@@ -18,6 +18,7 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 
+import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 
 import org.vcell.util.Coordinate;
@@ -920,7 +921,13 @@ private ImagePlanePanel getImagePlanePanel1() {
 private javax.swing.JLabel getInfoJlabel() {
 	if (ivjInfoJlabel == null) {
 		try {
-			ivjInfoJlabel = new javax.swing.JLabel();
+			ivjInfoJlabel = new javax.swing.JLabel(){
+				@Override
+				public Dimension getPreferredSize() {
+					Dimension size = new Dimension(getJPanel3().getWidth()+getImagePaneScroller1().getWidth()-10,22);
+					return size;
+				}
+			};
 			ivjInfoJlabel.setName("InfoJlabel");
 			//ivjInfoJlabel.setMinimumSize(new Dimension(50,15));
 //			ivjInfoJlabel.setBorder(BorderFactory.createEtchedBorder());
@@ -1061,9 +1068,12 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsInfoJlabel = new java.awt.GridBagConstraints();
 		constraintsInfoJlabel.gridx = 0; constraintsInfoJlabel.gridy = 1;
 		constraintsInfoJlabel.gridwidth = GridBagConstraints.REMAINDER;
-		constraintsInfoJlabel.weighty = 0.1;
+//		constraintsInfoJlabel.weighty = 0.1;
+//		constraintsInfoJlabel.weightx = 1.0;
 		constraintsInfoJlabel.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsInfoJlabel.anchor=GridBagConstraints.WEST;
 		constraintsInfoJlabel.insets = new java.awt.Insets(0, 4, 0, 4);
+		getInfoJlabel().setHorizontalAlignment(SwingConstants.LEFT);
 		add(getInfoJlabel(), constraintsInfoJlabel);
 		initConnections();
 		connEtoC4();

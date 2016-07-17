@@ -16,6 +16,7 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataInd
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 
 public class DataOperationResults implements Serializable{
+	private static final long serialVersionUID = -656370653400895175L;
 
 	public static class DataProcessingOutputTimeSeriesValues extends DataOperationResults{
 		private TimeSeriesJobResults timeSeriesJobResults;

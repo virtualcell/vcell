@@ -10,6 +10,7 @@
 
 package cbit.image.gui;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -97,7 +98,7 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("colorModelIDs"))) {
 					updateColorModelRadioButtons();
 				}
-				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("autoScale"))) {
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals(DisplayAdapterService.PROP_NAME_AUTOSCALE))) {
 					getAutoScaleCheckbox().setSelected(getDisplayAdapterService().getAutoScale());
 				}
 				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeColorModelID"))) {
@@ -1279,7 +1280,7 @@ private void initialize() {
 		// user code end
 		setName("DisplayAdapterServicePanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(222, 217);
+//		setSize(222, 217);
 
 		java.awt.GridBagConstraints constraintsColorGridPanel = new java.awt.GridBagConstraints();
 		constraintsColorGridPanel.gridx = 1; constraintsColorGridPanel.gridy = 1;
@@ -1308,6 +1309,25 @@ constraintsColorMapJLabel.gridheight = 2;
 	}
 	// user code begin {2}
 	// user code end
+}
+
+private static final Dimension mySize = new Dimension(150,250);
+@Override
+public Dimension getPreferredSize() {
+	// TODO Auto-generated method stub
+	return mySize;//super.getPreferredSize();
+}
+
+@Override
+public Dimension getMaximumSize() {
+	// TODO Auto-generated method stub
+	return mySize;//super.getMaximumSize();
+}
+
+@Override
+public Dimension getMinimumSize() {
+	// TODO Auto-generated method stub
+	return mySize;//super.getMinimumSize();
 }
 
 /**

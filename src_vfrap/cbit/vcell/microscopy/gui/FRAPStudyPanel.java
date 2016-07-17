@@ -1473,7 +1473,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					private String SIM_NORM_FLUOR = "Sim. Norm. Fluor";
 					private String DEFAULT_VIEW = "Default View (more...)";
 					private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS, EXP_NORM_FLUOR, SIM_NORM_FLUOR, DEFAULT_VIEW};
-					public boolean accept(String filterSetName, List<AnnotatedFunction> functions, DataIdentifier dataidentifier) {
+					public boolean accept(String filterSetName,List<AnnotatedFunction> myFunctionList,DataIdentifier dataidentifier) {
 						if(filterSetName.equals(ALL_DATAIDENTIFIERS)){
 							return true;
 						}else if(filterSetName.equals(EXP_NORM_FLUOR)){
@@ -1513,7 +1513,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						return false;
 					}
 					@Override
-					public ArrayList<DataIdentifier> accept(String filterSetName, List<AnnotatedFunction> functions, DataIdentifier[] dataidentifiers) {
+					public ArrayList<DataIdentifier> accept(String filterSetName,List<AnnotatedFunction> myFunctionList,DataIdentifier[] dataidentifiers) {
 						throw new RuntimeException("Not Implemented for FRAP");
 					}
 				}

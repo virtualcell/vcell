@@ -21,6 +21,7 @@ import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.DataJobListenerHolder;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
@@ -49,7 +50,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * {@link AsynchMessageManager} also listens to {@link ClientJobManager} if user stops the simulation, then it will notify {@link TopLevelWindowManager}
  * to update the status.
  */
-public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener {
+public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener,DataJobListenerHolder {
     private static final long BASE_POLL_SECONDS = 15;
     private static final long ATTEMPT_POLL_SECONDS = 3;
 	private static Logger lg = Logger.getLogger(AsynchMessageManager.class);

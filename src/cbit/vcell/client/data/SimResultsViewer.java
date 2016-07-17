@@ -14,6 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -26,6 +27,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -36,9 +38,11 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Constant;
-import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.ClientPDEDataContext;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.ODEDataManager;
+import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -117,7 +121,7 @@ public ExportMonitorPanel getExportMonitorPanel() {
  * Creation date: (10/17/2005 11:36:17 PM)
  * @return cbit.vcell.client.data.DataViewer
  */
-private DataViewer getMainViewer() {
+public DataViewer getMainViewer() {
 	return mainViewer;
 }
 
@@ -334,7 +338,11 @@ private int getSelectedParamScanJobIndex(){
  * Insert the method's description here.
  * Creation date: (10/18/2005 12:44:06 AM)
  */
+private Timer paramScanChoiceTimer;
 private void updateScanParamChoices(){
+	if((paramScanChoiceTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,paramScanChoiceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateScanParamChoices();}}))!=null){
+		return;
+	}
 	
 	int selectedJobIndex = getSelectedParamScanJobIndex();
 	// update viewer
@@ -373,19 +381,35 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get pde results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
-				if (currentContext == null || currentContext.getDataIdentifier() == null) {
-					PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, null);
-					pdeDataViewer.setPdeDataContext(pdeDatamanager.getPDEDataContext());
-				} else {
-					PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, (ClientPDEDataContext)currentContext);					
-					currentContext.setDataManager(pdeDatamanager);
+				PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, null);
+				PDEDataContext newPDEDC = pdeDatamanager.getPDEDataContext();
+				PDEDataContext oldPDEDC = pdeDataViewer.getPdeDataContext();
+				hashTable.put("newPDEDC", newPDEDC);
+				if(oldPDEDC != null && oldPDEDC.getTimePoints().length <= newPDEDC.getTimePoints().length){
+					DataIdentifier setDid = (newPDEDC.getDataIdentifier()==null?newPDEDC.getDataIdentifiers()[0]:newPDEDC.getDataIdentifier());
+					if(Arrays.asList(newPDEDC.getDataIdentifiers()).contains(oldPDEDC.getDataIdentifier())){
+						setDid = oldPDEDC.getDataIdentifier();
+						newPDEDC.setVariableAndTime(setDid,newPDEDC.getTimePoints()[BeanUtils.firstIndexOf(oldPDEDC.getTimePoints(), oldPDEDC.getTimePoint())]);
+					}
 				}
-				
+			}
+		};
+		AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ClientPDEDataContext newPDEDC = (ClientPDEDataContext)hashTable.get("newPDEDC");
+				pdeDataViewer.setPdeDataContext(newPDEDC);
 				pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
+
+//		AsynchClientTask refreshTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//			@Override
+//			public void run(Hashtable<String, Object> hashTable) throws Exception {
+//				((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(pdeDataViewer.getRefreshTasks()));
+//			}
+//		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1,task2/*,refreshTask*/});
 	}
 }
 

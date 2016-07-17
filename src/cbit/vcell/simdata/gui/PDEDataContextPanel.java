@@ -63,9 +63,7 @@ public class PDEDataContextPanel extends javax.swing.JPanel implements CurveValu
 	private SpatialSelection fieldSpatialSelection = null;
 	private int fieldSlice = 0;
 	private int fieldNormalAxis = 0;
-	private boolean ivjConnPtoP1Aligning = false;
-	private PDEDataContext ivjpdeDataContext1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP2Aligning = false;
 	private DisplayAdapterServicePanel ivjdisplayAdapterServicePanel1 = null;
 	private boolean ivjConnPtoP3Aligning = false;
@@ -77,10 +75,6 @@ public class PDEDataContextPanel extends javax.swing.JPanel implements CurveValu
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == PDEDataContextPanel.this && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connEtoC5(evt);
-			if (evt.getSource() == PDEDataContextPanel.this && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connPtoP1SetTarget();
 			if (evt.getSource() == PDEDataContextPanel.this.getImagePlaneManagerPanel() && (evt.getPropertyName().equals("displayAdapterServicePanel"))) 
 				connPtoP2SetTarget();
 			if (evt.getSource() == PDEDataContextPanel.this.getImagePlaneManagerPanel() && (evt.getPropertyName().equals("imagePlaneManager"))) 
@@ -95,10 +89,6 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				connPtoP5SetTarget();
 			if (evt.getSource() == PDEDataContextPanel.this && (evt.getPropertyName().equals("normalAxis"))) 
 				connPtoP5SetSource();
-			if (evt.getSource() == PDEDataContextPanel.this.getpdeDataContext1() && 
-					(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VARIABLE) || evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))) {
-//				connEtoM5(evt);
-			}
 			if (evt.getSource() == PDEDataContextPanel.this.getimagePlaneManager1() && (evt.getPropertyName().equals("imagePlaneData"))) 
 				connEtoC3(evt);
 			if (evt.getSource() == PDEDataContextPanel.this.getImagePlaneManagerPanel()) 
@@ -239,24 +229,6 @@ private void connEtoC4(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 /**
- * connEtoC5:  (PDEDataContextPanel.pdeDataContext --> PDEDataContextPanel.initMeshDisplayAdapter()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.initMeshDisplayAdapter();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
  * connEtoC6:  (PDEDataContextPanel2.propertyChange.propertyChange(java.beans.PropertyChangeEvent) --> PDEDataContextPanel.createSpatialSample(Ljava.beans.PropertyChangeEvent;)V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
@@ -284,26 +256,6 @@ private void connEtoM1() {
 		// user code begin {1}
 		// user code end
 		getImagePlaneManagerPanel().setCurveValueProvider(this);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM2:  (pdeDataContext1.this --> ImagePlaneManagerPanel.sourceDataInfo)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(PDEDataContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getpdeDataContext1() != null)) {
-			recodeDataForDomain();
-		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -383,10 +335,10 @@ private void recodeDataForDomain0() {
 	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
 	boolean bRecoding = getDataInfoProvider() != null && varDomain != null;	
 	
-	if (getpdeDataContext1().getDataValues() != originalData || recodeDataForDomainInfo == null ||
+	if (getPdeDataContext().getDataValues() != originalData || recodeDataForDomainInfo == null ||
 			((getDataInfoProvider() == null) != bDataInfoProviderNull)) {
 		bDataInfoProviderNull = (getDataInfoProvider() == null);
-		originalData = getpdeDataContext1().getDataValues();
+		originalData = getPdeDataContext().getDataValues();
 		tempRecodedData = originalData;
 		
 		double illegalNumber = Double.POSITIVE_INFINITY;
@@ -445,54 +397,6 @@ private void recodeDataForDomain0() {
 		recodeDataForDomainInfo = new RecodeDataForDomainInfo(true, tempRecodedData, dataRange);
 	}else{
 		recodeDataForDomainInfo = new RecodeDataForDomainInfo(false, tempRecodedData, dataRange);		
-	}
-}
-/**
- * connPtoP1SetSource:  (PDEDataContextPanel2.pdeDataContext <--> pdeDataContext1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			if ((getpdeDataContext1() != null)) {
-				this.setPdeDataContext(getpdeDataContext1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connPtoP1SetTarget:  (PDEDataContextPanel2.pdeDataContext <--> pdeDataContext1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			setpdeDataContext1(this.getPdeDataContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
 	}
 }
 /**
@@ -1073,16 +977,6 @@ public PDEDataContext getPdeDataContext() {
 	return fieldPdeDataContext;
 }
 /**
- * Return the pdeDataContext1 property value.
- * @return cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private PDEDataContext getpdeDataContext1() {
-	// user code begin {1}
-	// user code end
-	return ivjpdeDataContext1;
-}
-/**
  * Gets the slice property (int) value.
  * @return The slice property value.
  */
@@ -1131,7 +1025,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getImagePlaneManagerPanel().addPropertyChangeListener(ivjEventHandler);
-	connPtoP1SetTarget();
+//	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
@@ -1447,44 +1341,22 @@ public void setNormalAxis(int normalAxis) {
  */
 public void setPdeDataContext(PDEDataContext pdeDataContext) {
 	PDEDataContext oldValue = fieldPdeDataContext;
-	fieldPdeDataContext = pdeDataContext;
-	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
-	if(ivjImagePlaneManagerPanel != null && ivjImagePlaneManagerPanel.getCurveRenderer() != null && getPdeDataContext() != null){
-		ivjImagePlaneManagerPanel.getCurveRenderer().setCartesianMesh(getPdeDataContext().getCartesianMesh());
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(ivjEventHandler);
 	}
-}
-/**
- * Set the pdeDataContext1 to a new value.
- * @param newValue cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setpdeDataContext1(PDEDataContext newValue) {
-	if (ivjpdeDataContext1 != newValue) {
-		try {
-			PDEDataContext oldValue = getpdeDataContext1();
-			/* Stop listening for events from the current object */
-			if (ivjpdeDataContext1 != null) {
-				ivjpdeDataContext1.removePropertyChangeListener(ivjEventHandler);
-			}
-			ivjpdeDataContext1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjpdeDataContext1 != null) {
-				ivjpdeDataContext1.addPropertyChangeListener(ivjEventHandler);
-			}
-			connPtoP1SetSource();
-			connEtoM2(ivjpdeDataContext1);
-			firePropertyChange("pdeDataContext", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+	fieldPdeDataContext = pdeDataContext;
+	if (getPdeDataContext() != null) {
+		getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
+	}
+	if(!PDEDataViewer.isParameterScan(oldValue, getPdeDataContext())){
+		initMeshDisplayAdapter();	
+		if(ivjImagePlaneManagerPanel != null && ivjImagePlaneManagerPanel.getCurveRenderer() != null && getPdeDataContext() != null){
+			ivjImagePlaneManagerPanel.getCurveRenderer().setCartesianMesh(getPdeDataContext().getCartesianMesh());
 		}
-	};
-	// user code begin {3}
-	// user code end
+		if (getPdeDataContext() != null) {
+			recodeDataForDomain();
+		}		
+	}
 }
 /**
  * Sets the slice property (int) value.
