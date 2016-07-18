@@ -1410,6 +1410,7 @@ private void refresh() {
 		dsr.setSelectAreaRegionNames(getSurfaceCollectionDataInfo().getSurfaceNames());
 	}
 	
+	if(bDisplay == null){
 	bDisplay = (getSurfaceCollectionDataInfo() != null?new boolean[getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaceCount()]:null);
 	if(bDisplay != null){java.util.Arrays.fill(bDisplay,true);}
 	bWireframe = (getSurfaceCollectionDataInfo() != null?new boolean[getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaceCount()]:null);
@@ -1418,7 +1419,7 @@ private void refresh() {
 	//init with NO transparency
 	transparentSelection = (getSurfaceCollectionDataInfo() != null?new java.awt.AlphaComposite[getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaceCount()]:null);
 	if(transparentSelection != null){java.util.Arrays.fill(transparentSelection,java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC));}
-
+	}
 	
 	getScrollPaneTable().repaint();
 	

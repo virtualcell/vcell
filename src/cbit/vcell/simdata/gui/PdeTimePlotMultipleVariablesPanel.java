@@ -48,6 +48,7 @@ import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.VariableType;
@@ -134,9 +135,9 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		}
 	}
 	
-	private Timer plotChangeTimer;
+	private BlockingTimer plotChangeTimer;
 	public void showTimePlot() {
-		if((plotChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,multiTimePlotHelper.getPdeDatacontext(),null,plotChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {showTimePlot();}}))!=null){
+		if((plotChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,multiTimePlotHelper.getPdeDatacontext(),null,plotChangeTimer,false,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {showTimePlot();}}))!=null){
 			return;
 		}
 

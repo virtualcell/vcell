@@ -297,7 +297,9 @@ public class ChildWindowManager {
 				impl.setTitle(title);
 			}
 		}
-	
+		public String getTitle(){
+			return this.title;
+		}
 		/**
 		 * show with specified modality 
 		 * @throws ProgrammingException if previously shown with different modality 
@@ -357,7 +359,9 @@ public class ChildWindowManager {
 		public void show(){
 			show(LWModality.MODELESS);
 		}
-
+		public void hide(){
+			impl.setVisible(false);
+		}
 		/**
 		 * show as {@link LWHandle.LWModality#PARENT_ONLY}
 		 * @throws ProgrammingException if {@link #show()} previously called

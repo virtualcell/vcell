@@ -114,6 +114,7 @@ import cbit.vcell.client.data.PDEDataViewerPostProcess.PostProcessDataPDEDataCon
 import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gloworm.atoms.UserDataEntry;
 import cbit.vcell.export.gloworm.quicktime.MediaMethods;
 import cbit.vcell.export.gloworm.quicktime.MediaMovie;
@@ -320,7 +321,8 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	private static final String EXPORT_DATA_TABNAME = "Export Data";
 	private static final String POST_PROCESS_STATS_TABNAME = "Post Processing Stats Data";
 	private static final String POST_PROCESS_IMAGE_TABNAME = "Post Processing Image Data";
-		
+	
+	BlockingTimer pdePlotChange;
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
@@ -395,20 +397,43 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					}
 //					System.out.println("PDEDV asr="+displayAdapterService.getActiveScaleRange()+" csr="+displayAdapterService.getCustomScaleRange()+" vd="+displayAdapterService.getValueDomain()+" auto="+displayAdapterService.getAutoScale()+" sid="+displayAdapterService.getCurrentStateID());
 				}
-				
+				if(evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1() && evt.getPropertyName().equals(DisplayAdapterService.CUSTOM_SCALE_RANGE)){
+					if((pdePlotChange = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,pdePlotChange,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
+						return;
+					}
+					doUpdate(null);
+				}				
 				if(evt.getSource() == getPDEPlotControlPanel1() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))){
-					getPdeDataContext().setTimePoint((Double)evt.getNewValue());
+					if((pdePlotChange = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,pdePlotChange,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
+						return;
+					}
+					doUpdate(new AsynchClientTask("Setting timepoint="+(Double)evt.getNewValue(),AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							getPdeDataContext().setTimePoint((Double)evt.getNewValue());
+						}
+					});
+//					getPdeDataContext().setTimePoint((Double)evt.getNewValue());
 //					updateDataValueSurfaceViewer();
 				}
 				if(evt.getSource() == getPDEPlotControlPanel1() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER))){
+					if((pdePlotChange = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,pdePlotChange,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
+						return;
+					}
 					try{
 						getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
 						getPDEDataContextPanel1().getdisplayAdapterService1().activateMarkedState(((DataIdentifier)evt.getNewValue()).getName());
 					}finally{
 						getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
 					}
+					doUpdate(new AsynchClientTask("Setting variable="+((DataIdentifier)evt.getNewValue()).getName(),AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
+						}
+					});
 
-					getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
+//					getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
 //					updateDataValueSurfaceViewer();
 				}
 				
@@ -477,30 +502,20 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("dataViewerManager"))) {
 					getPDEExportPanel1().setDataViewerManager(getDataViewerManager());
 				}
-				if (evt.getSource() == PDEDataViewer.this.getPdeDataContext() && 
-						(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER) 
-						|| evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VARIABLE) 
-						|| evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))) {
-					getPDEDataContextPanel1().recodeDataForDomain();
-					if (getPdeDataContext().getDataIdentifier().getVariableType().getVariableDomain() == VariableDomain.VARIABLEDOMAIN_MEMBRANE) {
-						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
-							viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), true);
-						}
-						if (viewDataTabbedPane.getSelectedComponent() == getDataValueSurfaceViewer()) {
-							updateDataValueSurfaceViewer();
-						}
-					} else {
-						viewDataTabbedPane.setSelectedComponent(sliceViewPanel);
-						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
-							viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
-						}
-					}
-				}
-				if (evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1()) {
-					if (viewDataTabbedPane.getSelectedComponent() == getDataValueSurfaceViewer()) {
-						updateDataValueSurfaceViewer();
-					}
-				}
+//				if (evt.getSource() == PDEDataViewer.this.getPdeDataContext() && 
+//						(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER) 
+//						|| evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VARIABLE) 
+//						|| evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))) {
+//					doUpdate(true);
+//				}
+//				if (evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1()) {
+//					if((pdePlotChange = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,pdePlotChange,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
+//						return;
+//					}
+//					if (viewDataTabbedPane.getSelectedComponent() == getDataValueSurfaceViewer()) {
+//						doUpdate(null);
+//					}
+//				}
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}				
@@ -508,11 +523,71 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 		public void stateChanged(ChangeEvent e) {
 			if (e.getSource() == viewDataTabbedPane) {
 				if (viewDataTabbedPane.getSelectedComponent() == getDataValueSurfaceViewer()) {
-					updateDataValueSurfaceViewer();
+					doUpdate(null);
 				}
 			}
 		};
 	};
+	
+	BlockingTimer doUpdateTimer;
+	private void doUpdate(final AsynchClientTask dataTask){
+		if((doUpdateTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,doUpdateTimer,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {doUpdate(dataTask);}}))!=null){
+			return;
+		}
+		AsynchClientTask recodeTask = new AsynchClientTask("recoding data...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(dataTask != null){
+					getPDEDataContextPanel1().recodeDataForDomain();
+				}
+				if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
+					createDataValueSurfaceViewer(getClientTaskStatusSupport());
+				}
+			}
+		};
+		AsynchClientTask guiUpdateTask = new AsynchClientTask("updating GUI...",AsynchClientTask.TASKTYPE_SWING_BLOCKING){
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if (getPdeDataContext().getDataIdentifier().getVariableType().getVariableDomain() == VariableDomain.VARIABLEDOMAIN_MEMBRANE) {
+					if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
+						viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), true);
+					}
+					if (viewDataTabbedPane.getSelectedComponent() == getDataValueSurfaceViewer()) {
+						updateDataValueSurfaceViewer0();
+					}
+				} else {
+					viewDataTabbedPane.setSelectedComponent(sliceViewPanel);
+					if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
+						viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
+					}
+				}
+			}
+		};
+		final AsynchClientTask emptyTask = new AsynchClientTask("Filler...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				//do nothing}
+			}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {(dataTask==null?emptyTask:dataTask),recodeTask,guiUpdateTask},null,false,false,true,null,false);
+		
+//		getPDEDataContextPanel1().recodeDataForDomain();
+//		if (getPdeDataContext().getDataIdentifier().getVariableType().getVariableDomain() == VariableDomain.VARIABLEDOMAIN_MEMBRANE) {
+//			if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
+//				viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), true);
+//			}
+//			if (viewDataTabbedPane.getSelectedComponent() == getDataValueSurfaceViewer()) {
+//				updateDataValueSurfaceViewer();
+//			}
+//		} else {
+//			viewDataTabbedPane.setSelectedComponent(sliceViewPanel);
+//			if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
+//				viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
+//			}
+//		}
+
+	}
+	
 	public static class VolumeDataInfo{
 		public final int volumeIndex;
 		public final String volumeNamePhysiology;
@@ -613,7 +688,7 @@ public PDEDataViewer() {
 //	}
 //	initialize();
 //}
-public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter){
+public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) throws Exception{
 	getPDEPlotControlPanel1().setDataIdentifierFilter(dataIdentifierFilter);
 }
 
@@ -1495,12 +1570,12 @@ private javax.swing.JPanel getJPanelButtons() {
 	return ivjJPanelButtons;
 }
 
-private Timer stateChangeTimer;
+private BlockingTimer stateChangeTimer;
 private final ChangeListener mainTabChangeListener = 
 new ChangeListener(){
 	public void stateChanged(ChangeEvent e) {
 		boolean bPostProcessImageSelected = ivjJTabbedPane1.getSelectedIndex() == ivjJTabbedPane1.indexOfTab(POST_PROCESS_IMAGE_TABNAME);
-		if((stateChangeTimer = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,stateChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {mainTabChangeListener.stateChanged(e);}}))!=null){
+		if((stateChangeTimer = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,stateChangeTimer,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {mainTabChangeListener.stateChanged(e);}}))!=null){
 			return;
 		}
 		if(postProcessPdeDataViewerPanel.isInitialized()){
@@ -1828,7 +1903,7 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-private void setupDataInfoProvider(){
+private void setupDataInfoProvider() throws Exception{
 //	if (evt.getSource() == PDEDataViewer.this &&
 //			(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) {
 //	}
@@ -1906,7 +1981,7 @@ public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {
 	bSkipSurfaceCalc = true;
 	firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, null, pdeDataContext);
 	bSkipSurfaceCalc = false;
-	updateDataValueSurfaceViewer();
+//	updateDataValueSurfaceViewer();
 	
 	if(ivjJTabbedPane1.getTitleAt(ivjJTabbedPane1.getSelectedIndex()).equals(POST_PROCESS_STATS_TABNAME)){
 		dataProcessingResultsPanel.update(getPdeDataContext());
@@ -1962,52 +2037,64 @@ public void setSimulationModelInfo(SimulationModelInfo simulationModelInfo) {
 /**
  * Comment
  */
+private static final String MULTITPHELPER_TASK_KEY = "MULTITPHELPER_TASK_KEY";
+
 private void showKymograph() {
-	//Collect all sample curves created by user
-	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(false,true);
-	final Vector<SpatialSelection> lineSSOnly = new Vector<SpatialSelection>();
-	if (spatialSelectionArr != null && spatialSelectionArr.length > 0) {
-		//
-		for (int i = 0; i < spatialSelectionArr.length; i++){
-			if(spatialSelectionArr[i].isPoint() ||
-				(	spatialSelectionArr[i] instanceof SpatialSelectionMembrane && 
-					((SpatialSelectionMembrane)spatialSelectionArr[i]).getSelectionSource() instanceof cbit.vcell.geometry.SinglePoint)){
-			}else{
-				lineSSOnly.add(spatialSelectionArr[i]);
+	String title = createContextTitle(PDEDataViewer.this.isPostProcess(),"Kymograph: ",getPdeDataContext(),getSimulationModelInfo(),getSimulation());
+	final String INDICES_KEY = "INDICES_KEY";
+	final String CROSSING_KEY = "CROSSING_KEY";
+	final String ACCUM_KEY = "ACCUM_KEY";			
+	AsynchClientTask multiTimePlotHelperTask = new AsynchClientTask("multiTimePlotHelperTask...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			//Collect all sample curves created by user
+			SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(false,true);
+			final Vector<SpatialSelection> lineSSOnly = new Vector<SpatialSelection>();
+			if (spatialSelectionArr != null && spatialSelectionArr.length > 0) {
+				//
+				for (int i = 0; i < spatialSelectionArr.length; i++){
+					if(spatialSelectionArr[i].isPoint() ||
+						(	spatialSelectionArr[i] instanceof SpatialSelectionMembrane && 
+							((SpatialSelectionMembrane)spatialSelectionArr[i]).getSelectionSource() instanceof cbit.vcell.geometry.SinglePoint)){
+					}else{
+						lineSSOnly.add(spatialSelectionArr[i]);
+					}
+				}
 			}
-		}
-	}
-	//
-	if(lineSSOnly.size() == 0){
-		PopupGenerator.showErrorDialog(this, "No line samples match DataType="+getPdeDataContext().getDataIdentifier().getVariableType());
-		return;
-	}	
-	
-	try {
-		VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
-		int[] indices = null;
-		int[] crossingMembraneIndices = null;
-		double[] accumDistances = null;
-		for (int i = 0; i < lineSSOnly.size(); i++){
-			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION) || varType.equals(VariableType.POSTPROCESSING)){
-				SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
-				SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
-				indices = ssh.getSampledIndexes();
-				crossingMembraneIndices = ssh.getMembraneIndexesInOut();
-				accumDistances = ssh.getWorldCoordinateLengths();
-			}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-				SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)lineSSOnly.get(i);
-				SpatialSelection.SSHelper ssh = ssm.getIndexSamples();
-				indices = ssh.getSampledIndexes();
-				accumDistances = ssh.getWorldCoordinateLengths();
+			//
+			if(lineSSOnly.size() == 0){
+				throw new Exception("No line samples match DataType="+getPdeDataContext().getDataIdentifier().getVariableType());
 			}	
-			
-			String title = createContextTitle(PDEDataViewer.this.isPostProcess(),"Kymograph: ",getPdeDataContext(),getSimulationModelInfo(),getSimulation());
-//			if (getSimulationModelInfo()!=null){
-//				title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
-//			}
+
+			VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
+			int[] indices = null;
+			int[] crossingMembraneIndices = null;
+			double[] accumDistances = null;
+			for (int i = 0; i < lineSSOnly.size(); i++){
+				if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION) || varType.equals(VariableType.POSTPROCESSING)){
+					SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
+					SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
+					indices = ssh.getSampledIndexes();
+					crossingMembraneIndices = ssh.getMembraneIndexesInOut();
+					accumDistances = ssh.getWorldCoordinateLengths();
+				}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
+					SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)lineSSOnly.get(i);
+					SpatialSelection.SSHelper ssh = ssm.getIndexSamples();
+					indices = ssh.getSampledIndexes();
+					accumDistances = ssh.getWorldCoordinateLengths();
+				}	
+			}
+			if(indices !=null){hashTable.put(INDICES_KEY,indices);}
+			if(crossingMembraneIndices != null){hashTable.put(CROSSING_KEY,crossingMembraneIndices);}
+			if(accumDistances != null){hashTable.put(ACCUM_KEY,accumDistances);}
 			MultiTimePlotHelper multiTimePlotHelper = createMultiTimePlotHelper((ClientPDEDataContext)getPdeDataContext(),getDataViewerManager().getUser(),getSimulationModelInfo().getDataSymbolMetadataResolver());
-			KymographPanel  kymographPanel = new KymographPanel(this, title, multiTimePlotHelper);
+			hashTable.put(MULTITPHELPER_TASK_KEY,multiTimePlotHelper);
+		}
+	};
+	AsynchClientTask kymographTask = new AsynchClientTask("Kymograph showing...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			KymographPanel  kymographPanel = new KymographPanel(PDEDataViewer.this, title, (MultiTimePlotHelper)hashTable.get(MULTITPHELPER_TASK_KEY));
 			SymbolTable symbolTable;
 			if(getSimulation() != null && getSimulation().getMathDescription() != null){
 				symbolTable = getSimulation().getMathDescription();
@@ -2015,22 +2102,19 @@ private void showKymograph() {
 				symbolTable = new SimpleSymbolTable(new String[] {getPdeDataContext().getDataIdentifier().getName()});
 			}
 			
-			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
 			ChildWindow childWindow = childWindowManager.addChildWindow(kymographPanel, kymographPanel,  title);
 			childWindow.setSize(new Dimension(700,500));
 			childWindow.show();
 			
 			
-			kymographPanel.initDataManager(multiTimePlotHelper, getPdeDataContext().getTimePoints()[0], 1,
+			kymographPanel.initDataManager(getPdeDataContext().getTimePoints()[0], 1,
 				getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
-				indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),
+				(int[])hashTable.get(INDICES_KEY),(int[])hashTable.get(CROSSING_KEY),(double[])hashTable.get(ACCUM_KEY),true,getPdeDataContext().getTimePoint(),
 				symbolTable);
 		}
-	} catch (Exception e) {
-		PopupGenerator.showErrorDialog(PDEDataViewer.this, this.getClass().getName()+".showKymograph: "+e.getMessage(), e);
-		e.printStackTrace(System.out);
-	}
-
+	};
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {multiTimePlotHelperTask,kymographTask},null,false,false,true,null,false);
 }
 
 /**
@@ -2175,15 +2259,22 @@ private void showTimePlot() {
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		hash.put(StringKey_timeSeriesJobSpec, tsjs);
 		
-		AsynchClientTask task1 = new TimeSeriesDataRetrievalTask("Retrieving Data for '"+varName+"'...",PDEDataViewer.this,getPdeDataContext());	
+		AsynchClientTask task1 = new TimeSeriesDataRetrievalTask("Retrieving Data for '"+varName+"'...",PDEDataViewer.this,getPdeDataContext());
+		AsynchClientTask multiTimePlotHelperTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelper =
+					createMultiTimePlotHelper((ClientPDEDataContext)PDEDataViewer.this.getPdeDataContext(),PDEDataViewer.this.getDataViewerManager().getUser(),getSimulationModelInfo().getDataSymbolMetadataResolver());
+				hashTable.put(MULTITPHELPER_TASK_KEY, multiTimePlotHelper);
+			}
+		};
 		AsynchClientTask task2 = new AsynchClientTask("showing time plot for '"+varName+"'", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
 				//Make independent Plotviewer that is unaffected by changes (time,var,paramscan) in 'this' PDEDataviewer except to pass-thru OutputContext changes
-				PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelper =
-					createMultiTimePlotHelper((ClientPDEDataContext)PDEDataViewer.this.getPdeDataContext(),PDEDataViewer.this.getDataViewerManager().getUser(),getSimulationModelInfo().getDataSymbolMetadataResolver());
+				PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelper = (PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper)hashTable.get(MULTITPHELPER_TASK_KEY);
 				try{
 					PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(multiTimePlotHelper,singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
@@ -2222,7 +2313,8 @@ private void showTimePlot() {
 			}						
 		};	
 
-		ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+//		ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1,multiTimePlotHelperTask, task2 }, true, true, null);
+		ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1,multiTimePlotHelperTask, task2},null,false,false,true,null,false);
 	
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
@@ -2404,56 +2496,56 @@ private void updateDataSamplerContext(java.beans.PropertyChangeEvent propertyCha
 	
 }
 
-private AsynchClientTask[] getDataVlaueSurfaceViewerTasks(){
-	AsynchClientTask createDataValueSurfaceViewerTask = new AsynchClientTask("Create surface viewer...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
-				createDataValueSurfaceViewer(getClientTaskStatusSupport());
-			}
-		}
-	};
-	
-	AsynchClientTask updateDataValueSurfaceViewerTask = new AsynchClientTask("Update surface viewer...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			updateDataValueSurfaceViewer0();
-		}
-	};
-	
-	AsynchClientTask resetDataValueSurfaceViewerTask = new AsynchClientTask("Reset tab...",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false,false) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
-				viewDataTabbedPane.setSelectedIndex(0);
-			}
-		}
-	};
-	return new AsynchClientTask[] {createDataValueSurfaceViewerTask,updateDataValueSurfaceViewerTask,resetDataValueSurfaceViewerTask};
-}
-private Timer dataValueSurfaceTimer;
-//private boolean bPdeIsParamScan=false;
-private void updateDataValueSurfaceViewer(){
-//	if((dataValueSurfaceTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,dataValueSurfaceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateDataValueSurfaceViewer();}}))!=null){
+//private AsynchClientTask[] getDataVlaueSurfaceViewerTasks(){
+//	AsynchClientTask createDataValueSurfaceViewerTask = new AsynchClientTask("Create surface viewer...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
+//				createDataValueSurfaceViewer(getClientTaskStatusSupport());
+//			}
+//		}
+//	};
+//	
+//	AsynchClientTask updateDataValueSurfaceViewerTask = new AsynchClientTask("Update surface viewer...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			updateDataValueSurfaceViewer0();
+//		}
+//	};
+//	
+//	AsynchClientTask resetDataValueSurfaceViewerTask = new AsynchClientTask("Reset tab...",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false,false) {
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
+//				viewDataTabbedPane.setSelectedIndex(0);
+//			}
+//		}
+//	};
+//	return new AsynchClientTask[] {createDataValueSurfaceViewerTask,updateDataValueSurfaceViewerTask,resetDataValueSurfaceViewerTask};
+//}
+//private Timer dataValueSurfaceTimer;
+////private boolean bPdeIsParamScan=false;
+//private void updateDataValueSurfaceViewer(){
+////	if((dataValueSurfaceTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,dataValueSurfaceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateDataValueSurfaceViewer();}}))!=null){
+////		return;
+////	}
+//	if(bSkipSurfaceCalc){
 //		return;
+//	}	
+//	if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
+//		if((dataValueSurfaceTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,dataValueSurfaceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateDataValueSurfaceViewer();}}))!=null){
+//			return;
+//		}
+//		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), getDataVlaueSurfaceViewerTasks(),true,true,null);		
+//	}else{
+//		try{
+//			updateDataValueSurfaceViewer0();
+//		}catch(Exception e){
+//			e.printStackTrace();
+//			DialogUtils.showErrorDialog(this, e.getMessage());
+//		}
 //	}
-	if(bSkipSurfaceCalc){
-		return;
-	}	
-	if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
-		if((dataValueSurfaceTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,dataValueSurfaceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateDataValueSurfaceViewer();}}))!=null){
-			return;
-		}
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), getDataVlaueSurfaceViewerTasks(),true,true,null);		
-	}else{
-		try{
-			updateDataValueSurfaceViewer0();
-		}catch(Exception e){
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, e.getMessage());
-		}
-	}
-}
+//}
 /**
  * Insert the method's description here.
  * Creation date: (9/25/2005 2:00:05 PM)
