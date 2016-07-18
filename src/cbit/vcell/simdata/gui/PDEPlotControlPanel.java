@@ -62,6 +62,7 @@ import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -99,11 +100,11 @@ public class PDEPlotControlPanel extends JPanel {
 	private AnnotatedFunction[] myAnnotFunctions;	
 	private DataIdentifierFilter dataIdentifierFilter;// = new DefaultDataIdentifierFilter();
 	
-	private Timer filterSelectTimer;
+	private BlockingTimer filterSelectTimer;
 	private ActionListener filterChangeActionListener =
 		new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				if((filterSelectTimer = ClientTaskDispatcher.getBlockingTimer(PDEPlotControlPanel.this,null,null,filterSelectTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {filterChangeActionListener.actionPerformed(e);}}))!=null){
+				if((filterSelectTimer = ClientTaskDispatcher.getBlockingTimer(PDEPlotControlPanel.this,null,null,filterSelectTimer,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {filterChangeActionListener.actionPerformed(e);}}))!=null){
 					return;
 				}
 				try{
@@ -151,7 +152,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 public PDEPlotControlPanel() {
 	super();
 	initialize();
-	setDataIdentifierFilter(new DefaultDataIdentifierFilter());
+//	setDataIdentifierFilter(new DefaultDataIdentifierFilter());
 }
 
 public void viewFunction() {
@@ -219,7 +220,7 @@ public void viewFunction() {
 private void setDataIdentifiers(DataIdentifier[] dataIdentifiers){
 	myDataIdentifiers = dataIdentifiers;
 }
-public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
+public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) throws Exception{
 	this.dataIdentifierFilter = dataIdentifierFilter;
 	filterComboBox.removeActionListener(filterChangeActionListener);
 	filterComboBox.removeAllItems();
@@ -234,6 +235,7 @@ public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
 		filterComboBox.addItem("All Variables");
 		filterComboBox.setSelectedIndex(0);
 	}
+	filterVariableNames();
 }
 public DataIdentifierFilter getDataIdentifierFilter(){
 	return dataIdentifierFilter;
@@ -921,8 +923,8 @@ private void initConnections() throws java.lang.Exception {
 	getJList1().addListSelectionListener(ivjEventHandler);
 }
 
-private Timer varChangeTimer;
-private Timer sliderChangeTimer;
+private BlockingTimer varChangeTimer;
+private BlockingTimer sliderChangeTimer;
 /**
  * Initialize the class.
  */
@@ -1037,7 +1039,7 @@ private void setTimePoints(double[] newTimePoints) {
  */
 private void setTimeFromSlider() {
 	if (!getJSliderTime().getValueIsAdjusting()) {
-//		if((sliderChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,sliderChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {setTimeFromSlider();}}))!=null){
+//		if((sliderChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,sliderChangeTimer,false,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {setTimeFromSlider();}}))!=null){
 //			return;
 //		}
 		firePropertyChange(PDEDataContext.PROPERTY_NAME_TIME_POINT, -1, myTimePoints[getJSliderTime().getValue()]);
@@ -1080,7 +1082,7 @@ private void setTimeFromTextField(String typedValue) {
  * Comment
  */
 private void variableChanged() {
-//	if((varChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,varChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {variableChanged();}}))!=null){
+//	if((varChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,varChangeTimer,false,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {variableChanged();}}))!=null){
 //		return;
 //	}
 	firePropertyChange(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER, null, getJList1().getSelectedValue());

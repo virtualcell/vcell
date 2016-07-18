@@ -12,6 +12,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import org.vcell.client.logicalwindow.LWFrameOrDialog;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.Extent;
@@ -36,6 +37,7 @@ import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.server.DataSetControllerProvider;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
@@ -299,12 +301,12 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(postProcessPDEDataViewer);
 		ChildWindow[] childwindows = childWindowManager.getAllChildWindows();
 		for (int i = 0; i < childwindows.length; i++) {
-			if(childwindows[i].getParent().getTitle().startsWith(PDEDataViewer.POST_PROCESS_PREFIX)){
+			if(childwindows[i].getTitle().startsWith(PDEDataViewer.POST_PROCESS_PREFIX)){
 //				System.out.println("showing "+childwindows[i].getTitle()+" "+childwindows[i].getContentPane().getClass().getName());
 				if(bActivate){
 					childwindows[i].show();
 				}else{
-					childwindows[i].getParent().setVisible(false);
+					childwindows[i].hide();
 				}
 			}
 		}
@@ -340,9 +342,9 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 	public SimulationModelInfo getSimulationModelInfo(){
 		return simulationModelInfo;
 	}
-	private Timer updateTimer;
+	private BlockingTimer updateTimer;
 	public void update(){
-		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,getParentPdeDataContext(),null,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {update();}}))!=null){
+		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,getParentPdeDataContext(),null,updateTimer,false,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {update();}}))!=null){
 			return;
 		}
 		dispatchPostProcessUpdate((ClientPDEDataContext)getParentPdeDataContext());
@@ -442,7 +444,7 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 				hashTable.put(POST_PROCESS_PDEDC_KEY,createPostProcessPDEDataContext((ClientPDEDataContext)getParentPdeDataContext()));
 				}
 		};
-		AsynchClientTask setPostProcessPDETask = new AsynchClientTask("set postproces pdedc",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		AsynchClientTask setPostProcessPDETask = new AsynchClientTask("set postproces pdedc",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				postProcessPDEDataViewer.setPdeDataContext((ClientPDEDataContext)hashTable.get(POST_PROCESS_PDEDC_KEY));

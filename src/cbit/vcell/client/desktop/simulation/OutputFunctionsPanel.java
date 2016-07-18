@@ -55,6 +55,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -106,18 +107,18 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 	private JButton cancelGeomClassPanelButton = null;
 	private JDialog addFunctionDialog;
 
-	private Timer outputContextFnBtnTimer;
+	private BlockingTimer outputContextFnBtnTimer;
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
 				if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()){
-					if((outputContextFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
+					if((outputContextFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextFnBtnTimer,true, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
 						return;
 					}
 					addOutputFunction();
 				}
 				if (e.getSource() == OutputFunctionsPanel.this.getDeleteFnButton()){
-					if((outputContextFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
+					if((outputContextFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextFnBtnTimer,true, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
 						return;
 					}
 					deleteOutputFunction();	
