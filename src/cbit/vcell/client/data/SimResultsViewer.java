@@ -341,7 +341,7 @@ private int getSelectedParamScanJobIndex(){
  */
 private BlockingTimer paramScanChoiceTimer;
 private void updateScanParamChoices(){
-	if((paramScanChoiceTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,paramScanChoiceTimer,false,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateScanParamChoices();}}))!=null){
+	if((paramScanChoiceTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,paramScanChoiceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateScanParamChoices();}}))!=null){
 		return;
 	}
 	

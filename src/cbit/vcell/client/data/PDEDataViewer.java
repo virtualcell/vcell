@@ -322,7 +322,10 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	private static final String POST_PROCESS_STATS_TABNAME = "Post Processing Stats Data";
 	private static final String POST_PROCESS_IMAGE_TABNAME = "Post Processing Image Data";
 	
-	BlockingTimer pdePlotChange;
+	private BlockingTimer timerTimePoint;
+	private BlockingTimer timerScaleRange;
+	private BlockingTimer timerDataIdentifier;
+	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
@@ -398,13 +401,13 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 //					System.out.println("PDEDV asr="+displayAdapterService.getActiveScaleRange()+" csr="+displayAdapterService.getCustomScaleRange()+" vd="+displayAdapterService.getValueDomain()+" auto="+displayAdapterService.getAutoScale()+" sid="+displayAdapterService.getCurrentStateID());
 				}
 				if(evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1() && evt.getPropertyName().equals(DisplayAdapterService.CUSTOM_SCALE_RANGE)){
-					if((pdePlotChange = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,pdePlotChange,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
+					if((timerScaleRange = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,timerScaleRange,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
 						return;
 					}
 					doUpdate(null);
 				}				
 				if(evt.getSource() == getPDEPlotControlPanel1() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))){
-					if((pdePlotChange = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,pdePlotChange,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
+					if((timerTimePoint = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,timerTimePoint,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
 						return;
 					}
 					doUpdate(new AsynchClientTask("Setting timepoint="+(Double)evt.getNewValue(),AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
@@ -417,7 +420,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 //					updateDataValueSurfaceViewer();
 				}
 				if(evt.getSource() == getPDEPlotControlPanel1() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER))){
-					if((pdePlotChange = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,pdePlotChange,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
+					if((timerDataIdentifier = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,timerDataIdentifier,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}}))!=null){
 						return;
 					}
 					try{
@@ -531,7 +534,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	
 	BlockingTimer doUpdateTimer;
 	private void doUpdate(final AsynchClientTask dataTask){
-		if((doUpdateTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,doUpdateTimer,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {doUpdate(dataTask);}}))!=null){
+		if((doUpdateTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,doUpdateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {doUpdate(dataTask);}}))!=null){
 			return;
 		}
 		AsynchClientTask recodeTask = new AsynchClientTask("recoding data...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
@@ -1575,7 +1578,7 @@ private final ChangeListener mainTabChangeListener =
 new ChangeListener(){
 	public void stateChanged(ChangeEvent e) {
 		boolean bPostProcessImageSelected = ivjJTabbedPane1.getSelectedIndex() == ivjJTabbedPane1.indexOfTab(POST_PROCESS_IMAGE_TABNAME);
-		if((stateChangeTimer = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,stateChangeTimer,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {mainTabChangeListener.stateChanged(e);}}))!=null){
+		if((stateChangeTimer = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,stateChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {mainTabChangeListener.stateChanged(e);}}))!=null){
 			return;
 		}
 		if(postProcessPdeDataViewerPanel.isInitialized()){

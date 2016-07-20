@@ -122,7 +122,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 	
 	private BlockingTimer updateTimer;
 	public void update(final PDEDataContext newPDEDataContext) {
-		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,newPDEDataContext,this.pdeDataContext,updateTimer,true,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update(newPDEDataContext);}}))!=null){
+		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,newPDEDataContext,this.pdeDataContext,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update(newPDEDataContext);}}))!=null){
 			return;
 		}
 		if(this.pdeDataContext == newPDEDataContext){

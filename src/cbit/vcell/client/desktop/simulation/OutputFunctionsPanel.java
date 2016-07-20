@@ -107,18 +107,19 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 	private JButton cancelGeomClassPanelButton = null;
 	private JDialog addFunctionDialog;
 
-	private BlockingTimer outputContextFnBtnTimer;
+	private BlockingTimer outputContextAddFnBtnTimer;
+	private BlockingTimer outputContextDelFnBtnTimer;
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
 				if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()){
-					if((outputContextFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextFnBtnTimer,true, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
+					if((outputContextAddFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextAddFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
 						return;
 					}
 					addOutputFunction();
 				}
 				if (e.getSource() == OutputFunctionsPanel.this.getDeleteFnButton()){
-					if((outputContextFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextFnBtnTimer,true, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
+					if((outputContextDelFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextDelFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
 						return;
 					}
 					deleteOutputFunction();	
