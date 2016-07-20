@@ -344,7 +344,7 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 	}
 	private BlockingTimer updateTimer;
 	public void update(){
-		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,getParentPdeDataContext(),null,updateTimer,false,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {update();}}))!=null){
+		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,getParentPdeDataContext(),null,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {update();}}))!=null){
 			return;
 		}
 		dispatchPostProcessUpdate((ClientPDEDataContext)getParentPdeDataContext());

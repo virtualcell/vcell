@@ -213,17 +213,11 @@ public static class BlockingTimer extends Timer{
 public static boolean isBusy(PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2){
 	return ClientTaskDispatcher.isBusy() || (busyPDEDatacontext1 != null && busyPDEDatacontext1.isBusy()) || (busyPDEDatacontext2 != null && busyPDEDatacontext2.isBusy());
 }
-public static BlockingTimer getBlockingTimer(Component requester,PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2,BlockingTimer activeTimerOld,boolean bReplace,ActionListener actionListener){
+public static BlockingTimer getBlockingTimer(Component requester,PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2,BlockingTimer activeTimerOld,ActionListener actionListener){
 	if(isBusy(busyPDEDatacontext1,busyPDEDatacontext2)){
-		BlockingTimer activeTimerNew = null;
-		if(activeTimerOld == null || bReplace){
-			activeTimerNew = new BlockingTimer(requester,200,null);
-		}
-		if(bReplace && activeTimerOld != null){
+		BlockingTimer activeTimerNew = new BlockingTimer(requester,200,null);
+		if(activeTimerOld != null){
 			BlockingTimer.replace(activeTimerOld, activeTimerNew);
-		}
-		if(activeTimerOld != null && !bReplace){
-			activeTimerNew = activeTimerOld;
 		}
 		ActionListener[] currentActionlListeners = activeTimerNew.getActionListeners();
 		for (int i = 0; i < currentActionlListeners.length; i++) {
