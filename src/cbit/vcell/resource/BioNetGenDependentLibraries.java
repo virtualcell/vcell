@@ -6,10 +6,10 @@ package cbit.vcell.resource;
  * @author gweatherby
  *
  */
-public class BioNetGenCygwinDLL extends CygwinDLL {
+public class BioNetGenDependentLibraries extends CygwinDLLorMacosDylib {
 
 	@Override
-	public String version() throws UnsupportedOperationException {
+	public String cygwinSourceFilename() throws UnsupportedOperationException {
 		return "cygwin1.bionetgen"; 
 	}
 

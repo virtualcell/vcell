@@ -11,8 +11,8 @@ import java.util.Collection;
  *
  */
 public interface VersionedLibrary {
-	public final VersionedLibrary CYGWIN_DLL_VCELL = new VCellCygwinDLL();
-	public final VersionedLibrary CYGWIN_DLL_BIONETGEN = new BioNetGenCygwinDLL(); 
+	public final VersionedLibrary DEPENDENT_LIBS_VCELL = new VCellDependentLibraries();
+	public final VersionedLibrary DEPENDENT_LIBS_BNG = new BioNetGenDependentLibraries(); 
 	public final VersionedLibrary NONE = new LicensedPlaceholder(); 
 	/**
 	 * collection of zero to many libraries which should be extracted from  resources
