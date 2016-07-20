@@ -222,7 +222,7 @@ private static synchronized void initialize() {
 
 			file_exe_bng = new java.io.File(binDir, EXE_BNG);
 			file_exe_run_network = new java.io.File(binDir, EXE_RUN_NETWORK);
-			ResourceUtil.loadExecutable(EXE_BNG, VersionedLibrary.CYGWIN_DLL_BIONETGEN,binDir); 
+			ResourceUtil.loadExecutable(EXE_BNG, VersionedLibrary.DEPENDENT_LIBS_BNG,binDir); 
 
 			if (!file_exe_bng.exists()) {
 				ResourceUtil.writeResourceToExecutableFile(RES_EXE_BNG, file_exe_bng);

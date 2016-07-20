@@ -6,10 +6,10 @@ package cbit.vcell.resource;
  * @author gweatherby
  *
  */
-public class VCellCygwinDLL extends CygwinDLL {
+public class VCellDependentLibraries extends CygwinDLLorMacosDylib {
 	
 	@Override
-	public String version() throws UnsupportedOperationException {
+	public String cygwinSourceFilename() throws UnsupportedOperationException {
 		return "cygwin1.vcell"; 
 	}
 
