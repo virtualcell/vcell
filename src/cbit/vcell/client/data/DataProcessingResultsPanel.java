@@ -38,6 +38,7 @@ import cbit.plot.SingleXPlot2D;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
@@ -119,7 +120,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 	}
 	
 	
-	private Timer updateTimer;
+	private BlockingTimer updateTimer;
 	public void update(final PDEDataContext newPDEDataContext) {
 		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,newPDEDataContext,this.pdeDataContext,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update(newPDEDataContext);}}))!=null){
 			return;

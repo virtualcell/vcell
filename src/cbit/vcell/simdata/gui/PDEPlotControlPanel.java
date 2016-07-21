@@ -60,6 +60,7 @@ import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -208,7 +209,7 @@ public class PDEPlotControlPanel extends JPanel {
 	
 	private DataIdentifierFilter dataIdentifierFilter;// = new DefaultDataIdentifierFilter();
 	
-	private Timer filterSelectTimer;
+	private BlockingTimer filterSelectTimer;
 	private ActionListener filterChangeActionListener =
 		new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
@@ -260,7 +261,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 public PDEPlotControlPanel() {
 	super();
 	initialize();
-	setDataIdentifierFilter(new DefaultDataIdentifierFilter());
+//	setDataIdentifierFilter(new DefaultDataIdentifierFilter());
 }
 
 public void viewFunction() {
@@ -325,10 +326,10 @@ public void viewFunction() {
 	
 }
 
-private void setDataIdentifiers(DataIdentifier[] dataIdentifiers){
+private void setDataIdentifiers(DataIdentifier[] dataIdentifiers) {
 	myDataIdentifiers = dataIdentifiers;
 }
-public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
+public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) throws Exception {
 	this.dataIdentifierFilter = dataIdentifierFilter;
 	filterComboBox.removeActionListener(filterChangeActionListener);
 	filterComboBox.removeAllItems();
@@ -343,6 +344,7 @@ public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
 		filterComboBox.addItem("All Variables");
 		filterComboBox.setSelectedIndex(0);
 	}
+	filterVariableNames();
 }
 public DataIdentifierFilter getDataIdentifierFilter(){
 	return dataIdentifierFilter;

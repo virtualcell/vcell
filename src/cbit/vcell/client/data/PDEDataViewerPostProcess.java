@@ -34,6 +34,7 @@ import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.server.DataSetControllerProvider;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
@@ -317,7 +318,7 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 	public SimulationModelInfo getSimulationModelInfo(){
 		return simulationModelInfo;
 	}
-	private Timer updateTimer;
+	private BlockingTimer updateTimer;
 	public void update(){
 		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,getParentPdeDataContext(),null,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {update();}}))!=null){
 			return;
@@ -419,7 +420,7 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 				hashTable.put(POST_PROCESS_PDEDC_KEY,createPostProcessPDEDataContext((NewClientPDEDataContext)getParentPdeDataContext()));
 				}
 		};
-		AsynchClientTask setPostProcessPDETask = new AsynchClientTask("set postproces pdedc",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		AsynchClientTask setPostProcessPDETask = new AsynchClientTask("set postproces pdedc",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				postProcessPDEDataViewer.setPdeDataContext((PDEDataContext)hashTable.get(POST_PROCESS_PDEDC_KEY));
