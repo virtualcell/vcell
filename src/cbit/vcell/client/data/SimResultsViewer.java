@@ -35,6 +35,7 @@ import org.vcell.util.DataAccessException;
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Constant;
@@ -339,7 +340,7 @@ private int getSelectedParamScanJobIndex(){
  * Insert the method's description here.
  * Creation date: (10/18/2005 12:44:06 AM)
  */
-private Timer paramScanChoiceTimer;
+private BlockingTimer paramScanChoiceTimer;
 private void updateScanParamChoices(){
 	if((paramScanChoiceTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,paramScanChoiceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateScanParamChoices();}}))!=null){
 		return;

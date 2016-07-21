@@ -41,6 +41,7 @@ import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
@@ -1922,7 +1923,6 @@ private void initConnections() throws java.lang.Exception {
  * @param distances double[]
  */
 public void initDataManager(
-	MultiTimePlotHelper multiTimePlotHelper,
 	double initTime,int step,double endTime,
 	int[] indices,int[] argCrossingMembraneIndices,
 	double[] accumDistances,
@@ -1930,7 +1930,6 @@ public void initDataManager(
 	double argInitialLineScanTime,
 	SymbolTable argSymbolTable)	throws DataAccessException{
 
-	this.multiTimePlotHelper=multiTimePlotHelper;
 	symbolTable = argSymbolTable;
 	currentSymbolTablEntry = null;
 	resampleStepOrig = step;
@@ -2013,7 +2012,7 @@ private boolean failMethod(final Throwable timeSeriesJobFailed,final DataIdentif
 	}
 }
 
-private Timer initVariableTimer;
+private BlockingTimer initVariableTimer;
 /**
  * Insert the method's description here.
  * Creation date: (12/14/2004 9:47:38 AM)

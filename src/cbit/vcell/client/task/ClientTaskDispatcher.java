@@ -104,7 +104,7 @@ public static boolean isBusy(){
 	return false;
 }
 
-private static class BlockingTimer extends Timer{
+public static class BlockingTimer extends Timer{
 	private static AsynchProgressPopup pp;
 	private static ArrayList<BlockingTimer> allBlockingTimers = new ArrayList<>();
 	private static Timer ppStop = new Timer(1000, new ActionListener() {
@@ -125,18 +125,40 @@ private static class BlockingTimer extends Timer{
 		public void cancelButton_actionPerformed(EventObject newEvent) {
 			synchronized (allBlockingTimers) {
 				while(allBlockingTimers.size() > 0){
-					BlockingTimer blockingTimer = allBlockingTimers.remove(0);
+					allBlockingTimers.remove(0);
 				}
 				ppStop.restart();
 			}
 		}
 	};
+	private static class ALHelper implements ActionListener {
+		private ActionListener argActionListener;
+		private BlockingTimer argBlockingTimer;
+		public ALHelper(ActionListener argActionListener) {
+			super();
+			this.argActionListener = argActionListener;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			synchronized (allBlockingTimers) {
+				//if I'm next in the list do my action else repeat timer
+				if(BlockingTimer.allBlockingTimers.get(0) == argBlockingTimer){
+					argActionListener.actionPerformed(e);
+				}else{
+					argBlockingTimer.start();
+				}
+			}
+		}
+		public void setBlockingTimer(BlockingTimer argBlockingTimer){
+			this.argBlockingTimer = argBlockingTimer;
+		}
+	}
 	public BlockingTimer(Component requester,int delay,ActionListener actionListener){
-		super(delay, actionListener);
+		super(delay, new ALHelper(actionListener));
+		((ALHelper)getActionListeners()[0]).setBlockingTimer(this);
 		ppStop.setRepeats(false);
 		setRepeats(false);
 		synchronized (allBlockingTimers) {
-			boolean bBlockerExists = false;
 			if(pp == null){
 				pp = new AsynchProgressPopup(requester, "Waiting for actions to finish...", "busy...", null, true, false,true,cancelListener);
 				pp.start();
@@ -154,32 +176,45 @@ private static class BlockingTimer extends Timer{
 		// TODO Auto-generated method stub
 		super.stop();
 		synchronized (allBlockingTimers) {
+//			if(allBlockingTimers.size()>0 && allBlockingTimers.get(0) != BlockingTimer.this){
+//				System.err.println("Unexpected position of stopped Blockingtimer, not beginning of list");
+//			}
 			allBlockingTimers.remove(BlockingTimer.this);
 //			System.out.println("starting stop "+System.currentTimeMillis());
 			ppStop.restart();
+		}
+	}
+	private static void replace(BlockingTimer replaceThis, BlockingTimer withThis){
+		synchronized (allBlockingTimers) {
+			replaceThis.stop();
+			allBlockingTimers.add(withThis);
 		}
 	}
 }
 public static boolean isBusy(PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2){
 	return ClientTaskDispatcher.isBusy() || (busyPDEDatacontext1 != null && busyPDEDatacontext1.isBusy()) || (busyPDEDatacontext2 != null && busyPDEDatacontext2.isBusy());
 }
-public static Timer getBlockingTimer(Component requester,PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2,Timer activeTimer,ActionListener actionListener){
+public static BlockingTimer getBlockingTimer(Component requester,PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2,BlockingTimer activeTimerOld,ActionListener actionListener){
 	if(isBusy(busyPDEDatacontext1,busyPDEDatacontext2)){
-		if(activeTimer == null){
-			activeTimer = new BlockingTimer(requester,200,null);
+		BlockingTimer activeTimerNew = new BlockingTimer(requester,200,null);
+		if(activeTimerOld != null){
+			BlockingTimer.replace(activeTimerOld, activeTimerNew);
 		}
-		ActionListener[] currentActionlListeners = activeTimer.getActionListeners();
+		ActionListener[] currentActionlListeners = activeTimerNew.getActionListeners();
 		for (int i = 0; i < currentActionlListeners.length; i++) {
-			activeTimer.removeActionListener(currentActionlListeners[i]);			
+			activeTimerNew.removeActionListener(currentActionlListeners[i]);			
 		}
-		activeTimer.addActionListener(actionListener);
-		activeTimer.restart();
-		return activeTimer;		
-	}else if(activeTimer != null){
-		activeTimer.stop();
-		activeTimer = null;
+		activeTimerNew.addActionListener(actionListener);
+//		if(activeTimerNew.isRunning()){
+//			System.err.println("----------getBlockingTimer: single fire timer should not be running");
+//		}
+		activeTimerNew.restart();
+		return activeTimerNew;		
+	}else if(activeTimerOld != null){
+		activeTimerOld.stop();
+		activeTimerOld = null;
 	}
-	return activeTimer;
+	return null;
 }
 
 /**
