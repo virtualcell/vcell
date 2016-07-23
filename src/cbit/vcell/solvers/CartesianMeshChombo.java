@@ -32,8 +32,9 @@ import org.vcell.util.Origin;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.simdata.DataIdentifier;
 
-@SuppressWarnings("serial")
+
 public class CartesianMeshChombo extends CartesianMesh {
+	private static final long serialVersionUID = -6830066634726835851L;
 	protected static Logger logger = Logger.getLogger(CartesianMeshChombo.class);
 	
 	public static class FeaturePhaseVol implements Serializable
