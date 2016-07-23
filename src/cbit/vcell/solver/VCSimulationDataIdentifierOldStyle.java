@@ -25,7 +25,7 @@ import org.vcell.util.document.SimResampleInfoProvider;
 @Historical
 public class VCSimulationDataIdentifierOldStyle
 	implements
-		java.io.Serializable, org.vcell.util.document.VCKeyDataIdentifier,
+		java.io.Serializable,
 		SimResampleInfoProvider{
 
 

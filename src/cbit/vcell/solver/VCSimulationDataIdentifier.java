@@ -20,7 +20,6 @@ import org.vcell.util.document.SimResampleInfoProvider;
 public class VCSimulationDataIdentifier
 	implements
 		java.io.Serializable,
-		org.vcell.util.document.VCKeyDataIdentifier,
 		SimResampleInfoProvider{
 
 
