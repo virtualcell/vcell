@@ -39,6 +39,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.VCAssert;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
 import org.vcell.util.document.User;
@@ -72,7 +73,6 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePoi
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
-import cbit.vcell.simdata.FileResolver.LocInfo;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -99,7 +99,6 @@ public class SimulationData extends VCData {
 		private int jobIndex = 0;
 		private TreeSet<String> amplistorNotfoundSet = new TreeSet<String>();
 		boolean bNonSpatial = false;
-		private final FileResolver fileResolve = new FileResolver();
 
 		SimDataAmplistorInfo simDataAmplistorInfo;
 		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws FileNotFoundException{
@@ -110,19 +109,60 @@ public class SimulationData extends VCData {
 			if(secondaryUserDir != null && (!secondaryUserDir.exists() || !secondaryUserDir.isDirectory())){
 				throw new FileNotFoundException("If secondaryUserDir defined it must exist and be a directory");
 			}
-			fileResolve.registerDirectory(primaryUserDir);
-			if(secondaryUserDir != null){
-				fileResolve.registerDirectory(secondaryUserDir);
+//			this.amplistorVCellUsersRootPath = amplistorVCellUserRootPath;
+			String logFileName = null;
+			String logFileNameOldStyle = null;
+			if(argVCDataID instanceof VCSimulationDataIdentifier){
+				simulationKey = ((VCSimulationDataIdentifier)argVCDataID).getSimulationKey();
+				jobIndex = ((VCSimulationDataIdentifier)argVCDataID).getJobIndex();
+				logFileName = createCanonicalSimLogFileName(simulationKey, jobIndex, false);
+				logFileNameOldStyle = createCanonicalSimLogFileName(simulationKey, 0, true);
+			}else if(argVCDataID instanceof VCSimulationDataIdentifierOldStyle){
+				simulationKey = ((VCSimulationDataIdentifierOldStyle)argVCDataID).getSimulationKey();
+				logFileName = createCanonicalSimLogFileName(simulationKey, 0, false);
+				logFileNameOldStyle = createCanonicalSimLogFileName(simulationKey, 0, true);
+			}else if(argVCDataID instanceof ExternalDataIdentifier){
+				simulationKey = ((ExternalDataIdentifier)argVCDataID).getKey();
+				logFileName = createCanonicalSimLogFileName(simulationKey, 0, false);
+				logFileNameOldStyle = createCanonicalSimLogFileName(((ExternalDataIdentifier)argVCDataID).getKey(), 0, true);
+			}else{
+				throw new IllegalArgumentException("AmplistorHelper unexpected VCDataIdentifier type "+argVCDataID.getClass().getName());
 			}
-			LocInfo locInfo = fileResolve.getLocation(argVCDataID);
-			simulationKey = locInfo.simulationKey;
-			userDirectory = locInfo.directory;
-			ahvcDataId = locInfo.dataIdent;
-			jobIndex = locInfo.jobIndex;
-			if (locInfo.isSpatial != null) {
-				bNonSpatial = ! locInfo.isSpatial;
+			boolean bNotFound = false;
+			if(new File(primaryUserDir,logFileName).exists()){
+				this.userDirectory = primaryUserDir;
+				this.ahvcDataId = argVCDataID;
+			}else if(new File(primaryUserDir,logFileNameOldStyle).exists()){
+				this.userDirectory = primaryUserDir;
+				this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
+			}else if(secondaryUserDir != null && new File(secondaryUserDir,logFileName).exists()){
+				this.userDirectory = secondaryUserDir;
+				this.ahvcDataId = argVCDataID;
+			}else if(secondaryUserDir != null && new File(secondaryUserDir,logFileNameOldStyle).exists()){
+				this.userDirectory = secondaryUserDir;
+				this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
+			}else if(simDataAmplistorInfo != null && simDataAmplistorInfo.getAmplistorVCellUsersRootPath() != null){
+				try{
+					if(amplistorFileExists(simDataAmplistorInfo,argVCDataID.getOwner().getName(), logFileName)){
+						this.userDirectory = primaryUserDir;//use primary by default for amplistor
+						this.ahvcDataId = argVCDataID;
+					}else if(amplistorFileExists(simDataAmplistorInfo,argVCDataID.getOwner().getName(), logFileNameOldStyle)){
+						this.userDirectory = primaryUserDir;//use primary by default for amplistor
+						this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
+					}else{
+						bNotFound = true;
+					}
+				}catch(Exception e){
+					bNotFound = true;
+					e.printStackTrace();
 			}
-			else {
+			}else{
+				bNotFound = true;
+			}
+			if(bNotFound){
+				throw new FileNotFoundException(
+					"simulation data for [" + argVCDataID + "] newStyle="+logFileName+" oldStyle="+logFileNameOldStyle+" not exist in primary " + primaryUserDir + " dir or secondary " + secondaryUserDir+" dir or Archive server.");
+			}else{
 				FileInputStream fis = null;
 				try{
 					File logfile = getLogFile();
@@ -156,8 +196,7 @@ public class SimulationData extends VCData {
 		public boolean isNonSpatial(){
 			return bNonSpatial;
 		}
-
-		static VCDataIdentifier convertVCDataIDToOldStyle(VCDataIdentifier argVCDataID){
+		private static VCDataIdentifier convertVCDataIDToOldStyle(VCDataIdentifier argVCDataID){
 			if(argVCDataID instanceof VCSimulationDataIdentifier){
 				return VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle((VCSimulationDataIdentifier)argVCDataID);
 			}else if(argVCDataID instanceof VCSimulationDataIdentifierOldStyle){
