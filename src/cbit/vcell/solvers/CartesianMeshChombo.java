@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,13 +11,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
@@ -31,6 +23,12 @@ import org.vcell.util.Origin;
 
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.simdata.DataIdentifier;
+import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.object.Attribute;
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
 
 
 public class CartesianMeshChombo extends CartesianMesh {
@@ -39,6 +37,10 @@ public class CartesianMeshChombo extends CartesianMesh {
 	
 	public static class FeaturePhaseVol implements Serializable
 	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -6943874479513780808L;
 		public String feature;
 		public int iphase;
 		public int ivol;
@@ -53,6 +55,10 @@ public class CartesianMeshChombo extends CartesianMesh {
 	
 	private static class MembraneId implements Serializable
 	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -439586117231283048L;
 		public int id;
 		public String membrane;
 		
@@ -64,6 +70,10 @@ public class CartesianMeshChombo extends CartesianMesh {
 	}
 	
 	private static class SurfaceTriangleEntry3D implements Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 6814233776274848647L;
 		public int memIndex;
 		public int faceIndex = 0;
 		public Coordinate p0;
@@ -72,6 +82,10 @@ public class CartesianMeshChombo extends CartesianMesh {
 	}
 	
 	public static class Segment2D implements Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -2567791309131398171L;
 		public int memIndex;
 		public int prevVertex;
 		public int nextVertex;
@@ -91,12 +105,20 @@ public class CartesianMeshChombo extends CartesianMesh {
 	}
 	
 	private static class SliceViewEntry implements Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 2293303133521414030L;
 		public int memIndex;
 		public double[] crossPoints;
 	}
 	
 	private static class MembraneElementMetricsEntry implements Serializable
 	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 2582308848118755454L;
 		public int index, level, i,j,k;
 //		public double x,y,z;
 //		public double normalx, normaly, normalz;
@@ -123,6 +145,10 @@ public class CartesianMeshChombo extends CartesianMesh {
 	
 	public static class StructureMetricsEntry implements Serializable
 	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 2653788190224538988L;
 		private String name;
 		private StructureType type;
 		private double size;
