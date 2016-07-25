@@ -464,6 +464,73 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	if (geometryClass == null) {
 		issueVector.add(new Issue(this, issueContext, IssueCategory.StructureNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to a geometry subdomain.", Issue.SEVERITY_WARNING));
 	}
+	
+	if(simulationContext.getGeometryContext().getGeometry().getDimension() > 0) {
+		detectMappingConflictIssues(issueContext, issueVector, this);
+	}
+}
+
+private static void detectMappingConflictIssues(IssueContext issueContext, List<Issue> issueVector, StructureMapping ours) {
+	
+	final String ourStructureName = ours.getStructure().getName();
+	final String ourStructureTypeName = ours.getStructure().getTypeName();
+	final String ourSubdomainName = ours.getGeometryClass().getName();
+	SimulationContext sc = ours.simulationContext;
+	String incompatibilityList = "";		// list of incompatible structures mapped to the same subdomain, correctly built but not used
+	boolean incompatibilityFound = false;
+	
+	StructureMapping[] structureMappings = sc.getGeometryContext().getStructureMappings();
+	for(StructureMapping theirs : structureMappings) {
+		if(ours == theirs) {
+			continue;		// don't compare ours with itself
+		}
+		
+		final String theirSubdomainName = theirs.getGeometryClass().getName();
+		if(!ourSubdomainName.equals(theirSubdomainName)) {
+			continue;		// we don't care if mapped to another subdomain
+		}
+		
+		String incompatibleStructure = findMappingBoundaryConflict(ours, theirs);
+		if(incompatibleStructure != null) {
+			if(incompatibilityFound) {
+				incompatibilityList += ", ";
+			}
+			incompatibilityList += incompatibleStructure;
+			incompatibilityFound = true;
+		}	
+	}
+	
+	if(!incompatibilityList.isEmpty()) {
+		// TODO: modify StructureMappingTableRenderer to customize the way issues are being rendered
+		String message = "Subdomain '" +  ourSubdomainName + "' boundary conditions (e.g. for X-, X+...) must match.";
+		String tooltip = "Can't mix Flux and Value on the same column (e.g. X-, X+...) for multiple Structures mapped to the same Subdomain.";
+
+		issueVector.add(new Issue(ours, issueContext, IssueCategory.SubVolumeVerificationError, message, tooltip, Issue.Severity.ERROR));
+	}
+}
+private static String findMappingBoundaryConflict(StructureMapping ours, StructureMapping theirs) {
+	
+	SimulationContext sc = ours.simulationContext;
+	int dimension = sc.getGeometryContext().getGeometry().getDimension();
+	for (int i=0; i<dimension*2; i++){
+		if(!ours.boundaryConditionTypes[i].compareEqual(theirs.boundaryConditionTypes[i])) {
+			return theirs.getStructure().getName();
+		}
+	}
+	return null;
+	
+//	SimulationContext sc = ours.simulationContext;
+//	int dimension = sc.getGeometryContext().getGeometry().getDimension();
+//	for (int i=0; i<dimension*2; i++){
+//		if(!ours.boundaryConditionTypes[i].compareEqual(theirs.boundaryConditionTypes[i])) {
+//			final String ourStructureName = ours.getStructure().getName();
+//			final String theirStructureName = theirs.getStructure().getName();
+//			if(ourStructureName.compareTo(theirStructureName) > 0) {
+//				return theirStructureName;	// the first is never wrong
+//			}
+//		}
+//	}
+//	return null;
 }
 
 /**
