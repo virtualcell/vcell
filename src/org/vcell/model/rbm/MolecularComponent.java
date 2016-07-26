@@ -11,6 +11,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
 import org.vcell.util.Issue;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
@@ -106,6 +107,15 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 							throw new PropertyVetoException("State '" + newName + "' already exists in " + typeName + " '" + getDisplayName() + "'!", evt);
 						}
 					}
+				}
+				if (newName==null){
+					throw new PropertyVetoException(ComponentStateDefinition.typeName + " name is null.", evt);
+				}
+				if (newName.length()<1){
+					throw new PropertyVetoException(ComponentStateDefinition.typeName + " name is empty (zero length).", evt);
+				}
+				if (!newName.equals(TokenMangler.fixTokenStrict(newName))){
+					throw new PropertyVetoException(ComponentStateDefinition.typeName + " '" + newName + "' not legal identifier, try '" + TokenMangler.fixTokenStrict(newName) + "'.", evt);
 				}
 			}
 		}			

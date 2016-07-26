@@ -853,17 +853,20 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try{
+					String name = jTextField.getText();
 					//Type specific edit actions
 					if(selectedShape instanceof MolecularTypeLargeShape){
-						((MolecularTypeLargeShape)selectedShape).getMolecularType().setName(jTextField.getText());
+						((MolecularTypeLargeShape)selectedShape).getMolecularType().setName(name);
 					}else if(selectedShape instanceof MolecularComponentLargeShape){
-						((MolecularComponentLargeShape)selectedShape).getMolecularComponent().setName(jTextField.getText());
+						((MolecularComponentLargeShape)selectedShape).getMolecularComponent().setName(name);
 					}else if(selectedShape instanceof ComponentStateLargeShape){
-						((ComponentStateLargeShape)selectedShape).getComponentStateDefinition().setName(jTextField.getText());
+						((ComponentStateLargeShape)selectedShape).getComponentStateDefinition().setName(name);
 					}
 				}catch(Exception e2){
 					e2.printStackTrace();
 					DialogUtils.showErrorDialog(shapePanel, e2.getMessage());
+					shapePanel.remove(0);
+					updateInterface();
 				}
 				if(shapePanel.getComponentCount() > 0){
 					shapePanel.remove(0);
