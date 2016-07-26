@@ -464,6 +464,53 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	if (geometryClass == null) {
 		issueVector.add(new Issue(this, issueContext, IssueCategory.StructureNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to a geometry subdomain.", Issue.SEVERITY_WARNING));
 	}
+	
+	if(simulationContext.getGeometryContext().getGeometry().getDimension() > 0) {
+		detectMappingConflictIssues(issueContext, issueVector, this);
+	}
+}
+
+private static void detectMappingConflictIssues(IssueContext issueContext, List<Issue> issueVector, StructureMapping ours) {
+	
+	final String ourSubdomainName = ours.getGeometryClass().getName();
+	SimulationContext sc = ours.simulationContext;
+	String incompatibilityList = "";
+	boolean incompatibilityFound = false;
+	
+	StructureMapping[] structureMappings = sc.getGeometryContext().getStructureMappings();
+	for(StructureMapping theirs : structureMappings) {
+		if(ours == theirs) {
+			continue;		// don't compare ours with itself
+		}
+		
+		final String theirSubdomainName = theirs.getGeometryClass().getName();
+		if(!ourSubdomainName.equals(theirSubdomainName)) {
+			continue;		// we don't care if mapped to another subdomain
+		}
+		String incompatibleStructure = findMappingBoundaryConflict(ours, theirs);
+		if(incompatibleStructure != null) {
+			if(incompatibilityFound) {
+				incompatibilityList += ", ";
+			}
+			incompatibilityList += incompatibleStructure;
+			incompatibilityFound = true;
+		}	
+	}
+	if(!incompatibilityList.isEmpty()) {
+		String message = "Subdomain '" +  ourSubdomainName + "' boundary conditions (e.g. for X-, X+...) must match.";
+		issueVector.add(new Issue(ours, issueContext, IssueCategory.SubVolumeVerificationError, message, Issue.SEVERITY_ERROR));
+	}
+}
+private static String findMappingBoundaryConflict(StructureMapping ours, StructureMapping theirs) {
+	
+	SimulationContext sc = ours.simulationContext;
+	int dimension = sc.getGeometryContext().getGeometry().getDimension();
+	for (int i=0; i<dimension*2; i++){
+		if(!ours.boundaryConditionTypes[i].compareEqual(theirs.boundaryConditionTypes[i])) {
+			return theirs.getStructure().getName();
+		}
+	}
+	return null;
 }
 
 /**
