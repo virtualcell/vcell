@@ -5,7 +5,6 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -162,9 +161,18 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 				for (MolecularComponent mc : componentList) {
 					if (mc != evt.getSource()) {
 						if (mc.getName().equals(newName)) {
-							throw new PropertyVetoException(MolecularComponent.typeName + " '" + newName + "' already exists in " + getDisplayType() + " '" + getDisplayName() + "'!", evt);
+							throw new PropertyVetoException(MolecularComponent.typeName + " '" + newName + "' already exists in " + typeName + " '" + getDisplayName() + "'!", evt);
 						}
 					}
+				}
+				if (newName==null){
+					throw new PropertyVetoException(ComponentStateDefinition.typeName + " name is null.", evt);
+				}
+				if (newName.length()<1){
+					throw new PropertyVetoException(ComponentStateDefinition.typeName + " name is empty (zero length).", evt);
+				}
+				if (!newName.equals(TokenMangler.fixTokenStrict(newName))){
+					throw new PropertyVetoException(ComponentStateDefinition.typeName + " '" + newName + "' not legal identifier, try '" + TokenMangler.fixTokenStrict(newName) + "'.", evt);
 				}
 			}
 		}		
