@@ -2416,29 +2416,6 @@ public SimContextTransformer createNewTransformer(){
 	return null; 
 }
 
-/**
- * duplicate logic in {@link #createNewTransformer()} ... if {@link NetworkTransformer} 
- * going to be needed, return {@ link VersionedLibrary#CYGWIN_DLL_BIONETGEN}
- */
-//@Override
-//public VersionedLibrary getRequiredLibrary( ) {
-//	switch (applicationType) {
-//	case NETWORK_DETERMINISTIC:
-//	case NETWORK_STOCHASTIC:
-//		try { //4 gets and size -- can any return null? Wrap for safety
-//			final int listSize = getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size();
-//			if (listSize > 0) {
-//				return VersionedLibrary.CYGWIN_DLL_BIONETGEN;
-//			}
-//		}
-//		catch (NullPointerException npe) { }
-//		break;
-//	default:
-//	}
-//	return null;
-//}
-
-
 public static class NetworkGenerationRequirements {
 	public enum RequestType {
 		AllowTruncatedNetwork,
