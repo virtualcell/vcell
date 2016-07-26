@@ -2409,7 +2409,16 @@ public SimContextTransformer createNewTransformer(){
 	case NETWORK_STOCHASTIC:
 //		if(getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		if(getBioModel().getModel().getRbmModelContainer().getReactionRuleList().size() > 0) {
-			return new NetworkTransformer();
+			boolean foundEnabledRule = false;
+			for (ReactionRuleSpec rrs : getReactionContext().getReactionRuleSpecs()){
+				if (!rrs.isExcluded()){
+					foundEnabledRule = true;
+					break;
+				}
+			}
+			if(foundEnabledRule) {
+				return new NetworkTransformer();
+			}
 		}	// if no rules are present we don't need to flatten a deterministic model
 	}
 	return null; 
