@@ -13,8 +13,8 @@ import java.util.Collection;
  *
  */
 public interface LicensedLibrary {
-	public final LicensedLibrary CYGWIN_DLL_CHOMBO = new ChomboCygwinDLL();
-	public final LicensedLibrary CYGWIN_DLL_BIONETGEN = new BioNetGenCygwinDLL(); 
+	public final LicensedLibrary DependentSolverLibraries = new DependentLibrariesVCell();
+	public final LicensedLibrary CYGWIN_DLL_BIONETGEN = new DependentLibrariesBioNetGen(); 
 	public final LicensedLibrary NONE = new LicensedPlaceholder(); 
 	
 	/**
