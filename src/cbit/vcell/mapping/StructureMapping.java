@@ -465,13 +465,16 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 		issueVector.add(new Issue(this, issueContext, IssueCategory.StructureNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to a geometry subdomain.", Issue.SEVERITY_WARNING));
 	}
 	
-	if(simulationContext.getGeometryContext().getGeometry().getDimension() > 0) {
+	if(geometryClass != null && simulationContext.getGeometryContext().getGeometry().getDimension() > 0) {
 		detectMappingConflictIssues(issueContext, issueVector, this);
 	}
 }
 
 private static void detectMappingConflictIssues(IssueContext issueContext, List<Issue> issueVector, StructureMapping ours) {
 	
+	if(ours.getGeometryClass() == null) {
+		return;
+	}
 	final String ourStructureName = ours.getStructure().getName();
 	final String ourStructureTypeName = ours.getStructure().getTypeName();
 	final String ourSubdomainName = ours.getGeometryClass().getName();
@@ -483,6 +486,9 @@ private static void detectMappingConflictIssues(IssueContext issueContext, List<
 	for(StructureMapping theirs : structureMappings) {
 		if(ours == theirs) {
 			continue;		// don't compare ours with itself
+		}
+		if(theirs.getGeometryClass() == null) {
+			return;
 		}
 		
 		final String theirSubdomainName = theirs.getGeometryClass().getName();
