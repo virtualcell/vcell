@@ -88,6 +88,7 @@ import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
@@ -1045,6 +1046,10 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private static final String ORS_KEY = "Optimization result set";
 	
 	private void solve() throws NumberFormatException{
+		if (OperatingSystemInfo.getInstance().isMac()){
+			DialogUtils.showErrorDialog(this, "parameter estimation not currently available on Mac\n\n   try Windows or Linux.\n\n   coming soon on Mac.");
+			return;
+		}
 		CopasiOptimizationMethod com = optimizationMethodParameterTableModel.copasiOptimizationMethod;
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(com);
 		//get num runs for stochstic opt mehtods before starting solving...
