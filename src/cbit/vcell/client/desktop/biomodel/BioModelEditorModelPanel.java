@@ -42,9 +42,11 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
@@ -60,7 +62,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.ViewGeneratedReactionsPanel;
+import org.vcell.model.rbm.ViewReactionRulesShapesPanel;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
@@ -79,6 +84,7 @@ import cbit.gui.ModelProcessEquation;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -170,6 +176,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private JButton deleteButton = null;
 	private JButton pathwayButton = null;
 	private JButton duplicateButton = null;
+	private JButton viewRulesShapesButton = null;
 	private JPopupMenu pathwayPopupMenu = null;
 	private JMenuItem showPathwayMenuItem = null;
 	private JMenuItem editPathwayMenuItem = null;
@@ -186,6 +193,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private BioModel bioModel;
 	private JTextField textFieldSearch = null;
 	private JTabbedPane tabbedPane = null;
+	private JDialog viewReactionRulesDialog = null;
 	
 //	private CartoonEditorPanelFixed cartoonEditorPanel = null;
 	private ReactionCartoonEditorPanel reactionCartoonEditorPanel = null;
@@ -246,6 +254,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				getPathwayPopupMenu().show(pathwayButton, 0, pathwayButton.getHeight());
 			} else if (e.getSource() == duplicateButton) {
 				duplicateButtonPressed();
+			} else if (e.getSource() == viewRulesShapesButton) {
+				viewRulesShapesButtonPressed();
 			} else if (e.getSource() == showPathwayMenuItem) {
 				showPathwayLinks();
 			} else if (e.getSource() == editPathwayMenuItem) {
@@ -389,9 +399,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			newButton2.setVisible(true);
 			newButton2.setText("New Rule");
 			duplicateButton.setVisible(true);
+			viewRulesShapesButton.setVisible(false);	// TODO: don't show the button till functionality is implemented
+			viewRulesShapesButton.setEnabled(false);
 		} else {
 			newButton2.setVisible(false);
 			duplicateButton.setVisible(false);
+			viewRulesShapesButton.setVisible(false);
+			viewRulesShapesButton.setEnabled(false);
 		}
 		
 		deleteButton.setEnabled(false);
@@ -412,7 +426,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					Object object = currentSelectedTableModel.getValueAt(rows[r]);
 					if (object != null) {
 						objectList.add(object);;
-					}					
+					}
 				}
 				selectedObjects = objectList.toArray(new Object[0]);
 			}
@@ -498,6 +512,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		newMemButton = new JButton("New Membrane");
 		deleteButton = new JButton("Delete");
 		duplicateButton = new JButton("Duplicate");
+		viewRulesShapesButton = new JButton("View Rules");
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
@@ -573,6 +588,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 6;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		buttonPanel.add(viewRulesShapesButton, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 7;
 		gbc.gridy = 0;
 		gbc.weightx = 0.5;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -580,14 +602,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		buttonPanel.add(Box.createRigidArea(new Dimension(5,5)), gbc);		
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 7;
+		gbc.gridx = 8;
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
 		buttonPanel.add(new JLabel("Search "), gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 8;
+		gbc.gridx = 9;
 		gbc.gridy = 0;
 		gbc.weightx = 1.5;
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -623,6 +645,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		newMemButton.addActionListener(eventHandler);
 		duplicateButton.addActionListener(eventHandler);
 		duplicateButton.setEnabled(false);
+		viewRulesShapesButton.addActionListener(eventHandler);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
 		pathwayButton.addActionListener(eventHandler);
@@ -855,6 +878,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 									text += " ";
 								}
 							}
+							text = RbmUtils.appendSequence(text, o);
 							text += "</html>";
 							setText(text);
 						}
@@ -1383,7 +1407,19 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			throw new RuntimeException("Problem duplicating " + ReactionRule.typeName + " " + oldRule.getDisplayName());
 		}
 	}
-
+	
+	// TODO: functionality of the View Rules panel not yet implemented
+	private void viewRulesShapesButtonPressed() {
+		System.out.println("ViewRulesShapes Button Pressed");
+		ViewReactionRulesShapesPanel panel = new ViewReactionRulesShapesPanel(this);
+		panel.setPreferredSize(new Dimension(800,550));
+		JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
+		viewReactionRulesDialog = pane.createDialog(this, "View Reaction Rules");
+		viewReactionRulesDialog.setModal(false);
+		viewReactionRulesDialog.setResizable(true);
+		viewReactionRulesDialog.setVisible(true);
+	}
+	
 	private void deleteButtonPressed() {
 		try {
 			ArrayList<Object> deleteList = new ArrayList<Object>();
