@@ -1,27 +1,21 @@
 package cbit.vcell.graph;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Stroke;
 import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
@@ -31,16 +25,12 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.Pair;
 
-import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
-import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
-import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.RbmModelContainer;
@@ -50,19 +40,21 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 	class MolecularTypeRoundShape {
 		
 		private static final int radius = SpeciesPatternRoundShape.radius/2+1;
-		private int xPos = 0;
-		private int yPos = 0;		// y position where we draw the square containing the shape
+		private int xPos = 0;		// upper left corner of the square containing the shape - the x position
+		private int yPos = 0;		// as above - the y position
+		public final int index;		// index of this mtp inside the sp.
 		
 		final LargeShapePanel shapePanel;
 		private Displayable owner;
 		private MolecularTypePattern mtp;
 
-		public MolecularTypeRoundShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapePanel, Displayable owner, int i) {
+		public MolecularTypeRoundShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapePanel, Displayable owner, int index) {
 			this.xPos = xPos;
 			this.yPos = yPos;
 			this.shapePanel = shapePanel;
 			this.owner = owner;
 			this.mtp = mtp;
+			this.index = index;
 		}
 
 		public int getWidth() {
@@ -74,7 +66,7 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 		public MolecularTypePattern getMolecularTypePattern() {
 			return mtp;
 		}
-
+		
 		public void paintSelf(Graphics g) {
 			Graphics2D g2 = (Graphics2D)g;
 			Font fontOld = g2.getFont();
@@ -143,6 +135,7 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 	private int nameOffset = 0;	// offset upwards from yPos where we may write some text, like the expression of the sp
 	private int height = -1;	// -1 means it doesn't matter or that we can compute it from the shape + "tallest" bond
 	private List<MolecularTypeRoundShape> speciesShapes = new ArrayList<MolecularTypeRoundShape>();
+	private Set<Pair<Integer, Integer>> bondsSet = new HashSet<>();
 
 	final LargeShapePanel shapePanel;
 	
@@ -182,16 +175,13 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.shapePanel = shapePanel;
-		
 		xExtent = calculateXExtent(shapePanel);
-
 		this.height = height;
 
 		if(sp == null) {
 			// plain species context, no pattern
 			return;
 		}
-		
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		double angle = 0;
 		for(int i = 0; i<numPatterns; i++) {
@@ -206,14 +196,36 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 					angle += 45;
 				}
 			}
-
 			double x = Math.cos(Math.toRadians(angle)) * radius + xPos + radius - MolecularTypeRoundShape.radius;
 			double y = Math.sin(Math.toRadians(angle)) * radius + yPos + radius - MolecularTypeRoundShape.radius;
-			
 			MolecularTypeRoundShape mtrs = new MolecularTypeRoundShape((int)x, (int)y, mtp, shapePanel, owner, i);
-
-
 			speciesShapes.add(mtrs);
+		}
+		//
+		// bonds - we draw a simplified set
+		// for any number of bonds uniting any 2 mtp we'll draw just one bond
+		//
+		for(int i=0; i<numPatterns; i++) {
+
+			MolecularTypeRoundShape mtrsFrom = speciesShapes.get(i);
+			MolecularTypePattern mtpFrom = mtrsFrom.getMolecularTypePattern();
+			int numComponents = mtpFrom.getComponentPatternList().size();
+			for(int j=0; j<numComponents; j++) {
+
+				MolecularComponent mcFrom = mtpFrom.getMolecularType().getComponentList().get(j);
+				MolecularComponentPattern mcpFrom = mtpFrom.getMolecularComponentPattern(mcFrom);
+				if(mcpFrom.getBondType().equals(BondType.Specified)) {
+					Bond b = mcpFrom.getBond();
+
+					MolecularTypePattern mtpTo = b.molecularTypePattern;
+					MolecularTypeRoundShape mtrsTo = getShape(mtpTo);
+
+					if(mtrsFrom.index <= mtrsTo.index) {
+						Pair<Integer, Integer> p = new Pair<>(mtrsFrom.index, mtrsTo.index);
+						bondsSet.add(p);
+					}
+				}
+			}
 		}
 	}
 	
@@ -461,6 +473,40 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 //		g2.setPaint(Color.green.darker().darker());
 //		Ellipse2D circle = new Ellipse2D.Double(xPos, yPos, 2*radius, 2*radius);
 //		g2.fill(circle);
+		
+		
+		// paint the bonds first as circles
+		// as we keep painting other shapes over the bonds, all the unwanted parts of the bonds will get hidden
+		//
+//		for(Pair<Integer, Integer> p : bondsSet) {
+//			
+//			MolecularTypeRoundShape mtrsFrom = speciesShapes.get(p.one);
+//			MolecularTypeRoundShape mtrsTo = speciesShapes.get(p.two);
+//			
+////			Point p1 = new Point(mtrsFrom.xPos + MolecularTypeRoundShape.radius, mtrsFrom.yPos + MolecularTypeRoundShape.radius);
+////			Point p2 = new Point(mtrsTo.xPos + MolecularTypeRoundShape.radius, mtrsTo.yPos + MolecularTypeRoundShape.radius);
+//			Point p1 = new Point(mtrsFrom.xPos, mtrsFrom.yPos);
+//			Point p2 = new Point(mtrsTo.xPos, mtrsTo.yPos);
+//			
+//			int dx = Math.abs(p1.x - p2.x);
+//			int dy = Math.abs(p1.y - p2.y);
+//			double len = Math.sqrt(Math.pow((double)dx, 2) + Math.pow((double)dy, 2));
+//			
+//			Point m = new Point((p1.x+p2.x)/2, (p1.y+p2.y)/2);
+////			Point c = new Point(m.x+dy-MolecularTypeRoundShape.radius, m.y+dx-MolecularTypeRoundShape.radius);
+//			Point c = new Point(m.x+dy, m.y+dx);
+//			
+//			
+////			Ellipse2D circle2 = new Ellipse2D.Double(c.x, c.y, len, len);
+//			Ellipse2D circle2 = new Ellipse2D.Double(c.x-8, c.y-8, len+9, len+9);
+//			g2.setPaint(Color.gray);
+//			g2.draw(circle2);
+//
+//			
+//		}
+		
+		
+		
 		Ellipse2D circle2 = new Ellipse2D.Double(xPos, yPos, 2*radius, 2*radius);
 		g2.setPaint(Color.lightGray);
 		g2.draw(circle2);
