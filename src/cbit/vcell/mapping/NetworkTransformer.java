@@ -222,14 +222,19 @@ public class NetworkTransformer implements SimContextTransformer {
 			throw new RuntimeException(ex.getMessage());
 		}
 		
-		simContext.setInsufficientIterations(false);
-		simContext.setInsufficientMaxMolecules(false);
+//		simContext.setInsufficientIterations(false);
+//		simContext.setInsufficientMaxMolecules(false);
 		String bngConsoleString = bngOutput.getConsoleOutput();
 		
 		// TODO: this message we check if insufficient iterations / max molecules
 		// DO IT OUTSIDE (in the bng service), we now can
-		tcm = new TaskCallbackMessage(TaskCallbackStatus.DetailBatch, bngConsoleString);
-		simContext.appendToConsole(tcm);
+//		tcm = new TaskCallbackMessage(TaskCallbackStatus.DetailBatch, bngConsoleString);
+//		simContext.appendToConsole(tcm);
+		tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEndNotificationOnly, "");
+		simContext.setNewCallbackMessage(tcm);
+		tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEndAdjustSimulationContextFlagsOnly, "");
+		simContext.setNewCallbackMessage(tcm);
+
 
 		String bngNetString = bngOutput.getNetFileContent();
 		outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
