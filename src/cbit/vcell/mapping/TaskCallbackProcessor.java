@@ -69,8 +69,8 @@ public class TaskCallbackProcessor {
 			currentIterationSpecies = 0;
 			needAdjustIterations = false;
 			needAdjustMaxMolecules = false;
-			sc.setInsufficientIterations(false);
-			sc.setInsufficientMaxMolecules(false);
+//			sc.setInsufficientIterations(false);
+//			sc.setInsufficientMaxMolecules(false);
 			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
 			consoleNotificationList.add(tcm);
 			sc.firePropertyChange("appendToConsole", "", tcm);
