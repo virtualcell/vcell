@@ -23,11 +23,19 @@ public class StructureToolShape implements Icon {
 	private enum State { normal, selected };
 
 	private final State state;
-	private final int diameter = 20;
+	private final int diameter;
 
 	public StructureToolShape(State state) {
 		super();
 		this.state = state;
+		this.diameter = 20;		// recommended value
+	}
+	// at diameters different from 20, the smaller circle won't be centered inside the larger circle
+	// value for smaller icons should be at least 16
+	public StructureToolShape(int diameter) {
+		super();
+		this.state = State.normal;
+		this.diameter = diameter;
 	}
 	
 	@Override
@@ -36,10 +44,6 @@ public class StructureToolShape implements Icon {
 		if(c == null) {
 			return;
 		}
-		if(!(c instanceof JToolBarToggleButton)) {
-			return;
-		}
-		JToolBarToggleButton b = (JToolBarToggleButton)c;
 		
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
@@ -63,8 +67,8 @@ public class StructureToolShape implements Icon {
 			xx = x+2;
 			yy = y+2;
 		}
-		double w = 16;		// external red circle
-		double h = 16;
+		double w = diameter-4;		// external red circle
+		double h = diameter-4;
 		Ellipse2D e1 = new Ellipse2D.Double(xx, yy, w, h);
 		GradientPaint gp1 = new GradientPaint(25, 25, c1, 35, 32, c2, true);
 		g2.setPaint(gp1);
@@ -82,8 +86,8 @@ public class StructureToolShape implements Icon {
 			xx = x+6;
 			yy = y+6;
 		}
-		w = 8;			// inner green circle
-		h = 8;
+		w = w/2;			// inner green circle
+		h = h/2;
 		Ellipse2D e2 = new Ellipse2D.Double(xx, yy, w, h);
 		GradientPaint gp2 = new GradientPaint(25, 25, c1, 28, 28, c2, true);
 		g2.setPaint(gp2);

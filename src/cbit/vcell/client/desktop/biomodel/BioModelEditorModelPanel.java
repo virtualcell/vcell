@@ -100,6 +100,7 @@ import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.ReactionCartoonTool;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
+import cbit.vcell.graph.StructureToolShape;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.BioModelEntityObject;
@@ -395,10 +396,18 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		}
 		if (selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
+			Icon downArrow = null;
+			if( bioModel.getModel().getNumStructures() > 1) {
+				downArrow =  new DownArrowIcon();
+			}
 			newButton.setText("New Reaction");
 			newButton2.setVisible(true);
 			newButton2.setText("New Rule");
+			newButton2.setIcon(downArrow);
+			newButton2.setHorizontalTextPosition(SwingConstants.LEFT);
 			duplicateButton.setVisible(true);
+			duplicateButton.setIcon(downArrow);
+			duplicateButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			viewRulesShapesButton.setVisible(false);	// TODO: don't show the button till functionality is implemented
 			viewRulesShapesButton.setEnabled(false);
 		} else {
@@ -1321,6 +1330,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					Structure s = bioModel.getModel().getStructure(i);
 					String sName = s.getName();
 					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
+					menuItem.setIcon(new StructureToolShape(17));
 					menu.add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -1386,22 +1396,58 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void duplicateButtonPressed() {
-		System.out.println("Duplicate Button Pressed");
+
 		computeCurrentSelectedTable();
-		if (currentSelectedTable != reactionsTable) {
-			return;
+		if (currentSelectedTable == reactionsTable) {
+			int row = currentSelectedTable.getSelectedRow();
+			System.out.println("Duplicate Button Pressed for row " + row);
+			ModelProcess mp = reactionTableModel.getValueAt(row);
+			if(!(mp instanceof ReactionRule)) {
+				return;
+			}
+			ReactionRule oldRule = (ReactionRule)mp;
+				
+			if( bioModel.getModel().getNumStructures() == 1) {
+				duplicateReactionRule(oldRule, oldRule.getStructure());
+			} else if( bioModel.getModel().getNumStructures() > 1) {
+				final JPopupMenu menu = new JPopupMenu("Choose compartment");
+				for(int i=0; i<bioModel.getModel().getNumStructures(); i++) {
+					String ourType = oldRule.getStructure().getTypeName();
+					Structure s = bioModel.getModel().getStructure(i);
+					String theirType = s.getTypeName();
+					if(!ourType.equals(theirType)) {
+						continue;	// offer to duplicate only within structures of the same type as the original, 
+									// otherwise units will be meaningless (surface vs volume)
+					}
+					String sName = s.getName();
+					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
+					menuItem.setIcon(new StructureToolShape(17));
+					menu.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							newObject = duplicateReactionRule(oldRule, s);
+							if (newObject != null) {
+								for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
+									if (currentSelectedTableModel.getValueAt(i) == newObject) {
+										currentSelectedTable.setRowSelectionInterval(i, i);
+										break;
+									}
+								}
+							}
+						}
+					});
+				}
+				menu.show(duplicateButton, 0, duplicateButton.getHeight());
+			}
 		}
-		int row = currentSelectedTable.getSelectedRow();
-		System.out.println("Duplicate Button Pressed for row " + row);
-		ModelProcess mp = reactionTableModel.getValueAt(row);
-		if(!(mp instanceof ReactionRule)) {
-			return;
-		}
-		ReactionRule oldRule = (ReactionRule)mp;
+	}
+	private ReactionRule duplicateReactionRule(ReactionRule oldRule, Structure structure) {
 		try {
-			ReactionRule newRule = ReactionRule.duplicate(oldRule);
+			ReactionRule newRule = ReactionRule.duplicate(oldRule, structure);
 			Model m = oldRule.getModel();
 			m.getRbmModelContainer().addReactionRule(newRule);
+			return newRule;
 		} catch (PropertyVetoException | ExpressionBindingException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Problem duplicating " + ReactionRule.typeName + " " + oldRule.getDisplayName());

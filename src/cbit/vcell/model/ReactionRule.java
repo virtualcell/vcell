@@ -163,9 +163,8 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		return false;
 	}
 	
-	public static ReactionRule duplicate(ReactionRule oldRule) throws ExpressionBindingException {
+	public static ReactionRule duplicate(ReactionRule oldRule, Structure s) throws ExpressionBindingException {
 		Model m = oldRule.getModel();
-		Structure s = oldRule.getStructure();
 		boolean bR = oldRule.isReversible();
 		String newName = ReactionRule.deriveReactionName(oldRule);
 		ReactionRule newRule = new ReactionRule(m, newName, s, bR);
