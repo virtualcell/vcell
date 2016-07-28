@@ -46,7 +46,9 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Displayable;
 import org.vcell.util.document.KeyValue;
 
+import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -288,6 +290,30 @@ public void writeTokens(PrintWriter pw) {
 
 public String getTypeLabel() {
 	return "Species";
+}
+
+public static SpeciesContext duplicate(SpeciesContext oldSpecies, Structure s, Model m) throws ExpressionBindingException, PropertyVetoException {
+	String newName = SpeciesContext.deriveSpeciesName(oldSpecies, m);
+	Species newSpecies = new Species(newName, null);
+	SpeciesContext newSpeciesContext = new SpeciesContext(null, newName, newSpecies, s);
+	SpeciesPattern newsp = new SpeciesPattern(oldSpecies.getSpeciesPattern());
+	newSpeciesContext.setSpeciesPattern(newsp);
+	m.addSpecies(newSpecies);
+	m.addSpeciesContext(newSpeciesContext);
+	return newSpeciesContext;
+}
+public static String deriveSpeciesName(SpeciesContext sc, Model m) {
+	int count=0;
+	String baseName = sc.getName() + "_";
+	String newName = "";
+	while (true) {
+		newName = baseName + count;
+		if (m.getSpecies(newName) == null && m.getSpeciesContext(newName) == null){
+			break;
+		}
+		count++;
+	}
+	return newName;
 }
 
 public final SpeciesPattern getSpeciesPattern() {

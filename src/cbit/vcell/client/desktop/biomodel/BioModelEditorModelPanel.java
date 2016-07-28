@@ -370,51 +370,56 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private void refreshButtons() {
 		int selectedIndex = tabbedPane.getSelectedIndex();		
 		newMemButton.setVisible(false);
+		newButton2.setVisible(false);
+		duplicateButton.setVisible(false);
+		viewRulesShapesButton.setVisible(false);
+		viewRulesShapesButton.setEnabled(false);
+
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal() 
 //			|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()
-			|| selectedIndex == ModelPanelTabID.species_table.ordinal() && (bioModel == null || bioModel.getModel().getNumStructures() < 1)) {
+			|| selectedIndex == ModelPanelTabID.species_table.ordinal() && (bioModel == null || 
+			bioModel.getModel().getNumStructures() < 1))
+		{
 			newButton.setVisible(false);
 		} else {
+			Icon downArrow = null;
+			if( bioModel.getModel().getNumStructures() > 1) {
+				downArrow =  new DownArrowIcon();
+			}
 			newButton.setVisible(true);
 			// For structureTable tab, newButton should show 'New Compartment'; 'New Membrane' button should be visible.
 			if (selectedIndex == ModelPanelTabID.structure_table.ordinal()) {
 				newButton.setText("New Compartment");
 				newMemButton.setVisible(true);
+			} else if(selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
+				newButton.setText("New Reaction");
+				newButton2.setVisible(true);
+				newButton2.setText("New Rule");
+				newButton2.setIcon(downArrow);
+				newButton2.setHorizontalTextPosition(SwingConstants.LEFT);
+				duplicateButton.setVisible(true);
+				duplicateButton.setIcon(downArrow);
+				duplicateButton.setHorizontalTextPosition(SwingConstants.LEFT);
+				viewRulesShapesButton.setVisible(false);	// TODO: don't show the button till functionality is implemented
+				viewRulesShapesButton.setEnabled(false);
 			} else if(selectedIndex == ModelPanelTabID.species_table.ordinal()) {
-				if(bioModel.getModel().getNumStructures() <= 1) {
-					newButton.setIcon(null);
-					newButton.setHorizontalTextPosition(SwingConstants.RIGHT);
-				} else {
-					newButton.setIcon(new DownArrowIcon());
-					newButton.setHorizontalTextPosition(SwingConstants.LEFT);
-				}
+				newButton.setVisible(true);
+				newButton.setIcon(downArrow);
+				newButton.setHorizontalTextPosition(SwingConstants.LEFT);
+				duplicateButton.setVisible(true);
+				duplicateButton.setIcon(downArrow);
+				duplicateButton.setHorizontalTextPosition(SwingConstants.LEFT);
 				newButton.setText("New Species");
 			} else if(selectedIndex == ModelPanelTabID.observables_table.ordinal()) {
+				newButton.setVisible(true);
+				newButton.setIcon(downArrow);
 				newButton.setText("New Observable");		
+				duplicateButton.setVisible(true);
+				duplicateButton.setIcon(downArrow);
+				duplicateButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			} else if(selectedIndex == ModelPanelTabID.species_definitions_table.ordinal()) {
 				newButton.setText("New Molecule");		
 			}
-		}
-		if (selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
-			Icon downArrow = null;
-			if( bioModel.getModel().getNumStructures() > 1) {
-				downArrow =  new DownArrowIcon();
-			}
-			newButton.setText("New Reaction");
-			newButton2.setVisible(true);
-			newButton2.setText("New Rule");
-			newButton2.setIcon(downArrow);
-			newButton2.setHorizontalTextPosition(SwingConstants.LEFT);
-			duplicateButton.setVisible(true);
-			duplicateButton.setIcon(downArrow);
-			duplicateButton.setHorizontalTextPosition(SwingConstants.LEFT);
-			viewRulesShapesButton.setVisible(false);	// TODO: don't show the button till functionality is implemented
-			viewRulesShapesButton.setEnabled(false);
-		} else {
-			newButton2.setVisible(false);
-			duplicateButton.setVisible(false);
-			viewRulesShapesButton.setVisible(false);
-			viewRulesShapesButton.setEnabled(false);
 		}
 		
 		deleteButton.setEnabled(false);
@@ -442,8 +447,16 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		if (selectedObjects != null) {				
 			deleteButton.setEnabled(selectedObjects.length > 0);
-			if (selectedObjects.length == 1 && selectedObjects[0] instanceof ReactionRule) {
+			if (selectedObjects.length == 1 && 
+					(selectedObjects[0] instanceof ReactionRule || selectedObjects[0] instanceof RbmObservable)) {
 				duplicateButton.setEnabled(true);
+			} else if(selectedObjects.length == 1 && selectedObjects[0] instanceof SpeciesContext) {
+				SpeciesContext sp = (SpeciesContext)selectedObjects[0];
+				if(sp.hasSpeciesPattern()) {
+					duplicateButton.setEnabled(true);
+				} else {
+					duplicateButton.setEnabled(false);
+				}
 			}
 			if (selectedObjects.length == 1 && selectedObjects[0] instanceof BioModelEntityObject) {
 				pathwayButton.setEnabled(true);
@@ -1220,6 +1233,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					Structure s = bioModel.getModel().getStructure(i);
 					String sName = s.getName();
 					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
+					menuItem.setIcon(new StructureToolShape(17));
 					menu.add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -1398,9 +1412,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private void duplicateButtonPressed() {
 
 		computeCurrentSelectedTable();
+		int row = currentSelectedTable.getSelectedRow();
+		System.out.println("Duplicate Button Pressed for row " + row);
 		if (currentSelectedTable == reactionsTable) {
-			int row = currentSelectedTable.getSelectedRow();
-			System.out.println("Duplicate Button Pressed for row " + row);
 			ModelProcess mp = reactionTableModel.getValueAt(row);
 			if(!(mp instanceof ReactionRule)) {
 				return;
@@ -1427,18 +1441,58 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							newObject = duplicateReactionRule(oldRule, s);
-							if (newObject != null) {
-								for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
-									if (currentSelectedTableModel.getValueAt(i) == newObject) {
-										currentSelectedTable.setRowSelectionInterval(i, i);
-										break;
-									}
-								}
-							}
+							// moves selection on the newly created object
+//							if (newObject != null) {
+//								for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
+//									if (currentSelectedTableModel.getValueAt(i) == newObject) {
+//										currentSelectedTable.setRowSelectionInterval(i, i);
+//										break;
+//									}
+//								}
+//							}
 						}
 					});
 				}
 				menu.show(duplicateButton, 0, duplicateButton.getHeight());
+			}
+		} else if(currentSelectedTable == speciesTable) {
+			SpeciesContext sc = speciesTableModel.getValueAt(row);
+			if(!sc.hasSpeciesPattern()) {
+				return;
+			}
+			if( bioModel.getModel().getNumStructures() == 1) {
+				duplicateSpecies(sc, sc.getStructure(), bioModel.getModel());
+			} else if( bioModel.getModel().getNumStructures() > 1) {
+				final JPopupMenu menu = new JPopupMenu("Choose compartment");
+				for(int i=0; i<bioModel.getModel().getNumStructures(); i++) {
+					String ourType = sc.getStructure().getTypeName();
+					Structure s = bioModel.getModel().getStructure(i);
+					String theirType = s.getTypeName();
+					if(!ourType.equals(theirType)) {
+						continue;
+					}
+					String sName = s.getName();
+					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
+					menuItem.setIcon(new StructureToolShape(17));
+					menu.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							newObject = duplicateSpecies(sc, s, bioModel.getModel());
+						}
+					});
+				}
+				menu.show(duplicateButton, 0, duplicateButton.getHeight());
+			}
+		} else if(currentSelectedTable == observablesTable) {
+			RbmObservable o = observableTableModel.getValueAt(row);
+			if(o.getSpeciesPatternList().isEmpty()) {
+				return;
+			}
+			if( bioModel.getModel().getNumStructures() == 1) {
+//				duplicateObservable(o, o.getStructure());
+			} else if( bioModel.getModel().getNumStructures() > 1) {
+				
 			}
 		}
 	}
@@ -1451,6 +1505,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		} catch (PropertyVetoException | ExpressionBindingException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Problem duplicating " + ReactionRule.typeName + " " + oldRule.getDisplayName());
+		}
+	}
+	private SpeciesContext duplicateSpecies(SpeciesContext oldSpecies, Structure structure, Model model) {
+		try {
+			SpeciesContext newSpecies = SpeciesContext.duplicate(oldSpecies, structure, model);
+			return newSpecies;
+		} catch (PropertyVetoException | ExpressionBindingException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Problem duplicating " + SpeciesContext.typeName + " " + oldSpecies.getDisplayName());
 		}
 	}
 	
