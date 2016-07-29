@@ -46,7 +46,6 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Displayable;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
