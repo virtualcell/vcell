@@ -31,6 +31,7 @@ import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -236,6 +237,33 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 	}
 	public final List<SpeciesPattern> getSpeciesPatternList() {
 		return speciesPatternList;
+	}
+	
+	public static RbmObservable duplicate(RbmObservable oldObservable, Structure s, Model m) throws ExpressionBindingException, PropertyVetoException, ModelException {
+		String newName = RbmObservable.deriveObservableName(oldObservable, m);
+		RbmObservable newObservable = new RbmObservable(m, newName, s, oldObservable.getType());
+		for(SpeciesPattern oldsp : oldObservable.getSpeciesPatternList()) {
+			SpeciesPattern newsp = new SpeciesPattern(oldsp);
+			newObservable.addSpeciesPattern(newsp);
+		}
+		newObservable.setSequenceLength(Sequence.PolymerLengthEqual, oldObservable.getSequenceLength(Sequence.PolymerLengthEqual));
+		newObservable.setSequenceLength(Sequence.PolymerLengthGreater, oldObservable.getSequenceLength(Sequence.PolymerLengthGreater));
+		newObservable.setSequence(oldObservable.getSequence());
+		m.getRbmModelContainer().addObservable(newObservable);
+		return newObservable;
+	}
+	public static String deriveObservableName(RbmObservable sc, Model m) {
+		int count=0;
+		String baseName = sc.getName() + "_";
+		String newName = "";
+		while (true) {
+			newName = baseName + count;
+			if (m.getRbmModelContainer().getObservable(newName) == null){
+				break;
+			}
+			count++;
+		}
+		return newName;
 	}
 
 	@Override

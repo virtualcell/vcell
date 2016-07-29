@@ -64,7 +64,6 @@ import javax.swing.event.ListSelectionListener;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.ViewGeneratedReactionsPanel;
 import org.vcell.model.rbm.ViewReactionRulesShapesPanel;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.EntityImpl;
@@ -84,7 +83,6 @@ import cbit.gui.ModelProcessEquation;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -387,10 +385,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				downArrow =  new DownArrowIcon();
 			}
 			newButton.setVisible(true);
-			// For structureTable tab, newButton should show 'New Compartment'; 'New Membrane' button should be visible.
 			if (selectedIndex == ModelPanelTabID.structure_table.ordinal()) {
 				newButton.setText("New Compartment");
+				newButton.setIcon(null);
 				newMemButton.setVisible(true);
+				newMemButton.setIcon(null);
 			} else if(selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
 				newButton.setText("New Reaction");
 				newButton2.setVisible(true);
@@ -1267,6 +1266,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						Structure s = bioModel.getModel().getStructure(i);
 						String sName = s.getName();
 						JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
+						menuItem.setIcon(new StructureToolShape(17));
 						menu.add(menuItem);
 						menuItem.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
@@ -1490,9 +1490,23 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				return;
 			}
 			if( bioModel.getModel().getNumStructures() == 1) {
-//				duplicateObservable(o, o.getStructure());
+				duplicateObservable(o, o.getStructure(), bioModel.getModel());
 			} else if( bioModel.getModel().getNumStructures() > 1) {
-				
+				final JPopupMenu menu = new JPopupMenu("Choose compartment");
+				for(int i=0; i<bioModel.getModel().getNumStructures(); i++) {
+					Structure s = bioModel.getModel().getStructure(i);
+					String sName = s.getName();
+					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
+					menuItem.setIcon(new StructureToolShape(17));
+					menu.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							newObject = duplicateObservable(o, s, bioModel.getModel());
+						}
+					});
+				}
+				menu.show(duplicateButton, 0, duplicateButton.getHeight());
 			}
 		}
 	}
@@ -1514,6 +1528,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		} catch (PropertyVetoException | ExpressionBindingException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Problem duplicating " + SpeciesContext.typeName + " " + oldSpecies.getDisplayName());
+		}
+	}
+	private RbmObservable duplicateObservable(RbmObservable oldObservable, Structure structure, Model model) {
+		try {
+			RbmObservable newObservable = RbmObservable.duplicate(oldObservable, structure, model);
+			return newObservable;
+		} catch (PropertyVetoException | ExpressionBindingException | ModelException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Problem duplicating " + RbmObservable.typeName + " " + oldObservable.getDisplayName());
 		}
 	}
 	
