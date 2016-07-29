@@ -282,6 +282,15 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		if (!Compare.isEqual(type, that.type)) {
 			return false;
 		}
+		if (!Compare.isEqual(sequence, that.sequence)) {
+			return false;
+		}
+		if(lengthEqual != that.lengthEqual) {
+			return false;
+		}
+		if(lengthGreater != that.lengthGreater) {
+			return false;
+		}
 		if (!Compare.isEqual(structure.getName(), that.structure.getName())) {
 			return false;
 		}
