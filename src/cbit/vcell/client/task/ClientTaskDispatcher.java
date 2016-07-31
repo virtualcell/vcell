@@ -189,7 +189,6 @@ public static class BlockingTimer extends Timer{
 		ppStop.setRepeats(false);
 		setRepeats(false);
 		if(pp == null){
-			Thread.dumpStack();
 			pp = new AsynchProgressPopup(requester, "Waiting for actions to finish...", "busy...", null, true, false,true,cancelListener);
 			pp.startKeepOnTop();
 		}
