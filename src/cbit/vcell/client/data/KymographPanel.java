@@ -2024,7 +2024,7 @@ private void initDataManagerVariable(/*final DataIdentifier dataIdentifer,*//*bo
 	final DataIdentifier dataIdentifer = (DataIdentifier)getVarNamesJComboBox().getSelectedItem();
 //	System.out.println("-----initDataManagerVariable-----"+dataIdentifer+" "+bFromGUI);
 //	Thread.dumpStack();
-	if((initVariableTimer = ClientTaskDispatcher.getBlockingTimer(this,multiTimePlotHelper.getPdeDatacontext(),null,initVariableTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {initDataManagerVariable();}}))!=null){
+	if((initVariableTimer = ClientTaskDispatcher.getBlockingTimer(this,multiTimePlotHelper.getPdeDatacontext(),null,initVariableTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {initDataManagerVariable();}},"KymographPanel get '"+dataIdentifer.getName()+"'"))!=null){
 		return;
 	}
 

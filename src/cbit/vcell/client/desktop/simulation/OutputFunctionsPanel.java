@@ -113,13 +113,13 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
 				if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()){
-					if((outputContextAddFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextAddFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
+					if((outputContextAddFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextAddFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}},"OutputFunctionsPanel add new Function...")) != null){
 						return;
 					}
 					addOutputFunction();
 				}
 				if (e.getSource() == OutputFunctionsPanel.this.getDeleteFnButton()){
-					if((outputContextDelFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextDelFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
+					if((outputContextDelFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextDelFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}},"OutputFunctionsPanel delete Function '"+getSelectedFunction()+"'")) != null){
 						return;
 					}
 					deleteOutputFunction();	
@@ -773,11 +773,16 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		setSelectedObjects(new Object[] {newFunction});
 		enableDeleteFnButton();
 	}		
-
-	private void deleteOutputFunction() {
+	private AnnotatedFunction getSelectedFunction(){
 		int selectedRow = getFnScrollPaneTable().getSelectedRow();
 		if (selectedRow > -1) {
-			AnnotatedFunction function = outputFnsListTableModel.getValueAt(selectedRow);
+			return outputFnsListTableModel.getValueAt(selectedRow);
+		}
+		return null;
+	}
+	private void deleteOutputFunction() {
+		if (getSelectedFunction() != null) {
+			AnnotatedFunction function = getSelectedFunction();
 			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting Output Function", "You are going to delete the Output Function '" + function.getName() + "'. Continue?");
 			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 				return;
