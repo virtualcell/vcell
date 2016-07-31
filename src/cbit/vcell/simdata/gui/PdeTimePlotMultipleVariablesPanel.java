@@ -134,7 +134,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	
 	private BlockingTimer plotChangeTimer;
 	public void showTimePlot() {
-		if((plotChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,multiTimePlotHelper.getPdeDatacontext(),null,plotChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {showTimePlot();}}))!=null){
+		if((plotChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,multiTimePlotHelper.getPdeDatacontext(),null,plotChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {showTimePlot();}},"PdeTimePlotMultipleVariablesPanel update..."))!=null){
 			return;
 		}
 

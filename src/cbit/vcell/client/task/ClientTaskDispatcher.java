@@ -140,31 +140,45 @@ public static class BlockingTimer extends Timer{
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			String actionMessage = null;
 			synchronized (allBlockingTimers) {
 				//if I'm next in the list do my action else repeat timer
 				if(BlockingTimer.allBlockingTimers.get(0) == argBlockingTimer){
-					argActionListener.actionPerformed(e);
+					actionMessage = BlockingTimer.allBlockingTimers.get(0).getMessage();
 				}else{
-					argBlockingTimer.start();
+					if(allBlockingTimers.contains(argBlockingTimer)){
+						argBlockingTimer.start();
+					}
 				}
+			}
+			if(actionMessage != null){
+				if(pp != null){
+					pp.setMessage(actionMessage);
+				}
+				argActionListener.actionPerformed(e);
+
 			}
 		}
 		public void setBlockingTimer(BlockingTimer argBlockingTimer){
 			this.argBlockingTimer = argBlockingTimer;
 		}
 	}
-	public BlockingTimer(Component requester,int delay,ActionListener actionListener){
-		super(delay, new ALHelper(actionListener));
+	private String message;
+	public BlockingTimer(Component requester,int delay,String message){
+		super(delay, new ALHelper(null));
 		((ALHelper)getActionListeners()[0]).setBlockingTimer(this);
 		ppStop.setRepeats(false);
 		setRepeats(false);
+		if(pp == null){
+			pp = new AsynchProgressPopup(requester, "Waiting for actions to finish...", "busy...", null, true, false,true,cancelListener);
+			pp.startKeepOnTop();
+		}
 		synchronized (allBlockingTimers) {
-			if(pp == null){
-				pp = new AsynchProgressPopup(requester, "Waiting for actions to finish...", "busy...", null, true, false,true,cancelListener);
-				pp.start();
-			}
 			allBlockingTimers.add(this);
 		}
+	}
+	public String getMessage(){
+		return message;
 	}
 	@Override
 	public void start() {
@@ -194,9 +208,12 @@ public static class BlockingTimer extends Timer{
 public static boolean isBusy(PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2){
 	return ClientTaskDispatcher.isBusy() || (busyPDEDatacontext1 != null && busyPDEDatacontext1.isBusy()) || (busyPDEDatacontext2 != null && busyPDEDatacontext2.isBusy());
 }
-public static BlockingTimer getBlockingTimer(Component requester,PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2,BlockingTimer activeTimerOld,ActionListener actionListener){
+public static BlockingTimer getBlockingTimer(Component requester,PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2,BlockingTimer activeTimerOld,ActionListener actionListener,String actionMessage){
+	if(actionMessage == null){
+		actionMessage = "no message...";
+	}
 	if(isBusy(busyPDEDatacontext1,busyPDEDatacontext2)){
-		BlockingTimer activeTimerNew = new BlockingTimer(requester,200,null);
+		BlockingTimer activeTimerNew = new BlockingTimer(requester,200,actionMessage);
 		if(activeTimerOld != null){
 			BlockingTimer.replace(activeTimerOld, activeTimerNew);
 		}
