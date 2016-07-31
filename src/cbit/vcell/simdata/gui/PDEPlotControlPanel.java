@@ -213,7 +213,7 @@ public class PDEPlotControlPanel extends JPanel {
 	private ActionListener filterChangeActionListener =
 		new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				if((filterSelectTimer = ClientTaskDispatcher.getBlockingTimer(PDEPlotControlPanel.this,null,null,filterSelectTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {filterChangeActionListener.actionPerformed(e);}}))!=null){
+				if((filterSelectTimer = ClientTaskDispatcher.getBlockingTimer(PDEPlotControlPanel.this,null,null,filterSelectTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {filterChangeActionListener.actionPerformed(e);}},"PDEPlotControlPanel filterChangeAction..."))!=null){
 					return;
 				}
 				try{

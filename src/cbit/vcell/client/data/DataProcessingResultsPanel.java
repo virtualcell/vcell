@@ -28,6 +28,7 @@ import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VerboseDataIdentifier;
 import org.vcell.util.gui.AsynchProgressPopup;
@@ -112,17 +113,20 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		this.pdeDataContext = pdeDataContext0;
 		dataProcessingOutputInfo = null;
 		try {
-			dataProcessingOutputInfo = (DataProcessingOutputInfo)pdeDataContext.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(pdeDataContext.getVCDataIdentifier(),true,((NewClientPDEDataContext)pdeDataContext0).getDataManager().getOutputContext()));
+			dataProcessingOutputInfo = getDataProcessingOutputInfo(this.pdeDataContext);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("Data Processing Output Error - '"+e.getMessage()+"'  (Note: Data Processing Output is generated automatically when running VCell 5.2 or later simulations)");
 		}
 	}
 	
+	public static DataProcessingOutputInfo getDataProcessingOutputInfo(PDEDataContext pdeDataContext0) throws DataAccessException{
+		return (DataProcessingOutputInfo)pdeDataContext0.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(pdeDataContext0.getVCDataIdentifier(),true,((NewClientPDEDataContext)pdeDataContext0).getDataManager().getOutputContext()));
+	}
 	
 	private BlockingTimer updateTimer;
 	public void update(final PDEDataContext newPDEDataContext) {
-		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,newPDEDataContext,this.pdeDataContext,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update(newPDEDataContext);}}))!=null){
+		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,newPDEDataContext,this.pdeDataContext,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update(newPDEDataContext);}},"DataProcessingResultsPanel update..."))!=null){
 			return;
 		}
 		if(this.pdeDataContext == newPDEDataContext){

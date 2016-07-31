@@ -192,7 +192,7 @@ private void initialize() throws DataAccessException {
 		javax.swing.event.ListSelectionListener lsl = new javax.swing.event.ListSelectionListener() {
 			public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
-					updateScanParamChoices();
+					updateScanParamChoices("SimResultsViewer set paramScan index="+getSelectedParamScanJobIndex());
 				}
 			}
 		};
@@ -272,7 +272,7 @@ private void initialize() throws DataAccessException {
  */
 public void refreshData() throws DataAccessException {
 	if (isODEData) {
-		updateScanParamChoices(); // this takes care of all logic to get the fresh data
+		updateScanParamChoices("SimResultsViewer refreshData (ODE)..."); // this takes care of all logic to get the fresh data
 	} else {
 		pdeDataViewer.getPdeDataContext().refreshTimes();
 	}
@@ -280,10 +280,10 @@ public void refreshData() throws DataAccessException {
 
 public void refreshFunctions() throws DataAccessException {
 	if (isODEData) {
-		updateScanParamChoices();
+		updateScanParamChoices("SimResultsViewer refreshFunctions (ODE)...");
 	} else {
 		// no other reliable way until the PDE context/viewer/manager/dataset furball will be cleaned up... 
-		updateScanParamChoices();
+		updateScanParamChoices("SimResultsViewer refreshFunctions (PDE)...");
 	}
 }
 
@@ -341,8 +341,8 @@ private int getSelectedParamScanJobIndex(){
  * Creation date: (10/18/2005 12:44:06 AM)
  */
 private BlockingTimer paramScanChoiceTimer;
-private void updateScanParamChoices(){
-	if((paramScanChoiceTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,paramScanChoiceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateScanParamChoices();}}))!=null){
+private void updateScanParamChoices(final String message){
+	if((paramScanChoiceTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,paramScanChoiceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateScanParamChoices(message);}},message))!=null){
 		return;
 	}
 
