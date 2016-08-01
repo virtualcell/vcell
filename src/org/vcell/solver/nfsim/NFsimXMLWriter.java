@@ -829,12 +829,16 @@ public class NFsimXMLWriter {
 		return false;
 	}
 
-	private static Element getReactionParticipantPattern(String prefix0, String prefix1, VolumeParticleSpeciesPattern reactantSpeciesPattern, String patternElementName) throws SolverException {
+	private static Element getObservableParticipantPattern(String prefix0, String prefix1, VolumeParticleSpeciesPattern reactantSpeciesPattern, String patternElementName, ParticleObservable.Sequence sequence, Integer quantity) throws SolverException {
 		Element reactionParticipantPatternElement = new Element(patternElementName);
 		String patternID = prefix0 + "_" + prefix1;
 		reactionParticipantPatternElement.setAttribute("id", patternID);
 		//reactionParticipantPatternElement.setAttribute("name", reactantSpeciesPattern.getName());
-
+		if(sequence != ParticleObservable.Sequence.Multimolecular) {
+			String relation = sequence == ParticleObservable.Sequence.PolymerLengthEqual ? "==" : ">";
+			reactionParticipantPatternElement.setAttribute("relation", relation);
+			reactionParticipantPatternElement.setAttribute("quantity", quantity+"");
+		}
 		Element listOfMoleculesElement = new Element("ListOfMolecules");
 		HashMap<Bond,BondSites> bondSiteMapping = new HashMap<Bond,BondSites>();
 		for(int moleculeIndex = 0; moleculeIndex < reactantSpeciesPattern.getParticleMolecularTypePatterns().size(); moleculeIndex++) {
@@ -874,7 +878,6 @@ public class NFsimXMLWriter {
 				observableElement.setAttribute("id", observableId);
 				observableElement.setAttribute("name", particleObservable.getName());
 				observableElement.setAttribute("type", particleObservable.getType().getText());
-				// TODO: aici
 				Element listOfPatterns = getParticleSpeciesPatternList(observableId, particleObservable);
 				observableElement.addContent(listOfPatterns);
 				listOfObservablesElement.addContent(observableElement);
@@ -892,11 +895,11 @@ public class NFsimXMLWriter {
 		// Saving the observables, as produced by us
 		// in debug configurations add to command line   -Ddebug.user=danv
 		//
-		String debugUser = PropertyLoader.getProperty("debug.user", "not_defined");
-		if (debugUser.equals("danv") || debugUser.equals("mblinov")){
-			System.out.println("Saving our observables");
-			RulebasedTransformer.saveAsText("c:\\TEMP\\ddd\\ourObservables.txt", sOurs);
-		}
+//		String debugUser = PropertyLoader.getProperty("debug.user", "not_defined");
+//		if (debugUser.equals("danv") || debugUser.equals("mblinov")){
+//			System.out.println("Saving our observables");
+//			RulebasedTransformer.saveAsText("c:\\TEMP\\ddd\\ourObservables.txt", sOurs);
+//		}
 
 		return listOfObservablesElement;
 	}
@@ -904,18 +907,16 @@ public class NFsimXMLWriter {
 	private static Element getParticleSpeciesPatternList(String prefix0, ParticleObservable particleObservable) {
 		Element listOfPatternsElement = new Element("ListOfPatterns");
 		for(int molecularPatternIndex = 0; molecularPatternIndex < particleObservable.getParticleSpeciesPatterns().size(); molecularPatternIndex++) {
-//		for(ParticleSpeciesPattern pattern : particleObservable.getParticleSpeciesPatterns()) {
 			ParticleSpeciesPattern pattern = particleObservable.getParticleSpeciesPatterns().get(molecularPatternIndex);
 			if(pattern instanceof VolumeParticleSpeciesPattern) {
-//			Element patternElement = new Element("Pattern");
-			Element patternElement;
-			try {
-				String molecularPatternID = "P" + (molecularPatternIndex+1);
-				patternElement = getReactionParticipantPattern(prefix0, molecularPatternID, (VolumeParticleSpeciesPattern)pattern, "Pattern");
-				listOfPatternsElement.addContent(patternElement);
-			} catch (SolverException e) {
-				e.printStackTrace();
-			}
+				Element patternElement;
+				try {
+					String molecularPatternID = "P" + (molecularPatternIndex+1);
+					patternElement = getObservableParticipantPattern(prefix0, molecularPatternID, (VolumeParticleSpeciesPattern)pattern, "Pattern", particleObservable.getSequence(), particleObservable.getQuantity());
+					listOfPatternsElement.addContent(patternElement);
+				} catch (SolverException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		return listOfPatternsElement;

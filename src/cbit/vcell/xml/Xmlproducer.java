@@ -171,6 +171,7 @@ import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.math.ParticleMolecularTypePattern;
 import cbit.vcell.math.ParticleObservable;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleObservable.Sequence;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -3076,6 +3077,10 @@ private Element getXML(ParticleObservable param) {
 		e.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
 	}
 	e.setAttribute(XMLTags.ParticleMolecularTypePatternTag, mangle(param.getType().name()));
+	e.setAttribute(XMLTags.ParticleObservableSequenceTypeAttrTag, mangle(param.getSequence().name()));
+	if (param.getSequence() == Sequence.PolymerLengthEqual || param.getSequence() == Sequence.PolymerLengthGreater){
+		e.setAttribute(XMLTags.ParticleObservableSequenceLengthAttrTag, param.getQuantity().toString());
+	}
 	e.addContent(getVolumeParticleSpeciesPatternList(param));
 	return e;
 }
