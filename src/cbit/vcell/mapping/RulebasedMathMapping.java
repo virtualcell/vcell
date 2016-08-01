@@ -78,6 +78,7 @@ import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.math.ParticleMolecularTypePattern;
 import cbit.vcell.math.ParticleObservable;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleObservable.Sequence;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
@@ -1001,6 +1002,27 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 					particleObservableType = ParticleObservable.ObservableType.Species; 
 				}
 				ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observableCountParameter, geometryClass),domain,particleObservableType);
+
+				switch (rbmObservable.getSequence()){
+					case Multimolecular:{
+						particleObservable.setSequence(Sequence.Multimolecular);
+						break;
+					}
+					case PolymerLengthEqual:{
+						particleObservable.setSequence(Sequence.PolymerLengthEqual);
+						particleObservable.setQuantity(rbmObservable.getSequenceLength());
+						break;
+					}
+					case PolymerLengthGreater:{
+						particleObservable.setSequence(Sequence.PolymerLengthGreater);
+						particleObservable.setQuantity(rbmObservable.getSequenceLength());
+						break;
+					}
+					default:{
+						throw new RuntimeException("unexpected sequence "+rbmObservable.getSequence());
+					}
+				}
+
 				for(SpeciesPattern speciesPattern : rbmObservable.getSpeciesPatternList()) {
 					VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
 					particleObservable.addParticleSpeciesPattern(vpsp);
@@ -1011,6 +1033,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				SpeciesCountParameter speciesCountParameter = (SpeciesCountParameter)mathMappingParameter;
 				ParticleObservable.ObservableType particleObservableType = ParticleObservable.ObservableType.Species;
 				ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(speciesCountParameter, geometryClass),domain,particleObservableType);
+				particleObservable.setSequence(Sequence.Multimolecular);
 				SpeciesPattern speciesPattern = speciesCountParameter.getSpeciesContext().getSpeciesPattern();
 				VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
 				particleObservable.addParticleSpeciesPattern(vpsp);

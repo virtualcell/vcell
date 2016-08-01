@@ -53,7 +53,19 @@ public class VolumeParticleObservable extends ParticleObservable {
 				String name = token;
 				setType(ObservableType.fromString(name));
 				continue;
-			} else if(token.equalsIgnoreCase(VCML.VolumeParticleSpeciesPatterns)){
+			}
+			if (token.equalsIgnoreCase(VCML.ParticleSequence)){
+				token = tokens.nextToken();
+				String sequence = token;
+				setSequence(Sequence.fromString(sequence));
+				if (getSequence() == Sequence.PolymerLengthEqual || getSequence() == Sequence.PolymerLengthGreater){
+					token = tokens.nextToken();
+					String quantity = token;
+					setQuantity(Integer.parseInt(quantity));
+				}
+				continue;
+			}
+			if(token.equalsIgnoreCase(VCML.VolumeParticleSpeciesPatterns)){
 				token = tokens.nextToken();
 				if (!token.equalsIgnoreCase(VCML.BeginBlock)){
 					throw new MathFormatException("unexpected token " + token + " expecting " + VCML.BeginBlock);
@@ -70,8 +82,8 @@ public class VolumeParticleObservable extends ParticleObservable {
 						addParticleSpeciesPattern(psp);
 					} else {
 						throw new MathFormatException("failed to find "+VCML.VolumeParticleSpeciesPattern + " named " + name);
-//						VolumeParticleSpeciesPattern vpsp = new VolumeParticleSpeciesPattern(name, domain); // just a stub
-//						addParticleSpeciesPattern(vpsp);
+	//						VolumeParticleSpeciesPattern vpsp = new VolumeParticleSpeciesPattern(name, domain); // just a stub
+	//						addParticleSpeciesPattern(vpsp);
 					}
 					continue;
 				}	

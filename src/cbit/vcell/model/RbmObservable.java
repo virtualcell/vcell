@@ -470,6 +470,10 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 			String message = "Polymer may only be specified for Observable with all bonds set to 'Possible' and all States set to 'Any'";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 		}
+		if(sequence != Sequence.Multimolecular && type == ObservableType.Molecules) {
+			String message = "The Polymer Observable must be of type 'Species'.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+		}
 	}
 	public void checkComponentStateConsistency(IssueContext issueContext, List<Issue> issueList, MolecularTypePattern mtpThis) {
 		if(issueList == null) {

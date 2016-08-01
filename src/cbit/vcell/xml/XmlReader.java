@@ -194,6 +194,7 @@ import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.math.ParticleMolecularTypePattern;
 import cbit.vcell.math.ParticleObservable.ObservableType;
+import cbit.vcell.math.ParticleObservable.Sequence;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
@@ -7306,6 +7307,18 @@ private VolumeParticleObservable getVolumeParticleObservable(Element param, Vari
 	String molecularTypeString = unMangle( param.getAttributeValue(XMLTags.ParticleMolecularTypePatternTag) );
 	ObservableType observableType = ObservableType.fromString(molecularTypeString);
 	VolumeParticleObservable var = new VolumeParticleObservable( name, domain, observableType );
+	String sequenceAttr = param.getAttributeValue(XMLTags.ParticleObservableSequenceTypeAttrTag);
+
+	if (sequenceAttr != null){
+		Sequence sequence = Sequence.fromString(sequenceAttr);
+		String sequenceLength = param.getAttributeValue(XMLTags.ParticleObservableSequenceLengthAttrTag);
+		var.setSequence(sequence);
+		if(sequence != Sequence.Multimolecular) {
+			var.setQuantity(Integer.parseInt(sequenceLength));
+		}
+	}else{
+		var.setSequence(Sequence.Multimolecular);
+	}
 	
 	Element volumeParticleSpeciesPatternsElement = param.getChild(XMLTags.VolumeParticleSpeciesPatternsTag, vcNamespace);
 	List<Element> volumeParticleSpeciesPatternList = volumeParticleSpeciesPatternsElement.getChildren(XMLTags.VolumeParticleSpeciesPatternTag, vcNamespace);
