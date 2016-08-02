@@ -32,6 +32,7 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.BioModelEntityObject;
+import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 
@@ -178,7 +179,7 @@ public class PhysiologyRelationshipTableModel extends VCellSortTableModel<Physio
 			List<PhysiologyRelationshipTableRow> allPathwayObjectList = new ArrayList<PhysiologyRelationshipTableRow>();
 			for (BioPaxObject bpObject1 : bioModel.getPathwayModel().getBiopaxObjects()){
 				if (bpObject1 instanceof PhysicalEntity && (bioModelEntityObject == null || bioModelEntityObject instanceof SpeciesContext)
-						|| bpObject1 instanceof Conversion && (bioModelEntityObject == null || bioModelEntityObject instanceof ReactionStep)) {
+						|| bpObject1 instanceof Conversion && (bioModelEntityObject == null || bioModelEntityObject instanceof ModelProcess)) {
 					PhysiologyRelationshipTableRow entityRow = new PhysiologyRelationshipTableRow(bpObject1);
 					if (relationshipObjects != null) {
 						for (RelationshipObject ro : relationshipObjects) {

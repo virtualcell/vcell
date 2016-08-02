@@ -52,7 +52,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class ReactionRule implements RbmObject, Serializable, ModelProcess, PropertyChangeListener,
-	IssueSource, Identifiable
+	IssueSource, BioModelEntityObject
 	{
 	public static int reactionRuleLabelIndex;
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();
@@ -1631,6 +1631,10 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 	}
 	@Override
 	public final String getDisplayType() {
+		return typeName;
+	}
+	@Override
+	public String getTypeLabel() {
 		return typeName;
 	}
 
