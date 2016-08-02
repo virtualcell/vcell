@@ -1040,6 +1040,48 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			}
 		}
 		
+		// unmatched products must be unambiguous (bond can't be 'possible' and state can't be 'any')
+		for (ProductPattern pp : productPatterns) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				
+				MolecularTypePattern match = getMatchingReactantMolecule(mtp);
+				if(match == null) {		// this product has no reactant to match
+					for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+						if(mcp.isAmbiguousBond()) {
+							String message = "Ambiguous bond '" + mcp.getBondType().name() + "' in site '" + mcp.getMolecularComponent().getDisplayName() + "' in unmatched product molecule '" + mtp.getMolecularType().getDisplayName() + "'";
+							issueList.add(new Issue(this, mcp, issueContext, IssueCategory.Identifiers, message, message, Issue.Severity.ERROR));
+						}
+						if(mcp.isAmbiguousState()) {
+							String message = "Ambiguous state 'any' in site '" + mcp.getMolecularComponent().getDisplayName() + "' in unmatched product molecule '" + mtp.getMolecularType().getDisplayName() + "'";
+							issueList.add(new Issue(this, mcp, issueContext, IssueCategory.Identifiers, message, message, Issue.Severity.ERROR));
+						}
+					}
+				}
+			}
+		}
+		if(bReversible) {		// same as above for reactants if the rule is reversible
+			for (ReactantPattern rp : reactantPatterns) {
+				SpeciesPattern sp = rp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					
+					MolecularTypePattern match = getMatchingProductMolecule(mtp);
+					if(match == null) {
+						for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+							if(mcp.isAmbiguousBond()) {
+								String message = "Ambiguous bond '" + mcp.getBondType().name() + "' in site '" + mcp.getMolecularComponent().getDisplayName() + "' in unmatched reactant molecule '" + mtp.getMolecularType().getDisplayName() + "'";
+								issueList.add(new Issue(this, mcp, issueContext, IssueCategory.Identifiers, message, message, Issue.Severity.ERROR));
+							}
+							if(mcp.isAmbiguousState()) {
+								String message = "Ambiguous state 'any' in site '" + mcp.getMolecularComponent().getDisplayName() + "' in unmatched reactant molecule '" + mtp.getMolecularType().getDisplayName() + "'";
+								issueList.add(new Issue(this, mcp, issueContext, IssueCategory.Identifiers, message, message, Issue.Severity.ERROR));
+							}
+						}
+					}
+				}
+			}
+		}
+		
 //		// no orphan matches allowed
 //		for(String key : rMatches.keySet()) {
 //			if(pMatches.containsKey(key)) {
