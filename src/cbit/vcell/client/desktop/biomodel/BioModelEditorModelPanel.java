@@ -1063,15 +1063,22 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							Graphics panelContext = table.getGraphics();
 							spssList.clear();
 							int xPos = 4;
+							int extraSpace = 0;
 							for(int i = 0; i<rs.getNumReactants(); i++) {
 								SpeciesPattern sp = rs.getReactant(i).getSpeciesContext().getSpeciesPattern();
 								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected);
 								if(i < rs.getNumReactants()-1) {
 									spss.addEndText("+");
 								} else {
-									spss.addEndText("->");
+									if(rs.isReversible()) {
+										spss.addEndText("<->");
+										extraSpace += 7;
+									} else {
+										spss.addEndText("->");
+									}
 								}
 								int offset = sp == null ? 17 : 15;
+								offset += extraSpace;
 								int w = spss.getWidth();
 								xPos += w + offset;
 								spssList.add(spss);
