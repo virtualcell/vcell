@@ -20,10 +20,14 @@ import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.Icon;
 
+import org.vcell.util.gui.ShapePaintUtil;
+
 import cbit.vcell.model.SimpleReaction;
 
 public class SimpleReactionShape extends ReactionStepShape {
 
+	String linkText = "";
+	
 	public SimpleReactionShape(SimpleReaction simpleReaction,
 			ModelCartoon modelCartoon) {
 		super(simpleReaction, modelCartoon);
@@ -38,6 +42,10 @@ public class SimpleReactionShape extends ReactionStepShape {
 
 	public SimpleReaction getSimpleReaction() {
 		return (SimpleReaction) reactionStep;
+	}
+
+	public void setLinkText(String linkText) {
+		this.linkText = linkText;
 	}
 
 	private static int CIRCLE_DIMAETER = 9;
@@ -93,7 +101,9 @@ public class SimpleReactionShape extends ReactionStepShape {
 				g2D.drawString(getLabel(), textX, textY);
 			}
 		}
-		return;
+		if(linkText != null && linkText != "") {
+			ShapePaintUtil.paintLinkMark(g2D, this, Color.BLACK);
+		}
 	}
 
 	@Override
