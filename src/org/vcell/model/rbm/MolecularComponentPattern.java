@@ -142,6 +142,16 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 		final boolean b = bondType == BondType.Possible;
 		return a && b;
 	}
+	
+	public boolean isAmbiguousState() {
+		final boolean a = !molecularComponent.getComponentStateDefinitions().isEmpty() && componentStatePattern.isAny();
+		return a;
+	}
+	public boolean isAmbiguousBond() {
+		final boolean a = bondType == BondType.Exists;
+		final boolean b = bondType == BondType.Possible;
+		return a || b;
+	}
 
 	public final boolean isbVisible() {
 		return bVisible;
