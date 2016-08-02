@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -69,6 +70,9 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Compare;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -79,7 +83,10 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.constants.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.DistributedKinetics;
@@ -115,6 +122,8 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 	private ScrollTable table = null;
 	private JTextField nameTextField = null;
 	private JTextArea annotationTextArea;
+
+	private JScrollPane linkedPOScrollPane;
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 
@@ -199,7 +208,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 			Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 
-			TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation ");
+			TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation and Pathway Links ");
 			annotationBorder.setTitleJustification(TitledBorder.LEFT);
 			annotationBorder.setTitlePosition(TitledBorder.TOP);
 			annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
@@ -291,8 +300,52 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.gridwidth = 4;
 			add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 
-			CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Annotations", false);
+			// 'true' means expanded
+			CollapsiblePanel collapsiblePanel = new CollapsiblePanel(" Annotation and Pathway Links ", true);
 			collapsiblePanel.getContentPanel().setLayout(new GridBagLayout());
+						
+			JPanel jp1 = new JPanel();
+			jp1.setLayout(new GridBagLayout());
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			JLabel pathwayLink = new JLabel("Linked Pathway Object(s): ");
+			jp1.add(pathwayLink, gbc);
+			
+			linkedPOScrollPane = new JScrollPane();
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 0;
+			gbc.weightx = 1.0;
+			gbc.gridwidth = GridBagConstraints.REMAINDER;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			jp1.add(linkedPOScrollPane, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.weightx = 1.0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			collapsiblePanel.getContentPanel().add(jp1, gbc);
+
+			annotationTextArea = new javax.swing.JTextArea("", 4, 30);
+			annotationTextArea.setLineWrap(true);
+			annotationTextArea.setWrapStyleWord(true);
+			annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+			annotationTextArea.setEditable(false);
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.weightx = 1.0;
+			gbc.weighty = 0.5;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.anchor = GridBagConstraints.SOUTHWEST;
+			JScrollPane jp2 = new JScrollPane(annotationTextArea);
+			collapsiblePanel.getContentPanel().add(jp2, gbc);
+
 			gridy ++;
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
@@ -301,22 +354,6 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.weightx = 1.0;
 			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			add(collapsiblePanel, gbc);
-
-			annotationTextArea = new javax.swing.JTextArea("", 4, 30);
-			annotationTextArea.setLineWrap(true);
-			annotationTextArea.setWrapStyleWord(true);
-			annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
-			annotationTextArea.setEditable(false);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.weightx = 1.0;
-			gbc.weighty = 0.5;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.anchor = GridBagConstraints.SOUTHWEST;
-			JScrollPane jp2 = new JScrollPane(annotationTextArea);
-			collapsiblePanel.getContentPanel().add(jp2, gbc);
 
 			annotationTextArea.addFocusListener(eventHandler);
 			annotationTextArea.addMouseListener(eventHandler);
@@ -442,6 +479,53 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			nameTextField.setText(null);
 			isReversibleCheckBox.setSelected(false);
 		}
+		listLinkedPathwayObjects();
+	}
+	private String listLinkedPathwayObjects(){
+		if (reactionRule == null) {
+			return "no selected rule";
+		}
+		if(bioModel == null || bioModel.getModel() == null){
+			return "no biomodel";
+		}
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+		String linkedPOlist = "";
+		for(RelationshipObject relObject : bioModel.getRelationshipModel().getRelationshipObjects(reactionRule)){
+			if(relObject == null) {
+				continue;
+			}
+			final BioPaxObject bpObject = relObject.getBioPaxObject();
+			if(bpObject == null) {
+				continue;
+			}
+			if(bpObject instanceof Entity){
+				String name = new String();
+				if(((Entity)bpObject).getName().isEmpty()) {
+					name = ((Entity)bpObject).getID();
+				} else {
+					name = ((Entity)bpObject).getName().get(0);
+				}
+				if(name.contains("#")) {
+					name = name.substring(name.indexOf("#")+1);
+				}
+				JLabel label = new JLabel("<html><u>" + name + "</u></html>");
+				label.setForeground(Color.blue);
+				label.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						if (e.getClickCount() == 2) {
+							selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{bpObject});
+						}
+					}
+				});
+				panel.add(label);
+			}
+		}
+		Dimension dim = new Dimension(200, 20);
+		panel.setMinimumSize(dim);
+		panel.setPreferredSize(dim);
+		linkedPOScrollPane.setViewportView(panel);
+		return linkedPOlist;
 	}
 
 	private JComboBox getKineticsTypeComboBox() {
