@@ -79,8 +79,11 @@ implements java.beans.PropertyChangeListener, Model.Owner, RelationshipListener 
 			if(shape instanceof SpeciesContextShape) {
 				SpeciesContextShape scShape = (SpeciesContextShape) shape;
 				scShape.setLinkText("L");
-			}	
-		}else if(event.getOperationType() == event.REMOVED){
+			} else if(shape instanceof SimpleReactionShape) {
+				SimpleReactionShape srShape = (SimpleReactionShape) shape;
+				srShape.setLinkText("L");
+			}
+		} else if(event.getOperationType() == event.REMOVED){
 			Shape shape = getShapeFromModelObject(relationshipObject.getBioModelEntityObject());
 			if(shape instanceof SpeciesContextShape) {
 				SpeciesContextShape scShape = (SpeciesContextShape) shape;
@@ -88,6 +91,12 @@ implements java.beans.PropertyChangeListener, Model.Owner, RelationshipListener 
 				// if the BioModelEntity Object is still linked with other BioPax objects, we add the "L" shape back
 				if(((RelationshipModel)event.getSource()).getRelationshipObjects(relationshipObject.getBioModelEntityObject()).size() > 0){
 					scShape.setLinkText("L");
+				}
+			} else if(shape instanceof SimpleReactionShape) {
+				SimpleReactionShape srShape = (SimpleReactionShape) shape;
+				srShape.setLinkText("");
+				if(((RelationshipModel)event.getSource()).getRelationshipObjects(relationshipObject.getBioModelEntityObject()).size() > 0){
+					srShape.setLinkText("L");
 				}
 			}				
 		}
@@ -100,8 +109,10 @@ implements java.beans.PropertyChangeListener, Model.Owner, RelationshipListener 
 			if(shape instanceof SpeciesContextShape) {
 				SpeciesContextShape scShape = (SpeciesContextShape) shape;
 				scShape.setLinkText("L");
+			} else if(shape instanceof SimpleReactionShape) {
+				SimpleReactionShape srShape = (SimpleReactionShape) shape;
+				srShape.setLinkText("L");
 			}		
-			
 		}
 	}
 	
