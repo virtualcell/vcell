@@ -225,7 +225,7 @@ private void updateScanParamChoices(){
 			PlotData[] plotDatas = (PlotData[])hashTable.get("plotDatas");
 			String[] plotNames = (String[])hashTable.get("plotNames");
 			SymbolTableEntry[] symbolTableEntries = (SymbolTableEntry[])hashTable.get("symbolTableEntries");
-			if (plotDatas == null || plotNames == null) {
+			if (plotDatas == null || plotDatas.length == 0 || (plotDatas.length==1 && plotDatas[0] == null) || plotNames == null) {
 				plotPane.setPlot2D(null);
 				return;
 			}
