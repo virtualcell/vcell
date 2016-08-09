@@ -140,8 +140,15 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	}
 	
 	public Comparator<GeneratedReactionTableRow> getComparator(final int col, final boolean ascending) {
+		final int scale = ascending ? 1 : -1;
 		return new Comparator<GeneratedReactionTableRow>() {
 		    public int compare(GeneratedReactionTableRow o1, GeneratedReactionTableRow o2){
+				switch (col) {
+				case iColRule:
+					return scale * o1.getReactionRule().getDisplayName().compareToIgnoreCase(o2.getReactionRule().getDisplayName());
+				case iColStructure:
+					return scale * o1.getReactionRule().getStructure().getName().compareToIgnoreCase(o2.getReactionRule().getStructure().getName());
+				}
 		    	return 0;
 		    }
 		};

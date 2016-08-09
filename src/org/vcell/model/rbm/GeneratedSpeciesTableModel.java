@@ -137,8 +137,23 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	}
 	
 	public Comparator<GeneratedSpeciesTableRow> getComparator(final int col, final boolean ascending) {
+		final int scale = ascending ? 1 : -1;
 		return new Comparator<GeneratedSpeciesTableRow>() {
-		    public int compare(GeneratedSpeciesTableRow o1, GeneratedSpeciesTableRow o2){
+		    public int compare(GeneratedSpeciesTableRow o1, GeneratedSpeciesTableRow o2) {
+				switch (col) {
+				case iColOriginalName:
+					return scale * o1.getOriginalName().compareToIgnoreCase(o2.getOriginalName());
+				case iColStructure:
+					String es1 = o1.getExpression();
+					String es2 = o2.getExpression();
+					if(es1.startsWith("@") && es1.contains(":")) {		// no point to check es2 as well
+						String n1 = es1.substring(1, es1.indexOf(":"));
+						String n2 = es2.substring(1, es2.indexOf(":"));
+						return scale * n1.compareToIgnoreCase(n2);
+					} else {
+						return 0;	// we should be here only if we have one single structure, so nothing to sort
+					}
+				}
 		    	return 0;
 		    }
 		};
@@ -254,5 +269,6 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	public SymbolTable getSymbolTable(int row, int column) {
 		return null;
 	}
+	
 
 }
