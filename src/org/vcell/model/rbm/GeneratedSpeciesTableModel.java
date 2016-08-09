@@ -199,8 +199,14 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 		} else {
 			String lowerCaseSearchText = searchText.toLowerCase();
 			for (GeneratedSpeciesTableRow rs : allGeneratedSpeciesList){
+				boolean added = false;
 				if (rs.getExpression().toLowerCase().contains(lowerCaseSearchText) ) {
 					speciesObjectList.add(rs);
+					added = true;
+				}
+				if(!added && rs.getOriginalName().toLowerCase().contains(lowerCaseSearchText)) {
+					speciesObjectList.add(rs);
+					added = true;
 				}
 			}
 		}

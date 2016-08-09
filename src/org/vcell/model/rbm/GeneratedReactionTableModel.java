@@ -170,8 +170,18 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 		} else {
 			String lowerCaseSearchText = searchText.toLowerCase();
 			for (GeneratedReactionTableRow rs : allGeneratedReactionsList){
+				boolean added = false;
 				if (rs.getExpression().toLowerCase().contains(lowerCaseSearchText) ) {
 					reactionObjectList.add(rs);
+					added = true;
+				}
+				if(!added && rs.getReactionRule().getDisplayName().toLowerCase().contains(lowerCaseSearchText)) {
+					reactionObjectList.add(rs);
+					added = true;
+				}
+				if(!added && rs.getReactionRule().getStructure().getName().toLowerCase().contains(lowerCaseSearchText)) {
+					reactionObjectList.add(rs);
+					added = true;
 				}
 			}
 		}
