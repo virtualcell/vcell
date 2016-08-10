@@ -409,23 +409,6 @@ private void connEtoC6(java.awt.event.FocusEvent arg1) {
 }
 
 /**
- * connEtoM3:  (pdeDataContext1.this --> DefaultListModelCivilized1.contents)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(PDEDataContext value) {
-	try {
-		filterVariableNames();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
  * connEtoM4:  (DefaultListModelCivilized1.listData.intervalAdded(javax.swing.event.ListDataEvent) --> JList1.selectedIndex)
  * @param arg1 javax.swing.event.ListDataEvent
  */
@@ -435,25 +418,6 @@ private void connEtoM4(javax.swing.event.ListDataEvent arg1) {
 		// user code begin {1}
 		// user code end
 		getJList1().setSelectedIndex(0);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM7:  (pdeDataContext1.this --> JSliderTime.value)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(PDEDataContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJSliderTime().setValue(0);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -592,6 +556,9 @@ public void setup(AnnotatedFunction[] newFunctions,DataIdentifier[] newDataIdent
 	getJSliderTime().setValue(selectedTimeIndex);	
 }
 
+public void timePointsEvent(double[] newTimePoints){
+	setTimePoints(newTimePoints);
+}
 /**
  * Return the JLabel1 property value.
  * @return javax.swing.JLabel
