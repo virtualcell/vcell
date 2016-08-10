@@ -48,6 +48,8 @@ public class VCMODL {
 	public final static String Reaction		 				   = "Reaction";
 	public final static String SimpleReaction	 			   = "SimpleReaction";
 	public final static String FluxStep		 				   = "FluxStep";
+	public final static String ReactionRule	 				   = "ReactionRule";
+	public final static String RuleParticipantSignature	       = "RuleParticipantSignature";
 	public final static String InFlux						   = "InFlux";
 	public final static String Species	 					   = "Species";
 	public final static String BeginBlock	 				   = "{";
@@ -71,6 +73,7 @@ public class VCMODL {
 	public static final String Microscopic_IRRKinetics 	   	   = "Microscopic_IRRKinetics";
 	public final static String CurrentDensity				   = "CurrentDensity";
 	public final static String LumpedCurrent				   = "LumpedCurrent";
+	public final static String ElectricalUnitFactor			   = "ElectricalUnitFactor";
 	public final static String ReactionRate					   = "Rate";
 	public final static String Valence						   = "Valence";
 	public final static String PhysicsOptions				   = "PhysicsOptions";
@@ -85,7 +88,9 @@ public class VCMODL {
 	public final static String SpecificCapacitance			   = "SpecificCapacitance";	
 	public final static String Permeability					   = "Permeability";
 	public final static String Conductivity					   = "Conductivity";
-	public final static String ChargeValence				   = "ChargeValence";
+	public final static String ChargeValence_OLD			   = "ChargeValence";
+	public final static String NetChargeValence				   = "NetChargeValence";
+	public final static String CarrierChargeValence			   = "CarrierChargeValence";
 	public final static String ForwardRate					   = "ForwardRate";
 	public final static String ReverseRate					   = "ReverseRate";
 	public final static String DissociationConstant			   = "DissociationConstant";

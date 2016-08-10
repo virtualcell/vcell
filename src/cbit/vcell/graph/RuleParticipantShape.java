@@ -21,18 +21,19 @@ import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRuleParticipant;
 
-public abstract class ReactionParticipantShape extends EdgeShape {
+public abstract class RuleParticipantShape extends EdgeShape {
 	
-	protected ReactionParticipant reactionParticipant = null;
+	protected ReactionRuleParticipant reactionRuleParticipant = null;
 
 	private Point2D.Double lastp2ctrl = null;
 	private Point2D.Double lastp1ctrl = null;
 
-	public ReactionParticipantShape(ReactionParticipant reactionParticipant, ReactionStepShape reactionStepShape,
-			SpeciesContextShape speciesContextShape, GraphModel graphModel) {
-		super(speciesContextShape, reactionStepShape, graphModel);
-		this.reactionParticipant = reactionParticipant;
+	public RuleParticipantShape(ReactionRuleParticipant reactionRuleParticipant, ReactionRuleDiagramShape reactionRuleShape,
+			RuleParticipantSignatureShape ruleParticipantSignatureShape, GraphModel graphModel) {
+		super(ruleParticipantSignatureShape, reactionRuleShape, graphModel);
+		this.reactionRuleParticipant = reactionRuleParticipant;
 	}
 
 	@Override protected final CubicCurve2D.Double getCurve() {
@@ -51,21 +52,20 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 		// calculate tangent direction at "reactionStep"
 		double tangentX = 0.0;
 		double tangentY = 0.0;
-		if (endShape instanceof ReactionStepShape){
-			ReactionStepShape reactionStepShape = (ReactionStepShape) endShape;
+		if (endShape instanceof ReactionRuleDiagramShape){
+			ReactionRuleDiagramShape reactionRuleDiagramShape = (ReactionRuleDiagramShape) endShape;
 			for(Shape shape : graphModel.getShapes()) {
-				if (shape instanceof ReactionParticipantShape && 
-						((ReactionParticipantShape) shape).endShape == reactionStepShape){
-					ReactionParticipantShape rpShape = (ReactionParticipantShape)shape;
+				if (shape instanceof RuleParticipantShape && ((RuleParticipantShape) shape).endShape == reactionRuleDiagramShape){
+					RuleParticipantShape rpShape = (RuleParticipantShape)shape;
 					double dx = rpShape.start.getX()-rpShape.end.getX();
 					double dy = rpShape.start.getY()-rpShape.end.getY();
 					double len = dx*dx+dy*dy;
-					if (shape instanceof ProductShape){
-						ProductShape ps = (ProductShape) shape;
+					if (shape instanceof ProductPatternShape){
+						ProductPatternShape ps = (ProductPatternShape) shape;
 						tangentX += (ps.start.getX() - ps.end.getX())/len;
 						tangentY += (ps.start.getY() - ps.end.getY())/len;
-					}else if (shape instanceof ReactantShape){
-						ReactantShape rs = (ReactantShape) shape;
+					}else if (shape instanceof ReactantPatternShape){
+						ReactantPatternShape rs = (ReactantPatternShape) shape;
 						tangentX -= (rs.start.getX() - rs.end.getX())/len;
 						tangentY -= (rs.start.getY() - rs.end.getY())/len;
 					}
@@ -79,16 +79,17 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 		}
 		//tangentX = controlWeight;
 		//tangentY = 0.0;
-		if(this instanceof CatalystShape){
-			// choose side based on inner product with displacement vector between catalyst and reactionStep
-			if(((start.getX() - end.getX())*tangentY - (start.getY() - end.getY())*tangentX) > 0){
-				p2ctrl.setLocation(end.getX() + tangentY, end.getY() - tangentX);
-			}else{
-				p2ctrl.setLocation(end.getX() - tangentY, end.getY() + tangentX);
-			}
-		} else if(this instanceof ProductShape){
+//		if(this instanceof CatalystShape){
+//			// choose side based on inner product with displacement vector between catalyst and reactionStep
+//			if(((start.getX() - end.getX())*tangentY - (start.getY() - end.getY())*tangentX) > 0){
+//				p2ctrl.setLocation(end.getX() + tangentY, end.getY() - tangentX);
+//			}else{
+//				p2ctrl.setLocation(end.getX() - tangentY, end.getY() + tangentX);
+//			}
+//		} else
+		if(this instanceof ProductPatternShape){
 			p2ctrl.setLocation(end.getX()+tangentX, end.getY()+tangentY);	
-		} else if(this instanceof ReactantShape){
+		} else if(this instanceof ReactantPatternShape){
 			p2ctrl.setLocation(end.getX()-tangentX,end.getY()-tangentY);	
 		}
 
@@ -108,13 +109,12 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 		return lastCurve;
 	}
 
-	@Override 
-	public Object getModelObject() { return reactionParticipant; }
+	@Override public Object getModelObject() { return reactionRuleParticipant; }
 	
-	public ReactionParticipant getReactionParticipant() { return reactionParticipant; }
+	public ReactionRuleParticipant getReactionRuleParticipant() { return reactionRuleParticipant; }
 	
-	public SpeciesContextShape getSpeciesContextShape() { return (SpeciesContextShape) startShape; }
-	public ReactionStepShape getReactionStepShape() { return (ReactionStepShape) endShape; }
+	public RuleParticipantSignatureShape getRuleParticipantSignatureShape() { return (RuleParticipantSignatureShape) startShape; }
+	public ReactionRuleDiagramShape getReactionRuleShape() { return (ReactionRuleDiagramShape) endShape; }
 
 	@Override
 	public void paintSelf(Graphics2D g2D, int parentOffsetX, int parentOffsetY) {
@@ -132,10 +132,10 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 			g2D.draw(cubicCurve);
 		}
 		int arrowDirection = 0;
-		if (this instanceof ProductShape){
+		if (this instanceof ProductPatternShape){
 			arrowDirection = 1;
 		}
-		if (this instanceof ReactantShape){
+		if (this instanceof ReactantPatternShape){
 			arrowDirection = -1;
 		}
 		if (arrowDirection == 1) {

@@ -255,23 +255,6 @@ public abstract class GraphModel {
 	public Shape getShapeFromModelObject(Object obj) {
 		return objectShapeMap.get(obj);
 	}
-	public Shape getShapeFromModelObject(Model model, ReactionRuleParticipant theirs) {
-		
-		List <MolecularType> mtList = model.getRbmModelContainer().getMolecularTypeList();
-		String theirSignature = theirs.calculateSignature(mtList);
-		for (Map.Entry<Object, Shape> entry : objectShapeMap.entrySet()) {
-			Object key = entry.getKey();
-			if(!(key instanceof ReactionRuleParticipant)) {
-				continue;
-			}
-			ReactionRuleParticipant ours = (ReactionRuleParticipant)key;
-			if(theirSignature.equals(ours.calculateSignature(mtList))) {
-			
-			return entry.getValue();
-			}
-		}
-		return null;
-	}
 
 	public Collection<Shape> getShapes() {
 		return objectShapeMap.values();
