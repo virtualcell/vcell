@@ -1303,7 +1303,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					Shape shape = (getGraphModel().getSelectedShape() != null ?
 						getGraphModel().getSelectedShape():getReactionCartoon().pickWorld(worldPoint));
 					if (!bCntrl && !bShift && (shape instanceof SpeciesContextShape 				|| shape instanceof ReactionStepShape ||
-											   shape instanceof RuleParticipantSignatureShape || shape instanceof ReactionRuleDiagramShape)){
+											   shape instanceof RuleParticipantSignatureDiagramShape || shape instanceof ReactionRuleDiagramShape)){
 						bMoving=true;
 						movingShape = shape;
 						movingPointWorld = shape.getSpaceManager().getAbsLoc();

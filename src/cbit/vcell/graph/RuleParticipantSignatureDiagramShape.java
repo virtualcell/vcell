@@ -38,7 +38,7 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.RuleParticipantSignature;
 
-public class RuleParticipantSignatureShape extends ElipseShape {
+public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	RuleParticipantSignature ruleParticipantSignature = null;
 	private static final int RADIUS = 10;
 	public static final int DIAMETER = 2*RADIUS;
@@ -55,7 +55,7 @@ public class RuleParticipantSignatureShape extends ElipseShape {
 	
 	protected String linkText;
 
-	public RuleParticipantSignatureShape(RuleParticipantSignature ruleParticipantSignature, ModelCartoon graphModel) {
+	public RuleParticipantSignatureDiagramShape(RuleParticipantSignature ruleParticipantSignature, ModelCartoon graphModel) {
 		super(graphModel);
 		this.ruleParticipantSignature = ruleParticipantSignature;
 		defaultBG = java.awt.Color.red;

@@ -23,15 +23,15 @@ import cbit.gui.graph.Shape;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRuleParticipant;
 
-public abstract class RuleParticipantShape extends EdgeShape {
+public abstract class RuleParticipantEdgeDiagramShape extends EdgeShape {
 	
 	protected ReactionRuleParticipant reactionRuleParticipant = null;
 
 	private Point2D.Double lastp2ctrl = null;
 	private Point2D.Double lastp1ctrl = null;
 
-	public RuleParticipantShape(ReactionRuleParticipant reactionRuleParticipant, ReactionRuleDiagramShape reactionRuleShape,
-			RuleParticipantSignatureShape ruleParticipantSignatureShape, GraphModel graphModel) {
+	public RuleParticipantEdgeDiagramShape(ReactionRuleParticipant reactionRuleParticipant, ReactionRuleDiagramShape reactionRuleShape,
+			RuleParticipantSignatureDiagramShape ruleParticipantSignatureShape, GraphModel graphModel) {
 		super(ruleParticipantSignatureShape, reactionRuleShape, graphModel);
 		this.reactionRuleParticipant = reactionRuleParticipant;
 	}
@@ -55,17 +55,17 @@ public abstract class RuleParticipantShape extends EdgeShape {
 		if (endShape instanceof ReactionRuleDiagramShape){
 			ReactionRuleDiagramShape reactionRuleDiagramShape = (ReactionRuleDiagramShape) endShape;
 			for(Shape shape : graphModel.getShapes()) {
-				if (shape instanceof RuleParticipantShape && ((RuleParticipantShape) shape).endShape == reactionRuleDiagramShape){
-					RuleParticipantShape rpShape = (RuleParticipantShape)shape;
+				if (shape instanceof RuleParticipantEdgeDiagramShape && ((RuleParticipantEdgeDiagramShape) shape).endShape == reactionRuleDiagramShape){
+					RuleParticipantEdgeDiagramShape rpShape = (RuleParticipantEdgeDiagramShape)shape;
 					double dx = rpShape.start.getX()-rpShape.end.getX();
 					double dy = rpShape.start.getY()-rpShape.end.getY();
 					double len = dx*dx+dy*dy;
-					if (shape instanceof ProductPatternShape){
-						ProductPatternShape ps = (ProductPatternShape) shape;
+					if (shape instanceof ProductPatternEdgeDiagramShape){
+						ProductPatternEdgeDiagramShape ps = (ProductPatternEdgeDiagramShape) shape;
 						tangentX += (ps.start.getX() - ps.end.getX())/len;
 						tangentY += (ps.start.getY() - ps.end.getY())/len;
-					}else if (shape instanceof ReactantPatternShape){
-						ReactantPatternShape rs = (ReactantPatternShape) shape;
+					}else if (shape instanceof ReactantPatternEdgeDiagramShape){
+						ReactantPatternEdgeDiagramShape rs = (ReactantPatternEdgeDiagramShape) shape;
 						tangentX -= (rs.start.getX() - rs.end.getX())/len;
 						tangentY -= (rs.start.getY() - rs.end.getY())/len;
 					}
@@ -87,9 +87,9 @@ public abstract class RuleParticipantShape extends EdgeShape {
 //				p2ctrl.setLocation(end.getX() - tangentY, end.getY() + tangentX);
 //			}
 //		} else
-		if(this instanceof ProductPatternShape){
+		if(this instanceof ProductPatternEdgeDiagramShape){
 			p2ctrl.setLocation(end.getX()+tangentX, end.getY()+tangentY);	
-		} else if(this instanceof ReactantPatternShape){
+		} else if(this instanceof ReactantPatternEdgeDiagramShape){
 			p2ctrl.setLocation(end.getX()-tangentX,end.getY()-tangentY);	
 		}
 
@@ -113,7 +113,7 @@ public abstract class RuleParticipantShape extends EdgeShape {
 	
 	public ReactionRuleParticipant getReactionRuleParticipant() { return reactionRuleParticipant; }
 	
-	public RuleParticipantSignatureShape getRuleParticipantSignatureShape() { return (RuleParticipantSignatureShape) startShape; }
+	public RuleParticipantSignatureDiagramShape getRuleParticipantSignatureShape() { return (RuleParticipantSignatureDiagramShape) startShape; }
 	public ReactionRuleDiagramShape getReactionRuleShape() { return (ReactionRuleDiagramShape) endShape; }
 
 	@Override
@@ -132,10 +132,10 @@ public abstract class RuleParticipantShape extends EdgeShape {
 			g2D.draw(cubicCurve);
 		}
 		int arrowDirection = 0;
-		if (this instanceof ProductPatternShape){
+		if (this instanceof ProductPatternEdgeDiagramShape){
 			arrowDirection = 1;
 		}
-		if (this instanceof ReactantPatternShape){
+		if (this instanceof ReactantPatternEdgeDiagramShape){
 			arrowDirection = -1;
 		}
 		if (arrowDirection == 1) {
