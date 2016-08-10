@@ -262,6 +262,7 @@ public class ReactionCartoon extends ModelCartoon {
 					// add reaction participants as edges and SignatureShapes as needed
 					//
 					List<ReactionRuleParticipant> participants = rr.getReactionRuleParticipants();
+					List<RuleParticipantEdgeDiagramShape> ruleEdges = new ArrayList<> ();
 					for(ReactionRuleParticipant participant : participants) {
 						participant.getSpeciesPattern().removePropertyChangeListener(this);
 						participant.getSpeciesPattern().addPropertyChangeListener(this);
@@ -325,6 +326,23 @@ public class ReactionCartoon extends ModelCartoon {
 							}
 							unwantedShapes.remove(ruleParticipantShape);
 							ruleParticipantShape.refreshLabel();
+							ruleEdges.add(ruleParticipantShape);	// all the edges for this rule
+						}
+					}
+					// now let's see if any reactant and product pair have the same signature - means we need to draw a reactant and 
+					// a product edge (a closed loop) between the rule diagram shape and and the signature diagram shape
+					for(RuleParticipantEdgeDiagramShape ours : ruleEdges) {
+						ours.setSibling(false);		// reset them all
+					}
+					for(RuleParticipantEdgeDiagramShape ours : ruleEdges) {
+						for(RuleParticipantEdgeDiagramShape theirs : ruleEdges) {
+							if(ours == theirs) {
+								continue;			// don't compare with self
+							}
+							if(ours.getRuleParticipantSignatureShape() == theirs.getRuleParticipantSignatureShape()) {
+								ours.setSibling(true);
+								theirs.setSibling(true);
+							}
 						}
 					}
 				}

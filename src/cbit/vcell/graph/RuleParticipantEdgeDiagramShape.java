@@ -30,11 +30,18 @@ public abstract class RuleParticipantEdgeDiagramShape extends EdgeShape {
 	private Point2D.Double lastp2ctrl = null;
 	private Point2D.Double lastp1ctrl = null;
 
+	private boolean bSibling = false;
+
 	public RuleParticipantEdgeDiagramShape(ReactionRuleParticipant reactionRuleParticipant, ReactionRuleDiagramShape reactionRuleShape,
 			RuleParticipantSignatureDiagramShape ruleParticipantSignatureShape, GraphModel graphModel) {
 		super(ruleParticipantSignatureShape, reactionRuleShape, graphModel);
 		this.reactionRuleParticipant = reactionRuleParticipant;
 	}
+	
+	public void setSibling(boolean bSibling) {
+		this.bSibling  = bSibling;
+	}
+
 
 	@Override protected final CubicCurve2D.Double getCurve() {
 		// TODO is this the best place for layout?
@@ -64,6 +71,10 @@ public abstract class RuleParticipantEdgeDiagramShape extends EdgeShape {
 						ProductPatternEdgeDiagramShape ps = (ProductPatternEdgeDiagramShape) shape;
 						tangentX += (ps.start.getX() - ps.end.getX())/len;
 						tangentY += (ps.start.getY() - ps.end.getY())/len;
+						if(bSibling) {
+							tangentX += 0.1;
+							tangentY += 0.1;
+						}
 					}else if (shape instanceof ReactantPatternEdgeDiagramShape){
 						ReactantPatternEdgeDiagramShape rs = (ReactantPatternEdgeDiagramShape) shape;
 						tangentX -= (rs.start.getX() - rs.end.getX())/len;
@@ -77,6 +88,9 @@ public abstract class RuleParticipantEdgeDiagramShape extends EdgeShape {
 			tangentX = tangentX*CONTROL_WEIGHT/tangentLength;
 			tangentY = tangentY*CONTROL_WEIGHT/tangentLength;
 		}
+		
+		
+		
 		//tangentX = controlWeight;
 		//tangentY = 0.0;
 //		if(this instanceof CatalystShape){
