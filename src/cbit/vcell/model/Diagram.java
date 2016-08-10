@@ -103,6 +103,8 @@ public class Diagram implements Serializable, Matchable {
 			}			
 			if (token.equalsIgnoreCase(VCMODL.SimpleReaction) ||
 					token.equalsIgnoreCase(VCMODL.FluxStep) ||
+					token.equalsIgnoreCase(VCMODL.ReactionRule) ||
+					token.equalsIgnoreCase(VCMODL.RuleParticipantSignature) ||
 					token.equalsIgnoreCase(VCMODL.SpeciesContextSpec)){
 				String nodeType = token;
 				String nodeName = tokens.nextToken();

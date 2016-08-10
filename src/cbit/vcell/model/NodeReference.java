@@ -24,8 +24,10 @@ public class NodeReference implements java.io.Serializable, Matchable {
 	public static final int SIMPLE_REACTION_NODE = 1;
 	public static final int FLUX_REACTION_NODE = 2;
 	public static final int SPECIES_CONTEXT_NODE = 3;
+	public static final int REACTION_RULE_NODE = 4;
+	public static final int RULE_PARTICIPANT_SIGNATURE_NODE = 5;
 
-	public static final String nodeNames[] = { "unknown", VCMODL.SimpleReaction, VCMODL.FluxStep, VCMODL.SpeciesContextSpec };
+	public static final String nodeNames[] = { "unknown", VCMODL.SimpleReaction, VCMODL.FluxStep, VCMODL.SpeciesContextSpec, VCMODL.ReactionRule, VCMODL.RuleParticipantSignature };
 /**
  * NodeReference constructor comment.
  */
@@ -47,6 +49,10 @@ public NodeReference(String nodeTypeString, String name, java.awt.Point location
 		this.nodeType = FLUX_REACTION_NODE;
 	}else if (nodeNames[SPECIES_CONTEXT_NODE].equalsIgnoreCase(nodeTypeString)){
 		this.nodeType = SPECIES_CONTEXT_NODE;
+	}else if (nodeNames[REACTION_RULE_NODE].equalsIgnoreCase(nodeTypeString)){
+		this.nodeType = REACTION_RULE_NODE;
+	}else if (nodeNames[RULE_PARTICIPANT_SIGNATURE_NODE].equalsIgnoreCase(nodeTypeString)){
+		this.nodeType = RULE_PARTICIPANT_SIGNATURE_NODE;
 	}else{
 		throw new IllegalArgumentException("nodeType '"+nodeTypeString+"' unknown");
 	}

@@ -13,38 +13,33 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.util.List;
-import java.util.Map;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.gui.ShapePaintUtil;
 
 import cbit.gui.graph.ElipseShape;
-import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphModelPreferences;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
-import cbit.vcell.biomodel.meta.MiriamManager;
-import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionRuleParticipant;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.ReactionRuleParticipant;
+import cbit.vcell.model.RuleParticipantSignature;
 
-public class ReactionRuleParticipantDiagramShape extends ElipseShape {
-	ReactionRuleParticipant rrParticipant = null;
+public class RuleParticipantSignatureShape extends ElipseShape {
+	RuleParticipantSignature ruleParticipantSignature = null;
 	private static final int RADIUS = 10;
 	public static final int DIAMETER = 2*RADIUS;
 	private Color darkerBackground = null;
@@ -60,9 +55,9 @@ public class ReactionRuleParticipantDiagramShape extends ElipseShape {
 	
 	protected String linkText;
 
-	public ReactionRuleParticipantDiagramShape(ReactionRuleParticipant rrParticipant, ModelCartoon graphModel) {
+	public RuleParticipantSignatureShape(RuleParticipantSignature ruleParticipantSignature, ModelCartoon graphModel) {
 		super(graphModel);
-		this.rrParticipant = rrParticipant;
+		this.ruleParticipantSignature = ruleParticipantSignature;
 		defaultBG = java.awt.Color.red;
 		defaultFGselect = java.awt.Color.black;
 		backgroundColor = defaultBG;
@@ -76,7 +71,7 @@ public class ReactionRuleParticipantDiagramShape extends ElipseShape {
 
 	@Override
 	public Object getModelObject() {
-		return rrParticipant;
+		return ruleParticipantSignature;
 	}
 
 	public Dimension getSmallLabelSize() { return smallLabelSize; }
@@ -92,8 +87,8 @@ public class ReactionRuleParticipantDiagramShape extends ElipseShape {
 		return getSpaceManager().getSizePreferred();
 	}
 
-	public ReactionRuleParticipant getReactionRuleParticipant() {
-		return rrParticipant;
+	public RuleParticipantSignature getRuleParticipantSignature() {
+		return ruleParticipantSignature;
 	}
 
 	public void setLinkText(String linkText) { this.linkText = linkText; }
@@ -124,20 +119,18 @@ public class ReactionRuleParticipantDiagramShape extends ElipseShape {
 		int offsetY = (shapeHeight-circleDiameter) / 2;
 		Graphics2D g2D = g;
 		
-		SpeciesPattern sp = rrParticipant.getSpeciesPattern();
-		List <MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
 		Model model = ((ReactionCartoon)graphModel).getModel();
 		RbmModelContainer rbmmc = model.getRbmModelContainer();
 		List<MolecularType> mtList = rbmmc.getMolecularTypeList();
-		
-		for(int i=0; i<mtpList.size(); i++) {
+		List<MolecularType> ruleSignatureMolecularTypes = ruleParticipantSignature.getMolecularTypes();
+		for(int i=0; i<ruleSignatureMolecularTypes.size(); i++) {
 			icon = new Area();
 			icon.add(new Area(new Ellipse2D.Double(offsetX + displacement*i, offsetY,circleDiameter,circleDiameter)));
 				//icon.add(new Area(new RoundRectangle2D.Double(offsetX, offsetY,circleDiameter,circleDiameter,circleDiameter/2,circleDiameter/2)));
 			Area movedIcon = icon.createTransformedArea(
 				AffineTransform.getTranslateInstance(absPosX, absPosY));
 	
-			MolecularType mt = mtpList.get(i).getMolecularType();
+			MolecularType mt = ruleSignatureMolecularTypes.get(i);
 			int index = mtList.indexOf(mt);
 			index = index%7;
 
@@ -189,8 +182,10 @@ public class ReactionRuleParticipantDiagramShape extends ElipseShape {
 		switch (GraphModelPreferences.getInstance().getSpeciesContextDisplayName()) {
 		case GraphModelPreferences.DISPLAY_COMMON_NAME:
 		case GraphModelPreferences.DISPLAY_CONTEXT_NAME:
-			setLabel(getReactionRuleParticipant().getDisplayNameShort());
+			setLabel(ruleParticipantSignature.getLabel());
 			break;
+		default:
+			setLabel("no label");
 		}
 
 		smallLabel = getLabel();

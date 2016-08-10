@@ -37,6 +37,7 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -44,6 +45,7 @@ import cbit.vcell.model.Structure;
 public class ReactionCartoon extends ModelCartoon {
 
 	protected StructureSuite structureSuite = null;
+	private Set<RuleParticipantSignature> ruleParticipantSignatures = new HashSet<>();
 	
 	public ReactionCartoon() {
 		containerLayout = new GraphContainerLayoutReactions();
@@ -157,7 +159,9 @@ public class ReactionCartoon extends ModelCartoon {
 				return;
 			}
 			Set<Shape> unwantedShapes = new HashSet<Shape>();
+			Set<RuleParticipantSignature> unwantedSignatures = new HashSet<RuleParticipantSignature>();
 			unwantedShapes.addAll(getShapes());
+			unwantedSignatures.addAll(ruleParticipantSignatures);
 			ContainerContainerShape containerShape = (ContainerContainerShape) getShapeFromModelObject(getModel());
 			List<ReactionContainerShape> reactionContainerShapeList = 
 				new ArrayList<ReactionContainerShape>();
@@ -236,55 +240,96 @@ public class ReactionCartoon extends ModelCartoon {
 			getModel().removePropertyChangeListener(this);
 			getModel().addPropertyChangeListener(this);
 			
-			// TODO: =================================== Rules ================================================
-//			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
-//				rr.removePropertyChangeListener(this);
-//				rr.addPropertyChangeListener(this);
-//				Structure structure = rr.getStructure();
-//				if(getStructureSuite().areReactionsShownFor(structure)) {
-//					ReactionContainerShape reactionContainerShape =	(ReactionContainerShape) getShapeFromModelObject(structure);
-//					ReactionRuleDiagramShape rrShape = (ReactionRuleDiagramShape) getShapeFromModelObject(rr);
-//					if (rrShape == null) {
-//						rrShape = new ReactionRuleDiagramShape(rr, this);
-//						addShape(rrShape);
-//						rrShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
-//						reactionContainerShape.addChildShape(rrShape);
-//						rrShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
-//					}
-//					rrShape.refreshLabel();
-//					unwantedShapes.remove(rrShape);
-//					
-//					// add reaction participants as edges
-//					
-//					List<ReactionRuleParticipant> participants = rr.getReactionRuleParticipants();
-//					for(ReactionRuleParticipant participant : participants) {
-//						participant.getSpeciesPattern().removePropertyChangeListener(this);
-//						participant.getSpeciesPattern().addPropertyChangeListener(this);
-//						Structure speciesStructure = participant.getStructure();
-//						Structure reactionStructure = rr.getStructure();
-//						
-//						if(getStructureSuite().getStructures().contains(speciesStructure) && getStructureSuite().areReactionsShownFor(reactionStructure)) {
-//							ReactionRuleParticipantDiagramShape reactionParticipantShape = (ReactionRuleParticipantDiagramShape) getShapeFromModelObject(getModel(), participant);
-//							if (reactionParticipantShape == null) {
-//								if (participant instanceof ReactantPattern) {
-//									reactionParticipantShape = new ReactionRuleParticipantDiagramShape(participant, this);
-//								} else if (participant instanceof ProductPattern) {
-//									reactionParticipantShape = new ReactionRuleParticipantDiagramShape(participant, this);
-//								} else {
-//									throw new RuntimeException("unsupported ReactionRuleParticipant " + participant.getClass());
+			// =================================== Rules ================================================
+			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
+				rr.removePropertyChangeListener(this);
+				rr.addPropertyChangeListener(this);
+				Structure structure = rr.getStructure();
+				if(getStructureSuite().areReactionsShownFor(structure)) {
+					ReactionContainerShape reactionContainerShape =	(ReactionContainerShape) getShapeFromModelObject(structure);
+					ReactionRuleDiagramShape rrShape = (ReactionRuleDiagramShape) getShapeFromModelObject(rr);
+					if (rrShape == null) {
+						rrShape = new ReactionRuleDiagramShape(rr, this);
+						addShape(rrShape);
+						rrShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
+						reactionContainerShape.addChildShape(rrShape);
+						rrShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
+					}
+					rrShape.refreshLabel();
+					unwantedShapes.remove(rrShape);
+					
+					//
+					// add reaction participants as edges and SignatureShapes as needed
+					//
+					List<ReactionRuleParticipant> participants = rr.getReactionRuleParticipants();
+					for(ReactionRuleParticipant participant : participants) {
+						participant.getSpeciesPattern().removePropertyChangeListener(this);
+						participant.getSpeciesPattern().addPropertyChangeListener(this);
+						Structure speciesStructure = participant.getStructure();
+						Structure reactionStructure = rr.getStructure();
+						
+						if(getStructureSuite().getStructures().contains(speciesStructure) && getStructureSuite().areReactionsShownFor(reactionStructure)) {
+							//
+							// find existing RuleParticipantSignatureShape in cartoon
+							//
+							RuleParticipantSignature ruleParticipantSignature = null;
+							for (RuleParticipantSignature signature : ruleParticipantSignatures){
+								if (signature.getStructure() == participant.getStructure() && signature.getLabel().equals(RuleParticipantSignature.getSignature(participant))){
+									ruleParticipantSignature = signature;
+									break;
+								}
+							}
+							//
+							// if didn't find signature in cartoons list of signatures, then create one (and create a shape for it).
+							//
+							RuleParticipantSignatureShape signatureShape = null;
+							if (ruleParticipantSignature == null){
+								ruleParticipantSignature = RuleParticipantSignature.fromReactionRuleParticipant(participant);
+								ruleParticipantSignatures.add(ruleParticipantSignature);
+								signatureShape = new RuleParticipantSignatureShape(ruleParticipantSignature, this);
+								addShape(signatureShape);
+								ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(participant.getStructure());
+								signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
+								participantContainerShape.addChildShape(signatureShape);
+								signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
+							}else{
+								signatureShape = (RuleParticipantSignatureShape) getShapeFromModelObject(ruleParticipantSignature);
+//								if (!ruleParticipantSignature.contains(participant)){
+//									ruleParticipantSignature.addReactionRuleParticipant(participant);
 //								}
-//								addShape(reactionParticipantShape);
-//								reactionParticipantShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
-//							}
-//							if(!containerShape.getChildren().contains(reactionParticipantShape)) {
-//								containerShape.addChildShape(reactionParticipantShape);								
-//							}
-//							unwantedShapes.remove(reactionParticipantShape);
-//							reactionParticipantShape.refreshLabel();
-//						}
-//					}
-//				}
-//			}
+							}
+							unwantedShapes.remove(signatureShape);
+							unwantedSignatures.remove(ruleParticipantSignature);
+							if(signatureShape != null) {
+								signatureShape.refreshLabel();
+							}
+
+							//
+							// add edge for ReactionRuleParticipant if not already present.
+							//
+							RuleParticipantShape ruleParticipantShape = (RuleParticipantShape) getShapeFromModelObject(participant);
+							if (ruleParticipantShape == null || ruleParticipantShape.getRuleParticipantSignatureShape() != signatureShape) {
+								if (participant instanceof ReactantPattern) {
+									ruleParticipantShape = new ReactantPatternShape((ReactantPattern) participant, rrShape, signatureShape, this);
+								} else if (participant instanceof ProductPattern) {
+									ruleParticipantShape = new ProductPatternShape((ProductPattern) participant, rrShape, signatureShape, this);
+//								} else if (participant instanceof Catalyst) {
+//									ruleParticipantShape = new CatalystShape((Catalyst) participant, reactionStepShape, speciesContextShape, this);
+								} else {
+									throw new RuntimeException("unsupported ReactionRuleParticipant " + participant.getClass());
+								}
+								addShape(ruleParticipantShape);
+							}
+							if(!containerShape.getChildren().contains(ruleParticipantShape)) {
+								containerShape.addChildShape(ruleParticipantShape);								
+							}
+							unwantedShapes.remove(ruleParticipantShape);
+							ruleParticipantShape.refreshLabel();
+						}
+					}
+				}
+			}
+			ruleParticipantSignatures.removeAll(unwantedSignatures);
 			
 			for(ReactionStep reactionStep : getModel().getReactionSteps()) {
 				reactionStep.removePropertyChangeListener(this);
@@ -384,18 +429,18 @@ public class ReactionCartoon extends ModelCartoon {
 						shape.getSpaceManager().getRelPos()));
 			} else if (shape instanceof ReactionRuleDiagramShape) {
 				nodeList.add(new NodeReference(
-						NodeReference.SIMPLE_REACTION_NODE,
-						((ReactionStep) shape.getModelObject()).getName(),
+						NodeReference.REACTION_RULE_NODE,
+						((ReactionRule) shape.getModelObject()).getName(),
 						shape.getSpaceManager().getRelPos()));
 			} else if (shape instanceof SpeciesContextShape) {
 				nodeList.add(new NodeReference(
 						NodeReference.SPECIES_CONTEXT_NODE,
 						((SpeciesContext) shape.getModelObject()).getName(),
 						shape.getSpaceManager().getRelPos()));
-			} else if (shape instanceof ReactionRuleParticipantDiagramShape) {
+			} else if (shape instanceof RuleParticipantSignatureShape) {
 				nodeList.add(new NodeReference(
-						NodeReference.SPECIES_CONTEXT_NODE,
-						((SpeciesContext) shape.getModelObject()).getName(),
+						NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE,
+						((RuleParticipantSignature) shape.getModelObject()).getLabel(),
 						shape.getSpaceManager().getRelPos()));
 			}
 		}

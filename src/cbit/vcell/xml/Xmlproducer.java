@@ -3994,8 +3994,25 @@ private Element getXML(NodeReference param) {
 
 			return speciecontext;
 		}
+		case NodeReference.REACTION_RULE_NODE:{
+			Element reactionRuleNode = new Element(XMLTags.ReactionRuleShapeTag);
+			//add Attributes
+			reactionRuleNode.setAttribute(XMLTags.ReactionRuleRef2AttrTag, mangle(param.getName()));
+			reactionRuleNode.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
+			reactionRuleNode.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
+
+			return reactionRuleNode;
+		}
+		case NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE:{
+			Element ruleParticipant = new Element(XMLTags.RuleParticipantShapeTag);
+			//add Attributes
+			ruleParticipant.setAttribute(XMLTags.RuleParticipantRefAttrTag, mangle(param.getName()));
+			ruleParticipant.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
+			ruleParticipant.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
+
+			return ruleParticipant;
+		}
 	}
-	
 	return null;
 }
 

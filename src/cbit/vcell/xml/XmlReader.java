@@ -4894,6 +4894,18 @@ private NodeReference getNodeReference(Element param) throws XmlParseException{
 		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
 
 		newnoderef = new NodeReference(type, name, location);
+	} else if  ( tempname.equalsIgnoreCase(XMLTags.ReactionRuleShapeTag) ) {
+		int type = NodeReference.REACTION_RULE_NODE;
+		String name = unMangle(param.getAttributeValue( XMLTags.ReactionRuleRef2AttrTag ));
+		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
+
+		newnoderef = new NodeReference(type, name, location);
+	} else if  ( tempname.equalsIgnoreCase(XMLTags.RuleParticipantShapeTag) ) {
+		int type = NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE;
+		String name = unMangle(param.getAttributeValue( XMLTags.RuleParticipantRefAttrTag ));
+		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
+
+		newnoderef = new NodeReference(type, name, location);
 	} else {
 		throw new XmlParseException("An unknown type was found " + tempname+",when processing noderefence!");
 	}

@@ -35,7 +35,6 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.SpeciesPattern;
 //import org.vcell.model.rbm.RbmParameter;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;

@@ -405,8 +405,12 @@ public class XMLTags {
     public final static String SpeciesContextShapeTag = "LocalizedCompoundShape";
     public final static String SimpleReactionShapeTag = "SimpleReactionShape";
     public final static String FluxReactionShapeTag = "FluxReactionShape";
+    public final static String ReactionRuleShapeTag = "ReactionRuleShapeTag";
+    public final static String RuleParticipantShapeTag = "RuleParticipantShapeTag";
     public final static String SimpleReactionRefAttrTag = "SimpleReactionRef";
     public final static String FluxReactionRefAttrTag = "FluxReactionRef";
+    public final static String ReactionRuleRef2AttrTag = "ReactionRuleRef2AttrTag";
+    public final static String RuleParticipantRefAttrTag = "RuleParticipantRefAttrTag";
     public final static String LocationXAttrTag = "LocationX";
     public final static String LocationYAttrTag = "LocationY";
 
