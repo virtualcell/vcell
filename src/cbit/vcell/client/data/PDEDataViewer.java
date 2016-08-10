@@ -397,6 +397,10 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 //			System.out.println("----------"+evt.getPropertyName()+" "+evt.getSource().getClass().getName());
 			try {
+				if (evt.getSource() == getPdeDataContext() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINTS))){
+					getPDEPlotControlPanel1().timePointsEvent(getPdeDataContext().getTimePoints());
+				}
+
 //				if(evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1() && evt.getPropertyName().equals(DisplayAdapterService.PROP_NAME_ALLTIMES)){
 ////					getPDEDataContextPanel1().getdisplayAdapterService1().setValueDomain(new Range(0,100));
 //					doUpdate(new AsynchClientTask("Setting domain vals",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
