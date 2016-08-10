@@ -282,18 +282,18 @@ public class ReactionCartoon extends ModelCartoon {
 							//
 							// if didn't find signature in cartoons list of signatures, then create one (and create a shape for it).
 							//
-							RuleParticipantSignatureShape signatureShape = null;
+							RuleParticipantSignatureDiagramShape signatureShape = null;
 							if (ruleParticipantSignature == null){
 								ruleParticipantSignature = RuleParticipantSignature.fromReactionRuleParticipant(participant);
 								ruleParticipantSignatures.add(ruleParticipantSignature);
-								signatureShape = new RuleParticipantSignatureShape(ruleParticipantSignature, this);
+								signatureShape = new RuleParticipantSignatureDiagramShape(ruleParticipantSignature, this);
 								addShape(signatureShape);
 								ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(participant.getStructure());
 								signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
 								participantContainerShape.addChildShape(signatureShape);
 								signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
 							}else{
-								signatureShape = (RuleParticipantSignatureShape) getShapeFromModelObject(ruleParticipantSignature);
+								signatureShape = (RuleParticipantSignatureDiagramShape) getShapeFromModelObject(ruleParticipantSignature);
 //								if (!ruleParticipantSignature.contains(participant)){
 //									ruleParticipantSignature.addReactionRuleParticipant(participant);
 //								}
@@ -307,12 +307,12 @@ public class ReactionCartoon extends ModelCartoon {
 							//
 							// add edge for ReactionRuleParticipant if not already present.
 							//
-							RuleParticipantShape ruleParticipantShape = (RuleParticipantShape) getShapeFromModelObject(participant);
+							RuleParticipantEdgeDiagramShape ruleParticipantShape = (RuleParticipantEdgeDiagramShape) getShapeFromModelObject(participant);
 							if (ruleParticipantShape == null || ruleParticipantShape.getRuleParticipantSignatureShape() != signatureShape) {
 								if (participant instanceof ReactantPattern) {
-									ruleParticipantShape = new ReactantPatternShape((ReactantPattern) participant, rrShape, signatureShape, this);
+									ruleParticipantShape = new ReactantPatternEdgeDiagramShape((ReactantPattern) participant, rrShape, signatureShape, this);
 								} else if (participant instanceof ProductPattern) {
-									ruleParticipantShape = new ProductPatternShape((ProductPattern) participant, rrShape, signatureShape, this);
+									ruleParticipantShape = new ProductPatternEdgeDiagramShape((ProductPattern) participant, rrShape, signatureShape, this);
 //								} else if (participant instanceof Catalyst) {
 //									ruleParticipantShape = new CatalystShape((Catalyst) participant, reactionStepShape, speciesContextShape, this);
 								} else {
@@ -437,7 +437,7 @@ public class ReactionCartoon extends ModelCartoon {
 						NodeReference.SPECIES_CONTEXT_NODE,
 						((SpeciesContext) shape.getModelObject()).getName(),
 						shape.getSpaceManager().getRelPos()));
-			} else if (shape instanceof RuleParticipantSignatureShape) {
+			} else if (shape instanceof RuleParticipantSignatureDiagramShape) {
 				nodeList.add(new NodeReference(
 						NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE,
 						((RuleParticipantSignature) shape.getModelObject()).getLabel(),

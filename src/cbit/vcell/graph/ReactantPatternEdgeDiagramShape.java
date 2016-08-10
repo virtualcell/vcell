@@ -12,10 +12,10 @@ package cbit.vcell.graph;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.model.ReactantPattern;
 
-public class ReactantPatternShape extends RuleParticipantShape {
+public class ReactantPatternEdgeDiagramShape extends RuleParticipantEdgeDiagramShape {
 
-	public ReactantPatternShape(ReactantPattern reactant, ReactionRuleDiagramShape reactionRuleShape, 
-			RuleParticipantSignatureShape ruleParticipantSignatureShape, GraphModel graphModel) {
+	public ReactantPatternEdgeDiagramShape(ReactantPattern reactant, ReactionRuleDiagramShape reactionRuleShape, 
+			RuleParticipantSignatureDiagramShape ruleParticipantSignatureShape, GraphModel graphModel) {
 		super(reactant, reactionRuleShape, ruleParticipantSignatureShape, graphModel);
 	}
 
