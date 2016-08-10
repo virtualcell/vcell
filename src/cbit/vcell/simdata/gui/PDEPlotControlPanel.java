@@ -483,6 +483,10 @@ public void setup(AnnotatedFunction[] newFunctions,DataIdentifier[] newDataIdent
 	getJSliderTime().setValue(selectedTimeIndex);	
 }
 
+public void timePointsEvent(double[] newTimePoints){
+	setTimePoints(newTimePoints);
+}
+
 /**
  * Return the JLabel1 property value.
  * @return javax.swing.JLabel
