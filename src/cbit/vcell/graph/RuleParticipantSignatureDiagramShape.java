@@ -52,6 +52,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	protected Point smallLabelPos = new Point(0,0);
 
 	private boolean bTruncateLabelName = true;
+	private boolean bDisplayLabel = false;
 	
 	protected String linkText;
 
@@ -91,7 +92,12 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		return ruleParticipantSignature;
 	}
 
-	public void setLinkText(String linkText) { this.linkText = linkText; }
+	public void setLinkText(String linkText) {
+		this.linkText = linkText;
+	}
+	public void setDisplayLabel(boolean bDisplayLabel) {
+		this.bDisplayLabel = bDisplayLabel;
+	}
 	
 	@Override
 	public void refreshLayoutSelf() {
@@ -111,8 +117,8 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 		
-		int displacement = 12;
-		int circleDiameter = 16;
+		int displacement = 7;		// distance between circles representing molecular types
+		int circleDiameter = 14;
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
 		int offsetX = (shapeWidth-circleDiameter) / 2;
@@ -134,7 +140,8 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 			int index = mtList.indexOf(mt);
 			index = index%7;
 
-			defaultBG = MolecularTypeLargeShape.colorTable[index];
+//			defaultBG = MolecularTypeLargeShape.colorTable[index];		// take color from molecular type color selection
+			defaultBG = Color.lightGray;
 			backgroundColor = defaultBG;
 			darkerBackground = backgroundColor.darker().darker();
 	
@@ -143,7 +150,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	//		Color interior = exterior.brighter().brighter();
 			Point2D center = new Point2D.Float(absPosX + displacement*i + circleDiameter/2, absPosY+circleDiameter/2);
 			float radius = circleDiameter*0.5f;
-			Point2D focus = new Point2D.Float(absPosX + displacement*i + circleDiameter/2-1, absPosY+circleDiameter/2-1);
+			Point2D focus = new Point2D.Float(absPosX + displacement*i + circleDiameter/2+1, absPosY+circleDiameter/2+1);
 			float[] dist = {0.1f, 1.0f};
 			Color[] colors = {Color.white, exterior};
 	//		Color[] colors = {interior, exterior};
@@ -158,7 +165,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 
 		// draw label
 		if (getLabel()!=null && getLabel().length()>0){
-			if(isSelected()){//clear background and outline to make selected label stand out
+			if(isSelected()) {		//clear background and outline to make selected label stand out
 				Rectangle outlineRectangle = getLabelOutline(absPosX, absPosY);
 				drawRaisedOutline(
 						outlineRectangle.x, 
@@ -166,11 +173,13 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 						outlineRectangle.width, outlineRectangle.height, g, 
 						Color.white, forgroundColor, Color.gray);
 			}
-			g.setColor(forgroundColor);
-			g.drawString(
+			if(bDisplayLabel || isSelected()) {
+				g.setColor(forgroundColor);
+				g.drawString(
 					(isSelected() || smallLabel == null ? getLabel():smallLabel),
 					(isSelected() || smallLabel == null ? getLabelPos().x : smallLabelPos.x) + 
 					absPosX, getLabelPos().y + absPosY);
+			}
 		}
 		if(linkText != null && linkText != "") {
 			ShapePaintUtil.paintLinkMark(g2D, this, Color.BLACK);
