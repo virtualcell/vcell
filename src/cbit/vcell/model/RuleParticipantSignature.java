@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
 
 import sun.awt.im.CompositionArea;
 
@@ -93,6 +94,18 @@ public class RuleParticipantSignature {
 	
 	private String getUniqueSignature(){
 		return getStructure().getName()+":"+getSignature();
+	}
+	
+	public SpeciesPattern getSpeciesPattern() {
+		SpeciesPattern sp = new SpeciesPattern();
+		for (Entry<MolecularType, Integer> entry : composition.entrySet()){
+			for (int i=0;i<entry.getValue();i++){
+				MolecularType mt = entry.getKey();
+				MolecularTypePattern mtp = new MolecularTypePattern(mt);
+				sp.addMolecularTypePattern(mtp);
+			}
+		}
+		return sp;
 	}
 
 	public static String getSignature(ReactionRuleParticipant reactionRuleParticipant){

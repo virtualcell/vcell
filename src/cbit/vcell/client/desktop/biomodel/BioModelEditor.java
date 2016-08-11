@@ -71,6 +71,7 @@ import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
@@ -713,6 +714,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bShowPathway = true;
 			bottomComponent = getBioModelEditorPathwayPanel();
 		} else if (singleSelection instanceof Model) {
+		} else if (singleSelection instanceof RuleParticipantSignature) {
+			bottomComponent = getSpeciesPropertiesPanel();
 		} else if (singleSelection instanceof CSGObject) {
 			bottomComponent = csgObjectPropertiesPanel;
 			csgObjectPropertiesPanel.setSimulationContext(getSelectedSimulationContext());
