@@ -101,7 +101,7 @@ public class ReactionRuleDiagramShape extends ElipseShape {
 		int shapeWidth = getSpaceManager().getSize().width;
 		int offsetX = (shapeWidth-CIRCLE_DIMAETER) / 2;
 		int offsetY = (shapeHeight-CIRCLE_DIMAETER) / 2;
-		for(int i=0; i<3; i++) {
+		for(int i=0; i<2; i++) {
 		icon = new Area();
 		icon.add(new Area(new RoundRectangle2D.Double(offsetX+i*3, offsetY-i*3,CIRCLE_DIMAETER,CIRCLE_DIMAETER,CIRCLE_DIMAETER/2,CIRCLE_DIMAETER/2)));
 		Area movedIcon = icon.createTransformedArea(AffineTransform.getTranslateInstance(absPosX, absPosY));
@@ -128,7 +128,7 @@ public class ReactionRuleDiagramShape extends ElipseShape {
 	}
 	
 
-	private static int CIRCLE_DIMAETER = 10;
+	private static int CIRCLE_DIMAETER = 8;
 	public Rectangle getLabelOutline( int absPosX, int absPosY){
 		int textX = absPosX + getSpaceManager().getSize().width / 2 - getLabelSize().width / 2;
 		int textY = absPosY + ((getSpaceManager().getSize().height-CIRCLE_DIMAETER) / 2) - getLabelSize().height / 2;

@@ -72,13 +72,17 @@ public abstract class RuleParticipantEdgeDiagramShape extends EdgeShape {
 						tangentX += (ps.start.getX() - ps.end.getX())/len;
 						tangentY += (ps.start.getY() - ps.end.getY())/len;
 						if(bSibling) {
-							tangentX += 0.1;
-							tangentY += 0.1;
+							tangentX = 0.1;
+							tangentY = 0.1;
 						}
 					}else if (shape instanceof ReactantPatternEdgeDiagramShape){
 						ReactantPatternEdgeDiagramShape rs = (ReactantPatternEdgeDiagramShape) shape;
 						tangentX -= (rs.start.getX() - rs.end.getX())/len;
 						tangentY -= (rs.start.getY() - rs.end.getY())/len;
+						if(bSibling) {
+							tangentX = -0.1;
+							tangentY = -0.1;
+						}
 					}
 				}
 			}
