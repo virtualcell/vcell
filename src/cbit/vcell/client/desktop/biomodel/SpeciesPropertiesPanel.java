@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -119,6 +120,8 @@ import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
+import cbit.vcell.model.RuleParticipantSignature;
+import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
@@ -770,6 +773,11 @@ private void updateShape() {
 		}
 		if (selectedObjects[0] instanceof SpeciesContext) {
 			setSpeciesContext((SpeciesContext) selectedObjects[0]);
+		} else if(selectedObjects[0] instanceof RuleParticipantSignature) {
+			RuleParticipantSignature rps = (RuleParticipantSignature)selectedObjects[0];
+			SpeciesContext sc = new SpeciesContext(new Species("aaa", "bbb"), rps.getStructure(), null);
+			sc.setSpeciesPattern(rps.getSpeciesPattern());
+			setSpeciesContext(sc);
 		} else {
 			setSpeciesContext(null);
 		}		
