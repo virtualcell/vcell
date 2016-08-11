@@ -307,49 +307,36 @@ private synchronized void copyCells(CopyAction copyAction) {
 		//String[] dataNames = new String[symbolTableEntries.length];//don't include "t" for SimulationResultsSelection
 		// if copying more than one cell, make a string that will paste like a table in spreadsheets
 		// also include column headers in this case
-		if (r + c > 2) {
-			for (int i = 0; i < c; i++){
-				//this if condition is dangerous, because it assumes that "t" appears only on column idx 0, other column numbers should be
-				//greater than 0. However, histogram doesn't have "t" and there is sth. else in column 0 of the table.
-				if(!bHistogram && (!bHasTimeColumn || i>0)){ 
-					//dataNames[i-(bHasTimeColumn?1:0)] = getScrollPaneTable().getColumnName(columns[i]);
-					symbolTableEntries[i-(bHasTimeColumn?1:0)] = null;
-					if(getPlot2D().getSymbolTableEntries() != null){
-						SymbolTableEntry ste =  getPlot2D().getPlotDataSymbolTableEntry(columns[i]);
-						symbolTableEntries[i-(bHasTimeColumn?1:0)] = ste;
-						buffer.append(
-							( ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
-							getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
-					}
-				}else{
-					buffer.append(getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
+		for (int i = 0; i < c; i++){
+			//this if condition is dangerous, because it assumes that "t" appears only on column idx 0, other column numbers should be
+			//greater than 0. However, histogram doesn't have "t" and there is sth. else in column 0 of the table.
+			if(!bHistogram && (!bHasTimeColumn || i>0)){ 
+				//dataNames[i-(bHasTimeColumn?1:0)] = getScrollPaneTable().getColumnName(columns[i]);
+				symbolTableEntries[i-(bHasTimeColumn?1:0)] = null;
+				if(getPlot2D().getSymbolTableEntries() != null){
+					SymbolTableEntry ste =  getPlot2D().getPlotDataSymbolTableEntry(columns[i]);
+					symbolTableEntries[i-(bHasTimeColumn?1:0)] = ste;
+					buffer.append(
+						( ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
+						getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
 				}
-			}
-			for (int i = 0; i < r; i++){
-				buffer.append("\n");
-				for (int j = 0; j < c; j++){
-					Object cell = getScrollPaneTable().getValueAt(rows[i], columns[j]);
-					cell = cell != null ? cell : ""; 
-					buffer.append(cell.toString() + (j==c-1?"":"\t"));
-					if(!cell.equals("") && (!bHasTimeColumn || j>0) ){
-						resolvedValues[j-(bHasTimeColumn?1:0)] = new Expression(((Double)cell).doubleValue());
-					}
-				}
+			}else{
+				buffer.append(getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
 			}
 		}
-		// if copying a single cell, just get that value 
-		if (r + c == 2) {
-			Object cell = getScrollPaneTable().getValueAt(rows[0], columns[0]);
-			cell = (cell != null ? cell : ""); 
-			buffer.append(cell.toString());
-			if(!bHasTimeColumn){
-				//dataNames[0] = getScrollPaneTable().getColumnName(columns[0]);
-				symbolTableEntries[0] = null;
-				if(getPlot2D().getSymbolTableEntries() != null){					
-					SymbolTableEntry ste =getPlot2D().getPlotDataSymbolTableEntry(columns[0]);					
-					symbolTableEntries[0] = ste;
+		for (int i = 0; i < r; i++){
+			buffer.append("\n");
+			for (int j = 0; j < c; j++){
+				Object cell = getScrollPaneTable().getValueAt(rows[i], columns[j]);
+				cell = cell != null ? cell : "";
+				if(((r+c)==2)){// single table cell copy, just the value
+					buffer = new StringBuffer(cell.toString());
+				}else{
+					buffer.append(cell.toString() + (j==c-1?"":"\t"));
 				}
-				resolvedValues[0] = new Expression(((Double)cell).doubleValue());
+				if(!cell.equals("") && (!bHasTimeColumn || j>0) ){
+					resolvedValues[j-(bHasTimeColumn?1:0)] = new Expression(((Double)cell).doubleValue());
+				}
 			}
 		}
 
