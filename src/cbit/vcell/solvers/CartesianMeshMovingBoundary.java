@@ -181,4 +181,15 @@ public class CartesianMeshMovingBoundary extends CartesianMesh
 		}
 		return (new Coordinate(x, y, z));
 	}
+	
+	@Override
+	public int getVolumeRegionIndex(int volumeIndex) {
+		return 0;
+	}
+	
+	@Override
+	public int getSubVolumeFromVolumeIndex(int volIndex) {
+		return 0;
+	}
+
 }
