@@ -295,12 +295,14 @@ private Element getFrontVelocity(String tag, Expression ex) throws ExpressionExc
 }
 private Element getfrontVelocityFunctionX() throws ExpressionException, MathException {
 	Objects.requireNonNull(theMembrane);
-	Expression velocityX = Expression.mult(theMembrane.getVelocityX(), new Expression("normalX"));
+//	Expression velocityX = Expression.mult(theMembrane.getVelocityX(), new Expression("normalX"));
+	Expression velocityX = theMembrane.getVelocityX();
 	return getFrontVelocity(MBTags.frontVelocityFunctionX, velocityX);
 }
 private Element getfrontVelocityFunctionY() throws ExpressionException, MathException {
 	Objects.requireNonNull(theMembrane);
-	Expression velocityY = Expression.mult(theMembrane.getVelocityY(), new Expression("normalY"));
+	//Expression velocityY = Expression.mult(theMembrane.getVelocityY(), new Expression("normalY"));
+	Expression velocityY = theMembrane.getVelocityY();
 	return getFrontVelocity(MBTags.frontVelocityFunctionY,velocityY);
 }
 private Element getXMLphysiology() throws ExpressionException, MathException {
