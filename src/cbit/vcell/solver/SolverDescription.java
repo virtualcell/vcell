@@ -129,8 +129,8 @@ public enum SolverDescription {
 	      SolverExecutable.NFSIM, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000263", false),
 
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
-		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT,
-		  new SolverFeature[]{SolverFeature.Feature_Moving},
+		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT_UNIFORM,
+		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving},
 		  SolverExecutable.MOVING_B, VersionedLibrary.DEPENDENT_LIBS_VCELL,"KISAO",false)
       ;
 
@@ -176,7 +176,7 @@ public enum SolverDescription {
 	 */
 	public static final Collection<SolverFeature> SpatialHybridFeatureSet = new SolverFeatureSet (
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Hybrid, SolverFeature.Feature_Deterministic,
-		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isSpatialHybrid(); }},
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isSpatialHybrid() && !desc.isMovingMembrane(); }},
 		FiniteVolumeStandalone,50);
 
 	public static final Collection<SolverFeature> SpatialStochasticFeatureSet = new SolverFeatureSet (
@@ -200,12 +200,12 @@ public enum SolverDescription {
 	public static final Collection<SolverFeature> PdeFeatureSetWithoutDirichletAtMembrane = new SolverFeatureSet(
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic,
 		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector s) {
-			return s.isSpatial() && !s.isSpatialHybrid() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
+			return s.isSpatial() && !s.isSpatialHybrid()  && !s.isMovingMembrane() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
 		SundialsPDE,10);
 
 	public static final Collection<SolverFeature> MovingBoundaryFeatureSet = new SolverFeatureSet(
 			SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial,
-			s -> s.isMovingMembrane( ),
+			s -> s.isSpatial() && !s.isSpatialHybrid()  && s.isMovingMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(),
 			MovingBoundary,30);
 
 	/*

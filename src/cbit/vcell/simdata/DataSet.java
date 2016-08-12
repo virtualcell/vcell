@@ -20,24 +20,34 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 //import java.util.zip.ZipEntry;
 import java.util.zip.ZipEntry;
 //import java.util.zip.ZipFile;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
+
+
+
+
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import ncsa.hdf.object.Attribute;
 import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.simdata.SimulationData.SolverDataType;
+import cbit.vcell.solvers.CartesianMeshMovingBoundary.MBSDataGroup;
+import cbit.vcell.solvers.CartesianMeshMovingBoundary.MSBDataAttribute;
 
 public class DataSet implements java.io.Serializable
 {
@@ -70,62 +80,77 @@ public static double[] fetchSimData(String varName, File file) throws IOExceptio
  * @param varName java.lang.String
  */
 double[] getData(String varName, File zipFile) throws IOException {
+	return getData(varName, zipFile, null, null);
+}
+
+double[] getData(String varName, File zipFile, Double time, SolverDataType solverDataType) throws IOException {
 	double data[] = null;
-	if (zipFile != null && isChombo(zipFile)) {
+	if (solverDataType == SolverDataType.MBSData)
+	{
 		try {
-			data = readHdf5VariableSolution(zipFile, new File(fileName).getName(), varName);
+			data = readMBSData(varName, time);
 		} catch(Exception e) {
 			throw new IOException(e.getMessage(), e);
 		}
 	}
 	else
 	{
-		for (int i=0;i<dataBlockList.size();i++){
-			DataBlock dataBlock = (DataBlock)dataBlockList.elementAt(i);
-			if (varName.trim().equals(dataBlock.getVarName().trim())){
-				File pdeFile = new File(fileName);
-				InputStream is = null;
-				long length = 0;
-				org.apache.commons.compress.archivers.zip.ZipFile zipZipFile = null;
-	            
-				if (zipFile == null && !pdeFile.exists()) {
-					throw new FileNotFoundException("file "+fileName+" does not exist");
-				}
-				if (zipFile != null) {
-					zipZipFile = openZipFile(zipFile);
-					java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(pdeFile.getName());
-					length = dataEntry.getSize();
-					is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
-				} else {
-					length = pdeFile.length();
-					is = new FileInputStream(pdeFile);
-				}
-	
-				// read data from zip file
-				
-				DataInputStream dis = null;
-				try {
-					BufferedInputStream bis = new BufferedInputStream(is);
-					dis = new DataInputStream(bis);
-					dis.skip(dataBlock.getDataOffset());
-					int size = dataBlock.getSize();
-					data = new double[size];
-					for (int j = 0; j < size; j++) {
-						data[j] = dis.readDouble();
+		if (zipFile != null && isChombo(zipFile)) {
+			try {
+				data = readHdf5VariableSolution(zipFile, new File(fileName).getName(), varName);
+			} catch(Exception e) {
+				throw new IOException(e.getMessage(), e);
+			}
+		}
+		else
+		{
+			for (int i=0;i<dataBlockList.size();i++){
+				DataBlock dataBlock = (DataBlock)dataBlockList.elementAt(i);
+				if (varName.trim().equals(dataBlock.getVarName().trim())){
+					File pdeFile = new File(fileName);
+					InputStream is = null;
+					long length = 0;
+					org.apache.commons.compress.archivers.zip.ZipFile zipZipFile = null;
+		            
+					if (zipFile == null && !pdeFile.exists()) {
+						throw new FileNotFoundException("file "+fileName+" does not exist");
 					}
-				} finally {
+					if (zipFile != null) {
+						zipZipFile = openZipFile(zipFile);
+						java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(pdeFile.getName());
+						length = dataEntry.getSize();
+						is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
+					} else {
+						length = pdeFile.length();
+						is = new FileInputStream(pdeFile);
+					}
+		
+					// read data from zip file
+					
+					DataInputStream dis = null;
 					try {
-						if (dis != null) {
-							dis.close();
+						BufferedInputStream bis = new BufferedInputStream(is);
+						dis = new DataInputStream(bis);
+						dis.skip(dataBlock.getDataOffset());
+						int size = dataBlock.getSize();
+						data = new double[size];
+						for (int j = 0; j < size; j++) {
+							data[j] = dis.readDouble();
 						}
-						if (zipZipFile != null) {
-							zipZipFile.close();
+					} finally {
+						try {
+							if (dis != null) {
+								dis.close();
+							}
+							if (zipZipFile != null) {
+								zipZipFile.close();
+							}
+						} catch (Exception ex) {
+							// ignore
 						}
-					} catch (Exception ex) {
-						// ignore
-					}
-				}	
-				break;
+					}	
+					break;
+				}
 			}
 		}
 	}
@@ -134,6 +159,8 @@ double[] getData(String varName, File zipFile) throws IOException {
 	}	
 	return data;
 }
+
+
 
 
 /**
@@ -251,54 +278,69 @@ protected static ZipFile openZipFile(File zipFile) throws IOException {
  * 
  */
 void read(File file, File zipFile) throws IOException, OutOfMemoryError {
+	read(file, zipFile, null);
+}
+	
+void read(File file, File zipFile, SolverDataType solverDataType) throws IOException, OutOfMemoryError {
 	
 	ZipFile zipZipFile = null;
 	DataInputStream dataInputStream = null;
 	try{
 		this.fileName = file.getPath();	
 		
-		InputStream is = null;
-		long length  = 0;
-		
-		if (zipFile != null) {
-			System.out.println("DataSet.read() open " + zipFile + " for " + file.getName());
-			zipZipFile = openZipFile(zipFile);
-			java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(file.getName());
-			is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
-			length = dataEntry.getSize();
-		} else {		
-			if (!file.exists()){
-				File compressedFile = new File(fileName+".Z");
-				if (compressedFile.exists()){
-					Runtime.getRuntime().exec("uncompress "+fileName+".Z");
-					file = new File(fileName);
-					if (!file.exists()){
-						throw new IOException("file "+fileName+".Z could not be uncompressed");
-					}	
-				}else{
-					throw new FileNotFoundException("file "+fileName+" does not exist");
-				}
-			}	
-			System.out.println("DataSet.read() open '" + fileName + "'"); 
-			is = new FileInputStream(file);
-			length = file.length();
-		}
-	
-		if(is != null && zipFile!=null && isChombo(zipFile)){
+		if (solverDataType == SolverDataType.MBSData)
+		{
 			try {
-				readHdf5SolutionMetaData(is);
+				readMBSDataMetadata();
 			} catch (Exception e) {
-				e.printStackTrace();
 				throw new IOException(e.getMessage(),e);
 			}
-		}else{
-			BufferedInputStream bis = new BufferedInputStream(is);
-			dataInputStream = new DataInputStream(bis);
-			fileHeader.read(dataInputStream);
-			for (int i = 0; i < fileHeader.numBlocks; i++) {
-				DataBlock dataBlock = new DataBlock();
-				dataBlock.readBlockHeader(dataInputStream);
-				dataBlockList.addElement(dataBlock);
+		}
+		else
+		{
+			InputStream is = null;
+			long length  = 0;
+			
+			if (zipFile != null) {
+				System.out.println("DataSet.read() open " + zipFile + " for " + file.getName());
+				zipZipFile = openZipFile(zipFile);
+				java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(file.getName());
+				is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
+				length = dataEntry.getSize();
+			} else {		
+				if (!file.exists()){
+					File compressedFile = new File(fileName+".Z");
+					if (compressedFile.exists()){
+						Runtime.getRuntime().exec("uncompress "+fileName+".Z");
+						file = new File(fileName);
+						if (!file.exists()){
+							throw new IOException("file "+fileName+".Z could not be uncompressed");
+						}	
+					}else{
+						throw new FileNotFoundException("file "+fileName+" does not exist");
+					}
+				}	
+				System.out.println("DataSet.read() open '" + fileName + "'"); 
+				is = new FileInputStream(file);
+				length = file.length();
+			}
+		
+			if(is != null && zipFile!=null && isChombo(zipFile)){
+				try {
+					readHdf5SolutionMetaData(is);
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new IOException(e.getMessage(),e);
+				}
+			}else{
+				BufferedInputStream bis = new BufferedInputStream(is);
+				dataInputStream = new DataInputStream(bis);
+				fileHeader.read(dataInputStream);
+				for (int i = 0; i < fileHeader.numBlocks; i++) {
+					DataBlock dataBlock = new DataBlock();
+					dataBlock.readBlockHeader(dataInputStream);
+					dataBlockList.addElement(dataBlock);
+				}
 			}
 		}
 	}finally{
@@ -592,5 +634,162 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 			}
 		}
 		return data;
+	}
+	
+	private void readMBSDataMetadata() throws Exception
+	{
+		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+		FileFormat solFile = null;
+		try {
+			solFile = fileFormat.createInstance(fileName, FileFormat.READ);
+			solFile.open();
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
+			Group rootGroup = (Group)rootNode.getUserObject();
+			Group solutionGroup = null;
+			for (HObject member : rootGroup.getMemberList())
+			{
+				String memberName = member.getName();
+				if (member instanceof Group)
+				{
+					MBSDataGroup group = MBSDataGroup.valueOf(memberName);
+					if (group == MBSDataGroup.Solution)
+					{
+						solutionGroup = (Group) member;
+						break;
+					}
+				}
+			}
+			if (solutionGroup == null)
+			{
+				throw new Exception("Group " + MBSDataGroup.Solution + " not found");
+			}
+			List<Attribute> solAttrList = solutionGroup.getMetadata();
+			List<String> variables = new ArrayList<String>();
+			int size = 0;
+			for (Attribute attr : solAttrList)
+			{
+				String attrName = attr.getName();
+				Object attrValue = attr.getValue();
+				if(attrName.startsWith("Variable_")){
+					variables.add(((String[]) attrValue)[0]);
+				}
+				else if (attrName.equals(MSBDataAttribute.size.name()))
+				{
+					size = ((int[]) attrValue)[0];
+				}
+			}
+			
+			for (String var : variables)
+			{
+				dataBlockList.addElement(DataBlock.createDataBlock(var, VariableType.VOLUME.getType(), size, 0));
+			}
+		}
+		finally
+		{
+				if (solFile != null)
+				{
+					try {
+						solFile.close();
+					} catch (Exception e) {
+						// ignore
+					}
+				}
+		}
+	}
+	
+	private double[] readMBSData(String varName, Double time) throws Exception {
+		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+		FileFormat solFile = null;
+		double[] data = null;
+		try {
+			solFile = fileFormat.createInstance(fileName, FileFormat.READ);
+			solFile.open();
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
+			Group rootGroup = (Group)rootNode.getUserObject();
+			Group solutionGroup = null;
+			for (HObject member : rootGroup.getMemberList())
+			{
+				String memberName = member.getName();
+				if (member instanceof Group)
+				{
+					MBSDataGroup group = MBSDataGroup.valueOf(memberName);
+					if (group == MBSDataGroup.Solution)
+					{
+						solutionGroup = (Group) member;
+						break;
+					}
+				}
+			}
+			if (solutionGroup == null)
+			{
+				throw new Exception("Group " + MBSDataGroup.Solution + " not found");
+			}
+			
+			int varIndex = -1;
+			int size = 0;
+			for (int i = 0; i < dataBlockList.size(); ++ i)
+			{
+				DataBlock dataBlock = dataBlockList.get(i);
+				if (dataBlock.getVarName().equals(varName))
+				{
+					varIndex = i;
+					size = dataBlock.getSize();
+					break;
+				}
+			}
+			
+			if (varIndex == -1)
+			{
+				throw new Exception("Variable " + varName + " not found");
+			}
+			
+			double[] allData = null;
+			for (HObject member : solutionGroup.getMemberList())
+			{
+				if (member instanceof Dataset)
+				{
+					Dataset ds = (Dataset)member;
+					List<Attribute> dsAttrList = ds.getMetadata();
+					Attribute timeAttribute = null;
+					for (Attribute attr : dsAttrList)
+					{
+						if (attr.getName().equals(MSBDataAttribute.time.name()))
+						{
+							timeAttribute = attr;
+							break;
+						}
+					}
+					if (timeAttribute != null)
+					{
+						double t = ((double[]) timeAttribute.getValue())[0];
+						if (Math.abs(t - time) < 1e-8)
+						{
+							allData = (double[]) ds.getData();  // this is all variable data
+							break;
+						}
+					}
+				}
+			}
+			
+			if (allData == null)
+			{
+				throw new Exception("Data for Variable " + varName + " at time " + time + " not found");
+			}
+			
+			data = new double[size];
+			System.arraycopy(allData, varIndex * size, data, 0, size);
+			return data;
+		}
+		finally
+		{
+				if (solFile != null)
+				{
+					try {
+						solFile.close();
+					} catch (Exception e) {
+						// ignore
+					}
+				}
+		}		
 	}
 }

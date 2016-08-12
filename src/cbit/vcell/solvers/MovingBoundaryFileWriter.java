@@ -54,26 +54,26 @@ public class MovingBoundaryFileWriter extends SolverFileWriter {
 	private final MathDescription mathDesc;
 	private final Geometry geometry;
 	private MembraneSubDomain theMembrane = null;
-	private final String outputName;
+	private final String outputPrefix;
 	private final MovingBoundarySolverSpec solverSpec;
 	/**
 	 * temporary pending fixing MovingBoundary C++ to handle advection on per-species basis
 	 */
 	private Element problem;
 
-public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometry resampledGeometry, boolean arg_bMessaging, String outputName,
+public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometry resampledGeometry, boolean arg_bMessaging, String outputPrefix,
 		MovingBoundarySolverSpec mbss) {
 	super(pw, simTask, arg_bMessaging);
 
 	simulation = simTask.getSimulation();
 	mathDesc = simulation.getMathDescription();
 	geometry = mathDesc.getGeometry();
-	this.outputName = outputName;
+	this.outputPrefix = outputPrefix;
 	solverSpec = mbss;
 }
 
-public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometry resampledGeometry, boolean arg_bMessaging, String outputName) {
-	this(pw,simTask,resampledGeometry,arg_bMessaging,outputName, new MovingBoundarySolverSpec( ));
+public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometry resampledGeometry, boolean arg_bMessaging, String outputPrefix) {
+	this(pw,simTask,resampledGeometry,arg_bMessaging,outputPrefix, new MovingBoundarySolverSpec( ));
 }
 
 
@@ -169,6 +169,11 @@ private Element getXMLProblem() throws ExpressionException, MathException {
 		SolverTaskDescription std = simulation.getSolverTaskDescription();
 		e.addContent(getmaxTime(std));
 		e.addContent(gettimeStep(std));
+		Element ots = getOutputTimeStep(std);
+		if (ots != null)
+		{
+			e.addContent(ots);
+		}
 	}
 
 	e.addContent(getLevelFunction());
@@ -185,8 +190,7 @@ private Element getGeoLimit(String coordinateLabel, Double low, Double high) {
 	e1.setText(low.toString());
 	e.addContent(e1);
 	e1 = new Element(MBTags.high);		// sim.math.geometry.origin.x + sim.math.geometry.extent.x
-	Double h = low + high;
-	e1.setText(h.toString());
+	e1.setText(high.toString());
 	e.addContent(e1);
 	return e;
 }
@@ -239,6 +243,17 @@ private Element gettimeStep(SolverTaskDescription std) {
 	e.setText(defaultTimeStep+"");
 	return e;
 }
+private Element getOutputTimeStep(SolverTaskDescription std) {
+	Objects.requireNonNull(std);
+	if (std.getOutputTimeSpec().isUniform())
+	{
+		Element e = new Element(MBTags.outputTimeStep);
+		double outputTimeStep = ((UniformOutputTimeSpec)std.getOutputTimeSpec()).getOutputTimeStep();
+		e.setText(outputTimeStep+"");
+		return e;
+	}
+	return null;
+}
 private Element getLevelFunction() throws ExpressionException {
 	Element e = new Element(MBTags.levelFunction);
 	// geometry shape encode in "LevelFunction".
@@ -280,11 +295,13 @@ private Element getFrontVelocity(String tag, Expression ex) throws ExpressionExc
 }
 private Element getfrontVelocityFunctionX() throws ExpressionException, MathException {
 	Objects.requireNonNull(theMembrane);
-	return getFrontVelocity(MBTags.frontVelocityFunctionX,theMembrane.getVelocityX());
+	Expression velocityX = Expression.mult(theMembrane.getVelocityX(), new Expression("normalX"));
+	return getFrontVelocity(MBTags.frontVelocityFunctionX, velocityX);
 }
 private Element getfrontVelocityFunctionY() throws ExpressionException, MathException {
 	Objects.requireNonNull(theMembrane);
-	return getFrontVelocity(MBTags.frontVelocityFunctionY,theMembrane.getVelocityY());
+	Expression velocityY = Expression.mult(theMembrane.getVelocityY(), new Expression("normalY"));
+	return getFrontVelocity(MBTags.frontVelocityFunctionY,velocityY);
 }
 private Element getXMLphysiology() throws ExpressionException, MathException {
 	final Element e = new Element(MBTags.physiology);
@@ -345,12 +362,12 @@ private Element getSpecies(PdeEquation eq) throws ExpressionException, MathExcep
 	e.addContent(e1);
 
 	e1 = new Element(MBTags.source);
-	ex = eq.getDiffusionExpression();
+	ex = eq.getRateExpression();
 	setExpression(e1, ex, false);
 	e.addContent(e1);
 
 	e1 = new Element(MBTags.diffusion);
-	ex = eq.getRateExpression();
+	ex = eq.getDiffusionExpression();
 	setExpression(e1, ex, false);
 	e.addContent(e1);
 
@@ -403,7 +420,7 @@ private Element getSpecies(VolVariable v) {
 private Element getXMLReport() {
 	Element e = new Element(MBTags.report);
 	e.addContent(getdeleteExisting());
-	e.addContent(getoutputFilename());
+	e.addContent(getoutputFilePrefix());
 	e.addContent(getdatasetName());
 	e.addContent(getannotation());
 	e.addContent(gettimeReport());
@@ -415,9 +432,9 @@ private Element getdeleteExisting() {
 	e.setText("1");
 	return e;
 }
-private Element getoutputFilename() {
-	Element e = new Element(MBTags.outputFilename);
-	e.setText(outputName);
+private Element getoutputFilePrefix() {
+	Element e = new Element(MBTags.outputFilePrefix);
+	e.setText(outputPrefix);
 	return e;
 }
 private Element getdatasetName() {
@@ -484,10 +501,12 @@ private Element getXMLTrace() {
 	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("warn");
 	e.addContent(e1);
+	/*
 	e1 = new Element(MBTags.traceFilename);
 	e1.setAttribute("mode", "HARDCODED");
-	e1.setText("trace10-4.txt");
+	e1.setText(outputPrefix + "trace.txt");
 	e.addContent(e1);
+	*/
 	return e;
 }
 //------------------------------------------------------ debug
@@ -502,7 +521,7 @@ private Element getXMLTextReport() {
 	if (solverSpec.isTextReport()) {
 		Element e = new Element(MBTags.TEXT_REPORT);
 		String filename = "MovingBoundary " + simulation.getSimulationID() + ".txt";
-		Element fn = new Element(MBTags.outputFilename);
+		Element fn = new Element(MBTags.outputFilePrefix);
 		fn.setText(filename);
 		Element w = new Element(MBTags.WIDTH);
 		w.setText("6");
@@ -553,6 +572,7 @@ private class MBTags {
 	private static final String frontToNodeRatio			= "frontToNodeRatio";
 	private static final String maxTime					= "maxTime";
 	private static final String timeStep					= "timeStep";
+	private static final String outputTimeStep					= "outputTimeStep";
 	private static final String diffusion		        = "diffusion";
 	private static final String diffusionConstant		= "diffusionConstant";
 	private static final String levelFunction			= "levelFunction";
@@ -570,7 +590,8 @@ private class MBTags {
 
 	private static final String report					= "report";
 	private static final String deleteExisting			= "deleteExisting";
-	private static final String outputFilename			= "outputFilename";
+//	private static final String outputFilename			= "outputFilename";
+	private static final String outputFilePrefix	  = "outputFilePrefix";
 	private static final String datasetName				= "datasetName";
 	private static final String annotation				= "annotation";
 	private static final String series					= "series";
