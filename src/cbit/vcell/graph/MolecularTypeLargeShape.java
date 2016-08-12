@@ -41,12 +41,12 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	
 	public static final Color colorTable[] = new Color[] {
 		Color.red,
-		Color.blue,
-		Color.pink,
 		Color.cyan,
-		Color.orange,
 		Color.magenta,
-		Color.green
+		Color.orange,
+		Color.pink,
+		Color.green,
+		Color.blue,
 	};
 	
 	private static final int BaseWidth = 25;
