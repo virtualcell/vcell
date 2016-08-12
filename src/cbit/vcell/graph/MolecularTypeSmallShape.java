@@ -227,16 +227,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 					List<MolecularType> mtList = rbmmc.getMolecularTypeList();
 					int index = mtList.indexOf(mt);
 					index = index%7;
-					switch(index) {
-					case 0:  primaryColor = Color.red.darker().darker(); break;
-					case 1:  primaryColor = Color.blue.darker().darker(); break;
-					case 2:  primaryColor = Color.pink.darker().darker(); break;
-					case 3:  primaryColor = Color.cyan.darker().darker(); break;
-					case 4:  primaryColor = Color.orange.darker().darker(); break;
-					case 5:  primaryColor = Color.magenta.darker().darker(); break;
-					case 6:  primaryColor = Color.green.darker().darker().darker(); break;
-					default: primaryColor = Color.blue.darker().darker(); break;
-					}
+					primaryColor = MolecularTypeLargeShape.colorTable[index].darker().darker();
 				}
 			}
 		}
