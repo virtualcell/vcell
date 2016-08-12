@@ -83,6 +83,7 @@ import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.FeaturePhaseVol;
+import cbit.vcell.solvers.CartesianMeshMovingBoundary;
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
@@ -92,6 +93,11 @@ import cbit.vcell.xml.XmlParseException;
  * This type was created in VisualAge.
  */
 public class SimulationData extends VCData {
+	public enum SolverDataType
+	{
+		MBSData,
+	}
+	
 	public static class AmplistorHelper{
 		private File userDirectory;
 		private VCDataIdentifier ahvcDataId;
@@ -99,7 +105,8 @@ public class SimulationData extends VCData {
 		private int jobIndex = 0;
 		private TreeSet<String> amplistorNotfoundSet = new TreeSet<String>();
 		boolean bNonSpatial = false;
-
+		private SolverDataType solverDataType = null;
+		
 		SimDataAmplistorInfo simDataAmplistorInfo;
 		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws FileNotFoundException{
 			this.simDataAmplistorInfo = simDataAmplistorInfo;
@@ -171,6 +178,10 @@ public class SimulationData extends VCData {
 					if(log3Bytes.equals("IDA") || log3Bytes.equals("ODE") || log3Bytes.equals("NFS")){
 						bNonSpatial = true;
 					}
+					else if (SolverDataType.MBSData.name().startsWith(log3Bytes))
+					{
+						solverDataType = SolverDataType.MBSData;
+					}
 				}catch(Exception e){
 					e.printStackTrace();
 				}finally{
@@ -236,6 +247,10 @@ public class SimulationData extends VCData {
 		}
 		public File getMeshFile(boolean bHDF5){
 			String meshFileName = SimulationData.createCanonicalMeshFileName(getsimulationKey(),getJobIndex(), isOldStyle())+(bHDF5?".hdf5":"");
+			if (solverDataType == SolverDataType.MBSData)
+			{
+				meshFileName = createSimIDWithJobIndex(getsimulationKey(), getJobIndex(), isOldStyle()) + ".h5";
+			}
 			if(isNonSpatial()){
 				//this never exists, no need to look up in amplistor
 				return getLocalFilePath(meshFileName);
@@ -1034,7 +1049,7 @@ private synchronized DataSet getPDEDataSet(File pdeFile, double time) throws Dat
 	}
 
 	try {
-		dataSet.read(pdeFile, zipFile);
+		dataSet.read(pdeFile, zipFile, amplistorHelper.solverDataType);
 	} catch (IOException ex) {
 		ex.printStackTrace();
 		throw new DataAccessException("data at time="+time+" read error",ex);
@@ -1155,7 +1170,7 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 		throw new DataAccessException("data not found for variable " + varName);
 	}
 	final String varNameInDataSet = dsi.getQualifiedName();
-	double data[] = dataSet.getData(varNameInDataSet, zipFile);
+	double data[] = dataSet.getData(varNameInDataSet, zipFile, time, amplistorHelper.solverDataType);
 	int varTypeInt = dataSet.getVariableTypeInteger(varNameInDataSet);
 	VariableType variableType = null;
 	try {
@@ -1623,7 +1638,31 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		String xxx = (new File(filename)).getName();
 		dataFilenames = new String[1];
 		dataFilenames[0] = xxx;
-	} else {
+	}
+	else if (logfileContent.startsWith(SolverDataType.MBSData.name())) 
+	{
+		StringTokenizer st = new StringTokenizer(logfileContent);
+		if (st.hasMoreTokens())
+		{
+			st.nextToken(); // skip the first line
+			
+			int numTimes = st.countTokens() / 3;
+			dataTimes = new double[numTimes];
+			dataFilenames = new String[numTimes];
+			int index = 0;
+			while (st.hasMoreTokens())
+			{
+				String iteration = st.nextToken();
+				String filename = st.nextToken();
+				String time = st.nextToken();
+				dataFilenames[index] = (new File(filename)).getName();
+				dataTimes[index] = (new Double(time)).doubleValue();
+				index++;
+			}
+		}
+		indexPDEdataTimes( );
+	}
+	else {
 		StringTokenizer st = new StringTokenizer(logfileContent);
 		// PDE, so parse into 'dataFilenames' and 'dataTimes' arrays
 		isODEData = false;
@@ -1710,7 +1749,13 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 		// test serialization
 		//byte[] byteArray = BeanUtils.toSerialized(mesh);
 		//mesh = (CartesianMeshChombo) BeanUtils.fromSerialized(byteArray);
-	}else{
+	}
+	else if (amplistorHelper.solverDataType == SolverDataType.MBSData)
+	{
+		mesh = CartesianMeshMovingBoundary.readMeshFile(meshFile);
+	}
+	else
+	{
 		mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, getSubdomainFilePrivate());
 	}
 }
