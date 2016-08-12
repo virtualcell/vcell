@@ -140,20 +140,24 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 			int index = mtList.indexOf(mt);
 			index = index%7;
 
-//			defaultBG = MolecularTypeLargeShape.colorTable[index];		// take color from molecular type color selection
 			defaultBG = Color.lightGray;
+			Color interior = Color.white;
+			if(graphModel instanceof ReactionCartoon && ((ReactionCartoon)graphModel).getRuleParticipantGroupingCriteria() == RuleParticipantSignature.Criteria.full) {
+				defaultBG = MolecularTypeLargeShape.colorTable[index];		// take color from molecular type color selection
+//				interior = exterior.brighter().brighter();
+//				interior = Color.yellow.brighter();
+//				interior = Color.yellow;
+			}
 			backgroundColor = defaultBG;
 			darkerBackground = backgroundColor.darker().darker();
 	
 			g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			Color exterior = !isSelected()?darkerBackground:backgroundColor;
-	//		Color interior = exterior.brighter().brighter();
 			Point2D center = new Point2D.Float(absPosX + displacement*i + circleDiameter/2, absPosY+circleDiameter/2);
 			float radius = circleDiameter*0.5f;
 			Point2D focus = new Point2D.Float(absPosX + displacement*i + circleDiameter/2+1, absPosY+circleDiameter/2+1);
 			float[] dist = {0.1f, 1.0f};
-			Color[] colors = {Color.white, exterior};
-	//		Color[] colors = {interior, exterior};
+			Color[] colors = {interior, exterior};
 			RadialGradientPaint p = new RadialGradientPaint(center, radius, focus, dist, colors, CycleMethod.NO_CYCLE);
 			g2D.setPaint(p);
 			g2D.fill(movedIcon);

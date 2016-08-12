@@ -46,6 +46,7 @@ public class ReactionCartoon extends ModelCartoon {
 
 	protected StructureSuite structureSuite = null;
 	private Set<RuleParticipantSignature> ruleParticipantSignatures = new HashSet<>();
+	private RuleParticipantSignature.Criteria ruleParticipantGroupingCriteria = RuleParticipantSignature.Criteria.full;
 	
 	public ReactionCartoon() {
 		containerLayout = new GraphContainerLayoutReactions();
@@ -53,6 +54,14 @@ public class ReactionCartoon extends ModelCartoon {
 
 	public StructureSuite getStructureSuite() {
 		return structureSuite;
+	}
+	
+	public void setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria ruleParticipantGroupingCriteria) {
+		this.ruleParticipantGroupingCriteria = ruleParticipantGroupingCriteria;
+		refreshAll();
+	}
+	public RuleParticipantSignature.Criteria getRuleParticipantGroupingCriteria() {
+		return ruleParticipantGroupingCriteria;
 	}
 
 	public void applyDefaults(Diagram diagram) {
@@ -275,7 +284,7 @@ public class ReactionCartoon extends ModelCartoon {
 							//
 							RuleParticipantSignature ruleParticipantSignature = null;
 							for (RuleParticipantSignature signature : ruleParticipantSignatures){
-								if (signature.getStructure() == participant.getStructure() && signature.getLabel().equals(RuleParticipantSignature.getSignature(participant))){
+								if (signature.getStructure() == participant.getStructure() && signature.compareByCriteria(participant.getSpeciesPattern(), ruleParticipantGroupingCriteria)){
 									ruleParticipantSignature = signature;
 									break;
 								}
@@ -285,7 +294,7 @@ public class ReactionCartoon extends ModelCartoon {
 							//
 							RuleParticipantSignatureDiagramShape signatureShape = null;
 							if (ruleParticipantSignature == null){
-								ruleParticipantSignature = RuleParticipantSignature.fromReactionRuleParticipant(participant);
+								ruleParticipantSignature = RuleParticipantSignature.fromReactionRuleParticipant(participant, this);
 								ruleParticipantSignatures.add(ruleParticipantSignature);
 								signatureShape = new RuleParticipantSignatureDiagramShape(ruleParticipantSignature, this);
 								addShape(signatureShape);
