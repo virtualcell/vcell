@@ -17,6 +17,8 @@ import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.Range;
+
+import cbit.vcell.simdata.SimulationData.SolverDataType;
 /**
  * Insert the type's description here.
  * Creation date: (10/5/00 11:14:42 AM)
@@ -169,7 +171,7 @@ public org.vcell.util.CoordinateIndex getDataIndexFromUnitized(double unitizedX,
 		return null;
 	}
 	int xCoordIndex, yCoordIndex, zCoordIndex;
-	if (isChombo) {
+	if (isCellCentered()) {
 		xCoordIndex = (getXSize()==1)?(0):((int)(unitizedX * getXSize()));
 		yCoordIndex = (getYSize()==1)?(0):((int)(unitizedY * getYSize()));
 		zCoordIndex = (getZSize()==1)?(0):((int)(unitizedZ * getZSize()));
@@ -286,6 +288,12 @@ public int getType() {
 }
 
 private boolean isChombo = false;
+private SolverDataType solverDataType = null;
+
+public boolean isCellCentered()
+{
+	return isChombo || solverDataType == SolverDataType.MBSData;
+}
 public boolean isChombo(){
 	return isChombo;
 }
@@ -293,7 +301,7 @@ public void setIsChombo(boolean isChombo){
 	this.isChombo = isChombo;
 }
 public Coordinate getWorldCoordinateFromIndex(CoordinateIndex ci) {
-	if(isChombo){
+	if(isCellCentered()){
 		return getChomboWorldCoordinateFromIndex(ci);
 	}else{
 		return getVCellWorldCoordinateFromIndex(ci);
@@ -315,7 +323,7 @@ private Coordinate getChomboWorldCoordinateFromIndex(CoordinateIndex ci) {
 
 
 public Coordinate getWorldCoordinateFromUnitized(double unitizedX, double unitizedY, double unitizedZ) {
-	if(isChombo){
+	if(isCellCentered()){
 		return getChomboWorldCoordinateFromUnitized(unitizedX, unitizedY, unitizedZ);
 	}else{
 		return getVCellWorldCoordinateFromUnitized(unitizedX, unitizedY, unitizedZ);
@@ -452,6 +460,15 @@ public boolean isDataNull() {
  */
 public boolean needsColorConversion() {
 	return !(type == INT_RGB_TYPE);
+}
+
+
+public SolverDataType getSolverDataType() {
+	return solverDataType;
+}
+
+public void setSolverDataType(SolverDataType solverDataType) {
+	this.solverDataType = solverDataType;
 }
 
 }
