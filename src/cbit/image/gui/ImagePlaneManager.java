@@ -142,9 +142,9 @@ public SourceDataInfo getSourceDataInfo() {
 	return fieldSourceDataInfo;
 }
 
-public boolean isChombo(){
+public boolean isCellCentered(){
 	if(getSourceDataInfo() != null){
-		return getSourceDataInfo().isChombo();
+		return getSourceDataInfo().isCellCentered();
 	}
 	return false;
 }
@@ -310,7 +310,7 @@ public org.vcell.util.Coordinate snapWorldCoordinate(org.vcell.util.Coordinate t
  */
 public Coordinate snapWorldCoordinateFace(Coordinate targetC) {
 	
-		if (getSourceDataInfo().isChombo())
+		if (getSourceDataInfo().isCellCentered())
 		{
 			return targetC;
 		}
@@ -349,7 +349,7 @@ private Coordinate standardXYZFromUnitized(double x, double y) {
 	double z = 0;
 	if (sliceBoundary() > 1)
 	{
-		z = (isChombo())?(double)worldSlice()/(double)(sliceBoundary()):(double)worldSlice()/(double)(sliceBoundary()-1);
+		z = (isCellCentered())?(double)worldSlice()/(double)(sliceBoundary()):(double)worldSlice()/(double)(sliceBoundary()-1);
 	}
 	return Coordinate.convertCoordinateFromNormalToStandardXYZ(x,y,z,getNormalAxis());
 }
@@ -388,6 +388,7 @@ private void updateImagePlaneData() {
 	//
 	SourceDataInfo sdi = new SourceDataInfo(type, data, null, startIndex + startDelta, xSize, xIncrement, xOrigin, xExtent, ySize, yIncrement, yOrigin, yExtent);
 	sdi.setIsChombo(sdiSource.isChombo());
+	sdi.setSolverDataType(sdiSource.getSolverDataType());
 	setImagePlaneData(sdi);
 }
 /**

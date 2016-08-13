@@ -532,7 +532,7 @@ public void setSourceData(SourceDataInfo sourceData) {
 	fieldSourceData = sourceData;
 	Dimension beforeDimension = fieldDimension;
 	setDimension(calculateDimension());
-	if (fieldSourceData != null && fieldSourceData.isChombo())
+	if (fieldSourceData != null && fieldSourceData.isCellCentered())
 	{
 		fieldMode = NORMAL_MODE;
 	}

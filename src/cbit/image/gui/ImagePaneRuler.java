@@ -154,7 +154,7 @@ public int getWorldPixelSize() {
  */
 protected void paintComponent(java.awt.Graphics g) {
 	super.paintComponent(g);
-	boolean isChombo = getImagePlaneManager().isChombo();
+	boolean isCellCentered = getImagePlaneManager().isCellCentered();
 	//
 	if(getImagePlaneManager() == null ){
 		return;
@@ -194,7 +194,7 @@ protected void paintComponent(java.awt.Graphics g) {
 		int horzGap = 60;
 		//
 		for(int x = start;x<end;x+= 1){
-			boolean bDrawLine = isChombo ? x % elementLength == 0 : (x-halfElementLength)%elementLength == 0;
+			boolean bDrawLine = isCellCentered ? x % elementLength == 0 : (x-halfElementLength)%elementLength == 0;
 			if(bDrawLine || x == start || x == (end-1)){
 				//mark off the mesh elements
 				g.drawLine(x,(int)getPreferredSize().getHeight()-1-(len/2),x,(int)getPreferredSize().getHeight()-1);
@@ -203,19 +203,19 @@ protected void paintComponent(java.awt.Graphics g) {
 				lastHighPoint = x;
 				if(lastLowPoint != -1 && lastHighPoint != -1){//when we start having 2 boundaries we can calculate the middles
 					int tempPrintpoint = lastLowPoint+((lastHighPoint-lastLowPoint)/2);
-					boolean bPrintPoint = isChombo ? tempPrintpoint == halfElementLength || end - tempPrintpoint == halfElementLength : lastLowPoint == 0 || lastHighPoint == (end-1);
+					boolean bPrintPoint = isCellCentered ? tempPrintpoint == halfElementLength || end - tempPrintpoint == halfElementLength : lastLowPoint == 0 || lastHighPoint == (end-1);
 					if((bPrintPoint || (tempPrintpoint-lastPrintPoint) >= horzGap && end-tempPrintpoint >= horzGap) && getImagePlaneManager() != null){
 						//g.drawLine(lastLowPoint,(int)getPreferredSize().getHeight()-1-len,lastLowPoint,(int)getPreferredSize().getHeight()-1);
 						//g.drawLine(lastHighPoint,(int)getPreferredSize().getHeight()-1-len,lastHighPoint,(int)getPreferredSize().getHeight()-1);
-						if(isChombo || (lastPrintPoint != start && lastHighPoint != (end-1))){//dont print middle marks at begin or end
+						if(isCellCentered || (lastPrintPoint != start && lastHighPoint != (end-1))){//dont print middle marks at begin or end
 							g.drawLine(tempPrintpoint,(int)getPreferredSize().getHeight()-1-len+2,tempPrintpoint,(int)getPreferredSize().getHeight()-1-2);
 						}
 						lastPrintPoint = tempPrintpoint;
 						org.vcell.util.Coordinate coord = null;
 						if(lastLowPoint == 0){
-							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D((isChombo?1.0/(2*getWorldPixelSize()):0),0);
+							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D((isCellCentered?1.0/(2*getWorldPixelSize()):0),0);
 						}else if(lastHighPoint == (end-1)){
-							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D((isChombo?1.0-1.0/(2*getWorldPixelSize()):1),0);
+							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D((isCellCentered?1.0-1.0/(2*getWorldPixelSize()):1),0);
 						}else{
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D((double)lastPrintPoint/(double)getWorldPixelSize(),0);
 						}
@@ -227,9 +227,9 @@ protected void paintComponent(java.awt.Graphics g) {
 						java.awt.geom.Rectangle2D r2d = getFont().getStringBounds(val,0,val.length(),((java.awt.Graphics2D)g).getFontRenderContext());
 						java.awt.font.LineMetrics lm = getFont().getLineMetrics(val,((java.awt.Graphics2D)g).getFontRenderContext());
 						if(lastLowPoint == 0){
-							g.drawString(val,(isChombo ? tempPrintpoint : 2) ,(int)lm.getAscent()+descOffset);
+							g.drawString(val,(isCellCentered ? tempPrintpoint : 2) ,(int)lm.getAscent()+descOffset);
 						}else if(lastHighPoint == (end-1)){
-							g.drawString(val,(isChombo ? tempPrintpoint : end-(int)r2d.getWidth()),(int)lm.getAscent()+descOffset);
+							g.drawString(val,(isCellCentered ? tempPrintpoint : end-(int)r2d.getWidth()),(int)lm.getAscent()+descOffset);
 						}else{
 							g.drawString(val,lastPrintPoint-(((int)r2d.getWidth())/2),(int)lm.getAscent()+descOffset);
 						}
@@ -268,7 +268,7 @@ protected void paintComponent(java.awt.Graphics g) {
 		int vertGap = 20;
 		//
 		for(int y = start;y<end;y+= 1){
-			boolean bDrawLine = isChombo ? y % elementLength == 0 : (y-halfElementLength)%elementLength == 0;
+			boolean bDrawLine = isCellCentered ? y % elementLength == 0 : (y-halfElementLength)%elementLength == 0;
 			if(bDrawLine || y == start || y == (end-1)){
 				g.drawLine((int)getPreferredSize().getWidth()-1-(len/2),y,(int)getPreferredSize().getWidth()-1,y);
 				//
@@ -276,19 +276,19 @@ protected void paintComponent(java.awt.Graphics g) {
 				lastHighPoint = y;
 				if(lastLowPoint != -1 && lastHighPoint != -1){
 					int tempPrintpoint = lastLowPoint+((lastHighPoint-lastLowPoint)/2);
-					boolean bPrintPoint = isChombo ? tempPrintpoint == halfElementLength || end - tempPrintpoint == halfElementLength :  lastLowPoint == 0 || lastHighPoint == (end-1);
+					boolean bPrintPoint = isCellCentered ? tempPrintpoint == halfElementLength || end - tempPrintpoint == halfElementLength :  lastLowPoint == 0 || lastHighPoint == (end-1);
 					if((bPrintPoint || (tempPrintpoint-lastPrintPoint) >= vertGap && end-tempPrintpoint >= vertGap) && getImagePlaneManager() != null){
 						//g.drawLine((int)getPreferredSize().getWidth()-1-len,lastLowPoint,(int)getPreferredSize().getWidth()-1,lastLowPoint);
 						//g.drawLine((int)getPreferredSize().getWidth()-1-len,lastHighPoint,(int)getPreferredSize().getWidth()-1,lastHighPoint);						
-						if(isChombo || (lastPrintPoint != start) && lastHighPoint != (end-1)){//dont print middle marks at begin or end
+						if(isCellCentered || (lastPrintPoint != start) && lastHighPoint != (end-1)){//dont print middle marks at begin or end
 							g.drawLine((int)getPreferredSize().getWidth()-1-len+2,tempPrintpoint,(int)getPreferredSize().getWidth()-1-2,tempPrintpoint);						
 						}
 						lastPrintPoint = tempPrintpoint;
 						org.vcell.util.Coordinate coord = null;
 						if(lastLowPoint == 0){
-							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,(isChombo?1.0/(2*getWorldPixelSize()):0));
+							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,(isCellCentered?1.0/(2*getWorldPixelSize()):0));
 						}else if(lastHighPoint == (end-1)){
-							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,(isChombo?1.0-1.0/(2*getWorldPixelSize()):1));
+							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,(isCellCentered?1.0-1.0/(2*getWorldPixelSize()):1));
 						}else{
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,(double)lastPrintPoint/(double)getWorldPixelSize());
 						}
@@ -300,9 +300,9 @@ protected void paintComponent(java.awt.Graphics g) {
 						}
 						java.awt.font.LineMetrics lm = getFont().getLineMetrics(val,((java.awt.Graphics2D)g).getFontRenderContext());
 						if(lastLowPoint == 0){
-							g.drawString(val,2+descOffset,(isChombo ? tempPrintpoint : 0) + (int)lm.getAscent());
+							g.drawString(val,2+descOffset,(isCellCentered ? tempPrintpoint : 0) + (int)lm.getAscent());
 						}else if(lastHighPoint == (end-1)){
-							g.drawString(val,2+descOffset,(isChombo ? tempPrintpoint : (end-1)));
+							g.drawString(val,2+descOffset,(isCellCentered ? tempPrintpoint : (end-1)));
 						}else{
 							g.drawString(val,2+descOffset,lastPrintPoint+(int)lm.getAscent()/2);
 						}
