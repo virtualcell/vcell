@@ -600,15 +600,25 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		}
 		
 		// Size Functions
-		Set<FunctionInvocation> fiSet = SolverUtilities.getSizeFunctionInvocations(function.getExpression());
-		for (FunctionInvocation fi : fiSet) {
+		Set<FunctionInvocation> sizeFunctionInvocationSet = SolverUtilities.getSizeFunctionInvocations(function.getExpression());
+		for (FunctionInvocation fi : sizeFunctionInvocationSet) {
 			String functionName = fi.getFunctionName();
 			if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
 				varTypeList.add(VariableType.MEMBRANE_REGION);
 			} else if (functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
 				varTypeList.add(VariableType.VOLUME_REGION);
 			}
-		}	
+		}
+		
+		// Membrane Normal Functions
+		FunctionInvocation[] functionInvocations = function.getExpression().getFunctionInvocations(null);
+		for (FunctionInvocation fi : functionInvocations) {
+			String functionName = fi.getFunctionName();
+			if (functionName.equals(MathFunctionDefinitions.Function_normalX.getFunctionName())
+				|| functionName.equals(MathFunctionDefinitions.Function_normalY.getFunctionName())){
+				varTypeList.add(VariableType.MEMBRANE);
+			}
+		}
 			
 		FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(function.getExpression());
 		if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {

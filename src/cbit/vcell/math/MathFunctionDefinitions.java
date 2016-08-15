@@ -33,6 +33,8 @@ public class MathFunctionDefinitions {
 	public final static String FUNCTION_regionvolume_current	= "vcRegionVolume(StructureName:LITERAL)";
 	public final static String FunctionName_field_old		= "field";
 	public final static String FunctionName_grad_old		= "grad";
+	public final static String FUNCTION_normalX				= "normalX()";
+	public final static String FUNCTION_normalY				= "normalY()";
 	
 	public final static SymbolTableFunctionEntry Function_regionArea_indexed = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionarea_indexed, null);
 	public final static SymbolTableFunctionEntry Function_regionArea_current = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionarea_current, null);
@@ -42,6 +44,8 @@ public class MathFunctionDefinitions {
 	public final static GradientFunctionDefinition gradientFunctionDefinition = new GradientFunctionDefinition();
 	public final static ConvFunctionDefinition convFunctionDefinition = new ConvFunctionDefinition();
 	public final static ProjectFunctionDefinition projectFunctionDefinition = new ProjectFunctionDefinition();
+	public final static SymbolTableFunctionEntry Function_normalX = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_normalX, null);
+	public final static SymbolTableFunctionEntry Function_normalY = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_normalY, null);
 	
 	
 	private static SymbolTableFunctionEntry createDeferedFunctionEntry(String formalDefinition, NameScope nameScope){

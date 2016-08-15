@@ -29,6 +29,7 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
@@ -39,6 +40,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
 
@@ -297,12 +299,14 @@ private Element getfrontVelocityFunctionX() throws ExpressionException, MathExce
 	Objects.requireNonNull(theMembrane);
 //	Expression velocityX = Expression.mult(theMembrane.getVelocityX(), new Expression("normalX"));
 	Expression velocityX = theMembrane.getVelocityX();
+	velocityX = SolverUtilities.substituteSizeAndNormalFunctions(velocityX, VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 	return getFrontVelocity(MBTags.frontVelocityFunctionX, velocityX);
 }
 private Element getfrontVelocityFunctionY() throws ExpressionException, MathException {
 	Objects.requireNonNull(theMembrane);
 	//Expression velocityY = Expression.mult(theMembrane.getVelocityY(), new Expression("normalY"));
 	Expression velocityY = theMembrane.getVelocityY();
+	velocityY = SolverUtilities.substituteSizeAndNormalFunctions(velocityY, VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 	return getFrontVelocity(MBTags.frontVelocityFunctionY,velocityY);
 }
 private Element getXMLphysiology() throws ExpressionException, MathException {

@@ -1569,7 +1569,7 @@ private SimDataBlock evaluateFunction(
 	throws ExpressionException, DataAccessException, IOException, MathException {
 
 	Expression exp = new Expression(function.getExpression());
-	exp = SolverUtilities.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
+	exp = SolverUtilities.substituteSizeAndNormalFunctions(exp, function.getFunctionType().getVariableDomain());
 	exp.bindExpression(simData);
 	exp = fieldFunctionSubstitution(outputContext, vcdID, exp);
 	

@@ -433,7 +433,7 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
 	try {
 		simpleFunction = (AnnotatedFunction)BeanUtils.cloneSerializable(function);
 		Expression exp = simpleFunction.getExpression();
-		exp = SolverUtilities.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
+		exp = SolverUtilities.substituteSizeAndNormalFunctions(exp, function.getFunctionType().getVariableDomain());
 		exp.bindExpression(this);
 		String[] symbols = exp.getSymbols();
 		if (symbols != null) {
