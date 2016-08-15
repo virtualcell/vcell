@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 
 import cbit.gui.graph.ContainerShape;
+import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.vcell.graph.structures.StructureSuite;
@@ -54,15 +55,16 @@ public class ReactionContainerShape extends ContainerShape {
 		// randomize the locations of speciesContexts and of reactionSteps,
 		// then draw in the reactionParticipant edges
 		for(Shape child : childShapeList) {
-			if (child instanceof SpeciesContextShape || child instanceof ReactionStepShape){
+			if (child instanceof SpeciesContextShape || child instanceof ReactionStepShape
+			 || child instanceof ReactionRuleDiagramShape || child instanceof RuleParticipantSignatureDiagramShape){
 				// position normally about the center
 				child.getSpaceManager().setRelPos(getRandomPosition());
 			}	
 		}
 		// calculate locations and sizes of reactionParticipant edges
 		for(Shape child : childShapeList) {
-			if (child instanceof ReactionParticipantShape){
-				ReactionParticipantShape reactionParticipantShape = (ReactionParticipantShape)child;
+			if (child instanceof ReactionParticipantShape || child instanceof RuleParticipantEdgeDiagramShape){
+				EdgeShape reactionParticipantShape = (EdgeShape)child;
 				reactionParticipantShape.refreshLayoutSelf();
 			}
 		}

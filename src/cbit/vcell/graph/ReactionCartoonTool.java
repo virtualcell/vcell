@@ -1001,6 +1001,8 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			labelOutline = ((SimpleReactionShape)selectedShape).getLabelOutline(selectedShape.getAbsX(),selectedShape.getAbsY());
 		}else if(selectedShape instanceof FluxReactionShape){
 			labelOutline = ((FluxReactionShape)selectedShape).getLabelOutline(selectedShape.getAbsX(),selectedShape.getAbsY());
+		}else if(selectedShape instanceof ReactionRuleDiagramShape){
+			labelOutline = ((ReactionRuleDiagramShape)selectedShape).getLabelOutline(selectedShape.getAbsX(),selectedShape.getAbsY());
 		}else{
 			return;
 		}
@@ -1020,6 +1022,8 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 							((SimpleReactionShape)selectedShape).getReactionStep().setName(jTextField.getText());
 						}else if(selectedShape instanceof FluxReactionShape){
 							((FluxReactionShape)selectedShape).getReactionStep().setName(jTextField.getText());
+						}else if(selectedShape instanceof ReactionRuleDiagramShape){
+							((ReactionRuleDiagramShape)selectedShape).getReactionRule().setName(jTextField.getText());
 						}
 					}catch(Exception e2){
 						e2.printStackTrace();
@@ -1069,7 +1073,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					if(	selectedShape instanceof ReactionContainerShape ||
 						selectedShape instanceof SpeciesContextShape ||
 						selectedShape instanceof SimpleReactionShape ||
-						selectedShape instanceof FluxReactionShape){
+						selectedShape instanceof FluxReactionShape ||
+						selectedShape instanceof ReactionRuleDiagramShape ||
+						selectedShape instanceof RuleParticipantSignatureDiagramShape){
 						editInPlace(selectedShape,worldPoint);
 					}
 					if (selectedShape != null) {
@@ -2507,7 +2513,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			if (shape instanceof ReactionContainerShape || shape instanceof ReactionStepShape
 					|| shape instanceof ReactantShape
 					|| shape instanceof ProductShape
-					|| shape instanceof CatalystShape) {
+					|| shape instanceof CatalystShape
+					|| shape instanceof ReactionRuleDiagramShape
+					|| shape instanceof RuleParticipantSignatureDiagramShape) {
 				return true;
 			}
 		}
