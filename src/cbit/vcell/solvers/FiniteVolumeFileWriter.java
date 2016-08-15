@@ -299,7 +299,7 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable, 
 	}
 	else
 	{
-		newExp = SolverUtilities.substituteSizeFunctions(newExp, variableDomain);
+		newExp = SolverUtilities.substituteSizeAndNormalFunctions(newExp, variableDomain);
 	}
 	return newExp;
 }

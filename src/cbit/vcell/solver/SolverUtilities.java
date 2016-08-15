@@ -20,7 +20,7 @@ public class SolverUtilities {
 
 	private static Map<SolverExecutable,File[]>  loaded = new Hashtable<SolverExecutable,File[]>( );
 
-	public static Expression substituteSizeFunctions(Expression origExp, VariableDomain variableDomain) throws ExpressionException {
+	public static Expression substituteSizeAndNormalFunctions(Expression origExp, VariableDomain variableDomain) throws ExpressionException {
 		Expression exp = new Expression(origExp);
 		Set<FunctionInvocation> fiSet = SolverUtilities.getSizeFunctionInvocations(exp);
 		for(FunctionInvocation fi : fiSet) {
@@ -38,6 +38,15 @@ public class SolverUtilities {
 					domainName = domainName.substring(1, domainName.length() - 1);
 					exp.substituteInPlace(fi.getFunctionExpression(), new Expression(functionName + "_" + domainName));
 				}
+			}
+		}
+		FunctionInvocation[] allFunctions = exp.getFunctionInvocations(null);
+		for (FunctionInvocation fi : allFunctions){
+			if (fi.getFunctionName().equals(MathFunctionDefinitions.Function_normalX.getFunctionName())){
+				exp.substituteInPlace(fi.getFunctionExpression(), new Expression("normalX"));
+			}
+			if (fi.getFunctionName().equals(MathFunctionDefinitions.Function_normalY.getFunctionName())){
+				exp.substituteInPlace(fi.getFunctionExpression(), new Expression("normalY"));
 			}
 		}
 		return exp;
