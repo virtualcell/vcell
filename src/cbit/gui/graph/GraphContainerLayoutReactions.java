@@ -19,7 +19,9 @@ import java.util.List;
 
 import cbit.vcell.graph.ContainerContainerShape;
 import cbit.vcell.graph.ReactionContainerShape;
+import cbit.vcell.graph.ReactionRuleDiagramShape;
 import cbit.vcell.graph.ReactionStepShape;
+import cbit.vcell.graph.RuleParticipantSignatureDiagramShape;
 import cbit.vcell.graph.SpeciesContextShape;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Structure;
@@ -51,7 +53,8 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 			Dimension preferredSize = shape.getPreferedSizeSelf(g);
 			// make larger than empty size so that children fit
 			for(Shape child : shape.getChildren()) {
-				if (child instanceof ReactionStepShape || child instanceof SpeciesContextShape){
+				if (child instanceof ReactionStepShape || child instanceof SpeciesContextShape || 
+					child instanceof RuleParticipantSignatureDiagramShape || child instanceof ReactionRuleDiagramShape ){
 					preferredSize.width = 
 						Math.max(preferredSize.width, 
 								child.getSpaceManager().getRelPos().x +
@@ -144,9 +147,9 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 	}
 	
 	public Point getSeparatorDeepCount(Shape shape) {
-		if(shape instanceof SpeciesContextShape) {
+		if(shape instanceof SpeciesContextShape || shape instanceof RuleParticipantSignatureDiagramShape) {
 			return new Point(0,0);
-		} else if(shape instanceof ReactionStepShape) {
+		} else if(shape instanceof ReactionStepShape || shape instanceof ReactionRuleDiagramShape) {
 			return new Point(0,0);
 		} else {
 			return getSeparatorDeepCountShape(shape);
@@ -172,9 +175,9 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 	public void resize(Shape shape, Dimension newSize, Graphics2D g) {
 		if(shape instanceof ContainerContainerShape) {
 			resizeContainerContainerShape((ContainerContainerShape)shape, newSize, g);
-		} else if(shape instanceof SpeciesContextShape) {
+		} else if(shape instanceof SpeciesContextShape || shape instanceof RuleParticipantSignatureDiagramShape) {
 			return;
-		} else if(shape instanceof ReactionStepShape) {
+		} else if(shape instanceof ReactionStepShape || shape instanceof ReactionRuleDiagramShape) {
 			return;
 		} else {
 			resizeShape(shape, newSize, g);
