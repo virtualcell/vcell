@@ -23,6 +23,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
@@ -38,8 +39,15 @@ import cbit.vcell.model.Model.RbmModelContainer;
 
 public class ReactionRuleDiagramShape extends ElipseShape {
 	ReactionRule reactionRule = null;
-	Area icon = null;
+//	Area icon = null;
 	private static boolean bDisplayLabels = false;
+
+	private static final int height = 12;			// area considered "the inside" of the shape
+	private static final int width = 12;
+	private static final int circleDiameter = 8;	// size of the 2 small rectangles we use to depict the rule
+	private static final int displacement = 3;		// distance between the 2 small rectangles we use to depict the rule
+	// note that the 2 small rectangles occupy 8+3=11 pixels in each direction, so with height and width of 12 the "inside"
+	// area is actually 1 pixel larger (up and right) than it needs to be
 
 	public ReactionRuleDiagramShape(ReactionRule reactionRule, GraphModel graphModel) {
 		super(graphModel);
@@ -65,7 +73,7 @@ public class ReactionRuleDiagramShape extends ElipseShape {
 
 	@Override
 	public Dimension getPreferedSizeSelf(Graphics2D g) {
-		getSpaceManager().setSizePreferred(12, 12);
+		getSpaceManager().setSizePreferred(width, height);
 		if(getLabel() != null && getLabel().length() > 0){
 			FontMetrics fontMetrics = g.getFontMetrics();
 			setLabelSize(fontMetrics.stringWidth(getLabel()), 
@@ -99,17 +107,23 @@ public class ReactionRuleDiagramShape extends ElipseShape {
 		Color newBackgroundColor = backgroundColor;
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
-		int offsetX = (shapeWidth-CIRCLE_DIMAETER) / 2;
-		int offsetY = (shapeHeight-CIRCLE_DIMAETER) / 2;
-		for(int i=0; i<2; i++) {
-		icon = new Area();
-		icon.add(new Area(new RoundRectangle2D.Double(offsetX+i*3, offsetY-i*3,CIRCLE_DIMAETER,CIRCLE_DIMAETER,CIRCLE_DIMAETER/2,CIRCLE_DIMAETER/2)));
-		Area movedIcon = icon.createTransformedArea(AffineTransform.getTranslateInstance(absPosX, absPosY));
+		
+		// this is the "inside" of the shape; note it's 1 pixel larger than the approximate area occupied by the 2 yellow rectangles we use to depict the rule
+//		Rectangle2D contour = new Rectangle2D.Double(absPosX, absPosY, shapeWidth, shapeHeight);
+//		g2D.setColor(Color.gray);
+//		g2D.draw(contour);
 
-		g2D.setColor(newBackgroundColor);
-		g2D.fill(movedIcon);
-		g2D.setColor(forgroundColor);
-		g2D.draw(movedIcon);
+		int offsetX = 0;
+		int offsetY = shapeHeight-circleDiameter;
+		for(int i=0; i<2; i++) {
+			int x = absPosX + offsetX+i*displacement;
+			int y = absPosY + offsetY-i*displacement;
+			RoundRectangle2D icon = new RoundRectangle2D.Double(x, y, circleDiameter, circleDiameter, circleDiameter/2, circleDiameter/2);
+
+			g2D.setColor(newBackgroundColor);
+			g2D.fill(icon);
+			g2D.setColor(forgroundColor);
+			g2D.draw(icon);
 		}
 		// draw label
 		if (getDisplayLabels() || isSelected()) {
@@ -128,10 +142,9 @@ public class ReactionRuleDiagramShape extends ElipseShape {
 	}
 	
 
-	private static int CIRCLE_DIMAETER = 8;
 	public Rectangle getLabelOutline( int absPosX, int absPosY){
 		int textX = absPosX + getSpaceManager().getSize().width / 2 - getLabelSize().width / 2;
-		int textY = absPosY + ((getSpaceManager().getSize().height-CIRCLE_DIMAETER) / 2) - getLabelSize().height / 2;
+		int textY = absPosY + ((getSpaceManager().getSize().height-circleDiameter) / 2) - getLabelSize().height / 2;
 		return new Rectangle(textX - 5, textY - getLabelSize().height + 3,
 				getLabelSize().width + 10, getLabelSize().height);
 	}

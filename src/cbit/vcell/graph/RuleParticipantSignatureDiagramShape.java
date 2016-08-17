@@ -43,18 +43,16 @@ import cbit.vcell.model.RuleParticipantSignature;
 
 public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	RuleParticipantSignature ruleParticipantSignature = null;
-//	private final int RADIUS = 8;
-//	private final int DIAMETER = RADIUS;
 	
-	private final int height = 12;		// fixed 16
-	private int width = 12;				// this will be recalculated based on the number of molecules in the species pattern
-										// TODO: when the number of molecules changes and the RuleParticipantSignature object gets updated,
-										// we need to adjust the width here as well
+	private static final int height = 12;	// fixed (originally was 16, considered too large)
+	private int width = 12;					// this will be recalculated based on the number of molecules in the species pattern
+											// TODO: when the number of molecules changes and the RuleParticipantSignature object gets updated,
+											// we need to adjust the width here as well
 	
-	private int displacement = 6;		// distance between circles representing molecular types
-	private int circleDiameter = 12;	// diameter of circles representing molecular types
+	private static final int displacement = 6;		// distance between circles representing molecular types
+	private static final int circleDiameter = 12;	// diameter of circles representing molecular types
 
-	private int leftmargin = 0;			// space left empty to the left before we start drawing the molecules
+	private static final int leftmargin = 0;		// space left empty to the left before we start drawing the molecules
 //	private int leftmargin = getSpaceManager().getSize().height;
 
 	
@@ -75,7 +73,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		super(graphModel);
 		int numMolecules = Math.max(1, ruleParticipantSignature.getSpeciesPattern().getMolecularTypePatterns().size());		// we reserve space for at least 1 molecule
 		width = leftmargin + circleDiameter + displacement*(numMolecules-1);
-		getSpaceManager().setSize(width, height);
+		getSpaceManager().setSize(width, height);		// TODO: or setSizePreferred??
 		
 		this.ruleParticipantSignature = ruleParticipantSignature;
 		defaultBG = Color.white;
