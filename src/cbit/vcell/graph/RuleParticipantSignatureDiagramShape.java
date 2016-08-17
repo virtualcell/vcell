@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.MultipleGradientPaint.CycleMethod;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
@@ -22,6 +23,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
 import org.vcell.model.rbm.MolecularType;
@@ -31,6 +33,7 @@ import org.vcell.util.gui.ShapePaintUtil;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModelPreferences;
+import cbit.gui.graph.ShapeSpaceManager;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
 import cbit.vcell.model.Model;
@@ -40,10 +43,22 @@ import cbit.vcell.model.RuleParticipantSignature;
 
 public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	RuleParticipantSignature ruleParticipantSignature = null;
-	private static final int RADIUS = 10;
-	public static final int DIAMETER = 2*RADIUS;
+//	private final int RADIUS = 8;
+//	private final int DIAMETER = RADIUS;
+	
+	private final int height = 12;		// fixed 16
+	private int width = 12;				// this will be recalculated based on the number of molecules in the species pattern
+										// TODO: when the number of molecules changes and the RuleParticipantSignature object gets updated,
+										// we need to adjust the width here as well
+	
+	private int displacement = 6;		// distance between circles representing molecular types
+	private int circleDiameter = 12;	// diameter of circles representing molecular types
+
+	private int leftmargin = 0;			// space left empty to the left before we start drawing the molecules
+//	private int leftmargin = getSpaceManager().getSize().height;
+
+	
 	private Color darkerBackground = null;
-	private Area icon = null;
 
 	private static final int SCS_LABEL_WIDTHPARM = 3;
 	private static final String SCS_LABEL_TRUCATED = "...";
@@ -58,8 +73,12 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 
 	public RuleParticipantSignatureDiagramShape(RuleParticipantSignature ruleParticipantSignature, ModelCartoon graphModel) {
 		super(graphModel);
+		int numMolecules = Math.max(1, ruleParticipantSignature.getSpeciesPattern().getMolecularTypePatterns().size());		// we reserve space for at least 1 molecule
+		width = leftmargin + circleDiameter + displacement*(numMolecules-1);
+		getSpaceManager().setSize(width, height);
+		
 		this.ruleParticipantSignature = ruleParticipantSignature;
-		defaultBG = java.awt.Color.red;
+		defaultBG = Color.white;
 		defaultFGselect = java.awt.Color.black;
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();
@@ -84,7 +103,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		smallLabelSize.width = (smallLabel != null ? fm.stringWidth(smallLabel) : getLabelSize().width);
 		smallLabelSize.height = getLabelSize().height;
-		getSpaceManager().setSizePreferred(DIAMETER, DIAMETER);
+		getSpaceManager().setSizePreferred(width, height);
 		return getSpaceManager().getSizePreferred();
 	}
 
@@ -113,28 +132,44 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		getLabelPos().y + absPosY - getLabelSize().height + 3,
 		getLabelSize().width + 10, getLabelSize().height);
 	}
+
+	// TODO: Override ElipseShape::isInside()
+	// our shape here is rounded rectangle while IsInside thinks it's an ellipse, which means 
+	// that clicking near the corners of a long shape (with many molecules) fails to select the shape
+	// TODO: the RoundRectangle2D contour below needs to be recalculated with updated width, using the 
+	// species pattern in the RuleParticipantSignature 
 	
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 		
-		int displacement = 7;		// distance between circles representing molecular types
-		int circleDiameter = 14;
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
-		int offsetX = (shapeWidth-circleDiameter) / 2;
-		int offsetY = (shapeHeight-circleDiameter) / 2;
 		Graphics2D g2D = g;
+		
+		Paint oldPaint = g2D.getPaint();
+		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		Color exterior;
+		// draw the contour around the whole rule participant
+		// no need to really draw it if the shapes of the molecules fill it perfectly, because it won't be visible anyway
+		// however, the "isInside" function will need exactly this RoundRectangle2D to compute whether the point is inside the shape
+//		RoundRectangle2D contour = new RoundRectangle2D.Double(absPosX, absPosY, shapeWidth, shapeHeight, shapeHeight, shapeHeight);
+//		g2D.setPaint(Color.white);
+//		g2D.fill(contour);
+//		exterior = isSelected() ? Color.black : Color.gray;
+//		g.setColor(exterior);
+//		g2D.draw(contour);
 		
 		Model model = ((ReactionCartoon)graphModel).getModel();
 		RbmModelContainer rbmmc = model.getRbmModelContainer();
 		List<MolecularType> mtList = rbmmc.getMolecularTypeList();
 		List<MolecularType> ruleSignatureMolecularTypes = ruleParticipantSignature.getMolecularTypes();
+		
+		// draw the molecules (they are properly drawn because we use the sp as it is in the associated RuleParticipantSignature object)
 		for(int i=0; i<ruleSignatureMolecularTypes.size(); i++) {
-			icon = new Area();
-			icon.add(new Area(new Ellipse2D.Double(offsetX + displacement*i, offsetY,circleDiameter,circleDiameter)));
-				//icon.add(new Area(new RoundRectangle2D.Double(offsetX, offsetY,circleDiameter,circleDiameter,circleDiameter/2,circleDiameter/2)));
-			Area movedIcon = icon.createTransformedArea(
-				AffineTransform.getTranslateInstance(absPosX, absPosY));
+			
+			int offsetx = leftmargin + i*displacement;
+			int offsety = getSpaceManager().getSize().height - circleDiameter;
+			Ellipse2D icon = new Ellipse2D.Double(absPosX + offsetx, absPosY + offsety, circleDiameter, circleDiameter);
 	
 			MolecularType mt = ruleSignatureMolecularTypes.get(i);
 			int index = mtList.indexOf(mt);
@@ -144,30 +179,28 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 			Color interior = Color.white;
 			if(graphModel instanceof ReactionCartoon && ((ReactionCartoon)graphModel).getRuleParticipantGroupingCriteria() == RuleParticipantSignature.Criteria.full) {
 				defaultBG = MolecularTypeLargeShape.colorTable[index];		// take color from molecular type color selection
-//				interior = exterior.brighter().brighter();
-//				interior = Color.yellow.brighter();
-//				interior = Color.yellow;
 			}
 			backgroundColor = defaultBG;
 			darkerBackground = backgroundColor.darker().darker();
+			exterior = !isSelected() ? darkerBackground : backgroundColor;
+			Color[] colors = {interior, exterior};
 	
 			g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			Color exterior = !isSelected()?darkerBackground:backgroundColor;
-			Point2D center = new Point2D.Float(absPosX + displacement*i + circleDiameter/2, absPosY+circleDiameter/2);
+			Point2D center = new Point2D.Float(absPosX + offsetx + circleDiameter/2, absPosY + offsety + circleDiameter/2);
 			float radius = circleDiameter*0.5f;
-			Point2D focus = new Point2D.Float(absPosX + displacement*i + circleDiameter/2+1, absPosY+circleDiameter/2+1);
+			Point2D focus = new Point2D.Float(absPosX + offsetx + circleDiameter/2-2, absPosY + offsety + circleDiameter/2-2);
 			float[] dist = {0.1f, 1.0f};
-			Color[] colors = {interior, exterior};
 			RadialGradientPaint p = new RadialGradientPaint(center, radius, focus, dist, colors, CycleMethod.NO_CYCLE);
 			g2D.setPaint(p);
-			g2D.fill(movedIcon);
-			
+			g2D.fill(icon);
 			g.setColor(forgroundColor);
-			g2D.draw(movedIcon);
-	//		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+			g2D.draw(icon);
 		}		
 
 		// draw label
+		// TODO: we should regenerate the label using the species pattern in the RuleParticipantSignature (because 
+		// the species pattern may have been changed or because a molecular type has been renamed)
+		// TODO: see if RefreshLabel below works properly, if it does make a similar call to refresh the width!!!
 		if (getLabel()!=null && getLabel().length()>0){
 			if(isSelected()) {		//clear background and outline to make selected label stand out
 				Rectangle outlineRectangle = getLabelOutline(absPosX, absPosY);
@@ -188,6 +221,9 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		if(linkText != null && linkText != "") {
 			ShapePaintUtil.paintLinkMark(g2D, this, Color.BLACK);
 		}
+		
+		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+		g2D.setPaint(oldPaint);
 	}
 
 	@Override
@@ -200,7 +236,6 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		default:
 			setLabel("no label");
 		}
-
 		smallLabel = getLabel();
 		if(bTruncateLabelName && getLabel().length() > (2*SCS_LABEL_WIDTHPARM + SCS_LABEL_TRUCATED.length())){
 			smallLabel =
@@ -211,7 +246,6 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	}
 
 	public void truncateLabelName(boolean bTruncate) {
-
 		bTruncateLabelName = bTruncate;
 	}
 }
