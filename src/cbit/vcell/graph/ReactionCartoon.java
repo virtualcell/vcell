@@ -48,6 +48,9 @@ public class ReactionCartoon extends ModelCartoon {
 	private Set<RuleParticipantSignature> ruleParticipantSignatures = new HashSet<>();
 	private RuleParticipantSignature.Criteria ruleParticipantGroupingCriteria = RuleParticipantSignature.Criteria.full;
 	
+	private Set<RuleParticipantSignatureDiagramShape> cachedShapes = new HashSet<>();
+	private Set<RuleParticipantSignature> cachedSignatures = new HashSet<RuleParticipantSignature>();
+
 	public ReactionCartoon() {
 		containerLayout = new GraphContainerLayoutReactions();
 	}
@@ -56,10 +59,63 @@ public class ReactionCartoon extends ModelCartoon {
 		return structureSuite;
 	}
 	
-	public void setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria ruleParticipantGroupingCriteria) {
-		this.ruleParticipantGroupingCriteria = ruleParticipantGroupingCriteria;
-		refreshAll();
+	public void setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria newCriteria) {
+		
+		if(this.ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.full && newCriteria == RuleParticipantSignature.Criteria.moleculeNumber) {
+			// switch from showing each participant independently to grouping them by molecule signature
+			// we are trying to cache all the signatures and their shapes that will get deleted because of grouping
+			cachedShapes.clear();
+			cachedSignatures.clear();
+			
+			for(Shape sh : getShapes()) {
+				if(!(sh instanceof RuleParticipantSignatureDiagramShape)) {
+					continue;
+				}
+				RuleParticipantSignatureDiagramShape rpsds = (RuleParticipantSignatureDiagramShape) sh;
+				RuleParticipantSignature rps = rpsds.getRuleParticipantSignature();
+				cachedShapes.add(rpsds);
+				cachedSignatures.add(rps);
+			}
+			this.ruleParticipantGroupingCriteria = newCriteria;
+			refreshAll();
+
+			// we need to take out from the cache all the signatures and shapes still present after refreshAll
+			// no point in caching those
+			for(Shape sh : getShapes()) {
+				if(!(sh instanceof RuleParticipantSignatureDiagramShape)) {
+					continue;
+				}
+				RuleParticipantSignatureDiagramShape rpsds = (RuleParticipantSignatureDiagramShape) sh;
+				RuleParticipantSignature rps = rpsds.getRuleParticipantSignature();
+				cachedShapes.remove(rpsds);
+				cachedSignatures.remove(rps);
+			}
+			
+		} else if(this.ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.moleculeNumber && newCriteria == RuleParticipantSignature.Criteria.full) {
+			// we are trying to restore the cached signatures and their shapes (they are in a 1 to 1 relationship)
+			// inside refreshAll we'll sort the ones still usable from the ones that might have become obsolete
+			for(RuleParticipantSignatureDiagramShape sh : cachedShapes) {
+				addShape(sh);
+				RuleParticipantSignature rps = sh.getRuleParticipantSignature();
+				Structure str = rps.getStructure();
+				ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(str);
+				participantContainerShape.addChildShape(sh);
+//				signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
+			}
+			ruleParticipantSignatures.addAll(cachedSignatures);
+			
+
+			
+			this.ruleParticipantGroupingCriteria = newCriteria;
+			refreshAll();
+
+		} else {
+			// switching to the same criteria, nothing to do
+			return;
+		}
 	}
+	
+	
 	public RuleParticipantSignature.Criteria getRuleParticipantGroupingCriteria() {
 		return ruleParticipantGroupingCriteria;
 	}
@@ -248,8 +304,9 @@ public class ReactionCartoon extends ModelCartoon {
 			// add all reactionSteps that are in this structure (ReactionContainerShape), and draw the lines
 			getModel().removePropertyChangeListener(this);
 			getModel().addPropertyChangeListener(this);
-			
+			//
 			// =================================== Rules ================================================
+			//
 			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
 				rr.removePropertyChangeListener(this);
 				rr.addPropertyChangeListener(this);

@@ -77,17 +77,6 @@ public class RuleParticipantSignature {
 		String ourMolecularSignature = getMolecularSignature(ourMolecularTypeNames);
 		return ourMolecularSignature;
 	}
-//	
-//	private String getSignature(){
-//		ArrayList<String> molecularTypeNames = new ArrayList<String>();
-//		for (Entry<MolecularType, Integer> entry : composition.entrySet()){
-//			for (int i=0;i<entry.getValue();i++){
-//				molecularTypeNames.add(entry.getKey().getName());
-//			}
-//		}
-//		String molecularSignature = getMolecularSignature(molecularTypeNames);
-//		return molecularSignature;
-//	}
 	
 	private static String getMolecularSignature(List<String> molecularTypePatternSignature){
 		Collections.sort(molecularTypePatternSignature);
@@ -120,20 +109,6 @@ public class RuleParticipantSignature {
 		return speciesPattern;
 	}
 
-//	public static String getSignature(ReactionRuleParticipant reactionRuleParticipant){
-//		ArrayList<String> molecularTypeNames = new ArrayList<String>();
-//		for (MolecularTypePattern mt : reactionRuleParticipant.getSpeciesPattern().getMolecularTypePatterns()){
-//			molecularTypeNames.add(mt.getMolecularType().getName());
-//		}
-//		String molecularSignature = getMolecularSignature(molecularTypeNames);
-//		return molecularSignature;
-//	}
-//	
-//	public static String getUniqueSignature(ReactionRuleParticipant reactionRuleParticipant){
-//		String molecularSignature = getSignature(reactionRuleParticipant);
-//		return reactionRuleParticipant.getStructure().getName()+":"+molecularSignature;
-//	}
-//	
 	public List<MolecularType> getMolecularTypes() {
 		ArrayList<MolecularType> molecularTypes = new ArrayList<MolecularType>();
 		for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
@@ -141,5 +116,5 @@ public class RuleParticipantSignature {
 		}
 		return molecularTypes;
 	}
-
+	
 }
