@@ -154,11 +154,11 @@ public int getWorldPixelSize() {
  */
 protected void paintComponent(java.awt.Graphics g) {
 	super.paintComponent(g);
-	boolean isCellCentered = getImagePlaneManager().isCellCentered();
 	//
 	if(getImagePlaneManager() == null ){
 		return;
 	}
+	boolean isCellCentered = getImagePlaneManager().isCellCentered();
 	//if(lastBigFont == null || !lastBigFont.equals(g.getFont())){
 		//lastBigFont = g.getFont();
 		//lastSmallFont = lastBigFont.deriveFont(10f);

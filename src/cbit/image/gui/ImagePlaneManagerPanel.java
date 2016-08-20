@@ -117,7 +117,7 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 				connEtoC12(evt);
 			if (evt.getSource() == ImagePlaneManagerPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("activeScaleRange"))) 
 				connEtoC13(evt);
-			if (evt.getSource() == ImagePlaneManagerPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("valueDomain"))) 
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals(DisplayAdapterService.VALUE_DOMAIN_PROP))) 
 				connEtoC14(evt);
 			if (evt.getSource() == ImagePlaneManagerPanel.this.getImagePaneScroller1() && (evt.getPropertyName().equals("imagePaneView"))) 
 				connPtoP5SetTarget();
@@ -263,7 +263,7 @@ private void connEtoC14(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.firePropertyChange("valueDomain", arg1.getOldValue(), arg1.getNewValue());
+		this.firePropertyChange(DisplayAdapterService.VALUE_DOMAIN_PROP, arg1.getOldValue(), arg1.getNewValue());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -972,6 +972,7 @@ private javax.swing.JPanel getJPanel3() {
 			java.awt.GridBagConstraints constraintsImagePlanePanel1 = new java.awt.GridBagConstraints();
 			constraintsImagePlanePanel1.gridx = 0; constraintsImagePlanePanel1.gridy = 2;
 			constraintsImagePlanePanel1.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsImagePlanePanel1.ipadx = 20;
 			getJPanel3().add(getImagePlanePanel1(), constraintsImagePlanePanel1);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -1049,7 +1050,7 @@ private void initialize() {
 		// user code end
 		setName("ImagePlaneManagerPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(560, 544);
+		setSize(813, 544);
 
 		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
 		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 0;

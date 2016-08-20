@@ -31,6 +31,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -114,6 +115,7 @@ import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.PDEDataViewerPostProcess.PostProcessDataPDEDataContext;
 import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.client.desktop.geometry.GeometryDisplayPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
@@ -128,6 +130,7 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.gui.DataValueSurfaceViewer;
@@ -140,6 +143,8 @@ import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
@@ -147,6 +152,7 @@ import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -402,63 +408,18 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 			try {
 				if (evt.getSource() == getPdeDataContext() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINTS))){
 					getPDEPlotControlPanel1().timePointsEvent(getPdeDataContext().getTimePoints());
+					getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true);//PostProcessing info only when last timepoints are set
 				}
 
-//				if(evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1() && evt.getPropertyName().equals(DisplayAdapterService.PROP_NAME_ALLTIMES)){
-////					getPDEDataContextPanel1().getdisplayAdapterService1().setValueDomain(new Range(0,100));
-//					doUpdate(new AsynchClientTask("Setting domain vals",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
-//						@Override
-//						public void run(Hashtable<String, Object> hashTable) throws Exception {
-//							HashSet<String> stateVarNames = getSimulation().getMathDescription().getStateVariableNames();
-//							Variable theVariable = getSimulation().getMathDescription().getVariable(getPdeDataContext().getVariableName());
-//							boolean bStateVar = stateVarNames.contains(getPdeDataContext().getVariableName());
-//							boolean bConstant = theVariable.isConstant();
-//							if(!bStateVar && !bConstant && theVariable instanceof Function){
-//								ArrayList<VarStatistics> varStatsArr = new ArrayList<>();
-//								Function flattened = MathDescription.getFlattenedFunctions(SimulationSymbolTable.createMathSymbolTableFactory(), getSimulation().getMathDescription(), new String[] {theVariable.getName()})[0];
-////								Enumeration<Variable> enumvars = MathUtilities.getRequiredVariables(flattened.getExpression(), getSimulation().getMathDescription());
-////								while(enumvars.hasMoreElements()){
-////									Variable enumvar = enumvars.nextElement();
-////									if(enumvar.isConstant()){
-////										double[] minValuesOvertime = new double[getPdeDataContext().getTimePoints().length];
-////										Arrays.fill(minValuesOvertime, enumvar.getConstantValue());
-////										double[] maxValuesOverTime = minValuesOvertime;
-////										FunctionRangeGenerator.VarStatistics varstatistics = new VarStatistics(enumvar.getName(),minValuesOvertime,maxValuesOverTime);
-////										varStatsArr.add(varstatistics);										
-////									}
-////								}
-//								DataProcessingOutputInfo dataProcessingOutputInfo = DataProcessingResultsPanel.getDataProcessingOutputInfo(getPdeDataContext());
-//								String[] statisticVarNames = dataProcessingOutputInfo.getVariableNames();
-//								for(String stateVarName:stateVarNames){
-//									double[] minValuesOvertime = null;
-//									double[] maxValuesOverTime = null;
-//									for(String statisticVarName:statisticVarNames){
-//										if(statisticVarName.startsWith(stateVarName+"_min")){
-//											minValuesOvertime = dataProcessingOutputInfo.getVariableStatValues().get(statisticVarName);
-//										}
-//										if(statisticVarName.startsWith(stateVarName+"_max")){
-//											maxValuesOverTime = dataProcessingOutputInfo.getVariableStatValues().get(statisticVarName);
-//										}
-//									}
-//									if(minValuesOvertime != null && maxValuesOverTime != null){
-//										FunctionRangeGenerator.VarStatistics varstatistics = new VarStatistics(stateVarName,minValuesOvertime,maxValuesOverTime);
-//										varStatsArr.add(varstatistics);
-//									}
-//								}
-//								if(varStatsArr.size() == stateVarNames.size()){
-//									FunctionStatistics functionStatistics =
-//										FunctionRangeGenerator.getFunctionStatistics(flattened.getExpression(), varStatsArr.toArray(new VarStatistics[0]), getPdeDataContext().getTimePoints(),
-//											getSimulation().getMeshSpecification().getGeometry().getExtent(), getSimulation().getMeshSpecification().getGeometry().getOrigin(),10);
-//										getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(functionStatistics.getMinOverTime(),functionStatistics.getMaxOverTime()));																	
-//								}else{
-//									getPDEDataContextPanel1().setFunctionStatisticsRange(null);
-//								}
-//							}else{
-//								getPDEDataContextPanel1().setFunctionStatisticsRange(null);
-//							}
-//						}
-//					});					
-//				}
+				if(evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1() && evt.getPropertyName().equals(DisplayAdapterService.PROP_NAME_ALLTIMES)){
+//					getPDEDataContextPanel1().getdisplayAdapterService1().setValueDomain(new Range(0,100));
+					doUpdate(new AsynchClientTask("Setting domain vals",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							calcAutoAllTimes();
+						}
+					});					
+				}
 				if(evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1() && evt.getPropertyName().equals(DisplayAdapterService.PROP_NAME_AUTOSCALE)){
 					DisplayAdapterService displayAdapterService = getPDEDataContextPanel1().getdisplayAdapterService1();
 					if(getPDEDataContextPanel1().getdisplayAdapterService1().getAutoScale()){
@@ -503,6 +464,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
+							calcAutoAllTimes();
 						}
 					});
 
@@ -601,6 +563,32 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 			}
 		};
 	};
+	
+	private static ArrayList<VarStatistics> calcVarStat(PDEDataContext pdeDataContext,String[] stateVarNames) throws Exception{
+		ArrayList<VarStatistics> varStatsArr = new ArrayList<>();
+		DataProcessingOutputInfo dataProcessingOutputInfo = DataProcessingResultsPanel.getDataProcessingOutputInfo(pdeDataContext);
+		if(dataProcessingOutputInfo == null){
+			return null;
+		}
+		String[] statisticVarNames = dataProcessingOutputInfo.getVariableNames();
+		for(String stateVarName:stateVarNames){
+			double[] minValuesOvertime = null;
+			double[] maxValuesOverTime = null;
+			for(String statisticVarName:statisticVarNames){
+				if(statisticVarName.startsWith(stateVarName+"_min")){
+					minValuesOvertime = dataProcessingOutputInfo.getVariableStatValues().get(statisticVarName);
+				}
+				if(statisticVarName.startsWith(stateVarName+"_max")){
+					maxValuesOverTime = dataProcessingOutputInfo.getVariableStatValues().get(statisticVarName);
+				}
+			}
+			if(minValuesOvertime != null && maxValuesOverTime != null){
+				FunctionRangeGenerator.VarStatistics varstatistics = new VarStatistics(stateVarName,minValuesOvertime,maxValuesOverTime);
+				varStatsArr.add(varstatistics);
+			}
+		}
+		return varStatsArr;
+	}
 	
 	BlockingTimer doUpdateTimer;
 	private void doUpdate(final AsynchClientTask dataTask){
@@ -2004,6 +1992,7 @@ private void setupDataInfoProvider() throws Exception{
  */
 private boolean bSkipSurfaceCalc = false;
 public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {
+	getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true);
 	PDEDataContext oldValue = fieldPdeDataContext;
 	String setVarName = null;
 	Integer setTimePoint = null;
@@ -2925,6 +2914,79 @@ public void setPostProcessingPanelVisible(boolean bVisible){
 	}
 }
 
+private void calcAutoAllTimes() throws Exception {
+	HashSet<String> stateVarNames = getSimulation().getMathDescription().getStateVariableNames();
+	Variable theVariable = getSimulation().getMathDescription().getVariable(getPdeDataContext().getVariableName());
+	if(theVariable == null){
+		theVariable = ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunction(getPdeDataContext().getVariableName());
+	}
+	if(theVariable == null){
+		throw new Exception("Unexpected Alltimes... selected variable '"+getPdeDataContext().getVariableName()+"' is not stateVariable or OutputFunction");
+	}
+	boolean bStateVar = stateVarNames.contains(getPdeDataContext().getVariableName());
+	if(getPDEDataContextPanel1().getdisplayAdapterService1().getAllTimes()){// min-max over all timepoints (allTimes)
+		if(theVariable.isConstant()){
+			double constVal = theVariable.getConstantValue();
+			getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(constVal,constVal));
+		}else if(bStateVar){
+			ArrayList<VarStatistics> varStatsArr = calcVarStat(getPdeDataContext(), new String[] {theVariable.getName()});
+			if(errorAutoAllTimes(varStatsArr != null)){//no postprocessinfo
+				return;
+			}
+			FunctionStatistics functionStatistics = new FunctionStatistics(varStatsArr.get(0).minValuesOverTime, varStatsArr.get(0).maxValuesOverTime);
+			getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(functionStatistics.getMinOverTime(),functionStatistics.getMaxOverTime()));
+		}else if(theVariable instanceof Function){
+			Function flattened = MathDescription.getFlattenedFunctions(SimulationSymbolTable.createMathSymbolTableFactory(), getSimulation().getMathDescription(), new String[] {theVariable.getName()})[0];
+			if(flattened == null){
+				flattened = (Function)theVariable;
+			}
+			ArrayList<VarStatistics> varStatsArr = calcVarStat(getPdeDataContext(), stateVarNames.toArray(new String[0]));
+			if(errorAutoAllTimes(varStatsArr != null)){//no postprocessinfo
+				return;
+			}
+			if(varStatsArr.size() == stateVarNames.size()){
+				if(getSimulation().getMeshSpecification().getGeometry().getGeometrySurfaceDescription().getRegionImage() == null){
+					getSimulation().getMeshSpecification().getGeometry().getGeometrySurfaceDescription().updateAll();
+				}
+				FunctionStatistics functionStatistics =
+					FunctionRangeGenerator.getFunctionStatistics(flattened.getExpression(),
+							varStatsArr.toArray(new VarStatistics[0]),
+							getPdeDataContext().getTimePoints(),
+							CartesianMesh.createSimpleCartesianMesh(getSimulation().getMeshSpecification().getGeometry()),
+							getPDEDataContextPanel1().getInDomainBitSet(),
+							getPdeDataContext().getDataIdentifier().getVariableType(),
+							(int) (getPdeDataContext().getDataValues().length/Math.pow(10, getSimulation().getMeshSpecification().getGeometry().getDimension())));
+					getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(functionStatistics.getMinOverTime(),functionStatistics.getMaxOverTime()));																	
+			}else{
+				throw new Exception("Unexpectede AllTimes... calculated state var stats size != mathdescr state var size");
+			}
+		}else{
+			throw new Exception("Unexpected AllTimes... not constant, stateVar or function");
+		}
+	}else{// min-max at each timepoint (currTime)
+		getPDEDataContextPanel1().setFunctionStatisticsRange(null);
+	}
+}
+
+private boolean errorAutoAllTimes(boolean bPPInfo){
+	getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
+	boolean bdialog = false;
+	if(bPPInfo){
+		getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true);
+	}else{
+		getPDEDataContextPanel1().setFunctionStatisticsRange(null);//this tells pdedatacontextpanel.recodedata to calc 'current time' min-max instead of allTimes
+		if(getPDEDataContextPanel1().getdisplayAdapterServicePanel1().isEnableAutoAllTimes()){//disable autoAllTimes otherwise ignore to avoid repeating dialog warnings
+			bdialog = true;
+			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(false);
+		}		
+	}
+	getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
+	if(bdialog){
+		DialogUtils.showWarningDialog(this, "Sim '"+getSimulation().getName()+"' has no PostProcessing Data, cannot calculate 'all times' min-max");
+
+	}
+	return !bPPInfo;
+}
 
 
 

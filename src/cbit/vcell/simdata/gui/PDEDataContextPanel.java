@@ -10,9 +10,11 @@
 
 package cbit.vcell.simdata.gui;
 
+import java.util.BitSet;
 import java.util.Map.Entry;
 import java.util.Vector;
 
+import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.NumberUtils;
@@ -24,6 +26,7 @@ import cbit.image.gui.DisplayAdapterServicePanel;
 import cbit.image.gui.ImagePlaneManager;
 import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.client.data.PDEDataViewer.DataInfoProvider;
 import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.CurveSelectionCurve;
@@ -46,6 +49,8 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.StructureMetricsEntry;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary;
+import cbit.vcell.util.FunctionRangeGenerator;
+import cbit.vcell.util.FunctionRangeGenerator.FunctionStatistics;
 
 /**
  * Insert the type's description here.
@@ -308,7 +313,8 @@ private static class RecodeDataForDomainInfo{
 private double[] originalData = null;
 private RecodeDataForDomainInfo recodeDataForDomainInfo = null;
 private boolean bDataInfoProviderNull = true;
-
+private Range lastFunctionStatisticsRange;
+private BitSet inDomainBitSet;
 public void recodeDataForDomain() {
 	//This method recodes data (out of domain data is set to 'out of range' value that is displayed differently)
 	// and calculates a domain aware min,max range for variables that have a domain
@@ -337,8 +343,11 @@ private void recodeDataForDomain0() {
 	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
 	boolean bRecoding = getDataInfoProvider() != null && varDomain != null;	
 	
-	if (getPdeDataContext().getDataValues() != originalData || recodeDataForDomainInfo == null ||
-			((getDataInfoProvider() == null) != bDataInfoProviderNull)) {
+	if (getPdeDataContext().getDataValues() != originalData ||
+		recodeDataForDomainInfo == null ||
+		((getDataInfoProvider() == null) != bDataInfoProviderNull) ||
+		!Compare.isEqualOrNull(functionStatisticsRange, lastFunctionStatisticsRange)) {
+		lastFunctionStatisticsRange = functionStatisticsRange;
 		bDataInfoProviderNull = (getDataInfoProvider() == null);
 		originalData = getPdeDataContext().getDataValues();
 		tempRecodedData = originalData;
@@ -356,41 +365,29 @@ private void recodeDataForDomain0() {
 		illegalNumber-=1;//
 		
 		final CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
-		double min = Double.POSITIVE_INFINITY;
-		double max = Double.NEGATIVE_INFINITY;
+		double minCurrTime = Double.POSITIVE_INFINITY;
+		double maxCurrTime = Double.NEGATIVE_INFINITY;
+		inDomainBitSet = new BitSet(tempRecodedData.length);
+		inDomainBitSet.set(0, tempRecodedData.length, true);
 		for (int i = 0; i < tempRecodedData.length; i ++) {
 			if (bRecoding) {
-				if (vt.equals(VariableType.VOLUME) && !(cartesianMesh.isChomboMesh())) {
-					int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
-					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
-						tempRecodedData[i] = illegalNumber;
-					}
-				} else if (vt.equals(VariableType.VOLUME_REGION)) {
-					int subvol = cartesianMesh.getVolumeRegionMapSubvolume().get(i);
-					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
-						tempRecodedData[i] = illegalNumber;
-					}
-				} else if (vt.equals(VariableType.MEMBRANE) && !(cartesianMesh.isChomboMesh())) {
-					int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
-					int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
-					int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
-					int subvol2 =  cartesianMesh.getSubVolumeFromVolumeIndex(outsideVolumeIndex);
-					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
-						tempRecodedData[i] = illegalNumber;
-					}
-				} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
-					int[] subvols = cartesianMesh.getMembraneRegionMapSubvolumesInOut().get(i);
-					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
-						tempRecodedData[i] = illegalNumber;
-					}
+				if(!isInDomain(cartesianMesh, varDomain, dataInfoProvider, i, vt)){
+					tempRecodedData[i] = illegalNumber;
+					inDomainBitSet.set(i, false);
 				}
 			}
 			if(!Double.isNaN(tempRecodedData[i]) && tempRecodedData[i] != illegalNumber){
-				min = Math.min(min, tempRecodedData[i]);
-				max = Math.max(max, tempRecodedData[i]);
+				minCurrTime = Math.min(minCurrTime, tempRecodedData[i]);
+				maxCurrTime = Math.max(maxCurrTime, tempRecodedData[i]);
 			}
 		}
-		dataRange = new Range(min,max);
+		if(!getdisplayAdapterService1().getAllTimes() || functionStatisticsRange == null){
+			dataRange = new Range(minCurrTime,maxCurrTime);
+		}else if(functionStatisticsRange != null){
+			dataRange = functionStatisticsRange;
+		}else{
+			throw new RuntimeException("Unexpected state for range calculation");
+		}
 	}else{
 		dataRange = recodeDataForDomainInfo.getRecodedDataRange();
 		tempRecodedData = recodeDataForDomainInfo.getRecodedDataForDomain();
@@ -400,6 +397,41 @@ private void recodeDataForDomain0() {
 	}else{
 		recodeDataForDomainInfo = new RecodeDataForDomainInfo(false, tempRecodedData, dataRange);		
 	}
+}
+
+public BitSet getInDomainBitSet(){
+	return inDomainBitSet;
+}
+private static boolean isInDomain(CartesianMesh cartesianMesh,Domain varDomain,DataInfoProvider dataInfoProvider,int i,VariableType vt){
+	if (vt.equals(VariableType.VOLUME) && !(cartesianMesh.isChomboMesh())) {
+		int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
+		if (varDomain != null && !dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+			return false;
+		}
+	} else if (vt.equals(VariableType.VOLUME_REGION)) {
+		int subvol = cartesianMesh.getVolumeRegionMapSubvolume().get(i);
+		if (varDomain != null && !dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+			return false;
+		}
+	} else if (vt.equals(VariableType.MEMBRANE) && !(cartesianMesh.isChomboMesh())) {
+		int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
+		int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
+		int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
+		int subvol2 =  cartesianMesh.getSubVolumeFromVolumeIndex(outsideVolumeIndex);
+		if (varDomain != null && !dataInfoProvider.getSimulationModelInfo().getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
+			return false;
+		}
+	} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
+		int[] subvols = cartesianMesh.getMembraneRegionMapSubvolumesInOut().get(i);
+		if (varDomain != null && !dataInfoProvider.getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
+			return false;
+		}
+	}
+	return true;
+}
+private Range functionStatisticsRange;
+public void setFunctionStatisticsRange(Range functionStatisticsRange){
+	this.functionStatisticsRange = functionStatisticsRange;
 }
 /**
  * connPtoP2SetTarget:  (ImagePlaneManagerPanel.displayAdapterServicePanel <--> displayAdapterServicePanel1.this)
@@ -878,7 +910,7 @@ public DisplayAdapterService getdisplayAdapterService1() {
  * @return cbit.image.DisplayAdapterServicePanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private DisplayAdapterServicePanel getdisplayAdapterServicePanel1() {
+public DisplayAdapterServicePanel getdisplayAdapterServicePanel1() {
 	// user code begin {1}
 	// user code end
 	return ivjdisplayAdapterServicePanel1;
@@ -1009,7 +1041,7 @@ private void imagePlaneManagerPanel_PropertyChange(java.beans.PropertyChangeEven
 	if(propertyChangeEvent.getSource() == getImagePlaneManagerPanel()){
 		//These properties are from generic propertyChangeEvents from the ImagePlaneMangerPanel.DisplayAdapterService
 		//These are necessary so that curves are updated before a repaint that redraws them
-		if( propertyChangeEvent.getPropertyName().equals("valueDomain") ||
+		if( propertyChangeEvent.getPropertyName().equals(DisplayAdapterService.VALUE_DOMAIN_PROP) ||
 			propertyChangeEvent.getPropertyName().equals("activeScaleRange") ||
 			propertyChangeEvent.getPropertyName().equals("activeColorModelID")){
 				//System.out.println("PDEDataContextPanel<--ImagePlaneMangerPanel.propertyChange="+propertyChangeEvent.getPropertyName());
