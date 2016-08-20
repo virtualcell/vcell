@@ -25,6 +25,7 @@ public class DisplayAdapterService implements org.vcell.util.Stateful, java.bean
 	public static final String PROP_NAME_AUTOSCALE = "autoScale";
 	public static final String CUSTOM_SCALE_RANGE = "customScaleRange";
 	public static final String ACTIVE_SCALE_RANGE = "activeScaleRange";
+	public static final String PROP_NAME_ALLTIMES = "allTimes";
 	
 	public static final String BLUERED = "BlueRed";
 	public static final String GRAY = "Gray";
@@ -629,7 +630,7 @@ public void markCurrentState(java.lang.String stateID) {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	//
 	if (evt.getSource() == this) {
-		if (evt.getPropertyName().equals("valueDomain")) {
+		if (evt.getPropertyName().equals(DisplayAdapterService.VALUE_DOMAIN_PROP)) {
 			updateScaleRange();
 		}else if (evt.getPropertyName().equals("defaultScaleRange")){
 			updateScaleRange();
@@ -747,7 +748,15 @@ public void setAutoScale(boolean autoScale) {
 	firePropertyChange(PROP_NAME_AUTOSCALE, new Boolean(oldValue), new Boolean(autoScale));
 }
 
-
+private boolean fieldAllTimes = false;
+public void setAllTimes(boolean bAllTimes) {
+	boolean oldValue = fieldAllTimes;
+	fieldAllTimes = bAllTimes;
+	firePropertyChange(PROP_NAME_ALLTIMES, new Boolean(oldValue), new Boolean(fieldAllTimes));
+}
+public boolean getAllTimes(){
+	return fieldAllTimes;
+}
 /**
  * Sets the colorModelIDs property (java.lang.String[]) value.
  * @param colorModelIDs The new value for the property.
@@ -793,10 +802,11 @@ private void setSpecialColors(int[] specialColors) {
  * @param valueDomain The new value for the property.
  * @see #getValueDomain
  */
+public static String VALUE_DOMAIN_PROP = "valueDomain";
 public void setValueDomain(Range valueDomain) {
 	Range oldValue = fieldValueDomain;
 	fieldValueDomain = valueDomain;
-	firePropertyChange("valueDomain", oldValue, valueDomain);
+	firePropertyChange(VALUE_DOMAIN_PROP, oldValue, valueDomain);
 }
 
 

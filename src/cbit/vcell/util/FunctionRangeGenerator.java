@@ -1,23 +1,27 @@
 package cbit.vcell.util;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Random;
 
+import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Origin;
 import org.vcell.util.Range;
 
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.solvers.CartesianMesh;
 
 public class FunctionRangeGenerator {
 	
 	public static class VarStatistics {
-		final String stateVariableName;
-		final double[] minValuesOverTime;
-		final double[] maxValuesOverTime;
+		public final String stateVariableName;
+		public final double[] minValuesOverTime;
+		public final double[] maxValuesOverTime;
 		public VarStatistics(String stateVariableName, double[] minValuesOverTime, double[] maxValuesOverTime) {
 			super();
 			this.stateVariableName = stateVariableName;
@@ -62,7 +66,16 @@ public class FunctionRangeGenerator {
 	//
 	// note: functionExp should already be flattened to only have symbols for state variables, x, y, z, and t
 	//
-	public static FunctionStatistics getFunctionStatistics(Expression functionExp, VarStatistics[] varStatistics, double[] times, Extent extent, Origin origin, int numSamplesPerDim) throws ExpressionException{
+	public static FunctionStatistics getFunctionStatistics(Expression functionExp, VarStatistics[] varStatistics, double[] times,CartesianMesh cartesianMesh,BitSet inDomainBitSetOrig, VariableType variableType,int numSamplesPerDim) throws Exception{
+		ArrayList<Integer> inDomainIndexes =  new ArrayList<>();
+		for (int i = inDomainBitSetOrig.nextSetBit(0); i >= 0; i = inDomainBitSetOrig.nextSetBit(i + 1)) {
+			// operate on index i here
+			if (i == Integer.MAX_VALUE) {
+				break;
+			}
+			inDomainIndexes.add(i);
+		}
+
 		if (varStatistics.length == 0){
 			double constantValue = functionExp.evaluateConstant();
 			double[] minValues = new double[times.length];
@@ -108,10 +121,32 @@ public class FunctionRangeGenerator {
 			values[0] = times[tIndex];
 			double minValue = Double.POSITIVE_INFINITY;
 			double maxValue = Double.NEGATIVE_INFINITY;
+			BitSet inDomainIndexBitSet = new BitSet(inDomainIndexes.size());
+			inDomainIndexBitSet.set(0, inDomainIndexes.size(), true);
 			for (int sample=0; sample<numSamples; sample++){
-				values[1] = origin.getX() + rand.nextDouble()*extent.getX();
-				values[2] = origin.getY() + rand.nextDouble()*extent.getY();
-				values[3] = origin.getZ() + rand.nextDouble()*extent.getZ();
+				Coordinate coord = null;
+				while(true){
+					int rndIndex = rand.nextInt(inDomainIndexes.size());
+					int index = inDomainIndexes.get(rndIndex);
+					if(inDomainIndexBitSet.get(rndIndex)){
+						inDomainIndexBitSet.set(rndIndex,false);
+						if(variableType.equals(VariableType.MEMBRANE)){
+							coord = cartesianMesh.getCoordinateFromMembraneIndex(index);
+						}else if(variableType.equals(VariableType.VOLUME)){
+							coord = cartesianMesh.getCoordinateFromVolumeIndex(index);
+						}else{
+							throw new Exception("Not implemented "+variableType.getTypeName());
+						}
+						break;
+					}
+					System.out.println("timeIndx="+tIndex+" sample=("+sample+" of "+numSamples+") rndOODIndex=("+index+" of "+inDomainIndexBitSet.size()+")");
+				}
+				values[1] = coord.getX();
+				values[2] = coord.getY();
+				values[3] = coord.getZ();
+//				values[1] = origin.getX() + rand.nextDouble()*extent.getX();
+//				values[2] = origin.getY() + rand.nextDouble()*extent.getY();
+//				values[3] = origin.getZ() + rand.nextDouble()*extent.getZ();
 				for (int varIndex=0; varIndex<varStatistics.length; varIndex++){
 					double s = rand.nextDouble();
 					values[4+varIndex] = s * varStatistics[varIndex].minValuesOverTime[tIndex] +
@@ -128,23 +163,23 @@ public class FunctionRangeGenerator {
 		return functionStats;
 	}
 	
-	public static void main(String[] args){
-		try {
-			Expression exp = new Expression("a+log(b)+c");
-			VarStatistics[] varStats = new VarStatistics[3];
-			varStats[0] = new VarStatistics("a", new double[] {1.0, 2.0, 3.0}, new double[]{1.0, 2.0, 3.0});
-			varStats[1] = new VarStatistics("b", new double[] {1.0, 2.0, 3.0}, new double[]{1.0, 2.0, 3.0});
-			varStats[2] = new VarStatistics("c", new double[] {1.0, 2.0, 3.0}, new double[]{1.0, 2.0, 3.0});
-			double[] times = new double[] {0.0, 1.0, 2.0};
-			Extent extent = new Extent(5,5,5);
-			Origin origin = new Origin(0,0,0);
-			int numSamplesPerDim = 10;
-			FunctionStatistics results = FunctionRangeGenerator.getFunctionStatistics(exp, varStats, times, extent, origin, numSamplesPerDim);
-
-			System.out.println(results.getDefaultDatasetRange().toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	public static void main(String[] args){
+//		try {
+//			Expression exp = new Expression("a+log(b)+c");
+//			VarStatistics[] varStats = new VarStatistics[3];
+//			varStats[0] = new VarStatistics("a", new double[] {1.0, 2.0, 3.0}, new double[]{1.0, 2.0, 3.0});
+//			varStats[1] = new VarStatistics("b", new double[] {1.0, 2.0, 3.0}, new double[]{1.0, 2.0, 3.0});
+//			varStats[2] = new VarStatistics("c", new double[] {1.0, 2.0, 3.0}, new double[]{1.0, 2.0, 3.0});
+//			double[] times = new double[] {0.0, 1.0, 2.0};
+//			Extent extent = new Extent(5,5,5);
+//			Origin origin = new Origin(0,0,0);
+//			int numSamplesPerDim = 10;
+//			FunctionStatistics results = FunctionRangeGenerator.getFunctionStatistics(exp, varStats, times, extent, origin, numSamplesPerDim);
+//
+//			System.out.println(results.getDefaultDatasetRange().toString());
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
 }

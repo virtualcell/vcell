@@ -19,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.util.Arrays;
 
 import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -29,12 +30,14 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
 
 import cbit.image.DisplayAdapterService;
+import java.awt.Insets;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 4:21:48 PM)
@@ -79,6 +82,10 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 				connEtoC9(e);
 			if (e.getSource() == DisplayAdapterServicePanel.this.getMinTextField()) 
 				connEtoC16(e);
+			if (e.getSource() == DisplayAdapterServicePanel.this.getRdbtnAllTimes() && getRdbtnAllTimes().isSelected())
+				getDisplayAdapterService().setAllTimes(getRdbtnAllTimes().isSelected());
+			if (e.getSource() == DisplayAdapterServicePanel.this.getRdbtnSingle() && getRdbtnSingle().isSelected())
+				getDisplayAdapterService().setAllTimes(getRdbtnAllTimes().isSelected());
 		};
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
@@ -92,6 +99,10 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 				connEtoM3(e);
 			if (e.getSource() == DisplayAdapterServicePanel.this.getAutoScaleCheckbox()) 
 				connEtoM7(e);
+			if (e.getSource() == DisplayAdapterServicePanel.this.getAutoScaleCheckbox()){
+				getRdbtnSingle().setEnabled(getAutoScaleCheckbox().isSelected());
+				getRdbtnAllTimes().setEnabled(getAutoScaleCheckbox().isSelected() && bEnableAutoAllTimes);
+			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			try {
@@ -107,7 +118,7 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeColorModelID"))) {
 					getColorMapButtonGroup().setSelection(String.valueOf(getDisplayAdapterService().getActiveColorModelID()));
 				}
-				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("valueDomain"))) { 
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals(DisplayAdapterService.VALUE_DOMAIN_PROP))) { 
 					setvalueDomain1(getDisplayAdapterService().getValueDomain());
 				}
 				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeScaleRange"))) { 
@@ -144,7 +155,28 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	}
 }
 
-
+private boolean bEnableAutoAllTimes = true;
+public void enableAutoAllTimes(boolean bEnable){
+	if(bEnable == getRdbtnAllTimes().isEnabled() && bEnable == bEnableAutoAllTimes){
+		return;
+	}
+	bEnableAutoAllTimes = bEnable;
+//	getRdbtnAllTimes().removeActionListener(ivjEventHandler);
+//	getRdbtnSingle().removeActionListener(ivjEventHandler);
+//	try{
+		if(!bEnableAutoAllTimes && getRdbtnAllTimes().isSelected()){
+			getRdbtnSingle().setSelected(true);
+		}
+		getDisplayAdapterService().setAllTimes(false);
+		getRdbtnAllTimes().setEnabled(bEnableAutoAllTimes);
+//	}finally{
+//		getRdbtnAllTimes().addActionListener(ivjEventHandler);
+//		getRdbtnSingle().addActionListener(ivjEventHandler);
+//	}
+}
+public boolean isEnableAutoAllTimes(){
+	return bEnableAutoAllTimes;
+}
 /**
  * Comment
  */
@@ -456,6 +488,7 @@ private void createHighLevelUserEvent(java.awt.AWTEvent event) {
  */
 private void displayAdapterServicePanel_Initialize() {
 	getDisplayAdapterService().setAutoScale(getAutoScaleCheckbox().isSelected());
+	getDisplayAdapterService().setAllTimes(getRdbtnAllTimes().isSelected());
 }
 
 
@@ -508,7 +541,7 @@ private javax.swing.JCheckBox getAutoScaleCheckbox() {
 			ivjAutoScaleCheckbox = new javax.swing.JCheckBox();
 			ivjAutoScaleCheckbox.setName("AutoScaleCheckbox");
 			ivjAutoScaleCheckbox.setSelected(false);
-			ivjAutoScaleCheckbox.setText("Auto (current time)");
+			ivjAutoScaleCheckbox.setText("Auto range");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -642,11 +675,31 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
 			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
+			ivjJPanel1.setBorder(new LineBorder(Color.black, 1));
 
 			java.awt.GridBagConstraints constraintsAutoScaleCheckbox = new java.awt.GridBagConstraints();
+			constraintsAutoScaleCheckbox.gridwidth = 2;
+			constraintsAutoScaleCheckbox.insets = new Insets(0, 0, 0, 5);
 			constraintsAutoScaleCheckbox.gridx = 0; constraintsAutoScaleCheckbox.gridy = 0;
-			constraintsAutoScaleCheckbox.anchor = java.awt.GridBagConstraints.WEST;
-			getJPanel1().add(getAutoScaleCheckbox(), constraintsAutoScaleCheckbox);
+			constraintsAutoScaleCheckbox.weightx = 1.0;
+			constraintsAutoScaleCheckbox.anchor = GridBagConstraints.WEST;
+			
+			ivjJPanel1.add(getAutoScaleCheckbox(), constraintsAutoScaleCheckbox);
+			
+			GridBagConstraints gbc_rdbtnSingle = new GridBagConstraints();
+			gbc_rdbtnSingle.weightx = 1.0;
+			gbc_rdbtnSingle.insets = new Insets(0, 0, 0, 5);
+			gbc_rdbtnSingle.gridx = 0;
+			gbc_rdbtnSingle.gridy = 1;
+			gbc_rdbtnSingle.anchor = GridBagConstraints.WEST;
+			ivjJPanel1.add(getRdbtnSingle(), gbc_rdbtnSingle);
+			GridBagConstraints gbc_rdbtnAllTimes = new GridBagConstraints();
+			gbc_rdbtnAllTimes.gridx = 1;
+			gbc_rdbtnAllTimes.gridy = 1;
+			gbc_rdbtnAllTimes.weightx = 1.0;
+			gbc_rdbtnAllTimes.anchor = GridBagConstraints.WEST;
+			ivjJPanel1.add(getRdbtnAllTimes(), gbc_rdbtnAllTimes);
+			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -884,7 +937,7 @@ private javax.swing.JPanel getScalePanel() {
 			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 0;
 			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsJPanel1.weightx = 1.0;
-			constraintsJPanel1.insets = new java.awt.Insets(0, 4, 0, 4);
+			constraintsJPanel1.insets = new Insets(4, 4, 4, 4);
 			getScalePanel().add(getJPanel1(), constraintsJPanel1);
 			// user code begin {1}
 			// user code end
@@ -1170,6 +1223,13 @@ private void changeSpecialColor(ActionEvent e){
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
+	ButtonGroup timeRangeButtonGroup = new ButtonGroup();
+	timeRangeButtonGroup.add(getRdbtnSingle());
+	timeRangeButtonGroup.add(getRdbtnAllTimes());
+	getRdbtnSingle().setSelected(true);
+	getRdbtnAllTimes().addActionListener(ivjEventHandler);
+	getRdbtnSingle().addActionListener(ivjEventHandler);
+	
 	getDisplayAdapterService().addPropertyChangeListener(ivjEventHandler);
 	getAutoScaleCheckbox().addActionListener(ivjEventHandler);
 	getColorMapButtonGroup().addPropertyChangeListener(ivjEventHandler);
@@ -1286,7 +1346,7 @@ private void initialize() {
 		constraintsColorGridPanel.gridx = 1; constraintsColorGridPanel.gridy = 1;
 		constraintsColorGridPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsColorGridPanel.weightx = 1.0;
-		constraintsColorGridPanel.weighty = 1.0;
+//		constraintsColorGridPanel.weighty = 1.0;
 		constraintsColorGridPanel.insets = new java.awt.Insets(0, 0, 4, 4);
 		add(getColorGridPanel(), constraintsColorGridPanel);
 
@@ -1294,12 +1354,13 @@ private void initialize() {
 		constraintsScalePanel.gridx = 1; constraintsScalePanel.gridy = 0;
 		constraintsScalePanel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsScalePanel.weightx = 1.0;
+//		constraintsScalePanel.weighty = 1.0;
 		constraintsScalePanel.insets = new java.awt.Insets(4, 0, 4, 4);
 		add(getScalePanel(), constraintsScalePanel);
 
 		java.awt.GridBagConstraints constraintsColorMapJLabel = new java.awt.GridBagConstraints();
 		constraintsColorMapJLabel.gridx = 0; constraintsColorMapJLabel.gridy = 0;
-constraintsColorMapJLabel.gridheight = 2;
+		constraintsColorMapJLabel.gridheight = 2;
 		constraintsColorMapJLabel.insets = new java.awt.Insets(10, 4, 6, 0);
 		add(getColorMapJLabel(), constraintsColorMapJLabel);
 		initConnections();
@@ -1312,6 +1373,8 @@ constraintsColorMapJLabel.gridheight = 2;
 }
 
 private static final Dimension mySize = new Dimension(150,250);
+private JRadioButton rdbtnSingle;
+private JRadioButton rdbtnAllTimes;
 @Override
 public Dimension getPreferredSize() {
 	// TODO Auto-generated method stub
@@ -1587,4 +1650,16 @@ public void setDisplayAdapterService(DisplayAdapterService newValue) {
 		specialColorsChanged();
 	}
 }
+	private JRadioButton getRdbtnSingle() {
+		if (rdbtnSingle == null) {
+			rdbtnSingle = new JRadioButton("at time");
+		}
+		return rdbtnSingle;
+	}
+	private JRadioButton getRdbtnAllTimes() {
+		if (rdbtnAllTimes == null) {
+			rdbtnAllTimes = new JRadioButton("all times (approx.)");
+		}
+		return rdbtnAllTimes;
+	}
 }
