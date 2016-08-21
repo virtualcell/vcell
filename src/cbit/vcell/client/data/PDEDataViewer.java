@@ -589,7 +589,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 		}
 		return varStatsArr;
 	}
-	
+		
 	BlockingTimer doUpdateTimer;
 	private void doUpdate(final AsynchClientTask dataTask){
 		if((doUpdateTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,doUpdateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {doUpdate(dataTask);}},"PDEDataViewer doUpdate..."))!=null){
@@ -2093,8 +2093,13 @@ public void setDataViewerManager(DataViewerManager dataViewerManager) throws Pro
 
 @Override
 public void setSimulationModelInfo(SimulationModelInfo simulationModelInfo) {
-	super.setSimulationModelInfo(simulationModelInfo);
-	postProcessPdeDataViewerPanel.setSimulationModelInfo(simulationModelInfo);
+	try{
+		getPDEPlotControlPanel1().removePropertyChangeListener(ivjEventHandler);
+		super.setSimulationModelInfo(simulationModelInfo);
+		postProcessPdeDataViewerPanel.setSimulationModelInfo(simulationModelInfo);
+	}finally{
+		getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
+	}
 }
 
 /**
