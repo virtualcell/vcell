@@ -77,14 +77,6 @@ public class MassActionSolver {
 		private void setReverseRate(Expression rate) {
 			rRate = rate;
 		}
-		public VCUnitDefinition getForwardRateUnit() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		public VCUnitDefinition getReverseRateUnit() {
-			// TODO Auto-generated method stub
-			return null;
-		}
 		public List<ReactionParticipant> getReactants() {
 			return reactants;
 		}
