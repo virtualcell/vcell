@@ -1,9 +1,11 @@
 package cbit.vcell.graph;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,7 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
+import cbit.vcell.client.desktop.biomodel.ReactionRuleParticipantSignaturePropertiesPanel;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -30,6 +33,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	
 	ReactionRule rr;
 	boolean isReactants;
+	boolean bWriteName = false;
 	int xOffset;
 	PointLocationInShapeContext locationContext = null;
 	
@@ -97,6 +101,9 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		}
 	}
 	
+	public void setWriteName(boolean bWriteName) {
+		this.bWriteName = bWriteName;
+	}
 	public void setPointLocationInShapeContext(PointLocationInShapeContext locationContext) {
 		this.locationContext = locationContext;
 	}
@@ -154,6 +161,10 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			paintContour(g);
 		}
 		
+		if(bWriteName) {	// flag is set only when we display the list of rules where a participant signature diagram shape belongs to.
+			paintName(g);
+		}
+		
 		if(locationContext != null && this == locationContext.getDeepestShape()) {
 			paintGhost(g, true);
 		} else {
@@ -164,7 +175,33 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			stls.paintSelf(g, bPaintContour);
 		}
 	}
-	public void paintGhost(Graphics g, boolean bShow) {
+	
+	private void paintName(Graphics g) {
+
+		Graphics2D g2 = (Graphics2D)g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		Color colorOld = g2.getColor();
+		Font fontOld = g2.getFont();
+		
+		g.setColor(Color.black);
+		int fontSize = fontOld.getSize();
+			
+		int textX = xPos - 7;
+		int textY =  yPos - ReactionRuleParticipantSignaturePropertiesPanel.ReservedSpaceForNameOnYAxis + fontSize;
+		g2.drawString("Rule: ", textX, textY);
+
+		Font font = fontOld.deriveFont((float) (fontOld.getSize())).deriveFont(Font.BOLD);
+		g.setFont(font);
+		fontSize = font.getSize();
+			
+		textX = textX + 30;
+		g2.drawString(rr.getDisplayName(), textX, textY);
+
+	    g2.setFont(fontOld);
+		g2.setColor(colorOld);
+	}
+	
+	private void paintGhost(Graphics g, boolean bShow) {
 		if(height == -1) {
 			height = SpeciesPatternLargeShape.defaultHeight;
 		}
@@ -201,7 +238,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);
 	}
-	public void paintContour(Graphics g) {
+	private void paintContour(Graphics g) {
 		
 		 if(shapePanel.isViewSingleRow()) {
 			 return;
@@ -221,6 +258,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		int xSp = xPos-SpeciesPatternLargeShape.calculateXExtent(shapePanel);
 		int ySP = yPos-3;
 		int hSP = SpeciesPatternLargeShape.defaultHeight-2+ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
+		
 		// the dimensions of participants contour is exactly 1 pixel wider than the dimensions of the species pattern
 		Rectangle2D rect = new Rectangle2D.Double(xSp-1, ySP-1, 2000, hSP+2);
 		

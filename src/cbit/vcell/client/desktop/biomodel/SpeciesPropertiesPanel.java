@@ -773,11 +773,11 @@ private void updateShape() {
 		}
 		if (selectedObjects[0] instanceof SpeciesContext) {
 			setSpeciesContext((SpeciesContext) selectedObjects[0]);
-		} else if(selectedObjects[0] instanceof RuleParticipantSignature) {
-			RuleParticipantSignature rps = (RuleParticipantSignature)selectedObjects[0];
-			SpeciesContext sc = new SpeciesContext(new Species("aaa", "bbb"), rps.getStructure(), null);
-			sc.setSpeciesPattern(rps.getSpeciesPattern());
-			setSpeciesContext(sc);
+//		} else if(selectedObjects[0] instanceof RuleParticipantSignature) {
+//			RuleParticipantSignature rps = (RuleParticipantSignature)selectedObjects[0];
+//			SpeciesContext sc = new SpeciesContext(new Species("aaa", "bbb"), rps.getStructure(), null);
+//			sc.setSpeciesPattern(rps.getSpeciesPattern());
+//			setSpeciesContext(sc);
 		} else {
 			setSpeciesContext(null);
 		}		

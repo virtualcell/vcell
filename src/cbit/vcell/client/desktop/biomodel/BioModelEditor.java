@@ -115,7 +115,8 @@ public class BioModelEditor extends DocumentEditor {
 	private SpeciesPropertiesPanel speciesPropertiesPanel = null;
 	private MolecularTypePropertiesPanel molecularTypePropertiesPanel = null;
 	private ObservablePropertiesPanel observablePropertiesPanel = null;
-
+	private ReactionRuleParticipantSignaturePropertiesPanel reactionRuleParticipantSignaturePropertiesPanel = null;
+	
 	private StructurePropertiesPanel structurePropertiesPanel = null;
 	private ParameterPropertiesPanel parameterPropertiesPanel = null;
 	private ReactionParticipantPropertiesPanel reactionParticipantPropertiesPanel = null;
@@ -525,6 +526,12 @@ private SpeciesPropertiesPanel getSpeciesPropertiesPanel() {
 	}
 	return speciesPropertiesPanel;
 }
+private ReactionRuleParticipantSignaturePropertiesPanel getReactionRuleParticipantSignaturePropertiesPanel() {
+	if (reactionRuleParticipantSignaturePropertiesPanel == null) {
+		reactionRuleParticipantSignaturePropertiesPanel = new ReactionRuleParticipantSignaturePropertiesPanel();
+	}
+	return reactionRuleParticipantSignaturePropertiesPanel;
+}
 private MolecularTypePropertiesPanel getMolecularTypePropertiesPanel() {
 	if (molecularTypePropertiesPanel == null) {
 		molecularTypePropertiesPanel = new MolecularTypePropertiesPanel();
@@ -639,6 +646,7 @@ private void initialize() {
 		getApplicationPropertiesPanel().setSelectionManager(selectionManager);
 		getStructurePropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesPropertiesPanel().setSelectionManager(selectionManager);
+		getReactionRuleParticipantSignaturePropertiesPanel().setSelectionManager(selectionManager);
 		getMolecularTypePropertiesPanel().setSelectionManager(selectionManager);
 		getObservablePropertiesPanel().setSelectionManager(selectionManager);
 		getParameterPropertiesPanel().setSelectionManager(selectionManager);
@@ -715,7 +723,7 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getBioModelEditorPathwayPanel();
 		} else if (singleSelection instanceof Model) {
 		} else if (singleSelection instanceof RuleParticipantSignature) {
-			bottomComponent = getSpeciesPropertiesPanel();
+			bottomComponent = getReactionRuleParticipantSignaturePropertiesPanel();
 		} else if (singleSelection instanceof CSGObject) {
 			bottomComponent = csgObjectPropertiesPanel;
 			csgObjectPropertiesPanel.setSimulationContext(getSelectedSimulationContext());
@@ -916,6 +924,7 @@ public void setBioModel(BioModel bioModel) {
 	getReactionRulePropertiesPanel().setBioModel(bioModel); 
 	getReactionPropertiesPanel().setBioModel(bioModel); 
 	getSpeciesPropertiesPanel().setBioModel(bioModel);
+	getReactionRuleParticipantSignaturePropertiesPanel().setBioModel(bioModel);
 	getMolecularTypePropertiesPanel().setBioModel(bioModel);
 	getObservablePropertiesPanel().setBioModel(bioModel);
 	bioPaxObjectPropertiesPanel.setBioModel(bioModel);

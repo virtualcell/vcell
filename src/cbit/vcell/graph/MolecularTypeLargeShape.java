@@ -412,17 +412,15 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 					ReactionRule reactionRule = (ReactionRule)owner;
 
 					switch (((RulesShapePanel)shapePanel).hasNoMatch(mtp)){
-					case CHANGED:{
+					case CHANGED:
 						primaryColor = Color.orange;
 						break;
-					}
-					case UNCHANGED:{
+					case UNCHANGED:
 						primaryColor = AbstractComponentShape.componentVeryLightGray;
 //						primaryColor = AbstractComponentShape.componentHidden;
 //						primaryColor = Color.lightGray;
 						break;
-					}
-					case ANALYSISFAILED:{
+					case ANALYSISFAILED:
 						ArrayList<Issue> issueList = new ArrayList<Issue>();
 						reactionRule.gatherIssues(new IssueContext(), issueList);
 						boolean bRuleHasErrorIssues = false;
@@ -439,7 +437,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 							primaryColor = Color.red.darker();
 						}
 						break;
-					}
+					default:
+						break;
 					}
 				} else {
 					RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
