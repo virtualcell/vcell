@@ -70,6 +70,13 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			for(int i = 0; i<rpList.size(); i++) {
 				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
 				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
+				if(shapePanel instanceof ParticipantSignatureShapePanel) {
+					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
+					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(rpList.get(i), ssp.getSignature(), ssp.getCriteria());
+					if(bMatchesSignature) {
+						sps.setMatchesSignature(true);
+					}
+				}
 //				if(i==0) { sps.setHighlight(true); }
 				if(i < rpList.size()-1) {
 					sps.addEndText("+");
@@ -91,6 +98,13 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			for(int i = 0; i<ppList.size(); i++) {
 				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
 				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
+				if(shapePanel instanceof ParticipantSignatureShapePanel) {
+					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
+					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(ppList.get(i), ssp.getSignature(), ssp.getCriteria());
+					if(bMatchesSignature) {
+						sps.setMatchesSignature(true);
+					}
+				}
 //				if(i==0) { sps.setHighlight(true); }
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");
@@ -162,7 +176,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		}
 		
 		if(bWriteName) {	// flag is set only when we display the list of rules where a participant signature diagram shape belongs to.
-			paintName(g);
+			paintRuleName(g);
 		}
 		
 		if(locationContext != null && this == locationContext.getDeepestShape()) {
@@ -176,7 +190,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		}
 	}
 	
-	private void paintName(Graphics g) {
+	private void paintRuleName(Graphics g) {
 
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -187,7 +201,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		int fontSize = fontOld.getSize();
 			
 		int textX = xPos - 7;
-		int textY =  yPos - ReactionRuleParticipantSignaturePropertiesPanel.ReservedSpaceForNameOnYAxis + fontSize;
+		int textY =  yPos - ReactionRuleParticipantSignaturePropertiesPanel.ReservedSpaceForNameOnYAxis + fontSize + 6;
 		g2.drawString("Rule: ", textX, textY);
 
 		Font font = fontOld.deriveFont((float) (fontOld.getSize())).deriveFont(Font.BOLD);

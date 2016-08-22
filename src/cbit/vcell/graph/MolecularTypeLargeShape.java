@@ -35,6 +35,7 @@ import org.vcell.util.Issue.Severity;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
 
 public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeInterface {
@@ -72,7 +73,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	private final MolecularType mt;
 	private final MolecularTypePattern mtp;
 	private final Displayable owner;	// the topmost entity to which this shape belongs (a rule, an observable, a molecular type, etc)
-
+	private boolean bMatchesSignature = false;
+	
 	List <MolecularComponentLargeShape> componentShapes = new ArrayList<MolecularComponentLargeShape>();
 		
 	private static int calculateBaseWidth(LargeShapePanel shapePanel) {
@@ -362,6 +364,13 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		return false;		// locationContext.mts remains null;
 	}
 	
+	public void setMatchesSignature(boolean bMatchesSignature) {
+		this.bMatchesSignature = bMatchesSignature;
+		for(MolecularComponentLargeShape mcls : componentShapes) {
+			mcls.setMatchesSignature(bMatchesSignature);
+		}
+	}
+	
 	@Override
 	public void paintSelf(Graphics g) {
 		paintSpecies(g);
@@ -439,6 +448,25 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 						break;
 					default:
 						break;
+					}
+				} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
+					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
+					if(ssp.getCriteria() == RuleParticipantSignature.Criteria.moleculeNumber) {
+						if(bMatchesSignature == true) {
+							primaryColor = AbstractComponentShape.componentVeryLightGray;
+						} else {
+							primaryColor = AbstractComponentShape.componentVeryLightGray;
+						}
+					} else {
+						RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
+						List<MolecularType> mtList = rbmmc.getMolecularTypeList();
+						int index = mtList.indexOf(mt);
+						index = index%7;
+//						if(bMatchesSignature == true) {
+							primaryColor = colorTable[index].darker().darker();
+//						} else {
+//							primaryColor = AbstractComponentShape.componentVeryLightGray;
+//						}
 					}
 				} else {
 					RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
@@ -629,4 +657,5 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	public String getDisplayType() {
 		return MolecularType.typeName;
 	}
+
 }
