@@ -21,6 +21,7 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.Severity;
@@ -30,6 +31,7 @@ import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
 
 public class MolecularComponentLargeShape extends AbstractComponentShape implements LargeShape, HighlightableShapeInterface {
@@ -57,6 +59,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	private final MolecularComponent mc;
 	private final MolecularComponentPattern mcp;
 	private final Displayable owner;
+	
+	private boolean bMatchesSignature = false;
+	
 	private final List <ComponentStateLargeShape> stateShapes = new ArrayList<ComponentStateLargeShape> ();
 	
 	public static int calculateComponentSeparation(LargeShapePanel shapePanel) {
@@ -131,6 +136,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		private final Displayable owner;
 		private String displayName;
 
+		private boolean bMatchesSignature = false;
 
 		public ComponentStateLargeShape(int x, int y, RbmElementAbstract reaComponent, RbmElementAbstract reaState, LargeShapePanel shapePanel, Displayable owner) {
 			this.xPos = x;
@@ -239,6 +245,10 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				this.width = width + xOffsetWidth;
 			}
 		}
+		
+		public void setMatchesSignature(boolean bMatchesSignature) {
+			this.bMatchesSignature = bMatchesSignature;
+		}
 
 		@Override
 		public void paintSelf(Graphics g) {
@@ -287,6 +297,28 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				}else{
 					g2.setColor(componentHidden);
 				}
+				
+			} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
+				Color stateColor = null;
+				ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
+				if(ssp.getCriteria() == RuleParticipantSignature.Criteria.moleculeNumber) {
+					if(bMatchesSignature == true) {
+						if(csd != null) {
+							stateColor = Color.orange;
+						} else {
+							stateColor = AbstractComponentShape.componentVeryLightGray;
+						}
+					} else {
+						stateColor = AbstractComponentShape.componentVeryLightGray;
+					}
+				} else {
+					if(csd == null) {
+						g2.setColor(componentHidden);		// show it gray if it has "any" state
+					} else {
+						g2.setColor(componentPaleYellow);
+					}
+				}
+				g2.setColor(stateColor);
 			} else {
 				if(!isHighlighted()) {
 					if(csd == null) {
@@ -643,6 +675,28 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 					break;
 				}
 				}
+			} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
+				ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
+				if(ssp.getCriteria() == RuleParticipantSignature.Criteria.moleculeNumber) {
+					if(bMatchesSignature == true) {
+						if(mcp.getBondType() != BondType.Possible) {
+							componentColor = Color.orange;
+						} else {
+							componentColor = AbstractComponentShape.componentVeryLightGray;
+						}
+					} else {
+						componentColor = AbstractComponentShape.componentVeryLightGray;
+					}
+				} else {
+					componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
+					if(mcp.isbVisible()) {
+						componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+					}
+					ComponentStatePattern csp = mcp.getComponentStatePattern();
+					if(csp != null && !csp.isAny()) {
+						componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+					}
+				}
 			} else {
 				componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
 				if(mcp.isbVisible()) {
@@ -691,6 +745,13 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		return false;		// point not inside this component shape, locationContext.mcs remains null;
 	}
 	
+	public void setMatchesSignature(boolean bMatchesSignature) {
+		this.bMatchesSignature = bMatchesSignature;
+		for(ComponentStateLargeShape csls : stateShapes) {
+			csls.setMatchesSignature(bMatchesSignature);
+		}
+	}
+
 	public void paintSelf(Graphics g) {
 		paintComponent(g);
 	}
@@ -794,4 +855,5 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	public String getDisplayType() {
 		return MolecularComponent.typeName;
 	}
+
 }

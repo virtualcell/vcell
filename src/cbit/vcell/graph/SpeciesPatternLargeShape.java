@@ -64,6 +64,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	private SpeciesPattern sp;
 	private String endText = new String();	// we display this after the Shape, it's position is outside "width"
 	private boolean isError = false;
+	private boolean bMatchesSignature = false;	// true only if this species pattern comes from a rule participant
+	// whose signature and compartment match the RuleParticipantSignatureDiagramShape selected in the Reaction Diagram
 	
 	List <BondSingle> bondSingles = new ArrayList <BondSingle>();	// component with no explicit bond
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
@@ -283,6 +285,13 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		}
 		return false;
 	}
+	
+	public void setMatchesSignature(boolean bMatchesSignature) {
+		this.bMatchesSignature = bMatchesSignature;
+		for(MolecularTypeLargeShape mtls : speciesShapes) {
+			mtls.setMatchesSignature(bMatchesSignature);
+		}
+	}
 
 	@Deprecated
 	public void paintContour(Graphics g, Rectangle2D rect) {
@@ -328,6 +337,29 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			g2.setColor(Color.white);
 			g2.draw(rect);
 		}
+	    g2.setPaint(paintOld);
+		g2.setColor(colorOld);
+	}
+	private void paintMatchesSignatureContour(Graphics g) {
+		// we don't show contour when we display single row (view only, no edit)
+		if(shapePanel == null) {
+			return;
+		}
+		if(height == -1) {
+			height = defaultHeight;
+		}
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		Paint paintOld = g2.getPaint();
+			
+		Color paleBlue = Color.getHSBColor(0.9f, 0.05f, 1.0f);		// hue, saturation, brightness
+		Rectangle2D rect = new Rectangle2D.Double(xPos-11, yPos-6, getWidth()+xExtent+6, height-8);
+
+		g2.setPaint(paleBlue);
+		g2.fill(rect);
+		g2.setColor(Color.red.darker());		// border
+		g2.draw(rect);
+
 	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);
 	}
@@ -434,9 +466,14 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		if(bPaintContour && (owner instanceof RbmObservable || owner instanceof ReactionRule)) {
+		if(shapePanel instanceof ParticipantSignatureShapePanel) {
+			if(bMatchesSignature == true) {
+				paintMatchesSignatureContour(g);
+			}
+		} else if(bPaintContour && (owner instanceof RbmObservable || owner instanceof ReactionRule)) {
 			paintContour(g);
 		}
+		
 		paintCompartment(g);	// TODO: bring this back once we add compartments to species patterns
 		
 //		// type the expression of the species pattern right above the shape

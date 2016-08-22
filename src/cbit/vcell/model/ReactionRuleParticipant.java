@@ -1,8 +1,5 @@
 package cbit.vcell.model;
 
-import java.util.List;
-
-import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -45,12 +42,6 @@ public abstract class ReactionRuleParticipant implements Displayable, ModelProce
 		return null;
 	}
 
-	public String calculateSignature(List<MolecularType> molecularTypeList) {
-		String signature = structure.getName() + ":";
-		signature += speciesPattern.calculateSignature(molecularTypeList);
-		return signature;
-	}
-	
 	public String getDisplayNameShort() {
 		return getSpeciesPattern().getNameShort();
 	}
@@ -66,6 +57,18 @@ public abstract class ReactionRuleParticipant implements Displayable, ModelProce
 		}
 		return false;
 	}
-	
+
+	public static boolean matchesSignature(ReactionRuleParticipant participant, RuleParticipantSignature signature, RuleParticipantSignature.Criteria crit) {
+		if(signature == null) {
+			return false;
+		}
+		if(participant.getStructure() != signature.getStructure()) {
+			return false;
+		}
+		if(signature.compareByCriteria(participant.getSpeciesPattern(), crit)) {
+			return true;
+		}
+		return false;
+	}
 	
 }

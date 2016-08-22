@@ -75,6 +75,7 @@ import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
+import cbit.vcell.graph.ParticipantSignatureShapePanel;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.ReactionRulePatternLargeShape;
@@ -109,7 +110,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 	
 	List<Pair<ReactionRulePatternLargeShape, ReactionRulePatternLargeShape>> ruleShapeList = new ArrayList<> ();
 	
-	private LargeShapePanel shapePanel;
+	private ParticipantSignatureShapePanel shapePanel;
 	private JScrollPane scrollPane;
 	private JPanel containerOfScrollPanel;
 
@@ -180,7 +181,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 	
 	private void initialize() {
 		try {
-			shapePanel = new LargeShapePanel() {
+			shapePanel = new ParticipantSignatureShapePanel() {
 				@Override
 				public void paintComponent(Graphics g) {
 					super.paintComponent(g);
@@ -325,6 +326,10 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 //			oldValue.removePropertyChangeListener(eventHandler);
 		}
 		signature = newValue;
+		if(shapePanel != null) {
+			shapePanel.setSignature(signature);
+		}
+		
 		if (newValue != null) {
 //			newValue.addPropertyChangeListener(eventHandler);
 		}
@@ -340,7 +345,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 
 	public static final int xOffsetInitial = 15;
 	public static final int yOffsetReactantInitial = 8;
-	public static final int ReservedSpaceForNameOnYAxis = 10;
+	public static final int ReservedSpaceForNameOnYAxis = 16;
 	
 	private void updateShape() {
 		int maxXOffset = 0;
@@ -350,6 +355,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 		int yOffset = yOffsetReactantInitial + ReservedSpaceForNameOnYAxis;
 		ReactionCartoon rc = (ReactionCartoon) signature.getModelCartoon();
 		RuleParticipantSignature.Criteria crit = rc.getRuleParticipantGroupingCriteria();
+		shapePanel.setCriteria(crit);
 		for(int i = 0; i<size; i++) {
 			ReactionRule rr = bioModel.getModel().getRbmModelContainer().getReactionRuleList().get(i);
 			boolean found = false;
@@ -375,7 +381,8 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			Pair<ReactionRulePatternLargeShape, ReactionRulePatternLargeShape> p = new Pair<> (reactantShape, productShape);
 			ruleShapeList.add(p);
 		}
-		int maxYOffset = Math.max(yOffsetReactantInitial+SpeciesPatternLargeShape.defaultHeight, yOffsetReactantInitial+SpeciesPatternLargeShape.defaultHeight*ruleShapeList.size());
+		int maxYOffset = Math.max(yOffsetReactantInitial + SpeciesPatternLargeShape.defaultHeight + ReservedSpaceForNameOnYAxis,
+				yOffsetReactantInitial + (SpeciesPatternLargeShape.defaultHeight + ReservedSpaceForNameOnYAxis)*ruleShapeList.size());
 		Dimension preferredSize = new Dimension(maxXOffset, maxYOffset);
 		
 		shapePanel.setPreferredSize(preferredSize);
