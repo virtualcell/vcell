@@ -24,6 +24,15 @@ public class RulesShapePanel extends LargeShapePanel {
 	private ModelRuleEntry modelRuleEntry = null;
 	private boolean bRuleAnalysisFailed = false;
 
+	private boolean bViewSingleRow = false;
+
+	public boolean isViewSingleRow() {
+		return bViewSingleRow;
+	}
+	public void setViewSingleRow(boolean bViewSingleRow) {
+		this.bViewSingleRow = bViewSingleRow;
+	}
+
 	enum RuleAnalysisChanged {
 		CHANGED,
 		UNCHANGED,

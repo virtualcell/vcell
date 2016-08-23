@@ -330,7 +330,10 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 	}
 	public void paintContour(Graphics g) {
 		// we don't show contour when we display single row (view only, no edit)
-		if(shapePanel == null || shapePanel.isViewSingleRow()) {
+		if(shapePanel == null) {
+			return;
+		}
+		if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
 			return;
 		}
 		if(height == -1) {

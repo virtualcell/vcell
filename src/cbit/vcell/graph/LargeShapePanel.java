@@ -17,7 +17,6 @@ import cbit.vcell.model.ReactionRule;
 public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	
 	private boolean showDifferencesOnly = false;
-	private boolean bViewSingleRow = false;
 	
 	// zooming the shape, 0 means normal size, a negative number means smaller shape
 	private static final int SmallestZoomFactor = -7;			// -7 is the smallest where the shapes scale decently well
@@ -50,12 +49,7 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	public void setShowDifferencesOnly(boolean showDifferencesOnly) {
 		this.showDifferencesOnly = showDifferencesOnly;
 	}
-	public boolean isViewSingleRow() {
-		return bViewSingleRow;
-	}
-	public void setViewSingleRow(boolean bViewSingleRow) {
-		this.bViewSingleRow = bViewSingleRow;
-	}
+
 	public boolean zoomLarger() {	// returns false when upper limit was reached
 		zoomFactor++;
 		if(zoomFactor >= LargestZoomFactor) {
