@@ -354,7 +354,10 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				return shapePanel.isHighlighted(csp);
 			} else if(owner instanceof ReactionRule) {
 				// we don't highlight when we display single row (view only, no edit)
-				if(shapePanel == null || shapePanel.isViewSingleRow()) {
+				if(shapePanel == null) {
+					return false;
+				}
+				if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
 					return false;
 				}
 				return shapePanel.isHighlighted(csp);
@@ -828,7 +831,10 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			return shapePanel.isHighlighted(mcp);
 		} else if(owner instanceof ReactionRule) {
 			// we don't highlight when we display single row (view only, no edit)
-			if(shapePanel == null || shapePanel.isViewSingleRow()) {
+			if(shapePanel == null) {
+				return false;
+			}
+			if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
 				return false;
 			}
 			return shapePanel.isHighlighted(mcp);

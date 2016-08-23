@@ -254,9 +254,13 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	}
 	private void paintContour(Graphics g) {
 		
-		 if(shapePanel.isViewSingleRow()) {
-			 return;
-		 }
+		if(shapePanel == null) {
+			return;
+		}
+		if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
+			return;
+		}
+		
 		if(height == -1) {
 			height = SpeciesPatternLargeShape.defaultHeight;
 		}
@@ -276,38 +280,21 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		// the dimensions of participants contour is exactly 1 pixel wider than the dimensions of the species pattern
 		Rectangle2D rect = new Rectangle2D.Double(xSp-1, ySP-1, 2000, hSP+2);
 		
-		if(shapePanel == null || shapePanel.isViewSingleRow()) {
-			// we don't show contour when we display single row (view only, no edit), hence always paint white
-			if(isHighlightedReactants() && isReactants) {
-				g2.setColor(Color.white);
-				g2.draw(rect);
-			} else if(!isHighlightedReactants() && isReactants) {
-				g2.setColor(Color.white);
-				g2.draw(rect);
-			}
-			else if(isHighlightedProducts() && !isReactants) {
-				g2.setColor(Color.white);
-				g2.draw(rect);
-			} else if(!isHighlightedProducts() && !isReactants) {
-				g2.setColor(Color.white);
-				g2.draw(rect);
-			}
-		} else {
-			if(isHighlightedReactants() && isReactants) {
-				g2.setColor(darkerBlue);
-				g2.draw(rect);
-			} else if(!isHighlightedReactants() && isReactants) {
-				g2.setColor(Color.white);
-				g2.draw(rect);
-			}
-			else if(isHighlightedProducts() && !isReactants) {
-				g2.setColor(darkerBlue);
-				g2.draw(rect);
-			} else if(!isHighlightedProducts() && !isReactants) {
-				g2.setColor(Color.white);
-				g2.draw(rect);
-			}
+
+		if(isHighlightedReactants() && isReactants) {
+			g2.setColor(darkerBlue);
+			g2.draw(rect);
+		} else if(!isHighlightedReactants() && isReactants) {
+			g2.setColor(Color.white);
+			g2.draw(rect);
+		} else if(isHighlightedProducts() && !isReactants) {
+			g2.setColor(darkerBlue);
+			g2.draw(rect);
+		} else if(!isHighlightedProducts() && !isReactants) {
+			g2.setColor(Color.white);
+			g2.draw(rect);
 		}
+
 	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);
 	}

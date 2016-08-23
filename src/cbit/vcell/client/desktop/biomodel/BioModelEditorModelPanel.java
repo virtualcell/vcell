@@ -1449,6 +1449,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				reactionCartoonEditorPanel.getReactionCartoon().setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria.full);
+
+				// if current selection is a RuleParticipantSignature object, reselect it to refresh the content of the properties panel
+				int selectedIndex = tabbedPane.getSelectedIndex();
+				if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
+					Object[] selectedObjects = reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects();
+					if(selectedObjects.length == 1 && selectedObjects[0] instanceof RuleParticipantSignature) {
+						Object thing = selectedObjects[0];
+						reactionCartoonEditorPanel.getReactionCartoon().deselect(thing);
+						reactionCartoonEditorPanel.getReactionCartoon().select(thing);
+					}
+				}
 			}
 		});
 		JMenuItem groupBySignatureMenuItem = new JMenuItem("Group by Molecules Signature");
@@ -1457,12 +1468,21 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				reactionCartoonEditorPanel.getReactionCartoon().setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria.moleculeNumber);
+				
+				int selectedIndex = tabbedPane.getSelectedIndex();
+				if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
+					Object[] selectedObjects = reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects();
+					if(selectedObjects.length == 1 && selectedObjects[0] instanceof RuleParticipantSignature) {
+						Object thing = selectedObjects[0];
+						reactionCartoonEditorPanel.getReactionCartoon().deselect(thing);
+						reactionCartoonEditorPanel.getReactionCartoon().select(thing);
+					}
+				}
 			}
 		});
 		menu.show(groupButton, 0, groupButton.getHeight());
-		
-		
 	}
+	
 	private void duplicateButtonPressed() {
 
 		computeCurrentSelectedTable();
