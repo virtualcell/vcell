@@ -295,7 +295,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.SundialsSolverOptions;
+import cbit.vcell.solver.SundialsPdeSolverOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -6160,10 +6160,10 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 			SmoldynSimulationOptions smoldynSimulationOptions = getSmoldySimulationOptions(smoldySimulationOptionsElement);
 			solverTaskDesc.setSmoldynSimulationOptions(smoldynSimulationOptions);			
 		}
-		Element sundialsSolverOptionsElement = param.getChild(XMLTags.SundialsSolverOptions, vcNamespace);
-		if (sundialsSolverOptionsElement != null) {
-			SundialsSolverOptions sundialsSolverOptions = getSundialsSolverOptions(sundialsSolverOptionsElement);
-			solverTaskDesc.setSundialsSolverOptions(sundialsSolverOptions);			
+		Element sundialsPdeSolverOptionsElement = param.getChild(XMLTags.SundialsSolverOptions, vcNamespace);
+		if (sundialsPdeSolverOptionsElement != null) {
+			SundialsPdeSolverOptions sundialsPdeSolverOptions = getSundialsPdeSolverOptions(sundialsPdeSolverOptionsElement);
+			solverTaskDesc.setSundialsPdeSolverOptions(sundialsPdeSolverOptions);			
 		}
 		Element chomboElement = param.getChild(XMLTags.ChomboSolverSpec, vcNamespace);		
 		if (chomboElement != null) {
@@ -6249,16 +6249,16 @@ private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimula
 	return sso;
 }
 
-private SundialsSolverOptions getSundialsSolverOptions(Element sundialsSolverOptionsElement) throws XmlParseException {
+private SundialsPdeSolverOptions getSundialsPdeSolverOptions(Element sundialsPdeSolverOptionsElement) throws XmlParseException {
 	
-	SundialsSolverOptions sundialsSolverOptions = null;	
-	if (sundialsSolverOptionsElement != null) {		
-		String temp = sundialsSolverOptionsElement.getChildText(XMLTags.SundialsSolverOptions_maxOrderAdvection, vcNamespace);
+	SundialsPdeSolverOptions sundialsPdeSolverOptions = null;	
+	if (sundialsPdeSolverOptionsElement != null) {		
+		String temp = sundialsPdeSolverOptionsElement.getChildText(XMLTags.SundialsSolverOptions_maxOrderAdvection, vcNamespace);
 		if (temp != null) {
-			sundialsSolverOptions = new SundialsSolverOptions(Integer.parseInt(temp));
+			sundialsPdeSolverOptions = new SundialsPdeSolverOptions(Integer.parseInt(temp));
 		}
 	}	
-	return sundialsSolverOptions;
+	return sundialsPdeSolverOptions;
 }
 
 public ModelParameter[] getModelParams(Element globalParams, Model model) throws XmlParseException {

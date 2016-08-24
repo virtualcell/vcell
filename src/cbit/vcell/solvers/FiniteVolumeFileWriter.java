@@ -1334,7 +1334,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 				" " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance() 
 				+ " " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + " " + solverTaskDesc.getTimeStep().getMaximumTimeStep());
 		if (simulation.getMathDescription().hasVelocity()) {
-			printWriter.print(" " + solverTaskDesc.getSundialsSolverOptions().getMaxOrderAdvection());
+			printWriter.print(" " + solverTaskDesc.getSundialsPdeSolverOptions().getMaxOrderAdvection());
 		}
 		printWriter.println();
 		Vector<Discontinuity> discontinuities = new Vector<Discontinuity>();
