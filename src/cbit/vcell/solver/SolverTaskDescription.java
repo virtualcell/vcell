@@ -72,7 +72,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private boolean bSerialParameterScan = false;
 	private SmoldynSimulationOptions smoldynSimulationOptions = null;
 	private NFsimSimulationOptions nfsimSimulationOptions = null;
-	private SundialsSolverOptions sundialsSolverOptions = null;
+	private SundialsPdeSolverOptions sundialsPdeSolverOptions = null;
 	private ChomboSolverSpec chomboSolverSpec = null;
 	/**
 	 * number of parallel processors to use for solution, if supported by
@@ -166,9 +166,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			nfsimSimulationOptions = null;
 		}
 		if (fieldSolverDescription.equals(SolverDescription.SundialsPDE)) {
-			sundialsSolverOptions = new SundialsSolverOptions(solverTaskDescription.sundialsSolverOptions);
+			sundialsPdeSolverOptions = new SundialsPdeSolverOptions(solverTaskDescription.sundialsPdeSolverOptions);
 		} else {
-			sundialsSolverOptions = null;
+			sundialsPdeSolverOptions = null;
 		}
 		if (solverTaskDescription.chomboSolverSpec != null) {
 			chomboSolverSpec = new ChomboSolverSpec(solverTaskDescription.chomboSolverSpec);
@@ -268,7 +268,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			if  (!Compare.isEqualOrNull(smoldynSimulationOptions,solverTaskDescription.smoldynSimulationOptions)) {
 				return false;
 			}
-			if  (!Compare.isEqualOrNull(sundialsSolverOptions,solverTaskDescription.sundialsSolverOptions)) {
+			if  (!Compare.isEqualOrNull(sundialsPdeSolverOptions,solverTaskDescription.sundialsPdeSolverOptions)) {
 				return false;
 			}
 			if (!Compare.isEqualOrNull(chomboSolverSpec,solverTaskDescription.chomboSolverSpec)) {
@@ -565,8 +565,8 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		if (smoldynSimulationOptions != null) {
 			buffer.append(smoldynSimulationOptions.getVCML());
 		}
-		if (sundialsSolverOptions != null) {
-			buffer.append(sundialsSolverOptions.getVCML());
+		if (sundialsPdeSolverOptions != null) {
+			buffer.append(sundialsPdeSolverOptions.getVCML());
 		}
 
 		if (chomboSolverSpec != null) {
@@ -622,11 +622,11 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					if (solverDescription.equals(SolverDescription.SundialsPDE)) {
 						setErrorTolerance(ErrorTolerance.getDefaultSundialsErrorTolerance());
 						setDefaultTimeStep(TimeStep.getDefaultSundialsTimeStep());
-						if (sundialsSolverOptions == null) {
-							sundialsSolverOptions = new SundialsSolverOptions();
+						if (sundialsPdeSolverOptions == null) {
+							sundialsPdeSolverOptions = new SundialsPdeSolverOptions();
 						}
 					} else {
-						sundialsSolverOptions = null;
+						sundialsPdeSolverOptions = null;
 						setErrorTolerance(ErrorTolerance.getDefaultSemiImplicitErrorTolerance());
 					}
 				} else if (!solverDescription.supports(getOutputTimeSpec())){
@@ -1043,7 +1043,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions)) {
 					setSmoldynSimulationOptions(new SmoldynSimulationOptions(tokens));
 				} else if (token.equalsIgnoreCase(VCML.SundialsSolverOptions)) {
-					setSundialsSolverOptions(new SundialsSolverOptions(tokens));
+					setSundialsPdeSolverOptions(new SundialsPdeSolverOptions(tokens));
 				} else	if (token.equalsIgnoreCase(VCML.ChomboSolverSpec)) {
 					chomboSolverSpec = new ChomboSolverSpec(tokens);
 				}
@@ -1345,8 +1345,8 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		return nfsimSimulationOptions;
 	}
 
-	public final SundialsSolverOptions getSundialsSolverOptions() {
-		return sundialsSolverOptions;
+	public final SundialsPdeSolverOptions getSundialsPdeSolverOptions() {
+		return sundialsPdeSolverOptions;
 	}
 
 	public final void setSmoldynSimulationOptions(SmoldynSimulationOptions smoldynSimulationOptions) {
@@ -1365,11 +1365,11 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 	}
 
-	public final void setSundialsSolverOptions(SundialsSolverOptions sundialsSolverOptions) {
-		if (!Matchable.areEqual(this.sundialsSolverOptions,sundialsSolverOptions) ) {
-			SundialsSolverOptions oldValue = this.sundialsSolverOptions;
-			this.sundialsSolverOptions = sundialsSolverOptions;
-			firePropertyChange(PROPERTY_SUNDIALS_SOLVER_OPTIONS, oldValue, sundialsSolverOptions);
+	public final void setSundialsPdeSolverOptions(SundialsPdeSolverOptions sundialsPdeSolverOptions) {
+		if (!Matchable.areEqual(this.sundialsPdeSolverOptions,sundialsPdeSolverOptions) ) {
+			SundialsPdeSolverOptions oldValue = this.sundialsPdeSolverOptions;
+			this.sundialsPdeSolverOptions = sundialsPdeSolverOptions;
+			firePropertyChange(PROPERTY_SUNDIALS_SOLVER_OPTIONS, oldValue, sundialsPdeSolverOptions);
 		}
 	}
 

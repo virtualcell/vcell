@@ -468,7 +468,7 @@ private void refresh() {
 		} else {
 			// variable time step solvers shows min and max, but sundials solvers don't show min
 			enableDefaultTimeStep(false);
-			if (solverDescription.isSundialsSolver()) {
+			if (solverDescription.hasSundialsTimeStepping()) {
 				enableMinTimeStep(false);
 			}
 			enableMaxTimeStep(true);			

@@ -73,7 +73,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private StochSimOptionsPanel stochSimOptionsPanel = null;
 	private SmoldynSimulationOptionsPanel smoldynSimulationOptionsPanel = null;
 	private NFSimSimulationOptionsPanel nfsimSimulationOptionsPanel = null;
-	private SundialsSolverOptionsPanel sundialsSolverOptionsPanel = null;
+	private SundialsPdeSolverOptionsPanel sundialsPdeSolverOptionsPanel = null;
 
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private CollapsiblePanel generalOptionsPanel;
@@ -432,15 +432,15 @@ private SmoldynSimulationOptionsPanel getSmoldynSimulationOptionsPanel() {
 	return smoldynSimulationOptionsPanel;
 }
 
-private SundialsSolverOptionsPanel getSundialsSolverOptionsPanel() {
-	if (sundialsSolverOptionsPanel == null) {
+private SundialsPdeSolverOptionsPanel getSundialsPdeSolverOptionsPanel() {
+	if (sundialsPdeSolverOptionsPanel == null) {
 		try {
-			sundialsSolverOptionsPanel = new SundialsSolverOptionsPanel();
+			sundialsPdeSolverOptionsPanel = new SundialsPdeSolverOptionsPanel();
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return sundialsSolverOptionsPanel;
+	return sundialsPdeSolverOptionsPanel;
 }
 
 /**
@@ -802,7 +802,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getSundialsSolverOptionsPanel(), gbc);
+		add(getSundialsPdeSolverOptionsPanel(), gbc);
 
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -930,7 +930,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			getNFSimSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getSmoldynSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getOutputOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription, unitInfo);
-			getSundialsSolverOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
+			getSundialsPdeSolverOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			stopAtSpatiallyUniformPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			dataProcessingInstructionPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getTimeBoundsPanel().setTimeBounds(getTornOffSolverTaskDescription().getTimeBounds());

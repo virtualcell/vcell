@@ -127,7 +127,7 @@ public class SolverDescriptionRegression {
 		dest.println(se.isNonSpatialStochasticSolver());
 		dest.println(se.isSemiImplicitPdeSolver());
 		dest.println(se.isSpatialStochasticSolver());
-		dest.println(se.isSundialsSolver());
+		dest.println(se.hasSundialsTimeStepping());
 	}
 	
 	public static Collection<SolverDescription> getSupportingSolverDescriptionse(SolverSelector mathDescription) {

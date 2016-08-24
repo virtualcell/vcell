@@ -257,7 +257,7 @@ import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.SundialsSolverOptions;
+import cbit.vcell.solver.SundialsPdeSolverOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -4542,9 +4542,9 @@ private Element getXML(SolverTaskDescription param) {
 	if (nfsimSimulationOptions != null) {		
 		solvertask.addContent(getXML(nfsimSimulationOptions));
 	}
-	SundialsSolverOptions sundialsSolverOptions = param.getSundialsSolverOptions();
-	if (sundialsSolverOptions != null) {		
-		solvertask.addContent(getXML(sundialsSolverOptions));
+	SundialsPdeSolverOptions sundialsPdeSolverOptions = param.getSundialsPdeSolverOptions();
+	if (sundialsPdeSolverOptions != null) {		
+		solvertask.addContent(getXML(sundialsPdeSolverOptions));
 	}
 	ChomboSolverSpec chomboSolverSpec = param.getChomboSolverSpec();
 	if (chomboSolverSpec != null) {
@@ -4627,7 +4627,7 @@ private Element getXML(SmoldynSimulationOptions sso) {
 	return ssoElement;
 }
 
-private Element getXML(SundialsSolverOptions sso) {
+private Element getXML(SundialsPdeSolverOptions sso) {
 	Element ssoElement = null;
 	if (sso != null) {
 		ssoElement = new Element(XMLTags.SundialsSolverOptions);

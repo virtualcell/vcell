@@ -482,7 +482,7 @@ public enum SolverDescription {
 		return supportedTimeSpec.supports(outputTimeSpec);
 	}
 
-	public boolean isSundialsSolver() {
+	public boolean hasSundialsTimeStepping() {
 		switch (this) {
 		case CVODE:
 		case IDA:

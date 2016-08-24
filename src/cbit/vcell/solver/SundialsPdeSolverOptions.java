@@ -19,31 +19,31 @@ import org.vcell.util.Matchable;
 import cbit.vcell.math.VCML;
 
 @SuppressWarnings("serial")
-public class SundialsSolverOptions implements Matchable, Serializable {
+public class SundialsPdeSolverOptions implements Matchable, Serializable {
 	private final static int DEFAULT_MAX_ORDER_ADVECTION = 2;
 	
 	private int maxOrderAdvection = DEFAULT_MAX_ORDER_ADVECTION;
 	
-	public SundialsSolverOptions() {
+	public SundialsPdeSolverOptions() {
 		
 	}
-	public SundialsSolverOptions(int order) {
+	public SundialsPdeSolverOptions(int order) {
 		maxOrderAdvection = order;
 	}
-	public SundialsSolverOptions(SundialsSolverOptions sundialsSolverOptions) {
-		maxOrderAdvection = sundialsSolverOptions.maxOrderAdvection;
+	public SundialsPdeSolverOptions(SundialsPdeSolverOptions sundialsPdeSolverOptions) {
+		maxOrderAdvection = sundialsPdeSolverOptions.maxOrderAdvection;
 	}
-	public SundialsSolverOptions(CommentStringTokenizer tokens) throws DataAccessException {
+	public SundialsPdeSolverOptions(CommentStringTokenizer tokens) throws DataAccessException {
 		this();
 		readVCML(tokens);
 	}
 	
 	public boolean compareEqual(Matchable obj) {
-		if (!(obj instanceof SundialsSolverOptions)) {
+		if (!(obj instanceof SundialsPdeSolverOptions)) {
 			return false;
 		}
-		SundialsSolverOptions sundialsSolverOptions = (SundialsSolverOptions)obj;
-		return maxOrderAdvection == sundialsSolverOptions.maxOrderAdvection;
+		SundialsPdeSolverOptions sundialsPdeSolverOptions = (SundialsPdeSolverOptions)obj;
+		return maxOrderAdvection == sundialsPdeSolverOptions.maxOrderAdvection;
 	}
 	
 	public String getVCML() {		

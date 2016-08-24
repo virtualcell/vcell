@@ -30,10 +30,10 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.SundialsSolverOptions;
+import cbit.vcell.solver.SundialsPdeSolverOptions;
 
 @SuppressWarnings("serial")
-public class SundialsSolverOptionsPanel extends CollapsiblePanel {
+public class SundialsPdeSolverOptionsPanel extends CollapsiblePanel {
 	
 	private SolverTaskDescription solverTaskDescription = null;	
 	private JComboBox ivjJComboBoxMaxOrder = null;	
@@ -58,7 +58,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == maxOrderHelpButton) {
-				DialogUtils.showInfoDialog(SundialsSolverOptionsPanel.this, "Max order for BDF method", "<html>cvode includes an algorithm, " +
+				DialogUtils.showInfoDialog(SundialsPdeSolverOptionsPanel.this, "Max order for BDF method", "<html>cvode includes an algorithm, " +
 						"stald (STAbility Limit Detection), which provides protection against " +
 						"potentially unstable behavior of the BDF multistep integration methods is certain situations, as " +
 						"described below. " +
@@ -69,7 +69,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 						"in the system are stable, the method is also stable for any choice of step size, at least in the sense of" +
 						"a local linear stability analysis. " +
 						"<p>At orders 3 to 5, the BDF methods are not A-stable, although they are <i>stiffly</i> stable. In each" +
-						"case, in order for the method to be stable at step size <i>h</i> on the scalar model problem, the product \u03BBh� " +
+						"case, in order for the method to be stable at step size <i>h</i> on the scalar model problem, the product \u03BBh? " +
 						"must lie in <i>a region of absolute stability</i>. That region excludes a portion of the left half-plane that is " +
 						"concentrated near the imaginary axis. The size of that region of instability grows as the order increases " +
 						"from 3 to 5. What this means is that, when running BDF at any of these orders, if an eigenvalue \u03BB of " +
@@ -86,7 +86,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 						"to step sizes on the order of 1/\u03BD. It is in this situation that the new option may be of great value." +
 						"<p>In terms of partial differential equations, the typical problems for which the stability limit detection" +
 						" option is appropriate are ODE systems resulting from semi-discretized PDEs " +
-						"(i.e., PDEs discretized in space) with advection and di�usion, but with advection dominating over diffusion. " +
+						"(i.e., PDEs discretized in space) with advection and di?usion, but with advection dominating over diffusion. " +
 						"Diffusion alone produces pure decay modes, while advection tends to produce undamped oscillatory modes. A mix of" +
 						"the two with advection dominant will have weakly damped oscillatory modes.</html>");	
 			}
@@ -94,7 +94,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 		}
 	}
 	
-	public SundialsSolverOptionsPanel() {
+	public SundialsPdeSolverOptionsPanel() {
 		super("Advanced Solver Options", false);
 		initialize();		
 	}
@@ -193,7 +193,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 		}
 		try{
 			int order = (Integer) ivjJComboBoxMaxOrder.getSelectedItem();
-			solverTaskDescription.setSundialsSolverOptions(new SundialsSolverOptions(order));			
+			solverTaskDescription.setSundialsPdeSolverOptions(new SundialsPdeSolverOptions(order));			
 		} catch(Exception e){
 			PopupGenerator.showErrorDialog(this, e.getMessage(), e);
 		}
@@ -209,7 +209,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 		}
 			
 		setVisible(true);
-		SundialsSolverOptions sso = solverTaskDescription.getSundialsSolverOptions();	
+		SundialsPdeSolverOptions sso = solverTaskDescription.getSundialsPdeSolverOptions();	
 		ivjJComboBoxMaxOrder.setSelectedItem(sso.getMaxOrderAdvection());
 	}
 	
@@ -218,9 +218,9 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			
 			javax.swing.JFrame frame = new javax.swing.JFrame();
-			SundialsSolverOptionsPanel aSundialsSolverOptionsPanel;
-			aSundialsSolverOptionsPanel = new SundialsSolverOptionsPanel();
-			frame.setContentPane(aSundialsSolverOptionsPanel);
+			SundialsPdeSolverOptionsPanel aSundialsPdeSolverOptionsPanel;
+			aSundialsPdeSolverOptionsPanel = new SundialsPdeSolverOptionsPanel();
+			frame.setContentPane(aSundialsPdeSolverOptionsPanel);
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {
 				public void windowClosing(java.awt.event.WindowEvent e) {
 					System.exit(0);
