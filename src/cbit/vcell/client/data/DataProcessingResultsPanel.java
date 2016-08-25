@@ -129,7 +129,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,newPDEDataContext,this.pdeDataContext,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update(newPDEDataContext);}},"DataProcessingResultsPanel update..."))!=null){
 			return;
 		}
-		if(this.pdeDataContext == newPDEDataContext){
+		if(newPDEDataContext != null && this.pdeDataContext == newPDEDataContext && dataProcessingOutputInfo != null && newPDEDataContext.getTimePoints().length == dataProcessingOutputInfo.getVariableTimePoints().length){
 			return;
 		}
 		AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
