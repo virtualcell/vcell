@@ -2101,8 +2101,13 @@ public void setDataViewerManager(DataViewerManager dataViewerManager) throws Pro
 
 @Override
 public void setSimulationModelInfo(SimulationModelInfo simulationModelInfo) {
-	super.setSimulationModelInfo(simulationModelInfo);
-	postProcessPdeDataViewerPanel.setSimulationModelInfo(simulationModelInfo);
+	try{
+		getPDEPlotControlPanel1().removePropertyChangeListener(ivjEventHandler);
+		super.setSimulationModelInfo(simulationModelInfo);
+		postProcessPdeDataViewerPanel.setSimulationModelInfo(simulationModelInfo);
+	}finally{
+		getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
+	}
 }
 
 /**
