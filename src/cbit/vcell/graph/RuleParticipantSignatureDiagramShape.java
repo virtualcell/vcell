@@ -19,26 +19,20 @@ import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.ShapePaintUtil;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModelPreferences;
-import cbit.gui.graph.ShapeSpaceManager;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.RuleParticipantSignature;
 
 public class RuleParticipantSignatureDiagramShape extends ElipseShape {
