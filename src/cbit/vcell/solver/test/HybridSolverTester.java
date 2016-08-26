@@ -67,6 +67,7 @@ import cbit.vcell.xml.XmlHelper;
  * @author: Tracy LI
  */
 public class HybridSolverTester {
+	private static final String POSTPROC = "postproc";
 	private static final String varNameDelimiter = ":";
 	private String mathModelVCMLFileName = null;
 	private int startTrialNo = 1;
@@ -279,7 +280,7 @@ public class HybridSolverTester {
 			simTimes.add(timePoint);
 		}
 		
-		SimLocHelper simLocHelper = null;
+		SimLocHelper simLocHelper0 = null;
 		
 		ArrayList<String> simVars = new ArrayList<String>();
 		st = new StringTokenizer(altArgsHelper.varnames, ":");
@@ -293,8 +294,11 @@ public class HybridSolverTester {
 		while(true){
 			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobCounter);
 			SimulationData simData = null;
+			DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo;
 			try{
 				simData = new SimulationData(vcSimulationDataIdentifier, userSimDataDir, null, null);
+				dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)
+					DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimulationDataIdentifier, true, null), new File(userSimDataDir,SimulationData.createCanonicalPostProcessFileName(vcSimulationDataIdentifier)));
 			}catch(FileNotFoundException e){
 				if(jobCounter == 0){
 					System.out.println("found no trials matching SimID="+altArgsHelper.simID+" in user dir "+userSimDataDir.getAbsolutePath());
@@ -303,10 +307,10 @@ public class HybridSolverTester {
 				}
 				break;
 			}
-			if(simLocHelper == null){
-				simLocHelper = calcSimLocs(altArgsHelper.dataIndexes,simData.getMesh());
+			if(simLocHelper0 == null && !altArgsHelper.dataIndexes.equals(POSTPROC)){
+				simLocHelper0 = calcSimLocs(altArgsHelper.dataIndexes,simData.getMesh());
 			}
-			double[][][] trialData = new double[simTimes.size()][simLocHelper.boxToLocs.size()][simVars.size()];
+			double[][][] trialData = new double[simTimes.size()][(simLocHelper0==null?1:simLocHelper0.boxToLocs.size())][simVars.size()];
 			if(jobCounter == 0){
 				//Convert user input times to actual data times
 				double[] allDatasetTimes = simData.getDataTimes();
@@ -334,26 +338,33 @@ public class HybridSolverTester {
 					System.out.println(dataIdentifiers[j]);
 				}
 				
-				printheader(altArgsHelper,simTimes, simLocHelper, simVars, fw,TIME_SPACE_EXTRA);
+				printheader(altArgsHelper,simTimes, simLocHelper0, simVars, fw,TIME_SPACE_EXTRA);
 			}
 
 			for (int times = 0; times < simTimes.size(); times++) {
 				double timePoint = simTimes.get(times);
 				for (int vars = 0; vars < simVars.size(); vars++) {
-					SimDataBlock simDataBlock = simData.getSimDataBlock(null, simVars.get(vars), timePoint);
-					double[] data = simDataBlock.getData();
-					for (int locs = 0; locs < simLocHelper.boxToLocs.size(); locs++) {
+					double[] data = null;
+					if(altArgsHelper.dataIndexes.equals(POSTPROC)){
+						data = dataProcessingOutputInfo.getVariableStatValues().get(simVars.get(vars)+"_average");
+					}else{
+						SimDataBlock simDataBlock = simData.getSimDataBlock(null, simVars.get(vars), timePoint);
+						data = simDataBlock.getData();
+					}
+					for (int locs = 0; locs < trialData[times].length; locs++) {
 						double val;
-						if(simLocHelper.boxToLocs.get(locs).size() == 1){//point
+						if(simLocHelper0 != null && simLocHelper0.boxToLocs.get(locs).size() == 1){//point
 //							System.out.println("pointIndex="+simLocHelper.boxToLocs.get(locs).get(0));
-							val = data[simLocHelper.boxToLocs.get(locs).get(0)];
-						}else{//box, calculate the average, could be concentration or counts
+							val = data[simLocHelper0.boxToLocs.get(locs).get(0)];
+						}else if (simLocHelper0 != null){//box, calculate the average, could be concentration or counts
 							double accum = 0;
-							for(Integer locIndex:simLocHelper.boxToLocs.get(locs)){
+							for(Integer locIndex:simLocHelper0.boxToLocs.get(locs)){
 //								System.out.println("boxIndex="+locIndex);
 								accum+= data[locIndex];
 							}
-							val = accum / simLocHelper.boxToLocs.get(locs).size();
+							val = accum / simLocHelper0.boxToLocs.get(locs).size();
+						}else{//PostProcess
+							val = data[times];
 						}
 						trialData[times][locs][vars] = val;
 					}
@@ -361,7 +372,7 @@ public class HybridSolverTester {
 			}
 			fw.write("r="+runIndex+" s="+jobCounter+",");
 			for (int times = 0; times < simTimes.size(); times++) {
-				for (int locs = 0; locs < simLocHelper.boxToLocs.size(); locs++) {
+				for (int locs = 0; locs < trialData[times].length; locs++) {
 					for (int vars = 0; vars < simVars.size(); vars++) {
 //						System.out.println("job="+jobCounter+" time="+simTimes.get(times)+" loc="+simLocHelper.boxToID.get(locs)+" var="+simVars.get(vars)+" data="+trialData[times][locs][vars]);
 						fw.write(trialData[times][locs][vars]+",");
@@ -599,7 +610,7 @@ public class HybridSolverTester {
 		if(timeSpaceExtra > 0){
 			timeSpaceExtraCommas = commas.substring(0, timeSpaceExtra);
 		}
-		int locVarNum = simLocHelper.boxToLocs.size()*(simVars.size()+1);
+		int locVarNum = (simLocHelper==null?1:simLocHelper.boxToLocs.size())*(simVars.size()+1);
 		fw.write(",");
 		for (int times = 0; times < simTimes.size(); times++) {
 			double timePoint = simTimes.get(times);
@@ -607,21 +618,23 @@ public class HybridSolverTester {
 			fw.write(timeSpaceExtraCommas);
 		}
 		fw.write("\n");
-		fw.write(",");
-		for (int times = 0; times < simTimes.size(); times++) {
-			for (int locs = 0; locs < simLocHelper.boxToLocs.size(); locs++) {
-				if(simLocHelper.boxToLocs.get(locs).size() == 1){
-					fw.write(simLocHelper.boxToID.get(locs)+commas.substring(0, simVars.size()+1));
-				}else{
-					fw.write(simLocHelper.boxToID.get(locs)+" ("+simLocHelper.boxToLocs.get(locs).size()+")"+commas.substring(0, simVars.size()+1));					
+		if(!altArgsHelper.dataIndexes.equals(POSTPROC)){
+			fw.write(",");
+			for (int times = 0; times < simTimes.size(); times++) {
+				for (int locs = 0; locs < simLocHelper.boxToLocs.size(); locs++) {
+					if(simLocHelper.boxToLocs.get(locs).size() == 1){
+						fw.write(simLocHelper.boxToID.get(locs)+commas.substring(0, simVars.size()+1));
+					}else{
+						fw.write(simLocHelper.boxToID.get(locs)+" ("+simLocHelper.boxToLocs.get(locs).size()+")"+commas.substring(0, simVars.size()+1));					
+					}
 				}
+				fw.write(timeSpaceExtraCommas);
 			}
-			fw.write(timeSpaceExtraCommas);
+			fw.write("\n");
 		}
-		fw.write("\n");
 		fw.write(",");
 		for (int times = 0; times < simTimes.size(); times++) {
-			for (int locs = 0; locs < simLocHelper.boxToLocs.size(); locs++) {
+			for (int locs = 0; locs < (simLocHelper==null?1:simLocHelper.boxToLocs.size()); locs++) {
 				for (int vars = 0; vars < simVars.size(); vars++) {
 					String var = simVars.get(vars);
 					fw.write("\""+var+"\""+",");
