@@ -118,76 +118,34 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 	}
 	private Color setComponentColorNormal() {
 		if(owner == null) {
-//			return componentBad;
 			return Color.red;
 		}
-//		Color componentColor = componentBad;
 		Color componentColor = Color.red;
 
 		if(owner instanceof MolecularType) {
-			componentColor = componentGreen;
+			componentColor = Color.yellow;
 		} else if(owner instanceof SpeciesContext) {
-			componentColor = componentGreen;
+			componentColor = Color.yellow;
 		} else if(mcp != null && owner instanceof RbmObservable) {
-			componentColor = componentHidden;
-			if(mcp.isbVisible()) {
-				componentColor = componentGreen;
-			}
-			ComponentStatePattern csp = mcp.getComponentStatePattern();
-			if(csp != null && !csp.isAny()) {
-				componentColor = componentGreen;
+			componentColor = componentVeryLightGray;
+			if(mcp.getBondType() != BondType.Possible) {
+				componentColor = Color.yellow;
 			}
 		} else if(owner instanceof SimpleReaction || owner instanceof FluxReaction) {
-			componentColor = componentHidden;
-			if(mcp.isbVisible()) {
-				componentColor = componentGreen;
-			}
-			ComponentStatePattern csp = mcp.getComponentStatePattern();
-			if(csp != null && !csp.isAny()) {
-				componentColor = componentGreen;
+			componentColor = componentVeryLightGray;
+			if(mcp.getBondType() != BondType.Possible) {
+				componentColor = Color.yellow;
 			}
 		} else if(owner instanceof ReactionRule) {
-			componentColor = componentHidden;
-			if(shapeManager != null && shapeManager.isShowDifferencesOnly()) {
-				switch (((RulesShapePanel)shapeManager).hasBondChanged(mcp)){
-				case CHANGED:
-					componentColor = Color.orange;
-					break;
-				}
-			} else {
-				if(mcp.isbVisible()) {
-					componentColor = componentGreen;
-				}
-				ComponentStatePattern csp = mcp.getComponentStatePattern();
-				if(csp != null && !csp.isAny()) {
-					componentColor = componentGreen;
-				}
+			componentColor = componentVeryLightGray;
+			if(mcp.getBondType() != BondType.Possible) {
+				componentColor = Color.yellow;
 			}
 		}
-//		if(!mc.getComponentStateDefinitions().isEmpty()) {
-//			// comment this out if don't want to show the states at all
-//			componentColor = componentYellow;
-//		}
 		if(AbstractComponentShape.hasErrorIssues(owner, mcp, mc)) {
-//			componentColor = componentBad;
 			componentColor = Color.red;
 		}
 		return componentColor;
-
-//		Old way of doing it below
-//		Color componentColor = componentBad;
-//		if(mc.getComponentStateDefinitions().isEmpty()) {
-//			componentColor = componentGreen;
-//		} else {
-//			componentColor = componentYellow;
-//		}
-//		if(isHidden(owner, mcp)) {
-//			componentColor = componentHidden;
-//		}
-//		if(hasIssues(owner, mcp, mc)) {
-//			componentColor = componentBad;
-//		}
-//		return componentColor;
 	}
 	
 	@Override
@@ -219,19 +177,16 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 		
 		if(mc.getComponentStateDefinitions().size()>0) {
 			if(getDisplayRequirements() == DisplayRequirements.highlightBonds) {
-				g2.setColor(componentHidden);
+				g2.setColor(componentVeryLightGray);
 			} else {
-				if(shapeManager != null && owner instanceof ReactionRule && shapeManager.isShowDifferencesOnly()) {
-					switch (((RulesShapePanel)shapeManager).hasStateChanged(mcp)){
-					case CHANGED:
-						g2.setColor(Color.orange);
-						break;
-					case UNCHANGED:
-						g2.setColor(componentHidden);
-						break;
+				g2.setColor(componentVeryLightGray);
+				if(owner instanceof MolecularType) {
+					g2.setColor(Color.yellow);
+				} else if(mcp != null) {
+					ComponentStatePattern csp = mcp.getComponentStatePattern();
+					if(csp != null && !csp.isAny()) {
+						g2.setColor(Color.yellow);
 					}
-				} else {
-					g2.setColor(componentYellow);
 				}
 			}
 			g2.fillOval(xPos + width - 5, yPos-2, 5, 5);
