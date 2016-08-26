@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.rmi.Naming;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -274,10 +275,14 @@ public class HybridSolverTester {
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(altArgsHelper.simID), altArgsHelper.user);
 		boolean bInit = runIndex == 0;
 		ArrayList<Double> simTimes = new ArrayList<Double>();
-		StringTokenizer st = new StringTokenizer(altArgsHelper.times, ":");
-		while(st.hasMoreTokens()){
-			double timePoint = Double.parseDouble(st.nextToken());
-			simTimes.add(timePoint);
+		StringTokenizer st = null;
+		if(altArgsHelper.times.equals("all")){
+		}else{
+			st = new StringTokenizer(altArgsHelper.times, ":");
+			while(st.hasMoreTokens()){
+				double timePoint = Double.parseDouble(st.nextToken());
+				simTimes.add(timePoint);
+			}
 		}
 		
 		SimLocHelper simLocHelper0 = null;
@@ -291,6 +296,7 @@ public class HybridSolverTester {
 		
 		int jobCounter = 0;
 		final int TIME_SPACE_EXTRA = 0;
+		double[][][] trialData = null;
 		while(true){
 			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobCounter);
 			SimulationData simData = null;
@@ -310,26 +316,33 @@ public class HybridSolverTester {
 			if(simLocHelper0 == null && !altArgsHelper.dataIndexes.equals(POSTPROC)){
 				simLocHelper0 = calcSimLocs(altArgsHelper.dataIndexes,simData.getMesh());
 			}
-			double[][][] trialData = new double[simTimes.size()][(simLocHelper0==null?1:simLocHelper0.boxToLocs.size())][simVars.size()];
 			if(jobCounter == 0){
-				//Convert user input times to actual data times
 				double[] allDatasetTimes = simData.getDataTimes();
-				for (int times = 0; times < simTimes.size(); times++) {
-					double masterDelta = Double.POSITIVE_INFINITY;
-					double timePoint = -1;
-					for (int j = 0; j < allDatasetTimes.length; j++) {
-						double tempDelta = Math.abs(simTimes.get(times)-allDatasetTimes[j]);
-						if(tempDelta < masterDelta){
-							masterDelta = tempDelta;
-							timePoint = allDatasetTimes[j];
-							if(tempDelta == 0){
-								break;
+				if(altArgsHelper.times.equals("all")){
+					for(double thisTime:allDatasetTimes){
+						simTimes.add(thisTime);
+					}
+				}else{
+					//Convert user input times to actual data times
+					for (int times = 0; times < simTimes.size(); times++) {
+						double masterDelta = Double.POSITIVE_INFINITY;
+						double timePoint = -1;
+						for (int j = 0; j < allDatasetTimes.length; j++) {
+							double tempDelta = Math.abs(simTimes.get(times)-allDatasetTimes[j]);
+							if(tempDelta < masterDelta){
+								masterDelta = tempDelta;
+								timePoint = allDatasetTimes[j];
+								if(tempDelta == 0){
+									break;
+								}
 							}
 						}
+						System.out.println("User time="+simTimes.get(times)+" converted to dataset time="+timePoint);
+						simTimes.set(times, timePoint);
+				
 					}
-					System.out.println("User time="+simTimes.get(times)+" converted to dataset time="+timePoint);
-					simTimes.set(times, timePoint);
 				}
+				trialData = new double[simTimes.size()][(simLocHelper0==null?1:simLocHelper0.boxToLocs.size())][simVars.size()];
 			}
 			if(bInit && jobCounter == 0){
 				//print state vars
@@ -364,7 +377,12 @@ public class HybridSolverTester {
 							}
 							val = accum / simLocHelper0.boxToLocs.get(locs).size();
 						}else{//PostProcess
-							val = data[times];
+							if(times < data.length ){
+								val = data[times];
+							}else{
+								val = Double.NaN;
+							}
+							
 						}
 						trialData[times][locs][vars] = val;
 					}
@@ -375,7 +393,8 @@ public class HybridSolverTester {
 				for (int locs = 0; locs < trialData[times].length; locs++) {
 					for (int vars = 0; vars < simVars.size(); vars++) {
 //						System.out.println("job="+jobCounter+" time="+simTimes.get(times)+" loc="+simLocHelper.boxToID.get(locs)+" var="+simVars.get(vars)+" data="+trialData[times][locs][vars]);
-						fw.write(trialData[times][locs][vars]+",");
+						boolean isNan = Double.isNaN(trialData[times][locs][vars]);
+						fw.write((isNan?"":trialData[times][locs][vars])+",");
 					}
 					fw.write(",");
 				}
@@ -538,6 +557,9 @@ public class HybridSolverTester {
 								trialList = altArgsHelper.userSimDataDir.listFiles(new FileFilter() {
 								@Override
 								public boolean accept(File pathname) {
+//									if(pathname.getName().startsWith(altArgsHelper.simPrefix)){
+//										System.out.println(pathname);
+//									}
 									return pathname.getName().startsWith(altArgsHelper.simPrefix) && !pathname.getName().endsWith(".simtask.xml");
 								}
 								});
