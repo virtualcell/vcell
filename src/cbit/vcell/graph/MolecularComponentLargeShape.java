@@ -249,7 +249,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		public void setMatchesSignature(boolean bMatchesSignature) {
 			this.bMatchesSignature = bMatchesSignature;
 		}
-
+		
 		@Override
 		public void paintSelf(Graphics g) {
 			Graphics2D g2 = (Graphics2D)g;
@@ -259,22 +259,49 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			
 			RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, height, cornerArc, cornerArc);
-			
-			
-			if(shapePanel.isShowDifferencesOnly() && owner instanceof ReactionRule) {
+			if(shapePanel instanceof RulesShapePanel && shapePanel.isShowDifferencesOnly()) {
 				ReactionRule reactionRule = (ReactionRule)owner;
-				if(csd != null) {
-					Color stateColor = null;
-					switch (((RulesShapePanel)shapePanel).hasStateChanged(mcp)){
-					case CHANGED:{
+				Color stateColor = componentHidden;
+				switch (((RulesShapePanel)shapePanel).hasStateChanged(mcp)) {
+				case CHANGED:
+					stateColor = Color.orange;
+					break;
+				case ANALYSISFAILED:
+					ArrayList<Issue> issueList = new ArrayList<Issue>();
+					reactionRule.gatherIssues(new IssueContext(), issueList);
+					boolean bRuleHasErrorIssues = false;
+					for (Issue issue : issueList){
+						if (issue.getSeverity() == Severity.ERROR){
+							bRuleHasErrorIssues = true;
+							break;
+						}
+					}
+					if (bRuleHasErrorIssues) {
+						stateColor = componentHidden;
+					}else{
+						System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
+						stateColor = Color.red.darker();
+					}
+					break;
+				default:
+					break;
+				}
+				g2.setColor(stateColor);
+			} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
+				ReactionRule reactionRule = (ReactionRule)owner;
+				Color stateColor = componentHidden;
+				ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
+				if(ssp.isShowNonTrivialOnly() == true) {
+					if(csd != null) {
+						stateColor = componentPaleYellow;
+					}
+				}
+				if(ssp.isShowDifferencesOnly()) {
+					switch (ssp.hasStateChanged(reactionRule.getName(), mcp)) {
+					case CHANGED:
 						stateColor = Color.orange;
 						break;
-					}
-					case UNCHANGED:{
-						stateColor = componentHidden;
-						break;
-					}
-					case ANALYSISFAILED:{
+					case ANALYSISFAILED:
 						ArrayList<Issue> issueList = new ArrayList<Issue>();
 						reactionRule.gatherIssues(new IssueContext(), issueList);
 						boolean bRuleHasErrorIssues = false;
@@ -291,38 +318,16 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 							stateColor = Color.red.darker();
 						}
 						break;
-					}
-					}
-					g2.setColor(stateColor);
-				}else{
-					g2.setColor(componentHidden);
-				}
-				
-			} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
-				Color stateColor = null;
-				ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
-				if(ssp.getCriteria() == RuleParticipantSignature.Criteria.moleculeNumber) {
-					if(bMatchesSignature == true) {
-						if(csd != null) {
-							stateColor = Color.orange;
-						} else {
-							stateColor = AbstractComponentShape.componentVeryLightGray;
-						}
-					} else {
-						stateColor = AbstractComponentShape.componentVeryLightGray;
-					}
-				} else {
-					if(csd == null) {
-						g2.setColor(componentHidden);		// show it gray if it has "any" state
-					} else {
-						g2.setColor(componentPaleYellow);
+					default:
+						break;
 					}
 				}
 				g2.setColor(stateColor);
+
 			} else {
 				if(!isHighlighted()) {
 					if(csd == null) {
-						g2.setColor(componentHidden);		// show it gray if it has "any" state
+						g2.setColor(componentHidden);
 					} else {
 						g2.setColor(componentPaleYellow);
 					}
@@ -634,32 +639,26 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		}
 		Color componentColor = highlight == true ? componentBad.brighter() : componentBad;
 		if(owner instanceof MolecularType) {
-			componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+			componentColor = highlight == true ? componentPaleYellow.brighter() : componentPaleYellow;
 		} else if(owner instanceof SpeciesContext) {
-			componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+			componentColor = highlight == true ? componentPaleYellow.brighter() : componentPaleYellow;
 		} else if(mcp != null && owner instanceof RbmObservable) {
 			componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
-			if(mcp.isbVisible()) {
-				componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
-			}
-			ComponentStatePattern csp = mcp.getComponentStatePattern();
-			if(csp != null && !csp.isAny()) {
-				componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+			if(mcp.getBondType() != BondType.Possible) {
+				componentColor = highlight == true ? componentPaleYellow.brighter() : componentPaleYellow;
 			}
 		} else if(owner instanceof ReactionRule) {
-			ReactionRule reactionRule = (ReactionRule)owner;
 			
-			if(shapePanel.isShowDifferencesOnly()) {
+			ReactionRule reactionRule = (ReactionRule)owner;
+			if(shapePanel instanceof RulesShapePanel && shapePanel.isShowDifferencesOnly()) {
 				switch (((RulesShapePanel)shapePanel).hasBondChanged(mcp)){
-				case CHANGED:{
+				case CHANGED:
 					componentColor = Color.orange;
 					break;
-				}
-				case UNCHANGED:{
+				case UNCHANGED:
 					componentColor = componentHidden;
 					break;
-				}
-				case ANALYSISFAILED:{
+				case ANALYSISFAILED:
 					ArrayList<Issue> issueList = new ArrayList<Issue>();
 					reactionRule.gatherIssues(new IssueContext(), issueList);
 					boolean bRuleHasErrorIssues = false;
@@ -677,40 +676,49 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 					}
 					break;
 				}
-				}
 			} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
+				
 				ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
-				if(ssp.getCriteria() == RuleParticipantSignature.Criteria.moleculeNumber) {
-					if(bMatchesSignature == true) {
-						if(mcp.getBondType() != BondType.Possible) {
-							componentColor = Color.orange;
-						} else {
-							componentColor = AbstractComponentShape.componentVeryLightGray;
-						}
+				componentColor = componentHidden;
+				if(ssp.isShowNonTrivialOnly() == true) {
+					if(mcp.getBondType() != BondType.Possible) {
+						componentColor = componentPaleYellow;
 					} else {
-						componentColor = AbstractComponentShape.componentVeryLightGray;
+						componentColor = componentHidden;
 					}
-				} else {
-					componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
-					if(mcp.isbVisible()) {
-						componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
-					}
-					ComponentStatePattern csp = mcp.getComponentStatePattern();
-					if(csp != null && !csp.isAny()) {
-						componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+				}
+				if(ssp.isShowDifferencesOnly()) {
+					switch (ssp.hasBondChanged(reactionRule.getName(), mcp)) {
+					case CHANGED:
+						componentColor = Color.orange;
+						break;
+					case ANALYSISFAILED:
+						ArrayList<Issue> issueList = new ArrayList<Issue>();
+						reactionRule.gatherIssues(new IssueContext(), issueList);
+						boolean bRuleHasErrorIssues = false;
+						for (Issue issue : issueList) {
+							if (issue.getSeverity() == Severity.ERROR){
+								bRuleHasErrorIssues = true;
+								break;
+							}
+						}
+						if (bRuleHasErrorIssues) {
+							componentColor = componentHidden;
+						} else {
+							System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
+							componentColor = Color.red.darker();
+						}
+						break;
+					default:
+						break;
 					}
 				}
 			} else {
 				componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
-				if(mcp.isbVisible()) {
-					componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
-				}
-				ComponentStatePattern csp = mcp.getComponentStatePattern();
-				if(csp != null && !csp.isAny()) {
-					componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+				if(mcp.getBondType() != BondType.Possible) {
+					componentColor = highlight == true ? componentPaleYellow.brighter() : componentPaleYellow;
 				}
 			}
-			
 		}
 		if(AbstractComponentShape.hasErrorIssues(owner, mcp, mc)) {
 			componentColor = highlight == true ? componentBad.brighter() : componentBad;

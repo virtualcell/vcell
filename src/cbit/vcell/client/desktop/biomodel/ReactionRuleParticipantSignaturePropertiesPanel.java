@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -35,6 +36,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
@@ -91,6 +93,8 @@ import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRuleParticipant;
+import cbit.vcell.model.RbmObservable.ObservableType;
+import cbit.vcell.model.RbmObservable.Sequence;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.Structure;
@@ -104,11 +108,15 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 	private BioModel bioModel = null;
 	private RuleParticipantSignature signature = null;
 
-	private JCheckBox showDifferencesCheckbox = null;
+	private JCheckBox showMoleculeColorButton = null;
+	private JCheckBox showDifferenceButton = null;
+	private JCheckBox showNonTrivialButton = null;
+	
 	private JButton zoomLargerButton = null;
 	private JButton zoomSmallerButton = null;
 	
-	List<Pair<ReactionRulePatternLargeShape, ReactionRulePatternLargeShape>> ruleShapeList = new ArrayList<> ();
+	private Map<String,ReactionRule> reactionRuleMap = new LinkedHashMap<>();	// rules that involve the participant with this signature
+	private List<Pair<ReactionRulePatternLargeShape, ReactionRulePatternLargeShape>> ruleShapeList = new ArrayList<> ();	// pair of reactants and products for a rule
 	
 	private ParticipantSignatureShapePanel shapePanel;
 	private JScrollPane scrollPane;
@@ -120,8 +128,8 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 
 
-	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, ItemListener
-	{
+	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener {
+		
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == signature) {
@@ -142,6 +150,16 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 				getZoomLargerButton().setEnabled(true);
 				getZoomSmallerButton().setEnabled(ret);
 				updateInterface();
+				
+			} else if (e.getSource() == getShowMoleculeColorButton()) {
+				shapePanel.setShowMoleculeColor(getShowMoleculeColorButton().isSelected());
+				shapePanel.repaint();
+			} else if (e.getSource() == getShowDifferencesButton()) {
+				shapePanel.setShowDifferencesOnly(getShowDifferencesButton().isSelected());
+				shapePanel.repaint();
+			} else if (e.getSource() == getShowNonTrivialButton()) {
+				shapePanel.setShowNonTrivialOnly(getShowNonTrivialButton().isSelected());
+				shapePanel.repaint();
 			}
 		}
 		@Override
@@ -152,19 +170,6 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 		}
 		@Override
 		public void mouseExited(MouseEvent e) {
-		}
-
-		@Override
-		public void itemStateChanged(ItemEvent e) {
-			if(e.getSource() == getShowDifferencesCheckbox()) {
-				if(e.getStateChange() == ItemEvent.SELECTED) {
-					shapePanel.setShowDifferencesOnly(true);
-					shapePanel.repaint();
-				} else {
-					shapePanel.setShowDifferencesOnly(false);
-					shapePanel.repaint();
-				}
-			}
 		}
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -215,6 +220,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
+			gbc.weightx = 0;
 			gbc.insets = new Insets(8,4,4,0);
 			gbc.anchor = GridBagConstraints.WEST;
 			optionsPanel.add(getZoomLargerButton(), gbc);
@@ -222,6 +228,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			gbc = new GridBagConstraints();
 			gbc.gridx = 1;
 			gbc.gridy = gridy;
+			gbc.weightx = 0;
 			gbc.insets = new Insets(8,0,4,4);
 			gbc.anchor = GridBagConstraints.WEST;
 			optionsPanel.add(getZoomSmallerButton(), gbc);
@@ -231,7 +238,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
-			gbc.gridwidth = 3;
+			gbc.gridwidth = 2;
 			gbc.weightx = 1;
 			gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
 			gbc.anchor = GridBagConstraints.WEST;
@@ -242,11 +249,39 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
-			gbc.gridwidth = 3;
+			gbc.gridwidth = 2;
 			gbc.insets = new Insets(0,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.SOUTHWEST;
-			optionsPanel.add(getShowDifferencesCheckbox(), gbc);
+			optionsPanel.add(getShowMoleculeColorButton(), gbc);
+
+			gridy++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.gridwidth = 2;
+			gbc.insets = new Insets(0,4,4,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.SOUTHWEST;
+			optionsPanel.add(getShowNonTrivialButton(), gbc);
+
+			gridy++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.gridwidth = 2;
+			gbc.insets = new Insets(0,4,4,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.SOUTHWEST;
+			optionsPanel.add(getShowDifferencesButton(), gbc);
+
+			getShowMoleculeColorButton().setSelected(true);
+			getShowNonTrivialButton().setSelected(true);
+			getShowDifferencesButton().setSelected(false);
+			shapePanel.setShowMoleculeColor(getShowMoleculeColorButton().isSelected());
+			shapePanel.setShowNonTrivialOnly(getShowNonTrivialButton().isSelected());
+			shapePanel.setShowDifferencesOnly(getShowDifferencesButton().isSelected());
+			
 			
 			containerOfScrollPanel = new JPanel();
 			containerOfScrollPanel.setLayout(new BorderLayout());
@@ -261,18 +296,28 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			handleException(ivjExc);
 		}
 	}
-	
 
-	
-
-	private JCheckBox getShowDifferencesCheckbox() {
-		if(showDifferencesCheckbox == null) {
-			showDifferencesCheckbox = new JCheckBox("Show Differences");
-			showDifferencesCheckbox.addItemListener(eventHandler);
+	private JCheckBox getShowMoleculeColorButton() {
+		if(showMoleculeColorButton == null) {
+			showMoleculeColorButton = new JCheckBox("Show Molecule Color");
+			showMoleculeColorButton.addActionListener(eventHandler);
 		}
-		return showDifferencesCheckbox;
+		return showMoleculeColorButton;
 	}
-
+	private JCheckBox getShowDifferencesButton() {
+		if(showDifferenceButton == null) {
+			showDifferenceButton = new JCheckBox("Show Differences");
+			showDifferenceButton.addActionListener(eventHandler);
+		}
+		return showDifferenceButton;
+	}
+	private JCheckBox getShowNonTrivialButton() {
+		if(showNonTrivialButton == null) {
+			showNonTrivialButton = new JCheckBox("Show Non-trivial");
+			showNonTrivialButton.addActionListener(eventHandler);
+		}
+		return showNonTrivialButton;
+	}
 	
 	private JButton getZoomLargerButton() {
 		if (zoomLargerButton == null) {
@@ -326,7 +371,9 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 		}
 		signature = newValue;
 		if(shapePanel != null) {
+			findRulesForSignature();
 			shapePanel.setSignature(signature);
+			shapePanel.setRulesForSignature(reactionRuleMap);
 		}
 		
 		if (newValue != null) {
@@ -341,22 +388,16 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 		}
 		updateShape();
 	}
-
-	public static final int xOffsetInitial = 15;
-	public static final int yOffsetReactantInitial = 8;
-	public static final int ReservedSpaceForNameOnYAxis = 16;
 	
-	private void updateShape() {
-		int maxXOffset = 0;
-		int size = bioModel.getModel().getRbmModelContainer().getReactionRuleList().size();
-		ruleShapeList.clear();
-		
-		int yOffset = yOffsetReactantInitial + ReservedSpaceForNameOnYAxis;
+	private void findRulesForSignature() {
+		reactionRuleMap.clear();
+		if(signature == null) {
+			return;
+		}
 		ReactionCartoon rc = (ReactionCartoon) signature.getModelCartoon();
 		RuleParticipantSignature.Criteria crit = rc.getRuleParticipantGroupingCriteria();
 		shapePanel.setCriteria(crit);
-		for(int i = 0; i<size; i++) {
-			ReactionRule rr = bioModel.getModel().getRbmModelContainer().getReactionRuleList().get(i);
+		for(ReactionRule rr : bioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
 			boolean found = false;
 			for(ReactionRuleParticipant participant : rr.getReactionRuleParticipants()) {
 				if (signature.getStructure() == participant.getStructure() && signature.compareByCriteria(participant.getSpeciesPattern(), crit)){
@@ -367,7 +408,21 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			if(!found) {
 				continue;	// this rule has no participant with this signature, go to next
 			}
-			
+			reactionRuleMap.put(rr.getName(), rr);
+		}
+	}
+
+	public static final int xOffsetInitial = 15;
+	public static final int yOffsetReactantInitial = 8;
+	public static final int ReservedSpaceForNameOnYAxis = 16;
+	
+	private void updateShape() {
+		int maxXOffset = 0;
+		ruleShapeList.clear();
+		
+		int yOffset = yOffsetReactantInitial + ReservedSpaceForNameOnYAxis;
+		for(Map.Entry<String,ReactionRule> entry : reactionRuleMap.entrySet()) {
+			ReactionRule rr = entry.getValue();
 			ReactionRulePatternLargeShape reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffset, -1, shapePanel, rr, true);
 			reactantShape.setWriteName(true);
 			int xOffset = reactantShape.getRightEnd() + 70;

@@ -417,7 +417,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			if(mt == null || mt.getModel() == null) {
 				primaryColor = Color.blue.darker().darker();
 			} else {
-				if(shapePanel.isShowDifferencesOnly() && owner instanceof ReactionRule) {
+				if(shapePanel instanceof RulesShapePanel && shapePanel.isShowDifferencesOnly() && owner instanceof ReactionRule) {
 					ReactionRule reactionRule = (ReactionRule)owner;
 
 					switch (((RulesShapePanel)shapePanel).hasNoMatch(mtp)){
@@ -451,22 +451,14 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 					}
 				} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
 					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
-					if(ssp.getCriteria() == RuleParticipantSignature.Criteria.moleculeNumber) {
-						if(bMatchesSignature == true) {
-							primaryColor = AbstractComponentShape.componentVeryLightGray;
-						} else {
-							primaryColor = AbstractComponentShape.componentVeryLightGray;
-						}
+					if(!ssp.isShowMoleculeColor()) {
+						primaryColor = AbstractComponentShape.componentVeryLightGray;
 					} else {
 						RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
 						List<MolecularType> mtList = rbmmc.getMolecularTypeList();
 						int index = mtList.indexOf(mt);
 						index = index%7;
-//						if(bMatchesSignature == true) {
-							primaryColor = colorTable[index].darker().darker();
-//						} else {
-//							primaryColor = AbstractComponentShape.componentVeryLightGray;
-//						}
+						primaryColor = colorTable[index].darker().darker();
 					}
 				} else {
 					RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
