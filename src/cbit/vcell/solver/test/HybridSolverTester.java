@@ -552,8 +552,18 @@ public class HybridSolverTester {
 
 						for (int runIndex = 0; runIndex < altArgsHelper.numRuns; runIndex++) {
 							System.out.println("-----     Starting run "+(runIndex+1)+" of "+altArgsHelper.numRuns);
+							try{
+								vCellConnection.getUserMetaDbServer();//check connection
+							}catch(Exception e){
+								System.out.println("Retrying connection, '"+e.getMessage()+"'");
+								vcellBootstrap = (VCellBootstrap)Naming.lookup(rmiUrl);
+								vCellConnection = vcellBootstrap.getVCellConnection(userLoginInfo);
+								vcellBootstrap = null;
+								vCellConnection.getUserMetaDbServer();
+							}
 							runSim(userLoginInfo,vcSimulationIdentifier,vCellConnection);
 							if(trialList == null){
+								System.out.println("Sim ran, getting trial list for "+altArgsHelper.simPrefix+" please wait...");
 								trialList = altArgsHelper.userSimDataDir.listFiles(new FileFilter() {
 								@Override
 								public boolean accept(File pathname) {
