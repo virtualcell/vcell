@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
@@ -47,6 +48,16 @@ public class RuleParticipantSignature {
 		String ourMolecularSignature = getMolecularSignature(ourMolecularTypeNames);
 			
 		return ourMolecularSignature.equals(theirMolecularSignature);
+	}
+	public boolean compareByCriteria(String theirMolecularSignature, Criteria criteria) {
+
+		try {
+			SpeciesPattern theirSpeciesPattern = RbmUtils.parseSpeciesPattern(theirMolecularSignature, modelCartoon.getModel());
+			return compareByCriteria(theirSpeciesPattern, criteria);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Unable to parse species pattern signature: " + e.getMessage());
+		}
 	}
 	
 	public ModelCartoon getModelCartoon() {
@@ -107,6 +118,9 @@ public class RuleParticipantSignature {
 			}
 		}
 		return speciesPattern;
+	}
+	public String getSpeciesPatternAsString() {
+		return RbmUtils.toBnglString(speciesPattern, null, CompartmentMode.hide, -1);
 	}
 
 	public List<MolecularType> getMolecularTypes() {

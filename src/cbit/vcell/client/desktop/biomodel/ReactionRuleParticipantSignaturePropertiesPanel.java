@@ -122,12 +122,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 	private JScrollPane scrollPane;
 	private JPanel containerOfScrollPanel;
 
-	// TODO: this will have to go since there's no bottom panel anymore
-//	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-
 	private InternalEventHandler eventHandler = new InternalEventHandler();
-
-
 	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener {
 		
 		@Override
@@ -420,6 +415,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 		int maxXOffset = 0;
 		ruleShapeList.clear();
 		
+		// all the reactants go in one single ReactionRulePatternLargeShape, all the products the other
 		int yOffset = yOffsetReactantInitial + ReservedSpaceForNameOnYAxis;
 		for(Map.Entry<String,ReactionRule> entry : reactionRuleMap.entrySet()) {
 			ReactionRule rr = entry.getValue();
@@ -442,7 +438,5 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 		shapePanel.setPreferredSize(preferredSize);
 		containerOfScrollPanel.repaint();
 	}
-	
-
 
 }
