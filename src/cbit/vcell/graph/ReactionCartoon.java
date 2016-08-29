@@ -18,6 +18,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
+
 import cbit.gui.graph.GraphContainerLayoutReactions;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphPane;
@@ -148,6 +151,20 @@ public class ReactionCartoon extends ModelCartoon {
 			}
 			case NodeReference.SPECIES_CONTEXT_NODE: {
 				obj = getModel().getSpeciesContext(node.name);
+				break;
+			}
+			case NodeReference.REACTION_RULE_NODE: {
+				obj = getModel().getRbmModelContainer().getReactionRule(node.name);
+				break;
+			}
+			case NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE: {		// obj is a RuleParticipantSignature
+				Structure struct = diagram.getStructure();
+				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
+					if (signature.getStructure() == struct && signature.compareByCriteria(node.getName(), ruleParticipantGroupingCriteria)){
+						obj = signature;
+						break;
+					}
+				}
 				break;
 			}
 			}
@@ -522,9 +539,10 @@ public class ReactionCartoon extends ModelCartoon {
 						((SpeciesContext) shape.getModelObject()).getName(),
 						shape.getSpaceManager().getRelPos()));
 			} else if (shape instanceof RuleParticipantSignatureDiagramShape) {
+				String spAsString = ((RuleParticipantSignature) shape.getModelObject()).getSpeciesPatternAsString();
 				nodeList.add(new NodeReference(
 						NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE,
-						((RuleParticipantSignature) shape.getModelObject()).getLabel(),
+						spAsString,
 						shape.getSpaceManager().getRelPos()));
 			}
 		}
