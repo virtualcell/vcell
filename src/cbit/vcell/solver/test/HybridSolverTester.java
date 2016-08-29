@@ -514,6 +514,7 @@ public class HybridSolverTester {
 			bAlternate = true;
 		}else if(args.length != 5){
 			System.out.println("usage: HybridSolverTest userid SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :) numRuns outputFileDirectory bCalclOnly dbPassword useridKey rmiServer rmiPort");
+			System.out.println("usage: HybridSolverTest userid SimID all postproc varNames(delimited by :) numRuns outputFileDirectory bCalclOnly dbPassword useridKey rmiServer rmiPort");
 			System.out.println("usage: HybridSolverTest mathVCMLFileName startingTrialNo numTrials varNames(delimited by :) bPrintTime vcellSite(rel,beta,...)");
 			System.exit(1);
 		}
