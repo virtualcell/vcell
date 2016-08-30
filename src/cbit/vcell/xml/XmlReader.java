@@ -150,6 +150,12 @@ import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.ComputeCentroidComponentEquation;
+import cbit.vcell.math.ComputeCentroidComponentEquation.CentroidComponent;
+import cbit.vcell.math.ComputeMembraneMetricEquation;
+import cbit.vcell.math.ComputeMembraneMetricEquation.MembraneMetricComponent;
+import cbit.vcell.math.ComputeNormalComponentEquation;
+import cbit.vcell.math.ComputeNormalComponentEquation.NormalComponent;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.ConvolutionDataGenerator;
 import cbit.vcell.math.ConvolutionDataGenerator.ConvolutionDataGeneratorKernel;
@@ -203,6 +209,8 @@ import cbit.vcell.math.ParticleSpeciesPattern;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
+import cbit.vcell.math.PointSubDomain;
+import cbit.vcell.math.PointVariable;
 import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
@@ -749,6 +757,32 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		} 
 	}
 	
+	//process ComputeCentroid "equations"
+	iterator = param.getChildren( XMLTags.ComputeCentroidTag, vcNamespace ).iterator();
+	while (iterator.hasNext()) {
+		Element tempelement = (Element)iterator.next();
+
+		try {
+			subDomain.addEquation( getComputeCentroid(tempelement, mathDesc) );
+		} catch (MathException e) {
+			e.printStackTrace();
+			throw new XmlParseException("A MathException was fired when adding an ComputeCentroid 'equation' to the compartmentSubDomain " + name, e);
+		}
+	}
+	
+	//process ComputeMembraneMetric "equations"
+	iterator = param.getChildren( XMLTags.ComputeMembraneMetricTag, vcNamespace ).iterator();
+	while (iterator.hasNext()) {
+		Element tempelement = (Element)iterator.next();
+
+		try {
+			subDomain.addEquation( getComputeMembraneMetric(tempelement, mathDesc) );
+		} catch (MathException e) {
+			e.printStackTrace();
+			throw new XmlParseException("A MathException was fired when adding an ComputeMembraneMetric 'equation' to the compartmentSubDomain " + name, e);
+		}
+	}
+
 	//Process the FastSystem (if thre is)
 	Element tempelement = param.getChild(XMLTags.FastSystemTag, vcNamespace);
 	if ( tempelement != null){
@@ -1611,6 +1645,44 @@ private FilamentSubDomain getFilamentSubDomain(Element param, MathDescription ma
 	filDomain.setFastSystem( getFastSystem(param.getChild(XMLTags.FastSystemTag, vcNamespace), mathDesc) );
 
 	return filDomain;
+}
+
+private PointSubDomain getPointSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
+	//get name
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	
+	//*** create new pointSubDomain object ***
+	PointSubDomain pointDomain = new PointSubDomain(name);
+	
+	//add OdeEquations
+	Iterator<Element> iterator = param.getChildren(XMLTags.OdeEquationTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ){
+		Element tempElement = (Element)iterator.next();
+		try {
+			pointDomain.addEquation( getOdeEquation(tempElement, mathDesc) );
+		} catch (MathException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException("A MathException was fired when adding an OdeEquation to the FilamentSubDomain " + name, e);
+		}
+	}
+	String temp = param.getChildText(XMLTags.PositionXTag, vcNamespace);
+	if (temp!=null && temp.length()>0) {
+		pointDomain.setPositionX(unMangleExpression(temp));
+	}
+	temp = param.getChildText(XMLTags.PositionYTag, vcNamespace);
+	if (temp!=null && temp.length()>0) {
+		pointDomain.setPositionY(unMangleExpression(temp));
+	}
+	temp = param.getChildText(XMLTags.PositionZTag, vcNamespace);
+	if (temp!=null && temp.length()>0) {
+		pointDomain.setPositionZ(unMangleExpression(temp));
+	}
+	
+
+//	//Add the FastSytem
+//	pointDomain.setFastSystem( getFastSystem(param.getChild(XMLTags.FastSystemTag, vcNamespace), mathDesc) );
+
+	return pointDomain;
 }
 
 
@@ -2846,6 +2918,19 @@ MathDescription getMathDescription(Element param) throws XmlParseException {
 		}
 
 	}
+	
+	//Retrieve PointVariable
+	iterator = param.getChildren(XMLTags.PointVariableTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ) {
+		tempelement = (Element)iterator.next();
+		try {
+			varHash.addVariable( getPointVariable(tempelement) );
+		} catch (MathException e) {
+			e.printStackTrace();
+			throw new XmlParseException(e);
+		}
+
+	}
 	//retrieve OutsideVariables
 	//**** This variables are for internal USE ******
 
@@ -3014,6 +3099,17 @@ MathDescription getMathDescription(Element param) throws XmlParseException {
 		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Error adding a new FilamentSubDomain to the MathDescription " + name, e);
+		}
+	}
+	
+	//Retrieve the PointSubdomain (if any)
+	tempelement = param.getChild(XMLTags.PointSubDomainTag, vcNamespace);
+	if (tempelement != null) {
+		try {
+			mathdes.addSubDomain( getPointSubDomain(tempelement, mathdes) );
+		} catch (MathException e) {
+			e.printStackTrace();
+			throw new XmlParseException("Error adding a new PointSubDomain to the MathDescription " + name, e);
 		}
 	}
 	
@@ -3890,6 +3986,84 @@ private MembraneRegionEquation getMembraneRegionEquation(Element param, MathDesc
  	return memRegEq;	
 }
 
+private ComputeNormalComponentEquation getComputeNormal(Element param, MathDescription mathDesc) throws XmlParseException {
+	//get attributes
+	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	
+	//find reference in the dictionnary
+	//try a MembraneRegionVariable
+	MemVariable varref = (MemVariable)mathDesc.getVariable(varname);
+	if (varref == null) {
+		throw new XmlParseException("The reference to the Membrane variable "+ varname+ " could not be resolved!");
+	}
+
+	NormalComponent normalComponent = null;
+	String normalComponentString = param.getAttributeValue(XMLTags.ComputeNormalComponentAttrTag);
+	if (normalComponentString.equals(XMLTags.ComputeNormalComponentAttrTagValue_X)){
+		normalComponent = NormalComponent.X;
+	}else if (normalComponentString.equals(XMLTags.ComputeNormalComponentAttrTagValue_Y)){
+		normalComponent = NormalComponent.Y;
+	}else if (normalComponentString.equals(XMLTags.ComputeNormalComponentAttrTagValue_Z)){
+		normalComponent = NormalComponent.Z;
+	}
+	
+	ComputeNormalComponentEquation computeNormal = new ComputeNormalComponentEquation(varref, normalComponent);
+	return computeNormal;
+}
+
+private ComputeMembraneMetricEquation getComputeMembraneMetric(Element param, MathDescription mathDesc) throws XmlParseException {
+	//get attributes
+	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	
+	//find reference in the dictionnary
+	//try a MembraneRegionVariable
+	VolVariable varref = (VolVariable)mathDesc.getVariable(varname);
+	if (varref == null) {
+		throw new XmlParseException("The reference to the Volume variable "+ varname+ " could not be resolved!");
+	}
+
+	MembraneMetricComponent normalComponent = null;
+	String normalComponentString = param.getAttributeValue(XMLTags.ComputeMembraneMetricComponentAttrTag);
+	if (normalComponentString.equals(XMLTags.ComputeMembraneMetricComponentAttrTagValue_directionX)){
+		normalComponent = MembraneMetricComponent.directionToMembraneX;
+	}else if (normalComponentString.equals(XMLTags.ComputeMembraneMetricComponentAttrTagValue_directionY)){
+		normalComponent = MembraneMetricComponent.directionToMembraneY;
+	}else if (normalComponentString.equals(XMLTags.ComputeMembraneMetricComponentAttrTagValue_directionZ)){
+		normalComponent = MembraneMetricComponent.directionToMembraneZ;
+	}else if (normalComponentString.equals(XMLTags.ComputeMembraneMetricComponentAttrTagValue_distance)){
+		normalComponent = MembraneMetricComponent.distanceToMembrane;
+	}
+	
+	ComputeMembraneMetricEquation computeMembraneMetric = new ComputeMembraneMetricEquation(varref, normalComponent);
+	String membraneName = param.getAttributeValue(XMLTags.ComputeMembraneMetricTargetMembraneAttrTag);
+	computeMembraneMetric.setTargetMembraneName(membraneName);
+	return computeMembraneMetric;
+}
+
+private ComputeCentroidComponentEquation getComputeCentroid(Element param, MathDescription mathDesc) throws XmlParseException {
+	//get attributes
+	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	
+	//find reference in the dictionnary
+	//try a MembraneRegionVariable
+	VolumeRegionVariable varref = (VolumeRegionVariable)mathDesc.getVariable(varname);
+	if (varref == null) {
+		throw new XmlParseException("The reference to the Volume Region variable "+ varname+ " could not be resolved!");
+	}
+
+	CentroidComponent normalComponent = null;
+	String normalComponentString = param.getAttributeValue(XMLTags.ComputeCentroidComponentAttrTag);
+	if (normalComponentString.equals(XMLTags.ComputeCentroidComponentAttrTagValue_X)){
+		normalComponent = CentroidComponent.X;
+	}else if (normalComponentString.equals(XMLTags.ComputeCentroidComponentAttrTagValue_Y)){
+		normalComponent = CentroidComponent.Y;
+	}else if (normalComponentString.equals(XMLTags.ComputeCentroidComponentAttrTagValue_Z)){
+		normalComponent = CentroidComponent.Z;
+	}
+	
+	ComputeCentroidComponentEquation centroid = new ComputeCentroidComponentEquation(varref, normalComponent);
+	return centroid;
+}
 
 /**
  * This method returns a MembraneRegionVariable object from a XML Element.
@@ -3989,7 +4163,7 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 			subDomain.addEquation( odeEquation );
 		} catch (MathException e) {
 			e.printStackTrace();
-			throw new XmlParseException("A MathException was fired when adding an OdeEquation to a MEmbraneSubDomain!", e);
+			throw new XmlParseException("A MathException was fired when adding an OdeEquation to a MembraneSubDomain!", e);
 		}
 	}
 
@@ -4002,7 +4176,7 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 			subDomain.addEquation( getPdeEquation(tempElement, mathDesc) );
 		} catch (MathException e) {
 			e.printStackTrace();
-			throw new XmlParseException("A MathException was fired when adding an PdeEquation to the compartmentSubDomain " + name, e);
+			throw new XmlParseException("A MathException was fired when adding an PdeEquation to the MembraneSubDomain " + name, e);
 		}
 	}
 
@@ -4043,7 +4217,7 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 			subDomain.addParticleJumpProcess(getParticleJumpProcess(tempelement, mathDesc) );
 		} catch (MathException e) {
 			e.printStackTrace();
-			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name, e);
+			throw new XmlParseException("A MathException was fired when adding a jump process to the MembraneSubDomain " + name, e);
 		} 
 	}
 	
@@ -4054,9 +4228,24 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 			subDomain.addParticleProperties(getParticleProperties(tempelement, mathDesc));
 		} catch (MathException e) {
 			e.printStackTrace();
-			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name, e);
+			throw new XmlParseException("A MathException was fired when adding a jump process to the MembraneSubDomain " + name, e);
 		} 
 	}
+	
+	//process ComputeNormal "equations"
+	iterator = param.getChildren( XMLTags.ComputeNormalTag, vcNamespace ).iterator();
+	while (iterator.hasNext()) {
+		Element tempelement = (Element)iterator.next();
+
+		try {
+			subDomain.addEquation( getComputeNormal(tempelement, mathDesc) );
+		} catch (MathException e) {
+			e.printStackTrace();
+			throw new XmlParseException("A MathException was fired when adding an ComputeNormal 'equation' to the MembraneSubDomain " + name, e);
+		}
+	}
+
+
 	
 	Element velElem = param.getChild(XMLTags.VelocityTag, vcNamespace);
 	setMembraneSubdomainVelocity(velElem, XMLTags.XAttrTag,subDomain::setVelocityX); 
@@ -4108,6 +4297,22 @@ private MemVariable getMemVariable(Element param) {
 	transcribeComments(param, memVariable);
 	
 	return memVariable;
+}
+
+
+private PointVariable getPointVariable(Element param) {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
+
+	//Create new memVariable
+	PointVariable pointVariable = new PointVariable( name, domain );
+	transcribeComments(param, pointVariable);
+	
+	return pointVariable;
 }
 
 

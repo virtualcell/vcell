@@ -434,4 +434,26 @@ protected void checkValid_Membrane(MathDescription mathDesc, List<Expression> ex
 	}
 }
 
+protected void checkValid_PointSubDomain(MathDescription mathDesc, List<Expression> expList, PointSubDomain pointSubDomain) throws MathException, ExpressionException {
+	for (Expression exp : expList) {
+		if (exp == null) {
+			return;
+		}
+		Domain domain = new Domain(pointSubDomain);
+		Enumeration<Variable> varEnum = MathUtilities.getRequiredVariables(getInitialExpression(), mathDesc);
+		while (varEnum.hasMoreElements()) {
+			Variable refVar = varEnum.nextElement();
+			if (refVar!=null && refVar.getDomain()!=null){
+				// if variable defined on this surface or the appropriate volume domain, then it is ok.
+				if (!refVar.getDomain().compareEqual(domain)){
+					throw new MathException("Equation for point variable '" + getVariable().getName() + "' references variable not defined on this point, not yet supported (variable is '" + refVar.getName() + "'.");
+				}
+			}
+		}
+	}
+}
+
+public void refreshDependencies(MathDescription mathDesc) {
+}
+
 }

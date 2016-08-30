@@ -145,7 +145,6 @@ public MathDescription(String name) {
 	this.version = null;
 }
 
-
 /**
  * Add a javax.swing.event.ChangeListener.
  */
@@ -929,6 +928,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 			int countVolumeVars = 0;
 			int countMembraneVars = 0;
 			int countFilamentVars = 0;
+			int countPointVars = 0;
 			for (int j = 0; j < indepVarList.size(); j++){
 				if (indepVarList.get(j) instanceof VolVariable){
 					countVolumeVars++;
@@ -936,6 +936,8 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 					countMembraneVars++;
 				}else if (indepVarList.get(j) instanceof FilamentVariable){
 					countFilamentVars++;
+				}else if (indepVarList.get(j) instanceof PointVariable){
+					countPointVars++;
 				}else{
 					throw new RuntimeException("create canonicalMath cannot handle dependent vars of type '"+indepVarList.get(j).getClass().getName()+"'");
 				}
@@ -1024,6 +1026,13 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 			//
 			}else if (countFilamentVars == indepVarList.size()){
 				throw new RuntimeException("create canonicalMath cannot handle function of variables of type 'FilamentVariable'");
+				
+			//
+			// case: Point Variable
+			//
+			}else if (countPointVars == indepVarList.size()){
+				throw new RuntimeException("create canonicalMath cannot handle function of variables of type 'PointVariable'");
+
 			//
 			//
 			//
@@ -1600,7 +1609,9 @@ public String getVCML_database(boolean includeComments) throws MathException {
 	addVariablesOfType(MemVariable.class,buffer, true);
 	addVariablesOfType(VolumeRegionVariable.class,buffer, true);
 	addVariablesOfType(MembraneRegionVariable.class,buffer, true);
+	addVariablesOfType(FilamentVariable.class,buffer, true);
 	addVariablesOfType(FilamentRegionVariable.class,buffer, true);
+	addVariablesOfType(PointVariable.class,buffer, true);
 	addVariablesOfType(StochVolVariable.class,buffer, false);
 	addVariablesOfType(VolumeParticleVariable.class,buffer, false);
 	addVariablesOfType(MembraneParticleVariable.class,buffer, false);
@@ -2864,6 +2875,15 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 				varHash.addVariable(var);
 				continue;
 			}
+			if (tokenStr.equalsIgnoreCase(VCML.PointVariable)){
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
+				PointVariable var = new PointVariable(name,domain);
+				transcribeComments(var, token);
+				varHash.addVariable(var);
+				continue;
+			}
 			if (tokenStr.equalsIgnoreCase(VCML.VolumeRegionVariable)){
 				tokenStr = tokens.nextToken();
 				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
@@ -2998,11 +3018,17 @@ if(name.equals("ATP/ADP"))
 				continue;
 			}			
 			if (tokenStr.equalsIgnoreCase(VCML.MembraneSubDomain)){
+				if (variableList.size() == 0) {
+					setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+				}
 				MembraneSubDomain subDomain = MembraneSubDomain.create(this,token,tokens);
 				addSubDomain0(subDomain);
 				continue;
 			}			
 			if (tokenStr.equalsIgnoreCase(VCML.FilamentSubDomain)){
+				if (variableList.size() == 0) {
+					setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+				}
 				tokenStr = tokens.nextToken();
 				String subDomainName = tokenStr;
 				tokenStr = tokens.nextToken();
@@ -3012,6 +3038,17 @@ if(name.equals("ATP/ADP"))
 				}	
 				FilamentSubDomain subDomain = new FilamentSubDomain(subDomainName,outsideCompartment);
 				subDomain.read(this,tokens);
+				addSubDomain0(subDomain);
+				continue;
+			}
+			if (tokenStr.equalsIgnoreCase(VCML.PointSubDomain)){
+				if (variableList.size() == 0) {
+					setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+				}
+				tokenStr = tokens.nextToken();
+				String subDomainName = tokenStr;
+				PointSubDomain subDomain = new PointSubDomain(subDomainName);
+				subDomain.parseBlock(this, tokens);
 				addSubDomain0(subDomain);
 				continue;
 			}
@@ -3064,7 +3101,8 @@ if(name.equals("ATP/ADP"))
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
 		throw new MathException("line #" + tokens.lineIndex() + " Exception: "+e.getMessage());
-	}	
+	}
+	refreshDependencies();
 	fireStateChanged();
 }
 
@@ -3076,10 +3114,10 @@ public void addParticleMolecularType(ParticleMolecularType particleMolecularType
 }
 
 
-/**
- * This method was created in VisualAge.
- */
 public void refreshDependencies() {
+	for (SubDomain subDomain : this.subDomainList){
+		subDomain.refreshDependencies(this);
+	}
 }
 
 

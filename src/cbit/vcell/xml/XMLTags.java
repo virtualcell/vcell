@@ -100,6 +100,26 @@ public class XMLTags {
     public final static String UniformRateTag = "UniformRate";
     public final static String MembraneRateTag = "MembraneRate";
     public final static String VolumeRateTag = "VolumeRate";
+    
+    public final static String ComputeCentroidTag = "ComputeCentroid";
+    public final static String ComputeCentroidComponentAttrTag = "CentroidComponent";
+    public final static String   ComputeCentroidComponentAttrTagValue_X = "X";
+    public final static String   ComputeCentroidComponentAttrTagValue_Y = "Y";
+    public final static String   ComputeCentroidComponentAttrTagValue_Z = "Z";
+
+    public final static String ComputeNormalTag = "ComputeNormal";
+    public final static String ComputeNormalComponentAttrTag = "NormalComponent";
+    public final static String   ComputeNormalComponentAttrTagValue_X = "X";
+    public final static String   ComputeNormalComponentAttrTagValue_Y = "Y";
+    public final static String   ComputeNormalComponentAttrTagValue_Z = "Z";
+
+    public final static String ComputeMembraneMetricTag = "ComputeMembraneMetric";
+    public final static String ComputeMembraneMetricTargetMembraneAttrTag = "TargetMembrane";
+    public final static String ComputeMembraneMetricComponentAttrTag = "MembraneMetricComponent";
+    public final static String   ComputeMembraneMetricComponentAttrTagValue_distance = "distance";
+    public final static String   ComputeMembraneMetricComponentAttrTagValue_directionX = "directionX";
+    public final static String   ComputeMembraneMetricComponentAttrTagValue_directionY = "directionY";
+    public final static String   ComputeMembraneMetricComponentAttrTagValue_directionZ = "directionZ";
 
     public final static String StochVolVariableTag = "StochasticVolumeVariable"; //stoch
     public final static String VarIniCount_OldTag = "VariableInitialCondition"; //stoch
@@ -274,12 +294,14 @@ public class XMLTags {
     public final static String UserDefinedTag = "UserDefined";
 
     public final static String MembraneVariableTag = "MembraneVariable";
+    public final static String PointVariableTag = "PointVariable";
     public final static String FilamentVariableTag = "FilamentVariable";
     public final static String VolumeVariableTag = "VolumeVariable";
     public final static String DomainAttrTag = "Domain";
     public final static String LocationAttrTag = "Location";
     public final static String CompartmentSubDomainTag = "CompartmentSubDomain";
     public final static String FilamentSubDomainTag = "FilamentSubDomain";
+    public final static String PointSubDomainTag = "PointSubDomain";
     public final static String PriorityAttrTag = "Priority";
     public final static String MembraneSubDomainTag = "MembraneSubDomain";
     public final static String BoundaryTypeTag = "BoundaryType";
@@ -482,6 +504,9 @@ public class XMLTags {
 //	public static final String ParamRoleTotalRateTag = "totalRate";
 	public static final String DefaultReactionRateSymbol = "J";
 	public static final String VelocityTag = "Velocity";
+	public static final String PositionXTag = "PositionX";
+	public static final String PositionYTag = "PositionY";
+	public static final String PositionZTag = "PositionZ";
 	public static final String GradientTag = "Gradient";
 
 	//Surface Description elements

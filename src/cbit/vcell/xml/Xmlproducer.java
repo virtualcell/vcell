@@ -139,6 +139,9 @@ import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
+import cbit.vcell.math.ComputeCentroidComponentEquation;
+import cbit.vcell.math.ComputeMembraneMetricEquation;
+import cbit.vcell.math.ComputeNormalComponentEquation;
 import cbit.vcell.math.ExplicitDataGenerator;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
@@ -170,8 +173,8 @@ import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.math.ParticleMolecularTypePattern;
 import cbit.vcell.math.ParticleObservable;
-import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleObservable.Sequence;
+import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -179,6 +182,8 @@ import cbit.vcell.math.ParticleSpeciesPattern;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
+import cbit.vcell.math.PointSubDomain;
+import cbit.vcell.math.PointVariable;
 import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.RandomVariable;
@@ -2091,6 +2096,15 @@ private Element getXML(Equation param) throws XmlParseException{
 	else if (param instanceof VolumeRegionEquation) {
 		return getXML((VolumeRegionEquation)param);
 	}
+	else if (param instanceof ComputeMembraneMetricEquation){
+		return getXML((ComputeMembraneMetricEquation)param);
+	}
+	else if (param instanceof ComputeNormalComponentEquation){
+		return getXML((ComputeNormalComponentEquation)param);
+	}
+	else if (param instanceof ComputeCentroidComponentEquation){
+		return getXML((ComputeCentroidComponentEquation)param);
+	}
 	else {
 		throw new XmlParseException("Unknown equation type: " + param.getClass().getName());
 	}
@@ -2189,6 +2203,19 @@ private Element getXML(FilamentVariable param) {
 	}
 
 	return filvar;
+}
+
+
+private Element getXML(PointVariable param) {
+	Element pointvar = new Element(XMLTags.PointVariableTag);
+
+	//Add atributes
+	pointvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		pointvar.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
+
+	return pointvar;
 }
 
 
@@ -2357,6 +2384,9 @@ Element getXML(MathDescription mathdes) throws XmlParseException {
         }
         else if (var instanceof FilamentVariable) {
             element = getXML((FilamentVariable) var);
+        }
+        else if (var instanceof PointVariable) {
+            element = getXML((PointVariable) var);
         }
         else if (var instanceof Function) {
             element = getXML((Function) var);
@@ -2759,6 +2789,37 @@ private void addVelocityMaybe(Mutable<Element> dest, String tag, Expression exp)
 	velocity.addContent(component);
 }
 
+private Element getXML(PointSubDomain param) throws XmlParseException{
+	Element pointSubDomain = new Element(XMLTags.PointSubDomainTag);
+	
+	//Add attributes
+	pointSubDomain.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	
+
+	//Add Equation subelements
+	Enumeration<Equation> enum1 = param.getEquations();
+	while (enum1.hasMoreElements()){
+		Equation equ = enum1.nextElement();
+		pointSubDomain.addContent( getXML(equ) );
+	}
+	if (param.getPositionX()!=null){
+		Element positionX = new Element(XMLTags.PositionXTag);
+		positionX.addContent(param.getPositionX().infix());
+		pointSubDomain.addContent(positionX);
+	}
+	if (param.getPositionY()!=null){
+		Element positionY = new Element(XMLTags.PositionYTag);
+		positionY.addContent(param.getPositionY().infix());
+		pointSubDomain.addContent(positionY);
+	}
+	if (param.getPositionZ()!=null){
+		Element positionZ = new Element(XMLTags.PositionZTag);
+		positionZ.addContent(param.getPositionZ().infix());
+		pointSubDomain.addContent(positionZ);
+	}
+	return pointSubDomain;
+}
+
 
 /**
  * This method returns a XML representation of a MemVariable object.
@@ -3134,6 +3195,8 @@ private Element getXML(SubDomain param) throws XmlParseException{
 		e = getXML((FilamentSubDomain)param);
 	} else if (param instanceof MembraneSubDomain) {
 		e = getXML((MembraneSubDomain)param);
+	} else if (param instanceof PointSubDomain) {
+		e = getXML((PointSubDomain)param);
 	}
 	transcribeComments(param, e);
 	
@@ -3241,6 +3304,83 @@ private Element getXML(VolumeRegionEquation param) {
 	memregeq.addContent(tempElem);
 
 	return memregeq;
+}
+
+
+private Element getXML(ComputeMembraneMetricEquation param) {
+	Element computeMemMetric = new Element(XMLTags.ComputeMembraneMetricTag);
+	switch (param.getComponent()){
+	case directionToMembraneX: {
+		computeMemMetric.setAttribute(XMLTags.ComputeMembraneMetricComponentAttrTag, XMLTags.ComputeMembraneMetricComponentAttrTagValue_directionX);
+		break;
+	}
+	case directionToMembraneY: {
+		computeMemMetric.setAttribute(XMLTags.ComputeMembraneMetricComponentAttrTag, XMLTags.ComputeMembraneMetricComponentAttrTagValue_directionY);
+		break;
+	}
+	case directionToMembraneZ: {
+		computeMemMetric.setAttribute(XMLTags.ComputeMembraneMetricComponentAttrTag, XMLTags.ComputeMembraneMetricComponentAttrTagValue_directionZ);
+		break;
+	}
+	case distanceToMembrane: {
+		computeMemMetric.setAttribute(XMLTags.ComputeMembraneMetricComponentAttrTag, XMLTags.ComputeMembraneMetricComponentAttrTagValue_distance);
+		break;
+	}
+	default:{
+		throw new RuntimeException("unexpected component "+param.getComponent()+" for element "+XMLTags.ComputeMembraneMetricTag);
+	}
+	}
+	computeMemMetric.setAttribute(XMLTags.ComputeMembraneMetricTargetMembraneAttrTag,mangle(param.getTargetMembrane().getName()));
+	computeMemMetric.setAttribute(XMLTags.NameAttrTag,mangle(param.getVariable().getName()));
+	return computeMemMetric;
+}
+
+
+private Element getXML(ComputeNormalComponentEquation param) {
+	Element computeNormal = new Element(XMLTags.ComputeNormalTag);
+	switch (param.getComponent()){
+	case X: {
+		computeNormal.setAttribute(XMLTags.ComputeNormalComponentAttrTag, XMLTags.ComputeNormalComponentAttrTagValue_X);
+		break;
+	}
+	case Y: {
+		computeNormal.setAttribute(XMLTags.ComputeNormalComponentAttrTag, XMLTags.ComputeNormalComponentAttrTagValue_Y);
+		break;
+	}
+	case Z: {
+		computeNormal.setAttribute(XMLTags.ComputeNormalComponentAttrTag, XMLTags.ComputeNormalComponentAttrTagValue_Z);
+		break;
+	}
+	default:{
+		throw new RuntimeException("unexpected component "+param.getComponent()+" for element "+XMLTags.ComputeNormalTag);
+	}
+	}
+	computeNormal.setAttribute(XMLTags.NameAttrTag,mangle(param.getVariable().getName()));
+	return computeNormal;
+}
+
+
+private Element getXML(ComputeCentroidComponentEquation param) {
+	Element computeCentroid = new Element(XMLTags.ComputeCentroidTag);
+	switch (param.getComponent()){
+	case X: {
+		computeCentroid.setAttribute(XMLTags.ComputeCentroidComponentAttrTag, XMLTags.ComputeCentroidComponentAttrTagValue_X);
+		break;
+	}
+	case Y: {
+		computeCentroid.setAttribute(XMLTags.ComputeCentroidComponentAttrTag, XMLTags.ComputeCentroidComponentAttrTagValue_Y);
+		break;
+	}
+	case Z: {
+		computeCentroid.setAttribute(XMLTags.ComputeCentroidComponentAttrTag, XMLTags.ComputeCentroidComponentAttrTagValue_Z);
+		break;
+	}
+	default:{
+		throw new RuntimeException("unexpected component "+param.getComponent()+" for element "+XMLTags.ComputeMembraneMetricTag);
+	}
+	}
+	computeCentroid.setAttribute(XMLTags.NameAttrTag,mangle(param.getVariable().getName()));
+	return computeCentroid;
 }
 
 
