@@ -4,13 +4,22 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.TestingFrameworkWindowManager;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.numericstest.TestCaseNewBioModel;
+import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.TestCriteriaNewBioModel;
+import cbit.vcell.numericstest.TestCriteriaNewMathModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
 import edu.uchc.connjur.wb.LineStringBuilder;
 
 /**
@@ -64,12 +73,37 @@ public class SuiteTFRemoveCompiledSolvers  {
 			ArrayList<TestCriteriaNew> compiledSolverTests = new ArrayList<>();
 			TestSuiteNew ts = tfwm.getRequestManager().getDocumentManager().getTestSuite(tsInfo.getTSKey());
 			for (TestCaseNew tcn : ts.getTestCases()) {
+				VCDocument vcDocument = null;
+				Simulation[] simArr = null;
 				for ( TestCriteriaNew tcc : tcn.getTestCriterias()) {
-					if (tcc.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_SIMFAILED)) {
-						for (String f: COMPILED_MSGS) {
-							if (tcc.getReportStatusMessage().contains(f)) {
-								compiledSolverTests.add(tcc);
-								break; //COMPILED_MSGS
+					if (true || tcc.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_NOREFREGR/*TCRIT_STATUS_SIMFAILED*/)) {
+						if(vcDocument == null){
+							try{
+								if(tcn instanceof TestCaseNewBioModel){
+									vcDocument = tfwm.getRequestManager().getDocumentManager().getBioModel(tcn.getVersion().getVersionKey());
+									simArr = ((BioModel)vcDocument).getSimulations();
+								}else if(tcn instanceof TestCaseNewMathModel){
+									vcDocument = tfwm.getRequestManager().getDocumentManager().getMathModel(tcn.getVersion().getVersionKey());
+									simArr = ((MathModel)vcDocument).getSimulations();
+								}else{
+									System.out.println("TestCriteria '"+tcc.getSimInfo().getName()+"' not removed, unexpected type "+tcc.getClass().getName());
+									break;
+								}
+							}catch(Exception e){
+								e.printStackTrace();
+								System.out.println("Failed loading VCDocument for testcase '"+tcn.getVersion().getName()+"', testcriteria will not be checked for compiled solvers");
+								break;
+							}
+						}
+						Boolean isCompiled = null;
+						for (int i = 0; i < simArr.length; i++) {
+							if(simArr[i].getVersion().getVersionKey().equals(tcc.getSimInfo().getVersion().getVersionKey())){
+								isCompiled = simArr[i].getSolverTaskDescription().getSolverDescription() == SolverDescription.FiniteVolume;
+								if(isCompiled){
+									compiledSolverTests.add(tcc);
+									System.out.println("-----removing model '"+vcDocument.getName()+"', sim '"+simArr[i].getName()+"'");
+								}
+								break;
 							}
 						}
 					}
