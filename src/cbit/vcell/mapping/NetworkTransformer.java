@@ -130,7 +130,8 @@ public class NetworkTransformer implements SimContextTransformer {
 			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.show);
 		} else {
 			// if we have just one structure use the "old" way of doing things with no structure prefix
-			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.hide);
+			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.show);
+//			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.hide);
 
 		}
 		String bngl = bnglStringWriter.toString();
