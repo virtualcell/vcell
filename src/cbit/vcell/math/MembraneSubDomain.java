@@ -19,6 +19,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.math.ComputeNormalComponentEquation.NormalComponent;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -160,7 +161,7 @@ protected void parse(MathDescription mathDesc, String tokenString,
 			throw new MathFormatException("variable "+tokenString+" not a "+VCML.MembraneVariable);
 		}	
 		OdeEquation ode = new OdeEquation((MemVariable)var, null,null);
-		ode.read(tokens);
+		ode.read(tokens, mathDesc);
 		addEquation(ode);
 		return;
 	}			
@@ -204,7 +205,7 @@ protected void parse(MathDescription mathDesc, String tokenString,
 			throw new MathFormatException("variable "+tokenString+" not a MembraneVariable");
 		}	
 		PdeEquation pde = new PdeEquation((MemVariable)var);
-		pde.read(tokens);
+		pde.read(tokens, mathDesc);
 		addEquation(pde);
 		return;
 	}			
@@ -218,8 +219,32 @@ protected void parse(MathDescription mathDesc, String tokenString,
 			throw new MathFormatException("variable "+tokenString+" not a "+VCML.MembraneRegionVariable);
 		}	
 		MembraneRegionEquation mre = new MembraneRegionEquation((MembraneRegionVariable)var, null);
-		mre.read(tokens);
+		mre.read(tokens, mathDesc);
 		addEquation(mre);
+		return;
+	}
+	if (tokenString.equalsIgnoreCase(VCML.ComputeNormalX) ||
+		tokenString.equalsIgnoreCase(VCML.ComputeNormalY) ||
+		tokenString.equalsIgnoreCase(VCML.ComputeNormalZ)){
+		NormalComponent normalComponent = null;
+		if (tokenString.equalsIgnoreCase(VCML.ComputeNormalX)){
+			normalComponent = NormalComponent.X;
+		}else if (tokenString.equalsIgnoreCase(VCML.ComputeNormalY)){
+			normalComponent = NormalComponent.Y;
+		}else if (tokenString.equalsIgnoreCase(VCML.ComputeNormalZ)){
+			normalComponent = NormalComponent.Z;
+		}
+		tokenString = tokens.nextToken();
+		Variable var = mathDesc.getVariable(tokenString);
+		if (var == null){
+			throw new MathFormatException("variable "+tokenString+" not defined");
+		}	
+		if (!(var instanceof MemVariable)){
+			throw new MathFormatException("variable "+tokenString+" not a "+VCML.MembraneVariable);
+		}	
+		ComputeNormalComponentEquation computeNormalComponentEquation = new ComputeNormalComponentEquation((MemVariable)var, normalComponent);
+		computeNormalComponentEquation.read(tokens, mathDesc);
+		addEquation(computeNormalComponentEquation);
 		return;
 	}
 	if (tokenString.equalsIgnoreCase(VCML.ParticleProperties)){
@@ -251,13 +276,13 @@ protected void parse(MathDescription mathDesc, String tokenString,
 		} else {
 			throw new MathException("variable "+tokenString+" is neither a VolumeVariable nor a VolumeRegionVariable");
 		}
-		jump.read(tokens);
+		jump.read(tokens, mathDesc);
 		addJumpCondition(jump);
 		return;
 	}			
 	if (tokenString.equalsIgnoreCase(VCML.FastSystem)){
 		FastSystem fs = new FastSystem(mathDesc);
-		fs.read(tokens);
+		fs.read(tokens, mathDesc);
 		setFastSystem(fs);
 		return;
 	}			
@@ -513,6 +538,7 @@ public CompartmentSubDomain getOutsideCompartment() {
 public String getVCML(int spatialDimension) {
 	StringBuilder buffer = new StringBuilder();
 	buffer.append(VCML.MembraneSubDomain+" "+insideCompartment.getName()+" "+outsideCompartment.getName()+" {\n");
+	buffer.append("\t"+VCML.Name+"\t "+getName()+"\n");
 	if (spatialDimension>=1){
 		buffer.append("\t"+VCML.BoundaryXm+"\t "+boundaryConditionTypeXm.boundaryTypeStringValue()+"\n");
 		buffer.append("\t"+VCML.BoundaryXp+"\t "+boundaryConditionTypeXp.boundaryTypeStringValue()+"\n");

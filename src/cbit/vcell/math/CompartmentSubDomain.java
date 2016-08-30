@@ -17,6 +17,8 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Token;
 import org.vcell.util.VCAssert;
 
+import cbit.vcell.math.ComputeCentroidComponentEquation.CentroidComponent;
+import cbit.vcell.math.ComputeMembraneMetricEquation.MembraneMetricComponent;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -277,7 +279,7 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 			throw new MathFormatException("variable "+token+" not a VolumeVariable");
 		}	
 		PdeEquation pde = new PdeEquation((VolVariable)var, bSteady);
-		pde.read(tokens);
+		pde.read(tokens, mathDesc);
 		addEquation(pde);
 		return;
 	}			
@@ -291,7 +293,7 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 			throw new MathFormatException("variable "+token+" not a VolumeVariable");
 		}	
 		OdeEquation ode = new OdeEquation((VolVariable)var,null,null);
-		ode.read(tokens);
+		ode.read(tokens, mathDesc);
 		addEquation(ode);
 		return;
 	}			
@@ -305,8 +307,59 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 			throw new MathFormatException("variable "+token+" not a VolumeRegionVariable");
 		}	
 		VolumeRegionEquation vre = new VolumeRegionEquation((VolumeRegionVariable)var,null);
-		vre.read(tokens);
+		vre.read(tokens, mathDesc);
 		addEquation(vre);
+		return;
+	}			
+	if (token.equalsIgnoreCase(VCML.ComputeCentroidX) || 
+		token.equalsIgnoreCase(VCML.ComputeCentroidY) ||
+		token.equalsIgnoreCase(VCML.ComputeCentroidZ)){
+		CentroidComponent component = null;
+		if (token.equalsIgnoreCase(VCML.ComputeCentroidX)){
+			component = CentroidComponent.X;
+		}else if (token.equalsIgnoreCase(VCML.ComputeCentroidY)){
+			component = CentroidComponent.Y;
+		}else if (token.equalsIgnoreCase(VCML.ComputeCentroidZ)){
+			component = CentroidComponent.Z;
+		}
+		token = tokens.nextToken();
+		Variable var = mathDesc.getVariable(token);
+		if (var == null){
+			throw new MathFormatException("variable "+token+" not defined");
+		}	
+		if (!(var instanceof VolumeRegionVariable)){
+			throw new MathFormatException("variable "+token+" not a VolumeRegionVariable");
+		}	
+		ComputeCentroidComponentEquation computeCentroidEq = new ComputeCentroidComponentEquation((VolumeRegionVariable)var,component);
+		computeCentroidEq.read(tokens, mathDesc);
+		addEquation(computeCentroidEq);
+		return;
+	}			
+	if (token.equalsIgnoreCase(VCML.ComputeDistanceToMembrane) || 
+		token.equalsIgnoreCase(VCML.ComputeDirectionToMembraneX) ||
+		token.equalsIgnoreCase(VCML.ComputeDirectionToMembraneY) ||
+		token.equalsIgnoreCase(VCML.ComputeDirectionToMembraneZ)){
+		MembraneMetricComponent component = null;
+		if (token.equalsIgnoreCase(VCML.ComputeDistanceToMembrane)){
+			component = MembraneMetricComponent.distanceToMembrane;
+		}else if (token.equalsIgnoreCase(VCML.ComputeDirectionToMembraneX)){
+			component = MembraneMetricComponent.directionToMembraneX;
+		}else if (token.equalsIgnoreCase(VCML.ComputeDirectionToMembraneY)){
+			component = MembraneMetricComponent.directionToMembraneY;
+		}else if (token.equalsIgnoreCase(VCML.ComputeDirectionToMembraneZ)){
+			component = MembraneMetricComponent.directionToMembraneZ;
+		}
+		token = tokens.nextToken();
+		Variable var = mathDesc.getVariable(token);
+		if (var == null){
+			throw new MathFormatException("variable "+token+" not defined");
+		}	
+		if (!(var instanceof VolVariable)){
+			throw new MathFormatException("variable "+token+" not a VolumeVariable");
+		}	
+		ComputeMembraneMetricEquation computeMembraneMetricEq = new ComputeMembraneMetricEquation((VolVariable)var,component);
+		computeMembraneMetricEq.read(tokens, mathDesc);
+		addEquation(computeMembraneMetricEq);
 		return;
 	}			
 	/**
@@ -334,7 +387,7 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 	}			
 	if (token.equalsIgnoreCase(VCML.FastSystem)){
 		FastSystem fs = new FastSystem(mathDesc);
-		fs.read(tokens);
+		fs.read(tokens, mathDesc);
 		setFastSystem(fs);
 		return;
 	}	

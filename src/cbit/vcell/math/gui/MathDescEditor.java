@@ -322,6 +322,7 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.MembraneRate);
 		autoCompletionWords.add(VCML.MembraneRegionVariable);
 		autoCompletionWords.add(VCML.MembraneSubDomain);
+		autoCompletionWords.add(getTemplate_PointSubDomain());
 		autoCompletionWords.add(VCML.Name);		// for 'name' of MembraneSubdomain
 		autoCompletionWords.add(VCML.MembraneVariable);
 		autoCompletionWords.add(getTemplate_OdeEquation());
@@ -346,7 +347,18 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.VolumeRate);
 		autoCompletionWords.add(VCML.VolumeRegionVariable);
 		autoCompletionWords.add(VCML.VolumeVariable);
+		autoCompletionWords.add(VCML.PointVariable);
 		autoCompletionWords.add(VCML.Steady);
+		autoCompletionWords.add(getTemplate_ComputeCentroidX());
+		autoCompletionWords.add(getTemplate_ComputeCentroidY());
+		autoCompletionWords.add(getTemplate_ComputeCentroidZ());
+		autoCompletionWords.add(getTemplate_ComputeNormalX());
+		autoCompletionWords.add(getTemplate_ComputeNormalY());
+		autoCompletionWords.add(getTemplate_ComputeNormalZ());
+		autoCompletionWords.add(getTemplate_ComputeDirectionToMembraneX());
+		autoCompletionWords.add(getTemplate_ComputeDirectionToMembraneY());
+		autoCompletionWords.add(getTemplate_ComputeDirectionToMembraneZ());
+		autoCompletionWords.add(getTemplate_ComputeDistanceToMembrane());
 		autoCompletionWords.add(getTemplate_Event());
 		autoCompletionWords.add(VCML.Delay);
 		autoCompletionWords.add(VCML.Trigger);
@@ -427,6 +439,62 @@ private static String getTemplate_PdeEquation() {
 		+ "\t\t" + VCML.Rate + " 0.0;\n" 
 		+ "\t\t" + VCML.Diffusion + " 0.0;\n" 
 		+ "\t\t" + VCML.Initial + " 0.0;\n"
+		+ "\t" + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeCentroidX() {	
+	return VCML.ComputeCentroidX + " centroidX_varname " + VCML.BeginBlock + " " + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeCentroidY() {	
+	return VCML.ComputeCentroidY + " centroidY_varname " + VCML.BeginBlock + " " + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeCentroidZ() {	
+	return VCML.ComputeCentroidZ + " centroidZ_varname " + VCML.BeginBlock + " " + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeNormalX() {	
+	return VCML.ComputeNormalX + " normalX_varname " + VCML.BeginBlock + " " + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeNormalY() {	
+	return VCML.ComputeNormalY + " normalY_varname " + VCML.BeginBlock + " " + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeNormalZ() {	
+	return VCML.ComputeNormalZ + " normalZ_varname " + VCML.BeginBlock + " " + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeDirectionToMembraneX() {	
+	return VCML.ComputeDirectionToMembraneX + " dirX_varname " + VCML.BeginBlock + "\n"
+			+ "\t" + VCML.MembraneSubDomain + " membraneName \n"
+			+ VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeDirectionToMembraneY() {	
+	return VCML.ComputeDirectionToMembraneY + " dirX_varname " + VCML.BeginBlock + "\n"
+			+ "\t" + VCML.MembraneSubDomain + " membraneName \n"
+			+ VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeDirectionToMembraneZ() {	
+	return VCML.ComputeDirectionToMembraneZ + " dirX_varname " + VCML.BeginBlock + "\n"
+			+ "\t" + VCML.MembraneSubDomain + " membraneName \n"
+			+ VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ComputeDistanceToMembrane() {	
+	return VCML.ComputeDistanceToMembrane + " dist_varname " + VCML.BeginBlock + "\n"
+			+ "\t" + VCML.MembraneSubDomain + " membraneName \n"
+			+ VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_PointSubDomain() {	
+	return VCML.PointSubDomain + " pointName " + VCML.BeginBlock + "\n"
+		+ "\t\t" + VCML.PositionX + " 0.0;\n"
+		+ "\t\t" + VCML.PositionY + " 0.0;\n"
+		+ "\t\t" + VCML.PositionZ + " 0.0;\n"
 		+ "\t" + VCML.EndBlock + "\n";
 }
 
@@ -544,9 +612,20 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.MembraneRegionEquation);
 		keywords.add(VCML.MembraneRegionVariable);
 		keywords.add(VCML.MembraneSubDomain);
+		keywords.add(VCML.PointSubDomain);
 		keywords.add(VCML.Name);
 		keywords.add(VCML.MembraneVariable);
 		keywords.add(VCML.OdeEquation);
+		keywords.add(VCML.ComputeCentroidX);
+		keywords.add(VCML.ComputeCentroidY);
+		keywords.add(VCML.ComputeCentroidZ);
+		keywords.add(VCML.ComputeNormalX);
+		keywords.add(VCML.ComputeNormalY);
+		keywords.add(VCML.ComputeNormalZ);
+		keywords.add(VCML.ComputeDirectionToMembraneX);
+		keywords.add(VCML.ComputeDirectionToMembraneY);
+		keywords.add(VCML.ComputeDirectionToMembraneZ);
+		keywords.add(VCML.ComputeDistanceToMembrane);
 		keywords.add(VCML.OutFlux);
 		keywords.add(VCML.PdeEquation);
 		keywords.add(BoundaryConditionType.PERIODIC_STRING);
@@ -562,12 +641,16 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.VelocityX);
 		keywords.add(VCML.VelocityY);
 		keywords.add(VCML.VelocityZ);
+		keywords.add(VCML.PositionX);
+		keywords.add(VCML.PositionY);
+		keywords.add(VCML.PositionZ);
 		keywords.add(VCML.GradientX);
 		keywords.add(VCML.GradientY);
 		keywords.add(VCML.GradientZ);
 		keywords.add(VCML.VolumeRate);
 		keywords.add(VCML.VolumeRegionEquation);
 		keywords.add(VCML.VolumeRegionVariable);
+		keywords.add(VCML.PointVariable);
 		keywords.add(VCML.VolumeVariable);
 		keywords.add(VCML.Steady);
 

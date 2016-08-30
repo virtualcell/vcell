@@ -36,6 +36,7 @@ public class VCML {
 	public final static String MembraneParticleVariable 	= "MembraneParticleVariable"; //stoch
 	public final static String MembraneVariable 		= "MembraneVariable";
 	public final static String FilamentVariable 		= "FilamentVariable";
+	public final static String PointVariable 			= "PointVariable";
 	public final static String VolumeRegionVariable 	= "VolumeRegionVariable";
 	public final static String MembraneRegionVariable	= "MembraneRegionVariable";
 	public final static String FilamentRegionVariable	= "FilamentRegionVariable";
@@ -50,6 +51,7 @@ public class VCML {
 	public final static String CompartmentSubDomain 	= "CompartmentSubDomain";
 	public final static String MembraneSubDomain 		= "MembraneSubDomain";
 	public final static String FilamentSubDomain 		= "FilamentSubDomain";
+	public final static String PointSubDomain 			= "PointSubDomain";
 	public final static String Mesh						= "Mesh";
 	public final static String MeshSpecification		= "MeshSpecification";
 	public final static String CartesianMesh 			= "CartesianMesh";
@@ -68,6 +70,16 @@ public class VCML {
 	public final static String VolumeRegionEquation		= "VolumeRegionEquation";
 	public final static String MembraneRegionEquation	= "MembraneRegionEquation";
 	public final static String FilamentRegionEquation	= "FilamentRegionEquation";
+	public final static String ComputeNormalX			= "ComputeNormalX";
+	public final static String ComputeNormalY			= "ComputeNormalY";
+	public final static String ComputeNormalZ			= "ComputeNormalZ";
+	public final static String ComputeCentroidX			= "ComputeCentroidX";
+	public final static String ComputeCentroidY			= "ComputeCentroidY";
+	public final static String ComputeCentroidZ			= "ComputeCentroidZ";
+	public final static String ComputeDirectionToMembraneX	= "ComputeDirectionToMembraneX";
+	public final static String ComputeDirectionToMembraneY	= "ComputeDirectionToMembraneY";
+	public final static String ComputeDirectionToMembraneZ	= "ComputeDirectionToMembraneZ";
+	public final static String ComputeDistanceToMembrane	= "ComputeDistanceToMembrane";
 	public final static String UniformRate				= "UniformRate";
 	public final static String VolumeRate				= "VolumeRate";
 	public final static String MembraneRate				= "MembraneRate";
@@ -90,6 +102,9 @@ public class VCML {
 	public final static String VelocityX				= "VelocityX";
 	public final static String VelocityY				= "VelocityY";
 	public final static String VelocityZ				= "VelocityZ";
+	public final static String PositionX				= "PositionX";
+	public final static String PositionY				= "PositionY";
+	public final static String PositionZ				= "PositionZ";
 	public final static String GradientX				= "GradientX";
 	public final static String GradientY				= "GradientY";
 	public final static String GradientZ				= "GradientZ";

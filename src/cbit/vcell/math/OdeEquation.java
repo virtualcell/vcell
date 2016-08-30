@@ -149,7 +149,7 @@ public String getVCML() {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void read(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
+public void read(CommentStringTokenizer tokens, MathDescription mathDesc) throws MathFormatException, ExpressionException {
 	String token = null;
 	token = tokens.nextToken();
 	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
@@ -188,11 +188,16 @@ public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws Mat
 		expList.add(getRateExpression());
 		expList.add(getExactSolution());
 		checkValid_Volume(mathDesc, expList, (CompartmentSubDomain)subDomain);
-	} else {
+	} else if (getVariable() instanceof MemVariable) {
 		ArrayList<Expression> expList = new ArrayList<Expression>();
 		expList.add(getRateExpression());
 		expList.add(getExactSolution());
 		checkValid_Membrane(mathDesc, expList, (MembraneSubDomain)subDomain);
+	} else if (getVariable() instanceof PointVariable){
+		ArrayList<Expression> expList = new ArrayList<Expression>();
+		expList.add(getRateExpression());
+		expList.add(getExactSolution());
+		checkValid_PointSubDomain(mathDesc, expList, (PointSubDomain)subDomain);
 	}
 }
 }

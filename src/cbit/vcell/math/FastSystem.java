@@ -151,7 +151,7 @@ public String getVCML() {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void read(CommentStringTokenizer tokens) throws MathException, ExpressionException {
+public void read(CommentStringTokenizer tokens, MathDescription mathDesc) throws MathException, ExpressionException {
 	String token = null;
 	token = tokens.nextToken();
 	if (!token.equalsIgnoreCase(VCML.BeginBlock)){

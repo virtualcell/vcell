@@ -27,5 +27,5 @@ public String getVCML() throws Exception;
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void read(CommentStringTokenizer tokens) throws Exception;
+public void read(CommentStringTokenizer tokens, MathDescription mathDesc) throws Exception;
 }

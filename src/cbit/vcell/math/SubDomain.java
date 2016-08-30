@@ -926,5 +926,11 @@ private class ProviderAdapter implements VCMLProvider {
 
 }
 
+public void refreshDependencies(MathDescription mathDesc) {
+	for (Equation eq : this.equationList){
+		eq.refreshDependencies(mathDesc);
+	}
+}
+
 
 }

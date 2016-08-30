@@ -125,7 +125,7 @@ public void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws
 				throw new MathFormatException("variable "+token+" not a "+VCML.FilamentVariable);
 			}	
 			OdeEquation ode = new OdeEquation((FilamentVariable)var, null,null);
-			ode.read(tokens);
+			ode.read(tokens, mathDesc);
 			addEquation(ode);
 			continue;
 		}			
@@ -139,13 +139,13 @@ public void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws
 				throw new MathFormatException("variable "+token+" not a "+VCML.FilamentRegionVariable);
 			}	
 			FilamentRegionEquation fre = new FilamentRegionEquation((FilamentRegionVariable)var, null);
-			fre.read(tokens);
+			fre.read(tokens, mathDesc);
 			addEquation(fre);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.FastSystem)){
 			FastSystem fs = new FastSystem(mathDesc);
-			fs.read(tokens);
+			fs.read(tokens, mathDesc);
 			setFastSystem(fs);
 			continue;
 		}			
