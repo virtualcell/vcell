@@ -71,6 +71,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	private BNGExecutorServiceNative onepassBngService;
 	private long startTime = -1;
 	
+	long eltIsomorph = 0;	// elapsed time executing isomorphism
+
+	
 	private int previousIterationTotalSpecies = 0;	// TaskCallbackProcessor needs these to compute if the number of iterations is sufficient
 	private int currentIterationTotalSpecies = 0;
 	private int needAdjustMaxMolecules = 0;			// TaskCallbackProcessor needs this to see if the number of molecules per species is sufficient
@@ -104,7 +107,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	@Override
 	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionBindingException {
 		this.startTime = System.currentTimeMillis();
-		long elt = 0;	// elapsed time in doWork
+		long eltDoWork = 0;		// elapsed time in doWork
+		long eltExecBng = 0;	// elapsed time executing bngl
+		eltIsomorph = 0;		// elapsed time executing isomorphism
+		long eltObserv = 0;		// elapsed time on final Observable run
 		
 		String cBngInputString = cBngInput.getInputString();
 		
@@ -133,7 +139,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			this.onepassBngService = new BNGExecutorServiceNative(sBngInput, timeoutDurationMS);
 			this.onepassBngService.registerBngUpdaterCallback(this);	// we are the only callback for the native service, acting as middleman
 			
+			long st1 = System.currentTimeMillis();
 			sBngOutput = this.onepassBngService.executeBNG();
+			long et1 = System.currentTimeMillis();
+			eltExecBng += (et1 - st1);
 			this.onepassBngService = null;
 		
 			sBngOutputString = sBngOutput.getNetFileContent();		// .net file
@@ -149,10 +158,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 //			s += "\n" + delta;
 //			s += "---------------------------------------\n" + rs;
 			consoleNotification(s);
-			long st = System.currentTimeMillis();
+			long st2 = System.currentTimeMillis();
 			CorrectedSR correctedSR = doWork(oldSeedSpeciesString, sBngOutputString);
-			long et = System.currentTimeMillis();
-			elt += et - st;
+			long et2 = System.currentTimeMillis();
+			eltDoWork += (et2 - st2);
 			String correctedSeedSpeciesString = extractCorrectedSeedSpeciesAsString(correctedSR);
 			correctedReactionsString = extractCorrectedReactionsAsString(correctedSR);
 			oldSeedSpeciesString += correctedSeedSpeciesString;
@@ -166,6 +175,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		}
 		// run one more iteration with all the seed species calculated above and with one single fake 
 		// rule (so that no new seed species will be created), to properly compute the observables
+		long st3 = System.currentTimeMillis();
 		String obsInputString = prepareObservableRun(sBngInputString);	// the ObservableGroups
 		BNGInput obsBngInput = new BNGInput(obsInputString);
 		this.onepassBngService = new BNGExecutorServiceNative(obsBngInput, timeoutDurationMS);
@@ -173,7 +183,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		BNGOutput obsBngOutput = this.onepassBngService.executeBNG();
 		String correctedObservablesString = extractCorrectedObservablesAsString(obsBngOutput);
 		correctedObservablesString = extractPolymerObservablesAsString(correctedObservablesString, oldSeedSpeciesString);
-		
+		long et3 = System.currentTimeMillis();
+		eltObserv += (et3 - st3);
+
 		// oldSeedSpeciesString contains the final list of seed species
 		sBngOutput.insertEntitiesInNetFile(oldSeedSpeciesString, "species");
 		sBngOutput.insertEntitiesInNetFile(correctedReactionsString, "reactions");
@@ -186,7 +198,12 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		long endTime = System.currentTimeMillis();
 		long elapsedTime = endTime - startTime;
 		System.out.println("Done " + i + " Iterations in " + (int)(elapsedTime/1000.0) + " s.");
-		System.out.println("out of which " + (int)(elt/1000.0) + " s was spent in 'doWork'.");
+//		System.out.println("out of which " + (int)(eltDoWork/1000.0) + " s was spent in 'doWork'.");
+		System.out.println("- in BioNetGen: " + (int)(eltExecBng/1000.0));
+		System.out.println("- in DoWork   : " + (int)((eltDoWork-eltIsomorph)/1000.0));		// doWork except isomorphism
+		System.out.println("- in Isomorph : " + (int)(eltIsomorph/1000.0));
+		System.out.println("- in Observ   : " + (int)(eltObserv/1000.0));
+		System.out.println("- in rest     : " + (int)((elapsedTime-eltExecBng-eltDoWork-eltObserv)/1000.0));	// algorithms outside doWork
 		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
 	// -------------------------------------------------------------------------------------------------------------------------------------------------
@@ -410,7 +427,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(ruleName);
 				
 				// TODO: the code below may be greatly simplified using the more advanced BNGSpecies classes instead of using the strings
-				// 'one' is the list of all the compartments mentioned in this product
+				// 'one' is the list of all the compartments mentioned in this product; for single compartment models 'one' will always be 1
+				//    and thus we'll never attempt to correct anything
 				// 'two' is the BNGSpecies string with the compartment info extracted (that is, the AAA sites extracted)
 				Pair<List<String>, String> pair = RbmUtils.extractCompartment(s.getName());
 				Map<String, Set<String>> speciesAnchorMap = extractSpeciesAnchorMap(s);			// ex of one entry: key T,  value  mem, cyt
@@ -535,9 +553,13 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				// We correct the reaction to match the networkFileIndex of this species (useless activity except for the last iteration 
 				//    when we want the valid list of flattened reactions 
 				//
+				long st = System.currentTimeMillis();
 				BNGSpecies existingMatchInNew = BNGOutputSpec.findMatch(candidate, newSpeciesList);
 				BNGSpecies existingMatchInOld = BNGOutputSpec.findMatch(candidate, oldSpeciesList);
-				if(existingMatchInNew != null && existingMatchInOld != null) {
+				long et = System.currentTimeMillis();
+				eltIsomorph += (et - st);
+
+				if(existingMatchInNew != null && existingMatchInOld != null) {		// sanity check
 					throw new RuntimeException("The new 'candidate' species cannot exist in both the list of existing seed species and in the new one we're building");
 				}
 				// if it doesn't exist we add it to the list of seed species we are preparing for the next iteration
@@ -579,6 +601,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		summary += "   " + summaryRepaired + " species needed repairing.\n";
 		summary += "   " + summaryExisted + " species already present, not added to the seed species list.\n";
 		summary += "   " + summarySpecies + " new species added.\n";
+//		String summary = "   " + summarySpecies + " new species added.\n";
 		consoleNotification(summary);
 		
 		currentIterationTotalSpecies = previousIterationTotalSpecies + summarySpecies;	// total number of species at this moment
