@@ -129,10 +129,10 @@ public class NetworkTransformer implements SimContextTransformer {
 		if(simulationContext.getModel().getNumStructures() > 1) {
 			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.show);
 		} else {
-			// if we have just one structure use the "old" way of doing things with no structure prefix
+			// ATTENTION: even if we have just one structure we must NOT use the "old" way of constructing the .bngl file with no structure prefix and
+			// no "compartments" block, because the fake internal biomodel within BNGExecutorServiceMultipass will get c0 by default at creation time, and we
+			// need the real compartment name(s) from the original biomodel (which name we can only get from the bngl file from the "compartments" block)
 			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.show);
-//			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.hide);
-
 		}
 		String bngl = bnglStringWriter.toString();
 		pw.close();
