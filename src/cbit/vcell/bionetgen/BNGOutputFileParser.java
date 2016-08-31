@@ -141,7 +141,7 @@ public static String extractCompartments (String inputString) {
 				if (token2 != null) {
 					token2 = token2.trim();
 				}
-				System.out.println(token2);
+//				System.out.println(token2);
 				if(i==0) {
 					result.append("\t" + token2);
 				}
@@ -151,7 +151,7 @@ public static String extractCompartments (String inputString) {
 					String expression = p.two;
 					expression = RbmUtils.extractProduct(expression);
 					String s = "@" + structure + ":" + expression;
-					System.out.println(s);
+//					System.out.println(s);
 					result.append(" " + s);
 				}
 				if(i==2) {
