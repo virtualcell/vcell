@@ -109,13 +109,13 @@ public static int getFirstAvailableSpeciesIndex(List<BNGSpecies> bngSpecies) {
 	return indexCandidate+1;	// this is the first index not in use
 }
 public static BNGSpecies findMatch(BNGSpecies ours, List<BNGSpecies> theirsList) {
-	for(BNGSpecies theirs : theirsList) {
-//		System.out.println("Comparing existing " + theirs.getName() + " with ours " + ours.getName());
-		// simplest verification, if strings are identical - should work most of the times
-		if(theirs.getName().equals(ours.getName())) {
-			return theirs;
-		}
-	}
+//	for(BNGSpecies theirs : theirsList) {
+////		System.out.println("Comparing existing " + theirs.getName() + " with ours " + ours.getName());
+//		// simplest verification, if strings are identical - should work most of the times
+//		if(theirs.getName().equals(ours.getName())) {
+//			return theirs;
+//		}
+//	}
 	
 	// more expensive and difficult - we verify if the 2 species are isomorphic (different only in bond numbering)
 //	SpeciesIsomorphismInspector sii = new SpeciesIsomorphismInspector();

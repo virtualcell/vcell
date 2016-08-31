@@ -81,9 +81,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	private Model model;							// model identical with the original, created from the compartmental bngl file
 	private SimulationContext simContext;
 	
+	private Map <String, String> isomorphismSignaturesMap = new HashMap<>();	// when an isomorphism is detected, we store here the string expressions of the 2 isomorphic species
 	private Map <String, Set<String>> anchorsMap;
-	private List <RbmObservable> polymerEqualObservables = new ArrayList<>();		// syntax  A()=xx
-	private List <RbmObservable> polymerGreaterObservables = new ArrayList<>();		// syntax  A()>xx
+	private List <RbmObservable> polymerEqualObservables = new ArrayList<>();	// syntax  A()=xx
+	private List <RbmObservable> polymerGreaterObservables = new ArrayList<>();	// syntax  A()>xx
 	
 
 	BNGExecutorServiceMultipass(BNGInput cBngInput, Long timeoutDurationMS) {
@@ -366,6 +367,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		
 		// parse the .net file with BNGOutputFileParser
 		List<BNGSpecies> oldSpeciesList = BNGOutputFileParser.createBngSpeciesOutputSpec(oldSpeciesString);	// seed species at the beginning of the current iteration
+		// same as above, used internally, as we add new species from the current iteration we put them here; 
+		// used to speed up the verifications and reduce the isomorphism calls together with the isomorphismSignaturesMap
+		Map<String, BNGSpecies> oldSpeciesMap = BNGOutputFileParser.createBngSpeciesSignatureMap(oldSpeciesString);
+		
 		BNGOutputSpec workSpec = BNGOutputFileParser.createBngOutputSpec(newNetFile);		// .net file content generated during current iteration
 		List<BNGSpecies> newSpeciesList = new ArrayList<>();		// we build here the list of valid (perhaps even corrected) NEW species
 		
@@ -553,17 +558,35 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				// We correct the reaction to match the networkFileIndex of this species (useless activity except for the last iteration 
 				//    when we want the valid list of flattened reactions 
 				//
+				BNGSpecies existingMatch = null;		// we set this to an existing species if the candidate matches it (directly or through isomorphism) 
 				long st = System.currentTimeMillis();
-				BNGSpecies existingMatchInNew = BNGOutputSpec.findMatch(candidate, newSpeciesList);
-				BNGSpecies existingMatchInOld = BNGOutputSpec.findMatch(candidate, oldSpeciesList);
+				
+				String isomorphSpeciesName = isomorphismSignaturesMap.get(candidate.getName());
+				if(isomorphSpeciesName != null) {	// name of an existing species that is isomorphic with our candidate
+					// we recover the existing species and will use it instead of the candidate
+					existingMatch = oldSpeciesMap.get(isomorphSpeciesName);
+					if(existingMatch == null) {
+						throw new RuntimeException("Unable to find an isomorph BNGSpecies named " + isomorphSpeciesName + " that should have existed.");
+					}
+				} else {		// not present among the existing species or their known isomorphisms
+								// try to find an isomorphism the hard way
+					BNGSpecies existingMatchInNew = BNGOutputSpec.findMatch(candidate, newSpeciesList);
+					if(existingMatchInNew != null) {
+						isomorphismSignaturesMap.put(candidate.getName(), existingMatchInNew.getName());
+						existingMatch = existingMatchInNew;
+					} else {
+						BNGSpecies existingMatchInOld = BNGOutputSpec.findMatch(candidate, oldSpeciesList);
+						if(existingMatchInOld != null) {
+							isomorphismSignaturesMap.put(candidate.getName(), existingMatchInOld.getName());
+							existingMatch = existingMatchInOld;
+						}
+					}
+				}
 				long et = System.currentTimeMillis();
 				eltIsomorph += (et - st);
 
-				if(existingMatchInNew != null && existingMatchInOld != null) {		// sanity check
-					throw new RuntimeException("The new 'candidate' species cannot exist in both the list of existing seed species and in the new one we're building");
-				}
 				// if it doesn't exist we add it to the list of seed species we are preparing for the next iteration
-				if(existingMatchInNew == null && existingMatchInOld == null) {
+				if(existingMatch == null) {
 					newSpeciesList.add(candidate);
 					message += "Candidate " + candidate.getName() + " added to the seed species list.";
 					summarySpecies++;
@@ -572,19 +595,14 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 						r.getProducts()[reactionProductPosition] = candidate;		// correct the reaction
 					}
 					manageIndexesMap(indexesMap, s, candidate);
+					oldSpeciesMap.put(candidate.getName(), candidate);
+					isomorphismSignaturesMap.put(candidate.getName(), candidate.getName());	// put self in the list of signature map too
 				} else {
 					message += "Candidate " + candidate.getName() + " already exists, not added.";
-					BNGSpecies existingMatch;		// at this point we know for sure that there's one and only one match
-					if(existingMatchInNew != null) {
-						existingMatch = existingMatchInNew;
-					} else {
-						existingMatch = existingMatchInOld;
-					}
 					summaryExisted++;
 					for(int reactionProductPosition : reactionProductPositions) {
 						r.getProducts()[reactionProductPosition] = existingMatch;		// correct the reaction
 					}
-					
 					manageIndexesMap(indexesMap, s, existingMatch);
 				}
 //				if(!message.isEmpty()) {
