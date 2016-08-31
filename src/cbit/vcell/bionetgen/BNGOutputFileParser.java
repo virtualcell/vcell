@@ -14,6 +14,7 @@ import cbit.vcell.parser.Expression;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -171,6 +172,15 @@ public static String extractCompartments (String inputString) {
 	return s;
 }
 
+public static Map<String, BNGSpecies> createBngSpeciesSignatureMap(String inputString) {
+	
+	Map <String, BNGSpecies> map = new LinkedHashMap<> ();
+	List<BNGSpecies> list = createBngSpeciesOutputSpec(inputString);
+	for(BNGSpecies species : list) {
+		map.put(species.getName(), species);
+	}
+	return map;
+}
 public static List<BNGSpecies> createBngSpeciesOutputSpec(String inputString) {
 
 	String newLineDelimiters = "\n\r";
