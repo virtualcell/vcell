@@ -130,8 +130,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		String correctedReactionsString = null;		// the BNGReactions as they are at the end of the current iteration, after corrections of the species
 		
 		oldSeedSpeciesString = extractOriginalSeedSpecies(sBngInputString);		// before the first iteration we show the original seed species
-		consoleNotification("======= Original Seed Species ===========================\n" + oldSeedSpeciesString);
-
+//		consoleNotification("======= Original Seed Species ===========================\n" + oldSeedSpeciesString);
+		int speciesCount = org.apache.commons.lang3.StringUtils.countMatches(oldSeedSpeciesString, "\n");	// initial number of seed species 
+		displayIterationMessage(0, speciesCount);
+		
 		NetworkConstraints nc = simContext.getNetworkConstraints();
 		int i;		// iterations counter
 		for (i = 0; i<nc.getMaxIteration(); i++) {
@@ -155,10 +157,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			dump("dumpIteration" + (i+1) + ".txt", rawSeedSpeciesString);
 			delta = rawSeedSpeciesString.substring(oldSeedSpeciesString.length());
 			String rs = extractReactions(sBngOutputString);
-			String s = "  --- Iteration " + (i+1) + " ---------------------------";
+//			String s = "  --- Iteration " + (i+1) + " ---------------------------";
 //			s += "\n" + delta;
 //			s += "---------------------------------------\n" + rs;
-			consoleNotification(s);
+//			consoleNotification(s);
 			long st2 = System.currentTimeMillis();
 			CorrectedSR correctedSR = doWork(oldSeedSpeciesString, sBngOutputString);
 			long et2 = System.currentTimeMillis();
@@ -167,6 +169,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			correctedReactionsString = extractCorrectedReactionsAsString(correctedSR);
 			oldSeedSpeciesString += correctedSeedSpeciesString;
 
+			speciesCount += correctedSR.speciesList.size();
+			displayIterationMessage(i+1, speciesCount);
+			
 			if(correctedSR.speciesList.isEmpty()) {
 				// if the current iteration didn't provide any VALID NEW species (after correction) then we are done
 				break;
@@ -209,6 +214,16 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	}
 	// -------------------------------------------------------------------------------------------------------------------------------------------------
 
+	private void displayIterationMessage(int iterationIndex, int speciesCount) {
+		String s1 = iterationIndex + "";
+		String s2 = speciesCount + "";
+		String indent1 = "   ";
+		String indent2 = "      ";
+		String s = indent1 + "Iteration" + indent1.substring(0, indent1.length() - s1.length()) + s1 + ":";
+		s += indent2.substring(0, indent2.length() - s2.length()) + s2 + " species";
+		consoleNotification(s);
+	}
+	
 	private String extractPolymerObservablesAsString(String prefix, String sBngInputString) {
 		if(polymerEqualObservables.isEmpty() && polymerEqualObservables.isEmpty()) {
 			return prefix;
@@ -615,12 +630,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		System.out.println("   Added " + newSpeciesList.size() + " new species");
 		System.out.println(" ");
 		
-		String summary = "   " + summaryCreated + " species were created.\n";
-		summary += "   " + summaryRepaired + " species needed repairing.\n";
-		summary += "   " + summaryExisted + " species already present, not added to the seed species list.\n";
-		summary += "   " + summarySpecies + " new species added.\n";
-//		String summary = "   " + summarySpecies + " new species added.\n";
-		consoleNotification(summary);
+//		String summary = "   " + summaryCreated + " species were created.\n";
+//		summary += "   " + summaryRepaired + " species needed repairing.\n";
+//		summary += "   " + summaryExisted + " species already present, not added to the seed species list.\n";
+//		summary += "   " + summarySpecies + " new species added.\n";
+//		consoleNotification(summary);
 		
 		currentIterationTotalSpecies = previousIterationTotalSpecies + summarySpecies;	// total number of species at this moment
 		String message = previousIterationTotalSpecies + "," + currentIterationTotalSpecies + "," + needAdjustMaxMolecules;

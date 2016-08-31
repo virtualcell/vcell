@@ -142,7 +142,8 @@ public BNGOutput executeBNG() throws BNGException {
 		inputFile.print(bngInput.getInputString());
 		inputFile.close();
 
-		System.out.println("BNGExecutorService.executeBNG(): input = \n"+bngInput.getInputString());
+//		System.out.println("BNGExecutorService.executeBNG(): input = \n"+bngInput.getInputString());
+		System.out.println("BNGExecutorService.executeBNG()\n");
 
 		// run BNG
 		String[] cmd = new String[] {file_exe_bng.getAbsolutePath(), bngInputFile.getAbsolutePath()};
