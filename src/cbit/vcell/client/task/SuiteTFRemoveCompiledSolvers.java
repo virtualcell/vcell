@@ -75,36 +75,30 @@ public class SuiteTFRemoveCompiledSolvers  {
 			for (TestCaseNew tcn : ts.getTestCases()) {
 				VCDocument vcDocument = null;
 				Simulation[] simArr = null;
+				try{
+					if(tcn instanceof TestCaseNewBioModel){
+						vcDocument = tfwm.getRequestManager().getDocumentManager().getBioModel(tcn.getVersion().getVersionKey());
+						simArr = ((BioModel)vcDocument).getSimulations();
+					}else if(tcn instanceof TestCaseNewMathModel){
+						vcDocument = tfwm.getRequestManager().getDocumentManager().getMathModel(tcn.getVersion().getVersionKey());
+						simArr = ((MathModel)vcDocument).getSimulations();
+					}else{
+						throw new Exception("Error checking compiled solvers for TestCase '"+tcn.getVersion().getName()+"' expecting MathModel or BioModel but got type "+tcn.getClass().getName());
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+					System.out.println("Failed loading VCDocument for testcase '"+tcn.getVersion().getName()+"', its testcriteria cannot be checked for compiled solvers");
+					continue;
+				}
 				for ( TestCriteriaNew tcc : tcn.getTestCriterias()) {
-					if (true || tcc.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_NOREFREGR/*TCRIT_STATUS_SIMFAILED*/)) {
-						if(vcDocument == null){
-							try{
-								if(tcn instanceof TestCaseNewBioModel){
-									vcDocument = tfwm.getRequestManager().getDocumentManager().getBioModel(tcn.getVersion().getVersionKey());
-									simArr = ((BioModel)vcDocument).getSimulations();
-								}else if(tcn instanceof TestCaseNewMathModel){
-									vcDocument = tfwm.getRequestManager().getDocumentManager().getMathModel(tcn.getVersion().getVersionKey());
-									simArr = ((MathModel)vcDocument).getSimulations();
-								}else{
-									System.out.println("TestCriteria '"+tcc.getSimInfo().getName()+"' not removed, unexpected type "+tcc.getClass().getName());
-									break;
-								}
-							}catch(Exception e){
-								e.printStackTrace();
-								System.out.println("Failed loading VCDocument for testcase '"+tcn.getVersion().getName()+"', testcriteria will not be checked for compiled solvers");
-								break;
+					for (int i = 0; i < simArr.length; i++) {
+						if(simArr[i].getVersion().getVersionKey().equals(tcc.getSimInfo().getVersion().getVersionKey())){
+							Boolean isCompiled = simArr[i].getSolverTaskDescription().getSolverDescription() == SolverDescription.FiniteVolume;
+							if(isCompiled){
+								compiledSolverTests.add(tcc);
+								System.out.println("-----removing model '"+vcDocument.getName()+"', sim '"+simArr[i].getName()+"'");
 							}
-						}
-						Boolean isCompiled = null;
-						for (int i = 0; i < simArr.length; i++) {
-							if(simArr[i].getVersion().getVersionKey().equals(tcc.getSimInfo().getVersion().getVersionKey())){
-								isCompiled = simArr[i].getSolverTaskDescription().getSolverDescription() == SolverDescription.FiniteVolume;
-								if(isCompiled){
-									compiledSolverTests.add(tcc);
-									System.out.println("-----removing model '"+vcDocument.getName()+"', sim '"+simArr[i].getName()+"'");
-								}
-								break;
-							}
+							break;
 						}
 					}
 				}
