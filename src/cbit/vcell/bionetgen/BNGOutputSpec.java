@@ -108,38 +108,28 @@ public static int getFirstAvailableSpeciesIndex(List<BNGSpecies> bngSpecies) {
 	}
 	return indexCandidate+1;	// this is the first index not in use
 }
-public static BNGSpecies findMatch(BNGSpecies ours, List<BNGSpecies> theirsList) {
-//	for(BNGSpecies theirs : theirsList) {
-////		System.out.println("Comparing existing " + theirs.getName() + " with ours " + ours.getName());
-//		// simplest verification, if strings are identical - should work most of the times
-//		if(theirs.getName().equals(ours.getName())) {
-//			return theirs;
-//		}
-//	}
+public static BNGSpecies findMatch(BNGSpecies ours, List<BNGSpecies> theirsList, BNGSpecies.SignatureDetailLevel sigDetailLevel) {
 	
 	// more expensive and difficult - we verify if the 2 species are isomorphic (different only in bond numbering)
 //	SpeciesIsomorphismInspector sii = new SpeciesIsomorphismInspector();
-//	BNGSpecies oneway = null;
 //	sii.initialize(ours);
 //	for(BNGSpecies theirs : theirsList) {
 //		if(sii.isIsomorphism(theirs)) {
-//			oneway = theirs;
-////			return theirs;
-//			break;
+//			return theirs;
 //		}
 //	}
-	
+	String ourSignature = BNGSpecies.getShortSignature(ours, sigDetailLevel);
 	// using jgrapht
 	SpeciesGraphIsomorphismInspector sgii = new SpeciesGraphIsomorphismInspector();
 	for(BNGSpecies theirs : theirsList) {
+		String theirSignature = BNGSpecies.getShortSignature(theirs, sigDetailLevel);
+		if(!theirSignature.equals(ourSignature)) {
+			continue;			// no point to compute the isomorfism if the signatures don't match
+		}
 		if(sgii.isIsomorphism(ours, theirs)) {
-//			if(oneway != theirs) {
-//				throw new RuntimeException(oneway + " and " + theirs + " should be the same");
-//			}
 			return theirs;
 		}
 	}
-
 	return null;
 }
 

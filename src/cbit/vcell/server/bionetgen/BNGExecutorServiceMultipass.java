@@ -63,6 +63,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		List<BNGReaction> reactionsList;
 	}
 	
+	private final static BNGSpecies.SignatureDetailLevel sigDetailLevel = BNGSpecies.SignatureDetailLevel.ComponentsAndStates;
 	private final BNGInput cBngInput;	// compartmental .bng input file
 	
 	private final Long timeoutDurationMS;
@@ -72,7 +73,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	private long startTime = -1;
 	
 	long eltIsomorph = 0;	// elapsed time executing isomorphism
-
 	
 	private int previousIterationTotalSpecies = 0;	// TaskCallbackProcessor needs these to compute if the number of iterations is sufficient
 	private int currentIterationTotalSpecies = 0;
@@ -82,6 +82,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	private SimulationContext simContext;
 	
 	private Map <String, String> isomorphismSignaturesMap = new HashMap<>();	// when an isomorphism is detected, we store here the string expressions of the 2 isomorphic species
+	private Set<String> shortSignaturesSet = new HashSet<>();					// signature of BNGSpecies (molecules and components with states, bonds ignored)
+	
 	private Map <String, Set<String>> anchorsMap;
 	private List <RbmObservable> polymerEqualObservables = new ArrayList<>();	// syntax  A()=xx
 	private List <RbmObservable> polymerGreaterObservables = new ArrayList<>();	// syntax  A()>xx
@@ -134,6 +136,12 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		int speciesCount = org.apache.commons.lang3.StringUtils.countMatches(oldSeedSpeciesString, "\n");	// initial number of seed species 
 		displayIterationMessage(0, speciesCount);
 		
+		List<BNGSpecies> initialSpeciesList = BNGOutputFileParser.createBngSpeciesOutputSpec(oldSeedSpeciesString);
+		for(BNGSpecies s : initialSpeciesList) {	// populate the isomorphism signature map with the initial seed species
+			isomorphismSignaturesMap.put(s.getName(), s.getName());
+			shortSignaturesSet.add(BNGSpecies.getShortSignature(s, sigDetailLevel));
+		}
+		
 		NetworkConstraints nc = simContext.getNetworkConstraints();
 		int i;		// iterations counter
 		for (i = 0; i<nc.getMaxIteration(); i++) {
@@ -149,13 +157,13 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			this.onepassBngService = null;
 		
 			sBngOutputString = sBngOutput.getNetFileContent();		// .net file
-			String delta = "";
+//			String delta = "";
 			String rawSeedSpeciesString = "";
 
 			// this bloc is dealing with the strings, used for console display only
 			rawSeedSpeciesString = extractSeedSpecies(sBngOutputString);
 			dump("dumpIteration" + (i+1) + ".txt", rawSeedSpeciesString);
-			delta = rawSeedSpeciesString.substring(oldSeedSpeciesString.length());
+//			delta = rawSeedSpeciesString.substring(oldSeedSpeciesString.length());
 			String rs = extractReactions(sBngOutputString);
 //			String s = "  --- Iteration " + (i+1) + " ---------------------------";
 //			s += "\n" + delta;
@@ -384,7 +392,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		List<BNGSpecies> oldSpeciesList = BNGOutputFileParser.createBngSpeciesOutputSpec(oldSpeciesString);	// seed species at the beginning of the current iteration
 		// same as above, used internally, as we add new species from the current iteration we put them here; 
 		// used to speed up the verifications and reduce the isomorphism calls together with the isomorphismSignaturesMap
-		Map<String, BNGSpecies> oldSpeciesMap = BNGOutputFileParser.createBngSpeciesSignatureMap(oldSpeciesString);
+		Map<String, BNGSpecies> seedSpeciesMap = BNGOutputFileParser.createBngSpeciesSignatureMap(oldSpeciesString);
 		
 		BNGOutputSpec workSpec = BNGOutputFileParser.createBngOutputSpec(newNetFile);		// .net file content generated during current iteration
 		List<BNGSpecies> newSpeciesList = new ArrayList<>();		// we build here the list of valid (perhaps even corrected) NEW species
@@ -576,24 +584,31 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				BNGSpecies existingMatch = null;		// we set this to an existing species if the candidate matches it (directly or through isomorphism) 
 				long st = System.currentTimeMillis();
 				
-				String isomorphSpeciesName = isomorphismSignaturesMap.get(candidate.getName());
-				if(isomorphSpeciesName != null) {	// name of an existing species that is isomorphic with our candidate
-					// we recover the existing species and will use it instead of the candidate
-					existingMatch = oldSpeciesMap.get(isomorphSpeciesName);
-					if(existingMatch == null) {
-						throw new RuntimeException("Unable to find an isomorph BNGSpecies named " + isomorphSpeciesName + " that should have existed.");
-					}
-				} else {		// not present among the existing species or their known isomorphisms
-								// try to find an isomorphism the hard way
-					BNGSpecies existingMatchInNew = BNGOutputSpec.findMatch(candidate, newSpeciesList);
-					if(existingMatchInNew != null) {
-						isomorphismSignaturesMap.put(candidate.getName(), existingMatchInNew.getName());
-						existingMatch = existingMatchInNew;
-					} else {
-						BNGSpecies existingMatchInOld = BNGOutputSpec.findMatch(candidate, oldSpeciesList);
-						if(existingMatchInOld != null) {
-							isomorphismSignaturesMap.put(candidate.getName(), existingMatchInOld.getName());
-							existingMatch = existingMatchInOld;
+				String sig = BNGSpecies.getShortSignature(candidate, sigDetailLevel);
+				if(!shortSignaturesSet.contains(sig)) {
+					// our candidate has a new short signature, this means it is certainly not among the existing species
+					// no point in doing any other search to find it
+				} else {
+					// short signature match, now we check if the full species exists or is isomorphic with an existing one
+					String isomorphSpeciesName = isomorphismSignaturesMap.get(candidate.getName());
+					if(isomorphSpeciesName != null) {	// name of an existing species that is isomorphic with our candidate
+						// we recover the existing species and will use it instead of the candidate
+						existingMatch = seedSpeciesMap.get(isomorphSpeciesName);
+						if(existingMatch == null) {
+							throw new RuntimeException("Unable to find an isomorph BNGSpecies named " + isomorphSpeciesName + " that should have existed.");
+						}
+					} else {		// not present among the existing species or their known isomorphisms
+									// try to find an isomorphism the hard way
+						BNGSpecies existingMatchInNew = BNGOutputSpec.findMatch(candidate, newSpeciesList, sigDetailLevel);
+						if(existingMatchInNew != null) {
+							isomorphismSignaturesMap.put(candidate.getName(), existingMatchInNew.getName());
+							existingMatch = existingMatchInNew;
+						} else {
+							BNGSpecies existingMatchInOld = BNGOutputSpec.findMatch(candidate, oldSpeciesList, sigDetailLevel);
+							if(existingMatchInOld != null) {
+								isomorphismSignaturesMap.put(candidate.getName(), existingMatchInOld.getName());
+								existingMatch = existingMatchInOld;
+							}
 						}
 					}
 				}
@@ -610,8 +625,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 						r.getProducts()[reactionProductPosition] = candidate;		// correct the reaction
 					}
 					manageIndexesMap(indexesMap, s, candidate);
-					oldSpeciesMap.put(candidate.getName(), candidate);
+					seedSpeciesMap.put(candidate.getName(), candidate);
 					isomorphismSignaturesMap.put(candidate.getName(), candidate.getName());	// put self in the list of signature map too
+					String signature = BNGSpecies.getShortSignature(candidate, sigDetailLevel);
+					shortSignaturesSet.add(sig);
 				} else {
 					message += "Candidate " + candidate.getName() + " already exists, not added.";
 					summaryExisted++;

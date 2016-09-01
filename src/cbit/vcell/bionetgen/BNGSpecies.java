@@ -10,6 +10,7 @@
 
 package cbit.vcell.bionetgen;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.Matchable;
 import org.vcell.util.Pair;
 
+import cbit.vcell.bionetgen.SpeciesIsomorphismInspector.ComponentVertex;
 import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
@@ -122,6 +124,79 @@ public String toStringShort() {
 	return new String(getName());
 }
 
+public enum SignatureDetailLevel {
+	MoleculesOnly,
+	ComponentsAndStates		// molecules and components with states, no bond
+}
+public static String getShortSignature(BNGSpecies s, SignatureDetailLevel signatureDetaillevel) {
+	
+	List<BNGSpecies> list = new ArrayList<>(); 
+	if(s instanceof BNGComplexSpecies) {
+		list.addAll(Arrays.asList(s.parseBNGSpeciesName()));
+	} else {
+		list.add(s);
+	}
+	List<String> entities = new ArrayList<>();
+	for(BNGSpecies ss : list) {
+		String name = ss.getName();
+		name = name.substring(0, name.indexOf("("));
+		
+		String body = "";
+		if(signatureDetaillevel == SignatureDetailLevel.ComponentsAndStates) {
+			body = getComponentsAndStates(ss);
+		}
+		name += "(" + body + ")";
+		entities.add(name);
+	}
+	Collections.sort(entities);
+	
+	String name = "";
+	int i = 0;
+	for(String str : entities) {
+		if(i>0) {
+			name += ".";
+		}
+		i++;
+		name += str;
+	}
+	return name;
+}
+private static String getComponentsAndStates(BNGSpecies s) {
+	
+	if(!(s instanceof BNGMultiStateSpecies)) {
+		return "";
+	}
+	BNGMultiStateSpecies mss = (BNGMultiStateSpecies)s;		//  A(s~Y!1,t~X,v!1,u)
+	List<String> entities = new ArrayList<>();
+
+	for(BNGSpeciesComponent c : mss.getComponents()) {
+		String name = c.getComponentName();
+		if(c.getCurrentState() != null) {
+			String state = c.getCurrentState();
+			if(state.contains("!")) {		// get rid of an explicit bond (if present) ex: from s~Y!1 we only keep  s~Y
+				state = state.substring(0, state.indexOf("!"));
+			}
+			name += "~" + state;
+//			System.out.println(name);
+			entities.add(name);
+		} else {
+			continue;					// we don't care about the sites without state, be they with no bond or explicit bond
+		}
+	}
+	Collections.sort(entities);
+
+	String name = "";
+	int i = 0;
+	for(String str : entities) {
+		if(i>0) {
+			name += ",";
+		}
+		i++;
+		name += str;
+	}
+	return name;
+}
+
 public static Pair<List<BNGSpecies>, List<BNGSpecies>> diff(List<BNGSpecies> older, BNGSpecies[] newer) {
 	List<BNGSpecies> removed = new ArrayList<>();
 	List<BNGSpecies> added = new ArrayList<>();
@@ -157,6 +232,48 @@ public static Pair<List<BNGSpecies>, List<BNGSpecies>> diff(List<BNGSpecies> old
 	}
 	Pair<List<BNGSpecies>, List<BNGSpecies>> p = new Pair<>(removed, added);
 	return p;
+}
+
+
+// =================================================================================================================
+public static void main(String[] argv)
+{
+//	permutingArray(java.util.Arrays.asList(9, 8, 7, 6, 4), 0);
+	
+	try {
+		String a = "EGF(rb!1).EGF(rb!2).EGFR(ecd!1,tmd!3,y1068~p,y1173~u).EGFR(ecd!2,tmd!3,y1068~u,y1173~p)";
+		String b = "EGF(rb!1).EGF(rb!2).EGFR(ecd!1,tmd!3,y1068~u,y1173~p).EGFR(ecd!2,tmd!3,y1068~p,y1173~u)";
+		String c = "EGF(rb!1).EGF(rb!2).EGFR(ecd!1,tmd!3,y1068~u,y1173~p).EGFR(ecd!2,tmd!3,y1068~p,y1173~v)";	// slightly different
+//		String c = "EGF(rb~Y!1).EGF(rb~pY!1).EGFR(ecd!2,tmd!3,y1068~u,y1173~p).EGFR(ecd!2,tmd!3,y1068~p,y1173~u)";
+		String d = "A(s,t!+,v!1).B(s~Y,t~Y!+,u~Y!?,v~!1)";
+//		String e = "A(s~Y!1).A(s~X).B(s!1).B(s)";
+		String e = "B(t~Y!1,s~X,v!1,u,x!3).A(s~Y!2,t~X,v!2,x!3,u)";
+
+		List<BNGSpecies> list = new ArrayList<>();
+		
+		BNGSpecies aa = new  BNGComplexSpecies(a, new Expression("0.0"), 1);
+		BNGSpecies bb = new  BNGComplexSpecies(b, new Expression("0.0"), 2);
+		BNGSpecies cc = new  BNGComplexSpecies(c, new Expression("0.0"), 3);
+		BNGSpecies dd = new  BNGComplexSpecies(d, new Expression("0.0"), 4);
+		BNGSpecies ee = new  BNGComplexSpecies(e, new Expression("0.0"), 5);
+//		list.add(aa);
+//		list.add(bb);
+//		list.add(cc);
+//		list.add(dd);
+		list.add(ee);
+		
+		for(BNGSpecies ours : list) {
+			
+			String sig = getShortSignature(ours, SignatureDetailLevel.ComponentsAndStates);
+		}
+
+		
+		System.out.println("done");
+		
+	} catch (Throwable e) {
+		System.out.println("Uncaught exception in BNGSpecies.main()");
+		e.printStackTrace(System.out);
+	}
 }
 
 

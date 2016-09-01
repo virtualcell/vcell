@@ -174,7 +174,7 @@ public static String extractCompartments (String inputString) {
 
 public static Map<String, BNGSpecies> createBngSpeciesSignatureMap(String inputString) {
 	
-	Map <String, BNGSpecies> map = new LinkedHashMap<> ();
+	Map <String, BNGSpecies> map = new HashMap<> ();
 	List<BNGSpecies> list = createBngSpeciesOutputSpec(inputString);
 	for(BNGSpecies species : list) {
 		map.put(species.getName(), species);
