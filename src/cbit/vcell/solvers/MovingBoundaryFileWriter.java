@@ -381,13 +381,13 @@ private Element getSpecies(PdeEquation eq) throws ExpressionException, MathExcep
 	ex = eq.getVelocityX();
 	setExpression(e1, ex, true);
 	e.addContent(e1);
-	problem.addContent((Element)e1.clone());
+	//problem.addContent((Element)e1.clone());
 
 	e1 = new Element(MBTags.advectVelocityFunctionY);
 	ex = eq.getVelocityY();
 	setExpression(e1, ex, true);
 	e.addContent(e1);
-	problem.addContent((Element)e1.clone());
+	//problem.addContent((Element)e1.clone());
 	return e;
 }
 
