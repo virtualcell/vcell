@@ -27,6 +27,8 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.PointSubDomain;
+import cbit.vcell.math.PointVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType.VariableDomain;
@@ -316,19 +318,39 @@ private Element getXMLphysiology() throws ExpressionException, MathException {
 	return e;
 
 }
+
+private Element getXMLSubdomain(SubDomain sd) throws ExpressionException, MathException {
+	Element e = new Element(MBXmlTags.subdomain.name());
+	e.setAttribute(MBTags.name, sd.getName());
+	if (sd instanceof CompartmentSubDomain)
+	{
+		e.setAttribute(MBXmlTags.type.name(), MBXmlTags.volume.name());
+	}
+	else if (sd instanceof PointSubDomain)
+	{
+		e.setAttribute(MBXmlTags.type.name(), MBXmlTags.point.name());
+		Element x = new Element(MBXmlTags.positionX.name());
+		setExpression(x, ((PointSubDomain) sd).getPositionX());
+		e.addContent(x);
+		Element y = new Element(MBXmlTags.positionY.name());
+		setExpression(y, ((PointSubDomain) sd).getPositionY());
+		e.addContent(y);
+	}
+	return e;
+}
+
 private void manageCompartment(Element e, SubDomain sd) {
 	try {
-		if (sd instanceof CompartmentSubDomain) {
-			for ( Equation equation : sd.getEquationCollection()) {
-				if (equation.getVariable().getDomain().getName().equals(sd.getName()))
+		if (!sd.getEquationCollection().isEmpty())
+		{
+			Element se = getXMLSubdomain(sd);
+			if (sd instanceof CompartmentSubDomain || sd instanceof PointSubDomain) {
+				for ( Equation equation : sd.getEquationCollection()) 
 				{
-					System.out.println("ignore:   " + equation.getVariable().getName());
-				}
-
-				if (equation instanceof PdeEquation){
 					System.out.println("add this: " + equation.getVariable().getName());
-					e.addContent(getSpecies((PdeEquation)equation));
+					se.addContent(getSpecies(equation));
 				}
+				e.addContent(se);
 			}
 		}
 	} catch(Exception exc) {
@@ -344,50 +366,61 @@ private void manageCompartment(Element e, SubDomain sd) {
  * @throws ExpressionException
  * @throws MathException
  */
-private void setExpression(Element dest, Expression ex, boolean always) throws ExpressionException, MathException {
-	if (ex !=null) {
+private void setExpression(Element dest, Expression ex) throws ExpressionException, MathException {
+	if (ex != null)
+	{
 		dest.setAttribute("value",ex.infix( ));
 		dest.setText(flattenExpression(ex));
-		return;
-	}
-	if (always) {
-		dest.setAttribute("value","null");
-		dest.setText("0");
 	}
 }
 
 // TODO: flatten here
-private Element getSpecies(PdeEquation eq) throws ExpressionException, MathException {
+private Element getSpecies(Equation eq) throws ExpressionException, MathException {
 	Element e = new Element(MBTags.species);
-	e.setAttribute("name", eq.getVariable().getName());
-
+	e.setAttribute(MBTags.name, eq.getVariable().getName());
+	if (eq.getVariable() instanceof VolVariable)
+	{
+		e.setAttribute(MBXmlTags.type.name(), MBXmlTags.volume.name());
+	}
+	else if (eq.getVariable() instanceof PointVariable)
+	{
+		e.setAttribute(MBXmlTags.type.name(), MBXmlTags.point.name());
+	}
+	
 	Element e1 = null;
 	e1 = new Element(MBTags.initial);
 	Expression ex = eq.getInitialExpression();
-	setExpression(e1, ex, false);
+	setExpression(e1, ex);
 	e.addContent(e1);
 
 	e1 = new Element(MBTags.source);
 	ex = eq.getRateExpression();
-	setExpression(e1, ex, false);
+	setExpression(e1, ex);
 	e.addContent(e1);
 
-	e1 = new Element(MBTags.diffusion);
-	ex = eq.getDiffusionExpression();
-	setExpression(e1, ex, false);
-	e.addContent(e1);
-
-	e1 = new Element(MBTags.advectVelocityFunctionX);
-	ex = eq.getVelocityX();
-	setExpression(e1, ex, true);
-	e.addContent(e1);
-	//problem.addContent((Element)e1.clone());
-
-	e1 = new Element(MBTags.advectVelocityFunctionY);
-	ex = eq.getVelocityY();
-	setExpression(e1, ex, true);
-	e.addContent(e1);
-	//problem.addContent((Element)e1.clone());
+	if (eq instanceof PdeEquation)
+	{
+		e1 = new Element(MBTags.diffusion);
+		ex = ((PdeEquation) eq).getDiffusionExpression();
+		setExpression(e1, ex);
+		e.addContent(e1);
+	
+		ex = ((PdeEquation) eq).getVelocityX();
+		if (ex != null)
+		{
+			e1 = new Element(MBTags.advectVelocityFunctionX);
+			setExpression(e1, ex);
+			e.addContent(e1);
+		}
+	
+		ex = ((PdeEquation) eq).getVelocityY();
+		if (ex != null)
+		{
+			e1 = new Element(MBTags.advectVelocityFunctionY);
+			setExpression(e1, ex);
+			e.addContent(e1);
+		}
+	}
 	return e;
 }
 
@@ -409,19 +442,6 @@ private String flattenExpression(Expression ex) throws ExpressionException, Math
 	return name;
 }
 
-private Element getSpecies(VolVariable v) {
-	Element e = new Element(MBTags.species);
-	e.setAttribute("name", v.getName());
-	Element e1 = null;
-	e1 = new Element(MBTags.source);
-
-	Expression ex = v.getExpression();
-	if(ex != null) {
-		e1.setText(ex.infix());
-	}
-	e.addContent(e1);
-	return e;
-}
 //------------------------------------------------ report
 private Element getXMLReport() {
 	Element e = new Element(MBTags.report);
@@ -550,6 +570,15 @@ private void markHardcoded(Element e) {
 	e.setAttribute("mode", "HARDCODED");
 }
 
+enum MBXmlTags
+{
+	point,
+	positionX,
+	positionY,
+	subdomain,
+	type,
+	volume,
+}
 
 @SuppressWarnings("unused")
 private class MBTags {
