@@ -32,6 +32,7 @@ import java.util.zip.ZipEntry;
 
 
 
+
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import ncsa.hdf.object.Attribute;
@@ -48,6 +49,7 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.SimulationData.SolverDataType;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary.MBSDataGroup;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary.MSBDataAttribute;
+import cbit.vcell.solvers.CartesianMeshMovingBoundary.MSBDataAttributeValue;
 
 public class DataSet implements java.io.Serializable
 {
@@ -663,25 +665,68 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 			{
 				throw new Exception("Group " + MBSDataGroup.Solution + " not found");
 			}
-			List<Attribute> solAttrList = solutionGroup.getMetadata();
-			List<String> variables = new ArrayList<String>();
-			int size = 0;
-			for (Attribute attr : solAttrList)
+			
+			// find any timeGroup
+			Group timeGroup = null;
+			for (HObject member : solutionGroup.getMemberList())
 			{
-				String attrName = attr.getName();
-				Object attrValue = attr.getValue();
-				if(attrName.startsWith("Variable_")){
-					variables.add(((String[]) attrValue)[0]);
-				}
-				else if (attrName.equals(MSBDataAttribute.size.name()))
+				String memberName = member.getName();
+				if (member instanceof Group && memberName.startsWith("time"))
 				{
-					size = ((int[]) attrValue)[0];
+					timeGroup = (Group) member;
+					break;
 				}
 			}
 			
-			for (String var : variables)
+			if (timeGroup == null)
 			{
-				dataBlockList.addElement(DataBlock.createDataBlock(var, VariableType.VOLUME.getType(), size, 0));
+				throw new Exception("No time group found");
+			}
+			
+			// find all the datasets in that time group
+			for (HObject member : timeGroup.getMemberList())
+			{
+				if (member instanceof Dataset)
+				{
+					List<Attribute> solAttrList = member.getMetadata();
+					int size = 0;
+					String varName = null;
+					VariableType varType = null;
+					for (Attribute attr : solAttrList)
+					{
+						String attrName = attr.getName();
+						Object attrValue = attr.getValue();
+						if(attrName.equals(MSBDataAttribute.name.name()))
+						{
+							varName = ((String[]) attrValue)[0];
+						}
+						else if (attrName.equals(MSBDataAttribute.size.name()))
+						{
+							size = ((int[]) attrValue)[0];
+						}
+						else if (attrName.equals(MSBDataAttribute.type.name()))
+						{
+							String vt = ((String[]) attrValue)[0];
+							if (vt.equals(MSBDataAttributeValue.Point.name()))
+							{
+								varType = VariableType.POINT_VARIABLE;
+							}
+							else if (vt.equals(MSBDataAttributeValue.Volume.name()))
+							{
+								varType = VariableType.VOLUME;
+							}
+							else if (vt.equals(MSBDataAttributeValue.PointSubDomain.name()))
+							{
+								// Position for PointSubdomain
+							}
+						}
+					}
+					if (varType == VariableType.VOLUME)
+					{
+						// only display volume
+						dataBlockList.addElement(DataBlock.createDataBlock(varName, varType.getType(), size, 0));
+					}
+				}
 			}
 		}
 		finally
@@ -743,13 +788,14 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 				throw new Exception("Variable " + varName + " not found");
 			}
 			
-			double[] allData = null;
+			// find time group for that time
+			Group timeGroup = null;
 			for (HObject member : solutionGroup.getMemberList())
 			{
-				if (member instanceof Dataset)
+				if (member instanceof Group)
 				{
-					Dataset ds = (Dataset)member;
-					List<Attribute> dsAttrList = ds.getMetadata();
+					Group group = (Group)member;
+					List<Attribute> dsAttrList = group.getMetadata();
 					Attribute timeAttribute = null;
 					for (Attribute attr : dsAttrList)
 					{
@@ -764,20 +810,48 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 						double t = ((double[]) timeAttribute.getValue())[0];
 						if (Math.abs(t - time) < 1e-8)
 						{
-							allData = (double[]) ds.getData();  // this is all variable data
+							timeGroup = group;
 							break;
 						}
 					}
 				}
 			}
 			
-			if (allData == null)
+			if (timeGroup == null)
+			{
+				throw new Exception("No time group found for time=" + time);
+			}
+			
+			// find variable dataset
+			Dataset varDataset = null;
+			for (HObject member : timeGroup.getMemberList())
+			{
+				if (member instanceof Dataset)
+				{
+					List<Attribute> dsAttrList = member.getMetadata();
+					String var = null;
+					for (Attribute attr : dsAttrList)
+					{
+						if (attr.getName().equals(MSBDataAttribute.name.name()))
+						{
+							var = ((String[]) attr.getValue())[0];
+							break;
+						}
+					}
+					if (var != null && var.equals(varName))
+					{
+						varDataset = (Dataset) member;
+						break;
+					}
+				}
+			}
+			if (varDataset == null)
 			{
 				throw new Exception("Data for Variable " + varName + " at time " + time + " not found");
 			}
 			
 			data = new double[size];
-			System.arraycopy(allData, varIndex * size, data, 0, size);
+			System.arraycopy((double[])varDataset.getData(), 0, data, 0, size);
 			return data;
 		}
 		finally

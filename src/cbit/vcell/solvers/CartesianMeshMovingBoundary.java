@@ -36,8 +36,17 @@ public class CartesianMeshMovingBoundary extends CartesianMesh
 	
 	public enum MSBDataAttribute
 	{
+		name,
 		time,
 		size,
+		type,
+	}
+	
+	public enum MSBDataAttributeValue
+	{
+		Point,
+		Volume,
+		PointSubDomain,
 	}
 	
 	private enum MeshDataset
