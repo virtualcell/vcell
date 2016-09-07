@@ -80,6 +80,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 
 	private Model model;							// model identical with the original, created from the compartmental bngl file
 	private SimulationContext simContext;
+	private CompartmentMode compartmentMode = CompartmentMode.asSite;
 	
 	private Map <String, String> isomorphismSignaturesMap = new HashMap<>();	// when an isomorphism is detected, we store here the string expressions of the 2 isomorphic species
 	private Set<String> shortSignaturesSet = new HashSet<>();					// signature of BNGSpecies (molecules and components with states, bonds ignored)
@@ -205,7 +206,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		sBngOutput.insertEntitiesInNetFile(correctedReactionsString, "reactions");
 		sBngOutput.insertEntitiesInNetFile(correctedObservablesString, "groups");
 		// analyze the sBnglOutput, strip the fake "compartment" site and produce the proper cBnglOutput
-		sBngOutput.extractCompartmentsFromNetFile();	// converts the net file inside sBngOutput
+		if(model.getStructures().length > 1) {
+			sBngOutput.extractCompartmentsFromNetFile();	// converts the net file inside sBngOutput
+		}
 		BNGOutput cBngOutput = sBngOutput;
 //		String cBngOutputString = cBngOutput.getNetFileContent();
 //		System.out.println(cBngOutputString);
@@ -451,7 +454,12 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				// check the product against the rule to see if it's valid
 				// sanity check: only "transport" rules can give incorrect products, any rule with all participants in the same
 				//   compartment should only give valid products (is that so?)
-				String structureName = findRuleProductCompartment(s);		// this is the structure where the product should be, according to the rule
+				String structureName;
+				if(model.getStructures().length == 1) {
+					structureName = model.getStructure(0).getName();
+				} else {
+					structureName = findRuleProductCompartment(s);		// this is the structure where the product should be, according to the rule
+				}
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(ruleName);
 				
 				// TODO: the code below may be greatly simplified using the more advanced BNGSpecies classes instead of using the strings
@@ -546,7 +554,12 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 						}
 					}
 				} else {		// no transport caused by a 'wild card', just direct rule application (no compartment ambiguity, nothing to correct)
-					String structure = pair.one.get(0);
+					String structure;
+					if(model.getStructures().length == 1) {
+						structure = model.getStructure(0).getName();
+					} else {
+						structure = pair.one.get(0);
+					}
 					if(!structure.equals(structureName)) {
 						// This should never happen, if just one structure is present it must come directly from 
 						// the rule (no transport caused by '?' is possible)
@@ -834,6 +847,15 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		constructionVisitor = new BnglObjectConstructionVisitor(model, appList, bngUnitSystem, true);
 		astModel.jjtAccept(constructionVisitor, model.getRbmModelContainer());
 		
+		int numCompartments = model.getStructures().length;
+		if(numCompartments == 0) {
+			throw new RuntimeException("No structure present in the bngl file.");			
+		} else if(numCompartments == 1) {
+			compartmentMode = CompartmentMode.hide;		// for single compartment we don't need the 'trick'
+		} else {
+			compartmentMode = CompartmentMode.asSite;
+		}
+		
 		// extract all polymer observables for special treatment at the end
 		for(RbmObservable oo : model.getRbmModelContainer().getObservableList()) {
 			if(oo.getSequence() == RbmObservable.Sequence.PolymerLengthEqual) {
@@ -871,11 +893,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		writer.println();
 //		RbmNetworkGenerator.writeCompartments(writer, model, null);
 		RbmNetworkGenerator.writeParameters(writer, model.getRbmModelContainer(), false);
-		RbmNetworkGenerator.writeMolecularTypes(writer, model, CompartmentMode.asSite);
-		RbmNetworkGenerator.writeSpeciesSortedAlphabetically(writer, model, simContext, CompartmentMode.asSite);
-		RbmNetworkGenerator.writeObservables(writer, model.getRbmModelContainer(), CompartmentMode.asSite);
+		RbmNetworkGenerator.writeMolecularTypes(writer, model, compartmentMode);
+		RbmNetworkGenerator.writeSpeciesSortedAlphabetically(writer, model, simContext, compartmentMode);
+		RbmNetworkGenerator.writeObservables(writer, model.getRbmModelContainer(), compartmentMode);
 //		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
-		RbmNetworkGenerator.writeReactions(writer, model.getRbmModelContainer(), null, false, CompartmentMode.asSite);
+		RbmNetworkGenerator.writeReactions(writer, model.getRbmModelContainer(), null, false, compartmentMode);
 		
 		writer.println(RbmNetworkGenerator.END_MODEL);	
 		writer.println();
