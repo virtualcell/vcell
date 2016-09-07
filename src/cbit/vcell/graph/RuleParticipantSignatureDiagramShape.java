@@ -21,6 +21,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
@@ -38,17 +39,18 @@ import cbit.vcell.model.RuleParticipantSignature;
 public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	RuleParticipantSignature ruleParticipantSignature = null;
 	
-	private static final int height = 12;	// fixed (originally was 16, considered too large)
-	private int width = 12;					// this will be recalculated based on the number of molecules in the species pattern
+	private static final int height = 16;	// fixed (originally was 16, considered too large)
+	private int width = 16;					// this will be recalculated based on the number of molecules in the species pattern
 											// TODO: when the number of molecules changes and the RuleParticipantSignature object gets updated,
 											// we need to adjust the width here as well
 	
 	private static final int displacement = 6;		// distance between circles representing molecular types
 	private static final int circleDiameter = 12;	// diameter of circles representing molecular types
 
-	private static final int leftmargin = 0;		// space left empty to the left before we start drawing the molecules
-//	private int leftmargin = getSpaceManager().getSize().height;
-
+	private static final int leftmargin = 8;		// space left empty to the left before we start drawing the molecules
+//	private static final int leftmargin = 9;		// space left empty to the left before we start drawing the molecules
+	private static final int rightmargin = 0;
+//	private static final int rightmargin = 7;
 	
 	private Color darkerBackground = null;
 
@@ -65,8 +67,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 
 	public RuleParticipantSignatureDiagramShape(RuleParticipantSignature ruleParticipantSignature, ModelCartoon graphModel) {
 		super(graphModel);
-		int numMolecules = Math.max(1, ruleParticipantSignature.getSpeciesPattern().getMolecularTypePatterns().size());		// we reserve space for at least 1 molecule
-		width = leftmargin + circleDiameter + displacement*(numMolecules-1);
+//		width = leftmargin + displacement*numMolecules + rightmargin;
 		getSpaceManager().setSize(width, height);		// TODO: or setSizePreferred??
 		
 		this.ruleParticipantSignature = ruleParticipantSignature;
@@ -134,6 +135,9 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 		
+		int numMolecules = Math.max(1, ruleParticipantSignature.getSpeciesPattern().getMolecularTypePatterns().size());		// we reserve space for at least 1 molecule
+		width = leftmargin + circleDiameter + displacement*(numMolecules-1) +1;
+
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
 		Graphics2D g2D = g;
@@ -144,12 +148,12 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		// draw the contour around the whole rule participant
 		// no need to really draw it if the shapes of the molecules fill it perfectly, because it won't be visible anyway
 		// however, the "isInside" function will need exactly this RoundRectangle2D to compute whether the point is inside the shape
-//		RoundRectangle2D contour = new RoundRectangle2D.Double(absPosX, absPosY, shapeWidth, shapeHeight, shapeHeight, shapeHeight);
-//		g2D.setPaint(Color.white);
-//		g2D.fill(contour);
-//		exterior = isSelected() ? Color.black : Color.gray;
-//		g.setColor(exterior);
-//		g2D.draw(contour);
+		RoundRectangle2D contour = new RoundRectangle2D.Double(absPosX, absPosY, shapeWidth, shapeHeight, shapeHeight, shapeHeight);
+		g2D.setPaint(new Color(0xeeffee));
+		g2D.fill(contour);
+		exterior = isSelected() ? Color.black : Color.gray;
+		g.setColor(exterior);
+		g2D.draw(contour);
 		
 		Model model = ((ReactionCartoon)graphModel).getModel();
 		RbmModelContainer rbmmc = model.getRbmModelContainer();
@@ -159,9 +163,12 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		// draw the molecules (they are properly drawn because we use the sp as it is in the associated RuleParticipantSignature object)
 		for(int i=0; i<ruleSignatureMolecularTypes.size(); i++) {
 			
-			int offsetx = leftmargin + i*displacement;
-			int offsety = getSpaceManager().getSize().height - circleDiameter;
+			int offsetx = leftmargin + i*displacement -1;
+			int offsety = getSpaceManager().getSize().height - circleDiameter -2;
 			Ellipse2D icon = new Ellipse2D.Double(absPosX + offsetx, absPosY + offsety, circleDiameter, circleDiameter);
+//			int offsetx = leftmargin + i*displacement;
+//			int offsety = 0;
+//			Rectangle2D icon = new Rectangle2D.Double(absPosX + offsetx, absPosY + offsety, displacement, shapeHeight-1);
 	
 			MolecularType mt = ruleSignatureMolecularTypes.get(i);
 			int index = mtList.indexOf(mt);
@@ -183,6 +190,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 			Point2D focus = new Point2D.Float(absPosX + offsetx + circleDiameter/2-2, absPosY + offsety + circleDiameter/2-2);
 			float[] dist = {0.1f, 1.0f};
 			RadialGradientPaint p = new RadialGradientPaint(center, radius, focus, dist, colors, CycleMethod.NO_CYCLE);
+//			Paint p = defaultBG.darker().darker();
 			g2D.setPaint(p);
 			g2D.fill(icon);
 			g.setColor(forgroundColor);
