@@ -300,8 +300,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
 			
-		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
-		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// a bit darker for border
+		Color paleBlue = componentPaleBlue;
+		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);
 
 		g2.setPaint(paleBlue);
 		g2.fill(rect);
@@ -327,8 +327,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
 			
-		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
-		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// a bit darker for border
+		Color paleBlue = componentPaleBlue;
+		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// (hue, saturation, brightness) a bit darker for border
 		Rectangle2D rect = new Rectangle2D.Double(xPos-xExtent, yPos-3-nameOffset, getWidth()+2*xExtent, height-2+nameOffset);
 		if(isHighlighted()) {
 			g2.setPaint(paleBlue);
@@ -356,10 +356,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
 			
-		Color paleBlue = Color.getHSBColor(0.9f, 0.05f, 1.0f);		// hue, saturation, brightness
+		Color palePink = componentPalePink;
 		Rectangle2D rect = new Rectangle2D.Double(xPos-11, yPos-6, getWidth()+xExtent+6, height-8);
 
-		g2.setPaint(paleBlue);
+		g2.setPaint(palePink);
 		g2.fill(rect);
 		g2.setColor(Color.red.darker());		// border
 		g2.draw(rect);

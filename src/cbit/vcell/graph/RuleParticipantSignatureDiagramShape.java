@@ -44,16 +44,14 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 											// TODO: when the number of molecules changes and the RuleParticipantSignature object gets updated,
 											// we need to adjust the width here as well
 	
-	private static final int displacement = 6;		// distance between circles representing molecular types
+	private static final int displacement = 7;		// distance between circles representing molecular types
 	private static final int circleDiameter = 12;	// diameter of circles representing molecular types
 
-	private static final int leftmargin = 8;		// space left empty to the left before we start drawing the molecules
+	private static final int leftmargin = 10;		// space left empty to the left before we start drawing the molecules
 //	private static final int leftmargin = 9;		// space left empty to the left before we start drawing the molecules
 	private static final int rightmargin = 0;
 //	private static final int rightmargin = 7;
 	
-	private Color darkerBackground = null;
-
 	private static final int SCS_LABEL_WIDTHPARM = 3;
 	private static final String SCS_LABEL_TRUCATED = "...";
 	private String smallLabel = null;
@@ -74,7 +72,6 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		defaultBG = Color.white;
 		defaultFGselect = java.awt.Color.black;
 		backgroundColor = defaultBG;
-		darkerBackground = backgroundColor.darker().darker();
 	}
 
 	@Override
@@ -149,9 +146,9 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		// no need to really draw it if the shapes of the molecules fill it perfectly, because it won't be visible anyway
 		// however, the "isInside" function will need exactly this RoundRectangle2D to compute whether the point is inside the shape
 		RoundRectangle2D contour = new RoundRectangle2D.Double(absPosX, absPosY, shapeWidth, shapeHeight, shapeHeight, shapeHeight);
-		g2D.setPaint(new Color(0xeeffee));
+		g2D.setPaint(isSelected() ? Color.getHSBColor(0.9f, 0.14f, 1.0f) : AbstractComponentShape.componentPaleGreen);
 		g2D.fill(contour);
-		exterior = isSelected() ? Color.black : Color.gray;
+		exterior = isSelected() ? Color.red.darker().darker() : Color.darkGray;
 		g.setColor(exterior);
 		g2D.draw(contour);
 		
@@ -163,7 +160,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		// draw the molecules (they are properly drawn because we use the sp as it is in the associated RuleParticipantSignature object)
 		for(int i=0; i<ruleSignatureMolecularTypes.size(); i++) {
 			
-			int offsetx = leftmargin + i*displacement -1;
+			double offsetx = leftmargin + i*displacement -1.4;
 			int offsety = getSpaceManager().getSize().height - circleDiameter -2;
 			Ellipse2D icon = new Ellipse2D.Double(absPosX + offsetx, absPosY + offsety, circleDiameter, circleDiameter);
 //			int offsetx = leftmargin + i*displacement;
@@ -180,14 +177,14 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 				defaultBG = MolecularTypeLargeShape.colorTable[index];		// take color from molecular type color selection
 			}
 			backgroundColor = defaultBG;
-			darkerBackground = backgroundColor.darker().darker();
-			exterior = !isSelected() ? darkerBackground : backgroundColor;
+//			darkerBackground = backgroundColor.darker().darker();
+			exterior = !isSelected() ? backgroundColor.darker().darker() : backgroundColor.darker();
 			Color[] colors = {interior, exterior};
 	
 			g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			Point2D center = new Point2D.Float(absPosX + offsetx + circleDiameter/2, absPosY + offsety + circleDiameter/2);
+			Point2D center = new Point2D.Double(absPosX + offsetx + circleDiameter/2, absPosY + offsety + circleDiameter/2);
 			float radius = circleDiameter*0.5f;
-			Point2D focus = new Point2D.Float(absPosX + offsetx + circleDiameter/2-2, absPosY + offsety + circleDiameter/2-2);
+			Point2D focus = new Point2D.Double(absPosX + offsetx + circleDiameter/2-2, absPosY + offsety + circleDiameter/2-2);
 			float[] dist = {0.1f, 1.0f};
 			RadialGradientPaint p = new RadialGradientPaint(center, radius, focus, dist, colors, CycleMethod.NO_CYCLE);
 //			Paint p = defaultBG.darker().darker();

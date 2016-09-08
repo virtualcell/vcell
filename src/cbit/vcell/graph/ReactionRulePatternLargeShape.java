@@ -236,7 +236,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		// the dimensions of participants contour is exactly 1 pixel wider than the dimensions of the species pattern
 		Rectangle2D rect = new Rectangle2D.Double(xOffset, ySP, 2000, hSP);
 		
-		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
+		Color paleBlue = componentPaleBlue;							// hue, saturation, brightness
 		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// a bit darker for border
 		if(bShow) {
 			g2.setPaint(paleBlue);
@@ -268,8 +268,8 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
 			
-		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
-		Color darkerBlue = Color.getHSBColor(0.6f, 0.22f, 1.0f);	// a bit darker for border
+		Color paleBlue = componentPaleBlue;
+		Color darkerBlue = Color.getHSBColor(0.6f, 0.22f, 1.0f);
 		
 		// compute the dimensions of the SP contour
 		// TODO: keep this code in sync!
