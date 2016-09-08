@@ -467,7 +467,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				//    and thus we'll never attempt to correct anything
 				// 'two' is the BNGSpecies string with the compartment info extracted (that is, the AAA sites extracted)
 				Pair<List<String>, String> pair = RbmUtils.extractCompartment(s.getName());
-				Map<String, Set<String>> speciesAnchorMap = extractSpeciesAnchorMap(s);			// ex of one entry: key T,  value  mem, cyt
 				boolean needsRepairing = false;
 				if(pair.one.size() > 1) {
 //					System.out.println(s.getName() + " multiple compartments, needs repairing.");
@@ -499,8 +498,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 						 3.2 - if there's no compartment then we can't put the species anywhere - throw exception
 						 3.3 - if there's more than 1 compartment, it's ambiguous - throw exception
 				*/
-//					anchorsMap
-					
+					Map<String, Set<String>> speciesAnchorMap = extractSpeciesAnchorMap(s);			// ex of one entry: key T,  value  mem, cyt
+
 					// sanity check, step 1
 					for (Map.Entry<String, Set<String>> entry : speciesAnchorMap.entrySet()) {
 					    String molecule = entry.getKey();				// molecule in the newly generated species (product)
