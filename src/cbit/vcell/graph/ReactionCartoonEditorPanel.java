@@ -51,6 +51,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.ZoomShape.Sign;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.RuleParticipantSignature;
 
 @SuppressWarnings("serial")
 public class ReactionCartoonEditorPanel extends JPanel implements ActionListener {
@@ -65,7 +66,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JToolBarToggleButton lineCatalystButton = null;
 	private JToolBarToggleButton selectButton = null;
 	protected List<JToolBarToggleButton> modeButtons = null;
+	protected List<JToolBarToggleButton> viewButtons = null;
 	private ButtonGroup modeButtonGroup = new ButtonGroup();
+	private ButtonGroup viewButtonGroup = new ButtonGroup();
 	private JScrollPane scrollPane = null;
 	protected ViewPortStabilizer viewPortStabilizer = null;
 	private JButton annealLayoutButton = null;
@@ -109,6 +112,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			Object source = event.getSource();
 			if (getModeButtons().contains(source))
 				getReactionCartoonTool().setModeString(event.getActionCommand());
+			else if (getViewButtons().contains(source)) {
+				String command = event.getActionCommand();
+				setViewMode(command);
+			}
 			else if (source == getRandomLayoutButton())
 				getReactionCartoonTool().layout(RandomLayouter.LAYOUT_NAME);
 			else if (source == getAnnealLayoutButton())
@@ -119,7 +126,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.RELAXER);
 			else if (source == getLevellerLayoutButton())
 				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.LEVELLER);
-			else if (source == getZoomInButton()) {				
+			else if (source == getZoomInButton()) {			
 				viewPortStabilizer.saveViewPortPosition();
 				getReactionCartoon().getResizeManager().zoomIn();
 				SwingUtilities.invokeLater(new Runnable() {
@@ -309,6 +316,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
 				toolBar.add(getRelaxerLayoutButton(), getRelaxerLayoutButton().getName());
 				toolBar.add(getGlgLayoutJButton(), getGlgLayoutJButton().getName());
+				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
+				toolBar.add(getUngroupButton(), getUngroupButton().getName());
+				toolBar.add(getGroupButton(), getGroupButton().getName());
 				toolBar.add(Box.createHorizontalGlue());
 				toolBar.add(getFloatRequestButton());
 			} catch (Throwable throwable) {
@@ -467,6 +477,14 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		}
 		return modeButtons;
 	}
+	protected List<JToolBarToggleButton> getViewButtons() {
+		if(viewButtons == null) {
+			viewButtons = new ArrayList<JToolBarToggleButton>();
+			viewButtons.add(getUngroupButton());
+			viewButtons.add(getGroupButton());
+		}
+		return viewButtons;
+	}
 	
 	private JToolBarToggleButton createModeButton(String name, String toolTip, Mode mode, Icon icon) {
 		JToolBarToggleButton button = new JToolBarToggleButton();
@@ -580,6 +598,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		for(JToolBarToggleButton modeButton : getModeButtons()) {
 			modeButton.addActionListener(this);
 		}
+		for(JToolBarToggleButton viewButton : getViewButtons()) {
+			viewButton.addActionListener(this);
+		}
 		ButtonModel selection = modeButtonGroup.getSelection();
 		if(selection != null) {
 			getReactionCartoonTool().setModeString(selection.getActionCommand());
@@ -620,10 +641,15 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			modeButtonGroup.add(getSpeciesButton());
 			modeButtonGroup.add(getFluxReactionButton());
 			modeButtonGroup.add(getStructureButton());
+			viewButtonGroup.add(getUngroupButton());
+			viewButtonGroup.add(getGroupButton());
 			getReactionCartoonTool().setReactionCartoon(getReactionCartoon());
 			getReactionCartoonTool().setGraphPane(getGraphPane());
 			getReactionCartoonTool().setButtonGroup(modeButtonGroup);
+			getReactionCartoonTool().setButtonGroup(viewButtonGroup);
 			getGraphPane().setGraphModel(getReactionCartoon());
+			refreshButtons();
+//			setViewMode(Mode.GROUP.getActionCommand());
 		} catch (Throwable throwable) {
 			handleException(throwable);
 		}
@@ -633,6 +659,54 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		button.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
 		button.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
 		button.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+	}
+	
+	private JToolBarToggleButton groupButton;
+	private JToolBarToggleButton getGroupButton() {
+		if (groupButton == null) {
+			try {
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				GroupToolShape.setMod(button);
+				button.setActionCommand(Mode.GROUP.getActionCommand());
+				groupButton = button;
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return groupButton;
+	}
+	private JToolBarToggleButton ungroupButton;
+	private JToolBarToggleButton getUngroupButton() {
+		if (ungroupButton == null) {
+			try {
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				UngroupToolShape.setMod(button);
+				button.setActionCommand(Mode.UNGROUP.getActionCommand());
+				ungroupButton = button;
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return ungroupButton;
+	}
+	private void setViewMode(String command) {
+		if(command.equalsIgnoreCase(Mode.GROUP.getActionCommand())) {	// group participants by signature
+			getReactionCartoon().setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria.moleculeNumber);
+			Object[] selectedObjects = getReactionCartoon().getSelectedObjects();
+			if(selectedObjects.length == 1 && selectedObjects[0] instanceof RuleParticipantSignature) {
+				Object thing = selectedObjects[0];
+				getReactionCartoon().deselect(thing);
+				getReactionCartoon().select(thing);
+			}
+		} else if(command.equalsIgnoreCase(Mode.UNGROUP.getActionCommand())) {	// show participants individually
+			getReactionCartoon().setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria.full);
+			Object[] selectedObjects = getReactionCartoon().getSelectedObjects();
+			if(selectedObjects.length == 1 && selectedObjects[0] instanceof RuleParticipantSignature) {
+				Object thing = selectedObjects[0];
+				getReactionCartoon().deselect(thing);
+				getReactionCartoon().select(thing);
+			}
+		}
 	}
 
 	public static void main(String[] args) {
@@ -661,6 +735,27 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 
 	public void setModel(Model model) {
 		getReactionCartoon().setModel(model);
+		if(getModel() != null && !getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
+			getUngroupButton().setSelected(true);
+		}
+		refreshButtons();
+	}
+	public void selectedObjectsChanged() {
+		refreshButtons();
+	}
+	private void refreshButtons() {
+		if(getModel() != null) {
+			if(!getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
+				getGroupButton().setVisible(true);
+				getUngroupButton().setVisible(true);
+			} else {
+				getGroupButton().setVisible(false);
+				getUngroupButton().setVisible(false);
+			}
+		} else {
+			getGroupButton().setVisible(false);
+			getUngroupButton().setVisible(false);
+		}
 	}
 
 	public void setStructureSuite(StructureSuite structureSuite) {

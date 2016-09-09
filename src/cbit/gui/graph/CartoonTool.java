@@ -70,7 +70,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 	public static enum Mode { SELECT("select"), FEATURE("feature"), SPECIES("species"), LINE("line"), 
 		LINEDIRECTED("lineDirected"), LINECATALYST("lineCatalyst"), STEP("step"), FLUX("flux"), 
 		SPLINE("spline"), ADDCP("addCP"), COMPLEX("complex"), BINDINGSITE("bindingSite"), 
-		INTERACTION("interaction"),STRUCTURE("structure");
+		INTERACTION("interaction"),STRUCTURE("structure"),GROUP("group"),UNGROUP("ungroup");
 	protected final String actionCommand;
 	private Mode(String actionCommand) { this.actionCommand = actionCommand; }
 	public String getActionCommand() { return actionCommand; }
