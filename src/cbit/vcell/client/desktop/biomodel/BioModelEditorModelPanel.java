@@ -175,7 +175,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private JButton newMemButton = null;
 	private JButton deleteButton = null;
 	private JButton pathwayButton = null;
-	private JButton groupButton = null;
+//	private JButton groupButton = null;
 	private JButton duplicateButton = null;
 	private JButton viewRulesShapesButton = null;
 	private JPopupMenu pathwayPopupMenu = null;
@@ -253,8 +253,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				deleteButtonPressed();
 			} else if (e.getSource() == pathwayButton) {
 				getPathwayPopupMenu().show(pathwayButton, 0, pathwayButton.getHeight());
-			} else if (e.getSource() == groupButton) {
-				groupButtonPressed();
+//			} else if (e.getSource() == groupButton) {
+//				groupButtonPressed();
 			} else if (e.getSource() == duplicateButton) {
 				duplicateButtonPressed();
 			} else if (e.getSource() == viewRulesShapesButton) {
@@ -374,7 +374,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		newMemButton.setVisible(false);
 		newButton2.setVisible(false);
 		duplicateButton.setVisible(false);
-		groupButton.setVisible(false);
+//		groupButton.setVisible(false);
 		viewRulesShapesButton.setVisible(false);
 		viewRulesShapesButton.setEnabled(false);
 		
@@ -384,13 +384,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			bioModel.getModel().getNumStructures() < 1))
 		{
 			newButton.setVisible(false);
-			if(bioModel != null && !bioModel.getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
-				groupButton.setVisible(true);
-				groupButton.setEnabled(true);
-				groupButton.setText("View");
-				groupButton.setIcon(new DownArrowIcon());
-				groupButton.setHorizontalTextPosition(SwingConstants.LEFT);
-			}
+//			if(bioModel != null && !bioModel.getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
+//				groupButton.setVisible(true);
+//				groupButton.setEnabled(true);
+//				groupButton.setText("View");
+//				groupButton.setIcon(new DownArrowIcon());
+//				groupButton.setHorizontalTextPosition(SwingConstants.LEFT);
+//			}
 		} else {
 			Icon downArrow = null;
 			if( bioModel.getModel().getNumStructures() > 1) {
@@ -512,6 +512,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	@Override
 	public void onSelectedObjectsChange(Object[] selectedObjects) {
 		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
+		reactionCartoonEditorPanel.selectedObjectsChanged();
 //		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
 		setTableSelections(selectedObjects, structuresTable, structureTableModel);
 		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
@@ -548,8 +549,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		viewRulesShapesButton = new JButton("View Rules");
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
-		groupButton = new JButton("View", new DownArrowIcon());
-		groupButton.setHorizontalTextPosition(SwingConstants.LEFT);
+//		groupButton = new JButton("View", new DownArrowIcon());
+//		groupButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
 		textFieldSearch.putClientProperty("JTextField.variant", "search");
 		
@@ -621,22 +622,22 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(pathwayButton, gbc);
 
-		gbc = new GridBagConstraints();
-		gbc.gridx = 6;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = 0;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(groupButton, gbc);
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 6;
+//		gbc.insets = new Insets(4,4,4,4);
+//		gbc.gridy = 0;
+//		gbc.anchor = GridBagConstraints.LINE_END;
+//		buttonPanel.add(groupButton, gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 7;
+		gbc.gridx = 6;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(viewRulesShapesButton, gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 8;
+		gbc.gridx = 7;
 		gbc.gridy = 0;
 		gbc.weightx = 0.5;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -644,14 +645,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		buttonPanel.add(Box.createRigidArea(new Dimension(5,5)), gbc);		
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 9;
+		gbc.gridx = 8;
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
 		buttonPanel.add(new JLabel("Search "), gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 10;
+		gbc.gridx = 9;
 		gbc.gridy = 0;
 		gbc.weightx = 1.5;
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -692,8 +693,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		deleteButton.setEnabled(false);
 		pathwayButton.addActionListener(eventHandler);
 		pathwayButton.setEnabled(false);
-		groupButton.addActionListener(eventHandler);
-		groupButton.setEnabled(false);
+//		groupButton.addActionListener(eventHandler);
+//		groupButton.setEnabled(false);
 		textFieldSearch.addActionListener(eventHandler);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		structuresTable.getSelectionModel().addListSelectionListener(eventHandler);
@@ -1439,49 +1440,49 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 	}
 	
-	private void groupButtonPressed() {
-		System.out.println("GroupButtonPressed");
-		final JPopupMenu menu = new JPopupMenu("Choose compartment");
-		
-		JMenuItem viewAllMenuItem = new JMenuItem("View Patterns Individually");
-		menu.add(viewAllMenuItem);
-		viewAllMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				reactionCartoonEditorPanel.getReactionCartoon().setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria.full);
-
-				// if current selection is a RuleParticipantSignature object, reselect it to refresh the content of the properties panel
-				int selectedIndex = tabbedPane.getSelectedIndex();
-				if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
-					Object[] selectedObjects = reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects();
-					if(selectedObjects.length == 1 && selectedObjects[0] instanceof RuleParticipantSignature) {
-						Object thing = selectedObjects[0];
-						reactionCartoonEditorPanel.getReactionCartoon().deselect(thing);
-						reactionCartoonEditorPanel.getReactionCartoon().select(thing);
-					}
-				}
-			}
-		});
-		JMenuItem groupBySignatureMenuItem = new JMenuItem("Group by Molecules Signature");
-		menu.add(groupBySignatureMenuItem);
-		groupBySignatureMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				reactionCartoonEditorPanel.getReactionCartoon().setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria.moleculeNumber);
-				
-				int selectedIndex = tabbedPane.getSelectedIndex();
-				if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
-					Object[] selectedObjects = reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects();
-					if(selectedObjects.length == 1 && selectedObjects[0] instanceof RuleParticipantSignature) {
-						Object thing = selectedObjects[0];
-						reactionCartoonEditorPanel.getReactionCartoon().deselect(thing);
-						reactionCartoonEditorPanel.getReactionCartoon().select(thing);
-					}
-				}
-			}
-		});
-		menu.show(groupButton, 0, groupButton.getHeight());
-	}
+//	private void groupButtonPressed() {
+//		System.out.println("GroupButtonPressed");
+//		final JPopupMenu menu = new JPopupMenu("Choose compartment");
+//		
+//		JMenuItem viewAllMenuItem = new JMenuItem("View Patterns Individually");
+//		menu.add(viewAllMenuItem);
+//		viewAllMenuItem.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				reactionCartoonEditorPanel.getReactionCartoon().setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria.full);
+//
+//				// if current selection is a RuleParticipantSignature object, reselect it to refresh the content of the properties panel
+//				int selectedIndex = tabbedPane.getSelectedIndex();
+//				if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
+//					Object[] selectedObjects = reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects();
+//					if(selectedObjects.length == 1 && selectedObjects[0] instanceof RuleParticipantSignature) {
+//						Object thing = selectedObjects[0];
+//						reactionCartoonEditorPanel.getReactionCartoon().deselect(thing);
+//						reactionCartoonEditorPanel.getReactionCartoon().select(thing);
+//					}
+//				}
+//			}
+//		});
+//		JMenuItem groupBySignatureMenuItem = new JMenuItem("Group by Molecules Signature");
+//		menu.add(groupBySignatureMenuItem);
+//		groupBySignatureMenuItem.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				reactionCartoonEditorPanel.getReactionCartoon().setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria.moleculeNumber);
+//				
+//				int selectedIndex = tabbedPane.getSelectedIndex();
+//				if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
+//					Object[] selectedObjects = reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects();
+//					if(selectedObjects.length == 1 && selectedObjects[0] instanceof RuleParticipantSignature) {
+//						Object thing = selectedObjects[0];
+//						reactionCartoonEditorPanel.getReactionCartoon().deselect(thing);
+//						reactionCartoonEditorPanel.getReactionCartoon().select(thing);
+//					}
+//				}
+//			}
+//		});
+//		menu.show(groupButton, 0, groupButton.getHeight());
+//	}
 	
 	private void duplicateButtonPressed() {
 

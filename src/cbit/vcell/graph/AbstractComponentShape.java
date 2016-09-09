@@ -54,10 +54,11 @@ public abstract class AbstractComponentShape {
 		Point from;
 	}
 
-	final static Color componentPaleYellow = new Color(0xffff99);
+	public final static Color componentPaleYellow = new Color(0xffff99);
 	public final static Color componentPaleGreen = new Color(0xeeffee);
 	public final static Color componentPaleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);	// hue, saturation, brightness
 	public final static Color componentPalePink = Color.getHSBColor(0.9f, 0.05f, 1.0f);
+	public final static Color componentMediumPalePink = Color.getHSBColor(0.9f, 0.14f, 1.0f);
 	
 	public final static Color componentGreen = new Color(0xccffcc);
 	public final static Color componentYellow = new Color(0xffdf00);
