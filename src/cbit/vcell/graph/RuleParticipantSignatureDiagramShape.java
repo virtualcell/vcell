@@ -146,7 +146,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		// no need to really draw it if the shapes of the molecules fill it perfectly, because it won't be visible anyway
 		// however, the "isInside" function will need exactly this RoundRectangle2D to compute whether the point is inside the shape
 		RoundRectangle2D contour = new RoundRectangle2D.Double(absPosX, absPosY, shapeWidth, shapeHeight, shapeHeight, shapeHeight);
-		g2D.setPaint(isSelected() ? Color.getHSBColor(0.9f, 0.14f, 1.0f) : AbstractComponentShape.componentPaleGreen);
+		g2D.setPaint(isSelected() ? AbstractComponentShape.componentMediumPalePink : AbstractComponentShape.componentPaleGreen);
 		g2D.fill(contour);
 		exterior = isSelected() ? Color.red.darker().darker() : Color.darkGray;
 		g.setColor(exterior);
