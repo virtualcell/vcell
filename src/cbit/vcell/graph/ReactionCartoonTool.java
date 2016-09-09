@@ -2741,7 +2741,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				break;
 			}
 			default:{
-				System.out.println("ERROR: mode " + newMode + "not defined");
+				System.out.println("ERROR: mode " + newMode + " not defined");
 				break;
 			}
 			}
