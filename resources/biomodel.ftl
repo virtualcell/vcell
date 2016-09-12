@@ -13,7 +13,7 @@
 <br>name: &quot;${biomodel.name!""}&quot;</br>
 <br>owner: ${biomodel.ownerName!""}</br>
 <br>saved: ${biomodel.savedDate?number_to_date!""}</br>
-<br><a href="${vcmllink}" type="application/vcml+xml" download="Biomodel_${biomodel.bmKey}">dowload vcml</a></br>
+<br><a href="${vcmllink}" type="application/vcml+xml" download="Biomodel_${biomodel.bmKey}.vcml">dowload vcml</a></br>
 <br><img src="${diagramlink}" type="image/png"/></br>
 
 <br/><h3>Applications</h3>

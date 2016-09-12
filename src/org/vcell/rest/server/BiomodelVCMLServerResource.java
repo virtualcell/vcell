@@ -3,6 +3,7 @@ package org.vcell.rest.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.james.mime4j.field.ContentDispositionField;
 import org.restlet.data.Status;
 import org.restlet.ext.wadl.MethodInfo;
 import org.restlet.ext.wadl.ParameterInfo;
@@ -63,14 +64,16 @@ public class BiomodelVCMLServerResource extends AbstractServerResource implement
 	}
 
 	@Override
-	@Get("xml")
+	@Get("application/vcml+xml")
 	public String get_xml() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
 		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
-		
         String vcml = getBiomodelVCML(vcellUser);
         
         if (vcml != null){
+        	String bioModelID = (String)getRequestAttributes().get(VCellApiApplication.BIOMODELID);
+        	setAttribute("Content-type", "application/vcml+xml");
+        	setAttribute("Content-Disposition", "attachment; filename=\"VCBioModel_"+bioModelID+".vcml\"");
         	return vcml;
         }
         throw new RuntimeException("biomodel not found");

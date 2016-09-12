@@ -8,7 +8,7 @@ public interface BiomodelVCMLResource {
 	 * Returns the list of BioModels accessible to this user
 	 */
 
-	@Get("xml")
+	@Get("application/vcml+xml")
 	public String get_xml();
 	
 }
