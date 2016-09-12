@@ -102,7 +102,7 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String SIMTASK = "simtask";
 	public static final String SIMTASKID = "simtaskid";
 	
-	public static final String VCML_DOWNLOAD = "vcml";
+	public static final String VCML_DOWNLOAD = "biomodel.vcml";
 	public static final String DIAGRAM_DOWNLOAD = "diagram";
 	public static final String SIMULATION = "simulation";
 	public static final String SIMULATIONID = "simulationid";
