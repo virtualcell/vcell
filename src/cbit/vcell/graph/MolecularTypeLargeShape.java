@@ -417,39 +417,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			if(mt == null || mt.getModel() == null) {
 				primaryColor = Color.blue.darker().darker();
 			} else {
-				if(shapePanel instanceof RulesShapePanel && shapePanel.isShowDifferencesOnly() && owner instanceof ReactionRule) {
-					ReactionRule reactionRule = (ReactionRule)owner;
-
-					switch (((RulesShapePanel)shapePanel).hasNoMatch(mtp)){
-					case CHANGED:
-						primaryColor = Color.orange;
-						break;
-					case UNCHANGED:
-						primaryColor = AbstractComponentShape.componentVeryLightGray;
-//						primaryColor = AbstractComponentShape.componentHidden;
-//						primaryColor = Color.lightGray;
-						break;
-					case ANALYSISFAILED:
-						ArrayList<Issue> issueList = new ArrayList<Issue>();
-						reactionRule.gatherIssues(new IssueContext(), issueList);
-						boolean bRuleHasErrorIssues = false;
-						for (Issue issue : issueList){
-							if (issue.getSeverity() == Severity.ERROR){
-								bRuleHasErrorIssues = true;
-								break;
-							}
-						}
-						if (bRuleHasErrorIssues) {
-							primaryColor = AbstractComponentShape.componentHidden;
-						}else{
-							System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
-							primaryColor = Color.red.darker();
-						}
-						break;
-					default:
-						break;
-					}
-				} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
+				if(shapePanel instanceof ParticipantSignatureShapePanel) {
 					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
 					if(!ssp.isShowMoleculeColor()) {
 						primaryColor = AbstractComponentShape.componentVeryLightGray;
@@ -460,21 +428,83 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 						index = index%7;
 						primaryColor = colorTable[index].darker().darker();
 					}
+					if(ssp.isShowDifferencesOnly()) {
+						ReactionRule reactionRule = (ReactionRule)owner;
+						switch (ssp.hasNoMatch(reactionRule.getName(), mtp)){
+						case CHANGED:
+							primaryColor = AbstractComponentShape.deepOrange;
+							break;
+						case UNCHANGED:		// keep whatever color we set above
+							break;
+						case ANALYSISFAILED:
+							ArrayList<Issue> issueList = new ArrayList<Issue>();
+							reactionRule.gatherIssues(new IssueContext(), issueList);
+							boolean bRuleHasErrorIssues = false;
+							for (Issue issue : issueList){
+								if (issue.getSeverity() == Severity.ERROR){
+									bRuleHasErrorIssues = true;
+									break;
+								}
+							}
+							if (bRuleHasErrorIssues) {
+								primaryColor = AbstractComponentShape.componentHidden;
+							}else{
+								System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
+								primaryColor = Color.red.darker();
+							}
+							break;
+						default:
+							break;
+						}
+					}
+				} else if(shapePanel instanceof RulesShapePanel) {
+					RulesShapePanel rsp = (RulesShapePanel)shapePanel;
+					if(!rsp.isShowMoleculeColor()) {
+						primaryColor = AbstractComponentShape.componentVeryLightGray;
+					} else {
+						RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
+						List<MolecularType> mtList = rbmmc.getMolecularTypeList();
+						int index = mtList.indexOf(mt);
+						index = index%7;
+						primaryColor = colorTable[index].darker().darker();
+					}
+					// if we show difference, we apply that now and override the color
+					if(rsp.isShowDifferencesOnly()) {
+						ReactionRule reactionRule = (ReactionRule)owner;
+						switch (((RulesShapePanel)shapePanel).hasNoMatch(mtp)){
+						case CHANGED:
+							primaryColor = AbstractComponentShape.deepOrange;
+							break;
+						case UNCHANGED:		// keep whatever color we set above
+							break;
+						case ANALYSISFAILED:
+							ArrayList<Issue> issueList = new ArrayList<Issue>();
+							reactionRule.gatherIssues(new IssueContext(), issueList);
+							boolean bRuleHasErrorIssues = false;
+							for (Issue issue : issueList){
+								if (issue.getSeverity() == Severity.ERROR){
+									bRuleHasErrorIssues = true;
+									break;
+								}
+							}
+							if (bRuleHasErrorIssues) {
+								primaryColor = AbstractComponentShape.componentHidden;
+							}else{
+								System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
+								primaryColor = Color.red.darker();
+							}
+							break;
+						default:
+							break;
+						}
+					}
 				} else {
+					// TODO: do we ever get here legitimately? if not throw an exception!
 					RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
 					List<MolecularType> mtList = rbmmc.getMolecularTypeList();
 					int index = mtList.indexOf(mt);
 					index = index%7;
-					switch(index) {
-					case 0:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
-					case 1:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
-					case 2:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
-					case 3:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
-					case 4:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
-					case 5:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
-					case 6:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker().darker(); break;
-					default: primaryColor = isHighlighted() == true ? Color.white : Color.blue.darker().darker(); break;
-					}
+					primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker();
 				}
 			}
 		}

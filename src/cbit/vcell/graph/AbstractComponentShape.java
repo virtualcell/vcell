@@ -67,6 +67,8 @@ public abstract class AbstractComponentShape {
 	public final static Color componentVeryLightGray = new Color(0xd7d7d7);
 //	final static Color componentHidden = new Color(0xffffff);
 	public final static Color plusSignGreen = new Color(0x37874f);
+	public final static Color deepOrange = new Color(0xFF9200);
+
 //	final static Color plusSignGreen = new Color(0x006b1f);
 	
 	// used to colorize components with issues
