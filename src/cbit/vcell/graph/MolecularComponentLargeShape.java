@@ -259,35 +259,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			
 			RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, height, cornerArc, cornerArc);
-			if(shapePanel instanceof RulesShapePanel && shapePanel.isShowDifferencesOnly()) {
-				ReactionRule reactionRule = (ReactionRule)owner;
-				Color stateColor = componentHidden;
-				switch (((RulesShapePanel)shapePanel).hasStateChanged(mcp)) {
-				case CHANGED:
-					stateColor = Color.orange;
-					break;
-				case ANALYSISFAILED:
-					ArrayList<Issue> issueList = new ArrayList<Issue>();
-					reactionRule.gatherIssues(new IssueContext(), issueList);
-					boolean bRuleHasErrorIssues = false;
-					for (Issue issue : issueList){
-						if (issue.getSeverity() == Severity.ERROR){
-							bRuleHasErrorIssues = true;
-							break;
-						}
-					}
-					if (bRuleHasErrorIssues) {
-						stateColor = componentHidden;
-					}else{
-						System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
-						stateColor = Color.red.darker();
-					}
-					break;
-				default:
-					break;
-				}
-				g2.setColor(stateColor);
-			} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
+			if(shapePanel instanceof ParticipantSignatureShapePanel) {
 				ReactionRule reactionRule = (ReactionRule)owner;
 				Color stateColor = componentHidden;
 				ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
@@ -298,6 +270,42 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				}
 				if(ssp.isShowDifferencesOnly()) {
 					switch (ssp.hasStateChanged(reactionRule.getName(), mcp)) {
+					case CHANGED:
+						stateColor = Color.orange;
+						break;
+					case ANALYSISFAILED:
+						ArrayList<Issue> issueList = new ArrayList<Issue>();
+						reactionRule.gatherIssues(new IssueContext(), issueList);
+						boolean bRuleHasErrorIssues = false;
+						for (Issue issue : issueList){
+							if (issue.getSeverity() == Severity.ERROR){
+								bRuleHasErrorIssues = true;
+								break;
+							}
+						}
+						if (bRuleHasErrorIssues) {
+							stateColor = componentHidden;
+						}else{
+							System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
+							stateColor = Color.red.darker();
+						}
+						break;
+					default:
+						break;
+					}
+				}
+				g2.setColor(stateColor);
+			} else if(shapePanel instanceof RulesShapePanel) {
+				ReactionRule reactionRule = (ReactionRule)owner;
+				Color stateColor = componentHidden;
+				RulesShapePanel rsp = (RulesShapePanel)shapePanel;
+				if(rsp.isShowNonTrivialOnly() == true) {
+					if(csd != null) {
+						stateColor = componentPaleYellow;
+					}
+				}
+				if(rsp.isShowDifferencesOnly()) {
+					switch (rsp.hasStateChanged(mcp)) {
 					case CHANGED:
 						stateColor = Color.orange;
 						break;
@@ -363,6 +371,8 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 					return false;
 				}
 				if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
+					return false;
+				} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
 					return false;
 				}
 				return shapePanel.isHighlighted(csp);
@@ -650,33 +660,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		} else if(owner instanceof ReactionRule) {
 			
 			ReactionRule reactionRule = (ReactionRule)owner;
-			if(shapePanel instanceof RulesShapePanel && shapePanel.isShowDifferencesOnly()) {
-				switch (((RulesShapePanel)shapePanel).hasBondChanged(mcp)){
-				case CHANGED:
-					componentColor = Color.orange;
-					break;
-				case UNCHANGED:
-					componentColor = componentHidden;
-					break;
-				case ANALYSISFAILED:
-					ArrayList<Issue> issueList = new ArrayList<Issue>();
-					reactionRule.gatherIssues(new IssueContext(), issueList);
-					boolean bRuleHasErrorIssues = false;
-					for (Issue issue : issueList){
-						if (issue.getSeverity() == Severity.ERROR){
-							bRuleHasErrorIssues = true;
-							break;
-						}
-					}
-					if (bRuleHasErrorIssues) {
-						componentColor = componentHidden;
-					}else{
-						System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
-						componentColor = Color.red.darker();
-					}
-					break;
-				}
-			} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
+			if(shapePanel instanceof ParticipantSignatureShapePanel) {
 				
 				ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
 				componentColor = componentHidden;
@@ -689,6 +673,42 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				}
 				if(ssp.isShowDifferencesOnly()) {
 					switch (ssp.hasBondChanged(reactionRule.getName(), mcp)) {
+					case CHANGED:
+						componentColor = Color.orange;
+						break;
+					case ANALYSISFAILED:
+						ArrayList<Issue> issueList = new ArrayList<Issue>();
+						reactionRule.gatherIssues(new IssueContext(), issueList);
+						boolean bRuleHasErrorIssues = false;
+						for (Issue issue : issueList) {
+							if (issue.getSeverity() == Severity.ERROR){
+								bRuleHasErrorIssues = true;
+								break;
+							}
+						}
+						if (bRuleHasErrorIssues) {
+							componentColor = componentHidden;
+						} else {
+							System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
+							componentColor = Color.red.darker();
+						}
+						break;
+					default:
+						break;
+					}
+				}
+			} else if(shapePanel instanceof RulesShapePanel) {
+				RulesShapePanel rsp = (RulesShapePanel)shapePanel;
+				componentColor = componentHidden;
+				if(rsp.isShowNonTrivialOnly() == true) {
+					if(mcp.getBondType() != BondType.Possible) {
+						componentColor = componentPaleYellow;
+					} else {
+						componentColor = componentHidden;
+					}
+				}
+				if(rsp.isShowDifferencesOnly()) {
+					switch (rsp.hasBondChanged(mcp)) {
 					case CHANGED:
 						componentColor = Color.orange;
 						break;

@@ -199,6 +199,8 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			shapePanel.zoomSmaller();
 			shapePanel.zoomSmaller();
 			shapePanel.zoomSmaller();
+			getZoomSmallerButton().setEnabled(true);
+			getZoomLargerButton().setEnabled(true);
 			
 			scrollPane = new JScrollPane(shapePanel);
 			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
