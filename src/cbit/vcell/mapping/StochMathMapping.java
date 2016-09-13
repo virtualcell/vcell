@@ -546,7 +546,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 				if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
 					kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
-					Expression rateExp = new Expression(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate),getNameScope());
+					Expression rateExp = new Expression(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate),reactionStep.getNameScope());
 					Parameter forwardRateParameter = null;
 					Parameter reverseRateParameter = null;
 					if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction)){
@@ -714,7 +714,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 				//we could set jump processes for general flux rate in forms of p1*Sout + p2*Sin
 				if(kinetics.getKineticsDescription().equals(KineticsDescription.General) || kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability) )
 				{
-					Expression fluxRate = new Expression(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate),getNameScope());
+					Expression fluxRate = new Expression(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate),reactionStep.getNameScope());
 					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
 					// forward and reverse rate parameters may be null
 					Parameter forwardRateParameter = null;
