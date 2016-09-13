@@ -35,7 +35,7 @@ public class SubVolumeTable extends cbit.sql.Table {
 	public final Field name		 	= new Field("name",				"varchar(255)",	"NOT NULL");
 	public final Field imageRegionRef= new Field("imageRegionRef",	"integer",		ImageRegionTable.REF_TYPE);
 	public final Field geometryRef	= new Field("geometryRef",		"integer",		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field expression 	= new Field("expression",		"varchar(1024)",	"");
+	public final Field expression 	= new Field("expression",		"varchar(2048)",	"");
 	public final Field handle	 	= new Field("handle",			"integer",		"NOT NULL");
 	public final Field ordinal	 	= new Field("ordinal",			"integer",		"NOT NULL");
 	
