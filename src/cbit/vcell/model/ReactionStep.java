@@ -790,8 +790,8 @@ public void setKinetics(Kinetics kinetics) {
 	}
 
 	//
-	// if new Kinetic type is incompatable with current PhysicsOptions, choose appropriate PhysicsOptions
-	// then if "zero" valence is incompatable with new kinetic type and new physicsOptions, then force to 1
+	// if new Kinetic type is incompatible with current PhysicsOptions, choose appropriate PhysicsOptions
+	// then if "zero" valence is incompatible with new kinetic type and new physicsOptions, then force to 1
 	//
 	try {
 		KineticsParameter chargeValenceParameter = getKinetics().getChargeValenceParameter();
