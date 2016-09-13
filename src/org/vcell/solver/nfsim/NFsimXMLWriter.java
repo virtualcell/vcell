@@ -1,5 +1,6 @@
 package org.vcell.solver.nfsim;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -262,23 +263,28 @@ public class NFsimXMLWriter {
 	static HashSet<BondSites> reactionProductBondSites = new HashSet<BondSites>();
 	static HashSet<BondSites> reactionReactantBondSites = new HashSet<BondSites>();
 
-	public static Element writeNFsimXML(SimulationTask simTask, long randomSeed, NFsimSimulationOptions nfsimSimulationOptions, boolean bUseLocationMarks) throws SolverException {
-	try {
-		System.out.println("VCML ORIGINAL .... START\n"+simTask.getSimulation().getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
-	} catch (MathException e1) {
-		// TODO Auto-generated catch block
-		e1.printStackTrace();
-	}
+	public static Element writeNFsimXML(SimulationTask origSimTask, long randomSeed, NFsimSimulationOptions nfsimSimulationOptions, boolean bUseLocationMarks) throws SolverException {
+		try {
+			System.out.println("VCML ORIGINAL .... START\n"+origSimTask.getSimulation().getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
+		} catch (MathException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		SimulationTask clonedSimTask = null;
+		try {
+			clonedSimTask = (SimulationTask) BeanUtils.cloneSerializable(origSimTask);
+		}catch (Exception eee){
+			throw new SolverException("failed to clone mathDescription while preparing NFSim input: "+eee.getMessage(), eee);
+		}
+		MathDescription clonedMathDesc = clonedSimTask.getSimulation().getMathDescription();
 		if (bUseLocationMarks){
 			try {
-				simTask = (SimulationTask) BeanUtils.cloneSerializable(simTask);
-				MathDescription mathDesc = simTask.getSimulation().getMathDescription();
 	
 				//
 				// get list of Compartment Names (stored in locations).
 				//
 				ArrayList<String> locations = new ArrayList<String>();
-				Enumeration<Variable> varEnum = mathDesc.getVariables();
+				Enumeration<Variable> varEnum = clonedMathDesc.getVariables();
 				ArrayList<VolumeParticleSpeciesPattern> volumeParticleSpeciesPatterns = new ArrayList<VolumeParticleSpeciesPattern>();
 				while (varEnum.hasMoreElements()){
 					Variable var = varEnum.nextElement();
@@ -294,7 +300,7 @@ public class NFsimXMLWriter {
 				//
 				// add location site and mark site to each ParticleMolecularType (definition of the molecular type)
 				//
-				for (ParticleMolecularType particleMolecularType : mathDesc.getParticleMolecularTypes()){
+				for (ParticleMolecularType particleMolecularType : clonedMathDesc.getParticleMolecularTypes()){
 					String pmcLocationName = RbmUtils.SiteStruct;
 					String pmcLocationId = particleMolecularType.getName() + "_" + RbmUtils.SiteStruct;
 					ParticleMolecularComponent locationComponent = new ParticleMolecularComponent(pmcLocationId, pmcLocationName);
@@ -358,7 +364,7 @@ public class NFsimXMLWriter {
 				//
 				// cloned the "standard" reactant/observable speciesPattern, set the mark for all molecules, and add to mathDesc.
 				//
-				CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDesc.getSubDomains().nextElement();
+				CompartmentSubDomain subDomain = (CompartmentSubDomain)clonedMathDesc.getSubDomains().nextElement();
 				for (ParticleJumpProcess particleJumpProcess : subDomain.getParticleJumpProcesses()){
 					for (Action action : particleJumpProcess.getActions()){
 						if (action.getOperation().equals(Action.ACTION_CREATE)){
@@ -370,14 +376,16 @@ public class NFsimXMLWriter {
 								ParticleComponentStateDefinition markSet = productMolTypePattern.getMolecularType().getComponentList().get(1).getComponentStateDefinitions().get(1);
 								productMolTypePattern.getMolecularComponentPatternList().get(1).setComponentStatePattern(new ParticleComponentStatePattern(markSet));
 							}
-							
-							mathDesc.addVariable(productPattern);
+							System.out.println(productPattern.getName());
+							if (clonedMathDesc.getVariable(productPattern.getName())==null){
+								clonedMathDesc.addVariable(productPattern);
+							}
 							action.setVar(productPattern);
 						}
 					}
 				}
 				try {
-					System.out.println("===============================\n ----------- VCML HACKED .... START\n"+mathDesc.getVCML_database()+"\nVCML HACKED .... END\n====================\n");
+					System.out.println("===============================\n ----------- VCML HACKED .... START\n"+clonedMathDesc.getVCML_database()+"\nVCML HACKED .... END\n====================\n");
 				} catch (MathException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -386,18 +394,17 @@ public class NFsimXMLWriter {
 				throw new SolverException("failed to apply location mark transformation: "+e.getMessage(), e);
 			}
 		}
-		MathDescription mathDesc = simTask.getSimulation().getMathDescription();
 		Element sbmlElement = new Element("sbml");
 		Element modelElement = new Element("model");
 		modelElement.setAttribute("id", "nameless");
 		
-		SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simTask.getSimulation(), simTask.getSimulationJob().getJobIndex());
+		SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(clonedSimTask.getSimulation(), clonedSimTask.getSimulationJob().getJobIndex());
 		
-		Element listOfParametersElement = getListOfParameters(mathDesc, simulationSymbolTable);
-		Element listOfMoleculeTypesElement = getListOfMoleculeTypes(mathDesc);
-		Element listOfSpeciesElement = getListOfSpecies(mathDesc,simulationSymbolTable);
+		Element listOfParametersElement = getListOfParameters(clonedMathDesc, simulationSymbolTable);
+		Element listOfMoleculeTypesElement = getListOfMoleculeTypes(clonedMathDesc);
+		Element listOfSpeciesElement = getListOfSpecies(clonedMathDesc,simulationSymbolTable);
 		
-		CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain) mathDesc.getSubDomains().nextElement();
+		CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain) clonedMathDesc.getSubDomains().nextElement();
 		Element listOfReactionRules = new Element("ListOfReactionRules");
 		for (int reactionRuleIndex =0; reactionRuleIndex < compartmentSubDomain.getParticleJumpProcesses().size(); reactionRuleIndex++) {
 			ParticleJumpProcess particleJumpProcess = compartmentSubDomain.getParticleJumpProcesses().get(reactionRuleIndex);
@@ -519,7 +526,7 @@ public class NFsimXMLWriter {
 				}
 			}
 			
-			if(isFunction(rateConstantValue, mathDesc, simulationSymbolTable)) {
+			if(isFunction(rateConstantValue, clonedMathDesc, simulationSymbolTable)) {
 				rateLawElement.setAttribute("type", "Function");
 				rateLawElement.setAttribute("totalrate", "0");
 				rateLawElement.setAttribute("name", rateConstantValue);
@@ -761,8 +768,8 @@ public class NFsimXMLWriter {
 			listOfReactionRules.addContent(reactionRuleElement);
 		}
 
-		Element listOfObservablesElement = getListOfObservables(mathDesc);
-		Element listOfFunctionsElement = getListOfFunctions(mathDesc, simulationSymbolTable);
+		Element listOfObservablesElement = getListOfObservables(clonedMathDesc);
+		Element listOfFunctionsElement = getListOfFunctions(clonedMathDesc, simulationSymbolTable);
 		
 		modelElement.addContent(listOfParametersElement);
 		modelElement.addContent(listOfMoleculeTypesElement);
