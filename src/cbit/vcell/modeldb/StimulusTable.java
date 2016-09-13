@@ -35,7 +35,7 @@ public class StimulusTable extends cbit.sql.Table {
 	public final Field simContextRef	= new Field("simContextRef","integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
 	public final Field name				= new Field("name",	        "varchar(255)",		"");
 	public final Field stimulusType 	= new Field("stimulusType",	"integer",	"NOT NULL");
-	public final Field expression		= new Field("expression",	"varchar(255)",		"");
+	public final Field expression		= new Field("expression",	"varchar2(4000)",		"");
 	public final Field positionX		= new Field("posX",			"NUMBER",	"NOT NULL");
 	public final Field positionY		= new Field("posY",			"NUMBER",	"NOT NULL");
 	public final Field positionZ		= new Field("posZ",			"NUMBER",	"NOT NULL");

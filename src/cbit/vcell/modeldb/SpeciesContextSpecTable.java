@@ -31,8 +31,8 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 	public final Field bEnableDif	= new Field("bEnableDif",	"integer",	"NOT NULL");
 	public final Field bForceConst	= new Field("bForceConst",	"integer",	"NOT NULL");
 	public final Field bForceIndep	= new Field("bForceIndep",	"integer",	"NOT NULL");
-	public final Field initCondExp	= new Field("initCondExp",	"varchar(1024)","");
-	public final Field diffRateExp	= new Field("diffRateExp",	"varchar(255)",	"NOT NULL");
+	public final Field initCondExp	= new Field("initCondExp",	"varchar(2048)","");
+	public final Field diffRateExp	= new Field("diffRateExp",	"varchar(1024)", "NOT NULL");
 	public final Field boundaryXmExp	= new Field("boundaryXmExp","varchar(255)",	"");
 	public final Field boundaryXpExp	= new Field("boundaryXpExp","varchar(255)",	"");
 	public final Field boundaryYmExp	= new Field("boundaryYmExp","varchar(255)",	"");
