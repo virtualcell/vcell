@@ -962,7 +962,7 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 	//  }
 	//
 	//
-	//  new format (version 2) (deprecated, incompatable with Version 1, still supported for reading)
+	//  new format (version 2) (deprecated, incompatible with Version 1, still supported for reading)
 	//
 	//	Kinetics GeneralCurrentKinetics {
 	//      CurrentDensity 'currentDensity'
@@ -2215,7 +2215,7 @@ public final void writeTokens(java.io.PrintWriter pw) {
 	//  }
 	//
 	//
-	//  new format (version 2) (deprecated, incompatable with Version 1, still supported for reading)
+	//  new format (version 2) (deprecated, incompatible with Version 1, still supported for reading)
 	//
 	//	Kinetics GeneralCurrentKinetics {
 	//      CurrentDensity 'currentDensity'
@@ -2290,7 +2290,7 @@ public final String writeTokensWithReplacingProxyParams(Hashtable<String, Expres
 	//  }
 	//
 	//
-	//  new format (version 2) (deprecated, incompatable with Version 1, still supported for reading)
+	//  new format (version 2) (deprecated, incompatible with Version 1, still supported for reading)
 	//
 	//	Kinetics GeneralCurrentKinetics {
 	//      CurrentDensity 'currentDensity'

@@ -645,7 +645,7 @@ public void refreshMathDescription(MathMappingCallback callback, NetworkGenerati
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(
-				"Application "+getName()+" has no generated Math\n"+
+				"Application '"+getName()+"' has no generated Math\n"+
 				"Failed to generate new Math\n"+
 				e.getMessage()
 			);

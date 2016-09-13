@@ -346,7 +346,7 @@ public class MassActionSolver {
 		Expression constructedExp_withoutCatalyst = removeCatalystFromExp(constructedExp, rs);
 		if(! ExpressionUtils.functionallyEquivalent(orgExp_withoutCatalyst, constructedExp_withoutCatalyst, false, 1e-8, 1e-8))
 		{
-			throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Mathmatical form incompatable with mass action."));
+			throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Mathmatical form incompatible with mass action."));
 		}
 		//check if forward rate constant and reverse rate constant both can be evaluated to constants(numbers) after substituting all parameters.
 		if(forwardExp != null)
