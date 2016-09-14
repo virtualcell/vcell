@@ -65,7 +65,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 
 	public RuleParticipantSignatureDiagramShape(RuleParticipantSignature ruleParticipantSignature, ModelCartoon graphModel) {
 		super(graphModel);
-//		width = leftmargin + displacement*numMolecules + rightmargin;
+		// initialize with default widh / height, we compute width dynamically when we paint
 		getSpaceManager().setSize(width, height);		// TODO: or setSizePreferred??
 		
 		this.ruleParticipantSignature = ruleParticipantSignature;
@@ -134,7 +134,8 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 		
 		int numMolecules = Math.max(1, ruleParticipantSignature.getSpeciesPattern().getMolecularTypePatterns().size());		// we reserve space for at least 1 molecule
 		width = leftmargin + circleDiameter + displacement*(numMolecules-1) +1;
-
+		getSpaceManager().setSize(width, height);
+		
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
 		Graphics2D g2D = g;
