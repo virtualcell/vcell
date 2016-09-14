@@ -1039,6 +1039,13 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			String tooltip = NetworkFreePanel.rateWarning;
 			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, tooltip, Issue.Severity.WARNING));
 		}
+		for(Structure struct : getModel().getStructures()) {
+			String name = struct.getName();
+			if (!name.equals(TokenMangler.fixTokenStrict(name))) {
+				String msg = "'" + name + "' not legal identifier for rule-based stochastic applications, try '"+TokenMangler.fixTokenStrict(name)+"'.";
+				issueVector.add(new Issue(struct, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			}
+		}
 	}
 	
 	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
