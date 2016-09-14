@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.modeldb;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,6 +44,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
  */
 public class BioModelDbDriver extends DbDriver {
 	public static final BioModelTable bioModelTable = BioModelTable.table;
+	public static final PublicationTable publicationTable = PublicationTable.table;
 	public static final UserTable userTable = UserTable.table;
 	public static final BioModelSimulationLinkTable bioModelSimLinkTable = BioModelSimulationLinkTable.table;
 	public static final BioModelSimContextLinkTable bioModelSimContextLinkTable = BioModelSimContextLinkTable.table;
@@ -600,6 +600,35 @@ public BioModelRep[] getBioModelReps(Connection con, User user, String condition
 		stmt.close(); // Release resources include resultset
 	}
 	return bioModelReps.toArray(new BioModelRep[bioModelReps.size()]);
+}
+
+public PublicationRep[] getPublicationReps(Connection con, User user, String conditions, OrderBy orderBy)
+		throws SQLException, DataAccessException, ObjectNotFoundException {
+	if (user == null) {
+		throw new IllegalArgumentException("Improper parameters for getPublicationReps");
+	}
+	log.print("BioModelDbDriver.getPublicationReps(user=" + user + ", conditions=" + conditions + ")");
+	
+	String sql = publicationTable.getPreparedStatement_PublicationReps(conditions, orderBy);
+	
+	PreparedStatement stmt = con.prepareStatement(sql);
+//	System.out.println(sql);
+	publicationTable.setPreparedStatement_PublicationReps(stmt, user);
+
+	ArrayList<PublicationRep> publicationReps = new ArrayList<PublicationRep>();
+	try {
+		ResultSet rset = stmt.executeQuery();
+
+		//showMetaData(rset);
+
+		while (rset.next()) {
+			PublicationRep publicationRep = publicationTable.getPublicationRep(user,rset);
+			publicationReps.add(publicationRep);
+		}
+	} finally {
+		stmt.close(); // Release resources include resultset
+	}
+	return publicationReps.toArray(new PublicationRep[publicationReps.size()]);
 }
 
 }

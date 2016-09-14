@@ -1975,6 +1975,33 @@ public BioModelRep[] getBioModelReps(User user, String conditions, OrderBy order
 }
 
 
+public PublicationRep[] getPublicationReps(User user, String conditions, OrderBy orderBy, boolean bEnableRetry) throws SQLException, DataAccessException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		PublicationRep[] publicationreps = bioModelDB.getPublicationReps(con,user,conditions, orderBy);
+		return publicationreps;
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getPublicationReps(user, conditions, orderBy, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+
 public SimContextRep[] getSimContextReps(KeyValue startingSimContextKey, int numRows, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);

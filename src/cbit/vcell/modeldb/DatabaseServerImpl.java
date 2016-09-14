@@ -44,7 +44,6 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
-import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
@@ -75,7 +74,9 @@ public class DatabaseServerImpl {
 		name_asc,
 		name_desc,
 		date_asc,
-		date_desc
+		date_desc,
+		year_asc,
+		year_desc
 	};
 /**
  * This method was created in VisualAge.
@@ -324,6 +325,11 @@ public BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws DataAcces
 public BioModelRep[] getBioModelReps(User user, String conditions, OrderBy orderBy, int startRow, int numRows) throws DataAccessException, SQLException {
 	return dbTop.getBioModelReps(user, conditions, orderBy, startRow, numRows, true);
 }
+
+public PublicationRep[] getPublicationReps(User vcellUser, String conditions, OrderBy orderBy) throws SQLException, DataAccessException {
+	return dbTop.getPublicationReps(vcellUser, conditions, orderBy, true);
+}
+
 
 public SimContextRep[] getSimContextReps(KeyValue startingSimContextKey, int numRows) throws DataAccessException, SQLException {
 	return dbTop.getSimContextReps(startingSimContextKey, numRows, true);
@@ -1270,4 +1276,5 @@ public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String
 		throw new DataAccessException(e.getMessage());
 	}
 }
+
 }

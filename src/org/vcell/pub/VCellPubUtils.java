@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,7 +15,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.Field;
 import cbit.util.xml.XmlUtil;
 
 import com.google.gson.Gson;
@@ -49,7 +47,7 @@ public class VCellPubUtils {
 		HashMap<Publication,PublishedModels> publishedModels = new HashMap<Publication,PublishedModels>();
 		int countModels = 0;
 		for (Record r : pubMedData.variables){
-			Publication pub = new Publication(null,r.pubTitle,r.authors,r.pubCitation,r.pubMedId,null);
+			Publication pub = new Publication(null,r.pubTitle,r.authors,r.pubCitation,r.pubMedId,null,null);
 			PublishedModels pubModels = publishedModels.get(pub);
 			if (pubModels==null){
 				pubModels = new PublishedModels(pub, new KeyValue[] { new KeyValue(r.modelKey) }, new KeyValue[0] );

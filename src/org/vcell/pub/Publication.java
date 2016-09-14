@@ -14,8 +14,9 @@ public class Publication implements Serializable {
 	public final String citation;
 	public final String pubmedid;
 	public final String doi;
+	public final String url;
 	
-	public Publication(KeyValue key, String title, String[] authors, String citation, String pubmedid, String doi) {
+	public Publication(KeyValue key, String title, String[] authors, String citation, String pubmedid, String doi, String url) {
 		super();
 		this.key = key;
 		this.title = title;
@@ -23,6 +24,7 @@ public class Publication implements Serializable {
 		this.citation = citation;
 		this.pubmedid = pubmedid;
 		this.doi = doi;
+		this.url = url;
 	}
 	
 	@Override
