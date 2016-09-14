@@ -2281,6 +2281,13 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	}
 	
 	//
+	// get issues for all Structures
+	//
+	for(Structure struct : fieldStructures) {
+		struct.gatherIssues(issueContext, issueList);
+	}
+	
+	//
 	// get issues from all ReactionSteps
 	//
 	for (int i = 0; i < fieldReactionSteps.length; i++){
