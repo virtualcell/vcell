@@ -3,6 +3,7 @@ package org.vcell.rest.server;
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,8 @@ import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.modeldb.PublicationRep;
+import cbit.vcell.modeldb.PublicationTable;
 import cbit.vcell.modeldb.ServerDocumentManager;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
@@ -439,10 +442,27 @@ public class RestDatabaseService {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
-		ArrayList<String> conditions = new ArrayList<String>();
 		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
-		if (bioModelID != null){
-			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");		
+		return getBioModelRep(new KeyValue(bioModelID), vcellUser);
+	}
+	
+	public PublicationRep query(PublicationServerResource resource, User vcellUser) throws NumberFormatException, ObjectNotFoundException, SQLException, DataAccessException {
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		String pubID = (String)resource.getRequestAttributes().get(VCellApiApplication.PUBLICATIONID);
+		return getPublicationRep(new KeyValue(pubID), vcellUser);
+	}
+
+
+	
+	public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {	
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		ArrayList<String> conditions = new ArrayList<String>();
+		if (bmKey != null){
+			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bmKey.toString() + ")");		
 		}else{
 			throw new RuntimeException("bioModelID not specified");
 		}
@@ -478,6 +498,42 @@ public class RestDatabaseService {
 			throw new ObjectNotFoundException("failed to get biomodel");
 		}
 		return bioModelReps[0];
+	}
+	
+	public PublicationRep getPublicationRep(KeyValue pubKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {	
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		ArrayList<String> conditions = new ArrayList<String>();
+		if (pubKey != null){
+			conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubKey.toString() + ")");		
+		}else{
+			throw new RuntimeException("bioModelID not specified");
+		}
+	
+		StringBuffer conditionsBuffer = new StringBuffer();
+		for (String condition : conditions) {
+			if (conditionsBuffer.length() > 0) {
+				conditionsBuffer.append(" AND ");
+			}
+			conditionsBuffer.append(condition);
+		}
+		int startRow = 1;
+		int maxRows = 1;
+		PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsBuffer.toString(), null);
+		for (PublicationRep publicationRep : publicationReps) {
+			KeyValue[] bmKeys = publicationRep.getBiomodelKeyList();
+			for (KeyValue bmKey : bmKeys) {
+				BioModelRep bmRep = getBioModelRep(bmKey, vcellUser);
+				if (bmRep != null){
+					publicationRep.addBioModelRep(bmRep);
+				}
+			}
+		}
+		if (publicationReps==null || publicationReps.length!=1){
+			throw new ObjectNotFoundException("failed to get publication");
+		}
+		return publicationReps[0];
 	}
 	
 	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException, ExpressionException, XmlParseException, MappingException, MathException, MatrixException, ModelException {	
@@ -726,6 +782,53 @@ public class RestDatabaseService {
 
 	public UserInfo addUser(UserInfo newUserInfo) throws SQLException, ObjectNotFoundException, DataAccessException, UseridIDExistsException {
 		return localAdminDbServer.insertUserInfo(newUserInfo);
+	}
+
+	public PublicationRep[] query(PublicationsServerResource resource, User vcellUser) throws SQLException, DataAccessException {
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		Long pubID = resource.getLongQueryValue(PublicationsServerResource.PARAM_PUB_ID);
+		String orderByParam = resource.getQueryValue(PublicationsServerResource.PARAM_ORDERBY); // it is ok if the orderBy is null;
+		ArrayList<String> conditions = new ArrayList<String>();
+		
+		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
+		
+		if (pubID != null){
+			conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubID + ")");		
+		}
+
+	
+		StringBuffer conditionsBuffer = new StringBuffer();
+		for (String condition : conditions) {
+			if (conditionsBuffer.length() > 0) {
+				conditionsBuffer.append(" AND ");
+			}
+			conditionsBuffer.append(condition);
+		}
+		OrderBy orderBy = OrderBy.date_desc; // default
+		if (orderByParam!=null){
+			if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_DATE_ASC)){
+				orderBy = OrderBy.date_asc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_DATE_DESC)){
+				orderBy = OrderBy.date_desc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_ASC)){
+				orderBy = OrderBy.name_asc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_DESC)){
+				orderBy = OrderBy.name_desc;
+			}
+		}
+		PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsBuffer.toString(), orderBy);
+		for (PublicationRep publicationRep : publicationReps) {
+			KeyValue[] bmKeys = publicationRep.getBiomodelKeyList();
+			for (KeyValue bmKey : bmKeys) {
+				BioModelRep bmRep = getBioModelRep(bmKey, vcellUser);
+				if (bmRep != null){
+					publicationRep.addBioModelRep(bmRep);
+				}
+			}			
+		}
+	   	return publicationReps;
 	}
 
 }

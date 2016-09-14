@@ -30,6 +30,8 @@ import org.vcell.rest.server.BiomodelSimulationStartServerResource;
 import org.vcell.rest.server.BiomodelSimulationStopServerResource;
 import org.vcell.rest.server.BiomodelVCMLServerResource;
 import org.vcell.rest.server.BiomodelsServerResource;
+import org.vcell.rest.server.PublicationServerResource;
+import org.vcell.rest.server.PublicationsServerResource;
 import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.rest.server.SimDataServerResource;
 import org.vcell.rest.server.SimDataValuesServerResource;
@@ -93,6 +95,9 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String VCELLAPI = "vcellapi";
 
 	public static final String WEBAPP = "webapp";
+	
+	public static final String PUBLICATION = "publication";
+	public static final String PUBLICATIONID = "publicationid";
 	
 	public static final String BIOMODEL = "biomodel";
 	public static final String BIOMODELID = "biomodelid";
@@ -235,6 +240,8 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
 	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, AccessTokenServerResource.class);
 	    rootRouter.attach("/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
+	    rootRouter.attach("/"+PUBLICATION, PublicationsServerResource.class);
+	    rootRouter.attach("/"+PUBLICATION+"/{"+PUBLICATIONID+"}", PublicationServerResource.class);
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);  
