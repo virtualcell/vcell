@@ -68,6 +68,9 @@ public class RuleParticipantSignature {
 	public Structure getStructure(){
 		return structure;
 	}
+	public void setStructure(Structure structure) {
+		this.structure = structure;
+	}
 	
 	private static ArrayList<String> getListOfMolecularTypePatternSignatures(SpeciesPattern sp, Criteria crit) {
 		
