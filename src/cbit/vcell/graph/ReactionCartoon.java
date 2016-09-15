@@ -100,8 +100,12 @@ public class ReactionCartoon extends ModelCartoon {
 			for(RuleParticipantSignatureDiagramShape sh : cachedShapes) {
 				addShape(sh);
 				RuleParticipantSignature rps = sh.getRuleParticipantSignature();
-				Structure str = rps.getStructure();
-				ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(str);
+				Structure ours = rps.getStructure();
+				Structure theirs = getModel().getStructure(ours.getName());
+				if(ours != theirs) {
+					rps.setStructure(theirs);
+				}
+				ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(theirs);
 				participantContainerShape.addChildShape(sh);
 //				signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
 			}
