@@ -26,20 +26,43 @@
 <th>pub&nbsp;ids</th>
 <th>pub&nbsp;title</th>
 <th>pub&nbsp;year</th>
+<th>citation</th>
+<th>authors</th>
+<th>pubmed id</th>
+<th>endnote id</th>
+<th>witt id</th>
 <th>biomodels</th>
+<th>mathmodels</th>
 </tr>
 <#list publications as pub>
 <tr>
 <td><#if pub.pubKey??><a href="/publication/${pub.pubKey}">${pub.pubKey}</a><#else>-</#if></td>
 <td>${pub.title!""}</td>
 <td>${pub.year!""}</td>
+<td>${pub.citation!""}</td>
+<td><#if pub.authors??><#list pub.authors as author> ${author!""}; </#list></#if></td>
+<td>${pub.pubmedid!""}</td>
+<td>${pub.endnoteid!""}</td>
+<td>${pub.wittid!""}</td>
 <!-- <td><#if pub.biomodels??><#list pub.biomodels as biomodel><a href='./biomodel/${biomodel.bmKey}'>${biomodel.name}</a>&nbsp;&nbsp; </#list><#else>--</#if></td> -->
 
 
 <td>
-<#if pub.biomodels??>
-<#list pub.biomodels as biomodel>
-&nbsp;<a href='/biomodel/${biomodel.bmKey}'>${biomodel.name}</a>
+<#if pub.biomodelReferences??>
+<#list pub.biomodelReferences as biomodelReference>
+&nbsp;<a href='/biomodel/${biomodelReference.bmKey}'>${biomodelReference.name}</a>
+</#list>
+<br/>
+
+<#else>
+--
+</#if>
+</td>
+
+<td>
+<#if pub.mathmodelReferences??>
+<#list pub.mathmodelReferences as mathmodelReference>
+&nbsp;${mathmodelReference.name}
 </#list>
 <br/>
 

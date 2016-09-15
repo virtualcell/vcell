@@ -3,7 +3,6 @@ package org.vcell.rest.server;
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -518,18 +517,7 @@ public class RestDatabaseService {
 			}
 			conditionsBuffer.append(condition);
 		}
-		int startRow = 1;
-		int maxRows = 1;
 		PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsBuffer.toString(), null);
-		for (PublicationRep publicationRep : publicationReps) {
-			KeyValue[] bmKeys = publicationRep.getBiomodelKeyList();
-			for (KeyValue bmKey : bmKeys) {
-				BioModelRep bmRep = getBioModelRep(bmKey, vcellUser);
-				if (bmRep != null){
-					publicationRep.addBioModelRep(bmRep);
-				}
-			}
-		}
 		if (publicationReps==null || publicationReps.length!=1){
 			throw new ObjectNotFoundException("failed to get publication");
 		}
@@ -819,15 +807,6 @@ public class RestDatabaseService {
 			}
 		}
 		PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsBuffer.toString(), orderBy);
-		for (PublicationRep publicationRep : publicationReps) {
-			KeyValue[] bmKeys = publicationRep.getBiomodelKeyList();
-			for (KeyValue bmKey : bmKeys) {
-				BioModelRep bmRep = getBioModelRep(bmKey, vcellUser);
-				if (bmRep != null){
-					publicationRep.addBioModelRep(bmRep);
-				}
-			}			
-		}
 	   	return publicationReps;
 	}
 

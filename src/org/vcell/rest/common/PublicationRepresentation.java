@@ -2,7 +2,7 @@ package org.vcell.rest.common;
 
 import java.util.ArrayList;
 
-import cbit.vcell.modeldb.BioModelRep;
+import cbit.vcell.modeldb.BioModelReferenceRep;
 import cbit.vcell.modeldb.PublicationRep;
 import cbit.vcell.parser.ExpressionException;
 
@@ -16,7 +16,9 @@ public class PublicationRepresentation {
 	public String doi;
 	public String endnoteid;
 	public String url;
-	public BiomodelRepresentation[] biomodels;
+	public String wittid;
+	public BiomodelReferenceRepresentation[] biomodelReferences;
+	public MathmodelReferenceRepresentation[] mathmodelReferences;
 
 	public PublicationRepresentation(){
 		
@@ -59,11 +61,17 @@ public class PublicationRepresentation {
 		return url;
 	}
 
-	public BiomodelRepresentation[] getBiomodels() {
-		return biomodels;
+	public BiomodelReferenceRepresentation[] getBiomodelReferences() {
+		return biomodelReferences;
 	}
 
+	public MathmodelReferenceRepresentation[] getMathmodelReferences() {
+		return mathmodelReferences;
+	}
 
+	public String getWittid() {
+		return wittid;
+	}
 
 	public PublicationRepresentation(PublicationRep publicationRep) throws ExpressionException{
 		this.pubKey = publicationRep.getPubKey().toString();
@@ -75,11 +83,16 @@ public class PublicationRepresentation {
 		this.doi = publicationRep.getDoi();
 		this.endnoteid = publicationRep.getEndnoteid();
 		this.url = publicationRep.getUrl();
+		this.wittid = publicationRep.getWittid();
 
-		ArrayList<BiomodelRepresentation> biomodelList = new ArrayList<BiomodelRepresentation>();
-		for (BioModelRep bmRep : publicationRep.getBiomodelRepList()){
-			biomodelList.add(new BiomodelRepresentation(bmRep));
+		this.biomodelReferences = new BiomodelReferenceRepresentation[publicationRep.getBiomodelReferenceReps().length];
+		for (int i=0;i<biomodelReferences.length;i++){
+			this.biomodelReferences[i] = new BiomodelReferenceRepresentation(publicationRep.getBiomodelReferenceReps()[i]);
 		}
-		this.biomodels = biomodelList.toArray(new BiomodelRepresentation[biomodelList.size()]);
+
+		this.mathmodelReferences = new MathmodelReferenceRepresentation[publicationRep.getMathmodelReferenceReps().length];
+		for (int i=0;i<mathmodelReferences.length;i++){
+			this.mathmodelReferences[i] = new MathmodelReferenceRepresentation(publicationRep.getMathmodelReferenceReps()[i]);
+		}
 	}
 }
