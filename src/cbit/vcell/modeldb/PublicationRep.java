@@ -14,11 +14,12 @@ public class PublicationRep {
 	private final String doi;
 	private final String endnoteid;
 	private final String url;
-	private final KeyValue[] biomodelKeyList;
-	private ArrayList<BioModelRep> biomodelRepList = new ArrayList<BioModelRep>();
+	private BioModelReferenceRep[] bioModelReferenceReps = new BioModelReferenceRep[0];
+	private MathModelReferenceRep[] mathModelReferenceReps = new MathModelReferenceRep[0];
+	private final String wittid;
 	
 	public PublicationRep(KeyValue pubKey, String title, String[] authors, Integer year, String citation, String pubmedid, String doi, String endnoteid,
-			String url, KeyValue[] biomodelKeyList) {
+			String url, BioModelReferenceRep[] bioModelReferenceReps, MathModelReferenceRep[] mathModelReferenceReps, String wittid) {
 		
 		super();
 		this.pubKey = pubKey;
@@ -30,7 +31,9 @@ public class PublicationRep {
 		this.doi = doi;
 		this.endnoteid = endnoteid;
 		this.url = url;
-		this.biomodelKeyList = biomodelKeyList;
+		this.bioModelReferenceReps = bioModelReferenceReps;
+		this.mathModelReferenceReps = mathModelReferenceReps;
+		this.wittid = wittid;
 	}
 
 	public KeyValue getPubKey() {
@@ -69,19 +72,16 @@ public class PublicationRep {
 		return url;
 	}
 
-	public KeyValue[] getBiomodelKeyList() {
-		return biomodelKeyList;
+	public BioModelReferenceRep[] getBiomodelReferenceReps() {
+		return bioModelReferenceReps;
 	}
 
-
-	public BioModelRep[] getBiomodelRepList() {
-		return biomodelRepList.toArray(new BioModelRep[biomodelRepList.size()]);
+	public MathModelReferenceRep[] getMathmodelReferenceReps() {
+		return mathModelReferenceReps;
 	}
 
-	public void addBioModelRep(BioModelRep bmRep) {
-		if (!biomodelRepList.contains(bmRep)){
-			biomodelRepList.add(bmRep);
-		}
+	public String getWittid() {
+		return wittid;
 	}
 	
 }
