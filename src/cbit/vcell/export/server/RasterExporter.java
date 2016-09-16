@@ -9,18 +9,42 @@
  */
 
 package cbit.vcell.export.server;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferInt;
+import java.awt.image.Raster;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.WritableRaster;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.List;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
+
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.Range;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
@@ -28,12 +52,20 @@ import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
 import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 
+import cbit.image.DisplayAdapterService;
+import cbit.image.DisplayPreferences;
 import cbit.image.SourceDataInfo;
 import cbit.image.gui.ImagePlaneManager;
 import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.export.nrrd.NrrdInfo.NRRDAxisNames;
 import cbit.vcell.export.nrrd.NrrdWriter;
+import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.geometry.RegionImage.MembraneElementIdentifier;
+import cbit.vcell.geometry.surface.Node;
+import cbit.vcell.geometry.surface.Quadrilateral;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataOperation;
@@ -42,7 +74,9 @@ import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProc
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.MembraneElement;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 12:53:34 PM)
@@ -458,6 +492,361 @@ public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobReque
 		(RasterSpecs)exportSpecs.getFormatSpecificSpecs(),
 		fileDataContainerManager
 	);
+}
+
+public ExportOutput[] makePLYWithTexData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl,
+		ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) throws Exception{
+
+	String simID = exportSpecs.getVCDataIdentifier().getID();
+	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user,vcdID );
+	TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
+	VariableSpecs variableSpecs = exportSpecs.getVariableSpecs();
+	Vector<ExportOutput> exportOutV = new Vector<ExportOutput>();
+	RegionImage regionImage = MeshDisplayAdapter.generateRegionImage(mesh, null);
+	PLYSpecs plySpecs = (PLYSpecs)exportSpecs.getFormatSpecificSpecs();
+	DisplayPreferences[] displayPreferences = plySpecs.getDisplayPreferences();
+	
+//	BitSet bInDomain = null;
+//	String variableName = variableSpecs.getVariableNames()[0];
+//	Domain varDomain = null;
+//	DataIdentifier[] dataIdentifiers = dataServerImpl.getDataIdentifiers(outputContext, user, vcdID);
+//	for (int i = 0; i < dataIdentifiers.length; i++) {
+//		//dataIdentifier.getDomain();
+//		if(dataIdentifiers[i].getName().equals(variableName)){
+//			varDomain = dataIdentifiers[i].getDomain();
+//			break;
+//		}
+//	}
+	
+//	MembraneElement membraneElement = mesh.getMembraneElements()[faceIndex];
+//	String memSubdomainName = (varDomain==null?null:mesh.getMembraneSubdomainNamefromMemIndex(faceIndex));
+//	boolean bInDomain = (varDomain==null?true:varDomain.getName().equals(memSubdomainName));
+	
+	DisplayAdapterService das = new DisplayAdapterService();
+	
+	StringWriter stringWriter = new StringWriter();
+	PolyTexHelper imgResults = writeStanfordPolygonTex(regionImage, stringWriter/*,bInDomain*/,mesh);
+	//mesh
+	ExportOutput exportOut = new ExportOutput(true,".ply",simID.toString(),"_memb",fileDataContainerManager);
+	fileDataContainerManager.append(exportOut.getFileDataContainerID(), stringWriter.toString());
+	exportOutV.add(exportOut);
+	//special neighbor annotation image
+	ExportOutput textImagetOut0 = new ExportOutput(true,".png",simID.toString(),"_membAnnot",fileDataContainerManager);
+	fileDataContainerManager.append(textImagetOut0.getFileDataContainerID(), imgResults.specialNeighborImage);
+	exportOutV.add(textImagetOut0);
+	for (int varNameIndex = 0; varNameIndex < variableSpecs.getVariableNames().length; varNameIndex++) {
+		if(das.fetchColorModel(displayPreferences[varNameIndex].getColorMode()) == null){
+			if(displayPreferences[varNameIndex].getColorMode().equals(DisplayAdapterService.GRAY)){
+				das.addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createBlueRedSpecialColors(),displayPreferences[varNameIndex].getColorMode());
+			}else{
+				das.addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createGraySpecialColors(),displayPreferences[varNameIndex].getColorMode());
+//				das.setActiveColorModelID("Contrast");
+			}
+		}
+
+//		BitSet domainValid = (displayPreferences[varNameIndex]==null?null:(displayPreferences[varNameIndex].getDomainValid()==null?null:displayPreferences[varNameIndex].getDomainValid()));
+		ExportSpecs.setupDisplayAdapterService(displayPreferences[varNameIndex],das,displayPreferences[varNameIndex].getScaleSettings());
+		for (int j = timeSpecs.getBeginTimeIndex(); j <= timeSpecs.getEndTimeIndex(); j++){
+			BufferedImage image = createTextureImage(imgResults.imageSideSize);
+			int[] imgBuffer = ((DataBufferInt)(image.getRaster().getDataBuffer())).getData();
+			Arrays.fill(imgBuffer, Integer.MAX_VALUE);
+			SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[varNameIndex], timeSpecs.getAllTimes()[j]);
+//			Range valueDomain = null;
+//			if(domainValid != null){
+//				valueDomain = BeanUtils.calculateValueDomain(simDataBlock.getData(), domainValid);
+//			}
+			
+			// min-max for color range
+//			double min = simDataBlock.getData()[0];
+//			double max = min;
+//			for (int i = 0; i < simDataBlock.getData().length; i++) {
+//				String memSubdomainName = (varDomain==null?null:mesh.getMembraneSubdomainNamefromMemIndex(i));
+//				if (varDomain== null || varDomain.getName().equals(memSubdomainName)){
+//					min = Math.min(min, simDataBlock.getData()[i]);
+//					max = Math.max(max, simDataBlock.getData()[i]);
+//				}
+//			}
+//			min  -9e-4;
+//			max  5e-5;
+			
+//			das.setActiveScaleRange(new org.vcell.util.Range(min, max));
+//			das.setValueDomain(new org.vcell.util.Range(min,max));
+
+			for (int k = 0; k < imgResults.dataIndexes.length; k++) {
+				if(imgBuffer[k] != Integer.MAX_VALUE){
+					System.out.println("texture pixel used twice");
+				}
+				double avgVal = 0;
+				for (int l = 0; l < imgResults.dataIndexes[k].length; l++) {
+					avgVal+= simDataBlock.getData()[imgResults.dataIndexes[k][l]];
+				}
+				imgBuffer[k] = das.getColorFromValue(avgVal/imgResults.dataIndexes[k].length);
+			}
+			byte[] pngImage = flipPNG(image);
+			ExportOutput textImagetOut = new ExportOutput(true,".png",simID.toString(),"_memb_"+variableSpecs.getVariableNames()[varNameIndex]+"_"+j,fileDataContainerManager);
+			fileDataContainerManager.append(textImagetOut.getFileDataContainerID(), pngImage);
+			exportOutV.add(textImagetOut);
+		}
+	}
+	ExportOutput[] exportOutputArr = exportOutV.toArray(new ExportOutput[0]);
+	return exportOutputArr;
+}
+
+private static BufferedImage createTextureImage(int imageSideLength){
+	int[] texImage = new int[imageSideLength*imageSideLength];
+	int[] bitMasks = new int[]{0xFF0000, 0xFF00, 0xFF, 0xFF000000};
+	SinglePixelPackedSampleModel sm = new SinglePixelPackedSampleModel(
+	        DataBuffer.TYPE_INT, imageSideLength, imageSideLength, bitMasks);
+	DataBufferInt db = new DataBufferInt(texImage, texImage.length);
+	WritableRaster wr = Raster.createWritableRaster(sm, db, new Point());
+	BufferedImage image = new BufferedImage(ColorModel.getRGBdefault(), wr, false, null);
+	return image;
+}
+private static byte[] flipPNG(BufferedImage image) throws IOException{
+	//flip image vertical
+	AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+	tx.translate(0, -image.getHeight(null));
+	AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+	//write out
+	image = op.filter(image, null);
+	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	ImageIO.write(image, "png", baos);
+	return baos.toByteArray();
+}
+public static class PolyTexHelper {
+	public int[][] dataIndexes;
+	public byte[] specialNeighborImage;
+	public int imageSideSize;
+	public PolyTexHelper(int[][] dataIndexes, byte[] specialNeighborImage,int imageSideSize) {
+		super();
+		this.dataIndexes = dataIndexes;
+		this.specialNeighborImage = specialNeighborImage;
+		this.imageSideSize = imageSideSize;
+	}
+}
+public static PolyTexHelper writeStanfordPolygonTex(RegionImage regionImage,Writer writer,/*BitSet bInDomain,*/CartesianMesh mesh) throws IOException,MathException{
+	int totalPolygons = regionImage.getSurfacecollection().getTotalPolygonCount();
+	int totalVerts = totalPolygons*4;
+	final int ALL_NEIGHBOR_QUAD_BOX_SIDE = 3;
+	int imgSideSize = (int) Math.ceil(Math.sqrt((totalPolygons)));//2D image texture
+	int texelXSize = (imgSideSize*ALL_NEIGHBOR_QUAD_BOX_SIDE);
+	int[][] texIndexToFaceIndexPtrs = new int[texelXSize*texelXSize][0];
+//	Arrays.fill(texImage0, Integer.MAX_VALUE);
+	
+	final int squareSize = 40;
+	int fontXSize = texelXSize*squareSize;
+	int fontYSize = texelXSize*squareSize;
+	BufferedImage image0 = createTextureImage(fontXSize);
+//	int[] texFontImage = new int[fontXSize*fontYSize];
+//	Arrays.fill(texFontImage, 0xFF000000);
+//	int[] bitMasks0 = new int[]{0xFF0000, 0xFF00, 0xFF, 0xFF000000};
+//	SinglePixelPackedSampleModel sm0 = new SinglePixelPackedSampleModel(
+//	        DataBuffer.TYPE_INT, texelXSize*squareSize, texelXSize*squareSize, bitMasks0);
+//	DataBufferInt db0 = new DataBufferInt(texFontImage, texFontImage.length);
+//	WritableRaster wr0 = Raster.createWritableRaster(sm0, db0, new Point());
+//	BufferedImage image0 = new BufferedImage(ColorModel.getRGBdefault(), wr0, false, null);
+	Graphics2D g2d = image0.createGraphics();
+	g2d.setColor(Color.white);
+	Font bigF = Font.decode("Dialog-plain-10");
+	g2d.setFont(bigF);
+
+	float texelSize = 1.0f/texelXSize;
+	writer.write("ply\n");
+	writer.write("format ascii 1.0\n");
+//	writer.write("comment "+geometrySurfaceDescription.getGeometry().getName()+"\n");
+	writer.write("comment textureImage size is "+imgSideSize+"x"+imgSideSize+"\n");
+	writer.write("element vertex "+totalVerts+"\n");
+	writer.write("property float x\n");
+	writer.write("property float y\n");
+	writer.write("property float z\n");
+	writer.write("property float s\n");//must be 's' for blender (u texture coord)
+	writer.write("property float t\n");//must be 't' for blender (v texture coord)
+	writer.write("element face "+totalPolygons+"\n");
+	writer.write("property list uchar int vertex_index\n");
+	writer.write("end_header\n");
+	StringBuffer sbVert = new StringBuffer();
+	StringBuffer sbFace = new StringBuffer();
+	int faceIndex = 0;
+	int vertIndex = 0;
+	for (int currSurf = 0; currSurf < regionImage.getSurfacecollection().getSurfaceCount(); currSurf++) {
+		for (int currFace = 0; currFace < regionImage.getSurfacecollection().getSurfaces(currSurf).getPolygonCount(); currFace++) {
+//			if(bInDomain != null && !bInDomain.get(faceIndex)){
+//				continue;
+//			}
+			g2d.setColor(Color.white);
+			Quadrilateral quad = (Quadrilateral)regionImage.getSurfacecollection().getSurfaces(currSurf).getPolygons(currFace);
+			NAHelper naHelper0 = calcNAHelper(quad);
+			Point2D p2dm = Coordinate.get2DProjection(naHelper0.middle, naHelper0.normalAxis);
+			
+			int x = faceIndex%imgSideSize;
+			int y = faceIndex/imgSideSize;
+			int boxX = (x*ALL_NEIGHBOR_QUAD_BOX_SIDE)+1;
+			int boxY = (y*ALL_NEIGHBOR_QUAD_BOX_SIDE)+1;
+			int fontX = boxX*squareSize;
+			int fontY = boxY*squareSize;
+
+			texIndexToFaceIndexPtrs[boxY*texelXSize+boxX] = new int[] {faceIndex};//das.getColorFromValue(data[faceIndex]);//face color
+			g2d.drawString(currSurf+"-"+currFace, fontX, fontY);				
+			
+			float imgXTexelCenter = (boxX+.5f)*texelSize;
+			float imgYTexelCenter = (boxY+.5f)*texelSize;
+			ArrayList<RegionImage.MembraneEdgeNeighbor> neighbors = regionImage.getMembraneEdgeNeighbors()[currSurf][currFace];
+			sbFace.append(quad.getNodeCount()+"");
+			for (int vrt = 0; vrt < quad.getNodeCount(); vrt++) {
+				g2d.setColor(Color.white);
+				RegionImage.MembraneEdgeNeighbor membraneEdgeNeighbor = neighbors.get(vrt);
+				MembraneElementIdentifier neighb = membraneEdgeNeighbor.getMembraneElementIdentifier();
+				if(neighb != null){
+					Quadrilateral quadNeighbor = (Quadrilateral)regionImage.getSurfacecollection().getSurfaces(neighb.surfaceIndex).getPolygons(neighb.nonMasterPolygonIndex);
+					NAHelper naHelper1 = calcNAHelper(quadNeighbor);
+					Point2D p2dmNeighb = Coordinate.get2DProjection(naHelper1.middle, naHelper0.normalAxis);
+					double xdiff = p2dmNeighb.getX()-p2dm.getX();
+					double ydiff = p2dmNeighb.getY()-p2dm.getY();
+					int dxn = (int)Math.signum((Math.abs(xdiff)<1e-9?0:xdiff));
+					int dyn = (int)Math.signum((Math.abs(ydiff)<1e-9?0:ydiff));
+					texIndexToFaceIndexPtrs[(boxY+dyn)*texelXSize+(boxX+dxn)] = new int[] {membraneEdgeNeighbor.getMasterPolygonIndex()};//das.getColorFromValue(data[membraneEdgeNeighbor.getMasterPolygonIndex()]);
+					g2d.drawString(neighb.nonMasterPolygonIndex+"", fontX+(dxn*squareSize), fontY+(dyn*squareSize));
+					
+					RegionImage.MembraneEdgeNeighbor membraneEdgeNeighbor2 = neighbors.get((vrt+1==quad.getNodeCount()?0:vrt+1));
+					MembraneElementIdentifier neighb2 = membraneEdgeNeighbor2.getMembraneElementIdentifier();
+					if(neighb2 != null){
+						CommonNeighb commonNeighb = calculateCommonNeighbor(mesh,regionImage,mesh.getMembraneElements()[membraneEdgeNeighbor.getMasterPolygonIndex()], mesh.getMembraneElements()[membraneEdgeNeighbor2.getMasterPolygonIndex()], faceIndex);
+						if(commonNeighb != null){
+							if(commonNeighb.neighborneighbos.size() == 0){
+								commonNeighb.neighborneighbos.add(membraneEdgeNeighbor.getMasterPolygonIndex());
+								commonNeighb.neighborneighbos.add(membraneEdgeNeighbor2.getMasterPolygonIndex());
+							}
+							Coordinate commonCoord = new Coordinate(commonNeighb.node.getX(),commonNeighb.node.getY(),commonNeighb.node.getZ());//mesh.getMembraneElements()[commonNeighb].getCentroid();
+							Point2D p2dmcommon = Coordinate.get2DProjection(commonCoord, naHelper0.normalAxis);
+							double xdiff1 = p2dmcommon.getX()-p2dm.getX();
+							double ydiff1 = p2dmcommon.getY()-p2dm.getY();
+							int dxc = (int)Math.signum((Math.abs(xdiff1)<1e-9?0:xdiff1));
+							int dyc = (int)Math.signum((Math.abs(ydiff1)<1e-9?0:ydiff1));
+							g2d.setColor(Color.green);
+							int xloc = fontX+(dxc*squareSize);
+							int yloc = fontY+(dyc*squareSize);
+							double avgVal = 0;
+							int texIndex = (boxY+dyc)*texelXSize+boxX+dxc;
+							texIndexToFaceIndexPtrs[texIndex] = new int[commonNeighb.neighborneighbos.size()];
+							for (int k = 0; k < commonNeighb.neighborneighbos.size(); k++) {
+								g2d.drawString(regionImage.getQuadIndexToSurfAndFace().get(commonNeighb.neighborneighbos.get(k)).getFace()+"", xloc, yloc+(k*11));
+//								avgVal+= data[commonNeighb.neighborneighbos.get(k)];
+								texIndexToFaceIndexPtrs[texIndex][k] = commonNeighb.neighborneighbos.get(k);//das.getColorFromValue(avgVal/commonNeighb.neighborneighbos.size());
+							}
+//							if(texImage0[texIndex] != Integer.MAX_VALUE){
+//								System.out.println("texture pixel used twice");
+//							}
+						}
+					}
+				}else{
+					System.out.println("neighbor null");
+				}
+
+				Point2D p2dv = Coordinate.get2DProjection(new Coordinate(quad.getNodes(vrt).getX(),quad.getNodes(vrt).getY(),quad.getNodes(vrt).getZ()), naHelper0.normalAxis);
+				double xdiff3 = p2dv.getX()-p2dm.getX();
+				double ydiff3 = p2dv.getY()-p2dm.getY();
+				int dx = (int)Math.signum((Math.abs(xdiff3)<1e-9?0:xdiff3));
+				int dy = (int)Math.signum((Math.abs(ydiff3)<1e-9?0:ydiff3));
+				float u = (float)imgXTexelCenter+((float)dx*texelSize/2.0f);
+				float v = (float)imgYTexelCenter+((float)dy*texelSize/2.0f);
+				Node vertex = quad.getNodes()[vrt];
+				sbVert.append((float)vertex.getX()+" "+(float)vertex.getY()+" "+(float)vertex.getZ()+" "+u+" "+v+"\n");
+				sbFace.append(" ");
+				sbFace.append(vertIndex+"");
+				vertIndex++;
+			}
+			sbFace.append("\n");
+			faceIndex++;
+		}
+	}
+	if(faceIndex != totalPolygons || vertIndex != totalVerts){
+		throw new IOException("Final faces and verts count don't match");
+	}
+	writer.write(sbVert.toString());
+	writer.write(sbFace.toString());
+
+	//flip image vertical
+//	AffineTransform tx0 = AffineTransform.getScaleInstance(1, -1);
+//	tx0.translate(0, -image0.getHeight(null));
+//	AffineTransformOp op0 = new AffineTransformOp(tx0, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+//	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//	baos = new ByteArrayOutputStream();
+//	ImageIO.write(op0.filter(image0, null), "png", baos);
+	return new PolyTexHelper(texIndexToFaceIndexPtrs,flipPNG(image0),texelXSize);
+}
+private static class NAHelper{
+	public Coordinate middle;
+	public int normalAxis;
+	public NAHelper(Coordinate middle, int normalAxis) {
+		super();
+		this.middle = middle;
+		this.normalAxis = normalAxis;
+	}
+}
+private static NAHelper calcNAHelper(Quadrilateral quad){
+	double cx=0,cy=0,cz = 0;
+	boolean nx=true, ny = true,nz=true;
+	double ulp = Math.ulp(quad.getNodes(0).getX())*10;
+	for (int vrt = 0; vrt < quad.getNodeCount(); vrt++) {
+		cx+= quad.getNodes(vrt).getX();
+		cy+= quad.getNodes(vrt).getY();
+		cz+= quad.getNodes(vrt).getZ();
+		double xd = Math.abs(quad.getNodes(0).getX()-quad.getNodes(vrt).getX());
+		double yd = Math.abs(quad.getNodes(0).getY()-quad.getNodes(vrt).getY());
+		double zd = Math.abs(quad.getNodes(0).getZ()-quad.getNodes(vrt).getZ());
+		nx = nx && (xd<ulp);
+		ny = ny && (yd<ulp);
+		nz = nz && (zd<ulp);
+	}
+	Coordinate cm = new Coordinate(cx/quad.getNodeCount(), cy/quad.getNodeCount(), cz/quad.getNodeCount());
+	int normalAxis = (nx?Coordinate.X_AXIS:(ny?Coordinate.Y_AXIS:Coordinate.Z_AXIS));
+	return new NAHelper(cm, normalAxis);
+}
+
+private static class CommonNeighb {
+	public Node node;
+	public ArrayList<Integer> neighborneighbos;
+	public CommonNeighb(Node node, ArrayList<Integer> neighborneighbos) {
+		super();
+		this.node = node;
+		this.neighborneighbos = neighborneighbos;
+	}
+	
+}
+private static CommonNeighb calculateCommonNeighbor(CartesianMesh mesh,RegionImage regionImage,MembraneElement membraneElementN0,MembraneElement membraneElementN1,int parentMembrIndex){
+	//find common node
+	Quadrilateral quadp = (Quadrilateral)regionImage.getSurfacecollection().getSurfaces(regionImage.getQuadIndexToSurfAndFace().get(parentMembrIndex).getSurf()).getPolygons(regionImage.getQuadIndexToSurfAndFace().get(parentMembrIndex).getFace());
+	Quadrilateral quad0 = (Quadrilateral)regionImage.getSurfacecollection().getSurfaces(regionImage.getQuadIndexToSurfAndFace().get(membraneElementN0.getMembraneIndex()).getSurf()).getPolygons(regionImage.getQuadIndexToSurfAndFace().get(membraneElementN0.getMembraneIndex()).getFace());
+	Quadrilateral quad1 = (Quadrilateral)regionImage.getSurfacecollection().getSurfaces(regionImage.getQuadIndexToSurfAndFace().get(membraneElementN1.getMembraneIndex()).getSurf()).getPolygons(regionImage.getQuadIndexToSurfAndFace().get(membraneElementN1.getMembraneIndex()).getFace());
+	List<Node> nodesp = Arrays.asList(quadp.getNodes());
+	List<Node> nodes0 = Arrays.asList(quad0.getNodes());
+	List<Node> nodes1 = Arrays.asList(quad1.getNodes());
+	List<Node> intersectN = new ArrayList<>(nodes0);
+	intersectN.retainAll(nodes1);
+	intersectN.retainAll(nodesp);
+	if(intersectN.size() != 1){
+		System.out.println("Couldn't find parent node");
+		return null;
+	}
+	ArrayList<Integer> commonNeighbors = new ArrayList<>();
+	findNeighborNeighborsWithNode(regionImage, membraneElementN0, intersectN.get(0), parentMembrIndex, commonNeighbors);
+	findNeighborNeighborsWithNode(regionImage, membraneElementN1, intersectN.get(0), parentMembrIndex, commonNeighbors);
+
+	return new CommonNeighb(intersectN.get(0), commonNeighbors);
+}
+
+public static void findNeighborNeighborsWithNode(RegionImage regionImage,MembraneElement membraneElement,Node theNode,int excludeParent,ArrayList<Integer> container){
+	int[] neighborNeighbors = membraneElement.getMembraneNeighborIndexes();
+	for (int i = 0; i < neighborNeighbors.length; i++) {
+		Quadrilateral quad =
+			(Quadrilateral)regionImage.getSurfacecollection().getSurfaces(regionImage.getQuadIndexToSurfAndFace().get(neighborNeighbors[i]).getSurf()).getPolygons(regionImage.getQuadIndexToSurfAndFace().get(neighborNeighbors[i]).getFace());
+		for (int j = 0; j < quad.getNodeCount(); j++) {
+			if(quad.getNodes(j) == theNode && neighborNeighbors[i] != excludeParent){
+				container.add(neighborNeighbors[i]);
+			}
+		}
+	}
 }
 
 public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager)

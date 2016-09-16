@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Hashtable;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -54,18 +55,6 @@ public class PDEOffscreenRenderer {
 
 
 	
-private Range calculateValueDomain(){
-	double[] values = getServerPDEDataContext().getDataValues();
-	double min=Double.POSITIVE_INFINITY;
-	double max=Double.NEGATIVE_INFINITY;
-	for (int i = 0; i < values.length; i++) {
-		if((domainValid == null || domainValid.get(i)) && !Double.isNaN(values[i]) && !Double.isInfinite(values[i])){
-		if(values[i] < min){min = values[i];}
-		if(values[i] > max){max = values[i];}
-		}
-	}
-	return new Range(min,max);
-}
 /**
  * Insert the method's description here.
  * Creation date: (10/26/00 4:49:39 PM)
@@ -272,17 +261,8 @@ public void setVarAndTimeAndDisplay(String varName,double timepoint,DisplayPrefe
 	getServerPDEDataContext().setVariableName(varName);
 	getServerPDEDataContext().setTimePoint(timepoint);
 	domainValid = (displayPreferences==null?null:(displayPreferences.getDomainValid()==null?null:displayPreferences.getDomainValid()));
-	Range valueDomain = calculateValueDomain();
-	getDisplayAdapterService().setValueDomain(valueDomain);
-
-	Range activeScaleRange = (displayPreferences==null?valueDomain:(displayPreferences.getScaleSettings()==null?valueDomain:displayPreferences.getScaleSettings()));
-	getDisplayAdapterService().setActiveScaleRange(activeScaleRange);
-	
-	String colorMode = (displayPreferences==null?DisplayAdapterService.BLUERED:(displayPreferences.getColorMode()==null?DisplayAdapterService.BLUERED:displayPreferences.getColorMode()));
-	getDisplayAdapterService().setActiveColorModelID(colorMode);
-	
-	int[] specialColors = (displayPreferences==null?getDisplayAdapterService().getSpecialColors():(displayPreferences.getSpecialColors()==null?getDisplayAdapterService().getSpecialColors():displayPreferences.getSpecialColors()));
-	System.arraycopy(specialColors, 0, getDisplayAdapterService().getSpecialColors(), 0,specialColors.length);
+	Range valueDomain = BeanUtils.calculateValueDomain(getServerPDEDataContext().getDataValues(),domainValid);
+	ExportSpecs.setupDisplayAdapterService(displayPreferences,getDisplayAdapterService(),valueDomain);
 	
 }
 /**
