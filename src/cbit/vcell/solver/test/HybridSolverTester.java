@@ -15,6 +15,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.rmi.Naming;
 import java.text.SimpleDateFormat;
@@ -300,7 +301,7 @@ public class HybridSolverTester {
 		while(true){
 			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobCounter);
 			SimulationData simData = null;
-			DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo;
+			DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = null;
 			try{
 				simData = new SimulationData(vcSimulationDataIdentifier, userSimDataDir, null, null);
 				dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)
@@ -312,6 +313,13 @@ public class HybridSolverTester {
 					System.out.println("found "+jobCounter+" trials in dir "+userSimDataDir.getAbsolutePath()+" matching SimID="+altArgsHelper.simID);
 				}
 				break;
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			if(dataProcessingOutputInfo == null){
+				System.out.println("No postprocessing found for "+jobCounter+" trials in dir "+userSimDataDir.getAbsolutePath()+" matching SimID="+altArgsHelper.simID);
+				jobCounter++;
+				continue;
 			}
 			if(simLocHelper0 == null && !altArgsHelper.dataIndexes.equals(POSTPROC)){
 				simLocHelper0 = calcSimLocs(altArgsHelper.dataIndexes,simData.getMesh());
