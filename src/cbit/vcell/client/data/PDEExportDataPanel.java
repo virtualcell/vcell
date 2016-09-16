@@ -77,6 +77,7 @@ import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.GeometrySpecs;
 import cbit.vcell.export.server.ImageSpecs;
 import cbit.vcell.export.server.MovieSpecs;
+import cbit.vcell.export.server.PLYSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.mapping.SimulationContext;
@@ -2115,6 +2116,7 @@ private void setFormatChoices_0(/*boolean bMembrane*/){
 		cb.addItem(ExportFormat.FORMAT_JPEG);
 		cb.addItem(ExportFormat.NRRD);
 		cb.addItem(ExportFormat.UCD);
+		cb.addItem(ExportFormat.PLY);
 		cb.addItem(ExportFormat.VTK_UNSTRUCT);
 		if(getVolVarRadioButton().isSelected()){
 			cb.addItem(ExportFormat.VTK_IMAGE);
@@ -2410,6 +2412,7 @@ private void startExport() {
 	boolean selectionHasVolumeVariables = false;
 	boolean selectionHasMembraneVariables = false;
 	switch (getExportSettings1().getSelectedFormat()) {
+		case PLY:
 		case QUICKTIME:
 		case GIF:
 		case FORMAT_JPEG:
@@ -2507,6 +2510,9 @@ private void startExport() {
 	getExportSettings1().setIsSmoldyn(isSmoldyn);
 	
 	ExportFormat format = getSelectedFormat();
+	if(format.equals(ExportFormat.PLY)){
+		getExportSettings1().setFormatSpecificSpecs(new PLYSpecs(true,displayPreferences));
+	}
 	if (format.requiresFollowOn()){
 		boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this),selectionHasVolumeVariables,selectionHasMembraneVariables);
 				
@@ -2699,6 +2705,7 @@ private void updateExportFormat(ExportFormat exportFormat) {
 			break;
 		}
 		case UCD:
+		case PLY:
 		case VTK_UNSTRUCT:
 		case VTK_IMAGE: {
 			BeanUtils.enableComponents(getJPanelSelections(), false);
@@ -2805,6 +2812,7 @@ private void updateInterface() {
 		}
 		break;
 	case UCD:
+	case PLY:
 	case VTK_UNSTRUCT:
 		//no operation?
 		break;

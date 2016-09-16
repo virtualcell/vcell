@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 import org.vcell.util.Range;
 
 /**
@@ -20,7 +21,7 @@ import org.vcell.util.Range;
  * Creation date: (2/28/2001 10:06:01 AM)
  * @author: Ion Moraru
  */
-public class DisplayPreferences implements java.io.Serializable {
+public class DisplayPreferences implements java.io.Serializable,Matchable {
 	private String colorMode;
 	private org.vcell.util.Range scaleSettings;
 	private int[] specialColors;
@@ -123,5 +124,10 @@ public static boolean isGrayScale(int[] argbData){
 		
 	}
 	return true;
+}
+
+@Override
+public boolean compareEqual(Matchable obj) {
+	return equals(obj);
 }
 }

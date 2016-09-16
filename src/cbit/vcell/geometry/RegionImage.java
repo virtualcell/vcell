@@ -18,8 +18,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -28,8 +26,6 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ObjectReferenceWrapper;
 import org.vcell.util.Origin;
-
-import com.ibm.icu.util.GlobalizationPreferences;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -70,6 +66,22 @@ public class RegionImage implements Serializable {
 	public static double debug_maxQuadAngle = 180;
 	public static Double debug_filterCutoffFrequencyOverride = null;
 
+	public static class SurfAndFace {
+		private int surf;
+		private int face;
+		public SurfAndFace(int surf, int face) {
+			super();
+			this.surf = surf;
+			this.face = face;
+		}
+		public int getSurf() {
+			return surf;
+		}
+		public int getFace() {
+			return face;
+		}
+	}
+	ArrayList<SurfAndFace> quadIndexToSurfAndFace = new ArrayList<>();
 
 	
 //	public static class CompactUnsignedIntStorage{
@@ -1520,9 +1532,9 @@ private void generateSurfaceCollection(int numRegions,
 	cbit.vcell.geometry.surface.Node[] allNodes = new cbit.vcell.geometry.surface.Node[nodeListV.size()];
 	nodeListV.copyInto(allNodes);
 	surfaceCollection.setNodes(allNodes);
-	for (int i = 0; i < surfQuadsV.size(); i++) {
-		Vector<Quadrilateral> surfV = surfQuadsV.elementAt(i);
-		remapQuadIndexes[i] = new int[surfV.size()];
+	for (int surfaceIndex = 0; surfaceIndex < surfQuadsV.size(); surfaceIndex++) {
+		Vector<Quadrilateral> surfV = surfQuadsV.elementAt(surfaceIndex);
+		remapQuadIndexes[surfaceIndex] = new int[surfV.size()];
 		OrigSurface surface =
 			new OrigSurface(
 //					mapImageIndexToRegionIndex.getValue(surfV.elementAt(0).getVolIndexNeighbor1()),//surfV.elementAt(0).getVolIndexNeighbor1(),
@@ -1530,9 +1542,11 @@ private void generateSurfaceCollection(int numRegions,
 					mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[surfV.elementAt(0).getVolIndexNeighbor1()]],//surfV.elementAt(0).getVolIndexNeighbor1(),
 					mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[surfV.elementAt(0).getVolIndexNeighbor2()]]//surfV.elementAt(0).getVolIndexNeighbor2()
 				);
-		for (int j = 0; j < surfV.size(); j++) {
-			surface.addPolygon(surfV.elementAt(j));
-			remapQuadIndexes[i][j] = quadCounter++;
+		for (int faceIndex = 0; faceIndex < surfV.size(); faceIndex++) {
+			surface.addPolygon(surfV.elementAt(faceIndex));
+			remapQuadIndexes[surfaceIndex][faceIndex] = quadCounter;
+			quadIndexToSurfAndFace.add(new SurfAndFace(surfaceIndex,faceIndex));
+			quadCounter++;
 		}
 		surfaceCollection.addSurface(surface);
 	}
@@ -1568,7 +1582,7 @@ private void generateSurfaceCollection(int numRegions,
 }
 
 private boolean bMembraneNeighborCalculationFailed = false;
-private static class MembraneElementIdentifier {
+public static class MembraneElementIdentifier {
 	public enum PerpendicularTo {X,Y,Z};
 	public int surfaceIndex;
 	public int nonMasterPolygonIndex;
@@ -1618,6 +1632,9 @@ private void addQuadToSurface(
 }
 public SurfaceCollection getSurfacecollection(){
 	return surfaceCollection;
+}
+public ArrayList<SurfAndFace> getQuadIndexToSurfAndFace(){
+	return (quadIndexToSurfAndFace==null || quadIndexToSurfAndFace.size()==0?null:quadIndexToSurfAndFace);
 }
 
 private Comparator<MembraneElementIdentifier> membraneElementIDComparator = new Comparator<RegionImage.MembraneElementIdentifier>() {

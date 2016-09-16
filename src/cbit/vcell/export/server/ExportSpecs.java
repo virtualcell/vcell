@@ -13,8 +13,11 @@ import java.io.Serializable;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.Range;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.image.DisplayAdapterService;
+import cbit.image.DisplayPreferences;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 /**
@@ -250,5 +253,18 @@ public String toString() {
 		return "ExportSpecs [" + getVCDataIdentifier() + ", format: " + getFormat() + ", " + getVariableSpecs() + ", " + getTimeSpecs() + ", " + getGeometrySpecs() + ", " + getFormatSpecificSpecs() + "]";
 	else
 		return "ExportSpecs [" + getVCDataIdentifier() + ", format: " + getFormat() + ", " + getVariableSpecs() + ", " + getGeometrySpecs() + ", " + getFormatSpecificSpecs() + "]";
+}
+
+public static void setupDisplayAdapterService(DisplayPreferences displayPreferences,DisplayAdapterService displayAdapterService,Range valueDomain) {
+	displayAdapterService.setValueDomain(valueDomain);
+
+	Range activeScaleRange = (displayPreferences==null?valueDomain:(displayPreferences.getScaleSettings()==null?valueDomain:displayPreferences.getScaleSettings()));
+	displayAdapterService.setActiveScaleRange(activeScaleRange);
+	
+	String colorMode = (displayPreferences==null?DisplayAdapterService.BLUERED:(displayPreferences.getColorMode()==null?DisplayAdapterService.BLUERED:displayPreferences.getColorMode()));
+	displayAdapterService.setActiveColorModelID(colorMode);
+	
+	int[] specialColors = (displayPreferences==null?displayAdapterService.getSpecialColors():(displayPreferences.getSpecialColors()==null?displayAdapterService.getSpecialColors():displayPreferences.getSpecialColors()));
+	System.arraycopy(specialColors, 0, displayAdapterService.getSpecialColors(), 0,specialColors.length);
 }
 }

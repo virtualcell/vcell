@@ -24,6 +24,7 @@ import cbit.image.ImageException;
 import cbit.vcell.geometry.Line;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.SampledCurve;
+import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.Segment2D;
 import cbit.vcell.solvers.ContourElement;
@@ -36,7 +37,7 @@ import cbit.vcell.solvers.MembraneElement;
 public class MeshDisplayAdapter {
 	public static final int ORDER_PREPEND = 0x01;
 	public static final int ORDER_P0 = 0x02;
-	private cbit.vcell.solvers.CartesianMesh mesh = null;
+	private CartesianMesh mesh = null;
 
 	private class ConstructCurveHelper{
 		MembraneElement firstInCurve;
@@ -285,10 +286,10 @@ private ParamHolder doCheck(MembraneElement currentMembraneElement,int normalAxi
 	return paramHolder;
 }
 
-public RegionImage generateRegionImage(ClientTaskStatusSupport clientTaskStatusSupport) throws ImageException,UserCancelException{
-	int[] subVolumeIDField = new int[getMesh().getNumVolumeElements()];
+public static RegionImage generateRegionImage(CartesianMesh mesh,ClientTaskStatusSupport clientTaskStatusSupport) throws ImageException,UserCancelException{
+	int[] subVolumeIDField = new int[mesh.getNumVolumeElements()];
 	for(int i=0;i< subVolumeIDField.length;i+= 1){
-		subVolumeIDField[i] = getMesh().getSubVolumeFromVolumeIndex(i);
+		subVolumeIDField[i] = mesh.getSubVolumeFromVolumeIndex(i);
 	}
 	
 	RegionImage meshRegionImage =
@@ -296,10 +297,10 @@ public RegionImage generateRegionImage(ClientTaskStatusSupport clientTaskStatusS
 			new cbit.image.VCImageUncompressed(
 				null,
 				subVolumeIDField,
-				getMesh().getExtent(),
-				getMesh().getSizeX(),getMesh().getSizeY(),getMesh().getSizeZ()
+				mesh.getExtent(),
+				mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ()
 			),
-			getMesh().getGeometryDimension(),getMesh().getExtent(),getMesh().getOrigin(),RegionImage.NO_SMOOTHING,
+			mesh.getGeometryDimension(),mesh.getExtent(),mesh.getOrigin(),RegionImage.NO_SMOOTHING,
 			clientTaskStatusSupport
 	);
 	if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
@@ -316,7 +317,7 @@ public MeshRegionSurfaces generateMeshRegionSurfaces(ClientTaskStatusSupport cli
 	if(clientTaskStatusSupport != null){
 		clientTaskStatusSupport.setMessage("Generating region image...");
 	}
-	RegionImage meshRegionImage = generateRegionImage(clientTaskStatusSupport);
+	RegionImage meshRegionImage = generateRegionImage(getMesh(),clientTaskStatusSupport);
 
 	cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = meshRegionImage.getSurfacecollection();
 	
