@@ -10,10 +10,20 @@
 
 package cbit.vcell.client.data;
 import java.awt.AWTEventMulticaster;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
+import java.util.EventObject;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
+import javax.swing.SwingUtilities;
+
+import org.vcell.client.logicalwindow.LWTopFrame;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.RenderDataViewerDoubleWithTooltip;
@@ -22,15 +32,18 @@ import org.vcell.util.gui.SpecialtyTableRenderer;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTaskFunctionTrack;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
+import sun.swing.SwingUtilities2;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:01:46 AM)
@@ -82,28 +95,60 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
-//private final Set<AsynchClientTaskFunctionTrack> clientTasks = Collections.newSetFromMap(new WeakHashMap<AsynchClientTaskFunctionTrack, Boolean>()) ;
 
 /**
  * connPtoP1SetTarget:  (ODEDataViewer.odeSolverResultSet <--> ODESolverPlotSpecificationPanel1.odeSolverResultSet)
  */
-private synchronized void connPtoP1SetTarget() {
+BlockingTimer odeDataViewersetupTimer = null;
+private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	if(getOdeSolverResultSet() == null){
 		return;
 	}
+	//check if clienttaskdispatcher is busy, if so schedule this method to run later (workaround spurious threading problem)
+	if((odeDataViewersetupTimer = ClientTaskDispatcher.getBlockingTimer(ODEDataViewer.this, null, null, odeDataViewersetupTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){connPtoP1SetTarget();}},"ODEDataViewer Setup...")) != null){
+		return;
+	}
+
 	try {
-		AsynchClientTaskFunction filterCategoriesTask = new AsynchClientTaskFunctionTrack( ht -> calculateFilterTask(ht),"Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
-		AsynchClientTaskFunction firePropertyChangeTask = new AsynchClientTaskFunctionTrack( ht -> firePropertyChangeTask(ht),"Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING);
+		AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(ODEDataViewer.this.getSimulationModelInfo() != null){
+					SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
+					simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+				}
+			}
+		};
+		AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
+				ODEDataInterfaceImpl oDEDataInterfaceImpl = new ODEDataInterfaceImpl(getOdeSolverResultSet(),simulationModelInfo);
+				getODESolverPlotSpecificationPanel1().setMyDataInterface(oDEDataInterfaceImpl);
+//				new Thread(new Runnable() {
+//					@Override
+//					public void run() {
+//						while(ClientTaskDispatcher.isBusy()){
+//							try{Thread.sleep(200);}catch(Exception e){e.printStackTrace();}
+//						}
+//						SwingUtilities.invokeLater(new Runnable() {
+//							@Override
+//							public void run() {
+//								((Window)BeanUtils.findTypeParentOfComponent(ODEDataViewer.this, Window.class)).toFront();						
+//							}
+//						});
+//					}
+//				}).start();
+			}
+		};
 		ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),
 				new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
 				false, false, false, null, true);
-
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 }
-
 /**
  * {@link AsynchClientTask} method
  * @param ht
