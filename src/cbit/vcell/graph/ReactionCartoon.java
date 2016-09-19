@@ -41,6 +41,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.RuleParticipantSignature;
+import cbit.vcell.model.RuleParticipantSignature.Criteria;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -67,57 +68,58 @@ public class ReactionCartoon extends ModelCartoon {
 		if(this.ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.full && newCriteria == RuleParticipantSignature.Criteria.moleculeNumber) {
 			// switch from showing each participant independently to grouping them by molecule signature
 			// we are trying to cache all the signatures and their shapes that will get deleted because of grouping
-			cachedShapes.clear();
-			cachedSignatures.clear();
-			
-			for(Shape sh : getShapes()) {
-				if(!(sh instanceof RuleParticipantSignatureDiagramShape)) {
-					continue;
-				}
-				RuleParticipantSignatureDiagramShape rpsds = (RuleParticipantSignatureDiagramShape) sh;
-				RuleParticipantSignature rps = rpsds.getRuleParticipantSignature();
-				cachedShapes.add(rpsds);
-				cachedSignatures.add(rps);
-			}
+//			cachedShapes.clear();
+//			cachedSignatures.clear();
+//			
+//			for(Shape sh : getShapes()) {
+//				if(!(sh instanceof RuleParticipantSignatureDiagramShape)) {
+//					continue;
+//				}
+//				RuleParticipantSignatureDiagramShape rpsds = (RuleParticipantSignatureDiagramShape) sh;
+//				RuleParticipantSignature rps = rpsds.getRuleParticipantSignature();
+//				cachedShapes.add(rpsds);
+//				cachedSignatures.add(rps);
+//			}
 			this.ruleParticipantGroupingCriteria = newCriteria;
-			refreshAll();
+			refreshAll(true);
 
 			// we need to take out from the cache all the signatures and shapes still present after refreshAll
 			// no point in caching those
-			for(Shape sh : getShapes()) {
-				if(!(sh instanceof RuleParticipantSignatureDiagramShape)) {
-					continue;
-				}
-				RuleParticipantSignatureDiagramShape rpsds = (RuleParticipantSignatureDiagramShape) sh;
-				RuleParticipantSignature rps = rpsds.getRuleParticipantSignature();
-				cachedShapes.remove(rpsds);
-				cachedSignatures.remove(rps);
-			}
+//			for(Shape sh : getShapes()) {
+//				if(!(sh instanceof RuleParticipantSignatureDiagramShape)) {
+//					continue;
+//				}
+//				RuleParticipantSignatureDiagramShape rpsds = (RuleParticipantSignatureDiagramShape) sh;
+//				RuleParticipantSignature rps = rpsds.getRuleParticipantSignature();
+//				cachedShapes.remove(rpsds);
+//				cachedSignatures.remove(rps);
+//			}
 			
 		} else if(this.ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.moleculeNumber && newCriteria == RuleParticipantSignature.Criteria.full) {
 			// we are trying to restore the cached signatures and their shapes (they are in a 1 to 1 relationship)
 			// inside refreshAll we'll sort the ones still usable from the ones that might have become obsolete
-			for(RuleParticipantSignatureDiagramShape sh : cachedShapes) {
-				addShape(sh);
-				RuleParticipantSignature rps = sh.getRuleParticipantSignature();
-				Structure ours = rps.getStructure();
-				Structure theirs = getModel().getStructure(ours.getName());
-				if(ours != theirs) {
-					rps.setStructure(theirs);
-				}
-				ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(theirs);
-				participantContainerShape.addChildShape(sh);
-//				signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
-			}
-			ruleParticipantSignatures.addAll(cachedSignatures);
-			
-
-			
+//			for(RuleParticipantSignatureDiagramShape sh : cachedShapes) {
+//				addShape(sh);
+//				RuleParticipantSignature rps = sh.getRuleParticipantSignature();
+//				Structure ours = rps.getStructure();
+//				Structure theirs = getModel().getStructure(ours.getName());
+//				if(ours != theirs) {
+//					rps.setStructure(theirs);
+//				}
+//				ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(theirs);
+//				participantContainerShape.addChildShape(sh);
+////				signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
+//			}
+//			ruleParticipantSignatures.addAll(cachedSignatures);
+//			
+//
+//			
 			this.ruleParticipantGroupingCriteria = newCriteria;
-			refreshAll();
+			refreshAll(true);
 
 		} else {
 			// switching to the same criteria, nothing to do
+//			refreshAll(false);
 			return;
 		}
 	}
@@ -164,7 +166,8 @@ public class ReactionCartoon extends ModelCartoon {
 			case NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE: {		// obj is a RuleParticipantSignature
 				Structure struct = diagram.getStructure();
 				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
-					if (signature.getStructure() == struct && signature.compareByCriteria(node.getName(), ruleParticipantGroupingCriteria)){
+//					if (signature.getStructure() == struct && signature.compareByCriteria(node.getName(), ruleParticipantGroupingCriteria)){
+					if (signature.getStructure() == struct && signature.compareByCriteria(node.getName(), Criteria.full)){
 						obj = signature;
 						break;
 					}
@@ -240,6 +243,9 @@ public class ReactionCartoon extends ModelCartoon {
 
 	@Override
 	public void refreshAll() {
+		refreshAll(false);
+	}
+	private void refreshAll(boolean transitioning) {
 		try {
 			if (getModel() == null || getStructureSuite() == null) {
 				return;
@@ -328,6 +334,36 @@ public class ReactionCartoon extends ModelCartoon {
 			//
 			// =================================== Rules ================================================
 			//
+			// we go through all the participants; depending on the transition, we make their shapes visible or invisible
+			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
+				Structure structure = rr.getStructure();
+				if(getStructureSuite().areReactionsShownFor(structure)) {
+					List<ReactionRuleParticipant> participants = rr.getReactionRuleParticipants();
+					for(ReactionRuleParticipant participant : participants) {
+						participant.getSpeciesPattern().removePropertyChangeListener(this);
+						participant.getSpeciesPattern().addPropertyChangeListener(this);
+						Structure speciesStructure = participant.getStructure();
+						Structure reactionStructure = rr.getStructure();
+						if(getStructureSuite().getStructures().contains(speciesStructure) && getStructureSuite().areReactionsShownFor(reactionStructure)) {
+							for (RuleParticipantSignature signature : ruleParticipantSignatures){
+								if (signature.getStructure() == participant.getStructure() && signature.compareByCriteria(participant.getSpeciesPattern(), Criteria.full)){
+									RuleParticipantSignatureDiagramShape signatureShape = (RuleParticipantSignatureDiagramShape) getShapeFromModelObject(signature);
+									if(ruleParticipantGroupingCriteria == Criteria.full && transitioning) {
+										signatureShape.setVisible(true);
+									} else if(ruleParticipantGroupingCriteria == Criteria.moleculeNumber && transitioning) {
+										signatureShape.setVisible(false);
+									}
+									unwantedShapes.remove(signatureShape);		// we already know we want to keep them all, regardless of transition or visibility
+									unwantedSignatures.remove(signature);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			// 
 			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
 				rr.removePropertyChangeListener(this);
 				rr.addPropertyChangeListener(this);
@@ -382,6 +418,7 @@ public class ReactionCartoon extends ModelCartoon {
 								signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
 							}else{
 								signatureShape = (RuleParticipantSignatureDiagramShape) getShapeFromModelObject(ruleParticipantSignature);
+								signatureShape.setVisible(true);
 //								if (!ruleParticipantSignature.contains(participant)){
 //									ruleParticipantSignature.addReactionRuleParticipant(participant);
 //								}
@@ -397,9 +434,9 @@ public class ReactionCartoon extends ModelCartoon {
 							//
 							RuleParticipantEdgeDiagramShape ruleParticipantShape = (RuleParticipantEdgeDiagramShape) getShapeFromModelObject(participant);
 							if (ruleParticipantShape == null || ruleParticipantShape.getRuleParticipantSignatureShape() != signatureShape) {
-								if (participant instanceof ReactantPattern) {
+								if (participant instanceof ReactantPattern && signatureShape.isVisible()) {
 									ruleParticipantShape = new ReactantPatternEdgeDiagramShape((ReactantPattern) participant, rrShape, signatureShape, this);
-								} else if (participant instanceof ProductPattern) {
+								} else if (participant instanceof ProductPattern && signatureShape.isVisible()) {
 									ruleParticipantShape = new ProductPatternEdgeDiagramShape((ProductPattern) participant, rrShape, signatureShape, this);
 //								} else if (participant instanceof Catalyst) {
 //									ruleParticipantShape = new CatalystShape((Catalyst) participant, reactionStepShape, speciesContextShape, this);
@@ -543,11 +580,14 @@ public class ReactionCartoon extends ModelCartoon {
 						((SpeciesContext) shape.getModelObject()).getName(),
 						shape.getSpaceManager().getRelPos()));
 			} else if (shape instanceof RuleParticipantSignatureDiagramShape) {
-				String spAsString = ((RuleParticipantSignature) shape.getModelObject()).getSpeciesPatternAsString();
-				nodeList.add(new NodeReference(
-						NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE,
-						spAsString,
-						shape.getSpaceManager().getRelPos()));
+				RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
+				if (ruleParticipantSignature.getStructure() == diagram.getStructure()){
+					String spAsString = ruleParticipantSignature.getSpeciesPatternAsString();
+					nodeList.add(new NodeReference(
+							NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE,
+							spAsString,
+							shape.getSpaceManager().getRelPos()));
+				}
 			}
 		}
 		diagram.setNodeReferences(nodeList.toArray(new NodeReference[0]));
