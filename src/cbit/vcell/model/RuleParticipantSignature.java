@@ -92,7 +92,7 @@ public class RuleParticipantSignature {
 		return ourMolecularSignature;
 	}
 	
-	private static String getMolecularSignature(List<String> molecularTypePatternSignature){
+	private static String getMolecularSignature(List<String> molecularTypePatternSignature) {		// sorted!
 		Collections.sort(molecularTypePatternSignature);
 		StringBuffer buffer = new StringBuffer();
 		for (int i=0; i<molecularTypePatternSignature.size(); i++){
@@ -106,27 +106,30 @@ public class RuleParticipantSignature {
 	
 // ---------------------------------------------------------------------------------------
 	
-	public SpeciesPattern getSpeciesPattern() {
-		if(modelCartoon instanceof ReactionCartoon) {
-			ReactionCartoon reactionCartoon = (ReactionCartoon)modelCartoon;
-			if(reactionCartoon.getRuleParticipantGroupingCriteria() == Criteria.full) {
-				return speciesPattern;
-			} else {
-				SpeciesPattern spGroup = new SpeciesPattern();
-				for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
-					MolecularTypePattern mtpGroup = new MolecularTypePattern(mtp.getMolecularType());
-					spGroup.addMolecularTypePattern(mtpGroup);
-				}
-				return spGroup;
-			}
-		}
+	public SpeciesPattern getSpeciesPattern() {			// only used in paint for RuleParticipantSignatureDiagramShape
+//		if(modelCartoon instanceof ReactionCartoon) {
+//			ReactionCartoon reactionCartoon = (ReactionCartoon)modelCartoon;
+//			if(reactionCartoon.getRuleParticipantGroupingCriteria() == Criteria.full) {
+//				return speciesPattern;
+//			} else {
+//				SpeciesPattern spGroup = new SpeciesPattern();
+//				for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
+//					MolecularTypePattern mtpGroup = new MolecularTypePattern(mtp.getMolecularType());
+//					spGroup.addMolecularTypePattern(mtpGroup);
+//				}
+//				return spGroup;
+//			}
+//		}
 		return speciesPattern;
 	}
-	public String getSpeciesPatternAsString() {
-		return RbmUtils.toBnglString(speciesPattern, null, CompartmentMode.hide, -1);
+	public String getSpeciesPatternAsString() {			// sorted!
+//		return RbmUtils.toBnglString(speciesPattern, null, CompartmentMode.hide, -1);
+		ArrayList<String> molecularTypeNames = getListOfMolecularTypePatternSignatures(speciesPattern, Criteria.full);
+		String molecularSignature = getMolecularSignature(molecularTypeNames);
+		return molecularSignature;
 	}
 
-	public List<MolecularType> getMolecularTypes() {
+	public List<MolecularType> getMolecularTypes() {	// only used in paint for RuleParticipantSignatureDiagramShape
 		ArrayList<MolecularType> molecularTypes = new ArrayList<MolecularType>();
 		for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
 			molecularTypes.add(mtp.getMolecularType());

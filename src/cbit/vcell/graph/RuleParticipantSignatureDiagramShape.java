@@ -38,6 +38,7 @@ import cbit.vcell.model.RuleParticipantSignature;
 
 public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	RuleParticipantSignature ruleParticipantSignature = null;
+	boolean bVisible = true;				// we may want to hide this shape (not paint it) without destroying it
 	
 	private static final int height = 16;	// fixed (originally was 16, considered too large)
 	private int width = 16;					// this will be recalculated based on the number of molecules in the species pattern
@@ -131,6 +132,9 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
+		if(!bVisible) {
+			return;
+		}
 		
 		int numMolecules = Math.max(1, ruleParticipantSignature.getSpeciesPattern().getMolecularTypePatterns().size());		// we reserve space for at least 1 molecule
 		width = leftmargin + circleDiameter + displacement*(numMolecules-1) +1;
@@ -245,5 +249,12 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 
 	public void truncateLabelName(boolean bTruncate) {
 		bTruncateLabelName = bTruncate;
+	}
+
+	public void setVisible(boolean bVisible) {
+		this.bVisible = bVisible;
+	}
+	public boolean isVisible() {
+		return this.bVisible;
 	}
 }
