@@ -87,7 +87,6 @@ public abstract class ProgressDialog extends LWDialog {
  */
 public ProgressDialog(LWContainerHandle parent) {
 	super(parent);
-	LWTopFrame.registerTransientDialog(this);
 	getCancelButton().addActionListener(new ActionListener() {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getCancelButton()) {

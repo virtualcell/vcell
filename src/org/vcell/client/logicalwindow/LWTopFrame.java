@@ -1,19 +1,16 @@
 package org.vcell.client.logicalwindow;
 
 import java.awt.Window;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -27,7 +24,6 @@ import javax.swing.event.MenuListener;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
-import org.vcell.util.gui.GuiUtils;
 
 /**
  * base class for logical top level frames
@@ -43,7 +39,7 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	 * {@link LWContainerHandle} support
 	 */
 	private final LWManager lwManager;
-	private TakeItBack takeItBack;
+//	private TakeItBack takeItBack;
 
 	/**
 	 * static method data structure
@@ -55,16 +51,16 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	private static final LWTraits traits = new LWTraits(InitialPosition.NOT_LW_MANAGED);
 	private static final Logger LG = Logger.getLogger(LWTopFrame.class);
 
-	private final static Set<Window> transientStatusDialogs;
+//	private final static Set<Window> transientStatusDialogs;
 	static {
 		//newSetFromMap requires Boolean value type
 		WeakHashMap<Window, Boolean> whm = new WeakHashMap<>( );
-		transientStatusDialogs = Collections.newSetFromMap(whm);
+//		transientStatusDialogs = Collections.newSetFromMap(whm);
 	}
 
 	protected LWTopFrame( ) {
 		lwManager = new LWManager(null,this);
-		takeItBack = null;
+//		takeItBack = null;
 		tops.addFirst(new WeakReference<LWTopFrame>(this));
 		addWindowFocusListener(new FocusWatch());
 	}
@@ -133,17 +129,6 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	}
 
 	/**
-	 * tell Top Frame about a transient (e.g. progress) dialog
-	 * @param w
-	 */
-	public static void registerTransientDialog(Window w) {
-		transientStatusDialogs.add(w);
-		if (LG.isTraceEnabled()) {
-			LG.trace(GuiUtils.describe(w) + " added to transient dialogs, current count is " + transientStatusDialogs.size());
-		}
-	}
-
-	/**
 	 * return next sequential menu description
 	 * @param windowName not null
 	 * @return next sequential menu description, or just window name if first call with this name
@@ -194,19 +179,6 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 		}
 	}
 
-	private void lostFocusHandler(WindowEvent e) {
-		if (LG.isTraceEnabled()) {
-			LG.trace(menuDescription() + " lost focus to " + GuiUtils.describe(e.getOppositeWindow()) );
-		}
-		Window taker = e.getOppositeWindow();
-		if (transientStatusDialogs.contains(taker)) {
-			if (takeItBack == null) {
-				takeItBack = new TakeItBack();
-			}
-			taker.addWindowListener(takeItBack);
-		}
-	}
-
 	/**
 	 * class to ensure last focused top window is at beginning of collection
 	 */
@@ -230,21 +202,8 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 
 		@Override
 		public void windowLostFocus(WindowEvent e) {
-			lostFocusHandler(e);
+//			lostFocusHandler(e);
 		}
-	}
-
-	/**
-	 * take focus / top placement back from transient dialog
-	 */
-	private class TakeItBack extends WindowAdapter {
-
-		@Override
-		public void windowClosed(WindowEvent e) {
-			transientStatusDialogs.remove(e.getSource());
-			getWindow().toFront();
-		}
-
 	}
 
 	/**
