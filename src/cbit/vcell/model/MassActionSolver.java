@@ -312,7 +312,7 @@ public class MassActionSolver {
 			matrix.set_elem(1, 2, RationalExpUtils.getRationalExp(J_2, true));
 			RationalExp[] solution;
 			try {
-				matrix.show();
+				//matrix.show();
 				solution = matrix.solveLinearExpressions();
 				solution[0] = solution[0].simplify(); //solution[0] is forward rate.
 				solution[1] = solution[1].simplify(); //solution[1] is reverse rate. 

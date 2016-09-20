@@ -361,9 +361,9 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 				//
 				// don't add rate, we'll do it later when creating the jump processes
 				//
-				if (parameter.getRole() == Kinetics.ROLE_ReactionRate) {
-					continue;
-				}
+//				if (parameter.getRole() == Kinetics.ROLE_ReactionRate) {
+//					continue;
+//				}
 				
 				//
 				// don't add mass action reverse parameter if irreversible
