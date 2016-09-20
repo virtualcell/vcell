@@ -450,17 +450,19 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		if(speciesPatternList.size() > 1) {
 			polymerAllowedSingle = false;
 		}
-		SpeciesPattern sp = speciesPatternList.get(0);
-		if(sp != null && !sp.getMolecularTypePatterns().isEmpty()) {
-			if(sp.getMolecularTypePatterns().size() > 1) {
-				polymerAllowedSingle = false;
-			} else {
-				MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
-				if(mtp != null) {
-					for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
-						if(mcp.isbVisible()) {
-							polymerAllowedSimple = false;
-							break;
+		if(speciesPatternList.size() > 0) {
+			SpeciesPattern sp = speciesPatternList.get(0);
+			if(sp != null && !sp.getMolecularTypePatterns().isEmpty()) {
+				if(sp.getMolecularTypePatterns().size() > 1) {
+					polymerAllowedSingle = false;
+				} else {
+					MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+					if(mtp != null) {
+						for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+							if(mcp.isbVisible()) {
+								polymerAllowedSimple = false;
+								break;
+							}
 						}
 					}
 				}
@@ -480,10 +482,10 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		if(name.equalsIgnoreCase("Rg3")) {
 			System.out.println(name);
 		}
-		for(SpeciesPattern sp1 : speciesPatternList) {		// we look for species patterns where the polymer notation would be more suitable
+		for(SpeciesPattern sp : speciesPatternList) {		// we look for species patterns where the polymer notation would be more suitable
 			Set<String> moleculeNames = new HashSet<> ();
 			boolean isTrivial = true;
-			for(MolecularTypePattern mtp : sp1.getMolecularTypePatterns()) {
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 				moleculeNames.add(mtp.getMolecularType().getDisplayName());
 				for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
 					if(mcp.isbVisible()) {
@@ -492,9 +494,9 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 					}
 				}
 			}
-			if(isTrivial && sp1.getMolecularTypePatterns().size() > 1 && moleculeNames.size() == 1) {
-				String message = "Please use the Polymer notation (i.e. " + moleculeNames.toArray()[0] + "()>" + (sp1.getMolecularTypePatterns().size()-1) + " ) ";
-				message += "instead of " + sp1.toString();
+			if(isTrivial && sp.getMolecularTypePatterns().size() > 1 && moleculeNames.size() == 1) {
+				String message = "Please use the Polymer notation (i.e. " + moleculeNames.toArray()[0] + "()>" + (sp.getMolecularTypePatterns().size()-1) + " ) ";
+				message += "instead of " + sp.toString();
 				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 				break;		// if we find one sp that is suitable for polymer notation we stop here and don't check other sp 
 			}
