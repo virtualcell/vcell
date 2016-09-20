@@ -6,9 +6,11 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -64,7 +66,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		}
 	}
 	public static enum Sequence {
-		Multimolecular,
+		Multimolecular,				// normal observable
 		PolymerLengthEqual,
 		PolymerLengthGreater;
 	}
@@ -442,8 +444,9 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 				}
 			}
 		}
-		boolean polymerAllowedSingle = true;
-		boolean polymerAllowedSimple = true;
+		// ---------------------------------------- polymer notation restrictions
+		boolean polymerAllowedSingle = true;	// polymer notation may only contain one species pattern and one type of molecule
+		boolean polymerAllowedSimple = true;	// ---------------,,---------------- molecules in trivial state (question marks for bonds and states)
 		if(speciesPatternList.size() > 1) {
 			polymerAllowedSingle = false;
 		}
@@ -464,7 +467,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 			}
 		}
 		if(!polymerAllowedSingle && sequence != Sequence.Multimolecular) {
-			String message = "Polymer may only be specified for Observable containing a single Molecule.";
+			String message = "Polymer may only be specified for Observable containing a single type of Molecule.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 		} else if(!polymerAllowedSimple && sequence != Sequence.Multimolecular) {
 			String message = "Polymer may only be specified for Observable with all bonds set to 'Possible' and all States set to 'Any'";
@@ -473,6 +476,28 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		if(sequence != Sequence.Multimolecular && type == ObservableType.Molecules) {
 			String message = "The Polymer Observable must be of type 'Species'.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+		}
+		if(name.equalsIgnoreCase("Rg3")) {
+			System.out.println(name);
+		}
+		for(SpeciesPattern sp1 : speciesPatternList) {		// we look for species patterns where the polymer notation would be more suitable
+			Set<String> moleculeNames = new HashSet<> ();
+			boolean isTrivial = true;
+			for(MolecularTypePattern mtp : sp1.getMolecularTypePatterns()) {
+				moleculeNames.add(mtp.getMolecularType().getDisplayName());
+				for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+					if(mcp.isbVisible()) {
+						isTrivial = false;
+						continue;	// we may have more than 1 sp in the observable, check them all
+					}
+				}
+			}
+			if(isTrivial && sp1.getMolecularTypePatterns().size() > 1 && moleculeNames.size() == 1) {
+				String message = "Please use the Polymer notation (i.e. " + moleculeNames.toArray()[0] + "()>" + (sp1.getMolecularTypePatterns().size()-1) + " ) ";
+				message += "instead of " + sp1.toString();
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+				break;		// if we find one sp that is suitable for polymer notation we stop here and don't check other sp 
+			}
 		}
 	}
 	public void checkComponentStateConsistency(IssueContext issueContext, List<Issue> issueList, MolecularTypePattern mtpThis) {
