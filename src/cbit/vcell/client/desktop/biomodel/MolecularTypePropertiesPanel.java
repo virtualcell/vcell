@@ -455,6 +455,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private JRadioButton getAnchorAllButton() {
 		if (anchorAllButton == null) {
 			anchorAllButton = new JRadioButton("No restrictions");
+			anchorAllButton.setToolTipText("This Molecule can be present in any Structure (recommended)");
 			anchorAllButton.addActionListener(eventHandler);
 		}
 		return anchorAllButton;
@@ -462,6 +463,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private JRadioButton getAnchorOnlyButton() {
 		if (anchorOnlyButton == null) {
 			anchorOnlyButton = new JRadioButton("Only these:");
+			anchorOnlyButton.setToolTipText("This Molecule may be present only in the Structures checked below");
 			anchorOnlyButton.addActionListener(eventHandler);
 		}
 		return anchorOnlyButton;
@@ -751,7 +753,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(molecularType));
 			
 //			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
-			titleLabel.setText("Anchor rule");
+			titleLabel.setText("Anchor Molecule");
+			titleLabel.setToolTipText("Anchor a Molecule to a Structure to prevent it being moved to unwanted locations by a rule.");
 			molecularTypeShapeList.clear();
 			int maxYOffset = computeStatesVerticalOffset(molecularType);
 			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xOffsetInitial, maxYOffset, molecularType, shapePanel, molecularType);
