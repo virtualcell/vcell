@@ -60,7 +60,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	protected Point smallLabelPos = new Point(0,0);
 
 	private boolean bTruncateLabelName = true;
-	private boolean bDisplayLabel = false;
+	private boolean bDisplayLabel = true;
 	
 	protected String linkText;
 
@@ -120,7 +120,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	
 	public Rectangle getLabelOutline( int absPosX, int absPosY){
 		return new Rectangle(getLabelPos().x + absPosX - 5, 
-		getLabelPos().y + absPosY - getLabelSize().height + 3,
+		getLabelPos().y + absPosY - getLabelSize().height,
 		getLabelSize().width + 10, getLabelSize().height);
 	}
 
@@ -217,7 +217,7 @@ public class RuleParticipantSignatureDiagramShape extends ElipseShape {
 				g.drawString(
 					(isSelected() || smallLabel == null ? getLabel():smallLabel),
 					(isSelected() || smallLabel == null ? getLabelPos().x : smallLabelPos.x) + 
-					absPosX, getLabelPos().y + absPosY);
+					absPosX, getLabelPos().y - 2 + absPosY);
 			}
 		}
 		if(linkText != null && linkText != "") {
