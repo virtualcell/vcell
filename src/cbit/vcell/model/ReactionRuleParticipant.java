@@ -9,6 +9,7 @@ import cbit.vcell.units.VCUnitDefinition;
 
 public abstract class ReactionRuleParticipant implements Displayable, ModelProcessParticipant {
 	private final SpeciesPattern speciesPattern;
+	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Structure structure;
 	
 	public ReactionRuleParticipant(SpeciesPattern speciesPattern, Structure structure){
@@ -19,6 +20,24 @@ public abstract class ReactionRuleParticipant implements Displayable, ModelProce
 		}
 	}
 	
+	protected java.beans.PropertyChangeSupport getPropertyChange() {
+		if (propertyChange == null) {
+			propertyChange = new java.beans.PropertyChangeSupport(this);
+		};
+		return propertyChange;
+	}
+
+	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+		getPropertyChange().addPropertyChangeListener(listener);
+	}
+	public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+		getPropertyChange().removePropertyChangeListener(listener);
+	}
+	
+	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
+	}
+
 	public SpeciesPattern getSpeciesPattern(){
 		return this.speciesPattern;
 	}
@@ -27,10 +46,12 @@ public abstract class ReactionRuleParticipant implements Displayable, ModelProce
 		return this.structure;
 	}
 	public void setStructure(Structure structure){
+		Structure oldStructure = this.structure;
 		if (structure == null){
 			throw new RuntimeException("Null structure for ReactionRule Participant");
 		}
 		this.structure = structure;
+		firePropertyChange("structure",oldStructure,structure);
 	}
 	
 	public VCUnitDefinition getUnitDefinition(){
