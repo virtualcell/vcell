@@ -219,12 +219,14 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		if (oldValue != null) {
 			for (ReactantPattern rp : oldValue) {
 				rp.getSpeciesPattern().removePropertyChangeListener(this);
+				rp.removePropertyChangeListener(this);
 			}
 		}
 		reactantPatterns = newValue;
 		if (newValue != null) {
 			for (ReactantPattern rp : newValue) {
-				rp.getSpeciesPattern().addPropertyChangeListener(this);				
+				rp.getSpeciesPattern().addPropertyChangeListener(this);			
+				rp.addPropertyChangeListener(this);
 			}
 			if(bResolveBonds) {
 				resolveBonds(ReactionRuleParticipantType.Reactant);
@@ -368,12 +370,14 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		if (oldValue != null) {
 			for (ProductPattern pp : oldValue) {
 				pp.getSpeciesPattern().removePropertyChangeListener(this);
+				pp.removePropertyChangeListener(this);
 			}
 		}
 		productPatterns = newValue;
 		if (newValue != null) {
 			for (ProductPattern pp : newValue) {
 				pp.getSpeciesPattern().addPropertyChangeListener(this);
+				pp.addPropertyChangeListener(this);
 			}
 			if(bResolveBonds) {
 				resolveBonds(ReactionRuleParticipantType.Product);
@@ -851,6 +855,11 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 				}
 			}
 			resolveMatches();
+		}		
+		if (evt.getSource() instanceof ReactionRuleParticipant) {
+			if (getKineticLaw()!=null){
+				getKineticLaw().refreshUnits();
+			}
 		}		
 	}
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -1334,16 +1343,20 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 
 	public void refreshDependencies() {
 		getKineticLaw().refreshDependencies();
-//		for(ReactantPattern p : getReactantPatterns()) {
-//			p.removeVetoableChangeListener(this);
-//			p.addVetoableChangeListener(this);
-//			p.refreshDependencies();
-//		}
-//		for(ProductPattern p : getProductPatterns()) {
-//			p.removeVetoableChangeListener(this);
-//			p.addVetoableChangeListener(this);
-//			p.refreshDependencies();
-//		}
+		for(ReactantPattern p : getReactantPatterns()) {
+			p.getSpeciesPattern().removePropertyChangeListener(this);
+			p.getSpeciesPattern().addPropertyChangeListener(this);
+			p.removePropertyChangeListener(this);
+			p.addPropertyChangeListener(this);
+			//p.refreshDependencies();
+		}
+		for(ProductPattern p : getProductPatterns()) {
+			p.getSpeciesPattern().removePropertyChangeListener(this);
+			p.getSpeciesPattern().addPropertyChangeListener(this);
+			p.removePropertyChangeListener(this);
+			p.addPropertyChangeListener(this);
+			//p.refreshDependencies();
+		}
 		removePropertyChangeListener(this);
 		addPropertyChangeListener(this);
 //		removeVetoableChangeListener(this);
