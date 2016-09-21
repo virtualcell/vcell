@@ -1063,6 +1063,13 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				}
 				particleMolecularType.addMolecularComponent(particleMolecularComponent);
 			}
+			if(!molecularType.isAnchorAll()) {
+				List<String> anchorList = new ArrayList<>();
+				for(Structure struct : molecularType.getAnchors()) {
+					anchorList.add(struct.getName());
+				}
+				particleMolecularType.setAnchorList(anchorList);
+			}
 			mathDesc.addParticleMolecularType(particleMolecularType);
 		}
 	

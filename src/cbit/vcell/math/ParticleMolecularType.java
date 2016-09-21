@@ -14,6 +14,7 @@ public class ParticleMolecularType implements Serializable, Matchable {
 	
 	private String name;	
 	private List<ParticleMolecularComponent> componentList = new ArrayList<ParticleMolecularComponent>();
+	private List<String> anchorList = new ArrayList<>();
 	
 	public ParticleMolecularType(String name) {
 		this.name = name;
@@ -76,9 +77,15 @@ public class ParticleMolecularType implements Serializable, Matchable {
 	public final List<ParticleMolecularComponent> getComponentList() {
 		return componentList;
 	}
+	public final List<String> getAnchorList() {
+		return anchorList;
+	}
 
 	public final void setComponentList(List<ParticleMolecularComponent> newValue) {
 		componentList = newValue;
+	}
+	public final void setAnchorList(List<String> newValue) {
+		anchorList = newValue;
 	}
 
 	@Override

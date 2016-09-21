@@ -304,8 +304,14 @@ public class NFsimXMLWriter {
 					String pmcLocationName = RbmUtils.SiteStruct;
 					String pmcLocationId = particleMolecularType.getName() + "_" + RbmUtils.SiteStruct;
 					ParticleMolecularComponent locationComponent = new ParticleMolecularComponent(pmcLocationId, pmcLocationName);
-					for (String location : locations){
-						locationComponent.addComponentStateDefinition(new ParticleComponentStateDefinition(location));
+					if(particleMolecularType.getAnchorList().isEmpty()) {
+						for (String location : locations){		// if no anchors, add them all as usual
+							locationComponent.addComponentStateDefinition(new ParticleComponentStateDefinition(location));
+						}
+					} else {									// if anchored, add only the anchors
+						for(String location : particleMolecularType.getAnchorList()) {
+							locationComponent.addComponentStateDefinition(new ParticleComponentStateDefinition(location));
+						}
 					}
 					particleMolecularType.insertMolecularComponent(0,locationComponent);
 					
@@ -1211,6 +1217,10 @@ public class NFsimXMLWriter {
 			if(listOfComponentTypesElement != null) {
 				molecularTypeElement.addContent(listOfComponentTypesElement);
 			}
+			
+			// TODO: uncomment the next 2 lines to set anchor existence attribute
+//			boolean hasAnchors = !molecularType.getAnchorList().isEmpty();
+//			molecularTypeElement.setAttribute("hasAnchors", hasAnchors+"");
 			
 			listOfMoleculeTypesElement.addContent(molecularTypeElement);
 		}
