@@ -34,6 +34,7 @@ import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.title.TitleChanger;
 //import cbit.vcell.client.desktop.biomodel.ChildWindowListener;
 import edu.uchc.connjur.wb.ExecutionTrace;
@@ -405,7 +406,7 @@ public class ChildWindowManager {
 			LG.debug(ExecutionTrace.justClassName(component) + " does not have ManagedChild parent");
 		}
 		
-		DocumentWindow dw = LWNamespace.findOwnerOfType(DocumentWindow.class, component);
+		TopLevelWindow dw = LWNamespace.findOwnerOfType(TopLevelWindow.class, component);
 		if (dw != null) {
 			return dw.getChildWindowManager();
 		}
