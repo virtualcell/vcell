@@ -1650,16 +1650,23 @@ public void setDisplayAdapterService(DisplayAdapterService newValue) {
 		specialColorsChanged();
 	}
 }
+
+private static final String SINGLE_TIMES_TEXT = "at time";
+public static final String ALL_TIMES__STATE_TEXT = "all times";
+public static final String ALL_TIMES__APPROX_TEXT = "all times (approx)";
 	private JRadioButton getRdbtnSingle() {
 		if (rdbtnSingle == null) {
-			rdbtnSingle = new JRadioButton("at time");
+			rdbtnSingle = new JRadioButton(SINGLE_TIMES_TEXT);
 		}
 		return rdbtnSingle;
 	}
 	private JRadioButton getRdbtnAllTimes() {
 		if (rdbtnAllTimes == null) {
-			rdbtnAllTimes = new JRadioButton("all times (approx.)");
+			rdbtnAllTimes = new JRadioButton(ALL_TIMES__STATE_TEXT);
 		}
 		return rdbtnAllTimes;
+	}
+	public void changeAllTimesButtonText(String newText){
+		getRdbtnAllTimes().setText(newText);
 	}
 }

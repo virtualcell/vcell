@@ -101,6 +101,7 @@ import org.vcell.util.gui.exporter.FileFilters;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
+import cbit.image.gui.DisplayAdapterServicePanel;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
@@ -2033,7 +2034,7 @@ public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {
 			getPDEPlotControlPanel1().setup(/*getPDEPlotControlPanel1().getDataIdentifierFilter(),*/ ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions(), getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
 		}catch(Exception e){
 			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, "Couldn't setup PDEPlotControlPanel");
+			DialogUtils.showErrorDialog(this, "Couldn't setup PDEPlotControlPanel, "+e.getMessage());
 			return;
 		}
 	}finally{
@@ -2931,22 +2932,25 @@ private void calcAutoAllTimes() throws Exception {
 	boolean bStateVar = stateVarNames.contains(getPdeDataContext().getVariableName());
 	if(getPDEDataContextPanel1().getdisplayAdapterService1().getAllTimes()){// min-max over all timepoints (allTimes)
 		if(theVariable.isConstant()){
+			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
 			double constVal = theVariable.getConstantValue();
 			getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(constVal,constVal));
 		}else if(bStateVar){
+			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
 			ArrayList<VarStatistics> varStatsArr = calcVarStat(getPdeDataContext(), new String[] {theVariable.getName()});
-			if(errorAutoAllTimes(varStatsArr != null)){//no postprocessinfo
+			if(errorAutoAllTimes(varStatsArr != null,(varStatsArr==null?null:varStatsArr.size()>0))){//no postprocessinfo
 				return;
 			}
 			FunctionStatistics functionStatistics = new FunctionStatistics(varStatsArr.get(0).minValuesOverTime, varStatsArr.get(0).maxValuesOverTime);
 			getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(functionStatistics.getMinOverTime(),functionStatistics.getMaxOverTime()));
 		}else if(theVariable instanceof Function){
+			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__APPROX_TEXT);
 			Function flattened = MathDescription.getFlattenedFunctions(SimulationSymbolTable.createMathSymbolTableFactory(), getSimulation().getMathDescription(), new String[] {theVariable.getName()})[0];
 			if(flattened == null){
 				flattened = (Function)theVariable;
 			}
 			ArrayList<VarStatistics> varStatsArr = calcVarStat(getPdeDataContext(), stateVarNames.toArray(new String[0]));
-			if(errorAutoAllTimes(varStatsArr != null)){//no postprocessinfo
+			if(errorAutoAllTimes(varStatsArr != null, (varStatsArr==null?null:varStatsArr.size()>0))){//check for no postprocessinfo
 				return;
 			}
 			if(varStatsArr.size() == stateVarNames.size()){
@@ -2959,8 +2963,8 @@ private void calcAutoAllTimes() throws Exception {
 							getPdeDataContext().getTimePoints(),
 							CartesianMesh.createSimpleCartesianMesh(getSimulation().getMeshSpecification().getGeometry()),
 							getPDEDataContextPanel1().getInDomainBitSet(),
-							getPdeDataContext().getDataIdentifier().getVariableType(),
-							(int) (getPdeDataContext().getDataValues().length/Math.pow(10, getSimulation().getMeshSpecification().getGeometry().getDimension())));
+							getPdeDataContext().getDataIdentifier().getVariableType()/*,
+							10(int) (getPdeDataContext().getDataValues().length/Math.pow(10, getSimulation().getMeshSpecification().getGeometry().getDimension()))*/);
 					getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(functionStatistics.getMinOverTime(),functionStatistics.getMaxOverTime()));																	
 			}else{
 				throw new Exception("Unexpectede AllTimes... calculated state var stats size != mathdescr state var size");
@@ -2969,28 +2973,40 @@ private void calcAutoAllTimes() throws Exception {
 			throw new Exception("Unexpected AllTimes... not constant, stateVar or function");
 		}
 	}else{// min-max at each timepoint (currTime)
+		if(!(theVariable instanceof Function)){
+			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
+		}else{
+			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__APPROX_TEXT);
+		}
 		getPDEDataContextPanel1().setFunctionStatisticsRange(null);
 	}
 }
 
-private boolean errorAutoAllTimes(boolean bPPInfo){
-	getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
+private boolean errorAutoAllTimes(boolean bPPInfo,Boolean bVarMatch){
 	boolean bdialog = false;
-	if(bPPInfo){
-		getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true);
-	}else{
-		getPDEDataContextPanel1().setFunctionStatisticsRange(null);//this tells pdedatacontextpanel.recodedata to calc 'current time' min-max instead of allTimes
-		if(getPDEDataContextPanel1().getdisplayAdapterServicePanel1().isEnableAutoAllTimes()){//disable autoAllTimes otherwise ignore to avoid repeating dialog warnings
-			bdialog = true;
-			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(false);
-		}		
+	try{
+		getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
+		if(bPPInfo && Boolean.TRUE.equals(bVarMatch)){
+			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true);
+		}else{
+			getPDEDataContextPanel1().setFunctionStatisticsRange(null);//this tells pdedatacontextpanel.recodedata to calc 'current time' min-max instead of allTimes
+			if(getPDEDataContextPanel1().getdisplayAdapterServicePanel1().isEnableAutoAllTimes()){//disable autoAllTimes otherwise ignore to avoid repeating dialog warnings
+				bdialog = true;
+				getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(false);
+			}		
+		}
+	}finally{
+		getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
 	}
-	getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
 	if(bdialog){
-		DialogUtils.showWarningDialog(this, "Sim '"+getSimulation().getName()+"' has no PostProcessing Data, cannot calculate 'all times' min-max");
+		if(Boolean.FALSE.equals(bVarMatch)){//there was post process but no matching min/max variables
+			DialogUtils.showWarningDialog(this, "Sim '"+getSimulation().getName()+"' has no matching PostProcessing min/max variables, cannot calculate 'all times' min-max.\nSee 'Post Processing Stats Data' tab");
+		}else{
+			DialogUtils.showWarningDialog(this, "Sim '"+getSimulation().getName()+"' has no PostProcessing Data, cannot calculate 'all times' min-max.\nSee 'Post Processing Stats Data' tab");
+		}
 
 	}
-	return !bPPInfo;
+	return !bPPInfo/*didn't have postproc*/ || Boolean.FALSE.equals(bVarMatch)/*had postproc but no min/max (added as new feature so some data won't have)*/;
 }
 
 
