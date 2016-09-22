@@ -3092,6 +3092,11 @@ private Element getXML(ParticleMolecularType param) {
 	for (ParticleMolecularComponent pp : param.getComponentList()){
 		e.addContent(getXML(pp));
 	}
+	for(String anchor : param.getAnchorList()) {
+		Element a = new Element(XMLTags.ParticleMolecularTypeAnchorTag);
+		a.setAttribute(XMLTags.NameAttrTag, mangle(anchor));
+		e.addContent(a);
+	}
 	return e;
 }
 

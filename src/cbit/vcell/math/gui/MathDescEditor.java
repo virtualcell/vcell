@@ -380,6 +380,7 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.ParticleDistribution);
 		autoCompletionWords.add(VCML.VolumeParticleSpeciesPatterns);
 		autoCompletionWords.add(VCML.ParticleMolecularType);
+		autoCompletionWords.add(VCML.ParticleMolecularTypeAnchor);
 		autoCompletionWords.add(VCML.ParticleMolecularComponent);
 		autoCompletionWords.add(VCML.ParticleMolecularTypePattern);
 		autoCompletionWords.add(VCML.ParticleComponentStatePattern);
@@ -676,6 +677,7 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.ParticleDistribution);
 		keywords.add(VCML.VolumeParticleSpeciesPatterns);
 		keywords.add(VCML.ParticleMolecularType);
+		keywords.add(VCML.ParticleMolecularTypeAnchor);
 		keywords.add(VCML.ParticleMolecularComponent);
 		keywords.add(VCML.ParticleMolecularTypePattern);
 		keywords.add(VCML.ParticleComponentStatePattern);

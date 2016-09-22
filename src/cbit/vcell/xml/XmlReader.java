@@ -7580,6 +7580,11 @@ private ParticleMolecularType getParticleMolecularType(Element param) {
 		ParticleMolecularComponent p = getParticleMolecularComponent(name, molecularComponent);
 		var.addMolecularComponent(p);
 	}
+	List<Element> anchorList = param.getChildren(XMLTags.ParticleMolecularTypeAnchorTag, vcNamespace);
+	for(Element anchorElement : anchorList) {
+		String anchor = unMangle( anchorElement.getAttributeValue(XMLTags.NameAttrTag));
+		var.addAnchor(anchor);
+	}
 	return var;
 }
 
