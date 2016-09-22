@@ -52,6 +52,7 @@ import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 //import org.jdom.output.Format;
+import cbit.vcell.xml.XMLTags;
 
 public class NFsimXMLWriter {
 	
@@ -304,14 +305,8 @@ public class NFsimXMLWriter {
 					String pmcLocationName = RbmUtils.SiteStruct;
 					String pmcLocationId = particleMolecularType.getName() + "_" + RbmUtils.SiteStruct;
 					ParticleMolecularComponent locationComponent = new ParticleMolecularComponent(pmcLocationId, pmcLocationName);
-					if(particleMolecularType.getAnchorList().isEmpty()) {
-						for (String location : locations){		// if no anchors, add them all as usual
-							locationComponent.addComponentStateDefinition(new ParticleComponentStateDefinition(location));
-						}
-					} else {									// if anchored, add only the anchors
-						for(String location : particleMolecularType.getAnchorList()) {
-							locationComponent.addComponentStateDefinition(new ParticleComponentStateDefinition(location));
-						}
+					for (String location : locations) {
+						locationComponent.addComponentStateDefinition(new ParticleComponentStateDefinition(location));
 					}
 					particleMolecularType.insertMolecularComponent(0,locationComponent);
 					
@@ -1216,6 +1211,11 @@ public class NFsimXMLWriter {
 			Element listOfComponentTypesElement = getListOfComponentTypes(molecularType);
 			if(listOfComponentTypesElement != null) {
 				molecularTypeElement.addContent(listOfComponentTypesElement);
+			}
+			for(String anchor : molecularType.getAnchorList()) {
+				Element a = new Element(XMLTags.ParticleMolecularTypeAnchorTag);
+				a.setAttribute(XMLTags.NameAttrTag, anchor);
+				molecularTypeElement.addContent(a);
 			}
 			
 			// TODO: uncomment the next 2 lines to set anchor existence attribute
