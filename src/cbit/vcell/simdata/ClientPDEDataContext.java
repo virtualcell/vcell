@@ -156,7 +156,7 @@ private void initialize() {
 		setVariableAndTime(variable, tp);
 	} catch (DataAccessException exc) {
 		exc.printStackTrace(System.out);
-		throw new RuntimeException(exc.getMessage());
+		throw new RuntimeException(exc.getMessage(),exc);
 	}
 }
 

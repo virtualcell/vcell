@@ -107,7 +107,7 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, User use
 		return dataSetControllerImpl.getDataIdentifiers(outputContext, vcdID);
 	}catch (Throwable e){
 		log.exception(e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
 	}
 }
 

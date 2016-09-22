@@ -14,12 +14,12 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,10 +27,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.Timer;
+import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -188,13 +189,6 @@ private void initialize() throws DataAccessException {
 		
 		String[] scanParams = getSimulation().getMathOverrides().getScannedConstantNames();
 		Arrays.sort(scanParams);
-		javax.swing.event.ListSelectionListener lsl = new javax.swing.event.ListSelectionListener() {
-			public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					updateScanParamChoices("SimResultsViewer set paramScan index="+getSelectedParamScanJobIndex());
-				}
-			}
-		};
 		JPanel tablePanel = new JPanel();
 		tablePanel.setLayout(new BoxLayout(tablePanel, BoxLayout.X_AXIS));
 		for (int i = 0; i < scanParams.length; i++){
@@ -221,11 +215,38 @@ private void initialize() throws DataAccessException {
 				}
 			};
 			ScanChoicesTableModel tm = new ScanChoicesTableModel(values, new String[] {scanParams[i]});
-			JTable table = new JTable(tm);
+			final JTable table = new JTable(tm);
 			choicesHash.put(scanParams[i], table);
 			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			table.getSelectionModel().setSelectionInterval(0,0);
-			table.getSelectionModel().addListSelectionListener(lsl);
+			final ListSelectionListener[] nextListSelectionListener = new ListSelectionListener[1];
+			nextListSelectionListener[0] = new javax.swing.event.ListSelectionListener() {
+				public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+					if (!e.getValueIsAdjusting()) {
+					    DefaultListSelectionModel list = (DefaultListSelectionModel)e.getSource();
+					    int selected = list.getAnchorSelectionIndex();
+					    final int previous = (selected == e.getFirstIndex() ? e.getLastIndex() : e.getFirstIndex());
+					    ListReset listReset = new ListReset() {
+							@Override
+							public void reset(VCDataIdentifier myVcDataIdentifier) {
+								if(myVcDataIdentifier instanceof VCSimulationDataIdentifier){
+									int paramScanIndex = ((VCSimulationDataIdentifier)myVcDataIdentifier).getJobIndex();
+									table.getSelectionModel().removeListSelectionListener(nextListSelectionListener[0]);
+									try{
+										table.setRowSelectionInterval(paramScanIndex,paramScanIndex);
+									}finally{
+										table.getSelectionModel().addListSelectionListener(nextListSelectionListener[0]);
+									}
+								}else{
+									table.setRowSelectionInterval(previous, previous);
+								}
+							}
+						};
+						updateScanParamChoices("SimResultsViewer set paramScan index="+getSelectedParamScanJobIndex(),listReset);
+					}
+				}
+			};
+			table.getSelectionModel().addListSelectionListener(nextListSelectionListener[0]);
 			JScrollPane scr = new JScrollPane(table);
 			JPanel p = new JPanel();
 			scr.setPreferredSize(new java.awt.Dimension (100, Math.min(150, table.getPreferredSize().height + table.getTableHeader().getPreferredSize().height + 5)));
@@ -271,7 +292,7 @@ private void initialize() throws DataAccessException {
  */
 public void refreshData() throws DataAccessException {
 	if (isODEData) {
-		updateScanParamChoices("SimResultsViewer refreshData (ODE)..."); // this takes care of all logic to get the fresh data
+		updateScanParamChoices("SimResultsViewer refreshData (ODE)...",null); // this takes care of all logic to get the fresh data
 	} else {
 		pdeDataViewer.getPdeDataContext().refreshTimes();
 	}
@@ -279,10 +300,10 @@ public void refreshData() throws DataAccessException {
 
 public void refreshFunctions() throws DataAccessException {
 	if (isODEData) {
-		updateScanParamChoices("SimResultsViewer refreshFunctions (ODE)...");
+		updateScanParamChoices("SimResultsViewer refreshFunctions (ODE)...",null);
 	} else {
 		// no other reliable way until the PDE context/viewer/manager/dataset furball will be cleaned up... 
-		updateScanParamChoices("SimResultsViewer refreshData (PDE)...");
+		updateScanParamChoices("SimResultsViewer refreshData (PDE)...",null);
 	}
 }
 
@@ -339,9 +360,12 @@ private int getSelectedParamScanJobIndex(){
  * Insert the method's description here.
  * Creation date: (10/18/2005 12:44:06 AM)
  */
+interface ListReset {
+	void reset(VCDataIdentifier vcDataIdentifier);
+}
 private BlockingTimer paramScanChoiceTimer;
-private void updateScanParamChoices(final String message){
-	if((paramScanChoiceTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,paramScanChoiceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateScanParamChoices(message);}},message))!=null){
+private void updateScanParamChoices(final String message,ListReset listReset){
+	if((paramScanChoiceTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,paramScanChoiceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateScanParamChoices(message,listReset);}},message))!=null){
 		return;
 	}
 	
@@ -349,9 +373,17 @@ private void updateScanParamChoices(final String message){
 	// update viewer
 	if (selectedJobIndex == -1) {
 		if (isODEData) {
-			odeDataViewer.setOdeSolverResultSet(null);
+			if(listReset != null && odeDataViewer != null && odeDataViewer.getVcDataIdentifier() != null){
+				listReset.reset(odeDataViewer.getVcDataIdentifier());
+			}else{
+				odeDataViewer.setOdeSolverResultSet(null);
+			}
 		} else {
-			pdeDataViewer.setPdeDataContext(null);
+			if(listReset != null && pdeDataViewer != null && pdeDataViewer.getPdeDataContext() != null &&  pdeDataViewer.getPdeDataContext().getVCDataIdentifier() != null){
+				listReset.reset(pdeDataViewer.getPdeDataContext().getVCDataIdentifier());
+			}else{
+				pdeDataViewer.setPdeDataContext(null);
+			}
 		}
 		return;
 	}
@@ -398,9 +430,18 @@ private void updateScanParamChoices(final String message){
 		AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ClientPDEDataContext newPDEDC = (ClientPDEDataContext)hashTable.get("newPDEDC");
-				pdeDataViewer.setPdeDataContext(newPDEDC);
-				pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
+				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
+					ClientPDEDataContext newPDEDC = (ClientPDEDataContext)hashTable.get("newPDEDC");
+					pdeDataViewer.setPdeDataContext(newPDEDC);
+					pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
+				}else{
+					if(listReset != null && pdeDataViewer != null && pdeDataViewer.getPdeDataContext() != null && pdeDataViewer.getPdeDataContext().getVCDataIdentifier() != null){
+						listReset.reset(pdeDataViewer.getPdeDataContext().getVCDataIdentifier());
+					}else{
+						pdeDataViewer.setPdeDataContext(null);
+						pdeDataViewer.setSimNameSimDataID(null);
+					}
+				}
 			}
 		};
 
