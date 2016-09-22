@@ -1219,8 +1219,8 @@ public class NFsimXMLWriter {
 			}
 			
 			// TODO: uncomment the next 2 lines to set anchor existence attribute
-//			boolean hasAnchors = !molecularType.getAnchorList().isEmpty();
-//			molecularTypeElement.setAttribute("hasAnchors", hasAnchors+"");
+			boolean hasAnchors = !molecularType.getAnchorList().isEmpty();
+			molecularTypeElement.setAttribute("hasAnchors", hasAnchors+"");
 			
 			listOfMoleculeTypesElement.addContent(molecularTypeElement);
 		}

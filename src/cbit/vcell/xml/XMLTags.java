@@ -651,6 +651,7 @@ public class XMLTags {
 	public static final String MembraneParticleObservableTag = "MembraneParticleObservable";
 	public static final String ParticleObservableTag = "ParticleObservable";
 	public static final String ParticleMolecularTypeTag = "ParticleMolecularType";
+	public static final String ParticleMolecularTypeAnchorTag = "Anchor";
 	public static final String ParticleObservableSequenceTypeAttrTag = "SequenceType";
 	public static final String ParticleObservableSequenceLengthAttrTag = "SequenceLength";
 	// Smoldyn

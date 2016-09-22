@@ -3,6 +3,7 @@ package cbit.vcell.math;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.vcell.util.CommentStringTokenizer;
@@ -74,6 +75,9 @@ public class ParticleMolecularType implements Serializable, Matchable {
 		name = newValue;
 	}
 
+	public final void addAnchor(String anchor) {
+		anchorList.add(anchor);
+	}
 	public final List<ParticleMolecularComponent> getComponentList() {
 		return componentList;
 	}
@@ -95,6 +99,9 @@ public class ParticleMolecularType implements Serializable, Matchable {
 			if (!Compare.isEqual(componentList, other.componentList)){
 				return false;
 			}
+			if (!Compare.isEqual(anchorList.toArray(new String[0]), other.anchorList.toArray(new String[0]))){
+				return false;
+			}
 			if (!Compare.isEqual(name, other.name)){
 				return false;
 			}
@@ -106,11 +113,14 @@ public class ParticleMolecularType implements Serializable, Matchable {
 	public String getVCML(){
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(VCML.ParticleMolecularType + " " + name + " " + VCML.BeginBlock);
-		if (componentList.size()==0){
+		if (componentList.size() == 0 && anchorList.size() == 0){
 			buffer.append(" "+VCML.EndBlock+"\n");
 		}else{
 			for (ParticleMolecularComponent component : componentList){
 				buffer.append("\n    "+component.getVCML());
+			}
+			for(String anchor : anchorList) {
+				buffer.append("\n        " + VCML.ParticleMolecularTypeAnchor + " " + anchor);
 			}
 			buffer.append("\n"+VCML.EndBlock+"\n");
 		}
@@ -135,6 +145,11 @@ public class ParticleMolecularType implements Serializable, Matchable {
 				ParticleMolecularComponent particleMolecularComponent = new ParticleMolecularComponent(id, molecularComponentName);
 				particleMolecularComponent.read(tokens);
 				addMolecularComponent(particleMolecularComponent);
+				continue;
+			} else if(token.equalsIgnoreCase(VCML.ParticleMolecularTypeAnchor)) {
+				token = tokens.nextToken();
+				String anchor = token;
+				anchorList.add(anchor);
 				continue;
 			}
 			throw new MathFormatException("unexpected identifier "+token);

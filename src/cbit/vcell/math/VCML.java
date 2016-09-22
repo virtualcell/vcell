@@ -219,6 +219,7 @@ public class VCML {
 	public final static String ParticleComponentStatePattern = "State";
 	public final static String ParticleComponentBondPattern = "Bond";
 	public final static String ParticleMolecularType = "ParticleMolecularType";
+	public final static String ParticleMolecularTypeAnchor = "AnchorLocation";
 	public final static String ParticleSequence = "ParticleSequence";
 	public final static String VolumeParticleObservable     = "VolumeParticleObservable";
 	public final static String SpeciesPatternLocation     = "SpeciesPatternLocation";
