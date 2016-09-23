@@ -409,7 +409,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 			try {
 				if (evt.getSource() == getPdeDataContext() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINTS))){
 					getPDEPlotControlPanel1().timePointsEvent(getPdeDataContext().getTimePoints());
-					getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true);//PostProcessing info only when last timepoints are set
+					getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true && !(getPdeDataContext() instanceof PostProcessDataPDEDataContext));//PostProcessing info only when last timepoints are set
 				}
 
 				if(evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1() && evt.getPropertyName().equals(DisplayAdapterService.PROP_NAME_ALLTIMES)){
@@ -1993,7 +1993,7 @@ private void setupDataInfoProvider() throws Exception{
  */
 private boolean bSkipSurfaceCalc = false;
 public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {
-	getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true);
+	getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true && !(pdeDataContext instanceof PostProcessDataPDEDataContext));
 	PDEDataContext oldValue = fieldPdeDataContext;
 	String setVarName = null;
 	Integer setTimePoint = null;
@@ -2925,6 +2925,13 @@ private void calcAutoAllTimes() throws Exception {
 	Variable theVariable = getSimulation().getMathDescription().getVariable(getPdeDataContext().getVariableName());
 	if(theVariable == null){
 		theVariable = ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunction(getPdeDataContext().getVariableName());
+	}
+	if(theVariable == null){
+		DataProcessingOutputInfo dataProcessingOutputInfo = DataProcessingResultsPanel.getDataProcessingOutputInfo(getPdeDataContext());
+		if(dataProcessingOutputInfo != null && Arrays.asList(dataProcessingOutputInfo.getVariableNames()).contains(getPdeDataContext().getVariableName())){
+			//PostProcess Variable
+			return;
+		}
 	}
 	if(theVariable == null){
 		throw new Exception("Unexpected Alltimes... selected variable '"+getPdeDataContext().getVariableName()+"' is not stateVariable or OutputFunction");
