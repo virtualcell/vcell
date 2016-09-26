@@ -39,6 +39,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeExpansionEvent;
@@ -357,44 +358,45 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			
-			isReversibleCheckBox = new JCheckBox("");
+			isReversibleCheckBox = new JCheckBox("Reversible");
+			isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 			isReversibleCheckBox.addActionListener(eventHandler);
 			isReversibleCheckBox.setEnabled(true);
 
 			JPanel optionsPanel = new JPanel();
-			optionsPanel.setPreferredSize(new Dimension(150, 200));
+			optionsPanel.setPreferredSize(new Dimension(156, 200));
 			optionsPanel.setLayout(new GridBagLayout());
 			
 			int gridy = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0; 
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(6,6,2,1);
+			gbc.insets = new Insets(6,1,2,2);
 			gbc.anchor = GridBagConstraints.WEST;
-			optionsPanel.add(new JLabel("Reversible"), gbc);
-
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.insets = new Insets(6,1,2,5);
-			gbc.anchor = GridBagConstraints.WEST;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
 			optionsPanel.add(isReversibleCheckBox, gbc);
 			
 			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.insets = new Insets(0,0,0,0);
+			gbc.weightx = 1;	// empty cell to take all available horizontal space and push the next 2 buttons to the right
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			optionsPanel.add(new JLabel(""), gbc);
+
+			gbc = new GridBagConstraints();
 			gbc.gridx = 2;
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(6,5,2,2);
+			gbc.insets = new Insets(6,2,2,2);
 			gbc.anchor = GridBagConstraints.EAST;
 			optionsPanel.add(getZoomLargerButton(), gbc);
 
 			gbc = new GridBagConstraints();
 			gbc.gridx = 3;
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(6,2,2,6);
+			gbc.insets = new Insets(6,2,2,4);
 			gbc.anchor = GridBagConstraints.EAST;
 			optionsPanel.add(getZoomSmallerButton(), gbc);
-			// apparently we don't need a fake 3rd cell to the right
 
 			gridy++;
 			gbc = new GridBagConstraints();
