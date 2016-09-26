@@ -205,7 +205,7 @@ public class CartoonToolMiscActions {
 //		list.add(new ShowParameters(cartoonTool));
 		list.add(new AddBindingSite(cartoonTool));
 		list.add(new AddComplex(cartoonTool));
-		list.add(new Annotate(cartoonTool));
+//		list.add(new Annotate(cartoonTool));
 		return list; 
 	}
 
