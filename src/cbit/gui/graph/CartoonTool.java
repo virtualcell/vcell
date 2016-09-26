@@ -96,10 +96,10 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		}
 		menuItems.addAll(editMenuItems);
 		menuItems.add(saveAsImageMenu);
-		for(GraphViewAction paintingAction : paintingActions) {
-			paintingMenuItems.add(new JMenuItem(paintingAction));
-		}
-		menuItems.addAll(paintingMenuItems);
+//		for(GraphViewAction paintingAction : paintingActions) {
+//			paintingMenuItems.add(new JMenuItem(paintingAction));
+//		}
+//		menuItems.addAll(paintingMenuItems);
 		if(GROUPS_ARE_ENABLED) {
 			for(GraphViewAction groupAction : groupActions) {
 				groupMenuItems.add(new JMenuItem(groupAction));
