@@ -1627,7 +1627,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							throw new Exception("Unexpected delete object "+obj.getClass().getName());
 						}
 					}
-					ReactionCartoonTool.deleteReactionsAndSpecies(reactionCartoonEditorPanel,reactionStepArrList.toArray(new ReactionStep[0]),speciesContextArrList.toArray(new SpeciesContext[0]),false);
+					ReactionCartoonTool.deleteReactionsAndSpecies(reactionCartoonEditorPanel,reactionStepArrList.toArray(new ReactionStep[0]),speciesContextArrList.toArray(new SpeciesContext[0]));
 				}catch(UserCancelException uce){
 					return;
 				}

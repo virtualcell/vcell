@@ -48,18 +48,6 @@ public class CartoonToolEditActions {
 		}
 	}
 
-	@SuppressWarnings("serial")
-	public static class Cut extends CartoonToolWrapperAction {
-		public static final String MENU_ACTION = "Cut";
-		public static final String MENU_TEXT = MENU_ACTION;
-		public Cut(CartoonTool cartoonTool) {
-			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
-			putValue(MNEMONIC_KEY, KeyEvent.VK_X);
-			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X,
-					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		}
-	}
-
 //	@SuppressWarnings("serial")
 //	public static class Paste extends CartoonToolWrapperAction {
 //		public static final String MENU_ACTION = "Paste";
@@ -96,7 +84,6 @@ public class CartoonToolEditActions {
 		List<GraphViewAction> list = new ArrayList<GraphViewAction>();
 		list.add(new Copy(cartoonTool));
 		list.add(new Delete(cartoonTool));
-		list.add(new Cut(cartoonTool));
 //		list.add(new Paste(cartoonTool));
 		list.add(new PasteNew(cartoonTool));
 		list.add(new Move(cartoonTool));
