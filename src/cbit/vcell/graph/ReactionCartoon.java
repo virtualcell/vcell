@@ -66,64 +66,16 @@ public class ReactionCartoon extends ModelCartoon {
 	public void setRuleParticipantGroupingCriteria(RuleParticipantSignature.Criteria newCriteria) {
 		
 		if(this.ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.full && newCriteria == RuleParticipantSignature.Criteria.moleculeNumber) {
-			// switch from showing each participant independently to grouping them by molecule signature
-			// we are trying to cache all the signatures and their shapes that will get deleted because of grouping
-//			cachedShapes.clear();
-//			cachedSignatures.clear();
-//			
-//			for(Shape sh : getShapes()) {
-//				if(!(sh instanceof RuleParticipantSignatureDiagramShape)) {
-//					continue;
-//				}
-//				RuleParticipantSignatureDiagramShape rpsds = (RuleParticipantSignatureDiagramShape) sh;
-//				RuleParticipantSignature rps = rpsds.getRuleParticipantSignature();
-//				cachedShapes.add(rpsds);
-//				cachedSignatures.add(rps);
-//			}
 			this.ruleParticipantGroupingCriteria = newCriteria;
 			refreshAll(true);
-
-			// we need to take out from the cache all the signatures and shapes still present after refreshAll
-			// no point in caching those
-//			for(Shape sh : getShapes()) {
-//				if(!(sh instanceof RuleParticipantSignatureDiagramShape)) {
-//					continue;
-//				}
-//				RuleParticipantSignatureDiagramShape rpsds = (RuleParticipantSignatureDiagramShape) sh;
-//				RuleParticipantSignature rps = rpsds.getRuleParticipantSignature();
-//				cachedShapes.remove(rpsds);
-//				cachedSignatures.remove(rps);
-//			}
-			
 		} else if(this.ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.moleculeNumber && newCriteria == RuleParticipantSignature.Criteria.full) {
-			// we are trying to restore the cached signatures and their shapes (they are in a 1 to 1 relationship)
-			// inside refreshAll we'll sort the ones still usable from the ones that might have become obsolete
-//			for(RuleParticipantSignatureDiagramShape sh : cachedShapes) {
-//				addShape(sh);
-//				RuleParticipantSignature rps = sh.getRuleParticipantSignature();
-//				Structure ours = rps.getStructure();
-//				Structure theirs = getModel().getStructure(ours.getName());
-//				if(ours != theirs) {
-//					rps.setStructure(theirs);
-//				}
-//				ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(theirs);
-//				participantContainerShape.addChildShape(sh);
-////				signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
-//			}
-//			ruleParticipantSignatures.addAll(cachedSignatures);
-//			
-//
-//			
 			this.ruleParticipantGroupingCriteria = newCriteria;
 			refreshAll(true);
-
-		} else {
-			// switching to the same criteria, nothing to do
+		} else {			// switching to the same criteria, nothing to do
 //			refreshAll(false);
 			return;
 		}
 	}
-	
 	
 	public RuleParticipantSignature.Criteria getRuleParticipantGroupingCriteria() {
 		return ruleParticipantGroupingCriteria;
@@ -166,7 +118,6 @@ public class ReactionCartoon extends ModelCartoon {
 			case NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE: {		// obj is a RuleParticipantSignature
 				Structure struct = diagram.getStructure();
 				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
-//					if (signature.getStructure() == struct && signature.compareByCriteria(node.getName(), ruleParticipantGroupingCriteria)){
 					if (signature.getStructure() == struct && signature.compareByCriteria(node.getName(), Criteria.full)){
 						obj = signature;
 						break;
@@ -183,9 +134,9 @@ public class ReactionCartoon extends ModelCartoon {
 				// Now, we have only one diagram, so if a node has multiple positions,
 				// some would overwrite others.
 				// This attempts to prevent overwriting a position with a worse one.
-				if(relPosOld.x + relPosOld.y < relPosNew.x + relPosNew.y) {
+//				if(relPosOld.x + relPosOld.y < relPosNew.x + relPosNew.y) {
 					shape.setRelPos(relPosNew);					
-				}
+//				}
 			}
 		}
 	}
@@ -416,12 +367,9 @@ public class ReactionCartoon extends ModelCartoon {
 								signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
 								participantContainerShape.addChildShape(signatureShape);
 								signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
-							}else{
+							} else {
 								signatureShape = (RuleParticipantSignatureDiagramShape) getShapeFromModelObject(ruleParticipantSignature);
 								signatureShape.setVisible(true);
-//								if (!ruleParticipantSignature.contains(participant)){
-//									ruleParticipantSignature.addReactionRuleParticipant(participant);
-//								}
 							}
 							unwantedShapes.remove(signatureShape);
 							unwantedSignatures.remove(ruleParticipantSignature);
