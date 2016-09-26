@@ -198,7 +198,8 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			setLayout(new GridBagLayout());
 			setBackground(Color.white);
 
-			isReversibleCheckBox = new JCheckBox("");
+			isReversibleCheckBox = new JCheckBox("Reversible");
+			isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 			isReversibleCheckBox.addActionListener(eventHandler);
 			isReversibleCheckBox.setEnabled(true);
 			isReversibleCheckBox.setBackground(Color.white);
@@ -240,21 +241,6 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			// --------------------------------------------------------
 			
 			JPanel p = new JPanel();
-			p.setLayout(new GridBagLayout());
-			p.setBackground(Color.white);
-			int gridyy = 0;
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; 
-			gbc.gridy = gridyy;
-			gbc.anchor = GridBagConstraints.LINE_END;
-			p.add(new JLabel("Reversible"), gbc);
-			
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 1; 
-			gbc.gridy = gridyy;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			p.add(isReversibleCheckBox, gbc);
-			
 			gridy ++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -264,6 +250,15 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.NONE;
 			add(p, gbc);
+			
+			p.setLayout(new GridBagLayout());
+			p.setBackground(Color.white);
+			int gridyy = 0;
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridyy;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			p.add(isReversibleCheckBox, gbc);
 			
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 1; 
