@@ -430,7 +430,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 		int counter = 0;
 		Structure currentStruct = pasteToStructure;
 		String copiedStructName = copyFromRxSteps[counter].getStructure().getName();
-		StructureTopology structTopology = copyFromRxSteps[counter].getModel().getStructureTopology();
+		StructureTopology structTopology = (copyFromRxSteps[counter].getModel()==null?pasteToModel.getStructureTopology():copyFromRxSteps[counter].getModel().getStructureTopology());
 		IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 		IdentityHashMap<SpeciesContext, SpeciesContext> speciesContextHash = new IdentityHashMap<SpeciesContext, SpeciesContext>();
 		Vector<Issue> issueVector = new Vector<Issue>();

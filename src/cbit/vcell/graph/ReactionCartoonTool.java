@@ -455,18 +455,14 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			if (shape instanceof ReactionContainerShape) {
 				pasteReactionsAndSpecies(((ReactionContainerShape) shape).getStructure());
 			}
-		} else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)
-				|| menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 			try {
 				if(getGraphModel().getSelectedShape() instanceof ReactionContainerShape && menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)){
 					getModel().removeStructure(((ReactionContainerShape)getGraphModel().getSelectedShape()).getStructure());
 					return;
 				}
 				if (getSelectedReactionStepArray()!=null || getSelectedSpeciesContextArray()!=null) {
-					if(menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)){
-						new VCellTransferable.ReactionSpeciesCopy(getSelectedSpeciesContextArray(), getSelectedReactionStepArray());
-					}
-					deleteReactionsAndSpecies(getGraphPane(),getSelectedReactionStepArray(),getSelectedSpeciesContextArray(),menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION));
+					deleteReactionsAndSpecies(getGraphPane(),getSelectedReactionStepArray(),getSelectedSpeciesContextArray());
 				}
 				if (getSelectedReactionParticipantArray() != null && menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 					ReactionParticipant[] reactionParticipantArr = getSelectedReactionParticipantArray();
@@ -603,10 +599,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 	private static final String RXSPECIES_BACK = "Back";
 	private static final String RXSPECIES_CANCEL = "Cancel";
 	private static final String RXSPECIES_DELETE = "Delete";
-	private static final String RXSPECIES_CUT = "Cut";
 	private static final String RXSPECIES_ERROR = "Error";
 
-	private static TableListResult showDeleteDetails(Component requester,DeleteSpeciesInfo deleteSpeciesInfo,ReactionStep[] reactionStepArr,boolean bCut,boolean bShowErrorsOnly){
+	private static TableListResult showDeleteDetails(Component requester,DeleteSpeciesInfo deleteSpeciesInfo,ReactionStep[] reactionStepArr,boolean bShowErrorsOnly){
 		if(reactionStepArr != null && reactionStepArr.length == 0){
 			reactionStepArr = null;
 		}
@@ -625,7 +620,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		final String ERROR_IF_DELETE = "ERROR if deleted";
 		ArrayList<String[]> errorRows = new ArrayList<String[]>();
 		if(deleteSpeciesInfo != null && reactionStepArr != null){
-			title = (bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" Reactions/Species."+(deleteSpeciesInfo.bAnyUnresolvable()?"  User must resolve 'error' Flags to "+(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+".":"");
+			title = RXSPECIES_DELETE+" Reactions/Species."+(deleteSpeciesInfo.bAnyUnresolvable()?"  User must resolve 'error' Flags to "+RXSPECIES_DELETE+".":"");
 			columnNames = new String[] {"Type","Name","Flag","Reference"};
 			rowData = new String[deleteSpeciesInfo.getRowData().length+reactionStepArr.length][4];
 			final int STATUS_ROW = 2;
@@ -647,7 +642,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				}
 			}
 		}else if(deleteSpeciesInfo != null && reactionStepArr == null){
-			title = (bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" Species."+(deleteSpeciesInfo.bAnyUnresolvable()?"  User must resolve 'error' Flags to "+(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+".":"");
+			title = RXSPECIES_DELETE+" Species."+(deleteSpeciesInfo.bAnyUnresolvable()?"  User must resolve 'error' Flags to "+RXSPECIES_DELETE+".":"");
 			columnNames = new String[] {"Species","Flag","Reference"};
 			rowData = new String[deleteSpeciesInfo.getRowData().length][3];
 			final int STATUS_ROW = 1;
@@ -660,7 +655,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				}
 			}
 		}else if(deleteSpeciesInfo == null && reactionStepArr != null){
-			title = (bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" Reactions.";
+			title = RXSPECIES_DELETE+" Reactions.";
 			columnNames = new String[] {"Reactions"};
 			rowData = new String[reactionStepArr.length][1];
 			for (int i = 0; i < reactionStepArr.length; i++) {
@@ -675,7 +670,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		TableListResult tableListResult = DialogUtils.showComponentOptionsTableList(requester, title,columnNames, rowData, null ,null,new String[] {RXSPECIES_BACK},RXSPECIES_BACK,null);
 		return tableListResult;
 	}
-	public static void deleteReactionsAndSpecies(Component requester,ReactionStep[] reactionStepArr,SpeciesContext[] speciesContextArr, boolean bCut) throws Exception,UserCancelException{
+	public static void deleteReactionsAndSpecies(Component requester,ReactionStep[] reactionStepArr,SpeciesContext[] speciesContextArr) throws Exception,UserCancelException{
 		if((speciesContextArr == null && reactionStepArr == null) || 
 				(reactionStepArr == null && speciesContextArr != null && speciesContextArr.length == 0) ||
 				(speciesContextArr == null && reactionStepArr != null && reactionStepArr.length == 0) ||
@@ -698,15 +693,15 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		final String DETAILS = "Details...";
 		while(true){
 			String response = DialogUtils.showWarningDialog(requester,
-					(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" "+(bHasBoth?"Reactions and Species.":(rxCount > 0?"Reactions.":(speciesCount > 0?"Species.":""))),
-					(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" "+(bHasBoth?rxCount+" Reactions and "+speciesCount+" Species.":(rxCount > 0?rxCount+" Reactions.":(speciesCount > 0?speciesCount+" Species.":""))),
-					new String[] {(bCut?RXSPECIES_CUT:RXSPECIES_DELETE),DETAILS,RXSPECIES_CANCEL},(bCut?RXSPECIES_CUT:RXSPECIES_DELETE));
+					RXSPECIES_DELETE+" "+(bHasBoth?"Reactions and Species.":(rxCount > 0?"Reactions.":(speciesCount > 0?"Species.":""))),
+					RXSPECIES_DELETE+" "+(bHasBoth?rxCount+" Reactions and "+speciesCount+" Species.":(rxCount > 0?rxCount+" Reactions.":(speciesCount > 0?speciesCount+" Species.":""))),
+					new String[] {RXSPECIES_DELETE,DETAILS,RXSPECIES_CANCEL},RXSPECIES_DELETE);
 			if(response == null || response.equals(RXSPECIES_CANCEL)){
 				throw UserCancelException.CANCEL_GENERIC;
 			}
 			deleteSpeciesInfo = (deleteSpeciesInfo==null?detailsDeleteSpecies(requester, speciesContextArr,reactionStepArr,rxCartoon):deleteSpeciesInfo);
 			if(response.equals(DETAILS)){
-				TableListResult tableListResult = showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,bCut,false);
+				TableListResult tableListResult = showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,false);
 //				if(!tableListResult.selectedOption.equals(RXSPECIES_BACK)){
 //				//if(!tableListResult.selectedOption.equals((bCut?RXSPECIES_CUT:RXSPECIES_DELETE))){
 //					throw UserCancelException.CANCEL_GENERIC;
@@ -720,11 +715,11 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				if(errors){
 					while(true){
 						String response = DialogUtils.showWarningDialog(requester, "Error warning.",
-							"Warning: 1 or more SpeciesContexts have Model references that could cause Model corruption if "+(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+".", new String[] {DETAILS,RXSPECIES_CANCEL},DETAILS);
+							"Warning: 1 or more SpeciesContexts have Model references that could cause Model corruption if "+RXSPECIES_DELETE+".", new String[] {DETAILS,RXSPECIES_CANCEL},DETAILS);
 						if(response == null || response.equals(RXSPECIES_CANCEL)){
 							throw UserCancelException.CANCEL_GENERIC;
 						}
-						showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,bCut,true);
+						showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,true);
 					}
 				}
 			}
@@ -2516,12 +2511,6 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					|| shape instanceof CatalystShape
 					|| shape instanceof ReactionRuleDiagramShape
 					|| shape instanceof RuleParticipantSignatureDiagramShape) {
-				return true;
-			}
-		}
-		if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
-			if (shape instanceof SpeciesContextShape
-					|| shape instanceof ReactionStepShape) {
 				return true;
 			}
 		}
