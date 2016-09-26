@@ -126,29 +126,14 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if (source == getAddSpeciesPatternFromTreeMenuItem()) {
-				addSpeciesPattern();
-			} else if (source == getDeleteFromTreeMenuItem()) {
-				deleteFromTree();
-			} else if (source == getRenameFromTreeMenuItem()) {
-				observableTree.startEditingAtPath(observableTree.getSelectionPath());
-			} else if (source == getAddFromTreeMenu()) {
-				addNewFromTree();
-			} else if (source == getEditFromTreeMenuItem()) {
-				observableTree.startEditingAtPath(observableTree.getSelectionPath());
-			} else if (e.getSource() == getAddSpeciesButton()) {
+			if (e.getSource() == getAddSpeciesButton()) {
 				addSpeciesPattern();
 			} else if (e.getSource() == getAddSpeciesPatternFromShapeMenuItem()) {
 				addSpeciesPattern();
 			} else if (source == getDeleteFromShapeMenuItem()) {
 				deleteFromShape();
-			} else if (source == getRenameFromShapeMenuItem()) {
-//				observableTree.startEditingAtPath(observableTree.getSelectionPath());
 			} else if (source == getAddFromShapeMenu()) {
 				addNewFromShape();
-			} else if (source == getEditFromShapeMenuItem()) {
-//				observableTree.startEditingAtPath(observableTree.getSelectionPath());
-				
 			} else if (source == getSequenceMultimolecularButton()) {
 				getLengthEqualTextField().setEnabled(false);
 				getLengthGreaterTextField().setEnabled(false);
@@ -232,15 +217,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void mousePressed(MouseEvent e) {
-			if (!e.isConsumed() && e.getSource() == observableTree) {
-//				showPopupMenu(e);
-			}
 		}
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			if (!e.isConsumed() && e.getSource() == observableTree) {
-//				showPopupMenu(e);
-			}			
 		}
 		@Override
 		public void mouseEntered(MouseEvent e) {
@@ -288,7 +267,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private JTree observableTree = null;
 	private ObservableTreeModel observableTreeModel = null;
 	private RbmObservable observable;
-	private JLabel titleLabel = null;
 	JScrollPane scrollPane;
 	private JTextArea annotationTextArea;
 	private JButton addSpeciesButton = null;
@@ -302,18 +280,10 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
 	LargeShapePanel shapePanel;
-	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);	// between tree and right side
 	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
 
 	List<SpeciesPatternLargeShape> spsList = new ArrayList<SpeciesPatternLargeShape>();
 
-	private JPopupMenu popupFromTreeMenu;
-	private JMenu addFromTreeMenu;
-	private JMenuItem deleteFromTreeMenuItem;	
-	private JMenuItem renameFromTreeMenuItem;
-	private JMenuItem editFromTreeMenuItem;
-	private JMenuItem addSpeciesPatternFromTreeMenuItem;
-	
 	private JPopupMenu popupFromShapeMenu;
 	private JMenu addFromShapeMenu;
 	private JMenuItem deleteFromShapeMenuItem;	
@@ -347,103 +317,10 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	public void addNewFromShape() {
 		
 	}
-	public void addNewFromTree() {
-		Object obj = observableTree.getLastSelectedPathComponent();
-		if (obj == null || !(obj instanceof BioModelNode)) {
-			return;
-		}
-		BioModelNode selectedNode = (BioModelNode) obj;
-		Object selectedUserObject = selectedNode.getUserObject();
-		if (selectedUserObject == observable){
-			for (MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
-				JMenuItem menuItem = new JMenuItem(mt.getName());
-				menuItem.addActionListener(new ActionListener() {
-					
-					public void actionPerformed(ActionEvent e) {
-						;
-					}
-				});
-			}
-		} else if (selectedUserObject instanceof MolecularComponent){
-			;
-		}	
-	}
-
 	public void deleteFromShape() {
 
 	}
-	public void deleteFromTree() {
-		Object obj = observableTree.getLastSelectedPathComponent();
-		if (obj == null || !(obj instanceof BioModelNode)) {
-			return;
-		}
-		BioModelNode selectedNode = (BioModelNode) obj;
-		TreeNode parent = selectedNode.getParent();
-		if (!(parent instanceof BioModelNode)) {
-			return;
-		}
-		BioModelNode parentNode = (BioModelNode) parent;
-		Object selectedUserObject = selectedNode.getUserObject();
-		
-		if(selectedUserObject instanceof SpeciesPatternLocal) {
-			System.out.println("deleting species pattern local");
-			Object parentUserObject = parentNode.getUserObject();
-			SpeciesPatternLocal spl = (SpeciesPatternLocal)selectedUserObject;
-			RbmObservable o = (RbmObservable)parentUserObject;
-			List<SpeciesPattern> speciesPatternList = o.getSpeciesPatternList();
-			speciesPatternList.remove(spl.speciesPattern);
-			final TreePath path = observableTreeModel.findObjectPath(null, observable);
-			observableTree.setSelectionPath(path);
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					observableTreeModel.populateTree();			// repaint tree
-					observableTree.scrollPathToVisible(path);	// scroll back up to show the observable
-				}
-			});
-		} else if (selectedUserObject instanceof MolecularTypePattern){
-			System.out.println("deleting molecular type pattern");
-			MolecularTypePattern mtp = (MolecularTypePattern) selectedUserObject;
-			Object parentUserObject = parentNode.getUserObject();
-			SpeciesPatternLocal spl = (SpeciesPatternLocal)parentUserObject;
-			SpeciesPattern sp = spl.speciesPattern;
-			sp.removeMolecularTypePattern(mtp);
-			if(!sp.getMolecularTypePatterns().isEmpty()) {
-				sp.resolveBonds();
-			}
-			final TreePath path = observableTreeModel.findObjectPath(null, spl);
-			observableTree.setSelectionPath(path);
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					observableTreeModel.populateTree();
-					observableTree.scrollPathToVisible(path);	// this doesn't seem to work ?
-				}
-			});
-		} else if(selectedUserObject instanceof MolecularComponentPattern) {
-			MolecularComponentPattern mcp = (MolecularComponentPattern) selectedUserObject;
-			Object parentUserObject = parentNode.getUserObject();
-			MolecularTypePattern mtp = (MolecularTypePattern)parentUserObject;
-			mtp.removeMolecularComponentPattern(mcp);
-			System.out.println("deleting MolecularComponentPattern " + mcp.getMolecularComponent().getName());
-			parent = parentNode.getParent();
-			parentNode = (BioModelNode) parent;
-			parentUserObject = parentNode.getUserObject();
-			SpeciesPatternLocal spl = (SpeciesPatternLocal)parentUserObject;
-			SpeciesPattern sp = spl.speciesPattern;
-			if(!sp.getMolecularTypePatterns().isEmpty()) {
-				sp.resolveBonds();
-			}
-			final TreePath path = observableTreeModel.findObjectPath(null, spl);
-			observableTree.setSelectionPath(path);
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					observableTreeModel.populateTree();
-					observableTree.scrollPathToVisible(path);	// this doesn't seem to work ?
-				}
-			});
-		} else {
-			System.out.println("deleting " + selectedUserObject.toString());
-		}
-	}
+
 	private JRadioButton getSequenceMultimolecularButton() {
 		if (sequenceMultimolecularButton == null) {
 			sequenceMultimolecularButton = new JRadioButton("Multimolecular");
@@ -525,58 +402,11 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 
 	private void initialize() {
 		
-		JPanel leftPanel = new JPanel();
-		leftPanel.setLayout(new GridBagLayout());
-		leftPanel.setBackground(Color.white);	
-		
 		observableTree = new BioModelNodeEditableTree();
 		observableTreeModel = new ObservableTreeModel(observableTree);
 		observableTree.setModel(observableTreeModel);
-		observableTreeModel.setShowDetails(true);
-		
-		RbmObservableTreeCellRenderer cro = new RbmObservableTreeCellRenderer(observableTree);
-		observableTree.setCellRenderer(cro);
-		DisabledTreeCellEditor dtce =  new DisabledTreeCellEditor(observableTree, (cro));
-		observableTree.setCellEditor(dtce);
-		observableTree.setEditable(false);
-		
-		int rowHeight = observableTree.getRowHeight();
-		if (rowHeight < 10) { 
-			rowHeight = 20; 
-		}
-		observableTree.setRowHeight(rowHeight + 5);
-		observableTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		ToolTipManager.sharedInstance().registerComponent(observableTree);
-		observableTree.addTreeSelectionListener(eventHandler);
-		observableTree.addTreeWillExpandListener(eventHandler);
-		observableTree.addMouseListener(eventHandler);
-		observableTree.setLargeModel(true);
-		observableTree.setRootVisible(true);
 		
 		setLayout(new GridBagLayout());
-		
-		int gridy = 0;
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(2,2,0,2);
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		titleLabel = new JLabel("Observable");
-		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
-		leftPanel.add(titleLabel, gbc);
-		
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
-		gbc.gridwidth = 2;
-		gbc.insets = new Insets(2,2,2,2);
-		gbc.fill = GridBagConstraints.BOTH;
-		leftPanel.add(new JScrollPane(observableTree), gbc);
 		
 // --------------------------------------------------------------------------------------------------------	
 		
@@ -593,9 +423,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		annotationBorder.setTitlePosition(TitledBorder.TOP);
 		annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 		
-//		JScrollPane p = new JScrollPane(shapePanel);
-//		p.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-//		p.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		shapePanel = new LargeShapePanel() {
 			@Override
 			public void paintComponent(Graphics g) {
@@ -668,8 +495,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		optionsPanel.setPreferredSize(new Dimension(112, 200));		// gray options panel
 		optionsPanel.setLayout(new GridBagLayout());
 		
-		gridy = 0;
-		gbc = new GridBagConstraints();
+		int gridy = 0;
+		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.gridwidth = 3;
@@ -783,19 +610,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		splitPaneHorizontal.setResizeWeight(0.9d);
 		splitPaneHorizontal.setDividerLocation(0.8d);
 		
-// -------------------------------------------------------------------------------------------------		
-		splitPane.setOneTouchExpandable(true);
-		splitPane.setLeftComponent(leftPanel);
-		splitPane.setRightComponent(splitPaneHorizontal);
-		
-		splitPane.setResizeWeight(0.0d);
-		splitPane.getLeftComponent().setMinimumSize(new Dimension());
-		splitPane.getLeftComponent().setPreferredSize(new Dimension());
-		splitPane.setDividerLocation(0.0d);
-
 		setName("ObservablePropertiesPanel");
 		setLayout(new BorderLayout());
-		add(splitPane, BorderLayout.CENTER);
+		add(splitPaneHorizontal, BorderLayout.CENTER);
 		setBackground(Color.white);
 		
 		annotationTextArea.addFocusListener(eventHandler);
@@ -810,13 +627,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		return addSpeciesButton;
 	}
 	
-	private JMenu getAddFromTreeMenu() {
-		if (addFromTreeMenu == null) {
-			addFromTreeMenu = new JMenu("Add");
-			addFromTreeMenu.addActionListener(eventHandler);
-		}
-		return addFromTreeMenu;
-	}
 	private JMenu getAddFromShapeMenu() {
 		if (addFromShapeMenu == null) {
 			addFromShapeMenu = new JMenu("Add");
@@ -825,13 +635,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		return addFromShapeMenu;
 	}
 	
-	private JMenuItem getRenameFromTreeMenuItem() {
-		if (renameFromTreeMenuItem == null) {
-			renameFromTreeMenuItem = new JMenuItem("Rename");
-			renameFromTreeMenuItem.addActionListener(eventHandler);
-		}
-		return renameFromTreeMenuItem;
-	}
 	private JMenuItem getRenameFromShapeMenuItem() {
 		if (renameFromShapeMenuItem == null) {
 			renameFromShapeMenuItem = new JMenuItem("Rename");
@@ -840,13 +643,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		return renameFromShapeMenuItem;
 	}
 	
-	private JMenuItem getDeleteFromTreeMenuItem() {
-		if (deleteFromTreeMenuItem == null) {
-			deleteFromTreeMenuItem = new JMenuItem("Delete");
-			deleteFromTreeMenuItem.addActionListener(eventHandler);
-		}
-		return deleteFromTreeMenuItem;
-	}
 	private JMenuItem getDeleteFromShapeMenuItem() {
 		if (deleteFromShapeMenuItem == null) {
 			deleteFromShapeMenuItem = new JMenuItem("Delete");
@@ -855,13 +651,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		return deleteFromShapeMenuItem;
 	}
 	
-	private JMenuItem getEditFromTreeMenuItem() {
-		if (editFromTreeMenuItem == null) {
-			editFromTreeMenuItem = new JMenuItem("Edit");
-			editFromTreeMenuItem.addActionListener(eventHandler);
-		}
-		return editFromTreeMenuItem;
-	}
 	private JMenuItem getEditFromShapeMenuItem() {
 		if (editFromShapeMenuItem == null) {
 			editFromShapeMenuItem = new JMenuItem("Edit");
@@ -870,13 +659,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		return editFromShapeMenuItem;
 	}
 	
-	private JMenuItem getAddSpeciesPatternFromTreeMenuItem() {
-		if (addSpeciesPatternFromTreeMenuItem == null) {
-			addSpeciesPatternFromTreeMenuItem = new JMenuItem("Add Species Pattern");
-			addSpeciesPatternFromTreeMenuItem.addActionListener(eventHandler);
-		}
-		return addSpeciesPatternFromTreeMenuItem;
-	}
 	private JMenuItem getAddSpeciesPatternFromShapeMenuItem() {
 		if (addSpeciesPatternFromShapeMenuItem == null) {
 			addSpeciesPatternFromShapeMenuItem = new JMenuItem("Add Species Pattern");
@@ -924,14 +706,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		} else {
 			annotationTextArea.setText(null);
 		}
-		updateTitleLabel();
 		updateShape();
 	}
-	private void updateTitleLabel() {
-		if (observable != null) {
-			titleLabel.setText("Properties for Observable : " + observable.getName());
-		}
-	}
+
 //	public static final int ReservedSpaceForNameOnYAxis = 20;	// enough to write some text above the shape
 	public static final int xOffsetInitial = 25;
 	public static final int ReservedSpaceForNameOnYAxis = 2;	// just a little empty spacing above the shape
@@ -952,7 +729,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		Dimension preferredSize = new Dimension(maxXOffset+200, maxYOffset);
 		shapePanel.setPreferredSize(preferredSize);
 
-		splitPane.getRightComponent().repaint();
+		splitPaneHorizontal.repaint();
 	}
 	private void changeFreeTextAnnotation() {
 		try{
@@ -1033,7 +810,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			getAddFromShapeMenu().removeAll();
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
-				Graphics gc = splitPane.getRightComponent().getGraphics();
+				Graphics gc = splitPaneHorizontal.getGraphics();
 				Icon icon = new MolecularTypeSmallShape(4, 4, mt, null, gc, mt, null);
 				menuItem.setIcon(icon);
 				getAddFromShapeMenu().add(menuItem);
@@ -1258,7 +1035,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 		}
 		int index = 0;
-		Graphics gc = splitPane.getRightComponent().getGraphics();
+		Graphics gc = splitPaneHorizontal.getGraphics();
 		for(String name : itemMap.keySet()) {
 			JMenuItem menuItem = new JMenuItem(name);
 			if(index == 0) {
@@ -1351,255 +1128,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		popupFromShapeMenu.add(editBondMenu);
 	}
 	
-	private void showPopupMenu(MouseEvent e){ 
-		if (!e.isPopupTrigger()) {
-			return;
-		}
-		if (popupFromTreeMenu == null) {
-			popupFromTreeMenu = new JPopupMenu();			
-		}		
-		if (popupFromTreeMenu.isShowing()) {
-			return;
-		}
-		boolean bDelete = false;
-		boolean bAdd = false;
-		boolean bEdit = false;
-		boolean bRename = false;
-		popupFromTreeMenu.removeAll();
-		Point mousePoint = e.getPoint();
-		GuiUtils.selectClickTreePath(observableTree, e);		
-		TreePath clickPath = observableTree.getPathForLocation(mousePoint.x, mousePoint.y);
-	    if (clickPath == null) {
-	    	popupFromTreeMenu.add(getAddSpeciesPatternFromTreeMenuItem());
-	    	return;
-	    }
-		TreePath[] selectedPaths = observableTree.getSelectionPaths();
-		if (selectedPaths == null) {
-			return;
-		}
-		for (TreePath tp : selectedPaths) {
-			Object obj = tp.getLastPathComponent();
-			if (obj == null || !(obj instanceof BioModelNode)) {
-				continue;
-			}
-			
-			BioModelNode selectedNode = (BioModelNode) obj;
-			final Object selectedObject = selectedNode.getUserObject();
-			
-			if (selectedObject instanceof RbmObservable) {
-				popupFromTreeMenu.add(getAddSpeciesPatternFromTreeMenuItem());
-			} else if(selectedObject instanceof SpeciesPatternLocal) {
-				getAddFromTreeMenu().setText(VCellErrorMessages.AddMolecularTypes);
-				getAddFromTreeMenu().removeAll();
-				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
-					JMenuItem menuItem = new JMenuItem(mt.getName());
-					Graphics gc = splitPane.getRightComponent().getGraphics();
-					Icon icon = new MolecularTypeSmallShape(4, 4, mt, null, gc, mt, null);
-					menuItem.setIcon(icon);
-					getAddFromTreeMenu().add(menuItem);
-					menuItem.addActionListener(new ActionListener() {
-						
-						public void actionPerformed(ActionEvent e) {
-							MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
-							((SpeciesPatternLocal)selectedObject).speciesPattern.addMolecularTypePattern(molecularTypePattern);
-							final TreePath path = observableTreeModel.findObjectPath(null, molecularTypePattern);
-							observableTree.setSelectionPath(path);
-							SwingUtilities.invokeLater(new Runnable() {
-								
-								public void run() {				
-									observableTree.scrollPathToVisible(path);
-								}
-							});
-						}
-					});
-				}
-				bAdd = true;
-				bDelete = true;
-			} else if (selectedObject instanceof MolecularTypePattern) {
-				bDelete = true;
-			} else if (selectedObject instanceof MolecularComponentPattern) {
-				manageComponentPattern(observableTreeModel, observableTree, selectedNode, selectedObject);
-				bDelete = false;
-			}
-		}
-//		popupMenu.removeAll();
-		// everything can be renamed
-		if (bRename) {
-			popupFromTreeMenu.add(getRenameFromTreeMenuItem());
-		}
-		if (bDelete) {
-			popupFromTreeMenu.add(getDeleteFromTreeMenuItem());
-		}
-		if (bEdit) {
-			popupFromTreeMenu.add(getEditFromTreeMenuItem());
-		}
-		if (bAdd) {
-			popupFromTreeMenu.add(new JSeparator());
-			popupFromTreeMenu.add(getAddFromTreeMenu());
-		}
-		popupFromTreeMenu.show(observableTree, mousePoint.x, mousePoint.y);
-	}
-	
 	public void setBioModel(BioModel newValue) {
 		bioModel = newValue;
 		observableTreeModel.setBioModel(bioModel);
 	}
-	public void manageComponentPattern(final ObservableTreeModel treeModel, final JTree tree,
-			BioModelNode selectedNode, final Object selectedObject) {
-		popupFromTreeMenu.removeAll();
-		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
-		final MolecularComponent mc = mcp.getMolecularComponent();
-		//
-		// --- State
-		//
-		if(mc.getComponentStateDefinitions().size() != 0) {
-			JMenu editStateMenu = new JMenu();
-			editStateMenu.setText("Edit State");
-			editStateMenu.removeAll();
-			List<String> itemList = new ArrayList<String>();
-			itemList.add(ComponentStatePattern.strAny);
-			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
-				String name = csd.getName();
-				itemList.add(name);
-			}
-			for(String name : itemList) {
-				JMenuItem menuItem = new JMenuItem(name);
-				editStateMenu.add(menuItem);
-				menuItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						String name = e.getActionCommand();
-						if(name.equals(ComponentStatePattern.strAny)) {
-							ComponentStatePattern csp = new ComponentStatePattern();
-							mcp.setComponentStatePattern(csp);
-						} else {
-							String csdName = e.getActionCommand();
-							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(csdName);
-							if(csd == null) {
-								throw new RuntimeException("Missing ComponentStateDefinition " + csdName + " for Component " + mcp.getMolecularComponent().getName());
-							}
-							ComponentStatePattern csp = new ComponentStatePattern(csd);
-							mcp.setComponentStatePattern(csp);
-						}
-					}
-				});
-			}
-			popupFromTreeMenu.add(editStateMenu);
-		}
-		//
-		// --- Bonds
-		//						
-		final MolecularTypePattern mtp;
-		final SpeciesPattern sp;
-		BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
-		Object parentObject = parentNode == null ? null : parentNode.getUserObject();
-		if(parentObject != null && parentObject instanceof MolecularTypePattern) {
-			mtp = (MolecularTypePattern)parentObject;
-			parentNode = (BioModelNode) parentNode.getParent();
-			parentObject = parentNode == null ? null : parentNode.getUserObject();
-			if(parentObject != null && parentObject instanceof SpeciesPatternLocal) {
-				sp = ((SpeciesPatternLocal)parentObject).speciesPattern;
-			} else {
-				sp = null;
-			}
-		} else {
-			mtp = null;
-			sp = null;
-		}
-		
-		JMenu editBondMenu = new JMenu();
-		editBondMenu.setText("Edit Bond");
-		editBondMenu.removeAll();
-		final Map<String, Bond> itemMap = new LinkedHashMap<String, Bond>();
-		
-		final String noneString = "<html><b>" + BondType.None.symbol + "</b> " + BondType.None.name() + "</html>";
-		final String existsString = "<html><b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
-		final String possibleString = "<html><b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
-		itemMap.put(noneString, null);
-		itemMap.put(existsString, null);
-		itemMap.put(possibleString, null);
-		if(mtp != null && sp != null) {
-			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
-			for(Bond b : bondPartnerChoices) {
-				if(b.equals(mcp.getBond())) {
-					continue;	// if the mcp has a bond already we don't offer it
-				}
-				int index = 0;
-				if(mcp.getBondType() == BondType.Specified) {
-					index = mcp.getBondId();
-				} else {
-					index = sp.nextBondId();
-				}
-//				itemMap.put(b.toHtmlStringLong(sp, mtp, mc, index), b);
-				itemMap.put(b.toHtmlStringLong(sp, index), b);
-			}
-		}
-		for(String name : itemMap.keySet()) {
-			JMenuItem menuItem = new JMenuItem(name);
-			editBondMenu.add(menuItem);
-			menuItem.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					String name = e.getActionCommand();
-					BondType btBefore = mcp.getBondType();
-					if(name.equals(noneString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
-							// change the partner to possible
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
-							mcp.getBond().molecularComponentPattern.setBond(null);
-						}
-						mcp.setBondType(BondType.None);
-						mcp.setBond(null);
-						treeModel.populateTree();
-					} else if(name.equals(existsString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
-							// change the partner to possible
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
-							mcp.getBond().molecularComponentPattern.setBond(null);
-						}
-						mcp.setBondType(BondType.Exists);
-						mcp.setBond(null);
-						treeModel.populateTree();
-					} else if(name.equals(possibleString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
-							// change the partner to possible
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
-							mcp.getBond().molecularComponentPattern.setBond(null);
-						}
-						mcp.setBondType(BondType.Possible);
-						mcp.setBond(null);
-						treeModel.populateTree();
-					} else {
-						if (btBefore != BondType.Specified) {
-							// if we go from a non-specified to a specified we need to find the next available
-							// bond id, so that we can choose the color for displaying the bond
-							// a bad bond id, like -1, will crash badly when trying to choose the color
-							int bondId = sp.nextBondId();
-							mcp.setBondId(bondId);
-						} else {
-							// specified -> specified
-							// change the old partner to possible, continue using the bond id
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
-							mcp.getBond().molecularComponentPattern.setBond(null);
-						}
-						mcp.setBondType(BondType.Specified);
-						Bond b = itemMap.get(name);
-						mcp.setBond(b);
-						mcp.getBond().molecularComponentPattern.setBondId(mcp.getBondId());
-						sp.resolveBonds();
-
-						final TreePath path = treeModel.findObjectPath(null, mcp);
-						treeModel.populateTree();
-						tree.setSelectionPath(path);
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {				
-								tree.scrollPathToVisible(path);
-							}
-						});
-					}
-
-				}
-			});
-		}
-		popupFromTreeMenu.add(editBondMenu);
-	}
-
 }
