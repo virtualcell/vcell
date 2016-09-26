@@ -97,8 +97,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JMenuItem ivjExitMenuItem = null;
 	private JMenu ivjFileMenu = null;
 	private JMenu ivjHelpMenu = null;
-	private JMenuItem ivjLocalMenuItem = null;
-	private JMenuItem ivjMinimize_AllMenuItem = null;
 	private JMenu ivjNewMenuItem = null;
 	private JMenu ivjOpenMenuItem = null;
 	//private JMenu recentMenuItem = new JMenu("Open Recent...");
@@ -111,7 +109,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JCheckBoxMenuItem ivjStatusbarMenuItem = null;
 	private JPanel ivjStatusBarPane = null;
 	//--------------------------------------
-	private JMenu ivjViewMenu = null;
 	private JSeparator ivjJSeparator6 = null;
 	private JMenuItem ivjJMenuItemNewBioModel = null;
 	private JMenuItem ivjJMenuItemOpenBioModel = null;
@@ -122,11 +119,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private DocumentWindowManager fieldWindowManager = null;
 	private JMenuItem ivjJMenuItemExport = null;
 	private JMenuItem menuItemImport = null;
-	private JMenuItem ivjJMenuItemServer = null;
 	private JProgressBar ivjJProgressBarConnection = null;
 	private JMenuItem ivjJMenuItemCompare = null;
 	private JMenuItem ivjJMenuItemRevert = null;
-	private JMenuItem ivjJMenuItemOptions = null;
 	private JMenuItem ivjGeometryMenu = null;
 	private JMenuItem ivjMathFromBioMenuItem = null;
 	private JMenu ivjMathMenu = null;
@@ -190,14 +185,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC18(e);
 			if (e.getSource() == DocumentWindow.this.getReconnectMenuItem())
 				connEtoC19(e);
-			if (e.getSource() == DocumentWindow.this.getLocalMenuItem())
-				connEtoC20(e);
-			if (e.getSource() == DocumentWindow.this.getMinimize_AllMenuItem())
-				connEtoC24(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemServer())
-				connEtoC4(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemOptions())
-				connEtoC1(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemRevert())
 				connEtoC28(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemCompare())
@@ -275,27 +262,6 @@ private void closeWindow() {
 private void compareWithSaved() {
 	getWindowManager().compareWithSaved();
 }
-
-
-/**
- * connEtoC1:  (JMenuItemOptions.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.notYet();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC10:  (JMenuItemOpenBioModel.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
@@ -503,46 +469,6 @@ private void connEtoC2(java.awt.event.ItemEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoC20:  (LocalMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC20(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.notYet();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC24:  (Minimize_AllMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC24(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.notYet();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connEtoC25:  (JMenuItemOnlineHelp.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.invokeOnlineHelp()V)
  * @param arg1 java.awt.event.ActionEvent
@@ -715,27 +641,6 @@ private void connEtoC38(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC4:  (JMenuItemServer.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.notYet();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC5:  (CloseMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.closeWindow()V)
@@ -1010,7 +915,6 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar = new javax.swing.JMenuBar();
 			ivjDocumentWindowJMenuBar.setName("DocumentWindowJMenuBar");
 			ivjDocumentWindowJMenuBar.add(getFileMenu());
-			ivjDocumentWindowJMenuBar.add(getViewMenu());
 			ivjDocumentWindowJMenuBar.add(getServerMenu());
 			ivjDocumentWindowJMenuBar.add(createWindowMenu(true));
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
@@ -1169,6 +1073,7 @@ private javax.swing.JMenu getHelpMenu() {
 			ivjHelpMenu.add(getAbout_BoxMenuItem());
 			ivjHelpMenu.add(getSeparator());
 			ivjHelpMenu.add(getMntmLicenseInformation());
+			ivjHelpMenu.add(getStatusbarMenuItem());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1413,30 +1318,6 @@ private javax.swing.JMenuItem getJMenuItemOpenMathModel() {
 }
 
 /**
- * Return the JMenuItemOptions property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getJMenuItemOptions() {
-	if (ivjJMenuItemOptions == null) {
-		try {
-			ivjJMenuItemOptions = new javax.swing.JMenuItem();
-			ivjJMenuItemOptions.setName("JMenuItemOptions");
-			ivjJMenuItemOptions.setText("Options...");
-			ivjJMenuItemOptions.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemOptions;
-}
-
-
-/**
  * Return the JMenuItemRevert property value.
  * @return javax.swing.JMenuItem
  */
@@ -1457,29 +1338,6 @@ private javax.swing.JMenuItem getJMenuItemRevert() {
 		}
 	}
 	return ivjJMenuItemRevert;
-}
-
-/**
- * Return the JMenuItemServer property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getJMenuItemServer() {
-	if (ivjJMenuItemServer == null) {
-		try {
-			ivjJMenuItemServer = new javax.swing.JMenuItem();
-			ivjJMenuItemServer.setName("JMenuItemServer");
-			ivjJMenuItemServer.setText("Change Server");
-			ivjJMenuItemServer.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemServer;
 }
 
 /**
@@ -1542,29 +1400,6 @@ private javax.swing.JSeparator getJSeparator6() {
 }
 
 /**
- * Return the LocalMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getLocalMenuItem() {
-	if (ivjLocalMenuItem == null) {
-		try {
-			ivjLocalMenuItem = new javax.swing.JMenuItem();
-			ivjLocalMenuItem.setName("LocalMenuItem");
-			ivjLocalMenuItem.setText("Local");
-			ivjLocalMenuItem.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjLocalMenuItem;
-}
-
-/**
  * Comment
  */
 
@@ -1615,29 +1450,6 @@ private javax.swing.JMenu getMathMenu() {
 		}
 	}
 	return ivjMathMenu;
-}
-
-/**
- * Return the Minimize_AllMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getMinimize_AllMenuItem() {
-	if (ivjMinimize_AllMenuItem == null) {
-		try {
-			ivjMinimize_AllMenuItem = new javax.swing.JMenuItem();
-			ivjMinimize_AllMenuItem.setName("Minimize_AllMenuItem");
-			ivjMinimize_AllMenuItem.setText("Minimize All");
-			ivjMinimize_AllMenuItem.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjMinimize_AllMenuItem;
 }
 
 /**
@@ -1903,9 +1715,6 @@ private javax.swing.JMenu getServerMenu() {
 			ivjServerMenu.add(getChange_UserMenuItem());
 			ivjServerMenu.add(getUpdate_UserMenuItem());
 			ivjServerMenu.add(getReconnectMenuItem());
-			ivjServerMenu.add(new JSeparator());
-			ivjServerMenu.add(getJMenuItemServer());
-			ivjServerMenu.add(getLocalMenuItem());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2070,30 +1879,6 @@ public TopLevelWindowManager getTopLevelWindowManager() {
 }
 
 /**
- * Return the ViewMenu property value.
- * @return javax.swing.JMenu
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getViewMenu() {
-	if (ivjViewMenu == null) {
-		try {
-			ivjViewMenu = new javax.swing.JMenu();
-			ivjViewMenu.setName("ViewMenu");
-			ivjViewMenu.setText("View");
-			ivjViewMenu.add(getStatusbarMenuItem());
-			ivjViewMenu.add(getJMenuItemOptions());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjViewMenu;
-}
-
-/**
  * Gets the windowManager property (cbit.vcell.client.desktop.DocumentWindowManager) value.
  * @return The windowManager property value.
  * @see #setWindowManager
@@ -2146,10 +1931,6 @@ private void initConnections() throws java.lang.Exception {
 	getChange_UserMenuItem().addActionListener(ivjEventHandler);
 	getUpdate_UserMenuItem().addActionListener(ivjEventHandler);
 	getReconnectMenuItem().addActionListener(ivjEventHandler);
-	getLocalMenuItem().addActionListener(ivjEventHandler);
-	getMinimize_AllMenuItem().addActionListener(ivjEventHandler);
-	getJMenuItemServer().addActionListener(ivjEventHandler);
-	getJMenuItemOptions().addActionListener(ivjEventHandler);
 	getJMenuItemRevert().addActionListener(ivjEventHandler);
 	getJMenuItemCompare().addActionListener(ivjEventHandler);
 	getNonSpatialMenuItem().addActionListener(ivjEventHandler);
@@ -2233,15 +2014,6 @@ private void newDocument(java.awt.event.ActionEvent actionEvent) {
 	hash.put("requestManager", getWindowManager().getRequestManager());
 	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 }
-
-
-/**
- * Comment
- */
-private void notYet() {
-	PopupGenerator.showErrorDialog(this, "Feature not yet implemented...");
-}
-
 
 /**
  * Comment
