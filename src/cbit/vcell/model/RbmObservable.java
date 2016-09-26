@@ -469,7 +469,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 			}
 		}
 		if(!polymerAllowedSingle && sequence != Sequence.Multimolecular) {
-			String message = "Polymer may only be specified for Observable containing a single type of Molecule.";
+			String message = "Polymer may only be specified for Observable containing a single Molecule.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 		} else if(!polymerAllowedSimple && sequence != Sequence.Multimolecular) {
 			String message = "Polymer may only be specified for Observable with all bonds set to 'Possible' and all States set to 'Any'";
