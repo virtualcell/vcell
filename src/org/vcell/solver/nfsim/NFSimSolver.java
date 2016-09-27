@@ -147,6 +147,9 @@ public class NFSimSolver extends SimpleCompiledSolver {
 	private String getOutputFilename() {
 		return getBaseName() + NFSIM_OUTPUT_FILE_EXTENSION;
 	}
+	private String getSpeciesOutputFilename() {
+		return getBaseName() + ".species";
+	}
 
 	@Override
 	protected String[] getMathExecutableCommand() {
@@ -154,6 +157,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 				.getRequiredProperty(PropertyLoader.nfsimExecutableProperty);
 		String inputFilename = getInputFilename();
 		String outputFilename = getOutputFilename();
+		String speciesOutputFilename = getSpeciesOutputFilename();
 		
 		NFsimSimulationOptions nfsso = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
 		ArrayList<String> adv = new ArrayList<String>();
@@ -208,7 +212,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		
 		Integer seed = nfsso.getRandomSeed();
 		
-		String baseCommands[] = { "-xml", inputFilename, "-o", outputFilename, "-sim", Double.toString(dtime) };
+		String baseCommands[] = { "-xml", inputFilename, "-o", outputFilename, "-sim", Double.toString(dtime), "-ss", speciesOutputFilename };
 		ArrayList<String> cmds = new ArrayList<String>();
 		cmds.add(executableName);
 		if(seed != null) {
