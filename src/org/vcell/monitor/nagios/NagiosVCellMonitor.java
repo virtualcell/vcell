@@ -793,12 +793,27 @@ public class NagiosVCellMonitor {
 	}
 	
 	public ServerSocket claimSocketLinuxLocal(int port) throws Exception{
-		killMonitorProcessLinuxLocal(port);
-		ServerSocket newServerSocket =  new ServerSocket(port);
-		Thread.sleep(2000);
-		myProcessID = getPidOnPortLinuxLocal(port);
-		System.out.println("Monitor process ID pid="+myProcessID);
-		return newServerSocket;
+		int numRetries = 0;
+		while(numRetries < 10){
+			try{
+				killMonitorProcessLinuxLocal(port);
+				ServerSocket newServerSocket =  new ServerSocket(port);
+				Thread.sleep(2000);
+				myProcessID = getPidOnPortLinuxLocal(port);
+				System.out.println("Monitor process ID pid="+myProcessID);
+				return newServerSocket;
+			}catch(Exception e){
+				numRetries+= 1;
+				System.out.println("claimSocket failed, "+e.getMessage());
+				e.printStackTrace();
+				System.out.flush();
+				try{Thread.sleep(60000);}catch(InterruptedException ie){e.printStackTrace();}
+			}
+		}
+		System.out.println("claimSocket failed, too many retries");
+		System.out.flush();
+		throw new Exception("claimSocket failed, too many retries");
+		
 //		ServerSocket myServersocket = null;
 //	       for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
 //	           NetworkInterface intf = en.nextElement();
