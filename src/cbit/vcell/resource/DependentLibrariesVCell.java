@@ -13,6 +13,8 @@ public class DependentLibrariesVCell extends DependentLibraries {
 	/**
 	 * associated library names
 	 */
+	protected static final String[] LINUX_LIB_64_NAMES 	= { "libgfortran.so.3"};
+	protected static final String[] LINUX_LIB_32_NAMES 	= { "libgfortran.so.3"};
 	protected static final String[] MACOS_LIB_NAMES 	= { "libgcc_s.1.dylib", "libstdc++.6.dylib", "libgfortran.3.dylib", "libquadmath.0.dylib"};
 	protected static final String[] CYGWIN_LIB_64_NAMES = { "cyggcc_s-seh-1.dll","cygstdc++-6.dll","cyggfortran-3.dll", "cygquadmath-0.dll", "cygz.dll"};
 	protected static final String[] CYGWIN_LIB_32_NAMES = { "cyggcc_s-1.dll","cygstdc++-6.dll"};
@@ -44,6 +46,12 @@ public class DependentLibrariesVCell extends DependentLibraries {
 			}
 		}else if (operatingSystemInfo.isMac()){
 			bundledNames = Collections.unmodifiableCollection(Arrays.asList(MACOS_LIB_NAMES));
+		}else if (operatingSystemInfo.isLinux()){
+			if (operatingSystemInfo.is64bit()){
+				bundledNames = Collections.unmodifiableCollection(Arrays.asList(LINUX_LIB_64_NAMES));
+			}else{
+				bundledNames = Collections.unmodifiableCollection(Arrays.asList(LINUX_LIB_32_NAMES));
+			}
 		}
 		return bundledNames; 
 	}
