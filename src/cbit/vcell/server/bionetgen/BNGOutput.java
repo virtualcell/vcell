@@ -56,7 +56,7 @@ public String getNetFileContent() {
 	if (netFileIndices.size()==1){
 		return bng_fileContents[netFileIndices.iterator().next()].toString();
 	}
-	throw new RuntimeException("BioNetGen was unable to generate reaction network.");
+	throw new RuntimeException("BioNetGen generated an empty reaction network.");
 }
 public void extractCompartmentsFromNetFile() {
 	HashSet<Integer> netFileIndices = new HashSet<Integer>();
