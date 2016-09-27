@@ -55,6 +55,12 @@ public class SimulationConsolePanel extends JPanel {
 	public final static String getReactionsLimitExceededMessage(BNGOutputSpec outputSpec) {
 		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + outputSpec.getBNGReactions().length + endMessage;
 	}
+	public final static String getSpeciesLimitExceededMessage(int ourNumber) {
+		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + ourNumber + endMessage;
+	}
+	public final static String getReactionsLimitExceededMessage(int ourNumber) {
+		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + ourNumber + endMessage;
+	}
 	public final static String getInsufficientIterationsMessage() {
 		return "Warning: Max Iterations number may be insufficient." + endMessage;
 	}

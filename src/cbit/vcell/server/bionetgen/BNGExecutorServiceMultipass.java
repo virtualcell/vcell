@@ -38,6 +38,7 @@ import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.BNGSpeciesComponent;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
+import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.TaskCallbackMessage;
@@ -179,8 +180,15 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			oldSeedSpeciesString += correctedSeedSpeciesString;
 
 			speciesCount += correctedSR.speciesList.size();
+			int reactionsCount = correctedSR.reactionsList.size();
 			displayIterationMessage(i+1, speciesCount);
 			
+			if(speciesCount >= SimulationConsolePanel.speciesLimit) {
+				break;		// don't continue iterations if we reach species limit
+			}
+			if(reactionsCount >= SimulationConsolePanel.reactionsLimit) {
+				break;
+			}
 			if(correctedSR.speciesList.isEmpty()) {
 				// if the current iteration didn't provide any VALID NEW species (after correction) then we are done
 				break;
