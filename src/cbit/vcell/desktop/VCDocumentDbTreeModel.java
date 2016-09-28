@@ -66,7 +66,7 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	
 	public static final String Tutorials = "Tutorials";
 	public static final String Education = "Education";
-	public static final String BNGRulesBased61 = "Tutorials Beta";
+//	public static final String BNGRulesBased61 = "Tutorials Beta";
 	
 	public static final String SHARED_BIO_MODELS = "Shared BioModels";
 	public static final String Public_BioModels = "Public BioModels";
@@ -121,24 +121,16 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	vcDocumentDbTreeModel.publicModelsNode.removeAllChildren();
 	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
 	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
-//	boolean bBNGRules = vcDocumentDbTreeModel.bngRulesBasedModelsNode != null;
-	boolean bBNGRules61 = vcDocumentDbTreeModel.bngRulesBasedModelsNode61 != null;
 	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
 	if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
-//	if(bBNGRules){vcDocumentDbTreeModel.bngRulesBasedModelsNode.removeAllChildren();}
-	if(bBNGRules61){vcDocumentDbTreeModel.bngRulesBasedModelsNode61.removeAllChildren();}
 	for (String username : treeMap.keySet()) {
 		BioModelNode userNode = treeMap.get(username);
 		BioModelNode parentNode = vcDocumentDbTreeModel.sharedModelsNode;
 		boolean bSpecificUser = true;
-		if (username.equals(USER_tutorial) && bTutorial) {
+		if ((username.equals(USER_tutorial) || username.equals(USER_tutorial610) || username.equals(USER_tutorial611)) && bTutorial) {
 			parentNode = vcDocumentDbTreeModel.tutorialModelsNode;
 		} else if (username.equals(USER_Education) && bEducation) {
 			parentNode = vcDocumentDbTreeModel.educationModelsNode;
-//		} else if (username.equals(USER_BioNetGen) && bBNGRules) {
-//			parentNode = vcDocumentDbTreeModel.bngRulesBasedModelsNode;
-		} else if ((username.equals(USER_tutorial610) || username.equals(USER_tutorial611)) && bBNGRules61) {
-			parentNode = vcDocumentDbTreeModel.bngRulesBasedModelsNode61;
 		} else {
 			bSpecificUser = false;
 		}
