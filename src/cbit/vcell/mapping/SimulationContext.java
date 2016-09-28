@@ -14,6 +14,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,10 +29,12 @@ import javax.swing.SwingUtilities;
 
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.NetworkFreePanel;
+import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
+import org.vcell.util.ProgrammingException;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
@@ -51,6 +54,7 @@ import org.vcell.util.document.Versionable;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
+import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.task.DocumentValid;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -61,6 +65,9 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
+import cbit.vcell.mapping.NetworkTransformer.GeneratedSpeciesSymbolTableEntry;
+import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
+import cbit.vcell.mapping.SimContextTransformer.SimContextTransformation;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
@@ -2416,6 +2423,7 @@ public SimContextTransformer createNewTransformer(){
 	case NETWORK_STOCHASTIC:
 //		if(getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		if(getBioModel().getModel().getRbmModelContainer().getReactionRuleList().size() > 0) {
+			// if rules are present we need to flatten a deterministic model
 			boolean foundEnabledRule = false;
 			for (ReactionRuleSpec rrs : getReactionContext().getReactionRuleSpecs()){
 				if (!rrs.isExcluded()){
@@ -2426,7 +2434,14 @@ public SimContextTransformer createNewTransformer(){
 			if(foundEnabledRule) {
 				return new NetworkTransformer();
 			}
-		}	// if no rules are present we don't need to flatten a deterministic model
+		}
+		if (getGeometry().getDimension() == 0) {
+			if (!getGeometryContext().isAllSizeSpecifiedPositive()) {
+				// old models may not have absolute sizes for structures, we clone the original simulation context
+				// to one with corrected numbers and work on it while leaving the original unmodified
+				return new LegacySimContextTransformer();
+			}
+		}
 	}
 	return null; 
 }
