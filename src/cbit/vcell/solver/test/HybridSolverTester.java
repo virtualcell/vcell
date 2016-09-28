@@ -39,8 +39,10 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.simdata.DataIdentifier;
@@ -416,45 +418,49 @@ public class HybridSolverTester {
 		fw.flush();
 	}
 
-	private static VCellConnection runSim(UserLoginInfo userLoginInfo,VCSimulationIdentifier vcSimulationIdentifier,VCellConnection vcellConnection) throws Exception{
-		SimulationStatusPersistent simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+	private static void runSim(UserLoginInfo userLoginInfo,VCSimulationIdentifier vcSimulationIdentifier,VCellConnectionHelper vcellConnectionHelper) throws Exception{
+		SimulationStatusPersistent simulationStatus = vcellConnectionHelper.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 		System.out.println("initial status="+simulationStatus);
 		if(simulationStatus!=null && simulationStatus.isRunning()/*!simulationStatus.isNeverRan() && !simulationStatus.isCompleted()*/){
 			throw new Exception("Sim in unexpected state "+simulationStatus);
 		}
-		BigString simXML = vcellConnection.getUserMetaDbServer().getSimulationXML(vcSimulationIdentifier.getSimulationKey());
+		
+		int intialMaxTaskID = vcellConnectionHelper.getMaxTaskID(simulationStatus);
+		BigString simXML = vcellConnectionHelper.getSimulationXML(vcSimulationIdentifier.getSimulationKey());
 		Simulation sim = XmlHelper.XMLToSim(simXML.toString());
 
 		int scanCount = sim.getScanCount();
-		vcellConnection.getSimulationController().startSimulation(vcSimulationIdentifier, scanCount);
+		vcellConnectionHelper.startSimulation(vcSimulationIdentifier, scanCount);
 		long startTime = System.currentTimeMillis();
 		//wait until sim has stopped running
-		while((simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey())) == null ||
+		while((simulationStatus = vcellConnectionHelper.getSimulationStatus(vcSimulationIdentifier.getSimulationKey())) == null ||
 				(simulationStatus.isStopped() || simulationStatus.isCompleted() || simulationStatus.isFailed())){
+			MessageEvent[] messageEvents = vcellConnectionHelper.getMessageEvents();
+			if(vcellConnectionHelper.getMaxTaskID(simulationStatus) > intialMaxTaskID){//new sim must have started
+				break;
+			}
 			Thread.sleep(250);
-			MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
 //			for(int i = 0;i<(messageEvents==null?0:messageEvents.length);i++){
 //				System.out.println(messageEvents[i].toString());	
 //			}
-			if((System.currentTimeMillis()-startTime) > 60000){
+			if((System.currentTimeMillis()-startTime) > 120000){
 				throw new Exception("Sim finished too fast or took too long to start");
 			}
 		}
 		SimulationStatusPersistent lastSimStatus = simulationStatus;
 		while(!simulationStatus.isStopped() && !simulationStatus.isCompleted() && !simulationStatus.isFailed()){
 			Thread.sleep(3000);
-			simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+			simulationStatus = vcellConnectionHelper.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 			if(simulationStatus !=null && !simulationStatus.toString().equals(lastSimStatus.toString())){
 				lastSimStatus = simulationStatus;
 				System.out.println("running status="+simulationStatus);
 			}
-			MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+			MessageEvent[] messageEvents = vcellConnectionHelper.getMessageEvents();
 //			for(int i = 0;i<(messageEvents==null?0:messageEvents.length);i++){
 //				System.out.println(messageEvents[i].toString());	
 //			}
 		}
 		System.out.println("last run simStatus="+simulationStatus);
-		return vcellConnection;
 	}
 	
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_kkmmss");
@@ -515,6 +521,91 @@ public class HybridSolverTester {
 		}
 		
 	}
+	private static class VCellConnectionHelper {
+		VCellConnection vcellConnection;
+		UserLoginInfo userLoginInfo;
+		String rmiUrl;
+		public VCellConnectionHelper(UserLoginInfo userLoginInfo,String rmiUrl){
+			this.userLoginInfo = userLoginInfo;
+			this.rmiUrl = rmiUrl;
+		}
+		public VCellConnection getVCellConnection() throws Exception{
+			int numTries = 0;
+			while(numTries < 15){
+				try{
+					if(vcellConnection == null){
+						VCellBootstrap vcellBootstrap = (VCellBootstrap)Naming.lookup(rmiUrl);
+						vcellConnection = vcellBootstrap.getVCellConnection(userLoginInfo);
+						vcellBootstrap = null;
+					}
+					vcellConnection.getUserMetaDbServer();//check connection
+					return vcellConnection;
+				}catch(Exception e){
+					vcellConnection = null;
+					System.out.println("Error getting VCell connection, Retrying: '"+e.getMessage()+"'");
+				}
+				try{Thread.sleep(60000);}catch(Exception e){System.out.println("sleep interrupted");}
+			}
+			throw new Exception("getVCellConnection failed after "+numTries+" tries");
+		}
+		public SimulationStatusPersistent getSimulationStatus(KeyValue simKey)throws Exception{
+			int numTries = 0;
+			while(numTries < 15){
+				try{
+					return getVCellConnection().getUserMetaDbServer().getSimulationStatus(simKey);
+				}catch(Exception e){
+					System.out.println("Error getting simstatus, '"+e.getMessage()+"'");
+				}
+				try{Thread.sleep(20000);}catch(Exception e){System.out.println("sleep interrupted");}
+			}
+			throw new Exception("getSimStatus failed after "+numTries+" tries");
+		}
+		public MessageEvent[] getMessageEvents()throws Exception{
+			int numTries = 0;
+			while(numTries < 15){
+				try{
+					return getVCellConnection().getMessageEvents();
+				}catch(Exception e){
+					System.out.println("Error getting messageEvents, '"+e.getMessage()+"'");
+				}
+				try{Thread.sleep(20000);}catch(Exception e){System.out.println("sleep interrupted");}
+			}
+			throw new Exception("getMessageEvents failed after "+numTries+" tries");
+		}
+		public BigString getSimulationXML(KeyValue simKey)throws Exception{
+			int numTries = 0;
+			while(numTries < 15){
+				try{
+					return getVCellConnection().getUserMetaDbServer().getSimulationXML(simKey);
+				}catch(Exception e){
+					System.out.println("Error getting SimulationXML, '"+e.getMessage()+"'");
+				}
+				try{Thread.sleep(20000);}catch(Exception e){System.out.println("sleep interrupted");}
+			}
+			throw new Exception("getSimulationXML failed after "+numTries+" tries");
+		}
+		//startSimulation(vcSimulationIdentifier, scanCount);
+		public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int scanCount) throws Exception{
+			int numTries = 0;
+			while(numTries < 15){
+				try{
+					return getVCellConnection().getSimulationController().startSimulation(vcSimulationIdentifier, scanCount);
+				}catch(Exception e){
+					System.out.println("Error startSimulation, '"+e.getMessage()+"'");
+				}
+				try{Thread.sleep(20000);}catch(Exception e){System.out.println("sleep interrupted");}
+			}
+			throw new Exception("startSimulation failed after "+numTries+" tries");
+		}
+		public static int getMaxTaskID(SimulationStatusPersistent simulationStatus){
+			int maxTaskID = -1;
+			SimulationJobStatusPersistent[] simulationJobStatusPersistent = simulationStatus.getJobStatuses();
+			for (int i = 0; i < simulationJobStatusPersistent.length; i++) {
+				maxTaskID = Math.max(maxTaskID, simulationJobStatusPersistent[i].getTaskID());
+			}
+			return maxTaskID;
+		}
+	}
 	public static void main(java.lang.String[] args) {
 		VCMongoMessage.enabled = false;
 		boolean bAlternate = false;
@@ -549,28 +640,18 @@ public class HybridSolverTester {
 				UserLoginInfo userLoginInfo = new UserLoginInfo(altArgsHelper.user.getName(), new DigestedPassword(altArgsHelper.dbPassword));
 
 				File[] trialList = null;
-				VCellConnection vCellConnection = null;
+				VCellConnectionHelper vCellConnectionHelper = null;
 				try{
 					if(!altArgsHelper.bCalcOnly){
 //						String rmiUrl = "//" + "rmi-alpha.cam.uchc.edu" + ":" + "40106" + "/"+"VCellBootstrapServer";
 //						String rmiUrl = "//" + "rmi-alpha.cam.uchc.edu" + ":" + "40112" + "/"+"VCellBootstrapServer";
 						String rmiUrl = "//" + altArgsHelper.rmiServer+".cam.uchc.edu" + ":" + altArgsHelper.rmiPort + "/"+"VCellBootstrapServer";
-						VCellBootstrap vcellBootstrap = (VCellBootstrap)Naming.lookup(rmiUrl);
-						vCellConnection = vcellBootstrap.getVCellConnection(userLoginInfo);
-						vcellBootstrap = null;
+
+						vCellConnectionHelper = new VCellConnectionHelper(userLoginInfo, rmiUrl);
 
 						for (int runIndex = 0; runIndex < altArgsHelper.numRuns; runIndex++) {
 							System.out.println("-----     Starting run "+(runIndex+1)+" of "+altArgsHelper.numRuns);
-							try{
-								vCellConnection.getUserMetaDbServer();//check connection
-							}catch(Exception e){
-								System.out.println("Retrying connection, '"+e.getMessage()+"'");
-								vcellBootstrap = (VCellBootstrap)Naming.lookup(rmiUrl);
-								vCellConnection = vcellBootstrap.getVCellConnection(userLoginInfo);
-								vcellBootstrap = null;
-								vCellConnection.getUserMetaDbServer();
-							}
-							runSim(userLoginInfo,vcSimulationIdentifier,vCellConnection);
+							runSim(userLoginInfo,vcSimulationIdentifier,vCellConnectionHelper);
 							if(trialList == null){
 								System.out.println("Sim ran, getting trial list for "+altArgsHelper.simPrefix+" please wait...");
 								trialList = altArgsHelper.userSimDataDir.listFiles(new FileFilter() {
