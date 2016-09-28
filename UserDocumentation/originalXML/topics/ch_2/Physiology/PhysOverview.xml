@@ -8,9 +8,7 @@
 	<item><link target = "ReactDiagView"> Reaction Diagram </link> is a graphical editor used to create and edit <def target = "def_compartments">structures</def>, <def target = "def_reactions">reactions</def> and <def target = "def_species">species</def>.</item>
 	<item><link target = "ReactTabView">Reactions</link> provides a table to view, create and edit <def target = "def_reactions"> reactions</def> and <def target = "def_ReactionRules">reaction rules</def>. </item> 
 	<item><link target = "PhysStructTabView">Structures</link> provides a table to view and edit <def target = "def_membranes"> membranes</def> and <def target = "def_volumes"> volume</def> compartments.</item>
-	<item><link target = "SpeciesTabView">Species</link> provides a table to view and edit species defined within structures; molecular details of species can also be edited here. 
-	(note that in <link target = "RuleBasedOverview">Rule-Based</link> models, currently
-	only a single compartment is allowed)</item>
+	<item><link target = "SpeciesTabView">Species</link> provides a table to view and edit species defined within structures; molecular details of species can also be edited here.</item>
 	<item><link target = "Molecules">Molecules</link> provides a table to view and define molecules, the building blocks for rule-based models</item>
 	<item><link target = "Observables">Observables</link> provides a table to view and define observables, the outputs of rule-based models</item> 
 	</list>
