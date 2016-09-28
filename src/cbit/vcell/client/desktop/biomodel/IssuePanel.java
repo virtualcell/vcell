@@ -60,6 +60,7 @@ import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.RbmObservable;
+import org.vcell.model.rbm.MolecularType;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
@@ -245,6 +246,8 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				setActiveView(new ActiveView(((GeometryContext)object).getSimulationContext(), DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition));
 			} else if (object instanceof Structure) {
 				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURES_NODE, ActiveViewID.structures), new Object[] {object});
+			} else if (object instanceof MolecularType) {
+				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MOLECULAR_TYPES_NODE, ActiveViewID.structures), new Object[] {object});
 			} else if (object instanceof ReactionStep) {
 				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions), new Object[] {object});
 			} else if (object instanceof ReactionRule) {
