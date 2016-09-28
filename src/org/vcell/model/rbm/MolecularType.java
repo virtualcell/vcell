@@ -224,6 +224,16 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 					String msg = "Duplicate " + mc.getDisplayType() + " '" + mc.getDisplayName() + "' in the definition of the " + MolecularType.typeName + ".";
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 				}
+				String mcName = mc.getName();
+				if(!mcName.equals(TokenMangler.fixTokenStrict(mcName))) {
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + MolecularComponent.typeName + " " + mcName + " is invalid", Issue.Severity.ERROR));
+				}
+				for(ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
+					String csdName = csd.getName();
+					if(!csdName.equals(TokenMangler.fixTokenStrict(csdName))) {
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + ComponentStateDefinition.typeName + " " + csdName + " is invalid", Issue.Severity.ERROR));
+					}
+				}
 			}
 			for (MolecularComponent entity : componentList) {
 				entity.gatherIssues(issueContext, issueList);
