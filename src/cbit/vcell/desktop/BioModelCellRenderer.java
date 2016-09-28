@@ -111,7 +111,9 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				String username = nodeUser.getName();
 				if (nodeUser.compareEqual(sessionUser)
 						|| username.equals(VCDocumentDbTreeModel.USER_tutorial)
-						|| username.equals(VCDocumentDbTreeModel.USER_Education)) {
+						|| username.equals(VCDocumentDbTreeModel.USER_Education)
+						|| username.equals(VCDocumentDbTreeModel.USER_tutorial610)
+						|| username.equals(VCDocumentDbTreeModel.USER_tutorial611)) {
 					component.setText(modelName);
 				} else {
 					component.setText("<html><b>" + username + " </b> : " + modelName + "</html>");
