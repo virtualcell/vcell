@@ -38,7 +38,7 @@
 	    <imgReference target = "icon_arrowselect.gif"/> <bold>'Selection tool'</bold> enables selection mode. Species (graph nodes) and connecting lines (edges) can be selected by mouse click, or drag the mouse to select multiple components. Add elements to the selection using the shift key with the left mouse button, toggle the selection using the control key.
 
 	    <imgReference target = "icon_addcompartment.gif"/> <bold> 'Structure tool" </bold> inserts a new structure by clicking between existing structures or appending new structures to the ends.  
-	    dashed vertical lines appear on the reaction diagram to indicate where structures can be added.
+	    dashed vertical lines appear on the reaction diagram to indicate where structures can be added (indicator under mouse turns green to allow adding new structure).
 	    
 	    <para>
 	    <bold>Move a structure</bold> using the 'Selection tool'.  Click and drag on a <bold>structure name</bold> to enable <bold>drag to move</bold>; releasing the mouse over any set of vertical dashed lines moves the structure and contents to the new location.
