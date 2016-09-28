@@ -11,7 +11,7 @@
 	</appearance>
 	
 	<operations>
-	The <bold>Virtual Cell User Registration</bold> dialog prompts the user to choose a login id and password. 
+	The <bold>Virtual Cell User Registration</bold> dialog prompts the user to choose a 'login id' (user name, case sensitive) and password. 
 	In order to complete the registration, the user needs to provide other information such as a valid email address (for VCell software notifications and to retrieve forgotten passwords), first and last name of user, job title, organization and address. 
 	The user can choose to decline receiving emails regarding VCell notifications by clicking on the checkbox at the bottom of the registration dialog. 
 	</operations>

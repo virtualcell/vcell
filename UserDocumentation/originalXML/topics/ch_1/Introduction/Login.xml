@@ -12,7 +12,7 @@
 	
 	<operations>
 	<para>
-	The <bold>Login</bold> dialog prompts user to provide a user name and password. Clicking <bold>OK</bold> authenticates the user name and password and if successful, the user is logged in and can proceed with editing/creating models. 
+	The <bold>Login</bold> dialog prompts user to provide a 'login ID' (User Name, case sensitive) and password. Clicking <bold>OK</bold> authenticates the user name and password and if successful, the user is logged in and can proceed with editing/creating models. 
 	Clicking <bold>Cancel</bold> cancels the login process. The user can still create models, but cannot save or run simulations.
 	</para>
 	
