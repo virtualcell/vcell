@@ -2506,6 +2506,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		}
 		if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape || shape instanceof ReactionStepShape
+					|| shape instanceof SpeciesContextShape
 					|| shape instanceof ReactantShape
 					|| shape instanceof ProductShape
 					|| shape instanceof CatalystShape
