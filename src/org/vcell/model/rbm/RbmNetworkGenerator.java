@@ -80,6 +80,8 @@ public class RbmNetworkGenerator {
 		Model model = simulationContext.getModel();
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
 		
+		checkConsistency(model);
+
 		writer.println(BEGIN_MODEL);
 		writer.println();
 		
@@ -97,6 +99,7 @@ public class RbmNetworkGenerator {
 		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 		writer.println();
 	}
+	
 	/*
 	 * modified bngl writer for special use restricted to network / rulebased transformer functionality
 	 */
@@ -117,6 +120,8 @@ public class RbmNetworkGenerator {
 		}
 		Model model = simulationContext.getModel();
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
+		
+		checkConsistency(model);
 		
 		// first we prepare the fake parameters we need to maintain the relationship between the species context and the seed species
 		List<FakeSeedSpeciesInitialConditionsParameter> fakeParameterList = new ArrayList<FakeSeedSpeciesInitialConditionsParameter>();
@@ -219,6 +224,21 @@ public class RbmNetworkGenerator {
 		}
 		writer.println();
 	}
+	
+	public static void checkConsistency(Model model) {
+		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
+		for(RbmObservable o : rbmModelContainer.getObservableList()) {
+			if(o.getSpeciesPatternList().isEmpty()) {
+				throw new RuntimeException("Observable " + o.getDisplayName() + " is empty.");
+			}
+			for(SpeciesPattern sp : o.getSpeciesPatternList()) {
+				if(sp.getMolecularTypePatterns().isEmpty()) {
+					throw new RuntimeException(SpeciesPattern.typeName + " of Observable " + o.getDisplayName() + " is empty.");
+				}
+			}
+		}
+	}
+
 // ======================================================================================================
 
 	public static void writeCompartments(PrintWriter writer, Model model, SimulationContext sc) {
