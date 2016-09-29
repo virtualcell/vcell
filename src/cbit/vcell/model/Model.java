@@ -4343,11 +4343,6 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getDisplayType()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'.",e);
 			}
 		}
-		for (MolecularType mt : rbmModelContainer.molecularTypeList){
-			if (mt.getName().equals(newSymbolName)){
-				throw new ModelPropertyVetoException("conflict with " + symbolDescription + " '" + newSymbolName + "', name already used for " + mt.getDisplayType() + " '" + mt.getName() + "'.",e);
-			}
-		}
 	}
 	if (!newSymbolClass.equals(ReactionRule.class)){
 		for (ReactionRule rr : rbmModelContainer.reactionRuleList){
@@ -4355,12 +4350,16 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+rr.getDisplayType()+" '"+rr.getName()+"' in structure '"+rr.getStructure().getName()+"'.",e);
 			}
 		}
-		for (MolecularType mt : rbmModelContainer.molecularTypeList){
-			if (mt.getName().equals(newSymbolName)){
-				throw new ModelPropertyVetoException("conflict with " + symbolDescription + " '" + newSymbolName + "', name already used for " + mt.getDisplayType() + " '" + mt.getName() + "'.",e);
-			}
-		}
 	}
+// TODO: may be too strict, keep it commented for now
+//	if (newSymbolClass.equals(ReactionStep.class) || newSymbolClass.equals(ReactionRule.class)){
+//		for (MolecularType mt : rbmModelContainer.molecularTypeList){
+//			if (mt.getName().equals(newSymbolName)){
+//				throw new ModelPropertyVetoException("conflict with " + symbolDescription + " '" + newSymbolName + "', name already used for " + mt.getDisplayType() + " '" + mt.getName() + "'.",e);
+//			}
+//		}
+//	}
+
 	//
 	// make sure not to change to name of any other symbol in 'model' namespace (or friendly namespaces)
 	//
