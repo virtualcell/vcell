@@ -11,10 +11,14 @@
 package org.vcell.solver.nfsim;
 
 import java.io.PrintWriter;
+import java.io.StringReader;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.math3.random.RandomDataGenerator;
+import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.XMLOutputter;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -31,23 +35,26 @@ import cbit.vcell.solver.server.SolverFileWriter;
 public class NFSimFileWriter extends SolverFileWriter 
 {
 	private long randomSeed = 0; //value assigned in the constructor
-	private RandomDataGenerator dist = new RandomDataGenerator();
+//	private RandomDataGenerator dist = new RandomDataGenerator();
 	
 	
 public NFSimFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessaging) 
 {
 	super(pw, simTask, bMessaging);
 	
-	//get user defined random seed. If it doesn't exist, we assign system time (in millisecond) to it.
-	NFsimSimulationOptions nfsimOptions = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
-	if (nfsimOptions.getRandomSeed() != null) {
-		this.randomSeed = nfsimOptions.getRandomSeed();
-	} else {
-		this.randomSeed = System.currentTimeMillis();
-	}
-	//We add jobindex to the random seed in case there is a parameter scan.
-	randomSeed = randomSeed + simTask.getSimulationJob().getJobIndex();
-	dist.reSeed(randomSeed);
+	// TODO: this code doesn't seem to be functional, the random seed is properly set in NFSimSolver
+	// commented out for now
+//	//get user defined random seed. If it doesn't exist, we assign system time (in millisecond) to it.
+//	NFsimSimulationOptions nfsimOptions = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
+//	
+//	if (nfsimOptions.getRandomSeed() != null) {
+//		this.randomSeed = nfsimOptions.getRandomSeed();
+//	} else {
+//		this.randomSeed = System.currentTimeMillis();
+//	}
+//	//We add jobindex to the random seed in case there is a parameter scan.
+//	randomSeed = randomSeed + simTask.getSimulationJob().getJobIndex();
+//	dist.reSeed(randomSeed);
 }
 
 @Override
@@ -56,12 +63,28 @@ public void write(String[] parameterNames) throws Exception {
 	NFsimSimulationOptions nfsimSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
 	boolean bUseLocationMarks = true;
 	Element root = NFsimXMLWriter.writeNFsimXML(simTask, randomSeed, nfsimSimulationOptions, bUseLocationMarks);
+	
 	if (bUseMessaging) {
 		Element jms = super.xmlJMSParameters(); 
 		root.addContent(jms);
 	}
-	XmlUtil.writeXmlToStream(root, false, wos);
+	
+//	String resultString = XmlUtil.xmlToString(root);
+//	resultString = XmlUtil.beautify(resultString);
+//	resultString = resultString.replaceAll("DeleteMolecules=\"0\"", "DeleteMolecules=\"1\"");
+//	
+//	System.out.println(resultString);
+//
+//	StringReader stringReader = new StringReader(resultString);	// transform back to element
+//	SAXBuilder builder = new SAXBuilder();
+//	Document doc1 = builder.build(stringReader);
+//	Element root1 = doc1.getRootElement();
+//	XmlUtil.writeXmlToStream(root1, false, wos);	// modified
+	XmlUtil.writeXmlToStream(root, false, wos);		// original
+
 }
+
+
 
 
 }

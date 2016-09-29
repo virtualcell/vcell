@@ -10,7 +10,9 @@
 
 package org.vcell.solver.nfsim;
 
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -210,14 +212,35 @@ public class NFSimSolver extends SimpleCompiledSolver {
 			throw new RuntimeException("Unsupported output time spec class");
 		}
 		
-		Integer seed = nfsso.getRandomSeed();
-		
 		String baseCommands[] = { "-xml", inputFilename, "-o", outputFilename, "-sim", Double.toString(dtime), "-ss", speciesOutputFilename };
 		ArrayList<String> cmds = new ArrayList<String>();
 		cmds.add(executableName);
+
+		Integer seed = nfsso.getRandomSeed();
 		if(seed != null) {
 			cmds.add("-seed");
 			cmds.add(seed.toString());
+		} else {
+			long randomSeed = System.currentTimeMillis();
+			randomSeed = randomSeed + simTask.getSimulationJob().getJobIndex();
+			randomSeed = randomSeed*89611;		// multiply with a large prime number to spread numbers that are too close and in sequence
+			Integer rs = (int)randomSeed;
+			String str = rs.toString();
+			if(str.startsWith("-")) {
+				str = str.substring(1);			// NFSim wants a positive integer, for anything else is initializing with 0
+			}
+			cmds.add("-seed");
+			cmds.add(str);
+			
+//			PrintWriter writer;
+//			try {
+//				writer = new PrintWriter("c:\\TEMP\\aaa\\" + randomSeed + ".txt", "UTF-8");
+//				writer.println(str);
+//				writer.close();
+//			} catch (FileNotFoundException | UnsupportedEncodingException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 		
 		cmds.add("-vcell");
