@@ -20,6 +20,10 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+
 public class BiomodelVCMLServerResource extends AbstractServerResource implements BiomodelVCMLResource {
 
 	private String biomodelid;
@@ -87,8 +91,10 @@ public class BiomodelVCMLServerResource extends AbstractServerResource implement
 //		}else{
 			RestDatabaseService restDatabaseService = ((VCellApiApplication)getApplication()).getRestDatabaseService();
 			try {
-				String vcml = restDatabaseService.query(this,vcellUser);
-				return vcml;
+				String cachedVcml = restDatabaseService.query(this,vcellUser);
+				BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(cachedVcml));
+				String latestVcml = XmlHelper.bioModelToXML(bioModel);
+				return latestVcml;
 			} catch (PermissionException e) {
 				e.printStackTrace();
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
