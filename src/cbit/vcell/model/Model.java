@@ -4327,14 +4327,9 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 	
 	// Molecular Type is an abstract concept, hence the name can be reused (in a species for example)
 	//
-	// TODO: we actually can't verify anything because setMolecularTypeList() will fire a PROPERTY_NAME_MOLECULAR_TYPE_LIST with names
+	// We actually can't verify anything because setMolecularTypeList() will fire a PROPERTY_NAME_MOLECULAR_TYPE_LIST with names
 	// in the old list which will also be present in the new list, hence we'll always throw exception we shouldn't
 	if (newSymbolClass.equals(MolecularType.class)){
-//		for (MolecularType molecularType : rbmModelContainer.molecularTypeList){
-//			if (molecularType.getName().equals(newSymbolName)){
-//				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+molecularType.getDisplayType()+" '"+molecularType.getName()+"'.",e);
-//			}
-//		}
 		return;
 	}
 	
@@ -4348,11 +4343,21 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getDisplayType()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'.",e);
 			}
 		}
+		for (MolecularType mt : rbmModelContainer.molecularTypeList){
+			if (mt.getName().equals(newSymbolName)){
+				throw new ModelPropertyVetoException("conflict with " + symbolDescription + " '" + newSymbolName + "', name already used for " + mt.getDisplayType() + " '" + mt.getName() + "'.",e);
+			}
+		}
 	}
 	if (!newSymbolClass.equals(ReactionRule.class)){
 		for (ReactionRule rr : rbmModelContainer.reactionRuleList){
 			if (rr.getName().equals(newSymbolName)){
 				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+rr.getDisplayType()+" '"+rr.getName()+"' in structure '"+rr.getStructure().getName()+"'.",e);
+			}
+		}
+		for (MolecularType mt : rbmModelContainer.molecularTypeList){
+			if (mt.getName().equals(newSymbolName)){
+				throw new ModelPropertyVetoException("conflict with " + symbolDescription + " '" + newSymbolName + "', name already used for " + mt.getDisplayType() + " '" + mt.getName() + "'.",e);
 			}
 		}
 	}
