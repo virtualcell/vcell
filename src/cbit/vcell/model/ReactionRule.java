@@ -892,6 +892,13 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			String msg = "The prefix '_reverse_' is a BioNetGen reserved keyword. Please rename the " + typeName + ".";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 		}
+		for(MolecularType mt : model.getRbmModelContainer().getMolecularTypeList()) {
+			if (mt.getName().equals(name)){
+				String msg = "Name '" + name + "' name already used for " + mt.getDisplayType() + " '" + mt.getName() + "'.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+				break;		// no need to look further, we won't find another match since Molecule names are unique
+			}
+		}
 		if(reactantPatterns == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Reactant Pattern is null", Issue.Severity.ERROR));
 		} else if(reactantPatterns.isEmpty()) {

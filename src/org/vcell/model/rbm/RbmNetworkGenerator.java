@@ -33,6 +33,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
+import cbit.vcell.model.ModelPropertyVetoException;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -234,6 +235,13 @@ public class RbmNetworkGenerator {
 			for(SpeciesPattern sp : o.getSpeciesPatternList()) {
 				if(sp.getMolecularTypePatterns().isEmpty()) {
 					throw new RuntimeException(SpeciesPattern.typeName + " of Observable " + o.getDisplayName() + " is empty.");
+				}
+			}
+		}
+		for(ReactionRule rr : rbmModelContainer.getReactionRuleList()) {
+			for (MolecularType mt : rbmModelContainer.getMolecularTypeList()){
+				if (mt.getName().equals(rr.getName())){
+					throw new RuntimeException(ReactionRule.typeName + " name '" + rr.getName() + "' already used for " + mt.getDisplayType() + " '" + mt.getName() + "'.");
 				}
 			}
 		}
