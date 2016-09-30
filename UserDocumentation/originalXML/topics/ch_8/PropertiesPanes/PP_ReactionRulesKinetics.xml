@@ -7,9 +7,9 @@
   </introduction>
 		
   <appearance>
+  <para>The top of the table shows the editable Reaction Name. Below is a table of the kinetic terms used 
+  	to define the reaction rate. Items in brown cannot be edited.</para>
   <imgReference target = "PP_ReactionRuleRate.PNG"/>
-  The top of the table shows the editable Reaction Name. Below is a table of the kinetic terms used 
-  	to define the reaction rate. Items in brown cannot be edited. 
   	<para><bold>Note:</bold> reaction rule rate may be different from reaction rate. </para>
   	<list>
   	<item><bold>Kinetic type:</bold> currently, reaction rules can have only mass action kinetics law. 
