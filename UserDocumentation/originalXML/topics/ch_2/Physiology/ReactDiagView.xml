@@ -37,14 +37,14 @@
 	    
 	    <imgReference target = "icon_arrowselect.gif"/> <bold>'Selection tool'</bold> enables selection mode. Species (graph nodes) and connecting lines (edges) can be selected by mouse click, or drag the mouse to select multiple components. Add elements to the selection using the shift key with the left mouse button, toggle the selection using the control key.
 
-	    <imgReference target = "icon_addcompartment.gif"/> <bold> 'Structure tool" </bold> inserts a new structure by clicking between existing structures or appending new structures to the ends.  
+	    <imgReference target = "icon_addcompartment.png"/> <bold> 'Structure tool' </bold> inserts a new structure by clicking between existing structures or appending new structures to the ends.  
 	    dashed vertical lines appear on the reaction diagram to indicate where structures can be added (indicator under mouse turns green to allow adding new structure).
 	    
 	    <para>
 	    <bold>Move a structure</bold> using the 'Selection tool'.  Click and drag on a <bold>structure name</bold> to enable <bold>drag to move</bold>; releasing the mouse over any set of vertical dashed lines moves the structure and contents to the new location.
 	    </para>	    
 	  
-	    <imgReference target = "icon_species.gif"/> <bold>'Species tool'</bold> enables adding new species enables adding new species by clicking within a structure. Names automatically generated for species can be edited in the <link target= "PP_Species">species property pane</link>. New species are created without molecular details and appear <bold>green</bold>; species change to <bold>blue</bold> if the molecular composition of the species is specified using the <link target = "PP_Species">species properties pane</link>.
+	    <imgReference target = "icon_species.png"/> <bold>'Species tool'</bold> enables adding new species enables adding new species by clicking within a structure. Names automatically generated for species can be edited in the <link target= "PP_Species">species property pane</link>. New species are created without molecular details and appear <bold>green</bold>; species change to <bold>blue</bold> if the molecular composition of the species is specified using the <link target = "PP_Species">species properties pane</link>.
 	  
 	   
 	    <imgReference target = "icon_rxsolid.png"/> <bold>'Reaction tool'</bold> enables one to create reactants/products of a reaction or membrane flux.  
@@ -66,7 +66,7 @@
 	 
 
 	    
-	    <imgReference target = "icon_ImageEd_zooms.gif"/> buttons vary the display magnification of the reaction diagram.
+	    <imgReference target = "icon_ImageEd_zooms.png"/> buttons vary the display magnification of the reaction diagram.
 	  
 	    <para>
 	    The <bold>layout buttons</bold> automatically arrange the components (graph elements) by different algorithms. 
