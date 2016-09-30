@@ -170,7 +170,7 @@ public void viewData(final ExternalDataIdentifier eDI){
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ClientPDEDataContext newPDEDataContext = getPDEDataContext(eDI,null/*(currentlyViewedOutputFunctionViewer==null?null:currentlyViewedOutputFunctionViewer.getOutputContext())*/);
+				ClientPDEDataContext newPDEDataContext = getPDEDataContext(eDI,new OutputContext(new AnnotatedFunction[0])/*(currentlyViewedOutputFunctionViewer==null?null:currentlyViewedOutputFunctionViewer.getOutputContext())*/);
 				hashTable.put("newPDEDataContext", newPDEDataContext);
 			}				
 		};
