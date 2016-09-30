@@ -29,15 +29,13 @@
 	<operations>
 	<bold>Viewing/Editing Species Specifications</bold>
 	<list>
-	<item><bold>Activate</bold> by selecting the 'Specifications' item under a specific 'Applications' sub-node in the <link target="GeneralNavAndWinSetup">Navigation panel</link> tree structure.</item>
-	<item><bold>Display Species</bold> by selecting the 'Specifications' and 'Species' tabs in the <link target="GeneralNavAndWinSetup">View panel</link>  to show a table list of all species.</item>
 	<item><bold>Sort</bold> rows by values under a particular column by clicking the column 'header' (column names at the top of the table).</item>
 	<item><bold>Select</bold> a species from the table to display the 'Species Properties Pane' in the <link target="GeneralNavAndWinSetup">Properties panel</link> below the table.</item>
 	<item><bold>Edit Initial Condition</bold> by selecting a 'Species' table row and entering an expression in one of 3 ways.  
 	(1) double-click the 'Initial Condition' table-cell in the 'Species' table.  
 	(2) pop-up menu over 'Species' table and select 'Initial Condition'.  
 	(3) In the 'species properties' panel (below the 'Species' table) select the 'initConc' or 'initCount' parameter row and double-click the 'Expression' table-cell.  
-	The expression can refer to other application parameters (press cntrl-space for pop-up list).
+	The expression can refer to other application parameters (press space for pop-up list).
 	In spatial applications an expression may be used to restrict the initial condition to a certain region within the application geometry domain by referring to axes (x, y or z) within the expression (e.g. (1000.0 * (y>= 0.89))).  
 	<link target="fieldData">Field Data</link> can also be used to import 'image' based spatially distributed 'initial conditions'.</item>
 	<item><bold>Convert Concentration/Counts</bold> of 'Initial Conditions' for <bold>Stochastic</bold> applications 
@@ -46,7 +44,7 @@
 	(1) double-click the 'Diffusion Constant' table-cell in the 'Species' table.  
 	(2) pop-up menu over 'Species' table and select 'Diffusion Constant'.  
 	(3) In the 'species properties' panel (below the 'Species' table) select the 'diff' parameter row and double-click the 'Expression' table-cell.  
-	The diffusion expression can refer to other application parameters (press cntrl-space for pop-up list) and spatial axes x,y,z (e.g (10.0*(y>4.0)) where the value of 300 is confined within the area defined by the y coordinates).  
+	The diffusion expression can refer to other application parameters (press cntrl for pop-up list) and spatial axes x,y,z (e.g (10.0*(y>4.0)) where the value 10 is confined within the area defined by the y coordinates).  
 	In addition, The diffusion expression can refer to time (e.g. ((t>2.5)*3)) where diffusion would be 3 after simulation time 2.5).</item>
 	<item><bold>Clamp Concentration</bold> by selecting a 'Species' table row and clicking the check-box under the 'Clamped' column.  
 	The concentration of the selected species remains constant for all simulation times and does not diffuse.  
