@@ -60,10 +60,8 @@
 	<para><bold>Create</bold> a new application by clicking on "Applications" in the left menu.  Right 
 	click brings a menu to create either a deterministic or stochastic application.  Or, use the 
 	<bold> Add New</bold> button in the main window.</para>
-	<para>Click on an application to view the application expand the tree and to display the different
-	components of the application.
-	
-	</para>
+	<para><bold>View/Edit application </bold> components and properties by double-clicking the 'Applications' tree item (navigation panel) 
+	to expose the names of applications contained in the model, select one of the names to activate the 'view and 'properties' panels that display all the application detail editors.</para>
 		<imgReference target = "ApplicationOverview.png">
 		</imgReference>
 	</operations>
