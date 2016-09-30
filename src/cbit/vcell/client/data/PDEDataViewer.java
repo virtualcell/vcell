@@ -1996,6 +1996,12 @@ private void setupDataInfoProvider() throws Exception{
  */
 private boolean bSkipSurfaceCalc = false;
 public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {
+	if(pdeDataContext != null && pdeDataContext.getVCDataIdentifier() instanceof ExternalDataIdentifier){
+//		getJTabbedPane1().removeTabAt(getJTabbedPane1().indexOfTab(POST_PROCESS_IMAGE_TABNAME));
+//		getJTabbedPane1().removeTabAt(getJTabbedPane1().indexOfTab(POST_PROCESS_STATS_TABNAME));
+		getJTabbedPane1().setEnabledAt(getJTabbedPane1().indexOfTab(POST_PROCESS_IMAGE_TABNAME), false);
+		getJTabbedPane1().setEnabledAt(getJTabbedPane1().indexOfTab(POST_PROCESS_STATS_TABNAME), false);
+	}
 	getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true && !(pdeDataContext instanceof PostProcessDataPDEDataContext));
 	PDEDataContext oldValue = fieldPdeDataContext;
 	String setVarName = null;
@@ -3020,14 +3026,10 @@ private void calcAutoAllTimes() throws Exception {
 }
 
 private boolean errorAutoAllTimes(boolean bPPInfo,Boolean bVarMatch,boolean isFieldData){
-	if(isFieldData){
-		DialogUtils.showWarningDialog(this,"FielData has no PostProcessing min/max variables, cannot quick calculate 'all times' min-max.\nUse ROI->Statistics instead");
-		return true;
-	}
 	boolean bdialog = false;
 	try{
 		getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
-		if(bPPInfo && Boolean.TRUE.equals(bVarMatch)){
+		if(bPPInfo && Boolean.TRUE.equals(bVarMatch) && !isFieldData){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true);
 		}else{
 			getPDEDataContextPanel1().setFunctionStatisticsRange(null);//this tells pdedatacontextpanel.recodedata to calc 'current time' min-max instead of allTimes
@@ -3040,14 +3042,16 @@ private boolean errorAutoAllTimes(boolean bPPInfo,Boolean bVarMatch,boolean isFi
 		getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
 	}
 	if(bdialog){
-		if(Boolean.FALSE.equals(bVarMatch)){//there was post process but no matching min/max variables
+		if(isFieldData){
+			DialogUtils.showWarningDialog(this,"FielData has no PostProcessing min/max variables, cannot quick calculate 'all times' min-max.\nUse ROI->Statistics instead");
+		}else if(Boolean.FALSE.equals(bVarMatch)){//there was post process but no matching min/max variables
 			DialogUtils.showWarningDialog(this, "Sim '"+(getSimulation()==null?"unknown":getSimulation().getName())+"' has no matching PostProcessing min/max variables, cannot calculate 'all times' min-max.\nSee 'Post Processing Stats Data' tab");
 		}else{
 			DialogUtils.showWarningDialog(this, "Sim '"+(getSimulation()==null?"unknown":getSimulation().getName())+"' has no PostProcessing Data, cannot calculate 'all times' min-max.\nSee 'Post Processing Stats Data' tab");
 		}
 
 	}
-	return !bPPInfo/*didn't have postproc*/ || Boolean.FALSE.equals(bVarMatch)/*had postproc but no min/max (added as new feature so some data won't have)*/;
+	return isFieldData/*has no postproc*/ || !bPPInfo/*didn't have postproc*/ || Boolean.FALSE.equals(bVarMatch)/*had postproc but no min/max (added as new feature so some data won't have)*/;
 }
 
 
