@@ -14,7 +14,7 @@
 		<item>The <bold>Reaction</bold> column lists either a reaction (or flux) that can be edited in place, 
 		or "Reaction Rule" text that cannot be edited.</item> 
 		<item><bold>Name</bold> lists the reaction name; reaction names are generated automatically as "r_number" but can be edited to any text (without spaces).</item> 
-		<item><bold>Structure</bold> lists the <def target = "def_structure">structure</def> where the reaction, flux or reaction rule occurs. For rule-based models this field cannot be edited, because a rule-based model may contain only one compartment.</item>
+		<item><bold>Structure</bold> lists the <def target = "def_structure">structure</def> where the reaction, flux or reaction rule occurs.</item>
 		<item><bold>Depiction</bold> shows the molecular details of the reactants and products. Species that do not have molecular details are depicted as green balls. For reactions, molecular
 		details of species appear only if they are first specified in the <link target = "SpeciesTabView">Species</link> tab. For reaction rules, 
 		reactant and product molecular details are specified below in the <link target = "PP_ReactionRulesEditor"> Reaction Rules Properties</link> pane. 
