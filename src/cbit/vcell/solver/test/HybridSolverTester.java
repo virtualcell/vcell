@@ -642,6 +642,7 @@ public class HybridSolverTester {
 
 				File[] trialList = null;
 				VCellConnectionHelper vCellConnectionHelper = null;
+				File emptyFile = File.createTempFile("hstempty",null);
 				try{
 					if(!altArgsHelper.bCalcOnly){
 //						String rmiUrl = "//" + "rmi-alpha.cam.uchc.edu" + ":" + "40106" + "/"+"VCellBootstrapServer";
@@ -668,8 +669,18 @@ public class HybridSolverTester {
 							System.out.println("-----     Copying run "+(runIndex+1)+" of "+altArgsHelper.numRuns);
 							File outputRunDir = makeOutputRunDir(altArgsHelper.outputDir,runIndex);
 							for (int j = 0; j < trialList.length; j++) {
-								FileUtils.copyFile(trialList[j], new File(outputRunDir,trialList[j].getName()));
-								trialList[j].delete();
+								File localCopyFile = new File(outputRunDir,trialList[j].getName());
+								try{
+									FileUtils.copyFile(trialList[j],localCopyFile);//copy remote sim data file to local
+									trialList[j].delete();//delete remote
+								}catch(Exception e){
+									System.out.println("failed to copy '"+trialList[j].getAbsolutePath()+"', error="+e.getMessage()+".  Putting empty file as placeholder");
+									try{
+										FileUtils.copyFile(emptyFile,localCopyFile);//copy empty file to local in place of problematic remote sim data file, later analysis will skip it
+									}catch(Exception e2){
+										System.out.println("Faild to copy file and failed to copy empty, "+e2.getMessage());
+									}
+								}
 							}
 						}
 					}
