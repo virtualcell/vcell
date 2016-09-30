@@ -12,7 +12,7 @@
 	
 	<appearance>
 		<bold>Deterministic</bold>
-		<imgReference target = "SpeciesSpecifications.GIF"/>
+		<imgReference target = "SpeciesSpecifications.png"/>
 		<para><bold>Spatial Stochastic</bold>
 		<imgReference target = "SpeciesSpecifications_spatial_stoch.png"/>
 		</para>
