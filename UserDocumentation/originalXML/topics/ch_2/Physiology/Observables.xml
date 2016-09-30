@@ -24,8 +24,7 @@
 		The Observables Table displays 
 		<list>
 			<item>The <bold>Name</bold> of Observable (can be edited).</item>
-			<item>The <bold>Structure</bold> indicates where the species selected by an Observable are located 
-			(currently, only models containing a single compartment are allowed to contain Observables).</item>
+			<item>The <bold>Structure</bold> indicates where the species selected by an Observable are located .</item>
 			<item>The <bold>Depiction</bold> of each Observable. Green circles within each molecular shape denote 
 			molecular sites, small yellow circles denote that this site has possible states. </item> 
 			<item>A <def target = "def_BioNetGen">BioNetGen</def> definition.  The definition cannot be edited but can be searched.</item>
