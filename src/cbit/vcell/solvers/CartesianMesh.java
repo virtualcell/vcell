@@ -47,6 +47,7 @@ import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.VCML;
@@ -2259,8 +2260,13 @@ public static CartesianMesh readFromFiles(File meshFile, File meshmetricsFile, F
 	}
 	if (subdomainFile != null) {
 		mesh.subdomainInfo = SubdomainInfo.read(subdomainFile);
+	}else{
+		mesh.subdomainInfo = new SubdomainInfo(new SubdomainInfo.CompartmentSubdomainInfo[] {new SubdomainInfo.CompartmentSubdomainInfo("unknown", 0)}, null);		
 	}
 	mesh.read(meshST,membraneMeshMetrics);
+	if(mesh.getMeshRegionInfo().getVolumeRegionMapSubvolume().size() == 0){
+		mesh.getMeshRegionInfo().mapVolumeRegionToSubvolume(0, 0, 1, "unknown");
+	}
 	return mesh;
 	}finally{
 		if(meshReader != null){try{meshReader.close();}catch(Exception e){e.printStackTrace();}}

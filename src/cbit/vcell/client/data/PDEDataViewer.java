@@ -84,7 +84,9 @@ import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimResampleInfoProvider;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -113,6 +115,7 @@ import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientSimManager.LocalVCSimulationDataIdentifier;
 import cbit.vcell.client.DataViewerManager;
+import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.PDEDataViewerPostProcess.PostProcessDataPDEDataContext;
 import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
@@ -2537,7 +2540,7 @@ public static String createContextTitle(boolean isPostProcess,String prefix,PDED
 		if(pdeDatacontext != null && pdeDatacontext.getVCDataIdentifier() != null){
 			VCDataIdentifier vcDid = pdeDatacontext.getVCDataIdentifier();
 			boolean bIsOldStyle= vcDid instanceof VCSimulationDataIdentifierOldStyle;
-			parameterScanJobID = (bIsOldStyle?-1:(((VCSimulationDataIdentifier)vcDid).isParameterScanType()?((VCSimulationDataIdentifier)vcDid).getJobIndex():-1));
+			parameterScanJobID = (bIsOldStyle?-1:(((SimResampleInfoProvider)vcDid).isParameterScanType()?((SimResampleInfoProvider)vcDid).getJobIndex():-1));
 		}
 		String simulationName = (simulationModelInfo==null || simulationModelInfo.getSimulationName()==null?(simulation==null || simulation.getName()==null?"?Sim?":simulation.getName()):simulationModelInfo.getSimulationName());
 		String contextTitle = (simulationModelInfo==null?"":"["+simulationModelInfo.getContextName()+"]:")+"["+simulationName+"]"+(parameterScanJobID==-1?"":":ps="+parameterScanJobID);
@@ -2921,22 +2924,49 @@ public void setPostProcessingPanelVisible(boolean bVisible){
 }
 
 private void calcAutoAllTimes() throws Exception {
-	HashSet<String> stateVarNames = getSimulation().getMathDescription().getStateVariableNames();
-	Variable theVariable = getSimulation().getMathDescription().getVariable(getPdeDataContext().getVariableName());
-	if(theVariable == null){
-		theVariable = ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunction(getPdeDataContext().getVariableName());
-	}
-	if(theVariable == null){
-		DataProcessingOutputInfo dataProcessingOutputInfo = DataProcessingResultsPanel.getDataProcessingOutputInfo(getPdeDataContext());
-		if(dataProcessingOutputInfo != null && Arrays.asList(dataProcessingOutputInfo.getVariableNames()).contains(getPdeDataContext().getVariableName())){
-			//PostProcess Variable
-			return;
+	HashSet<String> stateVarNames = null;
+	Variable theVariable = null;
+	boolean bStateVar = true;
+	boolean isFieldData = getPdeDataContext().getVCDataIdentifier() instanceof ExternalDataIdentifier;
+	if(isFieldData){//fielddata
+		DataIdentifier[] dataids = getPdeDataContext().getDataIdentifiers();
+		stateVarNames = new HashSet<>();
+		for (int i = 0; i < dataids.length; i++) {
+			if(!dataids[i].isFunction()){
+				stateVarNames.add(dataids[i].getName());
+			}
+//			System.out.println("name:'"+dataids[i].getName()+"' type:"+dataids[i].getVariableType()+" func:"+dataids[i].isFunction());
 		}
+		bStateVar = !getPdeDataContext().getDataIdentifier().isFunction();
+		if(bStateVar){
+			theVariable = new VolVariable(getPdeDataContext().getDataIdentifier().getName(), getPdeDataContext().getDataIdentifier().getDomain());
+		}else{
+			AnnotatedFunction[] funcs = getPdeDataContext().getFunctions();
+			for (int i = 0; i < funcs.length; i++) {
+				if(funcs[i].getName().equals(getPdeDataContext().getDataIdentifier().getName())){
+					theVariable = funcs[i];
+					break;
+				}
+			}
+		}
+	}else{
+		stateVarNames = getSimulation().getMathDescription().getStateVariableNames();
+		theVariable = getSimulation().getMathDescription().getVariable(getPdeDataContext().getVariableName());
+		if(theVariable == null){
+			theVariable = ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunction(getPdeDataContext().getVariableName());
+		}
+		if(theVariable == null){
+			DataProcessingOutputInfo dataProcessingOutputInfo = DataProcessingResultsPanel.getDataProcessingOutputInfo(getPdeDataContext());
+			if(dataProcessingOutputInfo != null && Arrays.asList(dataProcessingOutputInfo.getVariableNames()).contains(getPdeDataContext().getVariableName())){
+				//PostProcess Variable
+				return;
+			}
+		}
+		bStateVar = stateVarNames.contains(getPdeDataContext().getVariableName());
 	}
 	if(theVariable == null){
 		throw new Exception("Unexpected Alltimes... selected variable '"+getPdeDataContext().getVariableName()+"' is not stateVariable or OutputFunction");
 	}
-	boolean bStateVar = stateVarNames.contains(getPdeDataContext().getVariableName());
 	if(getPDEDataContextPanel1().getdisplayAdapterService1().getAllTimes()){// min-max over all timepoints (allTimes)
 		if(theVariable.isConstant()){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
@@ -2945,7 +2975,7 @@ private void calcAutoAllTimes() throws Exception {
 		}else if(bStateVar){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
 			ArrayList<VarStatistics> varStatsArr = calcVarStat(getPdeDataContext(), new String[] {theVariable.getName()});
-			if(errorAutoAllTimes(varStatsArr != null,(varStatsArr==null?null:varStatsArr.size()>0))){//no postprocessinfo
+			if(errorAutoAllTimes(varStatsArr != null,(varStatsArr==null?null:varStatsArr.size()>0),isFieldData)){//no postprocessinfo
 				return;
 			}
 			FunctionStatistics functionStatistics = new FunctionStatistics(varStatsArr.get(0).minValuesOverTime, varStatsArr.get(0).maxValuesOverTime);
@@ -2957,7 +2987,7 @@ private void calcAutoAllTimes() throws Exception {
 				flattened = (Function)theVariable;
 			}
 			ArrayList<VarStatistics> varStatsArr = calcVarStat(getPdeDataContext(), stateVarNames.toArray(new String[0]));
-			if(errorAutoAllTimes(varStatsArr != null, (varStatsArr==null?null:varStatsArr.size()>0))){//check for no postprocessinfo
+			if(errorAutoAllTimes(varStatsArr != null, (varStatsArr==null?null:varStatsArr.size()>0),isFieldData)){//check for no postprocessinfo
 				return;
 			}
 			if(varStatsArr.size() == stateVarNames.size()){
@@ -2989,7 +3019,11 @@ private void calcAutoAllTimes() throws Exception {
 	}
 }
 
-private boolean errorAutoAllTimes(boolean bPPInfo,Boolean bVarMatch){
+private boolean errorAutoAllTimes(boolean bPPInfo,Boolean bVarMatch,boolean isFieldData){
+	if(isFieldData){
+		DialogUtils.showWarningDialog(this,"FielData has no PostProcessing min/max variables, cannot quick calculate 'all times' min-max.\nUse ROI->Statistics instead");
+		return true;
+	}
 	boolean bdialog = false;
 	try{
 		getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
@@ -3007,9 +3041,9 @@ private boolean errorAutoAllTimes(boolean bPPInfo,Boolean bVarMatch){
 	}
 	if(bdialog){
 		if(Boolean.FALSE.equals(bVarMatch)){//there was post process but no matching min/max variables
-			DialogUtils.showWarningDialog(this, "Sim '"+getSimulation().getName()+"' has no matching PostProcessing min/max variables, cannot calculate 'all times' min-max.\nSee 'Post Processing Stats Data' tab");
+			DialogUtils.showWarningDialog(this, "Sim '"+(getSimulation()==null?"unknown":getSimulation().getName())+"' has no matching PostProcessing min/max variables, cannot calculate 'all times' min-max.\nSee 'Post Processing Stats Data' tab");
 		}else{
-			DialogUtils.showWarningDialog(this, "Sim '"+getSimulation().getName()+"' has no PostProcessing Data, cannot calculate 'all times' min-max.\nSee 'Post Processing Stats Data' tab");
+			DialogUtils.showWarningDialog(this, "Sim '"+(getSimulation()==null?"unknown":getSimulation().getName())+"' has no PostProcessing Data, cannot calculate 'all times' min-max.\nSee 'Post Processing Stats Data' tab");
 		}
 
 	}
