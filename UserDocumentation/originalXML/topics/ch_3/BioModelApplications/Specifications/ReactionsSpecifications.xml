@@ -20,13 +20,11 @@
 		
 	<operations>
 	<bold>Viewing/Editing Reactions Specifications</bold>
+	Select a reaction from the table to display the <link target="PP_Reactions">Reactions Properties Pane</link> in the <link target="GeneralNavAndWinSetup">Properties panel</link> below.
+	View reaction properties in the <link target="PP_Reactions">Reactions Properties Pane</link>.
+	To edit reaction properties, See <link target="ReactTabView">Reactions table</link>.
+	Common information includes reaction 'Name', 'Type' (regular, flux, rule) and 'Enabled' (set/unset whether a reaction is included in simulations).
 	<list>
-	<item><bold>Activate</bold> by selecting the 'Specifications' item under a specific 'Applications' sub-node in the <link target="GeneralNavAndWinSetup">Navigation panel</link> tree structure.</item>
-	<item><bold>Display</bold> by selecting the 'Specifications' and 'Reaction' tabs in the <link target="GeneralNavAndWinSetup">View panel</link>  to show a table list of all reactions.</item>
-	<item><bold>Select</bold> a reaction from the table to display the <link target="PP_Reactions">Reactions Properties Pane</link> in the <link target="GeneralNavAndWinSetup">Properties panel</link> below.</item>
-	<item><bold>View</bold> reaction properties in the <link target="PP_Reactions">Reactions Properties Pane</link>.</item>
-	<item><bold>Edit</bold> reaction properties.  See <link target="ReactTabView">Reactions table</link>.</item>
-	<item><bold>Common Information </bold> includes reaction 'Name', 'Type' (regular, flux, rule) and 'Enabled' (set/unset whether a reaction is included in simulations).</item>
 	<item><bold>Turn off reactions</bold> in simulations by un-checking the checkbox under the <bold>Enabled</bold> table column causing solvers to ignore the reaction during simulations.  
 	A mouse popup menu can also be used to enable/disable a reaction.</item>
 	<item><bold>Set Fast mode</bold> for reactions in <bolod>deterministic applications</bolod> by checking the box under the <bold>Fast</bold> table column causing reaction to be treated as pseudo-steady-state.  
