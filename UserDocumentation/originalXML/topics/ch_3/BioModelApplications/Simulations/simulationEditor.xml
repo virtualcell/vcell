@@ -73,7 +73,7 @@ to compute. Coarse (lower number of points in x and Y) mesh sizes are suggested 
 	</para>
 	<list>
 	<item>Integrator</item>
-	<para>An appropriate integrator (solver) must be chosen from the drop-down menu. 
+	<para>An appropriate integrator (solver) is automatically selected by default based on model and geometry characteristics.  Additional solvers may be available and can be chosen from the drop-down menu. 
 	Press the <imgReference target="solverQuestionBtn.png"/>  button to show a description of the currently selected solver.  
 	Please reference the description of the Virtual Cell <link target = "numerical_solvers">numerical solvers</link>.</para>
 	<para></para>
