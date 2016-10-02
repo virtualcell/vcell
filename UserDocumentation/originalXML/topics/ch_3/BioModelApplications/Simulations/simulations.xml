@@ -80,7 +80,7 @@
 	<item><bold>Results</bold> <imgReference target = "sim_results.png" inline = "true"/> Once a simulation has started and/or is complete, press the 
 			Results button to view the simulation results.</item>
 	<item><bold>Status Details</bold> <imgReference target = "sim_status_details.png" inline = "true"/> This shows more detailed simulation status, 
-			including submit date, start date, end date, etc. It’s more useful when the simulation has parameter scans, where it will 
+			including VCell version that ran the simulation, running status (% progress, failed, finished), submit date, start date, end date, etc. It’s more useful when the simulation has parameter scans, where it will 
 			show the status of all the sub simulations.</item>
 	<item><bold>Quick Run</bold> <imgReference target = "ode_quick_run.png" inline = "true"/> Starts the simulation on the user's local computer.  
 	The Model is not automatically saved on the remote VCell server.  
