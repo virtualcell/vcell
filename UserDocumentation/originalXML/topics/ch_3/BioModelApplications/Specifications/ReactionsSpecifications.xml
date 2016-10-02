@@ -20,8 +20,7 @@
 		
 	<operations>
 	<bold>Viewing/Editing Reactions Specifications</bold>
-	Select a reaction from the table to display the <link target="PP_Reactions">Reactions Properties Pane</link> in the <link target="GeneralNavAndWinSetup">Properties panel</link> below.
-	View reaction properties in the <link target="PP_Reactions">Reactions Properties Pane</link>.
+	Select a reaction from the table to display the <link target="PP_Reactions">Reactions Properties Pane</link> in the <link target="PP_Reactions">Reactions Properties Pane</link> (below).
 	To edit reaction properties, See <link target="ReactTabView">Reactions table</link>.
 	Common information includes reaction 'Name', 'Type' (regular, flux, rule) and 'Enabled' (set/unset whether a reaction is included in simulations).
 	<list>
