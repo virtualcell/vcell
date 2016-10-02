@@ -31,7 +31,7 @@ of parameter values.  <bold>Right-click menu</bold> allows for copying and pasti
     <para>To specify a parameter scan, one must check the corresponding checkbox for the parameter
 	(s), and a dialog box will appear where the user can enter a List or Range of values to be scanned.
 	</para>
-	<para><imgReference target="sim_scan.gif"/></para>
+	<para><imgReference target="sim_scan.png"/></para>
 	<para></para>
 	<para>List- Enter values separated by commas. Each value will be used in a simulation.</para>
 	<para>Range - Enter the values that will be used as the minimum and maximum values between
@@ -64,7 +64,7 @@ and thus take many different values.
 of elements (points in x and y) used to create a mesh, the finer the spatial resolution and greater amount of time required
 to compute. Coarse (lower number of points in x and Y) mesh sizes are suggested for initial simulations to obtain faster solutions.
 	</para>
-	<para><imgReference target="sim_mesh.gif"/></para>
+	<para><imgReference target="sim_mesh.png"/></para>
 	</list>
 	
 	<para><bold>Solver</bold></para>
@@ -99,7 +99,7 @@ to compute. Coarse (lower number of points in x and Y) mesh sizes are suggested 
     <para>2. Customized Seed: a user specified number, which is used to produce a series of uniformly distributed random numbers.</para>
     <para>3. Single Trajectory: a single run of the stochastic simulation with an output of trajectories.</para>
     <para>4. Number of Trails: the number of multiple trials for Monte Carlo simulation with an output of histograms.</para>
-    <para><imgReference target="sim_solverSetting2.gif"/></para>
+    <para><imgReference target="sim_solverSetting2.png"/></para>
     <para></para>
 	<item>Special Settings for Non-spatial Hybrid Solvers</item>
 	<para>1. Epsilon: minimum number of molecules, both reactant and product species, required for approximation as a continuous Markov process.</para>
