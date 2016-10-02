@@ -26,7 +26,7 @@
 	<list>
 	<item><bold>Turn off reactions</bold> in simulations by un-checking the checkbox under the <bold>Enabled</bold> table column causing solvers to ignore the reaction during simulations.  
 	A mouse popup menu can also be used to enable/disable a reaction.</item>
-	<item><bold>Set Fast mode</bold> for reactions in <bolod>deterministic applications</bolod> by checking the box under the <bold>Fast</bold> table column causing reaction to be treated as pseudo-steady-state.  
+	<item><bold>Set Fast mode</bold> for reactions in <bold>deterministic applications</bold> by checking the box under the <bold>Fast</bold> table column causing reaction to be treated as pseudo-steady-state.  
 	May increases the speed of simulation processing and reduce the time needed to run a simulation.</item>
 	<item><bold>By default </bold> all reactions are <bold>enabled</bold> and <bold>not fast</bold>. </item>
 	</list>

@@ -15,11 +15,18 @@
 
 	
 	<introduction>
-	You can <link target="simulations">run a simulation</link>, <link target="output_functions">define an output function</link> and 
-	<link target="generated_math">view generated math</link> once an application is created in a BioModel.
+	Once a MathModel or an 'application' in a BioModel is created at least 1 simulation must be defined to generate numerical results.  You can create, copy, edit, run (local or remote), stop and delete simulations. 
+	The simulations panel also shows the running status (% progress,results available) of all simulations.  
+	Select a simulation row to 
+	display additional information in the properties panel below, 
+	launch a data viewer for simulation that have been run 
+	and display parameter scan information.
+	Model parameters can be changed for each simulation without changing the overall model.  
+	Simulation parameter scans can be defined to iterate over a set of model parameters, automatically generating separate results for each combination of parameter values.  
+	The panel also contains 'Output Functions' to add user defined data expressions that are displayed when simulation results are shown.
  	</introduction>
 	
-	<appearance><imgReference target="sim_overview.gif"/></appearance>
+	<appearance><imgReference target="sim_overview.png"/></appearance>
 	
 	<operations>
 	There are three sub-tabs under "Simulations" tab:

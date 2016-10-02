@@ -15,7 +15,7 @@
 	<operations>
 	<list>
 	<item><bold>Search textfield: </bold> Enter text fragment used to search model names and meta-information for matches.</item>
-	<itme><bold>Search button: </bold> Press to begin search using the text fragment entered in search textfield.</itme>
+	<item><bold>Search button: </bold> Press to begin search using the text fragment entered in search textfield.</item>
 	<item><bold>Show All button: </bold> Press to clear search and show all available models.</item>
 	<item><bold>Model Names list: </bold> Displays available models from repository matching search criteria.  
 	Selecting a name from the list will display information for that model in the Database File Info tab.  
