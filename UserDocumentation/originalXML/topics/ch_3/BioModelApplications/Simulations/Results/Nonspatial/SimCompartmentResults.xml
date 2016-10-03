@@ -6,7 +6,10 @@
 	
 	<introduction>
 	
-Results for compartmental (non-spatial) simulations can be displayed as a graph (Plot) or a table of the values (Values). Use the toggle buttons at the lower right of the Results Viewer to switch between Plot and Values views. The default view is Plot of a single variable from the model on the Y axis against time on the X axis. Results from Stochastic multi-trial simulations are displayed as a histogram.
+Results for compartmental (non-spatial) simulations can be displayed as a graph (Plot) or a table of the values (Values).  
+Use the toggle buttons at the lower right of the Results Viewer to switch between Plot and Values views.  
+The default view is Plot of a single variable from the model on the Y axis against time on the X axis.  
+Results from Stochastic multi-trial simulations are displayed as a histogram (see <link target = "SimResultsNonSpatialStochHistogram">Stochastic results viewer</link>). 
 
 		</introduction>
 		
