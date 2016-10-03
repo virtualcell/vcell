@@ -465,8 +465,9 @@ public class RuleAnalysis {
 			MolecularComponentEntry reactantComponent1 = report.getReactantComponentEntry(addedProductBond.productComponent1);
 			MolecularComponentEntry reactantComponent2 = report.getReactantComponentEntry(addedProductBond.productComponent2);
 			if(reactantComponent1 == null || reactantComponent2 == null) {
-				// TODO: need to find out what's causing this, for now we just catch it
-				String errMsg = "Null reactant component(s) for bond entry while generationg an addBond operation";
+				// need to find out what's causing this, for now we just catch it
+				// this is caused by AB -> AC
+				String errMsg = "Null reactant component(s) for bond entry while generating an addBond operation";
 				if (bThrowExceptions){
 					throw new RuntimeException(errMsg);
 				}else{
@@ -706,7 +707,7 @@ public class RuleAnalysis {
 				Element delete = new Element("Delete");
 				listOfOperations.addContent(delete);
 				delete.setAttribute("id",getID(deleteMolecule.removedReactantMolecularEntry));
-				delete.setAttribute("DeleteMolecules","0");
+				delete.setAttribute("DeleteMolecules","1");
 			}
 		}
 		for (Operation op : report.getOperations()){
