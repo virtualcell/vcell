@@ -8,20 +8,11 @@ introduce <def target= "def_RuleBased">rule-based</def> features among species a
 Additions to the Biomodel <link target = "PhysOverview">Physiology</link>  include 
 <link target = "Molecules">Molecules</link> and <link target = "Observables">Observables</link>, 
 as well as <def target = "def_ReactionRules">reaction rules</def> that can be specified alongside 
-<def target = "def_reactions">reactions</def> in the <link target = "ReactTabView">Reactions</link> Table.
+<def target = "def_reactions">reactions</def> in the <link target = "ReactTabView">Reactions</link> Table.  Defining <link target = "Molecules">Molecules</link> allows the user to create species that have <link target = "PP_Species">molecular details</link>.
  
-<para><bold>Rule-based features and compartments</bold></para>
-Defining <link target = "Molecules">Molecules</link> allows the user to create species that have 
-<link target = "PP_Species">molecular details</link>. 
-Currently, <bold>rules can operate only in Biomodels containing a single compartment</bold> 
-(a temporary restriction that will be lifted in the next release).  Once a reaction rule is created, 
-any new species by default will be placed in the c0 (initial default) compartment, and this can not be changed. Similarly, if multiple compartments have been created in the Biomodel, no rules can be added.
-
 <para><bold>Mixing Rule-based features and reaction networks</bold></para>
 Similar to the traditional BioModel, a rule-based BioModel consists of a model description (Physiology) 
-and one or more Applications. Except for the temporary restriction to Biomodels containing a single compartment, 
-any operations on species and reactions that are supported in VCell can be used alongside rules. Specifically, 
-species that are used as initial <def target= "def_SeedSpecies">seed species</def> for rule-based models can be used as species in reaction networks.
+and one or more Applications. Any operations on species and reactions that are supported in VCell can be used alongside rules. Specifically, species that are used as initial <def target= "def_SeedSpecies">seed species</def> for rule-based models can be used as species in reaction networks.
 
 
 	<para><bold>Rule-based Applications</bold></para>
@@ -42,10 +33,8 @@ species that are used as initial <def target= "def_SeedSpecies">seed species</de
 	specified in the <link target = "SpeciesSpecifications">Species</link> specification tab.
 	<link target = "NetworkSpecifications">Network</link> specification parameters are used to control the size of the network,
 	which otherwise can become infinitely large. The generated species and reactions can be seen in the 
-	<link target = "NetworkSpecifications">Network</link> tab, but they are not added to the 
-	<link target = "ReactDiagView">Reaction Diagram</link> view. </item>
-	<item>After the user is satified with the network that is generated using the set of species and reaction rules,
-		any determiministic or stochastic <link target = "simulations_overview">simulation</link> can be run.
+	<link target = "NetworkSpecifications">Network</link> tab. </item>
+	<item>After the user is satified with the network that is generated using the set of species and reaction rules, any determiministic or stochastic <link target = "simulations_overview">simulation</link> can be run.
 		</item>
 	</list>
 

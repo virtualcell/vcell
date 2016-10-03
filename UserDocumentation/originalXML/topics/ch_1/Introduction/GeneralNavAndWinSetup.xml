@@ -56,7 +56,7 @@
 		This is the panel on the bottom right of the VCell document window. This panel contains the following 3 tabs.
 		The <bold>Object Properties</bold> tab displays the properties of any entity (species, reaction, structure) selected in any of the tabs in the "View" panel (refer to section <link target="PropertiesPaneOverview">Properties Pane</link>) panel.
 		The <bold>Problems</bold> tab lists the errors and warnings in the model that has been created. The user is not allowed to save the model if there are any errors.
-		The <bold>Database File Info</bold> tab provides a brief database summary of the selected model in the "Database" panel. The Database Info tab is not visible for rule-based models.
+		The <bold>Database File Info</bold> tab provides a brief database summary of the selected model in the "Database" panel. 
 		</para>
 		</item>
 
@@ -66,7 +66,7 @@
 		This is the bottom left panel in the figure above. This panel allows the viewer to view/select models from different database sources. This panel has the following 3 tabs.
 		The <bold>VCell Database</bold> tab shows the models stored in the VCell database. This selection shows another set of 3 tabs (<bold>BioModels</bold>, <bold>MathModels</bold>, <bold>Geometries</bold>), 
 		which display the different VCell document types stored in the VCell database. Refer to the section on <link target="VCellDatabase">VCell Database</link> for further information.
-		The <bold>Biomodels.net</bold> tab shows models from the <link target="http://www.ebi.ac.uk/biomodels-main/">Biomodels database</link>, which is a database of annotated published models in SBML that can be imported into the Virtual Cell.
+		The <bold>BMBD</bold> tab shows models from the <link target="http://www.ebi.ac.uk/biomodels-main/">Biomodels database</link>, a database of annotated published models in SBML that can be imported into the Virtual Cell.
 		The <bold>Pathway Commons</bold> tab shows the list of pathways that can be mined from the <bold>Pathway Commons</bold> database. 
 		Please refer to sections <link target="PathwayCommonsPanel">Pathway Commons Database</link> and <link target="PathwayOverview">Biological Pathways</link>.
 		</para>

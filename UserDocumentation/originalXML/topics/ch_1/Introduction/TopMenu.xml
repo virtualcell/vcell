@@ -11,17 +11,17 @@
 	</appearance>
 	
 	<operations>
-	The menu options available to the user are
+	The top menu options available to the user are
 	<list>
  	  <item>
 	     <link target = "File">File</link>,  
 	  </item>
-	  <item>
-         <link target = "View">View</link>,
-      </item>
-	  <item>     
+ 	  <item>     
          <link target = "Server">Server</link>,
 	  </item>
+	  <item>
+         <link target = "Window">Window</link>,
+     	  </item>
 	  <item>         
          <link target = "Tools">Tools</link> and
 	  </item>
@@ -30,7 +30,6 @@
 	  </item>
 	</list> 
 
-	<para>To select any menu option, click on the required menu option.</para>  
 	</operations>
 	
 	<comments>  </comments>
