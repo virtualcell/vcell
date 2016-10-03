@@ -3,33 +3,13 @@
 <page title="Window">
 
 	<introduction>
-	The <bold>Window</bold> menu bar option allows the user to arrange the open windows in the current VCell document.
+	The <bold>Window</bold> menu bar option allows the user to switch among currently open VCell documents.
 	</introduction>
 	
 	<appearance>
 		<imgReference target = "WindowMenu.PNG"/>
 	</appearance>
 	
-	<operations>
-	<para>Clicking the Window menu displays the available options to arrange the open windows in the current VCell document.</para> 
-	<list>
- 	  <item>
-	     <bold> Tile Horizontally </bold> - arranges the windows horizontally.
-	  </item>
-	  <item>  
-         <bold> Tile Vertically </bold> - arranges the windows vertically.
-      </item>
-	  <item>
-         <bold> Cascade </bold> - cascades the windows.
-      </item>
-	  <item>
-         <bold> Minimize All </bold> - minimizes all the open windows.
-	  </item>
-	</list> 
-	</operations>
-	
-	<comments>  </comments>
-
 </page>
 
 </vcelldoc>

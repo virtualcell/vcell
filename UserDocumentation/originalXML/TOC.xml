@@ -19,13 +19,13 @@
     			<tocitem target="ImportBNGL" text="File->Import Menu (BNGL files)"/>
     			<tocitem target="Export" text="File->Export Menu"/>
     		</tocitem>
-    		<tocitem target="View" text="View Menu"/>
     		<tocitem target="Server" text="Server Menu">
     			<tocitem target="Login" text="User Login"/>
     			<tocitem target="ChangeUser" text="Change User Menu"/>
     			<tocitem target="UpdateRegistrationInfo" text="Update Registration Information Menu"/>
     			<tocitem target="NewUserRegistration" text="New User Registration"/>
     		</tocitem>	
+    		<tocitem target="Window" text="Window Menu"/>
     		<tocitem target="Tools" text="Tools Menu">
     			<tocitem target="LaunchBioNetGen" text="Launch BioNetGen Menu">
     			 	<tocitem target="BioNetGenRulesEditor" text="BioNetGen Rules Editor"/>
