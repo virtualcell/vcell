@@ -23,7 +23,7 @@
 	<item>t</item>
 	<item>x, y, z : spatial models only</item>
 	<item>model variables</item>
-	<item>vcell predefined mathematical functions</item>
+	<item><link target="PredefinedConstAndMathFns">predefined mathematical functions</link></item>
 	<item>previously defined output functions</item>
 	</list>
 	<para>After an output function is added, it will be automatically added to all simulation result viewers.</para>
