@@ -17,13 +17,13 @@
 	</para>
 	<list>
 		<item> <link target="VCellDatabase">VCell database (internal)</link> </item>
-		<item> <link target="BioModelsNet">BioModels.net repository (external)</link> </item>
+		<item> <link target="BioModelsNet">'BioModels Database' repository (external)</link> </item>
 		<item> <link target="PathwayCommonsPanel">Pathway Commons repository (external)</link> </item>
-		<item> <link target="SabioRK">Sabio-RK repository (external)</link> </item>
+		<item> <link target="SabioRK">Sabio-RK repository (external)</link> (available in VCell soon)</item>
 	</list>
 	For more information about the external model repositories visit their respective web sites:
 	<list>
-	<item><link target="http://www.ebi.ac.uk/biomodels-main/">Biomodels.net (http://www.ebi.ac.uk/biomodels-main/)</link></item>
+	<item><link target="http://www.ebi.ac.uk/biomodels-main/">'BioModels Database' (http://www.ebi.ac.uk/biomodels-main/)</link></item>
 	<item><link target="http://www.pathwaycommons.org/pc/">Pathway Commons (http://www.pathwaycommons.org/pc/)</link></item>
 	<item><link target="http://sabio.h-its.org/">SabioRK (http://sabio.h-its.org/)</link></item>
 	</list>

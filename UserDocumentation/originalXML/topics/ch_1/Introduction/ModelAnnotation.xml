@@ -21,7 +21,9 @@
 	<para> <bold>Viewing/Editing MIRIAM Annotations</bold></para>
 	<para>
 	VCell users may view/edit MIRIAM information in BioModels using the MIRIAM editor accessed from <bold>File -> Model Annotation</bold> menu sequence from any VCell main window. 
-	This brings up a window to view/add/delete/edit MIRIAM annotations for a model. Currently, the MIRIAM annotations are viewable for models that are imported from the Biomodels.net database that have MIRIAM annotations.
+	This brings up a window to view/add/delete/edit MIRIAM annotations for a model. Currently, the MIRIAM annotations are viewable for models that are imported from the 
+	<link target="http://www.ebi.ac.uk/biomodels-main/">'BioModels Database' (http://www.ebi.ac.uk/biomodels-main/)</link> 
+	that have MIRIAM annotations.
 	The MIRIAM annotation is now represented in a tree format with a node for each model component (the model itself, reactions, species, and structures). Each node displays the model component and its name. 
 	Any other MIRIAM information (its references in common databases) for the model component is displayed as a leaf of the component.
 	Each database reference leaf node is displayed in the following format: <bold>Annotation_Scheme</bold>, <bold>Annotation_Qualifier</bold>, <bold>Database_name (id_of_component_in_database)</bold>.
