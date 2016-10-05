@@ -9,16 +9,16 @@
 	or <bold>blue</bold> balls for species with <link target = "Molecules">molecular details</link>) 
 	and <def target = "def_reactions">reaction</def> (<bold>yellow</bold> squares) nodes, 
 	each within the appropriate
-	compartments, and connected by lines connecting species that participate in the reaction.
+	compartments, and connected by lines connecting species that participate in the reaction.  In rule-based models, reactants and products defined by rules are depicted with ovals around balls (species) in various colors.
 	</introduction>
 	
 	<appearance> 
 	<imgReference target = "ReactDiagView2.png"/> 
 	<para> 
 	Structures are depicted as connected rectangles within the workspace. 
-	Species are green or bluse balls and reactions are yellow squares placed into the structures. Lines each connect one 
+	Species are green or blue balls and reactions are yellow squares placed into the structures. Lines each connect one 
 	species with one reaction: solid lines with arrows denote reactants and products; dashed lines denote catalysts. 
-	Stoichiometric coefficients, if different from one, are displayed next to the appropriate lines.
+	Stoichiometric coefficients, if different from one, are displayed next to the appropriate lines. When reactions are defined by rules, the reactants and products are depicted as ovals with one or more balls of various colors.
 	</para>
 	<para>
 	A toolbar above the graph provides buttons for editing, adjusting zoom, and changing the layout of the elements.
@@ -71,7 +71,7 @@
 	    <para>
 	    The <bold>layout buttons</bold> automatically arrange the components (graph elements) by different algorithms. 
 	    These include (from left to right) random, within an ellipse within each structure, so that most lines point downward, to make lines
-	    shorter and more similar to each other in lengths, and to place nodes more evenly across each structure.
+	    shorter and more similar to each other in lengths, and to place nodes more evenly across each structure.  For rule-based models, there are additional buttons to either have all participants in a reaction depicted separately (and therefore reactants/products may be duplicated in the view) or have the same reactant/product depiction connected to multiple reactions.
 	    </para>
 	   
      
@@ -102,7 +102,7 @@
     <link target = "PP_MemFlux">membrane structure</link>, 
     <link target = "PP_Species">species</link>,
     <link target = "PP_Stoichiometries">stoichiometry</link> or 
-    <link target = "PP_Structures">volume structure</link> properties pane 
+    <link target = "PP_Structures">volume structure</link> properties pane. 
     </para>
 
   </operations>

@@ -19,7 +19,7 @@
 	(number of iterations to apply rules and maximum number of molecules per species in the generated network) 
 	are used to control the size of the network,
 	which otherwise can become infinitely large. The generated species and reactions can be viewed in the
-	<link target = "NetworkSpecifications">Network</link> tab, but they are not added to the 
+	<link target = "NetworkSpecifications">Network</link> or the 
 	<link target = "ReactDiagView">Reaction Diagram</link> view. </para>
 	
 	<para>After the network is generated, determiministic or 

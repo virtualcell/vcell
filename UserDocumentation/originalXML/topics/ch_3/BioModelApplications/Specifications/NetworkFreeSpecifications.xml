@@ -3,34 +3,26 @@
 <page title="Network-Free Specifications"  target="NetworkFreeSpecifications">
 	
 	<introduction>
-		For every model specified in a single compartment and having only mass-action kinetics, 
-		a modeler is able to create a new rule-based BioModel. Every rule-based enabled element of a model
-		(molecules, observables, species with molecular details, reaction rules) are transferred to a new
-		model without changes. Regular elements of a model (species without molecular detail and reactions) are
-		converted into rule-based physiology by generating of molecule per species, and having reactions written
-		as fully-defined reaction rules.	
+		A Network-Free simulation (using the NFSim solver) can be run for BioModels that include only a single compartment and where all reactions in the model have mass action kinetics.  For Biomodels without rules or molecular definitions, the simulations results will generate equivalent results as when using a non-spatial stochastic solver. The Network-free Specifications tab is visible only in Network-Free Applications. When a NetworkFree simulation is run for a non-ruled based BioModel, the Physiology is first coverted into a rule-based model and the simulation is run using the NFSim solver.  Within this Specifications window, it is possible to save the rule-based model that will be created as a new VCell Biomodel.
+
 	</introduction>
 	
 	<appearance>
-		For user convenience, the Network-Free tab provides statistics of rule-enabled and regular elements of
-		current model physiology, and the same stgatistics for the rule-based model to be created.
-	
+		Statistics of the species, molecules, reactions and observables are provided for both the original physiology and the created rule based physiology.  If the original model is rule-based, these numbers will be identical.  
 	</appearance>
 	
 	<operations>
-	<bold>Create New Rule-Based VCell BioModel</bold> generates a new BioModel and opens it in a new window.
 	<imgReference target = "NetworkFreeTab.PNG"/>
-	<para>Note that the same reaction expression treated as a reaction and as a reaction 
-		rule will have different rates:
-</para>
+	<para>	
+<bold>Create New Rule-Based VCell BioModel</bold> from the original physiology. A new BioModel is created and opened in a new window. A rule based model can be created only for models with a single compartment and if all reactions have mass action kinetics.  Molecules, observables, species with molecular details, and reaction rules are transferred to a new
+BioModel without changes. Species without molecular details and reactions are converted into rule-based physiology by generating a molecule for each species, and converting reactions to fully-defined reaction rules.</para>
+
+	<para>
+	Note that the same reaction expression treated as a reaction and as a reaction rule will have different rates:
+	</para>
 	
-	<list>
-		<item>
-			VCell will take care of reactions of the form A + A -> product(s), and the rate of generated 
-			reaction rules will be multiplied by 2 to account for symmetry factors. </item>
-		<item>VCell does not take care of reactions where reactants have symmetric sites and reaction 
-			rule will have a statistical factor. If this is not properly treated by a modeler, the resultant rule-based model may show different simulation results than its network precursor. 
-		</item>
+	<list><item>VCell will automatically convert reactions of the form A + A -> product(s), by multiplying the rate of  the generated reaction rules by 2 to account for symmetry factors. </item>
+		<item>VCell does not take adjust the kinetics of reactions where reactants have symmetric sites and where the reaction rule has a statistical factor. If this is not properly corrected by the user, the resultant rule-based model may yield different simulation results than its network precursor. </item>
 	</list>
 	
 	</operations>

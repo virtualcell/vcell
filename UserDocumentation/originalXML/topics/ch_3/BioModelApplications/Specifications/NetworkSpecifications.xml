@@ -4,12 +4,7 @@
 
 	
 	<introduction>
-	For <def target = "def_Deterministic">deterministic</def> and <def target = "def_Stochastic">stoichastic</def> applications, 
-	Network Tab describes constraints for network-generation performed by <def target = "def_BioNetGen">BioNetGen</def> engine, and tests
-	the size of the reaction network that is obtained using these constraints. 
-	Only after the user applies changes, the <link target="simulations_overview">simulation</link> 
-	is performed on the generated reaction network.
-	This tab is active only if at least one <link target="Molecules">Molecule</link> is specified.  	
+	The Network Tab enables the user to specify constraints for generating a reactin network from the rules in a rule-based model.  Network-generation is performed by the <def target = "def_BioNetGen">BioNetGen</def> engine.  The network that is generated can then be used in <def target = "def_Deterministic">deterministic</def> and <def target = "def_Stochastic">stoichastic</def> applications.  In addition, the user can test the size of the reaction network that would be obtained using the constraints supplied, prior to actually generating the network. The network tab is active only if at least one <link target="Molecules">Molecule</link> is specified.  	
 	</introduction>
 	
 	<appearance>
@@ -27,45 +22,34 @@
 	</appearance>
 	
 	<operations>
-After clicking on "Edit/Test Constraints" button, a user is presented with a window to specify new constraints. 	
+Clicking the "Edit/Test Constraints" button presents a window to specify new constraints. 	
 <imgReference target = "NetworkConstraints.PNG"/>	
 <list>	
-	<item><bold>Test/Run</bold> will attempt to generate a reaction network using these constraints.</item>
-	<item><bold>Apply</bold> will apply these constraints without network generation, 
-	so the <link target="simulations_overview">simulation</link> will be performed sequentially after network generation.</item>
+	<item><bold>Test/Run</bold> to attempt to generate a reaction network using the specified constraints.</item>
+	<item><bold>Apply</bold> the constraints without generating a network;  a <link target="simulations_overview">simulation</link> will be performed sequentially after generating the network.</item>
 </list>
 
-Running network may generate some warnings:
+Warnings may be generated when specifying or applying the constraints:
 <list>
 	<item>
-		<bold>Max iterations number may be insufficient</bold> means that the network may be not exaustively generated. In the
-		<bold>Network Generation Status</bold> pane below one can see that the number of species during the last two iterations is
-		different. Normally, the network generation stops when the last iteration does not produce new species, which means that
-		the number of species at the last two iterations are the same.
+		<bold>Max iterations number may be insufficient</bold> suggests that the network may be not exaustively generated. In this case the <bold>Network Generation Status</bold> pane displaying the number of species will show that the number of species during the last two iterations is different.  Generation of the network is generally considered complete when the last iteration does not produce new species and thus		the number of species at the last two iterations is the same.
 		<imgReference target = "MaxIterNumber.PNG"/> 
 	</item>
+
 	<item>
-		<bold>Max Molecules/Species number may be not sufficient</bold> means that the species with the set number of molecules are still
-		subject to rules application, so the network is truncated by this limitation.
+		<bold>Max Molecules/Species number may be not sufficient</bold> indicates that a species with aspecified number of molecules is a subject of a rule applied in the last interation.  This indicates that the network is truncated because of the limits set for the number of molecules of that species in the network.
 		<imgReference target = "MaxMolec.PNG"/>
 
-			<bold>Note:</bold> When the warning is displayed, the network is trunkated, which means that NFSim simulation will
-		likely produce different results than deterministic or stochastic simulations that use this network.
+			<para><bold>Note:</bold> When the warning is displayed, the network is truncated, so a simulation using NFSim is likely to produce different results compared to deterministic or stochastic simulations that use this network.</para></item>
 
-	<para>When <bold>Apply</bold> button is pressed, the constrains are applied to the application, and the user can
-	<bold>View</bold> all generated species and reactions, as well as <bold>Create a new VCell BioModel</bold> that consist 
-	of all generated species and reactions. This new model is not rule-based, but all species have molecular detail spe specified.</para>
-					
-		
-	</item>
+	<para>Use the <bold>Apply</bold> button to apply the specified constraints.
+	</para>
 
 	<item>
-		<bold>View Generated Species/View Generated Reactions</bold> After constraints are approved by the user, 
-		species and reactions are generated and can be viewed by pressing <bold>View</bold> button. 
-		The pop-up window shows species name, depiction and searchable BNGL code. Species names are the same as 
-		seen when checked "Generated Species" in "Simulation Results" window.
+		<bold>View Generated Species/View Generated Reactions</bold> after constraints are applied. The pop-up window shows the species name, depiction and searchable BNGL code. Species names are the same as seen  "Generated Species" is checked in the "Simulation Results" window.
 		<imgReference target = "View_species.PNG"/> 
 	</item>
+	
 	<item>
 		<bold>Create New VCell BioModel from Network</bold> launches a new BioModel in a new window.
 		This BioModel consists of all generated species and reactions, species have molecular details,
