@@ -19,11 +19,11 @@
 		<para><bold>Non-Spatial Stochastic</bold>
 		<imgReference target = "SpeciesSpecifications_nonspatial_stoch.png"/>
 		</para>
-	<para>
+<para> Columns values for a selected species row can be changed with the mouse pop-up menu. Initial condition expressions and values can be copied/pasted using the mouse pop-up menu.</para>	
+
 	<imgReference target = "speciesSpecificationMenu.png"/>
-	</para>
-	Columns values for a selected species row can be changed with the mouse pop-up menu.  
-	Initial condition expressions and values can be copied/pasted using the mouse pop-up menu.
+	
+	
 	</appearance>
 	
 	<operations>
