@@ -537,13 +537,18 @@ public class RulebasedTransformer implements SimContextTransformer {
 		if(model.getNumStructures() > 1) {
 			//
 			// we ignore compartment info and ask bionetgen to behave as if there's only one compartment 
-			// instead, we add an extra site with the compartments as states 
+			// instead, we add an extra site with the compartments as states
+			// ATTENTION: we MUST use the extra sites, otherwise the symmetry factor will be wrong, the next 2 reactions give different symmetry factors:
+			// @c:A.A -> @c:A + @c:A	flattened into AA -> 2*A
+			// @c:A.A -> @m:A + @c:A    flattened into AA -> A + A (different species)
 			//
 			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.asSite);
 		} else {
-			// ATTENTION: always make this call here the new way (CompartmentMode.asSite, never CompartmentMode.hide), so that we always have 
-			// a compartment block, even when there's only 1 compartment
-			// see detailed explanation in NetworkTransformer when we make a similar call
+			// for consistency, always make this call here the new way (CompartmentMode.asSite, never CompartmentMode.hide), so that we always have 
+			// a compartment site, even when there's only 1 compartment
+			// as it happens, since the compartment site has only one state (and so can't change between reactant and product) here we can make the 
+			// call either CompartmentMode.asSite or CompartmentMode.hide
+			//
 			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.asSite);
 		}
 		String bngl = bnglStringWriter.toString();
