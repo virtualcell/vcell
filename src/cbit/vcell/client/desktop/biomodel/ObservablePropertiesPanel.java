@@ -324,6 +324,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private JRadioButton getSequenceMultimolecularButton() {
 		if (sequenceMultimolecularButton == null) {
 			sequenceMultimolecularButton = new JRadioButton("Multimolecular");
+			sequenceMultimolecularButton.setToolTipText("<html>General representation of an Observable consisting of any combination of molecules</html>");
 			sequenceMultimolecularButton.addActionListener(eventHandler);
 		}
 		return sequenceMultimolecularButton;
@@ -331,6 +332,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private JRadioButton getSequencePolimerEqualButton() {
 		if (sequencePolimerEqualButton == null) {
 			sequencePolimerEqualButton = new JRadioButton("length = ");
+			sequencePolimerEqualButton.setToolTipText("<html>Compact notation to express a Species Observable consisting of <br>" + 
+															"a fixed length sequence of the same molecule</html>");
 			sequencePolimerEqualButton.addActionListener(eventHandler);
 		}
 		return sequencePolimerEqualButton;
@@ -338,6 +341,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private JRadioButton getSequencePolimerGreaterButton() {
 		if (sequencePolimerGreaterButton == null) {
 			sequencePolimerGreaterButton = new JRadioButton("length > ");
+			sequencePolimerGreaterButton.setToolTipText("<html>Compact notation to express a group of Species Observables consisting of <br>" + 
+															  "sequences of the same molecule of length greater than the one specified</html>");
 			sequencePolimerGreaterButton.addActionListener(eventHandler);
 		}
 		return sequencePolimerGreaterButton;
@@ -526,7 +531,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,10,2,4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		optionsPanel.add(new JLabel("Polymer of"), gbc);
+		JLabel label = new JLabel("Polymer of");
+		label.setToolTipText("Compact notation available below for single-Molecule polymers");
+		optionsPanel.add(label, gbc);
 
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -622,6 +629,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private JButton getAddSpeciesButton() {
 		if (addSpeciesButton == null) {
 			addSpeciesButton = new JButton("Add Pattern");
+			addSpeciesButton.setToolTipText("Creates a new Species Pattern placeholder in the Shapes Panel");
 			addSpeciesButton.addActionListener(eventHandler);
 		}
 		return addSpeciesButton;
