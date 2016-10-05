@@ -13,19 +13,19 @@
 	Properties are specific to the item selected. The different properties displayed include:
 	<list>
 	<item><link target=	"PP_ApplicationProps">Application Properties</link></item>
-	<item><link target=	"PP_VCellDatabaseInfo">Model Properties</link></item>
-	<item><link target=	"PP_Structures">Structures</link></item>
-	<item><link target=	"PP_Molecules">Molecules</link></item>
-	<item><link target=	"PP_Species">Species Properties</link></item>
-	<item><link target=	"PP_Observables">Observables Properties</link></item>
-	<item><link target=	"PP_Reactions">Reactions</link></item>
+	<item><link target=	"PP_VCellDatabaseInfo">Database Properties</link></item>
 	<item><link target=	"PP_MemFlux">Membrane Flux</link></item>
-	<item><link target=	"PP_ReactionRulesEditor">Reaction Rules Editor</link></item>
-	<item><link target=	"PP_ReactionRulesKinetics">Reaction Rules Kinetics</link></item>
-	<item><link target=	"PP_Stoichiometries">Stoichiometry</link></item>
+	<item><link target=	"PP_Molecules">Molecules</link></item>
+	<item><link target=	"PP_Observables">Observables Properties</link></item>
 	<item><link target=	"PP_Parameters">Parameters</link></item>
 	<item><link target=	"PP_Pathways">Pathway Information</link></item>
 	<item><link target=	"PP_Problems">Problems</link></item>
+	<item><link target=	"PP_Reactions">Reactions</link></item>
+	<item><link target=	"PP_ReactionRulesEditor">Reaction Rules Editor</link></item>
+	<item><link target=	"PP_ReactionRulesKinetics">Reaction Rules Kinetics</link></item>
+	<item><link target=	"PP_Species">Species Properties</link></item>
+	<item><link target=	"PP_Stoichiometries">Stoichiometry</link></item>
+	<item><link target=	"PP_Structures">Structures</link></item>
 	</list>
 	</operations>
 </page>

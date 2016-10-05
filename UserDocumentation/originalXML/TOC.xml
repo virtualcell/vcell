@@ -147,18 +147,18 @@
 	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
 	    	<tocitem target="PP_ApplicationProps" text="Application Info Properties Pane"/>
 	    	<tocitem target="PP_VCellDatabaseInfo" text="Database Info Properties Pane"/>
-	    	<tocitem target="PP_Structures" text="Structures Properties Pane"/>
-	    	<tocitem target="PP_Molecules" text="Molecules Properties Pane"/>
-	    	<tocitem target="PP_Species" text="Species Properties Pane"/>	
-	    	<tocitem target="PP_Observables" text="Observables Properties Pane"/>	    	
-	    	<tocitem target="PP_Reactions" text="Reactions Properties Pane"/>
 	    	<tocitem target="PP_MemFlux" text="Membrane Flux Properties Pane"/>
-    		<tocitem target="PP_ReactionRulesEditor" text="Reaction Rules Editor Pane"/>
-    		<tocitem target="PP_ReactionRulesKinetics" text="Reaction Rules Kinetics Pane"/>
-	    	<tocitem target="PP_Stoichiometries" text="Stoichiometries Properties Pane"/>
+	    	<tocitem target="PP_Molecules" text="Molecules Properties Pane"/>
+	    	<tocitem target="PP_Observables" text="Observables Properties Pane"/>	    	
 	    	<tocitem target="PP_Parameters" text="Parameter Properties Pane"/>
 	    	<tocitem target="PP_Pathways" text="Pathway Properties Pane"/>
 	    	<tocitem target="PP_Problems" text="Problems Properties Pane"/>
+	    	<tocitem target="PP_Reactions" text="Reactions Properties Pane"/>
+    		<tocitem target="PP_ReactionRulesEditor" text="Reaction Rules Editor Pane"/>
+    		<tocitem target="PP_ReactionRulesKinetics" text="Reaction Rules Kinetics Pane"/>
+	    	<tocitem target="PP_Species" text="Species Properties Pane"/>	
+	    	<tocitem target="PP_Stoichiometries" text="Stoichiometries Properties Pane"/>
+	    	<tocitem target="PP_Structures" text="Structures Properties Pane"/>
 		</tocitem>
 	    <tocitem target="AppendixOverview" text="Appendix">
 	    	<tocitem target="Definitions" text="Definitions"/>
