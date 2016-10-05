@@ -534,6 +534,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 
 	@Override
 	public int getRowCount() {
-		return getRowCountWithAddNew();
+//		return getRowCountWithAddNew();
+		return super.getRowCount();
 	}
 }

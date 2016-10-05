@@ -179,7 +179,8 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 	
 	@Override
 	public int getRowCount() {
-		return getRowCountWithAddNew();
+//		return getRowCountWithAddNew();
+		return super.getRowCount();
 	}
 	
 	@Override

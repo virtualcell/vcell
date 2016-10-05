@@ -52,9 +52,6 @@ public class ReactionCartoon extends ModelCartoon {
 	private Set<RuleParticipantSignature> ruleParticipantSignatures = new HashSet<>();
 	private RuleParticipantSignature.Criteria ruleParticipantGroupingCriteria = RuleParticipantSignature.Criteria.full;
 	
-	private Set<RuleParticipantSignatureDiagramShape> cachedShapes = new HashSet<>();
-	private Set<RuleParticipantSignature> cachedSignatures = new HashSet<RuleParticipantSignature>();
-
 	public ReactionCartoon() {
 		containerLayout = new GraphContainerLayoutReactions();
 	}
@@ -179,6 +176,7 @@ public class ReactionCartoon extends ModelCartoon {
 	}
 	
 	public void propertyChange(PropertyChangeEvent event) {
+		System.out.println(event.getSource().getClass() + ": " + event.getPropertyName());
 		refreshAll();
 	}
 
