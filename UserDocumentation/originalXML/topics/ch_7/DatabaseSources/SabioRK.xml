@@ -31,7 +31,7 @@
 <page title="SABIO-RK - Biochemical Reaction Kinetics Database">
 
 	
-	<introduction>SABIO-RK is a curated database that contains information about biochemical reactions, their kinetic rate equations with parameters and experimental conditions.
+	<introduction>SABIO-RK (Coming soon to VCell) is a curated database that contains information about biochemical reactions, their kinetic rate equations with parameters and experimental conditions.
  	</introduction>
 	
 	<appearance><imgReference target = "sabiork_tab.png"/></appearance>

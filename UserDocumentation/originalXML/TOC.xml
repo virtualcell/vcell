@@ -140,7 +140,7 @@
    		</tocitem>
     	<tocitem target="DatabaseOverview" text="Database Sources">
    	   		<tocitem target="VCellDatabase" text="VCell Database"/>
-   	   		<tocitem target="BioModelsNet" text="BioModels.net Database"/>
+   	   		<tocitem target="BioModelsNet" text="BioModels Database"/>
    	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
    	   		<tocitem target="SabioRK" text="SABIO-RK Database"/>
    		</tocitem>
