@@ -511,7 +511,8 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 
 	@Override
 	public int getRowCount() {
-		return getRowCountWithAddNew();
+//		return getRowCountWithAddNew();
+		return super.getRowCount();
 	}
 	
 	
