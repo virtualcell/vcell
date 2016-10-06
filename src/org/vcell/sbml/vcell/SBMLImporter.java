@@ -316,11 +316,11 @@ public class SBMLImporter {
 				org.sbml.libsbml.Compartment compartment = (org.sbml.libsbml.Compartment) listofCompartments
 						.get(i);
 				String compartmentName = compartment.getId();
-				if (compartment.getSpatialDimensions() == 3) {
+				if (!compartment.isSetSpatialDimensions() || compartment.getSpatialDimensions() == 3) {
 					Feature feature = new Feature(compartmentName);
 					structList.add(structIndx, feature);
 					structureNameMap.put(compartmentName, feature);
-				} else if (compartment.getSpatialDimensions() == 2) {
+				} else if (compartment.getSpatialDimensions() == 2) { // spatial dimensions is set (see clause above)
 					Membrane membrane = new Membrane(compartmentName);
 					structList.add(structIndx, membrane);
 					structureNameMap.put(compartmentName, membrane);
@@ -1530,8 +1530,12 @@ public class SBMLImporter {
 				// Adjust units of species, convert to VC units.
 				// Units in SBML, compute this using some of the attributes of
 				// sbmlSpecies
-				int dimension = (int) sbmlModel.getCompartment(
-						sbmlSpecies.getCompartment()).getSpatialDimensions();
+				Compartment sbmlCompartment = sbmlModel.getCompartment(
+						sbmlSpecies.getCompartment());
+				int dimension = 3;
+				if (sbmlCompartment.isSetSpatialDimensions()){
+					dimension = (int) sbmlCompartment.getSpatialDimensions();
+				}
 				if (dimension == 0 || dimension == 1) {
 					logger.sendMessage(VCLogger.Priority.HighPriority,
 							VCLogger.ErrorType.UnitError, dimension
@@ -2214,7 +2218,10 @@ public class SBMLImporter {
 				.getListOfCompartments();
 		for (int i = 0; i < listOfCompartments.size(); i++) {
 			Compartment sbmlComp = listOfCompartments.get(i);
-			long dim = sbmlComp.getSpatialDimensions();
+			long dim = 3;
+			if (sbmlComp.isSetSpatialDimensions()){
+				dim = sbmlComp.getSpatialDimensions();
+			}
 			String unitStr = sbmlComp.getUnits();
 			VCUnitDefinition sbmlUnitDefinition = null;
 			if (unitStr != null && unitStr.length() > 0) {
@@ -2654,7 +2661,7 @@ public class SBMLImporter {
 	 * process, since there is no point proceeding with the import any further.
 	 * 
 	 */
-	private void checkForUnsupportedVCellFeatures() throws Exception {
+	private void checkForUnsupportedVCellFeaturesAndApplyDefaults() throws Exception {
 
 		// Check if rules, if present, are algrbraic rules
 		if (sbmlModel.getNumRules() > 0) {
@@ -2672,26 +2679,34 @@ public class SBMLImporter {
 		for (int i = 0; i < (int) sbmlModel.getNumCompartments(); i++) {
 			Compartment comp = (Compartment) sbmlModel.getCompartment(i);
 
-			if (level > 2) {
-				// level 3+ does not have default value for spatialDimension. So
-				// cannot assume a value.
-				if (!comp.isSetSpatialDimensions()) {
+			if (!comp.isSetSpatialDimensions()) {
+				comp.setSpatialDimensions(3); // set default value to 3D
+				
+				if (level > 2) {
+					// level 3+ does not have default value for spatialDimension. So cannot assume a value.
 					logger.sendMessage(
-							VCLogger.Priority.HighPriority,
+							VCLogger.Priority.MediumPriority,
 							VCLogger.ErrorType.CompartmentError,
-							"Compartment '"
-									+ comp.getId()
-									+ "' spatial dimension is not set; default value cannot be assumed in an SBML Level 3 model.");
+							"Compartment '" + comp.getId() + "' spatial dimension is not set; assuming 3.");
 				}
 			}
-			if (comp.getSpatialDimensions() == 0
-					|| comp.getSpatialDimensions() == 1) {
+			if (!comp.isSetSize()) {
+				comp.setSize(1.0); // set default size to 1.0
+				
+				if (level > 2) {
+					// level 3+ does not have default value for size. So cannot assume a value.
+					logger.sendMessage(
+							VCLogger.Priority.MediumPriority,
+							VCLogger.ErrorType.CompartmentError,
+							"Compartment '"	+ comp.getId() + "' size is not set; assuming 1.");
+				}
+			}
+			
+			if (comp.getSpatialDimensions() == 0 || comp.getSpatialDimensions() == 1) {
 				logger.sendMessage(
 						VCLogger.Priority.HighPriority,
 						VCLogger.ErrorType.CompartmentError,
-						"Compartment "
-								+ comp.getId()
-								+ " has spatial dimension 0; this is not supported in VCell");
+						"Compartment " + comp.getId() + " has spatial dimension 0; this is not supported in VCell");
 			}
 		}
 
@@ -2718,7 +2733,7 @@ public class SBMLImporter {
 		// Check for SBML features not supported in VCell; stop import process
 		// if present.
 		try {
-			checkForUnsupportedVCellFeatures();
+			checkForUnsupportedVCellFeaturesAndApplyDefaults();
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			throw new SBMLImportException(e.getMessage(), e);
