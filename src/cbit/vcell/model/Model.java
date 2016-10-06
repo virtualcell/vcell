@@ -1616,12 +1616,18 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 					}
 					Boolean found = false;
 					for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
-						if (mcp.getMolecularComponent() == mc) {
+						// MolecularTypePattern.getComponentPatternList repairs the mtp list of components
+						// by adding or removing mcp, so that they match the components of the mt
+						if (mcp.getMolecularComponent() == mc && mcp.getBondType() == BondType.Possible) {
+							// we correct the bond type since it's a seed species, bond type can't be "Possible"
+							// obs: "Exists" is also illegal, but we leave it be and raise an issue
+							mcp.setBondType(BondType.None);
 							found = true;
 							break;
 						}
 					}
 					if(!found) {
+					// this should never happen
 						MolecularComponentPattern mcp = new MolecularComponentPattern(mc);
 						mcp.setBondType(BondType.None);
 						mtp.getComponentPatternList().add(mcp);
