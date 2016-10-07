@@ -175,13 +175,17 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 		g2.setColor(Color.BLACK);
 		g2.drawOval(xPos, yPos, componentDiameter, componentDiameter);
 		
-		if(mc.getComponentStateDefinitions().size()>0) {
+		if(mc.getComponentStateDefinitions().size() > 0) {
 			if(getDisplayRequirements() == DisplayRequirements.highlightBonds) {
 				g2.setColor(componentVeryLightGray);
 			} else {
 				g2.setColor(componentVeryLightGray);
 				if(owner instanceof MolecularType) {
-					g2.setColor(Color.yellow);
+					if(AbstractComponentShape.hasErrorIssues(owner, mc)) {
+						g2.setColor(Color.red);
+					} else {
+						g2.setColor(Color.yellow);
+					}
 				} else if(mcp != null) {
 					ComponentStatePattern csp = mcp.getComponentStatePattern();
 					if(csp != null && !csp.isAny()) {

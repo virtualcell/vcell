@@ -505,6 +505,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 					int index = mtList.indexOf(mt);
 					index = index%7;
 					primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker();
+					if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+						primaryColor = isHighlighted() ? Color.white : Color.red;
+					}
 				}
 			}
 		}
@@ -516,14 +519,30 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 
 		RoundRectangle2D inner = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, baseHeight-2, cornerArc-3, cornerArc-3);
 		if(isHighlighted()) {
-			g2.setPaint(Color.BLACK);
+			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+				g2.setPaint(Color.red);
+			} else {
+				g2.setPaint(Color.BLACK);
+			}
 			g2.draw(inner);
-			g2.setPaint(Color.BLACK);
+			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+				g2.setPaint(Color.red);
+			} else {
+				g2.setPaint(Color.BLACK);
+			}
 			g2.draw(rect);
 		} else {
-			g2.setPaint(Color.GRAY);
+			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+				g2.setPaint(Color.red.darker());
+			} else {
+				g2.setPaint(Color.GRAY);
+			}
 			g2.draw(inner);
-			g2.setPaint(Color.DARK_GRAY);
+			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+				g2.setPaint(Color.red.darker());
+			} else {
+				g2.setPaint(Color.DARK_GRAY);
+			}
 			g2.draw(rect);
 		}
 		
