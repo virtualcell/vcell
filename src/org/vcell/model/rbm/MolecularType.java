@@ -211,7 +211,9 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 		} else if(name.equals("")) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is empty", Issue.Severity.ERROR));
 		} else if(!name.equals(TokenMangler.fixTokenStrict(name))) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is invalid", Issue.Severity.ERROR));
+			String msg = "Name of " + getDisplayType() + " is invalid";
+			String tip = "Valid names must start with a letter or underscore and contain only letters, numbers and the '_' character (underscore)";
+			issueList.add(new Issue(this, this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 		}
 		if(componentList == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + MolecularComponent.typeName + "' List is null", Issue.Severity.ERROR));
@@ -226,12 +228,16 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 				}
 				String mcName = mc.getName();
 				if(!mcName.equals(TokenMangler.fixTokenStrict(mcName))) {
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + MolecularComponent.typeName + " " + mcName + " is invalid", Issue.Severity.ERROR));
+					String msg = "Name of " + MolecularComponent.typeName + " " + mcName + " is invalid";
+					String tip = "Valid names must start with a letter or underscore and contain only letters, numbers and the '_' character (underscore)";
+					issueList.add(new Issue(this, mc, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 				}
 				for(ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
 					String csdName = csd.getName();
 					if(!csdName.equals(TokenMangler.fixTokenStrict(csdName))) {
-						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + ComponentStateDefinition.typeName + " " + csdName + " is invalid", Issue.Severity.ERROR));
+						String msg = "Name of " + ComponentStateDefinition.typeName + " " + csdName + " is invalid";
+						String tip = "Valid names must start with a letter or underscore and contain only letters, numbers and the '_' character (underscore)";
+						issueList.add(new Issue(this, csd, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					}
 				}
 			}

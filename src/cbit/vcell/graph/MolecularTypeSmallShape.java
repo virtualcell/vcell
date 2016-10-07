@@ -230,7 +230,11 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 					primaryColor = MolecularTypeLargeShape.colorTable[index].darker().darker();
 				}
 			}
+			if(owner instanceof MolecularType && AbstractComponentShape.hasErrorIssues(owner, mt)) {
+				primaryColor = Color.red;
+			}
 		}
+		
 		GradientPaint p = new GradientPaint(xPos, yPos, primaryColor, xPos, yPos + finalHeight/2, Color.WHITE, true);
 		g2.setPaint(p);
 

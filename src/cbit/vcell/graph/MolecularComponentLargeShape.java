@@ -342,9 +342,18 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				} else {
 					g2.setColor(Color.white);
 				}
+				if(AbstractComponentShape.hasErrorIssues(owner, csp, csd)) {
+					g2.setColor(isHighlighted() ? componentBad.brighter() : componentBad);
+				}
+
 			}
 			g2.fill(normalRectangle);
-			g.setColor(Color.black);
+			if(AbstractComponentShape.hasErrorIssues(owner, csp, csd)) {
+				g2.setColor(Color.red);
+			} else {
+				g.setColor(Color.black);
+			}
+//			g.setColor(Color.black);
 			g2.draw(normalRectangle);
 			
 			g.setFont(font);
