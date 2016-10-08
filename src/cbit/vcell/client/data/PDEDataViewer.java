@@ -458,20 +458,22 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					if((timerDataIdentifier = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,timerDataIdentifier,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}},"PDEDataViewer dataIdentifer..."))!=null){
 						return;
 					}
-					try{
-						getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
-						getPDEDataContextPanel1().getdisplayAdapterService1().activateMarkedState(((DataIdentifier)evt.getNewValue()).getName());
-					}finally{
-						getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
-					}
-					doUpdate(new AsynchClientTask("Setting variable="+((DataIdentifier)evt.getNewValue()).getName(),AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
-							calcAutoAllTimes();
+					if(evt.getNewValue() instanceof DataIdentifier){
+						try{
+							getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
+							getPDEDataContextPanel1().getdisplayAdapterService1().activateMarkedState(((DataIdentifier)evt.getNewValue()).getName());
+						}finally{
+							getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
 						}
-					});
 
+						doUpdate(new AsynchClientTask("Setting variable="+((DataIdentifier)evt.getNewValue()).getName(),AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
+							@Override
+							public void run(Hashtable<String, Object> hashTable) throws Exception {
+								getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
+								calcAutoAllTimes();
+							}
+						});
+					}
 //					getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
 //					updateDataValueSurfaceViewer();
 				}
