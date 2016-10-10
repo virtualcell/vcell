@@ -53,6 +53,10 @@ with volume species in reactions, or reactions may occur only among membrane spe
 within membranes and have reactants and products in the adjacent volume structures.
 </def>
 
+<def target = "def_molecules" defLabel = "Molecule">Molecules are the principal component of rule-based model specification.  
+They are used to create Species and to define Reaction Rules and Observables.  
+Molecules are structured objects comprised of sites that can bind other sites, either within a single molecule or between molecules.
+</def>
 
 <def target = "def_NetworkFree" defLabel = "NetworkFree"> Network-free simulation of rule-based 
 models is performed without generation of the reaction network. Rather than generating 
@@ -69,6 +73,10 @@ network-free simulation.  It is described in
 Sneddon MW, Faeder JR, and Emonet T. (2011). 
 Efficient modeling, simulation and coarse-graining of biological complexity with NFsim. 
 Nature methods, 8(2), 177-183.
+</def>
+
+<def target = "def_observable" defLabel = "Observable">
+Observables are used to specify the outputs of a rule-based model; they are functions of the total population of multiple species that share a set of properties.
 </def>
 
 <def target = "def_pathcom" defLabel = "Pathway Commons">
