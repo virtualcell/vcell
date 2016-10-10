@@ -2,7 +2,10 @@
 <vcelldoc>
 <page title="Observable Properties Pane" target="PP_Observables">
 
-	<introduction><bold>The Observables Properties</bold> pane provides a graphical editor with drop-down menus to specify and edit <link target = "Observables">Observables</link> used in <def target = "def_RuleBased" label = "Rule-Based">Rule-Based</def> models.</introduction>
+	<introduction><bold>The Observables Properties</bold> pane provides a graphical editor with drop-down menus to specify and edit 
+	<link target = "Observables">Observables</link> used in <def target = "def_RuleBased" label = "Rule-Based">Rule-Based</def> models.
+	<imgReference target = "PP_Observables.png"/>
+	</introduction>
 	
 	<appearance>
 	<list><item>Each Observable consists of one or more <bold>Species Patterns</bold>. Each observable selects species that match at least one of the species patterns (not both). </item>
