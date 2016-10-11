@@ -12,7 +12,9 @@ package cbit.vcell.xml;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -153,6 +155,7 @@ import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneRandomVariable;
@@ -2996,38 +2999,375 @@ private Event getEvent(MathDescription mathdesc, Element eventElement) throws Xm
 	return event;
 }
 
+public static enum BioEventParameterType {
+	GeneralTriggerFunction(0,"GeneralTriggerFunction","triggerFunction","fires on each rising edge"),
+	Observable(1,"Observable","observable","observable to watch"),
+	Threshold(2,"Threshold", "threshold","threshold for observable"),
+	SingleTriggerTime(4, "SingleTriggerTime", "triggerTime","time of trigger"),
+	RangeMinTime(5,"RangeMinTime", "minTime","time range min"),
+	RangeMaxTime(6,"RangeMaxTime", "maxTime","time range max"),
+	RangeNumTimes(7, "RangeNumTimes", "numTimes","num times in range"),
+	TriggerDelay(8, "TriggerDelay", "delay","trigger delay"),
+	TimeListItem(9, "TimeListItem", null,"time list entry"),
+	UserDefined(10, "UserDefined", null,"user defined");
+	
+	private final int role;
+	private final String roleXmlName;
+	private final String defaultName;
+	private final String description;
+	
+	private BioEventParameterType(int role,String roleXmlName,String defaultName,String description){
+		this.role = role;
+		this.roleXmlName = roleXmlName;
+		this.defaultName = defaultName;
+		this.description = description;
+	}
+	
+	public int getRole(){
+		return role;
+	}
+
+	public String getRoleXmlName(){
+		return roleXmlName;
+	}
+
+	public String getDefaultName() {
+		return defaultName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+	
+	public static BioEventParameterType fromRole(int role){
+		for (BioEventParameterType type : values()){
+			if (type.getRole()==role){
+				return type;
+			}
+		}
+		return null;
+	}
+
+	public static BioEventParameterType fromRoleXmlName(String roleStr) {
+		for (BioEventParameterType type : values()){
+			if (type.getRoleXmlName().equals(roleStr)){
+				return type;
+			}
+		}
+		return null;
+	}
+}
+public static enum TriggerType {
+	GeneralTrigger("GeneralTrigger"),
+	SingleTriggerTime("SingleTriggerTime"),
+	ObservableAboveThreshold("ObservableAboveThreshold"),
+	ObservableBelowThreshold("ObservableBelowThreshold"),
+	LinearRangeTimes("LinearRangeTimes"),
+	LogRangeTimes("LogRangeTimes"),
+	ListOfTimes("ListOfTimes");
+	
+	private final String xmlName;
+	private TriggerType(String xmlName){
+		this.xmlName = xmlName;
+	}
+	
+	public String getXmlName(){
+		return this.xmlName;
+	}
+	
+	public static TriggerType fromXmlName(String xmlName){
+		for (TriggerType tt : values()){
+			if (tt.xmlName.equals(xmlName)){
+				return tt;
+			}
+		}
+		return null;
+	}
+}
+
+public Expression generateTriggerExpression(SimulationContext simContext, HashMap<BioEventParameterType,ArrayList<Expression>> parameterMap, TriggerType triggerType, String eventName) throws ExpressionException {
+
+	SymbolTableEntry timeSymbolTableEntry = simContext.getModel().getTIME();
+	Expression tExp = new Expression(timeSymbolTableEntry,simContext.getNameScope());
+
+	switch (triggerType){
+	case GeneralTrigger:{
+		return parameterMap.get(BioEventParameterType.GeneralTriggerFunction).get(0);
+	}
+	case ListOfTimes:{
+		ArrayList<Expression> timeParams = parameterMap.get(BioEventParameterType.TimeListItem);
+		
+		if (timeParams==null || timeParams.size()==0){
+			throw new RuntimeException("no times found for BioEvent "+eventName);
+		}
+		
+		//
+		// only one time, very simple  (t >= t0)
+		//
+		if (timeParams.size()==1){
+			Expression timeParamExp = timeParams.get(0);
+			return Expression.relational(">=", tExp, timeParamExp);
+		}
+		
+		//
+		// if more than one, flatten time expressions to get list of doubles for event triggers.
+		// these numbers are sorted to find the minimum distance between adjacent times.
+		// epsilon is 1/2 of this inter-trigger time interval (to insert a falling edge between events)
+		//
+		ArrayList<Double> timeValues = new ArrayList<Double>();
+		for (Expression p : timeParams){
+			timeValues.add(MathUtilities.substituteModelParameters(p, simContext.getNameScope().getScopedSymbolTable()).flatten().evaluateConstant());
+		}
+		Collections.sort(timeValues);
+		double epsilon = Double.MAX_VALUE;
+		for (int i=0; i<timeValues.size()-1; i++){
+			double absdiff = Math.abs(timeValues.get(i) - timeValues.get(i+1));
+			epsilon = Math.min(epsilon,  absdiff);
+		}
+		epsilon/= 2.0;
+		
+		//
+		// construct (((t >= t0) && (t <= t0+epsilon)) || ((t >= t1) && (t <= t1+epsilon)) || ((t >= t2) && (t <= t2+epsilon))) 
+		//
+		ArrayList<Expression> timeClauses = new ArrayList<Expression>();
+		for (Expression timeParamExp : timeParams){
+			Expression timeParamExpPlusEpsilon = Expression.add(timeParamExp, new Expression(epsilon));
+			timeClauses.add(
+					Expression.and(
+						Expression.relational(">=", tExp, timeParamExp), 
+						Expression.relational("<=", tExp, timeParamExpPlusEpsilon)));
+		}
+		if (timeClauses.size()==1){
+			return timeClauses.get(0);
+		}else{
+			// put all individual time clauses together
+			return Expression.or(timeClauses.toArray(new Expression[timeClauses.size()]));
+		}
+	}
+	case LinearRangeTimes:
+	case LogRangeTimes:{
+		//
+		// if more than one, flatten time expressions to get list of doubles for event triggers.
+		// these numbers are sorted to find the minimum distance between adjacent times.
+		// epsilon is 1/2 of this inter-trigger time interval (to insert a falling edge between events)
+		//
+		Expression firstTimeParam = parameterMap.get(BioEventParameterType.RangeMinTime).get(0);
+		Expression lastTimeParam = parameterMap.get(BioEventParameterType.RangeMaxTime).get(0);
+		Expression numTimesParam = parameterMap.get(BioEventParameterType.RangeNumTimes).get(0);
+		double firstTime = MathUtilities.substituteModelParameters(firstTimeParam, simContext.getNameScope().getScopedSymbolTable()).flatten().evaluateConstant();
+		double lastTime = MathUtilities.substituteModelParameters(lastTimeParam, simContext.getNameScope().getScopedSymbolTable()).flatten().evaluateConstant();
+		double numTimes = MathUtilities.substituteModelParameters(numTimesParam, simContext.getNameScope().getScopedSymbolTable()).flatten().evaluateConstant();
+		Expression first = new Expression(firstTime);
+		Expression last = new Expression(lastTime);
+		Expression num = new Expression(numTimes);
+		
+		
+		ArrayList<Expression> timeExps = new ArrayList<Expression>();
+		ArrayList<Double> timeValues = new ArrayList<Double>();
+
+		timeValues.add(firstTime);
+		timeExps.add(first);
+		if (triggerType == TriggerType.LinearRangeTimes){
+			double delta = (lastTime-firstTime)/(numTimes - 1);
+			Expression deltaExp = Expression.div(Expression.add(last,Expression.negate(first)), Expression.add(num, new Expression(-1)));
+			for (int i=1;i<numTimes;i++){
+				timeValues.add(firstTime + delta * i);
+				Expression eventTime = Expression.add(first, Expression.mult(deltaExp, new Expression(i)));
+				timeExps.add(eventTime);
+			}
+		}else if (triggerType == TriggerType.LogRangeTimes){
+			double ratio = lastTime/firstTime;
+			Expression ratioExp = Expression.div(last, first);
+			double n_minus_1 = numTimes - 1;
+			Expression n_minus_1_exp = Expression.add(num, new Expression(-1));
+			for (int i=1;i<numTimes;i++){
+				timeValues.add(firstTime * Math.pow(ratio, i/n_minus_1));
+				timeExps.add(Expression.mult(first, Expression.power(ratioExp, Expression.div(new Expression(i), n_minus_1_exp))));
+			}
+		}
+		
+		double epsilon = Double.MAX_VALUE;
+		for (int i=0; i<timeValues.size()-1; i++){
+			double absdiff = Math.abs(timeValues.get(i) - timeValues.get(i+1));
+			epsilon = Math.min(epsilon,  absdiff);
+		}
+		epsilon/= 2.0;
+		
+		//
+		// construct (((t >= t0) && (t <= t0+epsilon)) || ((t >= t1) && (t <= t1+epsilon)) || ((t >= t2) && (t <= t2+epsilon))) 
+		//
+		ArrayList<Expression> timeClauses = new ArrayList<Expression>();
+		for (Expression timeExp : timeExps){
+			Expression timeExpPlusEpsilon = Expression.add(timeExp, new Expression(epsilon));
+			timeClauses.add(
+					Expression.and(
+						Expression.relational(">=", tExp, timeExp), 
+						Expression.relational("<=", tExp, timeExpPlusEpsilon)));
+		}
+		if (timeClauses.size()==1){
+			return timeClauses.get(0);
+		}else{
+			// put all individual time clauses together
+			return Expression.or(timeClauses.toArray(new Expression[timeClauses.size()]));
+		}
+	}
+	case ObservableAboveThreshold:{
+		Expression observable = parameterMap.get(BioEventParameterType.Observable).get(0);
+		Expression threshold = parameterMap.get(BioEventParameterType.Threshold).get(0);
+		Expression highTrigger = Expression.relational(">=", observable, threshold);
+		return highTrigger;
+	}
+	case ObservableBelowThreshold:{
+		Expression observable = parameterMap.get(BioEventParameterType.Observable).get(0);
+		Expression threshold = parameterMap.get(BioEventParameterType.Threshold).get(0);
+		Expression lowTrigger = Expression.relational("<=", observable, threshold);
+		return lowTrigger;
+	}
+	case SingleTriggerTime:{
+		Expression singleTriggerTime = parameterMap.get(BioEventParameterType.SingleTriggerTime).get(0);
+		SymbolTableEntry time = simContext.getModel().getTIME();
+		return Expression.relational(">=", new Expression(time,simContext.getNameScope()), singleTriggerTime);
+	}
+	default:{
+		throw new RuntimeException("unexpected triggerType "+triggerType);
+	}
+	}
+}
+
+
+
 public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsElement) throws XmlParseException  {
 	Iterator<Element> bioEventsIterator = bioEventsElement.getChildren(XMLTags.BioEventTag, vcNamespace).iterator();
 	Vector<BioEvent> bioEventsVector = new Vector<BioEvent>();
 	while (bioEventsIterator.hasNext()) {
 		Element bEventElement = (Element) bioEventsIterator.next();
-
-		String name = unMangle(bEventElement.getAttributeValue(XMLTags.NameAttrTag));
-		Element element = bEventElement.getChild(XMLTags.TriggerTag, vcNamespace);
-		Expression triggerExp = unMangleExpression(element.getText());
 		
-		element = bEventElement.getChild(XMLTags.DelayTag, vcNamespace);
-		BioEvent.Delay delay = null;
-		BioEvent newBioEvent = new BioEvent(name, triggerExp, delay, null, simContext);
-		if (element != null) {
-			boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
-			Expression durationExp = unMangleExpression((element.getText()));
+		BioEvent newBioEvent = null;
+		String name = unMangle(bEventElement.getAttributeValue(XMLTags.NameAttrTag));
+		Element triggerElement = bEventElement.getChild(XMLTags.TriggerTag, vcNamespace);
+		if (triggerElement != null && triggerElement.getText().length()>0){
+			//
+			// read legacy VCell 5.3 style trigger and delay elements
+			//
+			// <Trigger>(t>3.0)</Trigger>
+			// <Delay UseValuesFromTriggerTime="true">3.0</Delay>     [optional]
+			// 
+			Expression triggerExp = unMangleExpression(triggerElement.getText());			
+			Element delayElement = bEventElement.getChild(XMLTags.DelayTag, vcNamespace);
+			BioEvent.Delay delay = null;
+			newBioEvent = new BioEvent(name, triggerExp, delay, null, simContext);
+			if (delayElement != null) {
+				boolean useValuesFromTriggerTime = Boolean.valueOf(delayElement.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
+				Expression durationExp = unMangleExpression((delayElement.getText()));
+				try {
+					delay = newBioEvent.new Delay(useValuesFromTriggerTime, durationExp);
+					newBioEvent.setDelay(delay);
+				} catch (ExpressionBindingException e) {
+					e.printStackTrace(System.out);
+					throw new XmlParseException(e);
+				}
+			}
+		} else if (triggerElement != null && triggerElement.getText().length()==0){
+			//
+			// read legacy first-pass VCell 5.4 style trigger and delay elements
+			//
+			// <Trigger>
+			//		<TriggerParameters triggerClass="TriggerGeneral">
+			//			(t > 500.0)
+			//      </TriggerParameters>
+			// </Trigger>
+			// <Delay UseValuesFromTriggerTime="true">3.0</Delay>     [optional]
+			// 
+			final String TriggerParametersTag = "TriggerParameters";
+			final String TriggerClassAttrTag = "triggerClass";
+			final String TriggerClassAttrValue_TriggerGeneral = "TriggerGeneral";
+			
+			Element triggerParametersElement = triggerElement.getChild(TriggerParametersTag, vcNamespace);
+			
+			Expression triggerExpression = null;
+			
+			String triggerClass = triggerParametersElement.getAttributeValue(TriggerClassAttrTag);
+			if (triggerClass.equals(TriggerClassAttrValue_TriggerGeneral)){
+				triggerExpression = unMangleExpression(triggerParametersElement.getText());
+			}else{
+				// not general trigger (just make it never happen, user will have to edit "t > -1")
+				triggerExpression = Expression.relational(">", new Expression(simContext.getModel().getTIME(), simContext.getModel().getNameScope()),new Expression(-1.0));
+			}
+			
+			// read <Delay>
+			BioEvent.Delay delay = null;
+			newBioEvent = new BioEvent(name, triggerExpression, delay, null, simContext);
+
+			Expression delayDurationExpression = null;
+			boolean useValuesFromTriggerTime = true;
+			Element delayElement = bEventElement.getChild(XMLTags.DelayTag, vcNamespace);
+			if (delayElement != null) {
+				useValuesFromTriggerTime = Boolean.valueOf(delayElement.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
+				delayDurationExpression = unMangleExpression((delayElement.getText()));
+				try {
+					delay = newBioEvent.new Delay(useValuesFromTriggerTime, delayDurationExpression);
+					newBioEvent.setDelay(delay);
+				} catch (ExpressionBindingException e) {
+					e.printStackTrace(System.out);
+					throw new XmlParseException(e);
+				}
+			}
+				
+		}else{
+			//
+			// VCell 5.4 style bioevent parameters
+			// 
+			//
+			TriggerType triggerType = TriggerType.fromXmlName(bEventElement.getAttributeValue(XMLTags.BioEventTriggerTypeAttrTag));
+			boolean bUseValuesFromTriggerTime = Boolean.parseBoolean(bEventElement.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag));
+
+			Iterator<Element> paramElementIter = bEventElement.getChildren(XMLTags.ParameterTag, vcNamespace).iterator();
+			ArrayList<LocalParameter> parameters = new ArrayList<LocalParameter>();
+			
+			HashMap<BioEventParameterType,ArrayList<Expression>> parameterMap = new HashMap<BioEventParameterType,ArrayList<Expression>>();
+			
+			while (paramElementIter.hasNext()){
+				Element paramElement = paramElementIter.next();
+
+				//Get parameter attributes
+				String paramName = paramElement.getAttributeValue(XMLTags.NameAttrTag);
+				Expression exp = unMangleExpression(paramElement.getText());
+				String roleStr = paramElement.getAttributeValue(XMLTags.ParamRoleAttrTag);
+				BioEventParameterType parameterType = BioEventParameterType.fromRoleXmlName(roleStr);
+				ArrayList<Expression> expressionList = parameterMap.get(parameterType);
+				if (expressionList==null){
+					expressionList = new ArrayList<Expression>();
+					parameterMap.put(parameterType,expressionList);
+				}
+				expressionList.add(exp); //	parameterMap.put(parameterType, exp);
+			}
+			
 			try {
-				delay = newBioEvent.new Delay(useValuesFromTriggerTime, durationExp);
-				newBioEvent.setDelay(delay);
-			} catch (ExpressionBindingException e) {
+				Expression triggerExp = generateTriggerExpression(simContext, parameterMap, triggerType, name);
+			
+				newBioEvent = new BioEvent(name, triggerExp, null, null, simContext);
+				BioEvent.Delay delay = null;
+				Expression delayDurationExpression = null;
+				ArrayList<Expression> delayExpList = parameterMap.get(BioEventParameterType.TriggerDelay);
+				if (delayExpList!=null){
+					delayDurationExpression = delayExpList.get(0);
+					delay = newBioEvent.new Delay(bUseValuesFromTriggerTime, delayDurationExpression);
+					newBioEvent.setDelay(delay);
+				}
+			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e);
 			}
+
 		}
 		
 		ArrayList<BioEvent.EventAssignment> eventAssignmentList = new ArrayList<BioEvent.EventAssignment>();
 		Iterator<Element> iter = bEventElement.getChildren(XMLTags.EventAssignmentTag, vcNamespace).iterator();
 		while (iter.hasNext()) {
-			element = iter.next();
+			Element eventAssignmentElement = iter.next();
 			try {
-				String varname = element.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
-				Expression assignExp = unMangleExpression(element.getText());
+				String varname = eventAssignmentElement.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
+				Expression assignExp = unMangleExpression(eventAssignmentElement.getText());
 				SymbolTableEntry target = simContext.getEntry(varname);
 				BioEvent.EventAssignment eventAssignment = newBioEvent.new EventAssignment(target, assignExp);
 				eventAssignmentList.add(eventAssignment);
