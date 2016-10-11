@@ -807,6 +807,8 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	for (GeometryClass gc : simContext.getGeometry().getGeometryClasses()) {
 		StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
 	}
+	simContext.getGeometryContext().enforceHierarchicalBoundaryConditions(simContext.getModel().getStructureTopology());
+
 	simContext.getModel().refreshDependencies();
 	assignAnalysisTasksSQL(con,simContextKey, simContext);
 	simContext.refreshDependencies();  // really needed to calculate MembraneMapping parameters that are not stored (inside/outside flux correction factors).

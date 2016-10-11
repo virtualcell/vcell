@@ -5252,6 +5252,8 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 	}
 	
+	newsimcontext.getGeometryContext().enforceHierarchicalBoundaryConditions(newsimcontext.getModel().getStructureTopology());
+	
 	return newsimcontext;
 }
 
