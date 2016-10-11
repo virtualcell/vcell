@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -2624,6 +2625,8 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 	// TO DO: allow user preferences for directory selection.
 	public void showSaveReactionImageDialog() throws Exception {
 		// set file filter
+		String result = DialogUtils.showInputDialog0(getDialogOwner(getGraphPane()), "Enter pixel width of saved rxdiagram image (height will be proportional)", "800");
+		int width = Integer.parseInt(result);
 		SimpleFilenameFilter jpgFilter = new SimpleFilenameFilter("jpg");
 		final java.io.File defaultFile = new java.io.File(getModel().getName()+".jpg");
 		ClientServerManager csm = (ClientServerManager) getDocumentManager().getSessionManager();
@@ -2660,7 +2663,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					}
 				}
 
-				BufferedImage bufferedImage = ITextWriter.generateDocReactionsImage(this.getModel(),ITextWriter.HIGH_RESOLUTION);
+				BufferedImage bufferedImage = ITextWriter.generateDocReactionsImage(this.getModel(),width);
 				FileOutputStream reactionImageOutputStream = null;
 				try{
 					reactionImageOutputStream = new FileOutputStream(selectedFile);

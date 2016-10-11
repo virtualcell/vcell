@@ -399,11 +399,11 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 	return createCell(text, font, colspan, 1, Element.ALIGN_LEFT, true);
 }
 
-	public static BufferedImage generateDocReactionsImage(Model model,String resolution) throws Exception {
+	public static BufferedImage generateDocReactionsImage(Model model,Integer width) throws Exception {
 			                                                       
-	    if (model == null || !isValidResolutionSetting(resolution)) {
-	    	throw new IllegalArgumentException("Invalid parameters for generating reactions image for  model: " + model.getName());
-	    }
+//	    if (model == null || !isValidResolutionSetting(resolution)) {
+//	    	throw new IllegalArgumentException("Invalid parameters for generating reactions image for  model: " + model.getName());
+//	    }
 		ReactionCartoon rcartoon = new ReactionCartoon();
 		rcartoon.setModel(model);
 		StructureSuite structureSuite = new AllStructureSuite(new Model.Owner() {
@@ -419,21 +419,25 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
 		Dimension prefDim = rcartoon.getPreferedCanvasSize(dummyGraphics);
 		dummyGraphics.dispose();
-		double width = prefDim.getWidth();
-		double height = prefDim.getHeight();
-		
-		int MAX_IMAGE_HEIGHT = 532;
-		if (width < ITextWriter.DEF_IMAGE_WIDTH) {
+//		double width = prefDim.getWidth();
+//		double height = prefDim.getHeight();
+		double widthHeightRatio = (double)prefDim.getWidth()/(double)prefDim.getHeight();
+		if(width == null){
 			width = ITextWriter.DEF_IMAGE_WIDTH;
-		} 
-		height= height * width/prefDim.getWidth();
-		
-		if (height < ITextWriter.DEF_IMAGE_HEIGHT) {
-			height = ITextWriter.DEF_IMAGE_HEIGHT;
-		} else if (height > MAX_IMAGE_HEIGHT) {
-			height = MAX_IMAGE_HEIGHT;
 		}
-		width= width * height/prefDim.getHeight();
+		int height = (int)((double)width/widthHeightRatio);
+		
+//		int MAX_IMAGE_HEIGHT = 532;
+//		if (width < ITextWriter.DEF_IMAGE_WIDTH) {
+//			width = ITextWriter.DEF_IMAGE_WIDTH;
+//		} 
+//		height= height * width/prefDim.getWidth();
+//		if (height < ITextWriter.DEF_IMAGE_HEIGHT) {
+//			height = ITextWriter.DEF_IMAGE_HEIGHT;
+//		} else if (height > MAX_IMAGE_HEIGHT) {
+//			height = MAX_IMAGE_HEIGHT;
+//		}
+//		width= width * height/prefDim.getHeight();
 		Dimension newDim = new Dimension((int)width,(int)height);
 
 		rcartoon.getResizeManager().setZoomPercent((int)(100*width/prefDim.getWidth()));
@@ -1874,7 +1878,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		reactionParagraph.add(new Chunk("Structures and Reactions Diagram").setLocalDestination(model.getName()));
 		Section reactionDiagramSection = physioChapter.addSection(reactionParagraph, physioChapter.numberDepth() + 1);
 		try{
-			addImage(reactionDiagramSection, encodeJPEG(generateDocReactionsImage(model, ITextWriter.HIGH_RESOLUTION)));
+			addImage(reactionDiagramSection, encodeJPEG(generateDocReactionsImage(model,null)));
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new DocumentException(e.getClass().getName()+": "+e.getMessage());
