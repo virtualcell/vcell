@@ -387,18 +387,27 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				newMemButton.setIcon(null);
 			} else if(selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
 				newButton.setText("New Reaction");
-				newButton2.setVisible(true);
+				if(bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+					newButton2.setVisible(false);		// show rule-related buttons only if rules are possible
+					duplicateButton.setVisible(false);
+				} else {
+					newButton2.setVisible(true);
+					duplicateButton.setVisible(true);
+				}
 				newButton2.setText("New Rule");
 				newButton2.setIcon(downArrow);
 				newButton2.setHorizontalTextPosition(SwingConstants.LEFT);
-				duplicateButton.setVisible(true);
 				duplicateButton.setIcon(downArrow);
 				duplicateButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			} else if(selectedIndex == ModelPanelTabID.species_table.ordinal()) {
 				newButton.setVisible(true);
 				newButton.setIcon(downArrow);
 				newButton.setHorizontalTextPosition(SwingConstants.LEFT);
-				duplicateButton.setVisible(true);
+				if(bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+					duplicateButton.setVisible(false);
+				} else {
+					duplicateButton.setVisible(true);
+				}
 				duplicateButton.setIcon(downArrow);
 				duplicateButton.setHorizontalTextPosition(SwingConstants.LEFT);
 				newButton.setText("New Species");
@@ -406,7 +415,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				newButton.setVisible(true);
 				newButton.setIcon(downArrow);
 				newButton.setText("New Observable");		
-				duplicateButton.setVisible(true);
+				if(bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+					duplicateButton.setVisible(false);
+				} else {
+					duplicateButton.setVisible(true);
+				}
 				duplicateButton.setIcon(downArrow);
 				duplicateButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			} else if(selectedIndex == ModelPanelTabID.species_definitions_table.ordinal()) {
