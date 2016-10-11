@@ -499,7 +499,8 @@ public class XMLTags {
 	public final static String DelayTag = "Delay";
 	public final static String EventAssignmentTag = "EventAssignment";
 	public final static String EventAssignmentVariableAttrTag = "Variable";
-	
+  	public static final String BioEventTriggerTypeAttrTag = "TriggerType";
+
 	// for rate rules
 	public final static String RateRulesTag = "RateRules";
 	public final static String RateRuleTag  = "RateRule";
