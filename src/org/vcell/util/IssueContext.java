@@ -1,11 +1,13 @@
 package org.vcell.util;
 
+import java.io.Serializable;
+
 /**
  * A hierarchical view of path to issue source object
  * 1) enables issue instantiation to be unaware of complete path to object within data model.
  * 2) enables issue consumer required context to react to issue (e.g. hyperlinks, display object name & path)
  */
-public class IssueContext {
+public class IssueContext implements Serializable {
 	public enum ContextType {
 		MathModel,
 		BioModel,
