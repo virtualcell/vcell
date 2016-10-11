@@ -52,7 +52,7 @@ import cbit.vcell.server.VCellConnection;
 public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener,DataJobListenerHolder {
     private static final long BASE_POLL_SECONDS = 3;
     private static final long ATTEMPT_POLL_SECONDS = 3;
-	private static Logger lg = Logger.getLogger(AsynchMessageManager.class);
+	public static Logger lg = Logger.getLogger(AsynchMessageManager.class);
 
 	private EventListenerList listenerList = new EventListenerList();
     private ClientServerManager clientServerManager = null;

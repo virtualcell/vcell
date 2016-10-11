@@ -894,6 +894,13 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 		if (!mathDesc.isValid()){
 			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 		}
+		
+		if (lg.isDebugEnabled()) {
+			System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+			System.out.println(mathDesc.getVCML());
+			System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+		}
+
 	}
 
 /**

@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -19,12 +20,14 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
+import org.vcell.util.ProgrammingException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
 
@@ -119,7 +122,7 @@ import cbit.vcell.units.VCUnitException;
  * to get an updated MathDescription.
  * 		capacitances must not be overridden and must be constant (used as literals in KVL)
  */
-public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
+public class MathMapping implements ScopedSymbolTable, UnitFactorProvider, StructureSizeValueProvider {
 	private static final String PARAMETER_VELOCITY_X_SUFFIX = "_velocityX";
 	private static final String PARAMETER_VELOCITY_Y_SUFFIX = "_velocityY";
 	private static final String PARAMETER_VELOCITY_Z_SUFFIX = "_velocityZ";
@@ -630,6 +633,69 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	return ste;
 }
 
+public static class StructureSizeValues {
+	final Expression sizeExp;
+	final VCUnitDefinition sizeUnit;
+	
+	public StructureSizeValues(Expression sizeExp, VCUnitDefinition sizeUnit) {
+		this.sizeExp = sizeExp;
+		this.sizeUnit = sizeUnit;
+	}
+	public StructureSizeValues(Parameter sizeParameter, NameScope nameScope) {
+		this.sizeExp = new Expression(sizeParameter,nameScope);
+		this.sizeUnit = sizeParameter.getUnitDefinition();
+	}
+}
+
+private HashMap<String,StructureSizeValues> structureSizeValues = null;
+
+/* (non-Javadoc)
+ * @see cbit.vcell.mapping.StructureSizeValueProvider#computeAbsoluteStructureSizeValues(cbit.vcell.mapping.SimulationContext, java.lang.String)
+ */
+@Override
+public StructureSizeValues computeAbsoluteStructureSizeValues(SimulationContext simContext, String structureName2) throws MappingException{
+	long startTime = System.currentTimeMillis();
+	if (structureSizeValues==null){
+		structureSizeValues = new HashMap<String,StructureSizeValues>();
+
+		ArrayList<String> structureNames = new ArrayList<String>();
+		for (Structure structure : simContext.getModel().getStructures()){
+			structureNames.add(structure.getName());
+		}
+		
+		SimulationContext clonedSimContext;
+		try {
+			clonedSimContext = (SimulationContext)BeanUtils.cloneSerializable(simContext);
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException("unexpected exception: "+e.getMessage());
+		}
+		try {
+			StructureMapping clonedFirstStructureMapping = clonedSimContext.getGeometryContext().getStructureMappings()[0];
+			StructureSizeSolver.updateAbsoluteStructureSizes(clonedSimContext, clonedFirstStructureMapping.getStructure(), 1.0, clonedFirstStructureMapping.getSizeParameter().getUnitDefinition());
+			
+			for (String sName : structureNames){
+				Structure clonedStructure = clonedSimContext.getModel().getStructure(sName);
+				StructureMapping clonedTargetStructureMapping = clonedSimContext.getGeometryContext().getStructureMapping(clonedStructure);
+				double size = clonedTargetStructureMapping.getSizeParameter().getExpression().evaluateConstant();
+				VCUnitDefinition sizeUnit = null;
+				if (clonedStructure instanceof Feature){
+					sizeUnit = simContext.getModel().getUnitSystem().getVolumeUnit();
+				}else if (clonedStructure instanceof Membrane){
+					sizeUnit = simContext.getModel().getUnitSystem().getAreaUnit();
+				}else{
+					throw new RuntimeException("only 3D and 2D compartments supported for computed sizes");
+				}
+				structureSizeValues.put(sName,new StructureSizeValues(new Expression(size), sizeUnit));
+			}			
+		} catch (Exception e) {
+			throw new ProgrammingException("exception updating sizes",e);
+		}
+	}
+	long endTime = System.currentTimeMillis();
+	System.out.println("> > > > > > > > > >     T I M E   I N    S O L V E R    is    "+(endTime-startTime)+" ms   < < < < < < < < < ");
+	return structureSizeValues.get(structureName2);
+}
 
 /**
  * This method was created in VisualAge.
@@ -650,25 +716,32 @@ public MathMapping.KFluxParameter getFluxCorrectionParameter(StructureMapping so
 	//
 	String sourceName = sourceStructureMapping.getStructure().getNameScope().getName();
 	String targetName = targetStructureMapping.getStructure().getNameScope().getName();
-	Parameter sourceSizeParameter = null;
-	Parameter targetSizeParameter = null;
+	Expression sourceSizeExpression = null;
+	StructureSizeValues sourceStructureSizeValues = null;
+	StructureSizeValues targetStructureSizeValues = null;
 	if (sourceStructureMapping.getGeometryClass() instanceof CompartmentSubVolume){
-		sourceSizeParameter = sourceStructureMapping.getSizeParameter();
-	}else{
-		sourceSizeParameter = sourceStructureMapping.getUnitSizeParameter();
-	}
-	if (targetStructureMapping.getGeometryClass() instanceof CompartmentSubVolume){
-		targetSizeParameter = targetStructureMapping.getSizeParameter();
-		if (targetSizeParameter==null || targetSizeParameter.getExpression()==null){
-			throw new MappingException("structure mapping sizes not set for application "+simContext.getName());
+		StructureMappingParameter sourceAbsoluteSizeParameter = sourceStructureMapping.getSizeParameter();
+		if (sourceAbsoluteSizeParameter!=null && sourceAbsoluteSizeParameter.getExpression()!=null){
+			sourceStructureSizeValues = new StructureSizeValues(sourceAbsoluteSizeParameter,simContext.getNameScope());
+		}else{
+			sourceStructureSizeValues = computeAbsoluteStructureSizeValues(simContext,sourceStructureMapping.getStructure().getName());
 		}
 	}else{
-		targetSizeParameter = targetStructureMapping.getUnitSizeParameter();
+		sourceStructureSizeValues = new StructureSizeValues(sourceStructureMapping.getUnitSizeParameter(),simContext.getNameScope());
 	}
-	Expression fluxCorrectionExp = Expression.div(new Expression(sourceSizeParameter,simContext.getNameScope()),
-								                  new Expression(targetSizeParameter,simContext.getNameScope()));
-	VCUnitDefinition sourceSizeUnit = sourceSizeParameter.getUnitDefinition();
-	VCUnitDefinition targetSizeUnit = targetSizeParameter.getUnitDefinition();
+	if (targetStructureMapping.getGeometryClass() instanceof CompartmentSubVolume){
+		StructureMappingParameter targetAbsoluteSizeParameter = targetStructureMapping.getSizeParameter();
+		if (targetAbsoluteSizeParameter!=null && targetAbsoluteSizeParameter.getExpression()!=null){
+			targetStructureSizeValues = new StructureSizeValues(targetAbsoluteSizeParameter,simContext.getNameScope());
+		}else{
+			targetStructureSizeValues = computeAbsoluteStructureSizeValues(simContext, targetStructureMapping.getStructure().getName());
+		}
+	}else{
+		targetStructureSizeValues = new StructureSizeValues(targetStructureMapping.getUnitSizeParameter(), simContext.getNameScope());
+	}
+	Expression fluxCorrectionExp = Expression.div(sourceStructureSizeValues.sizeExp,targetStructureSizeValues.sizeExp);
+	VCUnitDefinition sourceSizeUnit = sourceStructureSizeValues.sizeUnit;
+	VCUnitDefinition targetSizeUnit = targetStructureSizeValues.sizeUnit;
 	VCUnitDefinition unit = sourceSizeUnit.divideBy(targetSizeUnit);
 	fluxCorrectionExp.bindExpression(this);
 	String parameterName = PARAMETER_K_FLUX_PREFIX+sourceName+"_"+targetName;
@@ -2134,7 +2207,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				}else{
 					throw new RuntimeException("structure mapping "+sm.getClass().getName()+" not yet supported");
 				}
-				Expression totalVolumeCorrection = sm.getStructureSizeCorrection(simContext,this);
+				Expression totalVolumeCorrection = sm.getStructureSizeCorrection(simContext,this,this);
 				Expression sizeFunctionExpression = Expression.function(sizeFunctionName, new Expression[] {new Expression("'"+compartmentName+"'")} );
 //				sizeFunctionExpression.bindExpression(mathDesc);
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(Expression.mult(totalVolumeCorrection,sizeFunctionExpression),sizeUnit,sm.getGeometryClass()),sm.getGeometryClass()));
@@ -2823,9 +2896,11 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
 
-//System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-//System.out.println(mathDesc.getVCML());
-//System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+	if (lg.isDebugEnabled()) {
+		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+		System.out.println(mathDesc.getVCML());
+		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+	}
 }
 
 protected GeometryClass getDefaultGeometryClass(Expression expr) throws ExpressionException, MappingException {

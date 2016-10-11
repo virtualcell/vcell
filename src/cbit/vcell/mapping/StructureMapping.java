@@ -713,14 +713,14 @@ public Structure getStructure() {
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
-public abstract Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext, UnitFactorProvider unitFactorProvider) throws ExpressionException, MappingException;
+public abstract Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext, UnitFactorProvider unitFactorProvider, StructureSizeValueProvider mathMapping) throws ExpressionException, MappingException;
 
 
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
-public abstract Expression getStructureSizeCorrection(SimulationContext simulationContext, UnitFactorProvider unitFactorProvider) throws ExpressionException, MappingException;
+public abstract Expression getStructureSizeCorrection(SimulationContext simulationContext, UnitFactorProvider unitFactorProvider, StructureSizeValueProvider mathMapping) throws ExpressionException, MappingException;
 
 
 /**
