@@ -4,6 +4,7 @@
 
   <introduction>
   The reaction rules editor pane is currently the only way to specify and edit a reaction rule.
+  <imgReference target = "PP_ReactionRules.png"/>
   </introduction>
 		
   <appearance>
