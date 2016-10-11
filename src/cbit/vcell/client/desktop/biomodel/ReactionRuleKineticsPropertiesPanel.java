@@ -145,6 +145,8 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_NAME)) {
 					nameChanged(evt);
+				} else if(evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_REVERSIBLE)) {
+					isReversibleCheckBox.setSelected((boolean)(evt.getNewValue()));
 				}
 			}
 		}
