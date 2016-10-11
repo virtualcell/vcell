@@ -931,6 +931,20 @@ private void stopSimulations() {
 		activateConsole();
 
 		Simulation selectedSim = getSimulationListTableModel1().getValueAt(row);
+		if (selectedSim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+			if (getSimulationWorkspace().getSimulationOwner() instanceof SimulationContext) {
+				String option = DialogUtils.showOKCancelWarningDialog(SimulationListPanel.this, "Deprecated Solver", VCellErrorMessages.getSemiFVSolverCompiledSolverDeprecated(selectedSim));
+				if (option.equals(SimpleUserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				try {
+					selectedSim.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
+					selectedSim.setIsDirty(true);
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		getSimulationWorkspace().getClientSimManager().runQuickSimulation(selectedSim);
 	}
 
