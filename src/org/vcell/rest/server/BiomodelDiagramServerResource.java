@@ -88,7 +88,8 @@ public class BiomodelDiagramServerResource extends AbstractServerResource implem
         }
         try {
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml));
-			BufferedImage bufferedImage = ITextWriter.generateDocReactionsImage(bioModel.getModel(), ITextWriter.HIGH_RESOLUTION);
+			Integer imageWidthInPixels = 1000;
+			BufferedImage bufferedImage = ITextWriter.generateDocReactionsImage(bioModel.getModel(), imageWidthInPixels );
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ImageIO.write(bufferedImage, "png", outputStream);
 			byte[] imageBytes = outputStream.toByteArray();
