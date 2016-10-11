@@ -896,4 +896,36 @@ public void setStructureMappings(StructureMapping[] structureMappings) throws ja
 	firePropertyChange(PROPERTY_STRUCTURE_MAPPINGS, oldValue, structureMappings);
 }
 
+public void enforceHierarchicalBoundaryConditions(StructureTopology structureTopology) {
+	if (structureTopology != null) {
+		for (StructureMapping sm : fieldStructureMappings) {
+			//
+			// look for top level parent structure which is mapped to the same geometric domain, 
+			//
+			Structure topStructureForDomain = sm.getStructure();
+			while (true) {
+				Structure parent = structureTopology.getParentStructure(topStructureForDomain);
+				if (parent == null || getStructureMapping(parent).getGeometryClass() != sm.getGeometryClass()) {
+					break;
+				} else {
+					topStructureForDomain = parent;
+				}
+			}
+			//
+			// if has a top level parent in same domain (not me), apply boundary conditions types 
+			// for parent to this structure mapping.
+			//
+			if (topStructureForDomain != sm.getStructure()) {
+				StructureMapping parentSM = getStructureMapping(topStructureForDomain);
+				sm.setBoundaryConditionTypeXm(parentSM.getBoundaryConditionTypeXm());
+				sm.setBoundaryConditionTypeXp(parentSM.getBoundaryConditionTypeXp());
+				sm.setBoundaryConditionTypeYm(parentSM.getBoundaryConditionTypeYm());
+				sm.setBoundaryConditionTypeYp(parentSM.getBoundaryConditionTypeYp());
+				sm.setBoundaryConditionTypeZm(parentSM.getBoundaryConditionTypeZm());
+				sm.setBoundaryConditionTypeZp(parentSM.getBoundaryConditionTypeZp());
+			}	
+		}
+	}
+}
+
 }
