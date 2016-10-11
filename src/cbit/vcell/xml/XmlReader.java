@@ -3087,8 +3087,7 @@ public static enum TriggerType {
 
 public Expression generateTriggerExpression(SimulationContext simContext, HashMap<BioEventParameterType,ArrayList<Expression>> parameterMap, TriggerType triggerType, String eventName) throws ExpressionException {
 
-	SymbolTableEntry timeSymbolTableEntry = simContext.getModel().getTIME();
-	Expression tExp = new Expression(timeSymbolTableEntry,simContext.getNameScope());
+	Expression tExp = new Expression(simContext.getModel().getTIME(),simContext.getModel().getNameScope());
 
 	switch (triggerType){
 	case GeneralTrigger:{
@@ -3225,8 +3224,7 @@ public Expression generateTriggerExpression(SimulationContext simContext, HashMa
 	}
 	case SingleTriggerTime:{
 		Expression singleTriggerTime = parameterMap.get(BioEventParameterType.SingleTriggerTime).get(0);
-		SymbolTableEntry time = simContext.getModel().getTIME();
-		return Expression.relational(">=", new Expression(time,simContext.getNameScope()), singleTriggerTime);
+		return Expression.relational(">=", tExp, singleTriggerTime);
 	}
 	default:{
 		throw new RuntimeException("unexpected triggerType "+triggerType);
@@ -3291,7 +3289,8 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				triggerExpression = unMangleExpression(triggerParametersElement.getText());
 			}else{
 				// not general trigger (just make it never happen, user will have to edit "t > -1")
-				triggerExpression = Expression.relational(">", new Expression(simContext.getModel().getTIME(), simContext.getModel().getNameScope()),new Expression(-1.0));
+				Expression tExp = new Expression(simContext.getModel().getTIME(), simContext.getModel().getNameScope());
+				triggerExpression = Expression.relational(">", tExp, new Expression(-1.0));
 			}
 			
 			// read <Delay>
