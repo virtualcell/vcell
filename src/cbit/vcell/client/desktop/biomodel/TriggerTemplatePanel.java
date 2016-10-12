@@ -537,7 +537,7 @@ public class TriggerTemplatePanel extends JPanel {
 					}else{
 						textFieldLogMin.setText("");
 					}
-					LocalParameter rangeMaxParam = existingBioEvent.getParameter(BioEventParameterType.RangeMinTime);
+					LocalParameter rangeMaxParam = existingBioEvent.getParameter(BioEventParameterType.RangeMaxTime);
 					if (rangeMaxParam!=null && rangeMaxParam.getExpression()!=null){
 						textFieldLogMax.setText(rangeMaxParam.getExpression().infix());
 					}else{
@@ -559,7 +559,7 @@ public class TriggerTemplatePanel extends JPanel {
 					}else{
 						textFieldLinearMin.setText("");
 					}
-					LocalParameter rangeMaxParam = existingBioEvent.getParameter(BioEventParameterType.RangeMinTime);
+					LocalParameter rangeMaxParam = existingBioEvent.getParameter(BioEventParameterType.RangeMaxTime);
 					if (rangeMaxParam!=null && rangeMaxParam.getExpression()!=null){
 						textFieldLinearMax.setText(rangeMaxParam.getExpression().infix());
 					}else{
