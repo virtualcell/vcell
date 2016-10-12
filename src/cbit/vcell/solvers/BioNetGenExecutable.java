@@ -1,5 +1,6 @@
 package cbit.vcell.solvers;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +17,8 @@ public class BioNetGenExecutable extends MathExecutable {
 	 * @param command
 	 * @param timeoutMS - 0 means no-timeout.
 	 */
-	public BioNetGenExecutable(String[] command, long timeoutMS) {
-		super(command, timeoutMS);
+	public BioNetGenExecutable(String[] command, long timeoutMS, File workingDirectory) {
+		super(command, timeoutMS, workingDirectory);
 	}
 	
 	public void inheritCallbacks(List<BioNetGenUpdaterCallback> callbacks) {

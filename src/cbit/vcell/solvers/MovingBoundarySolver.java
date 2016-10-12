@@ -162,7 +162,7 @@ protected void initialize() throws SolverException {
 		throw new SolverException("Can't open input file "+ inputFilename, e);
 	}
 
-	setMathExecutable(new MathExecutable(getMathExecutableCommand()));
+	setMathExecutable(new MathExecutable(getMathExecutableCommand(),getSaveDirectory()));
 
 }
 

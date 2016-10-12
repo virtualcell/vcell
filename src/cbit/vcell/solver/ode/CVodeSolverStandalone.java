@@ -67,7 +67,7 @@ protected void initialize() throws SolverException {
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	
-	setMathExecutable(new MathExecutable(getMathExecutableCommand()));
+	setMathExecutable(new MathExecutable(getMathExecutableCommand(),getSaveDirectory()));
 }
 
 private String getInputFilename(){
