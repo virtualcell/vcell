@@ -10,6 +10,8 @@
 
 package cbit.vcell.solvers;
 
+import cbit.vcell.resource.ResourceUtil;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/14/2002 5:32:15 PM)
@@ -33,7 +35,7 @@ public static void main(String[] args) {
 			System.out.println("usage: MathExecutableTest cmd [arg1] [arg2] ...");
 			System.exit(1);
 		}
-		MathExecutable mathExecutable = new MathExecutable(args);
+		MathExecutable mathExecutable = new MathExecutable(args, ResourceUtil.getVcellHome());
 		mathExecutable.start();
 		while (mathExecutable.getStatus().equals(org.vcell.util.ExecutableStatus.RUNNING)){
 		}

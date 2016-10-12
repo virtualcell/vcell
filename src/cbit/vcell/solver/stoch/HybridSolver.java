@@ -354,7 +354,7 @@ protected void initialize() throws SolverException
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	//get executable path+name.
 	//Hybrid solver's usage: ProgramName <NetCDF Filename> <epsilon> <lambda> <MSR_Tolerance> <SDE_Tolerance> <SDE_dt> [-R <Random Seed>] [-OV]
-	setMathExecutable(new MathExecutable(getMathExecutableCommand()));
+	setMathExecutable(new MathExecutable(getMathExecutableCommand(), getSaveDirectory()));
 }
 
 private String getInputFilename(){

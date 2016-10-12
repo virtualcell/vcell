@@ -10,6 +10,10 @@
 
 package cbit.vcell.solvers;
 
+import java.io.File;
+
+import cbit.vcell.resource.ResourceUtil;
+
 
 public class MathExecutable extends org.vcell.util.Executable {
 	protected int currentStringPosition = 0;
@@ -17,12 +21,14 @@ public class MathExecutable extends org.vcell.util.Executable {
 	protected java.lang.String fieldApplicationMessage = new String();
 
 
-public MathExecutable(String[] command) {	
+public MathExecutable(String[] command, File workingDirectory) {	
 	super(command);
+	setWorkingDir(workingDirectory);
 }
 
-public MathExecutable(String[] command, long timeoutMS) {	
+public MathExecutable(String[] command, long timeoutMS, File workingDirectory) {	
 	super(command, timeoutMS);
+	setWorkingDir(workingDirectory);
 }
 
 /**
@@ -107,7 +113,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 }
 public static void main(java.lang.String[] args) {
 	try {
-		MathExecutable mathExecutable = new MathExecutable(args);
+		MathExecutable mathExecutable = new MathExecutable(args,ResourceUtil.getVcellHome());
 		mathExecutable.start();
 	}catch (org.vcell.util.ExecutableException e) {
 		System.out.println("\nExecutable Exception thrown, normally handled upstream by other classes...");

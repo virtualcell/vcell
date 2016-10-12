@@ -349,7 +349,7 @@ public MathExecutable getMathExecutable() {
 	}
 	assert(primaryCommand != null);
 	String[] carray = primaryCommand.getCommands().toArray(new String[0]);
-	setMathExecutable(new MathExecutable(carray));
+	setMathExecutable(new MathExecutable(carray, getSaveDirectory()));
 	me= super.getMathExecutable();
 	assert(me != null);
 	return me;

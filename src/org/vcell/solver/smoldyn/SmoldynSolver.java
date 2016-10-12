@@ -129,7 +129,7 @@ protected void initialize() throws SolverException
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	//get executable path+name.
-	setMathExecutable(new MathExecutable(getMathExecutableCommand()));	
+	setMathExecutable(new MathExecutable(getMathExecutableCommand(),getSaveDirectory()));	
 	//setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " gibson " + getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
 }
 
