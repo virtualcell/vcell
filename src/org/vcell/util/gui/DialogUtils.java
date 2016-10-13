@@ -290,7 +290,7 @@ public class DialogUtils {
 					if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
 						return UserMessage.OPTION_CANCEL;
 					} else {
-						return (String)selectedValue;
+						return selectedValue.toString();
 					}
 				}finally {
 					dialog.dispose();
