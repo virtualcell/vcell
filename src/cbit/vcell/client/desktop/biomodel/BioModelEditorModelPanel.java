@@ -105,6 +105,7 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ModelProcessDynamics;
@@ -233,6 +234,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				setSelectedObjects(selectedObjects);
 			} else if (evt.getSource() == reactionCartoonEditorPanel && evt.getPropertyName().equals(ReactionCartoonEditorPanel.PROPERTY_NAME_FLOATING)) {
 				floatDiagramView((Boolean) evt.getNewValue());
+			} else if(evt.getSource() instanceof Model && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
+//				ArrayList<MolecularType> mtList = (ArrayList<MolecularType>)evt.getNewValue();
+//				if(mtList.isEmpty() || mtList.size() == 0) {
+//					if(tabbedPane.getComponents().length == ModelPanelTabID.observables_table.ordinal()+1) {
+//						tabbedPane.removeTabAt(ModelPanelTabID.observables_table.ordinal());
+//					}
+//				} else {
+//					ModelPanelTab tab = modelPanelTabs[ModelPanelTabID.observables_table.ordinal()];
+//					tab.getComponent().setBorder(GuiConstants.TAB_PANEL_BORDER);
+//					tabbedPane.addTab(tab.getName(), tab.getIcon(), tab.getComponent());
+//				}
 			}
 		}
 		
@@ -1200,7 +1212,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		BioModel oldValue = bioModel;
 		bioModel = newValue;		
 		firePropertyChange(PROPERTY_NAME_BIO_MODEL, oldValue, newValue);
-		
+		if(oldValue != null && oldValue.getModel() != null) {
+			oldValue.getModel().removePropertyChangeListener(eventHandler);
+		}
+		if(bioModel != null && bioModel.getModel() != null) {
+			bioModel.getModel().addPropertyChangeListener(eventHandler);
+		}
 		SortPreference sp = new SortPreference(true, BioModelEditorReactionTableModel.COLUMN_NAME);
 		reactionTableModel.setSortPreference(sp);
 	}

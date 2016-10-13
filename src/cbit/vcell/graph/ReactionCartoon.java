@@ -176,7 +176,7 @@ public class ReactionCartoon extends ModelCartoon {
 	}
 	
 	public void propertyChange(PropertyChangeEvent event) {
-		System.out.println(event.getSource().getClass() + ": " + event.getPropertyName());
+//		System.out.println(event.getSource().getClass() + ": " + event.getPropertyName());
 		refreshAll();
 	}
 
