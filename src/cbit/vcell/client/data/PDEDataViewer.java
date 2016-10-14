@@ -163,6 +163,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
@@ -2945,7 +2946,7 @@ private void calcAutoAllTimes() throws Exception {
 	HashSet<String> stateVarNames = null;
 	Variable theVariable = null;
 	boolean bStateVar = true;
-	boolean isFieldData = getPdeDataContext().getVCDataIdentifier() instanceof ExternalDataIdentifier;
+	boolean isFieldData = getPdeDataContext().getVCDataIdentifier() instanceof ExternalDataIdentifier || getPdeDataContext().getVCDataIdentifier() instanceof MergedDataInfo;
 	if(isFieldData){//fielddata
 		DataIdentifier[] dataids = getPdeDataContext().getDataIdentifiers();
 		stateVarNames = new HashSet<>();
