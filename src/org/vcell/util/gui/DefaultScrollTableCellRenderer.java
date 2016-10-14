@@ -32,7 +32,9 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ModelProcessEquation;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationsTableModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
+import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
@@ -109,7 +111,42 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		} else if (value instanceof ModelProcessEquation && BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(((ModelProcessEquation)value).toString())) {
 			setText(BioModelEditorRightSideTableModel.ADD_NEW_REACTION_OR_RULE_HTML);
 		}
-		if (tableModel instanceof SortTableModel) {
+		if(tableModel instanceof BioModelEditorApplicationsTableModel) {	// for the applications table we show the icons with the app type
+			Icon icon = null;
+			String toolTipSuffix = "";
+			
+			BioModelEditorApplicationsTableModel bmeatm = (BioModelEditorApplicationsTableModel)tableModel;
+			SimulationContext simContext = (SimulationContext)(bmeatm.getValueAt(row));
+			if(simContext.isRuleBased()) {
+				if(simContext.getGeometry().getDimension() == 0) {
+					icon = VCellIcons.appRbmNonspIcon;
+		    		toolTipSuffix = "Rule Based / Non spatial";
+				}
+			} else if(simContext.isStoch()) {
+				if(simContext.getGeometry().getDimension() == 0) {
+					icon = VCellIcons.appStoNonspIcon;
+		    		toolTipSuffix = "Stochastic / Non spatial";
+				} else {
+					icon = VCellIcons.appStoSpatialIcon;
+		    		toolTipSuffix =  "Stochastic / Spatial";
+				}
+			} else {		// deterministic
+				if(simContext.getGeometry().getDimension() == 0) {
+					icon = VCellIcons.appDetNonspIcon;
+		    		toolTipSuffix =  "Deterministic / Non spatial";
+				} else {
+					icon = VCellIcons.appDetSpatialIcon;
+		    		toolTipSuffix =  "Deterministic / Spatial";
+				}
+			}
+    		String toolTipPrefix = "Application: ";
+    		setToolTipText(toolTipPrefix + toolTipSuffix);
+    		if(column == 0) {
+    			setIcon(icon);
+    		} else {
+    			setIcon(null);
+    		}
+		} else if (tableModel instanceof SortTableModel) {	// for most other tables we reserve the icon spot to display issues
 			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel)tableModel);
 		}
 		return this;
