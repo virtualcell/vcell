@@ -1454,15 +1454,16 @@ private void updateInfo(MouseEvent mouseEvent) {
 										infoS += " || " + structure.getDisplayLabel();
 									}
 								}
-							}else{
+							}else if(getDataInfoProvider() != null){
 								infoS+= "          ";
 								try{
 									PDEDataViewer.VolumeDataInfo volumeDataInfo =
 										getDataInfoProvider().getVolumeDataInfo(volumeIndex);
-									
-									infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
-									infoS+= " svID="+volumeDataInfo.subvolumeID;
-									infoS+= " vrID="+volumeDataInfo.volumeRegionID;
+									if(volumeDataInfo.subvolumeID0 != null){
+										infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
+										infoS+= " svID="+volumeDataInfo.subvolumeID0;
+										infoS+= " vrID="+volumeDataInfo.volumeRegionID;
+									}
 								}catch(Exception e){
 									//This can happen with FieldData viewer
 									e.printStackTrace();

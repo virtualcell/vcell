@@ -482,7 +482,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					getPDEDataContextPanel1().setPdeDataContext(getPdeDataContext());
 					getPDEExportPanel1().setPdeDataContext(getPdeDataContext(),
 							(getSimulation()==null?null:new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null)));
-					CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
+					CartesianMesh cartesianMesh = (getPdeDataContext() != null?getPdeDataContext().getCartesianMesh():null);
 					if (cartesianMesh != null && cartesianMesh.getGeometryDimension() == 3
 							&& cartesianMesh.getNumMembraneElements() > 0){
 						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) < 0) {
@@ -516,8 +516,12 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					setupDataInfoProvider();
 				}
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("simulation"))) {
+					if(getSimulation() != null){
 					SolverTaskDescription solverDescription = getSimulation().getSolverTaskDescription();
 					getPDEExportPanel1().setSolverTaskDescription(solverDescription);
+					}else{
+						System.out.println("sim null");
+					}
 				}
 				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("displayAdapterService1"))) {
 					getPDEExportPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
@@ -659,14 +663,20 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 		public final int volumeIndex;
 		public final String volumeNamePhysiology;
 		public final String volumeNameGeometry;
-		public final int subvolumeID;
+		public final Integer subvolumeID0;
 		public final int volumeRegionID;
 		public VolumeDataInfo(int volumeIndex,CartesianMesh cartesianMesh,SimulationModelInfo simulationModelInfo){
 			this.volumeIndex = volumeIndex;
 			volumeRegionID = cartesianMesh.getVolumeRegionIndex(volumeIndex);
-			subvolumeID = cartesianMesh.getSubVolumeFromVolumeIndex(volumeIndex);
-			volumeNamePhysiology = simulationModelInfo.getVolumeNamePhysiology(subvolumeID);
-			volumeNameGeometry = simulationModelInfo.getVolumeNameGeometry(subvolumeID);
+			if(cartesianMesh.hasSubvolumeInfo()){
+				subvolumeID0 = cartesianMesh.getSubVolumeFromVolumeIndex(volumeIndex);
+				volumeNamePhysiology = simulationModelInfo.getVolumeNamePhysiology(subvolumeID0);
+				volumeNameGeometry = simulationModelInfo.getVolumeNameGeometry(subvolumeID0);				
+			}else{
+				subvolumeID0 = null;
+				volumeNamePhysiology = null;
+				volumeNameGeometry = null;							
+			}
 		}
 	}
 
@@ -719,7 +729,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 				}
 				if(varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 					int subvol = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(dataIndex);
-					if (simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+					if (simulationModelInfo.getVolumeNameGeometry(subvol) == null || simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
 						return true;
 					}				
 				}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
@@ -2038,20 +2048,20 @@ public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {
 	if (getPdeDataContext() != null) {
 		getPdeDataContext().removePropertyChangeListener(ivjEventHandler);
 		getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
-	}
-	try{
-		getPDEPlotControlPanel1().removePropertyChangeListener(ivjEventHandler);
 		try{
-			getPDEPlotControlPanel1().setup(/*getPDEPlotControlPanel1().getDataIdentifierFilter(),*/ ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions(), getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
-		}catch(Exception e){
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, "Couldn't setup PDEPlotControlPanel, "+e.getMessage());
-			return;
+			getPDEPlotControlPanel1().removePropertyChangeListener(ivjEventHandler);
+			try{
+				getPDEPlotControlPanel1().setup(((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions(), getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
+			}catch(Exception e){
+				e.printStackTrace();
+				DialogUtils.showErrorDialog(this, "Couldn't setup PDEPlotControlPanel, "+e.getMessage());
+				return;
+			}
+		}finally{
+			getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
 		}
-	}finally{
-		getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
 	}
-		
+
 	
 	bSkipSurfaceCalc = true;
 	firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, null, pdeDataContext);
