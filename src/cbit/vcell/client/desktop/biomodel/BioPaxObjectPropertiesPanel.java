@@ -19,11 +19,13 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -269,6 +271,66 @@ private void lookupFormalName(final int tableRow){
 	
 }
 
+private static List<String> commentKeywords = Arrays.asList (
+		"FUNCTION:",
+		"CATALYTIC ACTIVITY:",
+		"ENZYME REGULATION:",
+		"COFACTOR:",
+		"SUBUNIT:",
+		"DISEASE:",
+		"SIMILARITY:",
+		"GENE SYNONYMS:",
+		"SUBCELLULAR LOCATION:",
+		"TISSUE SPECIFICITY:",
+		"SEQUENCE CAUTION:",
+		"WEB RESOURCE:",
+		"MISCELLANEOUS:",
+		"ALTERNATIVE PRODUCTS:",
+		"DEVELOPMENTAL STAGE:",
+		"MASS SPECTROMETRY:",
+		"POLYMORPHISM:",
+		"PATHWAY:",
+		"INDUCTION:",
+		"PTM:",
+		"DOMAIN:",
+		"COPYRIGHT:"
+		);
+private static List<String> otherKeywords = Arrays.asList (
+		"Name=",
+		"Named isoforms=",
+		"Sequence=",
+		"Type=",
+		"Mass=",
+		"Method=",
+		"Range=",
+		"Source=",
+		"IsoId=",
+		"Synonyms=",
+		"Event=",
+		"Comment=",
+		"Positions=",
+		"URL=",
+		"Note="
+		);
+private static String FormatDetails(BioPaxObjectProperty property) {
+	if(property.name.equalsIgnoreCase("comment")) {		// format comments
+		String text = property.value;
+		for(String entry : commentKeywords) {
+			String replacement = "<br>" + "<b><font color=\"#005500\">" + entry + "</font></b>";
+			text = text.replaceAll(entry, replacement);
+		}
+		for(String entry : otherKeywords) {
+			String replacement = "<font color=\"#770000\">" + entry + "</font>";
+			text = text.replaceAll(entry, replacement);
+		}
+		if(text.startsWith("<br>")) {
+			text = text.replaceFirst("<br>", "");
+		}
+		return text;
+	}
+	return property.value;
+}
+
 private void initialize() {
 	try {
 		table = new ScrollTable();
@@ -291,7 +353,8 @@ private void initialize() {
 						if(!property.getDetails().isEmpty()) {
 							details.setText(htmlStart + property.getDetails() + htmlEnd);
 						} else if((property.value != null) && !property.value.isEmpty()) {
-							details.setText(htmlStart + property.value + htmlEnd);
+							String text = FormatDetails(property);
+							details.setText(htmlStart + text + htmlEnd);
 						} else {
 							details.setText(htmlStart + "row: " + table.getSelectedRow() + ", col: " + table.getSelectedColumn() + htmlEnd);
 						}
