@@ -38,5 +38,21 @@ public class ShapePaintUtil {
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 	}
+	public static void paintLinkMarkRule(Graphics2D g, Shape shape, Color color) {
+		Font fontOld = g.getFont();
+		Color colorOld = g.getColor();
+		Font font = fontOld.deriveFont((float) (shape.getHeight()/2)).deriveFont(Font.BOLD);
+		g.setFont(font);
+		g.setColor(color);
+		FontRenderContext fontRenderContext = g.getFontRenderContext();
+		String text = "L";
+		TextLayout textLayout = new TextLayout(text, font, fontRenderContext);
+		Rectangle2D textBounds = textLayout.getBounds();
+		int xText = (int) (shape.getAbsX() + (shape.getWidth()+4 - textBounds.getWidth())/ 2 - 1);
+		int yText = (int) (shape.getAbsY() + (shape.getHeight()-2 + textBounds.getHeight())/ 2 + 1);
+		textLayout.draw(g, xText, yText);
+		g.setFont(fontOld);
+		g.setColor(colorOld);
+	}
 
 }

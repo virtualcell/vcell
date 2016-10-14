@@ -82,6 +82,9 @@ implements java.beans.PropertyChangeListener, Model.Owner, RelationshipListener 
 			} else if(shape instanceof SimpleReactionShape) {
 				SimpleReactionShape srShape = (SimpleReactionShape) shape;
 				srShape.setLinkText("L");
+			} else if(shape instanceof ReactionRuleDiagramShape) {
+				ReactionRuleDiagramShape srShape = (ReactionRuleDiagramShape) shape;
+				srShape.setLinkText("L");
 			}
 		} else if(event.getOperationType() == event.REMOVED){
 			Shape shape = getShapeFromModelObject(relationshipObject.getBioModelEntityObject());
@@ -94,6 +97,12 @@ implements java.beans.PropertyChangeListener, Model.Owner, RelationshipListener 
 				}
 			} else if(shape instanceof SimpleReactionShape) {
 				SimpleReactionShape srShape = (SimpleReactionShape) shape;
+				srShape.setLinkText("");
+				if(((RelationshipModel)event.getSource()).getRelationshipObjects(relationshipObject.getBioModelEntityObject()).size() > 0){
+					srShape.setLinkText("L");
+				}
+			} else if(shape instanceof ReactionRuleDiagramShape) {
+				ReactionRuleDiagramShape srShape = (ReactionRuleDiagramShape) shape;
 				srShape.setLinkText("");
 				if(((RelationshipModel)event.getSource()).getRelationshipObjects(relationshipObject.getBioModelEntityObject()).size() > 0){
 					srShape.setLinkText("L");
@@ -111,6 +120,9 @@ implements java.beans.PropertyChangeListener, Model.Owner, RelationshipListener 
 				scShape.setLinkText("L");
 			} else if(shape instanceof SimpleReactionShape) {
 				SimpleReactionShape srShape = (SimpleReactionShape) shape;
+				srShape.setLinkText("L");
+			} else if(shape instanceof ReactionRuleDiagramShape) {
+				ReactionRuleDiagramShape srShape = (ReactionRuleDiagramShape) shape;
 				srShape.setLinkText("L");
 			}		
 		}
