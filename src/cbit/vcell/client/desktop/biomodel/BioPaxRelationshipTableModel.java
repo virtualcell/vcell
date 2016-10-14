@@ -32,6 +32,7 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.BioModelEntityObject;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 
@@ -153,6 +154,20 @@ public class BioPaxRelationshipTableModel extends VCellSortTableModel<BioPaxRela
 					if (relationshipObjects != null) {
 						for (RelationshipObject ro : relationshipObjects) {
 							if (ro.getBioModelEntityObject() == rs) {
+								entityRow.setSelected(true);
+								break;
+							}
+						}
+					}
+					if (!bShowLinkOnly || entityRow.selected) {
+						allEntityRows.add(entityRow);
+					}
+				}
+				for (ReactionRule rr : bioModel.getModel().getRbmModelContainer().getReactionRuleList()){
+					BioPaxRelationshipTableRow entityRow = new BioPaxRelationshipTableRow(rr);
+					if (relationshipObjects != null) {
+						for (RelationshipObject ro : relationshipObjects) {
+							if (ro.getBioModelEntityObject() == rr) {
 								entityRow.setSelected(true);
 								break;
 							}

@@ -28,6 +28,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.util.gui.ShapePaintUtil;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
@@ -49,12 +50,18 @@ public class ReactionRuleDiagramShape extends ElipseShape {
 	// note that the 2 small rectangles occupy 8+3=11 pixels in each direction, so with height and width of 12 the "inside"
 	// area is actually 1 pixel larger (up and right) than it needs to be
 
+	String linkText = "";
+
 	public ReactionRuleDiagramShape(ReactionRule reactionRule, GraphModel graphModel) {
 		super(graphModel);
 		this.reactionRule = reactionRule;
 		defaultBG = java.awt.Color.yellow;
 		defaultFGselect = java.awt.Color.black;
 		backgroundColor = defaultBG;
+	}
+
+	public void setLinkText(String linkText) {
+		this.linkText = linkText;
 	}
 
 	@Override
@@ -138,7 +145,9 @@ public class ReactionRuleDiagramShape extends ElipseShape {
 				g2D.drawString(getLabel(), textX, textY);
 			}
 		}
-		return;
+		if(linkText != null && linkText != "") {
+			ShapePaintUtil.paintLinkMarkRule(g2D, this, Color.BLACK);
+		}
 	}
 	
 
