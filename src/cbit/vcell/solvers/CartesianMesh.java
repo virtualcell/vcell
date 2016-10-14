@@ -1286,7 +1286,9 @@ public int getSubVolumeFromVolumeIndex(int volIndex) {
 	int regionIndex = getVolumeRegionIndex(volIndex);
 	return meshRegionInfo.getSubVolumeIDfromVolRegion(regionIndex);
 }
-
+public boolean hasSubvolumeInfo(){
+	return getMeshRegionInfo() != null && getMeshRegionInfo().getVolumeRegionMapSubvolume() != null && getMeshRegionInfo().getVolumeRegionMapSubvolume().size()>0;
+}
 
 /**
  * This method was created in VisualAge.
@@ -2260,13 +2262,8 @@ public static CartesianMesh readFromFiles(File meshFile, File meshmetricsFile, F
 	}
 	if (subdomainFile != null) {
 		mesh.subdomainInfo = SubdomainInfo.read(subdomainFile);
-	}else{
-		mesh.subdomainInfo = new SubdomainInfo(new SubdomainInfo.CompartmentSubdomainInfo[] {new SubdomainInfo.CompartmentSubdomainInfo("unknown", 0)}, null);		
 	}
 	mesh.read(meshST,membraneMeshMetrics);
-	if(mesh.getMeshRegionInfo().getVolumeRegionMapSubvolume().size() == 0){
-		mesh.getMeshRegionInfo().mapVolumeRegionToSubvolume(0, 0, 1, "unknown");
-	}
 	return mesh;
 	}finally{
 		if(meshReader != null){try{meshReader.close();}catch(Exception e){e.printStackTrace();}}
