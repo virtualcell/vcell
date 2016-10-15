@@ -3,8 +3,8 @@
 <page title="Species Properties Pane" target="PP_Species">
 
 	<introduction>
-	The species properties pane allows editing of the Species name, shows Linked Pathway Object(s) (a list of items linked to selected species, see <link target="PathwayOverview">Pathway overview</link>) and provides an annotations box.  	
-<para> For rule-based models, a graphical editor enables the user to specify and edit the molecular details of <link target = "SpeciesTabView">Species</link> using drop-down menus in the <bold>Object Properites</bold> pane. </para>
+	Selecting a species in the <link target = "ReactDiagView">Reaction Diagram</link> or the <link target = "SpeciesTabView">Species</link> will activate the Species Properties pane in the lower right quadrant of the workspace.  Within this pane, the Species Name can be editing, <link target="PathwayOverview">Linked Pathway Object(s)</link> are displayed, and annotations cans be added.    	
+<para> For rule-based models, the <bold>Object Properties</bold> tab provides a graphical editor to specify and edit the molecular details of <link target = "SpeciesTabView">Species</link> using drop-down menus. </para>
 
 	</introduction>
 	
@@ -14,11 +14,11 @@
 	
 	<operations>
 	
-	<para><bold>Specify a molecule</bold> created in the <link target = "Molecules">Molecules table</link> that compose species in rule-based models.</para>
+	<bold>Specify a molecule</bold> previously created in the <link target = "Molecules">Molecules Table</link> as a component of a species in a rule-based model.<para></para>
 			<imgReference target = "PP_CompositeSpecies_start.PNG"/>
 			<imgReference target = "PP_CompositeSpecies_new.PNG"/>
 
-	<para>Upon adding a molecule, if additional information is required the species are highlighted in red and additionally errors may appear in the <link target = "PP_Problems">Problems tab</link>. In the figure shown, three errors were identified. Two errors arise from the fact that two binding sites have unspecified states; one error arises because molecules within the species are not connected with a bond.</para>
+	<para><bold>Add additional species information</bold>.  When a molecule is added, if additional information is required the species will be highlighted in red and errors may appear in the <link target = "PP_Problems">Problems tab</link>. In the figure shown, three errors were identified. Two errors arise from the fact that two binding sites have unspecified states; one error arises because molecules within the species are not connected with a bond.</para>
 			<imgReference target = "PP_CompositeSpecies_error.PNG"/>
 	<para>
 	</para>

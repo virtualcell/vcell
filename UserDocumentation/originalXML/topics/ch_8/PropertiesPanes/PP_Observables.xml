@@ -8,31 +8,32 @@
 	</introduction>
 	
 	<appearance>
-	<list><item>Each Observable consists of one or more <bold>Species Patterns</bold>. Each observable selects species that match at least one of the species patterns (not both). </item>
-	<item>A species pattern defines common features of multiple species, and consists of one 
-	or more of the <link target = "Molecules">molecules</link> that compose a species. Molecules may or may not be explicitely connected, but must be present in every species selected by the species pattern. Sites that have multiple possible states are depicted with a small yellow ball above the site. </item>
-	<item>Each molecule within a species pattern may have sites left undefined. If a site does not have defined states (where states are possible) and the site can be in the bound or unbound state, the site is colored white.</item>
-	<item>An observable may identify sites with a defined binding state - i.e. the funciton can explicitly identify a site bound to another site, a site unbound, or a site bound to an unspecified (i.e. any other) site; in this case the site is colored green with a bond drawn as a colored line if one exists.</item>
+	<para>An Observable consists of one or more <bold>Species Patterns</bold>. Each observable selects species that match at least one of the species patterns.  Observables are defined within each compartment within a model.</para>
+	<para>A species pattern defines common features of multiple species, and consists of one 
+	or more of the <link target = "Molecules">molecules</link> that compose a species. Molecules may or may not be explicitely connected, but must be present in every species selected by the species pattern. Sites that have multiple possible states are depicted with a small yellow ball above the site.</para>
+	<list><item>Each molecule within a species pattern may have sites left undefined. If states of a site are possible but not defined and the site can be in the bound or unbound state, the site is colored white.</item>
+	<item>An observable may identify sites with a defined binding state - i.e. the funciton can explicitly identify a site bound to another specified site, an unbound site, or a site bound to any other site; in this case the site is colored green with a bond drawn as a colored line if one exists.</item>
 	<item> A site that has a defined state is always shown in green.</item>
-	<item>In the figure below, the Observable describes the total extent of phosphorylation of all EGFR molecules. The first species pattern selects all species that have the tyrosine at position 1068 (Y1068) phosphorylated, the second species pattern selects all species that have the tyrosine at position 1148 (Y1148) phosphorylated.</item>
-	</list>	  <imgReference target = "O0.PNG"/>
+	</list>
+	<para>In the figure below, the Observable describes the total extent of phosphorylation of all EGFR molecules. The first species pattern selects all species that have the tyrosine at position 1068 (Y1068) phosphorylated, the second species pattern selects all species that have the tyrosine at position 1148 (Y1148) phosphorylated.</para>
+	<imgReference target = "O0.PNG"/>
   	<para></para>
 	</appearance>
 	
 	<operations>
-	Once an observable has been added in the <link target = "Observables">Observable Table</link>, <bold>specify an Observable</bold> using the following steps.
+	<bold>Add an observable</bold> using the <bold>New Observable</bold> button at the bottom of the main workspace.  A dotted shape will appear in the <bold>Object Properties</bold> tab of the properties pane.  If the model has more than one compartment, the compartment must be selected when the Observable is created, and only molecules within the compartment can be added to the Observable.  (Note that a parameter can be created to sum Observables from different compartments if needed).
 		<list>	
-			<item><bold>Add a molecule</bold> to the pattern by right click on the dotted shape and selecting the first molecule for the species pattern from the drop-down menu.
+			<item><bold>Add a molecule</bold> to the pattern using a right click on the dotted shape and selecting a molecule to add to the species pattern from the drop-down menu.
 			<imgReference target = "O1.PNG"/></item>
 			<item>
-			<bold>Edit</bold> the molecule site or state by right click on the molecular site or state to bring up a drop-down menu.
+			<bold>Edit</bold> the molecule site or state using a right click on the molecular site or state to bring up a drop-down menu.
 			</item>
 			<item>
-			<bold>Add another molecule</bold> by right click next to molecule.
+			<bold>Add another molecule</bold> by right clicking in the window next to molecule.
 			<imgReference target = "O2.PNG"/>
 			</item>
 			<item>
-			<bold>Add another species pattern</bold>by right click below the first species pattern.
+			<bold>Add another species pattern</bold> using the <bold>Add Pattern</bold> button on the left side of the property pane or using a right click in the window below the first species pattern.
 			<imgReference target = "O3.PNG"/>
 			</item>
 			<item>
@@ -43,6 +44,7 @@
 			<bold>Edit the second species pattern</bold> by right click on site to bring up the drop-down menu to edit the state.
 			<imgReference target = "O5.PNG"/></item>
 		</list>
+<para><bold>Select</bold> between a <bold>Multimolecular</bold> pattern or <bold>Polymer</bold> patterns using the radio buttons on the left side of the Observables Properties pane.  Polymers (such as actin filaments) can have patterns that describe an either an absolute number of monomers in the polymer, or a length greater than a specified number of monomers; radio buttons on the left of the Observables properties pane select between these options.</para>
 		
 	</operations>
 
