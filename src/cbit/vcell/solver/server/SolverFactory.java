@@ -59,7 +59,17 @@ public class SolverFactory {
 			FACTORY.put(SolverDescription.FiniteVolumeStandalone, fv); 
 			FACTORY.put(SolverDescription.FiniteVolume, fv); 
 			FACTORY.put(SolverDescription.SundialsPDE, fv); 
-			FACTORY.put(SolverDescription.Chombo, fv); 
+			Maker chomboMaker = new Maker(){
+				@Override
+				public Solver make(SimulationTask t, File d, File pd, SessionLog sl, boolean m) throws SolverException {
+					if (t.getSimulation().getSolverTaskDescription().isParallel()){
+						return new FVSolverStandalone(t,pd,d,sl,m);
+					}else{
+						return new FVSolverStandalone(t,d,null,sl,m);
+					}
+				}
+			};
+			FACTORY.put(SolverDescription.Chombo, chomboMaker); 
 		}
 
 		FACTORY.put(SolverDescription.ForwardEuler, (t,d,pd,sl,m) -> new ForwardEulerSolver(t, d, sl) );
