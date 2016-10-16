@@ -55,7 +55,7 @@ public class SolverFactory {
 	private static final Map<SolverDescription,Maker> FACTORY = new HashMap<SolverDescription, SolverFactory.Maker>( );
 	static {
 		{  //finite volume Java solvers
-			Maker fv = (t,d,pd,sl,m) -> new FVSolverStandalone(t, pd, d, sl,m);  // second parameter is working directory, should be pd
+			Maker fv = (t,d,pd,sl,m) -> new FVSolverStandalone(t, d, pd, sl,m);
 			FACTORY.put(SolverDescription.FiniteVolumeStandalone, fv); 
 			FACTORY.put(SolverDescription.FiniteVolume, fv); 
 			FACTORY.put(SolverDescription.SundialsPDE, fv); 
