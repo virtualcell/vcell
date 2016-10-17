@@ -17,7 +17,6 @@ import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitSystem;
 
 public class Membrane extends Structure implements IssueSource {
 	private MembraneVoltage fieldMembraneVoltage = null;
@@ -28,7 +27,7 @@ public class Membrane extends Structure implements IssueSource {
 
 		@Override
 		public String getDescription() {
-			return "membrane voltage";
+			return "voltage across membrane "+Membrane.this.getName();
 		}
 
 		public MembraneVoltage(String name) {

@@ -39,7 +39,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class RbmObservable implements Serializable, Matchable, SymbolTableEntry, PropertyChangeListener,
+public class RbmObservable implements Serializable, Matchable, EditableSymbolTableEntry, PropertyChangeListener,
 	IssueSource, Identifiable, Displayable
 {
 	public static enum ObservableType {
@@ -662,6 +662,46 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 	@Override
 	public final String getDisplayType() {
 		return typeName;
+	}
+
+	@Override
+	public boolean isExpressionEditable() {
+		return false;
+	}
+
+	@Override
+	public boolean isUnitEditable() {
+		return false;
+	}
+
+	@Override
+	public boolean isNameEditable() {
+		return true;
+	}
+
+	@Override
+	public void setExpression(Expression expression) throws ExpressionBindingException {
+		throw new RuntimeException("cannot set expression on rule-based observable");
+	}
+
+	@Override
+	public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+		throw new RuntimeException("cannot set unit on rule-based observable");
+	}
+
+	@Override
+	public String getDescription() {
+		return "observable";
+	}
+
+	@Override
+	public void setDescription(String description) throws PropertyVetoException {
+		throw new RuntimeException("cannot set description on rule-based observable");
+	}
+
+	@Override
+	public boolean isDescriptionEditable() {
+		return false;
 	}
 
 }

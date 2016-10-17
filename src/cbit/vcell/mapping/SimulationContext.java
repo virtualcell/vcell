@@ -164,6 +164,10 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		public String getName() {
 			return TokenMangler.fixTokenStrict(SimulationContext.this.getName());
 		}
+		@Override
+		public String getPathDescription() {
+			return "App("+SimulationContext.this.getName()+")";
+		}
 		public NameScope getParent() {
 			//System.out.println("SimulationContextNameScope.getParent() returning null ... no parent");
 			return null;
@@ -503,6 +507,7 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
 	geoContext = new GeometryContext(model,geometry,this);
 	geoContext.addPropertyChangeListener(this);
 	refreshCharacteristicSize();
+	addSimulationContextParameter(new SimulationContextParameter("myparam", new Expression(1.0), ROLE_UserDefined, model.getUnitSystem().getInstance_DIMENSIONLESS()));
 	
 	this.reactionContext = new ReactionContext(model,this);
 	this.membraneContext = new MembraneContext(this);

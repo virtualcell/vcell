@@ -10,6 +10,7 @@
 
 package cbit.vcell.model;
 
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
 import cbit.vcell.parser.Expression;
@@ -36,5 +37,9 @@ public interface EditableSymbolTableEntry extends SymbolTableEntry {
 	public void setDescription(String description) throws PropertyVetoException;
 	
 	public boolean isDescriptionEditable();
+
+	public void addPropertyChangeListener(PropertyChangeListener listener);
+
+	public void removePropertyChangeListener(PropertyChangeListener listener);
 
 }

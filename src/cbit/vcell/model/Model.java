@@ -790,6 +790,16 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		return (this.role.equals(ReservedSymbolRole.TIME));
 	}
 
+
+	@Override
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+	}
+
+
+	@Override
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+	}
+
 	}
 	
 	public static final int ROLE_UserDefined	= 0;

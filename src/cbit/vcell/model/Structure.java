@@ -79,6 +79,10 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 			return Structure.this;
 		}
 		@Override
+		public String getPathDescription() {
+			return "Model / Compartment("+Structure.this.getName()+")";
+		}
+		@Override
 		public NamescopeType getNamescopeType() {
 			return NamescopeType.structureType;
 		}
@@ -88,7 +92,7 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 
 		@Override
 		public String getDescription() {
-			return "structure size";
+			return "size of compartment "+Structure.this.getName();
 		}
 
 		public StructureSize(String name) {

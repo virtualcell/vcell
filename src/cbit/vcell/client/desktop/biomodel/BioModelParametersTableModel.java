@@ -14,7 +14,9 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.vcell.util.gui.DialogUtils;
@@ -22,20 +24,22 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.BioModelParametersPanel.ApplicationSelection;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
+import cbit.vcell.model.EditableSymbolTableEntry;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
@@ -44,6 +48,7 @@ import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -51,7 +56,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class BioModelParametersTableModel extends BioModelEditorRightSideTableModel<Parameter> implements java.beans.PropertyChangeListener {
+public class BioModelParametersTableModel extends BioModelEditorRightSideTableModel<EditableSymbolTableEntry> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_PATH = 0;
 	public static final int COLUMN_NAME = 1;
 	public static final int COLUMN_DESCRIPTION = 2;
@@ -63,6 +68,7 @@ public class BioModelParametersTableModel extends BioModelEditorRightSideTableMo
 	private boolean bGlobal = true;
 	private boolean bConstants = true;
 	private boolean bFunctions = true;
+	private ApplicationSelection applicationSelection = null;
 	
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -97,39 +103,47 @@ public Class<?> getColumnClass(int col) {
 /**
  * Insert the method's description here.
  * Creation date: (9/23/2003 1:24:52 PM)
- * @return cbit.vcell.model.Parameter
+ * @return cbit.vcell.model.EditableSymbolTableEntry
  * @param row int
  */
-protected List<Parameter> computeData() {
-	ArrayList<Parameter> allParameterList = new ArrayList<Parameter>();
+protected List<EditableSymbolTableEntry> computeData() {
+	ArrayList<EditableSymbolTableEntry> allEditableSymbolTableEntryList = new ArrayList<EditableSymbolTableEntry>();
 	if (bioModel == null){
 		return null;
 	}
 	if (bGlobal) {
-		allParameterList.addAll(Arrays.asList(bioModel.getModel().getModelParameters()));
+		Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+		bioModel.getModel().getEntries(entryMap);
+		for (SymbolTableEntry ste : entryMap.values()){
+			if (ste instanceof EditableSymbolTableEntry && !(ste instanceof ReservedSymbol)){
+				allEditableSymbolTableEntryList.add((EditableSymbolTableEntry)ste);
+			}
+		}
 	}
 	if (bReactions) {
 		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
-			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
-			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
+			allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
+			allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
 		}
 		if(!bioModel.getModel().getRbmModelContainer().isEmpty()) {
 			for(ReactionRule reactionRule : bioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
-				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getLocalParameters()));
-				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getProxyParameters()));
-				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getUnresolvedParameters()));
+				allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionRule.getKineticLaw().getLocalParameters()));
+				allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionRule.getKineticLaw().getProxyParameters()));
+				allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionRule.getKineticLaw().getUnresolvedParameters()));
 			}
 		}
 	}
 	if (bApplications) {
 		for (SimulationContext simContext : bioModel.getSimulationContexts()) {
-			allParameterList.addAll(getApplicationParameterList(simContext));
+			if (applicationSelection!=null && (applicationSelection.isAll() || applicationSelection.getSimulationContext()==simContext)){
+				allEditableSymbolTableEntryList.addAll(getApplicationEditableSymbolTableEntryList(simContext));
+			}
 		}
 	}
 	boolean bSearchInactive = searchText == null || searchText.length() == 0;
 	String lowerCaseSearchText = bSearchInactive ? null : searchText.toLowerCase();
-	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();
-	for (Parameter parameter : allParameterList) {
+	ArrayList<EditableSymbolTableEntry> parameterList = new ArrayList<EditableSymbolTableEntry>();
+	for (EditableSymbolTableEntry parameter : allEditableSymbolTableEntryList) {
 		boolean bNumeric = parameter.getExpression() == null || parameter.getExpression().isNumeric();
 		if (bConstants && bNumeric || bFunctions && !bNumeric) {
 			if (bSearchInactive
@@ -144,8 +158,15 @@ protected List<Parameter> computeData() {
 	return parameterList;
 }
 
-private List<Parameter> getApplicationParameterList(SimulationContext simulationContext) {	
-	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();	
+private List<EditableSymbolTableEntry> getApplicationEditableSymbolTableEntryList(SimulationContext simulationContext) {	
+	ArrayList<EditableSymbolTableEntry> parameterList = new ArrayList<EditableSymbolTableEntry>();	
+	Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+	simulationContext.getEntries(entryMap);
+	for (SymbolTableEntry ste : entryMap.values()){
+		if (ste instanceof EditableSymbolTableEntry && ste.getNameScope() == simulationContext.getNameScope()){
+			parameterList.add((EditableSymbolTableEntry)ste);
+		}
+	}
 	for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
 		parameterList.addAll(mapping.computeApplicableParameterList());
 	}
@@ -165,7 +186,7 @@ private List<Parameter> getApplicationParameterList(SimulationContext simulation
  */
 public Object getValueAt(int row, int col) {
 	try {
-		Parameter parameter = getValueAt(row);
+		EditableSymbolTableEntry parameter = getValueAt(row);
 		switch (col){
 			case COLUMN_PATH:
 				return parameter.getNameScope();
@@ -191,7 +212,7 @@ public Object getValueAt(int row, int col) {
 }
 
 public boolean isCellEditable(int row, int col) {
-	Parameter parameter = getValueAt(row);
+	EditableSymbolTableEntry parameter = getValueAt(row);
 	switch (col) {
 	case COLUMN_PATH:
 		return false;
@@ -210,8 +231,8 @@ public boolean isCellEditable(int row, int col) {
 @Override
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	super.propertyChange(evt);	
-	if (evt.getSource() instanceof Parameter) {
-		int changeRow = getRowIndex((Parameter) evt.getSource());
+	if (evt.getSource() instanceof EditableSymbolTableEntry) {
+		int changeRow = getRowIndex((EditableSymbolTableEntry) evt.getSource());
 		if (changeRow >= 0) {
 			fireTableRowsUpdated(changeRow, changeRow);
 		}
@@ -221,13 +242,13 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (propertyName.equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
 				ModelParameter[] oldValue = (ModelParameter[])evt.getOldValue();
 				if (oldValue!=null){
-					for (Parameter parameter : oldValue) {
+					for (EditableSymbolTableEntry parameter : oldValue) {
 						parameter.removePropertyChangeListener(this);
 					}
 				}
 				ModelParameter[] newValue = (ModelParameter[])evt.getNewValue();
 				if (newValue!=null){
-					for (Parameter parameter : newValue) {
+					for (EditableSymbolTableEntry parameter : newValue) {
 						parameter.addPropertyChangeListener(this);
 					}
 				}
@@ -252,14 +273,14 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					for (ReactionStep reactionStep : oldValue){
 						reactionStep.removePropertyChangeListener(this);
 						reactionStep.getKinetics().removePropertyChangeListener(this);
-						for (KineticsParameter kineticsParameter : reactionStep.getKinetics().getKineticsParameters()) {
-							kineticsParameter.removePropertyChangeListener(this);
+						for (KineticsParameter kineticsEditableSymbolTableEntry : reactionStep.getKinetics().getKineticsParameters()) {
+							kineticsEditableSymbolTableEntry.removePropertyChangeListener(this);
 						}
-						for (ProxyParameter proxyParameter : reactionStep.getKinetics().getProxyParameters()) {
-							proxyParameter.removePropertyChangeListener(this);
+						for (ProxyParameter proxyEditableSymbolTableEntry : reactionStep.getKinetics().getProxyParameters()) {
+							proxyEditableSymbolTableEntry.removePropertyChangeListener(this);
 						}
-						for (UnresolvedParameter unresolvedParameter: reactionStep.getKinetics().getUnresolvedParameters()) {
-							unresolvedParameter.removePropertyChangeListener(this);
+						for (UnresolvedParameter unresolvedEditableSymbolTableEntry: reactionStep.getKinetics().getUnresolvedParameters()) {
+							unresolvedEditableSymbolTableEntry.removePropertyChangeListener(this);
 						}
 					}
 				}
@@ -268,14 +289,14 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					for (ReactionStep reactionStep : newValue){
 						reactionStep.addPropertyChangeListener(this);
 						reactionStep.getKinetics().addPropertyChangeListener(this);
-						for (KineticsParameter kineticsParameter : reactionStep.getKinetics().getKineticsParameters()) {
-							kineticsParameter.addPropertyChangeListener(this);
+						for (KineticsParameter kineticsEditableSymbolTableEntry : reactionStep.getKinetics().getKineticsParameters()) {
+							kineticsEditableSymbolTableEntry.addPropertyChangeListener(this);
 						}
-						for (ProxyParameter proxyParameter : reactionStep.getKinetics().getProxyParameters()) {
-							proxyParameter.addPropertyChangeListener(this);
+						for (ProxyParameter proxyEditableSymbolTableEntry : reactionStep.getKinetics().getProxyParameters()) {
+							proxyEditableSymbolTableEntry.addPropertyChangeListener(this);
 						}
-						for (UnresolvedParameter unresolvedParameter: reactionStep.getKinetics().getUnresolvedParameters()) {
-							unresolvedParameter.addPropertyChangeListener(this);
+						for (UnresolvedParameter unresolvedEditableSymbolTableEntry: reactionStep.getKinetics().getUnresolvedParameters()) {
+							unresolvedEditableSymbolTableEntry.addPropertyChangeListener(this);
 						}
 					}
 				}
@@ -303,20 +324,20 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					simulationContext.getGeometryContext().removePropertyChangeListener(this);
 					for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
 						mapping.removePropertyChangeListener(this);
-						for (Parameter parameter : mapping.getParameters()) {
+						for (EditableSymbolTableEntry parameter : mapping.getParameters()) {
 							parameter.removePropertyChangeListener(this);
 						}
 					}
 					simulationContext.getReactionContext().removePropertyChangeListener(this);
 					for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
 						spec.removePropertyChangeListener(this);
-						for (Parameter parameter : spec.getParameters()) {
+						for (EditableSymbolTableEntry parameter : spec.getParameters()) {
 							parameter.removePropertyChangeListener(this);
 						}
 					}
 					for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
 						elect.removePropertyChangeListener(this);
-						for (Parameter parameter : elect.getParameters()) {
+						for (EditableSymbolTableEntry parameter : elect.getParameters()) {
 							parameter.removePropertyChangeListener(this);
 						}
 					}
@@ -327,20 +348,20 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					simulationContext.getGeometryContext().addPropertyChangeListener(this);
 					for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
 						mapping.addPropertyChangeListener(this);
-						for (Parameter parameter : mapping.getParameters()) {
+						for (EditableSymbolTableEntry parameter : mapping.getParameters()) {
 							parameter.addPropertyChangeListener(this);
 						}
 					}
 					simulationContext.getReactionContext().addPropertyChangeListener(this);
 					for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
 						spec.addPropertyChangeListener(this);
-						for (Parameter parameter : spec.getParameters()) {
+						for (EditableSymbolTableEntry parameter : spec.getParameters()) {
 							parameter.addPropertyChangeListener(this);
 						}
 					}
 					for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
 						elect.addPropertyChangeListener(this);
-						for (Parameter parameter : elect.getParameters()) {
+						for (EditableSymbolTableEntry parameter : elect.getParameters()) {
 							parameter.addPropertyChangeListener(this);
 						}
 					}
@@ -352,7 +373,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (oldValue != null) {
 				for (StructureMapping mapping : oldValue) {
 					mapping.removePropertyChangeListener(this);
-					for (Parameter parameter : mapping.getParameters()) {
+					for (EditableSymbolTableEntry parameter : mapping.getParameters()) {
 						parameter.removePropertyChangeListener(this);
 					}
 				}
@@ -361,7 +382,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (newValue != null) {
 				for (StructureMapping mapping : newValue) {
 					mapping.addPropertyChangeListener(this);
-					for (Parameter parameter : mapping.getParameters()) {
+					for (EditableSymbolTableEntry parameter : mapping.getParameters()) {
 						parameter.addPropertyChangeListener(this);
 					}
 				}
@@ -371,38 +392,38 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			Kinetics oldValue = (Kinetics)evt.getOldValue();
 			if (oldValue != null) {
 				oldValue.removePropertyChangeListener(this);
-				for (KineticsParameter kineticsParameter : oldValue.getKineticsParameters()) {
-					kineticsParameter.removePropertyChangeListener(this);
+				for (KineticsParameter kineticsEditableSymbolTableEntry : oldValue.getKineticsParameters()) {
+					kineticsEditableSymbolTableEntry.removePropertyChangeListener(this);
 				}
-				for (ProxyParameter proxyParameter : oldValue.getProxyParameters()) {
-					proxyParameter.removePropertyChangeListener(this);
+				for (ProxyParameter proxyEditableSymbolTableEntry : oldValue.getProxyParameters()) {
+					proxyEditableSymbolTableEntry.removePropertyChangeListener(this);
 				}
-				for (UnresolvedParameter unresolvedParameter: oldValue.getUnresolvedParameters()) {
-					unresolvedParameter.removePropertyChangeListener(this);
+				for (UnresolvedParameter unresolvedEditableSymbolTableEntry: oldValue.getUnresolvedParameters()) {
+					unresolvedEditableSymbolTableEntry.removePropertyChangeListener(this);
 				}
 			}
 			Kinetics newValue = (Kinetics)evt.getNewValue();
 			if (newValue != null) {
 				newValue.addPropertyChangeListener(this);
-				for (KineticsParameter kineticsParameter : newValue.getKineticsParameters()) {
-					kineticsParameter.addPropertyChangeListener(this);
+				for (KineticsParameter kineticsEditableSymbolTableEntry : newValue.getKineticsParameters()) {
+					kineticsEditableSymbolTableEntry.addPropertyChangeListener(this);
 				}
-				for (ProxyParameter proxyParameter : newValue.getProxyParameters()) {
-					proxyParameter.addPropertyChangeListener(this);
+				for (ProxyParameter proxyEditableSymbolTableEntry : newValue.getProxyParameters()) {
+					proxyEditableSymbolTableEntry.addPropertyChangeListener(this);
 				}
-				for (UnresolvedParameter unresolvedParameter: newValue.getUnresolvedParameters()) {
-					unresolvedParameter.addPropertyChangeListener(this);
+				for (UnresolvedParameter unresolvedEditableSymbolTableEntry: newValue.getUnresolvedParameters()) {
+					unresolvedEditableSymbolTableEntry.addPropertyChangeListener(this);
 				}
 			}
 			refreshData();
 		} else if (evt.getSource() instanceof Kinetics && (evt.getPropertyName().equals(Kinetics.PROPERTY_NAME_KINETICS_PARAMETERS))) {
-			Parameter oldValue[] = (Parameter[])evt.getOldValue();
+			EditableSymbolTableEntry oldValue[] = (EditableSymbolTableEntry[])evt.getOldValue();
 			if (oldValue != null) {
 				for (int i = 0; i < oldValue.length; i++){
 					oldValue[i].removePropertyChangeListener(this);
 				}
 			}
-			Parameter newValue[] = (Parameter[])evt.getNewValue();
+			EditableSymbolTableEntry newValue[] = (EditableSymbolTableEntry[])evt.getNewValue();
 			if (newValue != null) {
 				for (int i = 0; i < newValue.length; i++){
 					newValue[i].addPropertyChangeListener(this);
@@ -426,7 +447,7 @@ public void setValueAt(Object value, int row, int col) {
 	try {
 		String inputValue = (String)value;
 		inputValue = inputValue.trim();
-		Parameter parameter = getValueAt(row);
+		EditableSymbolTableEntry parameter = getValueAt(row);
 		switch (col){
 			case COLUMN_NAME:{
 				if (inputValue.length() == 0) {
@@ -480,10 +501,10 @@ public void setValueAt(Object value, int row, int col) {
 }
 
 
-  public Comparator<Parameter> getComparator(final int col, final boolean ascending) {
-	  return new Comparator<Parameter>() {
+  public Comparator<EditableSymbolTableEntry> getComparator(final int col, final boolean ascending) {
+	  return new Comparator<EditableSymbolTableEntry>() {
 
-		public int compare(Parameter parm1, Parameter parm2) {
+		public int compare(EditableSymbolTableEntry parm1, EditableSymbolTableEntry parm2) {
 			int scale = ascending ? 1 : -1;
 			switch (col){
 				case COLUMN_NAME:
@@ -509,7 +530,7 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 	super.bioModelChange(evt);
 	BioModel oldValue = (BioModel)evt.getOldValue();
 	if (oldValue!=null){
-		for (Parameter parameter : oldValue.getModel().getModelParameters()) {
+		for (EditableSymbolTableEntry parameter : oldValue.getModel().getModelParameters()) {
 			parameter.removePropertyChangeListener(this);
 		}
 		for (SpeciesContext sc : oldValue.getModel().getSpeciesContexts()) {
@@ -519,14 +540,14 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 			reactionStep.removePropertyChangeListener(this);
 			Kinetics kinetics = reactionStep.getKinetics();
 			kinetics.removePropertyChangeListener(this);
-			for (KineticsParameter kineticsParameter : kinetics.getKineticsParameters()) {
-				kineticsParameter.removePropertyChangeListener(this);
+			for (KineticsParameter kineticsEditableSymbolTableEntry : kinetics.getKineticsParameters()) {
+				kineticsEditableSymbolTableEntry.removePropertyChangeListener(this);
 			}
-			for (ProxyParameter proxyParameter : kinetics.getProxyParameters()) {
-				proxyParameter.removePropertyChangeListener(this);
+			for (ProxyParameter proxyEditableSymbolTableEntry : kinetics.getProxyParameters()) {
+				proxyEditableSymbolTableEntry.removePropertyChangeListener(this);
 			}
-			for (UnresolvedParameter unresolvedParameter: kinetics.getUnresolvedParameters()) {
-				unresolvedParameter.removePropertyChangeListener(this);
+			for (UnresolvedParameter unresolvedEditableSymbolTableEntry: kinetics.getUnresolvedParameters()) {
+				unresolvedEditableSymbolTableEntry.removePropertyChangeListener(this);
 			}
 		}
 		for (SimulationContext simulationContext : oldValue.getSimulationContexts()) {
@@ -534,20 +555,20 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 			simulationContext.getGeometryContext().removePropertyChangeListener(this);
 			for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
 				mapping.removePropertyChangeListener(this);
-				for (Parameter parameter : mapping.getParameters()) {
+				for (EditableSymbolTableEntry parameter : mapping.getParameters()) {
 					parameter.removePropertyChangeListener(this);
 				}
 			}
 			simulationContext.getReactionContext().removePropertyChangeListener(this);
 			for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
 				spec.removePropertyChangeListener(this);
-				for (Parameter parameter : spec.getParameters()) {
+				for (EditableSymbolTableEntry parameter : spec.getParameters()) {
 					parameter.removePropertyChangeListener(this);
 				}
 			}
 			for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
 				elect.removePropertyChangeListener(this);
-				for (Parameter parameter : elect.getParameters()) {
+				for (EditableSymbolTableEntry parameter : elect.getParameters()) {
 					parameter.removePropertyChangeListener(this);
 				}
 			}
@@ -555,8 +576,8 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 	}
 	BioModel newValue = (BioModel)evt.getNewValue();
 	if (newValue != null){
-		for (ModelParameter modelParameter : newValue.getModel().getModelParameters()) {
-			modelParameter.addPropertyChangeListener(this);
+		for (ModelParameter modelEditableSymbolTableEntry : newValue.getModel().getModelParameters()) {
+			modelEditableSymbolTableEntry.addPropertyChangeListener(this);
 		}
 		for (SpeciesContext sc : newValue.getModel().getSpeciesContexts()) {
 			sc.addPropertyChangeListener(this);
@@ -565,14 +586,14 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 			reactionStep.addPropertyChangeListener(this);
 			Kinetics kinetics = reactionStep.getKinetics();
 			kinetics.addPropertyChangeListener(this);
-			for (KineticsParameter kineticsParameter : kinetics.getKineticsParameters()) {
-				kineticsParameter.addPropertyChangeListener(this);
+			for (KineticsParameter kineticsEditableSymbolTableEntry : kinetics.getKineticsParameters()) {
+				kineticsEditableSymbolTableEntry.addPropertyChangeListener(this);
 			}
-			for (ProxyParameter proxyParameter : kinetics.getProxyParameters()) {
-				proxyParameter.addPropertyChangeListener(this);
+			for (ProxyParameter proxyEditableSymbolTableEntry : kinetics.getProxyParameters()) {
+				proxyEditableSymbolTableEntry.addPropertyChangeListener(this);
 			}
-			for (UnresolvedParameter unresolvedParameter: kinetics.getUnresolvedParameters()) {
-				unresolvedParameter.addPropertyChangeListener(this);
+			for (UnresolvedParameter unresolvedEditableSymbolTableEntry: kinetics.getUnresolvedParameters()) {
+				unresolvedEditableSymbolTableEntry.addPropertyChangeListener(this);
 			}
 		}
 		for (SimulationContext simulationContext : newValue.getSimulationContexts()) {
@@ -580,20 +601,20 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 			simulationContext.getGeometryContext().addPropertyChangeListener(this);
 			for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
 				mapping.addPropertyChangeListener(this);
-				for (Parameter parameter : mapping.getParameters()) {
+				for (EditableSymbolTableEntry parameter : mapping.getParameters()) {
 					parameter.addPropertyChangeListener(this);
 				}
 			}
 			simulationContext.getReactionContext().addPropertyChangeListener(this);
 			for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
 				spec.addPropertyChangeListener(this);
-				for (Parameter parameter : spec.getParameters()) {
+				for (EditableSymbolTableEntry parameter : spec.getParameters()) {
 					parameter.addPropertyChangeListener(this);
 				}
 			}
 			for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
 				elect.addPropertyChangeListener(this);
-				for (Parameter parameter : elect.getParameters()) {
+				for (EditableSymbolTableEntry parameter : elect.getParameters()) {
 					parameter.addPropertyChangeListener(this);
 				}
 			}
@@ -654,6 +675,14 @@ public final void setIncludeFunctions(boolean newValue) {
 		return;
 	}	
 	this.bFunctions = newValue;
+	refreshData();
+}
+
+public void setApplicationSelection(ApplicationSelection newSelection) {
+	if (this.applicationSelection == newSelection){
+		return;
+	}
+	this.applicationSelection = newSelection;
 	refreshData();
 }
 

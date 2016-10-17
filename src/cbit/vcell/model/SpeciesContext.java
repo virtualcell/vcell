@@ -54,7 +54,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
-public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, BioModelEntityObject,
+public class SpeciesContext implements Cacheable, Matchable, EditableSymbolTableEntry, VetoableChangeListener, BioModelEntityObject,
 	IssueSource, Displayable
 {
 	private KeyValue key = null;
@@ -660,6 +660,38 @@ public final String getDisplayName() {
 @Override
 public final String getDisplayType() {
 	return typeName;
+}
+@Override
+public boolean isExpressionEditable() {
+	return false;
+}
+@Override
+public boolean isUnitEditable() {
+	return false;
+}
+@Override
+public boolean isNameEditable() {
+	return true;
+}
+@Override
+public void setExpression(Expression expression) throws ExpressionBindingException {
+	throw new RuntimeException("cannot set expression on a species context");
+}
+@Override
+public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+	throw new RuntimeException("cannot set unit on a species context");
+}
+@Override
+public String getDescription() {
+	return "Species '"+getName()+"' defined in compartment '"+getStructure().getName()+"'";
+}
+@Override
+public void setDescription(String description) throws PropertyVetoException {
+	throw new RuntimeException("cannot set description on a species context");
+}
+@Override
+public boolean isDescriptionEditable() {
+	return false;
 }
 
 
