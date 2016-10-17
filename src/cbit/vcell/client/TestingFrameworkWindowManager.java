@@ -2899,8 +2899,8 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
  * Insert the method's description here.
  * Creation date: (11/18/2004 4:44:45 PM)
  */
-public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) {
-	getRequestManager().startExport(outputContext, this, exportSpecs);
+public void startExport(Component requester,OutputContext outputContext,ExportSpecs exportSpecs) {
+	getRequestManager().startExport(outputContext, requester, exportSpecs);
 }
 
 

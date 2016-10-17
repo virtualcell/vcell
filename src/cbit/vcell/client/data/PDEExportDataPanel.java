@@ -11,6 +11,7 @@
 package cbit.vcell.client.data;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -78,6 +79,7 @@ import cbit.vcell.export.server.GeometrySpecs;
 import cbit.vcell.export.server.ImageSpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.PLYSpecs;
+import cbit.vcell.export.server.RasterSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.mapping.SimulationContext;
@@ -2115,6 +2117,7 @@ private void setFormatChoices_0(/*boolean bMembrane*/){
 		cb.addItem(ExportFormat.ANIMATED_GIF);
 		cb.addItem(ExportFormat.FORMAT_JPEG);
 		cb.addItem(ExportFormat.NRRD);
+		cb.addItem(ExportFormat.IMAGEJ);
 		cb.addItem(ExportFormat.UCD);
 		cb.addItem(ExportFormat.PLY);
 		cb.addItem(ExportFormat.VTK_UNSTRUCT);
@@ -2492,6 +2495,7 @@ private void startExport() {
 			break;
 		}
 	case NRRD:
+	case IMAGEJ:
 	case UCD:
 	case VTK_IMAGE:
 	case VTK_UNSTRUCT:
@@ -2514,11 +2518,16 @@ private void startExport() {
 		getExportSettings1().setFormatSpecificSpecs(new PLYSpecs(true,displayPreferences));
 	}
 	if (format.requiresFollowOn()){
-		boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this),selectionHasVolumeVariables,selectionHasMembraneVariables);
+		Frame theFrame = JOptionPane.getFrameForComponent(this);
+		boolean okToExport = getExportSettings1().showFormatSpecificDialog(theFrame,selectionHasVolumeVariables,selectionHasMembraneVariables);
 				
 		if (!okToExport) {
 			return;
 		}
+	}
+	if(format.equals(ExportFormat.IMAGEJ)){
+		//export nrrd for imagej direct, the we'll send to imagej from vcell client
+		getExportSettings1().setFormatSpecificSpecs(new RasterSpecs(ExportConstants.NRRD_SINGLE, false));
 	}
 	
 	// determine of sim result is from local (quick) run or on server.
@@ -2546,7 +2555,7 @@ private void startExport() {
 	// pass the export request down the line; non-blocking call
 	if (!isLocalSimResult) {
 		// for sims that ran on server, do as before.
-		getDataViewerManager().startExport(outputContext,exportSpecs);
+		getDataViewerManager().startExport(this,outputContext,exportSpecs);
 	} else {
 		final String SOURCE_FILE_KEY = "SOURCE_FILE_KEY";
 		final String DESTINATION_FILE_KEY = "DEESTINATION_FILE_KEY";
@@ -2698,7 +2707,9 @@ private void updateExportFormat(ExportFormat exportFormat) {
 			getJRadioButtonFull().setEnabled(true);
 			break;
 		}
-		case NRRD: {
+		case NRRD: 
+		case IMAGEJ:
+		{
 			BeanUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonFull().setSelected(true);
 			getJRadioButtonFull().setEnabled(true);			
@@ -2795,6 +2806,7 @@ private void updateInterface() {
 		getVolVarRadioButton().setEnabled(false);
 		break;
 	case NRRD:
+	case IMAGEJ:
 		if(getBothVarRadioButton().isSelected()){
 			getVolVarRadioButton().doClick();
 		}

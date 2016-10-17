@@ -74,6 +74,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.vcell.imagej.ImageJHelper;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Compare;
@@ -81,6 +82,7 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DataJobListenerHolder;
+import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
@@ -327,8 +329,12 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	
 	private JButton roiButton = null;
 	private JPopupMenu roiPopupMenu = null;
+	private JButton imagejButton;
+	private JPopupMenu imagejPopupMenu = null;
+
 	private JMenuItem statisticsMenuItem;
 	private JMenuItem snapShotMenuItem;
+	private JMenuItem sendTimePointImageMenuItem;
 	
 	private Simulation fieldSimulation = null;
 
@@ -355,6 +361,8 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					getPlotPopupMenu().show(getPlotButton(), 0, getPlotButton().getHeight());
 				} else if (e.getSource() == getROIButton()) {
 					getROIPopupMenu().show(getROIButton(), 0, getROIButton().getHeight());
+				} else if (e.getSource() == getImagejButton()) {
+					getImagejPopupMenu().show(getImagejButton(), 0, getImagejButton().getHeight());
 				} else if (e.getSource() == spatialPlotMenuItem) { 
 					connEtoC2(e);
 				} else if (e.getSource() == timePlotMenuItem) { 
@@ -365,6 +373,8 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					connEtoC9(e);
 				} else if (e.getSource() == snapShotMenuItem) {
 					snapshotROI();
+				} else if (e.getSource() == sendTimePointImageMenuItem) {
+					sendImagej();
 				}
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -1639,6 +1649,7 @@ private javax.swing.JPanel getJPanelButtons() {
 			ivjJPanelButtons.setName("JPanelButtons");
 			ivjJPanelButtons.add(getPlotButton());
 			ivjJPanelButtons.add(getROIButton());
+			ivjJPanelButtons.add(getImagejButton());
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
@@ -1703,10 +1714,10 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 	return ivjJTabbedPane1;
 }
 
-private javax.swing.JButton getPlotButton() {
+private JButton getPlotButton() {
 	if (plotButton == null) {
 		try {
-			plotButton = new javax.swing.JButton("Plot");
+			plotButton = new JButton("Plot");
 			plotButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			plotButton.setIcon(new DownArrowIcon());
 			plotButton.addActionListener(ivjEventHandler);
@@ -1718,10 +1729,10 @@ private javax.swing.JButton getPlotButton() {
 	return plotButton;
 }
 
-private javax.swing.JButton getROIButton() {
+private JButton getROIButton() {
 	if (roiButton == null) {
 		try {
-			roiButton = new javax.swing.JButton("ROI");
+			roiButton = new JButton("ROI");
 			roiButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			roiButton.setIcon(new DownArrowIcon());
 			roiButton.addActionListener(ivjEventHandler);
@@ -1731,6 +1742,7 @@ private javax.swing.JButton getROIButton() {
 	}
 	return roiButton;
 }
+
 
 private javax.swing.JPopupMenu getROIPopupMenu() {
 	if (roiPopupMenu == null) {
@@ -1747,6 +1759,43 @@ private javax.swing.JPopupMenu getROIPopupMenu() {
 		}
 	}
 	return roiPopupMenu;
+}
+
+private JButton getImagejButton() {
+	if (imagejButton == null) {
+		try {
+			imagejButton = new JButton("ImageJ");
+			imagejButton.setHorizontalTextPosition(SwingConstants.LEFT);
+			imagejButton.setIcon(new DownArrowIcon());
+			imagejButton.addActionListener(ivjEventHandler);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return imagejButton;
+}
+private javax.swing.JPopupMenu getImagejPopupMenu() {
+	if (imagejPopupMenu == null) {
+		try {
+			imagejPopupMenu = new JPopupMenu();
+			sendTimePointImageMenuItem = new JMenuItem("Send Image...");
+			sendTimePointImageMenuItem.addActionListener(ivjEventHandler);
+			imagejPopupMenu.add(sendTimePointImageMenuItem);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return imagejPopupMenu;
+}
+private void sendImagej(){
+	System.out.println("Send ImageJ");
+	try{
+		String varname = getPdeDataContext().getVariableName();
+		double timepoint = getPdeDataContext().getTimePoint();
+		ImageJHelper.vcellSendImage(PDEDataViewer.this,getPdeDataContext());
+	}catch(Exception e){
+		handleException(e);
+	}
 }
 
 private JMenuItem getSpatialPlotMenuItem() {

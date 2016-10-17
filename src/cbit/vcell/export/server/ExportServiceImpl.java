@@ -209,6 +209,9 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		case NRRD:
 			fileFormat = "NRRD";
 			break;
+		case IMAGEJ:
+			fileFormat = "IMAGEJ";
+			break;
 	}
 	fireExportStarted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
 
@@ -272,6 +275,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 						return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 					}
 				case NRRD:
+				case IMAGEJ:
 					NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob, fileDataContainerManager);
 				case UCD:

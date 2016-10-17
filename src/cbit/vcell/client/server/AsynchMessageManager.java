@@ -51,9 +51,9 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * to update the status.
  */
 public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener,DataJobListenerHolder {
-    private static final long BASE_POLL_SECONDS = 15;
+    private static final long BASE_POLL_SECONDS = 3;
     private static final long ATTEMPT_POLL_SECONDS = 3;
-	private static Logger lg = Logger.getLogger(AsynchMessageManager.class);
+//	private static Logger lg = Logger.getLogger(AsynchMessageManager.class);
 
 	private EventListenerList listenerList = new EventListenerList();
     private ClientServerManager clientServerManager = null;
@@ -91,35 +91,35 @@ public synchronized void startPolling() {
 }
 
 public void stopPolling() {
-	lg.trace("stopping polling");
+//	lg.trace("stopping polling");
 	bPoll.set(false);
 }
 
 @Override
 public void created(DataAccessException dae) {
-	if (lg.isTraceEnabled()) {
-		lg.trace("scheduling now due to " + dae.getMessage());
-	}
+//	if (lg.isTraceEnabled()) {
+//		lg.trace("scheduling now due to " + dae.getMessage());
+//	}
 	schedule(0);
 }
 private void poll( )  {
 	if (!bPoll.get()) {
-		lg.trace("polling stopped");
+//		lg.trace("polling stopped");
 		return;
 	}
-	lg.trace("polling");
-	boolean report = counter%50 == 0;
-	long begin = 0;
-	long end = 0;
+//	lg.trace("polling");
+//	boolean report = counter%50 == 0;
+//	long begin = 0;
+//	long end = 0;
 	 //
     // ask remote message listener (really should be "message producer") for any queued events.
     //
     try {
     	MessageEvent[] queuedEvents = null;
-    	if (report) {
-	    	// time the call
-		    begin = System.currentTimeMillis();
-    	}
+//    	if (report) {
+//	    	// time the call
+//		    begin = System.currentTimeMillis();
+//    	}
 	    synchronized (this) {
 	    	if (!clientServerManager.isStatusConnected()) {
 	    		clientServerManager.attemptReconnect( );
@@ -128,9 +128,9 @@ private void poll( )  {
 		    pollTime = BASE_POLL_SECONDS;
 	    	queuedEvents = clientServerManager.getMessageEvents();
 		}
-    	if (report) {
-		    end = System.currentTimeMillis();
-    	}
+//    	if (report) {
+//		    end = System.currentTimeMillis();
+//    	}
 	    failureCount = 0; //this is skipped if the connection has failed:w
 	    // deal with events, if any
 	    if (queuedEvents != null) {
@@ -139,17 +139,17 @@ private void poll( )  {
 		    }
 	    }
 	    // report polling call performance
-	    if (report) {
-		    double duration = ((double)(end - begin)) / 1000;
-	    	PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
-			    this, null, new PerformanceData(
-				    "AsynchMessageManager.poll()",
-				    MessageEvent.POLLING_STAT,
-				    new PerformanceDataEntry[] {new PerformanceDataEntry("remote call duration", Double.toString(duration))}
-			    )
-			);
-			reportPerformanceMonitorEvent(performanceMonitorEvent);
-	    }
+//	    if (report) {
+//		    double duration = ((double)(end - begin)) / 1000;
+//	    	PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
+//			    this, null, new PerformanceData(
+//				    "AsynchMessageManager.poll()",
+//				    MessageEvent.POLLING_STAT,
+//				    new PerformanceDataEntry[] {new PerformanceDataEntry("remote call duration", Double.toString(duration))}
+//			    )
+//			);
+//			reportPerformanceMonitorEvent(performanceMonitorEvent);
+//	    }
     } catch (Exception exc) {
 	    System.out.println(">> polling failure << " + exc.getMessage());
 	    pollTime = ATTEMPT_POLL_SECONDS;
@@ -160,9 +160,9 @@ private void poll( )  {
 	    }
     }
     finally {
-    	if (lg.isTraceEnabled( )) {
-    		lg.trace(ExecutionTrace.justClassName(this) + " poll time " + pollTime + " seconds");
-    	}
+//    	if (lg.isTraceEnabled( )) {
+//    		lg.trace(ExecutionTrace.justClassName(this) + " poll time " + pollTime + " seconds");
+//    	}
     	if (bPoll.get()){
     		schedule(pollTime);
     	}

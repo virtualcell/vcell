@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client;
+import java.awt.Component;
+
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.server.UserPreferences;
@@ -46,6 +48,5 @@ public void removeDataListener(DataListener newListener);
  * Insert the method's description here.
  * Creation date: (6/1/2004 9:58:46 PM)
  */
-public void startExport(
-		OutputContext outputContext,ExportSpecs exportSpecs);
+public void startExport(Component requester,OutputContext outputContext,ExportSpecs exportSpecs);
 }

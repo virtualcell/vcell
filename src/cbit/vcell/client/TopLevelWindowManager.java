@@ -361,6 +361,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	final int MESH_FILE = 4;
 	final int FROM_SCRATCH = 5;
 	final int CSGEOMETRY_3D = 6;
+	final int FIJI_IMAGEJ = 7;
 
 	int[] geomType = null;
 
@@ -371,7 +372,8 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 			{"Image based (import from file, zip or directory)"},
 			{"Mesh based (import from STL file)"},
 			{"New Blank Image Canvas"},
-			{"Constructed Solid Geometry (3D)"}};
+			{"Constructed Solid Geometry (3D)"},
+			{"Import from Fiji/Imagej"}};
 	geomType = DialogUtils.showComponentOKCancelTableList(
 			getComponent(),
 			dialogText,
@@ -391,6 +393,8 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
 	}else if(geomType[0] == CSGEOMETRY_3D){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_CSGEOMETRY_3D);
+	}else if(geomType[0] == FIJI_IMAGEJ){
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FIJI_IMAGEJ);
 	}else{
 		throw new IllegalArgumentException("Error selecting geometry, Unknown Geometry type "+geomType[0]);
 	}
@@ -406,7 +410,7 @@ public static final String B_SHOW_OLD_GEOM_EDITOR = "B_SHOW_OLD_GEOM_EDITOR";
 public static final String DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE = "Choose new geometry type to create";
 public static final String APPLY_GEOMETRY_BUTTON_TEXT = "Finish";
 void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afterTasks,String selectDialogTitle,final String applyGeometryButtonText,DocumentWindowManager.GeometrySelectionInfo preSelect){
-
+	boolean bCancellable = false;
 	try{
 		final Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		Vector<AsynchClientTask> createGeomTaskV = new Vector<AsynchClientTask>();
@@ -415,6 +419,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 		hash.put(B_SHOW_OLD_GEOM_EDITOR, false);
 		if(geometrySelectionInfo.getDocumentCreationInfo() != null){
 			if(ClientRequestManager.isImportGeometryType(geometrySelectionInfo.getDocumentCreationInfo())){
+				bCancellable = geometrySelectionInfo.getDocumentCreationInfo().getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ;
 				//Create imported Geometry
 				createGeomTaskV.addAll(Arrays.asList(
 					((ClientRequestManager)getRequestManager()).createNewGeometryTasks(this,
@@ -459,7 +464,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 				}
 			});
 		}
-		ClientTaskDispatcher.dispatch(getComponent(), hash, createGeomTaskV.toArray(new AsynchClientTask[0]), false,false,null,true);
+		ClientTaskDispatcher.dispatch(getComponent(), hash, createGeomTaskV.toArray(new AsynchClientTask[0]), false,bCancellable,null,true);
 
 	} catch (UserCancelException e1) {
 		return;

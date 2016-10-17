@@ -198,8 +198,8 @@ public void viewData(final ExternalDataIdentifier eDI){
 						}
 						public void removeDataListener(DataListener newListener){
 						}
-						public void startExport(OutputContext outputContext,ExportSpecs exportSpecs){
-							getLocalRequestManager().startExport(outputContext, FieldDataWindowManager.this, exportSpecs);
+						public void startExport(Component requester,OutputContext outputContext,ExportSpecs exportSpecs){
+							getLocalRequestManager().startExport(outputContext, requester, exportSpecs);
 						}
 						public void simStatusChanged(SimStatusEvent simStatusEvent) {
 						}

@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import java.awt.Component;
 import java.io.FileNotFoundException;
 import java.util.Vector;
 
@@ -149,7 +150,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	public void removeDataListener(DataListener newListener){
 	}
 	
-	public void startExport(OutputContext outContext, ExportSpecs exportSpecs){
+	public void startExport(Component requester,OutputContext outContext, ExportSpecs exportSpecs){
 		try {
 			SessionLog log = new StdoutSessionLog("export");
 			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(new StdoutSessionLog("export"));

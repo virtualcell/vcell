@@ -120,7 +120,7 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void showTestingFrameworkWindow() {}
 	@Override
-	public void startExport(OutputContext outputContext,TopLevelWindowManager windowManager, ExportSpecs exportSpecs) {}
+	public void startExport(OutputContext outputContext,Component requester, ExportSpecs exportSpecs) {}
 	@Override
 	public void stopSimulations(ClientSimManager clientSimManager,Simulation[] simulations) { }
 	@Override

@@ -311,7 +311,7 @@ void showTestingFrameworkWindow();
  * Creation date: (6/1/2004 9:58:46 PM)
  */
 public void startExport(
-		OutputContext outputContext,TopLevelWindowManager windowManager, ExportSpecs exportSpecs);
+		OutputContext outputContext,Component requester, ExportSpecs exportSpecs);
 
 
 /**

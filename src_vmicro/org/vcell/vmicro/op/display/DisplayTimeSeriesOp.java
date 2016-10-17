@@ -1,5 +1,6 @@
 package org.vcell.vmicro.op.display;
 
+import java.awt.Component;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -145,7 +146,7 @@ public class DisplayTimeSeriesOp {
 				}
 				public void removeDataListener(DataListener newListener){
 				}
-				public void startExport(OutputContext outputContext,ExportSpecs exportSpecs){
+				public void startExport(Component requester,OutputContext outputContext,ExportSpecs exportSpecs){
 					//getLocalRequestManager().startExport(outputContext, FieldDataWindowManager.this, exportSpecs);
 				}
 				public void simStatusChanged(SimStatusEvent simStatusEvent) {

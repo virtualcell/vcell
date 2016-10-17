@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client;
+import java.awt.Component;
 import java.util.Hashtable;
 
 import javax.swing.JComponent;
@@ -856,9 +857,8 @@ public void showTestingFrameworkWindow() {
  * Insert the method's description here.
  * Creation date: (6/1/2004 9:58:46 PM)
  */
-public void startExport(
-		OutputContext outputContext,ExportSpecs exportSpecs) {
-	getRequestManager().startExport(outputContext,this, exportSpecs);
+public void startExport(Component requester,OutputContext outputContext,ExportSpecs exportSpecs) {
+	getRequestManager().startExport(outputContext,requester, exportSpecs);
 }
 
 public abstract void updateConnectionStatus(ConnectionStatus connStatus);

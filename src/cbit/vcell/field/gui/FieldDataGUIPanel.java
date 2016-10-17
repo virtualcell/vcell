@@ -11,7 +11,6 @@
 package cbit.vcell.field.gui;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -37,12 +36,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JTree;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.vcell.imagej.ImageJHelper;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -78,7 +78,6 @@ import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solvers.CartesianMesh;
@@ -161,11 +160,11 @@ public class FieldDataGUIPanel extends JPanel{
 	}
 	
 	private class FieldDataIDList {
-		public KeyValue key = null;
+//		public KeyValue key = null;
 		private String descr;
 		public FieldDataIDList(KeyValue k){
-			key = k;
-			descr ="Key (" + k + ")";
+//			this.key = k;
+			this.descr ="Key (" + k + ")";
 		}
 		public String toString(){
 			return descr;
@@ -221,8 +220,6 @@ public class FieldDataGUIPanel extends JPanel{
 	private FieldDataWindowManager fieldDataWindowManager;
 	//
 	private javax.swing.JButton ivjJButtonFDDelete = null;
-	private javax.swing.JButton ivjJButtonFDFromFile = null;
-	private javax.swing.JButton ivjJButtonFDFromSim = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JPanel normalTopPanel = null;
 	private javax.swing.JButton ivjJButtonFDView = null;
@@ -241,12 +238,16 @@ public class FieldDataGUIPanel extends JPanel{
 			connEtoC7(e);
 		if (e.getSource() == FieldDataGUIPanel.this.getJButtonFDCopyRef()) 
 			connEtoC8(e);
-		if (e.getSource() == FieldDataGUIPanel.this.getJButtonFDFromFile()) 
-			connEtoC9(e);
 		if (e.getSource() == FieldDataGUIPanel.this.getJButtonFDView()) 
 			connEtoC10(e);
-		if (e.getSource() == FieldDataGUIPanel.this.getJButtonFDFromSim()) 
-			connEtoC11(e);
+		if (e.getSource() == FieldDataGUIPanel.this.getJButtonFDCreate())
+			if(getCreateJComboBox().getSelectedItem().equals(FROM_SIM)){
+				jButtonFDFromSim_ActionPerformed(e);
+			}else if(getCreateJComboBox().getSelectedItem().equals(FROM_FILE)){
+				jButtonFDFromFile_ActionPerformed(e);
+			}else if(getCreateJComboBox().getSelectedItem().equals(FROM_IMAGEJ)){
+				fromImageJ();
+			}
 	};
 		public void treeCollapsed(javax.swing.event.TreeExpansionEvent event) {};
 		public void treeExpanded(javax.swing.event.TreeExpansionEvent event) {
@@ -413,40 +414,11 @@ private void copyMethod(int copyMode){
 	}
 }
 
-private void connEtoC9(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jButtonFDFromFile_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 private void connEtoC10(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
 		this.jButtonFDView_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-private void connEtoC11(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jButtonFDFromSim_ActionPerformed(arg1);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -597,17 +569,18 @@ private javax.swing.JButton getJButtonFDDelete() {
 	return ivjJButtonFDDelete;
 }
 
+private JButton ivjJButtonFDCreate;
 /**
  * Return the JButtonFDFromFile property value.
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonFDFromFile() {
-	if (ivjJButtonFDFromFile == null) {
+private JButton getJButtonFDCreate() {
+	if (ivjJButtonFDCreate == null) {
 		try {
-			ivjJButtonFDFromFile = new javax.swing.JButton();
-			ivjJButtonFDFromFile.setName("JButtonFDFromFile");
-			ivjJButtonFDFromFile.setText("From File...");
+			ivjJButtonFDCreate = new javax.swing.JButton();
+			ivjJButtonFDCreate.setName("JButtonFDFromCreate");
+			ivjJButtonFDCreate.setText("Create...");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -616,32 +589,19 @@ private javax.swing.JButton getJButtonFDFromFile() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJButtonFDFromFile;
+	return ivjJButtonFDCreate;
 }
 
-
-/**
- * Return the JButtonFDFromSim property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonFDFromSim() {
-	if (ivjJButtonFDFromSim == null) {
-		try {
-			ivjJButtonFDFromSim = new javax.swing.JButton();
-			ivjJButtonFDFromSim.setName("JButtonFDFromSim");
-			ivjJButtonFDFromSim.setText("From Simulation Data...");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
+private JComboBox<String> jComboBoxCreate;
+private static final String FROM_FILE = "from File";
+private static final String FROM_SIM = "from Simulation";
+private static final String FROM_IMAGEJ = "from ImageJ";
+private JComboBox<String> getCreateJComboBox(){
+	if(jComboBoxCreate == null){
+		jComboBoxCreate = new JComboBox<>(new String[] {FROM_FILE,FROM_SIM,FROM_IMAGEJ});
 	}
-	return ivjJButtonFDFromSim;
+	return jComboBoxCreate;
 }
-
 
 /**
  * Return the JButtonFDView property value.
@@ -690,14 +650,14 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsJButtonFDFromFile.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJButtonFDFromFile.weightx = 1.0;
 			constraintsJButtonFDFromFile.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel1().add(getJButtonFDFromFile(), constraintsJButtonFDFromFile);
+			getJPanel1().add(getJButtonFDCreate(), constraintsJButtonFDFromFile);
 
 			java.awt.GridBagConstraints constraintsJButtonFDFromSim = new java.awt.GridBagConstraints();
 			constraintsJButtonFDFromSim.gridx = 2; constraintsJButtonFDFromSim.gridy = 1;
 			constraintsJButtonFDFromSim.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJButtonFDFromSim.weightx = 1.0;
 			constraintsJButtonFDFromSim.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel1().add(getJButtonFDFromSim(), constraintsJButtonFDFromSim);
+			getJPanel1().add(getCreateJComboBox(), constraintsJButtonFDFromSim);
 			
 			// user code begin {1}
 			// user code end
@@ -918,9 +878,8 @@ private void initConnections() throws java.lang.Exception {
 	getJTree1().addTreeExpansionListener(ivjEventHandler);
 	getJButtonFDDelete().addActionListener(ivjEventHandler);
 	getJButtonFDCopyRef().addActionListener(ivjEventHandler);
-	getJButtonFDFromFile().addActionListener(ivjEventHandler);
+	getJButtonFDCreate().addActionListener(ivjEventHandler);
 	getJButtonFDView().addActionListener(ivjEventHandler);
-	getJButtonFDFromSim().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -996,7 +955,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 	try{
 		final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
 
-		final FieldDataWindowManager.OpenModelInfoHolder simInfoHolder = fieldDataWindowManager.selectOpenModelsFromDesktop(this,fieldDataWindowManager.getRequestManager(),true,"Select Simulation for Field Data",true);
+		final FieldDataWindowManager.OpenModelInfoHolder simInfoHolder = FieldDataWindowManager.selectOpenModelsFromDesktop(this,fieldDataWindowManager.getRequestManager(),true,"Select Simulation for Field Data",true);
 		if(simInfoHolder == null){
 			PopupGenerator.showErrorDialog(this, "Please open a Bio or Math model containing the spatial (non-compartmental) simulation you wish to use to create a new Field Data");
 			return;
@@ -1081,7 +1040,22 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 	ClientTaskDispatcher.dispatch(this, hash, tasks, false, true, null);
 
 }
-	
+
+private void fromImageJ(){
+	//windows debug port in use, netstat -anob | findstr "5000", tasklist | findstr "LISTENER from netstat query"
+	AsynchClientTask imageJTask = new AsynchClientTask("contact ImageJ...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			File imageJFile = ImageJHelper.vcellWantImage(getClientTaskStatusSupport());
+			hashTable.put(IMAGE_FILE_KEY, imageJFile);
+		}
+	};
+	AsynchClientTask[] tasks = fdFromFile();
+	tasks = BeanUtils.addElements(new AsynchClientTask[] {imageJTask}, tasks);
+	ClientTaskDispatcher.dispatch(this, new Hashtable<>(), tasks, false, true, null);
+}
+
+String IMAGE_FILE_KEY = "imageFile";
 private AsynchClientTask[] fdFromFile() {
 	final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
 	AsynchClientTask[] addTasks = addNewExternalData(this,this,false);
@@ -1091,11 +1065,11 @@ private AsynchClientTask[] fdFromFile() {
 	taskArray[0] = new AsynchClientTask("select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			FieldDataFileOperationSpec argfdos = (FieldDataFileOperationSpec)hashTable.get("argfdos");
-			if (argfdos == null) {
+			if (argfdos == null && hashTable.get(IMAGE_FILE_KEY) == null) {
 				File imageFile = DatabaseWindowManager.showFileChooserDialog(
 						fieldDataWindowManager, FileFilters.FILE_FILTER_FIELDIMAGES,
 						clientRequestManager.getUserPreferences(),JFileChooser.FILES_AND_DIRECTORIES);
-				hashTable.put("imageFile", imageFile);
+				hashTable.put(IMAGE_FILE_KEY, imageFile);
 			}
 		}
 	};
@@ -1107,7 +1081,7 @@ private AsynchClientTask[] fdFromFile() {
 			FieldDataFileOperationSpec argfdos = (FieldDataFileOperationSpec)hashTable.get("argfdos");
 			String arginitFDName = (String)hashTable.get("arginitFDName");
 			if (argfdos == null) {
-				File imageFile = (File)hashTable.get("imageFile");
+				File imageFile = (File)hashTable.get(IMAGE_FILE_KEY);
 				if (imageFile == null) {
 					return;
 				}
@@ -1225,10 +1199,10 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 	 
  }
 private SelectedTimes selectTimeFromNode(DefaultMutableTreeNode mainNode){
-	Enumeration<DefaultMutableTreeNode> children = mainNode.children();
+	Enumeration<?> children = mainNode.children();
 	double[] times = null;
 	while(children.hasMoreElements()){
-		DefaultMutableTreeNode child = children.nextElement();
+		DefaultMutableTreeNode child = (DefaultMutableTreeNode)children.nextElement();
 		if(child.getUserObject() instanceof FieldDataTimeList){
 			times = ((FieldDataTimeList)child.getUserObject()).times;
 			break;
@@ -1243,7 +1217,7 @@ private SelectedTimes selectTimeFromNode(DefaultMutableTreeNode mainNode){
 		JPanel jp = new JPanel();
 		BoxLayout bl = new BoxLayout(jp,BoxLayout.X_AXIS);
 		jp.setLayout(bl);
-		JComboBox jcBeg = new JComboBox(Arrays.asList(timesStr).toArray(new String[0]));
+		JComboBox<String> jcBeg = new JComboBox<String>(Arrays.asList(timesStr).toArray(new String[0]));
 		jp.add(jcBeg);
 		
 		if(PopupGenerator.showComponentOKCancelDialog(this, jp,"Select Field Data timepoint") ==JOptionPane.OK_OPTION){
@@ -1688,7 +1662,7 @@ private JButton getJButtonCreateGeom() {
 								((FieldDataMainList)ppLastPathComp.getUserObject()).externalDataIdentifier;
 							
 							final OpenModelInfoHolder openModelInfoHolder =
-								fieldDataWindowManager.selectOpenModelsFromDesktop(FieldDataGUIPanel.this,fieldDataWindowManager.getRequestManager(),false,"Select BioModel or MathModel to receive new geometry",false);
+								FieldDataWindowManager.selectOpenModelsFromDesktop(FieldDataGUIPanel.this,fieldDataWindowManager.getRequestManager(),false,"Select BioModel or MathModel to receive new geometry",false);
 							if(openModelInfoHolder == null){
 								DialogUtils.showErrorDialog(FieldDataGUIPanel.this,
 										"Before proceeding, please open a Biomodel application or Mathmodel you wish to apply a new Field Data Geometry to");

@@ -27,6 +27,7 @@ import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -35,9 +36,14 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -53,10 +59,13 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -65,14 +74,23 @@ import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.imagej.ImageJHelper;
+import org.vcell.imagej.ImageJHelper.ImageJConnection;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BNGLDebuggerPanel;
 import org.vcell.model.bngl.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -159,7 +177,10 @@ import cbit.vcell.client.task.SetMathDescription;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.desktop.LoginManager;
+import cbit.vcell.export.nrrd.NrrdInfo;
+import cbit.vcell.export.nrrd.NrrdWriter;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
@@ -1199,7 +1220,8 @@ public static boolean isImportGeometryType(DocumentCreationInfo documentCreation
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE ||
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH ||
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC ||
-	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE ||
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ
 	;
 }
 
@@ -1319,6 +1341,7 @@ public static FieldDataFileOperationSpec createFDOSFromSurfaceFile(File surfaceF
 	return null;
 }
 
+
 public static final String GEOM_FROM_WORKSPACE = "GEOM_FROM_WORKSPACE";
 public static final String VCPIXELCLASSES = "VCPIXELCLASSES";
 private enum NRRDTYPE {DOUBLE,FLOAT,UNSIGNEDCHAR};
@@ -1362,7 +1385,10 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 			final Component guiParent =(Component)hashTable.get(ClientRequestManager.GUI_PARENT);
 			try {
 				FieldDataFileOperationSpec fdfos = null;
-				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
+				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
+					hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport()));
+				}
+				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE || documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
 					File imageFile = (File)hashTable.get("imageFile");
 					if(imageFile == null){
 						throw new Exception("No file selected");
@@ -1785,6 +1811,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask,queryImageResizeTask,importFileImageTask/*resizes*/,finishTask}));
+	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,queryImageResizeTask,importFileImageTask/*resizes*/,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {getFieldDataImageParams,queryImageResizeTask,parseImageTask,resizeImageTask,finishTask}));
 	}
@@ -2237,34 +2265,115 @@ private final static String BYTES_KEY = "bytes";
  * Comment
  */
 public static void downloadExportedData(final Component requester, final UserPreferences userPrefs, final ExportEvent evt) {
-	URL location = null;
-	try {
-		location = new URL(evt.getLocation());
-	} catch (java.net.MalformedURLException exc) {
-		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(requester, "Reported file location does not seem to be a valid URL\n"+exc.getMessage());
-		return;
-	}
-	final URL url = location;
-	AsynchClientTask task1 = new AsynchClientTask("Retrieving data from "+url, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+	AsynchClientTask task1 = new AsynchClientTask("Retrieving data from '"+evt.getLocation()+"'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			// get it
-		    URLConnection connection = url.openConnection();
-		    int size = connection.getContentLength(); //may be -1, see "HTTP chunked decoding"
-		    ByteArrayOutputStream baos;
-		    if (size > 0) {
-		    	baos = new ByteArrayOutputStream(size);
-		    }
-		    else {
-		    	baos = new ByteArrayOutputStream( );
-		    }
+			final Exception[] excArr = new Exception[] {null};
+			final boolean[] bFlagArr = new boolean[] {false};
+			final ByteArrayOutputStream[] baosArr = new ByteArrayOutputStream[1];
+			final HttpGet[] httpGetArr = new HttpGet[1];
+			final ImageJConnection[] imagejConnetArr = new ImageJConnection[1];
+			//Start download of exported file in separate thread that is interruptible (apache HTTPClient)
+			Thread interruptible = new Thread(new Runnable() {
+				@Override
+				public void run() {
+			    	if(getClientTaskStatusSupport() != null){
+			    		getClientTaskStatusSupport().setMessage("downloading data...");
+			    	}
+					CloseableHttpClient httpclient = HttpClients.createDefault();
+					httpGetArr[0] = new HttpGet(evt.getLocation());
+					CloseableHttpResponse response = null;
+					try {
+						response = httpclient.execute(httpGetArr[0]);
+					    HttpEntity entity = response.getEntity();
+					    if (entity != null) {
+					    	long size = entity.getContentLength();
+					        InputStream instream = entity.getContent();
+					        try {
+//								URLConnection connection = new URL(evt.getLocation()).openConnection();
+//							    Thread.sleep(60000);
+							    if (size > 0) {
+							    	baosArr[0] = new ByteArrayOutputStream((int)size);
+							    }
+							    else {
+							    	baosArr[0] = new ByteArrayOutputStream( );
+							    }
+							    IOUtils.copy(instream, baosArr[0]);
+							}finally {
+					            instream.close();
+					        }
+					    }
 
-		    try (java.io.InputStream is = connection.getInputStream()) {
-		    	IOUtils.copy(is, baos);
+					}catch(Exception e){
+						excArr[0] = e;
+					}finally {
+					    if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
+					    if(response != null){try{response.close();}catch(Exception e){}}
+					    if(httpclient != null){try{httpclient.close();}catch(Exception e){}}
+					    bFlagArr[0] = true;
+					}
+				}
+			});
+			interruptible.start();
+			//Wait for download to 1-finish, 2-fail or 3-be cancelled by user
+			while(!bFlagArr[0]){
+				if(getClientTaskStatusSupport() != null && getClientTaskStatusSupport().isInterrupted()){//user cancelled
+					if(httpGetArr[0] != null){httpGetArr[0].abort();}
+					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+				try{
+					Thread.sleep(500);
+				}catch(InterruptedException e){// caused by pressing 'cancel' button on progresspopup
+					if(httpGetArr[0] != null){httpGetArr[0].abort();}
+					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
+					if(getClientTaskStatusSupport() != null && getClientTaskStatusSupport().isInterrupted()){
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+				}
+			}
+		    if(excArr[0] != null){//download failed
+		    	throw excArr[0];
 		    }
-		    hashTable.put(BYTES_KEY, baos.toByteArray());
+		    //
+		    //finished downloading, either save to file or send to ImageJ directly
+		    //
+		    if(evt.getFormat() == null || !evt.getFormat().equals("IMAGEJ")){
+		    	//save for file save operations
+		    	hashTable.put(BYTES_KEY, baosArr[0].toByteArray());
+		    }else{
+		    	//Send to ImageJ directly
+		    	int response = DialogUtils.showComponentOKCancelDialog(requester, new JLabel("Open ImageJ->File->Export->VCellUtil... to begin data transefer"), "Sending data to ImageJ...");
+		    	if(response != JOptionPane.OK_OPTION){
+		    		throw UserCancelException.CANCEL_GENERIC;
+		    	}
+		    	//NRRD format send to ImageJ
+		    	if(getClientTaskStatusSupport() != null){
+		    		getClientTaskStatusSupport().setMessage("unpacking data...");
+		    	}
+		    	ByteArrayInputStream bais = new ByteArrayInputStream( baosArr[0].toByteArray());
+		    	ZipInputStream zis = null;
+		    	try{
+			    	zis = new ZipInputStream(bais);
+			    	ZipEntry entry = zis.getNextEntry();
+//			    	System.out.println("zipfile entry name="+entry.getName()+"zipfile entry size="+entry.getSize());
+//					    	File tempf = new File("C:\\temp\\tempf.nrrd");
+//					    	FileOutputStream fos = new FileOutputStream(tempf);
+//					    	byte[] mybuf = new byte[1000];
+//					    	int numread = 0;
+//					    	while((numread = zis.read(mybuf)) != -1){
+//					    		fos.write(mybuf, 0, numread);
+//					    	}
+//					    	fos.close();
+			    	imagejConnetArr[0] = new ImageJConnection();//doesn't open connection until later
+			    	ImageJHelper.vcellSendNRRD(requester,zis,getClientTaskStatusSupport(),imagejConnetArr[0]);
+		    	}finally{
+		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}
+		    	}
+		    	throw UserCancelException.CANCEL_GENERIC;//finished, exit all further tasks
+		    }
 		}
 	};
 	AsynchClientTask task2 = new AsynchClientTask("selecting file to save", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -2372,7 +2481,7 @@ public static void downloadExportedData(final Component requester, final UserPre
             fo.close();
 		}
 	};
-	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false);
+	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false,true,null);
 }
 
 public void exitApplication() {
@@ -3930,7 +4039,7 @@ public void showTestingFrameworkWindow() {
  * Insert the method's description here.
  * Creation date: (6/15/2004 2:37:01 AM)
  */
-public void startExport(final OutputContext outputContext,final TopLevelWindowManager windowManager, final ExportSpecs exportSpecs) {
+public void startExport(final OutputContext outputContext,Component requester, final ExportSpecs exportSpecs) {
 	// start a thread to get it; not blocking any window/frame
 	AsynchClientTask task1 = new AsynchClientTask("starting exporting", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
@@ -3939,7 +4048,7 @@ public void startExport(final OutputContext outputContext,final TopLevelWindowMa
 			getClientServerManager().getJobManager().startExport(outputContext,exportSpecs);
 		}
 	};
-	ClientTaskDispatcher.dispatch(windowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1 });
+	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), new AsynchClientTask[] { task1 });
 }
 
 
