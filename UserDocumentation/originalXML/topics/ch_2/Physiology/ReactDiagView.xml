@@ -9,7 +9,7 @@
 	or <bold>blue</bold> balls for species with <link target = "Molecules">molecular details</link>) 
 	and <def target = "def_reactions">reaction</def> (<bold>yellow</bold> squares) nodes, 
 	each within the appropriate
-	compartments, and connected by lines connecting species that participate in the reaction.  In rule-based models, reactants and products defined by rules are depicted with ovals around balls (species) in various colors.
+	compartments, and connected by lines connecting species that participate in the reaction.  In rule-based models, species patterns representing reactants and products defined within rules are depicted with ovals around balls (molecules) of various colors.
 	</introduction>
 	
 	<appearance> 
@@ -18,7 +18,7 @@
 	Structures are depicted as connected rectangles within the workspace. 
 	Species are green or blue balls and reactions are yellow squares placed into the structures. Lines each connect one 
 	species with one reaction: solid lines with arrows denote reactants and products; dashed lines denote catalysts. 
-	Stoichiometric coefficients, if different from one, are displayed next to the appropriate lines. When reactions are defined by rules, the reactants and products are depicted as ovals with one or more balls of various colors.
+	Stoichiometric coefficients, if different from one, are displayed next to the appropriate lines. When reactions are defined by rules, the reactants and product species patterns are depicted as ovals with one or more balls of various colors.
 	</para>
 	<para>
 	A toolbar above the graph provides buttons for editing, adjusting zoom, and changing the layout of the elements.

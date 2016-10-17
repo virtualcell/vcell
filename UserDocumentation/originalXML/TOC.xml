@@ -39,7 +39,7 @@
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
-    	<tocitem target="RuleBasedOverview" text="New Rule-Based Features">
+    	<tocitem target="RuleBasedOverview" text="Rule-Based Features">
     	    <tocitem target="RuleBasedTheory" text="Introduction to Rule-Based Modeling"/> 
        		<tocitem target="RBCreate" text="How to create a rule-based model"/> 		
     		<tocitem target="RBSimulate" text="How to simulate a rule-based model"/> 

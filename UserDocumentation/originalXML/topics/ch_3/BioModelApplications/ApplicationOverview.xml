@@ -3,7 +3,7 @@
 <page title="Applications Overview" target="ApplicationOverview">
 
 	<introduction>
-	Applications allow users to define the quantitative conditions needed to define, 
+	Applications allow users to specify the quantitative conditions needed to define, 
 	run and visualize a Virtual Experiment, i.e. a numerical simulation of the BioModel 
 	with specific initial conditions, within a given geometry, and with a selected type 
 	of simulation method. In the Application,
@@ -17,7 +17,7 @@
 	<item>for each application, multiple <link target="simulations_overview">Simulations</link> 
 	can be created that can include different initial conditions.
 	</item>
-	<item><link target="PEOverview"> Parameter Estimation</link> can be performed</item> 
+	<item><link target="PEOverview"> Parameter Estimation</link> can be performed.</item> 
 	</list>  
 	</introduction>
 
@@ -27,26 +27,24 @@
 	<item><def target="def_Deterministic">Deterministic</def></item>
 	<item><def target="def_Stochastic">Stochastic</def></item>
 	<item><def target="def_HybridDeterministicStochastic">Hybrid Deterministic Stochastic</def>, 
-	a stochastic model with spatial geometry and at least 1 species specification set to 'Force Continuous' 
-	(See <bold>Spatial Stochastic </bold> under <link target="SpeciesSpecifications">Species Specifications</link>).</item>
-	<item><def target="def_RuleBased">Network-free</def>, a special single-compartment stochastic <link target="NFSimApp">network-free application</link> </item> 
+	a stochastic model with at least 1 species specification set to 'Force Continuous' 
+	(See <bold>Spatial Stochastic </bold> or <bold>Non-Spatial Stochastic </bold>under <link target="SpeciesSpecifications">Species Specifications</link>).</item>
+	<item><def target="def_RuleBased">Network-free</def>, a special stochastic <link target="NFSimApp">network-free application</link> that does not require generating a network to simulate. </item> 
 	</list>
 	<imgReference target = "ApplicationTypes.png"/>.
-	<para> Additionally, by defining <link target="GeometryOverview">Geometry</link> deterministic, stochastic or network-free 
-	applications can be made into </para>
+	<para> Additionally, by defining <link target="GeometryOverview">Geometry</link>, deterministic, stochastic or network-free 
+	applications can be made:</para>
 	<list> 
-	<item><bold>Compartmental</bold> (1D, 2D or 3D), where topology and size of compartments are defined, but species are assumed 
-	to be well mixed within their compartments. Such application is simulated using either differential equations
+	<item><bold>Compartmental</bold> (1D, 2D or 3D), where the topology and size of compartments are defined, but species are assumed 
+	to be well mixed within their compartments. A compartmental application is simulated using either differential equations
 	(for <def target="def_Deterministic">deterministic</def> application), or using stochastic simulation algorithms 
 	(for <def target="def_Stochastic">stochastic</def> application).  
-	For <def target="def_RuleBased">Network-free</def> applications, only compartmental geometry with 1 compartment is allowed.
 	</item>
-	<item><bold>Spatial</bold> (1D, 2D or 3D), where geometry of compartments is defined, 
-	and species are not well mixed but diffuse within compartments. Such application is 
+	<item><bold>Spatial</bold> (1D, 2D or 3D), where the geometry of compartments is defined, 
+	and species diffuse within compartments. A spatial application is 
 	simulated using either partial differential equations
-	(for <def target="def_Deterministic">deterministic</def> application), or using stochastic agent-based
-	 simulation algorithms SmolDyn
-	(for <def target="def_Stochastic">stochastic</def> application).  
+	(for <def target="def_Deterministic">deterministic</def> applications), or using the stochastic agent-based
+	 simulation algorithm SmolDyn (for <def target="def_Stochastic">stochastic</def> applications).  
 	Presently <def target="def_RuleBased">Network-free</def> applications do not allow spatial geometry (compartmental only).
 	</item> 
 	</list>
@@ -55,13 +53,11 @@
 	delete or copy applications. Properties for a selected object (e.g. species, reaction, simulation) 
 	are displayed in the Properties Pane below the main window.
 	</appearance>
-
 	<operations>  
-	<para><bold>Create</bold> a new application by clicking on "Applications" in the left menu.  Right 
-	click brings a menu to create either a deterministic or stochastic application.  Or, use the 
-	<bold> Add New</bold> button in the main window.</para>
-	<para><bold>View/Edit application </bold> components and properties by double-clicking the 'Applications' tree item (navigation panel) 
-	to expose the names of applications contained in the model, select one of the names to activate the 'view and 'properties' panels that display all the application detail editors.</para>
+        <bold>Create</bold> a new application by selecting "Applications" in the left menu.  Right 
+	click opens a menu to create either a deterministic or stochastic application.  Or, use the 
+	<bold>New Application</bold> button in the main window.
+	<para><bold>View/Edit</bold> application components and properties by double-clicking, or selecting the + icon beside, the 'Applications' tree in the navigation panel to expose the names of applications contained in the BioModel; select one of the Application names to activate the 'view' and 'properties' panels that display all the application detail editors.</para>
 		<imgReference target = "ApplicationOverview.png">
 		</imgReference>
 	</operations>

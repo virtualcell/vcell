@@ -1,2 +1,0 @@
-IndexRemove resources/vcellDoc/
-IndexRemove resources\vcellDoc\

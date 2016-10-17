@@ -1,5 +1,0 @@
-The Richard D. Berlin Center for Cell Analysis and Modeling (CCAM) at the University of Connecticut Health Center is proud to release the source code for The Virtual Cell as free software.  All source code and related resources created for Virtual Cell by CCAM is available under the MIT License (see license.txt for full text).  
-
-The Virtual Cell, which is a distributed component system, has build and runtime dependencies on several third party software components.  For convenience, we include in this release all third party software that we are allowed to distribute in source or binary form.  Please see dependencies.csv and thirdpartylicenses.txt for a spreadsheet and listing of dependencies and details about the licensing of third party software components.
-
-While most users will find using CCAM's prebuilt VCell clients and our free compute cluster services to be the most convenient manner of using Virtual Cell, interested users can attempt to build and deploy their own installations of the Virtual Cell software by following the instructions in install.txt.

@@ -1,7 +1,0 @@
-#!/bin/bash
-for i in {1..50}
-do
-   echo "submit job $i ---"
-   qsub job$i.sub
-   sleep 40
-done

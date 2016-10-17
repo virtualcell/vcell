@@ -11,11 +11,9 @@
 	</appearance>
 	
 	<operations>
-	<para>
 	Selecting a single species or a single reaction in the Reaction Diagram, Reactions Table or 
 	Species Table enables a <bold>Pathway Links</bold> button.
-	</para><para> 
-	If a species or reaction is already linked to a pathway object, 
+	<para> If a species or reaction is already linked to a pathway object, 
 	there are multiple ways to see <bold>Linked pathways objects</bold>.
 	<list>
 	<item>Double click on the blue underlined link that appears in the <bold>Link</bold> column in the <bold>Reactions</bold> 

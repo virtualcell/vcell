@@ -1,5 +1,0 @@
-#!/bin/bash 
-BOOTVARIANT=high
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-. $DIR/template.vcellbootstrap
