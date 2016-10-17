@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<toc version="1.0">
+	<tocitem image="toplevelfolder" text="The Virtual Cell Help">
+	    <tocitem target="GeneralOverview" text="Introduction">
+    		<tocitem target="General" text="Overview"/>
+      		<tocitem target="RuleBasedOverview" text="Rule-Based Features"/>  		
+    		<tocitem target="GeneralNavAndWinSetup" text="General Navigation and Window Setup"/>
+    		<tocitem target="TopMenu" text="Top Menu"/>
+    		<tocitem target="File" text="File Menu">
+	    		<tocitem target="New" text="File->New Menu"/>
+    			<tocitem target="Open" text="File->Open Menu"/>
+    			<tocitem target="SaveAs" text="File->Save As Menu"/>
+    			<tocitem target="RevertToSaved" text="File->Revert to Saved Menu"/>
+    			<tocitem target="Permissions" text="File->Permissions Menu"/>
+    			<tocitem target="ModelAnnotation" text="File->Model Annotation Menu"/>
+    			<tocitem target="EditAnnotation" text="File->Edit Annotation Menu"/>
+    			<tocitem target="FieldData" text="File->Field Data Menu"/>
+    			<tocitem target="Import" text="File->Import Menu (SBML files)"/>
+    			<tocitem target="ImportBNGL" text="File->Import Menu (BNGL files)"/>
+    			<tocitem target="Export" text="File->Export Menu"/>
+    		</tocitem>
+    		<tocitem target="Server" text="Server Menu">
+    			<tocitem target="Login" text="User Login"/>
+    			<tocitem target="ChangeUser" text="Change User Menu"/>
+    			<tocitem target="UpdateRegistrationInfo" text="Update Registration Information Menu"/>
+    			<tocitem target="NewUserRegistration" text="New User Registration"/>
+    		</tocitem>	
+    		<tocitem target="Window" text="Window Menu"/>
+    		<tocitem target="Tools" text="Tools Menu">
+    			<tocitem target="LaunchBioNetGen" text="Launch BioNetGen Menu">
+    			 	<tocitem target="BioNetGenRulesEditor" text="BioNetGen Rules Editor"/>
+    				<tocitem target="BioNetGenMessages" text="BioNetGen Messages"/>
+	    			<tocitem target="BioNetGenOutput" text="BioNetGen Outputs"/>
+    				<tocitem target="BioNetGenHelp" text="BioNetGen Help"/>
+    			</tocitem>
+    			<tocitem target="LaunchVirtualFRAP" text="Launch Virtual FRAP Menu"/>
+    			<tocitem target="LaunchVisITvisualization" text="Launch Visit Visualization Tool Menu"/>
+    			<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
+    		</tocitem>
+    		<tocitem target="Help" text="Help Menu"/>
+    	</tocitem>
+    	<tocitem target="RuleBasedOverview" text="Rule-Based Features">
+    	    <tocitem target="RuleBasedTheory" text="Introduction to Rule-Based Modeling"/> 
+       		<tocitem target="RBCreate" text="How to create a rule-based model"/> 		
+    		<tocitem target="RBSimulate" text="How to simulate a rule-based model"/> 
+    		<tocitem target="NFSimApp" text="Network-Free Application"/>		
+    	</tocitem>
+    	<tocitem target="PhysOverview" text="Physiology">
+    		<tocitem target="ReactDiagView" text="Reaction Diagram"/>
+    		<tocitem target="ReactTabView" text="Reactions Table">
+    			<tocitem target="PP_Reactions" text="Edit Reaction"/>
+ 	    		<tocitem target="PP_MemFlux" text="Edit Membrane Flux"/>   			
+    			<tocitem target="PP_ReactionRulesEditor" text="Edit Reaction Rule"/>
+    			<tocitem target="PP_ReactionRulesKinetics" text="Edit Kinetics for Reaction Rule"/>
+    			<tocitem target="PathLink" text="Edit Pathway Links"/> 	
+    		</tocitem>
+    		<tocitem target="PhysStructTabView" text="Structures table">
+	    		<tocitem target="PP_Structures" text="Structures Properties Pane"/>
+   			</tocitem>	    		    		
+    		<tocitem target="SpeciesTabView" text="Species Table">
+    			<tocitem target="PP_Species" text="Edit Species"/>
+    			<tocitem target="PathLink" text="Edit Pathway Links"/> 	
+    		</tocitem>
+    		<tocitem target="Molecules" text="Molecules Table">
+    			<tocitem target="PP_Molecules" text="Edit Molecule"/>
+      		</tocitem>	  			    	
+    		<tocitem target="Observables" text="Observables Table">
+    			   <tocitem target="PP_Observables" text="Edit Observable"/>
+    		</tocitem>	   
+    	</tocitem>
+    	<tocitem target="ApplicationOverview" text="BioModel Applications">
+    		<tocitem target="GeometryOverview" text="Geometry">
+    	   		<tocitem target="geom_Analytic" text="Analytic Geometry"/>
+   	 	  		<tocitem target="geom_from_images" text="Image-based Geometry"/>
+   	 	  		<tocitem target="geom_from_surface" text="Geometry from Surface"/>
+   	 	  		<tocitem target="geom_struct_mapping" text="Geometry Structure Mapping">
+   		   			<tocitem target="geom_spatial_mapping" text="Spatial"/>
+   		   			<tocitem target="geom_nonspatial_mapping" text="Non-Spatial"/>
+   		   		</tocitem>
+    		</tocitem>
+    		<tocitem target="SpecificationsOverview" text="Specifications">
+    	   		<tocitem target="SpeciesSpecifications" text="Species">
+    			     <tocitem target="fieldData" text="Field Data"/>
+    			</tocitem>
+   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions"/>
+   	 	  		<tocitem target="NetworkSpecifications" text="Network"/>
+   	 	  		<tocitem target="NetworkFreeSpecifications" text="Network-Free"/>  	 	  		
+    		</tocitem>
+    		<tocitem target="ProtocolsOverview" text="Protocols">
+    	   		<tocitem target="Events" text="Events"/>
+   	 	  		<tocitem target="Electrical" text="Electrical Mapping"/>
+   	 	  		<tocitem target="MicroscopeMeasurement" text="Microscope Measurements"/>
+    		</tocitem>
+    		<tocitem target="simulations_overview" text="Simulations">
+    	   		<tocitem target="simulations" text="Simulations"/>
+    	   		<tocitem target="simulationEditor" text="Simulation Editor"/>
+    	   		<tocitem target="NFSimSimulationEditor" text="NFSim Simulation Editor"/>
+   	 	  		<tocitem target="output_functions" text="Output Functions"/>
+   		   		<tocitem target="generated_math" text="Generated Math"/>
+	    		<tocitem target="numerical_solvers" text="Numerical Solvers"/>
+	    		<tocitem target="SimulationViewerOverview" text="Simulation Results">
+   		       <tocitem target="SpatialSimResultsOverview" text="Spatial Simulation Results">
+    	   			<tocitem target="SimResSpatialSliceView" text="Spatial Simulation Results Slice View"/>
+    	   			<tocitem target="SpatialSimResultsDrawingTools" text="Region of Interest Tools, Data Plots and Statistics"/>
+    	   			<tocitem target="SimResultsSpatialSurfaceView" text="Spatial Simulation Results 3D Membrane View"/>
+    	   			<tocitem target="SimResultsSpatialROIandStatistics" text="Statistics"/>		
+					<tocitem target="SimResultsKymograph" text="Plots"/>
+					<tocitem target="PostProcessingStats" text="Post Processing Statistics Data"/>
+					<tocitem target="PostProcessingImage" text="Post Processing Image Data"/>
+					<tocitem target="ExportingSpatialSimResults" text="Exporting Spatial Simulation Results"/>
+					<tocitem target="SpecificFormatSettings" text="Specific Format Settings"/>
+				</tocitem>
+    	   		<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
+					<tocitem target="SimResultsNonSpatialPlotSettings" text="Plot Settings"/>	    
+					<tocitem target="SimResultsNonSpatialStochHistogram" text="Stochastic Results Histograms"/>
+				</tocitem>
+				
+				
+   			</tocitem>
+    	    </tocitem>
+    	    <tocitem target="PEOverview" text="Fitting">
+    	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
+   	 	  		<tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
+        	</tocitem>
+        </tocitem>
+        <tocitem target="ParametersAndFunctionsOverview" text="Parameters and Functions">
+   	   		<tocitem target="ParametersAndFunctions" text="Parameters And Functions"/>
+   	   		<tocitem target="PredefinedConstAndMathFns" text="Predefined Constants and Math Functions"/>
+   	   		<tocitem target="ModelUnits" text="Model Unit System"/>
+   		</tocitem>
+    	<tocitem target="PathwayOverview" text="Biological Pathways">
+   	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
+   	   		<tocitem target="PathwayImportTable" text="Pathway Preview"/>
+   	   		<tocitem target="PathwayDiagramView" text="Pathway Diagram"/>
+   	   		<tocitem target="PathwayObjectsView" text="Pathway Objects"/>
+   			<tocitem target="BiopaxSummaryView" text="BioPAX Summary"/>
+   			<tocitem target="BiopaxTreeView" text="BioPAX Tree"/>
+   			<tocitem target="PP_Pathways" text="Pathway Object Properties Pane"/>
+   			<tocitem target="GroupOperationsPanel" text="Operations on Pathway Entities"/>		
+   		</tocitem>
+    	<tocitem target="DatabaseOverview" text="Database Sources">
+   	   		<tocitem target="VCellDatabase" text="VCell Database"/>
+   	   		<tocitem target="BioModelsNet" text="BioModels Database"/>
+   	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
+   	   		<tocitem target="SabioRK" text="SABIO-RK Database"/>
+   		</tocitem>
+	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
+	    	<tocitem target="PP_ApplicationProps" text="Application Info Properties Pane"/>
+	    	<tocitem target="PP_VCellDatabaseInfo" text="Database Info Properties Pane"/>
+	    	<tocitem target="PP_MemFlux" text="Membrane Flux Properties Pane"/>
+	    	<tocitem target="PP_Molecules" text="Molecules Properties Pane"/>
+	    	<tocitem target="PP_Observables" text="Observables Properties Pane"/>	    	
+	    	<tocitem target="PP_Parameters" text="Parameter Properties Pane"/>
+	    	<tocitem target="PP_Pathways" text="Pathway Properties Pane"/>
+	    	<tocitem target="PP_Problems" text="Problems Properties Pane"/>
+	    	<tocitem target="PP_Reactions" text="Reactions Properties Pane"/>
+    		<tocitem target="PP_ReactionRulesEditor" text="Reaction Rules Editor Pane"/>
+    		<tocitem target="PP_ReactionRulesKinetics" text="Reaction Rules Kinetics Pane"/>
+	    	<tocitem target="PP_Species" text="Species Properties Pane"/>	
+	    	<tocitem target="PP_Stoichiometries" text="Stoichiometries Properties Pane"/>
+	    	<tocitem target="PP_Structures" text="Structures Properties Pane"/>
+		</tocitem>
+	    <tocitem target="AppendixOverview" text="Appendix">
+	    	<tocitem target="Definitions" text="Definitions"/>
+	    	<tocitem target="Errors" text="Errors"/>
+	    	<tocitem target="Warnings" text="Warnings"/>
+		</tocitem>
+   	</tocitem>
+</toc>

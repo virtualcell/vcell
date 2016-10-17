@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Pathway Links">
+
+	<introduction> Objects in the Physiology (species and reactions) and pathway entities in a Pathway Model can be linked.
+	The linked objects are marked with a letter 'L'.
+	</introduction>
+	
+	<appearance>
+	<imgReference target = "ShowPathwayLinks.png"> </imgReference>	
+	</appearance>
+	
+	<operations>
+	Selecting a single species or a single reaction in the Reaction Diagram, Reactions Table or 
+	Species Table enables a <bold>Pathway Links</bold> button.
+	<para> If a species or reaction is already linked to a pathway object, 
+	there are multiple ways to see <bold>Linked pathways objects</bold>.
+	<list>
+	<item>Double click on the blue underlined link that appears in the <bold>Link</bold> column in the <bold>Reactions</bold> 
+	and <bold>Species</bold> tables or under <bold>Linked Pathway Objects</bold> in the <bold>Reaction Diagram</bold>.   
+	Annotations and Pathways can be viewed in the Reaction and Species <bold>Object Properties</bold>pane. </item>
+	<item>Select <bold>Show Linked Pathway Objects</bold> under the <bold>Pathway Links</bold> menu.</item>
+	</list>
+	In either case a <link target = "PathwayDiagramView">Pathway Diagram</link> view appear in the main model workspace.  Linked objects appear in red in the pathway diagram. 
+	<imgReference target = "LinkedPathwayObject.png"> </imgReference>
+	</para>
+	<para>
+	
+	<bold>/Add or edit Pathway Links.</bold> by selecting <bold>Physiology Links -> Edit Physiology Links...</bold> to initiate a  dialog box with the list of all objects in the Biomodel (physical entities for a species or interactions for a reaction). Create new links or delete existing links by checking/unchecking the checkbox in the table of objects in the dialog box. A Search field is provided for filtering the list of objects.
+		<imgReference target = "PathwayEditLinks.png"></imgReference>	
+		</para>
+	</operations>
+	
+</page>
+
+</vcelldoc>

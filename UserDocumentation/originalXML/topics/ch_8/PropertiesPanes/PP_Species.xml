@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Species Properties Pane" target="PP_Species">
+
+	<introduction>
+	Selecting a species in the <link target = "ReactDiagView">Reaction Diagram</link> or the <link target = "SpeciesTabView">Species</link> will activate the Species Properties pane in the lower right quadrant of the workspace.  Within this pane, the Species Name can be editing, <link target="PathwayOverview">Linked Pathway Object(s)</link> are displayed, and annotations cans be added.    	
+<para> For rule-based models, the <bold>Object Properties</bold> tab provides a graphical editor to specify and edit the molecular details of <link target = "SpeciesTabView">Species</link> using drop-down menus. </para>
+
+	</introduction>
+	
+	<appearance>
+			<imgReference target = "PP_CompositeSpecies_defined.PNG"/>		
+	</appearance>
+	
+	<operations>
+	
+	<bold>Specify a molecule</bold> previously created in the <link target = "Molecules">Molecules Table</link> as a component of a species in a rule-based model.<para></para>
+			<imgReference target = "PP_CompositeSpecies_start.PNG"/>
+			<imgReference target = "PP_CompositeSpecies_new.PNG"/>
+
+	<para><bold>Add additional species information</bold>.  When a molecule is added, if additional information is required the species will be highlighted in red and errors may appear in the <link target = "PP_Problems">Problems tab</link>. In the figure shown, three errors were identified. Two errors arise from the fact that two binding sites have unspecified states; one error arises because molecules within the species are not connected with a bond.</para>
+			<imgReference target = "PP_CompositeSpecies_error.PNG"/>
+	<para>
+	</para>
+	<para><bold>Specify connections</bold> between molecules in the species by right click on binding site shape and selecting from the drop-down menu</para>
+			<imgReference target = "PP_CompositeSpecies_bond1.PNG"/>
+	<para>
+	</para>
+			
+	<para><bold>Specify states</bold> for binding sites by mouse right click on state shape and selecting the cognate binding site.  In the figure shown, the number of errors is now one; bounds between molecules are specified connected and 
+				only one site has unspecified states.</para>
+			<imgReference target = "PP_CompositeSpecies_site.PNG"/>
+
+	</operations>	
+
+</page>
+
+</vcelldoc>
