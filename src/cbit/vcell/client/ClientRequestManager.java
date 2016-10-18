@@ -1386,7 +1386,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 			try {
 				FieldDataFileOperationSpec fdfos = null;
 				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
-					hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport()));
+					hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"Image for new VCell geometry"));
 				}
 				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE || documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
 					File imageFile = (File)hashTable.get("imageFile");
@@ -2345,10 +2345,10 @@ public static void downloadExportedData(final Component requester, final UserPre
 		    	hashTable.put(BYTES_KEY, baosArr[0].toByteArray());
 		    }else{
 		    	//Send to ImageJ directly
-		    	int response = DialogUtils.showComponentOKCancelDialog(requester, new JLabel("Open ImageJ->File->Export->VCellUtil... to begin data transefer"), "Sending data to ImageJ...");
-		    	if(response != JOptionPane.OK_OPTION){
-		    		throw UserCancelException.CANCEL_GENERIC;
-		    	}
+//		    	int response = DialogUtils.showComponentOKCancelDialog(requester, new JLabel("Open ImageJ->File->Export->VCellUtil... to begin data transefer"), "Sending data to ImageJ...");
+//		    	if(response != JOptionPane.OK_OPTION){
+//		    		throw UserCancelException.CANCEL_GENERIC;
+//		    	}
 		    	//NRRD format send to ImageJ
 		    	if(getClientTaskStatusSupport() != null){
 		    		getClientTaskStatusSupport().setMessage("unpacking data...");
@@ -2368,7 +2368,7 @@ public static void downloadExportedData(final Component requester, final UserPre
 //					    	}
 //					    	fos.close();
 			    	imagejConnetArr[0] = new ImageJConnection();//doesn't open connection until later
-			    	ImageJHelper.vcellSendNRRD(requester,zis,getClientTaskStatusSupport(),imagejConnetArr[0]);
+			    	ImageJHelper.vcellSendNRRD(requester,zis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'");
 		    	}finally{
 		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}
 		    	}

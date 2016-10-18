@@ -28,6 +28,7 @@ import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.simdata.PDEDataContext;
 
 public class ImageJHelper {
+	public static final String USER_ABORT = "userAbort";
 	public static class ImageJConnection {
 		public ServerSocket serverSocket;
 		public Socket socket;
@@ -36,14 +37,15 @@ public class ImageJHelper {
 		public ImageJConnection() throws Exception{
 			serverSocket = new ServerSocket(5000);
 		}
-		public void openConnection(ImageJHelper.commands command) throws Exception{
+		public void openConnection(ImageJHelper.commands command,String descr) throws Exception{
 			socket = serverSocket.accept();
 			serverSocket.close();
 			dis = new DataInputStream(socket.getInputStream());
 			dos = new DataOutputStream(socket.getOutputStream());
 			dos.writeUTF(command.name());
+			dos.writeUTF(descr);
 			String startMessage = dis.readUTF();
-			if(startMessage.equals("userAbort")){
+			if(startMessage.equals(USER_ABORT)){
 				throw UserCancelException.CANCEL_GENERIC;
 			}
 		}
@@ -86,7 +88,7 @@ public class ImageJHelper {
 
 	private static enum doneFlags {working,cancelled,finished};
 
-	public static File vcellWantImage(ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
+	public static File vcellWantImage(ClientTaskStatusSupport clientTaskStatusSupport,String description) throws Exception{
 		
 		final ImageJConnection[] imageJConnectionArr = new ImageJConnection[1];
 		final doneFlags[] bDone = new doneFlags[] {doneFlags.working};
@@ -115,7 +117,7 @@ public class ImageJHelper {
 				}).start();
 			}
 			//contact ImageJ
-			imageJConnection.openConnection(commands.vcellWantImage);
+			imageJConnection.openConnection(commands.vcellWantImage,description);
 			imageJConnection.dis.readInt();//integer (dimensions)
 			//get size of the standard 5 dimensions in this order (width, height, nChannels, nSlices, nFrames)
 			int xsize = imageJConnection.dis.readInt();
@@ -209,7 +211,7 @@ public class ImageJHelper {
 		}
 		return new HyperStackHelper((result.length>=1?result[0]:1), (result.length>=2?result[1]:1), (result.length>=3?result[2]:1), (result.length>=5?result[4]:1), (result.length>=4?result[3]:1));
 	}
-	public static void vcellSendNRRD(final Component requester,ZipInputStream nrrdFileFormatData,ClientTaskStatusSupport clientTaskStatusSupport,ImageJConnection imageJConnection) throws Exception{
+	public static void vcellSendNRRD(final Component requester,ZipInputStream nrrdFileFormatData,ClientTaskStatusSupport clientTaskStatusSupport,ImageJConnection imageJConnection,String description) throws Exception{
     	if(clientTaskStatusSupport != null){
     		clientTaskStatusSupport.setMessage("reading format... ");
     	}
@@ -232,7 +234,7 @@ public class ImageJHelper {
 	    	if(clientTaskStatusSupport != null){
 	    		clientTaskStatusSupport.setMessage("Sending data to ImageJ...");
 	    	}
-			imageJConnection.openConnection(commands.vcellSendImage);
+			imageJConnection.openConnection(commands.vcellSendImage,description);
 			double[] data = new double[hyperStackHelper.getTotalSize()];
 			for (int i = 0; i < data.length; i++) {
 				data[i] = dis.readDouble();
@@ -266,7 +268,7 @@ public class ImageJHelper {
 		}
 		imageJConnection.dos.write(bytes);
 	}
-	public static void vcellSendImage(final Component requester,final PDEDataContext pdeDataContext) throws Exception{//xyz, 1 time, 1 var
+	public static void vcellSendImage(final Component requester,final PDEDataContext pdeDataContext,String description) throws Exception{//xyz, 1 time, 1 var
 		final ImageJConnection[] imageJConnectionArr = new ImageJConnection[1];
 		AsynchClientTask sendImageTask = new AsynchClientTask("Send image to ImageJ...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -274,7 +276,7 @@ public class ImageJHelper {
 				try{					
 					ImageJConnection imageJConnection = new ImageJConnection();
 					imageJConnectionArr[0] = imageJConnection;
-					imageJConnection.openConnection(commands.vcellSendImage);
+					imageJConnection.openConnection(commands.vcellSendImage,description);
 					//send size of the standard 5 dimensions in this order (width, height, nChannels, nSlices, nFrames)
 					ISize xyzSize = pdeDataContext.getCartesianMesh().getISize();
 					sendData(imageJConnection, new HyperStackHelper(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());

@@ -1046,7 +1046,7 @@ private void fromImageJ(){
 	AsynchClientTask imageJTask = new AsynchClientTask("contact ImageJ...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			File imageJFile = ImageJHelper.vcellWantImage(getClientTaskStatusSupport());
+			File imageJFile = ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"image for new FieldData");
 			hashTable.put(IMAGE_FILE_KEY, imageJFile);
 		}
 	};

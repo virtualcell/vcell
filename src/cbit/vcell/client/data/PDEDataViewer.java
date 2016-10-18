@@ -1792,7 +1792,7 @@ private void sendImagej(){
 	try{
 		String varname = getPdeDataContext().getVariableName();
 		double timepoint = getPdeDataContext().getTimePoint();
-		ImageJHelper.vcellSendImage(PDEDataViewer.this,getPdeDataContext());
+		ImageJHelper.vcellSendImage(PDEDataViewer.this,getPdeDataContext(),"VCell sim results '"+varname+"':"+timepoint);
 	}catch(Exception e){
 		handleException(e);
 	}
