@@ -10,11 +10,18 @@
 
 package org.vcell.solver.nfsim;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -277,4 +284,116 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		}
 	}
 
+	public static void main(String[] args) {
+		
+		String baseName = "SimID_";
+		String workingDir = "C:\\TEMP\\eee\\";
+		String executable = "C:\\Users\\vasilescu\\.vcell\\solvers_DanDev_Version_5_3_build_99\\NFsim_x64.exe";
+		String blankDelimiters = " \t";
+		
+		int seed = 1807259453;
+		int steps = 50;
+		double duration = 0.05;
+		
+		BufferedReader br = null;
+		try {
+			for(int i = 0; i < steps; i++) {
+				String input = workingDir + baseName + "000" + ".nfsimInput";		// C:\\TEMP\\eee\\SimID_000.nfsimInput
+				String output = workingDir + baseName + i + ".gdat";
+				String species = workingDir + baseName + i + ".species";
+				double interval = duration / steps;
+				double dur = interval * (i + 1);		// we start at timepoint 1
+				String sdur = "" + dur;
+				if(sdur.length() > 6) {
+					sdur = sdur.substring(0, 6);
+				}
+				
+				double averageOfAverage = 0;	// average length of patterns at this timepoint, over many simulations
+				int numSimulations = 50;
+				for(int ii = 0; ii < numSimulations; ii++) {
+					int curSeed = seed + ii * 538297;		// calculate a new seed for this simulation (same start seeds will be used for each time point)
+					
+					String command = executable + " -seed " + curSeed + " -vcell -xml " + input + " -o " + output + " -sim " + sdur + " -ss " + species + " -oSteps 1" + " -notf -cb";
+					Process p = Runtime.getRuntime().exec(command);
+					p.waitFor();
+
+					command = "cmd.exe /c del " + workingDir + "*.gdat";
+					p = Runtime.getRuntime().exec(command);
+					p.waitFor();
+					
+					
+					Map<Integer, Integer> occurencesMap = new HashMap<> ();
+					br = new BufferedReader(new FileReader(species));
+					String line;			// ex: A(s!1,t!2).B(u!1).B(u!2)  5
+					while ((line = br.readLine()) != null) {
+						if(line.startsWith("#")) {
+							continue;
+						}
+						int numMolecules = 1;				// how many molecules in the above pattern => 3
+						int number;							// how many instances of this pattern => 5
+						StringTokenizer nextLine = new StringTokenizer(line, blankDelimiters);
+						String pattern = nextLine.nextToken();			// A(s!1,t!2).B(u!1).B(u!2)
+						for(int j = 0; j < pattern.length(); j++) {
+							if(pattern.charAt(j) == '.') {
+								numMolecules++;				// numMolecules equals the number of 'dot' characters in string + 1
+							}
+						}
+						String s = nextLine.nextToken();				// 5
+						number = Integer.parseInt(s);
+						
+						if(occurencesMap.containsKey(numMolecules)) {
+							int currentNumber = occurencesMap.get(numMolecules);
+							currentNumber += number;
+							occurencesMap.put(numMolecules, currentNumber);
+						} else {
+							occurencesMap.put(numMolecules, number);
+						}
+					}
+					
+					double up = 0;
+					double down = 0;
+					for (Map.Entry<Integer, Integer> entry : occurencesMap.entrySet()) {
+						Integer key = entry.getKey();
+						if(key == 1) {
+							continue;
+						}
+						Integer value = entry.getValue();
+						up += key * value;
+						down += value;
+					}
+					double average = up/down;
+					averageOfAverage += average;
+					br.close();
+				
+					command = "cmd.exe /c del " + workingDir + "*.species";
+					p = Runtime.getRuntime().exec(command);
+					p.waitFor();
+				}
+				averageOfAverage = averageOfAverage / numSimulations;
+				System.out.println(sdur + " " + averageOfAverage);
+			}
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (br != null) {
+					br.close();
+				}
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		System.out.println("Done");
+	}
 }
+//StringBuffer output = new StringBuffer();
+//String command = "cmd.exe /c ping.exe google.com";
+//Process p = Runtime.getRuntime().exec(command);
+//p.waitFor();
+//BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//String line = "";
+//while ((line = reader.readLine())!= null) {
+//	output.append(line + "\n");
+//}
+//System.out.println(output.toString());
+
