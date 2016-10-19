@@ -39,6 +39,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.EventObject;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +75,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.apache.http.concurrent.Cancellable;
 import org.vcell.imagej.ImageJHelper;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -84,6 +86,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -334,7 +337,6 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 
 	private JMenuItem statisticsMenuItem;
 	private JMenuItem snapShotMenuItem;
-	private JMenuItem sendTimePointImageMenuItem;
 	
 	private Simulation fieldSimulation = null;
 
@@ -373,8 +375,10 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					connEtoC9(e);
 				} else if (e.getSource() == snapShotMenuItem) {
 					snapshotROI();
-				} else if (e.getSource() == sendTimePointImageMenuItem) {
-					sendImagej();
+				} else if (e.getSource() == getSendTimePointImageMenuItem()) {
+					sendImageJTimePoint();
+				} else if (e.getSource() == getSendDomainImageMenuItem()) {
+					sendImageJDomain();
 				}
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -509,6 +513,9 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					}
 					
 					if (getPdeDataContext() != null) {
+						getImagejButton().setEnabled(true);
+						getSendDomainImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
+						getSendTimePointImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
 						// for local sim, get location of sim file and update log file location label
 						if (getPdeDataContext().getVCDataIdentifier() instanceof LocalVCSimulationDataIdentifier) {
 							LocalVCSimulationDataIdentifier localVCSimId = (LocalVCSimulationDataIdentifier)getPdeDataContext().getVCDataIdentifier();
@@ -520,6 +527,8 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 							}
 							localSimLogFilePathTextField.setText(localSimLogFilePath);
 						}
+					}else{
+						getImagejButton().setEnabled(false);
 					}
 				}
 				if (evt.getSource() == PDEDataViewer.this &&
@@ -643,6 +652,8 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 						viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
 					}
 				}
+				getSendTimePointImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
+				getSendDomainImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
 			}
 		};
 		final AsynchClientTask emptyTask = new AsynchClientTask("Filler...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
@@ -1774,25 +1785,67 @@ private JButton getImagejButton() {
 	}
 	return imagejButton;
 }
+private JMenuItem sendDomainImageMenuItem;
+private JMenuItem getSendDomainImageMenuItem(){
+	if(sendDomainImageMenuItem == null){
+		sendDomainImageMenuItem = new JMenuItem("Send Domains...");
+		sendDomainImageMenuItem.setEnabled(false);
+		sendDomainImageMenuItem.addActionListener(ivjEventHandler);
+	}
+	return sendDomainImageMenuItem;
+}
+private JMenuItem sendTimePointImageMenuItem;
+private JMenuItem getSendTimePointImageMenuItem(){
+	if(sendTimePointImageMenuItem == null){
+		sendTimePointImageMenuItem = new JMenuItem("Send Image...");
+		sendTimePointImageMenuItem.setEnabled(false);
+		sendTimePointImageMenuItem.addActionListener(ivjEventHandler);
+	}
+	return sendTimePointImageMenuItem;
+}
+
 private javax.swing.JPopupMenu getImagejPopupMenu() {
 	if (imagejPopupMenu == null) {
 		try {
 			imagejPopupMenu = new JPopupMenu();
-			sendTimePointImageMenuItem = new JMenuItem("Send Image...");
-			sendTimePointImageMenuItem.addActionListener(ivjEventHandler);
-			imagejPopupMenu.add(sendTimePointImageMenuItem);
+			imagejPopupMenu.add(getSendTimePointImageMenuItem());
+			imagejPopupMenu.add(getSendDomainImageMenuItem());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
 	return imagejPopupMenu;
 }
-private void sendImagej(){
-	System.out.println("Send ImageJ");
+
+private void sendImageJTimePoint(){
 	try{
 		String varname = getPdeDataContext().getVariableName();
 		double timepoint = getPdeDataContext().getTimePoint();
 		ImageJHelper.vcellSendImage(PDEDataViewer.this,getPdeDataContext(),"VCell sim results '"+varname+"':"+timepoint);
+	}catch(Exception e){
+		handleException(e);
+	}
+}
+private void sendImageJDomain(){
+	try{
+		if(getPdeDataContext().getDataIdentifier().getVariableType().getType() != VariableType.VOLUME.getType()){
+			DialogUtils.showErrorDialog(this, "Domain info for "+getPdeDataContext().getDataIdentifier().getVariableType()+" not yet implemented for ImageJ");
+			return;
+		}
+		final ImageJHelper.ListenAndCancel listenAndCancel = new ImageJHelper.ListenAndCancel();
+		AsynchClientTask sendDataTask = new AsynchClientTask("Sending domain Data...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ImageJHelper.sendVolumeDomain(
+					PDEDataViewer.this,
+					getPdeDataContext(),
+					getPdeDataContext().getCartesianMesh().getISize(),
+					getClientTaskStatusSupport(),
+					listenAndCancel,
+					"Volume domains '"+getSimulationModelInfo().getContextName()+"':'"+getSimulation().getName()+"'");
+			}
+		};
+		ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<>(), new AsynchClientTask[] {sendDataTask},true,false,true,listenAndCancel,false);
 	}catch(Exception e){
 		handleException(e);
 	}

@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -84,7 +85,7 @@ public class ImageJHelper {
 			return new int[] {zsize,ysize,xsize,csize,tsize};
 		}
 	}
-	public static enum commands {vcellWantImage,vcellWantInfo,vcellSendImage,vcellSendInfo};
+	public static enum commands {vcellWantImage,vcellWantInfo,vcellSendImage,vcellSendInfo,vcellSendDomains};
 
 	private static enum doneFlags {working,cancelled,finished};
 
@@ -211,6 +212,60 @@ public class ImageJHelper {
 		}
 		return new HyperStackHelper((result.length>=1?result[0]:1), (result.length>=2?result[1]:1), (result.length>=3?result[2]:1), (result.length>=5?result[4]:1), (result.length>=4?result[3]:1));
 	}
+	public static class ListenAndCancel implements ProgressDialogListener {
+		private Runnable cancelMethod;
+		public void setCancelMethod(Runnable runnable) {
+			cancelMethod = runnable;
+		}
+		@Override
+		public void cancelButton_actionPerformed(EventObject newEvent) {
+			if(cancelMethod != null){
+				cancelMethod.run();
+			}
+		}
+	};
+
+	public static void sendVolumeDomain(Component requester,PDEDataContext pdeDataContext,ISize iSize,ClientTaskStatusSupport clientTaskStatusSupport,ListenAndCancel listenAndCancel,String description) throws Exception{
+		ImageJConnection[] imageJConnection = new ImageJConnection[1];
+		try{
+			if(listenAndCancel != null){
+				listenAndCancel.setCancelMethod(new Runnable() {
+					@Override
+					public void run() {
+						if(imageJConnection[0] != null){
+							imageJConnection[0].closeConnection();
+						}
+					}
+				});
+			}
+	    	if(clientTaskStatusSupport != null){
+	    		clientTaskStatusSupport.setMessage("Sending Domain data to ImageJ...");
+	    	}
+//	    	new Thread(new Runnable() {
+//				@Override
+//				public void run() {
+//				}
+//			}).start();
+	    	imageJConnection[0] = new ImageJConnection();
+			imageJConnection[0].openConnection(commands.vcellSendDomains,description);
+			byte[] data = new byte[pdeDataContext.getCartesianMesh().getNumVolumeElements()];
+			for (int i = 0; i < data.length; i++) {
+				int subvolume = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(i);
+				if(subvolume > 255){
+					throw new Exception("Error ImageJHelper.sendVolumeDomain(...) subvolume > 255 not implemented");
+				}
+				data[i] = (byte)subvolume;
+			}
+			sendGrayscaleData(imageJConnection[0], new HyperStackHelper(iSize.getX(), iSize.getY(), iSize.getZ(), 1, 1), data,description);
+		}catch(Exception e){
+			if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
+				//ignore, we were cancelled
+			}
+		}finally{
+			try{if(imageJConnection != null){imageJConnection[0].closeConnection();}}catch(Exception e){e.printStackTrace();}
+		}
+
+	}
 	public static void vcellSendNRRD(final Component requester,ZipInputStream nrrdFileFormatData,ClientTaskStatusSupport clientTaskStatusSupport,ImageJConnection imageJConnection,String description) throws Exception{
     	if(clientTaskStatusSupport != null){
     		clientTaskStatusSupport.setMessage("reading format... ");
@@ -239,16 +294,23 @@ public class ImageJHelper {
 			for (int i = 0; i < data.length; i++) {
 				data[i] = dis.readDouble();
 			}
-			sendData(imageJConnection, hyperStackHelper, data,"Export direct");
+			sendImageDataAsFloats(imageJConnection, hyperStackHelper, data,description);
 		}
 		finally{
 			try{if(imageJConnection != null){imageJConnection.closeConnection();}}catch(Exception e){e.printStackTrace();}
 		}
 
 	}
-	private static void sendData(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,double[] data,String title) throws Exception{
-		if(data.length != hyperStackHelper.getTotalSize()){
-			throw new Exception("data length "+data.length+" not match hyperstack size "+hyperStackHelper.getTotalSize());
+	private static void sendImageDataAsFloats(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,double[] data,String title) throws Exception{
+		sendData0(imageJConnection, hyperStackHelper, data, title);
+	}
+	private static void sendGrayscaleData(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,byte[] data,String title) throws Exception{
+		sendData0(imageJConnection, hyperStackHelper, data, title);
+	}
+	private static void sendData0(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,Object arrObj,String title) throws Exception{
+		int dataLen = Array.getLength(arrObj);
+		if(dataLen != hyperStackHelper.getTotalSize()){
+			throw new Exception("data length "+dataLen+" not match hyperstack size "+hyperStackHelper.getTotalSize());
 		}
 		//
 		//This method expects data to be in "x,y,z,t,c" order
@@ -260,12 +322,14 @@ public class ImageJHelper {
 		for (int i = 0; i < hyperStackHelper.getSizesInVCellPluginOrder().length; i++) {
 			imageJConnection.dos.writeInt(hyperStackHelper.getSizesInVCellPluginOrder()[i]);
 		}
-		byte[] bytes = new byte[data.length*Float.BYTES];
+		byte[] bytes = (arrObj instanceof double[]?new byte[dataLen*Float.BYTES]:(byte[]) arrObj);
 		ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
 		byteBuffer.rewind();
-		for (int i = 0; i < data.length; i++) {
-			byteBuffer.putFloat((float)data[i]);
-		}
+		if(arrObj instanceof double[]){//convert to floats for imagej
+			for (int i = 0; i < dataLen; i++) {
+				byteBuffer.putFloat((float)(((double[])arrObj)[i]));
+			}
+		}//else{just send bytes as is to ImageJ}
 		imageJConnection.dos.write(bytes);
 	}
 	public static void vcellSendImage(final Component requester,final PDEDataContext pdeDataContext,String description) throws Exception{//xyz, 1 time, 1 var
@@ -279,7 +343,7 @@ public class ImageJHelper {
 					imageJConnection.openConnection(commands.vcellSendImage,description);
 					//send size of the standard 5 dimensions in this order (width, height, nChannels, nSlices, nFrames)
 					ISize xyzSize = pdeDataContext.getCartesianMesh().getISize();
-					sendData(imageJConnection, new HyperStackHelper(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
+					sendImageDataAsFloats(imageJConnection, new HyperStackHelper(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
 				}catch(Exception e){
 					if(e instanceof UserCancelException){
 						throw e;
