@@ -783,8 +783,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							for(int i = 0; i<rs.getNumReactants(); i++) {
 								Reactant p = rs.getReactant(i);
 								if(p.getSpeciesContext().hasSpeciesPattern()) {
+									text += p.getStoichiometry()>1 ? (p.getStoichiometry()+"") : "";
 									text += p.getName();			//		text += "<b>" + p.getName() + "</b>";
 								} else {
+									text += p.getStoichiometry()>1 ? (p.getStoichiometry()+"") : "";
 									text += p.getName();
 								}
 								if(i < rs.getNumReactants()-1) {
@@ -795,8 +797,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							for(int i = 0; i<rs.getNumProducts(); i++) {
 								Product p = rs.getProduct(i);
 								if(p.getSpeciesContext().hasSpeciesPattern()) {
+									text += p.getStoichiometry()>1 ? (p.getStoichiometry()+"") : "";
 									text += p.getName();			//			text += "<b>" + p.getName() + "</b>";
 								} else {
+									text += p.getStoichiometry()>1 ? (p.getStoichiometry()+"") : "";
 									text += p.getName();
 								}
 								if(i < rs.getNumProducts()-1) {
