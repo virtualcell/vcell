@@ -149,11 +149,14 @@ private void runSolver() {
 			System.out.println(key+"\n     "+val);
 			if(key.equals(LD_LIB_PATH)){
 				existingLD_LIB_PATH = val;
+				if(existingLD_LIB_PATH != null && existingLD_LIB_PATH.length() > 0 && !existingLD_LIB_PATH.endsWith(":")){
+					existingLD_LIB_PATH+= ":";
+				}
 			}
 		}
-		String newLD_LIB_PATH = (existingLD_LIB_PATH==null?"":existingLD_LIB_PATH+":")+solversDir.getAbsolutePath();
+		String newLD_LIB_PATH = (existingLD_LIB_PATH==null?"":existingLD_LIB_PATH)+solversDir.getAbsolutePath();
 		System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
-//		getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);
+		getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);
 		getMathExecutable().start();
 		cleanup();
 		//  getMathExecutable().start() may end prematurely (error or user stop), so check status before firing...
