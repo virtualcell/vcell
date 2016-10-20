@@ -60,7 +60,7 @@ public class ClientMDIManager implements MDIManager {
 	private static final Dimension JFRAME_SIZE = new Dimension(1024, 768);
 	public final static String DATABASE_WINDOW_ID = "DatabaseWindow";
 	public final static String TESTING_FRAMEWORK_WINDOW_ID = "TestingFrameworkWindow";
-	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
+//	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
 	public final static String FIELDDATA_WINDOW_ID = "FieldDataWindow";
 	private static interface Creator {
 		void create( );
@@ -248,7 +248,7 @@ void createRecyclableWindows() {
 		getManagersHash().put(DATABASE_WINDOW_ID, windowManager);
 	}
 	creators.put(TESTING_FRAMEWORK_WINDOW_ID, this::createTestingFramework);
-	creators.put(BIONETGEN_WINDOW_ID,this::createBioNetGen);
+//	creators.put(BIONETGEN_WINDOW_ID,this::createBioNetGen);
 	creators.put(FIELDDATA_WINDOW_ID,this::createFieldData);
 }
 
@@ -282,32 +282,32 @@ private void createTestingFramework( ) {
 		testingFrameworkWindow.addWindowListener(windowListener);
 	}
 }
-private void createBioNetGen( ) {
-
-	if (! getWindowsHash().containsKey(BIONETGEN_WINDOW_ID) ) {
-		// make the window
-		BNGWindow bngWindow = new BNGWindow();
-		cbit.vcell.client.bionetgen.BNGOutputPanel bngOutputPanel = new cbit.vcell.client.bionetgen.BNGOutputPanel();
-		bngWindow.setWorkArea(bngOutputPanel);
-		bngWindow.setSize(JFRAME_SIZE);
-		bngWindow.setIconImage(VCellIcons.getJFrameImageIcon());
-		BeanUtils.centerOnScreen(bngWindow);
-		// make the manager
-		BNGWindowManager windowManager = new BNGWindowManager(bngOutputPanel, getRequestManager());
-		// keep track of things
-		getWindowsHash().put(BIONETGEN_WINDOW_ID, bngWindow);
-		getManagersHash().put(BIONETGEN_WINDOW_ID, windowManager);
-		// get window ready
-		setCanonicalTitle(BIONETGEN_WINDOW_ID);
-		// set bngService for bngOutputPanel - thro' clientServerManager or separate manager for bionetgen?
-		bngWindow.setBngWindowManager(windowManager);
-		bngOutputPanel.setBngWindowManager(windowManager);
-		//		blockWindow(BIONETGEN_WINDOW_ID);
-
-		// listen for event when user clicks window close button
-		bngWindow.addWindowListener(windowListener);
-	}
-}
+//private void createBioNetGen( ) {
+//
+//	if (! getWindowsHash().containsKey(BIONETGEN_WINDOW_ID) ) {
+//		// make the window
+//		BNGWindow bngWindow = new BNGWindow();
+//		cbit.vcell.client.bionetgen.BNGOutputPanel bngOutputPanel = new cbit.vcell.client.bionetgen.BNGOutputPanel();
+//		bngWindow.setWorkArea(bngOutputPanel);
+//		bngWindow.setSize(JFRAME_SIZE);
+//		bngWindow.setIconImage(VCellIcons.getJFrameImageIcon());
+//		BeanUtils.centerOnScreen(bngWindow);
+//		// make the manager
+//		BNGWindowManager windowManager = new BNGWindowManager(bngOutputPanel, getRequestManager());
+//		// keep track of things
+//		getWindowsHash().put(BIONETGEN_WINDOW_ID, bngWindow);
+//		getManagersHash().put(BIONETGEN_WINDOW_ID, windowManager);
+//		// get window ready
+//		setCanonicalTitle(BIONETGEN_WINDOW_ID);
+//		// set bngService for bngOutputPanel - thro' clientServerManager or separate manager for bionetgen?
+//		bngWindow.setBngWindowManager(windowManager);
+//		bngOutputPanel.setBngWindowManager(windowManager);
+//		//		blockWindow(BIONETGEN_WINDOW_ID);
+//
+//		// listen for event when user clicks window close button
+//		bngWindow.addWindowListener(windowListener);
+//	}
+//}
 
 private void createFieldData( ) {
 	if (! getWindowsHash().containsKey(FIELDDATA_WINDOW_ID) ) {
@@ -351,14 +351,14 @@ public TopLevelWindow getWindow(String key) {
 
 	return windowsHash.get(key);
 }
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 8:57:53 PM)
- * @return cbit.vcell.client.desktop.DatabaseWindowManager
- */
-public BNGWindowManager getBNGWindowManager() {
-	return (BNGWindowManager)getWindowManager(BIONETGEN_WINDOW_ID);
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (5/24/2004 8:57:53 PM)
+// * @return cbit.vcell.client.desktop.DatabaseWindowManager
+// */
+//public BNGWindowManager getBNGWindowManager() {
+//	return (BNGWindowManager)getWindowManager(BIONETGEN_WINDOW_ID);
+//}
 
 
 /**

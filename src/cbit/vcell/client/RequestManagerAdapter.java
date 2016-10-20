@@ -113,8 +113,8 @@ public class RequestManagerAdapter implements RequestManager {
 	public BioModelInfo selectBioModelInfo(TopLevelWindowManager tfWindowManager) { return null; }
 	@Override
 	public MathModelInfo selectMathModelInfo(TopLevelWindowManager tfWindowManager) { return null;}
-	@Override
-	public void showBNGWindow() {}
+//	@Override
+//	public void showBNGWindow() {}
 	@Override
 	public void showFieldDataWindow(DataSymbolCallBack dataSymbolCallBack) {}
 	@Override

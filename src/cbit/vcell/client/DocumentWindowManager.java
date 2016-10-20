@@ -411,12 +411,12 @@ private void setJPanel(javax.swing.JPanel newJPanel) {
 }
 
 
-/**
- * Comment
- */
-public void showBNGWindow() {
-	getRequestManager().showBNGWindow();
-}
+///**
+// * Comment
+// */
+//public void showBNGWindow() {
+//	getRequestManager().showBNGWindow();
+//}
 
 /**
  * Insert the method's description here.

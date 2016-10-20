@@ -132,7 +132,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JMenuItem ivjTestingFrameworkMenuItem = null;
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
 	private JMenuItem newHelpMenuItem = null;
-	private JMenuItem ivjRunBNGMenuItem = null;
+//	private JMenuItem ivjRunBNGMenuItem = null;
 	private JMenuItem ivjRunVFrapMenuItem = null;
 	private JMenuItem ivjRunVCellVisItMenuItem = null;
 	//Added Oct. 17th, 2007. To put a tool menu in
@@ -207,8 +207,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC25(e);
 			if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
 				showVCellHelpWindow();
-			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem())
-				connEtoC26(e);
+//			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem())
+//				connEtoC26(e);
 			if (e.getSource() == DocumentWindow.this.getRunVFrapItem())
 				startVirtualFRAP();
 			if (e.getSource() == DocumentWindow.this.getRunVCellVisItItem())
@@ -487,24 +487,24 @@ private void connEtoC25(java.awt.event.ActionEvent arg1) {
 }
 
 
-/**
- * connEtoC26:  (RunBNGMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.launchBNG()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC26(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showBNGWindow();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+///**
+// * connEtoC26:  (RunBNGMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.launchBNG()V)
+// * @param arg1 java.awt.event.ActionEvent
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private void connEtoC26(java.awt.event.ActionEvent arg1) {
+//	try {
+//		// user code begin {1}
+//		// user code end
+//		this.showBNGWindow();
+//		// user code begin {2}
+//		// user code end
+//	} catch (java.lang.Throwable ivjExc) {
+//		// user code begin {3}
+//		// user code end
+//		handleException(ivjExc);
+//	}
+//}
 
 /**
  * connEtoC28:  (JMenuItemRevert.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.revertToSaved()V)
@@ -802,7 +802,7 @@ private JMenu getToolMenu() {
 			toolMenu = new javax.swing.JMenu();
 			toolMenu.setName("ToolMenu");
 			toolMenu.setText("Tools");
-			toolMenu.add(getRunBNGMenuItem());
+//			toolMenu.add(getRunBNGMenuItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getRunVFrapItem());
 		    if (VCellCodeVersion.CURRENT.compare(6,1) >= 0) {
@@ -1549,27 +1549,27 @@ private javax.swing.JMenuItem getReconnectMenuItem() {
 	return ivjReconnectMenuItem;
 }
 
-/**
- * Return the RunBNGMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getRunBNGMenuItem() {
-	if (ivjRunBNGMenuItem == null) {
-		try {
-			ivjRunBNGMenuItem = new javax.swing.JMenuItem();
-			ivjRunBNGMenuItem.setName("RunBNGMenuItem");
-			ivjRunBNGMenuItem.setText("Launch BioNetGen");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjRunBNGMenuItem;
-}
+///**
+// * Return the RunBNGMenuItem property value.
+// * @return javax.swing.JMenuItem
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private javax.swing.JMenuItem getRunBNGMenuItem() {
+//	if (ivjRunBNGMenuItem == null) {
+//		try {
+//			ivjRunBNGMenuItem = new javax.swing.JMenuItem();
+//			ivjRunBNGMenuItem.setName("RunBNGMenuItem");
+//			ivjRunBNGMenuItem.setText("Launch BioNetGen");
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjRunBNGMenuItem;
+//}
 
 private JMenuItem getRunVFrapItem() {
 	if (ivjRunVFrapMenuItem == null) {
@@ -1942,7 +1942,7 @@ private void initConnections() throws java.lang.Exception {
 	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
 	getNewHelpMenuItem().addActionListener(ivjEventHandler);
-	getRunBNGMenuItem().addActionListener(ivjEventHandler);
+//	getRunBNGMenuItem().addActionListener(ivjEventHandler);
 	getRunVFrapItem().addActionListener(ivjEventHandler);
 	getRunVCellVisItItem().addActionListener(ivjEventHandler);
 	getTransMAMenuItem().addActionListener(ivjEventHandler);
@@ -2114,12 +2114,12 @@ private void showAboutBox() {
 }
 
 
-/**
- * Comment
- */
-private void  showBNGWindow() {
-	getWindowManager().showBNGWindow();
-}
+///**
+// * Comment
+// */
+//private void  showBNGWindow() {
+//	getWindowManager().showBNGWindow();
+//}
 
 /**
  * Comment

@@ -37,12 +37,12 @@ long closeWindow(String windowID);
 DocumentWindow createNewDocumentWindow(DocumentWindowManager manager);
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 8:57:45 PM)
- * @return cbit.vcell.client.desktop.DatabaseWindowManager
- */
-BNGWindowManager getBNGWindowManager();
+///**
+// * Insert the method's description here.
+// * Creation date: (5/24/2004 8:57:45 PM)
+// * @return cbit.vcell.client.desktop.DatabaseWindowManager
+// */
+//BNGWindowManager getBNGWindowManager();
 
 
 /**

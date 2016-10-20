@@ -291,11 +291,11 @@ BioModelInfo selectBioModelInfo(TopLevelWindowManager tfWindowManager);
 MathModelInfo selectMathModelInfo(TopLevelWindowManager tfWindowManager);
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 4:18:53 AM)
- */
-void showBNGWindow();
+///**
+// * Insert the method's description here.
+// * Creation date: (5/21/2004 4:18:53 AM)
+// */
+//void showBNGWindow();
 
 void showFieldDataWindow(FieldDataWindowManager.DataSymbolCallBack dataSymbolCallBack);
 

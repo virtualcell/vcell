@@ -98,7 +98,8 @@ public java.awt.Component getComponent() {
  * @return java.lang.String
  */
 public String getManagerID() {
-	return ClientMDIManager.BIONETGEN_WINDOW_ID;
+	throw new RuntimeException("BioNetGen no longer separate application");
+//	return ClientMDIManager.BIONETGEN_WINDOW_ID;
 }
 
 

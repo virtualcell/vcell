@@ -3995,13 +3995,13 @@ private void setVcellClient(VCellClient newVcellClient) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 4:20:48 AM)
- */
-public void showBNGWindow() {
-	getMdiManager().showWindow(ClientMDIManager.BIONETGEN_WINDOW_ID);
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (5/21/2004 4:20:48 AM)
+// */
+//public void showBNGWindow() {
+//	getMdiManager().showWindow(ClientMDIManager.BIONETGEN_WINDOW_ID);
+//}
 
 public void showFieldDataWindow(FieldDataWindowManager.DataSymbolCallBack dataSymbolCallBack) {
 	FieldDataWindowManager fdwm = (FieldDataWindowManager)getMdiManager().getWindowManager(ClientMDIManager.FIELDDATA_WINDOW_ID);
