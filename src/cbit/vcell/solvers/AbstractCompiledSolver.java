@@ -19,6 +19,7 @@ import java.util.Vector;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
@@ -138,25 +139,28 @@ private void runSolver() {
 		initialize();
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING);
-		final String LD_LIB_PATH = "LD_LIBRARY_PATH";
-		File solversDir = ResourceUtil.getSolversDirectory();
-		String existingLD_LIB_PATH = null;
-		Map<String, String>envMap = System.getenv();
-		Iterator<String> envIter = envMap.keySet().iterator();
-		while(envIter.hasNext()){
-			String key = envIter.next();
-			String val = envMap.get(key).toString();
-			System.out.println(key+"\n     "+val);
-			if(key.equals(LD_LIB_PATH)){
-				existingLD_LIB_PATH = val;
-				if(existingLD_LIB_PATH != null && existingLD_LIB_PATH.length() > 0 && !existingLD_LIB_PATH.endsWith(":")){
-					existingLD_LIB_PATH+= ":";
+		if(OperatingSystemInfo.getInstance().isLinux()){
+			final String LD_LIB_PATH = "LD_LIBRARY_PATH";
+			File solversDir = ResourceUtil.getSolversDirectory();
+			String existingLD_LIB_PATH = null;
+			Map<String, String>envMap = System.getenv();
+			Iterator<String> envIter = envMap.keySet().iterator();
+			while(envIter.hasNext()){
+				String key = envIter.next();
+				String val = envMap.get(key).toString();
+//				System.out.println(key+"\n     "+val);
+				if(key.equals(LD_LIB_PATH)){
+					existingLD_LIB_PATH = val;
+					if(existingLD_LIB_PATH != null && existingLD_LIB_PATH.length() > 0 && !existingLD_LIB_PATH.endsWith(":")){
+						existingLD_LIB_PATH+= ":";
+					}
+					break;
 				}
 			}
+			String newLD_LIB_PATH = (existingLD_LIB_PATH==null?"":existingLD_LIB_PATH)+solversDir.getAbsolutePath();
+			System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
+			getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);			
 		}
-		String newLD_LIB_PATH = (existingLD_LIB_PATH==null?"":existingLD_LIB_PATH)+solversDir.getAbsolutePath();
-		System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
-		getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);
 		getMathExecutable().start();
 		cleanup();
 		//  getMathExecutable().start() may end prematurely (error or user stop), so check status before firing...
