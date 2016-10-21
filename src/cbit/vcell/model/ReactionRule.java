@@ -1257,7 +1257,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		if(getKineticLaw().getRateLawType().name().toLowerCase().contains(lowerCaseSearchText)){
 			return true;
 		}
-		if (RbmUtils.toBnglStringLong(this, CompartmentMode.hide).toLowerCase().contains(lowerCaseSearchText)){
+		if (RbmUtils.toBnglStringLong(this, CompartmentMode.show).toLowerCase().contains(lowerCaseSearchText)){
 			return true;
 		}
 		return false;
