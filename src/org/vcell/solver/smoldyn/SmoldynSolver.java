@@ -12,7 +12,9 @@ package org.vcell.solver.smoldyn;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -115,8 +117,29 @@ protected void initialize() throws SolverException
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simTask, bMessaging);
-		stFileWriter.write();
+		if (SystemUtils.IS_OS_WINDOWS){
+			//
+			// the windows executable is compiled under cygwin (or mingw) and expect Unix style line termination characters.
+			// so SmoldynInput file is written with platform default Java convention (different on windows) to a String.
+			// Then the string is translated to Unix style before written to the file.
+			// smoldyn is particularly sensitive to this issue, other compiled solvers are more tolerant.
+			//
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter pw2 = new PrintWriter(stringWriter);
+			
+			SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw2, false, getBaseName(), simTask, bMessaging);
+			stFileWriter.write();
+			
+			String fileContents = stringWriter.getBuffer().toString();
+			fileContents = fileContents.replace("\r\n", "\n");
+			pw.write(fileContents);
+		}else{
+			//
+			// for linux or macos, no translation is necessary.
+			//
+			SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simTask, bMessaging);
+			stFileWriter.write();			
+		}
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
 		e.printStackTrace(System.out);
@@ -141,6 +164,14 @@ private String getInputFilename(){
 protected String[] getMathExecutableCommand() {
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.smoldynExecutableProperty);
 	String inputFilename = getInputFilename();
+	if (SystemUtils.IS_OS_WINDOWS){
+		//
+		// file path is removed to avoided windows/unix style path conflicts in Smoldyn under cygwin/mingw.  
+		// on client-side, executable will be started in the correct directory so just the name is sufficient.
+		// smoldyn is particularly sensitive to this issue, other compiled solvers are more tolerant.
+		//
+		inputFilename = new File(inputFilename).getName();
+	}
 	return new String[] { executableName, inputFilename };
 }
 
