@@ -354,9 +354,9 @@ public class NFSimSolver extends SimpleCompiledSolver {
 					double down = 0;
 					for (Map.Entry<Integer, Integer> entry : occurencesMap.entrySet()) {
 						Integer key = entry.getKey();
-						if(key == 1) {
-							continue;
-						}
+//						if(key == 1) {
+//							continue;
+//						}
 						Integer value = entry.getValue();
 						up += key * value;
 						down += value;
