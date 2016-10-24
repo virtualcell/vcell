@@ -33,7 +33,8 @@ public abstract class BioNameScope extends AbstractNameScope {
 		electricalStimulusType,
 
 		mathmappingType,
-		structureMappingType,
+		structureMappingType, 
+		spatialProcessType,
 	}
 /**
  * BioNameScope constructor comment.

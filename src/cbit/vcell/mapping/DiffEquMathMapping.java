@@ -43,6 +43,17 @@ import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.mapping.potential.MembraneElectricalDevice;
 import cbit.vcell.mapping.potential.PotentialMapping;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
+import cbit.vcell.mapping.spatial.PointObject;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
+import cbit.vcell.mapping.spatial.SurfaceRegionObject;
+import cbit.vcell.mapping.spatial.VolumeRegionObject;
+import cbit.vcell.mapping.spatial.processes.PointKinematics;
+import cbit.vcell.mapping.spatial.processes.PointLocation;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess.SpatialProcessParameterType;
 import cbit.vcell.math.CommentedBlockObject;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -83,6 +94,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -91,6 +103,7 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -461,6 +474,209 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		if (scm.getVariable() instanceof MembraneRegionVariable){
 			varHash.addVariable(scm.getVariable());
+		}
+	}
+	
+	//
+	// consider the evaluation of spatial quantities associated with spatial objects
+	//
+	for (SpatialObject spatialObject : simContext.getSpatialObjects()){
+		if (spatialObject instanceof PointObject){
+			PointObject pointObject = (PointObject)spatialObject;
+			//
+			// if true, have to solve for this category
+			//
+			boolean bPosition = pointObject.isQuantityCategoryEnabled(QuantityCategory.PointPosition);
+			boolean bVelocity = pointObject.isQuantityCategoryEnabled(QuantityCategory.PointVelocity);
+			boolean bDirection = pointObject.isQuantityCategoryEnabled(QuantityCategory.DirectionToPoint);
+			boolean bDistance = pointObject.isQuantityCategoryEnabled(QuantityCategory.DistanceToPoint);
+			
+			//
+			// either make a point subdomain, or just define functions.
+			//
+			ArrayList<PointLocation> pointLocationProcesses = new ArrayList<PointLocation>();
+			ArrayList<PointKinematics> pointKinematicsProcesses = new ArrayList<PointKinematics>();
+			for (SpatialProcess spatialProcess : simContext.getSpatialProcesses()){
+				if (spatialProcess instanceof PointLocation && ((PointLocation) spatialProcess).getPointObject() == pointObject){
+					pointLocationProcesses.add((PointLocation) spatialProcess);
+				}
+				if (spatialProcess instanceof PointKinematics && ((PointKinematics) spatialProcess).getPointObject() == pointObject){
+					pointKinematicsProcesses.add((PointKinematics) spatialProcess);
+				}
+			}
+			if (pointLocationProcesses.size()==1 && pointKinematicsProcesses.size()==0 && !bVelocity){
+				GeometryClass gc = null;
+				PointLocation pointLocation = pointLocationProcesses.get(0);
+				if (bPosition){
+					if (simContext.getGeometry().getDimension()==1){
+						SpatialQuantity posXQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.X);
+						LocalParameter posXParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionX);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posXParam, gc), 
+								getIdentifierSubstitutions(posXParam.getExpression(), posXParam.getUnitDefinition(), gc), 
+								gc));
+						Expression posXExp = new Expression(posXParam,pointLocation.getNameScope());
+						Expression xExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.X),simContext.getModel().getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posXQuantity, gc), 
+								getIdentifierSubstitutions(posXExp,posXQuantity.getUnitDefinition(),gc),
+								gc));
+						Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
+						if (bDirection){
+							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirXQuantity, gc), 
+									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+						if (bDistance){
+							Expression abs_X_minux_posX = Expression.function(FunctionType.ABS, posX_minux_X);
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(distanceQuantity, gc), 
+									getIdentifierSubstitutions(abs_X_minux_posX,distanceQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+					}		
+					if (simContext.getGeometry().getDimension()==2){
+						SpatialQuantity posXQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.X);
+						LocalParameter posXParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionX);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posXParam, gc), 
+								getIdentifierSubstitutions(posXParam.getExpression(), posXParam.getUnitDefinition(), gc), 
+								gc));
+						Expression posXExp = new Expression(posXParam,pointLocation.getNameScope());
+						Expression xExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.X),simContext.getModel().getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posXQuantity, gc), 
+								getIdentifierSubstitutions(new Expression(posXParam,pointLocation.getNameScope()),posXQuantity.getUnitDefinition(),gc),
+								gc));
+						SpatialQuantity posYQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Y);
+						LocalParameter posYParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionY);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posYParam, gc), 
+								getIdentifierSubstitutions(posYParam.getExpression(), posYParam.getUnitDefinition(), gc), 
+								gc));
+						Expression posYExp = new Expression(posYParam,pointLocation.getNameScope());
+						Expression yExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.Y),simContext.getModel().getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posYQuantity, gc), 
+								getIdentifierSubstitutions(new Expression(posYParam,pointLocation.getNameScope()),posYQuantity.getUnitDefinition(),gc),
+								gc));
+						Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
+						Expression posY_minux_Y = Expression.add(posYExp,Expression.negate(yExp));
+						if (bDirection){
+							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirXQuantity, gc), 
+									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									gc));
+							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirYQuantity, gc), 
+									getIdentifierSubstitutions(posY_minux_Y,dirYQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+						if (bDistance){
+							Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
+							Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
+							Expression sqrt_DX2_DY2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2));
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(distanceQuantity, gc), 
+									getIdentifierSubstitutions(sqrt_DX2_DY2,distanceQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+					}		
+					if (simContext.getGeometry().getDimension()==3){
+						SpatialQuantity posXQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.X);
+						LocalParameter posXParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionX);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posXParam, gc), 
+								getIdentifierSubstitutions(posXParam.getExpression(), posXParam.getUnitDefinition(), gc), 
+								gc));
+						Expression posXExp = new Expression(posXParam,pointLocation.getNameScope());
+						Expression xExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.X),simContext.getModel().getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posXQuantity, gc), 
+								getIdentifierSubstitutions(new Expression(posXParam,pointLocation.getNameScope()),posXQuantity.getUnitDefinition(),gc),
+								gc));
+						SpatialQuantity posYQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Y);
+						LocalParameter posYParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionY);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posYParam, gc), 
+								getIdentifierSubstitutions(posYParam.getExpression(), posYParam.getUnitDefinition(), gc), 
+								gc));
+						Expression posYExp = new Expression(posYParam,pointLocation.getNameScope());
+						Expression yExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.Y),simContext.getModel().getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posYQuantity, gc), 
+								getIdentifierSubstitutions(new Expression(posYParam,pointLocation.getNameScope()),posYQuantity.getUnitDefinition(),gc),
+								gc));
+						SpatialQuantity posZQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Z);
+						LocalParameter posZParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionZ);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posZParam, gc), 
+								getIdentifierSubstitutions(posZParam.getExpression(), posZParam.getUnitDefinition(), gc), 
+								gc));
+						Expression posZExp = new Expression(posZParam,pointLocation.getNameScope());
+						Expression zExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.Z),simContext.getModel().getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(posZQuantity, gc), 
+								getIdentifierSubstitutions(new Expression(posZParam,pointLocation.getNameScope()),posZQuantity.getUnitDefinition(),gc),
+								gc));
+						Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
+						Expression posY_minux_Y = Expression.add(posYExp,Expression.negate(yExp));
+						Expression posZ_minux_Z = Expression.add(posZExp,Expression.negate(zExp));
+						if (bDirection){
+							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirXQuantity, gc), 
+									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									gc));
+							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirYQuantity, gc), 
+									getIdentifierSubstitutions(posY_minux_Y,dirYQuantity.getUnitDefinition(),gc),
+									gc));
+							SpatialQuantity dirZQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Z);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirZQuantity, gc), 
+									getIdentifierSubstitutions(posZ_minux_Z,dirZQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+						if (bDistance){
+							Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
+							Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
+							Expression DZ2 = Expression.mult(posZ_minux_Z,posZ_minux_Z);
+							Expression sqrt_DX2_DY2_DZ2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2,DZ2));
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(distanceQuantity, gc), 
+									getIdentifierSubstitutions(sqrt_DX2_DY2_DZ2,distanceQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+					}		
+				}else{
+					throw new MappingException("PointLocation process defined for pointObject '"+pointObject.getName()+"' but Position not enabled");
+				}
+			}else if (pointLocationProcesses.size()==0 && pointKinematicsProcesses.size()==1){
+				
+			}else{
+				throw new MappingException("expecting 1 location or kinematics process for point '"+pointObject.getName());
+			}
+		}else if (spatialObject instanceof SurfaceRegionObject){
+			SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject)spatialObject;
+			//	QuantityCategory.Normal,
+			//	QuantityCategory.SurfaceVelocity,
+			//	QuantityCategory.DistanceToSurface,
+			//	QuantityCategory.DirectionToSurface,
+			//	QuantityCategory.SurfaceSize
+			
+		}else if (spatialObject instanceof VolumeRegionObject){
+			VolumeRegionObject volumeRegionObject = (VolumeRegionObject)spatialObject;
+			//	QuantityCategory.Centroid,
+			//	QuantityCategory.VolumeSize},
 		}
 	}
 	

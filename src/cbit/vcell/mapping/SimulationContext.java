@@ -73,6 +73,11 @@ import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.SurfaceRegionObject;
 import cbit.vcell.mapping.spatial.VolumeRegionObject;
+import cbit.vcell.mapping.spatial.processes.PointKinematics;
+import cbit.vcell.mapping.spatial.processes.PointLocation;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
+import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess.SpatialProcessParameterType;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -125,6 +130,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_USE_CONCENTRATION = "UseConcentration";
 	public static final String PROPERTY_NAME_RANDOMIZE_INIT_CONDITIONS = "RandomizeInitConditions";
 	public static final String PROPERTY_NAME_SPATIALOBJECTS = "spatialObjects";
+	public static final String PROPERTY_NAME_SPATIALPROCESSES = "spatialProcesses";
+
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
 	
@@ -143,7 +150,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 										reactionContext.getReactionSpecs().length + 
 										fieldElectricalStimuli.length +
 										((fieldBioEvents!=null)?fieldBioEvents.length:0) +
-										((spatialObjects!=null)?spatialObjects.length:0)];
+										((spatialProcesses!=null)?spatialProcesses.length:0)];
 			for (int i = 0; i < geoContext.getStructureMappings().length; i++){
 				nameScopes[index++] = geoContext.getStructureMappings()[i].getNameScope();
 			}
@@ -158,6 +165,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			}
 			for (int i = 0; fieldBioEvents!=null && i < fieldBioEvents.length; i++){
 				nameScopes[index++] = fieldBioEvents[i].getNameScope();
+			}
+			for (int i = 0; spatialProcesses!=null && i < spatialProcesses.length; i++){
+				nameScopes[index++] = spatialProcesses[i].getNameScope();
 			}
 			return nameScopes;
 		}
@@ -2943,10 +2953,93 @@ public SpatialObject createPointObject() {
 	PointObject pointObject = new PointObject(pointName,this);
 	try {
 		addSpatialObject(pointObject);
+		PointLocation pointLocation = createPointLocation(pointObject);
+		try {
+			pointLocation.getParameter(SpatialProcessParameterType.PointPositionX).setExpression(new Expression(1.0));
+			pointLocation.getParameter(SpatialProcessParameterType.PointPositionY).setExpression(new Expression(2.0));
+			pointLocation.getParameter(SpatialProcessParameterType.PointPositionZ).setExpression(new Expression(3.0));
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace();
+		}
 	}catch (PropertyVetoException e){
 		throw new RuntimeException(e.getMessage(),e);
 	}
 	return pointObject;
+}
+
+private SpatialProcess[] spatialProcesses = new SpatialProcess[0];
+
+public SpatialProcess[] getSpatialProcesses(){
+	return Arrays.copyOf(spatialProcesses,spatialProcesses.length);
+}
+
+public void addSpatialProcess(SpatialProcess spatialProcess) throws PropertyVetoException{
+	setSpatialProcesses(BeanUtils.addElement(this.spatialProcesses, spatialProcess));
+}
+
+public void removeSpatialProcess(SpatialProcess spatialProcess) throws PropertyVetoException{
+	setSpatialProcesses(BeanUtils.removeElement(this.spatialProcesses, spatialProcess));
+}
+
+public void setSpatialProcesses(SpatialProcess[] spatialProcesses) throws PropertyVetoException{
+	SpatialProcess[] oldValue = this.spatialProcesses;
+	fireVetoableChange(PROPERTY_NAME_SPATIALPROCESSES, oldValue, spatialProcesses);
+	this.spatialProcesses = spatialProcesses;
+	firePropertyChange(PROPERTY_NAME_SPATIALPROCESSES, oldValue, spatialProcesses);
+}
+
+public SpatialProcess getSpatialProcess(String name) {
+	for (SpatialProcess so : spatialProcesses){
+		if (so.getName().equals(name)){
+			return so;
+		}
+	}
+	return null;
+}
+
+public PointKinematics createPointKinematics(PointObject pointObject) {
+	String pointProcName = "pproc_0";
+	while (getSpatialProcess(pointProcName)!=null){
+		pointProcName = TokenMangler.getNextEnumeratedToken(pointProcName);
+	}
+	PointKinematics pointKinematics = new PointKinematics(pointProcName,this);
+	pointKinematics.setPointObject(pointObject);
+	try {
+		addSpatialProcess(pointKinematics);
+	}catch (PropertyVetoException e){
+		throw new RuntimeException(e.getMessage(),e);
+	}
+	return pointKinematics;
+}
+
+public PointLocation createPointLocation(PointObject pointObject) {
+	String pointProcName = "pproc_0";
+	while (getSpatialProcess(pointProcName)!=null){
+		pointProcName = TokenMangler.getNextEnumeratedToken(pointProcName);
+	}
+	PointLocation pointLocation = new PointLocation(pointProcName,this);
+	pointLocation.setPointObject(pointObject);
+	try {
+		addSpatialProcess(pointLocation);
+	}catch (PropertyVetoException e){
+		throw new RuntimeException(e.getMessage(),e);
+	}
+	return pointLocation;
+}
+
+public SurfaceKinematics createSurfaceKinematics(SurfaceRegionObject surfaceRegionObject) {
+	String surfaceKinematicsName = "sproc_0";
+	while (getSpatialProcess(surfaceKinematicsName)!=null){
+		surfaceKinematicsName = TokenMangler.getNextEnumeratedToken(surfaceKinematicsName);
+	}
+	SurfaceKinematics surfaceKinematics = new SurfaceKinematics(surfaceKinematicsName,this);
+	surfaceKinematics.setSurfaceRegionObject(surfaceRegionObject);
+	try {
+		addSpatialProcess(surfaceKinematics);
+	}catch (PropertyVetoException e){
+		throw new RuntimeException(e.getMessage(),e);
+	}
+	return surfaceKinematics;
 }
 
 }

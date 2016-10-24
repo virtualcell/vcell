@@ -33,6 +33,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.model.EditableSymbolTableEntry;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -178,13 +179,9 @@ private List<EditableSymbolTableEntry> getApplicationEditableSymbolTableEntryLis
 	for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
 		parameterList.addAll(Arrays.asList(elect.getParameters()));
 	}	
-//	for (SpatialObject sobj : simulationContext.getSpatialObjects()){
-//		for (SpatialQuantity spatialQuantity : sobj.getSpatialQuantities()){
-//			if (spatialQuantity.isEnabled()){
-//				parameterList.add(spatialQuantity);
-//			}
-//		}
-//	}
+	for (SpatialProcess sp : simulationContext.getSpatialProcesses()){
+		parameterList.addAll(Arrays.asList(sp.getParameters()));
+	}
 	return parameterList;
 }
 

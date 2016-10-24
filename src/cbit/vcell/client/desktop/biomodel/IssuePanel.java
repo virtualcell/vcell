@@ -58,7 +58,6 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.mapping.spatial.SpatialObject;
-import cbit.vcell.mapping.spatial.SpatialProcess.SpatialObjectNameScope;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.RbmObservable;
@@ -221,8 +220,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping),new Object[] {object});
 			} else if (object instanceof SpatialObject) {
 				SpatialObject spatialObject = (SpatialObject) object;
-				SpatialObjectNameScope spatialObjectNameScope = (SpatialObjectNameScope)spatialObject.getSimulationContext().getNameScope();
-				SimulationContext simulationContext = ((SimulationContextNameScope)(spatialObjectNameScope.getParent())).getSimulationContext();
+				SimulationContext simulationContext = spatialObject.getSimulationContext();
 				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.spatial_objects),new Object[] {object});
 			} else if (object instanceof GeometryContext.UnmappedGeometryClass) {
 				UnmappedGeometryClass unmappedGeometryClass = (UnmappedGeometryClass) object;

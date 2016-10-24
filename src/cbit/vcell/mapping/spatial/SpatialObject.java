@@ -15,7 +15,6 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.ApplicationQuantity;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
@@ -262,6 +261,15 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 		return null;
 	}
 	
+	public final SpatialQuantity getSpatialQuantity(QuantityCategory quantityCategory, QuantityComponent quantityComponent) {
+		for (SpatialQuantity spatialQuantity : getSpatialQuantities()){
+			if (spatialQuantity.getQuantityCategory() == quantityCategory && spatialQuantity.getQuantityComponent() == quantityComponent){
+				return spatialQuantity;
+			}
+		}
+		return null;
+	}
+		
 	public List<QuantityCategory> getQuantityCategories(){
 		return Arrays.asList(quantityCategories);
 	}
