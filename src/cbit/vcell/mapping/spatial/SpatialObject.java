@@ -22,6 +22,7 @@ import cbit.vcell.units.VCUnitDefinition;
 public abstract class SpatialObject implements Serializable, IssueSource, Matchable {
 	public static final String PROPERTY_NAME_NAME = "name";
 	public static final String PROPERTY_NAME_SPATIALQUANTITIES = "spatialQuantities";
+	public static final String PROPERTY_NAME_QUANTITYCATEGORIESENABLED = "quantityCategoriesEnabled";
 	protected SpatialQuantity[] spatialQuantities;
 	protected SimulationContext simulationContext;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -275,11 +276,13 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 	}
 	
 	public void setQuantityCategoryEnabled(QuantityCategory quantityCategory, boolean enabled){
+		Boolean[] oldValue = this.quantityCategoryEnabled.clone();
 		for (int i=0;i<this.quantityCategories.length;i++){
 			if (this.quantityCategories[i] == quantityCategory){
 				this.quantityCategoryEnabled[i] = enabled;
 			}
 		}
+		firePropertyChange(PROPERTY_NAME_QUANTITYCATEGORIESENABLED, oldValue, this.quantityCategoryEnabled);
 	}
 	
 	public boolean isQuantityCategoryEnabled(QuantityCategory quantityCategory){

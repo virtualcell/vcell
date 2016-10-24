@@ -131,6 +131,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_RANDOMIZE_INIT_CONDITIONS = "RandomizeInitConditions";
 	public static final String PROPERTY_NAME_SPATIALOBJECTS = "spatialObjects";
 	public static final String PROPERTY_NAME_SPATIALPROCESSES = "spatialProcesses";
+	public static final String PROPERTY_NAME_SIMULATIONCONTEXTPARAMETERS = "simulationContextParameters";
 
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
@@ -2260,9 +2261,9 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  */
 public void setSimulationContextParameters(SimulationContext.SimulationContextParameter[] simulationContextParameters) throws java.beans.PropertyVetoException {
 	SimulationContextParameter[] oldValue = fieldSimulationContextParameters;
-	fireVetoableChange("simulationContextParameters", oldValue, simulationContextParameters);
+	fireVetoableChange(PROPERTY_NAME_SIMULATIONCONTEXTPARAMETERS, oldValue, simulationContextParameters);
 	fieldSimulationContextParameters = simulationContextParameters;
-	firePropertyChange("simulationContextParameters", oldValue, simulationContextParameters);
+	firePropertyChange(PROPERTY_NAME_SIMULATIONCONTEXTPARAMETERS, oldValue, simulationContextParameters);
 }
 
 

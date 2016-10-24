@@ -27,12 +27,13 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.BioModelParametersPanel.ApplicationSelection;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
 import cbit.vcell.mapping.spatial.SpatialObject;
-import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.model.EditableSymbolTableEntry;
 import cbit.vcell.model.Kinetics;
@@ -346,6 +347,18 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 							parameter.removePropertyChangeListener(this);
 						}
 					}
+					for (SpatialObject spatialObject : simulationContext.getSpatialObjects()){
+						spatialObject.removePropertyChangeListener(this);
+					}
+					for (SpatialProcess spatialProcess : simulationContext.getSpatialProcesses()){
+						spatialProcess.removePropertyChangeListener(this);
+						for (LocalParameter p : spatialProcess.getParameters()){
+							p.removePropertyChangeListener(this);
+						}
+					}
+					for (SimulationContextParameter p : simulationContext.getSimulationContextParameters()){
+						p.removePropertyChangeListener(this);
+					}
 				}
 				SimulationContext[] newValue = (SimulationContext[])evt.getNewValue();
 				for (SimulationContext simulationContext : newValue) {
@@ -369,6 +382,18 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 						for (EditableSymbolTableEntry parameter : elect.getParameters()) {
 							parameter.addPropertyChangeListener(this);
 						}
+					}
+					for (SpatialObject spatialObject : simulationContext.getSpatialObjects()){
+						spatialObject.addPropertyChangeListener(this);
+					}
+					for (SpatialProcess spatialProcess : simulationContext.getSpatialProcesses()){
+						spatialProcess.addPropertyChangeListener(this);
+						for (LocalParameter p : spatialProcess.getParameters()){
+							p.addPropertyChangeListener(this);
+						}
+					}
+					for (SimulationContextParameter p : simulationContext.getSimulationContextParameters()){
+						p.addPropertyChangeListener(this);
 					}
 				}
 				refreshData();
@@ -418,6 +443,56 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 				for (UnresolvedParameter unresolvedEditableSymbolTableEntry: newValue.getUnresolvedParameters()) {
 					unresolvedEditableSymbolTableEntry.addPropertyChangeListener(this);
+				}
+			}
+			refreshData();
+		} else if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_SPATIALPROCESSES)) {
+			SpatialProcess[] oldValue = (SpatialProcess[]) evt.getOldValue();
+			if (oldValue != null) {
+				for (SpatialProcess process : oldValue) {
+					process.removePropertyChangeListener(this);
+					for (EditableSymbolTableEntry parameter : process.getParameters()) {
+						parameter.removePropertyChangeListener(this);
+					}
+				}
+			}
+			SpatialProcess[] newValue = (SpatialProcess[]) evt.getNewValue();
+			if (newValue != null) {
+				for (SpatialProcess process : newValue) {
+					process.addPropertyChangeListener(this);
+					for (EditableSymbolTableEntry parameter : process.getParameters()) {
+						parameter.addPropertyChangeListener(this);
+					}
+				}
+			}
+			refreshData();
+		} else if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_SPATIALOBJECTS)) {
+			SpatialObject[] oldValue = (SpatialObject[]) evt.getOldValue();
+			if (oldValue != null) {
+				for (SpatialObject spatialObject : oldValue) {
+					spatialObject.removePropertyChangeListener(this);
+				}
+			}
+			SpatialObject[] newValue = (SpatialObject[]) evt.getNewValue();
+			if (newValue != null) {
+				for (SpatialObject spatialObject : newValue) {
+					spatialObject.addPropertyChangeListener(this);
+				}
+			}
+			refreshData();
+		} else if (evt.getSource() instanceof SpatialObject && evt.getPropertyName().equals(SpatialObject.PROPERTY_NAME_QUANTITYCATEGORIESENABLED)) {
+			refreshData();
+		} else if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_SIMULATIONCONTEXTPARAMETERS)) {
+			SimulationContextParameter[] oldValue = (SimulationContextParameter[]) evt.getOldValue();
+			if (oldValue != null) {
+				for (SimulationContextParameter param : oldValue) {
+					param.removePropertyChangeListener(this);
+				}
+			}
+			SimulationContextParameter[] newValue = (SimulationContextParameter[]) evt.getNewValue();
+			if (newValue != null) {
+				for (SimulationContextParameter param : newValue) {
+					param.addPropertyChangeListener(this);
 				}
 			}
 			refreshData();
@@ -577,6 +652,18 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 					parameter.removePropertyChangeListener(this);
 				}
 			}
+			for (SpatialObject spatialObject : simulationContext.getSpatialObjects()){
+				spatialObject.removePropertyChangeListener(this);
+			}
+			for (SpatialProcess spatialProcess : simulationContext.getSpatialProcesses()){
+				spatialProcess.removePropertyChangeListener(this);
+				for (LocalParameter p : spatialProcess.getParameters()){
+					p.removePropertyChangeListener(this);
+				}
+			}
+			for (SimulationContextParameter p : simulationContext.getSimulationContextParameters()){
+				p.removePropertyChangeListener(this);
+			}
 		}
 	}
 	BioModel newValue = (BioModel)evt.getNewValue();
@@ -622,6 +709,18 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 				for (EditableSymbolTableEntry parameter : elect.getParameters()) {
 					parameter.addPropertyChangeListener(this);
 				}
+			}
+			for (SpatialObject spatialObject : simulationContext.getSpatialObjects()){
+				spatialObject.addPropertyChangeListener(this);
+			}
+			for (SpatialProcess spatialProcess : simulationContext.getSpatialProcesses()){
+				spatialProcess.addPropertyChangeListener(this);
+				for (LocalParameter p : spatialProcess.getParameters()){
+					p.addPropertyChangeListener(this);
+				}
+			}
+			for (SimulationContextParameter p : simulationContext.getSimulationContextParameters()){
+				p.addPropertyChangeListener(this);
 			}
 		}
 	}
