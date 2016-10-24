@@ -102,6 +102,7 @@ GeometryContext(GeometryContext geometryContext, SimulationContext newSimulation
 	}
 	try {
 		refreshStructureMappings();
+		newSimulationContext.refreshSpatialObjects();
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 	}	
@@ -529,6 +530,7 @@ public void propertyChange(PropertyChangeEvent event) {
 				&& event.getPropertyName() != GeometrySpec.PROPERTY_NAME_THUMBNAIL_IMAGE){
 		try {
 			refreshStructureMappings();
+			getSimulationContext().refreshSpatialObjects();
 		}catch (MappingException e){
 			e.printStackTrace(System.out);
 		}catch (PropertyVetoException e){
@@ -851,6 +853,7 @@ void setGeometry(Geometry geometry) throws MappingException {
 	try {
 		refreshStructureMappings();
 		refreshDependencies();
+		getSimulationContext().refreshSpatialObjects();
 	}catch (PropertyVetoException e){
 		e.printStackTrace(System.out);
 		throw new MappingException(e.getMessage());

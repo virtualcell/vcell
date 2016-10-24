@@ -45,6 +45,7 @@ public class SelectionManager {
 		
 		geometry_definition,
 		structure_mapping,
+		spatial_objects,
 		
 		species_settings,
 		reaction_setting,

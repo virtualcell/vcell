@@ -14,7 +14,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,19 +21,16 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.SwingUtilities;
 
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.NetworkFreePanel;
-import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
-import org.vcell.util.ProgrammingException;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
@@ -54,7 +50,6 @@ import org.vcell.util.document.Versionable;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
-import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.task.DocumentValid;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -62,15 +57,22 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
+import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
-import cbit.vcell.mapping.NetworkTransformer.GeneratedSpeciesSymbolTableEntry;
-import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
-import cbit.vcell.mapping.SimContextTransformer.SimContextTransformation;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
+import cbit.vcell.mapping.spatial.CurveObject;
+import cbit.vcell.mapping.spatial.PointObject;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
+import cbit.vcell.mapping.spatial.SurfaceRegionObject;
+import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -79,7 +81,6 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelException;
@@ -89,11 +90,9 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -106,7 +105,6 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
@@ -126,6 +124,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_BIOEVENTS = "bioevents";
 	public static final String PROPERTY_NAME_USE_CONCENTRATION = "UseConcentration";
 	public static final String PROPERTY_NAME_RANDOMIZE_INIT_CONDITIONS = "RandomizeInitConditions";
+	public static final String PROPERTY_NAME_SPATIALOBJECTS = "spatialObjects";
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
 	
@@ -143,7 +142,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 										reactionContext.getSpeciesContextSpecs().length + 
 										reactionContext.getReactionSpecs().length + 
 										fieldElectricalStimuli.length +
-										((fieldBioEvents!=null)?fieldBioEvents.length:0)];
+										((fieldBioEvents!=null)?fieldBioEvents.length:0) +
+										((spatialObjects!=null)?spatialObjects.length:0)];
 			for (int i = 0; i < geoContext.getStructureMappings().length; i++){
 				nameScopes[index++] = geoContext.getStructureMappings()[i].getNameScope();
 			}
@@ -432,6 +432,25 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 			}
 		}
 		
+		// copy SpatialObjects
+		SpatialObject[] otherSpatialObjects = oldSimulationContext.getSpatialObjects();
+		if (otherSpatialObjects != null) {
+			this.spatialObjects = new SpatialObject[otherSpatialObjects.length];
+			for (int i = 0; i < otherSpatialObjects.length; i++) {
+				if (otherSpatialObjects[i] instanceof CurveObject){
+					this.spatialObjects[i] = new CurveObject((CurveObject) otherSpatialObjects[i], this);
+				}else if (otherSpatialObjects[i] instanceof PointObject){
+					this.spatialObjects[i] = new PointObject((PointObject) otherSpatialObjects[i], this);
+				}else if (otherSpatialObjects[i] instanceof SurfaceRegionObject){
+					this.spatialObjects[i] = new SurfaceRegionObject((SurfaceRegionObject) otherSpatialObjects[i], this);
+				}else if (otherSpatialObjects[i] instanceof VolumeRegionObject){
+					this.spatialObjects[i] = new VolumeRegionObject((VolumeRegionObject) otherSpatialObjects[i], this);
+				}else{
+					throw new RuntimeException("unexpected Spatial object in SimulationContext()");
+				}
+			}
+		}
+		
 		// copy rate rules
 		RateRule[] rateRules = oldSimulationContext.getRateRules();
 		if (rateRules != null) {
@@ -596,7 +615,6 @@ public BioEvent addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
 	}
 	return bioEvent;
 }
-
 
 /**
  * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
@@ -788,6 +806,10 @@ public boolean compareEqual(Matchable object) {
 	}
 	
 	if (!Compare.isEqualOrNull(fieldBioEvents,simContext.fieldBioEvents)){
+		return false;
+	}
+
+	if (!Compare.isEqualOrNull(spatialObjects,simContext.spatialObjects)){
 		return false;
 	}
 
@@ -988,7 +1010,7 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  */
 public static final String IssueInsufficientIterations = "Max Iterations number may be insufficient.";
 public static final String IssueInsufficientMolecules = "Max Molecules / Species number may be insufficient.";
-public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boolean bIgnoreMathDescription) {
 //	issueContext = issueContext.newChildContext(ContextType.SimContext, this);
 	if(applicationType.equals(Application.RULE_BASED_STOCHASTIC)) {
 		for(ReactionRuleSpec rrs : getReactionContext().getReactionRuleSpecs()) {
@@ -1060,6 +1082,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 		}
 	}
 	
+	for (SpatialObject spatialObject : spatialObjects){
+		spatialObject.gatherIssues(issueContext, issueVector);
+	}
+	
 	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		// we're going to use network transformer to flatten (or we already did)
 		if(isInsufficientIterations()) {
@@ -1079,7 +1105,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	}
 	getOutputFunctionContext().gatherIssues(issueContext, issueVector);
 	getMicroscopeMeasurement().gatherIssues(issueContext, issueVector);
-	if (getMathDescription()!=null){
+	if (getMathDescription()!=null && !bIgnoreMathDescription){
 		getMathDescription().gatherIssues(issueContext, issueVector);
 	}
 	
@@ -1104,7 +1130,6 @@ public AnalysisTask[] getAnalysisTasks() {
 public BioEvent[] getBioEvents() {
 	return fieldBioEvents;
 }
-
 
 /**
  * Gets the analysisTasks index property (cbit.vcell.modelopt.AnalysisTask) value.
@@ -1286,6 +1311,13 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 		return ste;
 	}
 	
+
+	for (SpatialObject spatialObject : spatialObjects){
+		SpatialQuantity appQuantity = spatialObject.getSpatialQuantity(identifier);
+		if (appQuantity!=null){
+			return appQuantity;
+		}
+	}
 
 	// if dataContext parameter exists, then return it
 	ste = getDataContext().getDataSymbol(identifier);
@@ -1696,6 +1728,12 @@ public void refreshDependencies1(boolean isRemoveUncoupledParameters) {
 		}
 	}
 
+	if (spatialObjects != null) {
+		for (int i = 0; i < spatialObjects.length; i++) {
+			spatialObjects[i].refreshDependencies();
+		}
+	}
+
 	if (fieldRateRules != null) {
 		for (int i = 0; i < fieldRateRules.length; i++) {
 			fieldRateRules[i].refreshDependencies();
@@ -1895,7 +1933,6 @@ public void setBioEvents(BioEvent[] bioEvents) throws java.beans.PropertyVetoExc
 	firePropertyChange(PROPERTY_NAME_BIOEVENTS, oldValue, bioEvents);
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (5/7/2004 11:54:10 AM)
@@ -1988,6 +2025,7 @@ public void setGeometry(Geometry geometry) throws MappingException {
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}
+		refreshSpatialObjects();
 		oldGeometry.getGeometrySpec().removePropertyChangeListener(this);
 		getGeometry().getGeometrySpec().addPropertyChangeListener(this);
 		if (geometry != null && geometry.getDimension() > 0) {
@@ -2011,6 +2049,121 @@ public void setGeometry(Geometry geometry) throws MappingException {
 		}
 // now firing from geoContext
 //		firePropertyChange("geometry",oldGeometry,geometry);
+	}
+}
+
+public void refreshSpatialObjects() {
+	Geometry geometry = getGeometry();
+	if (geometry!=null && geometry.getGeometrySurfaceDescription()!=null){
+		ArrayList<SpatialObject> unmappedSpatialObjects = new ArrayList<SpatialObject>(Arrays.asList(spatialObjects));
+		ArrayList<GeometricRegion> mappedRegions = new ArrayList<GeometricRegion>();
+		//
+		// for existing spatial objects, rebind to new geometry
+		//
+		for (SpatialObject spatialObject : spatialObjects){
+			if (spatialObject instanceof VolumeRegionObject){
+				VolumeRegionObject volRegionObj = (VolumeRegionObject)spatialObject;
+				SubVolume existingSubvolume = volRegionObj.getSubVolume();
+				Integer existingRegionID = volRegionObj.getRegionID();
+				SubVolume newSubvolume = geometry.getGeometrySpec().getSubVolume(existingSubvolume.getName());
+				if (newSubvolume!=null){
+					for (GeometricRegion newRegion : geometry.getGeometrySurfaceDescription().getGeometricRegions(newSubvolume)){
+						VolumeGeometricRegion newVolRegion = (VolumeGeometricRegion)newRegion;
+						if (newVolRegion.getRegionID() == existingRegionID){
+							((VolumeRegionObject) spatialObject).setSubVolume(newSubvolume);
+							mappedRegions.add(newVolRegion);
+							unmappedSpatialObjects.remove(spatialObject);
+						}
+					}
+				}
+			}
+			if (spatialObject instanceof SurfaceRegionObject){
+				SurfaceRegionObject surfaceRegionObj = (SurfaceRegionObject)spatialObject;
+				SubVolume existingInsideSubvolume = surfaceRegionObj.getInsideSubVolume();
+				SubVolume existingOutsideSubvolume = surfaceRegionObj.getOutsideSubVolume();
+				Integer existingInsideRegionID = surfaceRegionObj.getInsideRegionID();
+				Integer existingOutsideRegionID = surfaceRegionObj.getOutsideRegionID();
+				SubVolume newInsideSubvolume = geometry.getGeometrySpec().getSubVolume(existingInsideSubvolume.getName());
+				SubVolume newOutsideSubvolume = geometry.getGeometrySpec().getSubVolume(existingOutsideSubvolume.getName());
+				if (newInsideSubvolume != null && newOutsideSubvolume != null){
+					SurfaceClass surfaceClass = geometry.getGeometrySurfaceDescription().getSurfaceClass(newInsideSubvolume, newOutsideSubvolume);
+					for (GeometricRegion newRegion : geometry.getGeometrySurfaceDescription().getGeometricRegions(surfaceClass)){
+						SurfaceGeometricRegion newSurfaceRegion = (SurfaceGeometricRegion)newRegion;
+						GeometricRegion[] adjacentRegions = newSurfaceRegion.getAdjacentGeometricRegions();
+						if (adjacentRegions.length==2 && adjacentRegions[0] instanceof VolumeGeometricRegion && adjacentRegions[1] instanceof VolumeGeometricRegion){
+							VolumeGeometricRegion adjVolRegion0 = (VolumeGeometricRegion)adjacentRegions[0];
+							VolumeGeometricRegion adjVolRegion1 = (VolumeGeometricRegion)adjacentRegions[1];
+							if (adjVolRegion0.getSubVolume() == newInsideSubvolume && adjVolRegion0.getRegionID() == existingInsideRegionID &&
+								adjVolRegion1.getSubVolume() == newOutsideSubvolume && adjVolRegion1.getRegionID() == existingOutsideRegionID){
+								
+								surfaceRegionObj.setInsideSubVolume(newInsideSubvolume);
+								surfaceRegionObj.setOutsideSubVolume(newOutsideSubvolume);
+								mappedRegions.add(newSurfaceRegion);
+								unmappedSpatialObjects.remove(spatialObject);
+							}
+							if (adjVolRegion0.getSubVolume() == newOutsideSubvolume && adjVolRegion0.getRegionID() == existingOutsideRegionID &&
+								adjVolRegion1.getSubVolume() == newInsideSubvolume && adjVolRegion1.getRegionID() == existingInsideRegionID){
+
+								surfaceRegionObj.setInsideSubVolume(newInsideSubvolume);
+								surfaceRegionObj.setOutsideSubVolume(newOutsideSubvolume);
+								mappedRegions.add(newSurfaceRegion);
+								unmappedSpatialObjects.remove(spatialObject);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		//
+		// for geometric regions not represented as spatial objects, add them
+		//
+		ArrayList<GeometricRegion> unmappedRegions = new ArrayList<GeometricRegion>(Arrays.asList(geometry.getGeometrySurfaceDescription().getGeometricRegions()));
+		unmappedRegions.removeAll(mappedRegions);
+		for (GeometricRegion unmappedRegion : unmappedRegions){
+			if (unmappedRegion instanceof VolumeGeometricRegion){
+				VolumeGeometricRegion unmappedVolRegion = (VolumeGeometricRegion) unmappedRegion;
+				String newName = "vobj_"+unmappedVolRegion.getSubVolume().getName()+unmappedVolRegion.getRegionID();
+				try {
+					addSpatialObject(new VolumeRegionObject(newName, unmappedVolRegion.getSubVolume(), unmappedVolRegion.getRegionID(), this));
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+				}
+			}else if (unmappedRegion instanceof SurfaceGeometricRegion){
+				SurfaceGeometricRegion unmappedSurfRegion = (SurfaceGeometricRegion) unmappedRegion;
+				GeometricRegion[] adjacentRegions = unmappedSurfRegion.getAdjacentGeometricRegions();
+				if (adjacentRegions.length==2 && adjacentRegions[0] instanceof VolumeGeometricRegion && adjacentRegions[1] instanceof VolumeGeometricRegion){
+					VolumeGeometricRegion volRegion0 = (VolumeGeometricRegion)adjacentRegions[0];
+					VolumeGeometricRegion volRegion1 = (VolumeGeometricRegion)adjacentRegions[1];
+					SubVolume insideSubVolume = volRegion0.getSubVolume();
+					SubVolume outsideSubVolume = volRegion1.getSubVolume();
+					int insideRegionID = volRegion0.getRegionID();
+					int outsideRegionID = volRegion1.getRegionID();
+					SurfaceClass surfaceClass = geometry.getGeometrySurfaceDescription().getSurfaceClass(insideSubVolume,outsideSubVolume);
+					String newName = "sobj_"+insideSubVolume.getName()+insideRegionID+"_"+outsideSubVolume.getName()+outsideRegionID;
+					try {
+						addSpatialObject(new SurfaceRegionObject(newName, insideSubVolume, insideRegionID, outsideSubVolume, outsideRegionID, this));
+					} catch (PropertyVetoException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		
+		//
+		// for spatial objects no longer represented in the new geometry, try to delete one-by-one ... and cancel if vetoed.
+		//
+		for (SpatialObject unmappedSpatialObject : spatialObjects){
+			if (unmappedSpatialObject instanceof VolumeRegionObject){
+				System.err.println("volume region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete???");
+			}
+			if (unmappedSpatialObject instanceof SurfaceRegionObject){
+				System.err.println("surface region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete???");
+			}
+			if (unmappedSpatialObject instanceof PointObject){
+				System.err.println("point spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, this is expected");
+			}
+		}
 	}
 }
 
@@ -2295,6 +2448,13 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : dataContext.getDataSymbols()){
 		entryMap.put(ste.getName(), ste);
 	}
+	for (SpatialObject spatialObject : spatialObjects){
+		for (SpatialQuantity spatialQuantity : spatialObject.getSpatialQuantities()){
+			if (spatialQuantity.isEnabled()){
+				entryMap.put(spatialQuantity.getName(),spatialQuantity);
+			}
+		}
+	}
 	entryMap.put(MathFunctionDefinitions.fieldFunctionDefinition.getName(), MathFunctionDefinitions.fieldFunctionDefinition);
 }
 
@@ -2504,8 +2664,8 @@ public MathMapping createNewMathMapping() {
 }
 
 public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGenerationRequirements networkGenReq) {
-	
-	DocumentValid.checkIssuesForErrors(this);
+	boolean bIgnoreMathDescription = true;
+	DocumentValid.checkIssuesForErrors(this, bIgnoreMathDescription);
 	
 	mostRecentlyCreatedMathMapping = null;
 	switch (applicationType) {
@@ -2743,6 +2903,50 @@ public void setNewCallbackMessage(TaskCallbackMessage message) {
 public boolean isInterrupted() {
 	// TODO Auto-generated method stub
 	return false;
+}
+
+private SpatialObject[] spatialObjects = new SpatialObject[0];
+
+public SpatialObject[] getSpatialObjects(){
+	return Arrays.copyOf(spatialObjects,spatialObjects.length);
+}
+
+public void addSpatialObject(SpatialObject spatialObject) throws PropertyVetoException{
+	setSpatialObjects(BeanUtils.addElement(this.spatialObjects, spatialObject));
+}
+
+public void removeSpatialObject(SpatialObject spatialObject) throws PropertyVetoException{
+	setSpatialObjects(BeanUtils.removeElement(this.spatialObjects, spatialObject));
+}
+
+public void setSpatialObjects(SpatialObject[] spatialObjects) throws PropertyVetoException{
+	SpatialObject[] oldValue = this.spatialObjects;
+	fireVetoableChange(PROPERTY_NAME_SPATIALOBJECTS, oldValue, spatialObjects);
+	this.spatialObjects = spatialObjects;
+	firePropertyChange(PROPERTY_NAME_SPATIALOBJECTS, oldValue, spatialObjects);
+}
+
+public SpatialObject getSpatialObject(String name) {
+	for (SpatialObject so : spatialObjects){
+		if (so.getName().equals(name)){
+			return so;
+		}
+	}
+	return null;
+}
+
+public SpatialObject createPointObject() {
+	String pointName = "pobj_0";
+	while (getSpatialObject(pointName)!=null){
+		pointName = TokenMangler.getNextEnumeratedToken(pointName);
+	}
+	PointObject pointObject = new PointObject(pointName,this);
+	try {
+		addSpatialObject(pointObject);
+	}catch (PropertyVetoException e){
+		throw new RuntimeException(e.getMessage(),e);
+	}
+	return pointObject;
 }
 
 }

@@ -2773,6 +2773,10 @@ public class SBMLImporter {
 		setSpeciesInitialConditions();
 		// Add InitialAssignments
 		addInitialAssignments();
+		// Add constraints (not handled in VCell)
+		addConstraints();
+		// Add Reactions
+		addReactions(vcMetaData);
 		// Add Rules Rules : adding these later (after assignment rules, since
 		// compartment/species/parameter need to be defined before rate rules
 		// for those vars can be read in).
@@ -2782,10 +2786,6 @@ public class SBMLImporter {
 			ee.printStackTrace(System.out);
 			throw new SBMLImportException(ee.getMessage(), ee);
 		}
-		// Add constraints (not handled in VCell)
-		addConstraints();
-		// Add Reactions
-		addReactions(vcMetaData);
 		// Sort VCell-model Structures in structure array according to reaction
 		// adjacency and parentCompartment.
 		Structure[] sortedStructures = StructureSorter
@@ -4000,6 +4000,7 @@ public class SBMLImporter {
 			} // end for (sbmlModel.numParams)
 
 			simContext.getGeometryContext().refreshStructureMappings();
+			simContext.refreshSpatialObjects();
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			throw new SBMLImportException(

@@ -27,7 +27,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.apache.commons.lang3.StringUtils;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.common.NetworkConstraintsEntity;
@@ -57,10 +57,11 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialProcess.SpatialObjectNameScope;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.RbmObservable;
-import org.vcell.model.rbm.MolecularType;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
@@ -218,6 +219,11 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				StructureMappingNameScope structureMappingNameScope = (StructureMappingNameScope)structureMapping.getNameScope();
 				SimulationContext simulationContext = ((SimulationContextNameScope)(structureMappingNameScope.getParent())).getSimulationContext();
 				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping),new Object[] {object});
+			} else if (object instanceof SpatialObject) {
+				SpatialObject spatialObject = (SpatialObject) object;
+				SpatialObjectNameScope spatialObjectNameScope = (SpatialObjectNameScope)spatialObject.getSimulationContext().getNameScope();
+				SimulationContext simulationContext = ((SimulationContextNameScope)(spatialObjectNameScope.getParent())).getSimulationContext();
+				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.spatial_objects),new Object[] {object});
 			} else if (object instanceof GeometryContext.UnmappedGeometryClass) {
 				UnmappedGeometryClass unmappedGeometryClass = (UnmappedGeometryClass) object;
 				SimulationContext simulationContext = unmappedGeometryClass.getSimulationContext();

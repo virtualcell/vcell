@@ -541,7 +541,8 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) {
  */
 public Issue[] getIssues() {	
 	Vector<Issue> issueList = new Vector<Issue>();
-	getSimulationContext().gatherIssues(issueContext,issueList);
+	boolean bIgnoreMathDescription = false;
+	getSimulationContext().gatherIssues(issueContext,issueList,bIgnoreMathDescription);
 	getSimulationContext().getModel().gatherIssues(issueContext,issueList);
 	issueList.addAll(localIssueList);
 	return (Issue[])BeanUtils.getArray(issueList,Issue.class);

@@ -5955,6 +5955,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	try {
 		newsimcontext.getGeometryContext().setStructureMappings(structarray);
 		newsimcontext.getGeometryContext().refreshStructureMappings();
+		newsimcontext.refreshSpatialObjects();
 	} catch (MappingException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A MappingException was fired when trying to set the StructureMappings array to the Geometrycontext of the SimContext "+ name, e);

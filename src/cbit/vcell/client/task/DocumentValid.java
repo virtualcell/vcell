@@ -123,11 +123,11 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	}
 }
 
-public static void checkIssuesForErrors(SimulationContext simulationContext) {
+public static void checkIssuesForErrors(SimulationContext simulationContext, boolean bIgnoreMathDescription) {
 	Vector<Issue> issueList = new Vector<Issue>();
 	IssueContext issueContext = new IssueContext();
 	simulationContext.getModel().gatherIssues(issueContext, issueList);
-	simulationContext.gatherIssues(issueContext, issueList);
+	simulationContext.gatherIssues(issueContext, issueList, bIgnoreMathDescription);
 	checkIssuesForErrors(issueList);
 }
 public static void checkIssuesForErrors(BioModel bioModel) {

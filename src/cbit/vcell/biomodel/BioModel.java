@@ -342,7 +342,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	issueContext = issueContext.newChildContext(ContextType.BioModel, this);
 	getModel().gatherIssues(issueContext, issueList);
 	for (SimulationContext simulationContext : fieldSimulationContexts) {
-		simulationContext.gatherIssues(issueContext, issueList);
+		boolean bIgnoreMathDescription = false;
+		simulationContext.gatherIssues(issueContext, issueList, bIgnoreMathDescription);
 	}
 	if (lg.isInfoEnabled()) {
 		long end_time = System.currentTimeMillis();
