@@ -33,6 +33,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -40,7 +41,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -129,6 +132,41 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
+	public class ApplicationComboBoxRenderer implements ListCellRenderer {
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			
+			JLabel label = new JLabel();
+			ApplicationSelection as = (ApplicationSelection)value;
+			SimulationContext simContext = as.getSimulationContext();
+			Icon icon = null;
+			int left = 34;
+			if(simContext != null) {
+				left = 1;
+				if(simContext.isRuleBased()) {
+					if(simContext.getGeometry().getDimension() == 0) {
+						icon = VCellIcons.appRbmNonspIcon;
+					}
+				} else if(simContext.isStoch()) {
+					if(simContext.getGeometry().getDimension() == 0) {
+						icon = VCellIcons.appStoNonspIcon;
+					} else {
+						icon = VCellIcons.appStoSpatialIcon;
+					}
+				} else {
+					if(simContext.getGeometry().getDimension() == 0) {
+						icon = VCellIcons.appDetNonspIcon;
+					} else {
+						icon = VCellIcons.appDetSpatialIcon;
+					}
+				}
+			}
+			label.setText(as.toString());
+			label.setIcon(icon);
+			label.setBorder(new EmptyBorder(1, left, 1, 1));
+			return label;
+			}
+		}
 	public class ApplicationComboBoxModel implements ComboBoxModel, PropertyChangeListener {
 		ArrayList<ListDataListener> listeners = new ArrayList<ListDataListener>();
 		ApplicationSelection selectedApplicationSelection = null;
@@ -310,7 +348,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				parametersFunctionsTableModel.setIncludeApplications(applicationsCheckBox.isSelected());
 				applicationComboBox.setEnabled(applicationsCheckBox.isSelected());
 			} else if (e.getSource() == applicationComboBox) {
-				parametersFunctionsTableModel.setApplicationSelection((ApplicationSelection)applicationComboBox.getSelectedItem());
+				ApplicationSelection as = (ApplicationSelection)applicationComboBox.getSelectedItem();
+				parametersFunctionsTableModel.setApplicationSelection(as);
 			} else if (e.getSource() == reactionsCheckBox) {
 				parametersFunctionsTableModel.setIncludeReactions(reactionsCheckBox.isSelected());
 			} else if (e.getSource() == constantsCheckBox) {
@@ -406,6 +445,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		applicationComboBox.setSelectedItem("All");
 		applicationComboBox.addActionListener(eventHandler);
 		applicationComboBox.setModel(applicationComboBoxModel);
+		applicationComboBox.setRenderer(new ApplicationComboBoxRenderer());
+		
 		constantsCheckBox = new JCheckBox("Parameters");
 		constantsCheckBox.setSelected(true);
 		constantsCheckBox.addActionListener(eventHandler);
