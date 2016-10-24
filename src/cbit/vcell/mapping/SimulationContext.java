@@ -536,7 +536,6 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
 	geoContext = new GeometryContext(model,geometry,this);
 	geoContext.addPropertyChangeListener(this);
 	refreshCharacteristicSize();
-	addSimulationContextParameter(new SimulationContextParameter("myparam", new Expression(1.0), ROLE_UserDefined, model.getUnitSystem().getInstance_DIMENSIONLESS()));
 	
 	this.reactionContext = new ReactionContext(model,this);
 	this.membraneContext = new MembraneContext(this);
@@ -667,6 +666,24 @@ public Simulation addNewSimulation(String simNamePrefix, MathMappingCallback cal
 	bioModel.addSimulation(newSimulation);
 
 	return newSimulation;
+}
+
+public SimulationContextParameter createSimulationContextParameter() {
+	String name = "appParm0";
+	while (getSimulationContextParameter(name)!=null){
+		name = TokenMangler.getNextEnumeratedToken(name);
+	}
+	Expression expression = new Expression(1.0);
+	int role = SimulationContext.ROLE_UserDefined;
+	VCUnitDefinition unit = getModel().getUnitSystem().getInstance_DIMENSIONLESS();
+	SimulationContextParameter parameter = new SimulationContextParameter(name, expression, role, unit);
+	try {
+		addSimulationContextParameter(parameter);
+		return parameter;
+	} catch (PropertyVetoException e) {
+		e.printStackTrace();
+		throw new RuntimeException("error creating new application parameter: "+e.getMessage(),e);
+	}
 }
 
 public void refreshMathDescription(MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {

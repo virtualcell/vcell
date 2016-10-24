@@ -36,11 +36,11 @@ import cbit.vcell.parser.ExpressionException;
 public class SpatialObjectPropertyPanel extends DocumentEditorSubPanel {
 	private JSortTable scrollPaneTable = null;
 	private SpatialQuantityTableModel spatialQuantityTableModel = null;
-	private JLabel optionsTitle = null;
+//	private JLabel optionsTitle = null;
 	private JPanel optionsPanel = null;
 	private JPanel topPanel = null;
 	private ArrayList<JCheckBox> optionsCheckboxes = new ArrayList<JCheckBox>();
-	private JTextArea statusTextArea = null;
+//	private JTextArea statusTextArea = null;
 	private SpatialObject spatialObject = null;
 	
 	private ActionListener actionListener = new ActionListener() {
@@ -99,9 +99,9 @@ private void initialize() {
 		topPanel.setLayout(new BorderLayout());
 		add(topPanel,BorderLayout.NORTH);
 		
-		this.optionsTitle = new JLabel("select spatial quantities",SwingConstants.CENTER);
-		optionsTitle.setName("optionsTitle");
-		topPanel.add(optionsTitle, BorderLayout.NORTH);
+//		this.optionsTitle = new JLabel("select spatial quantities",SwingConstants.CENTER);
+//		optionsTitle.setName("optionsTitle");
+//		topPanel.add(optionsTitle, BorderLayout.NORTH);
 		
 		this.optionsPanel = new JPanel();
 		optionsPanel.setBackground(Color.lightGray.brighter());
@@ -109,10 +109,10 @@ private void initialize() {
 		optionsPanel.setLayout(new FlowLayout());
 		topPanel.add(optionsPanel,BorderLayout.CENTER);
 
-		this.statusTextArea = new JTextArea();
-		statusTextArea.setName("StatusTextArea");
-		statusTextArea.setText("abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz");
-		topPanel.add(statusTextArea, BorderLayout.SOUTH);
+//		this.statusTextArea = new JTextArea();
+//		statusTextArea.setName("StatusTextArea");
+//		statusTextArea.setText("abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz");
+//		topPanel.add(statusTextArea, BorderLayout.SOUTH);
 		
 //		JLabel label = new JLabel("<html><u>Select only one species to set initial conditions</u></html>");
 //		label.setHorizontalAlignment(SwingConstants.CENTER);

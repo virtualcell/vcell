@@ -33,8 +33,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -51,9 +53,11 @@ import javax.swing.event.ListSelectionListener;
 import org.vcell.util.VCAssert;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
@@ -64,14 +68,20 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.graph.StructureToolShape;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.model.EditableSymbolTableEntry;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
 
 @SuppressWarnings("serial")
 public class BioModelParametersPanel extends DocumentEditorSubPanel {
+	
+	Icon downArrow = null;
 	
 	public static class ApplicationSelection {
 		boolean isAll;
@@ -130,6 +140,20 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				selectedApplicationSelection = null;
 				applicationSelectionList.clear();
 			}else {
+				if( bioModel.getNumSimulationContexts() == 0) {
+					addNewButton2.setEnabled(false);
+					downArrow = null;
+					addNewButton2.setIcon(downArrow);
+				} else if (bioModel.getNumSimulationContexts() == 1) {
+					addNewButton2.setEnabled(true);
+					downArrow = null;
+					addNewButton2.setIcon(downArrow);
+				} else {
+					addNewButton2.setEnabled(true);
+					downArrow = new DownArrowIcon();
+					addNewButton2.setIcon(downArrow);
+				}
+				
 				ArrayList<ApplicationSelection> desiredItems = new ArrayList<ApplicationSelection>();
 				desiredItems.add(ApplicationSelection.All);
 				for (SimulationContext simContext : bioModel.getSimulationContexts()){
@@ -233,6 +257,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private BioModelWindowManager bioModelWindowManager = null;
 	
 	private JButton addNewButton = null;
+	private JButton addNewButton2 = null;
 	private JButton deleteButton = null;
 	private EditorScrollTable parametersFunctionsTable;
 	private BioModelParametersTableModel parametersFunctionsTableModel = null;
@@ -272,7 +297,9 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == addNewButton) {
-				newButtonPressed();
+				newGlobalButtonPressed();
+			} else if (e.getSource() == addNewButton2) {
+				newApplicationButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
 			} else if (e.getSource() == changeUnitsButton) {
@@ -345,10 +372,14 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	private void initialize(){
+	private void initialize() {
 		addNewButton = new JButton("New Global Parameter");
 		addNewButton.addActionListener(eventHandler);
-		deleteButton = new JButton("Delete Global Parameter(s)");
+		addNewButton2 = new JButton("New Application Parameter");
+//		addNewButton2.setIcon(downArrow);
+		addNewButton2.setHorizontalTextPosition(SwingConstants.LEFT);
+		addNewButton2.addActionListener(eventHandler);
+		deleteButton = new JButton("Delete");
 		deleteButton.setEnabled(false);
 		deleteButton.addActionListener(eventHandler);
 
@@ -412,6 +443,13 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(addNewButton, gbc);
 		
+		gbc = new GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		buttonPanel.add(addNewButton2, gbc);
+				
 		gbc = new GridBagConstraints();
 		gbc.gridx = GridBagConstraints.RELATIVE;
 		gbc.insets = new Insets(4,4,4,4);
@@ -610,9 +648,68 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		deleteButton.setEnabled(false);
 	}
 
-	protected void newButtonPressed() {
+	protected void newGlobalButtonPressed() {
 		ModelParameter modelParameter = bioModel.getModel().createModelParameter();
 		setTableSelections(new Object[]{modelParameter}, parametersFunctionsTable, parametersFunctionsTableModel);
+	}
+	protected void newApplicationButtonPressed() {
+		// TODO: add your code here!
+		if(bioModel.getNumSimulationContexts() == 1) {
+			SimulationContext simContext = bioModel.getSimulationContext(0);
+			SimulationContextParameter newObject = simContext.createSimulationContextParameter();
+//			setTableSelections(new Object[]{modelParameter}, parametersFunctionsTable, parametersFunctionsTableModel);
+			if (newObject != null) {
+				for (int i = 0; i < parametersFunctionsTableModel.getRowCount(); i ++) {
+					if (parametersFunctionsTableModel.getValueAt(i) == newObject) {
+						parametersFunctionsTable.setRowSelectionInterval(i, i);
+						break;
+					}
+				}
+			}
+		} else if(bioModel.getNumSimulationContexts() > 1) {
+			final JPopupMenu menu = new JPopupMenu("Choose Application");
+			for(int i=0; i<bioModel.getNumSimulationContexts(); i++) {
+				SimulationContext simContext = bioModel.getSimulationContext(i);
+				String sName = simContext.getName();
+				JMenuItem menuItem = new JMenuItem("In " + sName);
+				Icon icon = null;
+				if(simContext.isRuleBased()) {
+					if(simContext.getGeometry().getDimension() == 0) {
+						icon = VCellIcons.appRbmNonspIcon;
+					}
+				} else if(simContext.isStoch()) {
+					if(simContext.getGeometry().getDimension() == 0) {
+						icon = VCellIcons.appStoNonspIcon;
+					} else {
+						icon = VCellIcons.appStoSpatialIcon;
+					}
+				} else {		// deterministic
+					if(simContext.getGeometry().getDimension() == 0) {
+						icon = VCellIcons.appDetNonspIcon;
+					} else {
+						icon = VCellIcons.appDetSpatialIcon;
+					}
+				}
+				if(icon != null) {
+					menuItem.setIcon(icon);
+				}
+				menu.add(menuItem);
+				menuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						SimulationContextParameter newObject = simContext.createSimulationContextParameter();
+						if (newObject != null) {
+							for (int i = 0; i < parametersFunctionsTableModel.getRowCount(); i ++) {
+								if (parametersFunctionsTableModel.getValueAt(i) == newObject) {
+									parametersFunctionsTable.setRowSelectionInterval(i, i);
+									break;
+								}
+							}
+						}
+					}
+				});
+			}
+			menu.show(addNewButton2, 0, addNewButton2.getHeight());
+		}
 	}
 
 	protected void deleteButtonPressed() {
