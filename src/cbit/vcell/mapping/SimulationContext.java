@@ -841,6 +841,10 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 
+	if (!Compare.isEqualOrNull(spatialProcesses,simContext.spatialProcesses)){
+		return false;
+	}
+
 	if (!outputFunctionContext.compareEqual(simContext.outputFunctionContext)){
 		return false;
 	}

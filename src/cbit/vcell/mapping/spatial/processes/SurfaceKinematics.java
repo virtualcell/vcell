@@ -1,12 +1,15 @@
 package cbit.vcell.mapping.spatial.processes;
 
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SurfaceRegionObject;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
@@ -64,4 +67,10 @@ public class SurfaceKinematics extends SpatialProcess {
 		return "Point Location Process";
 	}
 
+	@Override
+	public List<SpatialObject> getSpatialObjects() {
+		ArrayList<SpatialObject> spatialObjects = new ArrayList<SpatialObject>();
+		spatialObjects.add(surfaceRegionObject);
+		return spatialObjects;
+	}
 }

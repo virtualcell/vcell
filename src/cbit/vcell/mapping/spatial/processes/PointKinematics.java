@@ -1,13 +1,16 @@
 package cbit.vcell.mapping.spatial.processes;
 
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.spatial.PointObject;
+import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -66,6 +69,13 @@ public class PointKinematics extends SpatialProcess {
 	@Override
 	public String getDescription() {
 		return "Point Kinematics (initial position, velocity)";
+	}
+
+	@Override
+	public List<SpatialObject> getSpatialObjects() {
+		ArrayList<SpatialObject> spatialObjects = new ArrayList<SpatialObject>();
+		spatialObjects.add(pointObject);
+		return spatialObjects;
 	}
 
 }

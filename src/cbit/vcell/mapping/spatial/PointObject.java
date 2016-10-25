@@ -58,4 +58,5 @@ public class PointObject extends SpatialObject {
 		return new SpatialQuantity[] { positionX, positionY, positionZ, velocityX, velocityY, velocityZ, distanceTo, directionToX, directionToY, directionToZ };
 	}
 
+
 }

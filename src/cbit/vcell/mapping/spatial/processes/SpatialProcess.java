@@ -5,7 +5,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -16,17 +15,15 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.mapping.ApplicationQuantity;
 import cbit.vcell.mapping.ParameterContext;
 import cbit.vcell.mapping.ParameterContext.GlobalParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
-import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -39,6 +36,7 @@ import cbit.vcell.units.VCUnitSystem;
 
 public abstract class SpatialProcess implements Serializable, IssueSource, PropertyChangeListener, Matchable {
 	private static final String PROPERTY_NAME_NAME = "name";
+	public static final String PROPERTY_NAME_PARAMETERS = "parameters";
 	
 		
 	public class SpatialProcessNameScope extends BioNameScope {
@@ -405,8 +403,12 @@ public abstract class SpatialProcess implements Serializable, IssueSource, Prope
 	}
 
 	public void setParameters(LocalParameter[] parameters) throws PropertyVetoException, ExpressionBindingException {
+		LocalParameter[] oldValue = parameterContext.getLocalParameters();
 		parameterContext.setLocalParameters(parameters);
+		firePropertyChange(PROPERTY_NAME_PARAMETERS, oldValue, parameterContext.getLocalParameters());
 	}
 
 	public abstract String getDescription();
+
+	public abstract List<SpatialObject> getSpatialObjects();
 }

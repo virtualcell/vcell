@@ -64,8 +64,10 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.DataSymbolsSpecPanel;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.gui.SpatialObjectPropertyPanel;
+import cbit.vcell.mapping.gui.SpatialProcessPropertyPanel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecPanel;
 import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
@@ -130,6 +132,7 @@ public class BioModelEditor extends DocumentEditor {
 	
 	private EventPanel eventPanel = null;
 	private SpatialObjectPropertyPanel spatialObjectPropertyPanel = null;
+	private SpatialProcessPropertyPanel spatialProcessPropertyPanel = null;
 	private DataSymbolsSpecPanel dataSymbolsSpecPanel = null;
 	private BioModelEditorApplicationPanel bioModelEditorApplicationPanel = null;
 	private ApplicationsPropertiesPanel applicationsPropertiesPanel;
@@ -474,6 +477,13 @@ private SpatialObjectPropertyPanel getSpatialObjectPropertyPanel() {
 	}
 	return spatialObjectPropertyPanel;
 }
+private SpatialProcessPropertyPanel getSpatialProcessPropertyPanel() {
+	if (spatialProcessPropertyPanel == null) {
+		spatialProcessPropertyPanel = new SpatialProcessPropertyPanel();
+		spatialProcessPropertyPanel.setName("SpatialProcessPanel");
+	}
+	return spatialProcessPropertyPanel;
+}
 private SimulationSummaryPanel getSimulationSummaryPanel() {
 	if (simulationSummaryPanel == null) {
 		try {
@@ -645,6 +655,7 @@ private void initialize() {
 		getReactionPropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesContextSpecPanel().setSelectionManager(selectionManager);
 		getSpatialObjectPropertyPanel().setSelectionManager(selectionManager);
+		getSpatialProcessPropertyPanel().setSelectionManager(selectionManager);
 		getKineticsTypeTemplatePanel().setSelectionManager(selectionManager);
 		getSimulationSummaryPanel().setSelectionManager(selectionManager);
 		getEventPanel().setSelectionManager(selectionManager);
@@ -728,6 +739,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getEventPanel();
 		} else if (singleSelection instanceof SpatialObject) {
 			bottomComponent = getSpatialObjectPropertyPanel();
+		} else if (singleSelection instanceof SpatialProcess) {
+			bottomComponent = getSpatialProcessPropertyPanel();
 		} else if (singleSelection instanceof BioPaxObject) {
 			bottomComponent = bioPaxObjectPropertiesPanel;
 		} else if (singleSelection instanceof BioModel || singleSelection instanceof VCMetaData) {

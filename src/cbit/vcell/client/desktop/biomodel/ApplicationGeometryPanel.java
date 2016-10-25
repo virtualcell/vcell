@@ -29,11 +29,13 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 	private GeometryViewer geometryViewer;
 	private StructureMappingCartoonPanel structureMappingCartoonPanel;	
 	private SpatialObjectDisplayPanel spatialObjectDisplayPanel;
+	private SpatialProcessDisplayPanel spatialProcessDisplayPanel;
 		
 	private enum GeometryPanelTabID {
 		structure_mapping("Structure Mapping"),
 		geometry_definition("Geometry Definition"),
-		spatial_objects("Spatial Objects");
+		spatial_objects("Spatial Objects"), 
+		spatial_processes("Spatial Processes");
 		
 		String title = null;
 		GeometryPanelTabID(String name) {
@@ -63,11 +65,13 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 		geometryViewer = new GeometryViewer();
 		structureMappingCartoonPanel = new StructureMappingCartoonPanel();
 		spatialObjectDisplayPanel = new SpatialObjectDisplayPanel();
+		spatialProcessDisplayPanel = new SpatialProcessDisplayPanel();
 		
 		GeometryPanelTab geometryPanelTabs[] = new GeometryPanelTab[GeometryPanelTabID.values().length]; 
 		geometryPanelTabs[GeometryPanelTabID.structure_mapping.ordinal()] = new GeometryPanelTab(GeometryPanelTabID.structure_mapping, structureMappingCartoonPanel, null);
 		geometryPanelTabs[GeometryPanelTabID.geometry_definition.ordinal()] = new GeometryPanelTab(GeometryPanelTabID.geometry_definition, geometryViewer, null);
 		geometryPanelTabs[GeometryPanelTabID.spatial_objects.ordinal()] = new GeometryPanelTab(GeometryPanelTabID.spatial_objects, spatialObjectDisplayPanel, null);
+		geometryPanelTabs[GeometryPanelTabID.spatial_processes.ordinal()] = new GeometryPanelTab(GeometryPanelTabID.spatial_processes, spatialProcessDisplayPanel, null);
 		
 		for (GeometryPanelTab tab : geometryPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -80,6 +84,7 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 		super.setSimulationContext(newValue);
 		structureMappingCartoonPanel.setSimulationContext(simulationContext);	
 		spatialObjectDisplayPanel.setSimulationContext(simulationContext);
+		spatialProcessDisplayPanel.setSimulationContext(simulationContext);
 		updateGeometryViewerOwner();
 	}
 
@@ -96,6 +101,7 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 		structureMappingCartoonPanel.setSelectionManager(selectionManager);
 		geometryViewer.setSelectionManager(selectionManager);
 		spatialObjectDisplayPanel.setSelectionManager(selectionManager);
+		spatialProcessDisplayPanel.setSelectionManager(selectionManager);
 	}
 
 	@Override
@@ -109,6 +115,8 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 					tabbedPane.setSelectedIndex(GeometryPanelTabID.structure_mapping.ordinal());
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.spatial_objects)) {
 					tabbedPane.setSelectedIndex(GeometryPanelTabID.spatial_objects.ordinal());
+				} else if (activeView.getActiveViewID().equals(ActiveViewID.spatial_processes)) {
+					tabbedPane.setSelectedIndex(GeometryPanelTabID.spatial_processes.ordinal());
 				}
 			}
 		}
@@ -124,6 +132,8 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 			activeViewID = ActiveViewID.geometry_definition;
 		} else if (selectedComponent == spatialObjectDisplayPanel) {
 			activeViewID = ActiveViewID.spatial_objects;
+		} else if (selectedComponent == spatialProcessDisplayPanel) {
+			activeViewID = ActiveViewID.spatial_processes;
 		}
 		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, activeViewID);
 	}
@@ -134,6 +144,7 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 		structureMappingCartoonPanel.setIssueManager(issueManager);
 		geometryViewer.setIssueManager(issueManager);
 		spatialObjectDisplayPanel.setIssueManager(issueManager);
+		spatialProcessDisplayPanel.setIssueManager(issueManager);
 	}
 	
 	private void updateGeometryViewerOwner(){
