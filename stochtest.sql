@@ -1,12 +1,18 @@
+-----------------------------------------------------------------
+-- create StochTest table
+-----------------------------------------------------------------
 CREATE TABLE stochtest(
 id integer PRIMARY KEY,
 simcontextref integer NOT NULL REFERENCES vc_simcontext(id) ON DELETE CASCADE,
 biomodelref integer NOT NULL REFERENCES vc_biomodel(id) ON DELETE CASCADE,
 mathref integer NOT NULL REFERENCES vc_math(id) ON DELETE CASCADE,
-dimension integer NOT NULL,numcompartments integer ,
+dimension integer NOT NULL,
+numcompartments integer,
 mathtype varchar2(64) );
 
-
+------------------------------------------------------------------
+-- first-time populate StochTest table (setting "dimension" column, but not setting numcompartments or mathtype)
+------------------------------------------------------------------
 insert into stochtest (id, simcontextref, biomodelref, mathref, dimension) 
 select NewSeq.NEXTVAL, vc_simcontext.id, vc_biomodelsimcontext.biomodelref, vc_simcontext.mathref, vc_geometry.dimension
 from vc_simcontext, vc_biomodelsimcontext, vc_geometry 
@@ -15,6 +21,9 @@ and vc_biomodelsimcontext.SIMCONTEXTREF = vc_simcontext.id;
 
 commit;
 
+-----------------------------------------
+-- update numcompartments column
+-----------------------------------------
 merge into stochtest a
 using (select vc_simcontext.id scid, count(vc_modelstruct.id) numcomp from vc_modelstruct, vc_simcontext where vc_simcontext.modelref = vc_modelstruct.modelref group by vc_simcontext.id) S
 on (a.simcontextref = S.scid)
@@ -23,6 +32,10 @@ update set a.numcompartments = S.numcomp;
 
 commit;
 
+
+------------------------------------------
+-- update mathtype for 'nonspatial-stochastic'
+------------------------------------------
 merge into stochtest a
 using (select id, language from vc_math m) S
 on (a.mathref = S.id 
@@ -30,6 +43,9 @@ on (a.mathref = S.id
 when matched then 
 update set a.mathtype = 'nonspatial-stochastic';
 
+------------------------------------------
+-- update mathtype for 'rules'
+------------------------------------------
 merge into stochtest a
 using (select id, language from vc_math m) S
 on (a.mathref = S.id 
@@ -39,6 +55,9 @@ on (a.mathref = S.id
 when matched then 
 update set a.mathtype = 'rules';
 
+------------------------------------------
+-- update mathtype for 'ode'
+------------------------------------------
 merge into stochtest a
 using (select id, language from vc_math m) S
 on (a.mathref = S.id 
@@ -47,6 +66,9 @@ on (a.mathref = S.id
 when matched then 
 update set a.mathtype = 'ode';
 
+------------------------------------------
+-- update mathtype for 'spatial-stochastic' (hybrid or not)
+------------------------------------------
 merge into stochtest a
 using (select id, language from vc_math m) S
 on (a.mathref = S.id 
@@ -55,16 +77,23 @@ on (a.mathref = S.id
 when matched then 
 update set a.mathtype = 'spatial-stochastic';
 
+------------------------------------------
+-- update mathtype for 'pde'
+------------------------------------------
 merge into stochtest a
 using (select id, language from vc_math m) S
 on (a.mathref = S.id 
     and a.dimension > 0
-    and dbms_lob.instr(S.language,'PdeEquation')>0
+    and ( dbms_lob.instr(S.language,'PdeEquation')>0
+         or dbms_lob.instr(S.language,'OdeEquation')>0
+         )
     and not dbms_lob.instr(S.language,'ParticleJumpProcess')>0)
 when matched then 
 update set a.mathtype = 'pde';
 
-
+--------------------------------------------------------------
+-- summary report on number of BioModel applications by mathtype
+--------------------------------------------------------------
 select count(id), mathtype, dimension from stochtest group by mathtype, dimension order by count(id) desc;
 
 select stochtest.*, dbms_lob.substr(vc_math.language,4000,1) vcml from stochtest, vc_math where stochtest.mathref = vc_math.id and stochtest.MATHTYPE is null and stochtest.DIMENSION>0;

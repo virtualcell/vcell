@@ -42,7 +42,7 @@ smallest_pvalue = NULL,
 numexperiments = NULL,
 numfail_95 = NULL,
 numfail_99 = NULL,
-numfail_999 = NULL);
+numfail_999 = NULL;
 commit;
 
 --------------------------------------------------------------------------------
