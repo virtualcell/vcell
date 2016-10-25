@@ -11,7 +11,7 @@ import org.vcell.util.BeanUtils;
  * @author gweatherby
  *
  */
-public interface SolverSelector {
+public interface ProblemRequirements {
 
 	public abstract boolean isSpatial();
 
@@ -38,7 +38,7 @@ public interface SolverSelector {
 		 * return true if SolverSelector state is valid
 		 * @param ss to check
 		 */
-		public static boolean isValid(SolverSelector ss) {
+		public static boolean isValid(ProblemRequirements ss) {
 			return validateLogic(ss) == null;
 		}
 		
@@ -47,19 +47,19 @@ public interface SolverSelector {
 		 * @param ss to check
 		 * @throws IllegalStateException
 		 */
-		public  static void validate(SolverSelector ss) {
+		public  static void validate(ProblemRequirements ss) {
 			 String msg = validateLogic(ss);
 			 if (msg != null) {
 				 throw new IllegalStateException(ss + msg);
 			 }
 		}
 		/**
-		 * common implementation of {@link #isValid(SolverSelector)} and {@link #validate(SolverSelector)} logic
+		 * common implementation of {@link #isValid(ProblemRequirements)} and {@link #validate(ProblemRequirements)} logic
 		 * This is out of date, should include rule based states
 		 * @param ss
 		 * @return null if good, error message if not
 		 */
-		private static String validateLogic(SolverSelector ss) {
+		private static String validateLogic(ProblemRequirements ss) {
 			if (ss.isNonSpatialStoch() && ss.isSpatial()) {
 				return ": invalid state: non spatial stochastic may not be spatial";
 			}
@@ -81,7 +81,7 @@ public interface SolverSelector {
 	 * Facade to provide human readable String 
 	 */
 	public static class Explain {
-		public static String describe(SolverSelector selector) {
+		public static String describe(ProblemRequirements selector) {
 			String desc = selector.isSpatial() ? "Spatial " : "Non-spatial";
 			if (selector.isSpatialHybrid()) {
 				desc += " hybrid";

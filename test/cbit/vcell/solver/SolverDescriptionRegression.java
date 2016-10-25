@@ -20,7 +20,7 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
-import cbit.vcell.math.SolverSelector;
+import cbit.vcell.math.ProblemRequirements;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 public class SolverDescriptionRegression {
 	public static final String SOLVER_SEP = "BEGIN Solver";
@@ -130,28 +130,28 @@ public class SolverDescriptionRegression {
 		dest.println(se.hasSundialsTimeStepping());
 	}
 	
-	public static Collection<SolverDescription> getSupportingSolverDescriptionse(SolverSelector mathDescription) {
+	public static Collection<SolverDescription> getSupportingSolverDescriptionse(ProblemRequirements mathDescription) {
 		if (mathDescription.isSpatial()) {
 			if (mathDescription.isSpatialHybrid()) {
-				return SolverDescription.getSolverDescriptions(SolverDescription.SpatialHybridFeatureSet);
+				return SolverDescription.getSolverDescriptions(SolverDescription.SpatialHybridFeatureSet.getSolverFeatures());
 			} else if (mathDescription.isSpatialStoch()) {
-				return SolverDescription.getSolverDescriptions(SolverDescription.SpatialStochasticFeatureSet);
+				return SolverDescription.getSolverDescriptions(SolverDescription.SpatialStochasticFeatureSet.getSolverFeatures());
 			} else {
 				if (mathDescription.hasFastSystems()) { // PDE with FastSystem
-					return SolverDescription.getSolverDescriptions(SolverDescription.PdeFastSystemFeatureSet);
+					return SolverDescription.getSolverDescriptions(SolverDescription.PdeFastSystemFeatureSet.getSolverFeatures());
 				} else if (mathDescription.hasDirichletAtMembrane()) { 
-					return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSetWithDirichletAtMembrane);
+					return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSetWithDirichletAtMembrane.getSolverFeatures());
 				} else {
-					return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSetWithoutDirichletAtMembrane);
+					return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSetWithoutDirichletAtMembrane.getSolverFeatures());
 				}
 			}
 		} else if (mathDescription.isNonSpatialStoch()) {
-			return SolverDescription.getSolverDescriptions(SolverDescription.NonSpatialStochasticFeatureSet);
+			return SolverDescription.getSolverDescriptions(SolverDescription.NonSpatialStochasticFeatureSet.getSolverFeatures());
 		} else {
 			if (mathDescription.hasFastSystems()) { // ODE with FastSystem
-				return SolverDescription.getSolverDescriptions(SolverDescription.OdeFastSystemFeatureSet);
+				return SolverDescription.getSolverDescriptions(SolverDescription.OdeFastSystemFeatureSet.getSolverFeatures());
 			} else {
-				return SolverDescription.getSolverDescriptions(SolverDescription.OdeFeatureSet);
+				return SolverDescription.getSolverDescriptions(SolverDescription.OdeFeatureSet.getSolverFeatures());
 			}
 		}
 	}
@@ -190,8 +190,8 @@ public class SolverDescriptionRegression {
 		return lhs.size( ) == rhs.size( ) && lhs.containsAll(rhs)  && rhs.containsAll(lhs);
 	}
 	
-	private void listMath(Collection<SolverDescription> coll, SolverSelector sel, PrintWriter where) {
-		where.println(SolverSelector.Explain.describe(sel));
+	private void listMath(Collection<SolverDescription> coll, ProblemRequirements sel, PrintWriter where) {
+		where.println(ProblemRequirements.Explain.describe(sel));
 		EnumSet<SolverDescription> es = EnumSet.noneOf(SolverDescription.class);
 		es.addAll(coll);
 		for (SolverDescription sd: es) {
@@ -211,7 +211,7 @@ public class SolverDescriptionRegression {
 		listMath(now,tmd,proposed);
 		while (tmd.hasMoreStates()) {
 			tmd.nextState();
-			System.out.println(SolverSelector.Explain.describe(tmd));
+			System.out.println(ProblemRequirements.Explain.describe(tmd));
 			orig = getSupportingSolverDescriptionse(tmd);
 			now = SolverDescription.getSupportingSolverDescriptions(tmd);
 			listMath(orig,tmd,current);
@@ -228,7 +228,7 @@ public class SolverDescriptionRegression {
 		Collection<SolverDescription> now = SolverDescription.getSupportingSolverDescriptions(tmd);
 		assertTrue(equals(orig,now));
 		if (!equals(orig,now)) {
-			System.err.println("mismatch " + SolverSelector.Explain.describe(tmd));
+			System.err.println("mismatch " + ProblemRequirements.Explain.describe(tmd));
 		}
 
 		while (tmd.hasMoreStates()) {
@@ -237,7 +237,7 @@ public class SolverDescriptionRegression {
 			now = SolverDescription.getSupportingSolverDescriptions(tmd);
 			//assertTrue(equals(orig,now));
 			if (!equals(orig,now)) {
-				System.err.println("mismatch " + SolverSelector.Explain.describe(tmd));
+				System.err.println("mismatch " + ProblemRequirements.Explain.describe(tmd));
 				now = SolverDescription.getSupportingSolverDescriptions(tmd);
 			}
 		}
@@ -271,7 +271,7 @@ public class SolverDescriptionRegression {
 			
 	}	
 	
-	public static SolverDescription getDefaultSolverDescriptione(SolverSelector mathDescription) {
+	public static SolverDescription getDefaultSolverDescriptione(ProblemRequirements mathDescription) {
 		if (mathDescription.isSpatial())	{
 			if (mathDescription.isSpatialHybrid()) {
 				return SolverDescription.FiniteVolumeStandalone;

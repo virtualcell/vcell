@@ -2,9 +2,9 @@ package cbit.vcell.solver;
 
 import org.junit.Test;
 
-import cbit.vcell.math.SolverSelector;
+import cbit.vcell.math.ProblemRequirements;
 
-public class TestMathDescription implements SolverSelector {
+public class TestMathDescription implements ProblemRequirements {
 
 	/* (non-Javadoc)
 	 * @see cbit.vcell.solver.SolverSelector#isSpatial()

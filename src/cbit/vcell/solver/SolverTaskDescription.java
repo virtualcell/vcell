@@ -332,7 +332,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				// keepAtMost will limit the number of points for ODEs.
 				// for PDEs, keepAtMost is ignored.
 				//
-				if (getSolverDescription().supports(SolverDescription.OdeFeatureSet)) {
+				if (getSolverDescription().supportsAll(SolverDescription.OdeFeatureSet.getSolverFeatures())) {
 					numTimepoints = Math.min(numTimepoints, keepAtMost);
 				}
 			}

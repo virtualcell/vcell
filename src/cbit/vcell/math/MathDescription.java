@@ -74,7 +74,7 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
  * 
  */
 @SuppressWarnings("serial")
-public class MathDescription implements Versionable, Matchable, SymbolTable, Serializable, SolverSelector, IssueSource {
+public class MathDescription implements Versionable, Matchable, SymbolTable, Serializable, ProblemRequirements, IssueSource {
 	
 	public final static String MATH_FUNC_INIT_SUFFIX_PREFIX = "_init_";
 	

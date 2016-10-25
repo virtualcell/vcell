@@ -1,82 +1,53 @@
 package cbit.vcell.solver;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.List;
 
-import cbit.vcell.math.SolverSelector;
+import cbit.vcell.math.ProblemRequirements;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.solver.SolverDescription.SupportedProblemRequirements;
 
 //public class SolverFeatureSet extends ArrayList<SolverFeature> {
-public class SolverFeatureSet implements Collection<SolverFeature>{ 
-	public interface Filter {		/**		 * @param desc SolverSelector to filter		 * @return true if desc has desired property		 */		boolean supports(SolverSelector desc);	}
+public class SolverFeatureSet { 
 
-	private Collection<SolverFeature> features;
-	private final Filter filter;
+	private ArrayList<SolverFeature> solverFeatures = new ArrayList<SolverFeature>();
+	private final SupportedProblemRequirements supportedProblemRequirements;
 	private final SolverDescription defaultSolver; 
 	private final int solverPriority; 
 
 	private static ArrayList<SolverFeatureSet> sets = new ArrayList<SolverFeatureSet>();
-
-
-	private SolverFeatureSet(Filter filter, SolverDescription defaultExecutable, int priority) {
-		features = new ArrayList<SolverDescription.SolverFeature>();
-		this.filter = filter;
-		this.defaultSolver = defaultExecutable;
-		this.solverPriority = priority;
-		sets.add(this);
-	}
-
-	/**
-	 * one feature constructor
-	 * @param sf0
-	 * @param filter if null, matches ??
-	 * @param defaultExecutable may be null
-	 */
-	public SolverFeatureSet(SolverFeature sf0,
-			Filter filter, SolverDescription defaultExecutable,
-			int solverPriority) {
-		this(filter,defaultExecutable, solverPriority);
-		features.add(sf0);
-		//use unmodifiable collection so iterator returned by  Collection#iterator( ) is read only 
-		features = Collections.unmodifiableCollection(features);
-	}
-
-	/**
-	 * two feature constructor
-	 * @param sf0
-	 * @param filter non null
-	 * @param defaultExecutable may be null
-	 */
-	public SolverFeatureSet(SolverFeature sf0,SolverFeature sf1,
-			Filter filter, SolverDescription defaultExecutable,
-			int solverPriority) {
-		this(filter,defaultExecutable, solverPriority);
-		features.add(sf0);
-		features.add(sf1);
-		//use unmodifiable collection so iterator returned by  Collection#iterator( ) is read only 
-		features = Collections.unmodifiableCollection(features);
-	}
-
-	public SolverFeatureSet(SolverFeature sf0,SolverFeature sf1,SolverFeature sf2,
-			Filter filter, SolverDescription defaultExecutable,
-			int solverPriority) {
-		this(filter,defaultExecutable, solverPriority);
-		features.add(sf0);
-		features.add(sf1);
-		features.add(sf2);
-		//use unmodifiable collection so iterator returned by  Collection#iterator( ) is read only 
-		features = Collections.unmodifiableCollection(features);
-	}
-
 	/**
 	 * @return all sets that have been created
 	 */
 	public static Collection<SolverFeatureSet> getSets( ) {
 		return sets;
 	}
-	
+
+	private SolverFeatureSet(SupportedProblemRequirements supportedProblemRequirements, SolverDescription defaultExecutable, int priority) {
+		this.supportedProblemRequirements = supportedProblemRequirements;
+		this.defaultSolver = defaultExecutable;
+		this.solverPriority = priority;
+		sets.add(this);
+	}
+
+	/**
+	 * @param defaultExecutable may be null
+	 */
+	public SolverFeatureSet(SolverFeature[] solverFeatures,
+			SupportedProblemRequirements supportedProblemRequirements, SolverDescription defaultExecutable,
+			int solverPriority) {
+		this(supportedProblemRequirements,defaultExecutable, solverPriority);
+		this.solverFeatures.addAll(Arrays.asList(solverFeatures));
+	}
+
+
+	public List<SolverFeature> getSolverFeatures(){
+		return Collections.unmodifiableList(solverFeatures);
+	}
+
 	/**
 	 * @param sfs
 	 * @return null if sfs null or doesn't have a solver
@@ -116,8 +87,8 @@ public class SolverFeatureSet implements Collection<SolverFeature>{
 	 * @param selector
 	 * @return true if this feature set supports given selector
 	 */
-	public boolean supports(SolverSelector selector) {
-		return filter.supports(selector);
+	public boolean supports(ProblemRequirements selector) {
+		return supportedProblemRequirements.supports(selector);
 	}
 
 	/**
@@ -128,72 +99,4 @@ public class SolverFeatureSet implements Collection<SolverFeature>{
 		return defaultSolver;
 	}
 
-	/*****
-	 * following methods implement unmodifiable Collection as pass through to {@link #features}
-	 */
-
-	@Override
-	public boolean add(SolverFeature arg0) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean addAll(Collection<? extends SolverFeature> arg0) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void clear() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean contains(Object arg0) {
-		return  features.contains(arg0);
-	}
-
-	@Override
-	public boolean containsAll(Collection<?> arg0) {
-		return  features.containsAll(arg0);
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return features.isEmpty(); 
-	}
-
-	@Override
-	public Iterator<SolverFeature> iterator() {
-		return features.iterator();
-	}
-
-	@Override
-	public boolean remove(Object arg0) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean removeAll(Collection<?> arg0) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean retainAll(Collection<?> arg0) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int size() {
-		return features.size( );
-	}
-
-	@Override
-	public Object[] toArray() {
-		return features.toArray( );
-	}
-
-	@Override
-	public <T> T[] toArray(T[] arg0) {
-		return features.toArray(arg0);
-	}
 }

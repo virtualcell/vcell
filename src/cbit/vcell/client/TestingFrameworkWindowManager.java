@@ -1492,7 +1492,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						SolverTaskDescription solverTaskDescription = refSim.getSolverTaskDescription();
 						if (solverTaskDescription.getOutputTimeSpec().isDefault() && ((DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec()).getKeepEvery() == 1) {
 							SolverDescription solverDescription = solverTaskDescription.getSolverDescription();
-							if ((!solverDescription.supports(SolverDescription.DiscontinutiesFeatureSet)) || !refSim.getMathDescription().hasDiscontinuities()) {
+							if ((!solverDescription.supportsAll(SolverDescription.DiscontinutiesFeatures)) || !refSim.getMathDescription().hasDiscontinuities()) {
 								interpolationOrder = solverDescription.getTimeOrder();
 							}
 						}
