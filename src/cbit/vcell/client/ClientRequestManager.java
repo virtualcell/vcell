@@ -1221,7 +1221,8 @@ public static boolean isImportGeometryType(DocumentCreationInfo documentCreation
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH ||
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC ||
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE ||
-	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER
 	;
 }
 
@@ -1388,7 +1389,13 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
 					hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"Image for new VCell geometry"));
 				}
-				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE || documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
+				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
+					hashTable.put("imageFile",ImageJHelper.vcellWantSurface(getClientTaskStatusSupport(),"Image for new VCell geometry"));
+				}
+				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE ||
+					documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
+					documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
+					
 					File imageFile = (File)hashTable.get("imageFile");
 					if(imageFile == null){
 						throw new Exception("No file selected");
@@ -1811,7 +1818,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask,queryImageResizeTask,importFileImageTask/*resizes*/,finishTask}));
-	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
+	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ || documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,queryImageResizeTask,importFileImageTask/*resizes*/,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {getFieldDataImageParams,queryImageResizeTask,parseImageTask,resizeImageTask,finishTask}));
@@ -2367,7 +2374,7 @@ public static void downloadExportedData(final Component requester, final UserPre
 //					    		fos.write(mybuf, 0, numread);
 //					    	}
 //					    	fos.close();
-			    	imagejConnetArr[0] = new ImageJConnection();//doesn't open connection until later
+			    	imagejConnetArr[0] = new ImageJConnection(ImageJHelper.ExternalCommunicator.IMAGEJ);//doesn't open connection until later
 			    	ImageJHelper.vcellSendNRRD(requester,zis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'");
 		    	}finally{
 		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}

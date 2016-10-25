@@ -17,6 +17,7 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipInputStream;
 
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
@@ -30,13 +31,24 @@ import cbit.vcell.simdata.PDEDataContext;
 
 public class ImageJHelper {
 	public static final String USER_ABORT = "userAbort";
+	public enum ExternalCommunicator 
+	{
+	  IMAGEJ(5000),
+	  BLENDER(5001);
+
+	  private final int port; 
+	  private ExternalCommunicator(final int port) { this.port = port; }
+	  public int getPort() { return this.port;}
+	}	
 	public static class ImageJConnection {
 		public ServerSocket serverSocket;
 		public Socket socket;
 		public DataInputStream dis;
 		public DataOutputStream dos;
-		public ImageJConnection() throws Exception{
-			serverSocket = new ServerSocket(5000);
+		public ExternalCommunicator externalCommunicator;
+		public ImageJConnection(ExternalCommunicator externalCommunicator) throws Exception{
+			serverSocket = new ServerSocket(externalCommunicator.getPort());
+			this.externalCommunicator = externalCommunicator;
 		}
 		public void openConnection(ImageJHelper.commands command,String descr) throws Exception{
 			socket = serverSocket.accept();
@@ -45,7 +57,17 @@ public class ImageJHelper {
 			dos = new DataOutputStream(socket.getOutputStream());
 			dos.writeUTF(command.name());
 			dos.writeUTF(descr);
-			String startMessage = dis.readUTF();
+			String startMessage = null;
+			switch(externalCommunicator){
+				case IMAGEJ:
+					startMessage = dis.readUTF();
+					break;
+				case BLENDER:
+					startMessage = dis.readLine();
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected external program "+externalCommunicator.name());
+			}
 			if(startMessage.equals(USER_ABORT)){
 				throw UserCancelException.CANCEL_GENERIC;
 			}
@@ -85,10 +107,31 @@ public class ImageJHelper {
 			return new int[] {zsize,ysize,xsize,csize,tsize};
 		}
 	}
-	public static enum commands {vcellWantImage,vcellWantInfo,vcellSendImage,vcellSendInfo,vcellSendDomains};
+	public static enum commands {vcellWantImage,vcellWantInfo,vcellSendImage,vcellSendInfo,vcellSendDomains,vcellWantSurface};
 
 	private static enum doneFlags {working,cancelled,finished};
 
+	public static File vcellWantSurface(ClientTaskStatusSupport clientTaskStatusSupport,String description) throws Exception{
+		final ImageJConnection[] imageJConnectionArr = new ImageJConnection[1];
+		try{
+			ImageJConnection imageJConnection = new ImageJConnection(ExternalCommunicator.BLENDER);
+			imageJConnectionArr[0] = imageJConnection;
+			imageJConnection.openConnection(commands.vcellWantSurface,description);
+			String sizeStr = imageJConnection.dis.readLine();
+			int fileSize = Integer.parseInt(sizeStr);
+			byte[] bytes = new byte[fileSize];
+			int numread = 0;
+			while(numread != bytes.length){
+				numread+= imageJConnection.dis.read(bytes, numread, bytes.length-numread);
+			}
+			File newFile = File.createTempFile("vcellBlener", null);
+			FileUtils.writeByteArrayToFile(bytes, newFile);
+			return newFile;
+		}finally{
+			try{if(imageJConnectionArr[0] != null){imageJConnectionArr[0].closeConnection();}}catch(Exception e){e.printStackTrace();}			
+		}
+	}
+	
 	public static File vcellWantImage(ClientTaskStatusSupport clientTaskStatusSupport,String description) throws Exception{
 		
 		final ImageJConnection[] imageJConnectionArr = new ImageJConnection[1];
@@ -99,7 +142,7 @@ public class ImageJHelper {
 		}
 		//Create nrrd file from socket input
 		try{
-			ImageJConnection imageJConnection = new ImageJConnection();
+			ImageJConnection imageJConnection = new ImageJConnection(ExternalCommunicator.IMAGEJ);
 			imageJConnectionArr[0] = imageJConnection;
 			//check in separate thread for possible cancel while this task is blocked waiting for serversocket contact with ImageJ
 			if(clientTaskStatusSupport != null){
@@ -246,7 +289,7 @@ public class ImageJHelper {
 //				public void run() {
 //				}
 //			}).start();
-	    	imageJConnection[0] = new ImageJConnection();
+	    	imageJConnection[0] = new ImageJConnection(ExternalCommunicator.IMAGEJ);
 			imageJConnection[0].openConnection(commands.vcellSendDomains,description);
 			byte[] data = new byte[pdeDataContext.getCartesianMesh().getNumVolumeElements()];
 			for (int i = 0; i < data.length; i++) {
@@ -338,7 +381,7 @@ public class ImageJHelper {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				try{					
-					ImageJConnection imageJConnection = new ImageJConnection();
+					ImageJConnection imageJConnection = new ImageJConnection(ExternalCommunicator.IMAGEJ);
 					imageJConnectionArr[0] = imageJConnection;
 					imageJConnection.openConnection(commands.vcellSendImage,description);
 					//send size of the standard 5 dimensions in this order (width, height, nChannels, nSlices, nFrames)
