@@ -529,6 +529,33 @@ public class XMLTags {
 	public final static String EventTag = "Event";
 	public final static String BioEventsTag = "BioEvents";
 	public final static String BioEventTag = "BioEvent";
+	
+	public final static String SpatialObjectsTag = "SpatialObjects";
+	public final static String SpatialObjectTag = "SpatialObject";
+	public final static String SpatialObjectTypeAttrTag = "Type";
+	public final static String 	SpatialObjectTypeAttrValue_Point = "Point";
+	public final static String 	SpatialObjectTypeAttrValue_Surface = "Surface";
+	public final static String 	SpatialObjectTypeAttrValue_Volume = "Volume";
+	public final static String SpatialObjectSubVolumeAttrTag = "subVolume";
+	public final static String SpatialObjectRegionIdAttrTag = "regionId";
+	public final static String SpatialObjectSubVolumeInsideAttrTag = "subVolumeInside";
+	public final static String SpatialObjectRegionIdInsideAttrTag = "regionIdInside";
+	public final static String SpatialObjectSubVolumeOutsideAttrTag = "subVolumeOutside";
+	public final static String SpatialObjectRegionIdOutsideAttrTag = "regionIdOutside";
+	public final static String QuantityCategoryListTag = "QuantityCategoryList";
+	public final static String QuantityCategoryTag = "QuantityCategory";
+	public final static String QuantityCategoryNameAttrTag = "Name";
+	public final static String QuantityCategoryEnabledAttrTag = "Enabled";
+	
+	public final static String SpatialProcessesTag = "SpatialProcesses";
+	public final static String SpatialProcessTag = "SpatialProcess";
+	public final static String SpatialProcessTypeAttrTag = "Type";
+	public final static String  SpatialProcessTypeAttrValue_PointLocation = "PointLocation";
+	public final static String  SpatialProcessTypeAttrValue_PointKinematics = "PointKinematics";
+	public final static String  SpatialProcessTypeAttrValue_SurfaceKinematics = "SurfaceKinematics";
+	public final static String SpatialProcessPointObjectAttrTag = "PointObject";
+	public final static String SpatialProcessSurfaceObjectAttrTag = "SurfaceObject";
+	
 	public final static String UseValuesFromTriggerTimeAttrTag = "UseValuesFromTriggerTime";
 	public final static String TriggerTag = "Trigger";
 	public final static String DelayTag = "Delay";

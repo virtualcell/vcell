@@ -78,9 +78,9 @@ public abstract class SpatialProcess implements Serializable, IssueSource, Prope
 
 	public static enum SpatialProcessParameterType implements ParameterRoleEnum {
 
-		PointInitialPositionX(0,"PointPositionX","initPosX","initial point position (x coord)"),
-		PointInitialPositionY(1,"PointPositionY","initPosY","initial point position (y coord)"),
-		PointInitialPositionZ(2,"PointPositionZ","initPosZ","initial point position (z coord)"),
+		PointInitialPositionX(0,"PointInitialPositionX","initPosX","initial point position (x coord)"),
+		PointInitialPositionY(1,"PointInitialPositionY","initPosY","initial point position (y coord)"),
+		PointInitialPositionZ(2,"PointInitialPositionZ","initPosZ","initial point position (z coord)"),
 		
 		PointPositionX(3,"PointPositionX","posX","point position (x coord)"),
 		PointPositionY(4,"PointPositionY","posY","point position (y coord)"),

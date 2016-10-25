@@ -15,6 +15,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.ApplicationQuantity;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
@@ -41,26 +42,37 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 	private String name;
 	
 	public enum QuantityCategory {
-		SurfaceSize("Surface Size","size",Dimension.Area),
-		PointPosition("Point Position","pos",Dimension.Length),
-		SurfaceVelocity("Surface Velocity","vel",Dimension.Velocity),
-		PointVelocity("Point Velocity","vel",Dimension.Velocity),
-		Centroid("Volume Centroid","centroid",Dimension.Length),
-		Normal("Surface Normal","normal",Dimension.Length), 
-		VolumeSize("Volume Region Size","size",Dimension.Volume), 
-		DistanceToSurface("Distance to Surface","distance",Dimension.Length), 
-		DirectionToSurface("Direction to Surface","direction",Dimension.Length), 
-		DistanceToPoint("Distance to Point","distance",Dimension.Length), 
-		DirectionToPoint("Direction to Point","direction",Dimension.Length);
+		SurfaceSize("Surface Size","size","SurfaceSize",Dimension.Area),
+		PointPosition("Point Position","pos","PointPosition",Dimension.Length),
+		SurfaceVelocity("Surface Velocity","vel","SurfaceVelocity",Dimension.Velocity),
+		PointVelocity("Point Velocity","vel","PointVelocity",Dimension.Velocity),
+		Centroid("Volume Centroid","centroid","VolumeCentroid",Dimension.Length),
+		Normal("Surface Normal","normal","SurfaceNormal",Dimension.Length), 
+		VolumeSize("Volume Region Size","size","VolumeRegionSize",Dimension.Volume), 
+		DistanceToSurface("Distance to Surface","distance","DistanceToSurface",Dimension.Length), 
+		DirectionToSurface("Direction to Surface","direction","DirectionToSurface",Dimension.Length), 
+		DistanceToPoint("Distance to Point","distance","DistanceToPoint",Dimension.Length), 
+		DirectionToPoint("Direction to Point","direction","DirectionToPoint",Dimension.Length);
 		
 		public final String description;
 		public final String varSuffix;
+		public final String xmlName;
 		public final Dimension dimension;
 		
-		QuantityCategory(String description, String varSuffix, Dimension dimension){
+		QuantityCategory(String description, String varSuffix, String xmlName, Dimension dimension){
 			this.description = description;
 			this.varSuffix = varSuffix;
+			this.xmlName = xmlName;
 			this.dimension = dimension;
+		}
+
+		public static QuantityCategory fromXMLName(String quantityCategoryName) {
+			for (QuantityCategory cat : values()){
+				if (cat.xmlName.equals(quantityCategoryName)){
+					return cat;
+				}
+			}
+			return null;
 		}
 	}
 	

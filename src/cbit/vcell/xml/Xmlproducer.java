@@ -128,8 +128,20 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.mapping.spatial.PointObject;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SurfaceRegionObject;
+import cbit.vcell.mapping.spatial.VolumeRegionObject;
+import cbit.vcell.mapping.spatial.processes.PointKinematics;
+import cbit.vcell.mapping.spatial.processes.PointLocation;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
+import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.ComputeCentroidComponentEquation;
+import cbit.vcell.math.ComputeMembraneMetricEquation;
+import cbit.vcell.math.ComputeNormalComponentEquation;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.ConvolutionDataGenerator;
 import cbit.vcell.math.ConvolutionDataGenerator.ConvolutionDataGeneratorKernel;
@@ -139,9 +151,6 @@ import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
-import cbit.vcell.math.ComputeCentroidComponentEquation;
-import cbit.vcell.math.ComputeMembraneMetricEquation;
-import cbit.vcell.math.ComputeNormalComponentEquation;
 import cbit.vcell.math.ExplicitDataGenerator;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
@@ -1648,6 +1657,16 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	BioEvent[] bioEvents = param.getBioEvents();
 	if (bioEvents!=null && bioEvents.length>0){
 		simulationcontext.addContent( getXML(bioEvents) );
+	}
+	
+	SpatialObject[] spatialObjects = param.getSpatialObjects();
+	if (spatialObjects!=null && spatialObjects.length>0){
+		simulationcontext.addContent( getXML(spatialObjects));
+	}
+	
+	SpatialProcess[] spatialProcesses = param.getSpatialProcesses();
+	if (spatialProcesses!=null && spatialProcesses.length>0){
+		simulationcontext.addContent( getXML(spatialProcesses));
 	}
 	
 	// Add rate rules
@@ -4844,7 +4863,7 @@ private Element getXML(Event event) throws XmlParseException{
 	return eventElement;
 }
 
-// For events in SimulationContext - XML is very similar to math events
+//For events in SimulationContext - XML is very similar to math events
 public Element getXML(BioEvent[] bioEvents) throws XmlParseException{
 	Element bioEventsElement = new Element(XMLTags.BioEventsTag);
 	for (int i = 0; i < bioEvents.length; i++) {
@@ -4890,6 +4909,86 @@ public Element getXML(BioEvent[] bioEvents) throws XmlParseException{
 
 	System.out.println(XmlUtil.xmlToString(bioEventsElement));
 	return bioEventsElement;
+}
+
+
+public Element getXML(SpatialObject[] spatialObjects) throws XmlParseException{
+	Element spatialObjectsElement = new Element(XMLTags.SpatialObjectsTag);
+	for (SpatialObject spatialObject : spatialObjects) {
+		Element spatialObjectElement = new Element(XMLTags.SpatialObjectTag);
+		spatialObjectElement.setAttribute(XMLTags.NameAttrTag, mangle(spatialObject.getName()));
+		
+		if (spatialObject instanceof PointObject){
+			spatialObjectElement.setAttribute(XMLTags.SpatialObjectTypeAttrTag,XMLTags.SpatialObjectTypeAttrValue_Point);
+		} else if (spatialObject instanceof SurfaceRegionObject){
+			spatialObjectElement.setAttribute(XMLTags.SpatialObjectTypeAttrTag,XMLTags.SpatialObjectTypeAttrValue_Surface);
+			spatialObjectElement.setAttribute(XMLTags.SpatialObjectSubVolumeInsideAttrTag,((SurfaceRegionObject) spatialObject).getInsideSubVolume().getName());
+			spatialObjectElement.setAttribute(XMLTags.SpatialObjectRegionIdInsideAttrTag,((SurfaceRegionObject) spatialObject).getInsideRegionID().toString());
+			spatialObjectElement.setAttribute(XMLTags.SpatialObjectSubVolumeOutsideAttrTag,((SurfaceRegionObject) spatialObject).getOutsideSubVolume().getName());
+			spatialObjectElement.setAttribute(XMLTags.SpatialObjectRegionIdOutsideAttrTag,((SurfaceRegionObject) spatialObject).getOutsideRegionID().toString());
+		} else if (spatialObject instanceof VolumeRegionObject){
+			spatialObjectElement.setAttribute(XMLTags.SpatialObjectTypeAttrTag,XMLTags.SpatialObjectTypeAttrValue_Volume);
+			spatialObjectElement.setAttribute(XMLTags.SpatialObjectSubVolumeAttrTag,((VolumeRegionObject) spatialObject).getSubVolume().getName());
+			spatialObjectElement.setAttribute(XMLTags.SpatialObjectRegionIdAttrTag,((VolumeRegionObject) spatialObject).getRegionID().toString());
+		} else {
+			throw new RuntimeException("spatialObject type "+spatialObject.getClass().getSimpleName()+" not yet supported for persistence.");
+		}
+		
+		Element quantityCategoryListElement = new Element(XMLTags.QuantityCategoryListTag);
+		for (QuantityCategory quantityCategory : spatialObject.getQuantityCategories()){
+			Element quantityCategoryElement = new Element(XMLTags.QuantityCategoryTag);
+			quantityCategoryElement.setAttribute(XMLTags.QuantityCategoryNameAttrTag, quantityCategory.xmlName);
+			quantityCategoryElement.setAttribute(XMLTags.QuantityCategoryEnabledAttrTag, Boolean.toString(spatialObject.isQuantityCategoryEnabled(quantityCategory)));
+			quantityCategoryListElement.addContent(quantityCategoryElement);
+		}
+		spatialObjectElement.addContent(quantityCategoryListElement);
+		spatialObjectsElement.addContent(spatialObjectElement);
+	}
+
+	System.out.println(XmlUtil.xmlToString(spatialObjectsElement));
+	return spatialObjectsElement;
+}
+
+
+public Element getXML(SpatialProcess[] spatialProcesses) throws XmlParseException{
+	Element spatialProcessesElement = new Element(XMLTags.SpatialProcessesTag);
+	for (SpatialProcess spatialProcess : spatialProcesses) {
+		Element spatialProcessElement = new Element(XMLTags.SpatialProcessTag);
+		spatialProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(spatialProcess.getName()));
+		
+		if (spatialProcess instanceof PointKinematics){
+			spatialProcessElement.setAttribute(XMLTags.SpatialProcessTypeAttrTag,XMLTags.SpatialProcessTypeAttrValue_PointKinematics);
+			spatialProcessElement.setAttribute(XMLTags.SpatialProcessPointObjectAttrTag,((PointKinematics) spatialProcess).getPointObject().getName());
+		} else if (spatialProcess instanceof PointLocation){
+			spatialProcessElement.setAttribute(XMLTags.SpatialProcessTypeAttrTag,XMLTags.SpatialProcessTypeAttrValue_PointLocation);
+			spatialProcessElement.setAttribute(XMLTags.SpatialProcessPointObjectAttrTag,((PointLocation) spatialProcess).getPointObject().getName());
+		} else if (spatialProcess instanceof SurfaceKinematics){
+			spatialProcessElement.setAttribute(XMLTags.SpatialProcessTypeAttrTag,XMLTags.SpatialProcessTypeAttrValue_SurfaceKinematics);
+			spatialProcessElement.setAttribute(XMLTags.SpatialProcessSurfaceObjectAttrTag,((SurfaceKinematics) spatialProcess).getSurfaceRegionObject().getName());
+		} else {
+			throw new RuntimeException("spatialProcess type "+spatialProcess.getClass().getSimpleName()+" not yet supported for persistence.");
+		}
+		
+		LocalParameter parameters[] = spatialProcess.getParameters();
+		for (LocalParameter parm : parameters){
+			if (parm.getExpression()!=null){
+				Element tempparameter = new Element(XMLTags.ParameterTag);
+				//Get parameter attributes
+				tempparameter.setAttribute(XMLTags.NameAttrTag, mangle(parm.getName()));
+				tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, spatialProcess.getParameterType(parm).getRoleXmlName());
+				VCUnitDefinition unit = parm.getUnitDefinition();
+				if (unit != null) {
+					tempparameter.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
+				}
+				tempparameter.addContent( mangleExpression(parm.getExpression()) );
+				spatialProcessElement.addContent(tempparameter);
+			}
+		}
+		spatialProcessesElement.addContent(spatialProcessElement);
+	}
+
+	System.out.println(XmlUtil.xmlToString(spatialProcessesElement));
+	return spatialProcessesElement;
 }
 
 

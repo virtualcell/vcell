@@ -38,6 +38,8 @@ import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextInfo;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model;
 import cbit.vcell.xml.XMLTags;
@@ -251,13 +253,37 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 	BioEvent[] bioEvents = simContext.getBioEvents();
 	if (bioEvents != null && bioEvents.length > 0) {
 		try {
-			Element bioEventElement = xmlProducer.getXML(bioEvents);
-			appComponentsElement.addContent(bioEventElement);
+			Element bioEventsElement = xmlProducer.getXML(bioEvents);
+			appComponentsElement.addContent(bioEventsElement);
 		} catch (XmlParseException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage());
 		}
 	}
+	
+	SpatialObject[] spatialObjects = simContext.getSpatialObjects();
+	if (spatialObjects!=null && spatialObjects.length>0){
+		try {
+			Element spatialObjectsElement = xmlProducer.getXML(spatialObjects);
+			appComponentsElement.addContent( spatialObjectsElement);
+		} catch (XmlParseException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error generating XML for spatialObjects : " + e.getMessage());
+		}
+	}
+	
+	SpatialProcess[] spatialProcesses = simContext.getSpatialProcesses();
+	if (spatialProcesses!=null && spatialProcesses.length>0){
+		try {
+			Element spatialProcessesElement = xmlProducer.getXML(spatialProcesses);
+			appComponentsElement.addContent( spatialProcessesElement);
+		} catch (XmlParseException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error generating XML for spatialProcesses : " + e.getMessage());
+		}
+	}
+	
+	
 	// microscope measurements
 	Element element = xmlProducer.getXML(simContext.getMicroscopeMeasurement());
 	appComponentsElement.addContent(element);
@@ -367,6 +393,18 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 			if (bioEventsElement != null) {
 				BioEvent[] bioEvents = xmlReader.getBioEvents(simContext, bioEventsElement);
 				simContext.setBioEvents(bioEvents);
+			}
+			// get spatial objects
+			Element spatialObjectsElement = appComponentsElement.getChild(XMLTags.SpatialObjectsTag);
+			if (spatialObjectsElement != null) {
+				SpatialObject[] spatialObjects = xmlReader.getSpatialObjects(simContext, spatialObjectsElement);
+				simContext.setSpatialObjects(spatialObjects);
+			}
+			// get spatial objects
+			Element spatialProcessesElement = appComponentsElement.getChild(XMLTags.SpatialProcessesTag);
+			if (spatialProcessesElement != null) {
+				SpatialProcess[] spatialProcesses = xmlReader.getSpatialProcesses(simContext, spatialProcessesElement);
+				simContext.setSpatialProcesses(spatialProcesses);
 			}
 			// get microscope measurements
 			Element element = appComponentsElement.getChild(XMLTags.MicroscopeMeasurement);

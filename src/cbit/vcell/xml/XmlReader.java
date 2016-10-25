@@ -147,6 +147,16 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.mapping.spatial.PointObject;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SurfaceRegionObject;
+import cbit.vcell.mapping.spatial.VolumeRegionObject;
+import cbit.vcell.mapping.spatial.processes.PointKinematics;
+import cbit.vcell.mapping.spatial.processes.PointLocation;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess.SpatialProcessParameterType;
+import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -3497,6 +3507,133 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 	return ((BioEvent[])BeanUtils.getArray(bioEventsVector, BioEvent.class));
 }
 
+public SpatialObject[] getSpatialObjects(SimulationContext simContext, Element spatialObjectsElement) throws XmlParseException  {
+	Iterator<Element> spatialObjectElementIterator = spatialObjectsElement.getChildren(XMLTags.SpatialObjectTag, vcNamespace).iterator();
+	ArrayList<SpatialObject> spatialObjectList = new ArrayList<SpatialObject>();
+	while (spatialObjectElementIterator.hasNext()) {
+		Element spatialObjectElement = (Element) spatialObjectElementIterator.next();
+
+		SpatialObject spatialObject = null;
+		String name = unMangle(spatialObjectElement.getAttributeValue(XMLTags.NameAttrTag));
+		String type = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectTypeAttrTag));
+		if (type.equals(XMLTags.SpatialObjectTypeAttrValue_Point)){
+			PointObject pointObject = new PointObject(name,simContext);
+			spatialObject = pointObject;
+		}else if (type.equals(XMLTags.SpatialObjectTypeAttrValue_Surface)){
+			String insideSubvolumeName = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectSubVolumeInsideAttrTag));
+			String insideRegionIDString = spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectRegionIdInsideAttrTag);
+			String outsideSubvolumeName = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectSubVolumeOutsideAttrTag));
+			String outsideRegionIDString = spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectRegionIdOutsideAttrTag);
+			
+			SubVolume insideSubvolume = null;
+			if (insideSubvolumeName!=null){
+				insideSubvolume = simContext.getGeometry().getGeometrySpec().getSubVolume(insideSubvolumeName);
+			}
+			Integer insideRegionID = null;
+			if (insideRegionIDString!=null){
+				insideRegionID = Integer.parseUnsignedInt(insideRegionIDString);
+			}
+			SubVolume outsideSubvolume = null;
+			if (outsideSubvolumeName!=null){
+				outsideSubvolume = simContext.getGeometry().getGeometrySpec().getSubVolume(outsideSubvolumeName);
+			}
+			Integer outsideRegionID = null;
+			if (outsideRegionIDString!=null){
+				outsideRegionID = Integer.parseUnsignedInt(outsideRegionIDString);
+			}
+			SurfaceRegionObject surfaceRegionObject = new SurfaceRegionObject(name,insideSubvolume,insideRegionID,outsideSubvolume,outsideRegionID,simContext);
+			spatialObject = surfaceRegionObject;
+		}else if (type.equals(XMLTags.SpatialObjectTypeAttrValue_Volume)){
+			String subvolumeName = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectSubVolumeAttrTag));
+			String regionIDString = spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectRegionIdAttrTag);
+			
+			SubVolume subvolume = null;
+			if (subvolumeName!=null){
+				subvolume = simContext.getGeometry().getGeometrySpec().getSubVolume(subvolumeName);
+			}
+			Integer regionID = null;
+			if (regionIDString!=null){
+				regionID = Integer.parseUnsignedInt(regionIDString);
+			}
+			VolumeRegionObject volumeRegionObject = new VolumeRegionObject(name,subvolume,regionID,simContext);
+			spatialObject = volumeRegionObject;
+		}
+		
+		// set Quantity enables
+		Element quantityCategoryListElement = spatialObjectElement.getChild(XMLTags.QuantityCategoryListTag, vcNamespace);
+		List<Element> quantityCategoryElements = quantityCategoryListElement.getChildren(XMLTags.QuantityCategoryTag, vcNamespace);
+		for (Element quantityCategoryElement : quantityCategoryElements){
+			String quantityCategoryName = unMangle(quantityCategoryElement.getAttributeValue(XMLTags.QuantityCategoryNameAttrTag));
+			Boolean enabled = Boolean.parseBoolean(quantityCategoryElement.getAttributeValue(XMLTags.QuantityCategoryEnabledAttrTag));
+			QuantityCategory category = QuantityCategory.fromXMLName(quantityCategoryName);
+			spatialObject.setQuantityCategoryEnabled(category, enabled);
+		}
+		
+		spatialObjectList.add(spatialObject);
+	}
+	return spatialObjectList.toArray(new SpatialObject[0]);
+}
+
+public SpatialProcess[] getSpatialProcesses(SimulationContext simContext, Element spatialProcessesElement) throws XmlParseException  {
+	Iterator<Element> spatialProcessElementIterator = spatialProcessesElement.getChildren(XMLTags.SpatialProcessTag, vcNamespace).iterator();
+	ArrayList<SpatialProcess> spatialProcessList = new ArrayList<SpatialProcess>();
+	while (spatialProcessElementIterator.hasNext()) {
+		Element spatialProcessElement = (Element) spatialProcessElementIterator.next();
+
+		SpatialProcess spatialProcess = null;
+		String name = unMangle(spatialProcessElement.getAttributeValue(XMLTags.NameAttrTag));
+		String type = unMangle(spatialProcessElement.getAttributeValue(XMLTags.SpatialProcessTypeAttrTag));
+		if (type.equals(XMLTags.SpatialProcessTypeAttrValue_PointKinematics)){
+			PointKinematics pointKinematics = new PointKinematics(name,simContext);
+			String pointObjectName = spatialProcessElement.getAttributeValue(XMLTags.SpatialProcessPointObjectAttrTag);
+			PointObject pointObject = (PointObject)simContext.getSpatialObject(pointObjectName);
+			pointKinematics.setPointObject(pointObject);
+			spatialProcess = pointKinematics;
+		}else if (type.equals(XMLTags.SpatialProcessTypeAttrValue_PointLocation)){
+			PointLocation pointLocation = new PointLocation(name,simContext);
+			String pointObjectName = spatialProcessElement.getAttributeValue(XMLTags.SpatialProcessPointObjectAttrTag);
+			PointObject pointObject = (PointObject)simContext.getSpatialObject(pointObjectName);
+			pointLocation.setPointObject(pointObject);
+			spatialProcess = pointLocation;
+		}else if (type.equals(XMLTags.SpatialProcessTypeAttrValue_SurfaceKinematics)){
+			SurfaceKinematics surfaceKinematics = new SurfaceKinematics(name,simContext);
+			String surfaceRegionObjectName = spatialProcessElement.getAttributeValue(XMLTags.SpatialProcessSurfaceObjectAttrTag);
+			SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject)simContext.getSpatialObject(surfaceRegionObjectName);
+			surfaceKinematics.setSurfaceRegionObject(surfaceRegionObject);
+			spatialProcess = surfaceKinematics;
+		}
+		
+		// set parameters
+		Iterator<Element> paramElementIter = spatialProcessElement.getChildren(XMLTags.ParameterTag, vcNamespace).iterator();
+		ArrayList<LocalParameter> parameters = new ArrayList<LocalParameter>();
+		
+		while (paramElementIter.hasNext()){
+			Element paramElement = paramElementIter.next();
+
+			//Get parameter attributes
+			String paramName = paramElement.getAttributeValue(XMLTags.NameAttrTag);
+			Expression exp = unMangleExpression(paramElement.getText());
+			String roleStr = paramElement.getAttributeValue(XMLTags.ParamRoleAttrTag);
+			SpatialProcessParameterType parameterType = SpatialProcessParameterType.fromRoleXmlName(roleStr);
+			VCUnitDefinition unit = simContext.getModel().getUnitSystem().getInstance_TBD();
+			String unitSymbol = paramElement.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
+			if (unitSymbol != null) {
+				unit = simContext.getModel().getUnitSystem().getInstance(unitSymbol);
+			}
+			parameters.add(spatialProcess.createNewParameter(paramName, parameterType, exp, unit));
+		}
+		try {
+			spatialProcess.setParameters(parameters.toArray(new LocalParameter[0]));
+		} catch (PropertyVetoException | ExpressionBindingException e) {
+			e.printStackTrace();
+			throw new XmlParseException("failed to read parameters in bioEvent "+name+": "+e.getMessage(), e);
+		}
+		
+		spatialProcessList.add(spatialProcess);
+	}
+	return spatialProcessList.toArray(new SpatialProcess[0]);
+}
+
 public RateRule[] getRateRules(SimulationContext simContext, Element rateRulesElement) throws XmlParseException  {
 	Iterator<Element> rateRulesIterator = rateRulesElement.getChildren(XMLTags.RateRuleTag, vcNamespace).iterator();
 	Vector<RateRule> rateRulesVector = new Vector<RateRule>();
@@ -6060,6 +6197,30 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding events to simulationContext", e);
+		}
+	}
+
+	// Retrieve spatialObjects and add to simContext
+	tempelement = param.getChild(XMLTags.SpatialObjectsTag, vcNamespace);
+	if(tempelement != null){
+		SpatialObject[] spatialObjects = getSpatialObjects(newsimcontext, tempelement);
+		try {
+			newsimcontext.setSpatialObjects(spatialObjects);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding spatialObjects to simulationContext", e);
+		}
+	}
+
+	// Retrieve spatialProcesses and add to simContext
+	tempelement = param.getChild(XMLTags.SpatialProcessesTag, vcNamespace);
+	if(tempelement != null){
+		SpatialProcess[] spatialProcesses = getSpatialProcesses(newsimcontext, tempelement);
+		try {
+			newsimcontext.setSpatialProcesses(spatialProcesses);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding spatialProcesses to simulationContext", e);
 		}
 	}
 
