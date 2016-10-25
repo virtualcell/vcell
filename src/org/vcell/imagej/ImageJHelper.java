@@ -50,7 +50,7 @@ public class ImageJHelper {
 			serverSocket = new ServerSocket(externalCommunicator.getPort());
 			this.externalCommunicator = externalCommunicator;
 		}
-		public void openConnection(ImageJHelper.commands command,String descr) throws Exception{
+		public void openConnection(ImageJHelper.VCellImageJCommands command,String descr) throws Exception{
 			socket = serverSocket.accept();
 			serverSocket.close();
 			dis = new DataInputStream(socket.getInputStream());
@@ -107,7 +107,7 @@ public class ImageJHelper {
 			return new int[] {zsize,ysize,xsize,csize,tsize};
 		}
 	}
-	public static enum commands {vcellWantImage,vcellWantInfo,vcellSendImage,vcellSendInfo,vcellSendDomains,vcellWantSurface};
+	public static enum VCellImageJCommands {vcellWantImage,vcellWantInfo,vcellSendImage,vcellSendInfo,vcellSendDomains,vcellWantSurface};
 
 	private static enum doneFlags {working,cancelled,finished};
 
@@ -116,7 +116,7 @@ public class ImageJHelper {
 		try{
 			ImageJConnection imageJConnection = new ImageJConnection(ExternalCommunicator.BLENDER);
 			imageJConnectionArr[0] = imageJConnection;
-			imageJConnection.openConnection(commands.vcellWantSurface,description);
+			imageJConnection.openConnection(VCellImageJCommands.vcellWantSurface,description);
 			String sizeStr = imageJConnection.dis.readLine();
 			int fileSize = Integer.parseInt(sizeStr);
 			byte[] bytes = new byte[fileSize];
@@ -161,7 +161,7 @@ public class ImageJHelper {
 				}).start();
 			}
 			//contact ImageJ
-			imageJConnection.openConnection(commands.vcellWantImage,description);
+			imageJConnection.openConnection(VCellImageJCommands.vcellWantImage,description);
 			imageJConnection.dis.readInt();//integer (dimensions)
 			//get size of the standard 5 dimensions in this order (width, height, nChannels, nSlices, nFrames)
 			int xsize = imageJConnection.dis.readInt();
@@ -290,7 +290,7 @@ public class ImageJHelper {
 //				}
 //			}).start();
 	    	imageJConnection[0] = new ImageJConnection(ExternalCommunicator.IMAGEJ);
-			imageJConnection[0].openConnection(commands.vcellSendDomains,description);
+			imageJConnection[0].openConnection(VCellImageJCommands.vcellSendDomains,description);
 			byte[] data = new byte[pdeDataContext.getCartesianMesh().getNumVolumeElements()];
 			for (int i = 0; i < data.length; i++) {
 				int subvolume = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(i);
@@ -332,7 +332,7 @@ public class ImageJHelper {
 	    	if(clientTaskStatusSupport != null){
 	    		clientTaskStatusSupport.setMessage("Sending data to ImageJ...");
 	    	}
-			imageJConnection.openConnection(commands.vcellSendImage,description);
+			imageJConnection.openConnection(VCellImageJCommands.vcellSendImage,description);
 			double[] data = new double[hyperStackHelper.getTotalSize()];
 			for (int i = 0; i < data.length; i++) {
 				data[i] = dis.readDouble();
@@ -383,7 +383,7 @@ public class ImageJHelper {
 				try{					
 					ImageJConnection imageJConnection = new ImageJConnection(ExternalCommunicator.IMAGEJ);
 					imageJConnectionArr[0] = imageJConnection;
-					imageJConnection.openConnection(commands.vcellSendImage,description);
+					imageJConnection.openConnection(VCellImageJCommands.vcellSendImage,description);
 					//send size of the standard 5 dimensions in this order (width, height, nChannels, nSlices, nFrames)
 					ISize xyzSize = pdeDataContext.getCartesianMesh().getISize();
 					sendImageDataAsFloats(imageJConnection, new HyperStackHelper(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
