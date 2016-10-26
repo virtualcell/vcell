@@ -1863,12 +1863,15 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 					throw new MappingException("PointLocation process defined for pointObject '"+pointObject.getName()+"' but Position not enabled");
 				}
 			}else if (pointLocationProcesses.size()==0 && pointKinematicsProcesses.size()==1){
-				throw new MappingException("PointSubDomains not yet implemented, needed for PointObject '"+pointObject.getName()+"'");
+				throw new MappingException("PointSubDomains not yet implemented, needed for PointKinematics process acting on PointObject '"+pointObject.getName()+"'");
 			}else{
 				throw new MappingException("expecting 1 location or kinematics process for point '"+pointObject.getName()+"'");
 			}
 		}else if (spatialObject instanceof SurfaceRegionObject){
 			SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject)spatialObject;
+			SubVolume insideSubvolume = surfaceRegionObject.getInsideSubVolume();
+			SubVolume outsideSubvolume = surfaceRegionObject.getOutsideSubVolume();
+			SurfaceClass surfaceClass = simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceClass(insideSubvolume, outsideSubvolume);
 
 			//
 			// if true, have to solve for this category
@@ -1887,9 +1890,6 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 					}
 				}
 				if (surfaceKinematicsList.size()==1){
-					SubVolume insideSubvolume = surfaceRegionObject.getInsideSubVolume();
-					SubVolume outsideSubvolume = surfaceRegionObject.getOutsideSubVolume();
-					SurfaceClass surfaceClass = simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceClass(insideSubvolume, outsideSubvolume);
 					SurfaceKinematics surfaceKinematics = surfaceKinematicsList.get(0);
 					if (simContext.getGeometry().getDimension()>=1){
 						SpatialQuantity velXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.X);
@@ -1957,11 +1957,41 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 				}else{
 					throw new MappingException("expecting 1 Surface Kinematics process for Surface Object '"+surfaceRegionObject.getName()+"'");
 				}
-			}			
+			}
+			if (bSize){
+				SpatialQuantity sizeQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceSize,QuantityComponent.Scalar);
+				String funcName = MathFunctionDefinitions.Function_regionArea_current.getFunctionName();
+				Expression sizeExp = Expression.function(funcName, new Expression[] {new Expression("'"+surfaceClass.getName()+"'")} );
+				varHash.addVariable(newFunctionOrConstant(
+						getMathSymbol(sizeQuantity, surfaceClass), 
+						getIdentifierSubstitutions(sizeExp,sizeQuantity.getUnitDefinition(),surfaceClass),
+						surfaceClass));
+			}
+			if (bDirection){
+				throw new MappingException(QuantityCategory.DirectionToSurface.description+" not yet implemented in math generation");
+			}
+			if (bDistance){
+				throw new MappingException(QuantityCategory.DistanceToSurface.description+" not yet implemented in math generation");
+			}
 		}else if (spatialObject instanceof VolumeRegionObject){
 			VolumeRegionObject volumeRegionObject = (VolumeRegionObject)spatialObject;
-			//	QuantityCategory.Centroid,
-			//	QuantityCategory.VolumeSize},
+			SubVolume subvolume = volumeRegionObject.getSubVolume();
+			
+			boolean bCentroid = volumeRegionObject.isQuantityCategoryEnabled(QuantityCategory.DirectionToSurface);
+			boolean bSize = volumeRegionObject.isQuantityCategoryEnabled(QuantityCategory.VolumeSize);
+			
+			if (bSize){
+				SpatialQuantity sizeQuantity = volumeRegionObject.getSpatialQuantity(QuantityCategory.VolumeSize,QuantityComponent.Scalar);
+				String funcName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();
+				Expression sizeExp = Expression.function(funcName, new Expression[] {new Expression("'"+subvolume.getName()+"'")} );
+				varHash.addVariable(newFunctionOrConstant(
+						getMathSymbol(sizeQuantity, subvolume), 
+						getIdentifierSubstitutions(sizeExp,sizeQuantity.getUnitDefinition(),subvolume),
+						subvolume));
+			}
+			if (bCentroid){
+				throw new MappingException(QuantityCategory.Centroid.description+" not yet implemented in math generation");
+			}
 		}
 	}
 }
