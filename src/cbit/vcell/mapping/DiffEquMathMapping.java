@@ -1286,7 +1286,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		for (SpatialObject spatialObject : simContext.getSpatialObjects()){
 			if (spatialObject instanceof SurfaceRegionObject){
 				SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject) spatialObject;
-				if (((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||
+				if (surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity) &&
+					((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||
 					((surfaceRegionObject.getInsideSubVolume() == outerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == innerSubVolume))){
 					int dim = simContext.getGeometry().getDimension();
 					if (dim!=2){

@@ -65,7 +65,7 @@ public class SurfaceKinematics extends SpatialProcess {
 
 	@Override
 	public String getDescription() {
-		return "Point Location Process";
+		return "Membrane Kinematics";
 	}
 
 	@Override
