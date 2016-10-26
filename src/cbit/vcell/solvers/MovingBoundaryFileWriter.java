@@ -10,6 +10,7 @@
 
 package cbit.vcell.solvers;
 import java.io.PrintWriter;
+import java.util.Map;
 import java.util.Objects;
 
 import org.jdom.Document;
@@ -17,6 +18,7 @@ import org.jdom.Element;
 import org.vcell.movingboundary.MovingBoundarySolverSpec;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
+import org.vcell.util.Matchable;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
@@ -25,6 +27,7 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PointSubDomain;
@@ -36,6 +39,9 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -45,6 +51,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
+import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Exporting simulation data to Moving Boundary XML format
@@ -426,7 +433,32 @@ private Element getSpecies(Equation eq) throws ExpressionException, MathExceptio
 
 private String flattenExpression(Expression ex) throws ExpressionException, MathException {
 	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
-	return simSymbolTable.substituteFunctions(ex).flatten().infix();
+	Variable normalX = new Variable("normalX",null){
+		public boolean compareEqual(Matchable object,boolean bIgnoreMissingDomains) {return false;}
+		public String getVCML() throws MathException { return null;}
+	};
+	Variable normalY = new Variable("normalY",null){
+		public boolean compareEqual(Matchable object,boolean bIgnoreMissingDomains) {return false;}
+		public String getVCML() throws MathException { return null;}
+	};
+	SymbolTable augmentedSymbolTable = new SymbolTable(){
+		@Override
+		public SymbolTableEntry getEntry(String identifierString) {
+			if (identifierString.equals(normalX.getName())){ return normalX; }
+			if (identifierString.equals(normalY.getName())){ return normalY; }
+			return simSymbolTable.getEntry(identifierString);
+		}
+		@Override
+		public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+			simSymbolTable.getEntries(entryMap);
+			entryMap.put(normalX.getName(),normalX);
+			entryMap.put(normalY.getName(),normalY);
+		}
+	};
+	ex = new Expression(ex);
+	ex.bindExpression(augmentedSymbolTable);
+	return MathUtilities.substituteFunctions(ex, augmentedSymbolTable).flatten().infix();
+	//return simSymbolTable.substituteFunctions(ex).flatten().infix();
 }
 
 //------------------------------------------------ report
