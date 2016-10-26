@@ -39,7 +39,6 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -51,7 +50,6 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Exporting simulation data to Moving Boundary XML format
@@ -292,15 +290,15 @@ private Element getLevelFunction() throws ExpressionException {
  * @throws ExpressionException
  * @throws MathException
  */
-private String expressionAsString(Expression e) throws ExpressionException, MathException {
+private String expressionAsString(Expression e, VariableDomain varDomain) throws ExpressionException, MathException {
 	if (Expression.notZero(e)) {
-		return flattenExpression(e);
+		return flattenExpression(e, varDomain).infix();
 	}
 	return "0";
 }
 private Element getFrontVelocity(String tag, Expression ex) throws ExpressionException, MathException {
 	Element e = new Element(tag);
-	e.setText(expressionAsString(ex));
+	e.setText(expressionAsString(ex, VariableDomain.VARIABLEDOMAIN_MEMBRANE));
 	return e;
 
 }
@@ -308,14 +306,14 @@ private Element getfrontVelocityFunctionX() throws ExpressionException, MathExce
 	Objects.requireNonNull(theMembrane);
 //	Expression velocityX = Expression.mult(theMembrane.getVelocityX(), new Expression("normalX"));
 	Expression velocityX = theMembrane.getVelocityX();
-	velocityX = SolverUtilities.substituteSizeAndNormalFunctions(velocityX, VariableDomain.VARIABLEDOMAIN_MEMBRANE);
+//	velocityX = SolverUtilities.substituteSizeAndNormalFunctions(velocityX, VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 	return getFrontVelocity(MBTags.frontVelocityFunctionX, velocityX);
 }
 private Element getfrontVelocityFunctionY() throws ExpressionException, MathException {
 	Objects.requireNonNull(theMembrane);
 	//Expression velocityY = Expression.mult(theMembrane.getVelocityY(), new Expression("normalY"));
 	Expression velocityY = theMembrane.getVelocityY();
-	velocityY = SolverUtilities.substituteSizeAndNormalFunctions(velocityY, VariableDomain.VARIABLEDOMAIN_MEMBRANE);
+//	velocityY = SolverUtilities.substituteSizeAndNormalFunctions(velocityY, VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 	return getFrontVelocity(MBTags.frontVelocityFunctionY,velocityY);
 }
 private Element getXMLphysiology() throws ExpressionException, MathException {
@@ -337,10 +335,10 @@ private Element getXMLSubdomain(SubDomain sd) throws ExpressionException, MathEx
 	{
 		e.setAttribute(MBXmlTags.type.name(), MBXmlTags.point.name());
 		Element x = new Element(MBXmlTags.positionX.name());
-		setExpression(x, ((PointSubDomain) sd).getPositionX());
+		setExpression(x, ((PointSubDomain) sd).getPositionX(), VariableDomain.VARIABLEDOMAIN_POINT);
 		e.addContent(x);
 		Element y = new Element(MBXmlTags.positionY.name());
-		setExpression(y, ((PointSubDomain) sd).getPositionY());
+		setExpression(y, ((PointSubDomain) sd).getPositionY(), VariableDomain.VARIABLEDOMAIN_POINT);
 		e.addContent(y);
 	}
 	return e;
@@ -373,11 +371,11 @@ private void manageCompartment(Element e, SubDomain sd) {
  * @throws ExpressionException
  * @throws MathException
  */
-private void setExpression(Element dest, Expression ex) throws ExpressionException, MathException {
+private void setExpression(Element dest, Expression ex, VariableDomain varDomain) throws ExpressionException, MathException {
 	if (ex != null)
 	{
 		dest.setAttribute("value",ex.infix( ));
-		dest.setText(flattenExpression(ex));
+		dest.setText(flattenExpression(ex, varDomain).infix());
 	}
 }
 
@@ -385,38 +383,41 @@ private void setExpression(Element dest, Expression ex) throws ExpressionExcepti
 private Element getSpecies(Equation eq) throws ExpressionException, MathException {
 	Element e = new Element(MBTags.species);
 	e.setAttribute(MBTags.name, eq.getVariable().getName());
+	VariableDomain varDomain = null;
 	if (eq.getVariable() instanceof VolVariable)
 	{
 		e.setAttribute(MBXmlTags.type.name(), MBXmlTags.volume.name());
+		varDomain = VariableDomain.VARIABLEDOMAIN_VOLUME;
 	}
 	else if (eq.getVariable() instanceof PointVariable)
 	{
 		e.setAttribute(MBXmlTags.type.name(), MBXmlTags.point.name());
+		varDomain = VariableDomain.VARIABLEDOMAIN_POINT;
 	}
 	
 	Element e1 = null;
 	e1 = new Element(MBTags.initial);
 	Expression ex = eq.getInitialExpression();
-	setExpression(e1, ex);
+	setExpression(e1, ex, varDomain);
 	e.addContent(e1);
 
 	e1 = new Element(MBTags.source);
 	ex = eq.getRateExpression();
-	setExpression(e1, ex);
+	setExpression(e1, ex, varDomain);
 	e.addContent(e1);
 
 	if (eq instanceof PdeEquation)
 	{
 		e1 = new Element(MBTags.diffusion);
 		ex = ((PdeEquation) eq).getDiffusionExpression();
-		setExpression(e1, ex);
+		setExpression(e1, ex, varDomain);
 		e.addContent(e1);
 	
 		ex = ((PdeEquation) eq).getVelocityX();
 		if (ex != null)
 		{
 			e1 = new Element(MBTags.advectVelocityFunctionX);
-			setExpression(e1, ex);
+			setExpression(e1, ex, varDomain);
 			e.addContent(e1);
 		}
 	
@@ -424,14 +425,14 @@ private Element getSpecies(Equation eq) throws ExpressionException, MathExceptio
 		if (ex != null)
 		{
 			e1 = new Element(MBTags.advectVelocityFunctionY);
-			setExpression(e1, ex);
+			setExpression(e1, ex, varDomain);
 			e.addContent(e1);
 		}
 	}
 	return e;
 }
 
-private String flattenExpression(Expression ex) throws ExpressionException, MathException {
+private Expression flattenExpression(Expression ex, VariableDomain varDomain) throws ExpressionException, MathException {
 	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	Variable normalX = new Variable("normalX",null){
 		public boolean compareEqual(Matchable object,boolean bIgnoreMissingDomains) {return false;}
@@ -457,7 +458,9 @@ private String flattenExpression(Expression ex) throws ExpressionException, Math
 	};
 	ex = new Expression(ex);
 	ex.bindExpression(augmentedSymbolTable);
-	return MathUtilities.substituteFunctions(ex, augmentedSymbolTable).flatten().infix();
+	Expression flattended = MathUtilities.substituteFunctions(ex, augmentedSymbolTable).flatten();
+	Expression substituted = SolverUtilities.substituteSizeAndNormalFunctions(flattended, varDomain).flatten();
+	return substituted;
 	//return simSymbolTable.substituteFunctions(ex).flatten().infix();
 }
 
