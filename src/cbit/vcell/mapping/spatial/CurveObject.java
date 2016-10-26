@@ -1,5 +1,7 @@
 package cbit.vcell.mapping.spatial;
 
+import java.beans.PropertyVetoException;
+
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.SimulationContext;
@@ -29,6 +31,10 @@ public class CurveObject extends SpatialObject {
 	@Override
 	public SpatialQuantity[] getSpatialQuantities() {
 		return new SpatialQuantity[0];
+	}
+
+	@Override
+	public void refreshName() throws PropertyVetoException {
 	}
 
 }

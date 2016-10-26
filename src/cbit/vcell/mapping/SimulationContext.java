@@ -1600,6 +1600,20 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 			}
 		}
 		else if (pname.equals(GeometrySpec.PROPERTY_NAME_GEOMETRY_NAME)) {
+			for (SpatialObject spatialObject : spatialObjects){
+				try {
+					spatialObject.refreshName();
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+				}
+			}
+			for (SimulationContextParameter appParameter : fieldSimulationContextParameters){
+				try {
+					appParameter.getExpression().renameBoundSymbols(this.getNameScope());
+				} catch (ExpressionBindingException e) {
+					e.printStackTrace();
+				}
+			}
 			MathMappingCallback  mmc = new MathMappingCallbackTaskAdapter(null);
 				try {
 					setMathDescription(createNewMathMapping(mmc, null).getMathDescription());
@@ -2176,9 +2190,8 @@ public void refreshSpatialObjects() {
 		for (GeometricRegion unmappedRegion : unmappedRegions){
 			if (unmappedRegion instanceof VolumeGeometricRegion){
 				VolumeGeometricRegion unmappedVolRegion = (VolumeGeometricRegion) unmappedRegion;
-				String newName = "vobj_"+unmappedVolRegion.getSubVolume().getName()+unmappedVolRegion.getRegionID();
 				try {
-					addSpatialObject(new VolumeRegionObject(newName, unmappedVolRegion.getSubVolume(), unmappedVolRegion.getRegionID(), this));
+					addSpatialObject(new VolumeRegionObject(unmappedVolRegion.getSubVolume(), unmappedVolRegion.getRegionID(), this));
 				} catch (PropertyVetoException e) {
 					e.printStackTrace();
 				}
@@ -2193,9 +2206,8 @@ public void refreshSpatialObjects() {
 					int insideRegionID = volRegion0.getRegionID();
 					int outsideRegionID = volRegion1.getRegionID();
 					SurfaceClass surfaceClass = geometry.getGeometrySurfaceDescription().getSurfaceClass(insideSubVolume,outsideSubVolume);
-					String newName = "sobj_"+insideSubVolume.getName()+insideRegionID+"_"+outsideSubVolume.getName()+outsideRegionID;
 					try {
-						addSpatialObject(new SurfaceRegionObject(newName, insideSubVolume, insideRegionID, outsideSubVolume, outsideRegionID, this));
+						addSpatialObject(new SurfaceRegionObject(insideSubVolume, insideRegionID, outsideSubVolume, outsideRegionID, this));
 					} catch (PropertyVetoException e) {
 						e.printStackTrace();
 					}

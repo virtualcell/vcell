@@ -1,5 +1,7 @@
 package cbit.vcell.mapping.spatial;
 
+import java.beans.PropertyVetoException;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -8,6 +10,7 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 
 /**
  * VolumeObjects will be used to specify the velocity of the volume.
@@ -32,6 +35,14 @@ public class VolumeRegionObject extends SpatialObject {
 		this.setRegionID(argVolumeObject.getRegionID());
 	}
 
+	public VolumeRegionObject(SubVolume subVolume, Integer regionID, SimulationContext simContext){
+		this(getCanonicalName(subVolume,regionID),subVolume,regionID,simContext);
+	}
+	
+	public static String getCanonicalName(SubVolume subVolume, Integer regionID){
+		return "vobj_"+subVolume.getName()+regionID;
+	}
+	
 	public VolumeRegionObject(String name, SubVolume subVolume, Integer regionID, SimulationContext simContext) {
 		super(name, simContext,
 				new QuantityCategory[] {
@@ -101,6 +112,17 @@ public class VolumeRegionObject extends SpatialObject {
 	@Override
 	public SpatialQuantity[] getSpatialQuantities() {
 		return new SpatialQuantity[] { centroidX, centroidY, centroidZ, size };
+	}
+
+	@Override
+	public void refreshName() throws PropertyVetoException {
+		String newName = getCanonicalName(subVolume, regionID);
+		if (!newName.equals(getName())){
+			setName(newName);
+			for (SpatialQuantity spatialQuantity : getSpatialQuantities()){
+				firePropertyChange(PROPERTY_NAME_NAME, null, spatialQuantity.getName());
+			}
+		}
 	}
 	
 }

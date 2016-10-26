@@ -58,5 +58,9 @@ public class PointObject extends SpatialObject {
 		return new SpatialQuantity[] { positionX, positionY, positionZ, velocityX, velocityY, velocityZ, distanceTo, directionToX, directionToY, directionToZ };
 	}
 
+	@Override
+	public void refreshName() throws PropertyVetoException {
+	}
+
 
 }

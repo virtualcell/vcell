@@ -1,5 +1,7 @@
 package cbit.vcell.mapping.spatial;
 
+import java.beans.PropertyVetoException;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -37,6 +39,27 @@ public class SurfaceRegionObject extends SpatialObject {
 		this.outsideRegionID = argSurfaceObject.getOutsideRegionID();
 	}
 
+	public SurfaceRegionObject(SubVolume insideSubVolume, Integer insideRegionID, SubVolume outsideSubVolume, Integer outsideRegionID, SimulationContext simContext){
+		this(getCannonicalName(insideSubVolume,insideRegionID,outsideSubVolume,outsideRegionID),insideSubVolume,insideRegionID,outsideSubVolume,outsideRegionID,simContext);
+	}
+
+	public static String getCannonicalName(SubVolume insideSubVolume, Integer insideRegionID, SubVolume outsideSubVolume, Integer outsideRegionID){
+		String newName = "sobj_"+insideSubVolume.getName()+insideRegionID+"_"+outsideSubVolume.getName()+outsideRegionID;
+		return newName;
+	}
+	
+	@Override
+	public void refreshName() throws PropertyVetoException {
+		String newName = getCannonicalName(insideSubVolume, insideRegionID, outsideSubVolume, outsideRegionID);
+		if (!newName.equals(getName())){
+			setName(newName);
+			for (SpatialQuantity spatialQuantity : getSpatialQuantities()){
+				firePropertyChange(PROPERTY_NAME_NAME, null, spatialQuantity.getName());
+			}
+		}		
+	}
+
+	
 	public SurfaceRegionObject(String name, 
 			SubVolume insideSubVolume, Integer insideRegionID, 
 			SubVolume outsideSubVolume, Integer outsideRegionID, 

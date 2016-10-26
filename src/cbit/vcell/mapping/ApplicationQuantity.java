@@ -265,4 +265,8 @@ public boolean isUnitEditable() {
 public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
 	throw new RuntimeException("units for Application quantities are not editable");
 }
+
+public String toString(){
+	return super.toString()+":"+getName();
+}
 }

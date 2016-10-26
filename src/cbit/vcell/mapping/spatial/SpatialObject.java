@@ -321,4 +321,6 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 	public SimulationContext getSimulationContext() {
 		return simulationContext;
 	}
+
+	public abstract void refreshName() throws PropertyVetoException;
 }
