@@ -462,6 +462,23 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 			}
 		}
 		
+		// copy SpatialProcesses
+		SpatialProcess[] otherSpatialProcesses = oldSimulationContext.getSpatialProcesses();
+		if (otherSpatialProcesses != null) {
+			this.spatialProcesses = new SpatialProcess[otherSpatialProcesses.length];
+			for (int i = 0; i < otherSpatialProcesses.length; i++) {
+				if (otherSpatialProcesses[i] instanceof PointLocation){
+					this.spatialProcesses[i] = new PointLocation((PointLocation) otherSpatialProcesses[i], this);
+				}else if (otherSpatialProcesses[i] instanceof PointKinematics){
+					this.spatialProcesses[i] = new PointKinematics((PointKinematics) otherSpatialProcesses[i], this);
+				}else if (otherSpatialProcesses[i] instanceof SurfaceKinematics){
+					this.spatialProcesses[i] = new SurfaceKinematics((SurfaceKinematics) otherSpatialProcesses[i], this);
+				}else{
+					throw new RuntimeException("unexpected Spatial process in SimulationContext()");
+				}
+			}
+		}
+		
 		// copy rate rules
 		RateRule[] rateRules = oldSimulationContext.getRateRules();
 		if (rateRules != null) {
@@ -1294,7 +1311,11 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) {
  * This method was created in VisualAge.
  */
 public Geometry getGeometry() {
-	return geoContext.getGeometry();
+	if (geoContext!=null){
+		return geoContext.getGeometry();
+	}else{
+		return null;
+	}
 }
 
 

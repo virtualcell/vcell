@@ -35,8 +35,9 @@ public class SurfaceKinematics extends SpatialProcess {
 		}
 	}
 
-	public SurfaceKinematics(SpatialProcess argSpatialProcess, SimulationContext argSimContext) {
-		super(argSpatialProcess, argSimContext);
+	public SurfaceKinematics(SurfaceKinematics argSurfaceKinematics, SimulationContext argSimContext) {
+		super(argSurfaceKinematics, argSimContext);
+		this.surfaceRegionObject = (SurfaceRegionObject)argSimContext.getSpatialObject(argSurfaceKinematics.getSurfaceRegionObject().getName());
 	}
 	
 	public void setSurfaceRegionObject(SurfaceRegionObject surfaceRegionObject){

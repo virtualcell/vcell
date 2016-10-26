@@ -39,8 +39,9 @@ public class PointKinematics extends SpatialProcess {
 		}
 	}
 
-	public PointKinematics(SpatialProcess argSpatialProcess, SimulationContext argSimContext) {
-		super(argSpatialProcess, argSimContext);
+	public PointKinematics(PointKinematics argPointKinematics, SimulationContext argSimContext) {
+		super(argPointKinematics, argSimContext);
+		this.pointObject = (PointObject)argSimContext.getSpatialObject(argPointKinematics.getPointObject().getName());
 	}
 	
 	public void setPointObject(PointObject pointObject){

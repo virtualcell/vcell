@@ -24,7 +24,7 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 	public static final String PROPERTY_NAME_NAME = "name";
 	public static final String PROPERTY_NAME_SPATIALQUANTITIES = "spatialQuantities";
 	public static final String PROPERTY_NAME_QUANTITYCATEGORIESENABLED = "quantityCategoriesEnabled";
-	protected SpatialQuantity[] spatialQuantities;
+//	protected SpatialQuantity[] spatialQuantities;
 	protected SimulationContext simulationContext;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoPropertyChange;
@@ -183,10 +183,10 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 		super();
 		this.simulationContext = argSimContext;
 		this.name = argSpatialObject.getName();
-		this.spatialQuantities = new SpatialQuantity[argSpatialObject.spatialQuantities.length];
-		for (int i=0;i<argSpatialObject.spatialQuantities.length;i++){
-			this.spatialQuantities[i] = new SpatialQuantity(argSpatialObject.spatialQuantities[i].quantityCategory,argSpatialObject.spatialQuantities[i].quantityComponent);
-		}
+//		this.spatialQuantities = new SpatialQuantity[argSpatialObject.spatialQuantities.length];
+//		for (int i=0;i<argSpatialObject.spatialQuantities.length;i++){
+//			this.spatialQuantities[i] = new SpatialQuantity(argSpatialObject.spatialQuantities[i].quantityCategory,argSpatialObject.spatialQuantities[i].quantityComponent);
+//		}
 		this.quantityCategories = argSpatialObject.quantityCategories.clone();
 		this.quantityCategoryEnabled = argSpatialObject.quantityCategoryEnabled.clone();
 	}

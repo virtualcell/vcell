@@ -130,7 +130,7 @@ public enum SolverDescription {
 
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
 		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT_UNIFORM,
-		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving},
+		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic},
 		  SolverExecutable.MOVING_B, VersionedLibrary.DEPENDENT_LIBS_VCELL,"KISAO",false)
       ;
 
@@ -209,7 +209,7 @@ public enum SolverDescription {
 		SundialsPDE,10);
 
 	public static final SolverFeatureSet MovingBoundaryFeatureSet = new SolverFeatureSet(
-		new SolverFeature[] { SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial },
+		new SolverFeature[] { SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
 			return s.isSpatial() && !s.isSpatialHybrid()  && s.isMovingMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
 		MovingBoundary,30);

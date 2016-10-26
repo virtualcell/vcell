@@ -35,8 +35,9 @@ public class PointLocation extends SpatialProcess {
 		}
 	}
 
-	public PointLocation(SpatialProcess argSpatialProcess, SimulationContext argSimContext) {
-		super(argSpatialProcess, argSimContext);
+	public PointLocation(PointLocation argPointLocation, SimulationContext argSimContext) {
+		super(argPointLocation, argSimContext);
+		this.pointObject = (PointObject)argSimContext.getSpatialObject(argPointLocation.getPointObject().getName());
 	}
 
 	@Override
