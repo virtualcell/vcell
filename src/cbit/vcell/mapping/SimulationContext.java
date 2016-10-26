@@ -1130,9 +1130,20 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boo
 			}
 		}
 	}
-	
-	for (SpatialObject spatialObject : spatialObjects){
-		spatialObject.gatherIssues(issueContext, issueVector);
+	if (fieldBioEvents!=null){
+		for (BioEvent bioEvent : fieldBioEvents){
+			bioEvent.gatherIssues(issueContext, issueVector);
+		}
+	}
+	if (spatialObjects!=null){
+		for (SpatialObject spatialObject : spatialObjects){
+			spatialObject.gatherIssues(issueContext, issueVector);
+		}
+	}
+	if (spatialProcesses!=null){
+		for (SpatialProcess spatialProcess : spatialProcesses){
+			spatialProcess.gatherIssues(issueContext, issueVector);
+		}
 	}
 	
 	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {

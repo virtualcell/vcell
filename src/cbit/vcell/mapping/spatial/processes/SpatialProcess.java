@@ -273,9 +273,7 @@ public abstract class SpatialProcess implements Serializable, IssueSource, Prope
 		parameterContext.getLocalParameterFromRole(parameterType).setExpression(expression);
 	}
 	
-	public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
-		// look for negative times ... etc.
-	}
+	public abstract void gatherIssues(IssueContext issueContext, List<Issue> issueList);
 	
 	protected final boolean compareEqual0(Matchable obj) {
 		if (obj instanceof SpatialProcess){

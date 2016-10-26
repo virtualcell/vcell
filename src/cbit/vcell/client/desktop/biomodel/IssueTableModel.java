@@ -44,6 +44,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
@@ -265,6 +267,10 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				description = "App(" + ((ModelOptimizationSpec)source).getSimulationContext().getName() + ") / Parameter Estimation";
 			} else if (source instanceof MicroscopeMeasurement) {
 				description = "App(" + ((MicroscopeMeasurement)source).getSimulationContext().getName() + ") / Microscope Measurements";
+			} else if (source instanceof SpatialObject){
+				description = "App(" + ((SpatialObject)source).getSimulationContext().getName() + ") / Spatial Objects";
+			} else if (source instanceof SpatialProcess){
+				description = "App(" + ((SpatialProcess)source).getSimulationContext().getName() + ") / Spatial Processes";
 			} else if (source instanceof SpeciesContextSpec) {
 				SpeciesContextSpec scs = (SpeciesContextSpec)source;
 				description = "App(" + scs.getSimulationContext().getName() + ") / Specifications / Species";
@@ -378,6 +384,10 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				description = ((UnmappedGeometryClass) object).getGeometryClass().getName();
 			} else if (object instanceof MicroscopeMeasurement) {
 				description = ((MicroscopeMeasurement) object).getName();
+			} else if (object instanceof SpatialObject){
+				description = ((SpatialObject)object).getName();
+			} else if (object instanceof SpatialProcess){
+				description = ((SpatialProcess)object).getName();
 			}else if (object instanceof GeometryContext) {
 				description = "Geometry";
 			}else if (object instanceof ModelOptimizationSpec) {

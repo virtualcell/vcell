@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
@@ -17,7 +18,10 @@ import cbit.vcell.mapping.ApplicationQuantity;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.units.VCUnitDefinition;
 
 public abstract class SpatialObject implements Serializable, IssueSource, Matchable {
@@ -234,9 +238,7 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 		firePropertyChange(PROPERTY_NAME_NAME, oldValue, newValue);
 	}
 
-	public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
-		// look for negative times ... etc.
-	}
+	public abstract void gatherIssues(IssueContext issueContext, List<Issue> issueList);
 	
 	protected final boolean compareEqual0(Matchable obj) {
 		if (obj instanceof SpatialObject){
