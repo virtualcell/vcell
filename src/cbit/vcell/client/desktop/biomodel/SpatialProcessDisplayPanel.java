@@ -23,8 +23,11 @@ import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingConstants;
 
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.DownArrowIcon;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.mapping.spatial.PointObject;
 import cbit.vcell.mapping.spatial.SpatialObject;
@@ -68,13 +71,26 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 		gbc.insets = new Insets(4,50,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(addNewButton, gbc);
+		addNewButton.setIcon(new DownArrowIcon());
+		addNewButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		addNewButton.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e){
+			public void mousePressed(MouseEvent e) {
 				JPopupMenu popup = new JPopupMenu();
-				popup.add(new JMenuItem(new AbstractAction("new Point Location") { public void actionPerformed(ActionEvent e) {  createNewPointLocation();  }}));
-				popup.add(new JMenuItem(new AbstractAction("new Point Kinematics") { public void actionPerformed(ActionEvent e) {  createNewPointKinematics();  }}));
-				popup.add(new JMenuItem(new AbstractAction("new Surface Kinematics") { public void actionPerformed(ActionEvent e) {  createNewSurfaceKinematics();  }}));
-				popup.show(e.getComponent(),e.getX(),e.getY());
+				JMenuItem newPointLocationMenuItem = new JMenuItem(new AbstractAction("new Point Location") {
+					public void actionPerformed(ActionEvent e) {  createNewPointLocation(); }});
+				JMenuItem newPointKinematicsMenuItem = new JMenuItem(new AbstractAction("new Point Kinematics") {
+					public void actionPerformed(ActionEvent e) {  createNewPointKinematics(); }});
+				JMenuItem newSurfaceKinematicsMenuItem = new JMenuItem(new AbstractAction("new Surface Kinematics") {
+					public void actionPerformed(ActionEvent e) {  createNewSurfaceKinematics(); }});
+				newPointLocationMenuItem.setIcon(VCellIcons.spatialPointLocationIcon);
+				newPointKinematicsMenuItem.setIcon(VCellIcons.spatialPointKinematicsIcon);
+				newSurfaceKinematicsMenuItem.setIcon(VCellIcons.spatialMembraneKinematicsIcon);
+				popup.add(newPointLocationMenuItem);
+				popup.add(newPointKinematicsMenuItem);
+				popup.add(newSurfaceKinematicsMenuItem);
+				
+				
+				popup.show(addNewButton, 0, addNewButton.getHeight());
 			}
 		});
 		// for now disable 'add' button

@@ -60,6 +60,10 @@ public abstract class VCellIcons {
 	public final static Icon rbmBondExistsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_exists.png"));
 	public final static Icon rbmBondPossibleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_possible.png"));
 
+	public final static Icon spatialMembraneKinematicsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_membrane_kinematics.png"));
+	public final static Icon spatialPointKinematicsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_point_kinematics.png"));
+	public final static Icon spatialPointLocationIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_point_location.png"));
+
 	public final static Icon kineticsPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/kinetics_properties.png"));
 	public final static Icon editorPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/editor_properties.png"));
 

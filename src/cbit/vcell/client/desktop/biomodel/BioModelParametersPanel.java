@@ -132,9 +132,10 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	public class ApplicationComboBoxRenderer implements ListCellRenderer {
+	public class ApplicationComboBoxRenderer implements ListCellRenderer<Object> {
+		
 		@Override
-		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList<? extends Object> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			
 			JLabel label = new JLabel();
 			ApplicationSelection as = (ApplicationSelection)value;
@@ -694,7 +695,6 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		setTableSelections(new Object[]{modelParameter}, parametersFunctionsTable, parametersFunctionsTableModel);
 	}
 	protected void newApplicationButtonPressed() {
-		// TODO: add your code here!
 		if(bioModel.getNumSimulationContexts() == 1) {
 			SimulationContext simContext = bioModel.getSimulationContext(0);
 			SimulationContextParameter newObject = simContext.createSimulationContextParameter();
