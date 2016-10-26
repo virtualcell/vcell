@@ -2967,7 +2967,7 @@ public SpatialObject getSpatialObject(String name) {
 	return null;
 }
 
-public SpatialObject createPointObject() {
+public PointObject createPointObject() {
 	String pointName = "pobj_0";
 	while (getSpatialObject(pointName)!=null){
 		pointName = TokenMangler.getNextEnumeratedToken(pointName);
@@ -2975,14 +2975,14 @@ public SpatialObject createPointObject() {
 	PointObject pointObject = new PointObject(pointName,this);
 	try {
 		addSpatialObject(pointObject);
-		PointLocation pointLocation = createPointLocation(pointObject);
-		try {
-			pointLocation.getParameter(SpatialProcessParameterType.PointPositionX).setExpression(new Expression(1.0));
-			pointLocation.getParameter(SpatialProcessParameterType.PointPositionY).setExpression(new Expression(2.0));
-			pointLocation.getParameter(SpatialProcessParameterType.PointPositionZ).setExpression(new Expression(3.0));
-		} catch (ExpressionBindingException e) {
-			e.printStackTrace();
-		}
+//		PointLocation pointLocation = createPointLocation(pointObject);
+//		try {
+//			pointLocation.getParameter(SpatialProcessParameterType.PointPositionX).setExpression(new Expression(1.0));
+//			pointLocation.getParameter(SpatialProcessParameterType.PointPositionY).setExpression(new Expression(2.0));
+//			pointLocation.getParameter(SpatialProcessParameterType.PointPositionZ).setExpression(new Expression(3.0));
+//		} catch (ExpressionBindingException e) {
+//			e.printStackTrace();
+//		}
 	}catch (PropertyVetoException e){
 		throw new RuntimeException(e.getMessage(),e);
 	}

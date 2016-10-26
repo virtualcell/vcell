@@ -54,6 +54,7 @@ import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.mapping.spatial.processes.PointKinematics;
 import cbit.vcell.mapping.spatial.processes.PointLocation;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
+import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess.SpatialProcessParameterType;
 import cbit.vcell.math.CommentedBlockObject;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -487,7 +488,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		}
 	}
 	
-	addSpatialProcesses(varHash);
+	addSpatialProcesses(varHash); // membrane velocities set on MembraneSubdomains later.
 	
 	varHash.addVariable(new Constant(getMathSymbol(model.getPI_CONSTANT(),null),getIdentifierSubstitutions(model.getPI_CONSTANT().getExpression(),model.getPI_CONSTANT().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
@@ -1281,6 +1282,35 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 
 		MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment);
 		mathDesc.addSubDomain(memSubDomain);
+		
+		for (SpatialObject spatialObject : simContext.getSpatialObjects()){
+			if (spatialObject instanceof SurfaceRegionObject){
+				SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject) spatialObject;
+				if (((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||
+					((surfaceRegionObject.getInsideSubVolume() == outerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == innerSubVolume))){
+					int dim = simContext.getGeometry().getDimension();
+					if (dim!=2){
+						throw new MappingException("Membrane Velocity only supported for 2D geometries");
+					}
+					if (simContext.getGeometry().getDimension()>=1){
+						SpatialQuantity velXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.X);
+						Expression velXExp = new Expression(velXQuantity,simContext.getNameScope());
+						memSubDomain.setVelocityX(getIdentifierSubstitutions(velXExp, velXQuantity.getUnitDefinition(), surfaceClass));
+					}
+					if (simContext.getGeometry().getDimension()>=2){
+						SpatialQuantity velYQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Y);
+						Expression velYExp = new Expression(velYQuantity,simContext.getNameScope());
+						memSubDomain.setVelocityY(getIdentifierSubstitutions(velYExp, velYQuantity.getUnitDefinition(), surfaceClass));
+					}
+					if (simContext.getGeometry().getDimension()==3){
+						SpatialQuantity velZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Z);
+						Expression velZExp = new Expression(velZQuantity,simContext.getNameScope());
+						//memSubDomain.setVelocityZ(getIdentifierSubstitutions(velZExp, velZQuantity.getUnitDefinition(), surfaceClass));
+						throw new MappingException("Membrane Velocity not supported for 2D problems");
+					}
+				}
+			}
+		}
 
 		//
 		// create equations for membrane-bound molecular species
@@ -1832,18 +1862,101 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 					throw new MappingException("PointLocation process defined for pointObject '"+pointObject.getName()+"' but Position not enabled");
 				}
 			}else if (pointLocationProcesses.size()==0 && pointKinematicsProcesses.size()==1){
-				
+				throw new MappingException("PointSubDomains not yet implemented, needed for PointObject '"+pointObject.getName()+"'");
 			}else{
-				throw new MappingException("expecting 1 location or kinematics process for point '"+pointObject.getName());
+				throw new MappingException("expecting 1 location or kinematics process for point '"+pointObject.getName()+"'");
 			}
 		}else if (spatialObject instanceof SurfaceRegionObject){
 			SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject)spatialObject;
-			//	QuantityCategory.Normal,
-			//	QuantityCategory.SurfaceVelocity,
-			//	QuantityCategory.DistanceToSurface,
-			//	QuantityCategory.DirectionToSurface,
-			//	QuantityCategory.SurfaceSize
+
+			//
+			// if true, have to solve for this category
+			//
+			boolean bNormal = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.Normal);
+			boolean bVelocity = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity);
+			boolean bDistance = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.DistanceToSurface);
+			boolean bDirection = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.DirectionToSurface);
+			boolean bSize = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceSize);
 			
+			if (bVelocity){
+				ArrayList<SurfaceKinematics> surfaceKinematicsList = new ArrayList<SurfaceKinematics>();
+				for (SpatialProcess spatialProcess : simContext.getSpatialProcesses()){
+					if (spatialProcess instanceof SurfaceKinematics && ((SurfaceKinematics) spatialProcess).getSurfaceRegionObject() == surfaceRegionObject){
+						surfaceKinematicsList.add((SurfaceKinematics) spatialProcess);
+					}
+				}
+				if (surfaceKinematicsList.size()==1){
+					SubVolume insideSubvolume = surfaceRegionObject.getInsideSubVolume();
+					SubVolume outsideSubvolume = surfaceRegionObject.getOutsideSubVolume();
+					SurfaceClass surfaceClass = simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceClass(insideSubvolume, outsideSubvolume);
+					SurfaceKinematics surfaceKinematics = surfaceKinematicsList.get(0);
+					if (simContext.getGeometry().getDimension()>=1){
+						SpatialQuantity velXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.X);
+						LocalParameter velXParam = surfaceKinematics.getParameter(SpatialProcessParameterType.SurfaceVelocityX);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velXParam, surfaceClass), 
+								getIdentifierSubstitutions(velXParam.getExpression(), velXParam.getUnitDefinition(), surfaceClass), 
+								surfaceClass));
+						Expression velXExp = new Expression(velXParam,surfaceKinematics.getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velXQuantity, surfaceClass), 
+								getIdentifierSubstitutions(velXExp,velXQuantity.getUnitDefinition(),surfaceClass),
+								surfaceClass));
+						if (bNormal){
+							SpatialQuantity normXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.Normal,QuantityComponent.X);
+							Expression normXExp = new Expression(MathFunctionDefinitions.FUNCTION_normalX);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(normXQuantity, surfaceClass), 
+									getIdentifierSubstitutions(normXExp,normXQuantity.getUnitDefinition(),surfaceClass),
+									surfaceClass));
+						}
+					}
+					if (simContext.getGeometry().getDimension()>=2){
+						SpatialQuantity velYQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.Y);
+						LocalParameter velYParam = surfaceKinematics.getParameter(SpatialProcessParameterType.SurfaceVelocityY);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velYParam, surfaceClass), 
+								getIdentifierSubstitutions(velYParam.getExpression(), velYParam.getUnitDefinition(), surfaceClass), 
+								surfaceClass));
+						Expression velYExp = new Expression(velYParam,surfaceKinematics.getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velYQuantity, surfaceClass), 
+								getIdentifierSubstitutions(velYExp,velYQuantity.getUnitDefinition(),surfaceClass),
+								surfaceClass));
+						if (bNormal){
+							SpatialQuantity normYQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.Normal,QuantityComponent.Y);
+							Expression normYExp = new Expression(MathFunctionDefinitions.FUNCTION_normalY);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(normYQuantity, surfaceClass), 
+									getIdentifierSubstitutions(normYExp,normYQuantity.getUnitDefinition(),surfaceClass),
+									surfaceClass));
+						}
+					}
+					if (simContext.getGeometry().getDimension()>=3){
+						SpatialQuantity velZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.Z);
+						LocalParameter velZParam = surfaceKinematics.getParameter(SpatialProcessParameterType.SurfaceVelocityZ);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velZParam, surfaceClass), 
+								getIdentifierSubstitutions(velZParam.getExpression(), velZParam.getUnitDefinition(), surfaceClass), 
+								surfaceClass));
+						Expression velYExp = new Expression(velZParam,surfaceKinematics.getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velZQuantity, surfaceClass), 
+								getIdentifierSubstitutions(velYExp,velZQuantity.getUnitDefinition(),surfaceClass),
+								surfaceClass));
+						if (bNormal){
+							SpatialQuantity normZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.Normal,QuantityComponent.Z);
+							Expression normZExp = new Expression("normalZ_not_implemented()"); // MathFunctionDefinitions.FUNCTION_normalZ);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(normZQuantity, surfaceClass), 
+									getIdentifierSubstitutions(normZExp,normZQuantity.getUnitDefinition(),surfaceClass),
+									surfaceClass));
+						}
+					}
+				}else{
+					throw new MappingException("expecting 1 Surface Kinematics process for Surface Object '"+surfaceRegionObject.getName()+"'");
+				}
+			}			
 		}else if (spatialObject instanceof VolumeRegionObject){
 			VolumeRegionObject volumeRegionObject = (VolumeRegionObject)spatialObject;
 			//	QuantityCategory.Centroid,

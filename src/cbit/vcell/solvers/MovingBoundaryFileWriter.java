@@ -425,21 +425,8 @@ private Element getSpecies(Equation eq) throws ExpressionException, MathExceptio
 }
 
 private String flattenExpression(Expression ex) throws ExpressionException, MathException {
-	String name = ex.infix();
-//	Simulation simulation = simTask.getSimulation();
 	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
-
-	Variable[] variables = simTask.getSimulationJob().getSimulationSymbolTable().getVariables();
-	for (int i = 0; i < variables.length; i++){
-		if(variables[i].getName().equals(name)) {
-
-			Expression rfexp = new Expression(ex);
-				rfexp.bindExpression(simSymbolTable);
-				rfexp = simSymbolTable.substituteFunctions(rfexp).flatten();
-			return rfexp.infix();
-		}
-	}
-	return name;
+	return simSymbolTable.substituteFunctions(ex).flatten().infix();
 }
 
 //------------------------------------------------ report

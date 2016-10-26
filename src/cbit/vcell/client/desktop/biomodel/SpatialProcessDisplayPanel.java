@@ -13,13 +13,23 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
+import javax.swing.AbstractAction;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.mapping.spatial.PointObject;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SurfaceRegionObject;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 
 
@@ -29,7 +39,7 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 		super();
 		initialize();
 	}
-	
+		
 	private void initialize() {
 		setName("SpatialProcessDisplayPanel");
 		setLayout(new GridBagLayout());
@@ -58,6 +68,15 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 		gbc.insets = new Insets(4,50,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(addNewButton, gbc);
+		addNewButton.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e){
+				JPopupMenu popup = new JPopupMenu();
+				popup.add(new JMenuItem(new AbstractAction("new Point Location") { public void actionPerformed(ActionEvent e) {  createNewPointLocation();  }}));
+				popup.add(new JMenuItem(new AbstractAction("new Point Kinematics") { public void actionPerformed(ActionEvent e) {  createNewPointKinematics();  }}));
+				popup.add(new JMenuItem(new AbstractAction("new Surface Kinematics") { public void actionPerformed(ActionEvent e) {  createNewSurfaceKinematics();  }}));
+				popup.show(e.getComponent(),e.getX(),e.getY());
+			}
+		});
 		// for now disable 'add' button
 //		addNewButton.setEnabled(false);
 		
@@ -82,15 +101,15 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 	
 	@Override
 	protected void newButtonPressed() {
-		if (simulationContext == null) {
-			return;
-		}
-		try {
-			simulationContext.createPointObject();
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			DialogUtils.showErrorDialog(this, "Error adding SpatialProcess : " + e.getMessage());
-		}		
+//		if (simulationContext == null) {
+//			return;
+//		}
+//		try {
+//			simulationContext.createPointObject();
+//		} catch (Exception e) {
+//			e.printStackTrace(System.out);
+//			DialogUtils.showErrorDialog(this, "Error adding SpatialProcess : " + e.getMessage());
+//		}		
 	}
 
 	@Override
@@ -113,6 +132,70 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 			ex.printStackTrace();
 			DialogUtils.showErrorDialog(this, ex.getMessage());
 		}		
+	}
+	
+	private PointObject getOrCreateNextPointObject(){
+		for (SpatialObject spatialObject : simulationContext.getSpatialObjects()){
+			if (spatialObject instanceof PointObject){
+				PointObject pointObject = (PointObject)spatialObject;
+				boolean bPointObjectFree = true;
+				for (SpatialProcess spatialProcess : simulationContext.getSpatialProcesses()){
+					if (spatialProcess.getSpatialObjects().contains(pointObject)){
+						bPointObjectFree = false;
+						break;
+					}
+				}
+				if (bPointObjectFree){
+					return pointObject;
+				}
+			}
+		}
+		return simulationContext.createPointObject();
+	}
+
+	private SurfaceRegionObject getFreeSurfaceRegionObject(){
+		for (SpatialObject spatialObject : simulationContext.getSpatialObjects()){
+			if (spatialObject instanceof SurfaceRegionObject){
+				SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject)spatialObject;
+				boolean bSurfaceRegionObjectFree = true;
+				for (SpatialProcess spatialProcess : simulationContext.getSpatialProcesses()){
+					if (spatialProcess.getSpatialObjects().contains(surfaceRegionObject)){
+						bSurfaceRegionObjectFree = false;
+						break;
+					}
+				}
+				if (bSurfaceRegionObjectFree){
+					return surfaceRegionObject;
+				}
+			}
+		}
+		return null;
+	}
+
+	private void createNewPointLocation() {
+		if (simulationContext!=null){
+			PointObject pointObject = getOrCreateNextPointObject();
+			pointObject.setQuantityCategoryEnabled(QuantityCategory.PointPosition, true);
+			pointObject.setQuantityCategoryEnabled(QuantityCategory.PointVelocity, false);
+			simulationContext.createPointLocation(getOrCreateNextPointObject());
+		}
+	}
+	private void createNewPointKinematics() {
+		if (simulationContext!=null){
+			PointObject pointObject = getOrCreateNextPointObject();
+			pointObject.setQuantityCategoryEnabled(QuantityCategory.PointPosition, true);
+			pointObject.setQuantityCategoryEnabled(QuantityCategory.PointVelocity, true);
+			simulationContext.createPointKinematics(pointObject);
+		}
+	}
+	private void createNewSurfaceKinematics() {
+		if (simulationContext!=null){
+			SurfaceRegionObject surfaceRegionObject = getFreeSurfaceRegionObject();
+			if (surfaceRegionObject!=null){
+				surfaceRegionObject.setQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity, true);
+				simulationContext.createSurfaceKinematics(surfaceRegionObject);
+			}
+		}
 	}
 
 	@Override
