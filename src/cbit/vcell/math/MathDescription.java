@@ -2004,6 +2004,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	int memRegionVarCount = 0;
 	int filRegionVarCount = 0;
 	int stochVarCount = 0;
+	int pointVarCount = 0;
 	for (int i=0;i<variableList.size();i++){
 		Variable var = variableList.get(i);
 		if (var instanceof VolVariable){
@@ -2020,6 +2021,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			filRegionVarCount++;
 		}else if (var instanceof StochVolVariable){
 			stochVarCount++;
+		}else if (var instanceof PointVariable){
+			pointVarCount++;
 		}
 	}
 	//
@@ -2206,6 +2209,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		int compartmentCount = 0;
 		int membraneCount = 0;
 		int filamentCount = 0;
+		int pointCount = 0;
 		for (int i=0;i<subDomainList.size();i++){
 			SubDomain subDomain = (SubDomain)subDomainList.get(i);
 			if (subDomain instanceof CompartmentSubDomain){
@@ -2219,6 +2223,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				membraneCount++;
 			}else if (subDomain instanceof FilamentSubDomain){
 				filamentCount++;
+			}else if (subDomain instanceof PointSubDomain){
+				pointCount++;
 			}else{
 				Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_2, subDomain.getName()), Issue.SEVERITY_ERROR);

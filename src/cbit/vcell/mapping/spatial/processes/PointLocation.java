@@ -80,6 +80,10 @@ public class PointLocation extends SpatialProcess {
 
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-	//	issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "PointLocation ..... FAKE ISSUE ...  not find corresponding surface region in geometry", Issue.Severity.ERROR));
+		if (simulationContext!=null && pointObject!=null){
+			if (simulationContext.getSpatialObject(pointObject.getName()) != pointObject){
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "PointLocation '"+getName()+"' refers to missing PointObject '"+pointObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+			}
+		}
 	}
 }

@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.mapping;
+import java.awt.PointerInfo;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -81,6 +82,8 @@ import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.PointSubDomain;
+import cbit.vcell.math.PointVariable;
 import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
@@ -1863,7 +1866,176 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 					throw new MappingException("PointLocation process defined for pointObject '"+pointObject.getName()+"' but Position not enabled");
 				}
 			}else if (pointLocationProcesses.size()==0 && pointKinematicsProcesses.size()==1){
-				throw new MappingException("PointSubDomains not yet implemented, needed for PointKinematics process acting on PointObject '"+pointObject.getName()+"'");
+				GeometryClass gc = null;
+				PointKinematics pointKinematics = pointKinematicsProcesses.get(0);
+				if (bPosition && bVelocity){
+					LocalParameter velXParam = pointKinematics.getParameter(SpatialProcessParameterType.PointVelocityX);
+					LocalParameter iniPosXParam = pointKinematics.getParameter(SpatialProcessParameterType.PointInitialPositionX);
+					SpatialQuantity posXQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition, QuantityComponent.X);
+					SpatialQuantity velXQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointVelocity, QuantityComponent.X);
+					Expression posXExp = new Expression(posXQuantity,simContext.getNameScope());
+					Expression xExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.X),simContext.getModel().getNameScope());
+					Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
+					
+					LocalParameter velYParam = pointKinematics.getParameter(SpatialProcessParameterType.PointVelocityY);
+					LocalParameter iniPosYParam = pointKinematics.getParameter(SpatialProcessParameterType.PointInitialPositionY);
+					SpatialQuantity posYQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition, QuantityComponent.Y);
+					SpatialQuantity velYQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointVelocity, QuantityComponent.Y);
+					Expression posYExp = new Expression(posYQuantity,simContext.getNameScope());
+					Expression yExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.Y),simContext.getModel().getNameScope());
+					Expression posY_minux_Y = Expression.add(posYExp,Expression.negate(yExp));
+
+					LocalParameter velZParam = pointKinematics.getParameter(SpatialProcessParameterType.PointVelocityZ);
+					LocalParameter iniPosZParam = pointKinematics.getParameter(SpatialProcessParameterType.PointInitialPositionZ);
+					SpatialQuantity posZQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition, QuantityComponent.Z);
+					SpatialQuantity velZQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointVelocity, QuantityComponent.Z);
+					Expression posZExp = new Expression(posZQuantity,simContext.getNameScope());
+					Expression zExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.Z),simContext.getModel().getNameScope());
+					Expression posZ_minux_Z = Expression.add(posZExp,Expression.negate(zExp));
+
+					String pointSubdomainName = pointObject.getName();
+					Domain domain = new Domain(pointSubdomainName);
+					PointSubDomain pointSubdomain = new PointSubDomain(pointSubdomainName);
+					mathDesc.addSubDomain(pointSubdomain);
+					
+					if (simContext.getGeometry().getDimension()>=1){
+						PointVariable posXVar = new PointVariable(getMathSymbol(posXQuantity, gc), domain);
+						varHash.addVariable(posXVar);
+						Expression initXExp = getIdentifierSubstitutions(new Expression(iniPosXParam,pointKinematics.getNameScope()), iniPosXParam.getUnitDefinition(), gc);
+						Expression rateXExp = getIdentifierSubstitutions(new Expression(velXParam,pointKinematics.getNameScope()), velXParam.getUnitDefinition(), gc);
+						OdeEquation odeX = new OdeEquation(posXVar, initXExp, rateXExp);
+						pointSubdomain.addEquation(odeX);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(iniPosXParam, gc), 
+								getIdentifierSubstitutions(new Expression(iniPosXParam.getExpression()), iniPosXParam.getUnitDefinition(), gc),
+								gc));
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velXParam, gc), 
+								getIdentifierSubstitutions(new Expression(velXParam.getExpression()), velXParam.getUnitDefinition(), gc),
+								gc));
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velXQuantity, gc), 
+								getIdentifierSubstitutions(new Expression(velXParam,pointKinematics.getNameScope()), velXQuantity.getUnitDefinition(), gc),
+								gc));
+						pointSubdomain.setPositionX(getIdentifierSubstitutions(new Expression(posXQuantity,simContext.getNameScope()), posXQuantity.getUnitDefinition(), gc));
+					}
+					if (simContext.getGeometry().getDimension()>=2){
+						PointVariable posYVar = new PointVariable(getMathSymbol(posYQuantity, gc), domain);
+						varHash.addVariable(posYVar);
+						Expression initYExp = getIdentifierSubstitutions(new Expression(iniPosYParam,pointKinematics.getNameScope()), iniPosYParam.getUnitDefinition(), gc);
+						Expression rateYExp = getIdentifierSubstitutions(new Expression(velYParam,pointKinematics.getNameScope()), velYParam.getUnitDefinition(), gc);
+						OdeEquation odeY = new OdeEquation(posYVar, initYExp, rateYExp);
+						pointSubdomain.addEquation(odeY);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(iniPosYParam, gc), 
+								getIdentifierSubstitutions(new Expression(iniPosYParam.getExpression()), iniPosYParam.getUnitDefinition(), gc),
+								gc));
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velYParam, gc), 
+								getIdentifierSubstitutions(new Expression(velYParam.getExpression()), velYParam.getUnitDefinition(), gc),
+								gc));
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velYQuantity, gc), 
+								getIdentifierSubstitutions(new Expression(velYParam,pointKinematics.getNameScope()), velYQuantity.getUnitDefinition(), gc),
+								gc));
+						pointSubdomain.setPositionY(getIdentifierSubstitutions(new Expression(posYQuantity,simContext.getNameScope()), posYQuantity.getUnitDefinition(), gc));
+					}
+					if (simContext.getGeometry().getDimension()==3){
+						PointVariable posZVar = new PointVariable(getMathSymbol(posZQuantity, gc), domain);
+						varHash.addVariable(posZVar);
+						Expression initZExp = getIdentifierSubstitutions(new Expression(iniPosZParam,pointKinematics.getNameScope()), iniPosZParam.getUnitDefinition(), gc);
+						Expression rateZExp = getIdentifierSubstitutions(new Expression(velZParam,pointKinematics.getNameScope()), velZParam.getUnitDefinition(), gc);
+						OdeEquation odeZ = new OdeEquation(posZVar, initZExp, rateZExp);
+						pointSubdomain.addEquation(odeZ);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(iniPosZParam, gc), 
+								getIdentifierSubstitutions(new Expression(iniPosZParam.getExpression()), iniPosZParam.getUnitDefinition(), gc),
+								gc));
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velZParam, gc), 
+								getIdentifierSubstitutions(new Expression(velZParam.getExpression()), velZParam.getUnitDefinition(), gc),
+								gc));
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velZQuantity, gc), 
+								getIdentifierSubstitutions(new Expression(velZParam,pointKinematics.getNameScope()), velZQuantity.getUnitDefinition(), gc),
+								gc));
+						pointSubdomain.setPositionZ(getIdentifierSubstitutions(new Expression(posZQuantity,simContext.getNameScope()), posZQuantity.getUnitDefinition(), gc));
+					}
+					if (simContext.getGeometry().getDimension()==1){
+						if (bDirection){
+							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirXQuantity, gc), 
+									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+						if (bDistance){
+							Expression abs_X_minux_posX = Expression.function(FunctionType.ABS, posX_minux_X);
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(distanceQuantity, gc), 
+									getIdentifierSubstitutions(abs_X_minux_posX,distanceQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+					}
+					if (simContext.getGeometry().getDimension()==2){
+						if (bDirection){
+							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirXQuantity, gc), 
+									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									gc));
+							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirYQuantity, gc), 
+									getIdentifierSubstitutions(posY_minux_Y,dirYQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+						if (bDistance){
+							Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
+							Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
+							Expression sqrt_DX2_DY2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2));
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(distanceQuantity, gc), 
+									getIdentifierSubstitutions(sqrt_DX2_DY2,distanceQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+
+					}
+					if (simContext.getGeometry().getDimension()==3){
+						if (bDirection){
+							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirXQuantity, gc), 
+									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									gc));
+							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirYQuantity, gc), 
+									getIdentifierSubstitutions(posY_minux_Y,dirYQuantity.getUnitDefinition(),gc),
+									gc));
+							SpatialQuantity dirZQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Z);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(dirZQuantity, gc), 
+									getIdentifierSubstitutions(posZ_minux_Z,dirZQuantity.getUnitDefinition(),gc),
+									gc));
+						}
+						if (bDistance){
+							Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
+							Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
+							Expression DZ2 = Expression.mult(posZ_minux_Z,posZ_minux_Z);
+							Expression sqrt_DX2_DY2_DZ2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2,DZ2));
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							varHash.addVariable(newFunctionOrConstant(
+									getMathSymbol(distanceQuantity, gc), 
+									getIdentifierSubstitutions(sqrt_DX2_DY2_DZ2,distanceQuantity.getUnitDefinition(),gc),
+									gc));
+						}						
+					}
+				}else{
+					throw new MappingException(pointKinematics.getDescription()+" process defined for pointObject '"+pointObject.getName()+"' but Position and Velocity not enabled");
+				}
 			}else{
 				throw new MappingException("expecting 1 location or kinematics process for point '"+pointObject.getName()+"'");
 			}

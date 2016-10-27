@@ -191,28 +191,28 @@ public class SurfaceRegionObject extends SpatialObject {
 
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-//		if (simulationContext.getGeometry().getGeometrySurfaceDescription() != null){
-//			GeometricRegion[] regions = simulationContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions();
-//			boolean bFound = false;
-//			for (GeometricRegion region : regions){
-//				if (region instanceof SurfaceGeometricRegion){
-//					SurfaceGeometricRegion sr = (SurfaceGeometricRegion)region;
-//					if (sr.getAdjacentGeometricRegions()!=null && sr.getAdjacentGeometricRegions().length==2){
-//						VolumeGeometricRegion vr1 = (VolumeGeometricRegion)sr.getAdjacentGeometricRegions()[0];
-//						VolumeGeometricRegion vr2 = (VolumeGeometricRegion)sr.getAdjacentGeometricRegions()[1];
-//						if (vr1.getSubVolume()==insideSubVolume && vr1.getRegionID()==insideRegionID && vr2.getSubVolume()==outsideSubVolume && vr2.getRegionID()==outsideRegionID){
-//							bFound = true;
-//						}
-//						if (vr1.getSubVolume()==outsideSubVolume && vr1.getRegionID()==outsideRegionID && vr2.getSubVolume()==insideSubVolume && vr2.getRegionID()==insideRegionID){
-//							bFound = true;
-//						}
-//					}
-//				}
-//			}
-//			if (!bFound){
-//				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "could not find corresponding surface region in geometry", Issue.Severity.ERROR));
-//			}
-//		}
+		if (simulationContext.getGeometry().getGeometrySurfaceDescription() != null){
+			GeometricRegion[] regions = simulationContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions();
+			boolean bFound = false;
+			for (GeometricRegion region : regions){
+				if (region instanceof SurfaceGeometricRegion){
+					SurfaceGeometricRegion sr = (SurfaceGeometricRegion)region;
+					if (sr.getAdjacentGeometricRegions()!=null && sr.getAdjacentGeometricRegions().length==2){
+						VolumeGeometricRegion vr1 = (VolumeGeometricRegion)sr.getAdjacentGeometricRegions()[0];
+						VolumeGeometricRegion vr2 = (VolumeGeometricRegion)sr.getAdjacentGeometricRegions()[1];
+						if (vr1.getSubVolume()==insideSubVolume && vr1.getRegionID()==insideRegionID && vr2.getSubVolume()==outsideSubVolume && vr2.getRegionID()==outsideRegionID){
+							bFound = true;
+						}
+						if (vr1.getSubVolume()==outsideSubVolume && vr1.getRegionID()==outsideRegionID && vr2.getSubVolume()==insideSubVolume && vr2.getRegionID()==insideRegionID){
+							bFound = true;
+						}
+					}
+				}
+			}
+			if (!bFound){
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "could not find corresponding surface region in geometry", Issue.Severity.ERROR));
+			}
+		}
 	}
 
 }

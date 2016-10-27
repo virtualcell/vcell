@@ -80,6 +80,10 @@ public class SurfaceKinematics extends SpatialProcess {
 
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-	//	issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "SurfaceKinematics ..... FAKE ISSUE ...  not find corresponding surface region in geometry", Issue.Severity.ERROR));
+		if (simulationContext!=null && surfaceRegionObject!=null){
+			if (simulationContext.getSpatialObject(surfaceRegionObject.getName()) != surfaceRegionObject){
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "SurfaceKinematics '"+getName()+"' refers to missing surfaceObject '"+surfaceRegionObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+			}
+		}
 	}
 }

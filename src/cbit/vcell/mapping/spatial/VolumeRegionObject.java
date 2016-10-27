@@ -12,6 +12,7 @@ import org.vcell.util.Issue.IssueCategory;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
@@ -131,7 +132,22 @@ public class VolumeRegionObject extends SpatialObject {
 
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-	//	issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "VolumeRegionObject ..... FAKE ISSUE ...  not find corresponding surface region in geometry", Issue.Severity.ERROR));
+		if (simulationContext.getGeometry().getGeometrySurfaceDescription() != null){
+			GeometricRegion[] regions = simulationContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions();
+			boolean bFound = false;
+			for (GeometricRegion region : regions){
+				if (region instanceof VolumeGeometricRegion){
+					VolumeGeometricRegion vr = (VolumeGeometricRegion)region;
+					if (getSubVolume() == vr.getSubVolume() && getRegionID() == vr.getRegionID()){
+						bFound = true;
+						break;
+					}
+				}
+			}
+			if (!bFound){
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "geomemtry missing volume region (subvolume "+subVolume.getName()+" region "+regionID+")", Issue.Severity.ERROR));
+			}
+		}
 	}
 	
 }
