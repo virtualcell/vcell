@@ -26,13 +26,6 @@ import cbit.vcell.mapping.spatial.SpatialObject;
 @SuppressWarnings("serial")
 public class SpatialObjectDisplayPanel extends BioModelEditorApplicationRightSidePanel<SpatialObject> {	
 	
-	@Override
-	public void setIssueManager(IssueManager newValue) {
-		super.setIssueManager(newValue);
-		SpatialObjectTableModel sotm = (SpatialObjectTableModel)table.getModel();
-		sotm.setIssueManager(newValue);
-	}
-
 	public SpatialObjectDisplayPanel() {
 		super();
 		initialize();
@@ -128,5 +121,11 @@ public class SpatialObjectDisplayPanel extends BioModelEditorApplicationRightSid
 		return new SpatialObjectTableModel(table);
 	}
 
-	
+	@Override
+	public void setIssueManager(IssueManager newValue) {
+		super.setIssueManager(newValue);
+		SpatialObjectTableModel sotm = (SpatialObjectTableModel)table.getModel();
+		sotm.setIssueManager(newValue);
+	}
+
 }

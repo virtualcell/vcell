@@ -219,4 +219,11 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 		return new SpatialProcessTableModel(table);
 	}
 	
+	@Override
+	public void setIssueManager(IssueManager newValue) {
+		super.setIssueManager(newValue);
+		SpatialProcessTableModel sptm = (SpatialProcessTableModel)table.getModel();
+		sptm.setIssueManager(newValue);
+	}
+
 }
