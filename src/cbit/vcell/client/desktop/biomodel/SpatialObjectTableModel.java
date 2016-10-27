@@ -21,6 +21,7 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
@@ -74,13 +75,19 @@ public class SpatialObjectTableModel extends BioModelEditorApplicationRightSideT
 		return SpatialObjectsList;
 	}
 	
-	private String getQuantitiesString(SpatialObject spatialObject){
+	private String getQuantitiesString(SpatialObject spatialObject) {
 		List<QuantityCategory> categories = spatialObject.getQuantityCategories();
 		ArrayList<String> categoryNames = new ArrayList<String>();
 		for (QuantityCategory cat : categories){
-			categoryNames.add(cat.varSuffix);
+			if(spatialObject.isQuantityCategoryEnabled(cat)) {
+				categoryNames.add("<b>" + cat.varSuffix + "</b>");
+			} else {
+				categoryNames.add(cat.varSuffix);
+			}
 		}
-		return categoryNames.toString().replace("]","").replace("[","");
+		String ret = categoryNames.toString().replace("]","").replace("[","");
+		ret = "<html>" + ret + "</html>";
+		return ret;
 	}
 
 	public Object getValueAt(int row, int column) {
