@@ -128,6 +128,11 @@ public class RuleParticipantSignature {
 		String molecularSignature = getMolecularSignature(molecularTypeNames);
 		return molecularSignature;
 	}
+	public static String getSpeciesPatternAsString(SpeciesPattern sp) {
+		ArrayList<String> molecularTypeNames = getListOfMolecularTypePatternSignatures(sp, Criteria.full);
+		String molecularSignature = getMolecularSignature(molecularTypeNames);
+		return molecularSignature;
+	}
 
 	public List<MolecularType> getMolecularTypes() {	// only used in paint for RuleParticipantSignatureDiagramShape
 		ArrayList<MolecularType> molecularTypes = new ArrayList<MolecularType>();

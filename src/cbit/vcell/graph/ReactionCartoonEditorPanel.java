@@ -157,6 +157,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		}
 	}
 
+	@Deprecated
 	public void cleanupOnClose() {
 		getReactionCartoon().cleanupAll();
 	}

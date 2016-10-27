@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 
@@ -31,6 +32,7 @@ import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
@@ -78,6 +80,32 @@ public class ReactionCartoon extends ModelCartoon {
 		return ruleParticipantGroupingCriteria;
 	}
 
+	// for the RULE_PARTICIPANT_SIGNATURE_NODE nodes we initialize the node's speciesPattern field 
+	// from the matching signature
+	public void rebindAll(Diagram diagram) {
+		String nodeStructure = diagram.getStructure().getName();
+		List<NodeReference> nodeList = diagram.getNodeList();
+		for (int i = 0; i < nodeList.size(); i++) {
+			NodeReference node = nodeList.get(i);
+			if(node.nodeType != NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE) {
+				continue;
+			}
+			if(node.speciesPattern != null) {
+				continue;
+			}
+			for(RuleParticipantSignature signature : ruleParticipantSignatures) {
+				if(!signature.getStructure().getName().equals(nodeStructure)) {
+					continue;
+				}
+				String speciesPatternName = signature.getSpeciesPatternAsString();
+				if(speciesPatternName.equals(node.name)) {
+					node.speciesPattern = signature.getSpeciesPattern();
+					break;
+				}
+			}
+		}
+	}
+	
 	public void applyDefaults(Diagram diagram) {
 		List<NodeReference> nodeList = diagram.getNodeList();
 		for (int i = 0; i < nodeList.size(); i++) {
@@ -145,8 +173,7 @@ public class ReactionCartoon extends ModelCartoon {
 				if (structure instanceof Membrane) {
 					Membrane membrane = (Membrane) structure;
 					if (membrane.getMembraneVoltage() != null) {
-						membrane.getMembraneVoltage().removePropertyChangeListener(
-								this);
+						membrane.getMembraneVoltage().removePropertyChangeListener(this);
 					}
 				}
 			}
@@ -157,8 +184,7 @@ public class ReactionCartoon extends ModelCartoon {
 			if (structSpeciesContext != null) {
 				for (int i = 0; i < structSpeciesContext.length; i++) {
 					structSpeciesContext[i].removePropertyChangeListener(this);
-					structSpeciesContext[i].getSpecies()
-							.removePropertyChangeListener(this);
+					structSpeciesContext[i].getSpecies().removePropertyChangeListener(this);
 				}
 			}
 			ReactionStep reactionSteps[] = getModel().getReactionSteps();
@@ -175,21 +201,34 @@ public class ReactionCartoon extends ModelCartoon {
 		super.paint(g, canvas);
 	}
 	
-	public void propertyChange(PropertyChangeEvent event) {
-//		System.out.println(event.getSource().getClass() + ": " + event.getPropertyName());
-		refreshAll();
+//	private static Integer getStructureLevel(Structure s) {
+//	Structure s0 = s;
+//	int level = 0;
+//	while (s0 != null) {
+//		level += 1;
+//		s0 = s0.getParentStructure();
+//	}
+//	return level;
+//}
+
+	private void relistenToMolecule(PropertyChangeEvent event) {
+		System.out.println(event.getSource().getClass() + ": " + event.getPropertyName());
+		if(event.getPropertyName().equals(Model.RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
+			for(MolecularType mt : getModel().getRbmModelContainer().getMolecularTypeList()) {
+				mt.removePropertyChangeListener(this);
+				mt.addPropertyChangeListener(this);
+			}
+		} else if(event.getSource() instanceof MolecularType) {
+//			MolecularType mt = (MolecularType)event.getSource();
+//			System.out.println(mt + ", " + event.getPropertyName() + ": " + event.getOldValue() + " -> " + event.getNewValue());
+		}
 	}
 
-//	private static Integer getStructureLevel(Structure s) {
-//		Structure s0 = s;
-//		int level = 0;
-//		while (s0 != null) {
-//			level += 1;
-//			s0 = s0.getParentStructure();
-//		}
-//		return level;
-//	}
-
+	public void propertyChange(PropertyChangeEvent event) {
+		relistenToMolecule(event);
+		refreshAll();
+	}
+	
 	@Override
 	public void refreshAll() {
 		refreshAll(false);
@@ -198,6 +237,14 @@ public class ReactionCartoon extends ModelCartoon {
 		try {
 			if (getModel() == null || getStructureSuite() == null) {
 				return;
+			}
+			for(Structure structure : structureSuite.getStructures()) {
+				Diagram diagram = getModel().getDiagram(structure);
+				if (diagram != null) {
+					// Maintain consistency between rule participant nodes, signatures and 
+					// species pattern when a molecule is being modified.
+					rebindAll(diagram);
+				}				
 			}
 			Set<Shape> unwantedShapes = new HashSet<Shape>();
 			Set<RuleParticipantSignature> unwantedSignatures = new HashSet<RuleParticipantSignature>();
@@ -529,10 +576,9 @@ public class ReactionCartoon extends ModelCartoon {
 				RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
 				if (ruleParticipantSignature.getStructure() == diagram.getStructure()){
 					String spAsString = ruleParticipantSignature.getSpeciesPatternAsString();
-					nodeList.add(new NodeReference(
-							NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE,
-							spAsString,
-							shape.getSpaceManager().getRelPos()));
+					NodeReference nr = new NodeReference(NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE, spAsString, shape.getSpaceManager().getRelPos());
+					nr.speciesPattern = ruleParticipantSignature.getSpeciesPattern();
+					nodeList.add(nr);
 				}
 			}
 		}

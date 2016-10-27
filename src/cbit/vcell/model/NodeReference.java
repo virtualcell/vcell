@@ -10,6 +10,7 @@
 
 package cbit.vcell.model;
 
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 /**
@@ -19,6 +20,8 @@ public class NodeReference implements java.io.Serializable, Matchable {
 	public int nodeType = UNKNOWN_NODE;
 	public String name = null;
 	public java.awt.Point location = null;
+	
+	public transient SpeciesPattern speciesPattern = null;
 
 	public static final int UNKNOWN_NODE = 0;
 	public static final int SIMPLE_REACTION_NODE = 1;
@@ -93,7 +96,18 @@ public boolean compareEqual(Matchable obj) {
  * @return java.lang.String
  */
 public String getName() {
-	return name;
+	if(RULE_PARTICIPANT_SIGNATURE_NODE != nodeType) {
+		return name;
+	} else {
+		if (speciesPattern != null) {
+			// Maintain consistency between rule participant nodes, signatures and 
+			// species pattern when a molecule is being modified.
+			name = RuleParticipantSignature.getSpeciesPatternAsString(speciesPattern);
+			return name;
+		} else {
+			return name;
+		}
+	}
 }
 /**
  * This method was created in VisualAge.
