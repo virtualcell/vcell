@@ -121,10 +121,10 @@ public class ImageJHelper {
 			int fileSize = Integer.parseInt(sizeStr);
 			byte[] bytes = new byte[fileSize];
 			int numread = 0;
-			while(numread != bytes.length){
+			while(numread >= 0 && numread != bytes.length){
 				numread+= imageJConnection.dis.read(bytes, numread, bytes.length-numread);
 			}
-			File newFile = File.createTempFile("vcellBlener", null);
+			File newFile = File.createTempFile("vcellBlener", ".stl");
 			FileUtils.writeByteArrayToFile(bytes, newFile);
 			return newFile;
 		}finally{
