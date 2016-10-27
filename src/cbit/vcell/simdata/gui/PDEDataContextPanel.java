@@ -10,7 +10,11 @@
 
 package cbit.vcell.simdata.gui;
 
+import java.awt.Polygon;
+import java.awt.Shape;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -1475,6 +1479,16 @@ private void updateContours() {
 		}
 	}
 
+}
+
+public Hashtable<SampledCurve, int[]>[] getMembranesAndIndexes(){
+	Hashtable<SampledCurve, int[]>[] membraneSlices = new Hashtable[getimagePlaneManager1().getSourceDataInfo().getZSize()];
+	//meshDisplayAdapter.getCurvesAndMembraneIndexes(normalAxis, slice);
+	int normalAxis = getImagePlaneManagerPanel().getImagePlaneManager().getNormalAxis();
+	for (int i = 0; i < membraneSlices.length; i++) {
+		membraneSlices[i] = meshDisplayAdapter.getCurvesAndMembraneIndexes(normalAxis, i);
+	}
+	return membraneSlices;
 }
 /**
  * Insert the method's description here.
