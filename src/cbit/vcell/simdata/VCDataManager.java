@@ -369,13 +369,13 @@ private void handleRemoteException(RemoteException remoteException) {
 }
 
 
-public synchronized VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcDataIdentifier) throws DataAccessException {
+public synchronized VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcDataIdentifier, int timeIndex) throws DataAccessException {
 	try {
-		return getDataSetController().getEmptyVtuMeshFiles(vcDataIdentifier);
+		return getDataSetController().getEmptyVtuMeshFiles(vcDataIdentifier, timeIndex);
 	}catch (RemoteException e){
 		handleRemoteException(e);
 		try {
-			return getDataSetController().getEmptyVtuMeshFiles(vcDataIdentifier);
+			return getDataSetController().getEmptyVtuMeshFiles(vcDataIdentifier, timeIndex);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());

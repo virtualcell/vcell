@@ -26,7 +26,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vis.vtk.VisMeshUtils;
-import org.vcell.vis.vtk.VtkService;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.BioModelWindowManager;
@@ -44,6 +43,7 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataManager;
+import cbit.vcell.simdata.VtkManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -119,7 +119,8 @@ public List<SimulationDataSetRef> getSimsFromOpenModels() throws cbit.vcell.clie
 						}
 						simulationDataSetReference.setSimName(simInfo.getName());
 						simulationDataSetRefs.add(simulationDataSetReference);
-					
+						boolean movingBoundarySolver = simulation.getSolverTaskDescription().getSolverDescription().isMovingBoundarySolver();
+						simulationDataSetReference.setIsTimeVaryingMesh(movingBoundarySolver);
 					}
 				}
 			}
@@ -139,9 +140,9 @@ private boolean isVtkSupported(Simulation simulation){
 public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSetRef) throws cbit.vcell.client.pyvcellproxy.ThriftDataAccessException {
 	try {
 		VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
-		PDEDataManager pdeDataManager = (PDEDataManager)vcellClient.getRequestManager().getDataManager(null, vcSimulationDataIdentifier, true);
 		OutputContext outputContext = null;
-		VtuVarInfo[] vtuVarInfos = pdeDataManager.getVtuVarInfos(outputContext);
+		VtkManager vtkManager = vcellClient.getRequestManager().getVtkManager(outputContext, vcSimulationDataIdentifier);
+		VtuVarInfo[] vtuVarInfos = vtkManager.getVtuVarInfos();
 		ArrayList<VariableInfo> varInfoList = new ArrayList<VariableInfo>();
 		for (VtuVarInfo vtuVarInfo : vtuVarInfos){
 			DomainType variableDomainType = null;
@@ -176,7 +177,7 @@ public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSet
 
 
 
-private File getEmptyMeshFileLocation(SimulationDataSetRef simulationDataSetRef, String domainName){
+private File getEmptyMeshFileLocation(SimulationDataSetRef simulationDataSetRef, String domainName, int timeIndex){
 	
 	VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
 	
@@ -191,7 +192,7 @@ private File getEmptyMeshFileLocation(SimulationDataSetRef simulationDataSetRef,
 	//
 	// compose the specific mesh filename
 	//
-	File vtuDataFile = new File(vtuSimDataFolder, vcSimulationDataIdentifier.getID()+"_"+domainName+".vtu");
+	File vtuDataFile = new File(vtuSimDataFolder, vcSimulationDataIdentifier.getID()+"_"+domainName+"_"+String.format("%06d" , timeIndex)+".vtu");
 	return vtuDataFile;
 }
 
@@ -221,7 +222,7 @@ private File getPopulatedMeshFileLocation(SimulationDataSetRef simulationDataSet
 public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulationDataSetRef, VariableInfo var, int timeIndex) throws ThriftDataAccessException {
 	try {
 		if (var.isMeshVar){
-			return getEmptyMeshFile(simulationDataSetRef, var.domainName).getAbsolutePath();
+			return getEmptyMeshFile(simulationDataSetRef, var.domainName, timeIndex).getAbsolutePath();
 		}
 		File meshFileForVariableAndTime = getPopulatedMeshFileLocation(simulationDataSetRef, var, timeIndex);
 		if (meshFileForVariableAndTime.exists()){
@@ -232,7 +233,7 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 		// get data from server for this variable, domain, time
 		//
 		VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
-		PDEDataManager pdeDataManager = (PDEDataManager)vcellClient.getRequestManager().getDataManager(null, vcSimulationDataIdentifier, true);
+		VtkManager vtkManager = vcellClient.getRequestManager().getVtkManager(null, vcSimulationDataIdentifier);
 		VariableDomain variableDomainType = VariableDomain.VARIABLEDOMAIN_UNKNOWN;
 		if (var.variableDomainType == DomainType.MEMBRANE){
 			variableDomainType = VariableDomain.VARIABLEDOMAIN_MEMBRANE;
@@ -242,12 +243,12 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 		VtuVarInfo vtuVarInfo = new VtuVarInfo(var.getVariableVtuName(),var.getVariableDisplayName(),var.getDomainName(),variableDomainType,var.getExpressionString(),var.isMeshVar);
 		List<Double> times = getTimePoints(simulationDataSetRef);
 		double time = (double)times.get(timeIndex);
-		double[] data = pdeDataManager.getVtuMeshData(vtuVarInfo, time);
+		double[] data = vtkManager.getVtuMeshData(vtuVarInfo, time);
 		
 		//
 		// get empty mesh file for this domain (getEmptyMeshFile() will ensure that the file exists or create it).
 		//
-		File emptyMeshFile = getEmptyMeshFile(simulationDataSetRef, var.getDomainName());
+		File emptyMeshFile = getEmptyMeshFile(simulationDataSetRef, var.getDomainName(), timeIndex);
 		VisMeshUtils.writeCellDataToVtu(emptyMeshFile, var.getVariableVtuName(), data, meshFileForVariableAndTime);
 		return meshFileForVariableAndTime.getAbsolutePath();
 	} catch (Exception e) {
@@ -257,21 +258,25 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 }
 
 
-private File getEmptyMeshFile(SimulationDataSetRef simulationDataSetRef, String domainName) throws ThriftDataAccessException {
+private File getEmptyMeshFile(SimulationDataSetRef simulationDataSetRef, String domainName, int timeIndex) throws ThriftDataAccessException {
 	
-	File vtuEmptyMeshFile = getEmptyMeshFileLocation(simulationDataSetRef, domainName);
+	File vtuEmptyMeshFile = getEmptyMeshFileLocation(simulationDataSetRef, domainName, timeIndex);
 
 	System.out.println("looking for file: "+vtuEmptyMeshFile);
-	
+
+	if (!simulationDataSetRef.isTimeVaryingMesh){
+		timeIndex = 0;
+	}
+
 	//
 	// if requested mesh file is not found, get files for this timepoint
 	//
 	if (!vtuEmptyMeshFile.exists()){
 		try {
-			VtuFileContainer vtuFileContainer = downloadEmptyVtuFileContainer(simulationDataSetRef);
+			VtuFileContainer vtuFileContainer = downloadEmptyVtuFileContainer(simulationDataSetRef, timeIndex);
 
 			for (VtuFileContainer.VtuMesh mesh : vtuFileContainer.getVtuMeshes()){
-				FileUtils.writeByteArrayToFile(mesh.vtuMeshContents, getEmptyMeshFileLocation(simulationDataSetRef, mesh.domainName));
+				FileUtils.writeByteArrayToFile(mesh.vtuMeshContents, getEmptyMeshFileLocation(simulationDataSetRef, mesh.domainName, timeIndex));
 			}
 			
 			if (!vtuEmptyMeshFile.exists()){
@@ -290,11 +295,11 @@ private File getEmptyMeshFile(SimulationDataSetRef simulationDataSetRef, String 
 	return vtuEmptyMeshFile;
 }
 
-private VtuFileContainer downloadEmptyVtuFileContainer(SimulationDataSetRef simulationDataSetRef) throws ThriftDataAccessException {
+private VtuFileContainer downloadEmptyVtuFileContainer(SimulationDataSetRef simulationDataSetRef, int timeIndex) throws ThriftDataAccessException {
 	try {
 		VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
-		PDEDataManager pdeDataManager = (PDEDataManager)vcellClient.getRequestManager().getDataManager(null, vcSimulationDataIdentifier, true);
-		VtuFileContainer vtuFileContainer = pdeDataManager.getEmptyVtuMeshFiles();
+		VtkManager vtkManager = vcellClient.getRequestManager().getVtkManager(null, vcSimulationDataIdentifier);
+		VtuFileContainer vtuFileContainer = vtkManager.getEmptyVtuMeshFiles(timeIndex);
 		return vtuFileContainer;
 	}catch (Exception e){
 		e.printStackTrace();
@@ -318,7 +323,7 @@ public List<Double> getTimePoints(SimulationDataSetRef simulationDataSetRef) thr
 	ArrayList<Double> timesList = new ArrayList<Double>();
 	try {
 		if (vcSimulationDataIdentifier != null) {				
-			double[] timesArray = vcellClient.getRequestManager().getDataManager(null, vcSimulationDataIdentifier, true).getDataSetTimes();
+			double[] timesArray = vcellClient.getRequestManager().getVtkManager(null, vcSimulationDataIdentifier).getDataSetTimes();
 			for (int i=0; i<timesArray.length; i++){
 			    timesList.add(new Double(timesArray[i]));
 			}

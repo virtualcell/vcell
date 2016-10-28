@@ -10,9 +10,9 @@ import org.apache.commons.lang3.ArrayUtils;
 public interface MovingBoundaryTypes {
 
 	public static class DimensionInfo {
-		final double start;
-		final double end;
-		final double delta;
+		public final double start;
+		public final double end;
+		public final double delta;
 		/**
 		 * currently all zeros due to bug in attribute reading of jhdf version
 		 * we're using
@@ -42,11 +42,11 @@ public interface MovingBoundaryTypes {
 	}
 
 	public static class MeshInfo {
-		final double precision;
-		final double scaleFactor;
-		final DimensionInfo xinfo;
-		final DimensionInfo yinfo;
-		final int depth;
+		public final double precision;
+		public final double scaleFactor;
+		public final DimensionInfo xinfo;
+		public final DimensionInfo yinfo;
+		public final int depth;
 
 		MeshInfo(double precision, double scaleFactor, DimensionInfo xinfo, DimensionInfo yinfo, int depth) {
 			super();
@@ -65,8 +65,8 @@ public interface MovingBoundaryTypes {
 	}
 
 	public static class Species {
-		final double mass;
-		final double concentration;
+		public final double mass;
+		public final double concentration;
 		Species(double mass, double concentration) {
 			this.mass = mass;
 			this.concentration = concentration;
@@ -78,7 +78,7 @@ public interface MovingBoundaryTypes {
 	}
 
 	public static class Element {
-		enum Position {
+		public enum Position {
 			INSIDE,
 			BOUNDARY,
 			OUTSIDE;
@@ -87,9 +87,9 @@ public interface MovingBoundaryTypes {
 				return name().toLowerCase();
 			}
 		}
-		final List<Species> species;
-		final double volume;
-		final Position position;
+		public final List<Species> species;
+		public final double volume;
+		public final Position position;
 		private final int[] boundaryIndexes;
 
 		Element(double volume, byte poz, int[] boundaryIndexes) {
@@ -138,9 +138,9 @@ public interface MovingBoundaryTypes {
 	}
 
 	public static class TimeInfo {
-		static class TimeStep {
-			final double time;
-			final double step;
+		public static class TimeStep {
+			public final double time;
+			public final double step;
 			TimeStep(double time, double step) {
 				this.time = time;
 				this.step = step;
@@ -151,12 +151,12 @@ public interface MovingBoundaryTypes {
 			}
 
 		}
-		final double requestedTimeStep;
-		final double endTime;
-		final double runTime;
-		final List<Double> generationTimes;
-		final List<Double> moveTimes;
-		final List<TimeStep> timeSteps;
+		public final double requestedTimeStep;
+		public final double endTime;
+		public final double runTime;
+		public final List<Double> generationTimes;
+		public final List<Double> moveTimes;
+		public final List<TimeStep> timeSteps;
 		TimeInfo(double requestedTimeStep, double endTime, double runTime, double[] generationTimes,
 				double[] moveTimes, List<TimeStep> timeSteps) {
 			super();

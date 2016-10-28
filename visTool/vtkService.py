@@ -14,6 +14,7 @@ from thrift.TSerialization import deserialize
 from thrift.TSerialization import serialize
 from vcellvismesh.ttypes import ChomboIndexData
 from vcellvismesh.ttypes import FiniteVolumeIndexData
+from vcellvismesh.ttypes import MovingBoundaryIndexData
 from vcellvismesh.ttypes import VisIrregularPolyhedron
 from vcellvismesh.ttypes import VisLine
 from vcellvismesh.ttypes import VisMesh
@@ -104,11 +105,11 @@ def writeFiniteVolumeSmoothedVtkGridAndIndexData(visMesh, domainName, vtuFile, i
         # if volume
         if visMesh.polygons is not None:
             for polygon in visMesh.polygons:
-                finiteVolumeIndexData.finiteVolumeIndices.appendpolygon.getFiniteVolumeIndex()
+                finiteVolumeIndexData.finiteVolumeIndices.append(polygon.finiteVolumeIndex)
         # if membrane
         if visMesh.visLines is not None:
             for visLine in visMesh.visLines:
-                finiteVolumeIndexData.finiteVolumeIndices.append(visLine.getFiniteVolumeIndex())
+                finiteVolumeIndexData.finiteVolumeIndices.append(visLine.finiteVolumeIndex)
     elif visMesh.dimension == 3:
         # if volume
         if visMesh.visVoxels is not None:
@@ -137,6 +138,104 @@ def writeFiniteVolumeIndexData(finiteVolumeIndexFile, finiteVolumeIndexData):
     ff.write(blob)
     ff.close()
     print("wrote finitevolume data to file "+str(finiteVolumeIndexFile))
+
+
+def writeMovingBoundaryVolumeVtkGridAndIndexData(visMesh, domainName, vtuFile, indexFile):
+    assert isinstance(visMesh, VisMesh)
+    vtkgrid = getVolumeVtkGrid(visMesh)
+    writevtk(vtkgrid, vtuFile)
+    movingBoundaryIndexData = MovingBoundaryIndexData()
+    movingBoundaryIndexData.movingBoundaryVolumeIndices = []
+    movingBoundaryIndexData.domainName = domainName
+    movingBoundaryIndexData.timeIndex = 0
+    if visMesh.dimension == 2:
+        # if volume
+        if visMesh.polygons is not None:
+            for polygon in visMesh.polygons:
+                movingBoundaryIndexData.movingBoundaryVolumeIndices.append(polygon.movingBoundaryVolumeIndex)
+        # if membrane
+        if visMesh.visLines is not None:
+            for visLine in visMesh.visLines:
+                movingBoundaryIndexData.movingBoundarySurfaceIndices.append(visLine.movingBoundarySurfaceIndex)
+    # elif visMesh.dimension == 3:
+    #     # if volume
+    #     if visMesh.visVoxels is not None:
+    #         for voxel in visMesh.visVoxels:
+    #             movingBoundaryIndexData.finiteVolumeIndices.append(voxel.finiteVolumeIndex)
+    #     if visMesh.irregularPolyhedra is not None:
+    #         raise Exception("unexpected irregular polyhedra in mesh, should have been replaced with tetrahedra")
+    #     if visMesh.tetrahedra is not None:
+    #         for tetrahedron in visMesh.tetrahedra:
+    #             movingBoundaryIndexData.finiteVolumeIndices.append(tetrahedron.finiteVolumeIndex)
+    #     # if membrane
+    #     if visMesh.polygons is not None:
+    #         for polygon in visMesh.polygons:
+    #             movingBoundaryIndexData.finiteVolumeIndices.append(polygon.finiteVolumeIndex)
+
+    if movingBoundaryIndexData.movingBoundaryVolumeIndices == None and movingBoundaryIndexData.movingBoundarySurfaceIndices == None:
+        print "didn't find any indices ... bad"
+
+    if movingBoundaryIndexData.movingBoundaryVolumeIndices != None and len(movingBoundaryIndexData.movingBoundaryVolumeIndices) == 0:
+        print "didn't find any indices ... bad"
+
+    if movingBoundaryIndexData.movingBoundarySurfaceIndices != None and len(movingBoundaryIndexData.movingBoundarySurfaceIndices) == 0:
+        print "didn't find any indices ... bad"
+
+    writeMovingBoundaryIndexData(indexFile, movingBoundaryIndexData)
+
+
+def writeComsolVolumeVtkGridAndIndexData(visMesh, domainName, vtuFile, indexFile):
+    assert isinstance(visMesh, VisMesh)
+    vtkgrid = getVolumeVtkGrid(visMesh)
+    writevtk(vtkgrid, vtuFile)
+    # movingBoundaryIndexData = MovingBoundaryIndexData()
+    # movingBoundaryIndexData.movingBoundaryVolumeIndices = []
+    # movingBoundaryIndexData.domainName = domainName
+    # movingBoundaryIndexData.timeIndex = 0
+    # if visMesh.dimension == 2:
+    #     # if volume
+    #     if visMesh.polygons is not None:
+    #         for polygon in visMesh.polygons:
+    #             movingBoundaryIndexData.movingBoundaryVolumeIndices.append(polygon.movingBoundaryVolumeIndex)
+    #     # if membrane
+    #     if visMesh.visLines is not None:
+    #         for visLine in visMesh.visLines:
+    #             movingBoundaryIndexData.movingBoundarySurfaceIndices.append(visLine.movingBoundarySurfaceIndex)
+    # elif visMesh.dimension == 3:
+    #     # if volume
+    #     if visMesh.visVoxels is not None:
+    #         for voxel in visMesh.visVoxels:
+    #             movingBoundaryIndexData.finiteVolumeIndices.append(voxel.finiteVolumeIndex)
+    #     if visMesh.irregularPolyhedra is not None:
+    #         raise Exception("unexpected irregular polyhedra in mesh, should have been replaced with tetrahedra")
+    #     if visMesh.tetrahedra is not None:
+    #         for tetrahedron in visMesh.tetrahedra:
+    #             movingBoundaryIndexData.finiteVolumeIndices.append(tetrahedron.finiteVolumeIndex)
+    #     # if membrane
+    #     if visMesh.polygons is not None:
+    #         for polygon in visMesh.polygons:
+    #             movingBoundaryIndexData.finiteVolumeIndices.append(polygon.finiteVolumeIndex)
+
+    # if movingBoundaryIndexData.movingBoundaryVolumeIndices == None and movingBoundaryIndexData.movingBoundarySurfaceIndices == None:
+    #     print "didn't find any indices ... bad"
+    #
+    # if movingBoundaryIndexData.movingBoundaryVolumeIndices != None and len(movingBoundaryIndexData.movingBoundaryVolumeIndices) == 0:
+    #     print "didn't find any indices ... bad"
+    #
+    # if movingBoundaryIndexData.movingBoundarySurfaceIndices != None and len(movingBoundaryIndexData.movingBoundarySurfaceIndices) == 0:
+    #     print "didn't find any indices ... bad"
+    #
+    #writeMovingBoundaryIndexData(indexFile, None)
+
+
+def writeMovingBoundaryIndexData(movingBoundaryIndexFile, movingBoundaryIndexData):
+    assert isinstance(movingBoundaryIndexData, MovingBoundaryIndexData)
+    blob = serialize(movingBoundaryIndexData, protocol_factory=TBinaryProtocol.TBinaryProtocolFactory())
+    ff = open(movingBoundaryIndexFile,'wb')
+    ff.write(blob)
+    ff.close()
+    print("wrote movingboundary data to file "+str(movingBoundaryIndexFile))
+
 
 
 def writeChomboIndexData(chomboIndexFile, chomboIndexData):
@@ -557,11 +656,15 @@ def createTetrahedra(clippedPolyhedron, visMesh):
 
     return visTets
 
+#import sys
 
 def main():
+
+    #sys.setrecursionlimit(100000)
+
     try:
         parser = argparse.ArgumentParser()
-        list_of_meshtypes = ["chombovolume", "chombomembrane", "finitevolume"]
+        list_of_meshtypes = ["chombovolume", "chombomembrane", "finitevolume", "movingboundary", "comsolvolume"]
         parser.add_argument("meshtype", help="type of visMesh processing required and index file generated", choices=list_of_meshtypes)
         parser.add_argument("domainname", help="domain name for output mesh")
         parser.add_argument("vismeshfile",help="filename of input visMesh to be processed (thrift serialization via TBinaryProtocol)")
@@ -588,6 +691,12 @@ def main():
             writeChomboMembraneVtkGridAndIndexData(visMesh, args.domainname, args.vtkfile, args.indexfile)
         elif args.meshtype == "finitevolume":
             writeFiniteVolumeSmoothedVtkGridAndIndexData(visMesh, args.domainname, args.vtkfile, args.indexfile)
+        elif args.meshtype == "movingboundary":
+            writeMovingBoundaryVolumeVtkGridAndIndexData(visMesh, args.domainname, args.vtkfile, args.indexfile)
+        elif args.meshtype == "comsolvolume":
+            writeComsolVolumeVtkGridAndIndexData(visMesh, args.domainname, args.vtkfile, args.indexfile)
+        else:
+            raise Exception("meshtype "+str(args.meshtype)+" not supported")
 
     except:
         e_info = sys.exc_info()
@@ -596,7 +705,7 @@ def main():
         sys.stderr.flush()
         sys.exit(-1)
     else:
-        sys.exit()
+        sys.exit(0)
 
 
 if __name__ == '__main__':

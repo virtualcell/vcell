@@ -46,6 +46,8 @@ public interface SimDataConstants {
 	public static final String CVODEINPUT_DATA_EXTENSION = ".cvodeInput";
 	public static final String STOCHINPUT_DATA_EXTENSION = ".stochInput";
 	public static final String STOCH_DATA_EXTENSION = ".stochbi"; //stoch
+	public static final String MOVINGBOUNDARYINDEX_FILE_EXTENSION = ".movingboundaryindex";
+	public static final String MOVINGBOUNDARY_OUTPUT_EXTENSION = ".h5";
 //	public static final String PARTICLE_DATA_EXTENSION = ".particle";
 	public static final String DATA_PROCESSING_OUTPUT_EXTENSION = ".dataProcOutput";
 	public static final String DATA_PROCESSING_OUTPUT_EXTENSION_HDF5 = ".hdf5";
@@ -85,5 +87,6 @@ public interface SimDataConstants {
 	public static final String VCG_FILE_EXTENSION = ".vcg";
 	
 	public static final double BASEFAB_REAL_SETVAL = 1.23456789e+300;
+
 	
 }

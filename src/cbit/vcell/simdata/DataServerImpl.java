@@ -15,6 +15,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
@@ -332,10 +333,20 @@ public boolean isChombo(User user, VCDataIdentifier vcdataID) throws DataAccessE
 		return dataSetControllerImpl.getIsChombo(vcdataID);
 	}catch (Throwable e){
 		log.exception(e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
 	}
 }
 
+
+public boolean isMovingBoundary(User user, VCDataIdentifier vcdataID) throws DataAccessException {
+	checkReadAccess(user, vcdataID);
+	try {
+		return dataSetControllerImpl.getIsMovingBoundary(vcdataID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
 
 public ChomboFiles getChomboFiles(User user, VCDataIdentifier vcdataID) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
@@ -358,12 +369,27 @@ public VCellSimFiles getVCellSimFiles(User user, VCDataIdentifier vcdataID) thro
 	}
 }
 
+public MovingBoundarySimFiles getMovingBoundarySimFiles(User user, VCDataIdentifier vcdataID) throws DataAccessException {
+	checkReadAccess(user, vcdataID);
+	try {
+		return dataSetControllerImpl.getMovingBoundarySimFiles(vcdataID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+
+
 public double[] getVtuMeshData(User user, OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
 		if (isChombo(user, vcdataID)){
 			ChomboFiles chomboFiles = getChomboFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuMeshData(chomboFiles, outputContext, vcdataID, var, time);
+		}else if (isMovingBoundary(user, vcdataID)){
+			MovingBoundarySimFiles movingBoundarySimFiles = getMovingBoundarySimFiles(user, vcdataID);
+			return dataSetControllerImpl.getVtuMeshData(movingBoundarySimFiles, outputContext, vcdataID, var, time);
 		}else{
 			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuMeshData(vcellFiles, outputContext, vcdataID, var, time);
@@ -374,15 +400,18 @@ public double[] getVtuMeshData(User user, OutputContext outputContext, VCDataIde
 	}
 }
 
-public VtuFileContainer getEmptyVtuMeshFiles(User user, VCDataIdentifier vcdataID) throws DataAccessException {
+public VtuFileContainer getEmptyVtuMeshFiles(User user, VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
 		if (isChombo(user, vcdataID)){
 			ChomboFiles chomboFiles = getChomboFiles(user, vcdataID);
-			return dataSetControllerImpl.getEmptyVtuMeshFiles(chomboFiles, vcdataID);
-		}else{
+			return dataSetControllerImpl.getEmptyVtuMeshFiles(chomboFiles, vcdataID, timeIndex);
+		}else if (!isMovingBoundary(user, vcdataID)){
 			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
-			return dataSetControllerImpl.getEmptyVtuMeshFiles(vcellFiles, vcdataID);
+			return dataSetControllerImpl.getEmptyVtuMeshFiles(vcellFiles, vcdataID, timeIndex);
+		}else{
+			MovingBoundarySimFiles movingBoundaryFiles = getMovingBoundarySimFiles(user, vcdataID);
+			return dataSetControllerImpl.getEmptyVtuMeshFiles(movingBoundaryFiles, vcdataID, timeIndex);
 		}
 	}catch (Throwable e){
 		log.exception(e);
@@ -397,13 +426,16 @@ public VtuVarInfo[] getVtuVarInfos(User user, OutputContext outputContext, VCDat
 		if (isChombo(user, vcdataID)){
 			ChomboFiles chomboFiles = getChomboFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuVarInfos(chomboFiles, outputContext, vcdataID);
-		}else{
+		}else if (!isMovingBoundary(user, vcdataID)){
 			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuVarInfos(vcellFiles, outputContext, vcdataID);
+		}else{
+			MovingBoundarySimFiles mbSimFiles = getMovingBoundarySimFiles(user, vcdataID);
+			return dataSetControllerImpl.getVtuVarInfos(mbSimFiles, outputContext, vcdataID);
 		}
 	}catch (Throwable e){
 		log.exception(e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
 	}
 }
 

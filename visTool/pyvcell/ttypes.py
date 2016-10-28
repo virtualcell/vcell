@@ -200,6 +200,7 @@ class SimulationDataSetRef:
    - modelName
    - originXYZ
    - extentXYZ
+   - isTimeVaryingMesh
   """
 
   thrift_spec = (
@@ -215,9 +216,10 @@ class SimulationDataSetRef:
     (9, TType.STRING, 'modelName', None, None, ), # 9
     (10, TType.LIST, 'originXYZ', (TType.DOUBLE,None), None, ), # 10
     (11, TType.LIST, 'extentXYZ', (TType.DOUBLE,None), None, ), # 11
+    (12, TType.BOOL, 'isTimeVaryingMesh', None, None, ), # 12
   )
 
-  def __init__(self, simId=None, simName=None, modelId=None, username=None, userkey=None, jobIndex=None, isMathModel=None, simulationContextName=None, modelName=None, originXYZ=None, extentXYZ=None,):
+  def __init__(self, simId=None, simName=None, modelId=None, username=None, userkey=None, jobIndex=None, isMathModel=None, simulationContextName=None, modelName=None, originXYZ=None, extentXYZ=None, isTimeVaryingMesh=None,):
     self.simId = simId
     self.simName = simName
     self.modelId = modelId
@@ -229,6 +231,7 @@ class SimulationDataSetRef:
     self.modelName = modelName
     self.originXYZ = originXYZ
     self.extentXYZ = extentXYZ
+    self.isTimeVaryingMesh = isTimeVaryingMesh
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -304,6 +307,11 @@ class SimulationDataSetRef:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.BOOL:
+          self.isTimeVaryingMesh = iprot.readBool();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -364,6 +372,10 @@ class SimulationDataSetRef:
         oprot.writeDouble(iter13)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.isTimeVaryingMesh is not None:
+      oprot.writeFieldBegin('isTimeVaryingMesh', TType.BOOL, 12)
+      oprot.writeBool(self.isTimeVaryingMesh)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -388,6 +400,8 @@ class SimulationDataSetRef:
       raise TProtocol.TProtocolException(message='Required field originXYZ is unset!')
     if self.extentXYZ is None:
       raise TProtocol.TProtocolException(message='Required field extentXYZ is unset!')
+    if self.isTimeVaryingMesh is None:
+      raise TProtocol.TProtocolException(message='Required field isTimeVaryingMesh is unset!')
     return
 
 
@@ -404,6 +418,7 @@ class SimulationDataSetRef:
     value = (value * 31) ^ hash(self.modelName)
     value = (value * 31) ^ hash(self.originXYZ)
     value = (value * 31) ^ hash(self.extentXYZ)
+    value = (value * 31) ^ hash(self.isTimeVaryingMesh)
     return value
 
   def __repr__(self):

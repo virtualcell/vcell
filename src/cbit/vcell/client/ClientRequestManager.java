@@ -38,12 +38,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -65,7 +59,6 @@ import java.util.zip.ZipInputStream;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -78,7 +71,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -90,7 +82,6 @@ import org.vcell.model.bngl.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -177,10 +168,7 @@ import cbit.vcell.client.task.SetMathDescription;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.desktop.LoginManager;
-import cbit.vcell.export.nrrd.NrrdInfo;
-import cbit.vcell.export.nrrd.NrrdWriter;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
@@ -230,6 +218,7 @@ import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.VCDataManager;
+import cbit.vcell.simdata.VtkManager;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -2617,6 +2606,14 @@ public DataManager getDataManager(OutputContext outputContext, VCDataIdentifier 
 //	dataManager.connect();
 	return dataManager;
 }
+
+@Override
+public VtkManager getVtkManager(OutputContext outputContext, VCDataIdentifier vcDataID) throws DataAccessException {
+	VCDataManager vcDataManager = getClientServerManager().getVCDataManager();
+	return new VtkManager(outputContext, vcDataManager, vcDataID);
+}
+
+
 
 
 /**

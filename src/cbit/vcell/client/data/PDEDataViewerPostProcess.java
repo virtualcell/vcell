@@ -10,9 +10,7 @@ import java.util.Hashtable;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.Timer;
 
-import org.vcell.client.logicalwindow.LWFrameOrDialog;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.Extent;
@@ -214,7 +212,7 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 					}
 
 					@Override
-					public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID) throws DataAccessException {
+					public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
 						// TODO Auto-generated method stub
 						return null;
 					}

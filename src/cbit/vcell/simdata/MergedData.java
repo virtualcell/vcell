@@ -20,6 +20,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
 import cbit.vcell.math.FunctionColumnDescription;
@@ -1194,6 +1195,19 @@ public boolean isChombo() throws DataAccessException, IOException {
 }
 
 @Override
+public boolean isMovingBoundary() throws DataAccessException, IOException {
+	try {
+		return getDatasetControllerImpl().getIsMovingBoundary(datasetsIDList[0]);
+	} catch (DataAccessException e) {
+		e.printStackTrace(System.out);
+		throw e;
+	} catch (FileNotFoundException e) {
+		e.printStackTrace(System.out);
+		throw e;
+	}
+}
+
+@Override
 public ChomboFiles getChomboFiles() throws IOException, XmlParseException, ExpressionException {
 	throw new RuntimeException("MergedData.getChomboFiles() not yet implemented");
 }
@@ -1201,6 +1215,11 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 @Override
 public VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccessException {
 	throw new RuntimeException("MergedData.getVCellSimFiles() not yet implemented");
+}
+
+@Override
+public MovingBoundarySimFiles getMovingBoundarySimFiles() throws FileNotFoundException, DataAccessException {
+	throw new RuntimeException("MergedData.getMovingBoundarySimFiles() not yet implemented");
 }
 
 

@@ -432,7 +432,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         #count = len(self.findChildren(QtGui.QDialog))
         if message != None:
             if self.progress == None:
-                self.progress = QtGui.QProgressDialog('...', None, 0, self.CONST_MODALPROGRESSMAX) #default application modal
+                self.progress = QtGui.QProgressDialog('...', '', 0, self.CONST_MODALPROGRESSMAX) #default application modal
                 #self.progress.setWindowModality(Qt.WindowModal) #if only wondow modal wanted
                 self.progress.setMinimumDuration(0)
             self.progress.setValue(1)
@@ -460,13 +460,14 @@ class VCellPysideApp(QtGui.QMainWindow):
        self.lst.start()
 
     def _onSimulationSelected0(self, sim):
+        
         vcellProxy2 = vcellProxy.VCellProxyHandler()
         try:
             vcellProxy2.open()
             variables = vcellProxy2.getClient().getVariableList(sim)
             all(isinstance(n,pyvcell.ttypes.VariableInfo) for n in variables)
-            if (len(variables)<=1):
-                print "no variables, ignoring dataset"
+            if (len(variables)<1):
+                print "no variables, ignoring dataset ... new"
                 return
 
             currVar = variables[0]
@@ -637,7 +638,7 @@ class VCellPysideApp(QtGui.QMainWindow):
             print("_onTimeSliderChanged: openOne() success "+str(results));
             checkSlidePos = self.sliderQ(None,self.timeSliderQueue)
             if checkSlidePos[VCellPysideApp.CONST_POSITION] != self._visDataContext.getCurrentTimeIndex():
-                self._onTimeSliderChanged()
+               self._onTimeSliderChanged()
 
         def errorCallback(errorMessage):
             self.otherEventsQueue.put(("cursorRestore",None))

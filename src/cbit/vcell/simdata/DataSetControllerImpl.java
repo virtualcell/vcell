@@ -68,10 +68,12 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
+import org.vcell.vis.mapping.movingboundary.MovingBoundaryVtkFileWriter;
 import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 
 import cbit.image.VCImageUncompressed;
@@ -94,6 +96,7 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.DivideByZeroException;
@@ -120,6 +123,7 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solvers.MembraneElement;
+import cbit.vcell.solvers.mb.MovingBoundaryReader;
 import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.util.EventRateLimiter;
 import cbit.vcell.xml.XmlParseException;
@@ -3300,7 +3304,8 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ") evaluating function");
 			simDataBlock = evaluateFunction(outputContext,vcdID,simData,function,time);
 		}
-		if(getMesh(vcdID).isChomboMesh()){
+		CartesianMesh mesh = getMesh(vcdID);
+		if (mesh != null && mesh.isChomboMesh()){
 			for (int i = 0; i < simDataBlock.getData().length; i++) {
 				if(simDataBlock.getData()[i] == 1.23456789e300){
 					simDataBlock.getData()[i] = Double.NaN;
@@ -4316,8 +4321,27 @@ public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[
 
 
 public boolean getIsChombo(VCDataIdentifier vcdataID) throws IOException, DataAccessException {
-	VCMongoMessage.sendTrace("DataSetControllerImpl.getMesh("+vcdataID.getID()+")  <<EXIT>>");
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getIsChombo("+vcdataID.getID()+")  <<EXIT>>");
 	log.print("DataSetControllerImpl.getMesh("+vcdataID.getOwner().getName()+","+vcdataID.getID()+")");
+	
+	VCData simData = null;
+	try {
+		simData = getVCData(vcdataID);
+	}catch (DataAccessException e){
+		e.printStackTrace(System.err);
+	}
+	
+	if (simData==null){
+		throw new DataAccessException("no simResults for user "+vcdataID.getOwner().getName()+" with simID="+vcdataID.getID());
+	}
+
+	return simData.isChombo();
+}
+
+
+public boolean getIsMovingBoundary(VCDataIdentifier vcdataID) throws IOException, DataAccessException {
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getIsMovingBoundary("+vcdataID.getID()+")  <<EXIT>>");
+	log.print("DataSetControllerImpl.getIsMovingBoundary("+vcdataID.getOwner().getName()+","+vcdataID.getID()+")");
 	
 	VCData simData = null;
 	try {
@@ -4329,7 +4353,7 @@ public boolean getIsChombo(VCDataIdentifier vcdataID) throws IOException, DataAc
 		throw new DataAccessException("no simResults for user "+vcdataID.getOwner().getName()+" with simID="+vcdataID.getID());
 	}
 
-	return simData.isChombo();
+	return simData.isMovingBoundary();
 }
 
 
@@ -4359,6 +4383,17 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 
 	return simData.getVCellSimFiles();
 }
+
+public MovingBoundarySimFiles getMovingBoundarySimFiles(VCDataIdentifier vcdataID) throws DataAccessException, IOException {
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getMovingBoundarySimFiles("+vcdataID.getID()+")  <<EXIT>>");
+	log.print("DataSetControllerImpl.getMovingBoundarySimFiles("+vcdataID.getOwner().getName()+","+vcdataID.getID()+")");
+	
+	VCData simData = getVCData(vcdataID);
+
+	return simData.getMovingBoundarySimFiles();
+}
+
+
 
 	private SimDataBlock getChomboExtrapolatedValues(VCDataIdentifier vcdID, String varName, double time) throws DataAccessException
 	{
@@ -4416,8 +4451,11 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 	}
 
 
-	public VtuFileContainer getEmptyVtuMeshFiles(ChomboFiles chomboFiles, VCDataIdentifier vcdataID) throws DataAccessException {
+	public VtuFileContainer getEmptyVtuMeshFiles(ChomboFiles chomboFiles, VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
 		try {
+			if (timeIndex>0){
+				throw new RuntimeException("only time index 0 supported for chombo vtk mesh files");
+			}
 			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
 			File primaryDirectory = getPrimaryUserDir(vcdataID.getOwner(), false);
 			VtuFileContainer vtuFiles = chomboVTKFileWriter.getEmptyVtuMeshFiles(chomboFiles, primaryDirectory);
@@ -4428,7 +4466,10 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 		}
 	}
 	
-	public VtuFileContainer getEmptyVtuMeshFiles(VCellSimFiles vcellSimFiles, VCDataIdentifier vcdataID) throws DataAccessException {
+	public VtuFileContainer getEmptyVtuMeshFiles(VCellSimFiles vcellSimFiles, VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
+		if (timeIndex>0){
+			throw new RuntimeException("only time index 0 supported for finitevolume vtk mesh files");
+		}
 		try {
 			CartesianMeshVtkFileWriter cartesianMeshVTKFileWriter = new CartesianMeshVtkFileWriter();
 			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
@@ -4440,6 +4481,17 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 		}
 	}
 
+	public VtuFileContainer getEmptyVtuMeshFiles(MovingBoundarySimFiles movingBoundarySimFiles, VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
+		try {
+			MovingBoundaryVtkFileWriter movingBoundaryVtkFileWriter = new MovingBoundaryVtkFileWriter();
+			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
+			VtuFileContainer vtuFiles = movingBoundaryVtkFileWriter.getEmptyVtuMeshFiles(movingBoundarySimFiles, timeIndex, primaryDirectory);
+			return vtuFiles;
+		}catch (Exception e){
+			log.exception(e);
+			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
+		}
+	}
 
 	public double[] getVtuMeshData(ChomboFiles chomboFiles, OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
 		try {
@@ -4462,6 +4514,32 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
+	
+	public double[] getVtuMeshData(MovingBoundarySimFiles movingBoundarySimFiles, OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
+		try {
+			double[] times = getDataSetTimes(vcdataID);
+			int timeIndex = -1;
+			for (int i=0;i<times.length;i++){
+				if (times[i] == time){
+					timeIndex = i;
+					break;
+				}
+			}
+			if (timeIndex<0){
+				throw new DataAccessException("data for dataset "+vcdataID+" not found at time "+time);
+			}
+			//VCData simulationData = getVCData(vcdataID);
+			SimDataBlock simDataBlock = getSimDataBlock(outputContext, vcdataID, var.name, time);
+			double[] volumeVarData = simDataBlock.getData();
+			MovingBoundaryVtkFileWriter movingBoundaryVtkFileWriter = new MovingBoundaryVtkFileWriter();
+			double[] vtuData = movingBoundaryVtkFileWriter.getVtuMeshData(movingBoundarySimFiles, volumeVarData, getUserDataDirectory(vcdataID), var, timeIndex);
+			return vtuData;
+		}catch (Exception e){
+			log.exception(e);
+			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
+		}
+	}
+	
 	
 	private File getUserDataDirectory(VCDataIdentifier vcdataID){
 		File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
@@ -4504,5 +4582,52 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 			throw new DataAccessException("failed to retrieve VTK variable list: "+e.getMessage(),e);
 		}
 	}
+
+	public VtuVarInfo[] getVtuVarInfos(MovingBoundarySimFiles movingBoundaryFiles, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+		try {
+			DataIdentifier[] dataIdentifiers = getDataIdentifiers(outputContext, vcdataID);
+			if (dataIdentifiers==null){
+				return null;
+			}
+			ArrayList<VtuVarInfo> vtuVarInfos = new ArrayList<VtuVarInfo>();
+			for (DataIdentifier di : dataIdentifiers){
+				String name = di.getName();
+				String displayName = di.getDisplayName();
+				if (di.getDomain() != null){
+					System.err.println("DataSetControllerImpl.getVtuVarInfos(movingboundary): need to support proper domain names now");
+				}
+				String domainName = MovingBoundaryReader.getFakeInsideDomainName();
+				VariableDomain variableDomain = null;
+				VariableType variableType = di.getVariableType();
+				if (variableType.equals(VariableType.VOLUME) || variableType.equals(VariableType.VOLUME_REGION)){
+					variableDomain = VariableDomain.VARIABLEDOMAIN_VOLUME;
+				}else if (variableType.equals(VariableType.MEMBRANE) || variableType.equals(VariableType.MEMBRANE_REGION)){
+					variableDomain = VariableDomain.VARIABLEDOMAIN_MEMBRANE;
+				}else if (variableType.equals(VariableType.POINT_VARIABLE)){
+					variableDomain = VariableDomain.VARIABLEDOMAIN_POINT;
+				}else if (variableType.equals(VariableType.CONTOUR) || variableType.equals(VariableType.CONTOUR_REGION)){
+					variableDomain = VariableDomain.VARIABLEDOMAIN_CONTOUR;
+				}else if (variableType.equals(VariableType.NONSPATIAL)){
+					variableDomain = VariableDomain.VARIABLEDOMAIN_UNKNOWN;
+				}else if (variableType.equals(VariableType.POSTPROCESSING)){
+					variableDomain = VariableDomain.VARIABLEDOMAIN_POSTPROCESSING;
+				}else{
+					System.err.print("skipping var "+di+", unsupported data type");
+				}
+				String functionExpression = null;
+				boolean bMeshVariable = false;
+if (name.toUpperCase().contains("SIZE")){
+	System.err.println("Skipping Moving Boundary variable '"+name+"' because it is a size ... change later");
+	continue;
+}
+				vtuVarInfos.add(new VtuVarInfo(name, displayName, domainName, variableDomain, functionExpression, bMeshVariable));
+			}
+			return vtuVarInfos.toArray(new VtuVarInfo[0]);
+		}catch (Exception e){
+			log.exception(e);
+			throw new DataAccessException("failed to retrieve VTK variable list: "+e.getMessage(),e);
+		}
+	}
+
 
 }

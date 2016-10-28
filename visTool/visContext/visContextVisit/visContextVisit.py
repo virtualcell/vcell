@@ -1,6 +1,14 @@
 import visContext
 from visContext.visContextAbstract import visContextAbstract
-from visContext.visContextAbstract import overrides
+
+def overrides(interface_class):
+    def overrider(method):
+        assert(method.__name__ in dir(interface_class))
+        return method
+    return overrider
+
+
+#from visContext.visContextAbstract import overrides
 from visContextVisitImpl import VisContextVisitImpl
 from visClipOperatorContext import VisClipOperatorContext
 

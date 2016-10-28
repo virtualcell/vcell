@@ -1,7 +1,7 @@
 package cbit.vcell.simdata;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -53,7 +53,7 @@ public class VtkMeshGenerator implements PortableCommand {
 		}
 	}
 
-	private void generateVtkMeshes(User owner, KeyValue simKey, int jobIndex) throws FileNotFoundException, DataAccessException {
+	private void generateVtkMeshes(User owner, KeyValue simKey, int jobIndex) throws DataAccessException, IOException {
 
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 		VCSimulationDataIdentifier vcdataID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
@@ -68,8 +68,21 @@ public class VtkMeshGenerator implements PortableCommand {
 
 		DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);
 
-		@SuppressWarnings("unused")
-		VtuFileContainer vtuFileContainer = dataServerImpl.getEmptyVtuMeshFiles(owner, vcdataID);
+//		@SuppressWarnings("unused")
+		if (!dataSetControllerImpl.getIsMovingBoundary(vcdataID)){
+			//
+			// precompute single static vtk mesh
+			//
+			VtuFileContainer vtuFileContainer = dataServerImpl.getEmptyVtuMeshFiles(owner, vcdataID, 0);
+		}else{
+			//
+			// precompute static vtk mesh for each saved time point
+			//
+			double[] times = dataServerImpl.getDataSetTimes(owner, vcdataID);
+			for (int i=0;i<times.length;i++){
+				VtuFileContainer vtuFileContainer = dataServerImpl.getEmptyVtuMeshFiles(owner, vcdataID, i);
+			}
+		}
 	}
 
 

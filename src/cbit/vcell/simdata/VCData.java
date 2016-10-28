@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
 import cbit.vcell.math.MathException;
@@ -211,5 +212,9 @@ double[] calcSpaceStats(double[] rawVals,int varIndex,DataSetControllerImpl.Spat
 public abstract ChomboFiles getChomboFiles() throws IOException, XmlParseException, ExpressionException;
 
 public abstract VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccessException;
+
+public abstract MovingBoundarySimFiles getMovingBoundarySimFiles() throws FileNotFoundException, DataAccessException;
+
+public abstract boolean isMovingBoundary() throws DataAccessException, IOException;
 
 }

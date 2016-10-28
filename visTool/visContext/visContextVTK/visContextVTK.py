@@ -1,4 +1,5 @@
-import sys, os
+import sys
+
 sys.path.append("D:/Developer/VTK6.0.0/build/Wrapping/Python")
 sys.path.append("D:/Developer/VTK6.0.0/build/Wrapping/Python")
 
@@ -11,29 +12,46 @@ import visgui.visQt as visQt
 QtCore = visQt.QtCore
 QtGui = visQt.QtGui
 
-
-import visContext
 from visContext.visContextAbstract import visContextAbstract
 from visContext.visContextAbstract import overrides
 
 
 class visContextVTK(visContextAbstract):
 
+    def setMaxColormapValue(self, maxValue):
+        pass
+
+    def getPick(self, screenX, screenY, dataReadyCallback, onErrorCallback):
+        pass
+
+    def getMDVariableNames(self):
+        pass
+
+    def doLineout(self, startPoint, endPoint, dataReadyCallback=None, onErrorCallback=None):
+        pass
+
+    def setMinColormapValue(self, minValue):
+        pass
+
     def __init__(self):
         visContextAbstract.__init__(self)
         #self._var = ""
+        self._parent = None
         self._frame = None
         self._widget = None
         self._dataset = None
         self._plot = None
-        assert isinstance(self._widget,vtk.qt4.QVTKRenderWindowInteractor.QVTKRenderWindowInteractor) or self._widget == None
-        assert isinstance(self._dataset,Dataset) or self._dataset == None
-        assert isinstance(self._plot,Plot) or self._dataset == None
+        self._renderer = None
+        self.renWin = None
+        assert isinstance(self._widget,vtk.qt4.QVTKRenderWindowInteractor.QVTKRenderWindowInteractor) or self._widget is None
+        assert isinstance(self._dataset,Dataset) or self._dataset is None
+        assert isinstance(self._plot,Plot) or self._dataset is None
  
         #self._variable = None
 
         self._currentOperator = None  # None, "Slice", "Clip"
         self._currentPlot = None      # None, ("Pseudocolor", varName)
+        self._hbox = None
         self._operatorEnabled = False
         self._operatorAxis = 0 # 0=x, 1=y, 2=z
         self._operatorPercent = 50
@@ -41,7 +59,7 @@ class visContextVTK(visContextAbstract):
 
     @overrides(visContextAbstract)
     def getRenderWindow(self,parent):
-        if self._frame == None:
+        if self._frame is None:
             self._parent = parent
             self._frame = QtGui.QFrame(parent)
             self._frame.setObjectName("vtkRenderWindowFrame1")
@@ -54,7 +72,7 @@ class visContextVTK(visContextAbstract):
             self._widget.Start()
 
             renderer = vtk.vtkRenderer()
-            renderer.SetBackground(0,0,0); #  Background color white
+            renderer.SetBackground(0,0,0) #  Background color white
             renWin = self._widget.GetRenderWindow()
             renWin.AddRenderer(renderer)
             self._widget.repaint()
@@ -66,30 +84,47 @@ class visContextVTK(visContextAbstract):
         assert isinstance(self._frame, QtGui.QFrame)
         self._frame.installEventFilter(eventFilter)
 
+
+
     @overrides(visContextAbstract)
-    def openOne(self,filename,variableName,bSameDomain,onSuccessCallback,onErrorCallback):
+    def openOne(self, filename, vtuVariableName, bSameDomain, onSuccessCallback, onErrorCallback):
+        assert(isinstance(filename,basestring))
+        assert(isinstance(vtuVariableName,basestring))
+        assert(isinstance(bSameDomain,bool))
+        print "\n\nvisContextVisit: openOne("+filename+","+vtuVariableName+","+str(bSameDomain)+") ... PREPARING ASYNCH TASK"
+        try:
+            self._timer = QtCore.QTimer.singleShot(50, self.openOne_internal(filename,vtuVariableName,bSameDomain, onSuccessCallback, onErrorCallback))
+        except:
+            print("\n\nvisContextVisit: openOne() failed to create or dispatch task")
+           # print(exc.message)
+
+
+    def openOne_internal(self,filename,variableName,bSameDomain,onSuccessCallback,onErrorCallback):
         print("in visContextVTK.open(): begin")
         #self._var = None
         filename = str(filename)
         print("filename is "+filename)
         self._dataset = Dataset(filename)
+        if self._renderer is None:
+            self._renderer = vtk.vtkRenderer()
+
+        if self._plot is not None and self._plot._actor is not None:
+            self._renderer.RemoveActor(self._plot.getActor())
+
         self._plot = PseudocolorPlot(self._dataset,variableName)
         actor = self._plot.getActor()
-       # Add the actor to the scene
-
-        renderer = vtk.vtkRenderer()
-        renderer.AddActor(actor);
-        renderer.SetBackground(1,0,0); #  Background color white
+        self._renderer.AddActor(actor)
+        self._renderer.SetBackground(1,0,0) #  Background color white
 
         self.renWin=self._widget.GetRenderWindow()
-        self.renWin.AddRenderer(renderer)
+        self.renWin.AddRenderer(self._renderer)
 
         self._setVariable(variableName)
         onSuccessCallback(None)
 
     @overrides(visContextAbstract)
     def getVariableName(self):
-        if (self._plot != None):
+        if (self._plot is not None):
             return self._plot.getVar()
 
     @overrides(visContextAbstract)
@@ -103,8 +138,8 @@ class visContextVTK(visContextAbstract):
        # Add the actor to the scene
 
         renderer = vtk.vtkRenderer()
-        renderer.AddActor(actor);
-        renderer.SetBackground(1,0,0); #  Background color white
+        renderer.AddActor(actor)
+        renderer.SetBackground(1,0,0) #  Background color white
 
         self.renWin=self._widget.GetRenderWindow()
         self.renWin.AddRenderer(renderer)
@@ -130,7 +165,7 @@ class visContextVTK(visContextAbstract):
     @overrides(visContextAbstract)
     def setOperatorAxis(self, axis):
         assert (axis in (0,1,2))
-        self._operatorAxis = axis;
+        self._operatorAxis = axis
         self._updateDisplay()
        
     @overrides(visContextAbstract)
@@ -138,10 +173,14 @@ class visContextVTK(visContextAbstract):
         return self._operatorAxis
     
     @overrides(visContextAbstract)
-    def setOperatorPercent(self, percent):
+    def setOperatorPercent(self, percent, onSuccessCallback, onErrorCallback):
         assert ((percent >=0) and (percent <=100))
         self._operatorPercent = percent
-        self._updateDisplay()
+        try:
+            self._updateDisplay()
+            onSuccessCallback()
+        except:
+            onErrorCallback()
 
     @overrides(visContextAbstract)
     def getOperatorPercent(self):
@@ -162,9 +201,6 @@ class Dataset(object):
     def __init__(self, filename):
         self._filename = filename
         self._ugrid = None
-        self._currentTimeIndex = None
-        self._currentTimeIndex = 0
-        assert isinstance(self._currentTimeIndex,int) or self._currentTimeIndex == None
         assert isinstance(self._ugrid,vtk.vtkUnstructuredGrid) or self._ugrid == None
 
     def _getGrid(self):
@@ -183,11 +219,6 @@ class Dataset(object):
         cellData = self._getGrid().GetCellData()
         return [cellData.GetArrayName(i) for i in range(cellData.GetNumberOfArrays())]
 
-    def getNumberOfTimePoints(self):
-        return 1
-
-    def getNumberOfTimePoints(self):
-        return [0.0, ]
 
 class Plot(object):
     def __init__(self,dataset):
@@ -200,7 +231,8 @@ class Plot(object):
     def getDataset(self):
         return self._dataset
 
-    def _getLUT(self,low,high):
+    @staticmethod
+    def _getLUT(low, high):
         lut = vtk.vtkLookupTable()
         lut.SetNumberOfTableValues(256)
         lut.SetHueRange(0.0,0.6)
@@ -269,11 +301,11 @@ class PseudocolorPlot(Plot):
        # mapper1.SetColorModeToMapScalars()
         mapper1.Update()
 
-        self._actor = vtk.vtkActor();
-        self._actor.SetMapper(mapper1);
+        self._actor = vtk.vtkActor()
+        self._actor.SetMapper(mapper1)
         #actor1.GetProperty().SetRepresentationToWireframe();
         #actor1.GetProperty().EdgeVisibilityOn();
-        self._actor.GetProperty().SetEdgeColor(0,0,0);
+        self._actor.GetProperty().SetEdgeColor(0,0,0)
         #actor1.GetProperty().SetLineWidth(1.5);
 
         return self._actor

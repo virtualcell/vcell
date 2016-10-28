@@ -479,6 +479,11 @@ public enum SolverDescription {
 	public boolean isGibsonSolver(){
 		return this == StochGibson;
 	}
+	
+	public boolean isMovingBoundarySolver(){
+		return this == MovingBoundary;
+	}
+	
 
 	public boolean isSpatialStochasticSolver() {
 		return supportedFeatures.containsAll(SpatialStochasticFeatureSet.getSolverFeatures());

@@ -4,7 +4,9 @@
 # C:\Windows\system32>"C:\Program Files\LLNL\VisIt 2.9.0\visit.exe" -cli -pysideviewer -s C:\Developer\EclipseLuna\eclipse\workspace\VCell-5.4-trunk\visTool\visMainCLI_Debug.py
 
 # Jim's debug invocation (as of 6/3/2015) on NRCAMDEV5
-#    > "D:\Program Files\LLNL\VisIt 2.9.2\visit.exe" -cli -pysideviewer -s D:\Developer\eclipse\workspace_refactor\VCell_5.4_clean\visTool\visMainCLI_Debug.py
+#    > "D:\Program Files\LLNL\VisIt 2.9.2\visit.exe" -cli -pysideviewer -s D:\Developer\eclipse\workspace_refactor\VCell_6.1_clean\visTool\visMainCLI_Debug.py
+# or
+#    > "D:\Program Files\LLNL\VisIt 2.9.2\visit.exe" -cli -pysideviewer -s D:\Developer\eclipse\workspace_refactor\VCell_6.1_userdata\visTool\visMainCLI_Debug.py
 
 import sys, os
 sys.path.append(os.path.dirname(__file__))
@@ -34,8 +36,8 @@ print('python version is '+sys.version);
 # click Refresh, select process in process list and click Attach. 
 print('before connect')
 ptvsd.enable_attach(secret = None)
-#ptvsd.wait_for_attach(None)
-#ptvsd.break_into_debugger()
+ptvsd.wait_for_attach(None)
+ptvsd.break_into_debugger()
 print('after connect')
  
 

@@ -199,7 +199,7 @@ public class DisplayTimeSeries extends Task {
 			}
 
 			@Override
-			public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+			public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int timeIndex) throws RemoteException, DataAccessException {
 				throw new RuntimeException("not yet implemented");
 			}
 

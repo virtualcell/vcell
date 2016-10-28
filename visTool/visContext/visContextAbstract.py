@@ -81,11 +81,11 @@ class visContextAbstract(object):
        raise NotImplementedError()
         
     def setMinColormapValue(self,minValue):
-        assert isinstance(minValue,int) or isinstance(minValue,float) or instance(minValue, double)
+        assert isinstance(minValue,int) or isinstance(minValue,float)
         raise NotImplementedError()
         
     def setMaxColormapValue(self,maxValue):
-        assert isinstance(maxValue,int) or isinstance(maxValue,float) or instance(maxValue, double)
+        assert isinstance(maxValue,int) or isinstance(maxValue,float)
         raise NotImplementedError()
 
     def doLineout(self, startPoint, endPoint, dataReadyCallback = None, onErrorCallback = None): # points must be tuples

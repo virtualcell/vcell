@@ -9,8 +9,6 @@
  */
 
 package cbit.vcell.simdata;
-import java.rmi.RemoteException;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -209,8 +207,8 @@ public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[
 
 
 @Override
-public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID) throws DataAccessException {
-	return dataServerImpl.getEmptyVtuMeshFiles(user, vcdataID);
+public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
+	return dataServerImpl.getEmptyVtuMeshFiles(user, vcdataID, timeIndex);
 }
 
 @Override

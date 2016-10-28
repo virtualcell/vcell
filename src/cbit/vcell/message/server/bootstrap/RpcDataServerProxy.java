@@ -246,8 +246,8 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
 
 
 @Override
-public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID)	throws DataAccessException {
-	return (VtuFileContainer)rpc("getEmptyVtuMeshFiles", new Object[]{userLoginInfo.getUser(), vcdataID});
+public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int timeIndex)	throws DataAccessException {
+	return (VtuFileContainer)rpc("getEmptyVtuMeshFiles", new Object[]{userLoginInfo.getUser(), vcdataID, new Integer(timeIndex)});
 }
 
 

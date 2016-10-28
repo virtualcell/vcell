@@ -39,6 +39,14 @@ struct ChomboSurfaceIndex {
    1: required int index;
 }
 
+struct MovingBoundarySurfaceIndex {
+   1: required int index;
+}
+
+struct MovingBoundaryVolumeIndex {
+   1: required int index;
+}
+
 struct FiniteVolumeIndex {
    1: required int globalIndex;
    2: required int regionIndex;
@@ -48,6 +56,7 @@ struct VisPolygon {
    1: required IntList pointIndices;
    2: optional ChomboVolumeIndex chomboVolumeIndex;
    3: optional FiniteVolumeIndex finiteVolumeIndex;
+   4: optional MovingBoundaryVolumeIndex movingBoundaryVolumeIndex;
 }
 typedef list<VisPolygon> VisPolygons
 
@@ -67,6 +76,7 @@ struct VisVoxel {
    1: required IntList pointIndices;
    2: optional ChomboVolumeIndex chomboVolumeIndex;
    3: optional FiniteVolumeIndex finiteVolumeIndex;
+   4: optional MovingBoundaryVolumeIndex movingBoundaryVolumeIndex;
 }
 typedef list<VisVoxel> VisVoxels
 
@@ -89,6 +99,7 @@ struct VisLine {
    2: required int p2;
    3: optional ChomboSurfaceIndex chomboSurfaceIndex;
    4: optional FiniteVolumeIndex finiteVolumeIndex;
+   5: optional MovingBoundarySurfaceIndex movingBoundarySurfaceIndex;
 }
 typedef list<VisLine> VisLines
 
@@ -101,6 +112,13 @@ struct ChomboIndexData {
    1: required string domainName;
    2: optional list<ChomboSurfaceIndex> chomboSurfaceIndices;
    3: optional list<ChomboVolumeIndex> chomboVolumeIndices;
+}
+
+struct MovingBoundaryIndexData {
+   1: required string domainName;
+   2: required int timeIndex;
+   3: optional list<MovingBoundarySurfaceIndex> movingBoundarySurfaceIndices;
+   4: optional list<MovingBoundaryVolumeIndex> movingBoundaryVolumeIndices;
 }
 
 struct VisMesh {

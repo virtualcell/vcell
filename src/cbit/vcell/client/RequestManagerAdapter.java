@@ -29,6 +29,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.simdata.VtkManager;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.xml.merge.XmlTreeDiff;
@@ -131,4 +132,6 @@ public class RequestManagerAdapter implements RequestManager {
 	public void accessPermissions(Component requester,VCDocument vcDocument) {}
 	@Override
 	public boolean isDifferentFromBlank(VCDocument.VCDocumentType documentType,VCDocument vcDocument) {return false;}
+	@Override
+	public VtkManager getVtkManager(OutputContext outputContext, VCDataIdentifier vcDataID) throws DataAccessException { return null;}
 };

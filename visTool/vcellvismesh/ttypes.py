@@ -416,6 +416,140 @@ class ChomboSurfaceIndex:
   def __ne__(self, other):
     return not (self == other)
 
+class MovingBoundarySurfaceIndex:
+  """
+  Attributes:
+   - index
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'index', None, None, ), # 1
+  )
+
+  def __init__(self, index=None,):
+    self.index = index
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.index = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('MovingBoundarySurfaceIndex')
+    if self.index is not None:
+      oprot.writeFieldBegin('index', TType.I32, 1)
+      oprot.writeI32(self.index)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.index is None:
+      raise TProtocol.TProtocolException(message='Required field index is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.index)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class MovingBoundaryVolumeIndex:
+  """
+  Attributes:
+   - index
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'index', None, None, ), # 1
+  )
+
+  def __init__(self, index=None,):
+    self.index = index
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.index = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('MovingBoundaryVolumeIndex')
+    if self.index is not None:
+      oprot.writeFieldBegin('index', TType.I32, 1)
+      oprot.writeI32(self.index)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.index is None:
+      raise TProtocol.TProtocolException(message='Required field index is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.index)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class FiniteVolumeIndex:
   """
   Attributes:
@@ -504,6 +638,7 @@ class VisPolygon:
    - pointIndices
    - chomboVolumeIndex
    - finiteVolumeIndex
+   - movingBoundaryVolumeIndex
   """
 
   thrift_spec = (
@@ -511,12 +646,14 @@ class VisPolygon:
     (1, TType.LIST, 'pointIndices', (TType.I32,None), None, ), # 1
     (2, TType.STRUCT, 'chomboVolumeIndex', (ChomboVolumeIndex, ChomboVolumeIndex.thrift_spec), None, ), # 2
     (3, TType.STRUCT, 'finiteVolumeIndex', (FiniteVolumeIndex, FiniteVolumeIndex.thrift_spec), None, ), # 3
+    (4, TType.STRUCT, 'movingBoundaryVolumeIndex', (MovingBoundaryVolumeIndex, MovingBoundaryVolumeIndex.thrift_spec), None, ), # 4
   )
 
-  def __init__(self, pointIndices=None, chomboVolumeIndex=None, finiteVolumeIndex=None,):
+  def __init__(self, pointIndices=None, chomboVolumeIndex=None, finiteVolumeIndex=None, movingBoundaryVolumeIndex=None,):
     self.pointIndices = pointIndices
     self.chomboVolumeIndex = chomboVolumeIndex
     self.finiteVolumeIndex = finiteVolumeIndex
+    self.movingBoundaryVolumeIndex = movingBoundaryVolumeIndex
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -549,6 +686,12 @@ class VisPolygon:
           self.finiteVolumeIndex.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.movingBoundaryVolumeIndex = MovingBoundaryVolumeIndex()
+          self.movingBoundaryVolumeIndex.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -574,6 +717,10 @@ class VisPolygon:
       oprot.writeFieldBegin('finiteVolumeIndex', TType.STRUCT, 3)
       self.finiteVolumeIndex.write(oprot)
       oprot.writeFieldEnd()
+    if self.movingBoundaryVolumeIndex is not None:
+      oprot.writeFieldBegin('movingBoundaryVolumeIndex', TType.STRUCT, 4)
+      self.movingBoundaryVolumeIndex.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -588,6 +735,7 @@ class VisPolygon:
     value = (value * 31) ^ hash(self.pointIndices)
     value = (value * 31) ^ hash(self.chomboVolumeIndex)
     value = (value * 31) ^ hash(self.finiteVolumeIndex)
+    value = (value * 31) ^ hash(self.movingBoundaryVolumeIndex)
     return value
 
   def __repr__(self):
@@ -786,6 +934,7 @@ class VisVoxel:
    - pointIndices
    - chomboVolumeIndex
    - finiteVolumeIndex
+   - movingBoundaryVolumeIndex
   """
 
   thrift_spec = (
@@ -793,12 +942,14 @@ class VisVoxel:
     (1, TType.LIST, 'pointIndices', (TType.I32,None), None, ), # 1
     (2, TType.STRUCT, 'chomboVolumeIndex', (ChomboVolumeIndex, ChomboVolumeIndex.thrift_spec), None, ), # 2
     (3, TType.STRUCT, 'finiteVolumeIndex', (FiniteVolumeIndex, FiniteVolumeIndex.thrift_spec), None, ), # 3
+    (4, TType.STRUCT, 'movingBoundaryVolumeIndex', (MovingBoundaryVolumeIndex, MovingBoundaryVolumeIndex.thrift_spec), None, ), # 4
   )
 
-  def __init__(self, pointIndices=None, chomboVolumeIndex=None, finiteVolumeIndex=None,):
+  def __init__(self, pointIndices=None, chomboVolumeIndex=None, finiteVolumeIndex=None, movingBoundaryVolumeIndex=None,):
     self.pointIndices = pointIndices
     self.chomboVolumeIndex = chomboVolumeIndex
     self.finiteVolumeIndex = finiteVolumeIndex
+    self.movingBoundaryVolumeIndex = movingBoundaryVolumeIndex
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -831,6 +982,12 @@ class VisVoxel:
           self.finiteVolumeIndex.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.movingBoundaryVolumeIndex = MovingBoundaryVolumeIndex()
+          self.movingBoundaryVolumeIndex.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -856,6 +1013,10 @@ class VisVoxel:
       oprot.writeFieldBegin('finiteVolumeIndex', TType.STRUCT, 3)
       self.finiteVolumeIndex.write(oprot)
       oprot.writeFieldEnd()
+    if self.movingBoundaryVolumeIndex is not None:
+      oprot.writeFieldBegin('movingBoundaryVolumeIndex', TType.STRUCT, 4)
+      self.movingBoundaryVolumeIndex.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -870,6 +1031,7 @@ class VisVoxel:
     value = (value * 31) ^ hash(self.pointIndices)
     value = (value * 31) ^ hash(self.chomboVolumeIndex)
     value = (value * 31) ^ hash(self.finiteVolumeIndex)
+    value = (value * 31) ^ hash(self.movingBoundaryVolumeIndex)
     return value
 
   def __repr__(self):
@@ -1097,6 +1259,7 @@ class VisLine:
    - p2
    - chomboSurfaceIndex
    - finiteVolumeIndex
+   - movingBoundarySurfaceIndex
   """
 
   thrift_spec = (
@@ -1105,13 +1268,15 @@ class VisLine:
     (2, TType.I32, 'p2', None, None, ), # 2
     (3, TType.STRUCT, 'chomboSurfaceIndex', (ChomboSurfaceIndex, ChomboSurfaceIndex.thrift_spec), None, ), # 3
     (4, TType.STRUCT, 'finiteVolumeIndex', (FiniteVolumeIndex, FiniteVolumeIndex.thrift_spec), None, ), # 4
+    (5, TType.STRUCT, 'movingBoundarySurfaceIndex', (MovingBoundarySurfaceIndex, MovingBoundarySurfaceIndex.thrift_spec), None, ), # 5
   )
 
-  def __init__(self, p1=None, p2=None, chomboSurfaceIndex=None, finiteVolumeIndex=None,):
+  def __init__(self, p1=None, p2=None, chomboSurfaceIndex=None, finiteVolumeIndex=None, movingBoundarySurfaceIndex=None,):
     self.p1 = p1
     self.p2 = p2
     self.chomboSurfaceIndex = chomboSurfaceIndex
     self.finiteVolumeIndex = finiteVolumeIndex
+    self.movingBoundarySurfaceIndex = movingBoundarySurfaceIndex
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1144,6 +1309,12 @@ class VisLine:
           self.finiteVolumeIndex.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRUCT:
+          self.movingBoundarySurfaceIndex = MovingBoundarySurfaceIndex()
+          self.movingBoundarySurfaceIndex.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1170,6 +1341,10 @@ class VisLine:
       oprot.writeFieldBegin('finiteVolumeIndex', TType.STRUCT, 4)
       self.finiteVolumeIndex.write(oprot)
       oprot.writeFieldEnd()
+    if self.movingBoundarySurfaceIndex is not None:
+      oprot.writeFieldBegin('movingBoundarySurfaceIndex', TType.STRUCT, 5)
+      self.movingBoundarySurfaceIndex.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -1187,6 +1362,7 @@ class VisLine:
     value = (value * 31) ^ hash(self.p2)
     value = (value * 31) ^ hash(self.chomboSurfaceIndex)
     value = (value * 31) ^ hash(self.finiteVolumeIndex)
+    value = (value * 31) ^ hash(self.movingBoundarySurfaceIndex)
     return value
 
   def __repr__(self):
@@ -1402,6 +1578,132 @@ class ChomboIndexData:
   def __ne__(self, other):
     return not (self == other)
 
+class MovingBoundaryIndexData:
+  """
+  Attributes:
+   - domainName
+   - timeIndex
+   - movingBoundarySurfaceIndices
+   - movingBoundaryVolumeIndices
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'domainName', None, None, ), # 1
+    (2, TType.I32, 'timeIndex', None, None, ), # 2
+    (3, TType.LIST, 'movingBoundarySurfaceIndices', (TType.STRUCT,(MovingBoundarySurfaceIndex, MovingBoundarySurfaceIndex.thrift_spec)), None, ), # 3
+    (4, TType.LIST, 'movingBoundaryVolumeIndices', (TType.STRUCT,(MovingBoundaryVolumeIndex, MovingBoundaryVolumeIndex.thrift_spec)), None, ), # 4
+  )
+
+  def __init__(self, domainName=None, timeIndex=None, movingBoundarySurfaceIndices=None, movingBoundaryVolumeIndices=None,):
+    self.domainName = domainName
+    self.timeIndex = timeIndex
+    self.movingBoundarySurfaceIndices = movingBoundarySurfaceIndices
+    self.movingBoundaryVolumeIndices = movingBoundaryVolumeIndices
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.domainName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.timeIndex = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.LIST:
+          self.movingBoundarySurfaceIndices = []
+          (_etype66, _size63) = iprot.readListBegin()
+          for _i67 in xrange(_size63):
+            _elem68 = MovingBoundarySurfaceIndex()
+            _elem68.read(iprot)
+            self.movingBoundarySurfaceIndices.append(_elem68)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.LIST:
+          self.movingBoundaryVolumeIndices = []
+          (_etype72, _size69) = iprot.readListBegin()
+          for _i73 in xrange(_size69):
+            _elem74 = MovingBoundaryVolumeIndex()
+            _elem74.read(iprot)
+            self.movingBoundaryVolumeIndices.append(_elem74)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('MovingBoundaryIndexData')
+    if self.domainName is not None:
+      oprot.writeFieldBegin('domainName', TType.STRING, 1)
+      oprot.writeString(self.domainName)
+      oprot.writeFieldEnd()
+    if self.timeIndex is not None:
+      oprot.writeFieldBegin('timeIndex', TType.I32, 2)
+      oprot.writeI32(self.timeIndex)
+      oprot.writeFieldEnd()
+    if self.movingBoundarySurfaceIndices is not None:
+      oprot.writeFieldBegin('movingBoundarySurfaceIndices', TType.LIST, 3)
+      oprot.writeListBegin(TType.STRUCT, len(self.movingBoundarySurfaceIndices))
+      for iter75 in self.movingBoundarySurfaceIndices:
+        iter75.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.movingBoundaryVolumeIndices is not None:
+      oprot.writeFieldBegin('movingBoundaryVolumeIndices', TType.LIST, 4)
+      oprot.writeListBegin(TType.STRUCT, len(self.movingBoundaryVolumeIndices))
+      for iter76 in self.movingBoundaryVolumeIndices:
+        iter76.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.domainName is None:
+      raise TProtocol.TProtocolException(message='Required field domainName is unset!')
+    if self.timeIndex is None:
+      raise TProtocol.TProtocolException(message='Required field timeIndex is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.domainName)
+    value = (value * 31) ^ hash(self.timeIndex)
+    value = (value * 31) ^ hash(self.movingBoundarySurfaceIndices)
+    value = (value * 31) ^ hash(self.movingBoundaryVolumeIndices)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class VisMesh:
   """
   Attributes:
@@ -1475,88 +1777,88 @@ class VisMesh:
       elif fid == 4:
         if ftype == TType.LIST:
           self.points = []
-          (_etype66, _size63) = iprot.readListBegin()
-          for _i67 in xrange(_size63):
-            _elem68 = VisPoint()
-            _elem68.read(iprot)
-            self.points.append(_elem68)
+          (_etype80, _size77) = iprot.readListBegin()
+          for _i81 in xrange(_size77):
+            _elem82 = VisPoint()
+            _elem82.read(iprot)
+            self.points.append(_elem82)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
           self.polygons = []
-          (_etype72, _size69) = iprot.readListBegin()
-          for _i73 in xrange(_size69):
-            _elem74 = VisPolygon()
-            _elem74.read(iprot)
-            self.polygons.append(_elem74)
+          (_etype86, _size83) = iprot.readListBegin()
+          for _i87 in xrange(_size83):
+            _elem88 = VisPolygon()
+            _elem88.read(iprot)
+            self.polygons.append(_elem88)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 6:
         if ftype == TType.LIST:
           self.irregularPolyhedra = []
-          (_etype78, _size75) = iprot.readListBegin()
-          for _i79 in xrange(_size75):
-            _elem80 = VisIrregularPolyhedron()
-            _elem80.read(iprot)
-            self.irregularPolyhedra.append(_elem80)
+          (_etype92, _size89) = iprot.readListBegin()
+          for _i93 in xrange(_size89):
+            _elem94 = VisIrregularPolyhedron()
+            _elem94.read(iprot)
+            self.irregularPolyhedra.append(_elem94)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 7:
         if ftype == TType.LIST:
           self.tetrahedra = []
-          (_etype84, _size81) = iprot.readListBegin()
-          for _i85 in xrange(_size81):
-            _elem86 = VisTetrahedron()
-            _elem86.read(iprot)
-            self.tetrahedra.append(_elem86)
+          (_etype98, _size95) = iprot.readListBegin()
+          for _i99 in xrange(_size95):
+            _elem100 = VisTetrahedron()
+            _elem100.read(iprot)
+            self.tetrahedra.append(_elem100)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 8:
         if ftype == TType.LIST:
           self.visVoxels = []
-          (_etype90, _size87) = iprot.readListBegin()
-          for _i91 in xrange(_size87):
-            _elem92 = VisVoxel()
-            _elem92.read(iprot)
-            self.visVoxels.append(_elem92)
+          (_etype104, _size101) = iprot.readListBegin()
+          for _i105 in xrange(_size101):
+            _elem106 = VisVoxel()
+            _elem106.read(iprot)
+            self.visVoxels.append(_elem106)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 9:
         if ftype == TType.LIST:
           self.surfaceTriangles = []
-          (_etype96, _size93) = iprot.readListBegin()
-          for _i97 in xrange(_size93):
-            _elem98 = VisSurfaceTriangle()
-            _elem98.read(iprot)
-            self.surfaceTriangles.append(_elem98)
+          (_etype110, _size107) = iprot.readListBegin()
+          for _i111 in xrange(_size107):
+            _elem112 = VisSurfaceTriangle()
+            _elem112.read(iprot)
+            self.surfaceTriangles.append(_elem112)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 10:
         if ftype == TType.LIST:
           self.visLines = []
-          (_etype102, _size99) = iprot.readListBegin()
-          for _i103 in xrange(_size99):
-            _elem104 = VisLine()
-            _elem104.read(iprot)
-            self.visLines.append(_elem104)
+          (_etype116, _size113) = iprot.readListBegin()
+          for _i117 in xrange(_size113):
+            _elem118 = VisLine()
+            _elem118.read(iprot)
+            self.visLines.append(_elem118)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 11:
         if ftype == TType.LIST:
           self.surfacePoints = []
-          (_etype108, _size105) = iprot.readListBegin()
-          for _i109 in xrange(_size105):
-            _elem110 = VisPoint()
-            _elem110.read(iprot)
-            self.surfacePoints.append(_elem110)
+          (_etype122, _size119) = iprot.readListBegin()
+          for _i123 in xrange(_size119):
+            _elem124 = VisPoint()
+            _elem124.read(iprot)
+            self.surfacePoints.append(_elem124)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1585,57 +1887,57 @@ class VisMesh:
     if self.points is not None:
       oprot.writeFieldBegin('points', TType.LIST, 4)
       oprot.writeListBegin(TType.STRUCT, len(self.points))
-      for iter111 in self.points:
-        iter111.write(oprot)
+      for iter125 in self.points:
+        iter125.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.polygons is not None:
       oprot.writeFieldBegin('polygons', TType.LIST, 5)
       oprot.writeListBegin(TType.STRUCT, len(self.polygons))
-      for iter112 in self.polygons:
-        iter112.write(oprot)
+      for iter126 in self.polygons:
+        iter126.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.irregularPolyhedra is not None:
       oprot.writeFieldBegin('irregularPolyhedra', TType.LIST, 6)
       oprot.writeListBegin(TType.STRUCT, len(self.irregularPolyhedra))
-      for iter113 in self.irregularPolyhedra:
-        iter113.write(oprot)
+      for iter127 in self.irregularPolyhedra:
+        iter127.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.tetrahedra is not None:
       oprot.writeFieldBegin('tetrahedra', TType.LIST, 7)
       oprot.writeListBegin(TType.STRUCT, len(self.tetrahedra))
-      for iter114 in self.tetrahedra:
-        iter114.write(oprot)
+      for iter128 in self.tetrahedra:
+        iter128.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.visVoxels is not None:
       oprot.writeFieldBegin('visVoxels', TType.LIST, 8)
       oprot.writeListBegin(TType.STRUCT, len(self.visVoxels))
-      for iter115 in self.visVoxels:
-        iter115.write(oprot)
+      for iter129 in self.visVoxels:
+        iter129.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.surfaceTriangles is not None:
       oprot.writeFieldBegin('surfaceTriangles', TType.LIST, 9)
       oprot.writeListBegin(TType.STRUCT, len(self.surfaceTriangles))
-      for iter116 in self.surfaceTriangles:
-        iter116.write(oprot)
+      for iter130 in self.surfaceTriangles:
+        iter130.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.visLines is not None:
       oprot.writeFieldBegin('visLines', TType.LIST, 10)
       oprot.writeListBegin(TType.STRUCT, len(self.visLines))
-      for iter117 in self.visLines:
-        iter117.write(oprot)
+      for iter131 in self.visLines:
+        iter131.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.surfacePoints is not None:
       oprot.writeFieldBegin('surfacePoints', TType.LIST, 11)
       oprot.writeListBegin(TType.STRUCT, len(self.surfacePoints))
-      for iter118 in self.surfacePoints:
-        iter118.write(oprot)
+      for iter132 in self.surfacePoints:
+        iter132.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

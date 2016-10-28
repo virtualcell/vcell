@@ -30,6 +30,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 	private MeshInfo meshInfo;
 	private int lastTimeIndex_;
 
+	private String[] fakeVarNames;
 	private TimeInfo timeInfo;
 	private PlaneNodes pnodes;
 	private final PointIndexTreeAndList pointIndex;
@@ -495,5 +496,16 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 		protected MovingBoundaryResultException(String message, Throwable cause) {
 			super(mbrec(message), cause);
 		}
+	}
+
+
+	public static String getFakeInsideDomainName() {
+		return "fakeInsideDomain";
+	}
+	public static String getFakeOutsideDomainName() {
+		return "fakeOutsideDomain";
+	}
+	public static String getFakeMembraneDomainName() {
+		return "fakeOutsideDomain";
 	}
 }

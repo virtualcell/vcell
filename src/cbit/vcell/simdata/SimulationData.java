@@ -45,6 +45,7 @@ import org.vcell.util.document.SimResampleInfoProvider;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
 import cbit.image.VCImage;
@@ -241,6 +242,9 @@ public class SimulationData extends VCData {
 		}
 		public File getMeshMetricsFile(){
 			return getFile(SimulationData.createCanonicalMeshMetricsFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
+		}
+		public File getMovingBoundaryOutputFile(){
+			return getFile(SimulationData.createCanonicalMovingBoundaryOutputFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
 		}
 		public File getSubdomainFile(){
 			return getFile(SimulationData.createCanonicalSubdomainFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
@@ -1764,6 +1768,13 @@ public boolean isChombo() throws FileNotFoundException{
 	return !amplistorHelper.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 }
 
+@Override
+public boolean isMovingBoundary() throws FileNotFoundException{
+	return !amplistorHelper.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.MOVINGBOUNDARY_OUTPUT_EXTENSION);
+}
+
+
+
 /**
  * This method was created in VisualAge.
  */
@@ -1986,6 +1997,12 @@ public static String createCanonicalMeshMetricsFileName(KeyValue fieldDataKey,in
 	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
 	SimDataConstants.MESHMETRICSFILE_EXTENSION;
 }
+public static String createCanonicalMovingBoundaryOutputFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
+	return
+	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
+	SimDataConstants.MOVINGBOUNDARY_OUTPUT_EXTENSION;
+}
+
 public static String createCanonicalFunctionsFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
 	return
 		createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
@@ -2191,6 +2208,15 @@ public VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccess
 
 	return vcellSimFiles;
 }
+
+@Override
+public MovingBoundarySimFiles getMovingBoundarySimFiles() throws FileNotFoundException, DataAccessException {
+	File movingBoundaryOutputFile = amplistorHelper.getMovingBoundaryOutputFile(); //retrieveExistingFile(SimFileTypeStandard.MovingBoundaryOutputFile);
+	VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)vcDataId;
+	MovingBoundarySimFiles movingBoundarySimFiles = new MovingBoundarySimFiles(vcSimDataID.getSimulationKey(),vcSimDataID.getJobIndex(),movingBoundaryOutputFile);
+	return movingBoundarySimFiles;
+}
+
 
 public VCDataIdentifier getVcDataId() {
 	return vcDataId;

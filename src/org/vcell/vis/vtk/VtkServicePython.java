@@ -55,6 +55,16 @@ public class VtkServicePython extends VtkService {
 		writeVtkGridAndIndexData("finitevolume", visMesh, domainName, vtkFile, indexFile);
 	}
 
+	@Override
+	public void writeMovingBoundaryVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException {
+		writeVtkGridAndIndexData("movingboundary", visMesh, domainName, vtkFile, indexFile);
+	}
+
+	@Override
+	public void writeComsolVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException {
+		writeVtkGridAndIndexData("comsolvolume", visMesh, domainName, vtkFile, indexFile);
+	}
+
 	private void writeVtkGridAndIndexData(String visMeshType, VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException {
 		if (lg.isDebugEnabled()) {
 			lg.debug("writeVtkGridAndIndexData (python) for domain "+domainName);
