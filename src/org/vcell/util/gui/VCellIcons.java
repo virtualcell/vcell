@@ -13,6 +13,7 @@ package org.vcell.util.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -60,9 +61,11 @@ public abstract class VCellIcons {
 	public final static Icon rbmBondExistsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_exists.png"));
 	public final static Icon rbmBondPossibleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_possible.png"));
 
-	public final static Icon spatialMembraneKinematicsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_membrane_kinematics.png"));
-	public final static Icon spatialPointKinematicsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_point_kinematics.png"));
-	public final static Icon spatialPointLocationIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_point_location.png"));
+	public final static Icon spatialPointIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_point.png"));
+	public final static Icon spatialMembraneIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_membrane.png"));
+	public final static Icon spatialVolumeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_volume.png"));
+	public final static Icon spatialKinematicsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_kinematic.png"));
+	public final static Icon spatialLocationIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_location2.png"));
 
 	public final static Icon kineticsPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/kinetics_properties.png"));
 	public final static Icon editorPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/editor_properties.png"));
@@ -223,27 +226,6 @@ public abstract class VCellIcons {
 		return infoIcon;
 	}
 	
-	public static void main(java.lang.String[] args) {
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			javax.swing.JFrame frame = new javax.swing.JFrame();
-			JPanel panel =  new JPanel(new BorderLayout());
-			panel.add(new JLabel("label", refLevelDeleteIcon, SwingConstants.LEFT), BorderLayout.CENTER);
-			frame.add(panel);
-			frame.addWindowListener(new java.awt.event.WindowAdapter() {
-				public void windowClosing(java.awt.event.WindowEvent e) {
-					System.exit(0);
-				};
-			});
-			frame.setSize(200,200);
-			BeanUtils.centerOnScreen(frame);
-			frame.setVisible(true);
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred in main() of javax.swing.JPanel");
-			exception.printStackTrace(System.out);
-		}
-	}
-
 	private static Icon getScaledIcon(Icon tempIcon) {
 		return getScaledIcon(null, tempIcon);
 	}
@@ -266,6 +248,44 @@ public abstract class VCellIcons {
 		}
 		image = image.getScaledInstance(VCellIconWidth, VCellIconHeight, Image.SCALE_SMOOTH);		
 		return new ImageIcon(image);
+	}
+	
+	public static Icon addIcon(Icon icon1, Icon icon2) {
+		int separatorWidth = 3;
+		Image image1 = ((ImageIcon) icon1).getImage(); 
+		Image image2  = ((ImageIcon) icon2).getImage();
+		int w = icon1.getIconWidth() + icon2.getIconWidth() + separatorWidth;
+		int h = Math.max(icon1.getIconHeight(), icon2.getIconHeight());
+		Image image = new BufferedImage(w, h,  BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2 = (Graphics2D) image.getGraphics();
+		g2.drawImage(image1, 0, 0, null);
+		g2.drawImage(image2, icon1.getIconWidth() + separatorWidth, 0, null);
+		g2.dispose();
+		ImageIcon icon = new ImageIcon(image);
+		return icon;
+	}
+
+	// ---------------------------------------------------------------------------------------------------
+
+	public static void main(java.lang.String[] args) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			javax.swing.JFrame frame = new javax.swing.JFrame();
+			JPanel panel =  new JPanel(new BorderLayout());
+			panel.add(new JLabel("label", refLevelDeleteIcon, SwingConstants.LEFT), BorderLayout.CENTER);
+			frame.add(panel);
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					System.exit(0);
+				};
+			});
+			frame.setSize(200,200);
+			BeanUtils.centerOnScreen(frame);
+			frame.setVisible(true);
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+			exception.printStackTrace(System.out);
+		}
 	}
 
 }

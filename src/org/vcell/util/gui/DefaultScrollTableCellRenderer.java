@@ -13,6 +13,14 @@ package org.vcell.util.gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -34,7 +42,18 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 import cbit.gui.ModelProcessEquation;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationsTableModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
+import cbit.vcell.client.desktop.biomodel.SpatialObjectDisplayPanel;
+import cbit.vcell.client.desktop.biomodel.SpatialObjectTableModel;
+import cbit.vcell.client.desktop.biomodel.SpatialProcessTableModel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.spatial.PointObject;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SurfaceRegionObject;
+import cbit.vcell.mapping.spatial.VolumeRegionObject;
+import cbit.vcell.mapping.spatial.processes.PointKinematics;
+import cbit.vcell.mapping.spatial.processes.PointLocation;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
+import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 
 @SuppressWarnings("serial")
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
@@ -146,6 +165,19 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
     		} else {
     			setIcon(null);
     		}
+		} else if (column == 2 && tableModel instanceof SpatialProcessTableModel) {
+			Icon icon = null;
+			SpatialProcess spatialProcess = (SpatialProcess)(((SpatialProcessTableModel) tableModel).getValueAt(row));
+			if(spatialProcess instanceof PointLocation)  {
+				icon = VCellIcons.spatialPointIcon;
+			} else if(spatialProcess instanceof PointKinematics) {
+				icon = VCellIcons.spatialPointIcon;
+			} else if(spatialProcess instanceof SurfaceKinematics) {
+				icon = VCellIcons.spatialMembraneIcon;
+			} else {
+				icon = VCellIcons.spatialVolumeIcon;
+			}
+			setIcon(icon);
 		} else if (tableModel instanceof SortTableModel) {	// for most other tables we reserve the icon spot to display issues
 			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel)tableModel);
 		}
@@ -203,16 +235,47 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 				renderer.setBorder(new MatteBorder(1,0,1,0,Color.orange));
 			}
 		} else {
-			if(column == 0) {
+			if (column == 0) {
 				icon = VCellIcons.issueGoodIcon;
 				renderer.setToolTipText(null);	// no tooltip for column 0 when we have no issues on that line
 			}
-			if(column != 0 && defaultToolTipText != null && !defaultToolTipText.isEmpty()) {
+			if (column != 0 && defaultToolTipText != null && !defaultToolTipText.isEmpty()) {
 				renderer.setToolTipText(defaultToolTipText);
 			} else {
 				renderer.setToolTipText(null);
 			}
 			renderer.setBorder(DEFAULT_GAP);
+		}
+		
+		if(column == 0 && icon != null) {
+			// for some tables we combine (concatenate) the issue icon with an entity icon 
+			if (tableModel instanceof SpatialProcessTableModel) {
+				Icon icon2 = null;
+				SpatialProcess spatialProcess = (SpatialProcess)(((SpatialProcessTableModel) tableModel).getValueAt(row));
+				if (spatialProcess instanceof PointLocation)  {
+					icon2 = VCellIcons.spatialLocationIcon;
+				} else if(spatialProcess instanceof PointKinematics) {
+					icon2 = VCellIcons.spatialKinematicsIcon;
+				} else if(spatialProcess instanceof SurfaceKinematics) {
+					icon2 = VCellIcons.spatialKinematicsIcon;
+				} else {
+					icon2 = VCellIcons.spatialKinematicsIcon;
+				}
+				icon = VCellIcons.addIcon(icon, icon2);
+			} else if (tableModel instanceof SpatialObjectTableModel) {
+				Icon icon2 = null;
+				SpatialObject spatialObject =	(SpatialObject)(((SpatialObjectTableModel) tableModel).getValueAt(row));
+				if (spatialObject instanceof PointObject) {
+					icon2 = VCellIcons.spatialPointIcon;
+				} else if (spatialObject instanceof SurfaceRegionObject) {
+					icon2 = VCellIcons.spatialMembraneIcon;
+				} else if (spatialObject instanceof VolumeRegionObject) {
+					icon2 = VCellIcons.spatialVolumeIcon;
+				} else {
+					icon2 = VCellIcons.spatialVolumeIcon;
+				}
+				icon = VCellIcons.addIcon(icon, icon2);
+			}
 		}
 		renderer.setIcon(icon);
 	}

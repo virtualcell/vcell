@@ -82,9 +82,9 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 					public void actionPerformed(ActionEvent e) {  createNewPointKinematics(); }});
 				JMenuItem newSurfaceKinematicsMenuItem = new JMenuItem(new AbstractAction("new Surface Kinematics") {
 					public void actionPerformed(ActionEvent e) {  createNewSurfaceKinematics(); }});
-				newPointLocationMenuItem.setIcon(VCellIcons.spatialPointLocationIcon);
-				newPointKinematicsMenuItem.setIcon(VCellIcons.spatialPointKinematicsIcon);
-				newSurfaceKinematicsMenuItem.setIcon(VCellIcons.spatialMembraneKinematicsIcon);
+				newPointLocationMenuItem.setIcon(VCellIcons.addIcon(VCellIcons.spatialPointIcon, VCellIcons.spatialLocationIcon));
+				newPointKinematicsMenuItem.setIcon(VCellIcons.addIcon(VCellIcons.spatialPointIcon, VCellIcons.spatialKinematicsIcon));
+				newSurfaceKinematicsMenuItem.setIcon(VCellIcons.addIcon(VCellIcons.spatialMembraneIcon, VCellIcons.spatialKinematicsIcon));
 				popup.add(newPointLocationMenuItem);
 				popup.add(newPointKinematicsMenuItem);
 				popup.add(newSurfaceKinematicsMenuItem);
