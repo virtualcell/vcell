@@ -143,6 +143,7 @@ import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleMappingType;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
@@ -6071,6 +6072,30 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 	}
 	
+	// Retrieve spatialObjects and add to simContext
+	Element spatialObjectsElement = param.getChild(XMLTags.SpatialObjectsTag, vcNamespace);
+	if(spatialObjectsElement != null){
+		SpatialObject[] spatialObjects = getSpatialObjects(newsimcontext, spatialObjectsElement);
+		try {
+			newsimcontext.setSpatialObjects(spatialObjects);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding spatialObjects to simulationContext", e);
+		}
+	}
+
+	// Retrieve application parameters and add to simContext
+	Element appParamsElement = param.getChild(XMLTags.ApplicationParametersTag, vcNamespace);
+	if(appParamsElement != null){
+		SimulationContextParameter[] appParameters = getSimulationContextParams(appParamsElement, newsimcontext);
+		try {
+			newsimcontext.setSimulationContextParameters(appParameters);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding application parameters to simulationContext", e);
+		}
+	}
+
 	//
 	//-Process the GeometryContext-
 	//
@@ -6197,18 +6222,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding events to simulationContext", e);
-		}
-	}
-
-	// Retrieve spatialObjects and add to simContext
-	tempelement = param.getChild(XMLTags.SpatialObjectsTag, vcNamespace);
-	if(tempelement != null){
-		SpatialObject[] spatialObjects = getSpatialObjects(newsimcontext, tempelement);
-		try {
-			newsimcontext.setSpatialObjects(spatialObjects);
-		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error adding spatialObjects to simulationContext", e);
 		}
 	}
 
@@ -6681,6 +6694,49 @@ public ModelParameter getModelParameter(Element paramElement, Model model) {
 	newGlParam.setModelParameterAnnotation(glParamAnnotation);
 
 	return newGlParam;
+}
+
+public SimulationContextParameter[] getSimulationContextParams(Element appParams, SimulationContext simContext) throws XmlParseException {
+	Iterator<Element> appParamIterator = appParams.getChildren(XMLTags.ParameterTag, vcNamespace).iterator();
+	ArrayList<SimulationContextParameter> appParamsList = new ArrayList<SimulationContextParameter>();
+	while (appParamIterator.hasNext()) {
+		org.jdom.Element paramElement = (Element) appParamIterator.next();
+		appParamsList.add(getSimulationContextParameter(paramElement, simContext));
+	}
+	return appParamsList.toArray(new SimulationContextParameter[0]);
+}
+
+
+public SimulationContextParameter getSimulationContextParameter(Element paramElement, SimulationContext simContext) {
+	//get its attributes : name, role and unit definition
+	String appParamName = unMangle( paramElement.getAttributeValue(XMLTags.NameAttrTag) );
+	String role = paramElement.getAttributeValue(XMLTags.ParamRoleAttrTag);
+	ModelUnitSystem modelUnitSystem = simContext.getModel().getUnitSystem();
+	int appParamRole = -1;
+	if (role.equals(XMLTags.ParamRoleUserDefinedTag)) {
+		appParamRole = SimulationContext.ROLE_UserDefined;
+	} else {
+		throw new RuntimeException("unknown type of application parameter (not user-defined)");
+	}
+	String unitSymbol = paramElement.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
+	VCUnitDefinition appParamUnit = null;
+	if (unitSymbol != null) {
+		appParamUnit = modelUnitSystem.getInstance(unitSymbol);
+	}
+	//get parameter contents : expression; annotation, if any.
+	String appParamExpStr = paramElement.getText();
+	Expression appParamExp = unMangleExpression(appParamExpStr);
+//	String appParamAnnotation = null;
+//	String annotationText = paramElement.getChildText(XMLTags.AnnotationTag, vcNamespace);
+//	if (annotationText != null && annotationText.length() > 0) {
+//		appParamAnnotation = unMangle(annotationText);
+//	}
+	
+	//create new global parameter
+	SimulationContextParameter newAppParam = simContext.new SimulationContextParameter(appParamName, appParamExp, appParamRole, appParamUnit);
+//	newGlParam.setModelParameterAnnotation(appParamAnnotation);
+
+	return newAppParam;
 }
 
 public ArrayList<AnnotatedFunction> getOutputFunctions(Element outputFunctionsElement) throws XmlParseException {

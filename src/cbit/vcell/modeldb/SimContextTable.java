@@ -38,6 +38,7 @@ import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextInfo;
+import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.math.MathDescription;
@@ -261,6 +262,17 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 		}
 	}
 	
+	SimulationContextParameter[] appParams = simContext.getSimulationContextParameters();
+	if (appParams!=null && appParams.length>0){
+		try {
+			Element appParamsElement = xmlProducer.getXML(appParams);
+			appComponentsElement.addContent( appParamsElement);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error generating XML for application parameters : " + e.getMessage());
+		}
+	}
+	
 	SpatialObject[] spatialObjects = simContext.getSpatialObjects();
 	if (spatialObjects!=null && spatialObjects.length>0){
 		try {
@@ -388,19 +400,25 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 			}
 			simContext.setNetworkConstraints(nc);
 			
-			// get bioEvents
-			Element bioEventsElement = appComponentsElement.getChild(XMLTags.BioEventsTag);
-			if (bioEventsElement != null) {
-				BioEvent[] bioEvents = xmlReader.getBioEvents(simContext, bioEventsElement);
-				simContext.setBioEvents(bioEvents);
-			}
 			// get spatial objects
 			Element spatialObjectsElement = appComponentsElement.getChild(XMLTags.SpatialObjectsTag);
 			if (spatialObjectsElement != null) {
 				SpatialObject[] spatialObjects = xmlReader.getSpatialObjects(simContext, spatialObjectsElement);
 				simContext.setSpatialObjects(spatialObjects);
 			}
-			// get spatial objects
+			// get application parameters
+			Element appParamsElement = appComponentsElement.getChild(XMLTags.ApplicationParametersTag);
+			if (appParamsElement != null) {
+				SimulationContextParameter[] appParams = xmlReader.getSimulationContextParams(appParamsElement, simContext);
+				simContext.setSimulationContextParameters(appParams);
+			}
+			// get bioEvents
+			Element bioEventsElement = appComponentsElement.getChild(XMLTags.BioEventsTag);
+			if (bioEventsElement != null) {
+				BioEvent[] bioEvents = xmlReader.getBioEvents(simContext, bioEventsElement);
+				simContext.setBioEvents(bioEvents);
+			}
+			// get spatial processes
 			Element spatialProcessesElement = appComponentsElement.getChild(XMLTags.SpatialProcessesTag);
 			if (spatialProcessesElement != null) {
 				SpatialProcess[] spatialProcesses = xmlReader.getSpatialProcesses(simContext, spatialProcessesElement);

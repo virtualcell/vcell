@@ -767,11 +767,6 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 
 	DataSymbolTable.table.populateDataSymbols(con, simContextKey, simContext.getDataContext(),user, simContext.getModel().getUnitSystem());
 	
-	assignStimuliSQL(con,simContextKey, simContext);
-	assignStructureMappingsSQL(dbc, con,simContextKey, simContext);
-	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
-	assignReactionSpecsSQL(con,simContextKey, simContext);
-	
 	ArrayList<AnnotatedFunction> outputFunctionList = ApplicationMathTable.table.getOutputFunctionsSimcontext(con, simContextKey);
 	if(outputFunctionList != null){
 		OutputFunctionContext outputFnContext = simContext.getOutputFunctionContext();
@@ -779,6 +774,11 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	}
 	
 	SimContextTable.table.readAppComponents(con, simContext);
+	
+	assignStimuliSQL(con,simContextKey, simContext);
+	assignStructureMappingsSQL(dbc, con,simContextKey, simContext);
+	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
+	assignReactionSpecsSQL(con,simContextKey, simContext);
 	
 	for (GeometryClass gc : simContext.getGeometry().getGeometryClasses()) {
 		StructureSizeSolver.updateUnitStructureSizes(simContext, gc);

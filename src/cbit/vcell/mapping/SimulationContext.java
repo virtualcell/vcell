@@ -86,6 +86,7 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelException;
@@ -208,7 +209,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		private int fieldParameterRole = -1;
 		private VCUnitDefinition fieldUnitDefinition = null;
 		
-		protected SimulationContextParameter(String argName, Expression expression, int argRole, VCUnitDefinition argUnitDefinition) {
+		public SimulationContextParameter(String argName, Expression expression, int argRole, VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -307,6 +308,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	}
 	public static final int ROLE_UserDefined	= 0;
 	public static final int NUM_ROLES		= 1;
+	public static final String RoleDesc = "user defined";
+
 	private Version version = null;
 	private GeometryContext geoContext = null;
 	private ReactionContext reactionContext = null;
@@ -1788,6 +1791,19 @@ public void refreshDependencies1(boolean isRemoveUncoupledParameters) {
 	getGeometry().getGeometrySpec().addPropertyChangeListener(this);
 	getGeometryContext().removePropertyChangeListener(this);
 	getGeometryContext().addPropertyChangeListener(this);
+	
+	for (int i=0;i<fieldSimulationContextParameters.length;i++){
+		fieldSimulationContextParameters[i].removeVetoableChangeListener(this);
+		fieldSimulationContextParameters[i].removePropertyChangeListener(this);
+		fieldSimulationContextParameters[i].addVetoableChangeListener(Parameter.PROPERTYNAME_NAME, this);
+		fieldSimulationContextParameters[i].addPropertyChangeListener(this);
+		try {
+			fieldSimulationContextParameters[i].getExpression().bindExpression(this);
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error binding global parameter '" + fieldSimulationContextParameters[i].getName() + "' to model."  + e.getMessage());
+		}
+	}
 
 	if (fieldElectricalStimuli!=null){
 		for (int i = 0; i < fieldElectricalStimuli.length; i++){
@@ -2312,6 +2328,21 @@ public void setSimulationContextParameters(SimulationContext.SimulationContextPa
 	fireVetoableChange(PROPERTY_NAME_SIMULATIONCONTEXTPARAMETERS, oldValue, simulationContextParameters);
 	fieldSimulationContextParameters = simulationContextParameters;
 	firePropertyChange(PROPERTY_NAME_SIMULATIONCONTEXTPARAMETERS, oldValue, simulationContextParameters);
+	
+	SimulationContextParameter newValue[] = simulationContextParameters;
+	if (oldValue != null) {
+		for (int i=0;i<oldValue.length;i++){	
+			oldValue[i].removePropertyChangeListener(this);
+			oldValue[i].removeVetoableChangeListener(this);
+		}
+	}
+	if (newValue != null) {
+		for (int i=0;i<newValue.length;i++){
+			newValue[i].addPropertyChangeListener(this);
+			newValue[i].addVetoableChangeListener(Parameter.PROPERTYNAME_NAME, this);
+		}
+	}
+	
 }
 
 

@@ -124,6 +124,7 @@ import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
@@ -1657,6 +1658,11 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	BioEvent[] bioEvents = param.getBioEvents();
 	if (bioEvents!=null && bioEvents.length>0){
 		simulationcontext.addContent( getXML(bioEvents) );
+	}
+	
+	SimulationContextParameter[] appParams = param.getSimulationContextParameters();
+	if (appParams!=null && appParams.length>0){
+		simulationcontext.addContent( getXML(appParams));
 	}
 	
 	SpatialObject[] spatialObjects = param.getSpatialObjects();
@@ -3776,6 +3782,41 @@ private Element getXML(ModelParameter modelParam) {
 		glParamElement.addContent(annotationElement);
 	}
 	return glParamElement;
+}
+
+public Element getXML(SimulationContextParameter[] appParams) {
+	Element appParamsElement = new Element(XMLTags.ApplicationParametersTag);
+	for (int i = 0; i < appParams.length; i++) {
+		Element appParamElement = getXML(appParams[i]);
+		appParamsElement.addContent(appParamElement);
+	}
+
+	return appParamsElement;
+}
+
+private Element getXML(SimulationContextParameter appParam) {
+	Element appParamElement = new Element(XMLTags.ParameterTag);
+	//Get parameter attributes - name, role and unit definition
+	appParamElement.setAttribute(XMLTags.NameAttrTag, mangle(appParam.getName()));
+	if (appParam.getRole() == SimulationContext.ROLE_UserDefined) {
+		appParamElement.setAttribute(XMLTags.ParamRoleAttrTag, SimulationContext.RoleDesc);
+	} else {
+		throw new RuntimeException("Unknown application parameter role/type");
+	}
+	VCUnitDefinition unit = appParam.getUnitDefinition();
+	if (unit != null) {
+		appParamElement.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
+	}
+	// add expression as content
+	appParamElement.addContent(mangleExpression(appParam.getExpression()) );
+	//add annotation (if there is any)
+//	if (modelParam.getModelParameterAnnotation() != null &&
+//			modelParam.getModelParameterAnnotation().length() > 0) {
+//		Element annotationElement = new Element(XMLTags.AnnotationTag);
+//		annotationElement.setText(mangle(modelParam.getModelParameterAnnotation()));
+//		glParamElement.addContent(annotationElement);
+//	}
+	return appParamElement;
 }
 // ============================================================================================================
 public Element getXML(RbmModelContainer rbmModelContainer) {

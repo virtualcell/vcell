@@ -468,6 +468,8 @@ public class XMLTags {
     public final static String VolumeFractionTag = "VolumeFraction";
     public final static String AreaPerUnitAreaTag = "AreaPerUnitArea";
     public final static String AreaPerUnitVolumeTag = "AreaPerUnitVolume";
+    public static final String ApplicationParametersTag = "ApplicationParameters";
+
     
     public final static String SpeciesContextSpecTag = "LocalizedCompoundSpec";
     public final static String ForceConstantAttrTag = "ForceConstant";
