@@ -260,13 +260,14 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 
 private File getEmptyMeshFile(SimulationDataSetRef simulationDataSetRef, String domainName, int timeIndex) throws ThriftDataAccessException {
 	
+	if (!simulationDataSetRef.isTimeVaryingMesh){
+		timeIndex = 0;
+	}
+
 	File vtuEmptyMeshFile = getEmptyMeshFileLocation(simulationDataSetRef, domainName, timeIndex);
 
 	System.out.println("looking for file: "+vtuEmptyMeshFile);
 
-	if (!simulationDataSetRef.isTimeVaryingMesh){
-		timeIndex = 0;
-	}
 
 	//
 	// if requested mesh file is not found, get files for this timepoint
