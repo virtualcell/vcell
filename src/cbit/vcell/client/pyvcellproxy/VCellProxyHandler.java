@@ -155,6 +155,10 @@ public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSet
 					variableDomainType = DomainType.VOLUME;
 					break;
 				}
+				case VARIABLEDOMAIN_POINT:{
+					System.err.println("VCellProxyHandler.getVariableList() skipping Point Variable "+vtuVarInfo.name+" ... implement later.");
+					continue; // skip point variables now.
+				}
 				default:{
 					break;
 				}

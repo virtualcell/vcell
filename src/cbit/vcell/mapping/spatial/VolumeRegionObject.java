@@ -132,7 +132,8 @@ public class VolumeRegionObject extends SpatialObject {
 
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-		if (simulationContext.getGeometry().getGeometrySurfaceDescription() != null){
+		if (simulationContext.getGeometry().getGeometrySurfaceDescription() != null && 
+				simulationContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() != null){
 			GeometricRegion[] regions = simulationContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions();
 			boolean bFound = false;
 			for (GeometricRegion region : regions){

@@ -1801,7 +1801,7 @@ public void refreshDependencies1(boolean isRemoveUncoupledParameters) {
 			fieldSimulationContextParameters[i].getExpression().bindExpression(this);
 		} catch (ExpressionBindingException e) {
 			e.printStackTrace(System.out);
-			throw new RuntimeException("Error binding global parameter '" + fieldSimulationContextParameters[i].getName() + "' to model."  + e.getMessage());
+//			throw new RuntimeException("Error binding global parameter '" + fieldSimulationContextParameters[i].getName() + "' to model."  + e.getMessage());
 		}
 	}
 
@@ -2148,7 +2148,7 @@ public void setGeometry(Geometry geometry) throws MappingException {
 
 public void refreshSpatialObjects() {
 	Geometry geometry = getGeometry();
-	if (geometry!=null && geometry.getGeometrySurfaceDescription()!=null){
+	if (geometry!=null && geometry.getGeometrySurfaceDescription()!=null && geometry.getGeometrySurfaceDescription().getGeometricRegions()!=null){
 		ArrayList<SpatialObject> unmappedSpatialObjects = new ArrayList<SpatialObject>(Arrays.asList(spatialObjects));
 		ArrayList<GeometricRegion> mappedRegions = new ArrayList<GeometricRegion>();
 		//
@@ -2160,7 +2160,7 @@ public void refreshSpatialObjects() {
 				SubVolume existingSubvolume = volRegionObj.getSubVolume();
 				Integer existingRegionID = volRegionObj.getRegionID();
 				SubVolume newSubvolume = geometry.getGeometrySpec().getSubVolume(existingSubvolume.getName());
-				if (newSubvolume!=null){
+				if (newSubvolume!=null && geometry.getGeometrySurfaceDescription().getGeometricRegions()!=null){
 					for (GeometricRegion newRegion : geometry.getGeometrySurfaceDescription().getGeometricRegions(newSubvolume)){
 						VolumeGeometricRegion newVolRegion = (VolumeGeometricRegion)newRegion;
 						if (newVolRegion.getRegionID() == existingRegionID){

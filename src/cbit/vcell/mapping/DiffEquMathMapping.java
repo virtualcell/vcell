@@ -1694,7 +1694,7 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 			boolean bPosition = pointObject.isQuantityCategoryEnabled(QuantityCategory.PointPosition);
 			boolean bVelocity = pointObject.isQuantityCategoryEnabled(QuantityCategory.PointVelocity);
 			boolean bDirection = pointObject.isQuantityCategoryEnabled(QuantityCategory.DirectionToPoint);
-			boolean bDistance = pointObject.isQuantityCategoryEnabled(QuantityCategory.DistanceToPoint);
+			boolean bDistance = pointObject.isQuantityCategoryEnabled(QuantityCategory.PointDistanceMap);
 			
 			//
 			// either make a point subdomain, or just define functions.
@@ -1726,17 +1726,18 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 								getMathSymbol(posXQuantity, gc), 
 								getIdentifierSubstitutions(posXExp,posXQuantity.getUnitDefinition(),gc),
 								gc));
-						Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
+						Expression posX_minus_X = Expression.add(posXExp,Expression.negate(xExp));
+						Expression signum_posX_minus_X = Expression.function(FunctionType.MIN, new Expression(1.0), Expression.function(FunctionType.MAX,Expression.mult(new Expression(1e10),posX_minus_X),new Expression(-1)));
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirXQuantity, gc), 
-									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(signum_posX_minus_X,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
-							Expression abs_X_minux_posX = Expression.function(FunctionType.ABS, posX_minux_X);
-							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							Expression abs_X_minux_posX = Expression.function(FunctionType.ABS, posX_minus_X);
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(distanceQuantity, gc), 
 									getIdentifierSubstitutions(abs_X_minux_posX,distanceQuantity.getUnitDefinition(),gc),
@@ -1770,23 +1771,25 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 								gc));
 						Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
 						Expression posY_minux_Y = Expression.add(posYExp,Expression.negate(yExp));
+						Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
+						Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
+						Expression sqrt_DX2_DY2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2));
+						Expression dirX = Expression.div(posX_minux_X, Expression.add(sqrt_DX2_DY2,new Expression(1e-8)));
+						Expression dirY = Expression.div(posY_minux_Y, Expression.add(sqrt_DX2_DY2,new Expression(1e-8)));
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirXQuantity, gc), 
-									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirX,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirYQuantity, gc), 
-									getIdentifierSubstitutions(posY_minux_Y,dirYQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirY,dirYQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
-							Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
-							Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
-							Expression sqrt_DX2_DY2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2));
-							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(distanceQuantity, gc), 
 									getIdentifierSubstitutions(sqrt_DX2_DY2,distanceQuantity.getUnitDefinition(),gc),
@@ -1833,29 +1836,32 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 						Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
 						Expression posY_minux_Y = Expression.add(posYExp,Expression.negate(yExp));
 						Expression posZ_minux_Z = Expression.add(posZExp,Expression.negate(zExp));
+						Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
+						Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
+						Expression DZ2 = Expression.mult(posZ_minux_Z,posZ_minux_Z);
+						Expression sqrt_DX2_DY2_DZ2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2,DZ2));
+						Expression dirX = Expression.div(posX_minux_X, Expression.add(sqrt_DX2_DY2_DZ2,new Expression(1e-8)));
+						Expression dirY = Expression.div(posY_minux_Y, Expression.add(sqrt_DX2_DY2_DZ2,new Expression(1e-8)));
+						Expression dirZ = Expression.div(posZ_minux_Z, Expression.add(sqrt_DX2_DY2_DZ2,new Expression(1e-8)));
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirXQuantity, gc), 
-									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirX,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirYQuantity, gc), 
-									getIdentifierSubstitutions(posY_minux_Y,dirYQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirY,dirYQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirZQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Z);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirZQuantity, gc), 
-									getIdentifierSubstitutions(posZ_minux_Z,dirZQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirZ,dirZQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
-							Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
-							Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
-							Expression DZ2 = Expression.mult(posZ_minux_Z,posZ_minux_Z);
-							Expression sqrt_DX2_DY2_DZ2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2,DZ2));
-							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(distanceQuantity, gc), 
 									getIdentifierSubstitutions(sqrt_DX2_DY2_DZ2,distanceQuantity.getUnitDefinition(),gc),
@@ -1962,16 +1968,17 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 						pointSubdomain.setPositionZ(getIdentifierSubstitutions(new Expression(posZQuantity,simContext.getNameScope()), posZQuantity.getUnitDefinition(), gc));
 					}
 					if (simContext.getGeometry().getDimension()==1){
+						Expression signum_posX_minus_X = Expression.function(FunctionType.MIN, new Expression(1.0), Expression.function(FunctionType.MAX,Expression.mult(new Expression(1e10),posX_minux_X),new Expression(-1)));
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirXQuantity, gc), 
-									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(signum_posX_minus_X,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
 							Expression abs_X_minux_posX = Expression.function(FunctionType.ABS, posX_minux_X);
-							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(distanceQuantity, gc), 
 									getIdentifierSubstitutions(abs_X_minux_posX,distanceQuantity.getUnitDefinition(),gc),
@@ -1979,23 +1986,25 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 						}
 					}
 					if (simContext.getGeometry().getDimension()==2){
+						Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
+						Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
+						Expression sqrt_DX2_DY2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2));
+						Expression dirX = Expression.div(posX_minux_X, Expression.add(sqrt_DX2_DY2,new Expression(1e-8)));
+						Expression dirY = Expression.div(posY_minux_Y, Expression.add(sqrt_DX2_DY2,new Expression(1e-8)));
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirXQuantity, gc), 
-									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirX,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirYQuantity, gc), 
-									getIdentifierSubstitutions(posY_minux_Y,dirYQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirY,dirYQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
-							Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
-							Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
-							Expression sqrt_DX2_DY2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2));
-							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(distanceQuantity, gc), 
 									getIdentifierSubstitutions(sqrt_DX2_DY2,distanceQuantity.getUnitDefinition(),gc),
@@ -2004,29 +2013,32 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 
 					}
 					if (simContext.getGeometry().getDimension()==3){
+						Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
+						Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
+						Expression DZ2 = Expression.mult(posZ_minux_Z,posZ_minux_Z);
+						Expression sqrt_DX2_DY2_DZ2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2,DZ2));
+						Expression dirX = Expression.div(posX_minux_X, Expression.add(sqrt_DX2_DY2_DZ2,new Expression(1e-8)));
+						Expression dirY = Expression.div(posY_minux_Y, Expression.add(sqrt_DX2_DY2_DZ2,new Expression(1e-8)));
+						Expression dirZ = Expression.div(posZ_minux_Z, Expression.add(sqrt_DX2_DY2_DZ2,new Expression(1e-8)));
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirXQuantity, gc), 
-									getIdentifierSubstitutions(posX_minux_X,dirXQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirX,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirYQuantity, gc), 
-									getIdentifierSubstitutions(posY_minux_Y,dirYQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirY,dirYQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirZQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Z);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(dirZQuantity, gc), 
-									getIdentifierSubstitutions(posZ_minux_Z,dirZQuantity.getUnitDefinition(),gc),
+									getIdentifierSubstitutions(dirZ,dirZQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
-							Expression DX2 = Expression.mult(posX_minux_X,posX_minux_X);
-							Expression DY2 = Expression.mult(posY_minux_Y,posY_minux_Y);
-							Expression DZ2 = Expression.mult(posZ_minux_Z,posZ_minux_Z);
-							Expression sqrt_DX2_DY2_DZ2 = Expression.function(FunctionType.SQRT, Expression.add(DX2,DY2,DZ2));
-							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
 									getMathSymbol(distanceQuantity, gc), 
 									getIdentifierSubstitutions(sqrt_DX2_DY2_DZ2,distanceQuantity.getUnitDefinition(),gc),
@@ -2050,7 +2062,7 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 			//
 			boolean bNormal = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.Normal);
 			boolean bVelocity = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity);
-			boolean bDistance = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.DistanceToSurface);
+			boolean bDistance = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceDistanceMap);
 			boolean bDirection = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.DirectionToSurface);
 			boolean bSize = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceSize);
 			
@@ -2143,7 +2155,7 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 				throw new MappingException(QuantityCategory.DirectionToSurface.description+" not yet implemented in math generation");
 			}
 			if (bDistance){
-				throw new MappingException(QuantityCategory.DistanceToSurface.description+" not yet implemented in math generation");
+				throw new MappingException(QuantityCategory.SurfaceDistanceMap.description+" not yet implemented in math generation");
 			}
 		}else if (spatialObject instanceof VolumeRegionObject){
 			VolumeRegionObject volumeRegionObject = (VolumeRegionObject)spatialObject;

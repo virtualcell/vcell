@@ -1747,6 +1747,8 @@ private SimDataBlock evaluateFunction(
 				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION)){
 					int volumeIndex = mesh.getVolumeRegionIndex(i);
 					args[TXYZ_OFFSET + j] = simDataHolder.getData()[volumeIndex];
+				}else if (simDataHolder.getVariableType().equals(VariableType.POINT_VARIABLE)){
+					args[TXYZ_OFFSET + j] = simDataHolder.getData()[0];
 				}
 			}
 			if(isGrad){
@@ -1757,6 +1759,8 @@ private SimDataBlock evaluateFunction(
 				SimDataHolder simDataHolder = dataSetList.elementAt(j);
 				if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION)){
 					args[TXYZ_OFFSET + j] = simDataHolder.getData()[i];
+				}else if (simDataHolder.getVariableType().equals(VariableType.POINT_VARIABLE)){
+					args[TXYZ_OFFSET + j] = simDataHolder.getData()[0];
 				}
 			}
 		}else if (variableType.equals(VariableType.MEMBRANE)){
@@ -1804,7 +1808,10 @@ private SimDataBlock evaluateFunction(
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE_REGION)){
 					int memRegionIndex = mesh.getMembraneRegionIndex(i);
 					args[TXYZ_OFFSET + j] = simDataHolder.getData()[memRegionIndex];
+				}else if (simDataHolder.getVariableType().equals(VariableType.POINT_VARIABLE)){
+					args[TXYZ_OFFSET + j] = simDataHolder.getData()[0];
 				}
+
 			}
 		}else if (variableType.equals(VariableType.MEMBRANE_REGION)){
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
@@ -1835,7 +1842,10 @@ private SimDataBlock evaluateFunction(
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE_REGION)){
 					int memRegionIndex = i;
 					args[TXYZ_OFFSET + j] = simDataHolder.getData()[memRegionIndex];
+				}else if (simDataHolder.getVariableType().equals(VariableType.POINT_VARIABLE)){
+					args[TXYZ_OFFSET + j] = simDataHolder.getData()[0];
 				}
+
 			}
 		}
 		try {

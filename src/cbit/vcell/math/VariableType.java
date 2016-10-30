@@ -257,6 +257,7 @@ public boolean isExpansionOf(VariableType varType) {
 	if (type == VOLUME_TYPE && varType.type == VOLUME_REGION_TYPE) return true;
 	if (type == MEMBRANE_TYPE && varType.type == MEMBRANE_REGION_TYPE) return true;
 	if (type == CONTOUR_TYPE && varType.type == CONTOUR_REGION_TYPE) return true;
+	if (type != POINT_VARIABLE_TYPE && varType.type == POINT_VARIABLE_TYPE) return true;
 	return false;
 }
 /**

@@ -33,7 +33,7 @@ public class SurfaceRegionObject extends SpatialObject {
 	private SpatialQuantity velocityX = new SpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.X);
 	private SpatialQuantity velocityY = new SpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Y);
 	private SpatialQuantity velocityZ = new SpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Z);
-	private SpatialQuantity distanceTo = new SpatialQuantity(QuantityCategory.DistanceToSurface, QuantityComponent.Scalar);
+	private SpatialQuantity distanceMap = new SpatialQuantity(QuantityCategory.SurfaceDistanceMap, QuantityComponent.Scalar);
 	private SpatialQuantity directionToX = new SpatialQuantity(QuantityCategory.DirectionToSurface, QuantityComponent.X);
 	private SpatialQuantity directionToY = new SpatialQuantity(QuantityCategory.DirectionToSurface, QuantityComponent.Y);
 	private SpatialQuantity directionToZ = new SpatialQuantity(QuantityCategory.DirectionToSurface, QuantityComponent.Z);
@@ -76,7 +76,7 @@ public class SurfaceRegionObject extends SpatialObject {
 				new QuantityCategory[] {
 					QuantityCategory.Normal,
 					QuantityCategory.SurfaceVelocity,
-					QuantityCategory.DistanceToSurface,
+					QuantityCategory.SurfaceDistanceMap,
 					QuantityCategory.DirectionToSurface,
 					QuantityCategory.SurfaceSize},
 				new Boolean[] {
@@ -186,7 +186,7 @@ public class SurfaceRegionObject extends SpatialObject {
 
 	@Override
 	public SpatialQuantity[] getSpatialQuantities() {
-		return new SpatialQuantity[] { normalX, normalY, normalZ, size, velocityX, velocityY, velocityZ, distanceTo, directionToX, directionToY, directionToZ };
+		return new SpatialQuantity[] { normalX, normalY, normalZ, size, velocityX, velocityY, velocityZ, distanceMap, directionToX, directionToY, directionToZ };
 	}
 
 	@Override

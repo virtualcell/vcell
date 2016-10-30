@@ -226,7 +226,7 @@ public SurfaceClass[] getSurfaceClasses() {
 
 public GeometricRegion[] getGeometricRegions(GeometryClass geometryClass){
 	ArrayList<GeometricRegion> regions = new ArrayList<GeometricRegion>();
-	if (this.getGeometricRegions().length==0){
+	if (this.getGeometricRegions()==null || this.getGeometricRegions().length==0){
 		return null;
 	}
 	for (int j = 0; j < getGeometricRegions().length; j++) {

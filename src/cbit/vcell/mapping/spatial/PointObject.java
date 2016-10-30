@@ -22,7 +22,7 @@ public class PointObject extends SpatialObject {
 	private SpatialQuantity velocityX = new SpatialQuantity(QuantityCategory.PointVelocity,QuantityComponent.X);
 	private SpatialQuantity velocityY = new SpatialQuantity(QuantityCategory.PointVelocity,QuantityComponent.Y);
 	private SpatialQuantity velocityZ = new SpatialQuantity(QuantityCategory.PointVelocity,QuantityComponent.Z);
-	private SpatialQuantity distanceTo = new SpatialQuantity(QuantityCategory.DistanceToPoint,QuantityComponent.Scalar);
+	private SpatialQuantity distanceMap = new SpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 	private SpatialQuantity directionToX = new SpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 	private SpatialQuantity directionToY = new SpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
 	private SpatialQuantity directionToZ = new SpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Z);
@@ -37,7 +37,7 @@ public class PointObject extends SpatialObject {
 				new QuantityCategory[] {QuantityCategory.PointPosition, 
 										QuantityCategory.PointVelocity, 
 										QuantityCategory.DirectionToPoint, 
-										QuantityCategory.DistanceToPoint }, 
+										QuantityCategory.PointDistanceMap }, 
 						new Boolean[] { new Boolean(true), 
 										new Boolean(false), 
 										new Boolean(true), 
@@ -62,7 +62,7 @@ public class PointObject extends SpatialObject {
 
 	@Override
 	public SpatialQuantity[] getSpatialQuantities() {
-		return new SpatialQuantity[] { positionX, positionY, positionZ, velocityX, velocityY, velocityZ, distanceTo, directionToX, directionToY, directionToZ };
+		return new SpatialQuantity[] { positionX, positionY, positionZ, velocityX, velocityY, velocityZ, distanceMap, directionToX, directionToY, directionToZ };
 	}
 
 	@Override

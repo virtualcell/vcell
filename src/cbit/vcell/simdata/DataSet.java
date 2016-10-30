@@ -726,6 +726,12 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 						// only display volume
 						dataBlockList.addElement(DataBlock.createDataBlock(varName, varType.getType(), size, 0));
 					}
+					if (varType == VariableType.POINT_VARIABLE)
+					{
+						// only display volume
+						dataBlockList.addElement(DataBlock.createDataBlock(varName, varType.getType(), size, 0));
+					}
+					
 				}
 			}
 		}
