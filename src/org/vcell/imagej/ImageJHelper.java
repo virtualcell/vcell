@@ -1,6 +1,7 @@
 package org.vcell.imagej;
 
 import java.awt.Component;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -11,10 +12,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.ZipInputStream;
 
@@ -94,25 +98,18 @@ public class ImageJHelper {
 		}
 	}
 	
-	private static class HyperStackHelper {
+	private static class BasicStackDimensions {
 		public int xsize;
 		public int ysize;
 		public int zsize;
 		public int csize;
 		public int tsize;
-		public String dataClass;
-		public boolean hasOverlays;
-		public Extent extent;
-		public HyperStackHelper(int xsize, int ysize, int zsize, int csize, int tsize,Extent extent,boolean hasOverlays,String dataClass) {
-			super();
+		public BasicStackDimensions(int xsize, int ysize, int zsize, int csize, int tsize){
 			this.xsize = xsize;
 			this.ysize = ysize;
 			this.zsize = zsize;
 			this.csize = csize;
-			this.tsize = tsize;
-			this.extent = extent;
-			this.dataClass = dataClass;
-			this.hasOverlays = hasOverlays;
+			this.tsize = tsize;			
 		}
 		public int getTotalSize(){
 			return xsize*ysize*zsize*csize*tsize;
@@ -120,6 +117,19 @@ public class ImageJHelper {
 		public int[] getSizesInVCellPluginOrder(){
 			//return sizes in "x,y,z,t,c" order
 			return new int[] {xsize,ysize,zsize,tsize,csize};
+		}
+	}
+	private static class HyperStackHelper extends BasicStackDimensions{
+		public String dataClass;
+		public boolean hasOverlays;
+		public Extent extent;
+		public boolean isMask;
+		public HyperStackHelper(BasicStackDimensions basicStackDimensions,Extent extent,boolean hasOverlays,String dataClass,boolean isMask) {
+			super(basicStackDimensions.xsize,basicStackDimensions.ysize,basicStackDimensions.zsize,basicStackDimensions.csize,basicStackDimensions.tsize);
+			this.extent = extent;
+			this.dataClass = dataClass;
+			this.hasOverlays = hasOverlays;
+			this.isMask = isMask;
 		}
 		public void writeInfo(DataOutputStream dos) throws Exception{
 			dos.writeUTF(dataClass);
@@ -130,6 +140,7 @@ public class ImageJHelper {
 			dos.writeDouble(extent.getY());
 			dos.writeDouble(extent.getZ());
 			dos.writeBoolean(hasOverlays);
+			dos.writeBoolean(isMask);
 		}
 	}
 	public static enum VCellImageJCommands {vcellWantImage,vcellWantInfo,vcellSendImage,vcellSendInfo,vcellSendDomains,vcellWantSurface};
@@ -273,7 +284,7 @@ public class ImageJHelper {
 		st.nextToken();
 		return st.nextToken().trim();
 	}
-	private static HyperStackHelper extractArr(DataInputStream dis,boolean hasOverlays,String dataClass) throws IOException{
+	private static BasicStackDimensions extractArr(DataInputStream dis) throws IOException{
 		String line = dis.readLine();
 		StringTokenizer st = new StringTokenizer(line, ":");
 		st.nextToken();
@@ -287,7 +298,7 @@ public class ImageJHelper {
 		for (int i = 0; i < result.length; i++) {
 			result[i] = resultArr.get(i);
 		}
-		return new HyperStackHelper((result.length>=1?result[0]:1), (result.length>=2?result[1]:1), (result.length>=3?result[2]:1), (result.length>=5?result[4]:1), (result.length>=4?result[3]:1),new Extent(1, 1, 1),hasOverlays,dataClass);
+		return new BasicStackDimensions((result.length>=1?result[0]:1), (result.length>=2?result[1]:1), (result.length>=3?result[2]:1), (result.length>=5?result[4]:1), (result.length>=4?result[3]:1));
 	}
 	public static class ListenAndCancel implements ProgressDialogListener {
 		private Runnable cancelMethod;
@@ -318,22 +329,20 @@ public class ImageJHelper {
 	    	if(clientTaskStatusSupport != null){
 	    		clientTaskStatusSupport.setMessage("Sending Domain data to ImageJ...");
 	    	}
-//	    	new Thread(new Runnable() {
-//				@Override
-//				public void run() {
-//				}
-//			}).start();
 	    	imageJConnection[0] = new ImageJConnection(ExternalCommunicator.IMAGEJ);
 			imageJConnection[0].openConnection(VCellImageJCommands.vcellSendDomains,description);
-			byte[] data = new byte[pdeDataContext.getCartesianMesh().getNumVolumeElements()];
-			for (int i = 0; i < data.length; i++) {
+			Hashtable<Integer, BitSet> subVolMapMask = new Hashtable<>();
+			for (int i = 0; i < pdeDataContext.getCartesianMesh().getNumVolumeElements(); i++) {
 				int subvolume = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(i);
 				if(subvolume > 255){
 					throw new Exception("Error ImageJHelper.sendVolumeDomain(...) subvolume > 255 not implemented");
 				}
-				data[i] = (byte)subvolume;
+				if(!subVolMapMask.containsKey(subvolume)){
+					subVolMapMask.put(subvolume, new BitSet(pdeDataContext.getCartesianMesh().getNumVolumeElements()));
+				}
+				subVolMapMask.get(subvolume).set(i);
 			}
-			sendGrayscaleData(imageJConnection[0], new HyperStackHelper(iSize.getX(), iSize.getY(), iSize.getZ(), 1, 1,pdeDataContext.getCartesianMesh().getExtent(),false,Byte.class.getSimpleName()), data,description);
+			sendData0(imageJConnection[0], new HyperStackHelper(new BasicStackDimensions(iSize.getX(), iSize.getY(), iSize.getZ(), subVolMapMask.size(), 1),pdeDataContext.getCartesianMesh().getExtent(),false,Byte.class.getSimpleName(),true), subVolMapMask,description);
 		}catch(Exception e){
 			if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
 				//ignore, we were cancelled
@@ -355,7 +364,7 @@ public class ImageJHelper {
 		String type = extract(dis);//"double"
 		Integer.parseInt(extract(dis));//integer (dimension)
 		extract(dis);//"raw" (encoding)
-		HyperStackHelper hyperStackHelper = extractArr(dis,false,Float.class.getSimpleName());//integers (x,y,z,t,v) and what kind of data will be sent
+		BasicStackDimensions basicStackDimensions = extractArr(dis);
 		
 		//read other text header elements until exhausted
 		String unused = "";
@@ -367,11 +376,11 @@ public class ImageJHelper {
 	    		clientTaskStatusSupport.setMessage("Sending data to ImageJ...");
 	    	}
 			imageJConnection.openConnection(VCellImageJCommands.vcellSendImage,description);
-			double[] data = new double[hyperStackHelper.getTotalSize()];
+			double[] data = new double[basicStackDimensions.getTotalSize()];
 			for (int i = 0; i < data.length; i++) {
 				data[i] = dis.readDouble();
 			}
-			sendImageDataAsFloats(imageJConnection, hyperStackHelper, data,description);
+			sendImageDataAsFloats(imageJConnection, new HyperStackHelper(basicStackDimensions, new Extent(1,1,1), false, Float.class.getSimpleName(), false), data,description);
 		}
 		finally{
 			try{if(imageJConnection != null){imageJConnection.closeConnection();}}catch(Exception e){e.printStackTrace();}
@@ -409,14 +418,8 @@ public class ImageJHelper {
 	private static void sendImageDataAsFloats(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,double[] data,String title) throws Exception{
 		sendData0(imageJConnection, hyperStackHelper, data, title);
 	}
-	private static void sendGrayscaleData(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,byte[] data,String title) throws Exception{
-		sendData0(imageJConnection, hyperStackHelper, data, title);
-	}
-	private static void sendData0(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,Object arrObj,String title) throws Exception{
-		int dataLen = Array.getLength(arrObj);
-		if(dataLen != hyperStackHelper.getTotalSize()){
-			throw new Exception("data length "+dataLen+" not match hyperstack size "+hyperStackHelper.getTotalSize());
-		}
+
+	private static void sendData0(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,Object dataObj,String title) throws Exception{
 		//
 		//This method expects data to be in "x,y,z,t,c" order
 		//
@@ -425,19 +428,47 @@ public class ImageJHelper {
 		//
 		imageJConnection.dos.writeUTF(title);
 		hyperStackHelper.writeInfo(imageJConnection.dos);
-		byte[] bytes = (arrObj instanceof double[]?new byte[dataLen*Float.BYTES]:(byte[]) arrObj);
-		ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-		byteBuffer.rewind();
-		if(arrObj instanceof double[]){//convert to floats for imagej
+		if(dataObj instanceof double[]){//convert to floats for imagej
+			final int buffersize = 100000;
+			byte[] bytes = new byte[Float.BYTES*buffersize];
+			ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+			int dataLen = hyperStackHelper.getTotalSize();
 			for (int i = 0; i < dataLen; i++) {
-				float val = (float)(((double[])arrObj)[i]);
-				if(val == 0 && ((double[])arrObj)[i] != 0){
+				float val = (float)(((double[])dataObj)[i]);
+				if(val == 0 && ((double[])dataObj)[i] != 0){
 					val = Float.MIN_VALUE;
 				}
 				byteBuffer.putFloat(val);
+				if((i+1)%buffersize == 0){
+					imageJConnection.dos.write(bytes, 0, buffersize*Float.BYTES);
+					byteBuffer.rewind();
+				}
+//				imageJConnection.dos.writeFloat(val);
 			}
-		}//else{just send bytes as is to ImageJ}
-		imageJConnection.dos.write(bytes);
+			if(dataLen%buffersize != 0){
+				imageJConnection.dos.write(bytes, 0, (dataLen%buffersize)*Float.BYTES);
+			}
+		}else if(dataObj instanceof byte[]){
+			imageJConnection.dos.write((byte[])dataObj);
+		}else if(dataObj instanceof Hashtable && hyperStackHelper.isMask){
+			int channelSize = hyperStackHelper.xsize*hyperStackHelper.ysize*hyperStackHelper.zsize;
+			Enumeration<Integer> subVolIDs = ((Hashtable<Integer, BitSet>)dataObj).keys();
+			while(subVolIDs.hasMoreElements()){
+				Integer subvolID = subVolIDs.nextElement();
+				BitSet bitset = ((Hashtable<Integer,BitSet>)dataObj).get(subvolID);
+				System.out.println(bitset.cardinality());
+				byte[] data = new byte[channelSize];
+				Arrays.fill(data, (byte)0);
+				for (int i = 0; i < channelSize; i++) {
+					if(bitset.get(i)){
+						data[i]|= 0xFF;
+					}
+				}
+				imageJConnection.dos.write(data);
+			}
+		}else{
+			throw new IllegalArgumentException("Unexpected data type="+dataObj.getClass().getName());
+		}
 	}
 	public static void vcellSendImage(final Component requester,final PDEDataContext pdeDataContext,Hashtable<SampledCurve, int[]>[] membraneTables,String description) throws Exception{//xyz, 1 time, 1 var
 		final ImageJConnection[] imageJConnectionArr = new ImageJConnection[1];
@@ -451,7 +482,7 @@ public class ImageJHelper {
 					//send size of the standard 5 dimensions in this order (width, height, nChannels, nSlices, nFrames)
 					ISize xyzSize = pdeDataContext.getCartesianMesh().getISize();
 					Extent extent = pdeDataContext.getCartesianMesh().getExtent();
-					sendImageDataAsFloats(imageJConnection, new HyperStackHelper(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1,extent,true,Float.class.getSimpleName()), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
+					sendImageDataAsFloats(imageJConnection, new HyperStackHelper(new BasicStackDimensions(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1),extent,true,Float.class.getSimpleName(),false), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
 					sendMembraneOutline(imageJConnection, membraneTables);
 				}catch(Exception e){
 					if(e instanceof UserCancelException){
