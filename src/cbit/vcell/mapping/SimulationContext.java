@@ -465,6 +465,18 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 			}
 		}
 		
+		// copy application parameters
+		SimulationContextParameter otherSimContextParameters[] = oldSimulationContext.getSimulationContextParameters();
+		if (otherSimContextParameters!=null){
+			this.fieldSimulationContextParameters = new SimulationContextParameter[otherSimContextParameters.length];
+			for (int i=0;i<otherSimContextParameters.length;i++){
+				SimulationContextParameter p = otherSimContextParameters[i];
+				VCUnitDefinition unit = getModel().getUnitSystem().getInstance(p.getUnitDefinition().getSymbol());
+				Expression exp = new Expression(p.getExpression());
+				this.fieldSimulationContextParameters[i] = new SimulationContextParameter(p.getName(), exp, p.getRole(), unit);
+			}
+		}
+		
 		// copy SpatialProcesses
 		SpatialProcess[] otherSpatialProcesses = oldSimulationContext.getSpatialProcesses();
 		if (otherSpatialProcesses != null) {
