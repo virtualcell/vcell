@@ -103,7 +103,16 @@ private BufferedImage getScaledRGBVolume(CartesianMesh mesh,int meshMode,int ima
 		double values[] = getServerPDEDataContext().getDataValues();
 		int dataIndices[] = getServerPDEDataContext().getCartesianMesh().getVolumeSliceIndices(getNormalAxis(),getSlice());
 		for (int i = 0; i < dataIndices.length; i++) {
-			volumeData[i] = (domainValid!=null?(domainValid.get(dataIndices[i])?values[dataIndices[i]]:notInDomainValue):values[dataIndices[i]]);
+			double value = values[dataIndices[i]];
+			if (domainValid!=null){
+				if (domainValid.get(dataIndices[i]) || domainValid.isEmpty()){
+					volumeData[i] = value;
+				}else{
+					volumeData[i] = notInDomainValue;
+				}
+			}else{
+				volumeData[i] = value;
+			}
 		}
 	}
 	
@@ -119,6 +128,7 @@ private BufferedImage getScaledRGBVolume(CartesianMesh mesh,int meshMode,int ima
 	imagePaneModel.setSourceData(sourceDataInfo);
 	imagePaneModel.setBackgroundColor(Color.black);
 	imagePaneModel.setDisplayAdapterService(getDisplayAdapterService());
+//	getDisplayAdapterService().setActiveScaleRange(new Range(0,1));
 	imagePaneModel.setMode(meshMode);
 	imagePaneModel.setZoom(imageScale);
 	imagePaneModel.setViewport(new Rectangle(imagePaneModel.getScaledLength(width),imagePaneModel.getScaledLength(height)));
