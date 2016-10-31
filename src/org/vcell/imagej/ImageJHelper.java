@@ -1,6 +1,7 @@
 package org.vcell.imagej;
 
 import java.awt.Component;
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -17,7 +18,6 @@ import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.zip.ZipInputStream;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
@@ -53,6 +53,7 @@ public class ImageJHelper {
 		public DataInputStream dis;
 		public DataOutputStream dos;
 		public ExternalCommunicator externalCommunicator;
+		private BufferedInputStream bis;
 		public ImageJConnection(ExternalCommunicator externalCommunicator) throws Exception{
 			serverSocket = new ServerSocket(externalCommunicator.getPort());
 			this.externalCommunicator = externalCommunicator;
@@ -60,7 +61,8 @@ public class ImageJHelper {
 		public void openConnection(ImageJHelper.VCellImageJCommands command,String descr) throws Exception{
 			socket = serverSocket.accept();
 			serverSocket.close();
-			dis = new DataInputStream(socket.getInputStream());
+			bis = new BufferedInputStream(socket.getInputStream());
+			dis = new DataInputStream(bis);
 			dos = new DataOutputStream(socket.getOutputStream());
 			dos.writeUTF(command.name());
 			dos.writeUTF(descr);
@@ -70,7 +72,7 @@ public class ImageJHelper {
 					startMessage = dis.readUTF();
 					break;
 				case BLENDER:
-					startMessage = dis.readLine();
+					startMessage = readLine();
 					break;
 				default:
 					throw new IllegalArgumentException("Unexpected external program "+externalCommunicator.name());
@@ -85,6 +87,7 @@ public class ImageJHelper {
 		public Exception[] closeConnection(){
 			ArrayList<Exception> errors = new ArrayList<>();
 			try{dis.close();}catch(Exception e){errors.add(e);}
+			try{bis.close();}catch(Exception e){errors.add(e);}
 			try{dos.close();}catch(Exception e){errors.add(e);}
 			try{socket.close();}catch(Exception e){errors.add(e);}
 			try{serverSocket.close();}catch(Exception e){errors.add(e);}
@@ -92,6 +95,9 @@ public class ImageJHelper {
 				return errors.toArray(new Exception[0]);
 			}
 			return null;
+		}
+		public String readLine() throws IOException{
+			return ImageJHelper.readLine(bis);
 		}
 	}
 	
@@ -166,7 +172,7 @@ public class ImageJHelper {
 		return doCancellableConnection(ExternalCommunicator.BLENDER, VCellImageJCommands.vcellWantSurface, clientTaskStatusSupport, description);
 	}
 	private static File vcellWantSurface0(ClientTaskStatusSupport clientTaskStatusSupport,String description,ImageJConnection imageJConnection) throws Exception{
-		String sizeStr = imageJConnection.dis.readLine();
+		String sizeStr = imageJConnection.readLine();
 		int fileSize = Integer.parseInt(sizeStr);
 		byte[] bytes = new byte[fileSize];
 		int numread = 0;
@@ -293,14 +299,12 @@ public class ImageJHelper {
 		return tempFile;
 	}
 
-	private static String extract(DataInputStream dis) throws IOException{
-		String line = dis.readLine();
+	private static String extract(String line) throws IOException{
 		StringTokenizer st = new StringTokenizer(line, ":");
 		st.nextToken();
 		return st.nextToken().trim();
 	}
-	private static BasicStackDimensions extractArr(DataInputStream dis) throws IOException{
-		String line = dis.readLine();
+	private static BasicStackDimensions extractArr(String line) throws IOException{
 		StringTokenizer st = new StringTokenizer(line, ":");
 		st.nextToken();
 		String arr = st.nextToken();
@@ -371,23 +375,41 @@ public class ImageJHelper {
 		}
 
 	}
-	public static void vcellSendNRRD(final Component requester,ZipInputStream nrrdFileFormatData,ClientTaskStatusSupport clientTaskStatusSupport,ImageJConnection imageJConnection,String description,double[] timePoints,String[] channelDescriptions) throws Exception{
+	public static String readLine(BufferedInputStream bis) throws IOException{
+		StringBuffer sb = new StringBuffer();
+		int nextChar = 0;
+		while((nextChar = bis.read()) != -1){
+			if(nextChar == '\n'){
+				break;
+			}else if(nextChar == '\r'){
+				bis.mark(1);
+				nextChar = bis.read();
+				if(nextChar == -1 || nextChar != '\n'){
+					bis.reset();
+					break;
+				}
+			}
+			sb.append((char)nextChar);
+		}
+		return sb.toString();
+	}
+	public static void vcellSendNRRD(final Component requester,BufferedInputStream bis,ClientTaskStatusSupport clientTaskStatusSupport,ImageJConnection imageJConnection,String description,double[] timePoints,String[] channelDescriptions) throws Exception{
     	if(clientTaskStatusSupport != null){
     		clientTaskStatusSupport.setMessage("reading format... ");
     	}
 		//read nrrd file format (See NRRDWriter.writeNRRD(...) for header format)
-		DataInputStream dis = new DataInputStream(nrrdFileFormatData);
-		dis.readLine();//magic nrrd
-		dis.readLine();//endian
-		dis.readLine();//comment
-		String type = extract(dis);//"double"
-		Integer.parseInt(extract(dis));//integer (dimension)
-		extract(dis);//"raw" (encoding)
-		BasicStackDimensions basicStackDimensions = extractArr(dis);
+		DataInputStream dis = new DataInputStream(bis);
+		readLine(bis);//magic nrrd
+		readLine(bis);//endian
+		readLine(bis);//comment
+		String type = extract(readLine(bis));//"double"
+		Integer.parseInt(extract(readLine(bis)));//integer (dimension)
+		extract(readLine(bis));//"raw" (encoding)
+		BasicStackDimensions basicStackDimensions = extractArr(readLine(bis));
 		
 		//read other text header elements until exhausted
 		String unused = "";
-		while((unused = dis.readLine()).length() != 0){
+		while((unused = readLine(bis)).length() != 0){
 			System.out.println(unused);
 		}
 		try{
@@ -399,7 +421,7 @@ public class ImageJHelper {
 			for (int i = 0; i < data.length; i++) {
 				data[i] = dis.readDouble();
 			}
-			sendImageDataAsFloats(imageJConnection, new HyperStackHelper(basicStackDimensions, new Extent(1,1,1), false, Float.class.getSimpleName(), false,timePoints,channelDescriptions), data,description);
+			sendData0(imageJConnection, new HyperStackHelper(basicStackDimensions, new Extent(1,1,1), false, Float.class.getSimpleName(), false,timePoints,channelDescriptions), data,description);
 		}
 		finally{
 			try{if(imageJConnection != null){imageJConnection.closeConnection();}}catch(Exception e){e.printStackTrace();}
@@ -434,9 +456,6 @@ public class ImageJHelper {
 			imageJConnection.dos.writeInt(0);
 		}
 	}
-	private static void sendImageDataAsFloats(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,double[] data,String title) throws Exception{
-		sendData0(imageJConnection, hyperStackHelper, data, title);
-	}
 
 	private static void sendData0(ImageJConnection imageJConnection, HyperStackHelper hyperStackHelper,Object dataObj,String title) throws Exception{
 		//
@@ -447,7 +466,7 @@ public class ImageJHelper {
 		//
 		imageJConnection.dos.writeUTF(title);
 		hyperStackHelper.writeInfo(imageJConnection.dos);
-		if(dataObj instanceof double[]){//convert to floats for imagej
+		if(dataObj instanceof double[]){//convert to floats for imagej (GRAY32 image type)
 			final int buffersize = 100000;
 			byte[] bytes = new byte[Float.BYTES*buffersize];
 			ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
@@ -462,14 +481,13 @@ public class ImageJHelper {
 					imageJConnection.dos.write(bytes, 0, buffersize*Float.BYTES);
 					byteBuffer.rewind();
 				}
-//				imageJConnection.dos.writeFloat(val);
 			}
 			if(dataLen%buffersize != 0){
 				imageJConnection.dos.write(bytes, 0, (dataLen%buffersize)*Float.BYTES);
 			}
-		}else if(dataObj instanceof byte[]){
+		}else if(dataObj instanceof byte[]){//send 8bit bytes as is to ImageJ (grayscale or colormap images)
 			imageJConnection.dos.write((byte[])dataObj);
-		}else if(dataObj instanceof Hashtable && hyperStackHelper.isMask){
+		}else if(dataObj instanceof Hashtable && hyperStackHelper.isMask){//convert to bytes (0 or 255) for ImageJ binary processing
 			int channelSize = hyperStackHelper.xsize*hyperStackHelper.ysize*hyperStackHelper.zsize;
 			Enumeration<Integer> subVolIDs = ((Hashtable<Integer, BitSet>)dataObj).keys();
 			while(subVolIDs.hasMoreElements()){
@@ -501,7 +519,8 @@ public class ImageJHelper {
 					//send size of the standard 5 dimensions in this order (width, height, nChannels, nSlices, nFrames)
 					ISize xyzSize = pdeDataContext.getCartesianMesh().getISize();
 					Extent extent = pdeDataContext.getCartesianMesh().getExtent();
-					sendImageDataAsFloats(imageJConnection, new HyperStackHelper(new BasicStackDimensions(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1),extent,true,Float.class.getSimpleName(),false,timePoints,channelDescriptions), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
+					BasicStackDimensions basicStackDimensions = new BasicStackDimensions(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1);
+					sendData0(imageJConnection, new HyperStackHelper(basicStackDimensions,extent,true,Float.class.getSimpleName(),false,timePoints,channelDescriptions), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
 					sendMembraneOutline(imageJConnection, membraneTables);
 				}catch(Exception e){
 					if(e instanceof UserCancelException){
