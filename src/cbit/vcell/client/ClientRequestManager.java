@@ -2360,6 +2360,7 @@ public static void downloadExportedData(final Component requester, final UserPre
 		    	}
 		    	ByteArrayInputStream bais = new ByteArrayInputStream( baosArr[0].toByteArray());
 		    	ZipInputStream zis = null;
+		    	BufferedInputStream bis = null;
 		    	try{
 			    	zis = new ZipInputStream(bais);
 			    	ZipEntry entry = zis.getNextEntry();
@@ -2379,9 +2380,11 @@ public static void downloadExportedData(final Component requester, final UserPre
 			    		timePoints[tp-timeSpecs.getBeginTimeIndex()] = timeSpecs.getAllTimes()[tp];
 			    	}
 			    	imagejConnetArr[0] = new ImageJConnection(ImageJHelper.ExternalCommunicator.IMAGEJ);//doesn't open connection until later
-			    	ImageJHelper.vcellSendNRRD(requester,zis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'",timePoints,annotatedExportEvent.getExportSpecs().getVariableSpecs().getVariableNames());
+			    	bis = new BufferedInputStream(zis);
+			    	ImageJHelper.vcellSendNRRD(requester,bis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'",timePoints,annotatedExportEvent.getExportSpecs().getVariableSpecs().getVariableNames());
 		    	}finally{
 		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}
+		    		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
 		    	}
 		    	throw UserCancelException.CANCEL_GENERIC;//finished, exit all further tasks
 		    }
