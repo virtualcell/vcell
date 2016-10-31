@@ -86,7 +86,7 @@ public int addExportEvent(String resultSetID, ExportEvent event) {
 			break;
 		}
 		case cbit.rmi.event.ExportEvent.EXPORT_COMPLETE: {
-//			exportStatus.getProgressBar().setValue(100);
+			exportStatus.getProgressBar().setValue(100);
 			exportStatus.getProgressBar().setString("Complete");
 			exportStatus.setComplete(Boolean.TRUE);
 			break;

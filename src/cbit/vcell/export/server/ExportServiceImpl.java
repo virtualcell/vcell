@@ -82,13 +82,13 @@ public synchronized void addExportListener(ExportListener listener) {
  * Creation date: (4/1/2001 11:20:45 AM)
  * @deprecated
  */
-protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location) {
+protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location,ExportSpecs exportSpecs) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_COMPLETE, format, location, null);
+	ExportEvent event = new ExportEvent.AnnotatedExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_COMPLETE, format, location, null,exportSpecs);
 	fireExportEvent(event);
 	return event;
 }
@@ -347,7 +347,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 		completedExportRequests.put(exportSpecs, newExportJob);
 		log.print("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 		URL url = new URL(exportBaseURL + zipFile.getName());
-		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString());
+		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
@@ -390,7 +390,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 				completedExportRequests.put(exportSpecs, newExportJob);
 				log.print("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 				URL url = new URL(exportBaseURL + zipFile.getName());
-				return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString());
+				return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 			}
 			else {
 				throw new DataFormatException("Export Server could not produce valid data !");
@@ -441,7 +441,7 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 		completedExportRequests.put(exportSpecs, newExportJob);
 		log.print("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileNames);
 		URL url = new URL(exportBaseURL + fileNames);
-		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString());
+		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");

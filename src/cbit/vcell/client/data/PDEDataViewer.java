@@ -1821,7 +1821,7 @@ private void sendImageJTimePoint(){
 	try{
 		String varname = getPdeDataContext().getVariableName();
 		double timepoint = getPdeDataContext().getTimePoint();
-		ImageJHelper.vcellSendImage(PDEDataViewer.this,getPdeDataContext(),getPDEDataContextPanel1().getMembranesAndIndexes(),"VCell sim results '"+varname+"':"+timepoint);
+		ImageJHelper.vcellSendImage(PDEDataViewer.this,getPdeDataContext(),getPDEDataContextPanel1().getMembranesAndIndexes(),"VCell sim results '"+varname+"':"+timepoint,new double[] {timepoint},new String[] {varname});
 	}catch(Exception e){
 		handleException(e);
 	}
@@ -1842,7 +1842,7 @@ private void sendImageJDomain(){
 					getPdeDataContext().getCartesianMesh().getISize(),
 					getClientTaskStatusSupport(),
 					listenAndCancel,
-					"Volume domains '"+getSimulationModelInfo().getContextName()+"':'"+getSimulation().getName()+"'");
+					"Volume domains '"+getSimulationModelInfo().getContextName()+"':'"+getSimulation().getName()+"'",getSimulationModelInfo());
 			}
 		};
 		ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<>(), new AsynchClientTask[] {sendDataTask},true,false,true,listenAndCancel,false);

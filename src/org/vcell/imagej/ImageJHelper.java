@@ -1,13 +1,11 @@
 package org.vcell.imagej;
 
 import java.awt.Component;
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -18,11 +16,9 @@ import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.ZipInputStream;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -31,6 +27,7 @@ import org.vcell.util.ISize;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 
+import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.nrrd.NrrdInfo;
@@ -124,12 +121,16 @@ public class ImageJHelper {
 		public boolean hasOverlays;
 		public Extent extent;
 		public boolean isMask;
-		public HyperStackHelper(BasicStackDimensions basicStackDimensions,Extent extent,boolean hasOverlays,String dataClass,boolean isMask) {
+		public double[] timePoints;
+		public String[] channelDescriptions;
+		public HyperStackHelper(BasicStackDimensions basicStackDimensions,Extent extent,boolean hasOverlays,String dataClass,boolean isMask,double[] timePoints,String[] channelDescriptions) {
 			super(basicStackDimensions.xsize,basicStackDimensions.ysize,basicStackDimensions.zsize,basicStackDimensions.csize,basicStackDimensions.tsize);
 			this.extent = extent;
 			this.dataClass = dataClass;
 			this.hasOverlays = hasOverlays;
 			this.isMask = isMask;
+			this.timePoints = timePoints;
+			this.channelDescriptions = channelDescriptions;
 		}
 		public void writeInfo(DataOutputStream dos) throws Exception{
 			dos.writeUTF(dataClass);
@@ -141,6 +142,20 @@ public class ImageJHelper {
 			dos.writeDouble(extent.getZ());
 			dos.writeBoolean(hasOverlays);
 			dos.writeBoolean(isMask);
+			//timepoints
+			dos.writeInt((timePoints==null?0:timePoints.length));
+			if(timePoints != null){
+				for (int i = 0; i < timePoints.length; i++) {
+					dos.writeDouble(timePoints[i]);
+				}
+			}
+			//channel descriptions
+			dos.writeInt((channelDescriptions==null?0:channelDescriptions.length));
+			if(channelDescriptions != null){
+				for (int i = 0; i < channelDescriptions.length; i++) {
+					dos.writeUTF(channelDescriptions[i]);
+				}
+			}
 		}
 	}
 	public static enum VCellImageJCommands {vcellWantImage,vcellWantInfo,vcellSendImage,vcellSendInfo,vcellSendDomains,vcellWantSurface};
@@ -313,7 +328,7 @@ public class ImageJHelper {
 		}
 	};
 
-	public static void sendVolumeDomain(Component requester,PDEDataContext pdeDataContext,ISize iSize,ClientTaskStatusSupport clientTaskStatusSupport,ListenAndCancel listenAndCancel,String description) throws Exception{
+	public static void sendVolumeDomain(Component requester,PDEDataContext pdeDataContext,ISize iSize,ClientTaskStatusSupport clientTaskStatusSupport,ListenAndCancel listenAndCancel,String description,SimulationModelInfo simulationModelInfo) throws Exception{
 		ImageJConnection[] imageJConnection = new ImageJConnection[1];
 		try{
 			if(listenAndCancel != null){
@@ -342,7 +357,11 @@ public class ImageJHelper {
 				}
 				subVolMapMask.get(subvolume).set(i);
 			}
-			sendData0(imageJConnection[0], new HyperStackHelper(new BasicStackDimensions(iSize.getX(), iSize.getY(), iSize.getZ(), subVolMapMask.size(), 1),pdeDataContext.getCartesianMesh().getExtent(),false,Byte.class.getSimpleName(),true), subVolMapMask,description);
+			ArrayList<String> channelDescriptions = new ArrayList<>();
+			for(Integer subvolID:subVolMapMask.keySet()){
+				channelDescriptions.add(simulationModelInfo.getVolumeNameGeometry(subvolID)+":"+simulationModelInfo.getVolumeNamePhysiology(subvolID));
+			}
+			sendData0(imageJConnection[0], new HyperStackHelper(new BasicStackDimensions(iSize.getX(), iSize.getY(), iSize.getZ(), subVolMapMask.size(), 1),pdeDataContext.getCartesianMesh().getExtent(),false,Byte.class.getSimpleName(),true,null,channelDescriptions.toArray(new String[0])), subVolMapMask,description);
 		}catch(Exception e){
 			if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
 				//ignore, we were cancelled
@@ -352,7 +371,7 @@ public class ImageJHelper {
 		}
 
 	}
-	public static void vcellSendNRRD(final Component requester,ZipInputStream nrrdFileFormatData,ClientTaskStatusSupport clientTaskStatusSupport,ImageJConnection imageJConnection,String description) throws Exception{
+	public static void vcellSendNRRD(final Component requester,ZipInputStream nrrdFileFormatData,ClientTaskStatusSupport clientTaskStatusSupport,ImageJConnection imageJConnection,String description,double[] timePoints,String[] channelDescriptions) throws Exception{
     	if(clientTaskStatusSupport != null){
     		clientTaskStatusSupport.setMessage("reading format... ");
     	}
@@ -380,7 +399,7 @@ public class ImageJHelper {
 			for (int i = 0; i < data.length; i++) {
 				data[i] = dis.readDouble();
 			}
-			sendImageDataAsFloats(imageJConnection, new HyperStackHelper(basicStackDimensions, new Extent(1,1,1), false, Float.class.getSimpleName(), false), data,description);
+			sendImageDataAsFloats(imageJConnection, new HyperStackHelper(basicStackDimensions, new Extent(1,1,1), false, Float.class.getSimpleName(), false,timePoints,channelDescriptions), data,description);
 		}
 		finally{
 			try{if(imageJConnection != null){imageJConnection.closeConnection();}}catch(Exception e){e.printStackTrace();}
@@ -470,7 +489,7 @@ public class ImageJHelper {
 			throw new IllegalArgumentException("Unexpected data type="+dataObj.getClass().getName());
 		}
 	}
-	public static void vcellSendImage(final Component requester,final PDEDataContext pdeDataContext,Hashtable<SampledCurve, int[]>[] membraneTables,String description) throws Exception{//xyz, 1 time, 1 var
+	public static void vcellSendImage(final Component requester,final PDEDataContext pdeDataContext,Hashtable<SampledCurve, int[]>[] membraneTables,String description,double[] timePoints,String[] channelDescriptions) throws Exception{//xyz, 1 time, 1 var
 		final ImageJConnection[] imageJConnectionArr = new ImageJConnection[1];
 		AsynchClientTask sendImageTask = new AsynchClientTask("Send image to ImageJ...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -482,7 +501,7 @@ public class ImageJHelper {
 					//send size of the standard 5 dimensions in this order (width, height, nChannels, nSlices, nFrames)
 					ISize xyzSize = pdeDataContext.getCartesianMesh().getISize();
 					Extent extent = pdeDataContext.getCartesianMesh().getExtent();
-					sendImageDataAsFloats(imageJConnection, new HyperStackHelper(new BasicStackDimensions(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1),extent,true,Float.class.getSimpleName(),false), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
+					sendImageDataAsFloats(imageJConnection, new HyperStackHelper(new BasicStackDimensions(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1),extent,true,Float.class.getSimpleName(),false,timePoints,channelDescriptions), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
 					sendMembraneOutline(imageJConnection, membraneTables);
 				}catch(Exception e){
 					if(e instanceof UserCancelException){

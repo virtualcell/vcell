@@ -9,8 +9,12 @@
  */
 
 package cbit.rmi.event;
+import java.io.Serializable;
+
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+
+import cbit.vcell.export.server.ExportSpecs;
 
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
@@ -24,6 +28,16 @@ public class ExportEvent extends MessageEvent {
 	private long jobID = 0L;
 	private VCDataIdentifier vcDataIdentifier = null;
 
+	public static class AnnotatedExportEvent extends ExportEvent implements Serializable{
+		private ExportSpecs exportSpecs;
+		public AnnotatedExportEvent(Object source, long jobID, User user, VCDataIdentifier vcsID, int argEventType, String format, String location, Double argProgress,ExportSpecs exportSpecs){
+			super(source, jobID, user, vcsID, argEventType, format, location, argProgress);
+			this.exportSpecs = exportSpecs;
+		}
+		public ExportSpecs getExportSpecs(){
+			return exportSpecs;
+		}
+	}
 /**
  * ExportEvent constructor comment.
  */

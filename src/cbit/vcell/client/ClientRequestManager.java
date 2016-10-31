@@ -125,6 +125,7 @@ import cbit.image.VCImageInfo;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportEvent.AnnotatedExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
@@ -169,6 +170,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
@@ -2261,7 +2263,6 @@ private final static String BYTES_KEY = "bytes";
  * Comment
  */
 public static void downloadExportedData(final Component requester, final UserPreferences userPrefs, final ExportEvent evt) {
-
 	AsynchClientTask task1 = new AsynchClientTask("Retrieving data from '"+evt.getLocation()+"'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
@@ -2333,6 +2334,14 @@ public static void downloadExportedData(final Component requester, final UserPre
 		    if(excArr[0] != null){//download failed
 		    	throw excArr[0];
 		    }
+//			//-------------------------
+//			String filePart = new URL(evt.getLocation()).getFile();
+//			File f = new File("c:/temp/exportdir",filePart);
+//			FileInputStream fis = new FileInputStream(f);
+//			baosArr[0] = new ByteArrayOutputStream();
+//			IOUtils.copy(fis, baosArr[0]);
+//			fis.close();
+//			//------------------------------
 		    //
 		    //finished downloading, either save to file or send to ImageJ directly
 		    //
@@ -2363,8 +2372,14 @@ public static void downloadExportedData(final Component requester, final UserPre
 //					    		fos.write(mybuf, 0, numread);
 //					    	}
 //					    	fos.close();
+			    	AnnotatedExportEvent annotatedExportEvent = (AnnotatedExportEvent)evt;
+			    	TimeSpecs timeSpecs = annotatedExportEvent.getExportSpecs().getTimeSpecs();
+			    	double[] timePoints = new double[timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1];
+			    	for (int tp = timeSpecs.getBeginTimeIndex(); tp <= timeSpecs.getEndTimeIndex(); tp++){
+			    		timePoints[tp-timeSpecs.getBeginTimeIndex()] = timeSpecs.getAllTimes()[tp];
+			    	}
 			    	imagejConnetArr[0] = new ImageJConnection(ImageJHelper.ExternalCommunicator.IMAGEJ);//doesn't open connection until later
-			    	ImageJHelper.vcellSendNRRD(requester,zis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'");
+			    	ImageJHelper.vcellSendNRRD(requester,zis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'",timePoints,annotatedExportEvent.getExportSpecs().getVariableSpecs().getVariableNames());
 		    	}finally{
 		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}
 		    	}
