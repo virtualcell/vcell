@@ -1447,7 +1447,7 @@ public final class BeanUtils {
 		double min=Double.POSITIVE_INFINITY;
 		double max=Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < values.length; i++) {
-			if((domainValid == null || domainValid.get(i)) && !Double.isNaN(values[i]) && !Double.isInfinite(values[i])){
+			if((domainValid == null || domainValid.get(i) || domainValid.isEmpty()) && !Double.isNaN(values[i]) && !Double.isInfinite(values[i])){
 			if(values[i] < min){min = values[i];}
 			if(values[i] > max){max = values[i];}
 			}
