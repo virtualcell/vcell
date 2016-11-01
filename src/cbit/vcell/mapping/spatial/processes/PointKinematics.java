@@ -10,10 +10,15 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.Issue.IssueCategory;
 
+import com.sun.javafx.scene.control.skin.ListViewSkin;
+
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.spatial.PointObject;
 import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -45,6 +50,20 @@ public class PointKinematics extends SpatialProcess {
 	public PointKinematics(PointKinematics argPointKinematics, SimulationContext argSimContext) {
 		super(argPointKinematics, argSimContext);
 		this.pointObject = (PointObject)argSimContext.getSpatialObject(argPointKinematics.getPointObject().getName());
+	}
+	
+	@Override
+	public List<SpatialQuantity> getReferencedSpatialQuantities() {
+		ArrayList<SpatialQuantity> spatialQuantities = new ArrayList<SpatialQuantity>();
+		if (pointObject!=null){
+			spatialQuantities.add(pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.X));
+			spatialQuantities.add(pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Y));
+			spatialQuantities.add(pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Z));
+			spatialQuantities.add(pointObject.getSpatialQuantity(QuantityCategory.PointVelocity,QuantityComponent.X));
+			spatialQuantities.add(pointObject.getSpatialQuantity(QuantityCategory.PointVelocity,QuantityComponent.Y));
+			spatialQuantities.add(pointObject.getSpatialQuantity(QuantityCategory.PointVelocity,QuantityComponent.Z));
+		}
+		return spatialQuantities;
 	}
 	
 	public void setPointObject(PointObject pointObject){
@@ -86,8 +105,15 @@ public class PointKinematics extends SpatialProcess {
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		if (simulationContext!=null && pointObject!=null){
 			if (simulationContext.getSpatialObject(pointObject.getName()) != pointObject){
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "PointKinematics '"+getName()+"' refers to missing PointObject '"+pointObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Point Kinematics '"+getName()+"' refers to missing PointObject '"+pointObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+			}
+			if (!pointObject.isQuantityCategoryEnabled(QuantityCategory.PointPosition)){
+				issueList.add(new Issue(pointObject, issueContext, IssueCategory.Identifiers,"Point Kinematics '"+getName()+"' refers to disabled quantity '"+QuantityCategory.PointPosition.description+"', please enable it.", Issue.Severity.ERROR));
+			}
+			if (!pointObject.isQuantityCategoryEnabled(QuantityCategory.PointVelocity)){
+				issueList.add(new Issue(pointObject, issueContext, IssueCategory.Identifiers, "Point Kinematics '"+getName()+"' refers to disabled quantity '"+QuantityCategory.PointVelocity.description+"', please enable it.", Issue.Severity.ERROR));
 			}
 		}
 	}
+
 }

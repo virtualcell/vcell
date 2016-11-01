@@ -34,6 +34,8 @@ public class SpatialObjectTableModel extends BioModelEditorApplicationRightSideT
 	
 	private static String[] columnNames = new String[] {"Name", "Description", "Quantities"};
 
+	SelectionManager selectionManager = null;
+
 	public SpatialObjectTableModel(ScrollTable table) {
 		super(table, columnNames);
 	}
@@ -209,4 +211,12 @@ public class SpatialObjectTableModel extends BioModelEditorApplicationRightSideT
 		// -1 added 10/20/2014 to suppress extra row for adding new rule until adding rate rules framework is fixed.  Had been return getRowCountWithAddNew();
 		return getRowCountWithAddNew()-1;  
 	}
+	
+	public void setSelectionManager(SelectionManager selectionManager) {
+		this.selectionManager = selectionManager;
+	}
+	public SelectionManager getSelectionManager() {
+		return selectionManager;
+	}
+
 }

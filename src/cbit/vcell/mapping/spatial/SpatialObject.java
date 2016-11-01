@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.mapping.ApplicationQuantity;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
@@ -326,4 +328,16 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 	}
 
 	public abstract void refreshName() throws PropertyVetoException;
+	
+	public final List<SpatialProcess> getRelatedSpatialProcesses() {
+		ArrayList<SpatialProcess> spatialProcesses = new ArrayList<SpatialProcess>();
+		if (simulationContext!=null){
+			for (SpatialProcess spatialProcess : simulationContext.getSpatialProcesses()){
+				if (spatialProcess.getSpatialObjects().contains(this)){
+					spatialProcesses.add(spatialProcess);
+				}
+			}
+		}
+		return spatialProcesses;
+	}
 }

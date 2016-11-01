@@ -14,6 +14,9 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SurfaceRegionObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -41,6 +44,17 @@ public class SurfaceKinematics extends SpatialProcess {
 	public SurfaceKinematics(SurfaceKinematics argSurfaceKinematics, SimulationContext argSimContext) {
 		super(argSurfaceKinematics, argSimContext);
 		this.surfaceRegionObject = (SurfaceRegionObject)argSimContext.getSpatialObject(argSurfaceKinematics.getSurfaceRegionObject().getName());
+	}
+	
+	@Override
+	public List<SpatialQuantity> getReferencedSpatialQuantities() {
+		ArrayList<SpatialQuantity> spatialQuantities = new ArrayList<SpatialQuantity>();
+		if (surfaceRegionObject!=null){
+			spatialQuantities.add(surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.X));
+			spatialQuantities.add(surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.Y));
+			spatialQuantities.add(surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.Z));
+		}
+		return spatialQuantities;
 	}
 	
 	public void setSurfaceRegionObject(SurfaceRegionObject surfaceRegionObject){
@@ -82,8 +96,12 @@ public class SurfaceKinematics extends SpatialProcess {
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		if (simulationContext!=null && surfaceRegionObject!=null){
 			if (simulationContext.getSpatialObject(surfaceRegionObject.getName()) != surfaceRegionObject){
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "SurfaceKinematics '"+getName()+"' refers to missing surfaceObject '"+surfaceRegionObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Surface Kinematics '"+getName()+"' refers to missing surfaceObject '"+surfaceRegionObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+			}
+			if (!surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity)){
+				issueList.add(new Issue(surfaceRegionObject, issueContext, IssueCategory.Identifiers, "Surface Kinematics '"+getName()+"' refers to disabled quantity '"+QuantityCategory.SurfaceVelocity.description+"', please enable it.", Issue.Severity.ERROR));
 			}
 		}
 	}
+	
 }

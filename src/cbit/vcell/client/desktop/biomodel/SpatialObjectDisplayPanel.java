@@ -15,6 +15,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JLabel;
 
@@ -86,12 +87,24 @@ public class SpatialObjectDisplayPanel extends BioModelEditorApplicationRightSid
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		if(selectedObjects != null && selectedObjects.length > 0 && selectedObjects[0] instanceof SpatialObject) {
 			super.onSelectedObjectsChange(selectedObjects);
-			System.out.println("Object panel, object: " + selectedObjects[0]);
+//			System.out.println("Object panel, object: " + selectedObjects[0]);
 		} else if(selectedObjects != null && selectedObjects.length > 0 && selectedObjects[0] instanceof SpatialProcess) {
-			System.out.println("Object panel, process: " + selectedObjects[0]);
+//			System.out.println("Object panel, process: " + selectedObjects[0]);
 			Object[] noSelection = new Object[0];
 			setTableSelections(noSelection, table, tableModel);
+			
+			// the renderer will check which SpatialObject is selected and will highlight the related
+			// spatial processes in this panel
+			SpatialObjectTableModel model = (SpatialObjectTableModel)table.getModel();
+			model.fireTableDataChanged();
 		}
+	}
+	
+	@Override
+	public void setSelectionManager(SelectionManager selectionManager) {
+		super.setSelectionManager(selectionManager);
+		SpatialObjectTableModel model = (SpatialObjectTableModel)table.getModel();
+		model.setSelectionManager(selectionManager);
 	}
 
 	@Override

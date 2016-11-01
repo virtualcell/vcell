@@ -14,6 +14,9 @@ import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.VolumeRegionObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -44,6 +47,17 @@ public class VolumeKinematics extends SpatialProcess {
 	public VolumeKinematics(VolumeKinematics argVolumeKinematics, SimulationContext argSimContext) {
 		super(argVolumeKinematics, argSimContext);
 		this.volumeRegionObject = (VolumeRegionObject)argSimContext.getSpatialObject(argVolumeKinematics.getVolumeRegionObject().getName());
+	}
+	
+	@Override
+	public List<SpatialQuantity> getReferencedSpatialQuantities() {
+		ArrayList<SpatialQuantity> spatialQuantities = new ArrayList<SpatialQuantity>();
+		if (volumeRegionObject!=null){
+			spatialQuantities.add(volumeRegionObject.getSpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.X));
+			spatialQuantities.add(volumeRegionObject.getSpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.Y));
+			spatialQuantities.add(volumeRegionObject.getSpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.Z));
+		}
+		return spatialQuantities;
 	}
 	
 	public void setVolumeRegionObject(VolumeRegionObject volumeRegionObject){
@@ -85,8 +99,12 @@ public class VolumeKinematics extends SpatialProcess {
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		if (simulationContext!=null && volumeRegionObject!=null){
 			if (simulationContext.getSpatialObject(volumeRegionObject.getName()) != volumeRegionObject){
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "VolumeKinematics '"+getName()+"' refers to missing volumeObject '"+volumeRegionObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Volume Kinematics '"+getName()+"' refers to missing volumeObject '"+volumeRegionObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+			}
+			if (!volumeRegionObject.isQuantityCategoryEnabled(QuantityCategory.InteriorVelocity)){
+				issueList.add(new Issue(volumeRegionObject, issueContext, IssueCategory.Identifiers, "Volume Kinematics '"+getName()+"' refers to disabled quantity '"+QuantityCategory.InteriorVelocity.description+"', please enable it.", Issue.Severity.ERROR));
 			}
 		}
 	}
+
 }

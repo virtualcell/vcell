@@ -18,6 +18,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JLabel;
@@ -125,12 +126,24 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		if(selectedObjects != null && selectedObjects.length > 0 && selectedObjects[0] instanceof SpatialProcess) {
 			super.onSelectedObjectsChange(selectedObjects);
-			System.out.println("Process panel, process: " + selectedObjects[0]);
+//			System.out.println("Process panel, process: " + selectedObjects[0]);
 		} else if(selectedObjects != null && selectedObjects.length > 0 && selectedObjects[0] instanceof SpatialObject) {
-			System.out.println("Process panel, object: " + selectedObjects[0]);
+//			System.out.println("Process panel, object: " + selectedObjects[0]);
 			Object[] noSelection = new Object[0];
 			setTableSelections(noSelection, table, tableModel);
+			
+			// the renderer will check which SpatialObject is selected and will highlight the related
+			// spatial processes in this panel
+			SpatialProcessTableModel model = (SpatialProcessTableModel)table.getModel();
+			model.fireTableDataChanged();
 		}
+	}
+	
+	@Override
+	public void setSelectionManager(SelectionManager selectionManager) {
+		super.setSelectionManager(selectionManager);
+		SpatialProcessTableModel model = (SpatialProcessTableModel)table.getModel();
+		model.setSelectionManager(selectionManager);
 	}
 
 	@Override

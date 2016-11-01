@@ -21,6 +21,7 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
@@ -32,7 +33,9 @@ public class SpatialProcessTableModel extends BioModelEditorApplicationRightSide
 	public final static int COLUMN_SpatialProcess_DESCRIPTION = 1;
 	public final static int COLUMN_SpatialProcess_SPATIALOBJECTS = 2;
 	
-	private static String[] columnNames = new String[] {"Name", "Description", "Spatial Objects"};
+	private static String[] columnNames = new String[] {"Name", "Description", "Spatial Objects (and Quantities)"};
+
+	SelectionManager selectionManager = null;
 
 	public SpatialProcessTableModel(ScrollTable table) {
 		super(table, columnNames);
@@ -77,9 +80,16 @@ public class SpatialProcessTableModel extends BioModelEditorApplicationRightSide
 	
 	private String getSpatialObjectsString(SpatialProcess spatialProcess){
 		List<SpatialObject> spatialObjects = spatialProcess.getSpatialObjects();
+		List<SpatialQuantity> spatialQuantities = spatialProcess.getReferencedSpatialQuantities();
 		ArrayList<String> spatialObjectNames = new ArrayList<String>();
 		for (SpatialObject obj : spatialObjects){
-			spatialObjectNames.add(obj.getName());
+			ArrayList<String> categoryNames = new ArrayList<String>();
+			for (SpatialQuantity quantity : spatialQuantities){
+				if (quantity.getSpatialObject() == obj && !categoryNames.contains(quantity.getQuantityCategory().varSuffix)){
+					categoryNames.add(quantity.getQuantityCategory().varSuffix);
+				}
+			}
+			spatialObjectNames.add(obj.getName()+"  ("+categoryNames.toString().replace("[", "").replace("]", "")+")");
 		}
 		return spatialObjectNames.toString().replace("]","").replace("[","");
 	}
@@ -202,5 +212,12 @@ public class SpatialProcessTableModel extends BioModelEditorApplicationRightSide
 	public int getRowCount() {
 		// -1 added 10/20/2014 to suppress extra row for adding new rule until adding rate rules framework is fixed.  Had been return getRowCountWithAddNew();
 		return getRowCountWithAddNew()-1;  
+	}
+	
+	public void setSelectionManager(SelectionManager selectionManager) {
+		this.selectionManager = selectionManager;
+	}
+	public SelectionManager getSelectionManager() {
+		return selectionManager;
 	}
 }

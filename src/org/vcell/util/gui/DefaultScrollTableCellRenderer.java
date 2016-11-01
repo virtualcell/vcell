@@ -42,6 +42,7 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 import cbit.gui.ModelProcessEquation;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationsTableModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
+import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.SpatialObjectDisplayPanel;
 import cbit.vcell.client.desktop.biomodel.SpatialObjectTableModel;
 import cbit.vcell.client.desktop.biomodel.SpatialProcessTableModel;
@@ -103,6 +104,18 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 				setBackground(hoverColor);
 			} else {
 				setBackground(row % 2 == 0 ? table.getBackground() : everyOtherRowColor);				
+			}
+			
+			if(table.getModel() instanceof SpatialProcessTableModel /* && column == SpatialProcessTableModel.COLUMN_SpatialProcess_SPATIALOBJECTS */) {
+				boolean found = isMatchWithSelectedObject(table, row);
+				if(found == true) {
+					setBackground(Color.yellow);
+				}
+			} else if(table.getModel() instanceof SpatialObjectTableModel /* && column == SpatialObjectTableModel.COLUMN_SpatialObject_NAME */) {
+				boolean found = isMatchWithSelectedProcess(table, row);
+				if(found == true) {
+					setBackground(Color.yellow);
+				}
 			}
 			setForeground(table.getForeground());
 		}
@@ -182,6 +195,53 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel)tableModel);
 		}
 		return this;
+	}
+
+	private boolean isMatchWithSelectedObject(JTable table, int row) {
+		SpatialProcessTableModel tm = (SpatialProcessTableModel)table.getModel();
+		SelectionManager selectionManager = tm.getSelectionManager();
+		boolean found = false;
+		if(selectionManager != null) {
+			for(Object ob : selectionManager.getSelectedObjects()) {
+				if(ob instanceof SpatialObject) {		// a SpatialObject selected
+					List<SpatialProcess> spList = ((SpatialObject)ob).getRelatedSpatialProcesses();
+					for(SpatialProcess theirs : spList) {
+						SpatialProcess ours = tm.getValueAt(row);
+						if(ours == theirs) {
+							found = true;
+							break;
+						}
+					}
+				}
+				if(found == true) {
+					break;
+				}
+			}
+		}
+		return found;
+	}
+	private boolean isMatchWithSelectedProcess(JTable table, int row) {
+		SpatialObjectTableModel tm = (SpatialObjectTableModel)table.getModel();
+		SelectionManager selectionManager = tm.getSelectionManager();
+		boolean found = false;
+		if(selectionManager != null) {
+			for(Object ob : selectionManager.getSelectedObjects()) {
+				if(ob instanceof SpatialProcess) {		// a SpatialProcess selected
+					List<SpatialObject> soList = ((SpatialProcess)ob).getSpatialObjects();
+					for(SpatialObject theirs : soList) {
+						SpatialObject ours = tm.getValueAt(row);
+						if(ours == theirs) {
+							found = true;
+							break;
+						}
+					}
+				}
+				if(found == true) {
+					break;
+				}
+			}
+		}
+		return found;
 	}
 	
 	/**

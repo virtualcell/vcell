@@ -14,6 +14,9 @@ import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.spatial.PointObject;
 import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -41,6 +44,17 @@ public class PointLocation extends SpatialProcess {
 	public PointLocation(PointLocation argPointLocation, SimulationContext argSimContext) {
 		super(argPointLocation, argSimContext);
 		this.pointObject = (PointObject)argSimContext.getSpatialObject(argPointLocation.getPointObject().getName());
+	}
+
+	@Override
+	public List<SpatialQuantity> getReferencedSpatialQuantities() {
+		ArrayList<SpatialQuantity> spatialQuantities = new ArrayList<SpatialQuantity>();
+		if (pointObject!=null){
+			spatialQuantities.add(pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.X));
+			spatialQuantities.add(pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Y));
+			spatialQuantities.add(pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Z));
+		}
+		return spatialQuantities;
 	}
 
 	@Override
@@ -82,8 +96,12 @@ public class PointLocation extends SpatialProcess {
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		if (simulationContext!=null && pointObject!=null){
 			if (simulationContext.getSpatialObject(pointObject.getName()) != pointObject){
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "PointLocation '"+getName()+"' refers to missing PointObject '"+pointObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Point Location Process '"+getName()+"' refers to missing PointObject '"+pointObject.getName()+" (see Spatial Objects)", Issue.Severity.ERROR));
+			}
+			if (!pointObject.isQuantityCategoryEnabled(QuantityCategory.PointPosition)){
+				issueList.add(new Issue(pointObject, issueContext, IssueCategory.Identifiers, "Point Location Process '"+getName()+"' refers to disabled quantity '"+QuantityCategory.PointPosition.description+"', please enable it.", Issue.Severity.ERROR));
 			}
 		}
 	}
+	
 }
