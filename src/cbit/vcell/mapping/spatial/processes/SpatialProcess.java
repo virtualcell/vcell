@@ -22,7 +22,6 @@ import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.spatial.SpatialObject;
-import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Model;

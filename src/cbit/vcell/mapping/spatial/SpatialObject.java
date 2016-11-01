@@ -57,9 +57,9 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 		VolumeSize("Volume Region Size","size","VolumeRegionSize",Dimension.Volume), 
 		InteriorVelocity("Interior Velocity","vel","InteriorVelocity",Dimension.Volume), 
 		SurfaceDistanceMap("Distance to Surface (Distance Map)","distance","DistanceToSurface",Dimension.Length), 
-		DirectionToSurface("Direction to Surface","direction","DirectionToSurface",Dimension.Length), 
+		DirectionToSurface("Direction to Surface","direction","DirectionToSurface",Dimension.Nondimensional), 
 		PointDistanceMap("Distance to Point (Distance Map)","distance","DistanceToPoint",Dimension.Length), 
-		DirectionToPoint("Direction to Point","direction","DirectionToPoint",Dimension.Length);
+		DirectionToPoint("Direction to Point","direction","DirectionToPoint",Dimension.Nondimensional);
 		
 		public final String description;
 		public final String varSuffix;
