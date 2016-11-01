@@ -11,9 +11,18 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.constants.GuiConstants;
@@ -28,18 +37,66 @@ import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
 public class ApplicationGeometryPanel extends ApplicationSubPanel {
 	private GeometryViewer geometryViewer;
 	private StructureMappingCartoonPanel structureMappingCartoonPanel;	
+	private SpatialEntitiesPanel spatialEntitiesPanel;
 	private SpatialObjectDisplayPanel spatialObjectDisplayPanel;
 	private SpatialProcessDisplayPanel spatialProcessDisplayPanel;
 		
 	private enum GeometryPanelTabID {
 		structure_mapping("Structure Mapping"),
 		geometry_definition("Geometry Definition"),
-		spatial_objects("Spatial Objects"), 
-		spatial_processes("Spatial Processes");
-		
+		spatial_entities("Kinematics"); 
+
 		String title = null;
 		GeometryPanelTabID(String name) {
 			this.title = name;
+		}
+	}
+	
+	private class SpatialEntitiesPanel extends JPanel {
+		public SpatialEntitiesPanel() {
+			super();
+			initialize();
+		}
+
+		private void initialize() {
+			setName("SpatialEntitiesPanel");
+			setLayout(new GridBagLayout());
+
+			Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+			Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
+			TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, "<html><b> Spatial Objects </b></html>");
+			titleTop.setTitleJustification(TitledBorder.LEFT);
+			titleTop.setTitlePosition(TitledBorder.TOP);
+			TitledBorder titleBottom = BorderFactory.createTitledBorder(loweredEtchedBorder, "<html><b> Spatial Process </b></html>");
+			titleBottom.setTitleJustification(TitledBorder.LEFT);
+			titleBottom.setTitlePosition(TitledBorder.TOP);
+			
+			spatialObjectDisplayPanel = new SpatialObjectDisplayPanel();
+			spatialProcessDisplayPanel = new SpatialProcessDisplayPanel();
+			spatialObjectDisplayPanel.setBorder(titleTop);
+			spatialProcessDisplayPanel.setBorder(titleBottom);
+
+			int gridy = 0;
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.anchor = GridBagConstraints.NORTH;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(8,4,4,4);
+			add(spatialObjectDisplayPanel, gbc);
+			
+			gridy++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.anchor = GridBagConstraints.SOUTH;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(8,4,4,4);
+			add(spatialProcessDisplayPanel, gbc);
 		}
 	}
 	
@@ -64,14 +121,12 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 		super.initialize();
 		geometryViewer = new GeometryViewer();
 		structureMappingCartoonPanel = new StructureMappingCartoonPanel();
-		spatialObjectDisplayPanel = new SpatialObjectDisplayPanel();
-		spatialProcessDisplayPanel = new SpatialProcessDisplayPanel();
+		spatialEntitiesPanel = new SpatialEntitiesPanel();
 		
 		GeometryPanelTab geometryPanelTabs[] = new GeometryPanelTab[GeometryPanelTabID.values().length]; 
 		geometryPanelTabs[GeometryPanelTabID.structure_mapping.ordinal()] = new GeometryPanelTab(GeometryPanelTabID.structure_mapping, structureMappingCartoonPanel, null);
 		geometryPanelTabs[GeometryPanelTabID.geometry_definition.ordinal()] = new GeometryPanelTab(GeometryPanelTabID.geometry_definition, geometryViewer, null);
-		geometryPanelTabs[GeometryPanelTabID.spatial_objects.ordinal()] = new GeometryPanelTab(GeometryPanelTabID.spatial_objects, spatialObjectDisplayPanel, null);
-		geometryPanelTabs[GeometryPanelTabID.spatial_processes.ordinal()] = new GeometryPanelTab(GeometryPanelTabID.spatial_processes, spatialProcessDisplayPanel, null);
+		geometryPanelTabs[GeometryPanelTabID.spatial_entities.ordinal()] = new GeometryPanelTab(GeometryPanelTabID.spatial_entities, spatialEntitiesPanel, null);
 		
 		for (GeometryPanelTab tab : geometryPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -114,9 +169,9 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.structure_mapping)) {
 					tabbedPane.setSelectedIndex(GeometryPanelTabID.structure_mapping.ordinal());
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.spatial_objects)) {
-					tabbedPane.setSelectedIndex(GeometryPanelTabID.spatial_objects.ordinal());
+					tabbedPane.setSelectedIndex(GeometryPanelTabID.spatial_entities.ordinal());
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.spatial_processes)) {
-					tabbedPane.setSelectedIndex(GeometryPanelTabID.spatial_processes.ordinal());
+					tabbedPane.setSelectedIndex(GeometryPanelTabID.spatial_entities.ordinal());
 				}
 			}
 		}

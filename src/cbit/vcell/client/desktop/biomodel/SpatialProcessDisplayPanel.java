@@ -38,7 +38,8 @@ import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 
 
 @SuppressWarnings("serial")
-public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSidePanel<SpatialProcess> {	
+public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSidePanel<SpatialProcess> {
+	
 	public SpatialProcessDisplayPanel() {
 		super();
 		initialize();
@@ -121,6 +122,18 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 	}
 	
 	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		if(selectedObjects != null && selectedObjects.length > 0 && selectedObjects[0] instanceof SpatialProcess) {
+			super.onSelectedObjectsChange(selectedObjects);
+			System.out.println("Process panel, process: " + selectedObjects[0]);
+		} else if(selectedObjects != null && selectedObjects.length > 0 && selectedObjects[0] instanceof SpatialObject) {
+			System.out.println("Process panel, object: " + selectedObjects[0]);
+			Object[] noSelection = new Object[0];
+			setTableSelections(noSelection, table, tableModel);
+		}
+	}
+
+	@Override
 	protected void newButtonPressed() {
 //		if (simulationContext == null) {
 //			return;
@@ -132,7 +145,7 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 //			DialogUtils.showErrorDialog(this, "Error adding SpatialProcess : " + e.getMessage());
 //		}		
 	}
-
+	
 	@Override
 	protected void deleteButtonPressed() {
 		int[] rows = table.getSelectedRows();

@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 
 
 @SuppressWarnings("serial")
@@ -81,6 +82,18 @@ public class SpatialObjectDisplayPanel extends BioModelEditorApplicationRightSid
 		add(table.getEnclosingScrollPane(), gbc);
 	}
 	
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		if(selectedObjects != null && selectedObjects.length > 0 && selectedObjects[0] instanceof SpatialObject) {
+			super.onSelectedObjectsChange(selectedObjects);
+			System.out.println("Object panel, object: " + selectedObjects[0]);
+		} else if(selectedObjects != null && selectedObjects.length > 0 && selectedObjects[0] instanceof SpatialProcess) {
+			System.out.println("Object panel, process: " + selectedObjects[0]);
+			Object[] noSelection = new Object[0];
+			setTableSelections(noSelection, table, tableModel);
+		}
+	}
+
 	@Override
 	protected void newButtonPressed() {
 		if (simulationContext == null) {

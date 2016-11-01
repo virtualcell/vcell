@@ -62,7 +62,7 @@ public abstract class VCellIcons {
 	public final static Icon rbmBondPossibleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_possible.png"));
 
 	public final static Icon spatialPointIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_point.png"));
-	public final static Icon spatialMembraneIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_membrane.png"));
+	public final static Icon spatialMembraneIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_membrane2.png"));
 	public final static Icon spatialVolumeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_volume.png"));
 	public final static Icon spatialKinematicsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_kinematic.png"));
 	public final static Icon spatialLocationIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_location2.png"));
