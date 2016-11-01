@@ -53,6 +53,7 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 		Centroid("Volume Centroid","centroid","VolumeCentroid",Dimension.Length),
 		Normal("Surface Normal","normal","SurfaceNormal",Dimension.Nondimensional), 
 		VolumeSize("Volume Region Size","size","VolumeRegionSize",Dimension.Volume), 
+		InteriorVelocity("Interior Velocity","vel","InteriorVelocity",Dimension.Volume), 
 		SurfaceDistanceMap("Distance to Surface (Distance Map)","distance","DistanceToSurface",Dimension.Length), 
 		DirectionToSurface("Direction to Surface","direction","DirectionToSurface",Dimension.Length), 
 		PointDistanceMap("Distance to Point (Distance Map)","distance","DistanceToPoint",Dimension.Length), 

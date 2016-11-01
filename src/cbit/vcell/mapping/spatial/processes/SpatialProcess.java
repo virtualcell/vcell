@@ -94,7 +94,17 @@ public abstract class SpatialProcess implements Serializable, IssueSource, Prope
 		SurfaceVelocityY(10,"SurfaceVelocityY","velY","surface velocity (y coord)"),
 		SurfaceVelocityZ(11,"SurfaceVelocityZ","velZ","surface velocity (z coord)"),
 				
-		UserDefined(12, "UserDefined", null,"user defined");
+		Viscosity(12,"Viscosity","viscosity","viscosity"),
+		ExternalDrag(13,"ExternalDrag","viscosity","viscosity"),
+		ActiveStressX(14,"ActiveStressX","activeStressX","externally applied active stress (x coord)"),
+		ActiveStressY(15,"ActiveStressY","activeStressY","externally applied active stress (y coord)"),
+		ActiveStressZ(16,"ActiveStressZ","activeStressZ","externally applied active stress (z coord)"),
+		
+		InternalVelocityX(17,"InternalVelocityX","velX","internal velocity (x coord)"),
+		InternalVelocityY(18,"InternalVelocityY","velY","internal velocity (y coord)"),
+		InternalVelocityZ(19,"InternalVelocityZ","velZ","internal velocity (z coord)"),
+		
+		UserDefined(20, "UserDefined", null,"user defined");
 		
 		private final int role;
 		private final String roleXmlName;

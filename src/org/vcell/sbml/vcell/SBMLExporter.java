@@ -104,6 +104,9 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
+import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -874,11 +877,14 @@ protected void addSpecies() {
 							}
 							boolean bDiffusionZero = (bDiffExprNull || bDiffExprIsZero);
 							Expression velX_Expr = vcSpeciesContextsSpec.getVelocityXParameter().getExpression();
-							boolean bVelX_ExprIsNull = (velX_Expr == null);
+							SpatialQuantity[] velX_Quantities = vcSpeciesContextsSpec.getVelocityQuantities(QuantityComponent.X);
+							boolean bVelX_ExprIsNull = (velX_Expr == null && velX_Quantities.length == 0);
 							Expression velY_Expr = vcSpeciesContextsSpec.getVelocityYParameter().getExpression();
-							boolean bVelY_ExprIsNull = (velY_Expr == null);
+							SpatialQuantity[] velY_Quantities = vcSpeciesContextsSpec.getVelocityQuantities(QuantityComponent.Y);
+							boolean bVelY_ExprIsNull = (velY_Expr == null && velY_Quantities.length == 0);
 							Expression velZ_Expr = vcSpeciesContextsSpec.getVelocityZParameter().getExpression();
-							boolean bVelZ_ExprIsNull = (velZ_Expr == null);
+							SpatialQuantity[] velZ_Quantities = vcSpeciesContextsSpec.getVelocityQuantities(QuantityComponent.Z);
+							boolean bVelZ_ExprIsNull = (velZ_Expr == null && velZ_Quantities.length == 0);
 							boolean bAdvectionNull = (bVelX_ExprIsNull && bVelY_ExprIsNull && bVelZ_ExprIsNull);
 							if (bDiffusionZero && bAdvectionNull) {
 								continue;

@@ -158,6 +158,7 @@ import cbit.vcell.mapping.spatial.processes.PointLocation;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess.SpatialProcessParameterType;
 import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
+import cbit.vcell.mapping.spatial.processes.VolumeKinematics;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -3602,6 +3603,12 @@ public SpatialProcess[] getSpatialProcesses(SimulationContext simContext, Elemen
 			SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject)simContext.getSpatialObject(surfaceRegionObjectName);
 			surfaceKinematics.setSurfaceRegionObject(surfaceRegionObject);
 			spatialProcess = surfaceKinematics;
+		}else if (type.equals(XMLTags.SpatialProcessTypeAttrValue_VolumeKinematics)){
+			VolumeKinematics volumeKinematics = new VolumeKinematics(name,simContext);
+			String volumeRegionObjectName = spatialProcessElement.getAttributeValue(XMLTags.SpatialProcessVolumeObjectAttrTag);
+			VolumeRegionObject volumeRegionObject = (VolumeRegionObject)simContext.getSpatialObject(volumeRegionObjectName);
+			volumeKinematics.setVolumeRegionObject(volumeRegionObject);
+			spatialProcess = volumeKinematics;
 		}
 		
 		// set parameters

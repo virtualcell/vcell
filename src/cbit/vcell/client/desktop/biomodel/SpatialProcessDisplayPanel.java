@@ -33,6 +33,7 @@ import cbit.vcell.mapping.spatial.PointObject;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.mapping.spatial.SurfaceRegionObject;
+import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 
 
@@ -82,12 +83,16 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 					public void actionPerformed(ActionEvent e) {  createNewPointKinematics(); }});
 				JMenuItem newSurfaceKinematicsMenuItem = new JMenuItem(new AbstractAction("new Surface Kinematics") {
 					public void actionPerformed(ActionEvent e) {  createNewSurfaceKinematics(); }});
+				JMenuItem newVolumeKinematicsMenuItem = new JMenuItem(new AbstractAction("new Volume Kinematics") {
+					public void actionPerformed(ActionEvent e) {  createNewVolumeKinematics(); }});
 				newPointLocationMenuItem.setIcon(VCellIcons.addIcon(VCellIcons.spatialPointIcon, VCellIcons.spatialLocationIcon));
 				newPointKinematicsMenuItem.setIcon(VCellIcons.addIcon(VCellIcons.spatialPointIcon, VCellIcons.spatialKinematicsIcon));
 				newSurfaceKinematicsMenuItem.setIcon(VCellIcons.addIcon(VCellIcons.spatialMembraneIcon, VCellIcons.spatialKinematicsIcon));
+				newVolumeKinematicsMenuItem.setIcon(VCellIcons.addIcon(VCellIcons.spatialVolumeIcon, VCellIcons.spatialKinematicsIcon));
 				popup.add(newPointLocationMenuItem);
 				popup.add(newPointKinematicsMenuItem);
 				popup.add(newSurfaceKinematicsMenuItem);
+				popup.add(newVolumeKinematicsMenuItem);
 				
 				
 				popup.show(addNewButton, 0, addNewButton.getHeight());
@@ -188,6 +193,25 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 		return null;
 	}
 
+	private VolumeRegionObject getFreeVolumeRegionObject(){
+		for (SpatialObject spatialObject : simulationContext.getSpatialObjects()){
+			if (spatialObject instanceof VolumeRegionObject){
+				VolumeRegionObject volumeRegionObject = (VolumeRegionObject)spatialObject;
+				boolean bVolumeRegionObjectFree = true;
+				for (SpatialProcess spatialProcess : simulationContext.getSpatialProcesses()){
+					if (spatialProcess.getSpatialObjects().contains(volumeRegionObject)){
+						bVolumeRegionObjectFree = false;
+						break;
+					}
+				}
+				if (bVolumeRegionObjectFree){
+					return volumeRegionObject;
+				}
+			}
+		}
+		return null;
+	}
+
 	private void createNewPointLocation() {
 		if (simulationContext!=null){
 			PointObject pointObject = getOrCreateNextPointObject();
@@ -210,6 +234,15 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 			if (surfaceRegionObject!=null){
 				surfaceRegionObject.setQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity, true);
 				simulationContext.createSurfaceKinematics(surfaceRegionObject);
+			}
+		}
+	}
+	private void createNewVolumeKinematics() {
+		if (simulationContext!=null){
+			VolumeRegionObject volumeRegionObject = getFreeVolumeRegionObject();
+			if (volumeRegionObject!=null){
+				volumeRegionObject.setQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity, true);
+				simulationContext.createVolumeKinematics(volumeRegionObject);
 			}
 		}
 	}

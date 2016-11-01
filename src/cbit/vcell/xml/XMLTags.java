@@ -555,8 +555,10 @@ public class XMLTags {
 	public final static String  SpatialProcessTypeAttrValue_PointLocation = "PointLocation";
 	public final static String  SpatialProcessTypeAttrValue_PointKinematics = "PointKinematics";
 	public final static String  SpatialProcessTypeAttrValue_SurfaceKinematics = "SurfaceKinematics";
+	public final static String  SpatialProcessTypeAttrValue_VolumeKinematics = "VolumeKinematics";
 	public final static String SpatialProcessPointObjectAttrTag = "PointObject";
 	public final static String SpatialProcessSurfaceObjectAttrTag = "SurfaceObject";
+	public final static String SpatialProcessVolumeObjectAttrTag = "VolumeObject";
 	
 	public final static String UseValuesFromTriggerTimeAttrTag = "UseValuesFromTriggerTime";
 	public final static String TriggerTag = "Trigger";

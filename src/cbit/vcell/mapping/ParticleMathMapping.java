@@ -29,6 +29,8 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -41,8 +43,8 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
-import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleJumpProcess.ProcessSymmetryFactor;
+import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -55,15 +57,14 @@ import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -634,16 +635,48 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm.getGeometryClass()));
 
 			Expression driftXExp = null;
-			if (scs.getVelocityXParameter()!=null){
-				driftXExp = scs.getVelocityXParameter().getExpression();
+			if (scs.getVelocityXParameter().getExpression()!=null){
+				driftXExp = new Expression(getMathSymbol(scs.getVelocityXParameter(),sm.getGeometryClass()));
+			}else{
+				SpatialQuantity[] velX_quantities = scs.getVelocityQuantities(QuantityComponent.X);
+				if (velX_quantities.length>0){
+					int numRegions = simContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(sm.getGeometryClass()).length;
+					if (velX_quantities.length==1 && numRegions==1){
+						driftXExp = new Expression(getMathSymbol(velX_quantities[0],sm.getGeometryClass()));
+					}else{
+						throw new MappingException("multiple advection velocities enabled set for multiple volume domains ");
+					}
+				}
 			}
+
 			Expression driftYExp = null;
-			if (scs.getVelocityYParameter()!=null){
-				driftYExp = scs.getVelocityYParameter().getExpression();
+			if (scs.getVelocityYParameter().getExpression()!=null){
+				driftYExp = new Expression(getMathSymbol(scs.getVelocityYParameter(),sm.getGeometryClass()));
+			}else{
+				SpatialQuantity[] velY_quantities = scs.getVelocityQuantities(QuantityComponent.Y);
+				if (velY_quantities.length>0){
+					int numRegions = simContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(sm.getGeometryClass()).length;
+					if (velY_quantities.length==1 && numRegions==1){
+						driftYExp = new Expression(getMathSymbol(velY_quantities[0],sm.getGeometryClass()));
+					}else{
+						throw new MappingException("multiple advection velocities enabled set for multiple volume domains ");
+					}
+				}
 			}
+			
 			Expression driftZExp = null;
-			if (scs.getVelocityZParameter()!=null){
-				driftZExp = scs.getVelocityZParameter().getExpression();
+			if (scs.getVelocityZParameter().getExpression()!=null){
+				driftZExp = new Expression(getMathSymbol(scs.getVelocityZParameter(),sm.getGeometryClass()));
+			}else{
+				SpatialQuantity[] velZ_quantities = scs.getVelocityQuantities(QuantityComponent.Z);
+				if (velZ_quantities.length>0){
+					int numRegions = simContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(sm.getGeometryClass()).length;
+					if (velZ_quantities.length==1 && numRegions==1){
+						driftZExp = new Expression(getMathSymbol(velZ_quantities[0],sm.getGeometryClass()));
+					}else{
+						throw new MappingException("multiple advection velocities enabled set for multiple volume domains ");
+					}
+				}
 			}
 
 			ParticleProperties particleProperties = new ParticleProperties(particleVariable, diffusion, driftXExp, driftYExp, driftZExp, particleInitialConditions);

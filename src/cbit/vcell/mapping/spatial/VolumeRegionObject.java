@@ -31,6 +31,9 @@ public class VolumeRegionObject extends SpatialObject {
 	private SpatialQuantity centroidX = new SpatialQuantity(QuantityCategory.Centroid,QuantityComponent.X);
 	private SpatialQuantity centroidY = new SpatialQuantity(QuantityCategory.Centroid,QuantityComponent.Y);
 	private SpatialQuantity centroidZ = new SpatialQuantity(QuantityCategory.Centroid,QuantityComponent.Z);
+	private SpatialQuantity interiorVelX = new SpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.X);
+	private SpatialQuantity interiorVelY = new SpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.Y);
+	private SpatialQuantity interiorVelZ = new SpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.Z);
 	private SpatialQuantity size = new SpatialQuantity(QuantityCategory.VolumeSize,QuantityComponent.Scalar);
 
 
@@ -52,8 +55,10 @@ public class VolumeRegionObject extends SpatialObject {
 		super(name, simContext,
 				new QuantityCategory[] {
 					QuantityCategory.Centroid,
+					QuantityCategory.InteriorVelocity,
 					QuantityCategory.VolumeSize},
 				new Boolean[] {
+					new Boolean(false),
 					new Boolean(false),
 					new Boolean(true)}
 		);
@@ -116,7 +121,7 @@ public class VolumeRegionObject extends SpatialObject {
 	
 	@Override
 	public SpatialQuantity[] getSpatialQuantities() {
-		return new SpatialQuantity[] { centroidX, centroidY, centroidZ, size };
+		return new SpatialQuantity[] { centroidX, centroidY, centroidZ, interiorVelX, interiorVelY, interiorVelZ, size };
 	}
 
 	@Override

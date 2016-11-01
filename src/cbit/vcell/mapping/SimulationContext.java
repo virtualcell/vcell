@@ -55,6 +55,7 @@ import cbit.vcell.data.DataContext;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
@@ -77,7 +78,7 @@ import cbit.vcell.mapping.spatial.processes.PointKinematics;
 import cbit.vcell.mapping.spatial.processes.PointLocation;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
-import cbit.vcell.mapping.spatial.processes.SpatialProcess.SpatialProcessParameterType;
+import cbit.vcell.mapping.spatial.processes.VolumeKinematics;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -86,7 +87,6 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelException;
@@ -303,6 +303,10 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			super.fireVetoableChange("name", oldValue, name);
 			fieldParameterName = name;
 			super.firePropertyChange("name", oldValue, name);
+		}
+		
+		public SimulationContext getSimulationContext(){
+			return SimulationContext.this;
 		}
 
 	}
@@ -3150,6 +3154,45 @@ public SurfaceKinematics createSurfaceKinematics(SurfaceRegionObject surfaceRegi
 	}
 	return surfaceKinematics;
 }
+
+public VolumeKinematics createVolumeKinematics(VolumeRegionObject volumeRegionObject) {
+	String volumeKinematicsName = "vproc_0";
+	while (getSpatialProcess(volumeKinematicsName)!=null){
+		volumeKinematicsName = TokenMangler.getNextEnumeratedToken(volumeKinematicsName);
+	}
+	VolumeKinematics volumeKinematics = new VolumeKinematics(volumeKinematicsName,this);
+	volumeKinematics.setVolumeRegionObject(volumeRegionObject);
+	try {
+		addSpatialProcess(volumeKinematics);
+	}catch (PropertyVetoException e){
+		throw new RuntimeException(e.getMessage(),e);
+	}
+	return volumeKinematics;
+}
+
+public SpatialObject[] getSpatialObjects(Structure structure) {
+	StructureMapping structureMapping = getGeometryContext().getStructureMapping(structure);
+	if (structureMapping.getGeometryClass()!=null){
+		return getSpatialObjects(structureMapping.getGeometryClass());
+	}
+	return new SpatialObject[0];
+}
+
+public SpatialObject[] getSpatialObjects(GeometryClass geometryClass) {
+	ArrayList<SpatialObject> spatialObjectList = new ArrayList<SpatialObject>();
+	if (geometryClass instanceof SubVolume){
+		for (SpatialObject spatialObject : this.spatialObjects){
+			if (spatialObject instanceof VolumeRegionObject){
+				if (((VolumeRegionObject)spatialObject).getSubVolume() == geometryClass){
+					spatialObjectList.add(spatialObject);
+				}
+			}
+		}
+	}
+	return spatialObjectList.toArray(new SpatialObject[0]);
+}
+
+
 
 }
 

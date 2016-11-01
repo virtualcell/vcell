@@ -29,6 +29,11 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
+import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
@@ -139,7 +144,31 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			} else if (fieldParameterRole == ROLE_VelocityX
 					|| fieldParameterRole == ROLE_VelocityY
 					|| fieldParameterRole == ROLE_VelocityZ) {
-				return "<html><i>&lt;0.0&gt;</i></html>";
+				QuantityComponent component = null;
+				if (fieldParameterRole == ROLE_VelocityX){
+					component = QuantityComponent.X;
+				}else if (fieldParameterRole == ROLE_VelocityY){
+					component = QuantityComponent.Y;
+				}else if (fieldParameterRole == ROLE_VelocityZ){
+					component = QuantityComponent.Z;
+				}
+				ArrayList<String> varNames = new ArrayList<String>(); 
+				StructureMapping sm = simulationContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
+				if (sm!=null && sm.getGeometryClass()!=null){
+					for (SpatialObject spatialObject : simulationContext.getSpatialObjects()){
+						if (spatialObject instanceof VolumeRegionObject){
+							VolumeRegionObject vro = (VolumeRegionObject)spatialObject;
+							if (vro.getSubVolume()==sm.getGeometryClass() && vro.isQuantityCategoryEnabled(QuantityCategory.InteriorVelocity)){
+								varNames.add(vro.getSpatialQuantity(QuantityCategory.InteriorVelocity, component).getName());
+							}
+						}
+					}
+				}
+				if (varNames.size()>0){
+					return "<html><i>&lt;"+varNames.toString().replace("[","").replace("]","").replace(","," or ")+"&gt;</i></html>";
+				}else{
+					return "<html><i>&lt;0.0&gt;</i></html>";
+				}
 			}
 			return null;
 		}
@@ -1153,10 +1182,19 @@ public boolean isAdvecting() {
 	Expression eX = getVelocityXParameter().getExpression();
 	Expression eY = getVelocityYParameter().getExpression();
 	Expression eZ = getVelocityZParameter().getExpression();
-	if (eX == null && eY == null && eZ == null) {
-		return false;
+	if (eX != null || eY != null || eZ != null) {
+		return true;
 	}
-	return true;
+	if (getVelocityQuantities(QuantityComponent.X).length>0){
+		return true;
+	}
+	if (getVelocityQuantities(QuantityComponent.Y).length>0){
+		return true;
+	}
+	if (getVelocityQuantities(QuantityComponent.Z).length>0){
+		return true;
+	}
+	return false;
 }
 
 ///**
@@ -1541,6 +1579,10 @@ public boolean hasTransport() {
 		if (getVelocityXParameter().getExpression() != null && !getVelocityXParameter().getExpression().isZero()) {
 			return true;
 		}
+		SpatialQuantity[] velX_quantities = getVelocityQuantities(QuantityComponent.X);
+		if (velX_quantities.length>0){
+			return true;
+		}
 		if (dimension > 1) {
 			if (getVelocityYParameter().getExpression() != null && !getVelocityYParameter().getExpression().isZero()) {
 				return true;
@@ -1608,4 +1650,17 @@ public List<SpeciesContextSpecParameter> computeApplicableParameterList() {
 	}
 	return speciesContextSpecParameterList;
 }
+
+public SpatialQuantity[] getVelocityQuantities(QuantityComponent component) {
+	ArrayList<SpatialQuantity> velocityQuantities = new ArrayList<SpatialQuantity>();
+	for (SpatialObject spatialObject : simulationContext.getSpatialObjects(speciesContext.getStructure())){
+		if (spatialObject instanceof VolumeRegionObject){
+			if (((VolumeRegionObject)spatialObject).isQuantityCategoryEnabled(QuantityCategory.InteriorVelocity)){
+				velocityQuantities.add(((VolumeRegionObject)spatialObject).getSpatialQuantity(QuantityCategory.InteriorVelocity, component));
+			}
+		}
+	}
+	return velocityQuantities.toArray(new SpatialQuantity[0]);
+}
+
 }

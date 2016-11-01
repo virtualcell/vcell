@@ -138,6 +138,7 @@ import cbit.vcell.mapping.spatial.processes.PointKinematics;
 import cbit.vcell.mapping.spatial.processes.PointLocation;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
+import cbit.vcell.mapping.spatial.processes.VolumeKinematics;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.ComputeCentroidComponentEquation;
@@ -5006,6 +5007,9 @@ public Element getXML(SpatialProcess[] spatialProcesses) throws XmlParseExceptio
 		} else if (spatialProcess instanceof SurfaceKinematics){
 			spatialProcessElement.setAttribute(XMLTags.SpatialProcessTypeAttrTag,XMLTags.SpatialProcessTypeAttrValue_SurfaceKinematics);
 			spatialProcessElement.setAttribute(XMLTags.SpatialProcessSurfaceObjectAttrTag,((SurfaceKinematics) spatialProcess).getSurfaceRegionObject().getName());
+		} else if (spatialProcess instanceof VolumeKinematics){
+			spatialProcessElement.setAttribute(XMLTags.SpatialProcessTypeAttrTag,XMLTags.SpatialProcessTypeAttrValue_VolumeKinematics);
+			spatialProcessElement.setAttribute(XMLTags.SpatialProcessVolumeObjectAttrTag,((VolumeKinematics) spatialProcess).getVolumeRegionObject().getName());
 		} else {
 			throw new RuntimeException("spatialProcess type "+spatialProcess.getClass().getSimpleName()+" not yet supported for persistence.");
 		}

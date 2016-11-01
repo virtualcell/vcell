@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.mapping;
-import java.awt.PointerInfo;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -55,8 +54,9 @@ import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.mapping.spatial.processes.PointKinematics;
 import cbit.vcell.mapping.spatial.processes.PointLocation;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
-import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess.SpatialProcessParameterType;
+import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
+import cbit.vcell.mapping.spatial.processes.VolumeKinematics;
 import cbit.vcell.math.CommentedBlockObject;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -1158,9 +1158,59 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZmParameter(),sm.getGeometryClass())));
 						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZpParameter(),sm.getGeometryClass())));
 						
-						((PdeEquation)equation).setVelocityX((scs.getVelocityXParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityXParameter(),sm.getGeometryClass())));
-						((PdeEquation)equation).setVelocityY((scs.getVelocityYParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityYParameter(),sm.getGeometryClass())));
-						((PdeEquation)equation).setVelocityZ((scs.getVelocityZParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityZParameter(),sm.getGeometryClass())));
+						if (simContext.getGeometry().getDimension()>=1){
+							Expression velXExp = null;
+							if (scs.getVelocityXParameter().getExpression()!=null){
+								velXExp = new Expression(getMathSymbol(scs.getVelocityXParameter(),sm.getGeometryClass()));
+							}else{
+								SpatialQuantity[] velX_quantities = scs.getVelocityQuantities(QuantityComponent.X);
+								if (velX_quantities.length>0){
+									int numRegions = simContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(subVolume).length;
+									if (velX_quantities.length==1 && numRegions==1){
+										velXExp = new Expression(getMathSymbol(velX_quantities[0],sm.getGeometryClass()));
+									}else{
+										throw new MappingException("multiple advection velocities enabled set for multiple volume domains ");
+									}
+								}
+							}
+							((PdeEquation)equation).setVelocityX(velXExp);
+						}
+						
+						if (simContext.getGeometry().getDimension()>=2){
+							Expression velYExp = null;
+							if (scs.getVelocityYParameter().getExpression()!=null){
+								velYExp = new Expression(getMathSymbol(scs.getVelocityYParameter(),sm.getGeometryClass()));
+							}else{
+								SpatialQuantity[] velY_quantities = scs.getVelocityQuantities(QuantityComponent.Y);
+								if (velY_quantities.length>0){
+									int numRegions = simContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(subVolume).length;
+									if (velY_quantities.length==1 && numRegions==1){
+										velYExp = new Expression(getMathSymbol(velY_quantities[0],sm.getGeometryClass()));
+									}else{
+										throw new MappingException("multiple advection velocities enabled set for multiple volume domains ");
+									}
+								}
+							}
+							((PdeEquation)equation).setVelocityY(velYExp);
+						}
+						
+						if (simContext.getGeometry().getDimension()==3){
+							Expression velZExp = null;
+							if (scs.getVelocityZParameter().getExpression()!=null){
+								velZExp = new Expression(getMathSymbol(scs.getVelocityZParameter(),sm.getGeometryClass()));
+							}else{
+								SpatialQuantity[] velZ_quantities = scs.getVelocityQuantities(QuantityComponent.Z);
+								if (velZ_quantities.length>0){
+									int numRegions = simContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(subVolume).length;
+									if (velZ_quantities.length==1 && numRegions==1){
+										velZExp = new Expression(getMathSymbol(velZ_quantities[0],sm.getGeometryClass()));
+									}else{
+										throw new MappingException("multiple advection velocities enabled set for multiple volume domains ");
+									}
+								}
+							}
+							((PdeEquation)equation).setVelocityZ(velZExp);
+						}
 						
 						subDomain.replaceEquation(equation);
 					} else {
@@ -2163,7 +2213,62 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 			
 			boolean bCentroid = volumeRegionObject.isQuantityCategoryEnabled(QuantityCategory.DirectionToSurface);
 			boolean bSize = volumeRegionObject.isQuantityCategoryEnabled(QuantityCategory.VolumeSize);
-			
+			boolean bVelocity = volumeRegionObject.isQuantityCategoryEnabled(QuantityCategory.InteriorVelocity);
+
+			if (bVelocity){
+				ArrayList<VolumeKinematics> volumeKinematicsList = new ArrayList<VolumeKinematics>();
+				for (SpatialProcess spatialProcess : simContext.getSpatialProcesses()){
+					if (spatialProcess instanceof VolumeKinematics && ((VolumeKinematics) spatialProcess).getVolumeRegionObject() == volumeRegionObject){
+						volumeKinematicsList.add((VolumeKinematics) spatialProcess);
+					}
+				}
+				if (volumeKinematicsList.size()==1){
+					VolumeKinematics volumeKinematics = volumeKinematicsList.get(0);
+					if (simContext.getGeometry().getDimension()>=1){
+						SpatialQuantity velXQuantity = volumeRegionObject.getSpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.X);
+						LocalParameter velXParam = volumeKinematics.getParameter(SpatialProcessParameterType.InternalVelocityX);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velXParam, subvolume), 
+								getIdentifierSubstitutions(velXParam.getExpression(), velXParam.getUnitDefinition(), subvolume), 
+								subvolume));
+						Expression velXExp = new Expression(velXParam,volumeKinematics.getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velXQuantity, subvolume), 
+								getIdentifierSubstitutions(velXExp,velXQuantity.getUnitDefinition(),subvolume),
+								subvolume));
+					}
+					if (simContext.getGeometry().getDimension()>=2){
+						SpatialQuantity velYQuantity = volumeRegionObject.getSpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.Y);
+						LocalParameter velYParam = volumeKinematics.getParameter(SpatialProcessParameterType.InternalVelocityY);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velYParam, subvolume), 
+								getIdentifierSubstitutions(velYParam.getExpression(), velYParam.getUnitDefinition(), subvolume), 
+								subvolume));
+						Expression velYExp = new Expression(velYParam,volumeKinematics.getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velYQuantity, subvolume), 
+								getIdentifierSubstitutions(velYExp,velYQuantity.getUnitDefinition(),subvolume),
+								subvolume));
+					}
+					if (simContext.getGeometry().getDimension()==3){
+						SpatialQuantity velZQuantity = volumeRegionObject.getSpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.Z);
+						LocalParameter velZParam = volumeKinematics.getParameter(SpatialProcessParameterType.InternalVelocityZ);
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velZParam, subvolume), 
+								getIdentifierSubstitutions(velZParam.getExpression(), velZParam.getUnitDefinition(), subvolume), 
+								subvolume));
+						Expression velZExp = new Expression(velZParam,volumeKinematics.getNameScope());
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(velZQuantity, subvolume), 
+								getIdentifierSubstitutions(velZExp,velZQuantity.getUnitDefinition(),subvolume),
+								subvolume));
+					}
+				}else{
+					throw new MappingException("expecting 1 Volume Kinematics process for Volume Object '"+volumeRegionObject.getName()+"'");
+				}
+
+
+			}
 			if (bSize){
 				SpatialQuantity sizeQuantity = volumeRegionObject.getSpatialQuantity(QuantityCategory.VolumeSize,QuantityComponent.Scalar);
 				String funcName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();

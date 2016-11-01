@@ -26,7 +26,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -71,14 +70,12 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
-import cbit.vcell.graph.StructureToolShape;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.model.EditableSymbolTableEntry;
-import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.parser.Expression;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.NameScope;
 
 @SuppressWarnings("serial")
@@ -681,7 +678,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		for (int r : rows) {
 			if (r < parametersFunctionsTableModel.getRowCount()) {
 				EditableSymbolTableEntry parameter = parametersFunctionsTableModel.getValueAt(r);
-				if (parameter instanceof ModelParameter) {
+				if (parameter instanceof ModelParameter || parameter instanceof SimulationContextParameter) {
 					deleteButton.setEnabled(true);
 					return;
 				}
@@ -760,22 +757,35 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				return;
 			}
 			String deleteListText = "";
-			ArrayList<ModelParameter> deleteList = new ArrayList<ModelParameter>();
+			ArrayList<Parameter> deleteList = new ArrayList<Parameter>();
 			for (int r : rows) {
 				if (r < parametersFunctionsTableModel.getRowCount()) {
 					EditableSymbolTableEntry parameter = parametersFunctionsTableModel.getValueAt(r);
 					if (parameter instanceof ModelParameter) {
-						deleteList.add((ModelParameter)parameter);
-						deleteListText += "\t" + ((ModelParameter)parameter).getName() + "\n"; 
+						ModelParameter modelParameter = (ModelParameter)parameter;
+						deleteList.add(modelParameter);
+						deleteListText += "\tGlobal Parameter " + modelParameter.getName() + "\n"; 
+					}
+					if (parameter instanceof SimulationContextParameter) {
+						SimulationContextParameter simulationContextParameter = (SimulationContextParameter)parameter;
+						deleteList.add(simulationContextParameter);
+						deleteListText += "\tApplication("+simulationContextParameter.getSimulationContext().getName()+") Parameter " + simulationContextParameter.getName() + "\n"; 
 					}
 				}
 			}	
-			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting global parameters", "You are going to delete the following global parameter(s):\n\n " + deleteListText + "\n Continue?");
+			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting global and/or application parameters", "You are going to delete the following global/application parameter(s):\n\n " + deleteListText + "\n Continue?");
 			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 				return;
 			}
-			for (ModelParameter param : deleteList) {
-				bioModel.getModel().removeModelParameter(param);
+			for (Parameter param : deleteList) {
+				if (param instanceof ModelParameter){
+					bioModel.getModel().removeModelParameter((ModelParameter)param);
+				}
+				if (param instanceof SimulationContextParameter){
+					SimulationContextParameter simContextParameter = (SimulationContextParameter) param;
+					SimulationContext simContext = simContextParameter.getSimulationContext();
+					simContext.removeSimulationContextParameter(simContextParameter);
+				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
