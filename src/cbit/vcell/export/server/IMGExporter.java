@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -36,6 +37,7 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Executable;
 import org.vcell.util.ExecutableStatus;
+import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.Range;
 import org.vcell.util.SessionLog;
@@ -169,11 +171,79 @@ public ExportOutput[] makeMediaData(
 		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,FileDataContainerManager fileDataContainerManager)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
-	ParticleInfo particleInfo = checkParticles(exportSpecs,user,dataServerImpl,jobRequest.getJobID());
-	return makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,particleInfo,fileDataContainerManager);
+	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
+	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
+		particleMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
+	}else if (exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
+		particleMode = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
+	}
+	ExportOutput[] mediaArr = null;
+	if(particleMode == FormatSpecificSpecs.PARTICLE_NONE){
+		mediaArr = makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,null/*particleInfo*/,fileDataContainerManager);
+	}else if(particleMode == FormatSpecificSpecs.PARTICLE_SELECT){
+	//	ParticleInfo particleInfo = checkParticles_unused(exportSpecs,user,dataServerImpl,jobRequest.getJobID());
+		try{
+			File[] smoldynparticleCoordinateFiles = getParticleFiles(exportSpecs, user, dataServerImpl);
+			if(smoldynparticleCoordinateFiles != null && smoldynparticleCoordinateFiles.length > 0){
+				ArrayList<ExportOutput> expOutputs = new ArrayList<>();
+//				expOutputs.addAll(Arrays.asList(mediaArr));
+				for (int i = 0; i < smoldynparticleCoordinateFiles.length; i++) {
+					ExportOutput pointExportOutput = new ExportOutput(true, ""/*".smoldynOutput"*/, smoldynparticleCoordinateFiles[i].getName()/*exportSpecs.getVCDataIdentifier().getID()*/, ""/*"_points"*/, fileDataContainerManager);
+					byte[] particleCoordsText = FileUtils.readByteArrayFromFile(smoldynparticleCoordinateFiles[i]);
+					fileDataContainerManager.append(pointExportOutput.getFileDataContainerID(), particleCoordsText);
+					expOutputs.add(pointExportOutput);
+				}
+				mediaArr = expOutputs.toArray(new ExportOutput[0]);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}else{
+		throw new IllegalArgumentException("Unknown FormatSpecificSpecs.PARTICLE flag="+particleMode);
+	}
+	return mediaArr;
 }
 
-private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,DataServerImpl dataServerImpl,final long jobID) throws Exception{
+private File[] getParticleFiles(ExportSpecs exportSpecs,User user,DataServerImpl dataServerImpl) throws Exception{
+//	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
+//	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
+//		particleMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
+//	}else if (exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
+//		particleMode = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
+//	}
+//	if(particleMode == FormatSpecificSpecs.PARTICLE_NONE){
+//		return null;
+//	}
+	
+	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
+	SimulationData simData = new SimulationData(vcdID,
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirProperty,null),vcdID.getOwner().getName()),
+			simDataAmplistorInfo);
+		
+	File logFile = simData.getLogFile();
+	if(!logFile.exists()){
+		throw new Exception("ImgExport particle, Couldn't find Log file "+logFile.getAbsolutePath());
+	}
+	ArrayList<File> smoldynPointFiles = new ArrayList<>();
+	int timeIndex = 1;//smoldyn always begins at timeindex 1
+	while(true){
+		File smoldynOutFile = simData.getSmoldynOutputFile(timeIndex);
+		if(!smoldynOutFile.exists()){//get smoldynOutput files
+			break;
+		}else{
+			smoldynPointFiles.add(smoldynOutFile);
+		}
+		timeIndex++;
+	}
+	if(smoldynPointFiles.size() == 0){
+		return null;
+	}
+	return smoldynPointFiles.toArray(new File[0]);
+}
+
+private ParticleInfo checkParticles_unused(final ExportSpecs exportSpecs,User user,DataServerImpl dataServerImpl,final long jobID) throws Exception{
 	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
 	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
 		particleMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();

@@ -11,6 +11,7 @@
 package cbit.vcell.export.gui;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -65,6 +66,7 @@ public class MediaSettingsPanel extends JPanel {
 	private JLabel membrVarThicknessLabel;
 	private JLabel lblMirroring;
 	private JLabel lblImageScale;
+	private JLabel lblEncodingFormat;
 	public MediaSettingsPanel() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0};
@@ -73,7 +75,7 @@ public class MediaSettingsPanel extends JPanel {
 		gridBagLayout.rowWeights = new double[]{0, 0.0, 0,0,0, 0.0, 0.0, 0.0, 0.0, 1.0,0.0};
 		setLayout(gridBagLayout);
 		
-		JLabel lblEncodingFormat = new JLabel("Encoding Format:");
+		lblEncodingFormat = new JLabel("Encoding Format:");
 		GridBagConstraints gbc_lblEncodingFormat = new GridBagConstraints();
 		gbc_lblEncodingFormat.anchor = GridBagConstraints.EAST;
 		gbc_lblEncodingFormat.insets = new Insets(4, 4, 5, 5);
@@ -296,7 +298,8 @@ public class MediaSettingsPanel extends JPanel {
 		add(movieDurationTextField, gbc_movieDurationTextField);
 		movieDurationTextField.setColumns(10);
 		
-		particleModeLabel = new JLabel("Particle Mode:");
+		particleModeLabel = new JLabel("Particle info export format:");
+		particleModeLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
 		GridBagConstraints gbc_particleModeLabel = new GridBagConstraints();
 		gbc_particleModeLabel.anchor = GridBagConstraints.EAST;
 		gbc_particleModeLabel.insets = new Insets(0, 0, 5, 5);
@@ -318,15 +321,16 @@ public class MediaSettingsPanel extends JPanel {
 		gbl_panel_5.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		panel_5.setLayout(gbl_panel_5);
 		
-		particleRadioButton = new JRadioButton("Particles");
-		particleRadioButton.setSelected(true);
+		particleRadioButton = new JRadioButton("xyz coordinate lists");
+//		particleRadioButton.setSelected(true);
 		GridBagConstraints gbc_particleRadioButton = new GridBagConstraints();
 		gbc_particleRadioButton.insets = new Insets(0, 0, 0, 5);
 		gbc_particleRadioButton.gridx = 0;
 		gbc_particleRadioButton.gridy = 0;
 		panel_5.add(particleRadioButton, gbc_particleRadioButton);
 		
-		particleCountsRadiobutton = new JRadioButton("Histogram");
+		particleCountsRadiobutton = new JRadioButton("volume counts as image");
+		particleCountsRadiobutton.setSelected(true);
 		GridBagConstraints gbc_particleCountsRadiobutton = new GridBagConstraints();
 		gbc_particleCountsRadiobutton.insets = new Insets(0, 0, 0, 5);
 		gbc_particleCountsRadiobutton.gridx = 1;
@@ -458,62 +462,69 @@ public class MediaSettingsPanel extends JPanel {
 				jScrollPane.setMaximumSize(new Dimension(400,300));
 				jScrollPane.setPreferredSize(new Dimension(400,300));
 				exportInfoJTextArea.setEditable(false);
-				exportInfoJTextArea.append("Export Type: "+(bMovie?"Movie":"Image")+"\n");
-				exportInfoJTextArea.append("Description: "+finalFileDescription+"\n");
-				exportInfoJTextArea.append((bMovie?"Frame":"Image")+" Size: width="+imageDim.width+" height="+imageDim.height+"\n\n");
-				if(bMovie){
-					exportInfoJTextArea.append("Movie Duration: "+getDuration()/1000.0+" Seconds\n");
-					exportInfoJTextArea.append("Movie Frame Count: "+numMovieFrames+"\n");
-					if(bQTVR){
-						exportInfoJTextArea.append("QuickTime VR is a special movie format that standard QuickTime viewers will recognize and allows\n"+
-							"     users to traverse through time and slice information in a single movie\n");
-					}
-					exportInfoJTextArea.append("\n");
-				}
-				if(bSmoldynParticle){
-					exportInfoJTextArea.append("Composition: All particles rendered together in each frame.\n");
+				if(isSmoldyn && particleRadioButton.isSelected()){
+					String str = "Collection of text files ("+numTimePoints+") each containing\n"+
+							"all variables particle coordinates (xyz) for a timepoint.\n"+
+							"One row per particle coordinate with format [varname x y z]";
+					exportInfoJTextArea.append("Export Type: Particle Coordinate Lists\n");
+					exportInfoJTextArea.append("Description: "+str+"\n");
 				}else{
-					exportInfoJTextArea.append("Composition: "+(bSeparate?"Export variables individually":"Export variables composited together vertically")+"\n");					
-				}
-				exportInfoJTextArea.append("Encoding Format: "+encodingFormat+"\n");
-				int compressionValue = 0;
-				if(!bLossLess && compressionSlider.getValue() != 0){
-					compressionValue = (int)(100*compressionSlider.getValue()/(double)compressionSlider.getMaximum());
-				}
-				exportInfoJTextArea.append("Compression Quality: "+(bLossLess?"LossLess (best quality,least compression)":(compressionValue==0?"0% (worst quality, most compression":compressionValue+"%"))+"\n");
-				exportInfoJTextArea.append("Num Variables: "+numVars+"\n");
-				exportInfoJTextArea.append("Num Slices: "+numSlices+"\n");
-				exportInfoJTextArea.append("Num TimePoints: "+numTimePoints+" (from "+timeSpecs.getAllTimes()[timeSpecs.getBeginTimeIndex()]+" to "+timeSpecs.getAllTimes()[timeSpecs.getEndTimeIndex()]+")\n");
-
-				if(bSmoldynParticle){
-					exportInfoJTextArea.append("Particle Mode: "+(isSmoldyn?"Particle Data ("+(particleRadioButton.isSelected()?"Render Particles":"Render Particle Counts")+")":"Non Particle Data")+"\n");
-				}else{
-					if(volVarMembrOutlineThicknessSlider.isEnabled() && volVarMembrOutlineThicknessSlider.getValue() == 0){
-						exportInfoJTextArea.append("Hiding Membrane Outlines for Volume variables\n");
-					}else if(volVarMembrOutlineThicknessSlider.isEnabled() && volVarMembrOutlineThicknessSlider.getValue() > 0){
-						exportInfoJTextArea.append("Showing Membrane Outlines for Volume variables\n");
+					exportInfoJTextArea.append("Export Type: "+(bMovie?"Movie":"Image")+"\n");
+					exportInfoJTextArea.append("Description: "+finalFileDescription+"\n");
+					exportInfoJTextArea.append((bMovie?"Frame":"Image")+" Size: width="+imageDim.width+" height="+imageDim.height+"\n\n");
+					if(bMovie){
+						exportInfoJTextArea.append("Movie Duration: "+getDuration()/1000.0+" Seconds\n");
+						exportInfoJTextArea.append("Movie Frame Count: "+numMovieFrames+"\n");
+						if(bQTVR){
+							exportInfoJTextArea.append("QuickTime VR is a special movie format that standard QuickTime viewers will recognize and allows\n"+
+								"     users to traverse through time and slice information in a single movie\n");
+						}
+						exportInfoJTextArea.append("\n");
 					}
-					if(membrVarThicknessSlider.isEnabled()){
-						exportInfoJTextArea.append("Membrane Thickness: "+membrVarThicknessSlider.getValue()+"\n");
+					if(bSmoldynParticle){
+						exportInfoJTextArea.append("Composition: All particles rendered together in each frame.\n");
+					}else{
+						exportInfoJTextArea.append("Composition: "+(bSeparate?"Export variables individually":"Export variables composited together vertically")+"\n");					
 					}
-					exportInfoJTextArea.append("Variable Mirroring: "+mirrorComboBox.getSelectedItem()+"\n");
-					exportInfoJTextArea.append("Display Scaling: "+imageScale+(meshMode==ImagePaneModel.MESH_MODE?" ("+scalingCombobox.getSelectedItem()+")":"")+"\n");
-					exportInfoJTextArea.append("\nVariable Display Preferences:\n");
-					for (int i = 0; i < variableNames.length; i++) {
-						boolean bDefaultScaleRange = displayPreferences[i].getScaleSettings() == null;
-						boolean bSpecialColorsCustom =
-							!Arrays.equals(DisplayAdapterService.createGraySpecialColors(), displayPreferences[i].getSpecialColors()) &&
-							!Arrays.equals(DisplayAdapterService.createBlueRedSpecialColors(), displayPreferences[i].getSpecialColors());
-						exportInfoJTextArea.append(
-							"'"+variableNames[i]+"':\n"+
-							"     ColorScheme: "+(displayPreferences[i].isGrayScale()?"Gray":"Color")+" (click 'Gray' or 'BlueRed' in 'Results Viewer' to change)\n"+
-							"     Value Scale Range: "+(bDefaultScaleRange?"Min/Max each timepoint (uncheck 'Auto(current time)' in 'Results Viewer' to change)":"User Defined->"+displayPreferences[i].getScaleSettings())+"\n"+
-							"     Special Colors: "+(bSpecialColorsCustom?"User Defined":"Default (right-click 'BM AM NN ND NR' color bar in 'Results Viewer' to change)")+"\n"+
-							"     Domain Infomation: "+(displayPreferences[i].getDomainValid()==null?"False":"True")+"\n"
-						);
+					exportInfoJTextArea.append("Encoding Format: "+encodingFormat+"\n");
+					int compressionValue = 0;
+					if(!bLossLess && compressionSlider.getValue() != 0){
+						compressionValue = (int)(100*compressionSlider.getValue()/(double)compressionSlider.getMaximum());
+					}
+					exportInfoJTextArea.append("Compression Quality: "+(bLossLess?"LossLess (best quality,least compression)":(compressionValue==0?"0% (worst quality, most compression":compressionValue+"%"))+"\n");
+					exportInfoJTextArea.append("Num Variables: "+numVars+"\n");
+					exportInfoJTextArea.append("Num Slices: "+numSlices+"\n");
+					exportInfoJTextArea.append("Num TimePoints: "+numTimePoints+" (from "+timeSpecs.getAllTimes()[timeSpecs.getBeginTimeIndex()]+" to "+timeSpecs.getAllTimes()[timeSpecs.getEndTimeIndex()]+")\n");
+	
+					if(bSmoldynParticle){
+						exportInfoJTextArea.append("Particle Mode: "+(isSmoldyn?"Particle Data ("+(particleRadioButton.isSelected()?"Render Particles":"Render Particle Counts")+")":"Non Particle Data")+"\n");
+					}else{
+						if(volVarMembrOutlineThicknessSlider.isEnabled() && volVarMembrOutlineThicknessSlider.getValue() == 0){
+							exportInfoJTextArea.append("Hiding Membrane Outlines for Volume variables\n");
+						}else if(volVarMembrOutlineThicknessSlider.isEnabled() && volVarMembrOutlineThicknessSlider.getValue() > 0){
+							exportInfoJTextArea.append("Showing Membrane Outlines for Volume variables\n");
+						}
+						if(membrVarThicknessSlider.isEnabled()){
+							exportInfoJTextArea.append("Membrane Thickness: "+membrVarThicknessSlider.getValue()+"\n");
+						}
+						exportInfoJTextArea.append("Variable Mirroring: "+mirrorComboBox.getSelectedItem()+"\n");
+						exportInfoJTextArea.append("Display Scaling: "+imageScale+(meshMode==ImagePaneModel.MESH_MODE?" ("+scalingCombobox.getSelectedItem()+")":"")+"\n");
+						exportInfoJTextArea.append("\nVariable Display Preferences:\n");
+						for (int i = 0; i < variableNames.length; i++) {
+							boolean bDefaultScaleRange = displayPreferences[i].getScaleSettings() == null;
+							boolean bSpecialColorsCustom =
+								!Arrays.equals(DisplayAdapterService.createGraySpecialColors(), displayPreferences[i].getSpecialColors()) &&
+								!Arrays.equals(DisplayAdapterService.createBlueRedSpecialColors(), displayPreferences[i].getSpecialColors());
+							exportInfoJTextArea.append(
+								"'"+variableNames[i]+"':\n"+
+								"     ColorScheme: "+(displayPreferences[i].isGrayScale()?"Gray":"Color")+" (click 'Gray' or 'BlueRed' in 'Results Viewer' to change)\n"+
+								"     Value Scale Range: "+(bDefaultScaleRange?"Min/Max each timepoint (uncheck 'Auto(current time)' in 'Results Viewer' to change)":"User Defined->"+displayPreferences[i].getScaleSettings())+"\n"+
+								"     Special Colors: "+(bSpecialColorsCustom?"User Defined":"Default (right-click 'BM AM NN ND NR' color bar in 'Results Viewer' to change)")+"\n"+
+								"     Domain Infomation: "+(displayPreferences[i].getDomainValid()==null?"False":"True")+"\n"
+							);
+						}
 					}
 				}
-
 				jScrollPane.setViewportView(exportInfoJTextArea);
 				exportInfoJTextArea.setCaretPosition(0);//reset scroll to beginning
 				if(DialogUtils.showComponentOKCancelDialog(MediaSettingsPanel.this, jScrollPane,"Export Information") != JOptionPane.OK_OPTION){
@@ -637,11 +648,13 @@ public class MediaSettingsPanel extends JPanel {
 	}
 	private void configureGUI(){
 		bMovie = mediaType == ExportFormat.QUICKTIME || mediaType == ExportFormat.ANIMATED_GIF;
-		jSliderEnable(mediaType == ExportFormat.QUICKTIME || mediaType == ExportFormat.FORMAT_JPEG,compressionSlider);
+		boolean bParticle = isSmoldyn && particleRadioButton.isSelected();
+		jSliderEnable(!bParticle && (mediaType == ExportFormat.QUICKTIME || mediaType == ExportFormat.FORMAT_JPEG),compressionSlider);
 		compressionLabel.setEnabled(compressionSlider.isEnabled());
 		
-		encodeFormatGIF.setEnabled(mediaType == ExportFormat.GIF || mediaType == ExportFormat.ANIMATED_GIF);
-		encodeFormatJPG.setEnabled(mediaType == ExportFormat.FORMAT_JPEG || mediaType == ExportFormat.QUICKTIME);
+		lblEncodingFormat.setEnabled(!bParticle);
+		encodeFormatGIF.setEnabled(!bParticle &&(mediaType == ExportFormat.GIF || mediaType == ExportFormat.ANIMATED_GIF));
+		encodeFormatJPG.setEnabled(!bParticle && (mediaType == ExportFormat.FORMAT_JPEG || mediaType == ExportFormat.QUICKTIME));
 		encodeFormatGIF.setSelected(encodeFormatGIF.isEnabled());
 		encodeFormatJPG.setSelected(encodeFormatJPG.isEnabled());
 		
@@ -655,8 +668,8 @@ public class MediaSettingsPanel extends JPanel {
 		jSliderEnable(selectionHasMembraneVars, membrVarThicknessSlider);
 		membrVarThicknessLabel.setEnabled(selectionHasMembraneVars);
 		
-		movieDurationLabel.setEnabled(bMovie);
-		movieDurationTextField.setEnabled(bMovie);
+		movieDurationLabel.setEnabled(!bParticle && bMovie);
+		movieDurationTextField.setEnabled(movieDurationLabel.isEnabled());
 		
 		compositionLabel.setEnabled((variableNames == null || variableNames.length > 1?true:false));
 		compositionSeparate.setEnabled(compositionLabel.isEnabled());
