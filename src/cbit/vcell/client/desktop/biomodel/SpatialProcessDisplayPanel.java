@@ -136,6 +136,8 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 			// spatial processes in this panel
 			SpatialProcessTableModel model = (SpatialProcessTableModel)table.getModel();
 			model.fireTableDataChanged();
+		} else if(selectedObjects == null || selectedObjects.length == 0) {
+			table.getSelectionModel().clearSelection();
 		}
 	}
 	

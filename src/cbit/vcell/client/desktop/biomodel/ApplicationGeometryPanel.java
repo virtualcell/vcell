@@ -168,6 +168,8 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 					tabbedPane.setSelectedIndex(GeometryPanelTabID.geometry_definition.ordinal());
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.structure_mapping)) {
 					tabbedPane.setSelectedIndex(GeometryPanelTabID.structure_mapping.ordinal());
+				} else if (activeView.getActiveViewID().equals(ActiveViewID.spatial_entities)) {
+					tabbedPane.setSelectedIndex(GeometryPanelTabID.spatial_entities.ordinal());
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.spatial_objects)) {
 					tabbedPane.setSelectedIndex(GeometryPanelTabID.spatial_entities.ordinal());
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.spatial_processes)) {
@@ -185,6 +187,8 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 			activeViewID = ActiveViewID.structure_mapping;
 		} else if (selectedComponent == geometryViewer) {
 			activeViewID = ActiveViewID.geometry_definition;
+		} else if (selectedComponent == spatialEntitiesPanel) {
+			activeViewID = ActiveViewID.spatial_entities;
 		} else if (selectedComponent == spatialObjectDisplayPanel) {
 			activeViewID = ActiveViewID.spatial_objects;
 		} else if (selectedComponent == spatialProcessDisplayPanel) {

@@ -97,6 +97,8 @@ public class SpatialObjectDisplayPanel extends BioModelEditorApplicationRightSid
 			// spatial processes in this panel
 			SpatialObjectTableModel model = (SpatialObjectTableModel)table.getModel();
 			model.fireTableDataChanged();
+		} else if(selectedObjects == null || selectedObjects.length == 0) {
+			table.getSelectionModel().clearSelection();
 		}
 	}
 	
