@@ -54,6 +54,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -63,6 +64,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -115,6 +117,7 @@ import cbit.plot.SingleXPlot2D;
 import cbit.plot.gui.PlotPane;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -135,9 +138,15 @@ import cbit.vcell.export.gloworm.quicktime.MediaTrack;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.export.gui.ExportMonitorPanel;
+import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.export.server.FormatSpecificSpecs;
+import cbit.vcell.export.server.GeometrySpecs;
+import cbit.vcell.export.server.RasterSpecs;
+import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.SampledCurve;
@@ -379,6 +388,8 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					sendImageJTimePoint();
 				} else if (e.getSource() == getSendDomainImageMenuItem()) {
 					sendImageJDomain();
+				} else if (e.getSource() == getsendTimeSeriesImageMenuItem()) {
+					sendTimeSeriesImageJ();
 				}
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -516,6 +527,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 						getImagejButton().setEnabled(true);
 						getSendDomainImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
 						getSendTimePointImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
+						getsendTimeSeriesImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
 						// for local sim, get location of sim file and update log file location label
 						if (getPdeDataContext().getVCDataIdentifier() instanceof LocalVCSimulationDataIdentifier) {
 							LocalVCSimulationDataIdentifier localVCSimId = (LocalVCSimulationDataIdentifier)getPdeDataContext().getVCDataIdentifier();
@@ -654,6 +666,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 				}
 				getSendTimePointImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
 				getSendDomainImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
+				getsendTimeSeriesImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
 			}
 		};
 		final AsynchClientTask emptyTask = new AsynchClientTask("Filler...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
@@ -1216,30 +1229,11 @@ private void roiAction(){
 		BoxLayout mainBL = new BoxLayout(mainJPanel,BoxLayout.Y_AXIS);
 		mainJPanel.setLayout(mainBL);
 		
-		JPanel timeJPanel = new JPanel();
-		timeJPanel.setLayout(new FlowLayout());
-		double[] timePoints = getPdeDataContext().getTimePoints();
-		Double[] timePointsD = new Double[timePoints.length];
-		for(int i=0;i<timePoints.length;i+= 1){
-			timePointsD[i] = new Double(timePoints[i]);
-		}
-		final JComboBox<Double> jcb_time_begin = new JComboBox<Double>(timePointsD);
-		final JComboBox<Double> jcb_time_end = new JComboBox<Double>(timePointsD);
-		jcb_time_end.setSelectedIndex(timePointsD.length-1);
-		timeJPanel.add(new JLabel("Begin Time:"));
-		timeJPanel.add(jcb_time_begin);
-		timeJPanel.add(Box.createHorizontalStrut(30));
-		timeJPanel.add(new JLabel("End Time:"));
-		timeJPanel.add(jcb_time_end);
+		MiniTimePanel timeJPanel = new MiniTimePanel();
 		
-		JPanel okCancelJPanel = new JPanel();
-		BoxLayout okCancelBL = new BoxLayout(okCancelJPanel,BoxLayout.X_AXIS);
-		okCancelJPanel.setLayout(okCancelBL);
-		final JButton okButton = new JButton("OK");
-		okButton.setEnabled(false);
-		okButton.addActionListener(new ActionListener(){
+		ActionListener 	okAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				if(((Double)jcb_time_begin.getSelectedItem()).compareTo((Double)jcb_time_end.getSelectedItem()) > 0){
+				if(((Double)timeJPanel.jcb_time_begin.getSelectedItem()).compareTo((Double)timeJPanel.jcb_time_end.getSelectedItem()) > 0){
 					PopupGenerator.showErrorDialog(PDEDataViewer.this, "Selected 'Begin Time' must be less than or equal to 'End Time'");
 					return;
 				}
@@ -1280,8 +1274,8 @@ private void roiAction(){
 						}
 						TimeSeriesJobSpec timeSeriesJobSpec = new TimeSeriesJobSpec(
 								new String[] {dataIdentifier.getName()}, new BitSet[] {dataBitSet},
-								((Double)jcb_time_begin.getSelectedItem()).doubleValue(), 1,
-								((Double)jcb_time_end.getSelectedItem()).doubleValue(),
+								((Double)timeJPanel.jcb_time_begin.getSelectedItem()).doubleValue(), 1,
+								((Double)timeJPanel.jcb_time_end.getSelectedItem()).doubleValue(),
 								true,false, VCDataJobID.createVCDataJobID(getDataViewerManager().getUser(),	true));
 						
 						Hashtable<String, Object> hash = new Hashtable<String, Object>();
@@ -1304,26 +1298,25 @@ private void roiAction(){
 				}
 				BeanUtils.disposeParentWindow(mainJPanel);
 			}
-		});
-		okCancelJPanel.add(okButton);
-		roiTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-			public void valueChanged(ListSelectionEvent e) {
-				if(roiTable.getSelectedRows() != null && roiTable.getSelectedRows().length > 0){
-					okButton.setEnabled(true);
-				}else{
-					okButton.setEnabled(false);
-				}
-			}
-		});
-		
-		JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener(){
+		};
+		ActionListener cancelAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				BeanUtils.disposeParentWindow(mainJPanel);
 			}
-		});
-		okCancelJPanel.add(cancelButton);
+		};
 	
+		OkCancelSubPanel okCancelJPanel = new OkCancelSubPanel(okAction, cancelAction);
+		
+		roiTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+			public void valueChanged(ListSelectionEvent e) {
+				if(roiTable.getSelectedRows() != null && roiTable.getSelectedRows().length > 0){
+					okCancelJPanel.okButton.setEnabled(true);
+				}else{
+					okCancelJPanel.okButton.setEnabled(false);
+				}
+			}
+		});
+				
 		mainJPanel.add(timeJPanel);
 		mainJPanel.add(roiTable.getEnclosingScrollPane());
 		mainJPanel.add(okCancelJPanel);
@@ -1348,6 +1341,41 @@ private void roiAction(){
 
 }
 
+private static class OkCancelSubPanel extends JPanel {
+	public JButton okButton;
+	public OkCancelSubPanel(ActionListener okAction,ActionListener cancelAction){
+		BoxLayout okCancelBL = new BoxLayout(this,BoxLayout.X_AXIS);
+		this.setLayout(okCancelBL);
+		okButton = new JButton("OK");
+		okButton.addActionListener(okAction);
+		okButton.setEnabled(false);
+		add(okButton);
+		JButton cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(cancelAction);
+		add(cancelButton);
+
+	}
+}
+private class MiniTimePanel extends JPanel{
+	public JComboBox<Double> jcb_time_begin;
+	public JComboBox<Double> jcb_time_end;
+	public MiniTimePanel(){
+		setLayout(new FlowLayout());
+		double[] timePoints = getPdeDataContext().getTimePoints();
+		Double[] timePointsD = new Double[timePoints.length];
+		for(int i=0;i<timePoints.length;i+= 1){
+			timePointsD[i] = new Double(timePoints[i]);
+		}
+		jcb_time_begin = new JComboBox<Double>(timePointsD);
+		jcb_time_end = new JComboBox<Double>(timePointsD);
+		jcb_time_end.setSelectedIndex(timePointsD.length-1);
+		add(new JLabel("Begin Time:"));
+		add(jcb_time_begin);
+		add(Box.createHorizontalStrut(30));
+		add(new JLabel("End Time:"));
+		add(jcb_time_end);
+	}
+}
 /**
  * connEtoC2:  (JButtonSpatial.action.actionPerformed(java.awt.event.ActionEvent) --> PDEDataViewer.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
@@ -1803,6 +1831,114 @@ private JMenuItem getSendTimePointImageMenuItem(){
 	}
 	return sendTimePointImageMenuItem;
 }
+private JMenuItem sendTimeSeriesImageMenuItem;
+private JMenuItem getsendTimeSeriesImageMenuItem(){
+	if(sendTimeSeriesImageMenuItem == null){
+		sendTimeSeriesImageMenuItem = new JMenuItem("Send TimeSeries...");
+		sendTimeSeriesImageMenuItem.setEnabled(false);
+		sendTimeSeriesImageMenuItem.addActionListener(ivjEventHandler);
+	}
+	return sendTimeSeriesImageMenuItem;
+}
+
+//private Hashtable<String, JLabel> sendTimeSeriesLabels = new Hashtable<>();
+//@Override
+//public void exportMessage(ExportEvent event) {
+//	super.exportMessage(event);
+//	if(sendTimeSeriesLabels.size() > 0){
+//		JLabel messgLabel = sendTimeSeriesLabels.values().iterator().next();
+//		SwingUtilities.invokeLater(new Runnable() {
+//			@Override
+//			public void run() {
+//				messgLabel.setText(event.getMessageData().toString());
+//			}
+//		});
+//	}
+//}
+private void sendTimeSeriesImageJ(){
+	final JPanel mainJPanel = new JPanel();
+	BoxLayout mainBL = new BoxLayout(mainJPanel,BoxLayout.Y_AXIS);
+	mainJPanel.setLayout(mainBL);
+	final boolean[] response = new boolean[] {false};
+	MiniTimePanel timeJPanel = new MiniTimePanel();
+	
+	final JLabel messgLabel = new JLabel("time points to export:"+( timeJPanel.jcb_time_end.getSelectedIndex()- timeJPanel.jcb_time_begin.getSelectedIndex()+1));
+	JRadioButton slicebtn = new JRadioButton("Slice "+getPDEDataContextPanel1().getSlice()+" only");
+	slicebtn.setSelected(true);
+	JPanel messageAndSlicePanel = null;
+	if(getPdeDataContext().getCartesianMesh().getGeometryDimension() == 3){
+		messageAndSlicePanel = new JPanel();
+		((FlowLayout)messageAndSlicePanel.getLayout()).setAlignment(FlowLayout.LEFT);
+		ButtonGroup buttonGroup = new ButtonGroup();
+		JRadioButton allslicebtn = new JRadioButton("All slices");
+		buttonGroup.add(slicebtn);
+		buttonGroup.add(allslicebtn);
+		messageAndSlicePanel.add(messgLabel);
+		messageAndSlicePanel.add(slicebtn);
+		messageAndSlicePanel.add(allslicebtn);
+	}
+	
+	ActionListener okAction = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(((Double)timeJPanel.jcb_time_begin.getSelectedItem()).compareTo((Double)timeJPanel.jcb_time_end.getSelectedItem()) > 0){
+				PopupGenerator.showErrorDialog(PDEDataViewer.this, "Selected 'Begin Time' must be less than or equal to 'End Time'");
+				return;
+			}
+			response[0] = true;
+			BeanUtils.disposeParentWindow(mainJPanel);
+		}
+	};
+	ActionListener cancelAction = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			BeanUtils.disposeParentWindow(mainJPanel);
+		}
+	};
+	final OkCancelSubPanel okCancelJPanel = new OkCancelSubPanel(okAction, cancelAction);
+	ActionListener rangeListener = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			int range =  timeJPanel.jcb_time_end.getSelectedIndex()- timeJPanel.jcb_time_begin.getSelectedIndex()+1;
+			okCancelJPanel.okButton.setEnabled(range > 0);
+			messgLabel.setText((range < 0?"Error: begin time must be < end time":"time points to export:"+(range)));
+		}
+	};
+	timeJPanel.jcb_time_end.addActionListener(rangeListener);
+	timeJPanel.jcb_time_begin.addActionListener(rangeListener);
+
+	okCancelJPanel.okButton.setEnabled(true);
+	mainJPanel.add(timeJPanel);
+	mainJPanel.add((messageAndSlicePanel==null?messgLabel:messageAndSlicePanel));
+	mainJPanel.add(okCancelJPanel);
+	Frame dialogOwner = JOptionPane.getFrameForComponent(this);
+	JOptionPane inputDialog = new JOptionPane(mainJPanel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[0]);
+	final JDialog d = inputDialog.createDialog(dialogOwner,"'"+getSimulationModelInfo().getContextName()+"':'"+getSimulationModelInfo().getSimulationName()+"':'"+getPdeDataContext().getVariableName()+"'");
+	d.setResizable(true);
+	d.setModal(true);
+	d.pack();
+	d.setVisible(true);
+//	try {
+//		DialogUtils.showModalJDialogOnTop(d,this);
+//	}finally {
+//		d.dispose();
+//	}
+	if(!response[0]){
+		return;
+	}
+	ExportSpecs exportSpecs = 
+			new ExportSpecs(
+					getPdeDataContext().getVCDataIdentifier(),
+					ExportFormat.IMAGEJ,
+					new VariableSpecs(new String[] {getPdeDataContext().getDataIdentifier().getName()} , ExportConstants.VARIABLE_MULTI),
+					new TimeSpecs(timeJPanel.jcb_time_begin.getSelectedIndex(), timeJPanel.jcb_time_end.getSelectedIndex(), getPdeDataContext().getTimePoints(), ExportConstants.TIME_RANGE),
+					new GeometrySpecs(null, getPDEDataContextPanel1().getNormalAxis(), getPDEDataContextPanel1().getSlice(), (slicebtn.isSelected()?ExportConstants.GEOMETRY_SLICE:ExportConstants.GEOMETRY_FULL)),
+					new RasterSpecs(ExportConstants.NRRD_BY_VARIABLE, false),
+					getSimulationModelInfo().getSimulationName(),
+					getSimulationModelInfo().getContextName()
+				);
+	getDataViewerManager().startExport(this,((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext(),exportSpecs);
+}
 
 private javax.swing.JPopupMenu getImagejPopupMenu() {
 	if (imagejPopupMenu == null) {
@@ -1810,6 +1946,7 @@ private javax.swing.JPopupMenu getImagejPopupMenu() {
 			imagejPopupMenu = new JPopupMenu();
 			imagejPopupMenu.add(getSendTimePointImageMenuItem());
 			imagejPopupMenu.add(getSendDomainImageMenuItem());
+			imagejPopupMenu.add(getsendTimeSeriesImageMenuItem());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
