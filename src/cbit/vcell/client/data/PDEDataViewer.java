@@ -383,6 +383,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					if((timerDataIdentifier = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,timerDataIdentifier,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}},"PDEDataViewer dataIdentifer..."))!=null){
 						return;
 					}
+					if(evt.getNewValue() instanceof DataIdentifier){
 					try{
 						getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
 						getPDEDataContextPanel1().getdisplayAdapterService1().activateMarkedState(((DataIdentifier)evt.getNewValue()).getName());
@@ -395,13 +396,14 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 							getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
 						}
 					});
+					}
 				}
 				
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) { 
 					getPDEDataContextPanel1().setPdeDataContext(getPdeDataContext());
 					getPDEExportPanel1().setPdeDataContext(getPdeDataContext(),
 							(getSimulation()==null?null:new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null)));
-					CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
+					CartesianMesh cartesianMesh = (getPdeDataContext() != null?getPdeDataContext().getCartesianMesh():null);
 					if (cartesianMesh != null && cartesianMesh.getGeometryDimension() == 3
 							&& cartesianMesh.getNumMembraneElements() > 0){
 						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) < 0) {
@@ -1911,20 +1913,20 @@ public void setPdeDataContext(PDEDataContext pdeDataContext) {
 	if (getPdeDataContext() != null) {
 		getPdeDataContext().removePropertyChangeListener(ivjEventHandler);
 		getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
-	}
-	try{
-		getPDEPlotControlPanel1().removePropertyChangeListener(ivjEventHandler);
+
 		try{
-			getPDEPlotControlPanel1().setup(/*getPDEPlotControlPanel1().getDataIdentifierFilter(),*/ ((NewClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions(), getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
-		}catch(Exception e){
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, "Couldn't setup PDEPlotControlPanel");
-			return;
+			getPDEPlotControlPanel1().removePropertyChangeListener(ivjEventHandler);
+			try{
+				getPDEPlotControlPanel1().setup(/*getPDEPlotControlPanel1().getDataIdentifierFilter(),*/ ((NewClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions(), getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
+			}catch(Exception e){
+				e.printStackTrace();
+				DialogUtils.showErrorDialog(this, "Couldn't setup PDEPlotControlPanel");
+				return;
+			}
+		}finally{
+			getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
 		}
-	}finally{
-		getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
-	}
-		
+	}		
 	
 	bSkipSurfaceCalc = true;
 	firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, null, pdeDataContext);
