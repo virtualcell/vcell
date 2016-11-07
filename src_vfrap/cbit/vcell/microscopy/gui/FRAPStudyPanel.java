@@ -1513,6 +1513,17 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					}
 					@Override
 					public ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] dataidentifiers,List<AnnotatedFunction> myFunctionList) {
+						if(filterSetName.equals(DEFAULT_VIEW)){
+							ArrayList<DataIdentifier> dataIds = new ArrayList<>();
+							if(dataidentifiers != null){
+								for (int i = 0; i < dataidentifiers.length; i++) {
+									dataIds.add(dataidentifiers[i]);
+								}
+							}
+							return dataIds;
+						}
+//						return null;
+
 						throw new RuntimeException("Not Implemented for FRAP");
 					}
 				}

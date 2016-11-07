@@ -631,6 +631,9 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 		if(dataOperation instanceof DataOperation.DataProcessingOutputTimeSeriesOP){
 			vcDataJobID = ((DataOperation.DataProcessingOutputTimeSeriesOP)dataOperation).getTimeSeriesJobSpec().getVcDataJobID();
 		}
+		if(!(getVCData(dataOperation.getVCDataIdentifier()) instanceof SimulationData)){
+			return null;
+		}
 		File dataProcessingOutputFileHDF5 = ((SimulationData)getVCData(dataOperation.getVCDataIdentifier())).getDataProcessingOutputSourceFileHDF5();
 		DataOperationResults dataOperationResults = getDataProcessingOutput(dataOperation,dataProcessingOutputFileHDF5);
 		if(vcDataJobID != null){

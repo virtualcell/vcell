@@ -12,6 +12,7 @@ package cbit.vcell.simdata;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Vector;
 
@@ -29,6 +30,7 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
@@ -412,15 +414,32 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 		ex.printStackTrace(System.out);
 	}
 	
-	AnnotatedFunction functions[] = new AnnotatedFunction[annotatedFunctionList.size()];
+	ArrayList<AnnotatedFunction> functionsArr = new ArrayList<>();
+//	AnnotatedFunction functions[] = new AnnotatedFunction[annotatedFunctionList.size()];
 	// Get the functions in annotatedFunctionsList
 	for (int i = 0; i < annotatedFunctionList.size(); i++){
 		//AnnotatedFunction annotatedFunc = (AnnotatedFunction)annotatedFunctionList.elementAt(i);
 		//functions[i] = new Function(annotatedFunc.getName(), annotatedFunc.getExpression());
-		functions[i] = (AnnotatedFunction)annotatedFunctionList.elementAt(i);
+		functionsArr.add((AnnotatedFunction)annotatedFunctionList.elementAt(i));
+	}
+	for (int i = 0; i < datasetsIDList.length; i++) {
+		VCDataIdentifier vcdid = datasetsIDList[i];
+		try {
+			AnnotatedFunction[] myFuncs = getDatasetControllerImpl().getFunctions(outputContext, vcdid);
+			for (int j = 0; j < myFuncs.length; j++) {
+				AnnotatedFunction myfunc = new AnnotatedFunction(dataSetPrefix[i]+"."+myFuncs[j].getName(),myFuncs[j].getExpression(),myFuncs[j].getDomain(),myFuncs[j].getErrorString(),myFuncs[j].getFunctionType(),myFuncs[j].getFunctionCatogery());
+				functionsArr.add(myfunc);
+			}
+		} catch (ExpressionBindingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (DataAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
-	return functions;
+	return functionsArr.toArray(new AnnotatedFunction[0]);
 }
 
 
