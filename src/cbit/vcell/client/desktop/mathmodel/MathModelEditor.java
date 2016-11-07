@@ -31,7 +31,9 @@ import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
@@ -60,6 +62,8 @@ public class MathModelEditor extends DocumentEditor {
 	private MathModelPropertiesPanel mathModelPropertiesPanel = new MathModelPropertiesPanel();
 	private MathModelEditorAnnotationPanel mathModelEditorAnnotationPanel = new MathModelEditorAnnotationPanel();
 	
+	private CSGObjectPropertiesPanel csgObjectPropertiesPanel;
+
 /**
  * BioModelEditor constructor comment.
  */
@@ -85,6 +89,8 @@ private void initialize() {
 		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
 		
 		mathModelEditorTreeModel = new MathModelEditorTreeModel(documentEditorTree);
+		mathModelEditorTreeModel.setSelectionManager(selectionManager);		
+		
 		mathModelEditorTreeCellRenderer = new MathModelEditorTreeCellRenderer();
 		documentEditorTree.setModel(mathModelEditorTreeModel);
 		documentEditorTree.setCellRenderer(mathModelEditorTreeCellRenderer);
@@ -92,19 +98,30 @@ private void initialize() {
 		vcmlEditorPanel = new VCMLEditorPanel();
 		vcmlEditorPanel.setMinimumSize(new java.awt.Dimension(198, 148));
 		rightSplitPane.setTopComponent(vcmlEditorPanel);
-		geometryViewer = new GeometryViewer();		
+		
+		geometryViewer = new GeometryViewer();	
+		geometryViewer.setSelectionManager(selectionManager);
+		geometryViewer.setIssueManager(issueManager);
+		
 		simulationListPanel = new SimulationListPanel();
-		simulationSummaryPanel = new SimulationSummaryPanel();		
+		simulationListPanel.setSelectionManager(selectionManager);
+		simulationListPanel.setIssueManager(issueManager);
+
 		outputFunctionsPanel  = new OutputFunctionsPanel();
+		outputFunctionsPanel.setSelectionManager(selectionManager);
+		outputFunctionsPanel.setIssueManager(issueManager);
+		
 		simulationSummaryPanel = new SimulationSummaryPanel();
+		simulationSummaryPanel.setSelectionManager(selectionManager);
+		simulationSummaryPanel.setIssueManager(issueManager);
 		
 		mathModelEditorAnnotationPanel.setSelectionManager(selectionManager);
-		outputFunctionsPanel.setSelectionManager(selectionManager);
-		mathModelEditorTreeModel.setSelectionManager(selectionManager);		
-		simulationListPanel.setSelectionManager(selectionManager);
-		simulationSummaryPanel.setSelectionManager(selectionManager);
+		mathModelEditorAnnotationPanel.setIssueManager(issueManager);
+				
+		csgObjectPropertiesPanel = new CSGObjectPropertiesPanel();
+		csgObjectPropertiesPanel.setSelectionManager(selectionManager);
+		csgObjectPropertiesPanel.setIssueManager(issueManager);
 		
-		outputFunctionsPanel.setIssueManager(issueManager);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -140,6 +157,9 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = geometryMetaDataPanel;
 		} else if (singleSelection instanceof Simulation) {
 			bottomComponent = simulationSummaryPanel;
+		} else if (singleSelection instanceof CSGObject) {
+			bottomComponent = csgObjectPropertiesPanel;
+			csgObjectPropertiesPanel.setSimulationContext(getSelectedSimulationContext());
 		}
 	}
 	if (bShowInDatabaseProperties) {
