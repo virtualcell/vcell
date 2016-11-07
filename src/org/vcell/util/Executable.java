@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,6 +38,7 @@ public class Executable {
 	private Thread runThread = null;
 	private CountDownLatch stoppingLatch = null;
 	private AtomicBoolean active = new AtomicBoolean(false);
+	private HashMap<String, String> addedEnvironmentVariables;
 	
 /**
  * sometimes command and input file name have space, we need to escape space;
@@ -110,6 +112,9 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 			setErrorString("");
 			setExitValue(null);
 			ProcessBuilder pb = new ProcessBuilder(Arrays.asList(command));
+			if(addedEnvironmentVariables != null){
+				pb.environment().putAll(addedEnvironmentVariables);
+			}
 			ResourceUtil.setEnvForOperatingSystem(pb.environment());
 			pb.directory(workingDir);
 			// start the process
@@ -485,5 +490,10 @@ public File getWorkingDir() {
 public void setWorkingDir(File workingDir) {
 	this.workingDir = workingDir;
 }
-
+public void addEnvironmentVariable(String varName,String varValue){
+	if(addedEnvironmentVariables == null){
+		addedEnvironmentVariables = new HashMap<>();
+	}
+	addedEnvironmentVariables.put(varName,varValue);
+}
 }
