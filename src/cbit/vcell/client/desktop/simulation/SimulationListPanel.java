@@ -71,7 +71,6 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton ivjResultsButton = null;
 	private JButton ivjRunButton = null;
 	private JButton ivjDeleteButton = null;
-	private JButton particleViewButton = null;
 	private JButton quickRunButton = null;
 	private ScrollTable ivjScrollPaneTable = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -100,8 +99,6 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				showSimulationResults();
 			} else if (e.getSource() == statusDetailsButton) {
 				showSimulationStatusDetails();
-			} else if (e.getSource() == particleViewButton) {
-				particleView();
 			} else if (e.getSource() == quickRunButton) {
 				quickRun();
 			}
@@ -245,9 +242,6 @@ private javax.swing.JToolBar getToolBar() {
 			statusDetailsButton = new JButton("", VCellIcons.statusDetailscon);
 			statusDetailsButton.setToolTipText("Simulation Status Details...");
 			statusDetailsButton.addActionListener(ivjEventHandler);
-			particleViewButton = new JButton("", VCellIcons.particleRunSimIcon);
-			particleViewButton.setToolTipText("Real-Time Particle View");
-			particleViewButton.addActionListener(ivjEventHandler);
 			quickRunButton = new JButton("", VCellIcons.odeQuickRunIcon);
 			quickRunButton.setToolTipText("Quick Run");
 			quickRunButton.addActionListener(ivjEventHandler);
@@ -264,7 +258,6 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(statusDetailsButton);
 			toolBar.addSeparator();
 			toolBar.add(quickRunButton);
-			toolBar.add(particleViewButton);
 			
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNewButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(copyButton);
@@ -274,7 +267,6 @@ private javax.swing.JToolBar getToolBar() {
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(stopButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getResultsButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(statusDetailsButton);
-			ReactionCartoonEditorPanel.setToolBarButtonSizes(particleViewButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(quickRunButton);
 
 		} catch (java.lang.Throwable ivjExc) {
@@ -649,7 +641,6 @@ private void newSimulation() {
 private void refreshButtonsLax() {
 	MathDescription mathDescription = fieldSimulationWorkspace.getSimulationOwner().getMathDescription();
 	if (mathDescription != null) {
-		particleViewButton.setVisible(mathDescription.isSpatialStoch());
 		quickRunButton.setVisible(true);
 	}
 	
@@ -662,7 +653,6 @@ private void refreshButtonsLax() {
 	boolean bStoppable = false;
 	boolean bHasData = false;
 	boolean bStatusDetails = false;
-	boolean bParticleView = false;
 	boolean bQuickRun = false;
 	
 	if (selections != null && selections.length > 0) {
@@ -674,7 +664,6 @@ private void refreshButtonsLax() {
 			if (!simStatus.isRunning()){
 				bEditable = true;
 			}
-			bParticleView = firstSelection.getScanCount() == 1;	
 			bQuickRun = canQuickRun(firstSelection.getSolverTaskDescription());
 		}
 		
@@ -695,7 +684,6 @@ private void refreshButtonsLax() {
 	stopButton.setEnabled(bStoppable);
 	getResultsButton().setEnabled(bHasData);
 	statusDetailsButton.setEnabled(bStatusDetails);
-	particleViewButton.setEnabled(bParticleView);
 	quickRunButton.setEnabled(bQuickRun);
 }
 
@@ -841,14 +829,6 @@ private void stopSimulations() {
 		
 	}
 	
-	private void particleView() {
-		int row = getScrollPaneTable().getSelectedRow();
-		if (row < 0) {
-			return;
-		}
-		Simulation selectedSim = getSimulationListTableModel1().getValueAt(row);
-		getSimulationWorkspace().getClientSimManager().runSmoldynParticleView(selectedSim);
-	}
 	private void quickRun() {
 		int row = getScrollPaneTable().getSelectedRow();
 		if (row < 0) {
