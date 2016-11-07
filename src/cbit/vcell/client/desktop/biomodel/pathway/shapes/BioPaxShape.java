@@ -15,10 +15,12 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
+
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
 import org.vcell.util.gui.ShapePaintUtil;
@@ -154,6 +156,10 @@ public abstract class BioPaxShape extends Shape {
 	
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
+		
+		RenderingHints oldRenderingHints = g.getRenderingHints();
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
 		int offsetX = (shapeWidth-getPreferredWidth()) / 2;
@@ -191,6 +197,8 @@ public abstract class BioPaxShape extends Shape {
 		if(hasRelationships) {
 			ShapePaintUtil.paintLinkMark(g2D, this, Color.WHITE);			
 		}
+		
+		g.setRenderingHints(oldRenderingHints);
 	}
 
 }

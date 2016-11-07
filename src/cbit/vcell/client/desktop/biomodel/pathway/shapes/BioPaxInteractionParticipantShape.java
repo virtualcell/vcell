@@ -14,6 +14,7 @@ import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 
 import org.vcell.pathway.InteractionParticipant;
@@ -63,7 +64,10 @@ public class BioPaxInteractionParticipantShape extends EdgeShape implements Edge
 
 	@Override
 	public void paintSelf(Graphics2D g2d, int xAbs, int yAbs) {
-		// TODO Auto-generated method stub
+
+		RenderingHints oldRenderingHints = g2d.getRenderingHints();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
 		Point startPos = interactionShape.getSpaceManager().getAbsCenter();
 		Point endPos = physicalEntityShape.getSpaceManager().getAbsCenter();
 		if(participant.getType().equals(Type.CONTROLLER) || participant.getType().equals(Type.COFACTOR)) {
@@ -84,6 +88,7 @@ public class BioPaxInteractionParticipantShape extends EdgeShape implements Edge
 		if(label != null) {
 			g2d.drawString(label, xAbs + labelPos.x, yAbs + labelPos.y);			
 		}
+		g2d.setRenderingHints(oldRenderingHints);
 	}
 
 	@Override
