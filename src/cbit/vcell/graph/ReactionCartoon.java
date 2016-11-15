@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 
@@ -42,6 +43,8 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.RuleParticipantLongSignature;
+import cbit.vcell.model.RuleParticipantShortSignature;
 import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.RuleParticipantSignature.Criteria;
 import cbit.vcell.model.SimpleReaction;
@@ -87,20 +90,21 @@ public class ReactionCartoon extends ModelCartoon {
 		List<NodeReference> nodeList = diagram.getNodeList();
 		for (int i = 0; i < nodeList.size(); i++) {
 			NodeReference node = nodeList.get(i);
-			if(node.nodeType != NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE) {
-				continue;
-			}
-			if(node.speciesPattern != null) {
-				continue;
-			}
-			for(RuleParticipantSignature signature : ruleParticipantSignatures) {
-				if(!signature.getStructure().getName().equals(nodeStructure)) {
+			if((ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.full && node.nodeType == NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE) ||
+					(ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.moleculeNumber && node.nodeType == NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE)) {
+
+				if(node.speciesPattern != null) {
 					continue;
 				}
-				String speciesPatternName = signature.getSpeciesPatternAsString();
-				if(speciesPatternName.equals(node.name)) {
-					node.speciesPattern = signature.getSpeciesPattern();
-					break;
+				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
+					if(!signature.getStructure().getName().equals(nodeStructure)) {
+						continue;
+					}
+					String speciesPatternName = signature.getSpeciesPatternAsString();
+					if(speciesPatternName.equals(node.name)) {
+						node.speciesPattern = signature.getSpeciesPattern();
+						break;
+					}
 				}
 			}
 		}
@@ -140,10 +144,20 @@ public class ReactionCartoon extends ModelCartoon {
 				obj = getModel().getRbmModelContainer().getReactionRule(node.name);
 				break;
 			}
-			case NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE: {		// obj is a RuleParticipantSignature
+			case NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE: {		// obj is a RuleParticipantSignature
 				Structure struct = diagram.getStructure();
 				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
-					if (signature.getStructure() == struct && signature.compareByCriteria(node.getName(), Criteria.full)){
+					if (signature instanceof RuleParticipantLongSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), Criteria.full)){
+						obj = signature;
+						break;
+					}
+				}
+				break;
+			}
+			case NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE: {
+				Structure struct = diagram.getStructure();
+				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
+					if (signature instanceof RuleParticipantShortSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), Criteria.full)){
 						obj = signature;
 						break;
 					}
@@ -330,36 +344,6 @@ public class ReactionCartoon extends ModelCartoon {
 			//
 			// =================================== Rules ================================================
 			//
-			// we go through all the participants; depending on the transition, we make their shapes visible or invisible
-			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
-				Structure structure = rr.getStructure();
-				if(getStructureSuite().areReactionsShownFor(structure)) {
-					List<ReactionRuleParticipant> participants = rr.getReactionRuleParticipants();
-					for(ReactionRuleParticipant participant : participants) {
-						participant.getSpeciesPattern().removePropertyChangeListener(this);
-						participant.getSpeciesPattern().addPropertyChangeListener(this);
-						Structure speciesStructure = participant.getStructure();
-						Structure reactionStructure = rr.getStructure();
-						if(getStructureSuite().getStructures().contains(speciesStructure) && getStructureSuite().areReactionsShownFor(reactionStructure)) {
-							for (RuleParticipantSignature signature : ruleParticipantSignatures){
-								if (signature.getStructure() == participant.getStructure() && signature.compareByCriteria(participant.getSpeciesPattern(), Criteria.full)){
-									RuleParticipantSignatureDiagramShape signatureShape = (RuleParticipantSignatureDiagramShape) getShapeFromModelObject(signature);
-									if(ruleParticipantGroupingCriteria == Criteria.full && transitioning) {
-										signatureShape.setVisible(true);
-									} else if(ruleParticipantGroupingCriteria == Criteria.moleculeNumber && transitioning) {
-										signatureShape.setVisible(false);
-									}
-									unwantedShapes.remove(signatureShape);		// we already know we want to keep them all, regardless of transition or visibility
-									unwantedSignatures.remove(signature);
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-			
-			// 
 			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
 				rr.removePropertyChangeListener(this);
 				rr.addPropertyChangeListener(this);
@@ -392,34 +376,70 @@ public class ReactionCartoon extends ModelCartoon {
 							//
 							// find existing RuleParticipantSignatureShape in cartoon
 							//
-							RuleParticipantSignature ruleParticipantSignature = null;
-							for (RuleParticipantSignature signature : ruleParticipantSignatures){
-								if (signature.getStructure() == participant.getStructure() && signature.compareByCriteria(participant.getSpeciesPattern(), ruleParticipantGroupingCriteria)){
-									ruleParticipantSignature = signature;
+							RuleParticipantLongSignature ruleParticipantLongSignature = null;
+							RuleParticipantShortSignature ruleParticipantShortSignature = null;
+							for (RuleParticipantSignature signature : ruleParticipantSignatures) {
+								if (signature instanceof RuleParticipantLongSignature && signature.getStructure() == participant.getStructure() && 
+										signature.compareByCriteria(participant.getSpeciesPattern(), RuleParticipantSignature.Criteria.full)) {
+									ruleParticipantLongSignature = (RuleParticipantLongSignature)signature;
+									break;
+								}
+							}
+							for (RuleParticipantSignature signature : ruleParticipantSignatures) {
+								if (signature instanceof RuleParticipantShortSignature && signature.getStructure() == participant.getStructure() && 
+										signature.compareByCriteria(participant.getSpeciesPattern(), RuleParticipantSignature.Criteria.moleculeNumber)) {
+									ruleParticipantShortSignature = (RuleParticipantShortSignature)signature;
 									break;
 								}
 							}
 							//
 							// if didn't find signature in cartoons list of signatures, then create one (and create a shape for it).
 							//
-							RuleParticipantSignatureDiagramShape signatureShape = null;
-							if (ruleParticipantSignature == null){
-								ruleParticipantSignature = RuleParticipantSignature.fromReactionRuleParticipant(participant, this);
-								ruleParticipantSignatures.add(ruleParticipantSignature);
-								signatureShape = new RuleParticipantSignatureDiagramShape(ruleParticipantSignature, this);
-								addShape(signatureShape);
+							RuleParticipantSignatureFullDiagramShape signatureFullShape = null;
+							RuleParticipantSignatureShortDiagramShape signatureShortShape = null;
+							if (ruleParticipantLongSignature == null) {
+								ruleParticipantLongSignature = RuleParticipantLongSignature.fromReactionRuleParticipant(participant, this);
+								ruleParticipantSignatures.add(ruleParticipantLongSignature);
+								signatureFullShape = new RuleParticipantSignatureFullDiagramShape(ruleParticipantLongSignature, this);
+								addShape(signatureFullShape);
 								ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(participant.getStructure());
-								signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
-								participantContainerShape.addChildShape(signatureShape);
-								signatureShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
+								signatureFullShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
+								participantContainerShape.addChildShape(signatureFullShape);
+								signatureFullShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
 							} else {
-								signatureShape = (RuleParticipantSignatureDiagramShape) getShapeFromModelObject(ruleParticipantSignature);
-								signatureShape.setVisible(true);
+								signatureFullShape = (RuleParticipantSignatureFullDiagramShape) getShapeFromModelObject(ruleParticipantLongSignature);
 							}
-							unwantedShapes.remove(signatureShape);
-							unwantedSignatures.remove(ruleParticipantSignature);
-							if(signatureShape != null) {
-								signatureShape.refreshLabel();
+							
+							if (ruleParticipantShortSignature == null) {
+								ruleParticipantShortSignature = RuleParticipantShortSignature.fromReactionRuleParticipant(participant, this);
+								ruleParticipantSignatures.add(ruleParticipantShortSignature);
+								signatureShortShape = new RuleParticipantSignatureShortDiagramShape(ruleParticipantShortSignature, this);
+								addShape(signatureShortShape);
+								ReactionContainerShape participantContainerShape =	(ReactionContainerShape) getShapeFromModelObject(participant.getStructure());
+								signatureShortShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
+								participantContainerShape.addChildShape(signatureShortShape);
+								signatureShortShape.getSpaceManager().setRelPos(participantContainerShape.getRandomPosition());
+							} else {
+								signatureShortShape = (RuleParticipantSignatureShortDiagramShape) getShapeFromModelObject(ruleParticipantShortSignature);
+							}
+
+							unwantedShapes.remove(signatureFullShape);
+							unwantedSignatures.remove(ruleParticipantLongSignature);
+							unwantedShapes.remove(signatureShortShape);
+							unwantedSignatures.remove(ruleParticipantShortSignature);
+							signatureFullShape.refreshLabel();
+							signatureShortShape.refreshLabel();
+							
+							// we go through all rule participants; depending on the transition, we make their shapes visible or invisible
+							RuleParticipantSignatureDiagramShape signatureShape = null;		// used for edge, can be either Full or Short
+							if(ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.full) {
+								signatureFullShape.setVisible(true);
+								signatureShortShape.setVisible(false);
+								signatureShape = signatureFullShape;
+							} else {
+								signatureFullShape.setVisible(false);
+								signatureShortShape.setVisible(true);
+								signatureShape = signatureShortShape;
 							}
 
 							//
@@ -431,8 +451,6 @@ public class ReactionCartoon extends ModelCartoon {
 									ruleParticipantShape = new ReactantPatternEdgeDiagramShape((ReactantPattern) participant, rrShape, signatureShape, this);
 								} else if (participant instanceof ProductPattern && signatureShape.isVisible()) {
 									ruleParticipantShape = new ProductPatternEdgeDiagramShape((ProductPattern) participant, rrShape, signatureShape, this);
-//								} else if (participant instanceof Catalyst) {
-//									ruleParticipantShape = new CatalystShape((Catalyst) participant, reactionStepShape, speciesContextShape, this);
 								} else {
 									throw new RuntimeException("unsupported ReactionRuleParticipant " + participant.getClass());
 								}
@@ -447,7 +465,7 @@ public class ReactionCartoon extends ModelCartoon {
 						}
 					}
 					// now let's see if any reactant and product pair have the same signature - means we need to draw a reactant and 
-					// a product edge (a closed loop) between the rule diagram shape and and the signature diagram shape
+					// a product edge (a closed loop) between the rule diagram shape and the signature diagram shape
 					for(RuleParticipantEdgeDiagramShape ours : ruleEdges) {
 						ours.setSibling(false);		// reset them all
 					}
@@ -465,6 +483,27 @@ public class ReactionCartoon extends ModelCartoon {
 				}
 			}
 			ruleParticipantSignatures.removeAll(unwantedSignatures);
+			
+			//TODO: uncomment the following block to track the instances of participants and signatures during transitions
+//			String msg1 = transitioning ? "transitioning to " : "staying ";
+//			msg1 += ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.full ? "full" : "short";
+//			System.out.println(" --------------------------------- " + msg1 + " ------------------------");
+//			for (RuleParticipantSignature signature : ruleParticipantSignatures) {
+//				String sSign = RbmUtils.toBnglString(signature.getSpeciesPattern(), null, CompartmentMode.hide, 0);
+//				String msg2 = "sign ";
+//				msg2 += signature instanceof RuleParticipantLongSignature ? "full:  " : "short: ";
+//				String hashSignature = System.identityHashCode(signature) + "";
+//				String hashSP = System.identityHashCode(signature.getSpeciesPattern()) + "";
+//				System.out.println(msg2 + sSign + ", sp hash: " + hashSP + ", signature hash: " + hashSignature);
+//			}
+//			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
+//				for(ReactionRuleParticipant participant : rr.getReactionRuleParticipants()) {
+//					String hashParticipant = System.identityHashCode(participant) + "";
+//					String hashSP = System.identityHashCode(participant.getSpeciesPattern()) + "";
+//					String sPart = RbmUtils.toBnglString(participant.getSpeciesPattern(), null, CompartmentMode.hide, 0);
+//					System.out.println("part: " + sPart + ", sp hash: " + hashSP + ", participant hash: " + hashParticipant);
+//				}
+//			}
 			
 			for(ReactionStep reactionStep : getModel().getReactionSteps()) {
 				reactionStep.removePropertyChangeListener(this);
@@ -572,11 +611,19 @@ public class ReactionCartoon extends ModelCartoon {
 						NodeReference.SPECIES_CONTEXT_NODE,
 						((SpeciesContext) shape.getModelObject()).getName(),
 						shape.getSpaceManager().getRelPos()));
-			} else if (shape instanceof RuleParticipantSignatureDiagramShape) {
+			} else if (shape instanceof RuleParticipantSignatureFullDiagramShape) {
 				RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
 				if (ruleParticipantSignature.getStructure() == diagram.getStructure()){
 					String spAsString = ruleParticipantSignature.getSpeciesPatternAsString();
-					NodeReference nr = new NodeReference(NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE, spAsString, shape.getSpaceManager().getRelPos());
+					NodeReference nr = new NodeReference(NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE, spAsString, shape.getSpaceManager().getRelPos());
+					nr.speciesPattern = ruleParticipantSignature.getSpeciesPattern();
+					nodeList.add(nr);
+				}
+			} else if (shape instanceof RuleParticipantSignatureShortDiagramShape) {
+				RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
+				if (ruleParticipantSignature.getStructure() == diagram.getStructure()){
+					String spAsString = ruleParticipantSignature.getSpeciesPatternAsString();
+					NodeReference nr = new NodeReference(NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE, spAsString, shape.getSpaceManager().getRelPos());
 					nr.speciesPattern = ruleParticipantSignature.getSpeciesPattern();
 					nodeList.add(nr);
 				}

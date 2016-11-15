@@ -5250,8 +5250,14 @@ private NodeReference getNodeReference(Element param) throws XmlParseException{
 		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
 
 		newnoderef = new NodeReference(type, name, location);
-	} else if  ( tempname.equalsIgnoreCase(XMLTags.RuleParticipantShapeTag) ) {
-		int type = NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE;
+	} else if  ( tempname.equalsIgnoreCase(XMLTags.RuleParticipantFullShapeTag) || tempname.equalsIgnoreCase(XMLTags.RuleParticipantShapeTag) ) {
+		int type = NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE;
+		String name = unMangle(param.getAttributeValue( XMLTags.RuleParticipantRefAttrTag ));
+		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
+
+		newnoderef = new NodeReference(type, name, location);
+	} else if  ( tempname.equalsIgnoreCase(XMLTags.RuleParticipantShortShapeTag) ) {
+		int type = NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE;
 		String name = unMangle(param.getAttributeValue( XMLTags.RuleParticipantRefAttrTag ));
 		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
 

@@ -4209,8 +4209,17 @@ private Element getXML(NodeReference param) {
 
 			return reactionRuleNode;
 		}
-		case NodeReference.RULE_PARTICIPANT_SIGNATURE_NODE:{
-			Element ruleParticipant = new Element(XMLTags.RuleParticipantShapeTag);
+		case NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE: {
+			Element ruleParticipant = new Element(XMLTags.RuleParticipantFullShapeTag);
+			//add Attributes
+			ruleParticipant.setAttribute(XMLTags.RuleParticipantRefAttrTag, mangle(param.getName()));
+			ruleParticipant.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
+			ruleParticipant.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
+
+			return ruleParticipant;
+		}
+		case NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE: {
+			Element ruleParticipant = new Element(XMLTags.RuleParticipantShortShapeTag);
 			//add Attributes
 			ruleParticipant.setAttribute(XMLTags.RuleParticipantRefAttrTag, mangle(param.getName()));
 			ruleParticipant.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));

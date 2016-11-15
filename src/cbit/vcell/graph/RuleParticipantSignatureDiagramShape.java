@@ -21,7 +21,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
@@ -36,7 +35,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RuleParticipantSignature;
 
-public class RuleParticipantSignatureDiagramShape extends ElipseShape {
+abstract class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	RuleParticipantSignature ruleParticipantSignature = null;
 	boolean bVisible = true;				// we may want to hide this shape (not paint it) without destroying it
 	

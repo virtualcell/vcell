@@ -28,9 +28,11 @@ public class NodeReference implements java.io.Serializable, Matchable {
 	public static final int FLUX_REACTION_NODE = 2;
 	public static final int SPECIES_CONTEXT_NODE = 3;
 	public static final int REACTION_RULE_NODE = 4;
-	public static final int RULE_PARTICIPANT_SIGNATURE_NODE = 5;
+	public static final int RULE_PARTICIPANT_SIGNATURE_FULL_NODE = 5;
+	public static final int RULE_PARTICIPANT_SIGNATURE_SHORT_NODE = 6;
 
-	public static final String nodeNames[] = { "unknown", VCMODL.SimpleReaction, VCMODL.FluxStep, VCMODL.SpeciesContextSpec, VCMODL.ReactionRule, VCMODL.RuleParticipantSignature };
+	public static final String nodeNames[] = { "unknown", VCMODL.SimpleReaction, VCMODL.FluxStep, VCMODL.SpeciesContextSpec, VCMODL.ReactionRule, 
+		VCMODL.RuleParticipantFullSignature, VCMODL.RuleParticipantShortSignature };
 /**
  * NodeReference constructor comment.
  */
@@ -54,8 +56,10 @@ public NodeReference(String nodeTypeString, String name, java.awt.Point location
 		this.nodeType = SPECIES_CONTEXT_NODE;
 	}else if (nodeNames[REACTION_RULE_NODE].equalsIgnoreCase(nodeTypeString)){
 		this.nodeType = REACTION_RULE_NODE;
-	}else if (nodeNames[RULE_PARTICIPANT_SIGNATURE_NODE].equalsIgnoreCase(nodeTypeString)){
-		this.nodeType = RULE_PARTICIPANT_SIGNATURE_NODE;
+	}else if (nodeNames[RULE_PARTICIPANT_SIGNATURE_FULL_NODE].equalsIgnoreCase(nodeTypeString)){
+		this.nodeType = RULE_PARTICIPANT_SIGNATURE_FULL_NODE;
+	}else if (nodeNames[RULE_PARTICIPANT_SIGNATURE_SHORT_NODE].equalsIgnoreCase(nodeTypeString)){
+		this.nodeType = RULE_PARTICIPANT_SIGNATURE_SHORT_NODE;
 	}else{
 		throw new IllegalArgumentException("nodeType '"+nodeTypeString+"' unknown");
 	}
@@ -96,7 +100,7 @@ public boolean compareEqual(Matchable obj) {
  * @return java.lang.String
  */
 public String getName() {
-	if(RULE_PARTICIPANT_SIGNATURE_NODE != nodeType) {
+	if(RULE_PARTICIPANT_SIGNATURE_FULL_NODE != nodeType && RULE_PARTICIPANT_SIGNATURE_SHORT_NODE != nodeType) {
 		return name;
 	} else {
 		if (speciesPattern != null) {

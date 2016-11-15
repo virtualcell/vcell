@@ -429,6 +429,8 @@ public class XMLTags {
     public final static String FluxReactionShapeTag = "FluxReactionShape";
     public final static String ReactionRuleShapeTag = "ReactionRuleShapeTag";
     public final static String RuleParticipantShapeTag = "RuleParticipantShapeTag";
+    public final static String RuleParticipantFullShapeTag = "RuleParticipantFullShapeTag";
+    public final static String RuleParticipantShortShapeTag = "RuleParticipantShortShapeTag";
     public final static String SimpleReactionRefAttrTag = "SimpleReactionRef";
     public final static String FluxReactionRefAttrTag = "FluxReactionRef";
     public final static String ReactionRuleRef2AttrTag = "ReactionRuleRef2AttrTag";

@@ -49,7 +49,8 @@ public class VCMODL {
 	public final static String SimpleReaction	 			   = "SimpleReaction";
 	public final static String FluxStep		 				   = "FluxStep";
 	public final static String ReactionRule	 				   = "ReactionRule";
-	public final static String RuleParticipantSignature	       = "RuleParticipantSignature";
+	public final static String RuleParticipantFullSignature	   = "RuleParticipantFullSignature";
+	public final static String RuleParticipantShortSignature   = "RuleParticipantShortSignature";
 	public final static String InFlux						   = "InFlux";
 	public final static String Species	 					   = "Species";
 	public final static String BeginBlock	 				   = "{";
