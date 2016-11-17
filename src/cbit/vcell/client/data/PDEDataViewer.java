@@ -31,6 +31,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,6 +152,7 @@ import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SinglePoint;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.DataValueSurfaceViewer;
 import cbit.vcell.geometry.gui.SurfaceCanvas;
 import cbit.vcell.geometry.gui.SurfaceMovieSettingsPanel;
@@ -159,6 +161,7 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
+import cbit.vcell.graph.GeometryContextGeometryShape;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -1958,7 +1961,20 @@ private void sendImageJTimePoint(){
 	try{
 		String varname = getPdeDataContext().getVariableName();
 		double timepoint = getPdeDataContext().getTimePoint();
-		ImageJHelper.vcellSendImage(PDEDataViewer.this,getPdeDataContext(),getPDEDataContextPanel1().getMembranesAndIndexes(),"VCell sim results '"+varname+"':"+timepoint,new double[] {timepoint},new String[] {varname});
+		//-----
+		int[] brcm = getPDEDataContextPanel1().getdisplayAdapterService1().createBlueRedColorModel0(false);
+//		FileWriter fw = new FileWriter(new File("C:/temp/brcm.lut"));
+//		for (int i = 0; i < brcm.length; i++) {
+//			int colr = brcm[i];
+//			String blue = ""+(colr&0xFF);
+//			String grn = ""+((colr>>8)&0xFF);
+//			String red = ""+((colr>>16)&0xFF);
+//			fw.write(i+"\t"+red+"\t"+grn+"\t"+blue+"\n");
+//		}
+//		fw.close();
+		//-----
+		SubVolume subvolume = getSimulation().getSimulationOwner().getGeometry().getGeometrySpec().getSubVolume(getPdeDataContext().getDataIdentifier().getDomain().getName());
+		ImageJHelper.vcellSendImage(PDEDataViewer.this,getPdeDataContext(),subvolume,getPDEDataContextPanel1().getMembranesAndIndexes(),"VCell sim results '"+varname+"':"+timepoint,new double[] {timepoint},new String[] {varname},brcm);
 	}catch(Exception e){
 		handleException(e);
 	}

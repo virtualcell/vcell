@@ -214,12 +214,15 @@ public void clearMarkedStates() {
 }
 
 
+public final static int[] createBlueRedColorModel() {
+	return createBlueRedColorModel0(true);
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/13/00 1:56:43 PM)
  * @return int[]
  */
-public final static int[] createBlueRedColorModel() {
+public final static int[] createBlueRedColorModel0(boolean bSpecial) {
 	int[] fullMap = new int[1148];
 	// dark blue to blue
 	for (int i = 128; i < 256; i++) {
@@ -243,8 +246,14 @@ public final static int[] createBlueRedColorModel() {
 	}
 	// now scale down to 256 colors
 	int[] colorMap = new int[256];
-	for (int i = 0; i < (256-NUM_SPECIAL_COLORS); i++) {
-		colorMap[i] = fullMap[i * 1147 / (255-NUM_SPECIAL_COLORS)];
+	if(bSpecial){
+		for (int i = 0; i < (256-NUM_SPECIAL_COLORS); i++) {
+			colorMap[i] = fullMap[i * 1147 / (255-NUM_SPECIAL_COLORS)];
+		}
+	}else{
+		for (int i = 0; i < (256); i++) {
+			colorMap[i] = fullMap[i * 1147 / (255)];
+		}		
 	}
 	//
 	return colorMap;
@@ -545,7 +554,7 @@ public DisplayPreferences getDisplayPreferences(String stateID) {
         DisplayAdapterServiceState storedState = (DisplayAdapterServiceState) states.get(stateID);
         return new DisplayPreferences(getActiveColorModelID(), storedState.getCustomScaleRange(),getSpecialColors()/*storedState.getCustomSpecialColors()*/);
     } else {
-        return new DisplayPreferences(getActiveColorModelID(), null,getSpecialColors());
+        return new DisplayPreferences(getActiveColorModelID(), getActiveScaleRange(),getSpecialColors());
     }
 }
 

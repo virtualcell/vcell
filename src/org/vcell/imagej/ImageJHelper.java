@@ -27,6 +27,7 @@ import org.vcell.util.ISize;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 
+import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -34,7 +35,9 @@ import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.export.nrrd.NrrdWriter;
 import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.geometry.SampledCurve;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.solvers.CartesianMesh;
 
 public class ImageJHelper {
 	public static final String USER_ABORT = "userAbort";
@@ -126,17 +129,21 @@ public class ImageJHelper {
 		public String dataClass;
 		public boolean hasOverlays;
 		public Extent extent;
-		public boolean isMask;
+		public int[] domainSubvolumeIDs;//this will be non-null if this is a domain mask
 		public double[] timePoints;
 		public String[] channelDescriptions;
-		public HyperStackHelper(BasicStackDimensions basicStackDimensions,Extent extent,boolean hasOverlays,String dataClass,boolean isMask,double[] timePoints,String[] channelDescriptions) {
+		public int[] channelSubvolIDs;
+		public int[] colormap;
+		public HyperStackHelper(BasicStackDimensions basicStackDimensions,Extent extent,boolean hasOverlays,String dataClass,int[] domainSubvolumeIDs,int[] channelSubvolIDs,double[] timePoints,String[] channelDescriptions,int[] colormap) {
 			super(basicStackDimensions.xsize,basicStackDimensions.ysize,basicStackDimensions.zsize,basicStackDimensions.csize,basicStackDimensions.tsize);
 			this.extent = extent;
 			this.dataClass = dataClass;
 			this.hasOverlays = hasOverlays;
-			this.isMask = isMask;
+			this.domainSubvolumeIDs = domainSubvolumeIDs;
+			this.channelSubvolIDs = channelSubvolIDs;
 			this.timePoints = timePoints;
 			this.channelDescriptions = channelDescriptions;
+			this.colormap = colormap;
 		}
 		public void writeInfo(DataOutputStream dos) throws Exception{
 			dos.writeUTF(dataClass);
@@ -147,7 +154,27 @@ public class ImageJHelper {
 			dos.writeDouble(extent.getY());
 			dos.writeDouble(extent.getZ());
 			dos.writeBoolean(hasOverlays);
-			dos.writeBoolean(isMask);
+			//write colormap
+			dos.writeInt((colormap != null?colormap.length:0));
+			if(colormap != null){
+				for (int i = 0; i < colormap.length; i++) {
+					dos.writeInt(colormap[i]);//argb
+				}
+			}
+			//write subvolumeIDs
+			dos.writeInt((domainSubvolumeIDs==null?0:domainSubvolumeIDs.length));
+			if(domainSubvolumeIDs != null){
+				for (int j = 0; j < domainSubvolumeIDs.length; j++) {
+					dos.writeInt(domainSubvolumeIDs[j]);
+				}
+			}
+			//write channel subvolumeIDs
+			dos.writeInt((channelSubvolIDs==null?0:channelSubvolIDs.length));
+			if(channelSubvolIDs != null){
+				for (int j = 0; j < channelSubvolIDs.length; j++) {
+					dos.writeInt(channelSubvolIDs[j]);
+				}
+			}
 			//timepoints
 			dos.writeInt((timePoints==null?0:timePoints.length));
 			if(timePoints != null){
@@ -332,6 +359,34 @@ public class ImageJHelper {
 		}
 	};
 
+	public static void sendVolumeDomain0(ImageJConnection imageJConnection,CartesianMesh mesh,SimulationModelInfo simulationModelInfo,String description) throws Exception{
+		Hashtable<Integer, BitSet> subVolMapMask = new Hashtable<>();
+		for (int i = 0; i < mesh.getNumVolumeElements(); i++) {
+			int subvolume = mesh.getSubVolumeFromVolumeIndex(i);
+			if(subvolume > 255){
+				throw new Exception("Error ImageJHelper.sendVolumeDomain(...) subvolume > 255 not implemented");
+			}
+			if(!subVolMapMask.containsKey(subvolume)){
+				subVolMapMask.put(subvolume, new BitSet(mesh.getNumVolumeElements()));
+			}
+			subVolMapMask.get(subvolume).set(i);
+		}
+		ArrayList<String> channelDescriptions = new ArrayList<>();
+		if(simulationModelInfo != null){
+			for(Integer subvolID:subVolMapMask.keySet()){
+				channelDescriptions.add(simulationModelInfo.getVolumeNameGeometry(subvolID)+":"+simulationModelInfo.getVolumeNamePhysiology(subvolID));
+			}
+		}
+		int[] subvolumeIDs = new int[subVolMapMask.size()];
+		Enumeration<Integer> subvolid = subVolMapMask.keys();
+		int cnt = 0;
+		while(subvolid.hasMoreElements()){
+			subvolumeIDs[cnt] = subvolid.nextElement();
+			cnt++;
+		}
+		sendData0(imageJConnection, new HyperStackHelper(new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), subVolMapMask.size(), 1),mesh.getExtent(),false,Byte.class.getSimpleName(),subvolumeIDs,null,null,(channelDescriptions.size()==0?null:channelDescriptions.toArray(new String[0])),null), subVolMapMask,description);
+
+	}
 	public static void sendVolumeDomain(Component requester,PDEDataContext pdeDataContext,ISize iSize,ClientTaskStatusSupport clientTaskStatusSupport,ListenAndCancel listenAndCancel,String description,SimulationModelInfo simulationModelInfo) throws Exception{
 		ImageJConnection[] imageJConnection = new ImageJConnection[1];
 		try{
@@ -350,22 +405,7 @@ public class ImageJHelper {
 	    	}
 	    	imageJConnection[0] = new ImageJConnection(ExternalCommunicator.IMAGEJ);
 			imageJConnection[0].openConnection(VCellImageJCommands.vcellSendDomains,description);
-			Hashtable<Integer, BitSet> subVolMapMask = new Hashtable<>();
-			for (int i = 0; i < pdeDataContext.getCartesianMesh().getNumVolumeElements(); i++) {
-				int subvolume = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(i);
-				if(subvolume > 255){
-					throw new Exception("Error ImageJHelper.sendVolumeDomain(...) subvolume > 255 not implemented");
-				}
-				if(!subVolMapMask.containsKey(subvolume)){
-					subVolMapMask.put(subvolume, new BitSet(pdeDataContext.getCartesianMesh().getNumVolumeElements()));
-				}
-				subVolMapMask.get(subvolume).set(i);
-			}
-			ArrayList<String> channelDescriptions = new ArrayList<>();
-			for(Integer subvolID:subVolMapMask.keySet()){
-				channelDescriptions.add(simulationModelInfo.getVolumeNameGeometry(subvolID)+":"+simulationModelInfo.getVolumeNamePhysiology(subvolID));
-			}
-			sendData0(imageJConnection[0], new HyperStackHelper(new BasicStackDimensions(iSize.getX(), iSize.getY(), iSize.getZ(), subVolMapMask.size(), 1),pdeDataContext.getCartesianMesh().getExtent(),false,Byte.class.getSimpleName(),true,null,channelDescriptions.toArray(new String[0])), subVolMapMask,description);
+			sendVolumeDomain0(imageJConnection[0], pdeDataContext.getCartesianMesh(), simulationModelInfo, description);
 		}catch(Exception e){
 			if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
 				//ignore, we were cancelled
@@ -421,7 +461,7 @@ public class ImageJHelper {
 			for (int i = 0; i < data.length; i++) {
 				data[i] = dis.readDouble();
 			}
-			sendData0(imageJConnection, new HyperStackHelper(basicStackDimensions, new Extent(1,1,1), false, Float.class.getSimpleName(), false,timePoints,channelDescriptions), data,description);
+			sendData0(imageJConnection, new HyperStackHelper(basicStackDimensions, new Extent(1,1,1), false, Float.class.getSimpleName(), null,null,timePoints,channelDescriptions,null), data,description);
 		}
 		finally{
 			try{if(imageJConnection != null){imageJConnection.closeConnection();}}catch(Exception e){e.printStackTrace();}
@@ -487,7 +527,7 @@ public class ImageJHelper {
 			}
 		}else if(dataObj instanceof byte[]){//send 8bit bytes as is to ImageJ (grayscale or colormap images)
 			imageJConnection.dos.write((byte[])dataObj);
-		}else if(dataObj instanceof Hashtable && hyperStackHelper.isMask){//convert to bytes (0 or 255) for ImageJ binary processing
+		}else if(dataObj instanceof Hashtable && hyperStackHelper.domainSubvolumeIDs != null){//convert to bytes (0 or 255) for ImageJ binary processing
 			int channelSize = hyperStackHelper.xsize*hyperStackHelper.ysize*hyperStackHelper.zsize;
 			Enumeration<Integer> subVolIDs = ((Hashtable<Integer, BitSet>)dataObj).keys();
 			while(subVolIDs.hasMoreElements()){
@@ -507,7 +547,7 @@ public class ImageJHelper {
 			throw new IllegalArgumentException("Unexpected data type="+dataObj.getClass().getName());
 		}
 	}
-	public static void vcellSendImage(final Component requester,final PDEDataContext pdeDataContext,Hashtable<SampledCurve, int[]>[] membraneTables,String description,double[] timePoints,String[] channelDescriptions) throws Exception{//xyz, 1 time, 1 var
+	public static void vcellSendImage(final Component requester,final PDEDataContext pdeDataContext,SubVolume subvolume,Hashtable<SampledCurve, int[]>[] membraneTables,String description,double[] timePoints,String[] channelDescriptions,int[] colormap) throws Exception{//xyz, 1 time, 1 var
 		final ImageJConnection[] imageJConnectionArr = new ImageJConnection[1];
 		AsynchClientTask sendImageTask = new AsynchClientTask("Send image to ImageJ...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -520,7 +560,8 @@ public class ImageJHelper {
 					ISize xyzSize = pdeDataContext.getCartesianMesh().getISize();
 					Extent extent = pdeDataContext.getCartesianMesh().getExtent();
 					BasicStackDimensions basicStackDimensions = new BasicStackDimensions(xyzSize.getX(), xyzSize.getY(), xyzSize.getZ(), 1, 1);
-					sendData0(imageJConnection, new HyperStackHelper(basicStackDimensions,extent,true,Float.class.getSimpleName(),false,timePoints,channelDescriptions), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
+					sendData0(imageJConnection, new HyperStackHelper(basicStackDimensions,extent,true,Float.class.getSimpleName(),null,new int[] {subvolume.getHandle()},timePoints,channelDescriptions,colormap), pdeDataContext.getDataValues(),"'"+pdeDataContext.getVariableName()+"'"+pdeDataContext.getTimePoint());
+					sendVolumeDomain0(imageJConnection, pdeDataContext.getCartesianMesh(), null, description);
 					sendMembraneOutline(imageJConnection, membraneTables);
 				}catch(Exception e){
 					if(e instanceof UserCancelException){
