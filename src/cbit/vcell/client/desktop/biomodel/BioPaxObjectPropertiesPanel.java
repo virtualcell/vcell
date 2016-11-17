@@ -312,21 +312,25 @@ private static List<String> otherKeywords = Arrays.asList (
 		"URL=",
 		"Note="
 		);
+public static String FormatDetails(String text) {
+	for(String entry : commentKeywords) {
+		String replacement = "<br>" + "<b><font color=\"#005500\">" + entry + "</font></b>";
+		text = text.replaceAll(entry, replacement);
+	}
+	for(String entry : otherKeywords) {
+		String replacement = "<font color=\"#770000\">" + entry + "</font>";
+		text = text.replaceAll(entry, replacement);
+	}
+	if(text.startsWith("<br>")) {
+		text = text.replaceFirst("<br>", "");
+	}
+	return text;
+
+}
 private static String FormatDetails(BioPaxObjectProperty property) {
 	if(property.name.equalsIgnoreCase("comment")) {		// format comments
 		String text = property.value;
-		for(String entry : commentKeywords) {
-			String replacement = "<br>" + "<b><font color=\"#005500\">" + entry + "</font></b>";
-			text = text.replaceAll(entry, replacement);
-		}
-		for(String entry : otherKeywords) {
-			String replacement = "<font color=\"#770000\">" + entry + "</font>";
-			text = text.replaceAll(entry, replacement);
-		}
-		if(text.startsWith("<br>")) {
-			text = text.replaceFirst("<br>", "");
-		}
-		return text;
+		return FormatDetails(text);
 	}
 	return property.value;
 }

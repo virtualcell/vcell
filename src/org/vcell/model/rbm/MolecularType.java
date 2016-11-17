@@ -32,6 +32,7 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	private String name;	
 	private List<MolecularComponent> componentList = new ArrayList<>();
 	private transient Model model = null;
+	public transient String comment = null;
 	
 	private Set<Structure> anchorSet = new HashSet<>();	// list of structures where the molecule are allowed to exist (Feature or Membrane) 
 	private boolean bAnchorAll = true;					// if true ignore the anchorSet content (by default any compartment is allowed)
