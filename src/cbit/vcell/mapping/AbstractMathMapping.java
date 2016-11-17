@@ -492,6 +492,7 @@ public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX = "_in
 static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "";
 public static final String MATH_VAR_SUFFIX_SPECIES_COUNT = "_Count";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
+static final String PARAMETER_PROBABLIITY_RATE_SUFFIX = "_probabilityRate";
 static final String PARAMETER_VELOCITY_X_SUFFIX = "_velocityX";
 static final String PARAMETER_VELOCITY_Y_SUFFIX = "_velocityY";
 static final String PARAMETER_VELOCITY_Z_SUFFIX = "_velocityZ";
@@ -1065,7 +1066,7 @@ protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geomet
 			}
 			if (ste instanceof ProbabilityParameter){ //be careful here, to see if we need mangle the reaction name
 				ProbabilityParameter probParm = (ProbabilityParameter)ste;
-				return probParm.getName();
+				return probParm.getName() + PARAMETER_PROBABLIITY_RATE_SUFFIX;
 			}
 			if (ste instanceof SpeciesConcentrationParameter){
 				SpeciesConcentrationParameter concParm = (SpeciesConcentrationParameter)ste;

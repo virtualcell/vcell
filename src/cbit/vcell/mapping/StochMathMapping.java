@@ -753,7 +753,10 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 							throw new MappingException(pve.getMessage());
 						}
 						//add probability to function or constant
-						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,geometryClass),getIdentifierSubstitutions(probExp, probabilityParamUnit, geometryClass),geometryClass));
+						String ms = getMathSymbol(probParm,geometryClass);
+						Expression is = getIdentifierSubstitutions(probExp, probabilityParamUnit, geometryClass);
+						Variable nfoc = newFunctionOrConstant(ms,is,geometryClass);
+						varHash.addVariable(nfoc);
 										
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,geometryClass)));
 						// actions
