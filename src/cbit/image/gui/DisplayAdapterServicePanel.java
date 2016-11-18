@@ -78,10 +78,8 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 				connEtoM11(e);
 			if (e.getSource() == DisplayAdapterServicePanel.this.getAutoScaleCheckbox()) 
 				connEtoC12(e);
-			if (e.getSource() == DisplayAdapterServicePanel.this.getMaxTextField()) 
-				connEtoC9(e);
-			if (e.getSource() == DisplayAdapterServicePanel.this.getMinTextField()) 
-				connEtoC16(e);
+			if (e.getSource() == DisplayAdapterServicePanel.this.getMaxTextField() || e.getSource() == DisplayAdapterServicePanel.this.getMinTextField()) 
+				calculateCustomScaleRange();
 			if (e.getSource() == DisplayAdapterServicePanel.this.getRdbtnAllTimes() && getRdbtnAllTimes().isSelected())
 				getDisplayAdapterService().setAllTimes(getRdbtnAllTimes().isSelected());
 			if (e.getSource() == DisplayAdapterServicePanel.this.getRdbtnSingle() && getRdbtnSingle().isSelected())
@@ -89,10 +87,8 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 		};
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
-			if (e.getSource() == DisplayAdapterServicePanel.this.getMaxTextField()) 
-				connEtoC15(e);
-			if (e.getSource() == DisplayAdapterServicePanel.this.getMinTextField()) 
-				connEtoC17(e);
+			if (e.getSource() == DisplayAdapterServicePanel.this.getMaxTextField() || e.getSource() == DisplayAdapterServicePanel.this.getMinTextField()) 
+				calculateCustomScaleRange();
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == DisplayAdapterServicePanel.this.getAutoScaleCheckbox()) 
@@ -235,64 +231,9 @@ private void connEtoC13(org.vcell.util.Range value) {
 	}
 }
 
-/**
- * connEtoC15:  (MaxTextField.focus.focusLost(java.awt.event.FocusEvent) --> DisplayAdapterServicePanel.calculateCustomScaleRange()V)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC15(java.awt.event.FocusEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.calculateCustomScaleRange();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 
-/**
- * connEtoC16:  (MinTextField.action.actionPerformed(java.awt.event.ActionEvent) --> DisplayAdapterServicePanel.calculateCustomScaleRange()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC16(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.calculateCustomScaleRange();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
-
-/**
- * connEtoC17:  (MinTextField.focus.focusLost(java.awt.event.FocusEvent) --> DisplayAdapterServicePanel.calculateCustomScaleRange()V)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC17(java.awt.event.FocusEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.calculateCustomScaleRange();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 
 /**
@@ -371,24 +312,6 @@ private void connEtoC8(org.vcell.util.Range value) {
 	}
 }
 
-/**
- * connEtoC9:  (MaxTextField.action.actionPerformed(java.awt.event.ActionEvent) --> DisplayAdapterServicePanel.calculateCustomScaleRange()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.calculateCustomScaleRange();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 
 /**
