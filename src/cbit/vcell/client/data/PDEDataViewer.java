@@ -366,6 +366,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					if((timerScaleRange = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this,getPdeDataContext(),null,timerScaleRange,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {IvjEventHandler.this.propertyChange(evt);}},"PDEDataViewer customScaleRange..."))!=null){
 						return;
 					}
+					getPDEDataContextPanel1().getdisplayAdapterService1().markCurrentState(getPdeDataContext().getVariableName());
 					doUpdate(null);
 				}				
 				if(evt.getSource() == getPDEPlotControlPanel1() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))){
