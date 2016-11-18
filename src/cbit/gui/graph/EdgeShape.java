@@ -32,9 +32,9 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	public static final int LINE_STYLE_DASHED = 1;
 
 	protected Shape startShape = null;
-	protected Shape endShape = null;
-	protected Point start = new Point();
-	protected Point end = new Point();
+	public Shape endShape = null;
+	public Point start = new Point();
+	public Point end = new Point();
 
 	protected static final double CONTROL_WEIGHT = 25.0;
 	protected static final double FRACT_WEIGHT = 0.25;

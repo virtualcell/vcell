@@ -39,7 +39,8 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 		this.reactionParticipant = reactionParticipant;
 	}
 
-	@Override protected final CubicCurve2D.Double getCurve() {
+	@Override 
+	protected final CubicCurve2D.Double getCurve() {
 		// TODO is this the best place for layout?
 		refreshLayoutSelf();
 		// default behavior of control points is for direction at ends to follow secant between end-points.
@@ -94,8 +95,8 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 					correctionFactor = (myPosition - offset) * 0.08;
 				} else {
 					// TODO: comment out the next 2 lines to have the "old style" behavior for a+b->a
-//					double offset = numSiblings / 2 - 0.5;
-//					correctionFactor = (myPosition - offset) * 0.08;
+					double offset = numSiblings / 2 - 0.5;
+					correctionFactor = (myPosition - offset) * 0.08;
 				}
 			}
 		}
