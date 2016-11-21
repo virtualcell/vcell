@@ -15,10 +15,13 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import org.vcell.pathway.BioPaxObject;
@@ -165,16 +168,26 @@ public abstract class BioPaxShape extends Shape {
 		int offsetX = (shapeWidth-getPreferredWidth()) / 2;
 		int offsetY = (shapeHeight-getPreferredHeight()) / 2;
 		Graphics2D g2D = g;
+		
 		if (icon == null) {
 			icon = new Area();
-			icon.add(new Area(new Ellipse2D.Double(offsetX, offsetY,
-					getPreferredWidth(), getPreferredHeight())));
-			//icon.add(new Area(new RoundRectangle2D.Double(offsetX, offsetY,circleDiameter,circleDiameter,circleDiameter/2,circleDiameter/2)));
+			icon.add(new Area(new Ellipse2D.Double(offsetX, offsetY, getPreferredWidth(), getPreferredHeight())));
 		}
-		Area movedIcon = icon.createTransformedArea(
-			AffineTransform.getTranslateInstance(absPosX, absPosY));
-
+		Area movedIcon = icon.createTransformedArea(AffineTransform.getTranslateInstance(absPosX, absPosY));
 		g.setColor((!hasPCLink() && !isSelected()?darkerBackground:backgroundColor));
+		
+		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		Color exterior = !hasPCLink() && !isSelected() ? darkerBackground : backgroundColor;
+		Color interior = exterior.brighter();
+		exterior = exterior.darker();
+		Point2D center = new Point2D.Float(absPosX+getPreferredWidth()/2, absPosY+getPreferredWidth()/2);
+		float radius = getPreferredWidth()*0.5f;
+		Point2D focus = new Point2D.Float(absPosX+getPreferredWidth()/2-2, absPosY+getPreferredWidth()/2-2);
+		float[] dist = {0.1f, 1.0f};
+//		Color[] colors = {Color.white, exterior};
+		Color[] colors = {interior, exterior};
+		RadialGradientPaint p = new RadialGradientPaint(center, radius, focus, dist, colors, CycleMethod.NO_CYCLE);
+		g2D.setPaint(p);
 		g2D.fill(movedIcon);
 		g.setColor(forgroundColor);
 		g2D.draw(movedIcon);
@@ -195,7 +208,7 @@ public abstract class BioPaxShape extends Shape {
 					absPosX, getLabelPos().y + absPosY);
 		}
 		if(hasRelationships) {
-			ShapePaintUtil.paintLinkMark(g2D, this, Color.WHITE);			
+			ShapePaintUtil.paintLinkMark(g2D, this, Color.BLACK);			
 		}
 		
 		g.setRenderingHints(oldRenderingHints);

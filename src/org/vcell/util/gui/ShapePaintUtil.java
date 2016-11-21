@@ -32,7 +32,7 @@ public class ShapePaintUtil {
 		String text = "L";
 		TextLayout textLayout = new TextLayout(text, font, fontRenderContext);
 		Rectangle2D textBounds = textLayout.getBounds();
-		int xText = (int) (shape.getAbsX() + (shape.getWidth() - textBounds.getWidth())/ 2 - 1);
+		int xText = (int) (shape.getAbsX() + (shape.getWidth() - textBounds.getWidth())/ 2);
 		int yText = (int) (shape.getAbsY() + (shape.getHeight() + textBounds.getHeight())/ 2 + 1);
 		textLayout.draw(g, xText, yText);
 		g.setFont(fontOld);
