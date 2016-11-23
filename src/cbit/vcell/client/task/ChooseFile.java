@@ -245,6 +245,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	final File fileUserSpecified = selectedFile.getCanonicalFile();
 	///
 	String selectedFileName = recordAndRemoveExtension( selectedFile.getPath() );
+	if(extensionUserProvided != null && !extensionUserProvided.isEmpty() && !extensionUserProvided.startsWith(".")) {
+		extensionUserProvided = "." + extensionUserProvided;
+	}
 	if (fileFilter.isValidExtension(extensionUserProvided)) {
 		selectedFileName += extensionUserProvided;
 	}
