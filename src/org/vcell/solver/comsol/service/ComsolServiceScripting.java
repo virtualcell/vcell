@@ -25,6 +25,7 @@ import org.vcell.solver.comsol.model.VCCModelNode;
 import org.vcell.solver.comsol.model.VCCPhysics;
 import org.vcell.solver.comsol.model.VCCStudyFeature;
 import org.vcell.solver.comsol.model.VCCTransientStudyFeature;
+import org.vcell.util.PropertyLoader;
 
 public class ComsolServiceScripting implements ComsolService {
 
@@ -372,14 +373,15 @@ public class ComsolServiceScripting implements ComsolService {
 	@Override
 	public void solve(VCCModel vccModel, File reportFile, File javaFile, File mphFile){
 		ClassLoader origClassLoader = null;
+		File comsolRootDir = PropertyLoader.getRequiredDirectory(PropertyLoader.comsolRootDir);
+		File comsolJarDir = PropertyLoader.getRequiredDirectory(PropertyLoader.comsolJarDir);
 		try {
 			origClassLoader = Thread.currentThread().getContextClassLoader();
-			System.setProperty("cs.root", "D:\\Program Files\\COMSOL\\COMSOL52\\Multiphysics");
+			System.setProperty("cs.root", comsolRootDir.getAbsolutePath());
 			
 			if (comsolClassloader==null){
-				File comsolPluginDir = new File("D:\\Program Files\\COMSOL\\COMSOL52\\Multiphysics\\plugins\\");
 				ArrayList<URL> urls = new ArrayList<URL>();
-				for (File f : comsolPluginDir.listFiles()){
+				for (File f : comsolJarDir.listFiles()){
 					if (f.isFile() && f.getName().endsWith(".jar")){
 						try {
 							urls.add(f.toURI().toURL());

@@ -65,6 +65,10 @@ public class PropertyLoader {
 	public static final String nfsimExecutableProperty		= record("vcell.nfsim.executable",ValueType.EXE);
 
 	public static final String MOVING_BOUNDARY_EXE		= record("vcell.mb.executable",ValueType.EXE);
+	
+	//Comsol properties
+	public static final String comsolRootDir				= record("vcell.comsol.rootdir",ValueType.DIR);
+	public static final String comsolJarDir					= record("vcell.comsol.jardir",ValueType.DIR);
 
 	//Stoch properties
 	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);
