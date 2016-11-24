@@ -15,6 +15,7 @@ import org.vcell.vis.chombo.ChomboMeshData;
 import org.vcell.vis.io.ChomboFileReader;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.ChomboFiles.ChomboFileEntry;
+import org.vcell.vis.io.VtuVarInfo.DataType;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vis.vismesh.thrift.ChomboIndexData;
@@ -242,14 +243,14 @@ public class ChomboVtkFileWriter {
 				String displayName = "("+volumeDomainName+")  "+varName;
 				String expressionString = null;
 				boolean bMeshVariable = true;
-				varInfos.add(new VtuVarInfo(varName, displayName, volumeDomainName, volVariableDomain, expressionString, bMeshVariable));
+				varInfos.add(new VtuVarInfo(varName, displayName, volumeDomainName, volVariableDomain, expressionString, DataType.CellData, bMeshVariable));
 			}
 			for (String componentVarName : chomboMeshData.getVisibleVolumeDataNames()){
 				String varName = componentVarName;
 				String displayName = "("+volumeDomainName+")  "+varName;
 				String expressionString = null;
 				boolean bMeshVariable = false;
-				varInfos.add(new VtuVarInfo(varName, displayName, volumeDomainName, volVariableDomain, expressionString, bMeshVariable));
+				varInfos.add(new VtuVarInfo(varName, displayName, volumeDomainName, volVariableDomain, expressionString, DataType.CellData, bMeshVariable));
 			}
 			for (DataIdentifier dataID : dataIdentifiers){
 				if (dataID.isVisible() 
@@ -262,7 +263,7 @@ public class ChomboVtkFileWriter {
 						expressionString = f.getExpression().infix();
 					}
 					boolean bMeshVar = false;
-					varInfos.add(new VtuVarInfo(dataID.getName(), displayName, volumeDomainName, volVariableDomain, expressionString, bMeshVar));
+					varInfos.add(new VtuVarInfo(dataID.getName(), displayName, volumeDomainName, volVariableDomain, expressionString, DataType.CellData, bMeshVar));
 				}
 			}
 			}
@@ -278,14 +279,14 @@ public class ChomboVtkFileWriter {
 				String displayName = "("+membraneVarData.getDomainName()+")  "+varName;
 				String expressionString = null;
 				boolean bMeshVariable = false;
-				varInfos.add(new VtuVarInfo(varName, displayName, memDomainName, memVariableDomain, expressionString, bMeshVariable));
+				varInfos.add(new VtuVarInfo(varName, displayName, memDomainName, memVariableDomain, expressionString, DataType.CellData, bMeshVariable));
 			}
 			for (String builtinVarName : chomboMeshData.getMembraneBuiltinNames()){
 				String varName = builtinVarName;
 				String displayName = "("+memDomainName+")  "+varName;
 				String expressionString = null;
 				boolean bMeshVariable = true;
-				varInfos.add(new VtuVarInfo(varName, displayName, memDomainName, memVariableDomain, expressionString, bMeshVariable));
+				varInfos.add(new VtuVarInfo(varName, displayName, memDomainName, memVariableDomain, expressionString, DataType.CellData, bMeshVariable));
 			}
 			for (DataIdentifier dataID : dataIdentifiers){
 				if (dataID.isVisible() 
@@ -298,7 +299,7 @@ public class ChomboVtkFileWriter {
 						expressionString = f.getExpression().infix();
 					}
 					boolean bMeshVar = false;
-					varInfos.add(new VtuVarInfo(dataID.getName(), displayName, memDomainName, memVariableDomain, expressionString, bMeshVar));
+					varInfos.add(new VtuVarInfo(dataID.getName(), displayName, memDomainName, memVariableDomain, expressionString, DataType.CellData, bMeshVar));
 				}
 			}
 			}

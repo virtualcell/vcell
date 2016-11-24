@@ -163,11 +163,22 @@ public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSet
 					break;
 				}
 			}
+			DataType dataType = null;
+			switch (vtuVarInfo.dataType){
+			case CellData:{
+				dataType = DataType.CELLDATA;
+				break;
+			}
+			case PointData:{
+				dataType = DataType.POINTDATA;
+				break;
+			}
+			}
 			String unitsLabel = "<unknown unit>";
 			if (vtuVarInfo.bMeshVariable){
 				continue; // skip "mesh variables" like size, vcRegionArea, etc, globalIndex, etc.
 			}
-			VariableInfo variableInfo = new VariableInfo(vtuVarInfo.name, vtuVarInfo.displayName, vtuVarInfo.domainName, variableDomainType, unitsLabel, vtuVarInfo.bMeshVariable);
+			VariableInfo variableInfo = new VariableInfo(vtuVarInfo.name, vtuVarInfo.displayName, vtuVarInfo.domainName, variableDomainType, unitsLabel, vtuVarInfo.bMeshVariable, dataType);
 			variableInfo.setExpressionString(vtuVarInfo.functionExpression);
 			varInfoList.add(variableInfo);
 		}
@@ -244,7 +255,13 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 		}else if (var.variableDomainType == DomainType.VOLUME){
 			variableDomainType = VariableDomain.VARIABLEDOMAIN_VOLUME;
 		}
-		VtuVarInfo vtuVarInfo = new VtuVarInfo(var.getVariableVtuName(),var.getVariableDisplayName(),var.getDomainName(),variableDomainType,var.getExpressionString(),var.isMeshVar);
+		org.vcell.vis.io.VtuVarInfo.DataType dataType = org.vcell.vis.io.VtuVarInfo.DataType.CellData;
+		if (var.isSetDataType() && var.dataType == DataType.CELLDATA){
+			dataType = org.vcell.vis.io.VtuVarInfo.DataType.CellData;
+		}else if (var.isSetDataType() && var.dataType == DataType.POINTDATA){
+			dataType = org.vcell.vis.io.VtuVarInfo.DataType.PointData;
+		}
+		VtuVarInfo vtuVarInfo = new VtuVarInfo(var.getVariableVtuName(),var.getVariableDisplayName(),var.getDomainName(),variableDomainType,var.getExpressionString(),dataType,var.isMeshVar);
 		List<Double> times = getTimePoints(simulationDataSetRef);
 		double time = (double)times.get(timeIndex);
 		double[] data = vtkManager.getVtuMeshData(vtuVarInfo, time);
@@ -253,7 +270,11 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 		// get empty mesh file for this domain (getEmptyMeshFile() will ensure that the file exists or create it).
 		//
 		File emptyMeshFile = getEmptyMeshFile(simulationDataSetRef, var.getDomainName(), timeIndex);
-		VisMeshUtils.writeCellDataToVtu(emptyMeshFile, var.getVariableVtuName(), data, meshFileForVariableAndTime);
+		if (var.getDataType()==DataType.CELLDATA){
+			VisMeshUtils.writeCellDataToVtu(emptyMeshFile, var.getVariableVtuName(), data, meshFileForVariableAndTime);
+		}else if (var.getDataType()==DataType.POINTDATA){
+			VisMeshUtils.writePointDataToVtu(emptyMeshFile, var.getVariableVtuName(), data, meshFileForVariableAndTime);
+		}
 		return meshFileForVariableAndTime.getAbsolutePath();
 	} catch (Exception e) {
 		e.printStackTrace();

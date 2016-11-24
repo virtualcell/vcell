@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.vcell.solver.comsol.ComsolSolver;
 import org.vcell.solver.nfsim.NFSimSolver;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.SessionLog;
@@ -87,6 +88,7 @@ public class SolverFactory {
 		FACTORY.put(SolverDescription.Smoldyn, (t,d,pd,sl,m) -> new SmoldynSolver(t, d, sl,m) ); 
 		FACTORY.put(SolverDescription.NFSim, (t,d,pd,sl,m) -> new NFSimSolver(t, d, sl,m) ); 
 		FACTORY.put(SolverDescription.MovingBoundary, (t,d,pd,sl,m) -> new MovingBoundarySolver(t, d, sl,m) ); 
+		FACTORY.put(SolverDescription.Comsol, (t,d,pd,sl,m) -> new ComsolSolver(t, d, sl) ); 
 	}
 	
 public static Solver createSolver(SessionLog sessionLog, File userDir, SimulationTask simTask, boolean bMessaging) throws SolverException {

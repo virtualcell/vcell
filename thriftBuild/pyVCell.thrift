@@ -9,6 +9,11 @@ enum DomainType {
    MEMBRANE
 }
 
+enum DataType {
+   CELLDATA
+   POINTDATA
+}
+
 typedef int TimeIndex
 typedef double TimePoint
 typedef double Datum 
@@ -26,6 +31,7 @@ struct VariableInfo{
    5: required string unitsLabel;
    6: required bool isMeshVar;
    7: optional string expressionString;
+   8: required DataType dataType;
 }
 
 typedef list<VariableInfo> VariableList

@@ -138,6 +138,12 @@ public class VisMeshUtils {
 		}
 	}
 
+	public static double[] readPointDataFromVtu(File inputMeshFile, String dataName) throws IOException{
+		Document meshDocument = XmlUtil.readXML(inputMeshFile);
+		double[] data = readPointDataFromVtuXml(meshDocument, dataName);
+		return data;
+	}
+
 	private static void addCellDataToVtuXml(Document meshFileXmlDocument, String dataName, double[] data) {
 		System.out.println("\n\n\n\n\n\n");
 		double rangeMin = Double.POSITIVE_INFINITY;
@@ -254,6 +260,48 @@ public class VisMeshUtils {
 		cellData.addContent("  ");
 		cellData.addContent(dataArray);
 		cellData.addContent("\n      ");
+	}
+	
+	private static double[] readPointDataFromVtuXml(Document meshFileXmlDocument, String dataName) {
+		Element vtkFileElement = meshFileXmlDocument.getRootElement();
+		ByteOrder byteOrder;
+		if (vtkFileElement.getAttributeValue("byte_order").equals("LittleEndian")){
+			byteOrder = ByteOrder.LITTLE_ENDIAN;
+		}else{
+			byteOrder = ByteOrder.BIG_ENDIAN;
+		}
+		//vtkFileElement.setAttribute("header_type", "UInt32");
+		Element unstructuredGridElement = vtkFileElement.getChild("UnstructuredGrid");
+		@SuppressWarnings("unchecked")
+		List<Element> pieceElements = unstructuredGridElement.getChildren("Piece");
+		if (pieceElements.size()!=1){
+			throw new RuntimeException("Expecting exactly one mesh piece, found "+pieceElements.size());
+		}
+//		int numberOfCells = Integer.parseInt(pieceElements.get(0).getAttributeValue("NumberOfCells"));
+		int numberOfPoints = Integer.parseInt(pieceElements.get(0).getAttributeValue("NumberOfPoints"));
+		Element pointData = pieceElements.get(0).getChild("PointData");
+		List<Element> dataArrayElements = pointData.getChildren("DataArray");
+		for (Element dataArrayElement : dataArrayElements){
+			if (dataArrayElement.getAttribute("Name").equals(dataName)){
+				if (!dataArrayElement.getAttribute("type").equals("Float64")){
+					throw new RuntimeException("expecting type Float64");
+				}
+				if (!dataArrayElement.getAttribute("format").equals("binary")){
+					throw new RuntimeException("expecting format binary");
+				}
+			}
+			String base64 = dataArrayElement.getText().trim();
+			byte[] bytes = new byte[numberOfPoints*8+4];
+			ByteBuffer b = ByteBuffer.wrap(DatatypeConverter.parseBase64Binary(base64));
+			b.order(byteOrder);
+			double[] data = new double[numberOfPoints];
+			int numPointsEncoded = b.getInt()/8;
+			for (int i=0;i<numPointsEncoded;i++){
+				data[i] = b.getDouble();
+			}
+			return data;
+		}
+		throw new RuntimeException("point data "+dataName+" not found");
 	}
 
 }

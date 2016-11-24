@@ -10,9 +10,14 @@ public class VtuVarInfo implements Serializable {
 	public final String domainName;
 	public final VariableDomain variableDomain;
 	public final boolean bMeshVariable; // true for built-in mesh quantities like global index for FiniteVolume code, or box index for Chombo.
+	public enum DataType {
+		CellData,
+		PointData
+	}
+	public final DataType dataType;
 	public final String functionExpression;
 	
-	public VtuVarInfo(String name, String displayName, String domainName, VariableDomain variableDomain, String functionExpression, boolean bMeshVariable) {
+	public VtuVarInfo(String name, String displayName, String domainName, VariableDomain variableDomain, String functionExpression, DataType dataType, boolean bMeshVariable) {
 		super();
 		this.name = name;
 		this.displayName = displayName;
@@ -20,5 +25,6 @@ public class VtuVarInfo implements Serializable {
 		this.variableDomain = variableDomain;
 		this.bMeshVariable = bMeshVariable;
 		this.functionExpression = functionExpression;
+		this.dataType = dataType;
 	}
 }

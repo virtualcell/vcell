@@ -45,6 +45,7 @@ import org.vcell.util.document.SimResampleInfoProvider;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.ComsolSimFiles;
 import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
@@ -53,16 +54,23 @@ import cbit.image.VCImageUncompressed;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.FieldFunctionDefinition;
+import cbit.vcell.math.FilamentSubDomain;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.PointSubDomain;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
@@ -97,6 +105,7 @@ public class SimulationData extends VCData {
 	public enum SolverDataType
 	{
 		MBSData,
+		COMSOL
 	}
 	
 	public static class AmplistorHelper{
@@ -183,6 +192,10 @@ public class SimulationData extends VCData {
 					{
 						solverDataType = SolverDataType.MBSData;
 					}
+					else if (SolverDataType.COMSOL.name().startsWith(log3Bytes))
+					{
+						solverDataType = SolverDataType.COMSOL;
+					}
 				}catch(Exception e){
 					e.printStackTrace();
 				}finally{
@@ -246,6 +259,9 @@ public class SimulationData extends VCData {
 		public File getMovingBoundaryOutputFile(){
 			return getFile(SimulationData.createCanonicalMovingBoundaryOutputFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
 		}
+		public File getComsolOutputFile(){
+			return getFile(SimulationData.createCanonicalComsolOutputFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
+		}
 		public File getSubdomainFile(){
 			return getFile(SimulationData.createCanonicalSubdomainFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
 		}
@@ -254,6 +270,8 @@ public class SimulationData extends VCData {
 			if (solverDataType == SolverDataType.MBSData)
 			{
 				meshFileName = createSimIDWithJobIndex(getsimulationKey(), getJobIndex(), isOldStyle()) + ".h5";
+			}else if (solverDataType == SolverDataType.COMSOL){
+				meshFileName = createSimIDWithJobIndex(getsimulationKey(), getJobIndex(), isOldStyle()) + ".comsoldat";
 			}
 			if(isNonSpatial()){
 				//this never exists, no need to look up in amplistor
@@ -304,6 +322,9 @@ public class SimulationData extends VCData {
 		}
 		private boolean isOldStyle(){
 			return getVCDataiDataIdentifier() instanceof VCSimulationDataIdentifierOldStyle;
+		}
+		public File getSimTaskXMLFile() {
+			return getFile(SimulationData.createCanonicalSimTaskXMLFilePathName(getsimulationKey(),getJobIndex(), isOldStyle()));
 		}
 	}
 
@@ -1391,14 +1412,16 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 	}
 
 	refreshLogFile();
-	try {
-		refreshMeshFile();
-	}catch (MathException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+	if (!isComsol()){
+		try {
+			refreshMeshFile();
+		}catch (MathException e){
+			e.printStackTrace(System.out);
+			throw new DataAccessException(e.getMessage());
+		}
 	}
-
-	if (!isRulesData && !getIsODEData() && dataFilenames != null) {
+	
+	if (!isRulesData && !getIsODEData() && !isComsol() && dataFilenames != null) {
 		// read variables only when I have never read the file since variables don't change
 		if (dataSetIdentifierList.size() == 0) {
 			File file = getPDEDataFile(0.0);
@@ -1454,6 +1477,51 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 			String varName = odeSimData.getColumnDescriptions(i+DATA_OFFSET).getDisplayName();
 			Domain domain = null; //TODO domain
 			dataSetIdentifierList.addElement(new DataSetIdentifier(varName,VariableType.NONSPATIAL,domain));
+		}
+	}
+
+	if (isComsol() && dataSetIdentifierList.size() == 0){
+		ComsolSimFiles comsolSimFiles = getComsolSimFiles();
+		if (comsolSimFiles.simTaskXMLFile!=null){
+			try {
+				String xmlString = FileUtils.readFileToString(comsolSimFiles.simTaskXMLFile);
+				SimulationTask simTask = XmlHelper.XMLToSimTask(xmlString);
+				Enumeration<Variable> variablesEnum = simTask.getSimulation().getMathDescription().getVariables();
+				while (variablesEnum.hasMoreElements()){
+					Variable var = variablesEnum.nextElement();
+					if (var instanceof VolVariable){
+						dataSetIdentifierList.addElement(new DataSetIdentifier(var.getName(), VariableType.VOLUME, var.getDomain()));
+					}else if (var instanceof MemVariable){
+						dataSetIdentifierList.addElement(new DataSetIdentifier(var.getName(), VariableType.MEMBRANE, var.getDomain()));
+					}else if (var instanceof Function){
+						VariableType varType = VariableType.UNKNOWN;
+						if (var.getDomain()!=null && var.getDomain().getName()!=null){
+							SubDomain subDomain = simTask.getSimulation().getMathDescription().getSubDomain(var.getDomain().getName());
+							if (subDomain instanceof CompartmentSubDomain){
+								varType = VariableType.VOLUME;
+							}else if (subDomain instanceof MembraneSubDomain){
+								varType = VariableType.MEMBRANE;
+							}else if (subDomain instanceof FilamentSubDomain){
+								throw new RuntimeException("filament subdomains not supported");
+							}else if (subDomain instanceof PointSubDomain){
+								varType = VariableType.POINT_VARIABLE;
+							}
+						}
+						dataSetIdentifierList.addElement(new DataSetIdentifier(var.getName(), varType, var.getDomain()));
+					}else if (var instanceof Constant){
+						System.out.println("ignoring Constant "+var.getName());
+					}else if (var instanceof InsideVariable){
+						System.out.println("ignoring InsideVariable "+var.getName());
+					}else if (var instanceof OutsideVariable){
+						System.out.println("ignoring OutsideVariable "+var.getName());
+					}else{
+						throw new RuntimeException("unexpected variable "+var.getName()+" of type "+var.getClass().getName());
+					}
+				}
+			} catch (XmlParseException | ExpressionException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to read sim task file, msg: "+e.getMessage(),e);
+			}
 		}
 	}
 
@@ -1666,6 +1734,16 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		}
 		indexPDEdataTimes( );
 	}
+	else if (logfileContent.startsWith(SolverDataType.COMSOL.name())) 
+	{
+		StringTokenizer st = new StringTokenizer(logfileContent);
+		if (st.hasMoreTokens())
+		{
+			dataTimes = new double[] { 0.0 };
+			dataFilenames = new String[] { logFile.getAbsolutePath().replaceAll(".log", ".comsoldat") };
+		}
+		indexPDEdataTimes( );
+	}
 	else {
 		StringTokenizer st = new StringTokenizer(logfileContent);
 		// PDE, so parse into 'dataFilenames' and 'dataTimes' arrays
@@ -1758,9 +1836,19 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 	{
 		mesh = CartesianMeshMovingBoundary.readMeshFile(meshFile);
 	}
+//	else if (amplistorHelper.solverDataType == SolverDataType.COMSOL)
+//	{
+//		mesh = new CartesianMeshCOMSOL();
+//	}
 	else
 	{
 		mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, getSubdomainFilePrivate());
+	}
+}
+
+public static class CartesianMeshCOMSOL extends CartesianMesh {
+	public CartesianMeshCOMSOL(){
+		super();
 	}
 }
 
@@ -1771,6 +1859,12 @@ public boolean isChombo() throws FileNotFoundException{
 @Override
 public boolean isMovingBoundary() throws FileNotFoundException{
 	return !amplistorHelper.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.MOVINGBOUNDARY_OUTPUT_EXTENSION);
+}
+
+
+@Override
+public boolean isComsol() throws FileNotFoundException{
+	return !amplistorHelper.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.COMSOL_OUTPUT_EXTENSION);
 }
 
 
@@ -1950,6 +2044,10 @@ public static String createCanonicalSimFilePathName(KeyValue fieldDataKey,int ti
 		(timeIndex<10?"000"+timeIndex:"")+SimDataConstants.PDE_DATA_EXTENSION;
 }
 
+public static String createCanonicalSimTaskXMLFilePathName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
+	return createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+"_"+jobIndex+SimDataConstants.SIMTASKXML_EXTENSION;
+}
+
 public static String createCanonicalFieldDataLogFileName(KeyValue fieldDataKey){
 	return
 	createSimIDWithJobIndex(fieldDataKey,0,false)+
@@ -2001,6 +2099,12 @@ public static String createCanonicalMovingBoundaryOutputFileName(KeyValue fieldD
 	return
 	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
 	SimDataConstants.MOVINGBOUNDARY_OUTPUT_EXTENSION;
+}
+
+public static String createCanonicalComsolOutputFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
+	return
+	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
+	SimDataConstants.COMSOL_OUTPUT_EXTENSION;
 }
 
 public static String createCanonicalFunctionsFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
@@ -2215,6 +2319,17 @@ public MovingBoundarySimFiles getMovingBoundarySimFiles() throws FileNotFoundExc
 	VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)vcDataId;
 	MovingBoundarySimFiles movingBoundarySimFiles = new MovingBoundarySimFiles(vcSimDataID.getSimulationKey(),vcSimDataID.getJobIndex(),movingBoundaryOutputFile);
 	return movingBoundarySimFiles;
+}
+
+
+@Override
+public ComsolSimFiles getComsolSimFiles() throws FileNotFoundException, DataAccessException {
+	File comsolOutputFile = amplistorHelper.getComsolOutputFile(); //retrieveExistingFile(SimFileTypeStandard.MovingBoundaryOutputFile);
+	File simTaskXMLFile = amplistorHelper.getSimTaskXMLFile();
+	File logFile = amplistorHelper.getLogFile();
+	VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)vcDataId;
+	ComsolSimFiles comsolSimFiles = new ComsolSimFiles(vcSimDataID.getSimulationKey(),vcSimDataID.getJobIndex(),comsolOutputFile,simTaskXMLFile,logFile);
+	return comsolSimFiles;
 }
 
 

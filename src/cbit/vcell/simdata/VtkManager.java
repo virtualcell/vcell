@@ -30,7 +30,7 @@ public class VtkManager {
 	}
 
 	public double[] getDataSetTimes() throws DataAccessException {
-		return vcDataManager.getDataSetTimes(vcDataIdentifier);
+		return vcDataManager.getVtuTimes(vcDataIdentifier);
 	}
 
 }

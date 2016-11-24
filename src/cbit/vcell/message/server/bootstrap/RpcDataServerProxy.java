@@ -263,4 +263,11 @@ public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier
 	return (VtuVarInfo[])rpc("getVtuVarInfos", new Object[]{userLoginInfo.getUser(), outputContext, vcdataID});
 }
 
+
+
+@Override
+public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+	return (double[])rpc("getVtuTimes", new Object[]{userLoginInfo.getUser(), vcdataID});
+}
+
 }

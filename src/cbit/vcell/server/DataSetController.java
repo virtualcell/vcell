@@ -50,6 +50,8 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataId
  * @exception java.rmi.RemoteException The exception description.
  */
 public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
+
+public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)

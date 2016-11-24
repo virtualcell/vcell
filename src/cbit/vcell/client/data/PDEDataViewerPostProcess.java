@@ -231,6 +231,12 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 						// TODO Auto-generated method stub
 						return null;
 					}
+
+					@Override
+					public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+						// TODO Auto-generated method stub
+						return null;
+					}
 				};
 			}
 		};

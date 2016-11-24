@@ -12,6 +12,7 @@ import org.vcell.vis.io.CartesianMeshFileReader;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
+import org.vcell.vis.io.VtuVarInfo.DataType;
 import org.vcell.vis.vcell.CartesianMesh;
 import org.vcell.vis.vismesh.thrift.FiniteVolumeIndex;
 import org.vcell.vis.vismesh.thrift.FiniteVolumeIndexData;
@@ -88,11 +89,11 @@ public class CartesianMeshVtkFileWriter {
 							}
 						}
 					}
-					varInfos.add(new VtuVarInfo(dataID.getName(), "("+domainName+")  "+dataID.getDisplayName(), domainName, varDomain, expressionString, bMeshVar));
+					varInfos.add(new VtuVarInfo(dataID.getName(), "("+domainName+")  "+dataID.getDisplayName(), domainName, varDomain, expressionString, DataType.CellData, bMeshVar));
 				}
 			}
-			varInfos.add(new VtuVarInfo(GLOBAL_INDEX_VAR, "("+domainName+")  "+GLOBAL_INDEX_VAR, domainName, varDomain, null, true));
-			varInfos.add(new VtuVarInfo(REGION_ID_VAR, "("+domainName+")  "+REGION_ID_VAR, domainName, varDomain, null, true));
+			varInfos.add(new VtuVarInfo(GLOBAL_INDEX_VAR, "("+domainName+")  "+GLOBAL_INDEX_VAR, domainName, varDomain, null, DataType.CellData, true));
+			varInfos.add(new VtuVarInfo(REGION_ID_VAR, "("+domainName+")  "+REGION_ID_VAR, domainName, varDomain, null, DataType.CellData, true));
 		}
 		return varInfos.toArray(new VtuVarInfo[0]); 
 	}

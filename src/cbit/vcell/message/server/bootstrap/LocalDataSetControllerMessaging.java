@@ -422,4 +422,21 @@ public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier
 	}
 }
 
+
+
+@Override
+public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+	sessionLog.print("LocalDataSetControllerMessaging.getVtuTimes(vcdataID=" + vcdataID + ")");
+	checkClosed();
+	try {
+		return dataServerProxy.getVtuTimes(vcdataID);
+	} catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
+	} catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
 }

@@ -216,6 +216,11 @@ public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcd
 	return dataServerImpl.getVtuMeshData(user, outputContext, vcdataID, var, time);
 }
 
+@Override
+public double[] getVtuTimes(VCDataIdentifier vcdataID) throws DataAccessException {
+	return dataServerImpl.getVtuTimes(user, vcdataID);
+}
+
 
 @Override
 public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {

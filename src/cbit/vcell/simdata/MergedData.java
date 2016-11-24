@@ -20,6 +20,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.ComsolSimFiles;
 import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
@@ -1182,6 +1183,18 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	}
 }
 
+public boolean isComsol() throws DataAccessException, IOException {
+	try {
+		return getDatasetControllerImpl().getIsComsol(datasetsIDList[0]);
+	} catch (DataAccessException e) {
+		e.printStackTrace(System.out);
+		throw e;
+	} catch (FileNotFoundException e) {
+		e.printStackTrace(System.out);
+		throw e;
+	}
+}
+
 public boolean isChombo() throws DataAccessException, IOException {
 	try {
 		return getDatasetControllerImpl().getIsChombo(datasetsIDList[0]);
@@ -1220,6 +1233,11 @@ public VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccess
 @Override
 public MovingBoundarySimFiles getMovingBoundarySimFiles() throws FileNotFoundException, DataAccessException {
 	throw new RuntimeException("MergedData.getMovingBoundarySimFiles() not yet implemented");
+}
+
+@Override
+public ComsolSimFiles getComsolSimFiles() throws FileNotFoundException, DataAccessException {
+	throw new RuntimeException("MergedData.getComsolSimFiles() not yet implemented");
 }
 
 

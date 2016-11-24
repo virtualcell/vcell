@@ -134,6 +134,11 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 		public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,	VCDataIdentifier vcdataID) throws DataAccessException {
 			return dataServerImpl.getVtuVarInfos(user, outputContext, vcdataID);
 		}
+
+		@Override
+		public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+			return dataServerImpl.getVtuTimes(user, vcdataID);
+		}
 	}
 	
 	private SessionLog log = null;

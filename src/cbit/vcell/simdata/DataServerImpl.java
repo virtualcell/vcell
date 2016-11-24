@@ -15,6 +15,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.ComsolSimFiles;
 import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.io.VtuFileContainer;
@@ -348,6 +349,16 @@ public boolean isMovingBoundary(User user, VCDataIdentifier vcdataID) throws Dat
 	}
 }
 
+public boolean isComsol(User user, VCDataIdentifier vcdataID) throws DataAccessException {
+	checkReadAccess(user, vcdataID);
+	try {
+		return dataSetControllerImpl.getIsComsol(vcdataID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
 public ChomboFiles getChomboFiles(User user, VCDataIdentifier vcdataID) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
@@ -369,10 +380,40 @@ public VCellSimFiles getVCellSimFiles(User user, VCDataIdentifier vcdataID) thro
 	}
 }
 
+public ComsolSimFiles getComsolSimFiles(User user, VCDataIdentifier vcdataID) throws DataAccessException {
+	checkReadAccess(user, vcdataID);
+	try {
+		return dataSetControllerImpl.getComsolSimFiles(vcdataID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
 public MovingBoundarySimFiles getMovingBoundarySimFiles(User user, VCDataIdentifier vcdataID) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
 		return dataSetControllerImpl.getMovingBoundarySimFiles(vcdataID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+/**
+ * This method was created by a SmartGuide.
+ * @return double[]
+ */
+public double[] getVtuTimes(User user, VCDataIdentifier vcdID) throws DataAccessException {
+	log.print("DataServerImpl.getVtuTimes()");
+	checkReadAccess(user, vcdID);
+	try {
+		if (isComsol(user,vcdID)){
+			ComsolSimFiles comsolFiles = getComsolSimFiles(user, vcdID);
+			return dataSetControllerImpl.getVtuTimes(comsolFiles, vcdID);
+		}else{
+			return dataSetControllerImpl.getDataSetTimes(vcdID);
+		}
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -384,7 +425,10 @@ public MovingBoundarySimFiles getMovingBoundarySimFiles(User user, VCDataIdentif
 public double[] getVtuMeshData(User user, OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
-		if (isChombo(user, vcdataID)){
+		if (isComsol(user, vcdataID)){
+			ComsolSimFiles comsolFiles = getComsolSimFiles(user, vcdataID);
+			return dataSetControllerImpl.getVtuMeshData(comsolFiles, outputContext, vcdataID, var, time);
+		}else if (isChombo(user, vcdataID)){
 			ChomboFiles chomboFiles = getChomboFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuMeshData(chomboFiles, outputContext, vcdataID, var, time);
 		}else if (isMovingBoundary(user, vcdataID)){
@@ -403,15 +447,18 @@ public double[] getVtuMeshData(User user, OutputContext outputContext, VCDataIde
 public VtuFileContainer getEmptyVtuMeshFiles(User user, VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
-		if (isChombo(user, vcdataID)){
+		if (isComsol(user, vcdataID)){
+			ComsolSimFiles comsolSimFiles = getComsolSimFiles(user, vcdataID);
+			return dataSetControllerImpl.getEmptyVtuMeshFiles(comsolSimFiles, vcdataID, timeIndex);
+		}else if (isChombo(user, vcdataID)){
 			ChomboFiles chomboFiles = getChomboFiles(user, vcdataID);
 			return dataSetControllerImpl.getEmptyVtuMeshFiles(chomboFiles, vcdataID, timeIndex);
-		}else if (!isMovingBoundary(user, vcdataID)){
-			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
-			return dataSetControllerImpl.getEmptyVtuMeshFiles(vcellFiles, vcdataID, timeIndex);
-		}else{
+		}else if (isMovingBoundary(user, vcdataID)){
 			MovingBoundarySimFiles movingBoundaryFiles = getMovingBoundarySimFiles(user, vcdataID);
 			return dataSetControllerImpl.getEmptyVtuMeshFiles(movingBoundaryFiles, vcdataID, timeIndex);
+		}else{
+			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
+			return dataSetControllerImpl.getEmptyVtuMeshFiles(vcellFiles, vcdataID, timeIndex);
 		}
 	}catch (Throwable e){
 		log.exception(e);
@@ -423,15 +470,18 @@ public VtuFileContainer getEmptyVtuMeshFiles(User user, VCDataIdentifier vcdataI
 public VtuVarInfo[] getVtuVarInfos(User user, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
-		if (isChombo(user, vcdataID)){
+		if (isComsol(user, vcdataID)){
+			ComsolSimFiles comsolFiles = getComsolSimFiles(user, vcdataID);
+			return dataSetControllerImpl.getVtuVarInfos(comsolFiles, outputContext, vcdataID);
+		}else if (isChombo(user, vcdataID)){
 			ChomboFiles chomboFiles = getChomboFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuVarInfos(chomboFiles, outputContext, vcdataID);
-		}else if (!isMovingBoundary(user, vcdataID)){
-			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
-			return dataSetControllerImpl.getVtuVarInfos(vcellFiles, outputContext, vcdataID);
-		}else{
+		}else if (isMovingBoundary(user, vcdataID)){
 			MovingBoundarySimFiles mbSimFiles = getMovingBoundarySimFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuVarInfos(mbSimFiles, outputContext, vcdataID);
+		}else{
+			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
+			return dataSetControllerImpl.getVtuVarInfos(vcellFiles, outputContext, vcdataID);
 		}
 	}catch (Throwable e){
 		log.exception(e);

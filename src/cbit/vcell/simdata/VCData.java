@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.ComsolSimFiles;
 import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
@@ -215,6 +216,10 @@ public abstract VCellSimFiles getVCellSimFiles() throws FileNotFoundException, D
 
 public abstract MovingBoundarySimFiles getMovingBoundarySimFiles() throws FileNotFoundException, DataAccessException;
 
+public abstract ComsolSimFiles getComsolSimFiles() throws FileNotFoundException, DataAccessException;
+
 public abstract boolean isMovingBoundary() throws DataAccessException, IOException;
+
+public abstract boolean isComsol() throws DataAccessException, IOException;
 
 }

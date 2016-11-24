@@ -133,6 +133,30 @@ public synchronized double[] getDataSetTimes(VCDataIdentifier vcdID) throws Data
 
 
 /**
+ * gets all times at which simulation result data is availlable for this Simulation.
+ *
+ * @param simulationInfo simulation database reference
+ *
+ * @returns double array of times of availlable data, or null if no data.
+ *
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
+ */
+public synchronized double[] getVtuTimes(VCDataIdentifier vcdID) throws DataAccessException {
+	try {
+		return getDataSetController().getVtuTimes(vcdID);
+	}catch (RemoteException e){
+		handleRemoteException(e);
+		try {
+			return getDataSetController().getVtuTimes(vcdID);
+		}catch (RemoteException e2){
+			handleRemoteException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
+
+/**
  * gets list of named Functions defined for the simulation.
  *
  * @param simulationInfo simulation set database reference

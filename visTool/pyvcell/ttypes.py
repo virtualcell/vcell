@@ -30,6 +30,20 @@ class DomainType:
     "MEMBRANE": 1,
   }
 
+class DataType:
+  CELLDATA = 0
+  POINTDATA = 1
+
+  _VALUES_TO_NAMES = {
+    0: "CELLDATA",
+    1: "POINTDATA",
+  }
+
+  _NAMES_TO_VALUES = {
+    "CELLDATA": 0,
+    "POINTDATA": 1,
+  }
+
 
 class VariableInfo:
   """
@@ -41,6 +55,7 @@ class VariableInfo:
    - unitsLabel
    - isMeshVar
    - expressionString
+   - dataType
   """
 
   thrift_spec = (
@@ -52,9 +67,10 @@ class VariableInfo:
     (5, TType.STRING, 'unitsLabel', None, None, ), # 5
     (6, TType.BOOL, 'isMeshVar', None, None, ), # 6
     (7, TType.STRING, 'expressionString', None, None, ), # 7
+    (8, TType.I32, 'dataType', None, None, ), # 8
   )
 
-  def __init__(self, variableVtuName=None, variableDisplayName=None, domainName=None, variableDomainType=None, unitsLabel=None, isMeshVar=None, expressionString=None,):
+  def __init__(self, variableVtuName=None, variableDisplayName=None, domainName=None, variableDomainType=None, unitsLabel=None, isMeshVar=None, expressionString=None, dataType=None,):
     self.variableVtuName = variableVtuName
     self.variableDisplayName = variableDisplayName
     self.domainName = domainName
@@ -62,6 +78,7 @@ class VariableInfo:
     self.unitsLabel = unitsLabel
     self.isMeshVar = isMeshVar
     self.expressionString = expressionString
+    self.dataType = dataType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -107,6 +124,11 @@ class VariableInfo:
           self.expressionString = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.I32:
+          self.dataType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -145,6 +167,10 @@ class VariableInfo:
       oprot.writeFieldBegin('expressionString', TType.STRING, 7)
       oprot.writeString(self.expressionString)
       oprot.writeFieldEnd()
+    if self.dataType is not None:
+      oprot.writeFieldBegin('dataType', TType.I32, 8)
+      oprot.writeI32(self.dataType)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -161,6 +187,8 @@ class VariableInfo:
       raise TProtocol.TProtocolException(message='Required field unitsLabel is unset!')
     if self.isMeshVar is None:
       raise TProtocol.TProtocolException(message='Required field isMeshVar is unset!')
+    if self.dataType is None:
+      raise TProtocol.TProtocolException(message='Required field dataType is unset!')
     return
 
 
@@ -173,6 +201,7 @@ class VariableInfo:
     value = (value * 31) ^ hash(self.unitsLabel)
     value = (value * 31) ^ hash(self.isMeshVar)
     value = (value * 31) ^ hash(self.expressionString)
+    value = (value * 31) ^ hash(self.dataType)
     return value
 
   def __repr__(self):

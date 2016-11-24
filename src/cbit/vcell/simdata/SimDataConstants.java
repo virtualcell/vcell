@@ -48,6 +48,8 @@ public interface SimDataConstants {
 	public static final String STOCH_DATA_EXTENSION = ".stochbi"; //stoch
 	public static final String MOVINGBOUNDARYINDEX_FILE_EXTENSION = ".movingboundaryindex";
 	public static final String MOVINGBOUNDARY_OUTPUT_EXTENSION = ".h5";
+	public static final String COMSOL_OUTPUT_EXTENSION = ".comsoldat";
+	public static final String SIMTASKXML_EXTENSION = ".simtask.xml";
 //	public static final String PARTICLE_DATA_EXTENSION = ".particle";
 	public static final String DATA_PROCESSING_OUTPUT_EXTENSION = ".dataProcOutput";
 	public static final String DATA_PROCESSING_OUTPUT_EXTENSION_HDF5 = ".hdf5";

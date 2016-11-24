@@ -468,17 +468,27 @@ interface SolverLongDesc {
 	     + "</html>";
     
     static final String NFSIM =
-   	     "<html>"
-   	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
-   	     "NFsim is a free, open-source, biochemical reaction simulator designed to handle systems" +
-   	     " that have a large or even infinite number of possible molecular interactions or states." +
-   	     " NFsim also has advanced and flexible options for simulating coarse-grained representations" +
-   	     " of complex nonlinear reaction mechanisms. A publication describing NFsim can be found at" +
-   	     " <a href='http://www.nature.com/nmeth/journal/v8/n2/full/nmeth.1546.html'>http://www.nature.com/nmeth/journal/v8/n2/full/nmeth.1546.html</a>"
-   	     + Description_PARAMETERS_TO_BE_SET +
-   			"<li>" + Description_Stochastic_RANDOM_SEED + "</li>"
-   	     + "</html>";
-    
+      	     "<html>"
+      	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
+      	     "NFsim is a free, open-source, biochemical reaction simulator designed to handle systems" +
+      	     " that have a large or even infinite number of possible molecular interactions or states." +
+      	     " NFsim also has advanced and flexible options for simulating coarse-grained representations" +
+      	     " of complex nonlinear reaction mechanisms. A publication describing NFsim can be found at" +
+      	     " <a href='http://www.nature.com/nmeth/journal/v8/n2/full/nmeth.1546.html'>http://www.nature.com/nmeth/journal/v8/n2/full/nmeth.1546.html</a>"
+      	     + Description_PARAMETERS_TO_BE_SET +
+      			"<li>" + Description_Stochastic_RANDOM_SEED + "</li>"
+      	     + "</html>";
+       
+    static final String COMSOL =
+      	     "<html>"
+      	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
+      	     "Comsol is a commercial simulation tool for multiphysics.  Use requires user to have Comsol Multiphysics licensed and installed on the user's local machine." +
+      	     " For more information see " +
+      	     " <a href='http://comsol.com'>http://comsol.com</a>"
+      	     + Description_PARAMETERS_TO_BE_SET +
+      			"<li>" + Description_End_Time + "</li>"
+      	     + "</html>";
+       
     static final String MB =
    	     "<html>"
    	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +

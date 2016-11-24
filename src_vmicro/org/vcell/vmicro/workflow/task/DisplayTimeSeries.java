@@ -204,6 +204,11 @@ public class DisplayTimeSeries extends Task {
 			}
 
 			@Override
+			public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+				throw new RuntimeException("not yet implemented");
+			}
+
+			@Override
 			public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID,
 					VtuVarInfo var, double time) throws RemoteException,
 					DataAccessException {

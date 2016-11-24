@@ -128,11 +128,16 @@ public enum SolverDescription {
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased},
 	      SolverExecutable.NFSIM, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000263", false),
 
+	   Comsol(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Comsol","Comsol Multiphysics","Comsol",
+		  SolverLongDesc.COMSOL,1,SupportedTimeSpec.DEFAULT_UNIFORM,
+		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic},
+		  null, VersionedLibrary.NONE,"KISAO",false),
+
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
 		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT_UNIFORM,
 		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic},
 		  SolverExecutable.MOVING_B, VersionedLibrary.DEPENDENT_LIBS_VCELL,"KISAO",false)
-      ;
+   ;
 
 	public interface SupportedProblemRequirements {
 		boolean supports(ProblemRequirements desc);
@@ -208,11 +213,17 @@ public enum SolverDescription {
 			return s.isSpatial() && !s.isSpatialHybrid()  && !s.isMovingMembrane() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
 		SundialsPDE,10);
 
+	public static final SolverFeatureSet ComsolFeatureSet = new SolverFeatureSet(
+			new SolverFeature[] { SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
+			new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
+				return s.isSpatial() && !s.isSpatialHybrid() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
+			Comsol,30);
+
 	public static final SolverFeatureSet MovingBoundaryFeatureSet = new SolverFeatureSet(
-		new SolverFeature[] { SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
-		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
-			return s.isSpatial() && !s.isSpatialHybrid()  && s.isMovingMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
-		MovingBoundary,30);
+			new SolverFeature[] { SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
+			new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
+				return s.isSpatial() && !s.isSpatialHybrid()  && s.isMovingMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
+			MovingBoundary,30);
 
 	/*
 	 * rule-based solvers
@@ -484,6 +495,9 @@ public enum SolverDescription {
 		return this == MovingBoundary;
 	}
 	
+	public boolean isComsolSolver(){
+		return this == Comsol;
+	}
 
 	public boolean isSpatialStochasticSolver() {
 		return supportedFeatures.containsAll(SpatialStochasticFeatureSet.getSolverFeatures());
