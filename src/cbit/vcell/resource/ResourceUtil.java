@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
@@ -115,17 +114,18 @@ public class ResourceUtil {
 	 * @throws FileNotFoundException if it can't
 	 * @throws BackingStoreException
 	 * @throws InterruptedException
-	 */	public static File getExecutable(String name, boolean useBitSuffix/*, ExecutableFinder efinder*/) throws FileNotFoundException, BackingStoreException, InterruptedException	{
+	 */	public static File getExecutable(String name, boolean useBitSuffix/*, ExecutableFinder efinder*/) throws FileNotFoundException, InterruptedException	{
 		String executableName = null;
 //		try{
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		executableName = getExecutableName(name, useBitSuffix, osi);
-		if (ExeCache.isCached(executableName)) {
-			return ExeCache.get(executableName);
+		File executable = VCellConfiguration.getFileProperty(executableName);
+		if (executable!=null){
+			return executable;
 		}
 		//		// check the system path first		//
 		Collection<File> exes = FileUtils.findFileByName(executableName, getSystemPath());
 		if (exes != null && !exes.isEmpty()) {
-			return ExeCache.store(executableName, exes.iterator().next());
+			return VCellConfiguration.setFileProperty(executableName, exes.iterator().next());
 		}
 		//		// not in path, look in common places		//		if (osi.isWindows()){
 			//use set to eliminate duplicates
@@ -139,7 +139,7 @@ public class ResourceUtil {
 			}
 			for (String pf :searchDirs) {
 				File programFiles = new File(pf);				if (programFiles.isDirectory()){					exes = FileUtils.findFileByName(executableName,FileUtils.getAllDirectoriesCollection(programFiles));					if (!exes.isEmpty()) {
-						return ExeCache.store(executableName, exes.iterator().next());
+						return VCellConfiguration.setFileProperty(executableName, exes.iterator().next());
 					}
 				}
 			}		}
@@ -177,73 +177,72 @@ public class ResourceUtil {
 		}
 	}
 
-	/**
-	 * store and retrieve executable locations in user preferences
-	 * make separate class to isolate implementation and to have distinct preferences
-	 */
-	static class ExeCache { //package level access for testing
-		private static Preferences prefs = Preferences.userNodeForPackage(ExeCache.class);
-		private static Map<String,File>  cache = new HashMap<String, File>( );
-
-		static boolean isCached(String name) throws BackingStoreException {
-			if (cache.containsKey(name)) {
-				if (cache.get(name).canRead()){
-					return true;
-				}
-				System.out.println("ExeCache thought it knew the location of executable "+name+" but it isn't readable at location: "+cache.get(name).getAbsolutePath());
-			}
-			String stored = prefs.get(name,null);
-			if (stored != null) {
-				File f = new File(stored);
-				if (f.canExecute()) {
-					cache.put(name, f);
-					return true;
-				}
-				//stored value is bad, so clear it
-				System.out.println("Clearing "+name+" from the ExeCache");
-				prefs.remove(name);
-				prefs.flush();
-			}
-			return false;
-		}
-
-		/**
-		 * get cached executable; call {@link #isCached(String)} to verify in cache
-		 * before calling
-		 * @param name
-		 * @return executable
-		 * @throws BackingStoreException
-		 * @throws IllegalStateException if name not cached
-		 */
-		static File get(String name) throws BackingStoreException {
-			if (!isCached(name)) {
-				throw new IllegalStateException(name + " not cached");
-			}
-			return cache.get(name);
-		}
-
-		/**
-		 * cache newly found file
-		 * @param name
-		 * @param f
-		 * @return f
-		 */
-		static File store(String name, File f) {
-			cache.put(name, f);
-			prefs.put(name, f.getAbsolutePath());
-			return f;
-		}
-
-		/**
-		 * remove stored locations from cache
-		 * @throws BackingStoreException
-		 */
-		static void forgetExecutableLocations( ) throws BackingStoreException {
-			prefs.clear();
-			cache.clear();
-		}
-
-	}
+//	/**
+//	 * store and retrieve executable locations in user preferences
+//	 * make separate class to isolate implementation and to have distinct preferences
+//	 */
+//	static class ExeCache { //package level access for testing
+//		private static Map<String,File>  cache = new HashMap<String, File>( );
+//
+//		static boolean isCached(String name) {
+//			if (cache.containsKey(name)) {
+//				if (cache.get(name).canRead()){
+//					return true;
+//				}
+//				System.out.println("ExeCache thought it knew the location of executable "+name+" but it isn't readable at location: "+cache.get(name).getAbsolutePath());
+//			}
+//			String stored = VCellConfiguration.get(name,null);
+//			if (stored != null) {
+//				File f = new File(stored);
+//				if (f.canExecute()) {
+//					cache.put(name, f);
+//					return true;
+//				}
+//				//stored value is bad, so clear it
+//				System.out.println("Clearing "+name+" from the ExeCache");
+//				prefs.remove(name);
+//				prefs.flush();
+//			}
+//			return false;
+//		}
+//
+//		/**
+//		 * get cached executable; call {@link #isCached(String)} to verify in cache
+//		 * before calling
+//		 * @param name
+//		 * @return executable
+//		 * @throws BackingStoreException
+//		 * @throws IllegalStateException if name not cached
+//		 */
+//		static File get(String name) throws BackingStoreException {
+//			if (!isCached(name)) {
+//				throw new IllegalStateException(name + " not cached");
+//			}
+//			return cache.get(name);
+//		}
+//
+//		/**
+//		 * cache newly found file
+//		 * @param name
+//		 * @param f
+//		 * @return f
+//		 */
+//		static File store(String name, File f) {
+//			cache.put(name, f);
+//			prefs.put(name, f.getAbsolutePath());
+//			return f;
+//		}
+//
+//		/**
+//		 * remove stored locations from cache
+//		 * @throws BackingStoreException
+//		 */
+//		static void forgetExecutableLocations( ) throws BackingStoreException {
+//			prefs.clear();
+//			cache.clear();
+//		}
+//
+//	}
 	/**
 	 * load solver executable from resources along with libraries
 	 * @param basename name of executable without path or os specific extension

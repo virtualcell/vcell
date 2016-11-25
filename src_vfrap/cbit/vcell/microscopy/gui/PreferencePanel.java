@@ -20,6 +20,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 
 import cbit.vcell.microscopy.VFRAPPreference;
+import cbit.vcell.resource.VCellConfiguration;
 
 @SuppressWarnings("serial")
 public class PreferencePanel extends JPanel
@@ -82,11 +83,11 @@ public class PreferencePanel extends JPanel
 	
 	public void setIniStatus() 
 	{
-		if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS))
+		if(VCellConfiguration.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS))
 		{
 			alwaysAutoPopupRadioButton.setSelected(true);
 		}
-		else if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_NO))
+		else if(VCellConfiguration.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_NO))
 		{
 			doNotPopupRadioButton.setSelected(true);
 		}

@@ -33,6 +33,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
@@ -45,6 +46,7 @@ import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.DocumentWindowManager.GeometrySelectionInfo;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.UserPreferences;
@@ -72,6 +74,7 @@ public abstract class TopLevelWindowManager implements DataJobListenerHolder {
 	protected transient Vector<DataJobListener> aDataJobListener = null;
 	private static final Logger lg = Logger.getLogger(TopLevelWindowManager.class);
 	private static final LinkedList<WeakReference<TopLevelWindowManager>> allManagers = new LinkedList<>();
+	private static final Object PREFERENCES_WINDOW = "PREFERENCES_WINDOW";
 
 /**
  * Insert the method's description here.
@@ -115,6 +118,23 @@ public static TopLevelWindowManager activeManager( ) {
 
 	return fallback;
 
+}
+
+public final void showPreferencesWindow(){
+
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(PREFERENCES_WINDOW);
+	if (childWindow==null){
+		VCellConfigurationPanel vcellConfigurationPanel = new VCellConfigurationPanel();
+		childWindow = childWindowManager.addChildWindow(vcellConfigurationPanel, PREFERENCES_WINDOW, "View/Edit VCell Preferences");
+		childWindow.setSize(600,400);
+		childWindow.setResizable(true);
+	}
+	else {
+		VCAssert.assertTrue(childWindow.isShowing(), "Invisible Preferences Window");
+	}
+
+	childWindow.show();
 }
 
 

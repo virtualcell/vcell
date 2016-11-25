@@ -13,15 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.prefs.BackingStoreException;
+//import java.util.prefs.BackingStoreException;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.Executable;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.gui.ExecutableFinderDialog;
-
-import cbit.vcell.resource.ResourceUtil.ExecutableFinder;
 
 public class VisitSupport {
 
@@ -105,7 +103,7 @@ public class VisitSupport {
 
 	  
 	  
-	  private static void launchVisToolMac(File visitExecutable) throws IOException, URISyntaxException, BackingStoreException, InterruptedException {
+	  private static void launchVisToolMac(File visitExecutable) throws IOException, URISyntaxException, InterruptedException {
 		
 		  if(visitExecutable == null){
 			  File visitExecutableRoot = null;
@@ -298,7 +296,7 @@ public class VisitSupport {
 		}
 
 	}
-	public static void launchVisTool(File visitExecutable) throws IOException, ExecutableException, URISyntaxException, BackingStoreException, InterruptedException
+	public static void launchVisTool(File visitExecutable) throws IOException, ExecutableException, URISyntaxException, InterruptedException
 	{
 		if (OperatingSystemInfo.getInstance().isMac()) {
 			launchVisToolMac(visitExecutable);

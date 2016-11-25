@@ -23,7 +23,6 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -35,7 +34,6 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -71,6 +69,7 @@ import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
+import cbit.vcell.resource.VCellConfiguration;
 
 
 /**
@@ -349,7 +348,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
 					int Choice = DialogUtils.showComponentOKCancelDialog(VirtualFrapMainFrame.this, panel, "Preferences");
 					if(Choice == JOptionPane.OK_OPTION)
 					{
-						VFRAPPreference.putValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, panel.getROIAssistType());
+						VCellConfiguration.putValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, panel.getROIAssistType());
 					}
 				}
 				else if(arg.equals(BATCH_RUN_ACTION_COMMAND))

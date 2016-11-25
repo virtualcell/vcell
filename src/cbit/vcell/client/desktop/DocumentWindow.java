@@ -233,6 +233,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 	};
 	private JMenuItem ivjJMenuItemFieldData = null;
 	private JMenuItem jMenuItemMIRIAM = null;
+	private JMenuItem jMenuItemPreferences = null;
 
 /**
  * DocumentWindow constructor comment.
@@ -1000,6 +1001,7 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getPermissionsMenuItem());
 			ivjFileMenu.add(getJMenuItemMIRIAM());
+			ivjFileMenu.add(getJMenuItemPreferences());
 			ivjFileMenu.add(getEdit_Annotation_JMenuItem());
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getJMenuItemFieldData());
@@ -2278,6 +2280,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setEnabled(true);
 			getJMenuItemFieldData().setEnabled(true);
 			getJMenuItemMIRIAM().setEnabled(true);
+			getJMenuItemPreferences().setEnabled(true);
 			getTransMAMenuItem().setEnabled(
 					getWindowManager() != null &&
 					getWindowManager().getVCDocument() != null &&
@@ -2307,6 +2310,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setEnabled(isTestUser);
 			getJMenuItemFieldData().setEnabled(false);
 			getJMenuItemMIRIAM().setEnabled(false);
+			getJMenuItemPreferences().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
 			break;
 		}
@@ -2329,6 +2333,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setEnabled(false);
 			getJMenuItemFieldData().setEnabled(false);
 			getJMenuItemMIRIAM().setEnabled(false);
+			getJMenuItemPreferences().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
 			checkForReconnecting(connStatus);
 			break;
@@ -2400,6 +2405,19 @@ private JMenuItem getJMenuItemMIRIAM() {
 		});
 	}
 	return jMenuItemMIRIAM;
+}
+
+private JMenuItem getJMenuItemPreferences() {
+	if (jMenuItemPreferences == null) {
+		jMenuItemPreferences = new JMenuItem();
+		jMenuItemPreferences.setText("Preferences ...");
+		jMenuItemPreferences.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent e) {
+				getTopLevelWindowManager().showPreferencesWindow();
+			}
+		});
+	}
+	return jMenuItemPreferences;
 }
 
 public void showTransMADialog()

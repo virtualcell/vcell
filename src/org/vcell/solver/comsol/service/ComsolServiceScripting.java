@@ -27,6 +27,8 @@ import org.vcell.solver.comsol.model.VCCStudyFeature;
 import org.vcell.solver.comsol.model.VCCTransientStudyFeature;
 import org.vcell.util.PropertyLoader;
 
+import cbit.vcell.resource.VCellConfiguration;
+
 public class ComsolServiceScripting implements ComsolService {
 
 	private static ClassLoader comsolClassloader = null;
@@ -373,8 +375,14 @@ public class ComsolServiceScripting implements ComsolService {
 	@Override
 	public void solve(VCCModel vccModel, File reportFile, File javaFile, File mphFile){
 		ClassLoader origClassLoader = null;
-		File comsolRootDir = PropertyLoader.getRequiredDirectory(PropertyLoader.comsolRootDir);
-		File comsolJarDir = PropertyLoader.getRequiredDirectory(PropertyLoader.comsolJarDir);
+		File comsolRootDir = VCellConfiguration.getFileProperty(PropertyLoader.comsolRootDir);
+		File comsolJarDir = VCellConfiguration.getFileProperty(PropertyLoader.comsolJarDir);
+		if (comsolRootDir==null || !comsolRootDir.exists()){
+			throw new RuntimeException("path to COMSOL root directory \""+comsolRootDir+"\" not found, update preferences (or "+PropertyLoader.comsolRootDir+" in vcell.config)");
+		}
+		if (comsolJarDir==null || !comsolJarDir.exists()){
+			throw new RuntimeException("path to COMSOL plugin directory \""+comsolJarDir+"\" not found, update preferences (or "+PropertyLoader.comsolJarDir+" in vcell.config)");
+		}
 		try {
 			origClassLoader = Thread.currentThread().getContextClassLoader();
 			System.setProperty("cs.root", comsolRootDir.getAbsolutePath());
