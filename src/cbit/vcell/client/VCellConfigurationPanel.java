@@ -38,7 +38,7 @@ public class VCellConfigurationPanel extends JPanel {
 		c.gridy=0;
 		jpanel.add(comsolRootLabel,c);
 
-		JTextField comsolRootTextField = new JTextField(VCellConfiguration.getFileProperty(PropertyLoader.comsolRootDir).getAbsolutePath());
+		JTextField comsolRootTextField = new JTextField();
 		c.gridx=0;
 		c.gridy=1;
 		jpanel.add(comsolRootTextField,c);
@@ -54,11 +54,21 @@ public class VCellConfigurationPanel extends JPanel {
 		c.gridy=3;
 		jpanel.add(comsolJarLabel,c);
 
-		JTextField comsolJarTextField = new JTextField(VCellConfiguration.getFileProperty(PropertyLoader.comsolJarDir).getAbsolutePath());
+		JTextField comsolJarTextField = new JTextField();
 		c.gridx=0;
 		c.gridy=4;
 		jpanel.add(comsolJarTextField,c);
 		comsolRootTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.comsolJarDir, new File(comsolJarTextField.getText())); });
+		
+		
+		File rootDir = VCellConfiguration.getFileProperty(PropertyLoader.comsolRootDir);
+		if (rootDir!=null){
+			comsolRootTextField.setText(rootDir.getAbsolutePath());
+		}
+		File jarDir = VCellConfiguration.getFileProperty(PropertyLoader.comsolJarDir);
+		if (jarDir!=null){
+			comsolJarTextField.setText(jarDir.getAbsolutePath());
+		}
 		
 	}
 
