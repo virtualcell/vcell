@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.vcell.util.Executable;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.ExecutableFinderDialog;
 
 public class VisitSupport {
@@ -119,6 +120,7 @@ public class VisitSupport {
 		  if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){
 			  throw new IOException("visit executable not found");
 		  }
+		  VCellConfiguration.setFileProperty(PropertyLoader.visitExe, visitExecutable);
 		  
 		File visMainCLI = getVisToolPythonScript();
 		if (!visMainCLI.exists() || !visMainCLI.isFile()){
@@ -222,6 +224,9 @@ public class VisitSupport {
 		if(visitExecutable == null || !visitExecutable.exists() || !visitExecutable.isFile()){
 			throw new IOException("visit executable not found");
 		}
+		
+		VCellConfiguration.setFileProperty(PropertyLoader.visitExe, visitExecutable);
+		
 		System.out.println(mpirun.getAbsolutePath());
 		if(mpirun == null || !mpirun.exists() || !mpirun.isFile()){
 			throw new IOException("mpirun executable not found");
@@ -314,6 +319,8 @@ public class VisitSupport {
 				throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());
 			}
 		}
+		
+		VCellConfiguration.setFileProperty(PropertyLoader.visitExe, visitExecutable);
 		
 		File visMainCLI =           getVisToolPythonScript();
 		if (!visMainCLI.exists() || !visMainCLI.isFile()){

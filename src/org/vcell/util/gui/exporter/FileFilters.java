@@ -47,6 +47,8 @@ public class FileFilters {
 		}
 	}
 	
+	public static final FileFilter FILE_FILTER_EXE		= new ExtensionFilter(".exe", 	"Windows Executables (*.exe)");
+
 	public static final FileFilter FILE_FILTER_AVS		= new ExtensionFilter(".avs", 	"AVS Unstructured Cell Data (*.avs)");
 	public static final FileFilter FILE_FILTER_STL		= new ExtensionFilter(".stl", 	"Stereolithography (STL) file (*.stl)");
 	public static final FileFilter FILE_FILTER_PLY		= new ExtensionFilter(".ply", 	"Stanford Polygon Format(*.ply)");
