@@ -11,14 +11,22 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
+import cbit.vcell.client.configuration.BioNetGenConfigurationPanel;
+import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel;
+import cbit.vcell.client.configuration.GeneralConfigurationPanel;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorTreeModel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.VCellConfiguration;
 
@@ -28,8 +36,55 @@ public class VCellConfigurationPanel extends JPanel {
 	private JTextField comsolJarTextField = null;
 	private JTextField visitExeTextField = null;
 	
+	
+	private GeneralConfigurationPanel generalConfigurationPanel = null;
+	private BioNetGenConfigurationPanel bioNetGenConfigurationPanel = null;
+	private JTree configurationOptionsTree = null;
+	private ConfigurationOptionsTreeModel configurationOptionsTreeModel = null;
+	
+	
 	public VCellConfigurationPanel(){
 		super();
+		initialize();
+		
+//		initializeOld();
+	}
+
+	private void initialize() {
+
+		generalConfigurationPanel = new GeneralConfigurationPanel();
+		bioNetGenConfigurationPanel = new BioNetGenConfigurationPanel();
+		
+		configurationOptionsTree = new javax.swing.JTree();
+		configurationOptionsTreeModel = new ConfigurationOptionsTreeModel(configurationOptionsTree);
+		configurationOptionsTree.setModel(configurationOptionsTreeModel);
+		configurationOptionsTree.setEditable(false);
+		configurationOptionsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
+		JScrollPane treePanel = new javax.swing.JScrollPane(configurationOptionsTree);
+		
+		
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane.setLeftComponent(treePanel);
+		splitPane.setRightComponent(generalConfigurationPanel);
+		
+		splitPane.setResizeWeight(0.2);
+		splitPane.setDividerLocation(200);
+		splitPane.setDividerSize(6);
+		splitPane.setOneTouchExpandable(true);
+		
+		setLayout(new BorderLayout());
+		add(splitPane, BorderLayout.CENTER);
+
+//		configurationOptionsTree.addTreeSelectionListener(eventHandler);
+//		configurationOptionsTree.addMouseListener(eventHandler);
+
+		configurationOptionsTreeModel.populateTree();
+	}
+	
+	
+	
+	private void initializeOld() {
 		setLayout(new BorderLayout());
 		
 		JPanel jpanel = new JPanel();

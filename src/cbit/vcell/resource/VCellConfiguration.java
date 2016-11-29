@@ -7,6 +7,7 @@ import java.util.Iterator;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.FileBasedBuilderParameters;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.sync.ReadWriteSynchronizer;
 import org.vcell.util.ConfigurationException;
@@ -26,9 +27,8 @@ public class VCellConfiguration {
 					e.printStackTrace();
 				}
 			}
-			configurationBuilder = 
-					new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
-					.configure(params.fileBased().setFile(propertiesFile));
+			FileBasedBuilderParameters thing = params.fileBased().setFile(propertiesFile);
+			configurationBuilder = new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class).configure(thing);
 			configurationBuilder.setAutoSave(true);
 			try {
 				propertiesConfiguration = configurationBuilder.getConfiguration();
