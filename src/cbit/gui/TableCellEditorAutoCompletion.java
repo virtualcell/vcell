@@ -69,6 +69,7 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 				if (text.trim().length() > 0) {
 					try {
 						Expression exp = new Expression(text);
+						exp.validateUnscopedSymbols();
 						if (scopedExpression == null || scopedExpression.isValidateFunctionBinding()){
 							FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
 							for (FunctionInvocation functionInvocation : functionInvocations){

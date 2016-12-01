@@ -997,5 +997,16 @@ substituteCount++;////////////////////////////////
 public static boolean notZero(Expression e) {
 	return e != null && ( ! e.isZero() );
 }
+
+public void validateUnscopedSymbols() throws ExpressionBindingException {
+	String[] symbols = getSymbols();
+	if (symbols!=null){
+		for (String symbol : symbols){
+			if (symbol.contains(".")){
+				throw new ExpressionBindingException("symbol "+symbol+" has a name scope separator '.', not allowed in this expression");
+			}
+		}
+	}
+}
 }
 
