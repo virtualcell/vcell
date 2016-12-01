@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
 
@@ -17,6 +19,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.PropertyLoader;
@@ -24,13 +28,16 @@ import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
 import cbit.vcell.client.configuration.BioNetGenConfigurationPanel;
+import cbit.vcell.client.configuration.ConfigurationModelNode;
 import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel;
 import cbit.vcell.client.configuration.GeneralConfigurationPanel;
+import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel.ConfigurationOptionsTreeFolderClass;
+import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel.ConfigurationOptionsTreeFolderNode;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorTreeModel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.VCellConfiguration;
 
-public class VCellConfigurationPanel extends JPanel {
+public class VCellConfigurationPanel extends JPanel implements PropertyChangeListener {
 	
 	private JTextField comsolRootTextField = null;
 	private JTextField comsolJarTextField = null;
@@ -42,6 +49,7 @@ public class VCellConfigurationPanel extends JPanel {
 	private JTree configurationOptionsTree = null;
 	private ConfigurationOptionsTreeModel configurationOptionsTreeModel = null;
 	
+	JSplitPane splitPane = null;
 	
 	public VCellConfigurationPanel(){
 		super();
@@ -53,18 +61,41 @@ public class VCellConfigurationPanel extends JPanel {
 	private void initialize() {
 
 		generalConfigurationPanel = new GeneralConfigurationPanel();
+		generalConfigurationPanel.setName("generalConfigurationPanel");
 		bioNetGenConfigurationPanel = new BioNetGenConfigurationPanel();
+		bioNetGenConfigurationPanel.setName("bioNetGenConfigurationPanel");
 		
 		configurationOptionsTree = new javax.swing.JTree();
 		configurationOptionsTreeModel = new ConfigurationOptionsTreeModel(configurationOptionsTree);
 		configurationOptionsTree.setModel(configurationOptionsTreeModel);
 		configurationOptionsTree.setEditable(false);
 		configurationOptionsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-
+		configurationOptionsTree.setRootVisible(false);
+		
+		configurationOptionsTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+		    @Override
+		    public void valueChanged(TreeSelectionEvent e) {
+		    	
+		    	ConfigurationModelNode cmn = (ConfigurationModelNode) e.getNewLeadSelectionPath().getLastPathComponent();
+		    	
+		    	ConfigurationOptionsTreeFolderNode cotfn = (ConfigurationOptionsTreeFolderNode) cmn.getUserObject();
+		    	
+		    	if(cotfn.getFolderClass() == ConfigurationOptionsTreeFolderClass.GENERAL_NODE) {
+		    		splitPane.setRightComponent(generalConfigurationPanel);
+		    		generalConfigurationPanel.validate();
+		    		generalConfigurationPanel.setVisible(true);
+		    	} else if(cotfn.getFolderClass() == ConfigurationOptionsTreeFolderClass.BIONETGEN_NODE) {
+		    		splitPane.setRightComponent(bioNetGenConfigurationPanel);
+		    		bioNetGenConfigurationPanel.validate();
+		    		bioNetGenConfigurationPanel.setVisible(true);
+		    	}
+		    	
+//		        System.out.println(e.getPath().toString());
+		    }
+		});
+		
 		JScrollPane treePanel = new javax.swing.JScrollPane(configurationOptionsTree);
-		
-		
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setLeftComponent(treePanel);
 		splitPane.setRightComponent(generalConfigurationPanel);
 		
@@ -297,6 +328,12 @@ public class VCellConfigurationPanel extends JPanel {
 			}
 		}
 		return selectedFile;
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		// TODO Auto-generated method stub
+		
 	}	
 
 }

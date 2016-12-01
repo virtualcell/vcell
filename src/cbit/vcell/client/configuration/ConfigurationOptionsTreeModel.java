@@ -5,6 +5,8 @@ import java.beans.PropertyChangeEvent;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
@@ -17,7 +19,7 @@ import cbit.vcell.desktop.BioModelNode;
 
 
 public class ConfigurationOptionsTreeModel extends DefaultTreeModel
-	implements java.beans.PropertyChangeListener, TreeExpansionListener/*, TreeSelectionListener*/{
+	implements java.beans.PropertyChangeListener, TreeExpansionListener, TreeSelectionListener {
 
 	public static class ConfigurationOptionsTreeFolderNode {
 		private ConfigurationOptionsTreeFolderClass folderClass;
@@ -111,6 +113,12 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void valueChanged(TreeSelectionEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
