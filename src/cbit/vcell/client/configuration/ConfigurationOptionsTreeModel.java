@@ -3,23 +3,15 @@ package cbit.vcell.client.configuration;
 import java.beans.PropertyChangeEvent;
 
 import javax.swing.JTree;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 
-import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.util.gui.GuiUtils;
-
-import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
-import cbit.vcell.desktop.BioModelNode;
 
 
 public class ConfigurationOptionsTreeModel extends DefaultTreeModel
-	implements java.beans.PropertyChangeListener, TreeExpansionListener, TreeSelectionListener {
+	implements java.beans.PropertyChangeListener, TreeSelectionListener {
 
 	public static class ConfigurationOptionsTreeFolderNode {
 		private ConfigurationOptionsTreeFolderClass folderClass;
@@ -55,6 +47,8 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 	public enum ConfigurationOptionsTreeFolderClass {
 		
 		GENERAL_NODE("General Properties"),
+		VISIT_NODE("VisIt Properties"),
+		COMSOL_NODE("Comsol Properties"),
 		BIONETGEN_NODE("BioNetGen Preferences");
 		
 		private String title = null;
@@ -66,33 +60,35 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 		}
 	}
 
-	// first Level
-	private ConfigurationOptionsTreeFolderNode configurationChildFolderNodes[] = {
+	public ConfigurationOptionsTreeFolderNode configurationChildFolderNodes[] = {
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.GENERAL_NODE, true),
+			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.VISIT_NODE, true),
+			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.COMSOL_NODE, true),
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.BIONETGEN_NODE, true),
 		};
 	private ConfigurationModelNode generalNode = new ConfigurationModelNode(configurationChildFolderNodes[0], true);
-	private ConfigurationModelNode bioNetGenNode = new ConfigurationModelNode(configurationChildFolderNodes[1], false);	// no leaves
+	private ConfigurationModelNode visitNode = new ConfigurationModelNode(configurationChildFolderNodes[1], false);
+	private ConfigurationModelNode comsolNode = new ConfigurationModelNode(configurationChildFolderNodes[2], false);
+	private ConfigurationModelNode bioNetGenNode = new ConfigurationModelNode(configurationChildFolderNodes[3], false);	// no leaves
 	
 	private ConfigurationModelNode rootNode = null;
 	private JTree ownerTree = null;
 
 	
 	public ConfigurationOptionsTreeModel(JTree tree) {
-		
 		super(new ConfigurationModelNode("empty", true));
-		
 		this.rootNode = (ConfigurationModelNode)root;
 		this.ownerTree = tree;
 	}
 	
 	public void populateTree() {
-
 		rootNode.setUserObject(null);
 		rootNode.removeAllChildren();
 
 		rootNode.add(generalNode);
-		rootNode.add(bioNetGenNode);
+		rootNode.add(visitNode);
+		rootNode.add(comsolNode);
+		generalNode.add(bioNetGenNode);
 		
 		nodeStructureChanged(rootNode);
 		GuiUtils.treeExpandAllRows(ownerTree);
@@ -100,26 +96,11 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 
 
 	@Override
-	public void treeExpanded(TreeExpansionEvent event) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void treeCollapsed(TreeExpansionEvent event) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		// TODO Auto-generated method stub
 		
 	}
-
 	@Override
 	public void valueChanged(TreeSelectionEvent e) {
-		// TODO Auto-generated method stub
 		
 	}
 
