@@ -1,6 +1,8 @@
 package cbit.vcell.client.configuration;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -8,13 +10,18 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileFilter;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.VCFileChooser;
@@ -35,13 +42,19 @@ public class ComsolConfigurationPanel extends JPanel {
 
 		setLayout(new BorderLayout());
 		
+		Border margin = new EmptyBorder(5,3,1,1);
+		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		TitledBorder panelBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Comsol Properties ");
+		panelBorder.setTitleJustification(TitledBorder.LEFT);
+		panelBorder.setTitlePosition(TitledBorder.TOP);
+		panelBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
+		
 		JPanel jpanel = new JPanel();
-		jpanel.setBorder(new EmptyBorder(15,15,15,15));
+		jpanel.setBorder(new CompoundBorder(margin, panelBorder));
 		add(jpanel,BorderLayout.CENTER);
 		
 		jpanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
-//		gbc.ipady=10;
 		gbc.weighty=0;
 		gbc.fill=GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -59,6 +72,7 @@ public class ComsolConfigurationPanel extends JPanel {
 		gbc.gridy = gridy;
 		gbc.gridwidth = 2;
 		gbc.weightx = 0.5;
+		gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
 		jpanel.add(comsolRootLabel, gbc);
 
 		gridy++;
@@ -67,6 +81,8 @@ public class ComsolConfigurationPanel extends JPanel {
 		gbc.gridy = gridy;
 		gbc.gridwidth = 1;
 		gbc.weightx = 0.5;
+		gbc.ipady = 1;
+		gbc.insets = new Insets(4,4,2,2);
 		jpanel.add(comsolRootTextField, gbc);
 		comsolRootTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.comsolRootDir, new File(comsolRootTextField.getText())); });
 		
@@ -76,9 +92,11 @@ public class ComsolConfigurationPanel extends JPanel {
 		gbc.gridy = gridy;
 		gbc.gridwidth = 1;
 		gbc.weightx = 0.0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(3,2,2,4);
 		jpanel.add(findComsolButton, gbc);
 		
-//		gridy += 4;		// !!!
+//		gridy += 4;
 //		gbc.gridx=0;
 //		gbc.gridy=5;
 //		gbc.gridwidth=2;
@@ -95,6 +113,7 @@ public class ComsolConfigurationPanel extends JPanel {
 		gbc.gridy = gridy;
 		gbc.gridwidth = 2;
 		gbc.weightx = 0.5;
+		gbc.insets = new Insets(8,4,2,4);
 		jpanel.add(comsolJarLabel, gbc);
 
 		gridy++;
@@ -103,6 +122,8 @@ public class ComsolConfigurationPanel extends JPanel {
 		gbc.gridy = gridy;
 		gbc.gridwidth = 2;
 		gbc.weightx = 0.5;
+		gbc.ipady = 1;
+		gbc.insets = new Insets(4,4,2,4);
 		jpanel.add(comsolJarTextField, gbc);
 		
 		gridy++;
@@ -111,9 +132,9 @@ public class ComsolConfigurationPanel extends JPanel {
 		gbc.gridwidth = 3;
 		gbc.weightx = 1;
 		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+		gbc.ipady = 0;
 		gbc.anchor = GridBagConstraints.WEST;
 		jpanel.add(new JLabel(""), gbc);
-
 		
 		comsolRootTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.comsolJarDir, new File(comsolJarTextField.getText())); });
 		initComsolValues();

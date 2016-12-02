@@ -1,6 +1,7 @@
 package cbit.vcell.client.configuration;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -8,13 +9,18 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileFilter;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.VCFileChooser;
@@ -36,50 +42,73 @@ public class VisItConfigurationPanel extends JPanel {
 	private void initialize() {
 		setLayout(new BorderLayout());
 		
+		Border margin = new EmptyBorder(5,3,1,1);
+		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		TitledBorder panelBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " VisIt Properties ");
+		panelBorder.setTitleJustification(TitledBorder.LEFT);
+		panelBorder.setTitlePosition(TitledBorder.TOP);
+		panelBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
+		
 		JPanel jpanel = new JPanel();
-		jpanel.setBorder(new EmptyBorder(15,15,15,15));
+		jpanel.setBorder(new CompoundBorder(margin, panelBorder));
 		add(jpanel,BorderLayout.CENTER);
 		
 		jpanel.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		c.ipady=10;
-		c.weighty=0;
-		c.fill=GridBagConstraints.HORIZONTAL;
-		c.gridheight=1;
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.weighty = 0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		gbc.gridheight = 1;
 		
 		//=============================================================================
 		//
 		// visit exe
 		//
 		//=============================================================================
+		int gridy = 0;
 		JLabel visitExeLabel = new JLabel("<html>VisIt executable, see <a href='https://wci.llnl.gov/simulation/computer-codes/visit'>VisIt</a> at LLNL (llnl.gov)</html>");
-		c.gridx=0;
-		c.gridy=0;
-		c.gridwidth=2;
-		c.weightx=0.5;
-		jpanel.add(visitExeLabel,c);
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.weightx = 0.5;
+		gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
+		jpanel.add(visitExeLabel,gbc);
 
+		gridy++;
 		visitExeTextField = new JTextField();
-		c.gridx=0;
-		c.gridy=1;
-		c.gridwidth=1;
-		c.weightx=0.5;
-		jpanel.add(visitExeTextField,c);
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 1;
+		gbc.weightx = 0.5;
+		gbc.ipady = 1;
+		gbc.insets = new Insets(4,4,2,2);
+		jpanel.add(visitExeTextField,gbc);
 		visitExeTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.visitExe, new File(visitExeTextField.getText())); });
 		
 		JButton findVisitExeButton = new JButton("Browse...");
 		findVisitExeButton.addActionListener((ActionEvent e) -> browseVisitExe() );
-		c.gridx=1;
-		c.gridy=1;
-		c.gridwidth=1;
-		c.weightx=0;
-		jpanel.add(findVisitExeButton,c);
+		gbc.gridx=1;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 1;
+		gbc.weightx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(3,2,2,4);
+		jpanel.add(findVisitExeButton,gbc);
 		
-		c.gridx=0;
-		c.gridy=2;
-		c.gridwidth=2;
-		jpanel.add(new JSeparator(),c);
+//		gbc.gridx=0;
+//		gbc.gridy=2;
+//		gbc.gridwidth=2;
+//		jpanel.add(new JSeparator(),gbc);
 		
+		gridy++;
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 3;
+		gbc.weightx = 1;
+		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+		gbc.anchor = GridBagConstraints.WEST;
+		jpanel.add(new JLabel(""), gbc);
+
 		initVisitValues();
 	}
 	
@@ -136,20 +165,6 @@ public class VisItConfigurationPanel extends JPanel {
 			}
 		}
 		return selectedFile;
-	}	
-
-//	private void initializeOld() {
-//		
-//		setLayout(new GridBagLayout());
-//
-//		JLabel jl = new JLabel("VisItConfigurationPanel");
-//		GridBagConstraints gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = 0;
-//		gbc.anchor = GridBagConstraints.WEST;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.insets = new Insets(2, 4, 2, 4);
-//		add(jl, gbc);
-//	}
+	}
 
 }
