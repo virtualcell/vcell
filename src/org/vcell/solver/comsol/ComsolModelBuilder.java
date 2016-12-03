@@ -54,31 +54,31 @@ import cbit.vcell.solver.TimeStep;
 
 public class ComsolModelBuilder {
 	
-	private static VCCGeomFeature csgVisitor(CSGNode node, ArrayList<VCCGeomFeature> geomFeatureList){
+	private static VCCGeomFeature csgVisitor(CSGNode node, ArrayList<VCCGeomFeature> geomFeatureList, String namePrefix){
 		final VCCGeomFeature newFeature;
 		
 		if (node instanceof CSGPrimitive){
 			CSGPrimitive csg = (CSGPrimitive)node;
 			switch (csg.getType()){
 			case CONE:{
-				newFeature = new VCCCone(csg.getName());
+				newFeature = new VCCCone(namePrefix+csg.getName());
 				break;
 			}
 			case CUBE:{
 				String[] size = new String[] { "2","2","2" };
 				String[] pos = new String[] { "-1","-1","-1" };
-				VCCBlock vccblock = new VCCBlock(csg.getName(), size, pos);
+				VCCBlock vccblock = new VCCBlock(namePrefix+csg.getName(), size, pos);
 				newFeature = vccblock;
 				break;
 			}
 			case CYLINDER:{
-				newFeature = new VCCCylinder(csg.getName());
+				newFeature = new VCCCylinder(namePrefix+csg.getName());
 				break;
 			}
 			case SPHERE:{
 				String r = "1";
 				String[] pos = new String[] { "0","0","0" };
-				newFeature = new VCCSphere(csg.getName(), pos, r);
+				newFeature = new VCCSphere(namePrefix+csg.getName(), pos, r);
 				break;
 			}
 			default:{
@@ -90,7 +90,7 @@ public class ComsolModelBuilder {
 			
 			ArrayList<VCCGeomFeature> childSubtrees = new ArrayList<VCCGeomFeature>();
 			for (CSGNode child : setOp.getChildren()){
-				VCCGeomFeature vccChild = csgVisitor(child, geomFeatureList);
+				VCCGeomFeature vccChild = csgVisitor(child, geomFeatureList, namePrefix);
 				childSubtrees.add(vccChild);
 			}
 			
@@ -99,7 +99,7 @@ public class ComsolModelBuilder {
 				if (childSubtrees.size()!=2){
 					throw new RuntimeException("expecting exactly two children for CSG difference operator");
 				}
-				VCCDifference diff = new VCCDifference(setOp.getName(), Keep.off);
+				VCCDifference diff = new VCCDifference(namePrefix+setOp.getName(), Keep.off);
 				diff.input.add(childSubtrees.get(0));
 				diff.input2.add(childSubtrees.get(1));
 				newFeature = diff;
@@ -109,7 +109,7 @@ public class ComsolModelBuilder {
 				if (childSubtrees.size()<2){
 					throw new RuntimeException("expecting two or more children for CSG intersection operator");
 				}
-				VCCIntersection intersection = new VCCIntersection(setOp.getName(), Keep.off);
+				VCCIntersection intersection = new VCCIntersection(namePrefix+setOp.getName(), Keep.off);
 				intersection.input.add(childSubtrees.get(0));
 				newFeature = intersection;
 				break;
@@ -118,7 +118,7 @@ public class ComsolModelBuilder {
 				if (childSubtrees.size()<2){
 					throw new RuntimeException("expecting two or more children for CSG union operator");
 				}
-				VCCUnion union = new VCCUnion(setOp.getName(), Keep.off);
+				VCCUnion union = new VCCUnion(namePrefix+setOp.getName(), Keep.off);
 				union.input.add(childSubtrees.get(0));
 				newFeature = union;
 				break;
@@ -130,7 +130,7 @@ public class ComsolModelBuilder {
 		}else if (node instanceof CSGTransformation){
 			CSGTransformation transformation = (CSGTransformation)node;
 
-			VCCGeomFeature vccChild = csgVisitor(transformation.getChild(), geomFeatureList);
+			VCCGeomFeature vccChild = csgVisitor(transformation.getChild(), geomFeatureList, namePrefix);
 
 			if (transformation instanceof CSGHomogeneousTransformation){
 				throw new RuntimeException("unsupported CSG transformation type Homogeneous transformation");
@@ -139,20 +139,20 @@ public class ComsolModelBuilder {
 				String[] axis = new String[] { Double.toString(rotation.getAxis().getX()), Double.toString(rotation.getAxis().getY()), Double.toString(rotation.getAxis().getZ()) };
 				String[] pos = new String[] { "0.0", "0.0", "0.0" };
 				String rot = Double.toString(rotation.getRotationRadians());
-				VCCRotate vccrotate = new VCCRotate(rotation.getName(),axis,pos,rot,Keep.off);
+				VCCRotate vccrotate = new VCCRotate(namePrefix+rotation.getName(),axis,pos,rot,Keep.off);
 				vccrotate.input.add(vccChild);
 				newFeature = vccrotate;
 			}else if (transformation instanceof CSGScale){
 				CSGScale scale = (CSGScale)transformation;
 				String[] factor = new String[] { Double.toString(scale.getScale().getX()), Double.toString(scale.getScale().getY()), Double.toString(scale.getScale().getZ()) };
 				String[] pos = new String[] { "0.0", "0.0", "0.0" };
-				VCCScale vccscale = new VCCScale(scale.getName(),pos,factor,Keep.off);
+				VCCScale vccscale = new VCCScale(namePrefix+scale.getName(),pos,factor,Keep.off);
 				vccscale.input.add(vccChild);
 				newFeature = vccscale;
 			}else if (transformation instanceof CSGTranslation){
 				CSGTranslation translation = (CSGTranslation)transformation;
 				String[] displ = new String[] { Double.toString(translation.getTranslation().getX()), Double.toString(translation.getTranslation().getY()), Double.toString(translation.getTranslation().getZ()) };
-				VCCMove vccmove = new VCCMove(translation.getName(),displ,Keep.off);
+				VCCMove vccmove = new VCCMove(namePrefix+translation.getName(),displ,Keep.off);
 				vccmove.input.add(vccChild);
 				newFeature = vccmove;
 			}else{
@@ -220,14 +220,37 @@ public class ComsolModelBuilder {
 	    	throw new RuntimeException("only analytic and CSG subvolumes currently supported by VCell's COMSOL model builder");
 	    }
 	    HashMap<String,VCCGeomFeature> subvolumeNameFeatureMap = new HashMap<String,VCCGeomFeature>();
-	    for (SubVolume subvolume : vcellGeometrySpec.getSubVolumes()){
+	    SubVolume[] subVolumes = vcellGeometrySpec.getSubVolumes();
+		for (int i=0; i<subVolumes.length; i++){
+			SubVolume subvolume = subVolumes[i];
 	    	if (subvolume instanceof CSGObject){
 	    		CSGObject vcellCSGObject = (CSGObject) subvolume;
 	    		CSGNode vcellCSGNode = vcellCSGObject.getRoot();
 	    		ArrayList<VCCGeomFeature> geomFeatureList = new ArrayList<VCCGeomFeature>();
-	    		VCCGeomFeature feature = csgVisitor(vcellCSGNode, geomFeatureList);
-	    		subvolumeNameFeatureMap.put(subvolume.getName(), feature);
+	    		VCCGeomFeature feature = csgVisitor(vcellCSGNode, geomFeatureList, subvolume.getName());
 	    		geom1.geomfeatures.addAll(geomFeatureList);
+	    		if (i==0){
+	    			// first subvolume (on top in ordinals) doesn't need any differencing
+		    		subvolumeNameFeatureMap.put(subvolume.getName(), feature);
+	    		}else{
+	    			// have to subtract union of prior subvolumes
+	    			ArrayList<VCCGeomFeature> priorFeatures = new ArrayList<VCCGeomFeature>();
+	    			for (int j=0;j<i;j++){
+	    	    		CSGObject priorCSGObject = (CSGObject) subVolumes[j];
+	    	    		CSGNode priorCSGNode = priorCSGObject.getRoot();
+		    			geomFeatureList.clear();
+	    	    		VCCGeomFeature priorFeature = csgVisitor(priorCSGNode, geomFeatureList, subvolume.getName());
+	    	    		priorFeatures.add(priorFeature);
+	    	    		geom1.geomfeatures.addAll(geomFeatureList);
+	    			}
+	    			VCCDifference diff = new VCCDifference("diff"+subvolume.getName(), Keep.off);
+	    			diff.input.add(feature);
+	    			diff.input2.addAll(priorFeatures);
+	    			geom1.geomfeatures.add(diff);
+	    			subvolumeNameFeatureMap.put(subvolume.getName(), diff);
+	    		}
+	    	}else{
+	    		throw new RuntimeException("only CSG subvolumes currently supported by VCell's COMSOL model builder");
 	    	}
 	    }
 	    
