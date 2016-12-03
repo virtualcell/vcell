@@ -1,6 +1,7 @@
 package org.vcell.solver.comsol.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -10,15 +11,20 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.solver.comsol.model.VCCCoefficientFormPDE;
 import org.vcell.solver.comsol.model.VCCConvectionDiffusionEquation;
 import org.vcell.solver.comsol.model.VCCGeomFeature;
+import org.vcell.solver.comsol.model.VCCGeomFeature.Keep;
+import org.vcell.solver.comsol.model.VCCGeomFeature.VCCBlock;
+import org.vcell.solver.comsol.model.VCCGeomFeature.VCCCircle;
+import org.vcell.solver.comsol.model.VCCGeomFeature.VCCDifference;
+import org.vcell.solver.comsol.model.VCCGeomFeature.VCCMove;
+import org.vcell.solver.comsol.model.VCCGeomFeature.VCCScale;
+import org.vcell.solver.comsol.model.VCCGeomFeature.VCCSphere;
+import org.vcell.solver.comsol.model.VCCGeomFeature.VCCSquare;
 import org.vcell.solver.comsol.model.VCCGeomSequence;
-import org.vcell.solver.comsol.model.VCCGeomSequence.VCCCircle;
-import org.vcell.solver.comsol.model.VCCGeomSequence.VCCDifference;
-import org.vcell.solver.comsol.model.VCCGeomSequence.VCCDifference.Keep;
-import org.vcell.solver.comsol.model.VCCGeomSequence.VCCSquare;
 import org.vcell.solver.comsol.model.VCCMeshSequence;
 import org.vcell.solver.comsol.model.VCCModel;
 import org.vcell.solver.comsol.model.VCCModelNode;
@@ -70,7 +76,7 @@ public class ComsolServiceScripting implements ComsolService {
 //		return buffer.toString();
 //	}
 	
-	private void run(ScriptEngine engine, VCCModel vccModel, File reportFile, File javaFile, File mphFile) throws ScriptException {
+	private void run(ScriptEngine engine, VCCModel vccModel, File reportFile, File javaFile, File mphFile, File jsFile) throws ScriptException, IOException {
 		StringBuffer buffer = new StringBuffer();
 		
 		//									   ModelUtil.initStandalone(true);		
@@ -95,6 +101,7 @@ public class ComsolServiceScripting implements ComsolService {
 			for (VCCGeomFeature geomFeature : geomSequence.geomfeatures) {
 				switch (geomFeature.type) {
 				case Circle: {
+buffer.append(	"print('geomFeature Circle named "+geomFeature.name+"');"		+ "\n");
 					VCCCircle circle = (VCCCircle) geomFeature;
 					//               model.geom(geomSequence.name)      .create(circle.name, "Circle");
 					buffer.append(	"model.geom('"+geomSequence.name+"').create('"+circle.name+"','Circle');"	+ "\n");
@@ -109,15 +116,42 @@ public class ComsolServiceScripting implements ComsolService {
 					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+circle.name+"').set('r', '"+circle.r+"');"	+ "\n");
 					break;
 				}
+				case Sphere: {
+buffer.append(	"print('geomFeature Sphere named "+geomFeature.name+"');"		+ "\n");
+					VCCSphere sphere = (VCCSphere) geomFeature;
+					//               model.geom(geomSequence.name)      .create(sphere.name, "Sphere");
+					buffer.append(	"model.geom('"+geomSequence.name+"').create('"+sphere.name+"','Sphere');"	+ "\n");
+
+					//               model.geom(geomSequence.name)      .feature(sphere.name)      .set("pos", sphere.pos);
+					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+sphere.name+"').set('pos', "+tojs(sphere.pos)+");"	+ "\n");
+
+					//               model.geom(geomSequence.name)      .feature(sphere.name)      .set("r", sphere.r);
+					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+sphere.name+"').set('r', "+sphere.r+");"	+ "\n");
+					break;
+				}
 				case Square: {
 					VCCSquare square = (VCCSquare) geomFeature;
 					//               model.geom(geomSequence.name)      .create(square.name, "Square");
 					buffer.append(	"model.geom('"+geomSequence.name+"').create('"+square.name+"','Square');"	+ "\n");
-					//               model.geom(geomSequence.name)      .feature(square.name)      .set("selresult", "on");
-					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+square.name+"').set('selresult','on');"	+ "\n");
+//					//               model.geom(geomSequence.name)      .feature(square.name)      .set("selresult", "on");
+//					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+square.name+"').set('selresult','on');"	+ "\n");
+					break;
+				}
+				case Block: {
+buffer.append(	"print('geomFeature Block named "+geomFeature.name+"');"		+ "\n");
+					VCCBlock block = (VCCBlock) geomFeature;
+					//               model.geom(geomSequence.name)      .create(block.name, "Block");
+					buffer.append(	"model.geom('"+geomSequence.name+"').create('"+block.name+"','Block');"	+ "\n");
+
+					//               model.geom(geomSequence.name)      .feature(block.name)      .set("pos", block.pos);
+					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+block.name+"').set('pos', "+tojs(block.pos)+");"	+ "\n");
+
+					//               model.geom(geomSequence.name)      .feature(block.name)      .set("size", bock.size);
+					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+block.name+"').set('size', "+tojs(block.size)+");"	+ "\n");
 					break;
 				}
 				case Difference: {
+buffer.append(	"print('geomFeature Difference named "+geomFeature.name+"');"		+ "\n");
 					VCCDifference diff = (VCCDifference) geomFeature;
 					//               model.geom(geomSequence.name)      .create(diff.name, "Difference");
 					buffer.append(	"model.geom('"+geomSequence.name+"').create('"+diff.name+"','Difference');"	+ "\n");
@@ -149,10 +183,48 @@ public class ComsolServiceScripting implements ComsolService {
 					}
 					break;
 				}
+				case Scale: {
+buffer.append(	"print('geomFeature Scale named "+geomFeature.name+"');"		+ "\n");
+					VCCScale scale = (VCCScale) geomFeature;
+					//               model.geom(geomSequence.name)      .create(diff.name, "Difference");
+					buffer.append(	"model.geom('"+geomSequence.name+"').create('"+scale.name+"','Scale');"	+ "\n");
+					
+					ArrayList<String> inputNames = new ArrayList<String>();
+					for (VCCGeomFeature feature : scale.input) {
+						inputNames.add(feature.name);
+					}
+					String[] inputSet = inputNames.toArray(new String[0]);
+					//               model.geom(geomSequence.name)      .feature(scale.name)      .selection("input").set(inputSet);
+					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+scale.name+"').selection('input').set("+tojs(inputSet)+");"	+ "\n");
+					//               model.geom(geomSequence.name)      .feature(scale.name)      .set('factor', scale.factor);
+					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+scale.name+"').set('factor',"+tojs(scale.factor)+");"	+ "\n");
+					break;
+				}
+				case Move: {
+buffer.append(	"print('geomFeature Move named "+geomFeature.name+"');"		+ "\n");
+					VCCMove move = (VCCMove) geomFeature;
+					//               model.geom(geomSequence.name)      .create(diff.name, "Difference");
+					buffer.append(	"model.geom('"+geomSequence.name+"').create('"+move.name+"','Move');"	+ "\n");
+					
+					ArrayList<String> inputNames = new ArrayList<String>();
+					for (VCCGeomFeature feature : move.input) {
+						inputNames.add(feature.name);
+					}
+					String[] inputSet = inputNames.toArray(new String[0]);
+
+					//               model.geom(geomSequence.name)      .feature(move.name)      .selection("input").set(inputSet);
+					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+move.name+"').selection('input').set("+tojs(inputSet)+");"	+ "\n");
+					
+					//               model.geom(geomSequence.name)      .feature(move.name)      .set("displ", move.displ);
+					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+move.name+"').set('displ',"+tojs(move.displ)+");"	+ "\n");
+					break;
+				}
 				default: {
 					throw new RuntimeException("unexpected Geometry Feature type " + geomFeature.type.name());
 				}
 				}
+				//				  model.geom(geomSequence.name)		 .feature(geomFeature.name)		 .set("selresult", "on");
+				buffer.append(   "model.geom('"+geomSequence.name+"').feature('"+geomFeature.name+"').set('selresult','on');"		+ "\n");
 			}
 			System.out.println("building geometry");
 			// 				long t_startGeomRun_ms = System.currentTimeMillis();
@@ -177,6 +249,7 @@ public class ComsolServiceScripting implements ComsolService {
 			switch (physics.type) {
 			case CoefficientFormPDE: {
 				VCCCoefficientFormPDE pde = (VCCCoefficientFormPDE) physics;
+//buffer.append(	"print('physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
 				//               model.physics().create(pde.name, "CoefficientFormPDE", pde.geom.name);
 				buffer.append(	"model.physics().create('"+pde.name+"','CoefficientFormPDE','"+pde.geom.name+"');"	+ "\n");
 
@@ -187,13 +260,19 @@ public class ComsolServiceScripting implements ComsolService {
 			}
 			case ConvectionDiffusionEquation: {
 				VCCConvectionDiffusionEquation pde = (VCCConvectionDiffusionEquation) physics;
+buffer.append(	"print('physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
 				//               model.physics().create(pde.name, "ConvectionDiffusionEquation", pde.geom.name);
 				buffer.append(	"model.physics().create('"+pde.name+"','ConvectionDiffusionEquation','"+pde.geom.name+"');"	+ "\n");
 				
 				String c = pde.diffTerm_c;
-				//               model.physics(pde.name)      .feature("cdeq1").setIndex("c", new String[] { c, "0", "0", c }, 0);
-				buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('c', "+tojs(new String[] { c,"0","0",c })+", 0);"	+ "\n");
-
+				if (vccModel.dim==2){
+					//               model.physics(pde.name)      .feature("cdeq1").setIndex("c", new String[] { c, "0", "0", c }, 0);
+					buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('c', "+tojs(new String[] { c,"0","0",c })+", 0);"	+ "\n");
+				}else if (vccModel.dim==3){
+					//               model.physics(pde.name)      .feature("cdeq1").setIndex("c", new String[] { c, "0", "0", c }, 0);
+					buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('c', "+tojs(new String[] { c,"0","0","0",c,"0","0","0",c })+", 0);"	+ "\n");
+				}
+				
 				//               model.physics(pde.name)      .feature("cdeq1").setIndex("be", pde.advection_be, 0);
 				buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('be', "+tojs(pde.advection_be)+", 0);"	+ "\n");
 
@@ -357,6 +436,9 @@ public class ComsolServiceScripting implements ComsolService {
 		String script = buffer.toString();
 		
 		System.out.println(script);
+		FileUtils.write(jsFile, script);
+		System.out.println("script written to "+jsFile.getAbsolutePath()+" prior to execution");
+
 //		RhinoScriptEngineFactory factory = new RhinoScriptEngineFactory();
 //		factory.
 //		ContextFactory factory = new ContextFactory();
@@ -404,7 +486,8 @@ public class ComsolServiceScripting implements ComsolService {
 			Thread.currentThread().setContextClassLoader(comsolClassloader);
 			ScriptEngineManager manager = new ScriptEngineManager();
 			ScriptEngine engine = manager.getEngineByName("nashorn");
-			run(engine, vccModel, reportFile, javaFile, mphFile);
+			File jsFile = new File(javaFile.getParentFile(), javaFile.getName().replace(".java",".js"));
+			run(engine, vccModel, reportFile, javaFile, mphFile, jsFile);
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
 		} finally {

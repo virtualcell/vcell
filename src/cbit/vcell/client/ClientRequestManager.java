@@ -2062,7 +2062,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 							double x = extent.getX();
 							double y = extent.getY();
 							double z = extent.getZ();
-							CSGScale scaledCube = new CSGScale("scale", new Vect3d(x, y, z));
+							CSGScale scaledCube = new CSGScale("scale", new Vect3d(x/2.0, y/2.0, z/2.0));
 							scaledCube.setChild(cube);
 							// translated scaled cube
 							CSGTranslation translatedScaledCube = new CSGTranslation("translation", new Vect3d(x/2, y/2, z/2));

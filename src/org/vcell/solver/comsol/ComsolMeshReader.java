@@ -12,6 +12,7 @@ import org.vcell.vis.vismesh.thrift.Vect3D;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 import org.vcell.vis.vismesh.thrift.VisPoint;
 import org.vcell.vis.vismesh.thrift.VisPolygon;
+import org.vcell.vis.vismesh.thrift.VisTetrahedron;
 import org.vcell.vis.vtk.VisMeshUtils;
 import org.vcell.vis.vtk.VtkService;
 
@@ -133,18 +134,31 @@ public class ComsolMeshReader {
 
 	private static void readElements(BufferedReader br, VisMesh visMesh, int numElements) throws IOException{
 		String line = br.readLine();
-		String elementsTag = "% Elements (triangles)";
-		if (!line.trim().equals(elementsTag)){
-			throw new RuntimeException("read "+line+"\nexpected "+elementsTag);
-		}
-		for (int i=0;i<numElements;i++){
-			line = br.readLine();
-			String[] tokens = line.split("\\ +");
-			ArrayList<Integer> points = new ArrayList<Integer>();
-			points.add(Integer.parseInt(tokens[0])-1);
-			points.add(Integer.parseInt(tokens[1])-1);
-			points.add(Integer.parseInt(tokens[2])-1);
-			visMesh.addToPolygons(new VisPolygon(points));
+		String tetrahedraTag = "% Elements (tetrahedra)";
+		String trianglesTag = "% Elements (triangles)";
+		if (line.trim().equals(trianglesTag)){
+			for (int i=0;i<numElements;i++){
+				line = br.readLine();
+				String[] tokens = line.split("\\ +");
+				ArrayList<Integer> points = new ArrayList<Integer>();
+				points.add(Integer.parseInt(tokens[0])-1);
+				points.add(Integer.parseInt(tokens[1])-1);
+				points.add(Integer.parseInt(tokens[2])-1);
+				visMesh.addToPolygons(new VisPolygon(points));
+			}
+		}else if (line.trim().equals(tetrahedraTag)){
+			for (int i=0;i<numElements;i++){
+				line = br.readLine();
+				String[] tokens = line.split("\\ +");
+				ArrayList<Integer> points = new ArrayList<Integer>();
+				points.add(Integer.parseInt(tokens[0])-1);
+				points.add(Integer.parseInt(tokens[1])-1);
+				points.add(Integer.parseInt(tokens[2])-1);
+				points.add(Integer.parseInt(tokens[3])-1);
+				visMesh.addToTetrahedra(new VisTetrahedron(points));
+			}
+		}else{
+			throw new RuntimeException("read "+line+"\nexpected "+tetrahedraTag+" or "+trianglesTag);
 		}
 	}
 

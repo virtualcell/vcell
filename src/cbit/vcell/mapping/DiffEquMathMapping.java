@@ -1340,8 +1340,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			if (spatialObject instanceof SurfaceRegionObject){
 				SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject) spatialObject;
 				if (surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity) &&
-					((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||
-					((surfaceRegionObject.getInsideSubVolume() == outerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == innerSubVolume))){
+					(((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||
+					 ((surfaceRegionObject.getInsideSubVolume() == outerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == innerSubVolume)))){
 					int dim = simContext.getGeometry().getDimension();
 					if (dim!=2){
 						throw new MappingException("Membrane Velocity only supported for 2D geometries");

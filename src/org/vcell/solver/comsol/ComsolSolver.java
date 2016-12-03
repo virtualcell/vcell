@@ -1,5 +1,6 @@
 package org.vcell.solver.comsol;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -126,7 +127,7 @@ public class ComsolSolver extends AbstractSolver {
 			try (FileOutputStream fos = new FileOutputStream(meshFile)) {
 				simTask.getSimulation().getMathDescription().getGeometry().getGeometrySurfaceDescription().updateAll();
 				CartesianMesh mesh = CartesianMesh.createSimpleCartesianMesh(simTask.getSimulation().getMathDescription().getGeometry());
-				mesh.write(new PrintStream(fos));
+				mesh.write(new PrintStream(new BufferedOutputStream(fos)));
 			} catch (Exception e) {
 				e.printStackTrace(System.out);
 				throw new SolverException(e.getMessage());

@@ -18,9 +18,11 @@ public class VCCModel {
 	public String name = null;
 	public String label = null;
 	public String comments = null;
+	public final int dim;
 	
-	public VCCModel(String name) {
+	public VCCModel(String name, int dim) {
 		this.name = name;
+		this.dim = dim;
 	}
 	
 }

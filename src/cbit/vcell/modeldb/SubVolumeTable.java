@@ -66,19 +66,23 @@ public SubVolume getAnalyticOrCompartmentSubVolume(KeyValue key, ResultSet rset,
 		return new CompartmentSubVolume(key,handleValue);
 	}else{
 		try {
+			if (expString.startsWith("<") && expString.endsWith(">")){
+				String xmlStr = TokenMangler.getSQLRestoredString(expString);
+				XmlReader xmlReader = new XmlReader(true);
+				Element csgObjElement =  (XmlUtil.stringToXML(xmlStr, null)).getRootElement(); 
+				try {
+					CSGObject csgObject = xmlReader.getCSGObject(csgObjElement, key);
+					return csgObject;
+				} catch (Exception e1) {
+					e1.printStackTrace(System.out);
+					throw new DataAccessException(e1.getMessage(), e1);
+				}
+			}
 			Expression exp = new Expression(expString);
 			return new AnalyticSubVolume(key,svName,exp,handleValue);
 		} catch (Exception e) {
-			String xmlStr = TokenMangler.getSQLRestoredString(expString);
-			XmlReader xmlReader = new XmlReader(true);
-			Element csgObjElement =  (XmlUtil.stringToXML(xmlStr, null)).getRootElement(); 
-			try {
-				CSGObject csgObject = xmlReader.getCSGObject(csgObjElement, key);
-				return csgObject;
-			} catch (Exception e1) {
-				e1.printStackTrace(System.out);
-				throw new DataAccessException(e1.getMessage(), e1);
-			}
+			e.printStackTrace(System.out);
+			throw new DataAccessException(e.getMessage(), e);
 		}
 	}
 }
