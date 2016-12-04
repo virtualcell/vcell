@@ -59,6 +59,8 @@ import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 import cbit.vcell.mapping.spatial.processes.VolumeKinematics;
 import cbit.vcell.math.CommentedBlockObject;
 import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.ComputeMembraneMetricEquation;
+import cbit.vcell.math.ComputeMembraneMetricEquation.MembraneMetricComponent;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.ConvFunctionDefinition;
 import cbit.vcell.math.ConvolutionDataGenerator;
@@ -257,6 +259,36 @@ private boolean sameName(String name, CommentedBlockObject cbo) {
 	return false;
 }
 
+private static class MembraneSubdomainContext {
+	final MembraneSubDomain membraneSubdomain;
+	final Domain domain;
+	final SurfaceClass surfaceClass;
+	final SubVolume innerSubvolume;
+	final SubVolume outerSubvolume;
+	final SurfaceRegionObject[] surfaceRegionObjects;
+	private MembraneSubdomainContext(MembraneSubDomain membraneSubdomain, Domain domain, SurfaceClass surfaceClass,
+			SubVolume innerSubvolume, SubVolume outerSubvolume, SurfaceRegionObject[] surfaceRegionObjects) {
+		super();
+		this.membraneSubdomain = membraneSubdomain;
+		this.domain = domain;
+		this.surfaceClass = surfaceClass;
+		this.innerSubvolume = innerSubvolume;
+		this.outerSubvolume = outerSubvolume;
+		this.surfaceRegionObjects = surfaceRegionObjects;
+	}
+}
+private static class CompartmentSubdomainContext {
+	final CompartmentSubDomain compartmentSubdomain;
+	final SubVolume subvolume;
+	final Domain domain;
+	
+	private CompartmentSubdomainContext(CompartmentSubDomain compartmentSubdomain, SubVolume subvolume, Domain domain) {
+		super();
+		this.compartmentSubdomain = compartmentSubdomain;
+		this.subvolume = subvolume;
+		this.domain = domain;
+	}	
+}
 
 /**
  * This method was created in VisualAge.
@@ -284,7 +316,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //			localIssueList.add(new Issue(structures[i], IssueCategory.StructureNotMapped,"In Application '" + simContext.getName() + "', model structure '"+structures[i].getName()+"' not mapped to a geometry subdomain",Issue.SEVERITY_WARNING));
 //		}
 //	}
-	SubVolume subVolumes[] = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
+	//SubVolume subVolumes[] = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
 //	for (int i = 0; i < subVolumes.length; i++){
 //		Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(subVolumes[i]);
 //		if (mappedStructures==null || mappedStructures.length==0){
@@ -491,7 +523,14 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		}
 	}
 	
-	addSpatialProcesses(varHash); // membrane velocities set on MembraneSubdomains later.
+	//
+	// add compartment and membrane subdomains
+	//
+	ArrayList<CompartmentSubdomainContext> compartmentSubdomainContexts = new ArrayList<CompartmentSubdomainContext>();
+	ArrayList<MembraneSubdomainContext> membraneSubdomainContexts = new ArrayList<MembraneSubdomainContext>();
+	addSubdomains(model, compartmentSubdomainContexts, membraneSubdomainContexts);
+	
+	addSpatialProcesses(varHash, compartmentSubdomainContexts, membraneSubdomainContexts); // membrane velocities set on MembraneSubdomains later.
 	
 	varHash.addVariable(new Constant(getMathSymbol(model.getPI_CONSTANT(),null),getIdentifierSubstitutions(model.getPI_CONSTANT().getExpression(),model.getPI_CONSTANT().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
@@ -1067,24 +1106,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	//
 	// volume subdomains
 	//
-	subVolumes = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
-	for (int j=0;j<subVolumes.length;j++){
-		SubVolume subVolume = (SubVolume)subVolumes[j];
-		//
-		// get priority of subDomain
-		//
-		int priority;
-		if (simContext.getGeometryContext().getGeometry().getDimension()==0){
-			priority = CompartmentSubDomain.NON_SPATIAL_PRIORITY;
-		}else{
-			priority = j; // now does not have to match spatial feature, *BUT* needs to be unique
-		}
-		//
-		// create subDomain
-		//
-		CompartmentSubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),priority);
-		mathDesc.addSubDomain(subDomain);
-
+	for (CompartmentSubdomainContext compartmentSubDomainContext : compartmentSubdomainContexts){
+		SubVolume subVolume = compartmentSubDomainContext.subvolume;
+		CompartmentSubDomain subDomain = mathDesc.getCompartmentSubDomain(subVolume.getName());
 		//
 		// assign boundary condition types
 		//
@@ -1281,87 +1305,31 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	//
 	// membrane subdomains
 	//
-	GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
-	for (int k=0;k<geometryClasses.length;k++){
-		if (!(geometryClasses[k] instanceof SurfaceClass)){
-			continue;
-		}
+	for (MembraneSubdomainContext memSubdomainContext : membraneSubdomainContexts){
+		MembraneSubDomain memSubDomain = memSubdomainContext.membraneSubdomain;
+		SurfaceClass surfaceClass = memSubdomainContext.surfaceClass;
 		
-		SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[k];
-		// determine membrane inside and outside subvolume
-		// this preserves backward compatibility so that membrane subdomain
-		// inside and outside correspond to structure hierarchy when present
-		SubVolume outerSubVolume = null;
-		SubVolume innerSubVolume = null;
-		Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
-		for (Structure s : mappedStructures) {
-			if (s instanceof Membrane) {
-				Membrane m = (Membrane)s;
-				Feature infeature = model.getStructureTopology().getInsideFeature(m);
-				if (infeature!=null){
-					FeatureMapping insm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(infeature);
-					if (insm.getGeometryClass() instanceof SubVolume) {
-						innerSubVolume = (SubVolume)insm.getGeometryClass();
-					}
+		for (SurfaceRegionObject surfaceRegionObject : memSubdomainContext.surfaceRegionObjects){
+			if (surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity)){
+				int dim = simContext.getGeometry().getDimension();
+				if (dim!=2){
+					throw new MappingException("Membrane Velocity only supported for 2D geometries");
 				}
-				Feature outfeature = model.getStructureTopology().getOutsideFeature(m);
-				if (outfeature!=null){
-					FeatureMapping outsm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(outfeature);
-					if (outsm.getGeometryClass() instanceof SubVolume) {
-						outerSubVolume = (SubVolume)outsm.getGeometryClass();
-					}
+				if (simContext.getGeometry().getDimension()>=1){
+					SpatialQuantity velXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.X);
+					Expression velXExp = new Expression(velXQuantity,simContext.getNameScope());
+					memSubDomain.setVelocityX(getIdentifierSubstitutions(velXExp, velXQuantity.getUnitDefinition(), surfaceClass));
 				}
-			}
-		}
-		// if structure hierarchy not present, alphabetically choose inside and outside
-		// make the choice deterministic
-		if (innerSubVolume == null || outerSubVolume == null || innerSubVolume == outerSubVolume){
-			Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
-			Iterator<SubVolume> iterator = sv.iterator();
-			innerSubVolume = iterator.next();
-			outerSubVolume = iterator.next();
-			if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
-				SubVolume temp = innerSubVolume;
-				innerSubVolume = outerSubVolume;
-				outerSubVolume = temp;
-			}
-		}
-
-		//
-		// create subDomain
-		//
-		CompartmentSubDomain outerCompartment = mathDesc.getCompartmentSubDomain(outerSubVolume.getName());
-		CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
-
-		MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment);
-		mathDesc.addSubDomain(memSubDomain);
-		
-		for (SpatialObject spatialObject : simContext.getSpatialObjects()){
-			if (spatialObject instanceof SurfaceRegionObject){
-				SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject) spatialObject;
-				if (surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity) &&
-					(((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||
-					 ((surfaceRegionObject.getInsideSubVolume() == outerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == innerSubVolume)))){
-					int dim = simContext.getGeometry().getDimension();
-					if (dim!=2){
-						throw new MappingException("Membrane Velocity only supported for 2D geometries");
-					}
-					if (simContext.getGeometry().getDimension()>=1){
-						SpatialQuantity velXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.X);
-						Expression velXExp = new Expression(velXQuantity,simContext.getNameScope());
-						memSubDomain.setVelocityX(getIdentifierSubstitutions(velXExp, velXQuantity.getUnitDefinition(), surfaceClass));
-					}
-					if (simContext.getGeometry().getDimension()>=2){
-						SpatialQuantity velYQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Y);
-						Expression velYExp = new Expression(velYQuantity,simContext.getNameScope());
-						memSubDomain.setVelocityY(getIdentifierSubstitutions(velYExp, velYQuantity.getUnitDefinition(), surfaceClass));
-					}
-					if (simContext.getGeometry().getDimension()==3){
-						SpatialQuantity velZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Z);
-						Expression velZExp = new Expression(velZQuantity,simContext.getNameScope());
-						//memSubDomain.setVelocityZ(getIdentifierSubstitutions(velZExp, velZQuantity.getUnitDefinition(), surfaceClass));
-						throw new MappingException("Membrane Velocity not supported for 2D problems");
-					}
+				if (simContext.getGeometry().getDimension()>=2){
+					SpatialQuantity velYQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Y);
+					Expression velYExp = new Expression(velYQuantity,simContext.getNameScope());
+					memSubDomain.setVelocityY(getIdentifierSubstitutions(velYExp, velYQuantity.getUnitDefinition(), surfaceClass));
+				}
+				if (simContext.getGeometry().getDimension()==3){
+					SpatialQuantity velZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Z);
+					Expression velZExp = new Expression(velZQuantity,simContext.getNameScope());
+					//memSubDomain.setVelocityZ(getIdentifierSubstitutions(velZExp, velZQuantity.getUnitDefinition(), surfaceClass));
+					throw new MappingException("Membrane Velocity not supported for 2D problems");
 				}
 			}
 		}
@@ -1728,7 +1696,109 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 }
 
-private void addSpatialProcesses(VariableHash varHash) throws MathException, MappingException, ExpressionException {
+private void addSubdomains(Model model, ArrayList<CompartmentSubdomainContext> compartmentSubdomainContexts,
+		ArrayList<MembraneSubdomainContext> membraneSubdomainContexts) throws MathException {
+	{
+		SubVolume[] subVolumes = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
+		for (int j=0;j<subVolumes.length;j++){
+			SubVolume subVolume = (SubVolume)subVolumes[j];
+			//
+			// get priority of subDomain
+			//
+			int priority;
+			if (simContext.getGeometryContext().getGeometry().getDimension()==0){
+				priority = CompartmentSubDomain.NON_SPATIAL_PRIORITY;
+			}else{
+				priority = j; // now does not have to match spatial feature, *BUT* needs to be unique
+			}
+			//
+			// create subDomain
+			//
+			CompartmentSubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),priority);
+			Domain domain = new Domain(subDomain);
+			mathDesc.addSubDomain(subDomain);
+			compartmentSubdomainContexts.add(new CompartmentSubdomainContext(subDomain, subVolume, domain));
+		}
+		GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
+	
+		for (int k=0;k<geometryClasses.length;k++){
+			if (!(geometryClasses[k] instanceof SurfaceClass)){
+				continue;
+			}
+			
+			SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[k];
+			// determine membrane inside and outside subvolume
+			// this preserves backward compatibility so that membrane subdomain
+			// inside and outside correspond to structure hierarchy when present
+			SubVolume outerSubVolume = null;
+			SubVolume innerSubVolume = null;
+			Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
+			for (Structure s : mappedStructures) {
+				if (s instanceof Membrane) {
+					Membrane m = (Membrane)s;
+					Feature infeature = model.getStructureTopology().getInsideFeature(m);
+					if (infeature!=null){
+						FeatureMapping insm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(infeature);
+						if (insm.getGeometryClass() instanceof SubVolume) {
+							innerSubVolume = (SubVolume)insm.getGeometryClass();
+						}
+					}
+					Feature outfeature = model.getStructureTopology().getOutsideFeature(m);
+					if (outfeature!=null){
+						FeatureMapping outsm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(outfeature);
+						if (outsm.getGeometryClass() instanceof SubVolume) {
+							outerSubVolume = (SubVolume)outsm.getGeometryClass();
+						}
+					}
+				}
+			}
+			// if structure hierarchy not present, alphabetically choose inside and outside
+			// make the choice deterministic
+			if (innerSubVolume == null || outerSubVolume == null || innerSubVolume == outerSubVolume){
+				Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
+				Iterator<SubVolume> iterator = sv.iterator();
+				innerSubVolume = iterator.next();
+				outerSubVolume = iterator.next();
+				if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
+					SubVolume temp = innerSubVolume;
+					innerSubVolume = outerSubVolume;
+					outerSubVolume = temp;
+				}
+			}
+	
+			//
+			// make list of SurfaceRegionObjects for this membrane subdomain
+			//
+			ArrayList<SurfaceRegionObject> surfaceRegionObjects = new ArrayList<SurfaceRegionObject>();
+			for (SpatialObject spatialObject : simContext.getSpatialObjects()){
+				if (spatialObject instanceof SurfaceRegionObject){
+					SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject) spatialObject;
+					if (surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity) &&
+						(((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||
+						 ((surfaceRegionObject.getInsideSubVolume() == outerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == innerSubVolume)))){
+						surfaceRegionObjects.add(surfaceRegionObject);
+					}
+				}
+			}
+			
+			//
+			// create subDomain
+			//
+			CompartmentSubDomain outerCompartment = mathDesc.getCompartmentSubDomain(outerSubVolume.getName());
+			CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
+	
+			MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment);
+			mathDesc.addSubDomain(memSubDomain);
+			membraneSubdomainContexts.add(new MembraneSubdomainContext(memSubDomain, new Domain(memSubDomain), surfaceClass, innerSubVolume, outerSubVolume, surfaceRegionObjects.toArray(new SurfaceRegionObject[0])));
+		}
+	}
+}
+
+private void addSpatialProcesses(
+		VariableHash varHash, 
+		ArrayList<CompartmentSubdomainContext> compartmentSubdomainContexts, 
+		ArrayList<MembraneSubdomainContext> membraneSubdomainContexts) throws MathException, MappingException, ExpressionException {
+	
 	if (simContext.getGeometry().getDimension()==0){
 		return;
 	}
@@ -2106,6 +2176,12 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 			SubVolume insideSubvolume = surfaceRegionObject.getInsideSubVolume();
 			SubVolume outsideSubvolume = surfaceRegionObject.getOutsideSubVolume();
 			SurfaceClass surfaceClass = simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceClass(insideSubvolume, outsideSubvolume);
+			MembraneSubdomainContext memSubdomainContext = null;
+			for (MembraneSubdomainContext context : membraneSubdomainContexts){
+				if (context.surfaceClass == surfaceClass){
+					memSubdomainContext = context;
+				}
+			}
 
 			//
 			// if true, have to solve for this category
@@ -2202,10 +2278,55 @@ private void addSpatialProcesses(VariableHash varHash) throws MathException, Map
 						surfaceClass));
 			}
 			if (bDirection){
-				throw new MappingException(QuantityCategory.DirectionToSurface.description+" not yet implemented in math generation");
+				SpatialQuantity directionXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.DirectionToSurface,QuantityComponent.X);
+				SpatialQuantity directionYQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.DirectionToSurface,QuantityComponent.Y);
+				SpatialQuantity directionZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.DirectionToSurface,QuantityComponent.Z);
+				for (SubVolume adjacentSubvolume : surfaceClass.getAdjacentSubvolumes()){
+					Domain domain = new Domain(adjacentSubvolume);
+					CompartmentSubDomain compSubdomain = mathDesc.getCompartmentSubDomain(adjacentSubvolume.getName());
+
+					if (simContext.getGeometry().getDimension()>=1){
+						String name = adjacentSubvolume.getName()+"_dirX_"+memSubdomainContext.membraneSubdomain.getName();
+						LocalizedDirectionToMembraneQuantity localDirectionXQuantity = addLocalizedDirectionToMembraneQuantity(name, surfaceClass, adjacentSubvolume, QuantityComponent.X);
+						VolVariable distanceVar = new VolVariable(getMathSymbol(localDirectionXQuantity, adjacentSubvolume), domain);
+						varHash.addVariable(distanceVar);
+						ComputeMembraneMetricEquation membraneMetricEquation = new ComputeMembraneMetricEquation(distanceVar, MembraneMetricComponent.directionToMembraneX);
+						membraneMetricEquation.setTargetMembraneName(memSubdomainContext.membraneSubdomain.getName());
+						compSubdomain.addEquation(membraneMetricEquation);
+					}
+					if (simContext.getGeometry().getDimension()>=2){
+						String name = adjacentSubvolume.getName()+"_dirY_"+memSubdomainContext.membraneSubdomain.getName();
+						LocalizedDirectionToMembraneQuantity localDirectionYQuantity = addLocalizedDirectionToMembraneQuantity(name, surfaceClass, adjacentSubvolume, QuantityComponent.Y);
+						VolVariable distanceVar = new VolVariable(getMathSymbol(localDirectionYQuantity, adjacentSubvolume), domain);
+						varHash.addVariable(distanceVar);
+						ComputeMembraneMetricEquation membraneMetricEquation = new ComputeMembraneMetricEquation(distanceVar, MembraneMetricComponent.directionToMembraneY);
+						membraneMetricEquation.setTargetMembraneName(memSubdomainContext.membraneSubdomain.getName());
+						compSubdomain.addEquation(membraneMetricEquation);
+					}
+					if (simContext.getGeometry().getDimension()==3){
+						String name = adjacentSubvolume.getName()+"_dirZ_"+memSubdomainContext.membraneSubdomain.getName();
+						LocalizedDirectionToMembraneQuantity localDirectionZQuantity = addLocalizedDirectionToMembraneQuantity(name, surfaceClass, adjacentSubvolume, QuantityComponent.Z);
+						VolVariable distanceVar = new VolVariable(getMathSymbol(localDirectionZQuantity, adjacentSubvolume), domain);
+						varHash.addVariable(distanceVar);
+						ComputeMembraneMetricEquation membraneMetricEquation = new ComputeMembraneMetricEquation(distanceVar, MembraneMetricComponent.directionToMembraneZ);
+						membraneMetricEquation.setTargetMembraneName(memSubdomainContext.membraneSubdomain.getName());
+						compSubdomain.addEquation(membraneMetricEquation);
+					}
+				}
 			}
 			if (bDistance){
-				throw new MappingException(QuantityCategory.SurfaceDistanceMap.description+" not yet implemented in math generation");
+				SpatialQuantity distanceQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceDistanceMap,QuantityComponent.Scalar);
+				for (SubVolume adjacentSubvolume : surfaceClass.getAdjacentSubvolumes()){
+					String name = adjacentSubvolume.getName()+"_distanceTo_"+memSubdomainContext.membraneSubdomain.getName();
+					LocalizedDistanceToMembraneQuantity localDistanceQuantity = addLocalizedDistanceToMembraneQuantity(name, surfaceClass, adjacentSubvolume);
+					CompartmentSubDomain compSubdomain = mathDesc.getCompartmentSubDomain(adjacentSubvolume.getName());
+					Domain domain = new Domain(adjacentSubvolume);
+					VolVariable distanceVar = new VolVariable(getMathSymbol(localDistanceQuantity, adjacentSubvolume), domain);
+					varHash.addVariable(distanceVar);
+					ComputeMembraneMetricEquation membraneMetricEquation = new ComputeMembraneMetricEquation(distanceVar, MembraneMetricComponent.distanceToMembrane);
+					membraneMetricEquation.setTargetMembraneName(memSubdomainContext.membraneSubdomain.getName());
+					compSubdomain.addEquation(membraneMetricEquation);
+				}
 			}
 		}else if (spatialObject instanceof VolumeRegionObject){
 			VolumeRegionObject volumeRegionObject = (VolumeRegionObject)spatialObject;

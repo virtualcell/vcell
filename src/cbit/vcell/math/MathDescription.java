@@ -2435,6 +2435,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				int pdeRefCount = 0;
 				int odeRefCount = 0;
 				int steadyPdeCount = 0;
+				int measureCount = 0;
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.get(j);
 					Equation equ = subDomain.getEquation(volVar);
@@ -2470,6 +2471,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 						}
 					}else if (equ instanceof OdeEquation){
 						odeRefCount++;
+					}else if (equ instanceof MeasureEquation){
+						measureCount++;
 					}
 					//
 					// for each JumpCondition, make sure that there is at least one PDE defined in inside or outside compartment
@@ -2513,7 +2516,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_15, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
-				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
+				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0 && measureCount == 0){
 					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_16, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);

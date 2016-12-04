@@ -30,10 +30,13 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.mapping.potential.MembraneElectricalDevice;
 import cbit.vcell.mapping.potential.PotentialMapping;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
@@ -50,6 +53,7 @@ import cbit.vcell.model.Model.ModelFunction;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelProcess;
+import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmObservable;
@@ -80,6 +84,7 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
 	private final IssueContext issueContext;
 	protected Vector<Issue> localIssueList = new Vector<Issue>();
 	protected MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
+	protected MathMappingQuantity[] fieldMathMappingQuantities = new MathMappingQuantity[0];
 	private NameScope nameScope = new MathMappingNameScope();
 	protected PotentialMapping potentialMapping = null;
 	private transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -212,6 +217,60 @@ public class KFluxParameter extends MathMappingParameter {
 			return false;
 		}
 		return true;
+	}
+}
+
+public class MathMappingQuantity extends ModelQuantity {
+
+	private final VCUnitDefinition unit;
+	
+	public MathMappingQuantity(String name, VCUnitDefinition unit) {
+		super(name);
+		this.unit = unit;
+	}
+
+	@Override
+	public final boolean isUnitEditable() {
+		return false;
+	}
+
+	@Override
+	public final void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+		throw new RuntimeException("cannot set unit on MathMappingQuantity "+getName());
+	}
+
+	@Override
+	public final NameScope getNameScope() {
+		return AbstractMathMapping.this.getNameScope();
+	}
+
+	@Override
+	public final VCUnitDefinition getUnitDefinition() {
+		return unit;
+	}
+}
+
+public class LocalizedDistanceToMembraneQuantity extends MathMappingQuantity {
+	public final SurfaceClass surfaceClass;
+	public final SubVolume subvolume;
+
+	private LocalizedDistanceToMembraneQuantity(String name, SurfaceClass surfaceClass, SubVolume subvolume){
+		super(name, getSimulationContext().getModel().getUnitSystem().getLengthUnit());
+		this.surfaceClass = surfaceClass;
+		this.subvolume = subvolume;
+	}
+}
+
+public class LocalizedDirectionToMembraneQuantity extends MathMappingQuantity {
+	public final SurfaceClass surfaceClass;
+	public final SubVolume subvolume;
+	public final QuantityComponent component;
+
+	private LocalizedDirectionToMembraneQuantity(String name, SurfaceClass surfaceClass, SubVolume subvolume, QuantityComponent component){
+		super(name, getSimulationContext().getModel().getUnitSystem().getLengthUnit());
+		this.surfaceClass = surfaceClass;
+		this.subvolume = subvolume;
+		this.component = component;
 	}
 }
 
@@ -565,7 +624,8 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	//
 	// try "truely" local first
 	//
-	SymbolTableEntry localSTE = getMathMappingParameter(identifier);
+	SymbolTableEntry localParamSTE = getMathMappingParameter(identifier);
+	SymbolTableEntry localQuantitySTE = getMathMappingQuantity(identifier);
 
 	//
 	// try "model" next
@@ -579,44 +639,43 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 
 	int resolutionCount = 0;
 	SymbolTableEntry ste = null;
-	if (localSTE!=null){ 
+	if (localParamSTE!=null){ 
 		resolutionCount++;
-		ste = localSTE;
+		ste = localParamSTE;
+	}
+	if (localQuantitySTE!=null){ 
+		resolutionCount++;
+		ste = localQuantitySTE;
 	}
 	if (modelSTE!=null){
 		resolutionCount++;
 		ste = modelSTE;
 	}
-	if (simContextSTE!=null){
+	if (simContextSTE!=null && simContextSTE!=modelSTE){
 		resolutionCount++;
 		ste = simContextSTE;
 	}
 
 	if (resolutionCount==0 || resolutionCount==1){
 		return ste;
-	}else if (resolutionCount == 2){
-		if (localSTE!=null){
-			if (modelSTE!=null){
-				// local and model
-				throw new RuntimeException("identifier '"+identifier+"' ambiguous, resolved by MathMapping ("+localSTE+") and Model ("+modelSTE+")");
-			}else{
-				// local and simContext
-				throw new RuntimeException("identifier '"+identifier+"' ambiguous, resolved by MathMapping ("+localSTE+") and Application ("+simContextSTE+")");
-			}
-		}else{
-			// model and simContext
-			if (!modelSTE.equals(simContextSTE)) {
-				throw new RuntimeException("identifier '"+identifier+"' ambiguous, resolved by Model ("+modelSTE+") and Application ("+simContextSTE+")");
-			} else {
-				return ste;
-			}
+	}else{
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("identifier '"+identifier+"' ambiguous, resolved by [");
+		if (localParamSTE!=null){
+			buffer.append(" MathMappingParameter("+localParamSTE+")");
 		}
-	}else if (resolutionCount == 3){
-		// local and model and simContext
-		throw new RuntimeException("identifier '"+identifier+"' ambiguous, resolved by MathMapping ("+localSTE+") and Model ("+modelSTE+") and Application ("+simContextSTE+")");
-	}	
-
-	return null;
+		if (localQuantitySTE!=null){
+			buffer.append(" MathMappingQuantity("+localQuantitySTE+")");
+		}
+		if (modelSTE!=null){
+			buffer.append(" Model("+modelSTE+")");
+		}
+		if (simContextSTE!=null && simContextSTE!=modelSTE){
+			buffer.append(" Application("+simContextSTE+")");
+		}
+		buffer.append(" ]");
+		throw new RuntimeException(buffer.toString());
+	}
 }
 
 /**
@@ -632,6 +691,9 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	simContext.getModel().getLocalEntries(entryMap);
 	simContext.getLocalEntries(entryMap);
 	for (SymbolTableEntry ste : fieldMathMappingParameters) {
+		entryMap.put(ste.getName(), ste);
+	}
+	for (SymbolTableEntry ste : fieldMathMappingQuantities) {
 		entryMap.put(ste.getName(), ste);
 	}
 }
@@ -663,12 +725,25 @@ public MathMappingParameter getMathMappingParameter(String argName) {
 	return null;
 }
 
+public MathMappingQuantity getMathMappingQuantity(String argName) {
+	for (int i = 0; i < fieldMathMappingQuantities.length; i++){
+		if (fieldMathMappingQuantities[i].getName().equals(argName)){
+			return fieldMathMappingQuantities[i];
+		}
+	}
+	return null;
+}
+
 /**
  * Gets the mathMappingParameters property (MathMappingParameter[]) value.
  * @return The mathMappingParameters property value.
  */
 public MathMappingParameter[] getMathMappingParameters() {
 	return fieldMathMappingParameters;
+}
+
+public MathMappingQuantity[] getMathMappingQuantities() {
+	return fieldMathMappingQuantities;
 }
 
 /**
@@ -785,6 +860,13 @@ protected void setMathMapppingParameters(MathMappingParameter[] mathMappingParam
 	fireVetoableChange("mathMappingParameters", oldValue, mathMappingParameters);
 	fieldMathMappingParameters = mathMappingParameters;
 	firePropertyChange("mathMappingParameters", oldValue, mathMappingParameters);
+}
+
+protected void setMathMapppingQuantities(MathMappingQuantity[] mathMappingQuantities) {
+	MathMappingParameter[] oldValue = fieldMathMappingParameters;
+//	fireVetoableChange("mathMappingQuantities", oldValue, mathMappingQuantities);
+	fieldMathMappingQuantities = mathMappingQuantities;
+	firePropertyChange("mathMappingQuantities", oldValue, mathMappingQuantities);
 }
 
 /**
@@ -1423,6 +1505,36 @@ protected GeometryClass getDefaultGeometryClass(Expression expr)
 			return geometryClass;
 		}
 
+final LocalizedDistanceToMembraneQuantity addLocalizedDistanceToMembraneQuantity(String name, SurfaceClass surfaceClass, SubVolume subVolume) {
+	LocalizedDistanceToMembraneQuantity newQuantity = new LocalizedDistanceToMembraneQuantity(name, surfaceClass, subVolume);
+	MathMappingQuantity previousQuantity = getMathMappingQuantity(name);
+	if(previousQuantity != null){
+		System.out.println("MathMappingQuantity addLocalizedDistanceToMembraneQuantity found duplicate parameter for name "+name);
+		if(!previousQuantity.compareEqual(newQuantity)){
+			throw new RuntimeException("MathMappingParameter addLocalizedDistanceToMembraneQuantity found duplicate parameter for name '"+name+"'.");
+		}
+		return (LocalizedDistanceToMembraneQuantity)previousQuantity;
+	}
+	MathMappingQuantity newQuantities[] = (MathMappingQuantity[])BeanUtils.addElement(fieldMathMappingQuantities,newQuantity);
+	setMathMapppingQuantities(newQuantities);
+	return newQuantity;
+}
+
+final LocalizedDirectionToMembraneQuantity addLocalizedDirectionToMembraneQuantity(String name, SurfaceClass surfaceClass, SubVolume subVolume, QuantityComponent component) {
+	LocalizedDirectionToMembraneQuantity newQuantity = new LocalizedDirectionToMembraneQuantity(name, surfaceClass, subVolume, component);
+	MathMappingQuantity previousQuantity = getMathMappingQuantity(name);
+	if(previousQuantity != null){
+		System.out.println("MathMappingQuantity addLocalizedDirectionToMembraneQuantity found duplicate parameter for name "+name);
+		if(!previousQuantity.compareEqual(newQuantity)){
+			throw new RuntimeException("MathMappingParameter addLocalizedDirectionToMembraneQuantity found duplicate parameter for name '"+name+"'.");
+		}
+		return (LocalizedDirectionToMembraneQuantity)previousQuantity;
+	}
+	MathMappingQuantity newQuantities[] = (MathMappingQuantity[])BeanUtils.addElement(fieldMathMappingQuantities,newQuantity);
+	setMathMapppingQuantities(newQuantities);
+	return newQuantity;
+}
+
 final ObservableConcentrationParameter addObservableConcentrationParameter(String name, Expression expr, int role,
 		VCUnitDefinition unitDefn, RbmObservable argObservable) throws PropertyVetoException {
 		
@@ -1430,7 +1542,7 @@ final ObservableConcentrationParameter addObservableConcentrationParameter(Strin
 			ObservableConcentrationParameter newParameter = new ObservableConcentrationParameter(name,expr,role,unitDefn,argObservable,geometryClass);
 			MathMappingParameter previousParameter = getMathMappingParameter(name);
 			if(previousParameter != null){
-				System.out.println("MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
+				System.out.println("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name "+name);
 				if(!previousParameter.compareEqual(newParameter)){
 					throw new RuntimeException("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name '"+name+"'.");
 				}
