@@ -75,6 +75,7 @@ import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.MeasureEquation;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneRandomVariable;
@@ -654,6 +655,8 @@ private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) thro
 		{
 			if (equation instanceof VolumeRegionEquation){
 				writeCompartmentRegion_VarContext_Equation(volSubDomain, (VolumeRegionEquation)equation);
+			} else if (equation instanceof MeasureEquation){
+				throw new RuntimeException("Measure Equation "+equation.getClass().getSimpleName()+" not yet supported in FiniteVolume solvers");
 			} else {
 				writeCompartment_VarContext_Equation(volSubDomain, equation);
 			}

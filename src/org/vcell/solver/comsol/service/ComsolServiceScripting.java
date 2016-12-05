@@ -20,6 +20,7 @@ import org.vcell.solver.comsol.model.VCCGeomFeature.Keep;
 import org.vcell.solver.comsol.model.VCCGeomFeature.VCCBlock;
 import org.vcell.solver.comsol.model.VCCGeomFeature.VCCCircle;
 import org.vcell.solver.comsol.model.VCCGeomFeature.VCCDifference;
+import org.vcell.solver.comsol.model.VCCGeomFeature.VCCIntersectionSelection;
 import org.vcell.solver.comsol.model.VCCGeomFeature.VCCMove;
 import org.vcell.solver.comsol.model.VCCGeomFeature.VCCScale;
 import org.vcell.solver.comsol.model.VCCGeomFeature.VCCSphere;
@@ -29,6 +30,8 @@ import org.vcell.solver.comsol.model.VCCMeshSequence;
 import org.vcell.solver.comsol.model.VCCModel;
 import org.vcell.solver.comsol.model.VCCModelNode;
 import org.vcell.solver.comsol.model.VCCPhysics;
+import org.vcell.solver.comsol.model.VCCPhysicsFeature;
+import org.vcell.solver.comsol.model.VCCPhysicsFeature.VCCFluxBoundary;
 import org.vcell.solver.comsol.model.VCCStudyFeature;
 import org.vcell.solver.comsol.model.VCCTransientStudyFeature;
 import org.vcell.util.PropertyLoader;
@@ -95,6 +98,8 @@ public class ComsolServiceScripting implements ComsolService {
 			//               model.modelNode().create(modelNode.name);
 			buffer.append(	"model.modelNode().create('"+modelNode.name+"');"	+ "\n");
 		}
+		
+		boolean bBeforeSelections = true;
 		for (VCCGeomSequence geomSequence : vccModel.geometrysequences) {
 			//               model.geom().create(geomSequence.name, geomSequence.dim);
 			buffer.append(	"model.geom().create('"+geomSequence.name+"',"+geomSequence.dim+");"	+ "\n");
@@ -219,12 +224,38 @@ buffer.append(	"print('geomFeature Move named "+geomFeature.name+"');"		+ "\n");
 					buffer.append(	"model.geom('"+geomSequence.name+"').feature('"+move.name+"').set('displ',"+tojs(move.displ)+");"	+ "\n");
 					break;
 				}
+				case IntersectionSelection: {
+buffer.append(	"print('geomFeature IntersectionSelection named "+geomFeature.name+"');"		+ "\n");
+					if (bBeforeSelections){
+						bBeforeSelections = false;
+						//                model.geom("geom1")                .run("fin");
+						buffer.append(   "model.geom('"+geomSequence.name+"').run('fin');"		+ "\n");
+					}
+					VCCIntersectionSelection intersectionSelection = (VCCIntersectionSelection)geomFeature;
+					//		          model.geom("geom1")                .create("intsel1", "IntersectionSelection");
+					buffer.append(	 "model.geom('"+geomSequence.name+"').create('"+intersectionSelection.name+"', 'IntersectionSelection');"	+ "\n");
+					
+				    //	              model.geom("geom1")                .feature("intsel1")                       .set("entitydim", "2");
+					buffer.append(	 "model.geom('"+geomSequence.name+"').feature('"+intersectionSelection.name+"').set('entitydim', '"+intersectionSelection.entitydim+"');"	+ "\n");
+
+					ArrayList<String> inputNames = new ArrayList<String>();
+					for (VCCGeomFeature feature : intersectionSelection.input) {
+						inputNames.add(feature.name);
+					}
+					String[] inputSet = inputNames.toArray(new String[0]);
+
+					//	              model.geom("geom1")                .feature("intsel1")                       .set("input", new String[]{"diffec", "celltranslation0"});
+					buffer.append(	 "model.geom('"+geomSequence.name+"').feature('"+intersectionSelection.name+"').set('input',"+tojs(inputSet)+");"	+ "\n");
+					break;
+				}
 				default: {
 					throw new RuntimeException("unexpected Geometry Feature type " + geomFeature.type.name());
 				}
 				}
-				//				  model.geom(geomSequence.name)		 .feature(geomFeature.name)		 .set("selresult", "on");
-				buffer.append(   "model.geom('"+geomSequence.name+"').feature('"+geomFeature.name+"').set('selresult','on');"		+ "\n");
+				if (!(geomFeature instanceof VCCIntersectionSelection)){
+					//				  model.geom(geomSequence.name)		 .feature(geomFeature.name)		 .set("selresult", "on");
+					buffer.append(   "model.geom('"+geomSequence.name+"').feature('"+geomFeature.name+"').set('selresult','on');"		+ "\n");
+				}
 			}
 			System.out.println("building geometry");
 			// 				long t_startGeomRun_ms = System.currentTimeMillis();
@@ -247,54 +278,86 @@ buffer.append(	"print('geomFeature Move named "+geomFeature.name+"');"		+ "\n");
 
 		for (VCCPhysics physics : vccModel.physics) {
 			switch (physics.type) {
-			case CoefficientFormPDE: {
-				VCCCoefficientFormPDE pde = (VCCCoefficientFormPDE) physics;
-//buffer.append(	"print('physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
-				//               model.physics().create(pde.name, "CoefficientFormPDE", pde.geom.name);
-				buffer.append(	"model.physics().create('"+pde.name+"','CoefficientFormPDE','"+pde.geom.name+"');"	+ "\n");
-
-				String selectionName = pde.geom.name+"_"+pde.geomFeature.name+"_dom";
-				//               model.physics(pde.name)      .selection().named(selectionName);
-				buffer.append(	"model.physics('"+pde.name+"').selection().named('"+selectionName+"');"	+ "\n");
-				break;
-			}
+//			case CoefficientFormPDE: {
+//				VCCCoefficientFormPDE pde = (VCCCoefficientFormPDE) physics;
+////buffer.append(	"print('physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
+//				//               model.physics().create(pde.name, "CoefficientFormPDE", pde.geom.name);
+//				buffer.append(	"model.physics().create('"+pde.name+"','CoefficientFormPDE','"+pde.geom.name+"');"	+ "\n");
+//
+//				String selectionName = pde.geom.name+"_"+pde.geomFeature.name+"_dom";
+//				//               model.physics(pde.name)      .selection().named(selectionName);
+//				buffer.append(	"model.physics('"+pde.name+"').selection().named('"+selectionName+"');"	+ "\n");
+//				break;
+//			}
 			case ConvectionDiffusionEquation: {
 				VCCConvectionDiffusionEquation pde = (VCCConvectionDiffusionEquation) physics;
-buffer.append(	"print('physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
+buffer.append(	"print('(0) physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
 				//               model.physics().create(pde.name, "ConvectionDiffusionEquation", pde.geom.name);
 				buffer.append(	"model.physics().create('"+pde.name+"','ConvectionDiffusionEquation','"+pde.geom.name+"');"	+ "\n");
 				
+buffer.append(	"print('(1) physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
 				String c = pde.diffTerm_c;
-				if (vccModel.dim==2){
-					//               model.physics(pde.name)      .feature("cdeq1").setIndex("c", new String[] { c, "0", "0", c }, 0);
-					buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('c', "+tojs(new String[] { c,"0","0",c })+", 0);"	+ "\n");
-				}else if (vccModel.dim==3){
-					//               model.physics(pde.name)      .feature("cdeq1").setIndex("c", new String[] { c, "0", "0", c }, 0);
-					buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('c', "+tojs(new String[] { c,"0","0","0",c,"0","0","0",c })+", 0);"	+ "\n");
+				if (c!=null){
+					if (vccModel.dim==2){
+						//               model.physics(pde.name)      .feature("cdeq1").setIndex("c", new String[] { c, "0", "0", c }, 0);
+						buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('c', "+tojs(new String[] { c,"0","0",c })+", 0);"	+ "\n");
+					}else if (vccModel.dim==3){
+						//               model.physics(pde.name)      .feature("cdeq1").setIndex("c", new String[] { c, "0", "0", c }, 0);
+						buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('c', "+tojs(new String[] { c,"0","0","0",c,"0","0","0",c })+", 0);"	+ "\n");
+					}
+				}
+				if (pde.advection_be!=null){
+					//               model.physics(pde.name)      .feature("cdeq1").setIndex("be", pde.advection_be, 0);
+					buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('be', "+tojs(pde.advection_be)+", 0);"	+ "\n");
 				}
 				
-				//               model.physics(pde.name)      .feature("cdeq1").setIndex("be", pde.advection_be, 0);
-				buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('be', "+tojs(pde.advection_be)+", 0);"	+ "\n");
-
+buffer.append(	"print('(2) physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
 				//               model.physics(pde.name)      .feature("cdeq1").setIndex("f", pde.sourceTerm_f, 0);
 				buffer.append(	"model.physics('"+pde.name+"').feature('cdeq1').setIndex('f', '"+pde.sourceTerm_f+"', 0);"	+ "\n");
 
+buffer.append(	"print('(3) physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
 				//               model.physics(pde.name)      .field("dimensionless")  .field(pde.fieldName);
 				buffer.append(	"model.physics('"+pde.name+"').field('dimensionless').field('"+pde.fieldName+"');"	+ "\n");
 
+buffer.append(	"print('(4) physics ConvectionDiffusionEquation for field name "+pde.fieldName+"');"		+ "\n");
 				//               model.physics(pde.name)      .feature("init1").set(pde.fieldName, pde.initial);
 				buffer.append(	"model.physics('"+pde.name+"').feature('init1').set('"+pde.fieldName+"','"+pde.initial+"');"	+ "\n");
 
-				String selectionName = pde.geom.name+"_"+pde.geomFeature.name+"_dom";
+				String selectionName = null;
+				if (pde.dim == vccModel.dim){
+					selectionName = pde.geom.name+"_"+pde.geomFeature.name+"_dom";
+				}else if (pde.dim == vccModel.dim-1){
+					selectionName = pde.geom.name+"_"+pde.geomFeature.name+"_bnd";
+				}
+buffer.append(	"print('(5) physics ConvectionDiffusionEquation for field name "+pde.fieldName+", selection "+selectionName+"');"		+ "\n");
 				//               model.physics(pde.name)      .selection().named(selectionName);
 				buffer.append(	"model.physics('"+pde.name+"').selection().named('"+selectionName+"');"	+ "\n");
+buffer.append(	"print('(6) physics ConvectionDiffusionEquation for field name "+pde.fieldName+", selection "+selectionName+"');"		+ "\n");
+				
+				for (VCCPhysicsFeature feature : pde.features){
+					if (feature instanceof VCCFluxBoundary){
+						VCCFluxBoundary fluxBoundary = (VCCFluxBoundary)feature;
+						String boundarySelectionName = pde.geom.name+"_"+fluxBoundary.selection.name;
+buffer.append(	"print('(0) physics ConvectionDiffusionEquation for field name "+pde.fieldName+", FluxBoundary name "+fluxBoundary.name+", selection name "+boundarySelectionName+"');"		+ "\n");
+						//                model.physics(pde.name)      .create(fluxBoundary.name, "FluxBoundary", 2);
+						buffer.append(   "model.physics('"+pde.name+"').create('"+fluxBoundary.name+"','FluxBoundary',"+fluxBoundary.dim+");"	+ "\n");
+						
+buffer.append(	"print('(1) physics ConvectionDiffusionEquation for field name "+pde.fieldName+", FluxBoundary name "+fluxBoundary.name+", selection name "+boundarySelectionName+"');"		+ "\n");
+						//                model.physics(pde.name)      .feature(fluxBoundary.name)      .selection().named("geom1_intsel1");
+						buffer.append(   "model.physics('"+pde.name+"').feature('"+fluxBoundary.name+"').selection().named('"+boundarySelectionName+"');"	+ "\n");
+				
+buffer.append(	"print('(2) physics ConvectionDiffusionEquation for field name "+pde.fieldName+", FluxBoundary name "+fluxBoundary.name+", selection name "+boundarySelectionName+"');"		+ "\n");
+						//                model.physics(pde.name)      .feature(fluxBoundary.name)      .set("g", "5-RanC_nuc");
+						buffer.append(   "model.physics('"+pde.name+"').feature('"+fluxBoundary.name+"').set('g', '"+fluxBoundary.flux_g+"');"	+ "\n");
+buffer.append(	"print('(3) physics ConvectionDiffusionEquation for field name "+pde.fieldName+", FluxBoundary name "+fluxBoundary.name+", selection name "+boundarySelectionName+"');"		+ "\n");
+					}
+				}
 				break;
 			}
+			default:{
+				throw new RuntimeException("unsupported physics type "+physics.type.name()+" in COMSOL script builder");
 			}
-
-			// for (VCCPhysicsField field : physics.fields){
-			// model.physics(physics.name).field(field.builtinName).field(field.name);
-			// }
+			}
 		}
 
 		System.out.println("building mesh");

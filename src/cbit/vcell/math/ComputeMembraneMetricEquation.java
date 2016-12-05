@@ -41,7 +41,9 @@ public class ComputeMembraneMetricEquation extends MeasureEquation {
 				if (!Compare.isEqualOrNull(membraneSubDomainName, other.membraneSubDomainName)){
 					return false;
 				}
-				if (!Compare.isEqualOrNull(membraneSubDomain, other.membraneSubDomain)){
+				String memName = (membraneSubDomain!=null)?membraneSubDomain.getName():null;
+				String otherMemName = (other.membraneSubDomain!=null)?other.membraneSubDomain.getName():null;
+				if (!Compare.isEqualOrNull(memName, otherMemName)){
 					return false;
 				}
 				return true;

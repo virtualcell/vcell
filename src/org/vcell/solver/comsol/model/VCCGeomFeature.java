@@ -18,7 +18,9 @@ public abstract class VCCGeomFeature extends VCCBase {
 		
 		Rotate,
 		Scale,
-		Move
+		Move, 
+		
+		IntersectionSelection
 	}
 	public enum Keep {
 		on,
@@ -148,8 +150,15 @@ public abstract class VCCGeomFeature extends VCCBase {
 		}
 	}
 	
-	
-	
+	public static class VCCIntersectionSelection extends VCCGeomFeature {
+		public final ArrayList<VCCGeomFeature> input = new ArrayList<VCCGeomFeature>();
+		public final int entitydim;
+		public VCCIntersectionSelection(String name, int entitydim){
+			super(name, Type.IntersectionSelection);
+			this.entitydim = entitydim;
+		}
+		
+	}
 	
 	
 	
