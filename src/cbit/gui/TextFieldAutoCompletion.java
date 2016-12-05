@@ -143,6 +143,11 @@ public class TextFieldAutoCompletion extends JTextField {
 						autoCompJPopupMenu.setVisible(false);
 					} else {
 						showPopupChoices(null);
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								requestFocus();
+							}
+						});
 					}
 				} else if (e.getKeyCode() == KeyEvent.VK_TAB) {
 					if (autoCompJPopupMenu.isVisible()) {
