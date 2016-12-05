@@ -960,5 +960,16 @@ substituteCount++;////////////////////////////////
 	   Expression exp = new Expression((SimpleNode)rootNode.convertToRvachevFunction());
 	   return exp;
    }
+
+   public void validateUnscopedSymbols() throws ExpressionBindingException {
+	   String[] symbols = getSymbols();
+	   if (symbols!=null){
+		   for (String symbol : symbols){
+			   if (symbol.contains(".")){
+				   throw new ExpressionBindingException("symbol "+symbol+" has a name scope separator '.', not allowed in this expression");
+			   }
+		   }
+	   }
+   }
 }
 
