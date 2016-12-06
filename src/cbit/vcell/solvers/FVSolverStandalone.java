@@ -69,7 +69,7 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 	 * (pending a better refactoring)
 	 */
 	private ExecutableCommand primaryCommand;
-	private File primaryUserDir = null;
+	private File destinationDirectory = null;
 	
 	private boolean unixMode = false;
 	
@@ -77,8 +77,8 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 	public static final int HESM_THROW_EXCEPTION = 1;
 	public static final int HESM_OVERWRITE_AND_CONTINUE = 2;
 	
-	public FVSolverStandalone (SimulationTask simTask, File workingDir, SessionLog sessionLog, boolean bMsging) throws SolverException {
-		this(simTask, workingDir, null, sessionLog, bMsging);
+	public FVSolverStandalone (SimulationTask simTask, File userDir, SessionLog sessionLog, boolean bMsging) throws SolverException {
+		this(simTask, userDir, userDir, sessionLog, bMsging);
 	}
 
 /**
@@ -90,9 +90,9 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
  * @param simID java.lang.String
  * @param clientProxy cbit.vcell.solvers.ClientProxy
  */
-public FVSolverStandalone (SimulationTask simTask, File workingUserDir, File primaryUserDir, SessionLog sessionLog, boolean bMsging) throws SolverException {
-	super(simTask, workingUserDir, sessionLog, bMsging);
-	this.primaryUserDir = primaryUserDir;
+public FVSolverStandalone (SimulationTask simTask, File userDir, File destinationDirectory, SessionLog sessionLog, boolean bMsging) throws SolverException {
+	super(simTask, userDir, sessionLog, bMsging);
+	this.destinationDirectory = destinationDirectory;
 	if (! simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use FVSolver on non-spatial simulation");
 	}
@@ -106,7 +106,6 @@ public FVSolverStandalone (SimulationTask simTask, File workingUserDir, File pri
 	SolverDescription sd = notNull(SolverDescription.class,sts.getSolverDescription());
 	isChombo = sd.isChomboSolver(); 
 }
-
 
 
 @Override
@@ -310,7 +309,7 @@ protected void initialize() throws SolverException {
 		PrintWriter pw = null;
 		try {
 			pw = new PrintWriter(new FileWriter(fvinputFile));
-			new FiniteVolumeFileWriter(pw, simTask, getResampledGeometry(), getSaveDirectory(), primaryUserDir, bMessaging).write();
+			new FiniteVolumeFileWriter(pw, simTask, getResampledGeometry(), getSaveDirectory(), destinationDirectory, bMessaging).write();
 		} finally {
 			if (pw != null) {
 				pw.close();
@@ -349,7 +348,8 @@ public MathExecutable getMathExecutable() {
 	}
 	assert(primaryCommand != null);
 	String[] carray = primaryCommand.getCommands().toArray(new String[0]);
-	setMathExecutable(new MathExecutable(carray, getSaveDirectory()));
+	File workingDir = getSaveDirectory();
+	setMathExecutable(new MathExecutable(carray, workingDir));
 	me= super.getMathExecutable();
 	assert(me != null);
 	return me;

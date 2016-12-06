@@ -138,8 +138,8 @@ import cbit.vcell.solver.server.SolverFileWriter;
 public class FiniteVolumeFileWriter extends SolverFileWriter {
 	private static final String RANDOM_VARIABLE_FILE_EXTENSION = ".rv";
 	private static final String DISTANCE_MAP_FILE_EXTENSION = ".dmf";
-	private File userDirectory = null;
-	private File primaryUserDirectory = null;
+	private File workingDirectory = null;
+	private File destinationDirectory = null;
 	private boolean bInlineVCG = false;
 	private Geometry resampledGeometry = null;
 	private int psfFieldIndex = -1;
@@ -173,7 +173,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		SUNDIALS_PDE_SOLVER,
 		DISCONTINUITY_TIMES,
 		BASE_FILE_NAME,
-		PRIMARY_DATA_DIR,
+		PRIMARY_DATA_DIR, // parallelWorkingDirectory (temporary directory to store parallel results before solver copies to user data directory)
 		ENDING_TIME,
 		TIME_STEP,
 		TIME_INTERVALS,
@@ -253,20 +253,20 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		CHOMBO_SPEC_END,
 	}
 
-public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File dir) {	// for optimization only, no messaging
-	this (pw, simTask, geo, dir, false);
+public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File workingDir) {	// for optimization only, no messaging
+	this (pw, simTask, geo, workingDir, false);
 	bInlineVCG = true; 
 }
 
-public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File dir, boolean arg_bMessaging) {
-	this(pw, simTask, geo, dir, null, arg_bMessaging);
+public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File workingDir, boolean arg_bMessaging) {
+	this(pw, simTask, geo, workingDir, workingDir, arg_bMessaging);
 }
 
-public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File dir, File primaryUserDir, boolean arg_bMessaging) {
+public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File workingDir, File destinationDirectory, boolean arg_bMessaging) {
 	super(pw, simTask, arg_bMessaging);
 	resampledGeometry = geo;
-	userDirectory = dir;
-	this.primaryUserDirectory = primaryUserDir;
+	this.workingDirectory = workingDir;
+	this.destinationDirectory = destinationDirectory;
 	bChomboSolver = simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver();
 }
 
@@ -378,7 +378,7 @@ public void write(String[] parameterNames) throws Exception {
 }
 
 private void writeSmoldyn() throws Exception {
-	String baseName =  new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getPath();
+	String baseName =  new File(workingDirectory, simTask.getSimulationJob().getSimulationJobID()).getPath();
 	String inputFilename = baseName + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
 	try (PrintWriter pw = new PrintWriter(inputFilename)) {
 		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, baseName, simTask, bUseMessaging);
@@ -441,7 +441,7 @@ private void writePostProcessingBlock() throws Exception { // SolverException, E
 			DATA_PROCESSOR_END
 			*/
 			cbit.vcell.microscopy.ROIDataGenerator roiDataGenerator = (cbit.vcell.microscopy.ROIDataGenerator) dataGenerator;
-			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(userDirectory, simTask.getSimulationJob())); 
+			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(workingDirectory, simTask.getSimulationJob())); 
 		} else if (dataGenerator instanceof org.vcell.vmicro.workflow.data.ROIDataGenerator) {
 			/*
 			ROI_DATA_GENERATOR_BEGIN roidata
@@ -454,7 +454,7 @@ private void writePostProcessingBlock() throws Exception { // SolverException, E
 			DATA_PROCESSOR_END
 			*/
 			org.vcell.vmicro.workflow.data.ROIDataGenerator roiDataGenerator = (org.vcell.vmicro.workflow.data.ROIDataGenerator) dataGenerator;
-			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(userDirectory, simTask.getSimulationJob())); 
+			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(workingDirectory, simTask.getSimulationJob())); 
 		} else {
 			throw new SolverException(dataGenerator.getClass() + " : data generator not supported yet.");
 		}
@@ -1365,10 +1365,10 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	} else { 
 		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.FV_SOLVER + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
 	}
-	printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getAbsolutePath());
-	if (solverTaskDesc.isParallel() && primaryUserDirectory != null && !primaryUserDirectory.equals(userDirectory))
+	printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(workingDirectory, simTask.getSimulationJob().getSimulationJobID()).getAbsolutePath());
+	if (solverTaskDesc.isParallel() && destinationDirectory != null && !destinationDirectory.equals(workingDirectory))
 	{
-		printWriter.println(FVInputFileKeyword.PRIMARY_DATA_DIR + " " + primaryUserDirectory.getAbsolutePath());
+		printWriter.println(FVInputFileKeyword.PRIMARY_DATA_DIR + " " + destinationDirectory.getAbsolutePath());
 	}
 	printWriter.println(FVInputFileKeyword.ENDING_TIME + " " + solverTaskDesc.getTimeBounds().getEndingTime());
 	OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();	
@@ -1430,7 +1430,7 @@ private void writeMeshFile() throws IOException {
 	if (bInlineVCG) {
 		GeometryFileWriter.write(printWriter, resampledGeometry);
 	} else {
-		printWriter.println(FVInputFileKeyword.VCG_FILE + " " + new File(userDirectory, simTask.getSimulationJobID() + SimDataConstants.VCG_FILE_EXTENSION).getAbsolutePath());
+		printWriter.println(FVInputFileKeyword.VCG_FILE + " " + new File(workingDirectory, simTask.getSimulationJobID() + SimDataConstants.VCG_FILE_EXTENSION).getAbsolutePath());
 	}	
 	printWriter.println(FVInputFileKeyword.MESH_END);
 	printWriter.println();
@@ -1613,7 +1613,7 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			printWriter.println(" " + varNameArr[i]);
 			dataArr[i] = generateRandomNumbers(rv, numRandomNumbers);
 		}
-		File rvFile = new File(userDirectory, simTask.getSimulationJobID() + RANDOM_VARIABLE_FILE_EXTENSION);
+		File rvFile = new File(workingDirectory, simTask.getSimulationJobID() + RANDOM_VARIABLE_FILE_EXTENSION);
 		DataSet.writeNew(rvFile, varNameArr, varTypeArr, samplingSize, dataArr);
 	}
 	printWriter.println(FVInputFileKeyword.VARIABLE_END);
@@ -1688,7 +1688,7 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 	}
 
 	String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);	
-	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),
+	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,workingDirectory.getParentFile(),
 			secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 	
 	printWriter.println("# Field Data");
@@ -1717,7 +1717,7 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 	for (int i = 0; i < fieldDataIDSpecs.length; i ++) {
 		if(!uniqueFieldDataIDSpecs.contains(fieldDataIDSpecs[i])){
 			FieldFunctionArguments ffa = fieldDataIDSpecs[i].getFieldFuncArgs();
-			File newResampledFieldDataFile = new File(userDirectory,
+			File newResampledFieldDataFile = new File(workingDirectory,
 					SimulationData.createCanonicalResampleFileName((VCSimulationDataIdentifier)simTask.getSimulationJob().getVCDataIdentifier(),
 							fieldDataIDSpecs[i].getFieldFuncArgs())
 				);
@@ -2072,7 +2072,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			
 			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + simGeometrySpec.getNumSubVolumes() + " " + FVInputFileKeyword.DISTANCE_MAP);
 			for (int i = 0; i < subVolumes.length; i++) {
-				File distanceMapFile = new File(userDirectory, getSimulationTask().getSimulationJobID() + "_" + subVolumes[i].getName() + DISTANCE_MAP_FILE_EXTENSION);
+				File distanceMapFile = new File(workingDirectory, getSimulationTask().getSimulationJobID() + "_" + subVolumes[i].getName() + DISTANCE_MAP_FILE_EXTENSION);
 				writeDistanceMapFile(deltaX, distanceMaps[i], distanceMapFile);
 				int phase = subDomainPhaseMap.get(subVolumes[i].getName());
 				printWriter.println(subVolumes[i].getName() + " " + phase + " " + distanceMapFile.getAbsolutePath());
