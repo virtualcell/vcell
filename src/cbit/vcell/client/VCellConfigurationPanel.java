@@ -4,7 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -19,11 +21,15 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.configuration.BioNetGenConfigurationPanel;
 import cbit.vcell.client.configuration.ComsolConfigurationPanel;
 import cbit.vcell.client.configuration.ConfigurationModelNode;
@@ -43,8 +49,21 @@ public class VCellConfigurationPanel extends JPanel {
 	
 	JSplitPane splitPane = null;
 	
-	public VCellConfigurationPanel() {
+	enum ActionButtons {
+		Ok,
+		Cancel
+	}
+	ActionButtons buttonPushed = ActionButtons.Cancel;
+	private JButton okButton;
+	private JButton cancelButton;
+	
+	private TopLevelWindowManager owner;
+	private ChildWindow parentChildWindow;
+
+	
+	public VCellConfigurationPanel(TopLevelWindowManager owner) {
 		super();
+		this.owner = owner;
 		initialize();
 	}
 
@@ -91,17 +110,20 @@ public class VCellConfigurationPanel extends JPanel {
 		});
 		
 		JScrollPane treePanel = new javax.swing.JScrollPane(configurationOptionsTree);
+//		Border margin = new EmptyBorder(5,3,1,1);
+//		treePanel.setBorder(margin);
+		
 		Dimension dim = new Dimension(200, 400);
-		treePanel.setPreferredSize(dim);
+		treePanel.setPreferredSize(dim);		// code that contributes to prevent resizing horizontally
 		treePanel.setMinimumSize(dim);
 		treePanel.setMaximumSize(dim);
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT) {
-			private final int location = 200;
-			{
+			private final int location = 200;	// all code below to make it impossible to move the divider
+			{									// so that the left component cannot be resized
 				setDividerLocation(location);
 				setResizeWeight(0);				// left component is fixed width
-				setDividerSize(3);
-				setOneTouchExpandable(false);		// no UI widget on the divider to quickly expand / collapse
+				setDividerSize(0);				// this also makes resizing impossible
+				setOneTouchExpandable(false);	// no UI widget on the divider to quickly expand / collapse
 			}
 			@Override
 			public int getDividerLocation() {
@@ -114,13 +136,99 @@ public class VCellConfigurationPanel extends JPanel {
 		};
 		splitPane.setLeftComponent(treePanel);
 		splitPane.setRightComponent(generalConfigurationPanel);
-		setLayout(new BorderLayout());
-		add(splitPane, BorderLayout.CENTER);
+		
+		// ---------------------------------------------------------------------------
+		JPanel okCancelPanel = new JPanel();
+		okCancelPanel.setLayout(new GridBagLayout());
+
+		GridBagConstraints gbc = new GridBagConstraints();		
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1;
+		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.anchor = GridBagConstraints.WEST;
+		okCancelPanel.add(new JLabel(""), gbc);
+
+		gbc = new GridBagConstraints();		
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0, 0, 4, 2);				//  top, left, bottom, right 
+		okCancelPanel.add(getOkButton(), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0, 2, 4, 4);
+		okCancelPanel.add(getCancelButton(), gbc);
+		
+		// --------------------------------------------------------------------------------
+		
+		setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();		
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(1, 1, 1, 1);
+		add(splitPane, gbc);
+
+		gbc = new GridBagConstraints();		
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(1, 1, 1, 1);
+		add(okCancelPanel, gbc);
+
+		
 
 //		configurationOptionsTree.addTreeSelectionListener(eventHandler);
 //		configurationOptionsTree.addMouseListener(eventHandler);
 
 		configurationOptionsTreeModel.populateTree();
+	}
+	
+	private JButton getOkButton() {
+		if (okButton == null) {
+			okButton = new javax.swing.JButton("Ok");
+			okButton.setName("ApplyButton");
+			okButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					buttonPushed = ActionButtons.Ok;
+//					try {
+//
+//					} catch (NumberFormatException ex) {
+//						DialogUtils.showErrorDialog(parentChildWindow.getParent(), "Wrong number format: " + ex.getMessage());
+//						return;
+//					}
+					parentChildWindow.close();
+				}
+			});
+		}
+		return okButton;
+	}
+	private JButton getCancelButton() {
+		if (cancelButton == null) {
+			cancelButton = new javax.swing.JButton("Cancel");
+			cancelButton.setName("CancelButton");
+			cancelButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					buttonPushed = ActionButtons.Cancel;
+					parentChildWindow.close();
+				}
+			});
+		}
+		return cancelButton;
+	}
+	public ActionButtons getButtonPushed() {
+		return buttonPushed;
+	}
+	
+	public void setChildWindow(ChildWindow childWindow) {
+		this.parentChildWindow = childWindow;
 	}
 
 }

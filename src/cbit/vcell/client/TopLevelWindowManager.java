@@ -124,17 +124,27 @@ public final void showPreferencesWindow(){
 
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(PREFERENCES_WINDOW);
+	VCellConfigurationPanel vcellConfigurationPanel = new VCellConfigurationPanel(this);
 	if (childWindow==null){
-		VCellConfigurationPanel vcellConfigurationPanel = new VCellConfigurationPanel();
 		childWindow = childWindowManager.addChildWindow(vcellConfigurationPanel, PREFERENCES_WINDOW, "View/Edit VCell Preferences");
 		childWindow.setSize(600,400);
 		childWindow.setResizable(true);
+		vcellConfigurationPanel.setChildWindow(childWindow);
 	}
 	else {
 		VCAssert.assertTrue(childWindow.isShowing(), "Invisible Preferences Window");
 	}
 
 	childWindow.show();
+	
+	if (vcellConfigurationPanel.getButtonPushed() == VCellConfigurationPanel.ActionButtons.Ok) {
+
+	} else if(vcellConfigurationPanel.getButtonPushed() == VCellConfigurationPanel.ActionButtons.Cancel) {
+
+	} else {
+		
+	}
+	
 }
 
 
