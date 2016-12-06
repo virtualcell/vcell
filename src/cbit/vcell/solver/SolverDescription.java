@@ -130,7 +130,7 @@ public enum SolverDescription {
 
 	   Comsol(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Comsol","Comsol Multiphysics","Comsol",
 		  SolverLongDesc.COMSOL,1,SupportedTimeSpec.DEFAULT_UNIFORM,
-		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic},
+		  new SolverFeature[]{SolverFeature.Feature_Spatial, /*  SolverFeature.Feature_Moving  ,*/ SolverFeature.Feature_Deterministic},
 		  null, VersionedLibrary.NONE,"KISAO",false),
 
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
@@ -213,12 +213,12 @@ public enum SolverDescription {
 			return s.isSpatial() && !s.isSpatialHybrid()  && !s.isMovingMembrane() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
 		SundialsPDE,10);
 
-	public static final SolverFeatureSet ComsolFeatureSet = new SolverFeatureSet(
-			new SolverFeature[] { SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
-			new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
-				return s.isSpatial() && !s.isSpatialHybrid() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
-			Comsol,30);
-
+//	public static final SolverFeatureSet ComsolFeatureSet = new SolverFeatureSet(
+//			new SolverFeature[] { SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
+//			new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
+//				return s.isSpatial() && !s.isSpatialHybrid() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
+//			Comsol,30);
+//
 	public static final SolverFeatureSet MovingBoundaryFeatureSet = new SolverFeatureSet(
 			new SolverFeature[] { SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
 			new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
