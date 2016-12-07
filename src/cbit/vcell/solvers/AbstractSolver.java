@@ -57,7 +57,7 @@ public AbstractSolver(SimulationTask simTask, File directory, SessionLog session
 
 	this.simTask = simTask;
 	this.fieldSessionLog = sessionLog;
-	if (!directory.exists()){
+	if (!directory.exists() && !simTask.getSimulation().getSolverTaskDescription().isParallel()){
 		if (bMakeUserDirs && !directory.mkdirs()){
 			String msg = "could not create directory "+directory;
 			sessionLog.alert(msg);
