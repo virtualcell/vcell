@@ -106,6 +106,10 @@ public class SolverPreprocessor  {
 			//
 			File simulationFile = new File(args[0]);
 			final SimulationTask simTask = XmlHelper.XMLToSimTask(FileUtils.readFileToString(simulationFile));
+			if (parallelDirectory != null){
+				// simulation task needs to be written to the "parallel directory" (a temporary directory) here (it is local to the cluster).
+				FileUtils.copyFile(simulationFile, new File(parallelDirectory,simulationFile.getName()));
+			}
 			File userDirectory = new File(args[1]);
 			final String hostName = null;
 
