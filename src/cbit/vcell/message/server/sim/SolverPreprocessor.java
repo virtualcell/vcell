@@ -92,6 +92,9 @@ public class SolverPreprocessor  {
 		File parallelDirectory = null;
 		if (args.length >= 3) {
 			parallelDirectory = new File(args[2]);
+			if (!parallelDirectory.exists()){
+				parallelDirectory.mkdirs();
+			}
 			if (!parallelDirectory.isDirectory() || !parallelDirectory.canWrite()) {
 				throw new IllegalArgumentException(parallelDirectory.getAbsolutePath() +  " is not a writeable directory");
 			}
