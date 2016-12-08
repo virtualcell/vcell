@@ -137,10 +137,8 @@ public final void showPreferencesWindow(){
 
 	childWindow.show();
 	
-	if (vcellConfigurationPanel.getButtonPushed() == VCellConfigurationPanel.ActionButtons.Ok) {
-
-	} else if(vcellConfigurationPanel.getButtonPushed() == VCellConfigurationPanel.ActionButtons.Cancel) {
-
+if(vcellConfigurationPanel.getButtonPushed() == VCellConfigurationPanel.ActionButtons.Close) {
+				// we do nothing on close
 	} else {
 		
 	}

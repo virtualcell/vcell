@@ -62,6 +62,10 @@ public class VCellConfiguration {
 		getConfiguration().setProperty(filePropertyKey, "\""+file.getAbsolutePath()+"\"");
 		return getFileProperty(filePropertyKey);
 	}
+	public static File resetFileProperty(String filePropertyKey) {
+		getConfiguration().setProperty(filePropertyKey, null);	// property will go away
+		return getFileProperty(filePropertyKey);
+	}
 
 	public static String getValue(String stringPropertyKey, String stringPropertyDefault) {
 		String value = getConfiguration().getString(stringPropertyKey);

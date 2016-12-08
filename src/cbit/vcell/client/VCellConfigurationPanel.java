@@ -50,12 +50,12 @@ public class VCellConfigurationPanel extends JPanel {
 	JSplitPane splitPane = null;
 	
 	enum ActionButtons {
-		Ok,
-		Cancel
+//		Ok,
+		Close
 	}
-	ActionButtons buttonPushed = ActionButtons.Cancel;
-	private JButton okButton;
-	private JButton cancelButton;
+	ActionButtons buttonPushed = ActionButtons.Close;
+//	private JButton okButton;
+	private JButton closeButton;
 	
 	private TopLevelWindowManager owner;
 	private ChildWindow parentChildWindow;
@@ -150,17 +150,17 @@ public class VCellConfigurationPanel extends JPanel {
 		gbc.anchor = GridBagConstraints.WEST;
 		okCancelPanel.add(new JLabel(""), gbc);
 
-		gbc = new GridBagConstraints();		
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		gbc.insets = new Insets(0, 0, 4, 2);				//  top, left, bottom, right 
-		okCancelPanel.add(getOkButton(), gbc);
+//		gbc = new GridBagConstraints();		
+//		gbc.gridx = 1;
+//		gbc.gridy = 0;
+//		gbc.insets = new Insets(0, 0, 4, 2);				//  top, left, bottom, right 
+//		okCancelPanel.add(getOkButton(), gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = 0;
 		gbc.insets = new Insets(0, 2, 4, 4);
-		okCancelPanel.add(getCancelButton(), gbc);
+		okCancelPanel.add(getCloseButton(), gbc);
 		
 		// --------------------------------------------------------------------------------
 		
@@ -189,39 +189,39 @@ public class VCellConfigurationPanel extends JPanel {
 		configurationOptionsTreeModel.populateTree();
 	}
 	
-	private JButton getOkButton() {
-		if (okButton == null) {
-			okButton = new javax.swing.JButton("Ok");
-			okButton.setName("ApplyButton");
-			okButton.addActionListener(new ActionListener() {
+//	private JButton getOkButton() {
+//		if (okButton == null) {
+//			okButton = new javax.swing.JButton("Ok");
+//			okButton.setName("ApplyButton");
+//			okButton.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(ActionEvent e) {
+//					buttonPushed = ActionButtons.Ok;
+////					try {
+////
+////					} catch (NumberFormatException ex) {
+////						DialogUtils.showErrorDialog(parentChildWindow.getParent(), "Wrong number format: " + ex.getMessage());
+////						return;
+////					}
+//					parentChildWindow.close();
+//				}
+//			});
+//		}
+//		return okButton;
+//	}
+	private JButton getCloseButton() {
+		if (closeButton == null) {
+			closeButton = new javax.swing.JButton("Close");
+			closeButton.setName("CloseButton");
+			closeButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					buttonPushed = ActionButtons.Ok;
-//					try {
-//
-//					} catch (NumberFormatException ex) {
-//						DialogUtils.showErrorDialog(parentChildWindow.getParent(), "Wrong number format: " + ex.getMessage());
-//						return;
-//					}
+					buttonPushed = ActionButtons.Close;
 					parentChildWindow.close();
 				}
 			});
 		}
-		return okButton;
-	}
-	private JButton getCancelButton() {
-		if (cancelButton == null) {
-			cancelButton = new javax.swing.JButton("Cancel");
-			cancelButton.setName("CancelButton");
-			cancelButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					buttonPushed = ActionButtons.Cancel;
-					parentChildWindow.close();
-				}
-			});
-		}
-		return cancelButton;
+		return closeButton;
 	}
 	public ActionButtons getButtonPushed() {
 		return buttonPushed;
