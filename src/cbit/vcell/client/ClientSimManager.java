@@ -281,100 +281,101 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 				final Simulation sim  = simsToShow[i];
 				final VCSimulationIdentifier vcSimulationIdentifier = sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 				final SimulationWindow simWindow = documentWindowManager.haveSimulationWindow(vcSimulationIdentifier);
+				OutputContext outputContext = (OutputContext)hashTable.get("outputContext");
 				
-				if (simWindow == null) {			
-					Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation,Throwable>)hashTable.get(H_FAILURES);
-					if (failures == null) {
-						failures = new Hashtable<Simulation, Throwable>();
-						hashTable.put(H_FAILURES, failures);
-					}
-						
+				Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation,Throwable>)hashTable.get(H_FAILURES);
+				if (failures == null) {
+					failures = new Hashtable<Simulation, Throwable>();
+					hashTable.put(H_FAILURES, failures);
+				}
+				if (simWindow == null && (viewerType==ViewerType.BothNativeAndPython || viewerType==ViewerType.NativeViewer_only)) {			
 					try {
 						// make the manager and wire it up
-						OutputContext outputContext = (OutputContext)hashTable.get("outputContext");
-						if (viewerType==ViewerType.BothNativeAndPython || viewerType==ViewerType.NativeViewer_only){
-							DataViewerController dataViewerController = null;
-							if (!isLocal) {
-								dataViewerController = documentWindowManager.getRequestManager().getDataViewerController(outputContext,sim, 0);
-								documentWindowManager.addDataListener(dataViewerController);//For changes in time or variable
+						DataViewerController dataViewerController = null;
+						if (!isLocal) {
+							dataViewerController = documentWindowManager.getRequestManager().getDataViewerController(outputContext,sim, 0);
+							documentWindowManager.addDataListener(dataViewerController);//For changes in time or variable
+						} else {
+							// ---- preliminary : construct the localDatasetControllerProvider
+							StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
+							File primaryDir = ResourceUtil.getLocalRootDir();
+							User usr = sim.getVersion().getOwner();
+							DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
+							ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
+							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
+							VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
+							File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
+							LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
+							DataManager dataManager = null;
+							if (sim.isSpatial()) {
+								dataManager = new PDEDataManager(outputContext,vcDataManager, vcDataId);
 							} else {
-								// ---- preliminary : construct the localDatasetControllerProvider
-								StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
-								File primaryDir = ResourceUtil.getLocalRootDir();
-								User usr = sim.getVersion().getOwner();
-								DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-								ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-								LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
-								VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
-								File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
-								LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
-								DataManager dataManager = null;
-								if (sim.isSpatial()) {
-									dataManager = new PDEDataManager(outputContext,vcDataManager, vcDataId);
-								} else {
-									dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);
-								}	
-								dataViewerController = new SimResultsViewerController(dataManager, sim);
-								dataSetControllerImpl.addDataJobListener(documentWindowManager);
-							}
-							// make the viewer
-							Hashtable<VCSimulationIdentifier, DataViewerController> dataViewerControllers = (Hashtable<VCSimulationIdentifier, DataViewerController>)hashTable.get(H_DATA_VIEWER_CONTROLLERS);
-							if (dataViewerControllers == null) {
-								dataViewerControllers = new Hashtable<VCSimulationIdentifier, DataViewerController>();
-								hashTable.put(H_DATA_VIEWER_CONTROLLERS, dataViewerControllers);
-							}						
-							dataViewerControllers.put(vcSimulationIdentifier, dataViewerController);
+								dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);
+							}	
+							dataViewerController = new SimResultsViewerController(dataManager, sim);
+							dataSetControllerImpl.addDataJobListener(documentWindowManager);
 						}
+						// make the viewer
+						Hashtable<VCSimulationIdentifier, DataViewerController> dataViewerControllers = (Hashtable<VCSimulationIdentifier, DataViewerController>)hashTable.get(H_DATA_VIEWER_CONTROLLERS);
+						if (dataViewerControllers == null) {
+							dataViewerControllers = new Hashtable<VCSimulationIdentifier, DataViewerController>();
+							hashTable.put(H_DATA_VIEWER_CONTROLLERS, dataViewerControllers);
+						}						
+						dataViewerControllers.put(vcSimulationIdentifier, dataViewerController);
+					} catch (Throwable exc) {
+						exc.printStackTrace(System.out);
+						failures.put(sim, exc);
+					}
+				}
+				try {
+					if (viewerType==ViewerType.PythonViewer_only || viewerType==ViewerType.BothNativeAndPython){
+						VtkManager vtkManager = null;
+						if (!isLocal) {
+							vtkManager = documentWindowManager.getRequestManager().getVtkManager(outputContext,new VCSimulationDataIdentifier(vcSimulationIdentifier,0));
+						} else {
+							// ---- preliminary : construct the localDatasetControllerProvider
+							StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
+							File primaryDir = ResourceUtil.getLocalRootDir();
+							User usr = sim.getVersion().getOwner();
+							DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
+							ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
+							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
+							VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
+							File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
+							VCSimulationDataIdentifier simulationDataIdentifier = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
+							vtkManager = new VtkManager(outputContext, vcDataManager, simulationDataIdentifier);
+						}
+						//
+						// test ability to read data
+						//
+						VtuVarInfo[] vtuVarInfos = vtkManager.getVtuVarInfos();
+						double[] times = vtkManager.getDataSetTimes();
 						
-						if (viewerType==ViewerType.PythonViewer_only || viewerType==ViewerType.BothNativeAndPython){
-							VtkManager vtkManager = null;
-							if (!isLocal) {
-								vtkManager = documentWindowManager.getRequestManager().getVtkManager(outputContext,new VCSimulationDataIdentifier(vcSimulationIdentifier,0));
-							} else {
-								// ---- preliminary : construct the localDatasetControllerProvider
-								StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
-								File primaryDir = ResourceUtil.getLocalRootDir();
-								User usr = sim.getVersion().getOwner();
-								DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-								ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-								LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
-								VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
-								File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
-								VCSimulationDataIdentifier simulationDataIdentifier = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
-								vtkManager = new VtkManager(outputContext, vcDataManager, simulationDataIdentifier);
-							}
-							//
-							// test ability to read data
-							//
-							VtuVarInfo[] vtuVarInfos = vtkManager.getVtuVarInfos();
-							double[] times = vtkManager.getDataSetTimes();
-							
-							//
-							// create the SimulationDataSetRef
-							//
-							VCDocument modelDocument = null;
-							if (documentWindowManager instanceof BioModelWindowManager){
-								modelDocument = ((BioModelWindowManager)documentWindowManager).getBioModel();
-							}else if (documentWindowManager instanceof MathModelWindowManager){
-								modelDocument = ((MathModelWindowManager)documentWindowManager).getMathModel();
-							}
-							SimulationDataSetRef simulationDataSetRef = VCellProxyHandler.createSimulationDataSetRef(sim, modelDocument, 0, isLocal);
-							
+						//
+						// create the SimulationDataSetRef
+						//
+						VCDocument modelDocument = null;
+						if (documentWindowManager instanceof BioModelWindowManager){
+							modelDocument = ((BioModelWindowManager)documentWindowManager).getBioModel();
+						}else if (documentWindowManager instanceof MathModelWindowManager){
+							modelDocument = ((MathModelWindowManager)documentWindowManager).getMathModel();
+						}
+						SimulationDataSetRef simulationDataSetRef = VCellProxyHandler.createSimulationDataSetRef(sim, modelDocument, 0, isLocal);
+						
 //							Hashtable<VCSimulationIdentifier, SimulationDataSetRef> simDataSetRefs = (Hashtable<VCSimulationIdentifier, SimulationDataSetRef>)hashTable.get(H_SIM_DATASET_REFS);
 //							if (simDataSetRefs == null) {
 //								simDataSetRefs = new Hashtable<VCSimulationIdentifier, SimulationDataSetRef>();
 //								hashTable.put(H_SIM_DATASET_REFS, simDataSetRefs);
 //							}
 //							simDataSetRefs.put(vcSimulationIdentifier, simulationDataSetRef);
-							File visitExe = VCellConfiguration.getFileProperty(PropertyLoader.visitExe);
-							if (visitExe != null){
-								VisitSupport.launchVisTool(visitExe, simulationDataSetRef);
-							}
+						File visitExe = VCellConfiguration.getFileProperty(PropertyLoader.visitExe);
+						if (visitExe != null){
+							VisitSupport.launchVisTool(visitExe, simulationDataSetRef);
 						}
-					} catch (Throwable exc) {
-						exc.printStackTrace(System.out);
-						failures.put(sim, exc);
 					}
+				} catch (Throwable exc) {
+					exc.printStackTrace(System.out);
+					failures.put(sim, exc);
 				}
 			}			
 		}	
