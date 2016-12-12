@@ -34,7 +34,12 @@ ex = visGui.VCellPysideApp(vis)
 # #parser.add_argument("resourcedir", help="???")
 # parser.add_argument("-simreffile", help="simref of initial simulation dataset to load upon initialization")
 # args = parser.parse_args()
-simreffile = os.environ['INITIALSIMDATAREFFILE']
+simreffile = None
+try:
+    simreffile = os.environ['INITIALSIMDATAREFFILE']
+except:
+    pass
+
 # i = 0
 # simreffile = None
 # while i < len(sys.argv):
