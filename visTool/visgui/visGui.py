@@ -125,7 +125,7 @@ class VCellPysideApp(QtGui.QMainWindow):
                 self.resourcedir = sys.argv[i+1]
                 i = i + 1
             i = i + 1
- 
+
     def __resource(self, filename):
         if self.resourcedir != "":
             return os.path.join(self.resourcedir, filename)
@@ -266,20 +266,20 @@ class VCellPysideApp(QtGui.QMainWindow):
 
         #actionOpen = QtGui.QAction(self);
         #actionOpen.setObjectName("actionOpen")
-        actionOpenSimFromOpenVCellModels = QtGui.QAction(self)
-        actionOpenSimFromOpenVCellModels.setObjectName("actionOpenSimFromOpenVCellModels")
+        self._actionOpenSimFromOpenVCellModels = QtGui.QAction(self)
+        self._actionOpenSimFromOpenVCellModels.setObjectName("actionOpenSimFromOpenVCellModels")
         actionExit = QtGui.QAction(self);
         actionExit.setObjectName("actionExit")
         menuBar.addAction(menuFile.menuAction())
         
         #menuFile.addAction(actionOpen)
-        menuFile.addAction(actionOpenSimFromOpenVCellModels)
+        menuFile.addAction(self._actionOpenSimFromOpenVCellModels)
         menuFile.addSeparator()
         menuFile.addAction(actionExit)
 
         self.setWindowTitle("VCell VisIt viewer")
         #actionOpen.setText("Open")
-        actionOpenSimFromOpenVCellModels.setText("Load Sim from open VCell Models")
+        self._actionOpenSimFromOpenVCellModels.setText("Load Sim from open VCell Models")
         actionExit.setText("Exit")
         #tabWidget.setTabText(tabWidget.indexOf(sliceTab), "Slice")
         tabWidget.setTabText(tabWidget.indexOf(sliceTab), "Plot")
@@ -296,8 +296,8 @@ class VCellPysideApp(QtGui.QMainWindow):
         #
         #actionOpen.setStatusTip("Open file")
         #actionOpen.triggered.connect(self._showLoadFile)
-        actionOpenSimFromOpenVCellModels.setStatusTip("Open Sim from VCell open models")
-        actionOpenSimFromOpenVCellModels.triggered.connect(self._showOpenSimFromVCellOpenModels)
+        self._actionOpenSimFromOpenVCellModels.setStatusTip("Open Sim from VCell open models")
+        self._actionOpenSimFromOpenVCellModels.triggered.connect(self._showOpenSimFromVCellOpenModels)
         actionExit.setStatusTip("Exit viewer")
         actionExit.triggered.connect(self._exitApplication)
         self._variableListWidget.clicked.connect(self._onSelectedVariableChanged)
@@ -451,8 +451,13 @@ class VCellPysideApp(QtGui.QMainWindow):
        selectedSim = dialog.getSelectedSimulation()
        dialog.close()
        print("-----")
+       assert isinstance(selectedSim, pyvcell.ttypes.SimulationDataSetRef)
        print(selectedSim)
        print("---------- Starting Dialog ----------")
+       self.loadSim(selectedSim)
+
+    def loadSim(self, selectedSim):
+       assert isinstance(selectedSim, pyvcell.ttypes.SimulationDataSetRef)
        self.modalProgress("Loading '"+selectedSim.simName+"'...")
 
        self.lst = LoadSimThread(selectedSim,self)

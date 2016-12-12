@@ -21,6 +21,9 @@ import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.ExecutableFinderDialog;
+import org.vcell.vis.vtk.VisMeshUtils;
+
+import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
 
 public class VisitSupport {
 
@@ -303,6 +306,11 @@ public class VisitSupport {
 	}
 	public static void launchVisTool(File visitExecutable) throws IOException, ExecutableException, URISyntaxException, InterruptedException
 	{
+		launchVisTool(visitExecutable, null);
+	}
+	
+	public static void launchVisTool(File visitExecutable, SimulationDataSetRef simulationDataSetRef) throws IOException, ExecutableException, URISyntaxException, InterruptedException
+	{
 		if (OperatingSystemInfo.getInstance().isMac()) {
 			launchVisToolMac(visitExecutable);
 			return;
@@ -362,8 +370,12 @@ public class VisitSupport {
 			//envVarList.add("pythonscript="+visMainCLI.toURI().toASCIIString());
 			
 
-			
-			String[] cmdStringArray = new String[] {"cmd", "/K","start","\"\"" ,visitExecutable.getPath(),"-cli" ,"-uifile", vcellHomeVisMainCLI.getPath().replace("\\", "/")};
+			final String[] cmdStringArray = new String[] {"cmd", "/K","start","\"\"" ,visitExecutable.getPath(),"-cli" ,"-uifile", vcellHomeVisMainCLI.getPath().replace("\\", "/")};
+			if (simulationDataSetRef!=null){
+				File simDataSetRefFile = new File(ResourceUtil.getLocalVisDataDir(),"SimID_"+simulationDataSetRef.getSimId()+"_"+simulationDataSetRef.getJobIndex()+"_.simref");
+				VisMeshUtils.writeSimulationDataSetRef(simDataSetRefFile, simulationDataSetRef);
+				envVarList.add("INITIALSIMDATAREFFILE="+simDataSetRefFile.getPath().replace("\\","/"));
+			}
 //			@SuppressWarnings("unused")
 			new Thread(new Runnable() {
 				@Override

@@ -46,6 +46,7 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.ClientSimManager.ViewerType;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
@@ -76,17 +77,20 @@ import cbit.vcell.solver.SolverTaskDescription;
 public class SimulationListPanel extends DocumentEditorSubPanel {
 	private static final Date FINITEVOLUME_CUTTOFF = getFiniteVolumeMissingDataRegenerateDate();
 
-	private static final String QUICK_RUN_TOOL_TIP = "Quick Run";
+	private static final String QUICK_RUN_PYTHON_TOOL_TIP = "Python Quick Run";
+	private static final String QUICK_RUN_NATIVE_TOOL_TIP = "Native Quick Run";
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private JToolBar toolBar = null;
 	private JButton ivjEditButton = null;
 	private JButton copyButton = null;
 	private JButton ivjNewButton = null;
-	private JButton ivjResultsButton = null;
+	private JButton ivjNativeResultsButton = null;
+	private JButton ivjPythonResultsButton = null;
 	private JButton ivjRunButton = null;
 	private JButton ivjDeleteButton = null;
 //	private JButton particleViewButton = null;
-	private JButton quickRunButton = null;
+	private JButton quickNativeRunButton = null;
+	private JButton quickPythonRunButton = null;
 	private JSortTable ivjScrollPaneTable = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
@@ -110,14 +114,18 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				runSimulations();
 			} else if (e.getSource() == stopButton) {
 				stopSimulations();
-			} else if (e.getSource() == getResultsButton()) {
-				showSimulationResults();
+			} else if (e.getSource() == getNativeResultsButton()) {
+				showSimulationResults(ViewerType.NativeViewer_only);
+			} else if (e.getSource() == getPythonResultsButton()) {
+				showSimulationResults(ViewerType.PythonViewer_only);
 			} else if (e.getSource() == statusDetailsButton) {
 				showSimulationStatusDetails();
 //			} else if (e.getSource() == particleViewButton) {
 //				particleView();
-			} else if (e.getSource() == quickRunButton) {
-				quickRun();
+			} else if (e.getSource() == quickPythonRunButton) {
+				quickRun(ViewerType.PythonViewer_only);
+			} else if (e.getSource() == quickNativeRunButton) {
+				quickRun(ViewerType.NativeViewer_only);
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -274,9 +282,13 @@ private javax.swing.JToolBar getToolBar() {
 			particleViewButton.setToolTipText("Real-Time Particle View");
 			particleViewButton.addActionListener(ivjEventHandler);
 			*/
-			quickRunButton = new JButton("", VCellIcons.odeQuickRunIcon);
-			quickRunButton.setToolTipText(QUICK_RUN_TOOL_TIP);
-			quickRunButton.addActionListener(ivjEventHandler);
+			quickPythonRunButton = new JButton("", VCellIcons.odeQuickRunIcon);
+			quickPythonRunButton.setToolTipText(QUICK_RUN_PYTHON_TOOL_TIP);
+			quickPythonRunButton.addActionListener(ivjEventHandler);
+
+			quickNativeRunButton = new JButton("", VCellIcons.odeQuickRunIcon);
+			quickNativeRunButton.setToolTipText(QUICK_RUN_NATIVE_TOOL_TIP);
+			quickNativeRunButton.addActionListener(ivjEventHandler);
 
 			toolBar.addSeparator();
 			toolBar.add(getNewButton());
@@ -286,10 +298,12 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(Box.createHorizontalGlue());
 			toolBar.add(getRunButton());
 			toolBar.add(stopButton);
-			toolBar.add(getResultsButton());
+			toolBar.add(getPythonResultsButton());
+			toolBar.add(getNativeResultsButton());
 			toolBar.add(statusDetailsButton);
 			toolBar.addSeparator();
-			toolBar.add(quickRunButton);
+			toolBar.add(quickPythonRunButton);
+			toolBar.add(quickNativeRunButton);
 //			toolBar.add(particleViewButton);
 
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNewButton());
@@ -298,10 +312,12 @@ private javax.swing.JToolBar getToolBar() {
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getDeleteButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getRunButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(stopButton);
-			ReactionCartoonEditorPanel.setToolBarButtonSizes(getResultsButton());
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(getPythonResultsButton());
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNativeResultsButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(statusDetailsButton);
 //			ReactionCartoonEditorPanel.setToolBarButtonSizes(particleViewButton);
-			ReactionCartoonEditorPanel.setToolBarButtonSizes(quickRunButton);
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(quickPythonRunButton);
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(quickNativeRunButton);
 
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -362,13 +378,13 @@ private javax.swing.JButton getNewButton() {
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getResultsButton() {
-	if (ivjResultsButton == null) {
+private javax.swing.JButton getNativeResultsButton() {
+	if (ivjNativeResultsButton == null) {
 		try {
-			ivjResultsButton = new javax.swing.JButton("", VCellIcons.resultsIcon);
-			ivjResultsButton.setName("ResultsButton");
-			ivjResultsButton.setToolTipText("Simulation Results");
-			ivjResultsButton.setEnabled(false);
+			ivjNativeResultsButton = new javax.swing.JButton("", VCellIcons.resultsIcon);
+			ivjNativeResultsButton.setName("NativeResultsButton");
+			ivjNativeResultsButton.setToolTipText("Native Simulation Results");
+			ivjNativeResultsButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -377,7 +393,26 @@ private javax.swing.JButton getResultsButton() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjResultsButton;
+	return ivjNativeResultsButton;
+}
+
+
+private javax.swing.JButton getPythonResultsButton() {
+	if (ivjPythonResultsButton == null) {
+		try {
+			ivjPythonResultsButton = new javax.swing.JButton("", VCellIcons.resultsIcon);
+			ivjPythonResultsButton.setName("PythonResultsButton");
+			ivjPythonResultsButton.setToolTipText("Python Simulation Results");
+			ivjPythonResultsButton.setEnabled(false);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjPythonResultsButton;
 }
 
 
@@ -542,7 +577,8 @@ private void initConnections() throws java.lang.Exception {
 	getEditButton().addActionListener(ivjEventHandler);
 	getDeleteButton().addActionListener(ivjEventHandler);
 	getRunButton().addActionListener(ivjEventHandler);
-	getResultsButton().addActionListener(ivjEventHandler);
+	getPythonResultsButton().addActionListener(ivjEventHandler);
+	getNativeResultsButton().addActionListener(ivjEventHandler);
 	getMoreActionsButton().addActionListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
 
@@ -711,17 +747,21 @@ private void newSimulation(final NetworkGenerationRequirements networkGeneration
  */
 private boolean canQuickRun(SolverTaskDescription taskDesc) {
 	if (taskDesc.isParallel())  {
-		quickRunButton.setToolTipText("Parallel solver not supported");
+		quickPythonRunButton.setToolTipText("Parallel solver not supported");
+		quickNativeRunButton.setToolTipText("Parallel solver not supported");
 		return false;
 	}else if (taskDesc.getSolverDescription().supports(SolverFeature.Feature_ServerOnly)) {
-		quickRunButton.setToolTipText("Not supported by selected solver");
+		quickPythonRunButton.setToolTipText("Not supported by selected solver");
+		quickNativeRunButton.setToolTipText("Not supported by selected solver");
 		return false;
 	}else if(taskDesc.getSimulation().getScanCount() > 1){
-		quickRunButton.setToolTipText("Not supported for parameter scans");
+		quickPythonRunButton.setToolTipText("Not supported for parameter scans");
+		quickNativeRunButton.setToolTipText("Not supported for parameter scans");
 		return false;
 	}
 
-	quickRunButton.setToolTipText(QUICK_RUN_TOOL_TIP);
+	quickPythonRunButton.setToolTipText(QUICK_RUN_PYTHON_TOOL_TIP);
+	quickNativeRunButton.setToolTipText(QUICK_RUN_NATIVE_TOOL_TIP);
 	return true;
 }
 /**
@@ -731,7 +771,8 @@ private void refreshButtonsLax() {
 	MathDescription mathDescription = fieldSimulationWorkspace.getSimulationOwner().getMathDescription();
 	if (mathDescription != null) {
 //		particleViewButton.setVisible(mathDescription.isSpatialStoch());
-		quickRunButton.setVisible(true);
+		quickPythonRunButton.setVisible(true);
+		quickNativeRunButton.setVisible(true);
 	}
 
 	int[] selections = getScrollPaneTable().getSelectedRows();
@@ -775,10 +816,12 @@ private void refreshButtonsLax() {
 	getDeleteButton().setEnabled(bDeletable);
 	getRunButton().setEnabled(bRunnable);
 	stopButton.setEnabled(bStoppable);
-	getResultsButton().setEnabled(bHasData);
+	getPythonResultsButton().setEnabled(bHasData);
+	getNativeResultsButton().setEnabled(bHasData);
 	statusDetailsButton.setEnabled(bStatusDetails);
 //	particleViewButton.setEnabled(bParticleView);
-	quickRunButton.setEnabled(bQuickRun);
+	quickPythonRunButton.setEnabled(bQuickRun);
+	quickNativeRunButton.setEnabled(bQuickRun);
 }
 
 
@@ -852,14 +895,14 @@ public void setSimulationWorkspace(SimulationWorkspace newValue) {
 /**
  * Comment
  */
-private void showSimulationResults() {
+private void showSimulationResults(ViewerType viewerType) {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
 		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i])));
 	}
 	Simulation[] toShow = (Simulation[])BeanUtils.getArray(v, Simulation.class);
-	getSimulationWorkspace().showSimulationResults(toShow);
+	getSimulationWorkspace().showSimulationResults(toShow, viewerType);
 }
 
 
@@ -923,7 +966,7 @@ private void stopSimulations() {
 		getSimulationWorkspace().getClientSimManager().runSmoldynParticleView(selectedSim);
 	}
 	*/
-	private void quickRun() {
+	private void quickRun(ViewerType viewerType) {
 		int row = getScrollPaneTable().getSelectedRow();
 		if (row < 0) {
 			return;
@@ -931,7 +974,8 @@ private void stopSimulations() {
 		activateConsole();
 
 		Simulation selectedSim = getSimulationListTableModel1().getValueAt(row);
-		if (selectedSim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+		SolverDescription solverDescription = selectedSim.getSolverTaskDescription().getSolverDescription();
+		if (solverDescription.equals(SolverDescription.FiniteVolume)) {
 			if (getSimulationWorkspace().getSimulationOwner() instanceof SimulationContext) {
 				String option = DialogUtils.showOKCancelWarningDialog(SimulationListPanel.this, "Deprecated Solver", VCellErrorMessages.getSemiFVSolverCompiledSolverDeprecated(selectedSim));
 				if (option.equals(SimpleUserMessage.OPTION_CANCEL)) {
@@ -945,7 +989,7 @@ private void stopSimulations() {
 				}
 			}
 		}
-		getSimulationWorkspace().getClientSimManager().runQuickSimulation(selectedSim);
+		getSimulationWorkspace().getClientSimManager().runQuickSimulation(selectedSim, viewerType);
 	}
 
 	public void activateConsole() {

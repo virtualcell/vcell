@@ -23,6 +23,7 @@ import org.vcell.vis.vismesh.thrift.MovingBoundaryIndexData;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
 
 public class VisMeshUtils {
 
@@ -73,6 +74,17 @@ public class VisMeshUtils {
 		} catch (TException e) {
 			e.printStackTrace();
 			throw new IOException("error writing ChomboIndexData to file "+chomboIndexFile.getPath()+": "+e.getMessage(),e);
+		}
+	}
+
+	public static void writeSimulationDataSetRef(File simDataSetRefFile, SimulationDataSetRef simDataSetRef) throws IOException {
+		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+		try {
+			byte[] blob = serializer.serialize(simDataSetRef);
+			FileUtils.writeByteArrayToFile(simDataSetRefFile, blob);
+		} catch (TException e) {
+			e.printStackTrace();
+			throw new IOException("error writing SimulationDataSetRef to file "+simDataSetRefFile.getPath()+": "+e.getMessage(),e);
 		}
 	}
 

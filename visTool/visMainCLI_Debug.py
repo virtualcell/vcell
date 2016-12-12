@@ -26,6 +26,12 @@ QtGui = visQt.QtGui
 import visContext
 from visgui import visGui
 
+import argparse
+from pyvcell.ttypes import SimulationDataSetRef
+from thrift.TSerialization import TBinaryProtocol
+from thrift.TSerialization import deserialize
+
+
 import ptvsd
 
 print('python version is '+sys.version);
@@ -44,4 +50,35 @@ print('after connect')
 visContext.init_with_Visit()
 vis = visContext.visContext()
 ex = visGui.VCellPysideApp(vis)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("resourcedir", help="???")
+parser.add_argument("simreffile", help="simref of initial simulation dataset to load upon initialization")
+args = parser.parse_args()
+
+if (args.resourcedif):
+    ex.resourcedir = args.resourcedif
+
+if (args.simreffile):
+    f_simref = open(args.simreffile, "rb")
+    blob_simref = f_simref.read()
+    print("read "+str(len(blob_simref))+" bytes from "+args.simreffile)
+    f_simref.close()
+    simref = SimulationDataSetRef()
+    protocol_factory = TBinaryProtocol.TBinaryProtocolFactory
+    #    deserialize(visMesh, blob_vismesh, protocol_factory = protocol_factory())
+    print("starting deserialization")
+    deserialize(simref, blob_simref, protocol_factory = protocol_factory())
+    print("done with deserialization")
+
+    ex.initialTimer = QtCore.QTimer(ex)
+    ex.initialTimer.setSingleShot(True)
+
+    def load():
+        ex.loadSim(simref)
+
+    ex.initialTimer.singleShot(4000,load)
+
+
+
 ex.show()

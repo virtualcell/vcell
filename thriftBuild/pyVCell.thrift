@@ -49,6 +49,7 @@ struct SimulationDataSetRef {
   10: required list<double> originXYZ;
   11: required list<double> extentXYZ;
   12: required bool isTimeVaryingMesh;
+  13: required bool isLocal;
 }
 typedef list<SimulationDataSetRef> SimulationDataSetRefList
 

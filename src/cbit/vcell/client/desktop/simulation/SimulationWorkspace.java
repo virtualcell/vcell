@@ -28,6 +28,7 @@ import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.ClientSimManager.ViewerType;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -765,10 +766,10 @@ public void setSimulations(final Simulation[] simulations) {
 /**
  * Comment
  */
-void showSimulationResults(Simulation[] sims) {
+void showSimulationResults(Simulation[] sims, ViewerType viewerType) {
 	ArrayList<AnnotatedFunction> outputFunctionsList = getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
 	OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));
-	getClientSimManager().showSimulationResults(outputContext,sims);
+	getClientSimManager().showSimulationResults(outputContext,sims,viewerType);
 }
 
 
