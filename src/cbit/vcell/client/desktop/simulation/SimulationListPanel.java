@@ -24,6 +24,7 @@ import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.DefaultCellEditor;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
@@ -54,6 +55,8 @@ import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
+import cbit.vcell.graph.VisItShape;
+import cbit.vcell.graph.VisItShape.State;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -400,9 +403,14 @@ private javax.swing.JButton getNativeResultsButton() {
 private javax.swing.JButton getPythonResultsButton() {
 	if (ivjPythonResultsButton == null) {
 		try {
-			ivjPythonResultsButton = new javax.swing.JButton("", VCellIcons.resultsIcon);
-			ivjPythonResultsButton.setName("PythonResultsButton");
-			ivjPythonResultsButton.setToolTipText("Python Simulation Results");
+			Icon iconNormal = new VisItShape(State.enabled);
+			Icon iconDisabled = new VisItShape(State.disabled);
+			ivjPythonResultsButton = new javax.swing.JButton("");
+			ivjPythonResultsButton.setName("VisItButton");
+			ivjPythonResultsButton.setIcon(iconNormal);
+			ivjPythonResultsButton.setSelectedIcon(iconNormal);
+			ivjPythonResultsButton.setDisabledIcon(iconDisabled);
+			ivjPythonResultsButton.setToolTipText("Use VisIt to view Simulation Results");
 			ivjPythonResultsButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -787,10 +795,11 @@ private void refreshButtonsLax() {
 //	boolean bParticleView = false;
 	boolean bQuickRun = false;
 
+	Simulation firstSelection = null;
 	if (selections != null && selections.length > 0) {
 		bCopy = true;
 		bStatusDetails = true;
-		Simulation firstSelection = ivjSimulationListTableModel1.getValueAt(selections[0]);
+		firstSelection = ivjSimulationListTableModel1.getValueAt(selections[0]);
 		if (selections.length == 1){
 			SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(firstSelection);
 			if (!simStatus.isRunning()){
@@ -816,7 +825,15 @@ private void refreshButtonsLax() {
 	getDeleteButton().setEnabled(bDeletable);
 	getRunButton().setEnabled(bRunnable);
 	stopButton.setEnabled(bStoppable);
-	getPythonResultsButton().setEnabled(bHasData);
+	if(selections != null && selections.length == 1) {
+		if(bHasData && firstSelection != null && firstSelection.getMathDescription().isSpatial3D()) {
+			getPythonResultsButton().setEnabled(true);
+		} else {
+			getPythonResultsButton().setEnabled(false);
+		}
+	} else {
+		getPythonResultsButton().setEnabled(false);
+	}
 	getNativeResultsButton().setEnabled(bHasData);
 	statusDetailsButton.setEnabled(bStatusDetails);
 //	particleViewButton.setEnabled(bParticleView);

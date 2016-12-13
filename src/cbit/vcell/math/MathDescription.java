@@ -1885,7 +1885,13 @@ public boolean isSpatial() {
 	if (getGeometry()==null) {
 		return false;
 	}
-	return (getGeometry().getDimension()>0);
+	return (getGeometry().getDimension() > 0);
+}
+public boolean isSpatial3D() {
+	if (getGeometry()==null) {
+		return false;
+	}
+	return (getGeometry().getDimension() == 3);
 }
 
 
