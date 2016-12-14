@@ -23,20 +23,12 @@ public class RuleParticipantSignature {
 		moleculeNumber
 	}
 	
-	private Structure structure = null;
-	private SpeciesPattern speciesPattern = null;
-	private ModelCartoon modelCartoon = null;		// it's always a ReactionCartoon, actually
+	protected Structure structure = null;
+	protected SpeciesPattern speciesPattern = null;
+	protected ModelCartoon modelCartoon = null;		// it's always a ReactionCartoon, actually
 	
-	private RuleParticipantSignature() {
+	protected RuleParticipantSignature() {
 		super();
-	}
-	
-	public static RuleParticipantSignature fromReactionRuleParticipant(ReactionRuleParticipant rrParticipant, ModelCartoon modelCartoon){
-		RuleParticipantSignature ruleParticipantSignature = new RuleParticipantSignature();
-		ruleParticipantSignature.structure = rrParticipant.getStructure();
-		ruleParticipantSignature.speciesPattern = rrParticipant.getSpeciesPattern();
-		ruleParticipantSignature.modelCartoon = modelCartoon;
-		return ruleParticipantSignature;
 	}
 	
 	public boolean compareByCriteria(SpeciesPattern speciesPattern, Criteria criteria) {
