@@ -285,7 +285,7 @@ private javax.swing.JToolBar getToolBar() {
 			particleViewButton.setToolTipText("Real-Time Particle View");
 			particleViewButton.addActionListener(ivjEventHandler);
 			*/
-			quickPythonRunButton = new JButton("", VCellIcons.odeQuickRunIcon);
+			quickPythonRunButton = new JButton("", VCellIcons.pythonQuickRunIcon);
 			quickPythonRunButton.setToolTipText(QUICK_RUN_PYTHON_TOOL_TIP);
 			quickPythonRunButton.addActionListener(ivjEventHandler);
 
@@ -406,11 +406,11 @@ private javax.swing.JButton getPythonResultsButton() {
 			Icon iconNormal = new VisItShape(State.enabled);
 			Icon iconDisabled = new VisItShape(State.disabled);
 			ivjPythonResultsButton = new javax.swing.JButton("");
-			ivjPythonResultsButton.setName("VisItButton");
+			ivjPythonResultsButton.setName("PythonResultsButton");
 			ivjPythonResultsButton.setIcon(iconNormal);
 			ivjPythonResultsButton.setSelectedIcon(iconNormal);
 			ivjPythonResultsButton.setDisabledIcon(iconDisabled);
-			ivjPythonResultsButton.setToolTipText("Use VisIt to view Simulation Results");
+			ivjPythonResultsButton.setToolTipText("Python Simulation Results");
 			ivjPythonResultsButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -827,12 +827,13 @@ private void refreshButtonsLax() {
 	stopButton.setEnabled(bStoppable);
 	if(selections != null && selections.length == 1) {
 		if(bHasData && firstSelection != null && firstSelection.getMathDescription().isSpatial3D()) {
+			getPythonResultsButton().setVisible(true);
 			getPythonResultsButton().setEnabled(true);
 		} else {
-			getPythonResultsButton().setEnabled(false);
+			getPythonResultsButton().setVisible(false);
 		}
 	} else {
-		getPythonResultsButton().setEnabled(false);
+		getPythonResultsButton().setVisible(false);
 	}
 	getNativeResultsButton().setEnabled(bHasData);
 	statusDetailsButton.setEnabled(bStatusDetails);

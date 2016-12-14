@@ -170,6 +170,7 @@ public abstract class VCellIcons {
 	public final static Icon resultsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_results.jpg"));
 	public final static Icon statusDetailscon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_status_details.gif"));
 	public final static Icon odeQuickRunIcon = new ImageIcon(VCellIcons.class.getResource("/icons/ode_quick_run.png"));
+	public final static Icon pythonQuickRunIcon = new ImageIcon(VCellIcons.class.getResource("/icons/python_quick_run.png"));
 	
 	//Window Manager
 	public final static Icon SHOW_WINDOWS = new ImageIcon(VCellIcons.class.getResource("/icons/showWindows.png"));
