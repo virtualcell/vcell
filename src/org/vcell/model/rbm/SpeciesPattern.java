@@ -251,6 +251,14 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 		return null;
 	}
 
+	public boolean containsMolecularType(MolecularType mt) {
+		for(MolecularTypePattern mtp : molecularTypePatterns) {
+			if(mtp.getMolecularType() == mt) {
+				return true;
+			}
+		}
+		return false;
+	}
 	public boolean hasExplicitParticipantMatch() {
 		// returns true if at least one molecular type pattern has an explicit match
 		for(MolecularTypePattern mtp : molecularTypePatterns) {

@@ -63,6 +63,7 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -137,6 +138,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
 //					titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
 //					titleLabel.setText("Anchor");
+				} else if(evt.getPropertyName().equals(MolecularType.PROPERTY_NAME_ANNOTATION)) {
+					annotationTextArea.setText((String)evt.getNewValue());
+					annotationTextArea.setCaretPosition(0);
 				}
 			}
 		}
@@ -180,9 +184,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void mouseExited(MouseEvent e) {
-			if(e.getSource() == annotationTextArea){
-				changeFreeTextAnnotation();
-			}
+//			if(e.getSource() == annotationTextArea){
+//				changeFreeTextAnnotation();
+//			}
 		}
 		@Override
 		public void valueChanged(TreeSelectionEvent e) {
@@ -206,9 +210,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void focusLost(FocusEvent e) {
-			if (e.getSource() == annotationTextArea) {
-				changeFreeTextAnnotation();
-			}
+//			if (e.getSource() == annotationTextArea) {
+//				changeFreeTextAnnotation();
+//			}
 		}
 		@Override
 		public void itemStateChanged(ItemEvent e) {
@@ -306,7 +310,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private MolecularTypeTreeModel molecularTypeTreeModel = null;
 	private MolecularType molecularType;
 	private JLabel titleLabel = null;
-	private JTextArea annotationTextArea;
+//	private JTextArea annotationTextArea;
+	private JTextPane annotationTextArea;
 
 	private JRadioButton anchorAllButton;
 	private JRadioButton anchorOnlyButton;
@@ -626,10 +631,12 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		generalPanel.setLayout(new GridBagLayout());
 
 		gridy = 0;
-		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
-		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+//		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
+//		annotationTextArea.setLineWrap(true);
+//		annotationTextArea.setWrapStyleWord(true);
+//		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+		annotationTextArea = new JTextPane();
+		annotationTextArea.setContentType("text/html");
 		annotationTextArea.setEditable(false);
 		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 		
@@ -747,10 +754,12 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	public static final int yOffsetInitial = 20;
 	public void updateInterface() {
 		boolean bNonNullMolecularType = molecularType != null && bioModel != null;
-		annotationTextArea.setEditable(bNonNullMolecularType);
+//		annotationTextArea.setEditable(bNonNullMolecularType);
 		if (bNonNullMolecularType) {
 			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
 			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(molecularType));
+			annotationTextArea.setCaretPosition(0);
+//			annotationTextArea.setText(molecularType.comment);
 			
 //			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
 			titleLabel.setText("Anchor Molecule");
@@ -787,24 +796,24 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	private void changeFreeTextAnnotation() {
-		try{
-			if (molecularType == null) {
-				return;
-			}
-			// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
-			if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
-				VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-				String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
-				if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(molecularType),textAreaStr)){
-					vcMetaData.setFreeTextAnnotation(molecularType, textAreaStr);	
-				}
-			}
-		} catch(Exception e){
-			e.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog(this,"Edit Molecule Error\n"+e.getMessage(), e);
-		}
-	}
+//	private void changeFreeTextAnnotation() {
+//		try{
+//			if (molecularType == null) {
+//				return;
+//			}
+//			// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
+//			if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
+//				VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+//				String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+//				if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(molecularType),textAreaStr)){
+//					vcMetaData.setFreeTextAnnotation(molecularType, textAreaStr);	
+//				}
+//			}
+//		} catch(Exception e){
+//			e.printStackTrace(System.out);
+//			PopupGenerator.showErrorDialog(this,"Edit Molecule Error\n"+e.getMessage(), e);
+//		}
+//	}
 
 	private void selectClickPath(MouseEvent e) {
 		Point mousePoint = e.getPoint();

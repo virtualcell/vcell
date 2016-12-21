@@ -20,6 +20,8 @@ import org.vcell.util.Matchable;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 
@@ -28,11 +30,11 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	IssueSource, Identifiable, Displayable
 {
 	public static final String PROPERTY_NAME_COMPONENT_LIST = "componentList";
+	public static final String PROPERTY_NAME_ANNOTATION = "annotation";
 	
 	private String name;	
 	private List<MolecularComponent> componentList = new ArrayList<>();
 	private transient Model model = null;
-	public transient String comment = null;
 	
 	private Set<Structure> anchorSet = new HashSet<>();	// list of structures where the molecule are allowed to exist (Feature or Membrane) 
 	private boolean bAnchorAll = true;					// if true ignore the anchorSet content (by default any compartment is allowed)
@@ -41,6 +43,24 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	public MolecularType(String name, Model model) {
 		this.name = name;
 		this.model = model;
+	}
+	
+	public void setComment(String comment) {
+		if(comment == null) {
+			return;
+		}
+		try {	// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
+			if(model != null && model.getVcMetaData() != null) {
+				VCMetaData vcMetaData = model.getVcMetaData();
+				String oldValue = vcMetaData.getFreeTextAnnotation(this);
+				if(!Compare.isEqualOrNull(oldValue, comment)){
+					vcMetaData.setFreeTextAnnotation(this, comment);
+					firePropertyChange(PROPERTY_NAME_ANNOTATION, oldValue, comment);
+				}
+			}
+		} catch(Exception e){
+			e.printStackTrace(System.out);
+		}
 	}
 	
 	public void addMolecularComponent(MolecularComponent molecularComponent) {

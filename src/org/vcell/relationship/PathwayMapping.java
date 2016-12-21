@@ -143,10 +143,10 @@ public class PathwayMapping {
 			String comment = commentList.get(0);
 			if(!comment.isEmpty()) {
 				String text = BioPaxObjectPropertiesPanel.FormatDetails(comment);
-				mt.comment = htmlStart + text + htmlEnd;
+				mt.setComment(htmlStart + text + htmlEnd);
 			}
 		} else {
-			mt.comment = htmlStart + "" + htmlEnd;
+			mt.setComment("");
 		}
 		return mt;
 	}
