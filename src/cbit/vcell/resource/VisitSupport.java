@@ -56,13 +56,9 @@ public class VisitSupport {
 
 	}
 	
-	public static File getVisToolPythonScriptDirectory()
-	{
-		return new File(ResourceUtil.getVCellInstall(),"visTool");
-	}
 	public static File getVisToolPythonScript()
 	{
-		File visToolScriptDir = getVisToolPythonScriptDirectory();
+		File visToolScriptDir = new File(ResourceUtil.getVCellInstall(),"visTool");
 		File visToolScript = new File(visToolScriptDir, "visMainCLI.py");
 		return visToolScript;
 	}
@@ -359,63 +355,40 @@ public class VisitSupport {
 				}
 			}
 			
+			
+			
+			
 			//FileUtils.copyDirectoryShallow(visMainCLI.getParentFile(), vcellHomeVisFolder);
 			FileUtils.copyDirectory(visMainCLI.getParentFile(), vcellHomeVisFolder, true, new VisitFolderFileFilter());
 			File vcellHomeVisMainCLI=new File(vcellHomeVisFolder, visMainCLI.getName());
 
 			vcellHomeVisMainCLI.setExecutable(true);
 			
+			
 			envVarList.add("visitcmd="+/*"\""+*/visitExecutable.getPath()/*+"\""*/);
 			envVarList.add("pythonscript="+vcellHomeVisMainCLI.getPath().replace("\\", "/"));
 			//envVarList.add("pythonscript="+visMainCLI.toURI().toASCIIString());
 			
-			final String visEx = visitExecutable.getPath().replace("\\", "/");
+
 			final String[] cmdStringArray = new String[] {"cmd", "/K","start","\"\"" ,visitExecutable.getPath(),"-cli" ,"-uifile", vcellHomeVisMainCLI.getPath().replace("\\", "/")};
 			if (simulationDataSetRef!=null){
 				File simDataSetRefFile = new File(ResourceUtil.getLocalVisDataDir(),"SimID_"+simulationDataSetRef.getSimId()+"_"+simulationDataSetRef.getJobIndex()+"_.simref");
 				VisMeshUtils.writeSimulationDataSetRef(simDataSetRefFile, simulationDataSetRef);
 				envVarList.add("INITIALSIMDATAREFFILE="+simDataSetRefFile.getPath().replace("\\","/"));
 			}
-			
+//			@SuppressWarnings("unused")
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
-
-					BufferedWriter writer = null;
-					String location = getVisToolPythonScriptDirectory().getAbsolutePath();
-
-					try {
-					String visitBatchName = location + "\\visit.bat";
-						
-					File visitBatchFile = new File(visitBatchName);
-//					System.out.println(visitBatchFile.getCanonicalPath());
-					writer = new BufferedWriter(new FileWriter(visitBatchFile));
-						
-					for(String var:envVarList) {
+					try{
+					Executable exec = new Executable(cmdStringArray);
+//					Executable exec = new Executable(new String[] {st});
+					for(String var:envVarList){
 						StringTokenizer st2 = new StringTokenizer(var, "=");
-						writer.write("set " + st2.nextToken() + "=" + st2.nextToken() + "\n");
-						writer.newLine();
+						exec.addEnvironmentVariable(st2.nextToken(), st2.nextToken());
 					}
-					
-					String visPath = visEx.substring(0, visEx.lastIndexOf("/"));
-					String visName = visEx.substring(visEx.lastIndexOf("/")+1);
-					writer.write("cd " + visPath);
-					writer.newLine();
-					writer.write(visName + " -cli -uifile " + vcellHomeVisMainCLI.getPath().replace("\\", "/"));
-//					writer.write("notepad.exe");
-					
-					} catch(Exception e) {
-						e.printStackTrace();
-					} finally {
-						try {
-							writer.close();
-						} catch (Exception e) {
-						}
-					}
-					String command = "cscript " + location + "\\visitscript.vbs \"" + location + "\"";
-					try {
-						Process p = Runtime.getRuntime().exec(command);
-					} catch (IOException e) {
+					exec.start();
+					}catch(Exception e){
 						e.printStackTrace();
 					}
 				}
@@ -423,28 +396,6 @@ public class VisitSupport {
 			if (lg.isInfoEnabled()) {
 				lg.info("Started VCellVisIt");
 			}
-			
-			
-//			@SuppressWarnings("unused")
-//			new Thread(new Runnable() {
-//				@Override
-//				public void run() {
-//					try{
-//					Executable exec = new Executable(cmdStringArray);
-////					Executable exec = new Executable(new String[] {st});
-//					for(String var:envVarList){
-//						StringTokenizer st2 = new StringTokenizer(var, "=");
-//						exec.addEnvironmentVariable(st2.nextToken(), st2.nextToken());
-//					}
-//					exec.start();
-//					}catch(Exception e){
-//						e.printStackTrace();
-//					}
-//				}
-//			}).start();
-//			if (lg.isInfoEnabled()) {
-//				lg.info("Started VCellVisIt");
-//			}
 			/*
 			List<String> cmds = new ArrayList<String>();
 			cmds.add(visitExecutable.getAbsolutePath());
@@ -471,19 +422,4 @@ public class VisitSupport {
 			*/
 		}
 
-	public static void main(String[] args) throws IOException {
-/* myscript.vbs
-Set objShell = WScript.CreateObject("WScript.Shell")
-objShell.Run("mybatch.bat"), 0, True
- */
-//		try {
-			String command = "cscript c:\\TEMP\\aaa\\myscript.vbs";
-			Process p = Runtime.getRuntime().exec(command);
-//			p.waitFor();
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-		System.out.println("Done!");
-	}
-	// start "" fullPath/file.exe
 }
