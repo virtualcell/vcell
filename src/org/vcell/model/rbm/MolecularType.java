@@ -22,12 +22,13 @@ import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
-public class MolecularType extends RbmElementAbstract implements Matchable, VetoableChangeListener, 
-	IssueSource, Identifiable, Displayable
+public class MolecularType extends RbmElementAbstract implements BioModelEntityObject, Matchable, VetoableChangeListener, 
+	IssueSource, Displayable
 {
 	public static final String PROPERTY_NAME_COMPONENT_LIST = "componentList";
 	public static final String PROPERTY_NAME_ANNOTATION = "annotation";
@@ -281,6 +282,16 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	@Override
 	public final String getDisplayType() {
 		return typeName;
+	}
+
+	@Override
+	public String getTypeLabel() {
+		return typeName;
+	}
+
+	@Override
+	public Structure getStructure() {
+		throw new UnsupportedOperationException("getStructure() not available for Molecular Type Objects");
 	}
 
 

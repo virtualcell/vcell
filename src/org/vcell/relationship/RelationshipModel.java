@@ -124,6 +124,23 @@ public class RelationshipModel {
 		return bRemoved;
 	}
 	
+	public boolean removeRelationshipObject(BioModelEntityObject bmObject) {
+		if (bmObject == null){
+			throw new RuntimeException("remove a null object from relationship model");
+		}
+
+		Iterator<RelationshipObject> iter = relationshipObjects.iterator();
+		boolean bRemoved = false;
+		while (iter.hasNext()) {
+			RelationshipObject relationshipObject = iter.next();
+			if(relationshipObject.getBioModelEntityObject() == bmObject) { 
+				iter.remove();
+				fireRelationshipChanged(new RelationshipEvent(this, relationshipObject, RelationshipEvent.REMOVED));
+				bRemoved = true;
+			}
+		}
+		return bRemoved;
+	}
 	public boolean removeRelationshipObjects(Set<BioModelEntityObject> biomodelEntityObjects){ // propertyChange() in bioModel
 		if (biomodelEntityObjects==null){
 			throw new RuntimeException("remove a null object from relationship model");
@@ -155,20 +172,31 @@ public class RelationshipModel {
 
 	public HashSet<RelationshipObject> getRelationshipObjects(BioModelEntityObject bioModelObject){
 		HashSet<RelationshipObject> associatedReObjects = new HashSet<RelationshipObject>();
-		for(RelationshipObject reObject : relationshipObjects){
-			if(reObject.getBioModelEntityObject() == bioModelObject)
+		for(RelationshipObject reObject : relationshipObjects) {
+//			System.out.println(reObject.getBioModelEntityObject().getName() + ", " + bioModelObject.getName());
+			if(reObject.getBioModelEntityObject() == bioModelObject) {
+				associatedReObjects.add(reObject);
+			}
+		}
+		return associatedReObjects;
+	}
+	
+	public HashSet<RelationshipObject> getRelationshipObjects(BioPaxObject bioPaxObject) {
+		HashSet<RelationshipObject> associatedReObjects = new HashSet<RelationshipObject>();
+		for(RelationshipObject reObject : relationshipObjects) {
+			if(reObject.getBioPaxObject() == bioPaxObject)
 				associatedReObjects.add(reObject);
 		}
 		return associatedReObjects;
 	}
 	
-	public HashSet<RelationshipObject> getRelationshipObjects(BioPaxObject bioPaxObject){
-		HashSet<RelationshipObject> associatedReObjects = new HashSet<RelationshipObject>();
-		for(RelationshipObject reObject : relationshipObjects){
-			if(reObject.getBioPaxObject() == bioPaxObject)
-				associatedReObjects.add(reObject);
+	public boolean isRelationship(BioModelEntityObject bioModelObject, BioPaxObject bioPaxObject) {
+		for(RelationshipObject reObject : relationshipObjects) {
+			if(reObject.getBioModelEntityObject() == bioModelObject && reObject.getBioPaxObject() == bioPaxObject) {
+				return true;
+			}
 		}
-		return associatedReObjects;
+		return false;
 	}
 	
 	public HashSet<BioModelEntityObject> getBioModelEntityObjects(){ // propertyChange() in bioModel

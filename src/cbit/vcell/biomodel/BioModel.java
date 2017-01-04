@@ -58,6 +58,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
@@ -654,6 +655,19 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		relationshipModel.removeRelationshipObjects(removedObjects);
 	}
 	// done
+	if (evt.getSource() == fieldModel && (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST))) {
+		@SuppressWarnings("unchecked")
+		List<MolecularType> oldListCopy = new ArrayList<MolecularType>((List<MolecularType>)evt.getOldValue());
+		@SuppressWarnings("unchecked")
+		List<MolecularType> newList = (List<MolecularType>)evt.getNewValue();
+		if(newList != null && oldListCopy != null && oldListCopy.size() > newList.size()) {
+			// something got deleted
+			oldListCopy.removeAll(newList);
+			for(MolecularType removedMt : oldListCopy) {
+				relationshipModel.removeRelationshipObject(removedMt);
+			}
+		}
+	}
 }
 
 

@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.PathwayEvent;
@@ -178,8 +179,9 @@ public class PhysiologyRelationshipTableModel extends VCellSortTableModel<Physio
 			}
 			List<PhysiologyRelationshipTableRow> allPathwayObjectList = new ArrayList<PhysiologyRelationshipTableRow>();
 			for (BioPaxObject bpObject1 : bioModel.getPathwayModel().getBiopaxObjects()){
-				if (bpObject1 instanceof PhysicalEntity && (bioModelEntityObject == null || bioModelEntityObject instanceof SpeciesContext)
-						|| bpObject1 instanceof Conversion && (bioModelEntityObject == null || bioModelEntityObject instanceof ModelProcess)) {
+				if ((bpObject1 instanceof PhysicalEntity && (bioModelEntityObject == null || bioModelEntityObject instanceof SpeciesContext))
+						|| (bpObject1 instanceof Conversion && (bioModelEntityObject == null || bioModelEntityObject instanceof ModelProcess))
+						|| (bpObject1 instanceof MolecularType && (bioModelEntityObject == null || bioModelEntityObject instanceof MolecularType))) {
 					PhysiologyRelationshipTableRow entityRow = new PhysiologyRelationshipTableRow(bpObject1);
 					if (relationshipObjects != null) {
 						for (RelationshipObject ro : relationshipObjects) {

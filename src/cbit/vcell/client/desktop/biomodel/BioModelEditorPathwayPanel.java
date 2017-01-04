@@ -70,9 +70,9 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 				getAddPopupMenu().show(importButton, 0, importButton.getHeight());
 //				importPathway();
 			} else if (e.getSource() == addSelectedOnlyMenuItem) {
-				importPathway(false, false, false);
+				importPathway(false, true, false);
 			} else if (e.getSource() == addWithInteractionsMenuItem) {
-				importPathway(false, false, true);
+				importPathway(false, true, true);
 			} else if (e.getSource() == addWithComponentsMenueItem) {
 				importPathway(false, true, true);
 			} else if (e.getSource() == addWithComplexesMenuItem) {
@@ -262,14 +262,14 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 			addSelectedOnlyMenuItem.addActionListener(eventHandler);			
 			addWithInteractionsMenuItem = new JMenuItem("Plus Interactions");
 			addWithInteractionsMenuItem.addActionListener(eventHandler);
-			addWithComponentsMenueItem = new JMenuItem("Plus Components");
-			addWithComponentsMenueItem.addActionListener(eventHandler);
-			addWithComplexesMenuItem = new JMenuItem("Plus Complexes");
-			addWithComplexesMenuItem.addActionListener(eventHandler);
+//			addWithComponentsMenueItem = new JMenuItem("Plus Components");		// we do it by default
+//			addWithComponentsMenueItem.addActionListener(eventHandler);
+//			addWithComplexesMenuItem = new JMenuItem("Plus Complexes");			// works but dubious need for it
+//			addWithComplexesMenuItem.addActionListener(eventHandler);
 			addPopupMenu.add(addSelectedOnlyMenuItem);
 			addPopupMenu.add(addWithInteractionsMenuItem);
-			addPopupMenu.add(addWithComponentsMenueItem);
-			addPopupMenu.add(addWithComplexesMenuItem);	
+//			addPopupMenu.add(addWithComponentsMenueItem);
+//			addPopupMenu.add(addWithComplexesMenuItem);	
 		}
 		return addPopupMenu;
 	}

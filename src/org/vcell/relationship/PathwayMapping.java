@@ -126,12 +126,21 @@ public class PathwayMapping {
 
 		RbmModelContainer rbmmc = bioModel.getModel().getRbmModelContainer();
 		if(rbmmc.getMolecularType(name) != null) {
-			return rbmmc.getMolecularType(name);		// already exists
+			MolecularType mt = rbmmc.getMolecularType(name);		// already exists
+			// check whether it links to pathway object, create relationship object if not
+			if(!bioModel.getRelationshipModel().isRelationship(mt, bioPaxObject)) {
+				RelationshipObject ro = new RelationshipObject(mt, bioPaxObject);
+				bioModel.getRelationshipModel().addRelationshipObject(ro);
+			}
+			return mt;
 		}
 		
 		MolecularType mt = new MolecularType(name, bioModel.getModel());
 		try {
 			rbmmc.addMolecularType(mt, true);
+			// we know for sure that a relationship can't exist, so we make one
+			RelationshipObject ro = new RelationshipObject(mt, bioPaxObject);
+			bioModel.getRelationshipModel().addRelationshipObject(ro);
 		} catch (ModelException | PropertyVetoException e) {
 			e.printStackTrace();
 		}
