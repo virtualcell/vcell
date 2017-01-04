@@ -109,6 +109,8 @@ public class ReactionCartoon extends ModelCartoon {
 	
 	public void applyDefaults(Diagram diagram) {
 		List<NodeReference> nodeList = diagram.getNodeList();
+		List<NodeReference> orphansList = new ArrayList<NodeReference> ();
+
 		for (int i = 0; i < nodeList.size(); i++) {
 			NodeReference node = nodeList.get(i);
 			Object obj = null;
@@ -143,21 +145,31 @@ public class ReactionCartoon extends ModelCartoon {
 			}
 			case NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE: {		// obj is a RuleParticipantSignature
 				Structure struct = diagram.getStructure();
+				boolean found = false;
 				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
 					if (signature instanceof RuleParticipantLongSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), Criteria.full)){
 						obj = signature;
+						found = true;
 						break;
 					}
+				}
+				if(!found) {
+					orphansList.add(node);
 				}
 				break;
 			}
 			case NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE: {
 				Structure struct = diagram.getStructure();
+				boolean found = false;
 				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
 					if (signature instanceof RuleParticipantShortSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), Criteria.full)){
 						obj = signature;
+						found = true;
 						break;
 					}
+				}
+				if(!found) {
+					orphansList.add(node);
 				}
 				break;
 			}
@@ -174,6 +186,10 @@ public class ReactionCartoon extends ModelCartoon {
 					shape.setRelPos(relPosNew);					
 //				}
 			}
+		}
+		
+		if(!orphansList.isEmpty()) {
+			diagram.removeNodeReferences(orphansList);
 		}
 	}
 

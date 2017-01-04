@@ -179,6 +179,9 @@ public class Diagram implements Serializable, Matchable {
 		nodeList.clear();
 		nodeList.addAll(Arrays.asList(nodeReferences));
 	}
+	public void removeNodeReferences(List<NodeReference> nodes) {
+		nodeList.removeAll(nodes);
+	}
 
 	public void setStructure(Structure structure) {
 		this.key = new StructureKey(structure);
