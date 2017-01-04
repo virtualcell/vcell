@@ -85,13 +85,13 @@ public class PathwayMapping {
 		for(int i = 0; i < selectedObjects.length; i++) {
 			if(selectedObjects[i] instanceof BioPaxObject) {
 				BioPaxObject bioPaxObject = (BioPaxObject)selectedObjects[i];
-				if(bioPaxObject instanceof Protein) {
-					createMolecularTypeFromBioPaxObject(bioModel, (Protein)bioPaxObject);
+				if(bioPaxObject instanceof PhysicalEntity && !(bioPaxObject instanceof Complex)) {
+					createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)bioPaxObject);
 				}
 			} else if(selectedObjects[i] instanceof ConversionTableRow) {
 				ConversionTableRow ctr = (ConversionTableRow)selectedObjects[i];
-				if(ctr.getBioPaxObject() instanceof Protein) {
-					createMolecularTypeFromBioPaxObject(bioModel, (Protein)ctr.getBioPaxObject());
+				if(ctr.getBioPaxObject() instanceof PhysicalEntity && !(ctr.getBioPaxObject() instanceof Complex)) {
+					createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)ctr.getBioPaxObject());
 				}
 			}
 		}
@@ -275,13 +275,13 @@ public class PathwayMapping {
 				sp.addMolecularTypePattern(mtp);
 			}
 			return sp;
-		} else if(bioPaxObject instanceof Protein || bioPaxObject instanceof SmallMolecule) {
+		} else {		//  else if(!(bioPaxObject instanceof Complex))
 			MolecularType mt = createMolecularTypeFromBioPaxObject(bioModel, bioPaxObject);
 			MolecularTypePattern mtp = new MolecularTypePattern(mt);
 			sp.addMolecularTypePattern(mtp);
 			return sp;
 		}
-		return null;
+//		return null;
 	}
 	
 	private void createReactionStepsFromBioPaxObject(BioModel bioModel, Conversion conversion) throws Exception

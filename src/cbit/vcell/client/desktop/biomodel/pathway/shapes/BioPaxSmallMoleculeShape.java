@@ -21,7 +21,7 @@ public class BioPaxSmallMoleculeShape extends BioPaxPhysicalEntityShape {
 		super(smallMolecule, graphModel);
 	}
 	
-	protected Color getDefaultBackgroundColor() { return Color.blue; }
+	protected Color getDefaultBackgroundColor() { return Color.cyan; }
 	protected int getPreferredWidth() { return 12; }
 	protected int getPreferredHeight() { return 12; }
 			

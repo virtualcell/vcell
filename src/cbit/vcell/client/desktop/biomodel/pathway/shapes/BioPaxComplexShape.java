@@ -22,8 +22,8 @@ public class BioPaxComplexShape extends BioPaxPhysicalEntityShape {
 	}
 	
 	protected Color getDefaultBackgroundColor() { return Color.orange; }
-	protected int getPreferredWidth() { return 18; }
-	protected int getPreferredHeight() { return 18; }
+	protected int getPreferredWidth() { return 20; }
+	protected int getPreferredHeight() { return 20; }
 			
 	public Complex getComplex() {
 		return (Complex) getModelObject();
