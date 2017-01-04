@@ -48,7 +48,8 @@ public class RuleParticipantSignature {
 			return compareByCriteria(theirSpeciesPattern, criteria);
 		} catch (ParseException e) {
 			e.printStackTrace();
-			throw new RuntimeException("Unable to parse species pattern signature: " + e.getMessage());
+//			throw new RuntimeException("Unable to parse species pattern signature: " + e.getMessage());
+			return false;
 		}
 	}
 	
