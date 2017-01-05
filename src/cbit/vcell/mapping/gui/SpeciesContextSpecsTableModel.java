@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -43,6 +44,7 @@ public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesCo
 	public enum ColumnType {
 		COLUMN_SPECIESCONTEXT("Species"),
 		COLUMN_STRUCTURE("Structure"),
+		COLUMN_DEPICTION("Depiction"),
 		COLUMN_CLAMPED("Clamped"),
 		COLUMN_INITIAL("Initial Condition"),
 		COLUMN_WELLMIXED("Well Mixed"),
@@ -110,6 +112,9 @@ public Class<?> getColumnClass(int column) {
 		}
 		case COLUMN_STRUCTURE:{
 			return Structure.class;
+		}
+		case COLUMN_DEPICTION:{
+			return SpeciesPattern.class;
 		}
 		case COLUMN_CLAMPED:
 		case COLUMN_WELLMIXED:
@@ -185,6 +190,9 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_STRUCTURE:{
 				return scSpec.getSpeciesContext().getStructure();
 			}
+			case COLUMN_DEPICTION:{
+				return scSpec.getSpeciesContext().getSpeciesPattern();
+			}
 			case COLUMN_CLAMPED:{
 				return new Boolean(scSpec.isConstant());
 			}
@@ -198,7 +206,6 @@ public Object getValueAt(int row, int col) {
 				} else	{
 					return null;
 				}
-				
 			}
 			case COLUMN_DIFFUSION:{
 				SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
@@ -236,6 +243,9 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return false;
 		}
 		case COLUMN_STRUCTURE:{
+			return false;
+		}
+		case COLUMN_DEPICTION:{
 			return false;
 		}
 		case COLUMN_CLAMPED:{

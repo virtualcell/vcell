@@ -12,6 +12,7 @@ package cbit.vcell.mapping.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -26,6 +27,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
@@ -38,13 +40,16 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSpeciesTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -491,12 +496,50 @@ private void initialize() {
 				return this;
 			}
 		};
+		DefaultTableCellRenderer rbmSpeciesShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
+			SpeciesPatternSmallShape spss = null;
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, 
+					boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == tableModel) {
+						selectedObject = tableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof SpeciesContextSpec) {
+							SpeciesContextSpec scs = (SpeciesContextSpec)selectedObject;
+							SpeciesContext sc = scs.getSpeciesContext();
+							SpeciesPattern sp = sc.getSpeciesPattern();		// sp may be null for "plain" species contexts
+							Graphics panelContext = table.getGraphics();
+							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected);
+						}
+					} else {
+						spss = null;
+					}
+				}
+				setText("");
+				return this;
+			}
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				if(spss != null) {
+					spss.paintSelf(g);
+				}
+			}
+		};
 
 		getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
+		getScrollPaneTable().setDefaultRenderer(SpeciesPattern.class, rbmSpeciesShapeDepictionCellRenderer);
+
 		getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(ScopedExpression.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
+		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

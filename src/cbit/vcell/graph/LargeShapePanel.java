@@ -61,6 +61,12 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 			return true;
 		}
 	}
+	public void setZoomFactor(int newZoomFactor) {
+		if(newZoomFactor > LargestZoomFactor || newZoomFactor < SmallestZoomFactor) {
+			throw new RuntimeException("Large Shape Panel zoom factor is out of bounds");
+		}
+		zoomFactor = newZoomFactor;
+	}
 	public boolean zoomSmaller() {	// returns false when lower limit was reached
 		zoomFactor--;
 		if(zoomFactor <= SmallestZoomFactor) {
