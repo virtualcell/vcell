@@ -1,0 +1,264 @@
+If automatic vcell restart script failed you will have to contact
+schaff@uchc.edu
+-or-
+frm@uchc.edu
+
+OTHERWISE here is the information to manually restart VCell and/or ActiveMQ:
+
+-----Restarting ActiveMQ manually (ONLY IF NEEDED))----------------------------------------------
+
+If activemq server on code2 has been disrupted and needs to restart
+
+login to code2.cam.uchc.edu
+su - root (must be root to stop/start activemq)
+find activemq 'processid' for site
+        rel     ps -efl | grep -i /apache-activemq-5.11.1/rel/conf
+        beta    ps -efl | grep -i /apache-activemq-5.11.1/beta/conf
+        alpha   ps -efl | grep -i /apache-activemq-5.11.1/conf
+
+kill 'processid' (activemq should catch signal and shutdown gracefully, check if processid is gone, if not use 'kill -9 processid')
+
+change directory to site specific activemq directory
+        rel     cd /usr/local/apache-activemq-5.11.1/rel/bin
+        beta    cd /usr/local/apache-activemq-5.11.1/beta/bin
+        alpha   cd /usr/local/apache-activemq-5.11.1/bin
+
+restart activemq using site specific script
+        rel:	./rel start
+        beta:	./beta start
+        alpha:	./activemq start
+--------------------------------------------------------------------------------------------------
+
+
+
+-----Restarting VCell manually-------------------------------------------------------------------
+
+i)  all "master" services run on the same machine (vcellservice)
+
+ii)  all "rmi bootstrap" services run on DIFFERENT machines  (rmi-rel, rmi-beta, rmi-alpha)
+
+iii)  each site has it's own script directory:
+/share/apps/vcell2/deployed/rel/configs
+/share/apps/vcell2/deployed/beta/configs
+/share/apps/vcell2/deployed/alpha/configs
+
+
+below you'll find detailed instructions for restarting "master" and "rmi" services for released and beta (don't worry about alpha site).
+
+A) RESTART RELEASE SITE MASTER SERVICE: <<< M U S T   B E    O N    vcellservice   A S   U S E R    vcell >>>>>
+B) RESTART RELEASE SITE RMI SERVICES: <<< M U S T   B E    O N    rmi-REL   A S   U S E R    vcell >>>>>
+
+C) RESTART BETA SITE MASTER SERVICE: <<< M U S T   B E    O N    vcellservice   A S   U S E R    vcell >>>>>
+D) RESTART BETA SITE RMI SERVICES: <<< M U S T   B E    O N    rmi-BETA   A S   U S E R    vcell >>>>>
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+A) RESTART RELEASE SITE MASTER SERVICE: <<< M U S T   B E    O N    VCELLSERVICE    A S   U S E R    vcell >>>>>
+====================================
+
+#
+# (1)  ssh into vcellservice.cam.uchc.edu
+#
+
+
+#
+# (2)  become user vcell
+#
+[jsadmin@vcellservice  /  1]  sudo su vcell -
+
+
+#
+# (3)  cd to script directory for release <<<< E A C H    S I T E    H A S    I T S   O W N    S C R I P T   D I R E C T O R Y >>>>
+#
+[vcell@vcellservice  /home/cam/vcell  11] $  cd /share/apps/vcell2/deployed/rel/configs
+
+
+#
+# (4)  find currently running <<RELEASE>> vcellservice instance and M A N U A L L Y   K I L L    I T  
+#
+#      note that there are normally two services running on vcellservice for each site ("VCellServices" and "NagiosVCellMonitor")
+#
+#      kill the one named "VCellServices" with "rel" in the log path (e.g. "/share/apps/vcell2/logs/rel"  )
+#
+[vcell@vcellservice  /share/apps/vcell2/deployed/rel/configs  12] $ jps -m | grep rel
+
+30133 VCellServices 123 /share/apps/vcell2/logs/rel SGE
+31715 NagiosVCellMonitor -H rmi-rel.cam.uchc.edu -i 40105:8080 -p nagcmd -m 33330 -t params:60,2,120,300,180,300,1200
+
+[vcell@vcellservice  /share/apps/vcell2/deployed/rel/configs  13] $ kill 30133 
+
+
+#
+# (5)  verify that VCellService is not still running (using jps -m) ... should not see "VCellService"
+#
+[vcell@vcellservice  /share/apps/vcell2/deployed/rel/configs  14]  jps -m | grep rel
+
+31715 NagiosVCellMonitor -H rmi-rel.cam.uchc.edu -i 40105:8080 -p nagcmd -m 33330 -t params:60,2,120,300,180,300,1200
+
+#
+# (6) start vcellservice for release site  (make sure it is not already running)
+#
+[vcell@vcellservice  /share/apps/vcell2/deployed/rel/configs  15] $ ./vcellservice
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+B) RESTART RELEASE SITE RMI SERVICES: <<< M U S T   B E    O N    RMI-REL    A S   U S E R    vcell >>>>>
+=================================
+
+#
+# (1)  ssh into rmi-rel.cam.uchc.edu
+#
+
+
+#
+# (2)  become user vcell
+#
+[jsadmin@rmi-rel /  1]  sudo su vcell -
+
+
+#
+# (3)  cd to script directory for release <<<< E A C H    S I T E    H A S    I T S   O W N    S C R I P T   D I R E C T O R Y >>>>
+#
+[vcell@rmi-rel ~  2] $ cd /share/apps/vcell2/deployed/rel/configs/
+
+#
+# (4)  find currently running <<RELEASE>> LocalVCellBootstrap instance and M A N U A L L Y   K I L L    I T  
+#
+#      note that there are normally two java services running on vcell-rmi named LocalVCellBootstrap and listening on ports 8080 and 40105
+#
+#      kill the two services named "LocalVCellBootstrap" with "rel" in the log path (e.g. "/share/apps/vcell2/logs/rel"  )
+#
+[vcell@rmi-rel /share/apps/vcell2/deployed/rel/configs  3] $ jps -m | grep rel
+
+2798 LocalVCellBootstrap rmi-rel.cam.uchc.edu 40105 messaging /share/apps/vcell2/logs/rel
+2240 LocalVCellBootstrap rmi-rel.cam.uchc.edu 8080 messaging /share/apps/vcell2/logs/rel
+
+[vcell@rmi-rel /share/apps/vcell2/deployed/rel/configs  4] $  $ kill 2798 
+[vcell@rmi-rel /share/apps/vcell2/deployed/rel/configs  5] $  $ kill 2240 
+
+
+#
+# (5)  verify that both LocalVCellBootstrap services are killed (using jps -m) ... should not see "LocalVCellBootstrap"
+#
+[vcell@rmi-rel /share/apps/vcell2/deployed/rel/configs  6] $   jps -m | grep rel
+
+
+#
+# (6) start LocalVCellBootstrap services (for port 8080 and for port 40105)
+#
+[vcell@rmi-rel /share/apps/vcell2/deployed/rel/configs  7] ./vcellbootstrap_http
+[vcell@rmi-rel /share/apps/vcell2/deployed/rel/configs  8] ./vcellbootstrap_high
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+C) RESTART BETA SITE MASTER SERVICE: <<< M U S T   B E    O N    VCELLSERVICE    A S   U S E R    vcell >>>>>
+====================================
+
+#
+# (1)  ssh into vcellservice.cam.uchc.edu
+#
+
+
+#
+# (2)  become user vcell
+#
+[jsadmin@vcellservice  /  1]  sudo su vcell -
+
+
+#
+# (3)  cd to script directory for beta <<<< E A C H    S I T E    H A S    I T S   O W N    S C R I P T   D I R E C T O R Y >>>>
+#
+[vcell@vcellservice  /home/cam/vcell  11] $  cd /share/apps/vcell2/deployed/beta/configs
+
+
+#
+# (4)  find currently running <<BETA>> vcellservice instance and M A N U A L L Y   K I L L    I T  
+#
+#      note that there are normally two services running on vcellservice for each site ("VCellServices" and "NagiosVCellMonitor")
+#
+#      kill the one named "VCellServices" with "beta" in the log path (e.g. "/share/apps/vcell2/logs/beta"  )
+#
+[vcell@vcellservice  /share/apps/vcell2/deployed/beta/configs  12] $ jps -m | grep beta
+
+30133 VCellServices 123 /share/apps/vcell2/logs/beta SGE
+31715 NagiosVCellMonitor -H rmi-beta.cam.uchc.edu -i 40105:8080 -p nagcmd -m 33330 -t params:60,2,120,300,180,300,1200
+
+[vcell@vcellservice  /share/apps/vcell2/deployed/beta/configs  13] $ kill 30133 
+
+
+#
+# (5)  verify that VCellService is not still running (using jps -m) ... should not see "VCellService"
+#
+[vcell@vcellservice  /share/apps/vcell2/deployed/beta/configs  14]  jps -m | grep beta
+
+31715 NagiosVCellMonitor -H rmi-beta.cam.uchc.edu -i 40105:8080 -p nagcmd -m 33330 -t params:60,2,120,300,180,300,1200
+
+#
+# (6) start vcellservice for beta site  (make sure it is not already running)
+#
+[vcell@vcellservice  /share/apps/vcell2/deployed/beta/configs  15] $ ./vcellservice
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+B) RESTART BETA SITE RMI SERVICES: <<< M U S T   B E    O N    RMI-BETA    A S   U S E R    vcell >>>>>
+=================================
+
+#
+# (1)  ssh into rmi-beta.cam.uchc.edu
+#
+
+
+#
+# (2)  become user vcell
+#
+[jsadmin@rmi-beta /  1]  sudo su vcell -
+
+
+#
+# (3)  cd to script directory for beta <<<< E A C H    S I T E    H A S    I T S   O W N    S C R I P T   D I R E C T O R Y >>>>
+#
+[vcell@rmi-beta ~  2] $ cd /share/apps/vcell2/deployed/beta/configs/
+
+#
+# (4)  find currently running <<BETA>> LocalVCellBootstrap instance and M A N U A L L Y   K I L L    I T  
+#
+#      note that there are normally two java services running on vcell-rmi named LocalVCellBootstrap and listening on ports 8080 and 40105
+#
+#      kill the two services named "LocalVCellBootstrap" with "beta" in the log path (e.g. "/share/apps/vcell2/logs/beta"  )
+#
+[vcell@rmi-beta /share/apps/vcell2/deployed/beta/configs  3] $ jps -m | grep beta
+
+2798 LocalVCellBootstrap rmi-beta.cam.uchc.edu 40105 messaging /share/apps/vcell2/logs/beta
+2240 LocalVCellBootstrap rmi-beta.cam.uchc.edu 8080 messaging /share/apps/vcell2/logs/beta
+
+[vcell@rmi-beta /share/apps/vcell2/deployed/beta/configs  4] $  $ kill 2798 
+[vcell@rmi-beta /share/apps/vcell2/deployed/beta/configs  5] $  $ kill 2240 
+
+
+#
+# (5)  verify that both LocalVCellBootstrap services are killed (using jps -m) ... should not see "LocalVCellBootstrap"
+#
+[vcell@rmi-beta /share/apps/vcell2/deployed/beta/configs  6] $   jps -m | grep beta
+
+
+#
+# (6) start LocalVCellBootstrap services (for port 8080 and for port 40105)
+#
+[vcell@rmi-beta /share/apps/vcell2/deployed/beta/configs  7] ./vcellbootstrap_http
+[vcell@rmi-beta /share/apps/vcell2/deployed/beta/configs  8] ./vcellbootstrap_high
+
+
+
+
