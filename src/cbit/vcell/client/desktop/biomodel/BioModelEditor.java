@@ -55,6 +55,7 @@ import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
@@ -63,6 +64,7 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.DataSymbolsSpecPanel;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
+import cbit.vcell.mapping.gui.ReactionRuleSpecPropertiesPanel;
 import cbit.vcell.mapping.gui.SpatialObjectPropertyPanel;
 import cbit.vcell.mapping.gui.SpatialProcessPropertyPanel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecPanel;
@@ -127,6 +129,7 @@ public class BioModelEditor extends DocumentEditor {
 	private ApplicationPropertiesPanel applicationPropertiesPanel = null;
 	private SpeciesContextSpecPanel speciesContextSpecPanel = null;
 	private KineticsTypeTemplatePanel kineticsTypeTemplatePanel = null;
+	private ReactionRuleSpecPropertiesPanel reactionRuleSpecPropertiesPanel = null;
 	private SimulationSummaryPanel simulationSummaryPanel = null;
 	private SimulationConsolePanel simulationConsolePanel = null;
 	
@@ -541,6 +544,17 @@ private KineticsTypeTemplatePanel getKineticsTypeTemplatePanel() {
 	}
 	return kineticsTypeTemplatePanel;
 }
+private ReactionRuleSpecPropertiesPanel getReactionRuleSpecPropertiesPanel() {
+	if(reactionRuleSpecPropertiesPanel == null) {
+		try {
+			reactionRuleSpecPropertiesPanel = new ReactionRuleSpecPropertiesPanel();
+			reactionRuleSpecPropertiesPanel.setName("ReactionRuleSpecPropertiesPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return reactionRuleSpecPropertiesPanel;
+}
 private SpeciesPropertiesPanel getSpeciesPropertiesPanel() {
 	if (speciesPropertiesPanel == null) {
 		speciesPropertiesPanel = new SpeciesPropertiesPanel();
@@ -654,6 +668,7 @@ private void initialize() {
 		getReactionRulePropertiesPanel().setSelectionManager(selectionManager);
 		getReactionPropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesContextSpecPanel().setSelectionManager(selectionManager);
+		getReactionRuleSpecPropertiesPanel().setSelectionManager(selectionManager);
 		getSpatialObjectPropertyPanel().setSelectionManager(selectionManager);
 		getSpatialProcessPropertyPanel().setSelectionManager(selectionManager);
 		getKineticsTypeTemplatePanel().setSelectionManager(selectionManager);
@@ -728,6 +743,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getSpeciesContextSpecPanel();
 		} else if (singleSelection instanceof ReactionSpec) {
 			bottomComponent = getKineticsTypeTemplatePanel();
+		} else if (singleSelection instanceof ReactionRuleSpec) {		// 
+			bottomComponent = getReactionRuleSpecPropertiesPanel();
 		} else if (singleSelection instanceof BioModelsNetModelInfo) {
 			bShowInDatabaseProperties = true;
 			bottomComponent = getBioModelsNetPropertiesPanel();
@@ -938,6 +955,8 @@ public void setBioModel(BioModel bioModel) {
 	this.bioModel = bioModel;
 	bioModelEditorModelPanel.setBioModel(bioModel);
 	getBioModelEditorApplicationsPanel().setBioModel(bioModel);
+	getSpeciesContextSpecPanel().setBioModel(bioModel);
+	getReactionRuleSpecPropertiesPanel().setBioModel(bioModel);
 	getScriptingPanel().setBioModel(bioModel);	
 	getBioModelEditorPathwayPanel().setBioModel(bioModel);
 	getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
