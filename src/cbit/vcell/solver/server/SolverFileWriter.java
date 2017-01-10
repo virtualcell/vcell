@@ -27,7 +27,7 @@ public abstract class SolverFileWriter {
 	protected boolean bUseMessaging = true;
 	protected final SimulationTask simTask;
 	
-	enum SolverInputFileKeyword {
+	protected enum SolverInputFileKeyword {
 		JMS_PARAM_BEGIN("jms"),
 		JMS_BROKER("broker"),
 		JMS_USER("jmsUser"),
@@ -42,7 +42,7 @@ public abstract class SolverFileWriter {
 		SolverInputFileKeyword(String xml ) {
 			this.xml = xml;
 		}
-		final String xml;
+		public final String xml;
 	}
 /**
  * OdeFileCoder constructor comment.

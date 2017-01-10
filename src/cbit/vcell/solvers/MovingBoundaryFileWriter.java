@@ -19,6 +19,7 @@ import org.vcell.movingboundary.MovingBoundarySolverSpec;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
+import org.vcell.util.PropertyLoader;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
@@ -35,6 +36,8 @@ import cbit.vcell.math.PointVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType.VariableDomain;
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.VCellTopic;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
@@ -146,6 +149,9 @@ public Element writeMovingBoundaryXML(SimulationTask simTask) throws SolverExcep
 	}
 
 	Element rootElement = new Element(MBTags.MovingBoundarySetup);
+	if (bUseMessaging) {
+		rootElement.addContent(getXMLJms());	// jms
+	}
 	rootElement.addContent(getXMLProblem());	// problem
 	rootElement.addContent(getXMLReport());		// report
 	rootElement.addContent(getXMLProgress());	// progress
@@ -160,6 +166,46 @@ public Element writeMovingBoundaryXML(SimulationTask simTask) throws SolverExcep
 		throw new SolverException("Can't generate MovingBoundary input", e);
 	}
 }
+
+private Element getXMLJms()
+{
+	Element jms = new Element(SolverInputFileKeyword.JMS_PARAM_BEGIN.xml);
+	
+	Element e = new Element(SolverInputFileKeyword.JMS_BROKER.xml);
+	e.setText(PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL));
+	jms.addContent(e);
+	
+	e = new Element(SolverInputFileKeyword.JMS_USER.xml);
+	e.setText(PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
+	jms.addContent(e);
+	
+	e = new Element(SolverInputFileKeyword.JMS_PW.xml);
+	e.setText(PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword));
+	jms.addContent(e);
+	
+	e = new Element(SolverInputFileKeyword.JMS_QUEUE.xml);
+	e.setText(VCellQueue.WorkerEventQueue.getName());
+	jms.addContent(e);
+	
+	e = new Element(SolverInputFileKeyword.JMS_TOPIC.xml);
+	e.setText(VCellTopic.ServiceControlTopic.getName());
+	jms.addContent(e);
+	
+	e = new Element(SolverInputFileKeyword.VCELL_USER.xml);
+	e.setText(simTask.getSimulation().getVersion().getOwner().getName());
+	jms.addContent(e);
+	
+	e = new Element(SolverInputFileKeyword.SIMULATION_KEY.xml);
+	e.setText(simTask.getSimulation().getVersion().getVersionKey().toString());
+	jms.addContent(e);
+	
+	e = new Element(SolverInputFileKeyword.JOB_INDEX.xml);
+	e.setText(simTask.getSimulationJob().getJobIndex() + "");
+	jms.addContent(e);
+
+	return jms;
+}
+
 // ------------------------------------------------- problem
 private Element getXMLProblem() throws ExpressionException, MathException {
 	Element e = problem = new Element(MBTags.problem);
