@@ -197,7 +197,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		Color colorOld = g2.getColor();
 		Font fontOld = g2.getFont();
 		
-		g.setColor(Color.black);
+		g.setColor(getDefaultColor(Color.black));
 		int fontSize = fontOld.getSize();
 			
 		int textX = xPos - 7;
@@ -299,6 +299,13 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 
 	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);
+	}
+
+	private Color getDefaultColor(Color defaultCandidate) {
+		if(shapePanel == null) {
+			return defaultCandidate;
+		}
+		return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
 	}
 
 	public boolean isHighlightedReactants() {

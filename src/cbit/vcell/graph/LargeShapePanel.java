@@ -1,5 +1,7 @@
 package cbit.vcell.graph;
 
+import java.awt.Color;
+
 import javax.swing.JPanel;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
@@ -23,7 +25,12 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	public static final int SmallestZoomFactorWithText = -5;	// -5 is the smallest where we show text
 	private static final int DefaultZoomFactor = 0;
 	private static final int LargestZoomFactor = 0;
-	private int zoomFactor = DefaultZoomFactor;	
+	private int zoomFactor = DefaultZoomFactor;
+	
+	// by default the shapes are editable and their border and text is black / gray, aso
+	// otherwise they are a shade of brown, very much alike the DefaultScrollTableCellRenderer.uneditableForeground
+	public static final Color uneditableShape = new Color(0x9F4F07);
+	private boolean editable = true;
 
 	public static enum Highlight { on, off }
 	public static enum WhatIsHighlighted { reactant, product }
@@ -86,6 +93,13 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	}
 	public int getZoomFactor() {
 		return zoomFactor;
+	}
+	
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+	public boolean isEditable() {
+		return editable;
 	}
 
 	// ----------------------------------------------------------------------------------------------------

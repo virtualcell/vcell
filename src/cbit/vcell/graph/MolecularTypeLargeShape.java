@@ -522,26 +522,26 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
 				g2.setPaint(Color.red);
 			} else {
-				g2.setPaint(Color.BLACK);
+				g2.setPaint(getDefaultColor(Color.BLACK));
 			}
 			g2.draw(inner);
 			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
 				g2.setPaint(Color.red);
 			} else {
-				g2.setPaint(Color.BLACK);
+				g2.setPaint(getDefaultColor(Color.BLACK));
 			}
 			g2.draw(rect);
 		} else {
 			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
 				g2.setPaint(Color.red.darker());
 			} else {
-				g2.setPaint(Color.GRAY);
+				g2.setPaint(getDefaultColor(Color.GRAY));
 			}
 			g2.draw(inner);
 			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
 				g2.setPaint(Color.red.darker());
 			} else {
-				g2.setPaint(Color.DARK_GRAY);
+				g2.setPaint(getDefaultColor(Color.DARK_GRAY));
 			}
 			g2.draw(rect);
 		}
@@ -552,7 +552,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			Graphics gc = shapePanel.getGraphics();
 			Font font = deriveMoleculeFontBold(g, shapePanel);
 			g.setFont(font);
-			g.setColor(Color.black);
+			g.setColor(getDefaultColor(Color.BLACK));	// font color
 			int fontSize = font.getSize();
 			
 			int textX = xPos + 11;
@@ -578,6 +578,13 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		}
 		g.setFont(fontOld);
 		g.setColor(colorOld);
+	}
+	
+	private Color getDefaultColor(Color defaultCandidate) {
+		if(shapePanel == null) {
+			return defaultCandidate;
+		}
+		return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
 	}
 	
 	public static Font deriveMoleculeFontBold(Graphics gc, LargeShapePanel shapePanel) {

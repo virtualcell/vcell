@@ -369,7 +369,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 	public void paintCompartment(Graphics g) {
 
-		Color structureColor = Color.black;
+		Color structureColor = getDefaultColor(Color.black);
 		Structure structure = null;
 		if(owner instanceof ReactionRule && !speciesShapes.isEmpty()) {
 			ReactionRule rr = (ReactionRule)owner;
@@ -384,7 +384,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			}
 		} else if(owner instanceof SpeciesContext && ((SpeciesContext)owner).hasSpeciesPattern()) {
 				structure = ((SpeciesContext)owner).getStructure();
-				structureColor = Color.gray;
+				structureColor = getDefaultColor(Color.gray);
 		} else if(owner instanceof RbmObservable && !speciesShapes.isEmpty()) {
 				structure = ((RbmObservable)owner).getStructure();			
 		} else {
@@ -422,7 +422,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			name = buildCompartmentName(g, name, "..", w);
 		}
 		
-		Color darker = Color.gray;	// a bit darker for border
+		Color darker = getDefaultColor(Color.gray);	// a bit darker for border
 		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, w, 58);
 		g2.setColor(darker);
 		g2.draw(border);
@@ -578,11 +578,11 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			Color fontColor = Color.red;
 			Color lineColor = Color.red;
 			if(AbstractComponentShape.isHidden(owner, bs.mcp)) {
-				fontColor = Color.gray;
-				lineColor = Color.lightGray;
+				fontColor = getDefaultColor(Color.gray);
+				lineColor = getDefaultColor(Color.lightGray);
 			} else {
-				fontColor = Color.black;
-				lineColor = Color.gray;
+				fontColor = getDefaultColor(Color.black);
+				lineColor = getDefaultColor(Color.gray);
 			}
 			
 			if(bs.mcp.getBondType().equals(BondType.Possible)) {	//		?  (Possible)
@@ -596,17 +596,17 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 				}
 				g2.setColor(lineColor);
 				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+ysExists);
-				g2.setColor(Color.gray);
+				g2.setColor(getDefaultColor(Color.gray));
 				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+ysExists);
 
 				g2.setColor(lineColor);
 				g2.drawLine(bs.from.x, bs.from.y+yExists, bs.from.x, bs.from.y+yExists+ysExists);
-				g2.setColor(Color.gray);
+				g2.setColor(getDefaultColor(Color.gray));
 				g2.drawLine(bs.from.x+1, bs.from.y+yExists, bs.from.x+1, bs.from.y+yExists+ysExists);
 
 				g2.setColor(lineColor);
 				g2.drawLine(bs.from.x, bs.from.y+yExists*2, bs.from.x, bs.from.y+yExists*2+ysExists);
-				g2.setColor(Color.gray);
+				g2.setColor(getDefaultColor(Color.gray));
 				g2.drawLine(bs.from.x+1, bs.from.y+yExists*2, bs.from.x+1, bs.from.y+yExists*2+ysExists);
 
 			} else if(bs.mcp.getBondType().equals(BondType.Exists)) {
@@ -618,7 +618,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 
 				g2.setColor(lineColor);
 				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+yExists*2+ysExists);
-				g2.setColor(Color.gray);
+				g2.setColor(getDefaultColor(Color.gray));
 				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+yExists*2+ysExists);
 			} else {
 //				g2.setColor(Color.red.darker());									// draw a dark red '-' sign
@@ -692,9 +692,9 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 //			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			
 			if(shapePanel.isShowDifferencesOnly()) {
-				g2.setColor(Color.gray);
+				g2.setColor(getDefaultColor(Color.gray));
 			} else {
-				g2.setColor(RbmTreeCellRenderer.bondHtmlColors[bp.id]);
+				g2.setColor(getDefaultColor(RbmTreeCellRenderer.bondHtmlColors[bp.id]));
 			}
 			g2.drawLine(bp.from.x, bp.from.y, bp.from.x, bp.from.y+yDouble+i*separ);
 			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+yDouble+i*separ);
@@ -714,7 +714,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 				}
 			}
 
-			g2.setColor(Color.lightGray);
+			g2.setColor(getDefaultColor(Color.lightGray));
 			g2.drawLine(bp.from.x+1, bp.from.y+1, bp.from.x+1, bp.from.y+yDouble+i*separ);
 			g2.drawLine(bp.to.x+1, bp.to.y+1, bp.to.x+1, bp.to.y+yDouble+i*separ);
 			g2.drawLine(bp.from.x, bp.from.y+yDouble+i*separ+1, bp.to.x+1, bp.to.y+yDouble+i*separ+1);
@@ -723,8 +723,18 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			g2.setColor(colorOld);
 		}
 		if(!endText.isEmpty()) {
+			Color colorOld = g2.getColor();
+			g2.setColor(getDefaultColor(Color.black));
 			g.drawString(endText, getRightEnd() + 20, yPos + 20);
+			g2.setColor(colorOld);
 		}
+	}
+
+	private Color getDefaultColor(Color defaultCandidate) {
+		if(shapePanel == null) {
+			return defaultCandidate;
+		}
+		return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
 	}
 
 	@Override

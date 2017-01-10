@@ -351,18 +351,24 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			if(AbstractComponentShape.hasErrorIssues(owner, csp, csd)) {
 				g2.setColor(Color.red);
 			} else {
-				g.setColor(Color.black);
+				g.setColor(getDefaultColor(Color.black));
 			}
-//			g.setColor(Color.black);
 			g2.draw(normalRectangle);
 			
 			g.setFont(font);
-			g.setColor(Color.black);
+			g.setColor(getDefaultColor(Color.black));
 			g.drawString(displayName, xPos+7, yPos+computeStateHeight(g, shapePanel)-4);
 			
 			g2.setPaint(paintOld);
 			g.setFont(fontOld);
 			g.setColor(colorOld);
+		}
+
+		private Color getDefaultColor(Color defaultCandidate) {
+			if(shapePanel == null) {
+				return defaultCandidate;
+			}
+			return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
 		}
 
 		@Override
@@ -813,14 +819,14 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			g2.setColor(Color.red);
 		} else {
 			if(hidden == false) {
-				g.setColor(Color.black);
+				g.setColor(getDefaultColor(Color.black));
 			} else {
-				g.setColor(Color.gray);
+				g.setColor(getDefaultColor(Color.gray));
 			}
 		}
 		g2.draw(normalRectangle);
 		if(isHighlighted()) {
-			g2.setColor(Color.black);
+			g2.setColor(getDefaultColor(Color.black));
 			g2.draw(innerRectangle);
 			g2.setColor(componentColor);
 		}
@@ -829,9 +835,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		Font font = deriveComponentFontBold(gc, shapePanel);
 		g.setFont(font);
 		if(hidden == false) {
-			g.setColor(Color.black);
+			g.setColor(getDefaultColor(Color.black));
 		} else {
-			g.setColor(Color.gray);
+			g.setColor(getDefaultColor(Color.gray));
 		}
 		int fontSize = font.getSize();
 		int textX = xPos+1+baseWidth/2;
@@ -845,6 +851,13 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		g.setColor(colorOld);
 	}
 	
+	private Color getDefaultColor(Color defaultCandidate) {
+		if(shapePanel == null) {
+			return defaultCandidate;
+		}
+		return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+	}
+
 	@Override
 	public void setHighlight(boolean b, boolean param) {
 		// param is ignored
