@@ -244,9 +244,9 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			g2.setColor(darkerBlue);
 			g2.draw(rect);
 		} else {
-			g2.setPaint(Color.white);
+			g2.setPaint(shapePanel.getBackground());
 			g2.fill(rect);
-			g2.setColor(Color.white);
+			g2.setColor(shapePanel.getBackground());
 			g2.draw(rect);
 		}
 	    g2.setPaint(paintOld);
@@ -285,13 +285,15 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			g2.setColor(darkerBlue);
 			g2.draw(rect);
 		} else if(!isHighlightedReactants() && isReactants) {
-			g2.setColor(Color.white);
+//			g2.setColor(Color.white);
+			g2.setColor(shapePanel.getBackground());
 			g2.draw(rect);
 		} else if(isHighlightedProducts() && !isReactants) {
 			g2.setColor(darkerBlue);
 			g2.draw(rect);
 		} else if(!isHighlightedProducts() && !isReactants) {
-			g2.setColor(Color.white);
+//			g2.setColor(Color.white);
+			g2.setColor(shapePanel.getBackground());
 			g2.draw(rect);
 		}
 

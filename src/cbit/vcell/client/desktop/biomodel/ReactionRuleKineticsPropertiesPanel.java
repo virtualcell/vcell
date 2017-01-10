@@ -1,15 +1,12 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -20,10 +17,6 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -31,78 +24,38 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.event.TreeWillExpandListener;
-import javax.swing.tree.ExpandVetoException;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
-import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.model.rbm.ComponentStatePattern;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Compare;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.model.DistributedKinetics;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.ReactantPattern;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
-import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
-import cbit.vcell.model.common.VCellErrorMessages;
-import cbit.vcell.model.gui.ParameterTableModel;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 
@@ -525,6 +478,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		return linkedPOlist;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
 	private JComboBox getKineticsTypeComboBox() {
 		if (kineticsTypeComboBox == null) {
 			kineticsTypeComboBox = new JComboBox();
