@@ -504,7 +504,11 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 					List<MolecularType> mtList = rbmmc.getMolecularTypeList();
 					int index = mtList.indexOf(mt);
 					index = index%7;
-					primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker();
+					if(!shapePanel.isShowMoleculeColor()) {
+						primaryColor = AbstractComponentShape.componentVeryLightGray;
+					} else {
+						primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker();
+					}
 					if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
 						primaryColor = isHighlighted() ? Color.white : Color.red;
 					}

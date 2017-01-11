@@ -18,11 +18,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -37,6 +40,7 @@ import cbit.vcell.graph.HighlightableShapeInterface;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.graph.ZoomShape;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
@@ -46,6 +50,10 @@ import cbit.vcell.parser.ExpressionException;
 public class SpeciesContextSpecPanel extends DocumentEditorSubPanel {
 	
 	private BioModel bioModel = null;
+	private SpeciesContext speciesContext = null;
+	private EventHandler eventHandler = new EventHandler();
+
+	
 	private JSortTable ivjScrollPaneTable = null;
 	private SpeciesContextSpecParameterTableModel ivjSpeciesContextSpecParameterTableModel = null;
 	
@@ -54,6 +62,24 @@ public class SpeciesContextSpecPanel extends DocumentEditorSubPanel {
 	private LargeShapePanel shapePanel = null;
 	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
+	private JButton zoomLargerButton = null;
+	private JButton zoomSmallerButton = null;
+
+	private class EventHandler implements ActionListener {
+		public void actionPerformed(java.awt.event.ActionEvent e) {
+			if (e.getSource() == getZoomLargerButton()) {
+				boolean ret = shapePanel.zoomLarger();
+				getZoomLargerButton().setEnabled(ret);
+				getZoomSmallerButton().setEnabled(true);
+				updateShape();
+			} else if (e.getSource() == getZoomSmallerButton()) {
+				boolean ret = shapePanel.zoomSmaller();
+				getZoomLargerButton().setEnabled(true);
+				getZoomSmallerButton().setEnabled(ret);
+				updateShape();
+			}
+		}
+	}
 
 public SpeciesContextSpecPanel() {
 	super();
@@ -112,8 +138,12 @@ private void initialize() {
 				shapePanel.setToolTipText("View-Only panel");
 			} 
 		});
-		shapePanel.setBackground(Color.white);		
+		shapePanel.setBackground(new Color(0xe0e0e0));		
 		shapePanel.setZoomFactor(-2);
+		shapePanel.setEditable(false);
+		shapePanel.setShowMoleculeColor(false);
+		shapePanel.setShowNonTrivialOnly(false);
+		// --------------------------------------------------------------
 		
 		JPanel upperPanel = new JPanel();
 		upperPanel.setLayout(new java.awt.BorderLayout());
@@ -124,8 +154,43 @@ private void initialize() {
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
+		JPanel optionsPanel = new JPanel();
+		optionsPanel.setLayout(new GridBagLayout());
+		
+		getZoomSmallerButton().setEnabled(true);
+		getZoomLargerButton().setEnabled(true);
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(4,4,0,10);
+		gbc.anchor = GridBagConstraints.WEST;
+		optionsPanel.add(getZoomLargerButton(), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.insets = new Insets(4,4,4,10);
+		gbc.anchor = GridBagConstraints.WEST;
+		optionsPanel.add(getZoomSmallerButton(), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.weightx = 1;
+		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		optionsPanel.add(new JLabel(""), gbc);
+
+		JPanel containerOfScrollPanel = new JPanel();
+		containerOfScrollPanel.setLayout(new BorderLayout());
+		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
+		containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
+		
+		// ------------------------------------------------
 		splitPaneHorizontal.setTopComponent(upperPanel);
-		splitPaneHorizontal.setBottomComponent(scrollPane);
+		splitPaneHorizontal.setBottomComponent(containerOfScrollPanel);
 		splitPaneHorizontal.setOneTouchExpandable(true);
 		splitPaneHorizontal.setDividerLocation(165);	// upper panel is 165 pixel height
 		splitPaneHorizontal.setResizeWeight(1);
@@ -140,25 +205,35 @@ private void initialize() {
 	}
 }
 
-private void updateInterface(SpeciesContextSpec speciesContextSpec) {
-	updateShape(speciesContextSpec);
+private void updateInterface() {
+	if(speciesContext == null) {
+		return;
+	}
+	updateShape();
 }
 
 public static final int xOffsetInitial = 20;
 public static final int yOffsetInitial = 10;
-private void updateShape(SpeciesContextSpec speciesContextSpec) {
-	shapePanel.setZoomFactor(-3);
-	if(speciesContextSpec != null) {
-		SpeciesContext sc = speciesContextSpec.getSpeciesContext();
-		SpeciesPattern sp = sc.getSpeciesPattern();
-		spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, shapePanel, sc);
-		shapePanel.repaint();
+private void updateShape() {
+	if(speciesContext == null) {
+		return;
 	}
+	SpeciesPattern sp = speciesContext.getSpeciesPattern();
+	spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, shapePanel, speciesContext);
+	
+	Dimension preferredSize = new Dimension(spls.getRightEnd()+40, yOffsetInitial+80);
+	shapePanel.setPreferredSize(preferredSize);
+	shapePanel.repaint();
 }
 
-public void setSpeciesContextSpec(SpeciesContextSpec newValue) {
-	getSpeciesContextSpecParameterTableModel().setSpeciesContextSpec(newValue);
-	updateInterface(newValue);
+public void setSpeciesContextSpec(SpeciesContextSpec scSpec) {
+	if(scSpec == null) {
+		this.speciesContext = null;
+	} else {
+		this.speciesContext = scSpec.getSpeciesContext();
+	}
+	getSpeciesContextSpecParameterTableModel().setSpeciesContextSpec(scSpec);
+	updateInterface();
 }
 public void setBioModel(BioModel newValue) {
 	if (bioModel == newValue) {
@@ -185,6 +260,25 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		speciesContextSpec = (SpeciesContextSpec) selectedObjects[0];
 	}
 	setSpeciesContextSpec(speciesContextSpec);	
+}
+
+private JButton getZoomLargerButton() {
+	if (zoomLargerButton == null) {
+		zoomLargerButton = new JButton();		// "+"
+//		ResizeCanvasShape.setCanvasNormalMod(zoomLargerButton, ResizeCanvasShape.Sign.expand);
+		ZoomShape.setZoomMod(zoomLargerButton, ZoomShape.Sign.plus);
+		zoomLargerButton.addActionListener(eventHandler);
+	}
+	return zoomLargerButton;
+}
+private JButton getZoomSmallerButton() {
+	if (zoomSmallerButton == null) {
+		zoomSmallerButton = new JButton();		// -
+//		ResizeCanvasShape.setCanvasNormalMod(zoomSmallerButton, ResizeCanvasShape.Sign.shrink);
+		ZoomShape.setZoomMod(zoomSmallerButton, ZoomShape.Sign.minus);
+		zoomSmallerButton.addActionListener(eventHandler);
+	}
+	return zoomSmallerButton;
 }
 
 /**

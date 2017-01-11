@@ -19,7 +19,9 @@ import cbit.vcell.model.ReactionRule;
 public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	
 	private boolean showDifferencesOnly = false;
-	
+	private boolean bShowMoleculeColor = false;
+	private boolean bShowNonTrivialOnly = false;
+
 	// zooming the shape, 0 means normal size, a negative number means smaller shape
 	private static final int SmallestZoomFactor = -7;			// -7 is the smallest where the shapes scale decently well
 	public static final int SmallestZoomFactorWithText = -5;	// -5 is the smallest where we show text
@@ -49,12 +51,28 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	// bonds are not being highlighted
 	
 	@Override
+	public void setShowDifferencesOnly(boolean showDifferencesOnly) {
+		this.showDifferencesOnly = showDifferencesOnly;
+	}
+	@Override
 	public boolean isShowDifferencesOnly() {
 		return showDifferencesOnly;
 	}
 	@Override
-	public void setShowDifferencesOnly(boolean showDifferencesOnly) {
-		this.showDifferencesOnly = showDifferencesOnly;
+	public void setShowMoleculeColor(boolean bShowMoleculeColor) {
+		this.bShowMoleculeColor = bShowMoleculeColor;
+	}
+	@Override
+	public boolean isShowMoleculeColor() {
+		return bShowMoleculeColor;
+	}
+	@Override
+	public void setShowNonTrivialOnly(boolean bShowNonTrivialOnly) {
+		this.bShowNonTrivialOnly = bShowNonTrivialOnly;
+	}
+	@Override
+	public boolean isShowNonTrivialOnly() {
+		return bShowNonTrivialOnly;
 	}
 
 	public boolean zoomLarger() {	// returns false when upper limit was reached

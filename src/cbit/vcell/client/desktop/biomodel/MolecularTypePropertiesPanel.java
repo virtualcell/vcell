@@ -572,6 +572,10 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		shapePanel.setBorder(border);
 		shapePanel.setLayout(null);
 		shapePanel.setBackground(Color.white);
+		shapePanel.setEditable(true);
+		shapePanel.setShowMoleculeColor(true);
+		shapePanel.setShowNonTrivialOnly(true);
+
 		shapePanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {

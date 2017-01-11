@@ -245,7 +245,7 @@ private void initialize() {
 		setLayout(new BorderLayout());
 		add(splitPaneHorizontal, BorderLayout.CENTER);
 		setBackground(Color.white);
-		setName("SpeciesContextSpecPanel");
+		setName("ReactionRuleSpecPropertiesPanel");
 		
         initConnections();
 		

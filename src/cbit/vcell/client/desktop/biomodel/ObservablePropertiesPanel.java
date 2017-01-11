@@ -443,6 +443,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		shapePanel.setBorder(border);
 		shapePanel.setBackground(Color.white);
 		shapePanel.setLayout(null);
+		shapePanel.setEditable(true);
+		shapePanel.setShowMoleculeColor(true);
+		shapePanel.setShowNonTrivialOnly(true);
 		
 		shapePanel.addMouseListener(new MouseAdapter() {
 			@Override

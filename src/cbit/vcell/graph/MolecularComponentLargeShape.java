@@ -342,6 +342,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				} else {
 					g2.setColor(Color.white);
 				}
+				if(shapePanel != null && !shapePanel.isShowNonTrivialOnly()) {
+					g2.setColor(componentHidden);
+				}
 				if(AbstractComponentShape.hasErrorIssues(owner, csp, csd)) {
 					g2.setColor(isHighlighted() ? componentBad.brighter() : componentBad);
 				}
@@ -666,9 +669,17 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		if(owner instanceof MolecularType) {
 			componentColor = highlight == true ? componentPaleYellow.brighter() : componentPaleYellow;
 		} else if(owner instanceof SpeciesContext) {
-			componentColor = highlight == true ? componentPaleYellow.brighter() : componentPaleYellow;
+			if(shapePanel != null && !shapePanel.isShowNonTrivialOnly()) {
+				componentColor = componentHidden;
+			} else {
+				componentColor = highlight == true ? componentPaleYellow.brighter() : componentPaleYellow;
+			}
 		} else if(mcp != null && owner instanceof RbmObservable) {
-			componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
+			if(shapePanel != null && !shapePanel.isEditable()) {
+				componentColor = componentHidden;
+			} else {
+				componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
+			}
 			if(mcp.getBondType() != BondType.Possible) {
 				componentColor = highlight == true ? componentPaleYellow.brighter() : componentPaleYellow;
 			}

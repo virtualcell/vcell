@@ -25,27 +25,12 @@ public class RulesShapePanel extends LargeShapePanel {
 	private boolean bRuleAnalysisFailed = false;
 
 	private boolean bViewSingleRow = false;
-	boolean bShowMoleculeColor = false;
-	boolean bShowNonTrivialOnly = false;
 
 	public boolean isViewSingleRow() {
 		return bViewSingleRow;
 	}
 	public void setViewSingleRow(boolean bViewSingleRow) {
 		this.bViewSingleRow = bViewSingleRow;
-	}
-	public void setShowMoleculeColor(boolean bShowMoleculeColor) {
-		this.bShowMoleculeColor = bShowMoleculeColor;
-	}
-	public boolean isShowMoleculeColor() {
-		return bShowMoleculeColor;
-	}
-
-	public void setShowNonTrivialOnly(boolean bShowNonTrivialOnly) {
-		this.bShowNonTrivialOnly = bShowNonTrivialOnly;
-	}
-	public boolean isShowNonTrivialOnly() {
-		return bShowNonTrivialOnly;
 	}
 
 	enum RuleAnalysisChanged {

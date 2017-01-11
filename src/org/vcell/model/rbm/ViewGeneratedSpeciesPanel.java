@@ -165,6 +165,9 @@ private void initialize() {
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 		shapePanel.setLayout(new GridBagLayout());
 		shapePanel.setBackground(Color.white);
+		shapePanel.setEditable(true);		// not really editable but we don't want the brown contours here
+		shapePanel.setShowMoleculeColor(true);
+		shapePanel.setShowNonTrivialOnly(true);
 
 		JScrollPane scrollPane = new JScrollPane(shapePanel);
 		scrollPane.setBorder(loweredBevelBorder);

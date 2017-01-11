@@ -388,6 +388,9 @@ private void initialize() {
 		};
 		shapePanel.setBorder(border);
 		shapePanel.setBackground(Color.white);		
+		shapePanel.setEditable(true);
+		shapePanel.setShowMoleculeColor(true);
+		shapePanel.setShowNonTrivialOnly(true);
 //		Dimension ms = new Dimension(350, 80);
 //		shapePanel.setMinimumSize(ms);
 		shapePanel.addMouseListener(new MouseAdapter() {

@@ -386,6 +386,7 @@ private void initialize() {
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 		shapePanel.setLayout(new GridBagLayout());
 		shapePanel.setBackground(Color.white);
+		shapePanel.setEditable(true);		// don't show the brown contour even though it's not editable
 		shapePanel.setShowMoleculeColor(true);
 		shapePanel.setShowNonTrivialOnly(true);
 		
