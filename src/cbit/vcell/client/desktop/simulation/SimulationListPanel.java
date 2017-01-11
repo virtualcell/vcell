@@ -826,7 +826,7 @@ private void refreshButtonsLax() {
 	getRunButton().setEnabled(bRunnable);
 	stopButton.setEnabled(bStoppable);
 	if(selections != null && selections.length == 1) {
-		if(bHasData && firstSelection != null && firstSelection.getMathDescription().isSpatial3D()) {
+		if(bHasData && firstSelection != null && (firstSelection.getMathDescription().isSpatial3D() || firstSelection.getMathDescription().isSpatial2D())) {
 			getPythonResultsButton().setVisible(true);
 			getPythonResultsButton().setEnabled(true);
 		} else {

@@ -1893,6 +1893,12 @@ public boolean isSpatial3D() {
 	}
 	return (getGeometry().getDimension() == 3);
 }
+public boolean isSpatial2D() {
+	if (getGeometry()==null) {
+		return false;
+	}
+	return (getGeometry().getDimension() == 2);
+}
 
 
 public boolean isNonSpatialStoch() {
