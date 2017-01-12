@@ -24,9 +24,6 @@ public class ParticipantSignatureShapePanel extends LargeShapePanel implements S
 	RuleParticipantSignature.Criteria crit = RuleParticipantSignature.Criteria.full;
 	RuleParticipantSignature signature = null;
 	
-	boolean bShowMoleculeColor = false;
-	boolean bShowNonTrivialOnly = false;
-
 	public void setCriteria(Criteria crit) {
 		this.crit = crit;
 	}
@@ -38,20 +35,6 @@ public class ParticipantSignatureShapePanel extends LargeShapePanel implements S
 	}
 	public RuleParticipantSignature getSignature() {
 		return this.signature;
-	}
-	
-	public void setShowMoleculeColor(boolean bShowMoleculeColor) {
-		this.bShowMoleculeColor = bShowMoleculeColor;
-	}
-	public boolean isShowMoleculeColor() {
-		return bShowMoleculeColor;
-	}
-
-	public void setShowNonTrivialOnly(boolean bShowNonTrivialOnly) {
-		this.bShowNonTrivialOnly = bShowNonTrivialOnly;
-	}
-	public boolean isShowNonTrivialOnly() {
-		return bShowNonTrivialOnly;
 	}
 	
 	// ================================================================================================================

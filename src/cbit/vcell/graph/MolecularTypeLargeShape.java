@@ -380,6 +380,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		Graphics2D g2 = (Graphics2D)g;
 		Font fontOld = g2.getFont();
 		Color colorOld = g2.getColor();
+		Stroke strokeOld = g2.getStroke();
 		Color primaryColor = null;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
@@ -388,7 +389,11 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			if(owner == null) {						// for plain species, we just draw a circle based on height!!! we ignore width!!!
 				exterior = Color.red.darker();		// error
 			} else {
-				exterior = Color.green.darker().darker();		// plain species
+				if(!shapePanel.isShowMoleculeColor()) {
+					exterior = Color.GRAY;
+				} else {
+					exterior = Color.green.darker().darker();		// plain species
+				}
 			}
 			Point2D center = new Point2D.Float(xPos+baseHeight/3, yPos+baseHeight/3);
 			float radius = baseHeight*0.5f;
@@ -399,8 +404,10 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			g2.setPaint(p);
 			Ellipse2D circle = new Ellipse2D.Double(xPos, yPos, baseHeight, baseHeight);
 			g2.fill(circle);
-			Ellipse2D circle2 = new Ellipse2D.Double(xPos-1, yPos-1, baseHeight, baseHeight);
-			g2.setPaint(Color.DARK_GRAY);
+			Ellipse2D circle2 = new Ellipse2D.Double(xPos-1, yPos-1, baseHeight+0.7, baseHeight+0.7);
+			g2.setPaint(getDefaultColor(Color.DARK_GRAY));
+			int z = shapePanel.getZoomFactor();
+			g2.setStroke(new BasicStroke(2.0f+0.14f*z));
 			g2.draw(circle2);
 			
 			if(owner == null) {
@@ -409,9 +416,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 				g.setColor(Color.red.darker().darker());
 				g2.drawString("Error parsing generated species!", xPos+baseHeight+10, yPos+baseHeight-9);
 			}
-			
-			g.setFont(fontOld);
-			g.setColor(colorOld);
+			g2.setFont(fontOld);
+			g2.setColor(colorOld);
+			g2.setStroke(strokeOld);
 			return;
 		} else {							// molecular type, species pattern, observable
 			if(mt == null || mt.getModel() == null) {
@@ -576,12 +583,14 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		}
 		g.setFont(fontOld);
 		g.setColor(colorOld);
+		g2.setStroke(strokeOld);
 		
 		for(MolecularComponentLargeShape mcls : componentShapes) {
 			mcls.paintSelf(g);
 		}
-		g.setFont(fontOld);
-		g.setColor(colorOld);
+		g2.setFont(fontOld);
+		g2.setColor(colorOld);
+		g2.setStroke(strokeOld);
 	}
 	
 	private Color getDefaultColor(Color defaultCandidate) {
