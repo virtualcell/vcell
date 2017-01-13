@@ -113,6 +113,12 @@ public String getName() {
 		}
 	}
 }
+public SpeciesPattern getSpeciesPattern() {
+	return speciesPattern;
+}
+public int getType() {
+	return nodeType;
+}
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
