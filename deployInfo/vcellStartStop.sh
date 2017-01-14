@@ -77,6 +77,7 @@ if [ "$service" = "$SERVICE_AMQ" ]; then
 	/share/apps/vcell2/java/current8/bin/java -jar /home/CAM/vcell/sitecontrol/vcellStartStop.jar /usr/bin/ cbittech $cmd1 $site
 else
 	# either vcell or vcellandamq will always do vcell operation first so need extra args
-	/share/apps/vcell2/java/current8/bin/java -jar /home/CAM/vcell/sitecontrol/vcellStartStop.jar /usr/bin/ cbittech $cmd1 $site SGE vcellservice.cam.uchc.edu
+#	/share/apps/vcell2/java/current8/bin/java -jar /home/CAM/vcell/sitecontrol/vcellStartStop.jar /usr/bin/ cbittech $cmd1 $site SGE vcellservice.cam.uchc.edu
+	/share/apps/vcell2/java/current8/bin/java -jar /home/CAM/vcell/sitecontrol/vcellStartStop.jar /usr/bin/ cbittech $cmd1 $site
 fi
 
