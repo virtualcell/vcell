@@ -59,8 +59,7 @@ arguments="${bootstrap_rmihost} ${rmiport} messaging ${common_logdir}"
 #
 # reverting to default system java for bootstraps ... must be configured with "setcap" for vcell owned process to listen on port 80.
 #
-common_jre=java
-nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${common_jvm_jars} ${jvmprop} ${bootstrap_mainclass} ${arguments} &
+nohup ${common_jre_rmi} ${procLabel} ${jmxargs} -cp ${common_jvm_jars} ${jvmprop} ${bootstrap_mainclass} ${arguments} &
 
 #record pid of service 
 pidfile=${BOOTVARIANT}pid

@@ -42,6 +42,10 @@ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/$JDK_VERSION/jre/lib/amd64/xawt
 export LD_LIBRARY_PATH
 
 common_jre=${common_vcellInstallDir}/java/$JAVA_VERSION/bin/java
+
+# explicit path needed for setcap for rmi services to use port 80.
+common_jre_rmi=/usr/java/jdk1.8.0_66/jre/bin/java
+
 common_jvm_jars=GENERATED
 
 #--------------------------------------
