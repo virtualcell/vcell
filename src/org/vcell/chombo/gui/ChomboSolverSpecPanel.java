@@ -405,7 +405,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	private JTextField fillRatioTextField;
 	private JPanel finestInfoPanel;
 	private JTextField finestSizeTextField;
-	private CollapsiblePanel refinementPanel;
+	private JPanel refinementPanel;
 	private JComboBox<Integer> viewLevelComboBox = null;
 	private RefinementRoiPanel membraneRoiPanel = null;
 	private RefinementRoiPanel volumeRoiPanel = null;
@@ -413,7 +413,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	private JRadioButton viewLevelUserSelectRadioButton = null;
 
 	public ChomboSolverSpecPanel() {
-		super("EBChombo Options");
+		super("Mesh Refinement");
 		initialize();
 	}
 
@@ -504,11 +504,11 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			}
 		});
 		
-		fillRatioTextField = new JTextField(20);
+		fillRatioTextField = new JTextField();
 		fillRatioTextField.addFocusListener(eventHandler);
 		
-		JPanel northPanel = new JPanel(new GridBagLayout());
-		northPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
+		CollapsiblePanel northPanel = new CollapsiblePanel("Advanced", false);
+		northPanel.getContentPanel().setLayout(new GridBagLayout());
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -516,7 +516,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.EAST;
-		northPanel.add(new JLabel("Max Box Size"), gbc);
+		northPanel.getContentPanel().add(new JLabel("Max Box Size"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.insets = new java.awt.Insets(4, 1, 4, 4);
@@ -524,64 +524,33 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.gridy = gridy;
 		gbc.weightx = 0.1;
 		gbc.anchor = GridBagConstraints.WEST;
-		northPanel.add(maxBoxSizeComboBox, gbc);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		northPanel.getContentPanel().add(maxBoxSizeComboBox, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.insets = new java.awt.Insets(4, 4, 4, 1);		
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.EAST;
-		northPanel.add(new JLabel("Fill Ratio"), gbc);
+		northPanel.getContentPanel().add(new JLabel("Fill Ratio"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.insets = new java.awt.Insets(4, 1, 4, 4);
 		gbc.gridx = 3;
 		gbc.gridy = gridy;
-		gbc.weightx = 0.5;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.WEST;
-		northPanel.add(fillRatioTextField, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.insets = new java.awt.Insets(4, 20, 4, 1);		
-		gbc.gridx = 4;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.EAST;
-		northPanel.add(new JLabel("View Level"), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.insets = new java.awt.Insets(4, 1, 4, 1);
-		gbc.gridx = 5;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		northPanel.add(viewLevelFinestRadioButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.insets = new java.awt.Insets(4, 1, 4, 1);
-		gbc.gridx = 6;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		northPanel.add(viewLevelUserSelectRadioButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.insets = new java.awt.Insets(4, 1, 4, 1);
-		gbc.gridx = 7;
-		gbc.gridy = gridy;
 		gbc.weightx = 0.1;
-		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		northPanel.add(viewLevelComboBox, gbc);
+		gbc.anchor = GridBagConstraints.WEST;
+		northPanel.getContentPanel().add(fillRatioTextField, gbc);
 		
 		getContentPanel().setLayout(new BorderLayout(0, 2));
-		getContentPanel().add(northPanel, BorderLayout.NORTH);
+		getContentPanel().add(northPanel, BorderLayout.SOUTH);
 		getContentPanel().add(getRefinementPanel(), BorderLayout.CENTER);
 		
 		maxBoxSizeComboBox.addActionListener(eventHandler);
 	}
 
-	private CollapsiblePanel getRefinementPanel() {
+	private JPanel getRefinementPanel() {
 		if (refinementPanel == null)
 		{
 			membraneRoiPanel = new RefinementRoiPanel(RoiType.Membrane);
@@ -589,16 +558,19 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			JTabbedPane tabbedPanel = new JTabbedPane();
 			tabbedPanel.add(RoiType.Membrane.name(), membraneRoiPanel);
 			tabbedPanel.add(RoiType.Volume.name(), volumeRoiPanel);
-			refinementPanel = new CollapsiblePanel("Mesh Refinement");
-			refinementPanel.getContentPanel().setLayout(new GridBagLayout());		
+			refinementPanel = new JPanel();
+			refinementPanel.setLayout(new GridBagLayout());		
+			refinementPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			
 			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.insets = new java.awt.Insets(0, 5, 0, 0);
+			gbc.insets = new java.awt.Insets(5, 5, 0, 0);
 			gbc.gridx = 0;
 			gbc.gridy = 0;
 			gbc.weightx = 1.0;
 			gbc.weighty = 1.0;
+			gbc.gridwidth = 4;
 			gbc.fill = GridBagConstraints.BOTH;
-			refinementPanel.getContentPanel().add(tabbedPanel, gbc);
+			refinementPanel.add(tabbedPanel, gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.insets = new java.awt.Insets(0, 5, 0, 0);
@@ -606,7 +578,40 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			gbc.gridy = 1;
 			gbc.weightx = 1.0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			refinementPanel.getContentPanel().add(getFinestInfoPanel(), gbc);
+			gbc.gridwidth = 4;
+			refinementPanel.add(getFinestInfoPanel(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.insets = new java.awt.Insets(4, 10, 4, 1);		
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.EAST;
+			JLabel lbl = new JLabel("View Level");
+			lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
+			refinementPanel.add(lbl, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.insets = new java.awt.Insets(4, 1, 4, 1);
+			gbc.gridx = 1;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			refinementPanel.add(viewLevelFinestRadioButton, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.insets = new java.awt.Insets(4, 1, 4, 1);
+			gbc.gridx = 2;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			refinementPanel.add(viewLevelUserSelectRadioButton, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.insets = new java.awt.Insets(4, 1, 4, 1);
+			gbc.gridx = 3;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.WEST;
+			refinementPanel.add(viewLevelComboBox, gbc);
 		}
 		return refinementPanel;
 	}
