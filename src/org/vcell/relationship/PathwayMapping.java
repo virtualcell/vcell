@@ -34,6 +34,7 @@ import org.vcell.pathway.Protein;
 import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.Transport;
 import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
+import org.vcell.pathway.persistence.BiopaxProxy.PhysicalEntityProxy;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.biomodel.BioModel;
@@ -58,14 +59,40 @@ public class PathwayMapping {
 	
 	public void createBioModelEntitiesFromBioPaxObjects(BioModel bioModel, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
 	{
+		//
+		// TODO: add to the conversion table rows all the components (proteins, small molecules, etc) of any Complex already here
+		//  so that molecular types can be created right away
+		//
+		ArrayList<ConversionTableRow> addList = new ArrayList<>();
 		for(ConversionTableRow ctr : conversionTableRows) {
-			if(ctr.getBioPaxObject() instanceof Protein) {
-				createMolecularTypeFromBioPaxObject(bioModel, (Protein)ctr.getBioPaxObject());
+			BioPaxObject bpo = ctr.getBioPaxObject();
+			if(bpo instanceof Complex) {
+				Complex complex = (Complex)bpo;
+				for(PhysicalEntity pe : complex.getComponents()) {
+					ConversionTableRow row = new ConversionTableRow(pe, true);
+					if(!addList.contains(row)) {
+						addList.add(row);
+					}
+				}
+			}
+		}
+		for(ConversionTableRow candidate : addList) {
+			if(!conversionTableRows.contains(candidate)) {
+				conversionTableRows.add(candidate);
 			}
 		}
 		
 		for(ConversionTableRow ctr : conversionTableRows) {
-			if(ctr.getBioPaxObject() instanceof PhysicalEntity) {
+			BioPaxObject bpo = ctr.getBioPaxObject();
+			// any physical entity that's not a complex is a molecular type
+			// protein, small molecule, dna, dna region, rna, rna region
+			if(bpo instanceof PhysicalEntity && !(bpo instanceof Complex || bpo instanceof PhysicalEntityProxy)) {
+				createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)ctr.getBioPaxObject());
+			}
+		}
+		
+		for(ConversionTableRow ctr : conversionTableRows) {
+			if(ctr.getBioPaxObject() instanceof PhysicalEntity && !ctr.isMoleculeOnly()) {	// if not molecule only we need to create a species too
 				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
 			} else if(ctr.getBioPaxObject() instanceof ComplexAssembly) { // Conversion : ComplexAssembly
 				createReactionStepsFromTableRow(bioModel, (ComplexAssembly)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
@@ -79,41 +106,41 @@ public class PathwayMapping {
 		}
 	}
 	
-	public void createBioModelEntitiesFromBioPaxObjects(BioModel bioModel, Object[] selectedObjects) throws Exception
-	{
-		
-		for(int i = 0; i < selectedObjects.length; i++) {
-			if(selectedObjects[i] instanceof BioPaxObject) {
-				BioPaxObject bioPaxObject = (BioPaxObject)selectedObjects[i];
-				if(bioPaxObject instanceof PhysicalEntity && !(bioPaxObject instanceof Complex)) {
-					createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)bioPaxObject);
-				}
-			} else if(selectedObjects[i] instanceof ConversionTableRow) {
-				ConversionTableRow ctr = (ConversionTableRow)selectedObjects[i];
-				if(ctr.getBioPaxObject() instanceof PhysicalEntity && !(ctr.getBioPaxObject() instanceof Complex)) {
-					createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)ctr.getBioPaxObject());
-				}
-			}
-		}
-		
-		for(int i = 0; i < selectedObjects.length; i++) {
-			if(selectedObjects[i] instanceof BioPaxObject) {
-				BioPaxObject bioPaxObject = (BioPaxObject)selectedObjects[i];
-				if(bioPaxObject instanceof PhysicalEntity) {
-					createSpeciesContextFromBioPaxObject(bioModel, (PhysicalEntity)bioPaxObject);
-				} else if(bioPaxObject instanceof Conversion) {
-					createReactionStepsFromBioPaxObject(bioModel, (Conversion)bioPaxObject);
-				}
-			} else if(selectedObjects[i] instanceof ConversionTableRow) {
-				ConversionTableRow ctr = (ConversionTableRow)selectedObjects[i];
-				if(ctr.getBioPaxObject() instanceof PhysicalEntity) {
-					createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
-				} else if(ctr.getBioPaxObject() instanceof Conversion) {
-					createReactionStepsFromTableRow(bioModel, (Conversion)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
-				}
-			}
-		}
-	}
+// TODO: not in use 
+//	public void createBioModelEntitiesFromBioPaxObjects(BioModel bioModel, Object[] selectedObjects) throws Exception
+//	{
+//		for(int i = 0; i < selectedObjects.length; i++) {
+//			if(selectedObjects[i] instanceof BioPaxObject) {
+//				BioPaxObject bioPaxObject = (BioPaxObject)selectedObjects[i];
+//				if(bioPaxObject instanceof PhysicalEntity && !(bioPaxObject instanceof Complex)) {
+//					createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)bioPaxObject);
+//				}
+//			} else if(selectedObjects[i] instanceof ConversionTableRow) {
+//				ConversionTableRow ctr = (ConversionTableRow)selectedObjects[i];
+//				if(ctr.getBioPaxObject() instanceof PhysicalEntity && !(ctr.getBioPaxObject() instanceof Complex)) {
+//					createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)ctr.getBioPaxObject());
+//				}
+//			}
+//		}
+//		
+//		for(int i = 0; i < selectedObjects.length; i++) {
+//			if(selectedObjects[i] instanceof BioPaxObject) {
+//				BioPaxObject bioPaxObject = (BioPaxObject)selectedObjects[i];
+//				if(bioPaxObject instanceof PhysicalEntity) {
+//					createSpeciesContextFromBioPaxObject(bioModel, (PhysicalEntity)bioPaxObject);
+//				} else if(bioPaxObject instanceof Conversion) {
+//					createReactionStepsFromBioPaxObject(bioModel, (Conversion)bioPaxObject);
+//				}
+//			} else if(selectedObjects[i] instanceof ConversionTableRow) {
+//				ConversionTableRow ctr = (ConversionTableRow)selectedObjects[i];
+//				if(ctr.getBioPaxObject() instanceof PhysicalEntity) {
+//					createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
+//				} else if(ctr.getBioPaxObject() instanceof Conversion) {
+//					createReactionStepsFromTableRow(bioModel, (Conversion)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
+//				}
+//			}
+//		}
+//	}
 	
 	private MolecularType createMolecularTypeFromBioPaxObject(BioModel bioModel, PhysicalEntity bioPaxObject) {
 
@@ -255,7 +282,10 @@ public class PathwayMapping {
 				bioModel.getRelationshipModel().addRelationshipObject(newSpeciesContext);
 			}
 		}
-		
+		// new or existing species now will get a species pattern if they don't have one already
+		// because of the association with a physical entity
+		// if the physical entity is a complex then the species pattern may consist of several molecules
+		// else if it's proteine, small molecule, dna, etc the sp will consist of one molecule
 		if(!freeSpeciesContext.hasSpeciesPattern()) {
 			SpeciesPattern sp = generateSpeciesPattern(bioModel, bioPaxObject);
 			if(sp != null && !sp.getMolecularTypePatterns().isEmpty()) {
@@ -318,6 +348,9 @@ public class PathwayMapping {
 		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 			for(ConversionTableRow ctr : conversionTableRows) {
+				if(ctr.interactionId() == null) {
+					continue;
+				}
 				if(ctr.interactionId().equals(bioPaxObject.getID())) {
 					participants.add(ctr);
 				}
@@ -352,9 +385,10 @@ public class PathwayMapping {
 		if (bioModel==null){
 			return;
 		}
+		// there is just one "normal" reaction but it is possible to have controls associated to it, we take them too
 		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
-			for(ConversionTableRow ctr : conversionTableRows){
+			for(ConversionTableRow ctr : conversionTableRows) {			// find the participants of this process
 				if(ctr.interactionId().equals(bioPaxObject.getID())) {
 					participants.add(ctr);
 				}
@@ -383,7 +417,7 @@ public class PathwayMapping {
 	
 	private void createReactionStepsFromTableRow(BioModel bioModel, Transport bioPaxObject,
 			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
-			{
+	{
 		if (bioModel==null) {
 			return;
 		}
@@ -482,7 +516,6 @@ public class PathwayMapping {
 					//reactionStep.addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
 					reactionStep.addReactionParticipant(new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
 				}
-
 			}
 		}
 	}
@@ -606,7 +639,6 @@ public class PathwayMapping {
 				SpeciesContext newSpeciescontext = createSpeciesContextFromBioPaxObject( bioModel, pe.getPhysicalEntity());
 				(reactionStep).addReactionParticipant(new Catalyst(null,reactionStep, newSpeciescontext));
 			}
-			
 		}
 		addKinetics(reactionStep, process);
 	}

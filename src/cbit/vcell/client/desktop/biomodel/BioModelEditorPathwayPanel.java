@@ -31,8 +31,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Complex;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PathwaySelectionExpander;
+import org.vcell.pathway.PhysicalEntity;
+import org.vcell.relationship.ConversionTableRow;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -145,10 +148,30 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 				bpObject.replace(keeperObject);
 			}
 		}
+		
+
+		// we bring proteins, small molecules, etc that are components of a Complex
+		ArrayList<PhysicalEntity> addList = new ArrayList<>();
+		for(BioPaxObject bpo : selectedPathwayModel.getBiopaxObjects()) {
+			if(bpo instanceof Complex) {
+				Complex complex = (Complex)bpo;
+				for(PhysicalEntity pe : complex.getComponents()) {
+					if(!addList.contains(pe)) {
+						addList.add(pe);
+					}
+				}
+			}
+		}
+		for(PhysicalEntity pe : addList) {
+			if(selectedPathwayModel.find(pe) == null) {
+				selectedPathwayModel.add(pe);
+			}
+		}
+		
 		bioModel.getPathwayModel().merge(selectedPathwayModel);
 		
 		// jump the view to pathway diagram panel
-		if (selectionManager != null){
+		if (selectionManager != null) {
 			selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),selectedPathwayModel.getBiopaxObjects().toArray());
 		}
 	}

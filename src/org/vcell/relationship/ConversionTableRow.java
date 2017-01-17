@@ -21,10 +21,18 @@ public class ConversionTableRow {
 	private String participantType;
 	private String id;
 	private String location;
+	// indicates how to deal with Physical Entities when brought in the Pathway Diagram
+	// applies to non-complexes, mainly proteins and small molecules
+	// false means to create both a species and a molecular type, true means to create only molecular type
+	private boolean moleculeOnly = false;
 	
 	
-	public ConversionTableRow(BioPaxObject bpObject) {
+	public ConversionTableRow(BioPaxObject bpObject, boolean moleculeOnly) {
 		this.bioPaxObject = bpObject;
+		this.moleculeOnly = moleculeOnly;
+	}
+	public ConversionTableRow(BioPaxObject bpObject) {
+		this(bpObject, false);
 	}
 	
 	public String interactionId() {
@@ -77,5 +85,9 @@ public class ConversionTableRow {
 	
 	public BioPaxObject getBioPaxObject(){
 		return bioPaxObject;
+	}
+	
+	public boolean isMoleculeOnly() {
+		return moleculeOnly;
 	}
 }
