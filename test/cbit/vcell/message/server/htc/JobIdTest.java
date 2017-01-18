@@ -71,6 +71,15 @@ public class JobIdTest {
 	}
 
 	@Test
+	public void slurmSame() {
+		sysSame(BatchSystemType.SLURM);
+	}
+	@Test
+	public void slurmDiff() {
+		sysDiff(BatchSystemType.SLURM);
+	}
+
+	@Test
 	public void pbsSame() {
 		sysSame(BatchSystemType.PBS);
 	}
@@ -84,13 +93,23 @@ public class JobIdTest {
 		long n = r.nextLong();
 		HtcJobID x = gen(n,BatchSystemType.SGE,null);
 		HtcJobID y = gen(n,BatchSystemType.PBS,null);
+		HtcJobID z = gen(n,BatchSystemType.SLURM,null);
 		assertFalse(x.equals(y));
 		assertFalse(x.compareEqual(y));
+		assertFalse(x.equals(z));
+		assertFalse(x.compareEqual(z));
+		assertFalse(y.equals(z));
+		assertFalse(y.compareEqual(z));
 
 		String server = randomServer( );
 		x = gen(n,BatchSystemType.SGE,server);
 		y = gen(n,BatchSystemType.PBS,server);
+		z = gen(n,BatchSystemType.SLURM,server);
 		assertFalse(x.equals(y));
 		assertFalse(x.compareEqual(y));
+		assertFalse(x.equals(z));
+		assertFalse(x.compareEqual(z));
+		assertFalse(y.equals(z));
+		assertFalse(y.compareEqual(z));
 	}
 }

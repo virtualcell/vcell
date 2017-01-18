@@ -6,6 +6,7 @@ import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
+import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 
 public class HtcTest {
 
@@ -16,7 +17,7 @@ public class HtcTest {
 		CommandServiceSsh cmdssh = null;
 		try {
 			if (args.length != 4){
-				System.out.println("Usage: HtcTest remotehost username password (PBS|SGE)");
+				System.out.println("Usage: HtcTest remotehost username password (PBS|SGE|SLURM)");
 				System.exit(1);
 			}
 			String host = args[0];
@@ -29,6 +30,8 @@ public class HtcTest {
 				htcProxy = new PbsProxy(cmdssh,username);
 			}else if (htcType.equalsIgnoreCase("SGE")){
 				htcProxy = new SgeProxy(cmdssh,username);
+			}else if (htcType.equalsIgnoreCase("SLURM")){
+				htcProxy = new SlurmProxy(cmdssh,username);
 			}else{
 				throw new RuntimeException("unrecognized htc type = "+htcType);
 			}

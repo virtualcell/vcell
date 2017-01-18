@@ -218,7 +218,7 @@ public class SimulationStateMachine {
 
 		if (workerEvent.isAcceptedEvent()) {
 			//
-			// job message accepted by HtcSimulationWorker and sent to Scheduler (PBS/SGE) (with a htcJobID) ... previous state should be "WAITING"
+			// job message accepted by HtcSimulationWorker and sent to Scheduler (PBS/SGE/SLURM) (with a htcJobID) ... previous state should be "WAITING"
 			//
 			if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued()) {
 				// new queue status
