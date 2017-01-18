@@ -61,6 +61,7 @@ import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
+import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.message.server.sim.HtcSimulationWorker;
@@ -160,7 +161,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		OperatingSystemInfo.getInstance();
 
 		if (args.length != 3 && args.length != 6) {
-			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE) [pbshost userid pswd] ");
+			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE|SLURM) [pbshost userid pswd] ");
 			System.exit(1);
 		}
 
@@ -196,6 +197,10 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				}
 				case SGE:{
 					htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
+					break;
+				}
+				case SLURM:{
+					htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 					break;
 				}
 				default: {
