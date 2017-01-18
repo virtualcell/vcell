@@ -199,6 +199,10 @@ denied: job "6894" does not exist
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
+		return extractJobIds(output, statusMap);
+	}
+
+	public static List<HtcJobID> extractJobIds(String output, Map<HtcJobID, JobInfoAndStatus> statusMap) throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();
 		if (!line.equals("JobID|JobName|Partition|Account|AllocCPUS|NCPUS|NTasks|State|ExitCode")){
@@ -206,7 +210,7 @@ denied: job "6894" does not exist
 		}
 		statusMap.clear();
 		while ((line = reader.readLine()) != null){
-			String[] tokens = line.split("|");
+			String[] tokens = line.split("\\|");
 			String jobID = tokens[0];
 			String jobName = tokens[1];
 			String partition = tokens[2];
@@ -392,7 +396,7 @@ denied: job "6894" does not exist
 	/**
 	 * package job info and status
 	 */
-	private static class JobInfoAndStatus {
+	public static class JobInfoAndStatus {
 		final HtcJobInfo info;
 		final HtcJobStatus status;
 		/**
