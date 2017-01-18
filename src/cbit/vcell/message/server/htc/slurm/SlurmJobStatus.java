@@ -34,6 +34,14 @@ public enum SlurmJobStatus {
 	 */
 
 	public static SlurmJobStatus parseStatus(String status, String state) {
+		/**
+		 *        JobID    JobName  Partition    Account  AllocCPUS      State ExitCode
+		 *        ------------ ---------- ---------- ---------- ---------- ---------- --------
+		 *        4989         V_TEST_10+        amd      vcell          1 CANCELLED+      0:0
+		 *        4990         V_TEST_10+    general      vcell          2  COMPLETED      0:0
+		 *        4990.batch        batch                 vcell          2  COMPLETED      0:0
+		 *        
+		 */
 		//first check state codes, more informative for specific states
 		for (SlurmJobStatus js : STATE_CODED) {
 			if (js.stateCode.equals(state)) {

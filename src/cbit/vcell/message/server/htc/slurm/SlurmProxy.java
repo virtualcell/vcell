@@ -273,9 +273,9 @@ denied: job "6894" does not exist
 
 		LineStringBuilder lsb = new LineStringBuilder();
 
-		lsb.write("#!/bin/bash");
-		String partition = "amd";
-		lsb.write("#SBATCH -partition " + partition);
+		lsb.write("#!/usr/bin/bash");
+		String partition = "general";
+		lsb.write("#SBATCH --partition=" + partition);
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + htcLogDirString+jobName+".slurm.log");
 		lsb.write("#SBATCH -e " + htcLogDirString+jobName+".slurm.log");
@@ -377,7 +377,7 @@ denied: job "6894" does not exist
 			return null;
 		}
 
-		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SUBMIT, "-S","/bin/bash","-terse", sub_file};
+		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SUBMIT, sub_file};
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
 
