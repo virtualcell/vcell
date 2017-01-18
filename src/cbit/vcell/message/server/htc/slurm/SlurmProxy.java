@@ -201,7 +201,7 @@ denied: job "6894" does not exist
 		String output = commandOutput.getStandardOutput();
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();
-		if (line.equals("JobID|JobName|Partition|Account|AllocCPUS|NCPUS|NTasks|State|ExitCode")){
+		if (!line.equals("JobID|JobName|Partition|Account|AllocCPUS|NCPUS|NTasks|State|ExitCode")){
 			throw new RuntimeException("unexpected first line from sacct: '"+line+"'");
 		}
 		statusMap.clear();
