@@ -158,11 +158,11 @@ public abstract class HtcProxy {
 
 	public abstract HtcProxy cloneThreadsafe();
 
-	public final List<HtcJobID> getRunningSimulationJobIDs() throws ExecutableException {
+	public final List<HtcJobID> getRunningSimulationJobIDs() throws ExecutableException, IOException {
 		return getRunningJobIDs(HTC_SIMULATION_JOB_NAME_PREFIX);
 	}
 
-	public abstract List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException;
+	public abstract List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException, IOException;
 
 	public abstract Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
 

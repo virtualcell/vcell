@@ -1,7 +1,9 @@
 package cbit.vcell.message.server.htc.slurm;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,13 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.jdom.Document;
-import org.jdom.Element;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.htc.HtcException;
@@ -138,16 +137,96 @@ denied: job "6894" does not exist
 	}
 
 	/**
-	 * @param jobNamePrefix
-	 * return jobs that start with prefix for current user
+	 * sacct 
+	 * 
+	 *        JobID    JobName  Partition    Account  AllocCPUS      State ExitCode
+	 *        ------------ ---------- ---------- ---------- ---------- ---------- --------
+	 *        4989         V_TEST_10+        amd      vcell          1 CANCELLED+      0:0
+	 *        4990         V_TEST_10+    general      vcell          2  COMPLETED      0:0
+	 *        4990.batch        batch                 vcell          2  COMPLETED      0:0
+	 * 
+	 * 
+	 * allowed fields: 
+	 * 
+	 * AllocCPUS         AllocGRES         AllocNodes        AllocTRES
+	 * Account           AssocID           AveCPU            AveCPUFreq
+	 * AveDiskRead       AveDiskWrite      AvePages          AveRSS
+	 * AveVMSize         BlockID           Cluster           Comment
+	 * ConsumedEnergy    ConsumedEnergyRaw CPUTime           CPUTimeRAW
+	 * DerivedExitCode   Elapsed           Eligible          End
+	 * ExitCode          GID               Group             JobID
+	 * JobIDRaw          JobName           Layout            MaxDiskRead
+	 * MaxDiskReadNode   MaxDiskReadTask   MaxDiskWrite      MaxDiskWriteNode
+	 * MaxDiskWriteTask  MaxPages          MaxPagesNode      MaxPagesTask
+	 * MaxRSS            MaxRSSNode        MaxRSSTask        MaxVMSize
+	 * MaxVMSizeNode     MaxVMSizeTask     MinCPU            MinCPUNode
+	 * MinCPUTask        NCPUS             NNodes            NodeList
+	 * NTasks            Priority          Partition         QOS
+	 * QOSRAW            ReqCPUFreq        ReqCPUFreqMin     ReqCPUFreqMax
+	 * ReqCPUFreqGov     ReqCPUS           ReqGRES           ReqMem
+	 * ReqNodes          ReqTRES           Reservation       ReservationId
+	 * Reserved          ResvCPU           ResvCPURAW        Start
+	 * State             Submit            Suspended         SystemCPU
+	 * Timelimit         TotalCPU          UID               User
+	 * UserCPU           WCKey             WCKeyID
+	 * 
+	 *  
+	 *  sacct -A vcell -P -o jobid%25,jobname%25,partition,account,alloccpus,ncpus,ntasks,state%13,exitcode
+	 *  
+	 *  JobID|JobName|Partition|Account|AllocCPUS|NCPUS|NTasks|State|ExitCode
+	 *  4989|V_TEST_107541132_0_0|amd|vcell|1|1||CANCELLED by 10001|0:0
+	 *  4990|V_TEST_107541132_0_0|general|vcell|2|2||COMPLETED|0:0
+	 *  4990.batch|batch||vcell|2|2|1|COMPLETED|0:0
+	 *  4991|V_TEST_107548598_0_0|general|vcell|2|2||COMPLETED|0:0
+	 *  4991.batch|batch||vcell|2|2|1|COMPLETED|0:0
+	 *  
+	 *  sacct can specify a particular job:
+	 *  
+	 *  -j job(.step) , --jobs=job(.step)
+	 *  
+	 *     Displays information about the specified job(.step) or list of job(.step)s.
+	 *     The job(.step) parameter is a comma-separated list of jobs. 
+	 *     Space characters are not permitted in this list. 
+	 *     NOTE: A step id of 'batch' will display the information about the batch step. 
+	 *     The batch step information is only available after the batch job is complete unlike regular steps which are available when they start.
+	 *     The default is to display information on all jobs.
+	 * @throws IOException 
 	 */
+
 	@Override
-	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
-		String[] cmds = {Slurm_HOME + JOB_CMD_STATUS,"-f","-xml"};
+	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException, IOException {
+		String[] cmds = {Slurm_HOME + JOB_CMD_STATUS,"-A","vcell","-P","-o","jobid%25,jobname%25,partition,account,alloccpus,ncpus,ntasks,state%13,exitcode"};
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
-		return parseXML(output,jobNamePrefix);
+		BufferedReader reader = new BufferedReader(new StringReader(output));
+		String line = reader.readLine();
+		if (line.equals("JobID|JobName|Partition|Account|AllocCPUS|NCPUS|NTasks|State|ExitCode")){
+			throw new RuntimeException("unexpected first line from sacct: '"+line+"'");
+		}
+		statusMap.clear();
+		while ((line = reader.readLine()) != null){
+			String[] tokens = line.split("|");
+			String jobID = tokens[0];
+			String jobName = tokens[1];
+			String partition = tokens[2];
+			String account = tokens[3];
+			String allocCPUs = tokens[4];
+			String ncpus = tokens[5];
+			String ntasks = tokens[6];
+			String state = tokens[7];
+			String exitcode = tokens[8];
+			if (jobName.equals("batch")){
+				continue;
+			}
+			HtcJobID htcJobID = new SlurmJobID(jobID);
+			String errorPath = null;
+			String outputPath = null;
+			HtcJobInfo htcJobInfo = new HtcJobInfo(htcJobID, true, jobName, errorPath, outputPath);
+			HtcJobStatus htcJobStatus = new HtcJobStatus(SlurmJobStatus.parseStatus(state));
+			statusMap.put(htcJobID, new JobInfoAndStatus(htcJobInfo, htcJobStatus));
+		}
+		return new ArrayList<HtcJobID>(statusMap.keySet());
 	}
 
 	@Override
@@ -161,82 +240,8 @@ denied: job "6894" does not exist
 		}
 		return jobInfoMap;
 	}
+	
 
-	private static final String PSYM_QINFO = "queue_info";
-	private static final String PSYM_QLIST = "Queue-List";
-	//private static final String PSYM_NAME = "name";
-	private static final String PSYM_JLIST = "job_list";
-	private static final String PSYM_JNAME = "JB_name";
-	private static final String PSYM_JNUMBER = "JB_job_number";
-	private static final String PSYM_STATE = "state";
-	private static final String PSYM_JINFO = "job_info";
-
-	/**
-	 * @param xmlString string to parse (qstat output
-	 * @param prefix to look for
-	 * @return list of jobs, except ones already marked for deletion
-	 */
-	private List<HtcJobID> parseXML(String xmlString, String prefix) {
-		if (LG.isTraceEnabled()) {
-			LG.trace(xmlString);
-		}
-		try {
-		statusMap.clear();
-		List<HtcJobID>  jobList = new ArrayList<>();
-		Document qstatDoc = XmlUtil.stringToXML(xmlString, null);
-		Element rootElement = qstatDoc.getRootElement();
-		Element qElement = rootElement.getChild(PSYM_QINFO);
-		for (Element qList : XmlUtil.getChildren(qElement,PSYM_QLIST,Element.class) ) {
-			//String name = qList.getChildText(PSYM_NAME);
-			for (Element jlist : XmlUtil.getChildren(qList, PSYM_JLIST, Element.class)) {
-				JobInfoAndStatus jias = parseJobInfo(jlist,prefix);
-				if (jias != null) {
-					HtcJobID id = jias.info.getHtcJobID();
-					statusMap.put(id, jias);
-					jobList.add(id);
-				}
-			}
-		}
-		for (Element ji : XmlUtil.getChildren(rootElement,PSYM_JINFO,Element.class) ) {
-			for (Element jlist : XmlUtil.getChildren(ji, PSYM_JLIST, Element.class)) {
-				parseJobInfo(jlist,prefix); //logs job submit errors to server log
-			}
-		}
-		return jobList;
-		} catch (Error e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
-
-	private JobInfoAndStatus parseJobInfo(Element ji, String prefix) {
-		String jname = ji.getChildText(PSYM_JNAME);
-		if (prefix != null  && !jname.startsWith(prefix)) {
-			return null;
-		}
-		String jn = ji.getChildText(PSYM_JNUMBER);
-		String state = ji.getAttributeValue(PSYM_STATE);
-		Element stateCodeE = ji.getChild(PSYM_STATE);
-		String stateCode = stateCodeE.getValue();
-
-		SlurmJobID id = new SlurmJobID(jn);
-		HtcJobInfo hji = new HtcJobInfo(id,true,jname,null,null);
-		SlurmJobStatus stat = SlurmJobStatus.parseStatus(state,stateCode);
-		if (LG.isDebugEnabled()) {
-			LG.debug("job " + jname + ' ' + state + ", " + stateCode + stat);
-		}
-		switch (stat) {
-		case RUNNING:
-		case PENDING:
-		case EXITED:
-			HtcJobStatus status = new HtcJobStatus(stat);
-			return new JobInfoAndStatus(hji, status);
-		case ERROR:
-			LG.error("EXCEPTION-ERROR: Job "+ id.getJobNumber() + " Error " + XmlUtil.xmlToString(ji) );
-		case DELETING:
-		}
-		return null;
-	}
 
 	/**
 	 * @param htcJobID
