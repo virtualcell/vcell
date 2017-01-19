@@ -11,6 +11,7 @@
 package cbit.vcell.model;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.util.Displayable;
 import org.vcell.util.document.Identifiable;
 /*
  * used in  relationship objects (mapping between BioModel object and BioPax entity)
@@ -20,7 +21,7 @@ import org.vcell.util.document.Identifiable;
  *   private BioModelEntityObject bioModelObject
  *   ...
  */
-public interface BioModelEntityObject extends Identifiable{
+public interface BioModelEntityObject extends Identifiable, Displayable {
 	String getName();
 	String getTypeLabel();
 	Structure getStructure();

@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.relationship.PathwayMapping;
 
 public class ConversionImpl extends InteractionImpl implements Conversion {
 
@@ -102,6 +103,20 @@ public class ConversionImpl extends InteractionImpl implements Conversion {
 		printObjects(sb,"participantStoichiometry",participantStoichiometry,level);
 		printObjects(sb,"right",getRight(),level);
 		printBoolean(sb,"spontaneous",spontaneous,level);
+	}
+
+	public static final String typeName = "Conversion";
+	@Override
+	public final String getDisplayName() {
+		if(getName().size() == 0) {
+			return PathwayMapping.getSafetyName(getID());
+		} else {
+			return PathwayMapping.getSafetyName(getName().get(0));
+		}
+	}
+	@Override
+	public final String getDisplayType() {
+		return typeName;
 	}
 
 }

@@ -15,10 +15,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.util.Displayable;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.Identifiable;
 
-public interface BioPaxObject extends Identifiable, Matchable {
+public interface BioPaxObject extends Identifiable, Matchable, Displayable {
 
 	public void setID(String id);
 	public String getID();

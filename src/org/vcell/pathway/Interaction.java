@@ -13,8 +13,9 @@ package org.vcell.pathway;
 import java.util.List;
 
 import org.vcell.pathway.InteractionParticipant.Type;
+import org.vcell.util.Displayable;
 
-public interface Interaction extends Entity {
+public interface Interaction extends Entity, Displayable {
 	
 	public List<InteractionVocabulary> getInteractionTypes();
 	public List<InteractionParticipant> getParticipants();

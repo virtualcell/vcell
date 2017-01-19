@@ -87,23 +87,34 @@ public class PathwayMapping {
 			// any physical entity that's not a complex is a molecular type
 			// protein, small molecule, dna, dna region, rna, rna region
 			if(bpo instanceof PhysicalEntity && !(bpo instanceof Complex || bpo instanceof PhysicalEntityProxy)) {
-				createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)ctr.getBioPaxObject());
+				createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)bpo);
 			}
 		}
 		
 		for(ConversionTableRow ctr : conversionTableRows) {
-			if(ctr.getBioPaxObject() instanceof PhysicalEntity && !ctr.isMoleculeOnly()) {	// if not molecule only we need to create a species too
-				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
-			} else if(ctr.getBioPaxObject() instanceof ComplexAssembly) { // Conversion : ComplexAssembly
-				createReactionStepsFromTableRow(bioModel, (ComplexAssembly)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
-			} else if(ctr.getBioPaxObject() instanceof Transport) { // Conversion : Transport
-				createReactionStepsFromTableRow(bioModel, (Transport)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
+			BioPaxObject bpo = ctr.getBioPaxObject();
+			if(bpo instanceof PhysicalEntity && !ctr.isMoleculeOnly()) {	// if not molecule only we need to create a species too
+				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)bpo, ctr.stoich(), ctr.id(), ctr.location());
+			} else if(bpo instanceof ComplexAssembly) { // Conversion : ComplexAssembly
+				createReactionStepsFromTableRow(bioModel, (ComplexAssembly)bpo, ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
+			} else if(bpo instanceof Transport) { // Conversion : Transport
+				createReactionStepsFromTableRow(bioModel, (Transport)bpo, ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
 //			} else if(ctr.getBioPaxObject() instanceof Degradation) { // Conversion : Degradation 
 //				// to do
-			} else if(ctr.getBioPaxObject() instanceof Conversion) { // Conversion : BiochemicalReaction
-				createReactionStepsFromTableRow(bioModel, (Conversion)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
+			} else if(bpo instanceof Conversion) { // Conversion : BiochemicalReaction
+				createReactionStepsFromTableRow(bioModel, (Conversion)bpo, ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
 			}
 		}
+	}
+	
+	private static void printSet(Set<RelationshipObject> set) {
+		for (RelationshipObject ro : set) {
+			System.out.println("ro:" + System.identityHashCode(ro));
+			String n1 = "   bMod:" + ro.getBioModelEntityObject().getDisplayName();
+			String n2 = "   bPax:" + ro.getBioPaxObject().getDisplayName();
+			System.out.println(n1 + ", " + n2);
+		}
+		System.out.println("                             ---------");
 	}
 	
 // TODO: not in use 
@@ -759,7 +770,7 @@ public class PathwayMapping {
 		return participantString;
 	}
 	//convert the name of biopax object to safety vcell object name
-	private static String getSafetyName(String oldValue) {
+	public static String getSafetyName(String oldValue) {
 		return TokenMangler.fixTokenStrict(oldValue, 60);
 	} 
 	

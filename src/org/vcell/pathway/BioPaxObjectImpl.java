@@ -19,6 +19,7 @@ import java.util.Random;
 import org.vcell.pathway.id.URIUtil;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.pathway.tree.BioPAXClassNameDirectory;
+import org.vcell.relationship.PathwayMapping;
 import org.vcell.util.Matchable;
 
 public abstract class BioPaxObjectImpl implements BioPaxObject {
@@ -225,4 +226,14 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 		}
 	}
 	
+	public static final String typeName = "BioPaxObjectImpl";
+	@Override
+	public String getDisplayName() {
+		return PathwayMapping.getSafetyName(getID());
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
+	}
+
 }

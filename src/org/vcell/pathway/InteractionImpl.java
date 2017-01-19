@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.vcell.pathway.InteractionParticipant.Type;
 import org.vcell.pathway.persistence.BiopaxProxy.*;
+import org.vcell.relationship.PathwayMapping;
 
 public class InteractionImpl extends EntityImpl implements Interaction {
 
@@ -119,6 +120,20 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 		for(InteractionParticipant participant : participants) {
 			printObject(sb, participant.getType().name(), participant.getPhysicalEntity(), level);
 		}
+	}
+
+	public static final String typeName = "Interaction";
+	@Override
+	public String getDisplayName() {
+		if(getName().size() == 0) {
+			return PathwayMapping.getSafetyName(getID());
+		} else {
+			return PathwayMapping.getSafetyName(getName().get(0));
+		}
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
 	}
 	
 //	public String getTypeLabel(){

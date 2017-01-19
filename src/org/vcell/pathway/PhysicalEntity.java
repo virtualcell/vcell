@@ -15,8 +15,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.relationship.PathwayMapping;
+import org.vcell.util.Displayable;
 
-public class PhysicalEntity extends EntityImpl {
+public class PhysicalEntity extends EntityImpl implements Displayable {
 	private CellularLocationVocabulary cellularLocation;
 	private ArrayList<EntityFeature> feature = new ArrayList<EntityFeature>();
 	private ArrayList<PhysicalEntity> memberPhysicalEntity = new ArrayList<PhysicalEntity>();
@@ -134,5 +136,18 @@ public class PhysicalEntity extends EntityImpl {
 		printObjects(sb, "memberPhysicalEntity",memberPhysicalEntity,level);
 		printObjects(sb, "notFeature",notFeature,level);
 	}
-
+	
+	public static final String typeName = "PhysicalEntity";
+	@Override
+	public final String getDisplayName() {
+		if(getName().size() == 0) {
+			return PathwayMapping.getSafetyName(getID());
+		} else {
+			return PathwayMapping.getSafetyName(getName().get(0));
+		}
+	}
+	@Override
+	public final String getDisplayType() {
+		return typeName;
+	}
 }
