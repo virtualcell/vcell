@@ -652,6 +652,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for(ReactionStep rs : fieldModel.getReactionSteps()){
 			removedObjects.remove(rs);
 		}
+		for(MolecularType mt : fieldModel.getRbmModelContainer().getMolecularTypeList()) {
+			removedObjects.remove(mt);
+		}
 		relationshipModel.removeRelationshipObjects(removedObjects);
 	}
 	// done
