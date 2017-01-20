@@ -52,6 +52,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.text.View;
 
 import org.sbpax.schemas.util.SBPAX3Util;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Catalysis;
@@ -97,6 +98,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.model.BioModelEntityObject;
+import cbit.vcell.model.SpeciesContext;
 
 
 @SuppressWarnings("serial")
@@ -399,7 +401,11 @@ private void initialize() {
 						if (bioPaxObject == null) {
 							BioModelEntityObject bioModelEntityObject = property.bioModelEntityObject;
 							if (bioModelEntityObject != null) {
-								selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram),new Object[]{bioModelEntityObject});
+								if(bioModelEntityObject instanceof SpeciesContext) {
+									selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram),new Object[]{bioModelEntityObject});
+								} else if(bioModelEntityObject instanceof MolecularType) {
+									selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.MOLECULAR_TYPES_NODE, ActiveViewID.species_definitions),new Object[]{bioModelEntityObject});
+								}
 							}else if(((Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject).getFormalNames() == null || ((Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject).getFormalNames().size() == 0){
 								lookupFormalName(crow);
 							}

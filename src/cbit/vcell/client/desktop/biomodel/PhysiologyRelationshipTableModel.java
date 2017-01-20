@@ -181,7 +181,7 @@ public class PhysiologyRelationshipTableModel extends VCellSortTableModel<Physio
 			for (BioPaxObject bpObject1 : bioModel.getPathwayModel().getBiopaxObjects()){
 				if ((bpObject1 instanceof PhysicalEntity && (bioModelEntityObject == null || bioModelEntityObject instanceof SpeciesContext))
 						|| (bpObject1 instanceof Conversion && (bioModelEntityObject == null || bioModelEntityObject instanceof ModelProcess))
-						|| (bpObject1 instanceof MolecularType && (bioModelEntityObject == null || bioModelEntityObject instanceof MolecularType))) {
+						|| (bpObject1 instanceof PhysicalEntity && (bioModelEntityObject == null || bioModelEntityObject instanceof MolecularType))) {
 					PhysiologyRelationshipTableRow entityRow = new PhysiologyRelationshipTableRow(bpObject1);
 					if (relationshipObjects != null) {
 						for (RelationshipObject ro : relationshipObjects) {

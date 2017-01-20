@@ -88,6 +88,9 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
@@ -103,6 +106,9 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.FluxReactionShape;
 import cbit.vcell.graph.HighlightableShapeInterface;
@@ -312,6 +318,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private JLabel titleLabel = null;
 //	private JTextArea annotationTextArea;
 	private JTextPane annotationTextArea;
+	private JScrollPane linkedPOScrollPane;
 
 	private JRadioButton anchorAllButton;
 	private JRadioButton anchorOnlyButton;
@@ -555,7 +562,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 
-		TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation ");
+		TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation and Pathway Links ");
 		annotationBorder.setTitleJustification(TitledBorder.LEFT);
 		annotationBorder.setTitlePosition(TitledBorder.TOP);
 		annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
@@ -635,6 +642,24 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		generalPanel.setLayout(new GridBagLayout());
 
 		gridy = 0;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		JLabel pathwayLink = new JLabel("Linked Pathway Object(s): ");
+		generalPanel.add(pathwayLink, gbc);
+		
+		linkedPOScrollPane = new JScrollPane();
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		generalPanel.add(linkedPOScrollPane, gbc);
+		
+		gridy ++;
 //		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 //		annotationTextArea.setLineWrap(true);
 //		annotationTextArea.setWrapStyleWord(true);
@@ -646,9 +671,12 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.1;
+		gbc.weighty = 1.0;
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
@@ -782,6 +810,38 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		} else {
 			annotationTextArea.setText(null);
 		}
+		listLinkedPathwayObjects();
+	}
+	private String listLinkedPathwayObjects(){
+		if (molecularType == null) {
+			return "no selected molecule";
+		}
+		if(bioModel == null || bioModel.getModel() == null){
+			return "no biomodel";
+		}
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		String linkedPOlist = "";
+		for(RelationshipObject relObject : bioModel.getRelationshipModel().getRelationshipObjects(molecularType)){
+			final BioPaxObject bpObject = relObject.getBioPaxObject();
+			if(bpObject instanceof Entity){
+				JLabel label = new JLabel("<html><u>" + ((Entity)bpObject).getName().get(0) + "</u></html>");
+				label.setForeground(Color.blue);
+				label.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						if (e.getClickCount() == 2) {
+							selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{bpObject});
+						}
+					}
+				});
+				panel.add(label);
+			}
+		}
+		Dimension dim = new Dimension(200, 20);
+		panel.setMinimumSize(dim);
+		panel.setPreferredSize(dim);
+		linkedPOScrollPane.setViewportView(panel);
+		return linkedPOlist;
 	}
 	private int computeStatesVerticalOffset(MolecularType mt) {
 		if(mt.getComponentList().size() == 0) {

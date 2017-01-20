@@ -317,6 +317,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 //						System.out.println(reactionTableSelection);
 						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{speciesTableSelection});
 					}					
+				} else if(e.getSource() == molecularTypeTable) {
+					Object moleculesTableSelection = molecularTypeTable.getValueAt(molecularTypeTable.getSelectedRow(),molecularTypeTable.getSelectedColumn());
+					if(moleculesTableSelection instanceof BioPaxObject){
+						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{moleculesTableSelection});
+					}					
 				}
 			}
 		}
@@ -730,6 +735,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						bioModelEntityObject = (BioModelEntityObject)reactionTableModel.getValueAt(row);
 					} else if (table.getModel() == speciesTableModel){
 						bioModelEntityObject = speciesTableModel.getValueAt(row);
+					} else if(table.getModel() == molecularTypeTableModel) {
+						bioModelEntityObject = molecularTypeTableModel.getValueAt(row);
 					}
 					if (bioModelEntityObject != null) {
 						Set<RelationshipObject> relationshipSet = bioModel.getRelationshipModel().getRelationshipObjects(bioModelEntityObject);
@@ -1195,6 +1202,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEFINITION).setCellRenderer(rbmReactionDefinitionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(rbmSpeciesNameCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
+		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.link.ordinal()).setCellRenderer(tableCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.species_pattern.ordinal()).setCellRenderer(rbmObservablePatternCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.structure.ordinal()).setCellRenderer(tableRenderer);
 		

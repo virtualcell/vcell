@@ -5,6 +5,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,9 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
@@ -36,6 +40,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 	public enum Column {
 		name("Name"),
 		depiction("Depiction"),
+		link("Link"),
 		bngl_pattern("BioNetGen Definition");
 		
 		String columeName;
@@ -68,6 +73,12 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 			switch(col) {
 			case name:
 				return molecularType.getName();
+			case link:
+				HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(molecularType);
+				if(relObjsHash != null && relObjsHash.size() > 0){
+					return relObjsHash.iterator().next().getBioPaxObject();
+				}
+				return null;
 			case bngl_pattern:
 				return pattern(molecularType);
 			}
@@ -204,6 +215,8 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		switch (col) {
 		case name:
 			return String.class;
+		case link:
+			return BioPaxObject.class;
 		case bngl_pattern:
 			return MolecularType.class;
 		}
@@ -321,6 +334,18 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 			mtList = new ArrayList<MolecularType>();
 			String lowerCaseSearchText = searchText.toLowerCase();
 			for (MolecularType mt : getModel().getRbmModelContainer().getMolecularTypeList()){
+				
+				boolean bMatchRelationshipObj = false;
+				HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(mt);
+				for(RelationshipObject relObj:relObjsHash){
+					if(relObj.getBioPaxObject() instanceof Entity){
+						if(((Entity)relObj.getBioPaxObject()).getName().get(0).toLowerCase().contains(lowerCaseSearchText)){
+							bMatchRelationshipObj = true;
+							break;
+						}
+					}
+				}
+				
 				String expression = pattern(mt);
 				if(expression != null && expression.toLowerCase().contains(lowerCaseSearchText)) {
 					mtList.add(mt);
