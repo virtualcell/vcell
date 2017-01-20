@@ -28,6 +28,7 @@ import cbit.vcell.tools.PortableCommandWrapper;
 import edu.uchc.connjur.wb.LineStringBuilder;
 
 public class SlurmProxy extends HtcProxy {
+	
 	private final static int SCANCEL_JOB_NOT_FOUND_RETURN_CODE = 1;
 	private final static String SCANCEL_UNKNOWN_JOB_RESPONSE = "does not exist";
 	protected final static String SLURM_SUBMISSION_FILE_EXT = ".slurm.sub";
@@ -386,10 +387,21 @@ denied: job "6894" does not exist
 			return null;
 		}
 
+		/**
+		 * 
+		 * > sbatch /share/apps/vcell2/deployed/test/htclogs/V_TEST_107643258_0_0.slurm.sub
+		 * Submitted batch job 5174
+		 * 
+		 */
 		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SUBMIT, sub_file};
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
-
+		final String EXPECTED_STDOUT_PREFIX = "Submitted batch job ";
+		if (jobid.startsWith(EXPECTED_STDOUT_PREFIX)){
+			jobid = jobid.replace(EXPECTED_STDOUT_PREFIX, "");
+		}else{
+			throw new ExecutableException("unexpected response from '"+JOB_CMD_SUBMIT+"' while submitting simulation: '"+jobid+"'");
+		}
 		return new SlurmJobID(jobid);
 	}
 
