@@ -25,6 +25,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.SwingConstants;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Catalysis;
@@ -560,7 +561,10 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		}else{
 			String id = null;
 			for(RelationshipObject relationshipObject : relationshipObjects){
-				if(relationshipObject.getBioModelEntityObject().getStructure().getName().equalsIgnoreCase(location)){
+				if(relationshipObject.getBioModelEntityObject() instanceof MolecularType){
+					id = relationshipObject.getBioModelEntityObject().getName();
+					location = "";
+				} else if(relationshipObject.getBioModelEntityObject().getStructure().getName().equalsIgnoreCase(location)){
 					id = relationshipObject.getBioModelEntityObject().getName();
 				}
 			}
@@ -578,7 +582,6 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 				}
 			}
 		}
-		
 		return conversionTableRow;
 	}
 	

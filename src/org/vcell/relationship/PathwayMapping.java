@@ -400,6 +400,10 @@ public class PathwayMapping {
 		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 			for(ConversionTableRow ctr : conversionTableRows) {			// find the participants of this process
+				if(ctr.interactionId() == null) {
+					continue;		// proteins that are brought in as molecular type only have interaction id == null
+									// because they don't participate to the interaction
+				}
 				if(ctr.interactionId().equals(bioPaxObject.getID())) {
 					participants.add(ctr);
 				}
