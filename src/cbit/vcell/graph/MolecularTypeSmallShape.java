@@ -29,6 +29,7 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
+import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.model.Model.RbmModelContainer;
 
 public class MolecularTypeSmallShape implements AbstractShape, Icon {
@@ -46,7 +47,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 	
 	final Graphics graphicsContext;
 	
-	private final LargeShapePanel shapeManager;
+	private final InitialConditionsPanel.SmallShapeManager shapeManager;
 	private final MolecularType mt;
 	private final MolecularTypePattern mtp;
 	private final Displayable owner;
@@ -54,7 +55,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 	
 	List <MolecularComponentSmallShape> componentShapes = new ArrayList<MolecularComponentSmallShape>();
 
-	public MolecularTypeSmallShape(int xPos, int yPos, LargeShapePanel shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularTypeSmallShape(int xPos, int yPos, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mt = null;
@@ -68,7 +69,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 		height = baseHeight + MolecularComponentSmallShape.componentDiameter / 2;
 		// no species pattern - this is a plain species context
 	}
-	public MolecularTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mt = mtp.getMolecularType();
@@ -103,7 +104,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 			componentShapes.add(0, mcss);
 		}
 	}
-	public MolecularTypeSmallShape(int xPos, int yPos, MolecularType mt, LargeShapePanel shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularType mt, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mt = mt;
@@ -182,7 +183,13 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 		}
 		return parentShape.getDisplayRequirements();
 	}
-	
+	private Color getDefaultColor(Color defaultCandidate) {
+		if(shapeManager == null) {
+			return defaultCandidate;
+		}
+		return shapeManager.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+	}
+
 	public void paintSelf(Graphics g) {
 		paintSpecies(g);
 	}
@@ -193,24 +200,30 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		Color primaryColor = null;
+		Color border = Color.black;
 		int finalHeight = baseHeight;
 		
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if(mt == null && mtp == null) {		// plain species context
-			 primaryColor = Color.green.darker().darker();
+			
+			if(shapeManager == null) {
+				 primaryColor = Color.green.darker().darker();
+			} else {
+				primaryColor = shapeManager.isEditable() ? Color.green.darker().darker() : Color.gray;
+			}
+			
 			 finalHeight = baseHeight+3;
-			Color exterior = Color.green.darker().darker();
 			Point2D center = new Point2D.Float(xPos+finalHeight/3, yPos+finalHeight/3);
 			float radius = finalHeight*0.5f;
 			Point2D focus = new Point2D.Float(xPos+finalHeight/3-1, yPos+finalHeight/3-1);
 			float[] dist = {0.1f, 1.0f};
-			Color[] colors = {Color.white, exterior};
+			Color[] colors = {Color.white, primaryColor};
 			RadialGradientPaint p = new RadialGradientPaint(center, radius, focus, dist, colors, CycleMethod.NO_CYCLE);
 			g2.setPaint(p);
 			Ellipse2D circle = new Ellipse2D.Double(xPos, yPos, finalHeight, finalHeight);
 			g2.fill(circle);
 			Ellipse2D circle2 = new Ellipse2D.Double(xPos-1, yPos-1, finalHeight, finalHeight);
-			g2.setPaint(Color.DARK_GRAY);
+			g2.setPaint(getDefaultColor(Color.darkGray));
 			g2.draw(circle2);
 				
 			g.setColor(colorOld);
@@ -219,9 +232,17 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 			if(mt == null || mt.getModel() == null) {
 				primaryColor = Color.blue.darker().darker();
 			} else {
-				
-				if(shapeManager != null && shapeManager.isShowDifferencesOnly()) {
-					primaryColor = Color.lightGray;
+				if(shapeManager != null) {
+					if(shapeManager.isShowMoleculeColor()) {
+						RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
+						List<MolecularType> mtList = rbmmc.getMolecularTypeList();
+						int index = mtList.indexOf(mt);
+						index = index%7;
+						primaryColor = MolecularTypeLargeShape.colorTable[index].darker().darker();
+					} else {
+						primaryColor = Color.gray;
+					}
+					border = shapeManager.isEditable() ? Color.black : LargeShapePanel.uneditableShape;
 				} else {
 					RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
 					List<MolecularType> mtList = rbmmc.getMolecularTypeList();
@@ -241,7 +262,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, width, finalHeight, cornerArc, cornerArc);
 		g2.fill(rect);
 		RoundRectangle2D inner = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, finalHeight-2, cornerArc-3, cornerArc-3);
-		g2.setPaint(Color.black);
+		g2.setPaint(border);
 		g2.draw(rect);
 		
 		g.setColor(colorOld);

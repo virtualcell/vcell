@@ -536,7 +536,7 @@ private void initialize() {
 							int xPos = 4;
 							for(int i = 0; i<rpList.size(); i++) {
 								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, bioModel.getRulesShapeManager(), panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
 								if(i < rpList.size()-1) {
 									spss.addEndText("+");
 								} else {
@@ -555,7 +555,7 @@ private void initialize() {
 							xPos+= 7;
 							for(int i = 0; i<ppList.size(); i++) {
 								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, bioModel.getRulesShapeManager(), panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
 								if(i < ppList.size()-1) {
 									spss.addEndText("+");
 								}

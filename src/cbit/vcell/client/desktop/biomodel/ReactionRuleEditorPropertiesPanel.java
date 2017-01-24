@@ -674,9 +674,6 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			return;
 		}
 		bioModel = newValue;
-		if(bioModel != null && shapePanel != null) {
-			bioModel.setRulesShapeManager(shapePanel);
-		}
 	}	
 	
 	@Override

@@ -18,6 +18,7 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.Severity;
 
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
+import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
@@ -36,14 +37,14 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 	private int width = componentDiameter;
 	private int height = componentDiameter;
 	
-	private final LargeShapePanel shapeManager;
+	private final InitialConditionsPanel.SmallShapeManager shapeManager;
 	private final MolecularComponent mc;
 	private final MolecularComponentPattern mcp;
 	private final Displayable owner;
 	private final AbstractShape parentShape;
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
-	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, LargeShapePanel shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mcp = null;
@@ -53,7 +54,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 		xPos = rightPos-width;
 		yPos = y;
 	}
-	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponentPattern mcp, LargeShapePanel shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponentPattern mcp, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mcp = mcp;
@@ -122,26 +123,31 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 		}
 		Color componentColor = Color.red;
 
-		if(owner instanceof MolecularType) {
-			componentColor = Color.yellow;
-		} else if(owner instanceof SpeciesContext) {
-			componentColor = Color.yellow;
-		} else if(mcp != null && owner instanceof RbmObservable) {
+		if(shapeManager != null && !shapeManager.isShowMoleculeColor()) {
 			componentColor = componentVeryLightGray;
-			if(mcp.getBondType() != BondType.Possible) {
+		} else {
+			if(owner instanceof MolecularType) {
 				componentColor = Color.yellow;
-			}
-		} else if(owner instanceof SimpleReaction || owner instanceof FluxReaction) {
-			componentColor = componentVeryLightGray;
-			if(mcp.getBondType() != BondType.Possible) {
+			} else if(owner instanceof SpeciesContext) {
 				componentColor = Color.yellow;
-			}
-		} else if(owner instanceof ReactionRule) {
-			componentColor = componentVeryLightGray;
-			if(mcp.getBondType() != BondType.Possible) {
-				componentColor = Color.yellow;
+			} else if(mcp != null && owner instanceof RbmObservable) {
+				componentColor = componentVeryLightGray;
+				if(mcp.getBondType() != BondType.Possible) {
+					componentColor = Color.yellow;
+				}
+			} else if(owner instanceof SimpleReaction || owner instanceof FluxReaction) {
+				componentColor = componentVeryLightGray;
+				if(mcp.getBondType() != BondType.Possible) {
+					componentColor = Color.yellow;
+				}
+			} else if(owner instanceof ReactionRule) {
+				componentColor = componentVeryLightGray;
+				if(mcp.getBondType() != BondType.Possible) {
+					componentColor = Color.yellow;
+				}
 			}
 		}
+		
 		if(AbstractComponentShape.hasErrorIssues(owner, mcp, mc)) {
 			componentColor = Color.red;
 		}
@@ -172,7 +178,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 		
 		g2.setColor(componentColor);
 		g2.fillOval(xPos, yPos, componentDiameter, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
-		g2.setColor(Color.BLACK);
+		g2.setColor(getDefaultColor(Color.black));
 		g2.drawOval(xPos, yPos, componentDiameter, componentDiameter);
 		
 		if(mc.getComponentStateDefinitions().size() > 0) {
@@ -184,19 +190,34 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 					if(AbstractComponentShape.hasErrorIssues(owner, mc)) {
 						g2.setColor(Color.red);
 					} else {
-						g2.setColor(Color.yellow);
+						if(shapeManager != null && !shapeManager.isShowMoleculeColor()) {
+							g2.setColor(componentVeryLightGray);
+						} else {
+							g2.setColor(Color.yellow);
+						}
 					}
 				} else if(mcp != null) {
 					ComponentStatePattern csp = mcp.getComponentStatePattern();
 					if(csp != null && !csp.isAny()) {
-						g2.setColor(Color.yellow);
+						if(shapeManager != null && !shapeManager.isShowMoleculeColor()) {
+							g2.setColor(componentVeryLightGray);
+						} else {
+							g2.setColor(Color.yellow);
+						}
 					}
 				}
 			}
 			g2.fillOval(xPos + width - 5, yPos-2, 5, 5);
-			g.setColor(Color.darkGray);
+			g.setColor(getDefaultColor(Color.darkGray));
 			g2.drawOval(xPos + width - 5, yPos-2, 5, 5);
 		}
 		g.setColor(colorOld);
 	}
+	private Color getDefaultColor(Color defaultCandidate) {
+		if(shapeManager == null) {
+			return defaultCandidate;
+		}
+		return shapeManager.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+	}
+
 }

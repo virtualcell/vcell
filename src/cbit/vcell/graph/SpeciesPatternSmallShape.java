@@ -26,6 +26,7 @@ import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.graph.AbstractComponentShape.BondPair;
+import cbit.vcell.mapping.gui.InitialConditionsPanel;
 
 public class SpeciesPatternSmallShape extends AbstractComponentShape implements AbstractShape, Icon {
 
@@ -45,7 +46,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 	private final AbstractShape parentShape = null;
 	private Displayable owner;
 	private SpeciesPattern sp;
-	private LargeShapePanel shapeManager = null;
+	private InitialConditionsPanel.SmallShapeManager shapeManager = null;
 	private String startText = new String();	// we display this before the Shape (positioned left of xPos - attention!)
 	private String endText = new String();		// we display this after the Shape, it's position is outside "width"
 	
@@ -59,7 +60,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 			boolean isSelected) {
 		this(xPos, yPos, sp, null, graphicsContext, owner, isSelected);
 	}
-	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, LargeShapePanel shapeManager, Graphics graphicsContext, Displayable owner,
+	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner,
 			boolean isSelected) {
 		this.owner = owner;
 		this.sp = sp;
@@ -175,6 +176,14 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		this.endText = string;
 	}
 	
+	private Color getDefaultColor(Color defaultCandidate) {
+		if(shapeManager == null) {
+			return defaultCandidate;
+		}
+		return shapeManager.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+	}
+
+	
 	public void paintSelf(Graphics g) {
 		int offset = 2;			// initial lenth of vertical bar
 		if(getDisplayRequirements() == DisplayRequirements.highlightBonds) {
@@ -188,7 +197,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 
 		if(!startText.isEmpty()) {
 			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext, null);
-			Color fontColor = Color.black;
+			Color fontColor = getDefaultColor(Color.black);
 			g2.setFont(font);
 			g2.setColor(fontColor);
 			g2.drawString(startText, xPos-18, yPos+9);
@@ -211,7 +220,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 			if(isSelected) {
 				g2.setColor(Color.white);
 			} else {
-				g2.setColor(Color.black);
+				g2.setColor(getDefaultColor(Color.black));
 			}
 			g2.drawLine(bp.from.x, bp.from.y+1, bp.from.x, bp.from.y+offset);
 			g2.drawLine(bp.to.x, bp.to.y+1, bp.to.x, bp.to.y+offset);
@@ -223,7 +232,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		
 		if(!endText.isEmpty()) {
 			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext, null);
-			Color fontColor = Color.black;
+			Color fontColor = getDefaultColor(Color.black);
 			g2.setFont(font);
 			g2.setColor(fontColor);
 			g2.drawString(endText, getRightEnd()+4, yPos+9);

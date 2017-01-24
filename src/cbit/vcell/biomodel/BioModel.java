@@ -1198,16 +1198,6 @@ public SimulationContext getSimulationContext(String name) {
 		for (SimulationContext simContext : fieldSimulationContexts){
 			simContext.getNameScope().findReferences(symbolTableEntry, references, visited);
 		}
-
 		return references;
-	}
-
-	private transient RulesShapePanel rulesShapeManager = null;
-	public void setRulesShapeManager(RulesShapePanel rulesShapeManager) {
-		this.rulesShapeManager = rulesShapeManager;
-	}
-	public RulesShapePanel getRulesShapeManager() {
-		return null;
-//		return rulesShapeManager;
 	}
 }
