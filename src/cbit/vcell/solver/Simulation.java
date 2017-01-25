@@ -951,7 +951,7 @@ public boolean isSerialParameterScan() {
 	public boolean hasCellCenteredMesh()
 	{
 		return getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null
-				&& getSolverTaskDescription().getSolverDescription().isChomboSolver();
+				&& getSolverTaskDescription().getSolverDescription().hasCellCenteredMesh();
 	}
 	/**
 	 * forward to {@link #simWarning}

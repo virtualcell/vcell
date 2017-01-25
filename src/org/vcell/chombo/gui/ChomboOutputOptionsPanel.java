@@ -206,13 +206,16 @@ public class ChomboOutputOptionsPanel extends JPanel {
 				return;
 			}
 			chomboSolverSpec = solverTaskDescription.getChomboSolverSpec();
-			setVisible(true);
-			vcellOutputCheckBox.setSelected(chomboSolverSpec.isSaveVCellOutput());
-
-			final boolean saveChomboFormatFiles = chomboSolverSpec.isSaveChomboOutput();
-			lastUserChomboOutput = saveChomboFormatFiles; 
-			chomboOutputCheckBox.setSelected(saveChomboFormatFiles);
-			setNumProcessorsField(false);
+			if (chomboSolverSpec != null)
+			{
+				setVisible(true);
+				vcellOutputCheckBox.setSelected(chomboSolverSpec.isSaveVCellOutput());
+	
+				final boolean saveChomboFormatFiles = chomboSolverSpec.isSaveChomboOutput();
+				lastUserChomboOutput = saveChomboFormatFiles; 
+				chomboOutputCheckBox.setSelected(saveChomboFormatFiles);
+				setNumProcessorsField(false);
+			}
 		} 
 	}
 

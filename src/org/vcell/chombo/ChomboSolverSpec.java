@@ -31,6 +31,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	public static final int defaultRefineRatio = 2;
 	
 	private static double defaultFillRatio = 0.9;
+	public static final int BLOCK_FACTOR = 8;
 	
 	private int maxBoxSize = 32;
 	private double fillRatio = defaultFillRatio;

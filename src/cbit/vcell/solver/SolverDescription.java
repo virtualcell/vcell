@@ -635,4 +635,8 @@ public enum SolverDescription {
 		return this == other;
 	}
 
+	public boolean hasCellCenteredMesh()
+	{
+		return isChomboSolver() || isMovingBoundarySolver();
+	}
 }

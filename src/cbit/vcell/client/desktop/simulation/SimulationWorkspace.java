@@ -270,7 +270,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 			|| !SolverUtilities.isPowerOf2(samplingSize.getY())
 			|| simulation.getMathDescription().getGeometry().getDimension() == 3 && !SolverUtilities.isPowerOf2(samplingSize.getZ()))
 		{
-			errorMessage = "Errors in Simulation: '" + simulation.getName() + "'!\n" + "Mesh sizes must be power of 2 for " + SolverDescription.Chombo.getDisplayLabel() + ".";
+			//errorMessage = "Errors in Simulation: '" + simulation.getName() + "'!\n" + "Mesh sizes must be power of 2 for " + SolverDescription.Chombo.getDisplayLabel() + ".";
 		}
 		else
 		{
@@ -404,13 +404,13 @@ public static void editSimulation(Component parent, SimulationOwner simOwner, Si
 		PopupGenerator.showErrorDialog(parent, errorMessage+"\nUpdate Math before editing");
 		return;
 	}
-	
-	SimulationEditor simEditor = new SimulationEditor();
-	simEditor.prepareToEdit(simulation);
-	
-	JScrollPane scrollPane = new JScrollPane(simEditor);
-    Dimension panesize = simEditor.getPreferredSize();
-    scrollPane.setPreferredSize(new Dimension(panesize.width + 20, panesize.height + 20));
+
+		SimulationEditor simEditor = new SimulationEditor();
+		simEditor.prepareToEdit(simulation);
+		
+		JScrollPane scrollPane = new JScrollPane(simEditor);
+		Dimension panesize = simEditor.getPreferredSize();
+		scrollPane.setPreferredSize(new Dimension(panesize.width + 20, panesize.height + 20));
 
 
 	boolean acceptable = false;

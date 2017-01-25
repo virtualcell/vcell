@@ -384,7 +384,7 @@ private void writeSmoldyn() throws Exception {
 		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, baseName, simTask, bUseMessaging);
 		stFileWriter.write();
 	} 
-
+	
 	printWriter.println("# Smoldyn Input");
 	printWriter.println(FVInputFileKeyword.SMOLDYN_BEGIN);
 	printWriter.println(FVInputFileKeyword.SMOLDYN_INPUT_FILE + " " + inputFilename);
@@ -1395,11 +1395,11 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
     	printWriter.println(FVInputFileKeyword.TIME_STEP + " " + defaultTimeStep);
     	int keepEvery = 1;
 		if (outputTimeSpec.isDefault()) {
-        	keepEvery = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery();
+			keepEvery = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery();
 		} else if (outputTimeSpec.isUniform()) {
 			UniformOutputTimeSpec uots = (UniformOutputTimeSpec) outputTimeSpec;
 			double ots = uots.getOutputTimeStep();
-	    	keepEvery = (int)(ots / defaultTimeStep);
+	    keepEvery = (int)Math.round(ots / defaultTimeStep);
 		} else {
 			throw new RuntimeException("unexpected OutputTime specification type :"+outputTimeSpec.getClass().getName());
 		}
