@@ -641,7 +641,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 
-	// wei's code
 	if (evt.getSource() == fieldModel && (evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS)
 			|| evt.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS))){
 		//remove the relationship objects if the biomodelEntity objects were removed
@@ -655,9 +654,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for(MolecularType mt : fieldModel.getRbmModelContainer().getMolecularTypeList()) {
 			removedObjects.remove(mt);
 		}
+		for(ReactionRule rr : fieldModel.getRbmModelContainer().getReactionRuleList()) {
+			removedObjects.remove(rr);
+		}
 		relationshipModel.removeRelationshipObjects(removedObjects);
 	}
-	// done
+	// adjust the relationship model when a molecule gets deleted
 	if (evt.getSource() == fieldModel && (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST))) {
 		@SuppressWarnings("unchecked")
 		List<MolecularType> oldListCopy = new ArrayList<MolecularType>((List<MolecularType>)evt.getOldValue());
@@ -668,6 +670,19 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			oldListCopy.removeAll(newList);
 			for(MolecularType removedMt : oldListCopy) {
 				relationshipModel.removeRelationshipObject(removedMt);
+			}
+		}
+	}
+	if (evt.getSource() == fieldModel && (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST))) {
+		@SuppressWarnings("unchecked")
+		List<ReactionRule> oldListCopy = new ArrayList<ReactionRule>((List<ReactionRule>)evt.getOldValue());
+		@SuppressWarnings("unchecked")
+		List<ReactionRule> newList = (List<ReactionRule>)evt.getNewValue();
+		if(newList != null && oldListCopy != null && oldListCopy.size() > newList.size()) {
+			// something got deleted
+			oldListCopy.removeAll(newList);
+			for(ReactionRule removedRr : oldListCopy) {
+				relationshipModel.removeRelationshipObject(removedRr);
 			}
 		}
 	}
