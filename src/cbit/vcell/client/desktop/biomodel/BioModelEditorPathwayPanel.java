@@ -149,17 +149,12 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 			}
 		}
 		
-
 		// we bring proteins, small molecules, etc that are components of a Complex
 		ArrayList<PhysicalEntity> addList = new ArrayList<>();
 		for(BioPaxObject bpo : selectedPathwayModel.getBiopaxObjects()) {
 			if(bpo instanceof Complex) {
 				Complex complex = (Complex)bpo;
-				for(PhysicalEntity pe : complex.getComponents()) {
-					if(!addList.contains(pe)) {
-						addList.add(pe);
-					}
-				}
+				addComplexComponents(complex, addList, 0);
 			}
 		}
 		for(PhysicalEntity pe : addList) {
@@ -167,12 +162,28 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 				selectedPathwayModel.add(pe);
 			}
 		}
-		
 		bioModel.getPathwayModel().merge(selectedPathwayModel);
 		
 		// jump the view to pathway diagram panel
 		if (selectionManager != null) {
 			selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),selectedPathwayModel.getBiopaxObjects().toArray());
+		}
+	}
+	
+	private static final int DEPTH_LIMIT = 4;
+	private void addComplexComponents(Complex complex, ArrayList<PhysicalEntity> addList, int depth) {
+		depth++;
+		if(depth > DEPTH_LIMIT) {
+			throw new RuntimeException("Recursion limit exceeded for Complex " + complex.getDisplayName());
+		}
+		for(PhysicalEntity pe : complex.getComponents()) {
+			if(pe instanceof Complex) {		// call recursively if the complex contains other complex(es)
+				addComplexComponents((Complex)pe, addList, depth);
+			} else {		// if it's not a complex we add it to the list unless it's there already
+				if(!addList.contains(pe)) {
+					addList.add(pe);
+				}
+			}
 		}
 	}
 
