@@ -19,9 +19,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.StringUtils;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPAXUtil.Process;
 import org.vcell.pathway.BioPaxObject;
@@ -57,7 +61,7 @@ import cbit.vcell.parser.ExpressionException;
 
 public class PathwayMapping {
 	
-	public void createBioModelEntitiesFromBioPaxObjects(BioModel bioModel, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
+	public void createBioModelEntitiesFromBioPaxObjects(BioModel bioModel, ArrayList<ConversionTableRow> conversionTableRows, boolean addSubunits) throws Exception
 	{
 		//
 		// TODO: add to the conversion table rows all the components (proteins, small molecules, etc) of any Complex already here
@@ -87,22 +91,22 @@ public class PathwayMapping {
 			// any physical entity that's not a complex is a molecular type
 			// protein, small molecule, dna, dna region, rna, rna region
 			if(bpo instanceof PhysicalEntity && !(bpo instanceof Complex || bpo instanceof PhysicalEntityProxy)) {
-				createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)bpo);
+				createMolecularTypeFromBioPaxObject(bioModel, (PhysicalEntity)bpo, addSubunits);
 			}
 		}
 		
 		for(ConversionTableRow ctr : conversionTableRows) {
 			BioPaxObject bpo = ctr.getBioPaxObject();
 			if(bpo instanceof PhysicalEntity && !ctr.isMoleculeOnly()) {	// if not molecule only we need to create a species too
-				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)bpo, ctr.stoich(), ctr.id(), ctr.location());
+				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)bpo, ctr.stoich(), ctr.id(), ctr.location(), addSubunits);
 			} else if(bpo instanceof ComplexAssembly) { // Conversion : ComplexAssembly
-				createReactionStepsFromTableRow(bioModel, (ComplexAssembly)bpo, ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
+				createReactionStepsFromTableRow(bioModel, (ComplexAssembly)bpo, ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows, addSubunits);
 			} else if(bpo instanceof Transport) { // Conversion : Transport
-				createReactionStepsFromTableRow(bioModel, (Transport)bpo, ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
+				createReactionStepsFromTableRow(bioModel, (Transport)bpo, ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows, addSubunits);
 //			} else if(ctr.getBioPaxObject() instanceof Degradation) { // Conversion : Degradation 
 //				// to do
 			} else if(bpo instanceof Conversion) { // Conversion : BiochemicalReaction
-				createReactionStepsFromTableRow(bioModel, (Conversion)bpo, ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
+				createReactionStepsFromTableRow(bioModel, (Conversion)bpo, ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows, addSubunits);
 			}
 		}
 	}
@@ -153,7 +157,7 @@ public class PathwayMapping {
 //		}
 //	}
 	
-	private MolecularType createMolecularTypeFromBioPaxObject(BioModel bioModel, PhysicalEntity bioPaxObject) {
+	private MolecularType createMolecularTypeFromBioPaxObject(BioModel bioModel, PhysicalEntity bioPaxObject, boolean addSubunits) {
 
 		String name;
 		if(bioPaxObject.getName().size() == 0) {
@@ -173,8 +177,19 @@ public class PathwayMapping {
 			return mt;
 		}
 		
+		int numSubunits = 0;
+		if(addSubunits) {
+			for (String comment : bioPaxObject.getComments()) {
+				numSubunits = StringUtils.countMatches(comment, "SUBUNIT:");
+			}
+		}
+		
 		MolecularType mt = new MolecularType(name, bioModel.getModel());
 		try {
+			for(int i = 0; i<numSubunits; i++) {
+				MolecularComponent mc = new MolecularComponent("Subunit"+i);
+				mt.addMolecularComponent(mc);
+			}
 			rbmmc.addMolecularType(mt, true);
 			// we know for sure that a relationship can't exist, so we make one
 			RelationshipObject ro = new RelationshipObject(mt, bioPaxObject);
@@ -198,7 +213,7 @@ public class PathwayMapping {
 		return mt;
 	}
 	
-	private SpeciesContext createSpeciesContextFromBioPaxObject(BioModel bioModel, PhysicalEntity bioPaxObject) throws Exception
+	private SpeciesContext createSpeciesContextFromBioPaxObject(BioModel bioModel, PhysicalEntity bioPaxObject, boolean addSubunits) throws Exception
 	{
 		String name;
 		if(bioPaxObject.getName().size() == 0) {
@@ -241,7 +256,7 @@ public class PathwayMapping {
 		}
 		
 		if(!freeSpeciesContext.hasSpeciesPattern()) {
-			SpeciesPattern sp = generateSpeciesPattern(bioModel, bioPaxObject);
+			SpeciesPattern sp = generateSpeciesPattern(bioModel, bioPaxObject, addSubunits);
 			if(sp != null && !sp.getMolecularTypePatterns().isEmpty()) {
 				freeSpeciesContext.setSpeciesPattern(sp);
 			}
@@ -250,7 +265,7 @@ public class PathwayMapping {
 	}
 	
 	private SpeciesContext createSpeciesContextFromTableRow(BioModel bioModel, PhysicalEntity bioPaxObject, 
-			double stoich, String id, String location) throws Exception
+			double stoich, String id, String location, boolean addSubunits) throws Exception
 	{
 		// use user defined id as the name of the speciesContext
 		String safeId = getSafetyName(id);
@@ -298,26 +313,28 @@ public class PathwayMapping {
 		// if the physical entity is a complex then the species pattern may consist of several molecules
 		// else if it's proteine, small molecule, dna, etc the sp will consist of one molecule
 		if(!freeSpeciesContext.hasSpeciesPattern()) {
-			SpeciesPattern sp = generateSpeciesPattern(bioModel, bioPaxObject);
+			SpeciesPattern sp = generateSpeciesPattern(bioModel, bioPaxObject, addSubunits);
 			if(sp != null && !sp.getMolecularTypePatterns().isEmpty()) {
 				freeSpeciesContext.setSpeciesPattern(sp);
+				sp.initializeBonds(MolecularComponentPattern.BondType.None);
+
 			}
 		}
 		return freeSpeciesContext;
 	}
-	private SpeciesPattern generateSpeciesPattern(BioModel bioModel, PhysicalEntity bioPaxObject) {
+	private SpeciesPattern generateSpeciesPattern(BioModel bioModel, PhysicalEntity bioPaxObject, boolean addSubunits) {
 		SpeciesPattern sp = new SpeciesPattern();
 
 		if(bioPaxObject instanceof Complex) {
 			Complex c = (Complex)bioPaxObject;
 			for(PhysicalEntity pc : c.getComponents()) {
-				MolecularType mt = createMolecularTypeFromBioPaxObject(bioModel, pc);
+				MolecularType mt = createMolecularTypeFromBioPaxObject(bioModel, pc, addSubunits);
 				MolecularTypePattern mtp = new MolecularTypePattern(mt);
 				sp.addMolecularTypePattern(mtp);
 			}
 			return sp;
 		} else {		//  else if(!(bioPaxObject instanceof Complex))
-			MolecularType mt = createMolecularTypeFromBioPaxObject(bioModel, bioPaxObject);
+			MolecularType mt = createMolecularTypeFromBioPaxObject(bioModel, bioPaxObject, addSubunits);
 			MolecularTypePattern mtp = new MolecularTypePattern(mt);
 			sp.addMolecularTypePattern(mtp);
 			return sp;
@@ -325,7 +342,7 @@ public class PathwayMapping {
 //		return null;
 	}
 	
-	private void createReactionStepsFromBioPaxObject(BioModel bioModel, Conversion conversion) throws Exception
+	private void createReactionStepsFromBioPaxObject(BioModel bioModel, Conversion conversion, boolean addSubunits) throws Exception
 	{
 		if (bioModel==null) {
 			return;
@@ -338,18 +355,18 @@ public class PathwayMapping {
 				simpleReactionStep.setName(name);
 				RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, conversion);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStepFromPathway(bioModel, process, simpleReactionStep, newRelationship);
+				createReactionStepFromPathway(bioModel, process, simpleReactionStep, newRelationship, addSubunits);
 			} else {
 				// add missing parts for the existing reactionStep
 				RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), conversion);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStepFromPathway(bioModel, process, bioModel.getModel().getReactionStep(name), newRelationship);
+				createReactionStepFromPathway(bioModel, process, bioModel.getModel().getReactionStep(name), newRelationship, addSubunits);
 			}
 		}
 	}
 
 	private void createReactionStepsFromTableRow(BioModel bioModel, Conversion bioPaxObject,
-			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
+			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows, boolean addSubunits) throws Exception
 	{
 		// use user defined id as the name of the reaction name
 		// get participants of this reaction from table rows
@@ -375,21 +392,21 @@ public class PathwayMapping {
 				simpleReactionStep.setName(name);
 				RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStep(bioModel, process, simpleReactionStep, newRelationship, participants);
+				createReactionStep(bioModel, process, simpleReactionStep, newRelationship, participants, addSubunits);
 				addKinetics(simpleReactionStep, process);
 			} else {
 				//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
 				// add missing parts for the existing reactionStep
 				RelationshipObject newRelationship = new RelationshipObject(reactionStep, bioPaxObject);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStep(bioModel, process, reactionStep, newRelationship, participants);
+				createReactionStep(bioModel, process, reactionStep, newRelationship, participants, addSubunits);
 				addKinetics(reactionStep, process);
 			}
 		}
 	}
 	
 	private void createReactionStepsFromTableRow(BioModel bioModel, ComplexAssembly bioPaxObject,
-			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
+			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows, boolean addSubunits) throws Exception
 	{
 		// use user defined id as the name of the reaction name
 		// get participants from table rows
@@ -417,21 +434,21 @@ public class PathwayMapping {
 				simpleReactionStep.setName(name);
 				RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStep(bioModel, process, simpleReactionStep, newRelationship, participants);
+				createReactionStep(bioModel, process, simpleReactionStep, newRelationship, participants, addSubunits);
 				addKinetics(simpleReactionStep, process);
 			} else {
 				//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
 				// add missing parts for the existing reactionStep
 				RelationshipObject newRelationship = new RelationshipObject(reactionStep, bioPaxObject);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStep(bioModel, process, reactionStep, newRelationship, participants);
+				createReactionStep(bioModel, process, reactionStep, newRelationship, participants, addSubunits);
 				addKinetics(reactionStep, process);
 			}
 		}
 	}
 	
 	private void createReactionStepsFromTableRow(BioModel bioModel, Transport bioPaxObject,
-			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
+			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows, boolean addSubunits) throws Exception
 	{
 		if (bioModel==null) {
 			return;
@@ -453,13 +470,13 @@ public class PathwayMapping {
 				fluxReactionStep.setName(name);
 				RelationshipObject newRelationship = new RelationshipObject(fluxReactionStep, bioPaxObject);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStep(bioModel, process, fluxReactionStep, newRelationship, participants);
+				createReactionStep(bioModel, process, fluxReactionStep, newRelationship, participants, addSubunits);
 			} else {
 				//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
 				// add missing parts for the existing reactionStep
 				RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), bioPaxObject);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStep(bioModel, process, bioModel.getModel().getReactionStep(name), newRelationship, participants);
+				createReactionStep(bioModel, process, bioModel.getModel().getReactionStep(name), newRelationship, participants, addSubunits);
 			}
 		}
 	}
@@ -478,7 +495,7 @@ public class PathwayMapping {
 	 *      + just modify the existing one?
 	 */
 	private void createReactionStep(BioModel bioModel, Process process, ReactionStep reactionStep, 
-			RelationshipObject relationshipObject, ArrayList<ConversionTableRow> participants) 
+			RelationshipObject relationshipObject, ArrayList<ConversionTableRow> participants, boolean addSubunits) 
 	throws Exception
 	{
 		if (reactionStep == null || bioModel == null || bioModel.getRelationshipModel() == null || participants.size() < 1) {
@@ -493,7 +510,7 @@ public class PathwayMapping {
 
 			// get speciesContext object based on its name
 			// if the speciesContext is not existed, create a new one
-			createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
+			createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location(), addSubunits);
 			
 			// add the existed speciesContext objects or new speciesContext objects to reaction participant list
 			if(ctr.participantType().equals("Reactant")) {
@@ -536,7 +553,7 @@ public class PathwayMapping {
 	}
 	
 	private void createReactionStepsFromTableRow(BioModel bioModel, Conversion conversion,
-			double stoich, String id, String location) throws Exception
+			double stoich, String id, String location, boolean addSubunits) throws Exception
 	{
 		// use user defined id as the name of the reaction name
 		if (bioModel==null) {
@@ -551,13 +568,13 @@ public class PathwayMapping {
 				simpleReactionStep.setName(name);
 				RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, conversion);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStepFromPathway( bioModel, process, simpleReactionStep, newRelationship);
+				createReactionStepFromPathway( bioModel, process, simpleReactionStep, newRelationship, addSubunits);
 			} else {
 				bioModel.getModel().getReactionStep(name).setStructure(bioModel.getModel().getStructure(location));
 			// add missing parts for the existing reactionStep
 				RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), conversion);
 				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-				createReactionStepFromPathway( bioModel, process, bioModel.getModel().getReactionStep(name), newRelationship);
+				createReactionStepFromPathway( bioModel, process, bioModel.getModel().getReactionStep(name), newRelationship, addSubunits);
 			}			
 		}
 	}
@@ -593,7 +610,7 @@ public class PathwayMapping {
 	 *      + just modify the existing one?
 	 */
 	private void createReactionStepFromPathway(BioModel bioModel, Process process, 
-			ReactionStep reactionStep, RelationshipObject relationshipObject) throws Exception
+			ReactionStep reactionStep, RelationshipObject relationshipObject, boolean addSubunits) throws Exception
 	{
 		// annotate the selected vcell object using linked pathway object
 		// add non-existing speciesContexts from linked pathway conversion
@@ -651,7 +668,7 @@ public class PathwayMapping {
 		// add Control to the reaction
 		if(process.getControl() != null) {
 			for(InteractionParticipant pe : process.getControl().getParticipants()) {
-				SpeciesContext newSpeciescontext = createSpeciesContextFromBioPaxObject( bioModel, pe.getPhysicalEntity());
+				SpeciesContext newSpeciescontext = createSpeciesContextFromBioPaxObject( bioModel, pe.getPhysicalEntity(), addSubunits);
 				(reactionStep).addReactionParticipant(new Catalyst(null,reactionStep, newSpeciescontext));
 			}
 		}

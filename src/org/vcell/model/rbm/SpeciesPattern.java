@@ -469,7 +469,14 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 		return signature.substring(0, signature.length()-1);
 	}
 
-	
+	public void initializeBonds(BondType bondType) {
+		for(MolecularTypePattern mtp : getMolecularTypePatterns()) {
+			for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+				mcp.setBondType(bondType);
+			}
+		}
+	}
+
 	public void checkSpeciesPattern(IssueContext issueContext, List<Issue> issueList) {
 		for(MolecularTypePattern mtp : getMolecularTypePatterns()) {
 			for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {

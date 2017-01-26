@@ -22,8 +22,10 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -41,6 +43,7 @@ public class ConversionPanel extends DocumentEditorSubPanel  {
 	private BioModelEditorConversionTableModel tableModel = null; 
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
+	private JCheckBox addSubunits = null;
 	
 	private class EventHandler implements ActionListener, DocumentListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -135,6 +138,18 @@ private void initialize() {
 		gbc.insets = new Insets(4, 0, 4, 4);
 		add(textFieldSearch, gbc);
 		
+		addSubunits = new JCheckBox("Add Subunits");
+		addSubunits.setHorizontalTextPosition(SwingConstants.LEFT);
+		addSubunits.setSelected(false);
+		addSubunits.setBackground(Color.white);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 7; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		add(addSubunits, gbc);
+		
 		setBackground(Color.white);		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -144,6 +159,9 @@ private void initialize() {
 private void searchTable() {
 	String searchText = textFieldSearch.getText();
 	tableModel.setSearchText(searchText);
+}
+public boolean isAddSubunits() {
+	return addSubunits.isSelected();
 }
 
 // done

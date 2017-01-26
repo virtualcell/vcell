@@ -411,11 +411,11 @@ implements PathwayEditor, ActionBuilder.Generator {
 		int returnCode = DialogUtils.showComponentOKCancelDialog(this, conversionPanel, "Import into Physiology");
 		if (returnCode == JOptionPane.OK_OPTION) {
 			PathwayMapping pathwayMapping = new PathwayMapping();
-			try{
+			try {
 				
 				// function I:
 				// pass the table rows that contains user edited values to create Vcell object
-				pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, conversionPanel.getTableRows());
+				pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, conversionPanel.getTableRows(), conversionPanel.isAddSubunits());
 				for(BioPaxObject bpo : importedBPObjects){
 					  if(bpo instanceof Conversion){
 							  infoMessage += "Reaction: \t\'";
