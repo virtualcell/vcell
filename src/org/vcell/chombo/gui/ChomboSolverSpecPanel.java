@@ -294,7 +294,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		private void addButton_actionPerformed() 
 		{	
 			try {
-				RefinementRoi roi = RefinementRoi.createNewRoi(roiType);
+				RefinementRoi roi = RefinementRoi.createNewRoi(roiType, simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels() + 1);
 				simulation.getSolverTaskDescription().getChomboSolverSpec().addRefinementRoi(roi);
 				roiTableModel.fireTableDataChanged();
 			} catch (ExpressionException e) {

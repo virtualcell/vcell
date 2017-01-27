@@ -19,6 +19,7 @@ import java.util.List;
 
 import javax.swing.JScrollPane;
 
+import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
 import org.vcell.util.ISize;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.PropertyConstants;
@@ -28,6 +29,7 @@ import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.client.ClientSimManager.ViewerType;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -404,18 +406,17 @@ public static void editSimulation(Component parent, SimulationOwner simOwner, Si
 		PopupGenerator.showErrorDialog(parent, errorMessage+"\nUpdate Math before editing");
 		return;
 	}
-
+	
+	try{
 		SimulationEditor simEditor = new SimulationEditor();
-		simEditor.prepareToEdit(simulation);
+		simEditor.prepareToEdit(simulation, parent);
 		
 		JScrollPane scrollPane = new JScrollPane(simEditor);
 		Dimension panesize = simEditor.getPreferredSize();
 		scrollPane.setPreferredSize(new Dimension(panesize.width + 20, panesize.height + 20));
-
-
-	boolean acceptable = false;
-	String errors = null;
-	try{
+		
+		boolean acceptable = false;
+		String errors = null;
 		do {
 			int ok = PopupGenerator.showComponentOKCancelDialog(parent, scrollPane,"Edit: " + simulation.getName());
 			if (ok != javax.swing.JOptionPane.OK_OPTION) {
@@ -431,6 +432,12 @@ public static void editSimulation(Component parent, SimulationOwner simOwner, Si
 		errors = applyChanges(clonedSimulation, simulation); //clonedSimulation is the new one.
 		if (!errors.equals("")) {
 			throw new Exception("Some or all of the changes could not be applied:" + errors);
+		}
+	} catch (ChomboInvalidGeometryException e) {
+		String option = DialogUtils.showWarningDialog(parent, "Warning", e.getRecommendation().getErrorMessage(),
+				e.getRecommendation().getDialogOptions(), ChomboMeshRecommendation.optionClose);
+		if (ChomboMeshRecommendation.optionSuggestions.equals(option)) {
+			DialogUtils.showInfoDialog(parent, ChomboMeshRecommendation.optionSuggestions, e.getRecommendation().getMeshSuggestions());
 		}
 	}catch(Exception e){
 		DialogUtils.showErrorDialog(parent, e.getMessage(), e);

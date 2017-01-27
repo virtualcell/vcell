@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Objects;
 
@@ -19,6 +20,7 @@ import javax.swing.JTabbedPane;
 
 import org.vcell.util.BeanUtils;
 
+import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.math.gui.MeshTabPanel;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
@@ -247,15 +249,17 @@ private void makeBoldTitle() {
 /**
  * Comment
  * @param simulation not null
+ * @param parent 
+ * @throws ChomboInvalidGeometryException 
  * @throws NullPointerException
  */
-public void prepareToEdit(Simulation simulation) {
+public void prepareToEdit(Simulation simulation, Component parent) throws ChomboInvalidGeometryException {
 	Objects.requireNonNull(simulation);
 	try {
 		Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(simulation);
 		clonedSimulation.refreshDependencies();
 		getMathOverridesPanel1().setMathOverrides(clonedSimulation == null ? null : clonedSimulation.getMathOverrides());
-		getMeshTabPanel().setSimulation(clonedSimulation);
+		getMeshTabPanel().setSimulation(parent, clonedSimulation);
 		SolverTaskDescriptionAdvancedPanel stdap = getSolverTaskDescriptionAdvancedPanel1();
 		{
 			SimulationOwner so = simulation.getSimulationOwner();
@@ -276,6 +280,10 @@ public void prepareToEdit(Simulation simulation) {
 			getJTabbedPane1().remove(getMeshTabPanel());
 		}
 		setClonedSimulation(clonedSimulation);
+	} catch (ChomboInvalidGeometryException exc) {
+		// if this happens, sim is not allowed to edit
+		exc.printStackTrace(System.out);
+		throw exc;
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
 		JOptionPane.showMessageDialog(this, "Could not initialize simulation editor\n"+exc.getMessage(), "Error:", JOptionPane.ERROR_MESSAGE);

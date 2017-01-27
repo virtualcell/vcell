@@ -1,6 +1,8 @@
 package org.vcell.chombo;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.vcell.util.Extent;
@@ -8,6 +10,7 @@ import org.vcell.util.Extent;
 import com.google.gson.Gson;
 
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.solver.SolverDescription;
 
 public class ChomboMeshValidator {
 	private Extent extent;
@@ -1085,15 +1088,76 @@ public class ChomboMeshValidator {
 	};
 
 	public static class ChomboMeshRecommendation {
+		private int dim;
 		public List<ChomboMeshSpec> validMeshSpecList;
-		public List<double[]> recommendedARList;
+		public List<int[]> recommendedNxList;
 		public double[] currentAR;
-		public double[] bestRecommendedAR;
+		public int[] bestRecommendedNx;
+		private String[] dialogOptions;
+		private String errorMessage;
+		public static final String optionClose = "Close";
+		public static final String optionSuggestions = "Domain Aspect Ratio Suggestions";
+		
+		private ChomboMeshRecommendation(int dim)
+		{
+			this.dim = dim;
+		}
+		
+		public String getMeshSuggestions()
+		{
+			StringBuffer sb = new StringBuffer();
+			sb.append("Domain sizes that are proportional to the following values are compatible with "
+					+ SolverDescription.Chombo.getShortDisplayLabel() + " solver:\n");
+			for (int[] nx : recommendedNxList)
+			{
+				sb.append(nx[0]);
+				if (dim > 1)
+				{
+					sb.append(" : ").append(nx[1]);
+					if (dim > 2)
+					{
+						sb.append(" : ").append(nx[2]);
+					}
+				}
+				sb.append("\n");
+			}
+			return sb.toString();
+		}
+		
+		public boolean validate()
+		{
+			boolean bGood = true;
+			if (validMeshSpecList == null || validMeshSpecList.size() == 0) {
+				bGood = false;
+				dialogOptions = new String[]{optionClose};
+				errorMessage = SolverDescription.Chombo.getShortDisplayLabel()
+						+ " solver does not work with arbitrary geometry domain size. "
+						+ "This domain's sizes are proportional to the following aspect ratios: "
+						+ currentAR[0] + (dim > 1 ? " : " + currentAR[1] : "")
+						+ (dim > 2 ? " : " + currentAR[2] : "")
+						+ " which is incompatible with this solver. Try creating a new geometry (in a new application/model), "
+						+ "with domain sizes proportional to an aspect ratio that is compatible with the solver, for example, "
+						+ bestRecommendedNx[0] + (dim > 1 ? " : " + bestRecommendedNx[1] : "")
+						+ (dim > 2 ? " : " + bestRecommendedNx[2] : "")
+						+ ".";
+				if (recommendedNxList != null && recommendedNxList.size() > 0) {
+					errorMessage += " For mesh size suggestions, click \"" + optionSuggestions + "\" below.";
+					dialogOptions = new String[] {optionClose, optionSuggestions};
+				}
+			}
+			return bGood;
+		}
 		
 		@Override
 		public String toString() {
 			Gson gson = new Gson();
 			return gson.toJson(this);
+		}
+		public String[] getDialogOptions() {
+			return dialogOptions;
+		}
+		public String getErrorMessage() {
+			return errorMessage;
 		}
 	}
 
@@ -1165,7 +1229,7 @@ public class ChomboMeshValidator {
 	public ChomboMeshRecommendation computeMeshSpecs() {
 		final double tol = 1e-5;
 
-		ChomboMeshRecommendation chomboMeshRecommendation = new ChomboMeshRecommendation();
+		ChomboMeshRecommendation chomboMeshRecommendation = new ChomboMeshRecommendation(dim);
 
 		double[] extentValues = new double[] { extent.getX(), extent.getY(), extent.getZ() };
 		int[] orderedIndexes = sortDir(extentValues);
@@ -1188,9 +1252,9 @@ public class ChomboMeshValidator {
 			}
 		}
 		if (arIndex == -1) {
-			chomboMeshRecommendation.recommendedARList = new ArrayList<>();
+			chomboMeshRecommendation.recommendedNxList = new ArrayList<>();
 			chomboMeshRecommendation.currentAR = new double[dim];
-			chomboMeshRecommendation.bestRecommendedAR = new double[dim];
+			chomboMeshRecommendation.bestRecommendedNx = new int[dim];
 
 			double tolAR_dist = 0.5;
 			int i_match = -1;
@@ -1205,22 +1269,48 @@ public class ChomboMeshValidator {
 					AR_MinDistance = ar_dist;
 					i_match = i;
 					if (ar_dist <= tolAR_dist) {
-						double[] recommendedAR = new double[dim];
-						recommendedAR[orderedIndexes[0]] = 1.0;
-						if (dim > 1) {
-							recommendedAR[orderedIndexes[1]] = listDomainARInfo[i].ar[0];
-							if (dim > 2) {
-								recommendedAR[orderedIndexes[2]] = listDomainARInfo[i].ar[1];
-							}
+						int[] recommendedNx = new int[dim];
+						for (int d = 0; d < dim; ++d) {
+							recommendedNx[orderedIndexes[d]] = listDomainARInfo[i].minNx[d];
 						}
-						chomboMeshRecommendation.recommendedARList.add(recommendedAR);
+
+						chomboMeshRecommendation.recommendedNxList.add(recommendedNx);
 					}
 				}
 			}
-			chomboMeshRecommendation.bestRecommendedAR[orderedIndexes[0]] = 1.0;
-			for (int d = 0; d < dim - 1; ++d) {
-				int thisDir = orderedIndexes[d + 1];
-				chomboMeshRecommendation.bestRecommendedAR[thisDir] = listDomainARInfo[i_match].ar[d];
+			Collections.sort(chomboMeshRecommendation.recommendedNxList, new Comparator<int[]>() {
+
+				@Override
+				public int compare(int[] o1, int[] o2) {
+					if (o1[0] < o2[0]) {
+						return -1;
+					}
+					if (o1[0] > o2[0]) {
+						return 1;
+					}
+
+					if (dim > 1) {
+						if (o1[1] < o2[1]) {
+							return -1;
+						}
+						if (o1[1] > o2[1]) {
+							return 1;
+						}
+
+						if (dim > 2) {
+							if (o1[2] < o2[2]) {
+								return -1;
+							}
+							if (o1[2] > o2[2]) {
+								return 1;
+							}
+						}
+					}
+					return 0;
+				}
+			});
+			for (int d = 0; d < dim; ++d) {
+				chomboMeshRecommendation.bestRecommendedNx[orderedIndexes[d]] = listDomainARInfo[i_match].minNx[d];
 			}
 			// compute AR again in original order
 			chomboMeshRecommendation.currentAR[0] = extent.getX() / minExtent;
@@ -1238,14 +1328,19 @@ public class ChomboMeshValidator {
 				coarseNx[d] = blockFactor * listDomainARInfo[arIndex].minNx[d];
 			}
 
+			long MaxNAllowed= (long)5.0E+7; // limit max number of mesh points
 			for (int nextNx : NxFactors) {
 				int[] Nx = new int[dim];
+				int totalN = 1; // compute total number of points
 				for (int d = 0; d < dim; ++d) {
 					int dir = orderedIndexes[d];
 					Nx[dir] = nextNx * coarseNx[d];
+					totalN = totalN*Nx[dir];
 				}
-				double H = extent.getX() / Nx[0];
-				chomboMeshRecommendation.validMeshSpecList.add(new ChomboMeshSpec(Nx, H));
+				if (totalN < MaxNAllowed) {
+					double H = extent.getX() / Nx[0];
+					chomboMeshRecommendation.validMeshSpecList.add(new ChomboMeshSpec(Nx, H));
+				}
 			}
 		}
 		return chomboMeshRecommendation;

@@ -28,22 +28,22 @@ import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.geometry.ChomboGeometryException;
+import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.solver.Simulation;
 
 public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JTextField geometrySizeTextField = null;
 	private Simulation simulation = null;
-	private JComboBox<Double> HComboBox;
+	private JComboBox<Float> HComboBox;
 	private JComboBox<Integer> NxComboBox;
 	private JComboBox<Integer> NyComboBox;
 	private JComboBox<Integer> NzComboBox;
 	private JLabel NxLabel;
 	private JLabel NyLabel;
 	private JLabel NzLabel;
-	private ChomboMeshRecommendation meshRecommendation;
 
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener {
 
@@ -59,7 +59,12 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
-			updateDisplay(true);
+			try {
+				updateDisplay(true);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	};
 
@@ -121,7 +126,7 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 			setSize(324, 310);
 			setEnabled(false);
 
-			HComboBox = new JComboBox<Double>();
+			HComboBox = new JComboBox<Float>();
 			HComboBox.setName("HComboBox");
 			HComboBox.addActionListener(ivjEventHandler);
 			
@@ -174,7 +179,7 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 			gbc.gridwidth = 5;
 			gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 			JLabel lbl = new JLabel(
-					"<html>Enter one of the following: either Dx(spatial step of for discretization), or the number of points in one dimension, x, y or z. The other entries will be automatically filled in to satisfy requirements of the solver. Chosen values may be substituted by similar values that define a valid mesh.</html");
+					"<html>Enter one of the following: either \u0394x(spatial step of for discretization), or the number of points in one dimension, x, y or z. The other entries will be automatically filled in to satisfy requirements of the solver. Chosen values may be substituted by similar values that define a valid mesh.</html");
 			getContentPanel().add(lbl, gbc);
 
 			gridy++;
@@ -265,7 +270,7 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 		}
 	}
 
-	public void setSimulation(Simulation newValue) {
+	public void setSimulation(Simulation newValue) throws ChomboGeometryException, ChomboInvalidGeometryException {
 		Simulation oldValue = simulation;
 		if (oldValue != null)
 		{
@@ -279,15 +284,16 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 		updateDisplay(false);
 	}
 
-	private void updateDisplay(boolean bSolverChanged) {
+	private void updateDisplay(boolean bSolverChanged) throws ChomboGeometryException, ChomboInvalidGeometryException {
 		if (!simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
 			setVisible(false);
 			return;
 		}
 
-		String error = null;
-		Extent extent = simulation.getMathDescription().getGeometry().getExtent();
-		switch (simulation.getMathDescription().getGeometry().getDimension()) {
+		Geometry geometry = simulation.getMathDescription().getGeometry();
+		Extent extent = geometry.getExtent();
+		int dimension = geometry.getDimension();
+		switch (dimension) {
 		case 0:
 			setVisible(false);
 			break;
@@ -308,10 +314,10 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 			break;
 		}
 
-		Geometry geometry = simulation.getMathDescription().getGeometry();
-		meshRecommendation = new ChomboMeshValidator(geometry.getDimension(), geometry.getExtent(),
+		String error;
+		ChomboMeshRecommendation meshRecommendation = new ChomboMeshValidator(geometry.getDimension(), geometry.getExtent(),
 				ChomboSolverSpec.BLOCK_FACTOR).computeMeshSpecs();
-		if (meshRecommendation.validMeshSpecList != null && meshRecommendation.validMeshSpecList.size() > 0) {
+		if (meshRecommendation.validate()) {
 			// remove ActionListener, here we only want to set values
 			removeComboBoxListener();
 			HComboBox.removeAll();
@@ -319,7 +325,7 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 			NyComboBox.removeAll();
 			NzComboBox.removeAll();
 			for (ChomboMeshSpec meshSpec : meshRecommendation.validMeshSpecList) {
-				HComboBox.addItem(meshSpec.H);
+				HComboBox.addItem((float)meshSpec.H);
 				NxComboBox.addItem(meshSpec.Nx[0]);
 				if (geometry.getDimension() > 1) {
 					NyComboBox.addItem(meshSpec.Nx[1]);
@@ -335,18 +341,27 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 			}
 			else 
 			{
-				NxComboBox.setSelectedItem(simulation.getMeshSpecification().getSamplingSize().getX());
+				ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
+				NxComboBox.setSelectedItem(samplingSize.getX());
 				// double check if existing mesh size is an option in drop down
-				Integer selectedItem = (Integer) NxComboBox.getSelectedItem();
-				if (selectedItem != simulation.getMeshSpecification().getSamplingSize().getX())
+				Integer selectedNx = (Integer) NxComboBox.getSelectedItem();
+				Integer selectedNy = geometry.getDimension() > 1 ? (Integer) NyComboBox.getSelectedItem() : 1;
+				Integer selectedNz = geometry.getDimension() > 2 ? (Integer) NzComboBox.getSelectedItem() : 1;
+				boolean bMatchFound = selectedNx == samplingSize.getX()
+						&& (dimension < 2 || selectedNy == samplingSize.getY())
+						&& (dimension < 3 || selectedNz == samplingSize.getZ());
+						
+				if (!bMatchFound)
 				{
-					error = "Mesh size not found in valid mesh sizes";
+					error = "Original mesh size for this simulation with the current domain size does not satisfy the solver requirements. "
+							+ "The mesh size has been adjusted. Please go to the Mesh tab and verify.";
+					throw new ChomboGeometryException(error);
 				}
 			}
 		}
 		else
 		{
-			error = "Valid mesh sizes not found.";
+			throw new ChomboInvalidGeometryException(meshRecommendation);
 		}
 	}
 
@@ -403,5 +418,4 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 			DialogUtils.showErrorDialog(this, "Error setting mesh size : " + error);
 		}
 	}
-
 }

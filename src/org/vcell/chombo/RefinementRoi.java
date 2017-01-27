@@ -180,9 +180,9 @@ public class RefinementRoi implements Serializable, Matchable {
 		return level;
 	}
 	
-	public static RefinementRoi createNewRoi(RoiType roiType) throws ExpressionException
+	public static RefinementRoi createNewRoi(RoiType roiType, int nextLevel) throws ExpressionException
 	{
-		return new RefinementRoi(roiType, 1, defaultTagsGrow, roiType == RoiType.Membrane ? "1.0" : "0.0");
+		return new RefinementRoi(roiType, nextLevel, defaultTagsGrow, roiType == RoiType.Membrane ? "1.0" : "0.0");
 	}
 
 	public RoiType getType() {

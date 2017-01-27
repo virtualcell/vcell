@@ -10,12 +10,16 @@
 
 package cbit.vcell.math.gui;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import org.vcell.chombo.gui.ChomboSolverSpecPanel;
+import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.geometry.ChomboGeometryException;
+import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 
@@ -142,9 +146,11 @@ public class MeshTabPanel extends javax.swing.JPanel {
 /**
  * Sets the meshSpecification property (cbit.vcell.mesh.MeshSpecification) value.
  * @param meshSpecification The new value for the property.
+ * @throws ChomboInvalidGeometryException 
+ * @throws ChomboGeometryException 
  * @see #getMeshSpecification
  */
-	public void setSimulation(Simulation newValue) {
+	public void setSimulation(Component parent, Simulation newValue) throws ChomboInvalidGeometryException {
 		Simulation oldValue = simulation;
 		if (oldValue != null) {
 			oldValue.getSolverTaskDescription().removePropertyChangeListener(eventListener);
@@ -154,9 +160,14 @@ public class MeshTabPanel extends javax.swing.JPanel {
 			simulation.getSolverTaskDescription().addPropertyChangeListener(eventListener);
 		}
 		updateDisplay();
-		chomboMeshSpecificationPanel.setSimulation(simulation);
 		chomboSolverSpecPanel.setSimulation(simulation);
 		meshSpecificationPanel.setSimulation(simulation);
+		try {
+			chomboMeshSpecificationPanel.setSimulation(simulation);
+		} catch (ChomboGeometryException exc) {
+			exc.printStackTrace(System.out);
+			DialogUtils.showWarningDialog(parent, exc.getMessage());
+		}
 	}
 
 	private void updateDisplay() {
@@ -170,5 +181,4 @@ public class MeshTabPanel extends javax.swing.JPanel {
 			meshSpecificationPanel.setVisible(true);
 		}
 	}
-
 }

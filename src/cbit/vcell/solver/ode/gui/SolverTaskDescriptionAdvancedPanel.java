@@ -37,8 +37,8 @@ import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientTaskManager;
+import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.common.VCellErrorMessages;
@@ -176,9 +176,11 @@ private void connEtoM13(SolverTaskDescription value) {
 			SolverDescription solverDescription = getSolverDescriptionFromDisplayLabel((String)getSolverComboBox().getSelectedItem());
 			validateChomboExtentAR(solverDescription);
 			getTornOffSolverTaskDescription().setSolverDescription(solverDescription);
-		} catch (java.lang.Throwable ivjExc) {
+		} catch (ChomboInvalidGeometryException ivjExc) {
 			// set solver back to what it was
 			fieldSolverComboBoxModel.setSelectedItem(fieldSolverTaskDescription.getSolverDescription().getDisplayLabel());
+			handleException(ivjExc);
+		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
@@ -1215,51 +1217,21 @@ private ChomboDeveloperToolsPanel getChomboDeveloperToolsPanel() {
 	return chomboDeveloperToolsPanel;
 }
 
-	private void validateChomboExtentAR(SolverDescription solverDescription) throws GeometryException {
+	private void validateChomboExtentAR(SolverDescription solverDescription) throws ChomboInvalidGeometryException {
 		if (solverDescription != null && solverDescription.isChomboSolver()) {
 			Simulation sim = fieldSolverTaskDescription.getSimulation();
 			Geometry geometry = sim.getMathDescription().getGeometry();
 			int dim = geometry.getDimension();
 			ChomboMeshValidator meshValidator = new ChomboMeshValidator(geometry);
 			ChomboMeshRecommendation chomboMeshRecommendation = meshValidator.computeMeshSpecs();
-			if (chomboMeshRecommendation.validMeshSpecList == null || chomboMeshRecommendation.validMeshSpecList.size() == 0) {
-				String optionClose = "Close";
-				String optionARSuggestions = "Aspect Ratio Suggestions";
-				String[] dialogOptions = new String[]{optionClose};
-				String errorMessage = SolverDescription.Chombo.getDisplayLabel()
-						+ " does not work with arbitrary geometry domain size. "
-						+ "This domain¡¯s sizes are proportional to the following aspect ratios: "
-						+ chomboMeshRecommendation.currentAR[0] + (dim > 1 ? " : " + chomboMeshRecommendation.currentAR[1] : "")
-						+ (dim > 2 ? " : " + chomboMeshRecommendation.currentAR[2] : "")
-						+ " which is incompatible with this solver. Try creating a new geometry (in a new application/model), "
-						+ "with domain sizes proportional to an aspect ratio that is compatible with the solver, for example, "
-						+ chomboMeshRecommendation.bestRecommendedAR[0] + (dim > 1 ? " : " + chomboMeshRecommendation.bestRecommendedAR[1] : "")
-						+ (dim > 2 ? " : " + chomboMeshRecommendation.bestRecommendedAR[2] : "")
-						+ ".";
-				if (chomboMeshRecommendation.recommendedARList != null && chomboMeshRecommendation.recommendedARList.size() > 0) {
-					errorMessage += " For more aspect ratio suggestions, click \"" + optionARSuggestions + "\" below.";
-					dialogOptions = new String[] {optionClose, optionARSuggestions};
-				}
-				String option = DialogUtils.showWarningDialog(this, errorMessage, dialogOptions, optionClose);
-				if (optionARSuggestions.equals(option))
+			if (!chomboMeshRecommendation.validate())
+			{
+				String option = DialogUtils.showWarningDialog(this, "Warning", chomboMeshRecommendation.getErrorMessage(), chomboMeshRecommendation.getDialogOptions(), ChomboMeshRecommendation.optionClose);
+				if (ChomboMeshRecommendation.optionSuggestions.equals(option))
 				{
-					StringBuffer sb = new StringBuffer();
-					for (double[] ar : chomboMeshRecommendation.recommendedARList)
-					{
-						sb.append(ar[0]);
-						if (dim > 1)
-						{
-							sb.append(" : ").append(ar[1]);
-							if (dim > 2)
-							{
-								sb.append(" : ").append(ar[2]);
-							}
-						}
-						sb.append("\n");
-					}
-					DialogUtils.showInfoDialog(this, "Aspect Ratio Suggestions", sb.toString());
+					DialogUtils.showInfoDialog(this, ChomboMeshRecommendation.optionSuggestions, chomboMeshRecommendation.getMeshSuggestions());
 				}
-				throw new GeometryException("Invalid geometry aspect ratio for " + SolverDescription.Chombo.getDisplayLabel());
+				throw new ChomboInvalidGeometryException(chomboMeshRecommendation);
 			}
 		}
 	}
