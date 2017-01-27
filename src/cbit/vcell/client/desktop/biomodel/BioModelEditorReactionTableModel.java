@@ -142,8 +142,9 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 						if (process instanceof ModelProcess){
 							ModelProcess reactionStep = (ModelProcess)process;
 							HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(reactionStep);
-							if(relObjsHash != null && relObjsHash.size() > 0){
-								return relObjsHash.iterator().next().getBioPaxObject();
+							if(relObjsHash != null && relObjsHash.size() > 0) {
+								BioPaxObject bpo = relObjsHash.iterator().next().getBioPaxObject();
+								return bpo;
 							}
 						}
 						return null;

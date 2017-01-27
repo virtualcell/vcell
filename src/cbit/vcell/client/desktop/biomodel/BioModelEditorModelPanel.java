@@ -66,6 +66,7 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Conversion;
 import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Displayable;
@@ -750,9 +751,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							}
 							String finalName = null;
 							BioPaxObject bioPaxObject = relationshipSet.iterator().next().getBioPaxObject();
-							if(bioPaxObject instanceof EntityImpl && ((EntityImpl)bioPaxObject).getName() != null && ((EntityImpl)bioPaxObject).getName().size() > 0){
+							if(bioPaxObject instanceof EntityImpl && ((EntityImpl)bioPaxObject).getName() != null && ((EntityImpl)bioPaxObject).getName().size() > 0) {
 								finalName = ((EntityImpl)bioPaxObject).getName().get(0);
-							}else{
+							} else if(bioPaxObject instanceof Conversion) {
+								Conversion mp = (Conversion)bioPaxObject;
+								finalName = "[" + bioPaxObject.getIDShort() + "]";
+							} else {
 								finalName = bioModelEntityObject.getName();
 							}
 							final int LIMIT = 40;
