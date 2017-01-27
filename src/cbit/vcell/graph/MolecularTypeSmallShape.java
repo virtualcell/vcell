@@ -3,8 +3,6 @@ package cbit.vcell.graph;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -12,8 +10,6 @@ import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.MultipleGradientPaint.CycleMethod;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
@@ -29,7 +25,7 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
-import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.mapping.gui.SmallShapeManager;
 import cbit.vcell.model.Model.RbmModelContainer;
 
 public class MolecularTypeSmallShape implements AbstractShape, Icon {
@@ -47,7 +43,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 	
 	final Graphics graphicsContext;
 	
-	private final InitialConditionsPanel.SmallShapeManager shapeManager;
+	private final SmallShapeManager shapeManager;
 	private final MolecularType mt;
 	private final MolecularTypePattern mtp;
 	private final Displayable owner;
@@ -55,7 +51,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 	
 	List <MolecularComponentSmallShape> componentShapes = new ArrayList<MolecularComponentSmallShape>();
 
-	public MolecularTypeSmallShape(int xPos, int yPos, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularTypeSmallShape(int xPos, int yPos, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mt = null;
@@ -69,7 +65,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 		height = baseHeight + MolecularComponentSmallShape.componentDiameter / 2;
 		// no species pattern - this is a plain species context
 	}
-	public MolecularTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mt = mtp.getMolecularType();
@@ -104,7 +100,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 			componentShapes.add(0, mcss);
 		}
 	}
-	public MolecularTypeSmallShape(int xPos, int yPos, MolecularType mt, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularType mt, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mt = mt;

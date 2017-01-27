@@ -6,7 +6,7 @@ import java.beans.PropertyVetoException;
 import org.vcell.util.Displayable;
 import org.vcell.util.Matchable;
 
-public interface ModelProcess extends Displayable, Matchable {
+public interface ModelProcess extends BioModelEntityObject, Displayable, Matchable {
 
 	String getName();
 

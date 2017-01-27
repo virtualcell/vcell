@@ -8,10 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.Icon;
 
@@ -22,11 +19,8 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
 
-import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
-import cbit.vcell.graph.AbstractComponentShape.BondPair;
-import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.mapping.gui.SmallShapeManager;
 
 public class SpeciesPatternSmallShape extends AbstractComponentShape implements AbstractShape, Icon {
 
@@ -46,7 +40,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 	private final AbstractShape parentShape = null;
 	private Displayable owner;
 	private SpeciesPattern sp;
-	private InitialConditionsPanel.SmallShapeManager shapeManager = null;
+	private SmallShapeManager shapeManager = null;
 	private String startText = new String();	// we display this before the Shape (positioned left of xPos - attention!)
 	private String endText = new String();		// we display this after the Shape, it's position is outside "width"
 	
@@ -60,8 +54,8 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 			boolean isSelected) {
 		this(xPos, yPos, sp, null, graphicsContext, owner, isSelected);
 	}
-	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner,
-			boolean isSelected) {
+	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, SmallShapeManager shapeManager, 
+			Graphics graphicsContext, Displayable owner, boolean isSelected) {
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;

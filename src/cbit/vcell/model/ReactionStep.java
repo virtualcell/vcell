@@ -59,7 +59,7 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
  * @since   VCELL1.0
  */
 @SuppressWarnings("serial")
-public abstract class ReactionStep implements ModelProcess, BioModelEntityObject, Model.ElectricalTopologyListener,
+public abstract class ReactionStep implements ModelProcess, Model.ElectricalTopologyListener,
 		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable, 
 		IssueSource, Displayable
 {

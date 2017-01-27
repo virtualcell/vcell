@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
@@ -40,6 +41,7 @@ import cbit.vcell.model.SimpleReaction;
 public class ModelProcessSpecsTableModel extends VCellSortTableModel<ModelProcessSpec> implements java.beans.PropertyChangeListener {
 	public enum ColumnType {
 		COLUMN_NAME("Name"),
+		COLUMN_DEPICTION("Depiction"),
 		COLUMN_TYPE("Type"),
 		COLUMN_ENABLED("Enabled"),
 		COLUMN_FAST("Fast");
@@ -129,6 +131,9 @@ public Class<?> getColumnClass(int column) {
 	switch (columnType){
 		case COLUMN_NAME:{
 			return ModelProcess.class;
+		}
+		case COLUMN_DEPICTION:{
+			return SpeciesPattern.class;
 		}
 		case COLUMN_TYPE:{
 			return String.class;

@@ -11,21 +11,35 @@
 package cbit.vcell.mapping.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JTable;
 import javax.swing.table.TableModel;
 
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.client.desktop.biomodel.ObservableTableModel;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.graph.ShapeModeInterface;
+import cbit.vcell.graph.SpeciesPatternSmallShape;
+import cbit.vcell.mapping.ModelProcessSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ModelProcess;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.ReactantPattern;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 
 /**
@@ -39,7 +53,8 @@ public class ModelProcessSpecsPanel extends DocumentEditorSubPanel implements Ap
 	private ModelProcessSpecsTableModel ivjModelProcessSpecsTableModel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	
+	private SmallShapeManager shapeManager = new SmallShapeManager(false, false, false, false);
+
 	private class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ModelProcessSpecsPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
@@ -167,6 +182,128 @@ private void initConnections() throws java.lang.Exception {
 			return this;
 		}
 	});
+	
+	DefaultScrollTableCellRenderer rbmReactionShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
+		List<SpeciesPatternSmallShape> spssList = new ArrayList<SpeciesPatternSmallShape>();
+		SpeciesPatternSmallShape spss = null;
+		
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, 
+				boolean isSelected, boolean hasFocus, int row, int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if (table.getModel() instanceof VCellSortTableModel<?>) {
+				Object selectedObject = null;
+				if (table.getModel() == ivjModelProcessSpecsTableModel) {
+					selectedObject = ivjModelProcessSpecsTableModel.getValueAt(row);
+				}
+				if (selectedObject != null) {
+					if(selectedObject instanceof ModelProcessSpec) {
+						ModelProcessSpec mps = (ModelProcessSpec)selectedObject;
+						ModelProcess mp = (ModelProcess)mps.getModelProcess();
+						if(mp instanceof ReactionRule) {
+							ReactionRule rr = (ReactionRule)mp;
+							Graphics panelContext = table.getGraphics();
+	
+							spssList.clear();
+							List<ReactantPattern> rpList = rr.getReactantPatterns();
+							int xPos = 4;
+							for(int i = 0; i<rpList.size(); i++) {
+								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rr, isSelected);
+								if(i < rpList.size()-1) {
+									spss.addEndText("+");
+								} else {
+									if(rr.isReversible()) {
+										spss.addEndText("<->");
+										xPos += 7;
+									} else {
+										spss.addEndText("->");
+									}
+								}
+								xPos += spss.getWidth() + 15;
+								spssList.add(spss);
+							}
+							List<ProductPattern> ppList = rr.getProductPatterns();
+							xPos+= 7;
+							for(int i = 0; i<ppList.size(); i++) {
+								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rr, isSelected);
+								if(i < ppList.size()-1) {
+									spss.addEndText("+");
+								}
+								xPos += spss.getWidth() + 15;
+								spssList.add(spss);
+							}
+						} else {
+							ReactionStep rs = (ReactionStep)mp;
+							Graphics panelContext = table.getGraphics();
+							spssList.clear();
+							int xPos = 4;
+							int extraSpace = 0;
+							for(int i = 0; i<rs.getNumReactants(); i++) {
+								SpeciesPattern sp = rs.getReactant(i).getSpeciesContext().getSpeciesPattern();
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rs, isSelected);
+								if(i < rs.getNumReactants()-1) {
+									spss.addEndText("+");
+								} else {
+									if(rs.isReversible()) {
+										spss.addEndText("<->");
+										extraSpace += 7;
+									} else {
+										spss.addEndText("->");
+									}
+								}
+								int offset = sp == null ? 17 : 15;
+								offset += extraSpace;
+								int w = spss.getWidth();
+								xPos += w + offset;
+								spssList.add(spss);
+							}
+							xPos+= 8;
+							for(int i = 0; i<rs.getNumProducts(); i++) {
+								SpeciesPattern sp = rs.getProduct(i).getSpeciesContext().getSpeciesPattern();
+								if(i==0 && rs.getNumReactants() == 0) {
+									xPos += 14;
+								}
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rs, isSelected);
+								if(i==0 && rs.getNumReactants() == 0) {
+									spss.addStartText("->");
+								}
+								if(i < rs.getNumProducts()-1) {
+									spss.addEndText("+");
+								}
+								int offset = sp == null ? 17 : 15;
+								int w = spss.getWidth();
+								xPos += w + offset;
+								spssList.add(spss);
+							}
+						}
+					}
+				} else {
+					spssList.clear();
+				}
+			}
+			setText("");
+			return this;
+		}
+		@Override
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			for(SpeciesPatternSmallShape spss : spssList) {
+				if(spss == null) {
+					continue;
+				}
+				spss.paintSelf(g);
+			}
+		}
+	};
+	
+	
+	getScrollPaneTable().setDefaultRenderer(SpeciesPattern.class, rbmReactionShapeDepictionCellRenderer);
+	
+//	ivjScrollPaneTable.getColumnModel().getColumn(ModelProcessSpecsTableModel.ColumnType.COLUMN_DEPICTION.ordinal()).setCellRenderer(rbmReactionShapeDepictionCellRenderer);
+//	ivjScrollPaneTable.getColumnModel().getColumn(ModelProcessSpecsTableModel.ColumnType.COLUMN_DEPICTION.ordinal()).setPreferredWidth(180);
+	
 	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 }
 

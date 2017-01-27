@@ -10,7 +10,6 @@
 
 package cbit.vcell.mapping.gui;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -50,7 +49,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.graph.ShapeModeInterface;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MathMapping;
@@ -88,54 +86,6 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 	private javax.swing.JMenuItem ivjJMenuItemCopyAll = null;
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
 
-	public class SmallShapeManager implements ShapeModeInterface {
-		
-		private boolean showDifferencesOnly = true;
-		private boolean bShowMoleculeColor = true;
-		private boolean bShowNonTrivialOnly = false;
-
-		public final Color uneditableShape = new Color(0x9F4F07);
-		private boolean editable = true;
-		
-		SmallShapeManager(boolean showDifferencesOnly, boolean bShowMoleculeColor, boolean bShowNonTrivialOnly, boolean editable) {
-			this.showDifferencesOnly = showDifferencesOnly;
-			this.bShowMoleculeColor = bShowMoleculeColor;
-			this.bShowNonTrivialOnly = bShowNonTrivialOnly;
-			this.editable = editable;
-		}
-		@Override
-		public void setShowDifferencesOnly(boolean showDifferencesOnly) {
-			this.showDifferencesOnly = showDifferencesOnly;
-		}
-		@Override
-		public boolean isShowDifferencesOnly() {
-			return showDifferencesOnly;
-		}
-		@Override
-		public void setShowMoleculeColor(boolean bShowMoleculeColor) {
-			this.bShowMoleculeColor = bShowMoleculeColor;
-		}
-		@Override
-		public boolean isShowMoleculeColor() {
-			return bShowMoleculeColor;
-		}
-		@Override
-		public void setShowNonTrivialOnly(boolean bShowNonTrivialOnly) {
-			this.bShowNonTrivialOnly = bShowNonTrivialOnly;
-		}
-		@Override
-		public boolean isShowNonTrivialOnly() {
-			return bShowNonTrivialOnly;
-		}
-		public void setEditable(boolean editable) {
-			this.editable = editable;
-		}
-		public boolean isEditable() {
-			return editable;
-		}
-
-	}
-	
 	private class InternalScrollTableActionManager extends DefaultScrollTableActionManager {
 
 		InternalScrollTableActionManager(JTable table) {

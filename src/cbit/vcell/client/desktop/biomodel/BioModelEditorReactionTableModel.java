@@ -139,8 +139,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 						return process.getName();
 					} 
 					case COLUMN_LINK: {
-						if (process instanceof ReactionStep){
-							ReactionStep reactionStep = (ReactionStep)process;
+						if (process instanceof ModelProcess){
+							ModelProcess reactionStep = (ModelProcess)process;
 							HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(reactionStep);
 							if(relObjsHash != null && relObjsHash.size() > 0){
 								return relObjsHash.iterator().next().getBioPaxObject();

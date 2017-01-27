@@ -1,11 +1,8 @@
 package cbit.vcell.graph;
 
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.util.ArrayList;
 
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -13,12 +10,9 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Issue.Severity;
 
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
-import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.mapping.gui.SmallShapeManager;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
@@ -37,14 +31,14 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 	private int width = componentDiameter;
 	private int height = componentDiameter;
 	
-	private final InitialConditionsPanel.SmallShapeManager shapeManager;
+	private final SmallShapeManager shapeManager;
 	private final MolecularComponent mc;
 	private final MolecularComponentPattern mcp;
 	private final Displayable owner;
 	private final AbstractShape parentShape;
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
-	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mcp = null;
@@ -54,7 +48,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 		xPos = rightPos-width;
 		yPos = y;
 	}
-	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponentPattern mcp, InitialConditionsPanel.SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponentPattern mcp, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mcp = mcp;
