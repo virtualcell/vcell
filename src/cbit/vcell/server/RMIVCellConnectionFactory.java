@@ -127,6 +127,7 @@ public static VCellBootstrap getVCellBootstrap(Component requester,String host) 
 	//If requester != null (called from VCell client) and connection fails then we ask user to supply proxy info
 	//If requester == null (called from VCell server) then we assume that all connection properties were set already
 	try {
+		if(true){throw new Exception("test");}
 		return getVCellBootstrap0(host);
 	} catch (Exception e) {
 		e.printStackTrace();
@@ -192,10 +193,10 @@ public static VCellBootstrap getVCellBootstrap(Component requester,String host) 
 						System.setProperty("http.proxyHost", proxyHost);
 						System.setProperty("http.proxyPort", proxyPort + "");						
 						System.clearProperty("socksProxyHost");
-						System.clearProperty("socksPproxyPort");						
+						System.clearProperty("socksProxyPort");						
 					}else{
 						System.setProperty("socksProxyHost", proxyHost);
-						System.setProperty("socksPproxyPort", proxyPort+"");						
+						System.setProperty("socksProxyPort", proxyPort+"");						
 						System.clearProperty("http.proxyHost");
 						System.clearProperty("http.proxyPort");						
 					}
@@ -236,9 +237,9 @@ public static VCellBootstrap getVCellBootstrap(Component requester,String host) 
 				bHttpAlreadySet?"\n":"")+" "+(bHttpAlreadySet?"following settings didn't work:":"")+
 				"\n"+s+
 				"\n"+e.getMessage()+"\nRestart VCell to set new Proxy info.",e);
-			if(requester != null){
-				DialogUtils.showErrorDialog(requester, newe.getMessage());
-			}
+//			if(requester != null){
+//				DialogUtils.showErrorDialog(requester, newe.getMessage());
+//			}
 			throw newe;
 		}
 	}
