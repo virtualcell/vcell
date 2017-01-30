@@ -127,7 +127,6 @@ public static VCellBootstrap getVCellBootstrap(Component requester,String host) 
 	//If requester != null (called from VCell client) and connection fails then we ask user to supply proxy info
 	//If requester == null (called from VCell server) then we assume that all connection properties were set already
 	try {
-		if(true){throw new Exception("test");}
 		return getVCellBootstrap0(host);
 	} catch (Exception e) {
 		e.printStackTrace();
