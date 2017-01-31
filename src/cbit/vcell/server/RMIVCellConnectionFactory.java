@@ -123,126 +123,112 @@ private static VCellBootstrap getVCellBootstrap0(String host) throws Exception{
 private static final String prefProxyType = "proxyType";
 private static final String prefProxyHost = "proxyHost";
 private static final String prefProxyPort = "proxyPort";
+//private static final String prefProxyForceAsk = "proxyForceAsk";
 public static VCellBootstrap getVCellBootstrap(Component requester,String host) throws Exception{
 	//If requester != null (called from VCell client) and connection fails then we ask user to supply proxy info
 	//If requester == null (called from VCell server) then we assume that all connection properties were set already
+	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
 	try {
 		return getVCellBootstrap0(host);
 	} catch (Exception e) {
 		e.printStackTrace();
-		Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
 		String proxyType = prefs.get(prefProxyType,prefProxyType);
 		String proxyHost = prefs.get(prefProxyHost,prefProxyHost);
 		String proxyPort = prefs.get(prefProxyPort,prefProxyPort);
-
-		//See if we already set the rmihttpsocketfactory, if so we already asked user and tried their info to create connection
-		boolean bHttpAlreadySet = RMISocketFactory.getSocketFactory() != null;
-		if(requester != null && !bHttpAlreadySet){// if we have requester then ask user about proxy info
-			do {
-				try {
-//					String proxyHost = prefs.get(prefProxyHost,prefProxyHost);
-//					int proxyPort = -1;
-//					boolean bPrefsOK = false;
-//					if(!proxyHost.equals(prefProxyHost)){
-//						// try HTTP tunnel connection with current prefs
-//						proxyPort = Integer.parseInt(prefs.get(prefProxyPort,prefProxyPort));
-//						SocketAddress proxyAddress = InetSocketAddress.createUnresolved(proxyHost,proxyPort);
-//						Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyAddress);
-////						String vcrmihostStr = System.getProperty("vcell.serverHost");
-////						StringTokenizer st = new StringTokenizer("http://"+vcrmihostStr, ";");
-//						URL url = new URL("http://"+host);
-//						HttpURLConnection httpUrlConn = null;
-//						try {
-//							httpUrlConn = (HttpURLConnection)url.openConnection(proxy);
-//							httpUrlConn.connect();
-//							assert HttpURLConnection.HTTP_OK == httpUrlConn.getResponseCode();
-//							long clength = httpUrlConn.getContentLength();
-//							System.out.println("-----Test content leng ="+clength);
-//							DataInputStream dis = new DataInputStream(httpUrlConn.getInputStream());
-//							byte[] byteArr = new byte[(int)clength];
-//							dis.readFully(byteArr);
-//							dis.close();
-//							System.out.println(new String(byteArr));
-//							bPrefsOK = true;
-//						} catch (Exception e1) {
-//							e1.printStackTrace();
-//							bPrefsOK = false;
-//						}finally{
-//							if(httpUrlConn != null){
-//								httpUrlConn.disconnect();
-//							}
-//						}
-//					}
-//					if(!bPrefsOK){
-						//Ask for proxy since direct didn't work, preset proxyType, proxyHost and proxyPort if already in preferences
-						String init = prefs.get(prefProxyType,prefProxyType)+":"+prefs.get(prefProxyHost,prefProxyHost)+":"+prefs.get(prefProxyPort, prefProxyPort);
-						String s = DialogUtils.showInputDialog0(requester, "Enter Proxy: [http,socks]:proxyHost:portNumber",init);
-						StringTokenizer st = new StringTokenizer(s, ":");
-						proxyType = st.nextToken().toLowerCase();
-						if(!proxyType.equals("http") && !proxyType.equals("socks")){
-							throw new IllegalArgumentException("Unkown proxyType='"+proxyType+"'");
-						}
-						proxyHost = st.nextToken();
-						proxyPort = st.nextToken();
-						prefs.put("proxyType", proxyType);
-						prefs.put("proxyHost", proxyHost);
-						prefs.put("proxyPort", Integer.parseInt(proxyPort)+"");
-//					}
-					if(proxyType.equals("http")){
-						System.setProperty("http.proxyHost", proxyHost);
-						System.setProperty("http.proxyPort", proxyPort + "");						
-						System.clearProperty("socksProxyHost");
-						System.clearProperty("socksProxyPort");						
-					}else{
-						System.setProperty("socksProxyHost", proxyHost);
-						System.setProperty("socksProxyPort", proxyPort+"");						
-						System.clearProperty("http.proxyHost");
-						System.clearProperty("http.proxyPort");						
-					}
-					System.setProperty("http.proxySet", "true");
-					System.setProperty("java.rmi.server.disableHttp", "false");
-					System.setProperty("sun.rmi.transport.proxy.eagerHttpFallback", "true");
-					//now reset the socket mechanism to 'http' tunnel (will also try 'socks' if properties set)
-					//must be done because inital default rmifactory is not configured for tunneling if above properties were not set when jvm started
-					//this can only be set once and can't be changed, must restart jvm to clear
-					RMISocketFactory.setSocketFactory(new RMIHttpToPortSocketFactory());
-					break;
-				} catch (UtilCancelException uce) {
-					// User didn't set proxy info, throw exception
-					throw e;
-				} catch (NumberFormatException nfe) {
-					e.printStackTrace();
-					DialogUtils.showErrorDialog(requester,nfe.getMessage() + "\nportNumber must be integer between 0 and 65535");
-				} catch (IllegalArgumentException iae) {
-					e.printStackTrace();
-					DialogUtils.showErrorDialog(requester,iae.getMessage() + "\nProxy type must be 'http' or 'socks'");
+		boolean bAllPrefsSet = !proxyType.equals(prefProxyType) && !proxyHost.equals(prefProxyHost) && !proxyPort.equals(prefProxyPort);
+		boolean bNewRMISocketFactorySet = RMISocketFactory.getSocketFactory() != null;
+		
+		if(requester != null){// called from client, see if proxy prefs are set and try those
+			if(bAllPrefsSet){// proxy prefs were already set by user
+				if(bNewRMISocketFactorySet){//we already tried them
+					throw createException(true, true, e);
+				}else{//Setup proxy properties based on prefs
+					handleProxyPrfs(requester, prefs);
+					return getVCellBootstrap(requester, proxyHost);
 				}
-			} while (true);
-			//try to get bootstrap again after setting user proxy info
-			return getVCellBootstrap0(host);
-		}else{
-			String s =
-				"http.proxySet="+System.getProperty("http.proxySet")+
-				"\nhttp.proxyHost="+System.getProperty("http.proxyHost")+
-				"\nhttp.proxyPort="+System.getProperty("http.proxyPort")+
-				"\njava.rmi.server.disableHttp="+System.getProperty("java.rmi.server.disableHttp")+
-				"\nsun.rmi.transport.proxy.eagerHttpFallback="+System.getProperty("sun.rmi.transport.proxy.eagerHttpFallback")+
-				"\nsocksProxyHost="+System.getProperty("socksProxyHost")+
-				"\nsocksProxyPort="+System.getProperty("socksProxyPort")+
-				"\nRMISocketFactory="+(RMISocketFactory.getSocketFactory()==null?RMISocketFactory.getDefaultSocketFactory().getClass().getName():RMISocketFactory.getSocketFactory().getClass().getName());
-					
-			Exception newe = new Exception("Getting bootstrap failed because: "+
-				(requester==null?"requester is null":"")+" "+(requester==null && 
-				bHttpAlreadySet?"\n":"")+" "+(bHttpAlreadySet?"following settings didn't work:":"")+
-				"\n"+s+
-				"\n"+e.getMessage()+"\nRestart VCell to set new Proxy info.",e);
-//			if(requester != null){
-//				DialogUtils.showErrorDialog(requester, newe.getMessage());
-//			}
-			throw newe;
+			}else{// Proxy prefs need to be set by user
+				handleProxyPrfs(requester, prefs);
+				return getVCellBootstrap(requester, proxyHost);
+			}
+		}else{// called from server, requester == null, assume java properties for proxies (if necessary) are not set correctly at jvm startup
+			throw createException(false, true, e);
 		}
 	}
 }
+
+private static void handleProxyPrfs(Component requester,Preferences prefs) throws Exception{
+	String proxyType = prefs.get(prefProxyType,prefProxyType);
+	String proxyHost = prefs.get(prefProxyHost,prefProxyHost);
+	String proxyPort = prefs.get(prefProxyPort,prefProxyPort);
+	boolean bAllPrefsSet = !proxyType.equals(prefProxyType) && !proxyHost.equals(prefProxyHost) && !proxyPort.equals(prefProxyPort);
+	do {
+		try {
+			if(!bAllPrefsSet){
+				//Ask for proxy since direct didn't work and prefs aren't all setup, preset proxyType, proxyHost and proxyPort if already in preferences
+				String init = proxyType+":"+proxyHost+":"+proxyPort;
+				String s = DialogUtils.showInputDialog0(requester, "Enter Proxy: [http,socks]:proxyHost:portNumber",init);
+				StringTokenizer st = new StringTokenizer(s, ":");
+				proxyType = st.nextToken().toLowerCase();
+				if(!proxyType.equals("http") && !proxyType.equals("socks")){
+					throw new IllegalArgumentException("Unkown proxyType='"+proxyType+"'");
+				}
+				proxyHost = st.nextToken();
+				proxyPort = st.nextToken();
+				prefs.put("proxyType", proxyType);
+				prefs.put("proxyHost", proxyHost);
+				prefs.put("proxyPort", Integer.parseInt(proxyPort)+"");
+			}
+			if(proxyType.equals("http")){
+				System.setProperty("http.proxyHost", proxyHost);
+				System.setProperty("http.proxyPort", proxyPort + "");						
+				System.clearProperty("socksProxyHost");
+				System.clearProperty("socksProxyPort");						
+			}else{
+				System.setProperty("socksProxyHost", proxyHost);
+				System.setProperty("socksProxyPort", proxyPort+"");						
+				System.clearProperty("http.proxyHost");
+				System.clearProperty("http.proxyPort");						
+			}
+			System.setProperty("http.proxySet", "true");
+			System.setProperty("java.rmi.server.disableHttp", "false");
+			System.setProperty("sun.rmi.transport.proxy.eagerHttpFallback", "true");
+			//now reset the socket mechanism to 'http' tunnel (will also try 'socks' if properties set)
+			//must be done because inital default rmifactory is not configured for tunneling if above properties were not set when jvm started
+			//this can only be set once and can't be changed, must restart jvm to clear
+			RMISocketFactory.setSocketFactory(new RMIHttpToPortSocketFactory());
+			break;
+		} catch (UtilCancelException uce) {
+			// User didn't set proxy info, throw exception
+			throw uce;
+		} catch (NumberFormatException nfe) {
+			nfe.printStackTrace();
+			DialogUtils.showErrorDialog(requester,nfe.getMessage() + "\nportNumber must be integer between 0 and 65535");
+		} catch (IllegalArgumentException iae) {
+			iae.printStackTrace();
+			DialogUtils.showErrorDialog(requester,iae.getMessage() + "\nProxy type must be 'http' or 'socks'");
+		}
+	} while (true);
+}
+
+private static Exception createException(boolean bRequester, boolean bAlreadyTriedProxies,Exception cause){
+	String s =
+			"http.proxySet="+System.getProperty("http.proxySet")+
+			"\nhttp.proxyHost="+System.getProperty("http.proxyHost")+
+			"\nhttp.proxyPort="+System.getProperty("http.proxyPort")+
+			"\njava.rmi.server.disableHttp="+System.getProperty("java.rmi.server.disableHttp")+
+			"\nsun.rmi.transport.proxy.eagerHttpFallback="+System.getProperty("sun.rmi.transport.proxy.eagerHttpFallback")+
+			"\nsocksProxyHost="+System.getProperty("socksProxyHost")+
+			"\nsocksProxyPort="+System.getProperty("socksProxyPort")+
+			"\nRMISocketFactory="+(RMISocketFactory.getSocketFactory()==null?RMISocketFactory.getDefaultSocketFactory().getClass().getName():RMISocketFactory.getSocketFactory().getClass().getName());
+				
+		Exception newe = new Exception("Getting bootstrap failed because: "+
+			(!bRequester?"requester is null":"")+" "+(!bRequester && 
+					bAlreadyTriedProxies?"\n":"")+" "+(bAlreadyTriedProxies?"following settings didn't work:":"")+
+			"\n"+s+
+			"\n"+cause.getMessage()+"\nRestart VCell to set new Proxy info.",cause);
+		return newe;
+}
+
 
 //private static void test(){
 //		java.net.Proxy proxy = null;
