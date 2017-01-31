@@ -317,8 +317,6 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		}
 	}
 	
-
-
 	// filtering functions
 	public void setSearchText(String newValue) {
 		if (searchText == newValue) {
@@ -328,17 +326,31 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		refreshData();
 	}
 	
+	// displays on console the bioPaxObjects in the local list (the things we want to bring into the physiology)
+	public static void printObjects(List<BioPaxObject> bpoList) {
+		System.out.println(bpoList.size() + " bioPaxObjects in the local list");
+		for(BioPaxObject bpo : bpoList) {
+			BioModel.printObject(bpo);
+		}
+	}
+
 	private void refreshData() {
 		if (bioModel == null || bioModel.getPathwayModel() == null || bioPaxObjects == null) {
 			setData(null);
 			return;
 		}
-		
 		// function I :: get selected objects only
 		// create ConversionTableRow objects
 		allPathwayObjectList = new ArrayList<ConversionTableRow>();
 		convertedBPObjects = new HashSet<BioPaxObject>();
-		for(BioPaxObject bpo : bioPaxObjects){
+		
+		printObjects(bioPaxObjects);
+		BioModel.printBpModelObjects(bioModel.getPathwayModel().getBiopaxObjects());
+//		BioModel.printBpRelationshipObjects(bioModel.getRelationshipModel().getBioPaxObjects());	// derived; the bpObjects that are part of a relationship
+		BioModel.printRelationships(bioModel.getRelationshipModel().getRelationshipObjects());
+		System.out.println("----------------------------------------------------------------------");
+		
+		for(BioPaxObject bpo : bioPaxObjects) {
 		  if(bpo instanceof Conversion){
 			  if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
 	  		    Conversion conversion = (Conversion)bpo;

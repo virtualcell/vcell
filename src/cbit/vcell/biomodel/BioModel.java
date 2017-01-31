@@ -1196,23 +1196,50 @@ public SimulationContext getSimulationContext(String name) {
 	return null;
 }
 
-	public PathwayModel getPathwayModel() {
-		return pathwayModel;
+public List<SymbolTableEntry> findReferences(SymbolTableEntry symbolTableEntry){
+	ArrayList<SymbolTableEntry> references = new ArrayList<SymbolTableEntry>();
+	HashSet<NameScope> visited = new HashSet<NameScope>();
+
+	fieldModel.getNameScope().findReferences(symbolTableEntry, references, visited);
+
+	for (SimulationContext simContext : fieldSimulationContexts){
+		simContext.getNameScope().findReferences(symbolTableEntry, references, visited);
 	}
+	return references;
+}
 
-	public RelationshipModel getRelationshipModel(){
-		return relationshipModel;
+// ------------------------------------------------- Pathway and Relationship objects and utility functions
+public PathwayModel getPathwayModel() {
+	return pathwayModel;
+}
+public RelationshipModel getRelationshipModel(){
+	return relationshipModel;
+}
+
+public static void printObject(BioPaxObject bpo) {
+}
+private static void printObject(RelationshipObject ro) {
+}
+// displays on console the bioPaxObjects in the pathway model
+public static void printBpModelObjects(Set<BioPaxObject> bpoList) {
+	System.out.println(bpoList.size() + " bioPaxObjects in the pathway model");
+	for(BioPaxObject bpo : bpoList) {
+		printObject(bpo);
 	}
-
-	public List<SymbolTableEntry> findReferences(SymbolTableEntry symbolTableEntry){
-		ArrayList<SymbolTableEntry> references = new ArrayList<SymbolTableEntry>();
-		HashSet<NameScope> visited = new HashSet<NameScope>();
-
-		fieldModel.getNameScope().findReferences(symbolTableEntry, references, visited);
-
-		for (SimulationContext simContext : fieldSimulationContexts){
-			simContext.getNameScope().findReferences(symbolTableEntry, references, visited);
-		}
-		return references;
+}
+// displays on console the bioPaxObjects that are part of a relationship
+public static void printBpRelationshipObjects(Set<BioPaxObject> bpoList) {
+	System.out.println(bpoList.size() + " bioPaxObjects that are part of a relationship");
+	for(BioPaxObject bpo : bpoList) {
+		printObject(bpo);
 	}
+}
+// displays on console the relationship objects existing in the relationship model
+public static void printRelationships(Set<RelationshipObject> roList) {
+	System.out.println(roList.size() + " relationshipObjects in the relationship model");
+	for(RelationshipObject ro : roList) {
+		printObject(ro);
+	}
+}
+
 }

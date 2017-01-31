@@ -207,9 +207,10 @@ public class RelationshipModel {
 		return bioModelEntityReObjects;
 	} 
 	
-	public HashSet<BioPaxObject> getBioPaxObjects(){ // unused function
+	@Deprecated
+	public HashSet<BioPaxObject> getBioPaxObjects() { 		// unused function
 		HashSet<BioPaxObject> bioPaxObject = new HashSet<BioPaxObject>();
-		for(RelationshipObject reObject : relationshipObjects){
+		for(RelationshipObject reObject : relationshipObjects) {
 			bioPaxObject.add(reObject.getBioPaxObject());
 		}
 		return bioPaxObject;
