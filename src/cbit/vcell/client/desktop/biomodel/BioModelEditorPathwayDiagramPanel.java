@@ -385,11 +385,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 		}
 		
 		// create import panel
-		if (conversionPanel == null) {
-			conversionPanel = new ConversionPanel();
-			conversionPanel.setBioModel(bioModel);
-			conversionPanel.setSelectionManager(getSelectionManager());
-		}				
+		conversionPanel = new ConversionPanel();
+		conversionPanel.setBioModel(bioModel);
+		conversionPanel.setSelectionManager(getSelectionManager());
 		
 		// show warning message 
 		warningMessage2 += "\nNO membrane structures available in the physiology model.\n";
