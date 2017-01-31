@@ -279,7 +279,7 @@ public static void checkClientServerSoftwareVersion(TopLevelWindowManager reques
 	if (clientServerInfo.getServerType() == ClientServerInfo.SERVER_REMOTE) {
 		String[] hosts = clientServerInfo.getHosts();
 		for (int i = 0; i < hosts.length; i ++) {
-			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion((requester!=null?requester.getComponent():null),hosts[i]);
+			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(hosts[i]);
 			if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
 					PopupGenerator.showWarningDialog(requester.getComponent(), "A new VCell client is available:\n"
 						+ "current version : " + clientSoftwareVersion + "\n"
@@ -365,6 +365,7 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 	VCellThreadChecker.checkRemoteInvocation();
 
 	VCellConnection newVCellConnection = null;
+	VCellConnectionFactory vcConnFactory = null;
 	String badConnStr = "";
 	try {
 		switch (getClientServerInfo().getServerType()) {
@@ -378,9 +379,9 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 						getClientServerInfo().setActiveHost(hosts[i]);
 
 						badConnStr += hosts[i] + ";";
-						RMIVCellConnectionFactory vcConnFactory = new RMIVCellConnectionFactory(hosts[i], getClientServerInfo().getUserLoginInfo());
+						vcConnFactory = new RMIVCellConnectionFactory(hosts[i], getClientServerInfo().getUserLoginInfo());
 						setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), hosts[i], ConnectionStatus.INITIALIZING));
-						newVCellConnection = vcConnFactory.createVCellConnectionAskProxy((requester!=null?requester.getComponent():null));
+						newVCellConnection = vcConnFactory.createVCellConnection();
 						break;
 					} catch (AuthenticationException ex) {
 						throw ex;
@@ -397,7 +398,7 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 				new PropertyLoader();
 				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);
 				SessionLog log = new StdoutSessionLog(getClientServerInfo().getUsername());
-				LocalVCellConnectionFactory vcConnFactory = new LocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo(), log);
+				vcConnFactory = new LocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo(), log);
 				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), ClientServerInfo.LOCAL_SERVER, ConnectionStatus.INITIALIZING));
 				newVCellConnection = vcConnFactory.createVCellConnection();
 				break;
