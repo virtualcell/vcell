@@ -8015,10 +8015,12 @@ private	Convert<Boolean> convertBoolean = new Convert<Boolean>() {
 		try 
 		{
 			ChomboSolverSpec css = new ChomboSolverSpec(maxBoxSize, fillRatio, viewLevel, bSaveVCellOutput, bSaveChomboOutput, refineRatioList);
-			Double smallVolfracThreshold = parseDoubleWithDefault(element, XMLTags.SmallVolfracThreshold, 0);
+			double smallVolfracThreshold = parseDoubleWithDefault(element, XMLTags.SmallVolfracThreshold, 0);
+			int blockFactor = parseIntWithDefault(element, XMLTags.BlockFactor, ChomboSolverSpec.DEFAULT_BLOCK_FACTOR);
 			boolean bActivateFeatureUnderDevelopment = parseBooleanWithDefault(element, XMLTags.ActivateFeatureUnderDevelopment, false); 
 			css.setSmallVolfracThreshold(smallVolfracThreshold);
 			css.setActivateFeatureUnderDevelopment(bActivateFeatureUnderDevelopment);
+			css.setBlockFactor(blockFactor);
 						
 			Element timeBoundsElement = element.getChild(XMLTags.TimeBoundTag, vcNamespace);
 			List<Element> timeIntervalElementList = null;

@@ -245,6 +245,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		SAVE_CHOMBO_OUTPUT,
 		ACTIVATE_FEATURE_UNDER_DEVELOPMENT,
 		SMALL_VOLFRAC_THRESHOLD,
+		BLOCK_FACTOR,
 		SUBDOMAINS,
 		IF,
 		USER,
@@ -2098,6 +2099,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		printWriter.println(FVInputFileKeyword.SAVE_CHOMBO_OUTPUT + " " + chomboSolverSpec.isSaveChomboOutput());
 		printWriter.println(FVInputFileKeyword.ACTIVATE_FEATURE_UNDER_DEVELOPMENT + " " + chomboSolverSpec.isActivateFeatureUnderDevelopment());
 		printWriter.println(FVInputFileKeyword.SMALL_VOLFRAC_THRESHOLD + " " + chomboSolverSpec.getSmallVolfracThreshold());
+		printWriter.println(FVInputFileKeyword.BLOCK_FACTOR + " " + chomboSolverSpec.getBlockFactor());
 		
 		// Refinement
 		int numLevels = chomboSolverSpec.getNumRefinementLevels();

@@ -783,6 +783,7 @@ public class XMLTags {
   public final static String TimeIntervalTag = "TimeInterval";
 	public final static String ActivateFeatureUnderDevelopment = "ActivateFeatureUnderDevelopment";
 	public final static String SmallVolfracThreshold = "SmallVolfracThreshold";
+	public final static String BlockFactor = "BlockFactor";
   
   //Parallel processing
   public final static String NUM_PROCESSORS = "NumberProcessors";

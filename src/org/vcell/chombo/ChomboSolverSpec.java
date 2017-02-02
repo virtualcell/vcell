@@ -31,7 +31,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	public static final int defaultRefineRatio = 2;
 	
 	private static double defaultFillRatio = 0.9;
-	public static final int BLOCK_FACTOR = 8;
+	public static final int DEFAULT_BLOCK_FACTOR = 4;
 	
 	private int maxBoxSize = 32;
 	private double fillRatio = defaultFillRatio;
@@ -48,6 +48,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	private boolean bSaveChomboOutput = false;
 	private boolean bActivateFeatureUnderDevelopment = false;
 	private double smallVolfracThreshold = 0;
+	private int blockFactor = DEFAULT_BLOCK_FACTOR;
 	private List<Integer> refineRatioList = null;
 	private List<TimeInterval> timeIntervalList = new ArrayList<TimeInterval>();
 
@@ -63,6 +64,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		this.bSaveChomboOutput = css.bSaveChomboOutput;
 		this.bActivateFeatureUnderDevelopment = css.bActivateFeatureUnderDevelopment;
 		this.smallVolfracThreshold = css.smallVolfracThreshold;
+		this.blockFactor = css.blockFactor;
 		for (TimeInterval ti : css.timeIntervalList)
 		{
 			timeIntervalList.add(new TimeInterval(ti));
@@ -217,7 +219,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		
 		EqualsBuilder equalsBuilder = new EqualsBuilder();
 		equalsBuilder.append(bActivateFeatureUnderDevelopment, chomboSolverSpec.bActivateFeatureUnderDevelopment)
-			.append(smallVolfracThreshold, chomboSolverSpec.smallVolfracThreshold);
+			.append(smallVolfracThreshold, chomboSolverSpec.smallVolfracThreshold).append(blockFactor, chomboSolverSpec.blockFactor);
 		if (!equalsBuilder.isEquals())
 		{
 			return false;
@@ -259,6 +261,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		buffer.append("\t" + VCML.SaveChomboOutput + " " + bSaveChomboOutput + "\n");
 		buffer.append("\t" + VCML.ActivateFeatureUnderDevelopment + " " + bActivateFeatureUnderDevelopment + "\n");
 		buffer.append("\t" + VCML.SmallVolfracThreshold + " " + smallVolfracThreshold + "\n");
+		buffer.append("\t" + VCML.BlockFactor + " " + blockFactor + "\n");
 		
 		buffer.append("\t" + VCML.TimeBounds + " " + VCML.BeginBlock + "\n");
 		for (TimeInterval ti : timeIntervalList)
@@ -333,6 +336,11 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			else if (token.equalsIgnoreCase(VCML.TimeBounds))
 			{
 				readVCMLTimeBounds(tokens);
+			}
+			else if (token.equalsIgnoreCase(VCML.BlockFactor))
+			{
+				token = tokens.nextToken();
+				blockFactor = Integer.parseInt(token);
 			}
 			else
 			{
@@ -591,5 +599,13 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 
 	public void setSmallVolfracThreshold(double smallVolfracThreshold) {
 		this.smallVolfracThreshold = smallVolfracThreshold;
+	}
+
+	public int getBlockFactor() {
+		return blockFactor;
+	}
+
+	public void setBlockFactor(int blockFactor) {
+		this.blockFactor = blockFactor;
 	}
 }

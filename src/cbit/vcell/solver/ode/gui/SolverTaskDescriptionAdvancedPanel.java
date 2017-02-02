@@ -1221,8 +1221,7 @@ private ChomboDeveloperToolsPanel getChomboDeveloperToolsPanel() {
 		if (solverDescription != null && solverDescription.isChomboSolver()) {
 			Simulation sim = fieldSolverTaskDescription.getSimulation();
 			Geometry geometry = sim.getMathDescription().getGeometry();
-			int dim = geometry.getDimension();
-			ChomboMeshValidator meshValidator = new ChomboMeshValidator(geometry);
+			ChomboMeshValidator meshValidator = new ChomboMeshValidator(geometry, fieldSolverTaskDescription.getChomboSolverSpec());
 			ChomboMeshRecommendation chomboMeshRecommendation = meshValidator.computeMeshSpecs();
 			if (!chomboMeshRecommendation.validate())
 			{

@@ -22,7 +22,6 @@ import javax.swing.JLabel;
 import org.vcell.chombo.ChomboMeshValidator;
 import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
 import org.vcell.chombo.ChomboMeshValidator.ChomboMeshSpec;
-import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -316,7 +315,7 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 
 		String error;
 		ChomboMeshRecommendation meshRecommendation = new ChomboMeshValidator(geometry.getDimension(), geometry.getExtent(),
-				ChomboSolverSpec.BLOCK_FACTOR).computeMeshSpecs();
+				simulation.getSolverTaskDescription().getChomboSolverSpec().getBlockFactor()).computeMeshSpecs();
 		if (meshRecommendation.validate()) {
 			// remove ActionListener, here we only want to set values
 			removeComboBoxListener();
@@ -353,6 +352,7 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 						
 				if (!bMatchFound)
 				{
+					NxComboBox.setSelectedIndex(0);
 					error = "Original mesh size for this simulation with the current domain size does not satisfy the solver requirements. "
 							+ "The mesh size has been adjusted. Please go to the Mesh tab and verify.";
 					throw new ChomboGeometryException(error);

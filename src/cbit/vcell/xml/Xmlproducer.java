@@ -5108,6 +5108,10 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 		smallVolfracThreshold.setText(chomboSolverSpec.getSmallVolfracThreshold() + "");
 		chomboElement.addContent(smallVolfracThreshold);
 		
+		Element blockFactor = new Element(XMLTags.BlockFactor);
+		blockFactor.setText(chomboSolverSpec.getBlockFactor() + "");
+		chomboElement.addContent(blockFactor);
+		
 		Element timeBoundsTag = new Element(XMLTags.TimeBoundTag); 
 		for (TimeInterval ti : chomboSolverSpec.getTimeIntervalList())
 		{

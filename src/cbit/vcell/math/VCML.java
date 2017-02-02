@@ -279,4 +279,5 @@ public class VCML {
 	public final static String TimeInterval = "TimeInterval";
 	public final static String ActivateFeatureUnderDevelopment = "ActivateFeatureUnderDevelopment";
 	public final static String SmallVolfracThreshold = "SmallVolfracThreshold";
+	public final static String BlockFactor = "BlockFactor";
 }

@@ -351,6 +351,10 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			{
 				setMaxBoxSize();
 			}
+			else if (e.getSource() == blockFactorComboBox)
+			{
+				setBlockFactor();
+			}
 			else if (e.getSource() == viewLevelComboBox)
 			{
 				if (viewLevelComboBox.getItemCount() > 0)
@@ -403,6 +407,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	private Simulation simulation = null;
 	private JComboBox<Integer> maxBoxSizeComboBox = null;
 	private JTextField fillRatioTextField;
+	private JComboBox<Integer> blockFactorComboBox = null;
 	private JPanel finestInfoPanel;
 	private JTextField finestSizeTextField;
 	private JPanel refinementPanel;
@@ -477,6 +482,15 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		}
 		maxBoxSizeComboBox.addItem(0);
 		
+		blockFactorComboBox = new JComboBox<Integer>();
+		start = 4;
+		for (int i = 0; i < 4; ++ i)
+		{
+			blockFactorComboBox.addItem(start);
+			start *= 2;
+		}
+		blockFactorComboBox.setEnabled(false);
+		
 		viewLevelFinestRadioButton = new JRadioButton("Finest");
 		viewLevelUserSelectRadioButton = new JRadioButton("Select");
 		viewLevelFinestRadioButton.addActionListener(eventHandler);
@@ -543,11 +557,28 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.anchor = GridBagConstraints.WEST;
 		northPanel.getContentPanel().add(fillRatioTextField, gbc);
 		
+		gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(4, 4, 4, 1);		
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.EAST;
+		northPanel.getContentPanel().add(new JLabel("Block Factor"), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(4, 1, 4, 4);
+		gbc.gridx = 5;
+		gbc.gridy = gridy;
+		gbc.weightx = 0.1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.WEST;
+		northPanel.getContentPanel().add(blockFactorComboBox, gbc);
+		
 		getContentPanel().setLayout(new BorderLayout(0, 2));
 		getContentPanel().add(northPanel, BorderLayout.SOUTH);
 		getContentPanel().add(getRefinementPanel(), BorderLayout.CENTER);
 		
 		maxBoxSizeComboBox.addActionListener(eventHandler);
+		blockFactorComboBox.addActionListener(eventHandler);
 	}
 
 	private JPanel getRefinementPanel() {
@@ -641,6 +672,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		setVisible(true);
 		ChomboSolverSpec chomboSolverSpec = simulation.getSolverTaskDescription().getChomboSolverSpec();
 		maxBoxSizeComboBox.setSelectedItem(chomboSolverSpec.getMaxBoxSize());
+		blockFactorComboBox.setSelectedItem(chomboSolverSpec.getBlockFactor());
 		fillRatioTextField.setText(chomboSolverSpec.getFillRatio() + "");
 		
 		updateViewLevel();
@@ -709,6 +741,10 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		{
 			DialogUtils.showErrorDialog(this, ex.getMessage());
 		}
+	}
+	
+	private void setBlockFactor() {
+		simulation.getSolverTaskDescription().getChomboSolverSpec().setBlockFactor((Integer)blockFactorComboBox.getSelectedItem());
 	}
 	
 	private void setViewLevel() {

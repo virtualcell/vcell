@@ -1188,10 +1188,10 @@ public class ChomboMeshValidator {
 			256, 270, 280, 288, 300, 315, 320, 324, 336, 350, 360, 375, 378, 384, 400, 405, 420, 432, 448, 450, 480, 486,
 			500 };
 
-	public ChomboMeshValidator(Geometry geometry) {
+	public ChomboMeshValidator(Geometry geometry, ChomboSolverSpec chomboSolverSpec) {
 		this.dim = geometry.getDimension();
 		this.extent = geometry.getExtent();
-		this.blockFactor = ChomboSolverSpec.BLOCK_FACTOR;
+		this.blockFactor = chomboSolverSpec.getBlockFactor();
 	}
 
 	public ChomboMeshValidator(int dim, Extent extent, int blockFactor) {
