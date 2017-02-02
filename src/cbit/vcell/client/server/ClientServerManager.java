@@ -279,7 +279,7 @@ public static void checkClientServerSoftwareVersion(TopLevelWindowManager reques
 	if (clientServerInfo.getServerType() == ClientServerInfo.SERVER_REMOTE) {
 		String[] hosts = clientServerInfo.getHosts();
 		for (int i = 0; i < hosts.length; i ++) {
-			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(hosts[i]);
+			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(requester.getComponent(),hosts[i]);
 			if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
 					PopupGenerator.showWarningDialog(requester.getComponent(), "A new VCell client is available:\n"
 						+ "current version : " + clientSoftwareVersion + "\n"
@@ -413,7 +413,7 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 		aexc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(requester, aexc.getMessage());
 	} catch (ConnectionException cexc) {
-		String msg = badConnectMessage(badConnStr) + "\n\n" + cexc.getMessage();
+		String msg = badConnectMessage(badConnStr) + "\n" + cexc.getMessage();
 		cexc.printStackTrace(System.out);
 		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
