@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 
@@ -37,6 +38,7 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -56,6 +58,18 @@ public class VCellClientTest {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
+	//check synchronize Proxy prefs, Proxy Properties
+	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
+	Boolean bHttp =
+		(System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST)==null && System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_HOST)==null?null:System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST) != null);
+	String proxyHostProp = (bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_HOST)));
+	String proxyPortProp = (bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_PORT):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_PORT)));
+	RMIVCellConnectionFactory.writeProxyToSupplementalVMOptions(JOptionPane.getRootFrame(),false,
+		prefs.get(RMIVCellConnectionFactory.prefProxyType,RMIVCellConnectionFactory.prefProxyType),
+		proxyHostProp,proxyPortProp,
+		prefs.get(RMIVCellConnectionFactory.prefProxyType,RMIVCellConnectionFactory.prefProxyType),
+		prefs.get(RMIVCellConnectionFactory.prefProxyHost,RMIVCellConnectionFactory.prefProxyHost),prefs.get(RMIVCellConnectionFactory.prefProxyPort,RMIVCellConnectionFactory.prefProxyPort));
+
 	final boolean  IS_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
 	if (!IS_DEBUG) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
@@ -181,6 +195,74 @@ private static VCDocument startupWithOpen(String fileName) {
 	}
 	return initialDocument;
 }
+
+
+//private static String handleExceptionProxyPrfs(Exception cause) throws Exception{
+//Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
+//String proxyType = prefs.get(prefProxyType,prefProxyType);
+//String proxyHost = prefs.get(prefProxyHost,prefProxyHost);
+//String proxyPort = prefs.get(prefProxyPort,prefProxyPort);
+//boolean bProxySet = true;
+//boolean bProxyTypeChanged = false;
+//boolean bProxyHostPortChanged = false;
+//System.out.println("Prefs= "+proxyType+":"+proxyHost+":"+proxyPort);
+//String combinedType = System.getProperty("socksProxyHost")+","+System.getProperty("http.proxyHost");
+//if(proxyType.equals("http")){
+//	System.out.println("Props= "+combinedType+":"+System.getProperty("http.proxyHost")+":"+System.getProperty("http.proxyPort"));
+//	bProxyTypeChanged = System.getProperty("socksProxyHost") != null;
+//	bProxyHostPortChanged = 
+//		!Compare.isEqualOrNull(System.getProperty("http.proxyHost"), proxyHost) ||
+//		!Compare.isEqualOrNull(System.getProperty("http.proxyPort"), proxyPort);
+//	System.setProperty("http.proxyHost", proxyHost);
+//	System.setProperty("http.proxyPort", proxyPort + "");						
+//	System.clearProperty("socksProxyHost");
+//	System.clearProperty("socksProxyPort");						
+//}else if (proxyType.equals("socks")){
+//	System.out.println("Props= "+combinedType+":"+System.getProperty("socksProxyHost")+":"+System.getProperty("socksProxyPort"));
+//	bProxyTypeChanged = System.getProperty("http.proxyHost") != null;
+//	bProxyHostPortChanged = 
+//		!Compare.isEqualOrNull(System.getProperty("socksProxyHost"), proxyHost) ||
+//		!Compare.isEqualOrNull(System.getProperty("socksProxyPort"), proxyPort);
+//	System.setProperty("socksProxyHost", proxyHost);
+//	System.setProperty("socksProxyPort", proxyPort+"");						
+//	System.clearProperty("http.proxyHost");
+//	System.clearProperty("http.proxyPort");						
+//}else{//No proxy set
+//	System.out.println("Props= "+combinedType+":"+System.getProperty("http.proxyHost")+":"+System.getProperty("http.proxyPort"));
+//	System.out.println("Props= "+combinedType+":"+System.getProperty("socksProxyHost")+":"+System.getProperty("socksProxyPort"));
+//	bProxyTypeChanged = System.getProperty("socksProxyHost") != null || System.getProperty("http.proxyHost") != null;
+//	bProxySet = false;
+//	System.clearProperty("socksProxyHost");
+//	System.clearProperty("socksProxyPort");						
+//	System.clearProperty("http.proxyHost");
+//	System.clearProperty("http.proxyPort");						
+//	System.clearProperty("http.proxySet");						
+//	System.clearProperty("java.rmi.server.disableHttp");						
+//	System.clearProperty("sun.rmi.transport.proxy.eagerHttpFallback");						
+//}
+//if(bProxySet){
+//	System.setProperty("http.proxySet", "true");
+//	System.setProperty("java.rmi.server.disableHttp", "false");
+//	System.setProperty("sun.rmi.transport.proxy.eagerHttpFallback", "true");
+//}
+////now reset the socket mechanism to 'http' tunnel (will also try 'socks' if properties set)
+////must be done because inital default rmifactory is not configured for tunneling if above properties were not set when jvm started
+////this can only be set once and can't be changed, must restart jvm to clear
+//if(RMISocketFactory.getSocketFactory() == null){
+//	if(bProxySet){
+//		RMISocketFactory.setSocketFactory(new RMIHttpToPortSocketFactory());
+//		return proxyHost;
+//	}else{//clear an unset rmisocketfactory, nothing to do, os rethrow original error
+//		throw createException(cause);
+//	}
+//}else if(bProxySet && (bProxyHostPortChanged || bProxyTypeChanged)){//if rmisocketfactory is set we can change proxy parameters
+//	return proxyHost;
+//}else{// nothing changed or can't unset if socketfactory has been set, must restart jvm
+//	throw createException(cause);
+//	
+//}
+//
+//}
 
 /**
  * array of properties required for correct operation

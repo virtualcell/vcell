@@ -104,9 +104,9 @@ public class GeneralConfigurationPanel extends JPanel {
 		jpanel.add(l5, gbc);
 
 		String lrdap = ResourceUtil.getLocalRootDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\simdata
-		int where = lrdap.lastIndexOf(".vcell");
+		int where = lrdap.lastIndexOf(ResourceUtil.VCELL_HOME_DIR_NAME);
 		if(where > 0) {
-			lrdap = lrdap.substring(where + ".vcell".length());
+			lrdap = lrdap.substring(where + ResourceUtil.VCELL_HOME_DIR_NAME.length());
 			lrdap = redhome + lrdap;
 		}
 		JLabel l6 = new JLabel("<html>" + lrdap + "</html>");
@@ -124,9 +124,9 @@ public class GeneralConfigurationPanel extends JPanel {
 		jpanel.add(l7, gbc);
 
 		String ldap = ResourceUtil.getLogDir().getAbsolutePath();					// C:\Users\vasilescu\.vcell\logs
-		where = ldap.lastIndexOf(".vcell");
+		where = ldap.lastIndexOf(ResourceUtil.VCELL_HOME_DIR_NAME);
 		if(where > 0) {
-			ldap = ldap.substring(where + ".vcell".length());
+			ldap = ldap.substring(where + ResourceUtil.VCELL_HOME_DIR_NAME.length());
 			ldap = redhome + ldap;
 		}
 

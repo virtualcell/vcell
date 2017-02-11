@@ -11,6 +11,8 @@
 package cbit.vcell.server;
 
 import java.awt.Component;
+import java.io.File;
+import java.io.FileWriter;
 import java.rmi.server.RMISocketFactory;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
@@ -22,6 +24,7 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
+import cbit.vcell.resource.ResourceUtil;
 import sun.rmi.transport.proxy.RMIHttpToPortSocketFactory;
 
 
@@ -121,26 +124,27 @@ public static boolean pingBootstrap(String host) {
 private static VCellBootstrap getVCellBootstrap0(String host) throws Exception{
 	return (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup("//"+host+"/"+SERVICE_NAME);
 }
-private static final String prefProxyType = "proxyType";
-private static final String prefProxyHost = "proxyHost";
-private static final String prefProxyPort = "proxyPort";
+public static final String prefProxyType = "proxyType";
+public static final String prefProxyHost = "proxyHost";
+public static final String prefProxyPort = "proxyPort";
 public static VCellBootstrap getVCellBootstrap(Component requester,String host) throws Exception{
 	//If requester != null (called from VCell client) and connection fails then we ask user to supply proxy info
 	//If requester == null (called from VCell server) then we assume that all connection properties were set already
-	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
+//	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
 	try {
 		return getVCellBootstrap0(host);
 	} catch (Exception e) {
 		e.printStackTrace();
-//		Throwable parent = e;
-//		do{
-//			System.out.println(parent.getClass().getName()+" "+parent.getMessage());
-//		}while((parent = parent.getCause()) != null);		
-		if(requester != null){// called from client, see if proxy prefs are set and try those
-			return getVCellBootstrap(requester, handleExceptionProxyPrfs(e));
-		}else{// called from server, requester == null, assume java properties for proxies (if necessary) are not set correctly at jvm startup
-			throw createException(e);
-		}
+		throw createException(e);
+////		Throwable parent = e;
+////		do{
+////			System.out.println(parent.getClass().getName()+" "+parent.getMessage());
+////		}while((parent = parent.getCause()) != null);		
+//		if(requester != null){// called from client, see if proxy prefs are set and try those
+//			return getVCellBootstrap(requester, handleExceptionProxyPrfs(e));
+//		}else{// called from server, requester == null, assume java properties for proxies (if necessary) are not set correctly at jvm startup
+//			throw createException(e);
+//		}
 	}
 }
 
@@ -154,24 +158,27 @@ public static void setProxyPrefs(Component requester) throws UtilCancelException
 		try {
 			//Ask for proxy since direct didn't work and prefs aren't all setup, preset proxyType, proxyHost and proxyPort if already in preferences
 			String init = proxyType+":"+proxyHost+":"+proxyPort;
-			String s = DialogUtils.showInputDialog0(requester, "Enter Proxy as 3 : separeated values, "+PROXY_FORMAT,init);
+			String s = DialogUtils.showInputDialog0(requester, "Enter 3 : separated values, "+PROXY_FORMAT,init);
+			String proxyTypeNew = null;
+			String proxyHostNew = null;
+			String proxyPortNew = null;
 			if(s== null || s.trim().length()==0){
 				//clear proxy info
 				prefs.remove(prefProxyType);
 				prefs.remove(prefProxyHost);
 				prefs.remove(prefProxyPort);
-				return;
+			}else{
+				StringTokenizer st = new StringTokenizer(s, ":");
+				proxyTypeNew = st.nextToken().toLowerCase();
+				if(!proxyTypeNew.equals("http") && !proxyTypeNew.equals("socks")){
+					throw new IllegalArgumentException("Unkown proxyType='"+proxyTypeNew+"'");
+				}
+				proxyHostNew = st.nextToken();
+				proxyPortNew = st.nextToken();
+				prefs.put(prefProxyType, proxyTypeNew);
+				prefs.put(prefProxyHost, proxyHostNew);
+				prefs.put(prefProxyPort, Integer.parseInt(proxyPortNew)+"");
 			}
-			StringTokenizer st = new StringTokenizer(s, ":");
-			proxyType = st.nextToken().toLowerCase();
-			if(!proxyType.equals("http") && !proxyType.equals("socks")){
-				throw new IllegalArgumentException("Unkown proxyType='"+proxyType+"'");
-			}
-			proxyHost = st.nextToken();
-			proxyPort = st.nextToken();
-			prefs.put("proxyType", proxyType);
-			prefs.put("proxyHost", proxyHost);
-			prefs.put("proxyPort", Integer.parseInt(proxyPort)+"");
 			break;
 		} catch (UtilCancelException uce) {
 			// User didn't set proxy info
@@ -188,75 +195,101 @@ public static void setProxyPrefs(Component requester) throws UtilCancelException
 		}
 	} while (true);
 	
+	writeProxyToSupplementalVMOptions(requester,true,proxyType,proxyHost,proxyPort,prefs.get(prefProxyType,prefProxyType),prefs.get(prefProxyHost,prefProxyHost),prefs.get(prefProxyPort,prefProxyPort));
 }
 
-
-private static String handleExceptionProxyPrfs(Exception cause) throws Exception{
-	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
-	String proxyType = prefs.get(prefProxyType,prefProxyType);
-	String proxyHost = prefs.get(prefProxyHost,prefProxyHost);
-	String proxyPort = prefs.get(prefProxyPort,prefProxyPort);
-	boolean bProxySet = true;
-	boolean bProxyTypeChanged = false;
-	boolean bProxyHostPortChanged = false;
-	System.out.println("Prefs= "+proxyType+":"+proxyHost+":"+proxyPort);
-	String combinedType = System.getProperty("socksProxyHost")+","+System.getProperty("http.proxyHost");
-	if(proxyType.equals("http")){
-		System.out.println("Props= "+combinedType+":"+System.getProperty("http.proxyHost")+":"+System.getProperty("http.proxyPort"));
-		bProxyTypeChanged = System.getProperty("socksProxyHost") != null;
-		bProxyHostPortChanged = 
-			!Compare.isEqualOrNull(System.getProperty("http.proxyHost"), proxyHost) ||
-			!Compare.isEqualOrNull(System.getProperty("http.proxyPort"), proxyPort);
-		System.setProperty("http.proxyHost", proxyHost);
-		System.setProperty("http.proxyPort", proxyPort + "");						
-		System.clearProperty("socksProxyHost");
-		System.clearProperty("socksProxyPort");						
-	}else if (proxyType.equals("socks")){
-		System.out.println("Props= "+combinedType+":"+System.getProperty("socksProxyHost")+":"+System.getProperty("socksProxyPort"));
-		bProxyTypeChanged = System.getProperty("http.proxyHost") != null;
-		bProxyHostPortChanged = 
-			!Compare.isEqualOrNull(System.getProperty("socksProxyHost"), proxyHost) ||
-			!Compare.isEqualOrNull(System.getProperty("socksProxyPort"), proxyPort);
-		System.setProperty("socksProxyHost", proxyHost);
-		System.setProperty("socksProxyPort", proxyPort+"");						
-		System.clearProperty("http.proxyHost");
-		System.clearProperty("http.proxyPort");						
-	}else{//No proxy set
-		System.out.println("Props= "+combinedType+":"+System.getProperty("http.proxyHost")+":"+System.getProperty("http.proxyPort"));
-		System.out.println("Props= "+combinedType+":"+System.getProperty("socksProxyHost")+":"+System.getProperty("socksProxyPort"));
-		bProxyTypeChanged = System.getProperty("socksProxyHost") != null || System.getProperty("http.proxyHost") != null;
-		bProxySet = false;
-		System.clearProperty("socksProxyHost");
-		System.clearProperty("socksProxyPort");						
-		System.clearProperty("http.proxyHost");
-		System.clearProperty("http.proxyPort");						
-		System.clearProperty("http.proxySet");						
-		System.clearProperty("java.rmi.server.disableHttp");						
-		System.clearProperty("sun.rmi.transport.proxy.eagerHttpFallback");						
-	}
-	if(bProxySet){
-		System.setProperty("http.proxySet", "true");
-		System.setProperty("java.rmi.server.disableHttp", "false");
-		System.setProperty("sun.rmi.transport.proxy.eagerHttpFallback", "true");
-	}
-	//now reset the socket mechanism to 'http' tunnel (will also try 'socks' if properties set)
-	//must be done because inital default rmifactory is not configured for tunneling if above properties were not set when jvm started
-	//this can only be set once and can't be changed, must restart jvm to clear
-	if(RMISocketFactory.getSocketFactory() == null){
-		if(bProxySet){
-			RMISocketFactory.setSocketFactory(new RMIHttpToPortSocketFactory());
-			return proxyHost;
-		}else{//clear an unset rmisocketfactory, nothing to do, os rethrow original error
-			throw createException(cause);
+public static final String PROXY_HTTP_HOST = "http.proxyHost";
+public static final String PROXY_HTTP_PORT = "http.proxyPort";
+public static final String PROXY_SOCKS_HOST = "socksProxyHost";
+public static final String PROXY_SOCKS_PORT = "socksProxyPort";
+public static void writeProxyToSupplementalVMOptions(Component requester,boolean bRestartWarn,String proxyType ,String proxyHost ,String proxyPort,String proxyTypeNew ,String proxyHostNew ,String proxyPortNew){
+	String altVMOptionsFile = System.getProperty("user.home")+System.getProperty("file.separator")+ResourceUtil.VCELL_HOME_DIR_NAME+System.getProperty("file.separator")+ResourceUtil.VCELL_PROXY_VMOPTIONS;
+	try (FileWriter fw = new FileWriter(new File(altVMOptionsFile),false)) {
+		fw.write((proxyTypeNew != null && proxyTypeNew.equals("http")? PROXY_HTTP_HOST+"="+proxyHostNew+"\n"+PROXY_HTTP_PORT+"="+proxyPortNew+"\n":"\n"));
+		fw.write((proxyTypeNew != null && proxyTypeNew.equals("socks")?PROXY_SOCKS_HOST+"="+proxyHostNew+"\n"+PROXY_SOCKS_PORT+"="+proxyPortNew+"\n":"\n"));
+		fw.close();
+		boolean bChanged = !Compare.isEqualOrNull(proxyType, proxyTypeNew) || !Compare.isEqualOrNull(proxyHost, proxyHostNew) ||!Compare.isEqualOrNull(proxyPort, proxyPortNew);
+		String oldProxy = proxyType+":"+proxyHost+":"+proxyPort;
+		String newProxy = proxyTypeNew+":"+proxyHostNew+":"+proxyPortNew;
+		if(bChanged && !bRestartWarn){
+			new Exception("Error, not expecting old proxy "+oldProxy+" doesn't match new proxy "+newProxy).printStackTrace();
 		}
-	}else if(bProxySet && (bProxyHostPortChanged || bProxyTypeChanged)){//if rmisocketfactory is set we can change proxy parameters
-		return proxyHost;
-	}else{// nothing changed or can't unset if socketfactory has been set, must restart jvm
-		throw createException(cause);
-		
+		if(bChanged && bRestartWarn){
+			DialogUtils.showInfoDialog(requester, "Proxy settings have changed from '"+oldProxy+"' to '"+newProxy+"', please restart VCell");
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+//		DialogUtils.showErrorDialog(requester,"Error writing proxyOptions file '"+altVMOptionsFile+"'\n"+ e.getMessage());
 	}
 
 }
+
+//private static String handleExceptionProxyPrfs(Exception cause) throws Exception{
+//	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
+//	String proxyType = prefs.get(prefProxyType,prefProxyType);
+//	String proxyHost = prefs.get(prefProxyHost,prefProxyHost);
+//	String proxyPort = prefs.get(prefProxyPort,prefProxyPort);
+//	boolean bProxySet = true;
+//	boolean bProxyTypeChanged = false;
+//	boolean bProxyHostPortChanged = false;
+//	System.out.println("Prefs= "+proxyType+":"+proxyHost+":"+proxyPort);
+//	String combinedType = System.getProperty("socksProxyHost")+","+System.getProperty("http.proxyHost");
+//	if(proxyType.equals("http")){
+//		System.out.println("Props= "+combinedType+":"+System.getProperty("http.proxyHost")+":"+System.getProperty("http.proxyPort"));
+//		bProxyTypeChanged = System.getProperty("socksProxyHost") != null;
+//		bProxyHostPortChanged = 
+//			!Compare.isEqualOrNull(System.getProperty("http.proxyHost"), proxyHost) ||
+//			!Compare.isEqualOrNull(System.getProperty("http.proxyPort"), proxyPort);
+//		System.setProperty("http.proxyHost", proxyHost);
+//		System.setProperty("http.proxyPort", proxyPort + "");						
+//		System.clearProperty("socksProxyHost");
+//		System.clearProperty("socksProxyPort");						
+//	}else if (proxyType.equals("socks")){
+//		System.out.println("Props= "+combinedType+":"+System.getProperty("socksProxyHost")+":"+System.getProperty("socksProxyPort"));
+//		bProxyTypeChanged = System.getProperty("http.proxyHost") != null;
+//		bProxyHostPortChanged = 
+//			!Compare.isEqualOrNull(System.getProperty("socksProxyHost"), proxyHost) ||
+//			!Compare.isEqualOrNull(System.getProperty("socksProxyPort"), proxyPort);
+//		System.setProperty("socksProxyHost", proxyHost);
+//		System.setProperty("socksProxyPort", proxyPort+"");						
+//		System.clearProperty("http.proxyHost");
+//		System.clearProperty("http.proxyPort");						
+//	}else{//No proxy set
+//		System.out.println("Props= "+combinedType+":"+System.getProperty("http.proxyHost")+":"+System.getProperty("http.proxyPort"));
+//		System.out.println("Props= "+combinedType+":"+System.getProperty("socksProxyHost")+":"+System.getProperty("socksProxyPort"));
+//		bProxyTypeChanged = System.getProperty("socksProxyHost") != null || System.getProperty("http.proxyHost") != null;
+//		bProxySet = false;
+//		System.clearProperty("socksProxyHost");
+//		System.clearProperty("socksProxyPort");						
+//		System.clearProperty("http.proxyHost");
+//		System.clearProperty("http.proxyPort");						
+//		System.clearProperty("http.proxySet");						
+//		System.clearProperty("java.rmi.server.disableHttp");						
+//		System.clearProperty("sun.rmi.transport.proxy.eagerHttpFallback");						
+//	}
+//	if(bProxySet){
+//		System.setProperty("http.proxySet", "true");
+//		System.setProperty("java.rmi.server.disableHttp", "false");
+//		System.setProperty("sun.rmi.transport.proxy.eagerHttpFallback", "true");
+//	}
+//	//now reset the socket mechanism to 'http' tunnel (will also try 'socks' if properties set)
+//	//must be done because inital default rmifactory is not configured for tunneling if above properties were not set when jvm started
+//	//this can only be set once and can't be changed, must restart jvm to clear
+//	if(RMISocketFactory.getSocketFactory() == null){
+//		if(bProxySet){
+//			RMISocketFactory.setSocketFactory(new RMIHttpToPortSocketFactory());
+//			return proxyHost;
+//		}else{//clear an unset rmisocketfactory, nothing to do, os rethrow original error
+//			throw createException(cause);
+//		}
+//	}else if(bProxySet && (bProxyHostPortChanged || bProxyTypeChanged)){//if rmisocketfactory is set we can change proxy parameters
+//		return proxyHost;
+//	}else{// nothing changed or can't unset if socketfactory has been set, must restart jvm
+//		throw createException(cause);
+//		
+//	}
+//
+//}
 
 private static Exception createException(Exception cause){
 	String s =
