@@ -156,7 +156,6 @@ public static void setProxyPrefs(Component requester) throws UtilCancelException
 	String proxyPort = prefs.get(prefProxyPort,prefProxyPort);
 	do {
 		try {
-			//Ask for proxy since direct didn't work and prefs aren't all setup, preset proxyType, proxyHost and proxyPort if already in preferences
 			String init = proxyType+":"+proxyHost+":"+proxyPort;
 			String s = DialogUtils.showInputDialog0(requester, "Enter 3 : separated values, "+PROXY_FORMAT,init);
 			String proxyTypeNew = null;
@@ -205,17 +204,37 @@ public static final String PROXY_SOCKS_PORT = "socksProxyPort";
 public static void writeProxyToSupplementalVMOptions(Component requester,boolean bRestartWarn,String proxyType ,String proxyHost ,String proxyPort,String proxyTypeNew ,String proxyHostNew ,String proxyPortNew){
 	String altVMOptionsFile = System.getProperty("user.home")+System.getProperty("file.separator")+ResourceUtil.VCELL_HOME_DIR_NAME+System.getProperty("file.separator")+ResourceUtil.VCELL_PROXY_VMOPTIONS;
 	try (FileWriter fw = new FileWriter(new File(altVMOptionsFile),false)) {
+		// Set or clear java proxy system properties
+		if(proxyTypeNew != null && proxyTypeNew.equals("http")){
+			System.setProperty(PROXY_HTTP_HOST, proxyHostNew);
+			System.setProperty(PROXY_HTTP_PORT, proxyPortNew);
+			System.clearProperty(PROXY_SOCKS_HOST);
+			System.clearProperty(PROXY_SOCKS_PORT);							
+		}else if(proxyTypeNew != null && proxyTypeNew.equals("socks")){
+			System.setProperty(PROXY_SOCKS_HOST, proxyHostNew);
+			System.setProperty(PROXY_SOCKS_PORT, proxyPortNew);				
+			System.clearProperty(PROXY_HTTP_HOST);
+			System.clearProperty(PROXY_HTTP_PORT);
+		}else{
+			System.clearProperty(PROXY_HTTP_HOST);
+			System.clearProperty(PROXY_HTTP_PORT);
+			System.clearProperty(PROXY_SOCKS_HOST);
+			System.clearProperty(PROXY_SOCKS_PORT);							
+		}
+		// Write out proxy to supplemental install4j proxy.vmoptions file
 		fw.write((proxyTypeNew != null && proxyTypeNew.equals("http")? PROXY_HTTP_HOST+"="+proxyHostNew+"\n"+PROXY_HTTP_PORT+"="+proxyPortNew+"\n":"\n"));
 		fw.write((proxyTypeNew != null && proxyTypeNew.equals("socks")?PROXY_SOCKS_HOST+"="+proxyHostNew+"\n"+PROXY_SOCKS_PORT+"="+proxyPortNew+"\n":"\n"));
 		fw.close();
+		// Check if user should be told to restart
 		boolean bChanged = !Compare.isEqualOrNull(proxyType, proxyTypeNew) || !Compare.isEqualOrNull(proxyHost, proxyHostNew) ||!Compare.isEqualOrNull(proxyPort, proxyPortNew);
 		String oldProxy = proxyType+":"+proxyHost+":"+proxyPort;
 		String newProxy = proxyTypeNew+":"+proxyHostNew+":"+proxyPortNew;
-		if(bChanged && !bRestartWarn){
-			new Exception("Error, not expecting old proxy "+oldProxy+" doesn't match new proxy "+newProxy).printStackTrace();
-		}
-		if(bChanged && bRestartWarn){
-			DialogUtils.showInfoDialog(requester, "Proxy settings have changed from '"+oldProxy+"' to '"+newProxy+"', please restart VCell");
+		if(bChanged){
+			if(bRestartWarn){
+				DialogUtils.showInfoDialog(requester, "Proxy settings have changed from '"+oldProxy+"' to '"+newProxy+"', please restart VCell");
+			}else{
+				new Exception("Error, not expecting old proxy "+oldProxy+" doesn't match new proxy "+newProxy).printStackTrace(System.out);
+			}
 		}
 	}catch(Exception e){
 		e.printStackTrace();
@@ -302,12 +321,12 @@ private static Exception createException(Exception cause){
 			"\nsocksProxyPort="+System.getProperty("socksProxyPort")+
 			"\nRMISocketFactory="+(RMISocketFactory.getSocketFactory()==null?RMISocketFactory.getDefaultSocketFactory().getClass().getName():RMISocketFactory.getSocketFactory().getClass().getName());
 	System.out.println(s);
-	boolean bHttpProxy = System.getProperty("http.proxyHost") != null &&  System.getProperty("http.proxyHost").trim().length()>0;
-	boolean bSockProxy = System.getProperty("socksProxyHost") != null &&  System.getProperty("socksProxyHost").trim().length()>0;
+	boolean bHttpProxy = System.getProperty(PROXY_HTTP_HOST) != null &&  System.getProperty(PROXY_HTTP_HOST).trim().length()>0;
+	boolean bSockProxy = System.getProperty(PROXY_SOCKS_HOST) != null &&  System.getProperty(PROXY_SOCKS_HOST).trim().length()>0;
 	boolean bNoProxy = !bHttpProxy && !bSockProxy;
 	Exception newe = new Exception("Getting connection bootstrap failed: "+cause.getClass().getSimpleName()+
 			" ("+
-			(bNoProxy?"Local Proxy=None":(bHttpProxy?"HTTP Proxy="+System.getProperty("http.proxyHost")+":"+System.getProperty("http.proxyPort"):"Socks Proxy="+System.getProperty("socksProxyHost")+":"+System.getProperty("socksProxyPort")))+
+			(bNoProxy?"Local Proxy=None":(bHttpProxy?"HTTP Proxy="+System.getProperty(PROXY_HTTP_HOST)+":"+System.getProperty(PROXY_HTTP_PORT):"Socks Proxy="+System.getProperty(PROXY_SOCKS_HOST)+":"+System.getProperty(PROXY_SOCKS_PORT)))+
 			")"+
 			"\nIf problem persists see menu Server->'Set Proxy' to change if necessary and restart VCell",cause);
 	return newe;

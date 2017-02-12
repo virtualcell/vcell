@@ -62,11 +62,13 @@ public static void main(java.lang.String[] args) {
 	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
 	Boolean bHttp =
 		(System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST)==null && System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_HOST)==null?null:System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST) != null);
-	String proxyHostProp = (bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_HOST)));
-	String proxyPortProp = (bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_PORT):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_PORT)));
+	String proxyHostPropFromSupplementalInstall4jVmoptions =
+		(bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_HOST)));
+	String proxyPortPropFromSupplementalInstall4jVmoptions =
+		(bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_PORT):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_PORT)));
 	RMIVCellConnectionFactory.writeProxyToSupplementalVMOptions(JOptionPane.getRootFrame(),false,
 		prefs.get(RMIVCellConnectionFactory.prefProxyType,RMIVCellConnectionFactory.prefProxyType),
-		proxyHostProp,proxyPortProp,
+		proxyHostPropFromSupplementalInstall4jVmoptions,proxyPortPropFromSupplementalInstall4jVmoptions,
 		prefs.get(RMIVCellConnectionFactory.prefProxyType,RMIVCellConnectionFactory.prefProxyType),
 		prefs.get(RMIVCellConnectionFactory.prefProxyHost,RMIVCellConnectionFactory.prefProxyHost),prefs.get(RMIVCellConnectionFactory.prefProxyPort,RMIVCellConnectionFactory.prefProxyPort));
 
