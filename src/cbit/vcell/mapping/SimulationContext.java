@@ -415,7 +415,9 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 	this.fieldName = "copied_from_"+oldSimulationContext.getName();
 	this.fieldDescription = "(copied from "+oldSimulationContext.getName()+") "+oldSimulationContext.getDescription();
 	this.bioModel = oldSimulationContext.getBioModel();
-	this.networkConstraints = new NetworkConstraints(oldSimulationContext.networkConstraints);
+	if(oldSimulationContext.networkConstraints != null) {
+		this.networkConstraints = new NetworkConstraints(oldSimulationContext.networkConstraints);
+	}
 	applicationType = appType;
 	
 	//

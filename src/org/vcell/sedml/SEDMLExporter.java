@@ -28,7 +28,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
+import org.jdom.Namespace;
 //import org.jdom.Element;
 import org.jlibsedml.Algorithm;
 import org.jlibsedml.ChangeAttribute;
@@ -44,6 +44,7 @@ import org.jlibsedml.Plot2D;
 import org.jlibsedml.Range;
 import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.SEDMLDocument;
+import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedML;
 import org.jlibsedml.SetValue;
 import org.jlibsedml.SubTask;
@@ -155,6 +156,9 @@ public class SEDMLExporter {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument();
+		sedmlDocument.getSedMLModel().setAdditionalNamespaces(Arrays.asList(new Namespace[] { 
+                Namespace.getNamespace(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4)
+        }));
 
 		sedmlModel = sedmlDocument.getSedMLModel();
 
@@ -837,7 +841,8 @@ public class SEDMLExporter {
 			KineticsParameter kp = (KineticsParameter)ste;
 			String reactionID = kp.getKinetics().getReactionStep().getName();
 			String parameterID = kp.getName();
-			targetXpath = new XPathTarget(sbmlSupport.getXPathForKineticLawParameter(reactionID, parameterID, ParameterAttribute.value));
+//			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalKineticLawParameter(reactionID, parameterID, ParameterAttribute.value));
+			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(parameterID + "_" + reactionID, ParameterAttribute.value));
 		} else {
 			System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
 			throw new RuntimeException("Unknown entity in SBML model");

@@ -25,6 +25,7 @@ public class XMLTags {
 	public final static String VCellInfoTag				 = "VCellInfo";
 	public final static String FreeTextAnnotationTag	 = "FreeText";
 	public final static String VCellRelatedInfoTag		 = "VCMLSpecific";
+	public final static String SedMLTypeTag			 		= "sedML";
 
 	// VCML tags
 	public final static String VcmlRootNodeTag			 = "vcml";

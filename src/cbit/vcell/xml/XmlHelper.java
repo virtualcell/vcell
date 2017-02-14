@@ -14,8 +14,10 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jdom.Comment;
@@ -23,12 +25,27 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Text;
+import org.jlibsedml.AbstractTask;
+import org.jlibsedml.DataGenerator;
+import org.jlibsedml.Libsedml;
+import org.jlibsedml.Model;
+import org.jlibsedml.OneStep;
+import org.jlibsedml.Output;
+import org.jlibsedml.SedML;
+import org.jlibsedml.SteadyState;
+import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.execution.FileModelResolver;
+import org.jlibsedml.execution.ModelResolver;
+import org.jlibsedml.modelsupport.KisaoOntology;
+import org.jlibsedml.modelsupport.KisaoTerm;
 import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sedml.RelativeFileModelResolver;
 import org.vcell.util.Extent;
+import org.vcell.util.FileUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -42,11 +59,17 @@ import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
+import cbit.vcell.client.ClientTaskManager;
+import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -59,6 +82,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverDescription;
 import cbit.xml.merge.NodeInfo;
 import cbit.xml.merge.XmlTreeDiff;
 import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
@@ -515,6 +539,199 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		return simString;
 	}
 
+	public static VCDocument sedmlToBioModel(TranslationLogger transLogger, XMLSource xmlSource, AbstractTask selectedTask) throws XmlParseException {
+		VCDocument doc = null;
+		if (xmlSource == null) {
+			throw new XmlParseException("Invalid xml for Biomodel.");
+		}
+		try {
+		File sedmlFile = xmlSource.getXmlFile();
+//		SedML sedml = SEDMLReader.readFile(sedmlFile);
+		
+		SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
+		
+        Namespace namespace = sedml.getNamespace();
+        if(sedml.getModels().isEmpty()) {
+        	return null;
+        }
+        
+        // iterate through all the elements and show them at the console
+        List<org.jlibsedml.Model> mmm = sedml.getModels();
+        for(Model mm : mmm) {
+            System.out.println(mm.toString());
+        }
+        List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
+        for(org.jlibsedml.Simulation ss : sss) {
+            System.out.println(ss.toString());
+        }
+        List<AbstractTask> ttt = sedml.getTasks();
+        for(AbstractTask tt : ttt) {
+            System.out.println(tt.toString());
+        }
+        List<DataGenerator> ddd = sedml.getDataGenerators();
+        for(DataGenerator dd : ddd) {
+            System.out.println(dd.toString());
+        }
+        List<Output> ooo = sedml.getOutputs();
+        for(Output oo : ooo) {
+            System.out.println(oo.toString());
+        }
+
+		KisaoTerm sedmlKisao = null;
+		org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
+
+		org.jlibsedml.Model sedmlOriginalModel = null;		// the "original" model referred to by the task
+		String sedmlOriginalModelName = null;
+		// the original model may have as source another model that refers to the sbml file (or a URL)
+		org.jlibsedml.Model sedmlBaseModel = null;
+		String sedmlBaseModelName = null;
+        
+        if(selectedTask == null) {			// no task, just pick the Model and find its sbml file
+        	sedmlOriginalModelName = mmm.get(0).getName();
+        	sedmlBaseModelName = mmm.get(0).getName();
+        } else {
+        	sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
+        	sedmlOriginalModelName = sedmlOriginalModel.getId();
+        	
+        	if(sedml.getModelWithId(sedmlOriginalModel.getSource()) != null) {	// the original model's source refers to another model
+        		sedmlBaseModel = sedml.getModelWithId(sedmlOriginalModel.getSource());
+        	} else {
+            	sedmlBaseModel = sedmlOriginalModel;	// the original model's source doesn't refer to another model, it's a direct sbml file or an URL
+        	}
+    		sedmlBaseModelName = sedmlBaseModel.getId();
+    		
+        	sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
+            sedmlKisao = KisaoOntology.getInstance().getTermById(sedmlSimulation.getAlgorithm().getKisaoID());
+        }
+        
+        // UniformTimeCourse [initialTime=0.0, numberOfPoints=1000, outputEndTime=1.0, outputStartTime=0.0, 
+        // Algorithm [kisaoID=KISAO:0000019], getId()=SimSlow]
+        
+        // identify the vCell solvers that would match best the sedml solver kisao id
+        List<SolverDescription> solverDescriptions = new ArrayList<>();
+		for (SolverDescription sd : SolverDescription.values()) {
+			KisaoTerm solverKisaoTerm = KisaoOntology.getInstance().getTermById(sd.getKisao());
+			if(solverKisaoTerm == null) {
+				break;
+			}
+			boolean isExactlySame = solverKisaoTerm.equals(sedmlKisao);
+			if (isExactlySame && !solverKisaoTerm.isObsolete()) {
+				solverDescriptions.add(sd);		// we make a list with all the solvers that match the kisao
+			}
+		}
+		
+		// from the list of vcell solvers that match the sedml kisao we select the ones that have a matching time step
+		SolverDescription solverDescription = null;
+		for(SolverDescription sd : solverDescriptions) {
+			if(true) {
+				solverDescription = sd;
+				break;
+			}
+		}
+		
+		// find out everything else we need about the application we're going to use,
+		// some of the info will be needed when we parse the sbml file 
+		boolean bSpatial = false;
+		Application appType = Application.NETWORK_DETERMINISTIC;
+		Set<SolverDescription.SolverFeature> sfList = solverDescription.getSupportedFeatures();
+		for(SolverDescription.SolverFeature sf : sfList) {
+			switch(sf) {
+			case Feature_Rulebased:
+				appType = Application.RULE_BASED_STOCHASTIC;
+				break;
+			case Feature_Stochastic:
+				appType = Application.NETWORK_STOCHASTIC;
+				break;
+			case Feature_Deterministic:
+				appType = Application.NETWORK_DETERMINISTIC;
+				break;
+			case Feature_Spatial:
+				bSpatial = true;
+				break;
+			default:
+				break;
+			}
+		}
+        
+        // -------------------------------------------------------------------------------------------
+        String sbmlFileName = null;			// sbml file with the physiology
+        URI sbmlSourceURI = null;			// same thing if it's URI format
+        if(sedmlBaseModel != null) {
+        	sbmlFileName = sedmlBaseModel.getSource();
+        	sbmlSourceURI = sedmlBaseModel.getSourceURI();
+        }
+
+        // TODO: things will get mode complicated here when we'll have to alternately parse the sedx file
+		String fullPath = FileUtils.getFullPath(sedmlFile.getAbsolutePath());	// extract the path only from the sedml file
+   		sbmlFileName = FileUtils.getName(sbmlFileName);							// extract the sbml name (base name + extension)
+        String bioModelNameCandidate = FileUtils.getBaseName(sbmlFileName);		// extract the sbml base name (without extension)
+        
+        
+		sbmlFileName = fullPath + sbmlFileName;									// build the absolute path
+
+        ModelResolver resolver = new ModelResolver(sedml);
+        resolver.add(new FileModelResolver());
+        resolver.add(new RelativeFileModelResolver(fullPath));
+        String newMdl = resolver.getModelString(sedmlOriginalModel);
+        
+        XMLSource sbmlSource = new XMLSource(newMdl);		// sbmlSource with all the changes applied
+        doc = XmlHelper.importSBML(transLogger, sbmlSource, bSpatial);
+        BioModel bioModel = (BioModel)doc;
+        
+        // extract and use the original biomodel name if the current biomodel name is a combination of the original and the app name
+        // this happens because we used the name of the sbml file
+        // ex: original biomodel name:									BioModel6
+        // current name of the biomodel (the name of the sbml file):	BioModel6_AppDeter
+        // name of the application:										AppDeter
+        if(bioModelNameCandidate.endsWith("_" + sedmlBaseModelName)) {
+        	bioModelNameCandidate = bioModelNameCandidate.substring(0, bioModelNameCandidate.lastIndexOf("_" + sedmlBaseModelName));
+        	bioModel.setName(bioModelNameCandidate);
+        }
+
+        // we already have an application loaded from the sbml file, with initial conditions and stuff
+        // which may be not be suitable because the sedml kisao may need a different app type
+        // so we do a "copy as" to the right type and then delete the original we loaded from the sbml file
+        SimulationContext oldSimulationContext = null;		// the application loaded from the sbml file, which we'll delete at the end
+        SimulationContext newSimulationContext = null;		// the new application we're making from the old one
+        if(bioModel.getSimulationContexts().length == 1) {
+        	oldSimulationContext = bioModel.getSimulationContext(0);
+        	newSimulationContext = ClientTaskManager.copySimulationContext(oldSimulationContext, sedmlOriginalModelName, bSpatial, appType);
+        } else {
+        	newSimulationContext = bioModel.addNewSimulationContext(sedmlOriginalModelName, appType);
+        }
+        if(newSimulationContext != null) {
+        	bioModel.addSimulationContext(newSimulationContext);
+        }
+        if(oldSimulationContext != null) {
+        	bioModel.removeSimulationContext(oldSimulationContext);
+        }
+        
+        // making the new vCell simulation based on the sedml simulation
+        newSimulationContext.refreshDependencies();
+        MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
+        newSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
+    	Simulation newSimulation = new Simulation(newSimulationContext.getMathDescription());
+    	newSimulation.setName(sedmlSimulation.getName());	
+    	bioModel.addSimulation(newSimulation);
+		
+		// we identify the type of sedml simulation (uniform time course, etc) 
+    	// and set the vCell simulation parameters accordingly
+		if(sedmlSimulation instanceof UniformTimeCourse) {
+			
+		} else if(sedmlSimulation instanceof OneStep) {
+			
+		} else if(sedmlSimulation instanceof SteadyState) {
+			
+		} else {
+			
+		}
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Unable to initialize bioModel for the given selection.");
+		}
+		return doc;
+	}
 
 public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseException {
 	return XMLToBioModel(xmlSource, true, null);
