@@ -206,7 +206,7 @@ public class SEDMLExporter {
 						sbmlString = XmlHelper.exportSBML(vcBioModel, 2, 4, 0, false, simContext, null);
 					}
 					String sbmlFilePathStrAbsolute = savePath + FileUtils.WINDOWS_SEPARATOR + bioModelName + "_" + simContextName + ".xml";
-					String sbmlFilePathStrRelative = "./" + bioModelName + "_" + simContextName + ".xml";
+					String sbmlFilePathStrRelative = bioModelName + "_" + simContextName + ".xml";
 					XmlUtil.writeXMLStringToFile(sbmlString, sbmlFilePathStrAbsolute, true);
 					sbmlFilePathStrAbsoluteList.add(sbmlFilePathStrRelative);
 			        String simContextId = TokenMangler.mangleToSName(simContextName);
@@ -929,7 +929,7 @@ public class SEDMLExporter {
 			// Content elements
 			Element content = doc.createElement("content");
 			rootElement.appendChild(content);
-			content.setAttribute("location", "./manifest.xml");
+			content.setAttribute("location", "manifest.xml");
 			content.setAttribute("format", manifestFormat);
 			
 			for (String s : sbmlFilePathStrAbsoluteList) {
@@ -941,7 +941,7 @@ public class SEDMLExporter {
 			
 			content = doc.createElement("content");
 			rootElement.appendChild(content);
-			content.setAttribute("location", "./" + fileName + ".sedml");
+			content.setAttribute("location", fileName + ".sedml");
 			content.setAttribute("format", sedmlFormat);
 			content.setAttribute("master", "true");
 

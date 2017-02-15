@@ -32,9 +32,9 @@ public class TranslationLogger extends VCLogger implements AutoCloseable {
 	private java.awt.Component requester;
 	protected Set<Message> messages = new LinkedHashSet< > ( ); //used LinkedHashSet to preserve order
 	
-	private static class Message{
-		final VCLogger.Priority priority;
-		final String message;
+	public static class Message{
+		public final VCLogger.Priority priority;
+		public final String message;
 		public Message(Priority priority, String message) {
 			super();
 			assert(priority != null);
