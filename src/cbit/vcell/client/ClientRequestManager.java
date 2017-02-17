@@ -75,8 +75,11 @@ import org.apache.http.impl.client.HttpClients;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jlibsedml.AbstractTask;
+import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
+import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
+import org.jlibsedml.execution.ArchiveModelResolver;
 import org.vcell.imagej.ImageJHelper;
 import org.vcell.imagej.ImageJHelper.ImageJConnection;
 import org.vcell.model.bngl.ASTModel;
@@ -3122,6 +3125,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 
 	final String DOCUMENT_INFO = "documentInfo";
 	final String SEDML_TASK = "SedMLTask";
+	final String SEDML_MODEL = "SedMLModel";
 	final String BNG_UNIT_SYSTEM = "bngUnitSystem";
 	/* asynchronous and not blocking any window */
 	bOpening = true;
@@ -3234,50 +3238,46 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			}
 			hashTable.put(BNG_UNIT_SYSTEM, bngUnitSystem);
 		} else if(file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".sedml")) {
-			
-			
-			
-			SedML sedml = null;
-			XMLSource xmlSource;
 			try {
-				xmlSource = externalDocInfo.createXMLSource();
-				
+				XMLSource xmlSource = externalDocInfo.createXMLSource();
 				File sedmlFile = xmlSource.getXmlFile();
-				sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
 				
-		        if(sedml == null || sedml.getModels().isEmpty()) {
-		        	return;
-		        }
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					throw new RuntimeException("failed to read document: "+e.getMessage(),e);
+				SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
+				if(sedml == null || sedml.getModels().isEmpty()) {
+					return;
 				}
-		        
-		        List<AbstractTask> ttt = sedml.getTasks();
-		        for(AbstractTask tt : ttt) {
-		        	String applicationName = tt.getModelReference();
-		        	String simulationName = tt.getSimulationReference();
-		            System.out.println(tt.toString());
-		        }
-		        
-		        
-		        
-				SEDMLChooserPanel panel = new SEDMLChooserPanel(ttt);
-				int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "Import Sed-ML file: " + file.getName());
-				if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
-					throw new UserCancelException("Canceling Import");
-				}
-				SEDMLRadioButtonModel bm = (SEDMLRadioButtonModel) panel.group.getSelection();
-				AbstractTask tt = bm.getTask();
-
-				hashTable.put(DOCUMENT_INFO, externalDocInfo);
-				hashTable.put(SEDML_TASK, tt);
-		        
-		        
-		        
-		        
+				
+				List<AbstractTask> taskList = sedml.getTasks();
+				AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(taskList, requester.getComponent(), file.getName());
+				
+				hashTable.put(SEDML_MODEL, sedml);
+				hashTable.put(SEDML_TASK, chosenTask);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to read document: "+e.getMessage(),e);
+			}
+		} else if(file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".sedx")) {
+			try {
+				ArchiveComponents ac = null;
+				ac = Libsedml.readSEDMLArchive(new FileInputStream(file));
+//				ArchiveModelResolver amr = new ArchiveModelResolver(ac);
+				SEDMLDocument doc = ac.getSedmlDocument();
 			
+				SedML sedml = doc.getSedMLModel();
+				if(sedml == null || sedml.getModels().isEmpty()) {
+					return;
+				}
+				List<AbstractTask> taskList = sedml.getTasks();
+		        AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(taskList, requester.getComponent(), file.getName());
+		        
+				hashTable.put(SEDML_MODEL, sedml);
+				hashTable.put(SEDML_TASK, chosenTask);
+			
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to read archive: "+e.getMessage(),e);
+			}
 		}
 	} else {
 		taskName = "Loading document '" + documentInfo.getVersion().getName() + "' from database";
@@ -3307,9 +3307,12 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				doc = getDocumentManager().getGeometry(gmi);
 			} else if (documentInfo instanceof ExternalDocInfo){
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
-
-				if (!externalDocInfo.isXML()) {
-						if (hashTable.containsKey(BNG_UNIT_SYSTEM)){ 			// not XML, look for BNGL etc.
+				File file = externalDocInfo.getFile();
+				if(file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".sedx")) {
+					TranslationLogger transLogger = new TranslationLogger(requester);
+					doc = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo, (SedML)hashTable.get(SEDML_MODEL), (AbstractTask)hashTable.get(SEDML_TASK));
+				} else if (!externalDocInfo.isXML()) {
+					if (hashTable.containsKey(BNG_UNIT_SYSTEM)) { 			// not XML, look for BNGL etc.
 					// we use the BngUnitSystem already created during the 1st pass
 					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
 					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
@@ -3378,7 +3381,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 //					Simulation sim = ruleBasedSimContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,networkGenerationRequirements);
 
 					doc = bioModel;
-						}
+					}
 				}else{ // is XML
 					try (TranslationLogger transLogger = new TranslationLogger(requester)) {
 						XMLSource xmlSource = externalDocInfo.createXMLSource();
@@ -3412,7 +3415,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 						} else if (xmlType.equals(MicroscopyXMLTags.FRAPStudyTag)) {
 							doc = VFrapXmlHelper.VFRAPToBioModel(hashTable, xmlSource, getDocumentManager(), requester);
 						} else if (xmlType.equals(XMLTags.SedMLTypeTag)) {
-							doc = XmlHelper.sedmlToBioModel(transLogger, xmlSource, (AbstractTask)hashTable.get(SEDML_TASK));
+							doc = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo, (SedML)hashTable.get(SEDML_MODEL), (AbstractTask)hashTable.get(SEDML_TASK));
 						} else { // unknown XML format
 							throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 						}

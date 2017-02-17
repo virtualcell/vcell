@@ -18,7 +18,7 @@ import org.w3c.dom.Document;
  * This resolver will resolve relative URIs to a predetermined "current" prefix path.<br/>
  * For example:<br/>
  * <ul>
- * <li>"./Myfile.xml"
+ * <li>"Myfile.sbml"
  * </ul>
  */
 public class RelativeFileModelResolver implements IModelResolver {
@@ -45,24 +45,17 @@ public class RelativeFileModelResolver implements IModelResolver {
     public String getModelXMLFor(URI modelURI) {
         
         try {
-            String path = modelURI.getPath();
-            if(path.startsWith("./")) {
-                path = prefixPath + path.substring(2);
-            } else {
-                return null;
-            }
+            String path = prefixPath + modelURI.getPath();
             File f = new File(path);
             if (!f.exists() && !f.canRead()) {
                 return null;
             }
-            DocumentBuilder builder = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder();
+            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document doc = builder.parse(f);
             StreamResult result = new StreamResult(new StringWriter());
             DOMSource source = new DOMSource(doc);
             // Write the DOM document to the file
-            Transformer xformer = TransformerFactory.newInstance()
-                    .newTransformer();
+            Transformer xformer = TransformerFactory.newInstance().newTransformer();
             xformer.transform(source, result);
             return result.getWriter().toString();
 

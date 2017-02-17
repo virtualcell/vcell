@@ -539,22 +539,16 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		return simString;
 	}
 
-	public static VCDocument sedmlToBioModel(TranslationLogger transLogger, XMLSource xmlSource, AbstractTask selectedTask) throws XmlParseException {
-		VCDocument doc = null;
-		if (xmlSource == null) {
-			throw new XmlParseException("Invalid xml for Biomodel.");
-		}
-		try {
-		File sedmlFile = xmlSource.getXmlFile();
-//		SedML sedml = SEDMLReader.readFile(sedmlFile);
-		
-		SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
-		
-        Namespace namespace = sedml.getNamespace();
+	public static VCDocument sedmlToBioModel(TranslationLogger transLogger, ExternalDocInfo externalDocInfo, 
+			SedML sedml, AbstractTask selectedTask) throws Exception {
         if(sedml.getModels().isEmpty()) {
         	return null;
         }
         
+		VCDocument doc = null;
+		try {
+		String fullPath = FileUtils.getFullPath(externalDocInfo.getFile().getAbsolutePath());	// extract the path only from the sedml file
+//        Namespace namespace = sedml.getNamespace();
         // iterate through all the elements and show them at the console
         List<org.jlibsedml.Model> mmm = sedml.getModels();
         for(Model mm : mmm) {
@@ -582,24 +576,13 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 
 		org.jlibsedml.Model sedmlOriginalModel = null;		// the "original" model referred to by the task
 		String sedmlOriginalModelName = null;
-		// the original model may have as source another model that refers to the sbml file (or a URL)
-		org.jlibsedml.Model sedmlBaseModel = null;
-		String sedmlBaseModelName = null;
         
         if(selectedTask == null) {			// no task, just pick the Model and find its sbml file
         	sedmlOriginalModelName = mmm.get(0).getName();
-        	sedmlBaseModelName = mmm.get(0).getName();
         } else {
         	sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
         	sedmlOriginalModelName = sedmlOriginalModel.getId();
         	
-        	if(sedml.getModelWithId(sedmlOriginalModel.getSource()) != null) {	// the original model's source refers to another model
-        		sedmlBaseModel = sedml.getModelWithId(sedmlOriginalModel.getSource());
-        	} else {
-            	sedmlBaseModel = sedmlOriginalModel;	// the original model's source doesn't refer to another model, it's a direct sbml file or an URL
-        	}
-    		sedmlBaseModelName = sedmlBaseModel.getId();
-    		
         	sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
             sedmlKisao = KisaoOntology.getInstance().getTermById(sedmlSimulation.getAlgorithm().getKisaoID());
         }
@@ -654,21 +637,10 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		}
         
         // -------------------------------------------------------------------------------------------
-        String sbmlFileName = null;			// sbml file with the physiology
-        URI sbmlSourceURI = null;			// same thing if it's URI format
-        if(sedmlBaseModel != null) {
-        	sbmlFileName = sedmlBaseModel.getSource();
-        	sbmlSourceURI = sedmlBaseModel.getSourceURI();
-        }
 
         // TODO: things will get mode complicated here when we'll have to alternately parse the sedx file
-		String fullPath = FileUtils.getFullPath(sedmlFile.getAbsolutePath());	// extract the path only from the sedml file
-   		sbmlFileName = FileUtils.getName(sbmlFileName);							// extract the sbml name (base name + extension)
-        String bioModelNameCandidate = FileUtils.getBaseName(sbmlFileName);		// extract the sbml base name (without extension)
+        String bioModelName = FileUtils.getBaseName(externalDocInfo.getFile().getAbsolutePath());		// extract bioModel name from sedx (or sedml) file
         
-        
-		sbmlFileName = fullPath + sbmlFileName;									// build the absolute path
-
         ModelResolver resolver = new ModelResolver(sedml);
         resolver.add(new FileModelResolver());
         resolver.add(new RelativeFileModelResolver(fullPath));
@@ -677,35 +649,21 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         XMLSource sbmlSource = new XMLSource(newMdl);		// sbmlSource with all the changes applied
         doc = XmlHelper.importSBML(transLogger, sbmlSource, bSpatial);
         BioModel bioModel = (BioModel)doc;
-        
-        // extract and use the original biomodel name if the current biomodel name is a combination of the original and the app name
-        // this happens because we used the name of the sbml file
-        // ex: original biomodel name:									BioModel6
-        // current name of the biomodel (the name of the sbml file):	BioModel6_AppDeter
-        // name of the application:										AppDeter
-        if(bioModelNameCandidate.endsWith("_" + sedmlBaseModelName)) {
-        	bioModelNameCandidate = bioModelNameCandidate.substring(0, bioModelNameCandidate.lastIndexOf("_" + sedmlBaseModelName));
-        	bioModel.setName(bioModelNameCandidate);
-        }
+       	bioModel.setName(bioModelName);
 
         // we already have an application loaded from the sbml file, with initial conditions and stuff
         // which may be not be suitable because the sedml kisao may need a different app type
         // so we do a "copy as" to the right type and then delete the original we loaded from the sbml file
-        SimulationContext oldSimulationContext = null;		// the application loaded from the sbml file, which we'll delete at the end
         SimulationContext newSimulationContext = null;		// the new application we're making from the old one
         if(bioModel.getSimulationContexts().length == 1) {
-        	oldSimulationContext = bioModel.getSimulationContext(0);
+        	SimulationContext oldSimulationContext = bioModel.getSimulationContext(0);
         	newSimulationContext = ClientTaskManager.copySimulationContext(oldSimulationContext, sedmlOriginalModelName, bSpatial, appType);
-        } else {
+        	bioModel.removeSimulationContext(oldSimulationContext);
+        	bioModel.addSimulationContext(newSimulationContext);
+        } else {	// length == 0
         	newSimulationContext = bioModel.addNewSimulationContext(sedmlOriginalModelName, appType);
         }
-        if(newSimulationContext != null) {
-        	bioModel.addSimulationContext(newSimulationContext);
-        }
-        if(oldSimulationContext != null) {
-        	bioModel.removeSimulationContext(oldSimulationContext);
-        }
-        
+
         // making the new vCell simulation based on the sedml simulation
         newSimulationContext.refreshDependencies();
         MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
