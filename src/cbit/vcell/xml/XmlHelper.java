@@ -12,6 +12,7 @@ package cbit.vcell.xml;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
@@ -26,6 +27,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Text;
 import org.jlibsedml.AbstractTask;
+import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
@@ -34,6 +36,7 @@ import org.jlibsedml.Output;
 import org.jlibsedml.SedML;
 import org.jlibsedml.SteadyState;
 import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.KisaoOntology;
@@ -641,7 +644,15 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         // TODO: things will get mode complicated here when we'll have to alternately parse the sedx file
         String bioModelName = FileUtils.getBaseName(externalDocInfo.getFile().getAbsolutePath());		// extract bioModel name from sedx (or sedml) file
         
+		ArchiveComponents ac = null;
+		if(externalDocInfo.getFile().getPath().toLowerCase().endsWith("sedx")) {
+			ac = Libsedml.readSEDMLArchive(new FileInputStream(externalDocInfo.getFile().getPath()));
+		}
+        
         ModelResolver resolver = new ModelResolver(sedml);
+        if(ac != null) {
+        	resolver.add(new ArchiveModelResolver(ac));
+        }
         resolver.add(new FileModelResolver());
         resolver.add(new RelativeFileModelResolver(fullPath));
         String newMdl = resolver.getModelString(sedmlOriginalModel);

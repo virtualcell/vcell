@@ -16,6 +16,10 @@ import javax.swing.JRadioButton;
 import javax.swing.JToggleButton.ToggleButtonModel;
 
 import org.jlibsedml.AbstractTask;
+import org.jlibsedml.RepeatedTask;
+import org.jlibsedml.SedML;
+import org.jlibsedml.SubTask;
+import org.jlibsedml.Task;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
@@ -24,7 +28,7 @@ import cbit.vcell.model.Structure;
 
 public class SEDMLChooserPanel extends JPanel {
 	
-	private List<AbstractTask> taskList;
+	private SedML sedml;
 	public ButtonGroup group = new ButtonGroup();
 	
 	public class SEDMLRadioButtonModel extends ToggleButtonModel {
@@ -40,9 +44,11 @@ public class SEDMLChooserPanel extends JPanel {
 		}
 	}
 	
-	public SEDMLChooserPanel(List<AbstractTask> taskList) {
+		// List<AbstractTask> taskList
+	
+	public SEDMLChooserPanel(SedML sedml) {
 		super();
-		this.taskList = taskList;
+		this.sedml = sedml;
 		initialize();
 	}
 	
@@ -51,9 +57,44 @@ public class SEDMLChooserPanel extends JPanel {
 		setLayout(new GridBagLayout());
 		int gridy = 0;
 		//structureList.clear();
-		for(AbstractTask tt : taskList) {
-			JRadioButton rb = new JRadioButton(tt.getModelReference() + ": " + tt.getSimulationReference());
-			SEDMLRadioButtonModel bm = new SEDMLRadioButtonModel(tt);
+		for(AbstractTask at : sedml.getTasks()) {
+			
+			String text = "";
+			String tooltip = "";
+			
+			if(at instanceof Task) {
+				Task t = (Task)at;
+				text = " Simple task, id " + t.getId() + " - " + 
+						sedml.getModelWithId(t.getModelReference()).getClass().getSimpleName() + " '" +		// model class
+						sedml.getModelWithId(t.getModelReference()).getName() + "' : " + 
+						sedml.getSimulation(t.getSimulationReference()).getClass().getSimpleName() + " '" +	// simulation class
+						sedml.getSimulation(t.getSimulationReference()).getName() + "' ";
+				tooltip = "The model has " + sedml.getModelWithId(t.getModelReference()).getListOfChanges().size() + " changes.";
+			} else if(at instanceof RepeatedTask) {
+				RepeatedTask rt = (RepeatedTask)at;
+				switch(rt.getSubTasks().size()) {
+				case 0:
+					throw new RuntimeException("At least one subtask required within a repeated task: " + rt.getId());
+				case 1:
+					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue();		// first (and only) element
+					String taskId = st.getTaskId();
+					AbstractTask t = sedml.getTaskWithId(taskId);
+					text = " Repeated task, id " + rt.getId() + " - " + 
+							sedml.getModelWithId(t.getModelReference()).getClass().getSimpleName() + " '" +		// model class
+							sedml.getModelWithId(t.getModelReference()).getName() + "' : " + 
+							sedml.getSimulation(t.getSimulationReference()).getClass().getSimpleName() + " '" +	// simulation class
+							sedml.getSimulation(t.getSimulationReference()).getName() + "' ";
+					tooltip = "The repeated task has " + rt.getChanges().size() + " changes and " + rt.getRanges().size() + " ranges.";
+					break;
+				default:
+					throw new RuntimeException("Multiple subtasks within a repeated task not supported at this time: " + rt.getId());
+				}
+				
+			}
+			
+			JRadioButton rb = new JRadioButton(text);
+			rb.setToolTipText(tooltip);
+			SEDMLRadioButtonModel bm = new SEDMLRadioButtonModel(at);
 			rb.setModel(bm);
 			
 			if(gridy == 0) {
@@ -81,9 +122,9 @@ public class SEDMLChooserPanel extends JPanel {
 		add(new JLabel(""), gbc);
 	}
 	
-	public static AbstractTask chooseTask(List<AbstractTask> taskList, Component requester, String name) {
+	public static AbstractTask chooseTask(SedML sedml, Component requester, String name) {
 		
-		SEDMLChooserPanel panel = new SEDMLChooserPanel(taskList);
+		SEDMLChooserPanel panel = new SEDMLChooserPanel(sedml);
 		int oKCancel = DialogUtils.showComponentOKCancelDialog(requester, panel, "Import Sed-ML file: " + name);
 		if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
 			throw new UserCancelException("Canceling Import");

@@ -3246,9 +3246,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				if(sedml == null || sedml.getModels().isEmpty()) {
 					return;
 				}
-				
-				List<AbstractTask> taskList = sedml.getTasks();
-				AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(taskList, requester.getComponent(), file.getName());
+				AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(), file.getName());
 				
 				hashTable.put(SEDML_MODEL, sedml);
 				hashTable.put(SEDML_TASK, chosenTask);
@@ -3261,15 +3259,13 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			try {
 				ArchiveComponents ac = null;
 				ac = Libsedml.readSEDMLArchive(new FileInputStream(file));
-//				ArchiveModelResolver amr = new ArchiveModelResolver(ac);
 				SEDMLDocument doc = ac.getSedmlDocument();
 			
 				SedML sedml = doc.getSedMLModel();
 				if(sedml == null || sedml.getModels().isEmpty()) {
 					return;
 				}
-				List<AbstractTask> taskList = sedml.getTasks();
-		        AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(taskList, requester.getComponent(), file.getName());
+		        AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(), file.getName());
 		        
 				hashTable.put(SEDML_MODEL, sedml);
 				hashTable.put(SEDML_TASK, chosenTask);
