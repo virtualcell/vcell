@@ -19,18 +19,19 @@ import java.util.List;
 
 import javax.swing.JScrollPane;
 
+import org.vcell.chombo.ChomboMeshValidator;
 import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
-import org.vcell.util.ISize;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientSimManager;
+import cbit.vcell.client.ClientSimManager.ViewerType;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
-import cbit.vcell.client.ClientSimManager.ViewerType;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -57,7 +58,6 @@ import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import edu.uchc.connjur.spectrumtranslator.CodeUtil;
@@ -263,28 +263,39 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 	} else if(!simulation.getMathDescription().isNonSpatialStoch() && (solverDescription.isNonSpatialStochasticSolver())) {
 		errorMessage = "Errors in Simulation: '" + simulation.getName() + "'!\n" +
 				    "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" + 
-					solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";		
-	} 
-	else if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
-	{
-		ISize samplingSize = (ISize) simulation.getMeshSpecification().getSamplingSize();
-		if (!SolverUtilities.isPowerOf2(samplingSize.getX())
-			|| !SolverUtilities.isPowerOf2(samplingSize.getY())
-			|| simulation.getMathDescription().getGeometry().getDimension() == 3 && !SolverUtilities.isPowerOf2(samplingSize.getZ()))
-		{
-			//errorMessage = "Errors in Simulation: '" + simulation.getName() + "'!\n" + "Mesh sizes must be power of 2 for " + SolverDescription.Chombo.getDisplayLabel() + ".";
-		}
-		else
-		{
-			//errorMessage = simulation.getSolverTaskDescription().getChomboSolverSpec().checkParamters();
-		}
+					solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";
+	}	else if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
+		MeshSpecification meshSpecification = simulation.getMeshSpecification();
+		boolean bCellCentered = simulation.hasCellCenteredMesh();
+		if (meshSpecification != null && !meshSpecification.isAspectRatioOK(1e-4, bCellCentered)) {
+			errorMessage =  "Non uniform spatial step is detected. This will affect the accuracy of the solution.\n\n"
+				+ "\u0394x=" + meshSpecification.getDx(bCellCentered) + "\n" 
+				+ "\u0394y=" + meshSpecification.getDy(bCellCentered)
+				+ (meshSpecification.getGeometry().getDimension() < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz(bCellCentered));
+		}		
 	} else {		
 		errorMessage = null;
 	}
 	if (errorMessage != null) {
 		DialogUtils.showErrorDialog(parent, errorMessage);
 		return false;
-	}else{
+	} 
+	else if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
+	{
+		Geometry geometry = simulation.getMathDescription().getGeometry();
+		ChomboMeshValidator meshValidator = new ChomboMeshValidator(geometry, simulation.getSolverTaskDescription().getChomboSolverSpec());
+		ChomboMeshRecommendation chomboMeshRecommendation = meshValidator.computeMeshSpecs();
+		if (!chomboMeshRecommendation.validate())
+		{
+			String option = DialogUtils.showWarningDialog(parent, "Error", chomboMeshRecommendation.getErrorMessage(), chomboMeshRecommendation.getDialogOptions(), ChomboMeshRecommendation.optionClose);
+			if (ChomboMeshRecommendation.optionSuggestions.equals(option))
+			{
+				DialogUtils.showInfoDialog(parent, ChomboMeshRecommendation.optionSuggestions, chomboMeshRecommendation.getMeshSuggestions());
+			}
+		}
+		return false;
+	} 
+	else{
 		String warningMessage = null;
 		//don't check warning message for stochastic multiple trials, let it run.
 		if(simulation.getMathDescription().isNonSpatialStoch() && simulation.getSolverTaskDescription().getStochOpt()!=null &&

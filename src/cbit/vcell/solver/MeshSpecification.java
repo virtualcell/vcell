@@ -365,6 +365,10 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws java.bea
 }
 
 public boolean isAspectRatioOK(boolean bCellCentered) {
+	return isAspectRatioOK(0.1, bCellCentered);
+}
+
+public boolean isAspectRatioOK(double tolerance, boolean bCellCentered) {
 	final int dimension = fieldGeometry.getDimension();
 	if (dimension > 1) {		
 		double dx = getDx(bCellCentered);
@@ -377,7 +381,7 @@ public boolean isAspectRatioOK(boolean bCellCentered) {
 			min = Math.min(min, dz);
 			max = Math.max(max, dz);
 		}
-		if ((max-min)/max > 0.10) {
+		if ((max-min)/max > tolerance) {
 			return false;
 		}
 	}
