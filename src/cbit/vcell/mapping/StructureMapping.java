@@ -486,7 +486,7 @@ private static void detectMappingConflictIssues(IssueContext issueContext, List<
 			continue;		// don't compare ours with itself
 		}
 		if(theirs.getGeometryClass() == null) {
-			return;
+			continue;		// 'theirs' is unmapped but some others may be, keep looking
 		}
 
 		final String theirSubdomainName = theirs.getGeometryClass().getName();
