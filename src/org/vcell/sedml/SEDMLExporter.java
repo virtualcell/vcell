@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -64,15 +65,20 @@ import org.jmathml.ASTNode;
 import org.jmathml.MathMLReader;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
+import org.vcell.sbml.vcell.MathModel_SBMLExporter;
+import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.FileUtils;
+import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 
 import com.sun.swing.internal.plaf.basic.resources.basic_zh_HK;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -81,11 +87,13 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.Function;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelQuantity;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -100,6 +108,7 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -200,11 +209,51 @@ public class SEDMLExporter {
 					
 					// Export the application itself to SBML, with default overrides
 					String sbmlString = null;
-					if (simContext.getGeometry().getDimension() > 0) {
-						sbmlString = XmlHelper.exportSBML(vcBioModel, 2, 4, 0, true, simContext, null);
+					int level = 2;
+					int version = 4;
+					boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
+					SimulationJob simJob = null;
+					
+//					if (simContext.getGeometry().getDimension() > 0) {
+//						sbmlString = XmlHelper.exportSBML(vcBioModel, 2, 4, 0, true, simContext, null);
+//					} else {
+//						sbmlString = XmlHelper.exportSBML(vcBioModel, 2, 4, 0, false, simContext, null);
+//					}
+					//
+					// TODO: we need to salvage from the SBMLExporter info about the fate of local parameters
+					// some of them may stay as locals, some others may become globals
+					// Any of these, if used in a repeated task or change or whatever, needs to be used in a consistent way,
+					// that is, if a param becomes a global in SBML, we need to refer at it in SEDML as the same global
+					//
+					// We'll use:
+					// Map<Pair <String reaction, String param>, String global>		- if local converted to global
+					// Set<Pair <String reaction, String param>>	(if needed?)	- if local stays local
+					// 
+					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
+					if (vcBioModel instanceof BioModel) {
+						try {
+							// check if model to be exported to SBML has units compatible with SBML default units (default units in SBML can be assumed only until SBML Level2)
+							ModelUnitSystem forcedModelUnitSystem = simContext.getModel().getUnitSystem();
+							if (level < 3 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
+								forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
+							}
+							// create new Biomodel with new (SBML compatible)  unit system
+							BioModel modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(simContext.getBioModel(), forcedModelUnitSystem);
+							// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
+							SimulationContext simContextFromModifiedBioModel = modifiedBiomodel.getSimulationContext(simContext.getName());
+							SBMLExporter sbmlExporter = new SBMLExporter(modifiedBiomodel, level, version, isSpatial);
+							sbmlExporter.setSelectedSimContext(simContextFromModifiedBioModel);
+							sbmlExporter.setSelectedSimulationJob(null);	// no sim job
+							sbmlString = sbmlExporter.getSBMLFile();
+							l2gMap = sbmlExporter.getLocalToGlobalTranslationMap();
+						} catch (ExpressionException | SbmlException e) {
+							e.printStackTrace(System.out);
+							throw new XmlParseException(e);
+						}
 					} else {
-						sbmlString = XmlHelper.exportSBML(vcBioModel, 2, 4, 0, false, simContext, null);
+						throw new RuntimeException("unsupported Document Type "+vcBioModel.getClass().getName()+" for SBML export");
 					}
+					
 					String sbmlFilePathStrAbsolute = savePath + FileUtils.WINDOWS_SEPARATOR + bioModelName + "_" + simContextName + ".xml";
 					String sbmlFilePathStrRelative = bioModelName + "_" + simContextName + ".xml";
 					XmlUtil.writeXMLStringToFile(sbmlString, sbmlFilePathStrAbsolute, true);
@@ -280,13 +329,13 @@ public class SEDMLExporter {
 									Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
 									if(unscannedParamExpr.isNumeric()) {
 										// if expression is numeric, add ChangeAttribute to model created above
-										XPathTarget targetXpath = getTargetAttributeXPath(ste);
+										XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
 										ChangeAttribute changeAttribute = new ChangeAttribute(targetXpath, unscannedParamExpr.infix());
 										sedModel.addChange(changeAttribute);
 									} else {
 										// non-numeric expression : add 'computeChange' to modified model
 										ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
-										XPathTarget targetXpath = getTargetXPath(ste);
+										XPathTarget targetXpath = getTargetXPath(ste, l2gMap);
 										ComputeChange computeChange = new ComputeChange(targetXpath, math);
 										String[] exprSymbols = unscannedParamExpr.getSymbols();
 										for (String symbol : exprSymbols) {
@@ -294,7 +343,7 @@ public class SEDMLExporter {
 											SymbolTableEntry ste1 = vcModel.getEntry(symbol);
 											if (ste != null) {
 												if (ste1 instanceof SpeciesContext || ste1 instanceof Structure || ste1 instanceof ModelParameter) {
-													XPathTarget ste1_XPath = getTargetXPath(ste1);
+													XPathTarget ste1_XPath = getTargetXPath(ste1, l2gMap);
 													org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolName, symbolName, taskRef, ste1_XPath.getTargetAsString());
 													computeChange.addVariable(sedmlVar);
 												} else {
@@ -360,7 +409,7 @@ public class SEDMLExporter {
 										
 										// list of Changes
 										SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-										XPathTarget target = getTargetXPath(ste);
+										XPathTarget target = getTargetXPath(ste, l2gMap);
 										//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
 										ASTNode math1 = Libsedml.parseFormulaString(r.getId());
 										SetValue setValue = new SetValue(target, r.getId(), simContextId);
@@ -428,7 +477,7 @@ public class SEDMLExporter {
 										
 										// create setValue for scannedConstName
 										SymbolTableEntry ste2 = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-										XPathTarget target1 = getTargetXPath(ste2);
+										XPathTarget target1 = getTargetXPath(ste2, l2gMap);
 										ASTNode math1 = new ASTCi(scannedConstName);
 										SetValue setValue1 = new SetValue(target1, r.getId(), sedModel.getId());
 										setValue1.setMath(math1);
@@ -443,7 +492,7 @@ public class SEDMLExporter {
 									Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
 									if(unscannedParamExpr.isNumeric()) {
 										// if expression is numeric, add ChangeAttribute to model created above
-										XPathTarget targetXpath = getTargetAttributeXPath(ste);
+										XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
 										ChangeAttribute changeAttribute = new ChangeAttribute(targetXpath, unscannedParamExpr.infix());
 										sedModel.addChange(changeAttribute);
 									} else {
@@ -463,14 +512,14 @@ public class SEDMLExporter {
 										if (bHasScannedParameter && scannedParamNameInUnscannedParamExp != null) {
 											// create setValue for unscannedParamName (which contains a scanned param in its expression)
 											SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
-											XPathTarget target = getTargetXPath(entry);
+											XPathTarget target = getTargetXPath(entry, l2gMap);
 											String rangeId = scannedParamHash.get(scannedParamNameInUnscannedParamExp);
 											SetValue setValue = new SetValue(target, rangeId, sedModel.getId());	// @TODO: we have no range??
 											setValue.setMath(math);
 											rt.addChange(setValue);
 										} else {
 											// non-numeric expression : add 'computeChange' to modified model
-											XPathTarget targetXpath = getTargetXPath(ste);
+											XPathTarget targetXpath = getTargetXPath(ste, l2gMap);
 											ComputeChange computeChange = new ComputeChange(targetXpath, math);
 											for (String symbol : exprSymbols) {
 												String symbolName = TokenMangler.mangleToSName(symbol);
@@ -481,7 +530,7 @@ public class SEDMLExporter {
 												}
 												if (ste1 != null) {
 													if (ste1 instanceof SpeciesContext || ste1 instanceof Structure || ste1 instanceof ModelParameter) {
-														XPathTarget ste1_XPath = getTargetXPath(ste1);
+														XPathTarget ste1_XPath = getTargetXPath(ste1, l2gMap);
 														org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolName, symbolName, taskRef, ste1_XPath.getTargetAsString());
 														computeChange.addVariable(sedmlVar);
 													} else {
@@ -566,7 +615,7 @@ public class SEDMLExporter {
 									ste = simContext.getMathDescription().getEntry(symbol);
 								}
 								if (ste instanceof SpeciesContext || ste instanceof Structure || ste instanceof ModelParameter) {
-									XPathTarget targetXPath = getTargetXPath(ste);
+									XPathTarget targetXPath = getTargetXPath(ste, l2gMap);
 									org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolName, symbolName, taskRef, targetXPath.getTargetAsString());
 									dataGen.addVariable(sedmlVar);
 								} else {
@@ -739,7 +788,7 @@ public class SEDMLExporter {
 		}
 	}
 
-	private XPathTarget getTargetXPath(SymbolTableEntry ste) {
+	private XPathTarget getTargetXPath(SymbolTableEntry ste, Map<Pair <String, String>, String> l2gMap) {
 		SBMLSupport sbmlSupport = new SBMLSupport();		// to get Xpath string for variables.
 		XPathTarget targetXpath = null;
 		if (ste instanceof SpeciesContext || ste instanceof SpeciesContextSpecParameter) {
@@ -776,7 +825,13 @@ public class SEDMLExporter {
 			KineticsParameter kp = (KineticsParameter)ste;
 			String reactionID = kp.getKinetics().getReactionStep().getName();
 			String parameterID = kp.getName();
-			targetXpath = new XPathTarget(sbmlSupport.getXPathForKineticLawParameter(reactionID, parameterID));
+			Pair<String, String> key = new Pair(reactionID, parameterID);
+			String value = l2gMap.get(key);
+			if(value == null) {
+				targetXpath = new XPathTarget(sbmlSupport.getXPathForKineticLawParameter(reactionID, parameterID));
+			} else {
+				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(value, ParameterAttribute.value));
+			}
 		} else {
 			System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
 			throw new RuntimeException("Unknown entity in SBML model");
@@ -784,7 +839,7 @@ public class SEDMLExporter {
 		return targetXpath;
 	}
 	
-	private XPathTarget getTargetAttributeXPath(SymbolTableEntry ste) {
+	private XPathTarget getTargetAttributeXPath(SymbolTableEntry ste, Map<Pair <String, String>, String> l2gMap) {
 		SBMLSupport sbmlSupport = new SBMLSupport();		// to get Xpath string for variables.
 		XPathTarget targetXpath = null;
 		if (ste instanceof SpeciesContext || ste instanceof SpeciesContextSpecParameter) {
@@ -841,8 +896,15 @@ public class SEDMLExporter {
 			KineticsParameter kp = (KineticsParameter)ste;
 			String reactionID = kp.getKinetics().getReactionStep().getName();
 			String parameterID = kp.getName();
-//			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalKineticLawParameter(reactionID, parameterID, ParameterAttribute.value));
-			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(parameterID + "_" + reactionID, ParameterAttribute.value));
+			Pair<String, String> key = new Pair(reactionID, parameterID);
+			String value = l2gMap.get(key);
+			if(value == null) {
+				// stays as local parameter
+				targetXpath = new XPathTarget(sbmlSupport.getXPathForKineticLawParameter(reactionID, parameterID, ParameterAttribute.value));
+			} else {
+				// became a global in SBML, we need to refer to that global
+				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(value, ParameterAttribute.value));
+			}
 		} else {
 			System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
 			throw new RuntimeException("Unknown entity in SBML model");
