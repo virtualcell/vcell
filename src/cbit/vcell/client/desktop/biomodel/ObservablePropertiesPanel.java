@@ -174,14 +174,15 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void keyReleased(KeyEvent e) {
+			final int MaxLength = 6;
 			Object source = e.getSource();
 			if (source == getLengthEqualTextField()) {
 				String str = getLengthEqualTextField().getText();
 				if(str.length() == 0) {
 					return;		// just deleted the number; do nothing and expect the user to type something
-				} else if(str.length() > 2) {
+				} else if(str.length() > MaxLength) {
 					getLengthEqualTextField().setText(observable.getSequenceLength()+"");
-					return;		// don't allow anything larger than 2 digits
+					return;		// don't allow anything larger than MaxLength digits
 				}
 				int value;
 				try {
@@ -196,7 +197,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				String str = getLengthGreaterTextField().getText();
 				if(str.length() == 0) {
 					return;
-				} else if(str.length() > 2) {
+				} else if(str.length() > MaxLength) {
 					getLengthGreaterTextField().setText(observable.getSequenceLength()+"");
 					return;
 				}
@@ -500,7 +501,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		});
 		
 		JPanel optionsPanel = new JPanel();
-		optionsPanel.setPreferredSize(new Dimension(112, 200));		// gray options panel
+		optionsPanel.setPreferredSize(new Dimension(140, 200));		// gray options panel
 		optionsPanel.setLayout(new GridBagLayout());
 		
 		int gridy = 0;
@@ -542,7 +543,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(2,4,1,7);
+		gbc.insets = new Insets(2,4,1,2);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		optionsPanel.add(getSequencePolimerEqualButton(), gbc);
 
@@ -550,7 +551,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.gridwidth = 2;
-		gbc.insets = new Insets(2,4,1,7);
+		gbc.insets = new Insets(2,4,1,4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		optionsPanel.add(getLengthEqualTextField(), gbc);
 
@@ -558,7 +559,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(1,4,4,7);
+		gbc.insets = new Insets(1,4,4,2);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		optionsPanel.add(getSequencePolimerGreaterButton(), gbc);
 
@@ -566,7 +567,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.gridwidth = 2;
-		gbc.insets = new Insets(1,4,4,7);
+		gbc.insets = new Insets(1,4,4,4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		optionsPanel.add(getLengthGreaterTextField(), gbc);
 
