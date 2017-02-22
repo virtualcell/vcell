@@ -1295,26 +1295,8 @@ private void initialize() {
 	// user code end
 }
 
-private static final Dimension mySize = new Dimension(150,250);
 private JRadioButton rdbtnSingle;
 private JRadioButton rdbtnAllTimes;
-@Override
-public Dimension getPreferredSize() {
-	// TODO Auto-generated method stub
-	return mySize;//super.getPreferredSize();
-}
-
-@Override
-public Dimension getMaximumSize() {
-	// TODO Auto-generated method stub
-	return mySize;//super.getMaximumSize();
-}
-
-@Override
-public Dimension getMinimumSize() {
-	// TODO Auto-generated method stub
-	return mySize;//super.getMinimumSize();
-}
 
 /**
  * main entrypoint - starts the part when it is run as an application

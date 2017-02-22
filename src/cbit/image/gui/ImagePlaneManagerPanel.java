@@ -901,7 +901,13 @@ public ImagePlaneManager getImagePlaneManager() {
 private ImagePlanePanel getImagePlanePanel1() {
 	if (ivjImagePlanePanel1 == null) {
 		try {
-			ivjImagePlanePanel1 = new ImagePlanePanel();
+			ivjImagePlanePanel1 = new ImagePlanePanel(){
+				@Override
+				public Dimension getPreferredSize() {
+					// TODO Auto-generated method stub
+					return new Dimension(getDisplayAdapterServicePanel().getPreferredSize().width,super.getPreferredSize().height);
+				}
+			};
 			ivjImagePlanePanel1.setName("ImagePlanePanel1");
 			// user code begin {1}
 			// user code end
