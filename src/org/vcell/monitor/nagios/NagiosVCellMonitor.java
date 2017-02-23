@@ -835,7 +835,7 @@ public class NagiosVCellMonitor {
 	}
 
 	public static String[] createLSOFPort_LinuxCmdParams(int tcpPort){
-		return new String[] {"/usr/sbin/lsof","-i","TCP:"+tcpPort};
+		return new String[] {"/usr/sbin/lsof","-P","-i","TCP:"+tcpPort};
 	}
 	public static String[] createChekcMonitorProcess_LinuxCmdParams(Integer linuxProcessID){
 		return new String[] {"/bin/ps","-fww","-p",linuxProcessID.toString()};
