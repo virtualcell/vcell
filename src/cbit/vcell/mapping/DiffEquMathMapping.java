@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Pair;
 import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.data.DataSymbol;
@@ -1696,6 +1697,50 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 }
 
+//determine membrane inside and outside subvolume
+public static Pair<SubVolume,SubVolume> computeBoundaryConditionSource(Model model, SimulationContext simContext, SurfaceClass surfaceClass) {
+	
+	SubVolume outerSubVolume = null;
+	SubVolume innerSubVolume = null;
+	Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
+	// this preserves backward compatibility so that membrane subdomain
+	// inside and outside correspond to structure hierarchy when present
+	for (Structure s : mappedStructures) {
+		if (s instanceof Membrane) {
+			Membrane m = (Membrane)s;
+			Feature infeature = model.getStructureTopology().getInsideFeature(m);
+			if (infeature != null) {
+				FeatureMapping insm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(infeature);
+				if (insm.getGeometryClass() instanceof SubVolume) {
+					innerSubVolume = (SubVolume)insm.getGeometryClass();
+				}
+			}
+			Feature outfeature = model.getStructureTopology().getOutsideFeature(m);
+			if (outfeature != null) {
+				FeatureMapping outsm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(outfeature);
+				if (outsm.getGeometryClass() instanceof SubVolume) {
+					outerSubVolume = (SubVolume)outsm.getGeometryClass();
+				}
+			}
+		}
+	}
+	// if structure hierarchy not present, alphabetically choose inside and outside
+	// make the choice deterministic
+	if (innerSubVolume == null || outerSubVolume == null || innerSubVolume == outerSubVolume){
+		Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
+		Iterator<SubVolume> iterator = sv.iterator();
+		innerSubVolume = iterator.next();
+		outerSubVolume = iterator.next();
+		if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
+			SubVolume temp = innerSubVolume;
+			innerSubVolume = outerSubVolume;
+			outerSubVolume = temp;
+		}
+	}
+	Pair<SubVolume,SubVolume> ret = new Pair<>(innerSubVolume, outerSubVolume);
+	return ret;
+}
+
 private void addSubdomains(Model model, ArrayList<CompartmentSubdomainContext> compartmentSubdomainContexts,
 		ArrayList<MembraneSubdomainContext> membraneSubdomainContexts) throws MathException {
 	{
@@ -1706,15 +1751,15 @@ private void addSubdomains(Model model, ArrayList<CompartmentSubdomainContext> c
 			// get priority of subDomain
 			//
 			int priority;
-			if (simContext.getGeometryContext().getGeometry().getDimension()==0){
+			if (simContext.getGeometryContext().getGeometry().getDimension() == 0){
 				priority = CompartmentSubDomain.NON_SPATIAL_PRIORITY;
-			}else{
+			} else {
 				priority = j; // now does not have to match spatial feature, *BUT* needs to be unique
 			}
 			//
 			// create subDomain
 			//
-			CompartmentSubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),priority);
+			CompartmentSubDomain subDomain = new CompartmentSubDomain(subVolume.getName(), priority);
 			Domain domain = new Domain(subDomain);
 			mathDesc.addSubDomain(subDomain);
 			compartmentSubdomainContexts.add(new CompartmentSubdomainContext(subDomain, subVolume, domain));
@@ -1730,48 +1775,16 @@ private void addSubdomains(Model model, ArrayList<CompartmentSubdomainContext> c
 			// determine membrane inside and outside subvolume
 			// this preserves backward compatibility so that membrane subdomain
 			// inside and outside correspond to structure hierarchy when present
-			SubVolume outerSubVolume = null;
-			SubVolume innerSubVolume = null;
-			Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
-			for (Structure s : mappedStructures) {
-				if (s instanceof Membrane) {
-					Membrane m = (Membrane)s;
-					Feature infeature = model.getStructureTopology().getInsideFeature(m);
-					if (infeature!=null){
-						FeatureMapping insm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(infeature);
-						if (insm.getGeometryClass() instanceof SubVolume) {
-							innerSubVolume = (SubVolume)insm.getGeometryClass();
-						}
-					}
-					Feature outfeature = model.getStructureTopology().getOutsideFeature(m);
-					if (outfeature!=null){
-						FeatureMapping outsm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(outfeature);
-						if (outsm.getGeometryClass() instanceof SubVolume) {
-							outerSubVolume = (SubVolume)outsm.getGeometryClass();
-						}
-					}
-				}
-			}
-			// if structure hierarchy not present, alphabetically choose inside and outside
-			// make the choice deterministic
-			if (innerSubVolume == null || outerSubVolume == null || innerSubVolume == outerSubVolume){
-				Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
-				Iterator<SubVolume> iterator = sv.iterator();
-				innerSubVolume = iterator.next();
-				outerSubVolume = iterator.next();
-				if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
-					SubVolume temp = innerSubVolume;
-					innerSubVolume = outerSubVolume;
-					outerSubVolume = temp;
-				}
-			}
-	
+			Pair<SubVolume,SubVolume> ret = computeBoundaryConditionSource(model, simContext, surfaceClass);
+			SubVolume innerSubVolume = ret.one;
+			SubVolume outerSubVolume = ret.two;
+
 			//
 			// make list of SurfaceRegionObjects for this membrane subdomain
 			//
 			ArrayList<SurfaceRegionObject> surfaceRegionObjects = new ArrayList<SurfaceRegionObject>();
-			for (SpatialObject spatialObject : simContext.getSpatialObjects()){
-				if (spatialObject instanceof SurfaceRegionObject){
+			for (SpatialObject spatialObject : simContext.getSpatialObjects()) {
+				if (spatialObject instanceof SurfaceRegionObject) {
 					SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject) spatialObject;
 					if (surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity) &&
 						(((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||

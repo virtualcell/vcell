@@ -19,7 +19,9 @@ import java.awt.Graphics2D;
 import java.awt.font.TextAttribute;
 import java.text.AttributedString;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.JTable;
@@ -27,10 +29,19 @@ import javax.swing.SwingConstants;
 import javax.swing.border.MatteBorder;
 
 import org.vcell.util.Issue;
+import org.vcell.util.Pair;
+import org.vcell.util.gui.ColorIcon;
+import org.vcell.util.gui.ColorIconEx;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.VCellIcons;
 
+import cbit.image.DisplayAdapterService;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Structure;
@@ -109,18 +120,20 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 		setHorizontalTextPosition(SwingConstants.LEFT);
 	}
 
+	private int[] colormap = DisplayAdapterService.createContrastColorModel();
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 	{
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		setIcon(null);
 		if (table.getModel() instanceof StructureMappingTableModel) {
 			StructureMappingTableModel structureMappingTableModel = (StructureMappingTableModel)table.getModel();
+			String toolTip = structureMappingTableModel.getToolTip(row, column);
 			if (value instanceof Structure) {
 				Structure structure = (Structure)value;
 				setText(structure.getName());
 			} else if (value instanceof Double && structureMappingTableModel.isNewSizeColumn(column)) {
 				StructureMapping structureMapping = structureMappingTableModel.getStructureMapping(row);
-				if (structureMappingTableModel.isNonSpatial()) {	
+				if (structureMappingTableModel.isNonSpatial()) {
 					VCUnitDefinition unitDefinition = structureMapping.getStructure().getStructureSize().getUnitDefinition();
 					TextIcon sizeIcon = unitIconHash.get(unitDefinition.getSymbol());
 					if (sizeIcon==null){
@@ -128,7 +141,7 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 						unitIconHash.put(unitDefinition.getSymbol(), sizeIcon);
 					}
 					setIcon(sizeIcon);
-				} else {
+				} else {				// spatial
 					if (structureMapping.getUnitSizeParameter()!=null){
 						VCUnitDefinition unitDefinition = structureMapping.getUnitSizeParameter().getUnitDefinition();
 						TextIcon sizeIcon = unitIconHash.get(unitDefinition.getSymbol());
@@ -144,22 +157,61 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 				if (value == null) {
 					setText("Unmapped");
 					setForeground(Color.red);
+					setIcon(null);
 				} else {
 					if (value instanceof GeometryClass) {
 						setText(((GeometryClass)value).getName());
+						if (value instanceof SubVolume){
+							SubVolume subVolume = (SubVolume)value;
+							java.awt.Color handleColor = new java.awt.Color(colormap[subVolume.getHandle()]);
+							Icon icon = new ColorIcon(12,12,handleColor, true);	// small square icon with subdomain color
+							setHorizontalTextPosition(SwingConstants.RIGHT);
+							setIcon(icon);
+						} else if(value instanceof SurfaceClass) {
+							SurfaceClass sc = (SurfaceClass)value;
+							Set<SubVolume> sv = sc.getAdjacentSubvolumes();
+							Iterator<SubVolume> iterator = sv.iterator();
+							SubVolume sv1 = iterator.next();
+							SubVolume sv2 = iterator.next();
+							java.awt.Color c1 = new java.awt.Color(colormap[sv2.getHandle()]);
+							java.awt.Color c2 = new java.awt.Color(colormap[sv1.getHandle()]);
+							Icon icon = new ColorIconEx(12,12,c1,c2);
+							setIcon(icon);
+							setHorizontalTextPosition(SwingConstants.RIGHT);
+
+						}
 					} else {
 						setText(value.toString());
+						setIcon(null);
 					}
 				}
 			}
 			
-			if (value instanceof BoundaryConditionType) {
-				setText(((BoundaryConditionType)value).boundaryTypeStringValue());
+			if (value instanceof BoundaryConditionType) {	// we get here only for spatial
+				Object candidate = structureMappingTableModel.getValueAt(row, StructureMappingTableModel.SPATIAL_COLUMN_SUBDOMAIN);
+				if(candidate instanceof SurfaceClass) {
+					
+					SurfaceClass surfaceClass = (SurfaceClass)candidate;
+					cbit.vcell.model.Model model = structureMappingTableModel.getGeometryContext().getModel();
+					SimulationContext simContext = structureMappingTableModel.getGeometryContext().getSimulationContext();
+					Pair<SubVolume,SubVolume> ret = DiffEquMathMapping.computeBoundaryConditionSource(model, simContext, surfaceClass);
+					SubVolume innerSubVolume = ret.one;
+					
+					java.awt.Color handleColor = new java.awt.Color(colormap[innerSubVolume.getHandle()]);
+					Icon icon = new ColorIcon(8,8,handleColor, true);	// small square icon with subdomain color
+					setHorizontalTextPosition(SwingConstants.LEFT);
+					setIcon(icon);
+					setText("from");
+					toolTip = "Boundary condition inherited from Subdomain '" + innerSubVolume.getName() + "'";	// override default tooltip
+					setToolTipText(toolTip);
+				} else {
+					setText(((BoundaryConditionType)value).boundaryTypeStringValue());
+				}
 			}
 
 			List<Issue> issueList = structureMappingTableModel.getIssues(row, column, Issue.SEVERITY_ERROR);
 			if (issueList.size() > 0) {
-				setToolTipText(Issue.getHtmlIssueMessage(issueList));
+				setToolTipText(Issue.getHtmlIssueMessage(issueList));		// override default tooltip
 				if (column == 0) {
 					setBorder(new MatteBorder(1,1,1,0,Color.red));
 				} else if (column == table.getColumnCount() - 1) {
@@ -168,7 +220,7 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 					setBorder(new MatteBorder(1,0,1,0,Color.red));
 				}
 			} else {
-				String toolTip = structureMappingTableModel.getToolTip(row, column);
+				
 				setToolTipText(toolTip);
 				setBorder(DEFAULT_GAP);
 			}

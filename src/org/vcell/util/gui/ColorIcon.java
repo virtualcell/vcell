@@ -10,6 +10,8 @@
 
 package org.vcell.util.gui;
 
+import java.awt.Color;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/9/01 10:43:47 AM)
@@ -19,14 +21,19 @@ public class ColorIcon implements javax.swing.Icon {
 	private int sizeX = 0;
 	private int sizeY = 0;
 	private java.awt.Color color = null;
+	private boolean drawBorder = false;
 /**
  * ColorIcon constructor comment.
  */
-public ColorIcon(int argSizeX, int argSizeY, java.awt.Color argColor) {
-	this.sizeX = argSizeX;
-	this.sizeY = argSizeY;
-	this.color = argColor;
-}
+	public ColorIcon(int argSizeX, int argSizeY, java.awt.Color argColor) {
+		this(argSizeX, argSizeY, argColor, false);
+	}
+	public ColorIcon(int argSizeX, int argSizeY, java.awt.Color argColor, boolean argDrawBorder) {
+		this.sizeX = argSizeX;
+		this.sizeY = argSizeY;
+		this.color = argColor;
+		this.drawBorder = argDrawBorder;
+	}
 	/**
 	 * Returns the icon's height.
 	 *
@@ -51,5 +58,9 @@ public int getIconWidth() {
 public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
 	g.setColor(color);
 	g.fillRect(x,y,sizeX,sizeY);
+	if(drawBorder) {
+		g.setColor(Color.gray);
+		g.drawRect(x, y, sizeX, sizeY);
+	}
 }
 }

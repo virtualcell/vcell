@@ -396,7 +396,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return true;
 		}
 		return false;
-	} else {
+	} else {			// spatial
 		//
 		// see if feature is distributed and has a membrane (not top)
 		//		
@@ -412,9 +412,13 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 					sm.getUnitSizeParameter().getUnitDefinition().isEquivalent(getGeometryContext().getModel().getUnitSystem().getInstance_DIMENSIONLESS());
 			return (structureMappings != null && structureMappings.length > 1) || !bDimensionless;
 		}
-		// bounday conditions are editable
-		if ((columnIndex >= SPATIAL_COLUMN_X_MINUS) && (columnIndex <= SPATIAL_COLUMN_Z_PLUS))
+		// some boundary conditions are editable
+		if ((columnIndex >= SPATIAL_COLUMN_X_MINUS) && (columnIndex <= SPATIAL_COLUMN_Z_PLUS)) {
+			if(sm.getStructure() instanceof Membrane) {
+				return false;
+			}
 			return true;
+		}
 	}
 	return false;
 }
