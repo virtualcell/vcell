@@ -194,16 +194,16 @@ public static void setProxyPrefs(Component requester) throws UtilCancelException
 		}
 	} while (true);
 	
-	writeProxyToSupplementalVMOptions(requester,true,proxyType,proxyHost,proxyPort,prefs.get(prefProxyType,prefProxyType),prefs.get(prefProxyHost,prefProxyHost),prefs.get(prefProxyPort,prefProxyPort));
+	setProxyProperties(requester,true,proxyType,proxyHost,proxyPort,prefs.get(prefProxyType,prefProxyType),prefs.get(prefProxyHost,prefProxyHost),prefs.get(prefProxyPort,prefProxyPort));
 }
 
 public static final String PROXY_HTTP_HOST = "http.proxyHost";
 public static final String PROXY_HTTP_PORT = "http.proxyPort";
 public static final String PROXY_SOCKS_HOST = "socksProxyHost";
 public static final String PROXY_SOCKS_PORT = "socksProxyPort";
-public static void writeProxyToSupplementalVMOptions(Component requester,boolean bRestartWarn,String proxyType ,String proxyHost ,String proxyPort,String proxyTypeNew ,String proxyHostNew ,String proxyPortNew){
+public static void setProxyProperties(Component requester,boolean bRestartWarn,String proxyType ,String proxyHost ,String proxyPort,String proxyTypeNew ,String proxyHostNew ,String proxyPortNew){
 	String altVMOptionsFile = System.getProperty("user.home")+System.getProperty("file.separator")+ResourceUtil.VCELL_HOME_DIR_NAME+System.getProperty("file.separator")+ResourceUtil.VCELL_PROXY_VMOPTIONS;
-	try (FileWriter fw = new FileWriter(new File(altVMOptionsFile),false)) {
+	try /*(FileWriter fw = new FileWriter(new File(altVMOptionsFile),false))*/ {
 		// Set or clear java proxy system properties
 		if(proxyTypeNew != null && proxyTypeNew.equals("http")){
 			System.setProperty(PROXY_HTTP_HOST, proxyHostNew);
@@ -221,10 +221,10 @@ public static void writeProxyToSupplementalVMOptions(Component requester,boolean
 			System.clearProperty(PROXY_SOCKS_HOST);
 			System.clearProperty(PROXY_SOCKS_PORT);							
 		}
-		// Write out proxy to supplemental install4j proxy.vmoptions file
-		fw.write((proxyTypeNew != null && proxyTypeNew.equals("http")? PROXY_HTTP_HOST+"="+proxyHostNew+"\n"+PROXY_HTTP_PORT+"="+proxyPortNew+"\n":"\n"));
-		fw.write((proxyTypeNew != null && proxyTypeNew.equals("socks")?PROXY_SOCKS_HOST+"="+proxyHostNew+"\n"+PROXY_SOCKS_PORT+"="+proxyPortNew+"\n":"\n"));
-		fw.close();
+//		// Write out proxy to supplemental install4j proxy.vmoptions file
+//		fw.write((proxyTypeNew != null && proxyTypeNew.equals("http")? PROXY_HTTP_HOST+"="+proxyHostNew+"\n"+PROXY_HTTP_PORT+"="+proxyPortNew+"\n":"\n"));
+//		fw.write((proxyTypeNew != null && proxyTypeNew.equals("socks")?PROXY_SOCKS_HOST+"="+proxyHostNew+"\n"+PROXY_SOCKS_PORT+"="+proxyPortNew+"\n":"\n"));
+//		fw.close();
 		// Check if user should be told to restart
 		boolean bChanged = !Compare.isEqualOrNull(proxyType, proxyTypeNew) || !Compare.isEqualOrNull(proxyHost, proxyHostNew) ||!Compare.isEqualOrNull(proxyPort, proxyPortNew);
 		String oldProxy = proxyType+":"+proxyHost+":"+proxyPort;
