@@ -2,15 +2,7 @@
 # GENERAL INCLUDE FILE FOR COMMON VCELL VARIABLES
 #
 #
-EVAL_JAVA=0  #1 to use eval version
-if [ $EVAL_JAVA -eq 0 ]; then
-	JAVA_VERSION=current8
-	JDK_VERSION=currentjdk8
-else
-	JAVA_VERSION=currentEval
-	JDK_VERSION=currentjdkEval
-fi
-
+# 
 #--------------------------------------
 # common definitions
 #--------------------------------------
@@ -31,16 +23,20 @@ common_propertyfile=${common_siteCfgDir}/vcell64.properties
 common_siteTmpDir=${common_siteRootDir}/tmp
 common_javaPrefsDir=${common_siteRootDir}/javaprefs
 
-common_siteLibDir=${common_siteRootDir}/lib
+common_siteLibDir=${buildsupport}/sitelibs/${HOSTNAME}/${common_site}
 LD_LIBRARY_PATH=${common_siteLibDir}:$LD_LIBRARY_PATH
 
 #these are necessary to pick up the JVM shared libraries for VTK
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/$JDK_VERSION/jre/lib/amd64
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/$JDK_VERSION/jre/lib/amd64/server
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/$JDK_VERSION/jre/lib/amd64/xawt
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/jdk1.8.0_66/jre/lib/amd64
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/jdk1.8.0_66/jre/lib/amd64/server
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/jdk1.8.0_66/jre/lib/amd64/xawt
 export LD_LIBRARY_PATH
 
-common_jre=${common_vcellInstallDir}/java/$JAVA_VERSION/bin/java
+common_jre=${common_vcellInstallDir}/java/jdk1.8.0_66/bin/java
+
+# explicit path needed for setcap for rmi services to use port 80.
+common_jre_rmi=/usr/java/jdk1.8.0_66/jre/bin/java
+
 common_jvm_jars=GENERATED
 
 #--------------------------------------
