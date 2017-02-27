@@ -51,6 +51,7 @@ public class StructureMappingCartoonPanel extends DocumentEditorSubPanel impleme
 	private StructureMappingCartoon ivjStructureMappingCartoon1 = null;
 	private GeometryContext ivjGeometryContext1 = null;
 	private JLabel ivjMessageLabel = null;
+	private JLabel boundaryMessageLabel = null;
 
 	/**
 	 * Constructor
@@ -133,6 +134,7 @@ public class StructureMappingCartoonPanel extends DocumentEditorSubPanel impleme
 			// user code end
 			getLineButton().setEnabled(this.hasMappableGeometry());
 			getMessageLabel().setVisible(this.hasMappableGeometry());
+			getBoundaryMessageLabel().setVisible(this.hasMappableGeometry());
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -504,22 +506,33 @@ public class StructureMappingCartoonPanel extends DocumentEditorSubPanel impleme
 				constraintsMessageLabel.anchor = GridBagConstraints.CENTER;
 				constraintsMessageLabel.weightx = 1.0;
 				constraintsMessageLabel.weighty = 0;
+				constraintsMessageLabel.insets = new java.awt.Insets(3, 5, 0, 4);
 				ivjJPanel2.add(getMessageLabel(), constraintsMessageLabel);
-
-				java.awt.GridBagConstraints constraintsStructureMappingPanel = new java.awt.GridBagConstraints();
-				constraintsStructureMappingPanel.gridx = 0; constraintsStructureMappingPanel.gridy = 2;
-				constraintsStructureMappingPanel.fill = java.awt.GridBagConstraints.BOTH;
-				constraintsStructureMappingPanel.weightx = 1.0;
-				constraintsStructureMappingPanel.weighty = 1.5;
-				ivjJPanel2.add(getStructureMappingPanel(), constraintsStructureMappingPanel);
 
 				java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 				constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
 				constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 				constraintsJScrollPane1.weightx = 1.0;
 				constraintsJScrollPane1.weighty = 5.0;
-				constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
+				constraintsJScrollPane1.insets = new java.awt.Insets(2, 4, 4, 4);
 				ivjJPanel2.add(getJScrollPane1(), constraintsJScrollPane1);
+
+				java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+				gbc.gridx = 0; gbc.gridy = 2;
+				gbc.fill = java.awt.GridBagConstraints.BOTH;
+				gbc.anchor = GridBagConstraints.CENTER;
+				gbc.weightx = 1.0;
+				gbc.weighty = 0;
+				gbc.insets = new java.awt.Insets(1, 5, 2, 4);
+				ivjJPanel2.add(getBoundaryMessageLabel(), gbc);
+				
+				java.awt.GridBagConstraints constraintsStructureMappingPanel = new java.awt.GridBagConstraints();
+				constraintsStructureMappingPanel.gridx = 0; constraintsStructureMappingPanel.gridy = 3;
+				constraintsStructureMappingPanel.fill = java.awt.GridBagConstraints.BOTH;
+				constraintsStructureMappingPanel.weightx = 1.0;
+				constraintsStructureMappingPanel.weighty = 1.5;
+				ivjJPanel2.add(getStructureMappingPanel(), constraintsStructureMappingPanel);
+
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -565,9 +578,9 @@ public class StructureMappingCartoonPanel extends DocumentEditorSubPanel impleme
 			try {
 				ivjMessageLabel  = new javax.swing.JLabel();
 				ivjMessageLabel.setName("MessageLabel");
-				ivjMessageLabel.setText("<html>All structures and subdomains must be mapped to run a simulation.<br>  Use line tool or drop down menu in the 'subdomain' column.</html>");
-				ivjMessageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-				ivjMessageLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+				ivjMessageLabel.setText("<html>All structures and subdomains must be mapped to run a simulation. Use line tool or drop down menu in the 'subdomain' column.</html>");
+				ivjMessageLabel.setHorizontalAlignment(SwingConstants.LEFT);
+				ivjMessageLabel.setHorizontalTextPosition(SwingConstants.LEFT);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -577,6 +590,21 @@ public class StructureMappingCartoonPanel extends DocumentEditorSubPanel impleme
 			}
 		}
 		return ivjMessageLabel;
+	}
+	private javax.swing.JLabel getBoundaryMessageLabel() {
+		if (boundaryMessageLabel == null) {
+			try {
+				boundaryMessageLabel  = new javax.swing.JLabel();
+				boundaryMessageLabel.setName("BoundaryMessageLabel");
+				boundaryMessageLabel.setText("<html><font color = \"#8B0000\">Membrane boundary conditions are chosen alphabetically among the adjacent subdomains.</font></html>");
+				boundaryMessageLabel.setHorizontalAlignment(SwingConstants.LEFT);
+				boundaryMessageLabel.setHorizontalTextPosition(SwingConstants.LEFT);
+				boundaryMessageLabel.setToolTipText("Rename a subdomain in the Geometry Definition Panel if you need to change which one is chosen.");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return boundaryMessageLabel;
 	}
 
 	/**
@@ -959,6 +987,7 @@ public class StructureMappingCartoonPanel extends DocumentEditorSubPanel impleme
 		SimulationContext oldValue = fieldSimulationContext;
 		fieldSimulationContext = simulationContext;
 		getMessageLabel().setVisible(this.hasMappableGeometry());
+		getBoundaryMessageLabel().setVisible(this.hasMappableGeometry());
 		firePropertyChange("simulationContext", oldValue, simulationContext);
 	}
 
