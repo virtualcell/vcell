@@ -14,10 +14,13 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -26,14 +29,18 @@ import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.util.gui.ColorIcon;
+import org.vcell.util.gui.ColorIconEx;
 import org.vcell.util.gui.ScrollTable;
 
+import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.IllegalMappingException;
@@ -424,6 +431,8 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	return false;
 }
 
+private int[] colormap = DisplayAdapterService.createContrastColorModel();
+@SuppressWarnings({ "rawtypes", "unchecked" })
 private void updateSubdomainComboBox() {
 	GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
 	DefaultComboBoxModel aModel = new DefaultComboBoxModel();
@@ -440,7 +449,24 @@ private void updateSubdomainComboBox() {
 			if (value instanceof GeometryClass) {
 				GeometryClass gc = (GeometryClass)value;
 				setText(gc.getName());
-//				setIcon(gc instanceof SubVolume ? StructureMappingTableRenderer.volumeIcon : StructureMappingTableRenderer.surfaceIcon);
+				if (value instanceof SubVolume) {
+					SubVolume subVolume = (SubVolume)value;
+					java.awt.Color handleColor = new java.awt.Color(colormap[subVolume.getHandle()]);
+					Icon icon = new ColorIcon(10,10,handleColor, true);	// small square icon with subdomain color
+					setHorizontalTextPosition(SwingConstants.RIGHT);
+					setIcon(icon);
+				} else if(value instanceof SurfaceClass) {
+					SurfaceClass sc = (SurfaceClass)value;
+					Set<SubVolume> sv = sc.getAdjacentSubvolumes();
+					Iterator<SubVolume> iterator = sv.iterator();
+					SubVolume sv1 = iterator.next();
+					SubVolume sv2 = iterator.next();
+					java.awt.Color c1 = new java.awt.Color(colormap[sv2.getHandle()]);
+					java.awt.Color c2 = new java.awt.Color(colormap[sv1.getHandle()]);
+					Icon icon = new ColorIconEx(10,10,c1,c2);
+					setIcon(icon);
+					setHorizontalTextPosition(SwingConstants.RIGHT);
+				}
 			}
 			return this;
 		}
@@ -542,7 +568,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for (int i=0;newStructureMappings!=null && i<newStructureMappings.length;i++){
 			newStructureMappings[i].addPropertyChangeListener(this);
 		}
-		refreshData();
+		update();
 	}
 	if (evt.getSource() instanceof StructureMapping) {
 		fireTableRowsUpdated(0, getRowCount() - 1);
