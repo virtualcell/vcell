@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 
@@ -34,6 +35,7 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -53,6 +55,20 @@ public class VCellClientTest {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
+	//check synchronize Proxy prefs, Proxy Properties
+	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
+	Boolean bHttp =
+		(System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST)==null && System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_HOST)==null?null:System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST) != null);
+	String currentProxyHost =
+		(bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_HOST)));
+	String currentProxyPort =
+		(bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_PORT):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_PORT)));
+	RMIVCellConnectionFactory.setProxyProperties(JOptionPane.getRootFrame(),false,
+		prefs.get(RMIVCellConnectionFactory.prefProxyType,RMIVCellConnectionFactory.prefProxyType),
+		currentProxyHost,currentProxyPort,
+		prefs.get(RMIVCellConnectionFactory.prefProxyType,RMIVCellConnectionFactory.prefProxyType),
+		prefs.get(RMIVCellConnectionFactory.prefProxyHost,RMIVCellConnectionFactory.prefProxyHost),prefs.get(RMIVCellConnectionFactory.prefProxyPort,RMIVCellConnectionFactory.prefProxyPort));
+
 	final boolean  IS_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
 	if (!IS_DEBUG) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();

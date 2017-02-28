@@ -501,11 +501,13 @@ public class ResourceUtil {
 		}
 	}
 
+	public static final String VCELL_HOME_DIR_NAME = ".vcell";
+	public static final String VCELL_PROXY_VMOPTIONS = "proxy.vmoptions";
 	public static File getVcellHome()
 	{
 		if(vcellHome == null)
 		{
-			vcellHome = new File(getUserHomeDir(), ".vcell");
+			vcellHome = new File(getUserHomeDir(), VCELL_HOME_DIR_NAME);
 			if (!vcellHome.exists()) {
 				vcellHome.mkdirs();
 			}
