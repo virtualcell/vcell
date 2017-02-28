@@ -27,6 +27,7 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
+import org.vcell.util.Pair;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
@@ -2506,41 +2507,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		// determine membrane inside and outside subvolume
 		// this preserves backward compatibility so that membrane subdomain
 		// inside and outside correspond to structure hierarchy when present
-		SubVolume outerSubVolume = null;
-		SubVolume innerSubVolume = null;
-		Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
-		for (Structure s : mappedStructures) {
-			if (s instanceof Membrane) {
-				Membrane m = (Membrane)s;
-				Feature infeature = model.getStructureTopology().getInsideFeature(m);
-				if (infeature!=null){
-					FeatureMapping insm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(infeature);
-					if (insm.getGeometryClass() instanceof SubVolume) {
-						innerSubVolume = (SubVolume)insm.getGeometryClass();
-					}
-				}
-				Feature outfeature = model.getStructureTopology().getOutsideFeature(m);
-				if (outfeature!=null){
-					FeatureMapping outsm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(outfeature);
-					if (outsm.getGeometryClass() instanceof SubVolume) {
-						outerSubVolume = (SubVolume)outsm.getGeometryClass();
-					}
-				}
-			}
-		}
-		// if structure hierarchy not present, alphabetically choose inside and outside
-		// make the choice deterministic
-		if (innerSubVolume == null || outerSubVolume == null || innerSubVolume == outerSubVolume){
-			Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
-			Iterator<SubVolume> iterator = sv.iterator();
-			innerSubVolume = iterator.next();
-			outerSubVolume = iterator.next();
-			if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
-				SubVolume temp = innerSubVolume;
-				innerSubVolume = outerSubVolume;
-				outerSubVolume = temp;
-			}
-		}
+		Pair<SubVolume,SubVolume> ret = computeBoundaryConditionSource(model, simContext, surfaceClass);
+		SubVolume innerSubVolume = ret.one;
+		SubVolume outerSubVolume = ret.two;
 
 		//
 		// create subDomain
@@ -2972,6 +2941,50 @@ protected GeometryClass getDefaultGeometryClass(Expression expr) throws Expressi
 		}
 	}
 	return geometryClass;
+}
+
+//determine membrane inside and outside subvolume
+public static Pair<SubVolume,SubVolume> computeBoundaryConditionSource(Model model, SimulationContext simContext, SurfaceClass surfaceClass) {
+	
+	SubVolume outerSubVolume = null;
+	SubVolume innerSubVolume = null;
+	Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
+	// this preserves backward compatibility so that membrane subdomain
+	// inside and outside correspond to structure hierarchy when present
+	for (Structure s : mappedStructures) {
+		if (s instanceof Membrane) {
+			Membrane m = (Membrane)s;
+			Feature infeature = model.getStructureTopology().getInsideFeature(m);
+			if (infeature != null) {
+				FeatureMapping insm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(infeature);
+				if (insm.getGeometryClass() instanceof SubVolume) {
+					innerSubVolume = (SubVolume)insm.getGeometryClass();
+				}
+			}
+			Feature outfeature = model.getStructureTopology().getOutsideFeature(m);
+			if (outfeature != null) {
+				FeatureMapping outsm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(outfeature);
+				if (outsm.getGeometryClass() instanceof SubVolume) {
+					outerSubVolume = (SubVolume)outsm.getGeometryClass();
+				}
+			}
+		}
+	}
+	// if structure hierarchy not present, alphabetically choose inside and outside
+	// make the choice deterministic
+	if (innerSubVolume == null || outerSubVolume == null || innerSubVolume == outerSubVolume){
+		Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
+		Iterator<SubVolume> iterator = sv.iterator();
+		innerSubVolume = iterator.next();
+		outerSubVolume = iterator.next();
+		if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
+			SubVolume temp = innerSubVolume;
+			innerSubVolume = outerSubVolume;
+			outerSubVolume = temp;
+		}
+	}
+	Pair<SubVolume,SubVolume> ret = new Pair<>(innerSubVolume, outerSubVolume);
+	return ret;
 }
 
 /**
