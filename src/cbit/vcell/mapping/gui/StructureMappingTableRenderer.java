@@ -163,7 +163,7 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 						if (value instanceof SubVolume){
 							SubVolume subVolume = (SubVolume)value;
 							java.awt.Color handleColor = new java.awt.Color(colormap[subVolume.getHandle()]);
-							Icon icon = new ColorIcon(12,12,handleColor, true);	// small square icon with subdomain color
+							Icon icon = new ColorIcon(10,10,handleColor, true);	// small square icon with subdomain color
 							setHorizontalTextPosition(SwingConstants.RIGHT);
 							setIcon(icon);
 						} else if(value instanceof SurfaceClass) {
@@ -174,7 +174,7 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 							SubVolume sv2 = iterator.next();
 							java.awt.Color c1 = new java.awt.Color(colormap[sv2.getHandle()]);
 							java.awt.Color c2 = new java.awt.Color(colormap[sv1.getHandle()]);
-							Icon icon = new ColorIconEx(12,12,c1,c2);
+							Icon icon = new ColorIconEx(10,10,c1,c2);
 							setIcon(icon);
 							setHorizontalTextPosition(SwingConstants.RIGHT);
 						}
