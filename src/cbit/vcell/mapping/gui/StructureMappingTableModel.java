@@ -421,7 +421,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		}
 		// some boundary conditions are editable
 		if ((columnIndex >= SPATIAL_COLUMN_X_MINUS) && (columnIndex <= SPATIAL_COLUMN_Z_PLUS)) {
-			if(sm.getStructure() instanceof Membrane) {
+			if(sm.getGeometryClass() instanceof SurfaceClass) {
 				return false;
 			}
 			return true;
