@@ -67,6 +67,7 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.resource.OperatingSystemInfo;
 
 @SuppressWarnings("serial")
 public class TextFieldAutoCompletion extends JTextField {
@@ -91,6 +92,8 @@ public class TextFieldAutoCompletion extends JTextField {
 	private ArrayList<String> functList = new ArrayList<String>();
 	private Rectangle highlightRectangle = null;
 	private boolean bSetText = false;
+	
+	OperatingSystemInfo osi = null;
 		
 	private class InternalEventHandler implements DocumentListener, MouseListener, KeyListener, FocusListener {
 		public void changedUpdate(DocumentEvent e) {
@@ -170,24 +173,38 @@ public class TextFieldAutoCompletion extends JTextField {
 		public void focusGained(FocusEvent e) {			
 		}
 		public void focusLost(FocusEvent e) {
-			if (e.isTemporary()) {
-				if(focusCounter == 2) {
-					focusCounter--;
-				} else if(focusCounter == 1) {
-					focusCounter--;
-					requestFocus();
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							int cp = getCaretPosition();
-							setCaretPosition(cp);
-							moveCaretPosition(cp);				
-						}
-					});
+			if(getOperatingSystemInfo().isLinux()) {
+				requestFocus();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						int cp = getCaretPosition();
+						setCaretPosition(cp);
+						moveCaretPosition(cp);				
+						requestFocus();
+					}
+				});
+				repaint();
+			} else {		// Windows or Mac
+				if (e.isTemporary()) {
+					if(focusCounter == 2) {
+						focusCounter--;
+					} else if(focusCounter == 1) {
+						focusCounter--;
+						requestFocus();
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								int cp = getCaretPosition();
+								setCaretPosition(cp);
+								moveCaretPosition(cp);				
+							}
+						});
+					}
+					return;
 				}
-				return;
+				repaint();
 			}
-			repaint();
 		}
+		
 	}
 	
 	public TextFieldAutoCompletion() {
@@ -196,6 +213,7 @@ public class TextFieldAutoCompletion extends JTextField {
 	}
 		
 	private void initialize() {
+		osi = getOperatingSystemInfo();
 		getDocument().addDocumentListener(eventHandler);
 		addKeyListener(eventHandler);
 		addMouseListener(eventHandler);
@@ -564,6 +582,13 @@ public class TextFieldAutoCompletion extends JTextField {
 			tempList.addAll(tempFuncList);
 		}
 		return tempList;
+	}
+	
+	private OperatingSystemInfo getOperatingSystemInfo() {
+		if(osi == null) {
+			osi = OperatingSystemInfo.getInstance();
+		}
+		return osi;
 	}
 	
 	// test main
