@@ -28,6 +28,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.vcell.chombo.ChomboMeshValidator;
+import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
 import org.vcell.chombo.gui.ChomboDeveloperToolsPanel;
 import org.vcell.chombo.gui.ChomboTimeBoundsPanel;
@@ -179,7 +180,6 @@ private void connEtoM13(SolverTaskDescription value) {
 		} catch (ChomboInvalidGeometryException ivjExc) {
 			// set solver back to what it was
 			fieldSolverComboBoxModel.setSelectedItem(fieldSolverTaskDescription.getSolverDescription().getDisplayLabel());
-			handleException(ivjExc);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -1221,7 +1221,9 @@ private ChomboDeveloperToolsPanel getChomboDeveloperToolsPanel() {
 		if (solverDescription != null && solverDescription.isChomboSolver()) {
 			Simulation sim = fieldSolverTaskDescription.getSimulation();
 			Geometry geometry = sim.getMathDescription().getGeometry();
-			ChomboMeshValidator meshValidator = new ChomboMeshValidator(geometry, fieldSolverTaskDescription.getChomboSolverSpec());
+			ChomboMeshValidator meshValidator = fieldSolverTaskDescription.getChomboSolverSpec() == null 
+					? new ChomboMeshValidator(geometry.getDimension(), geometry.getExtent(), ChomboSolverSpec.DEFAULT_BLOCK_FACTOR)
+					: new ChomboMeshValidator(geometry, fieldSolverTaskDescription.getChomboSolverSpec()); 
 			ChomboMeshRecommendation chomboMeshRecommendation = meshValidator.computeMeshSpecs();
 			if (!chomboMeshRecommendation.validate())
 			{
