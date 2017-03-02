@@ -285,7 +285,8 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		Geometry geometry = simulation.getMathDescription().getGeometry();
 		ChomboMeshValidator meshValidator = new ChomboMeshValidator(geometry, simulation.getSolverTaskDescription().getChomboSolverSpec());
 		ChomboMeshRecommendation chomboMeshRecommendation = meshValidator.computeMeshSpecs();
-		if (!chomboMeshRecommendation.validate())
+		boolean bValid = chomboMeshRecommendation.validate();
+		if (!bValid)
 		{
 			String option = DialogUtils.showWarningDialog(parent, "Error", chomboMeshRecommendation.getErrorMessage(), chomboMeshRecommendation.getDialogOptions(), ChomboMeshRecommendation.optionClose);
 			if (ChomboMeshRecommendation.optionSuggestions.equals(option))
@@ -293,7 +294,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 				DialogUtils.showInfoDialog(parent, ChomboMeshRecommendation.optionSuggestions, chomboMeshRecommendation.getMeshSuggestions());
 			}
 		}
-		return false;
+		return bValid;
 	} 
 	else{
 		String warningMessage = null;
