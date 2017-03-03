@@ -51,6 +51,7 @@ import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
@@ -58,7 +59,9 @@ import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -632,6 +635,12 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
 		GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
 		SubDomain subdomain = mathDesc.getSubDomain(reactionStepGeometryClass.getName());
+		KineticsParameter reactionRateParameter = null;
+		if (kinetics instanceof LumpedKinetics){
+			reactionRateParameter = ((LumpedKinetics)kinetics).getLumpedReactionRateParameter();
+		}else{
+			reactionRateParameter = ((DistributedKinetics)kinetics).getReactionRateParameter();
+		}
 		
 		//macroscopic_irreversible/Microscopic_irreversible for bimolecular membrane reactions. They will NOT go through MassAction solver.
 		if(kinetics.getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) || kinetics.getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible)) 
@@ -710,8 +719,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			   for Mass Action, we use KForward and KReverse, 
 			   for General Kinetics we parse reaction rate J to see if it is in Mass Action form.
 			 */
-			VCUnitDefinition forwardRateUnit = null;
-			VCUnitDefinition reverseRateUnit = null;
 			Expression forwardRate = null;
 			Expression reverseRate = null;
 			
@@ -730,12 +737,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					if(maFunc.getForwardRate() != null)
 					{
 						forwardRate = maFunc.getForwardRate();
-						forwardRateUnit = maFunc.getForwardRateUnit();
 					}
 					if(maFunc.getReverseRate() != null)
 					{
 						reverseRate = maFunc.getReverseRate();
-						reverseRateUnit = maFunc.getReverseRateUnit();
 					}
 				}
 			}
@@ -797,54 +802,62 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 						throw new MappingException("particle variable '"+varName+"' not found");
 					}
 				}
+				//
+				// There are two unit conversions required:
+				//
+				// 1) convert entire reaction rate from vcell reaction units to Smoldyn units (molecules/lengthunit^dim/timeunit)
+				//    (where dim is 2 for membrane reactions and 3 for volume reactions)
+				//
+				// for forward rates:
+				// 2) convert each reactant from Smoldyn units (molecules/lengthunit^dim) to VCell units 
+				//    (where dim is 2 for membrane reactants and 3 for volume reactants)
+				//
+				// or
+				//
+				// for reverse rates:
+				// 2) convert each product from Smoldyn units (molecules/lengthunit^dim) to VCell units 
+				//    (where dim is 2 for membrane products and 3 for volume products)
+				//
+				RationalNumber reactionLocationDim = new RationalNumber(reactionStep.getStructure().getDimension());
+				VCUnitDefinition timeUnit = modelUnitSystem.getTimeUnit();
+				VCUnitDefinition smoldynReactionSizeUnit = modelUnitSystem.getLengthUnit().raiseTo(reactionLocationDim);
+				VCUnitDefinition smoldynSubstanceUnit = modelUnitSystem.getStochasticSubstanceUnit();
+				VCUnitDefinition smoldynReactionRateUnit = smoldynSubstanceUnit.divideBy(smoldynReactionSizeUnit).divideBy(timeUnit);
+				VCUnitDefinition vcellReactionRateUnit = reactionRateParameter.getUnitDefinition();
+				VCUnitDefinition reactionUnitFactor = smoldynReactionRateUnit.divideBy(vcellReactionRateUnit);
+				
 				if (forwardRate!=null)
 				{
-					// 
-					// Smoldyn assumes kinectic constants work on molecules/size. VCell assumes a unit of molecules/size 
-					// only on membrane reactions. Hence the need to perform unit conversion if reaction is in vol.
+					VCUnitDefinition smoldynReactantsUnit = modelUnitSystem.getInstance_DIMENSIONLESS();
+					VCUnitDefinition forwardUnitFactor = reactionUnitFactor; // start with factor to translate entire reaction rate.
 					//
-					// The algorithm used to perform the unit conversion for reaction rate:
-					//	(1) Count the # of vol. (reactants * stoichiometry) : N
-					// 	(2) Count = N - 1, if reaction is a vol. reaction or flux reaction (N, otherwise)
-					//	(3) Converted reaction rate = reaction_rate * KMOLE^N
+					// convert each reactant from Smoldyn units (molecules/lengthunit^dim) to VCell units 
+					// (where dim is 2 for membrane reactants and 3 for volume reactants)
 					//
-					
-					// Step (1) : Calculate N
-					int N = 0;
-					for (ReactionParticipant rp : reactants) {
-						// for a reactant in vol
-						if (rp.getStructure() instanceof Feature) {
-							// add it to total count N
-							N += rp.getStoichiometry();
-						}
-					}
-					// there are special cases with 0th order reaction(no reactant, 1 product) or consuming a species (1 reactant, 0 product) in VOLUME (on mem, the unit(molecules) is fine)
-					// if using MASSACTION rate law,  0th order reaction doesn't have forward rate involved, and the reverse rate constant is in unit of 1/s
-					// consuming a species doesn't have reverse rate involved, and the forward rate constant is in unit of 1/s. So, MassAction has no problem.
-					// if using GENERAL rate law, 0th order reaction has forward rate in unit of uM/s, reverse rate in 1/s, we'll have to divide forward rate constant by KMOLE.
-					// consuming a species has forward rate in 1/s, reverse rate in uM/s, we'll have to divide reverse rate constant by KMOLE.
-					if( (reactants.size() == 0) && (products.size() == 1) && 	//0th order reaction
-						reactionStep.getStructure() instanceof Feature &&  // in VOLUME
-						reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
-					{
-						forwardRate = Expression.mult(forwardRate, unitFactor);
-					}
-					else
-					{
-						// Step (2) : if reaction is a vol reaction/flux, N = N-1
-						if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
-							N = N-1;
-						}
+					for (ReactionParticipant reactant : maFunc.getReactants()){
+						VCUnitDefinition vcellReactantUnit = reactant.getSpeciesContext().getUnitDefinition();
 						
-						// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
-						if (N == 1) {
-							forwardRate = Expression.div(forwardRate, unitFactor);
-						} else if (N > 1) {
-							forwardRate = Expression.div(forwardRate, Expression.power(unitFactor, new Expression((double)N)));
+						boolean bForceContinuous = getSimulationContext().getReactionContext().getSpeciesContextSpec(reactant.getSpeciesContext()).isForceContinuous();
+						VCUnitDefinition smoldynReactantUnit = null;
+						if (bForceContinuous){ // reactant is continuous (vcell units)
+							smoldynReactantUnit = reactant.getSpeciesContext().getUnitDefinition();
+						}else{ // reactant is a particle (smoldyn units)
+							RationalNumber reactantLocationDim = new RationalNumber(reactant.getStructure().getDimension());
+							VCUnitDefinition smoldynReactantSize = modelUnitSystem.getLengthUnit().raiseTo(reactantLocationDim);
+							smoldynReactantUnit = smoldynSubstanceUnit.divideBy(smoldynReactantSize);
 						}
+						smoldynReactantsUnit = smoldynReactantsUnit.multiplyBy(smoldynReactantUnit); // keep track of units of all reactants 
+						
+						RationalNumber reactantStoichiometry = new RationalNumber(reactant.getStoichiometry());
+						VCUnitDefinition reactantUnitFactor = (vcellReactantUnit.divideBy(smoldynReactantUnit)).raiseTo(reactantStoichiometry);
+						forwardUnitFactor = forwardUnitFactor.multiplyBy(reactantUnitFactor); // accumulate unit factors for all reactants
 					}
-					
-					Expression exp = getIdentifierSubstitutions(forwardRate, forwardRateUnit, reactionStepGeometryClass);
+
+					forwardRate = Expression.mult(forwardRate, getUnitFactor(forwardUnitFactor));
+					VCUnitDefinition smoldynExpectedForwardRateUnit = smoldynReactionRateUnit.divideBy(smoldynReactantsUnit);
+
+					// get probability
+					Expression exp = getIdentifierSubstitutions(forwardRate, smoldynExpectedForwardRateUnit, reactionStepGeometryClass).flatten();
 					JumpProcessRateDefinition partRateDef = new MacroscopicRateConstant(exp);
 					// create particle jump process
 					String jpName = TokenMangler.mangleToSName(reactionStep.getName());
@@ -853,50 +866,36 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				} // end of forward rate not null
 				if (reverseRate!=null)
 				{
-					// The algorithm used to perform the unit conversion for reverse reaction rate:
-					//	(1) Count the # of vol. (products * stoichiometry) : N
-					// 	(2) Count = N - 1, if reaction is a vol. reaction or flux reaction (N, otherwise)
-					//	(3) Converted reaction rate = reaction_rate * KMOLE^N
+					VCUnitDefinition smoldynProductsUnit = modelUnitSystem.getInstance_DIMENSIONLESS();
+					VCUnitDefinition reverseUnitFactor = reactionUnitFactor; // start with factor to translate entire reaction rate.
 					//
-					
-					// Step (1) : Calculate N
-					int N = 0;
-					for (ReactionParticipant rp : products) {
-						// for a product in vol
-						if (rp.getStructure() instanceof Feature) {
-							// add it to total count N
-							N += rp.getStoichiometry();
+					// convert each product from Smoldyn units (molecules/lengthunit^dim) to VCell units 
+					// (where dim is 2 for membrane products and 3 for volume products)
+					//
+					for (ReactionParticipant product : maFunc.getProducts()){
+						VCUnitDefinition vcellProductUnit = product.getSpeciesContext().getUnitDefinition();
+
+						boolean bForceContinuous = getSimulationContext().getReactionContext().getSpeciesContextSpec(product.getSpeciesContext()).isForceContinuous();
+						VCUnitDefinition smoldynProductUnit = null;
+						if (bForceContinuous){
+							smoldynProductUnit = product.getSpeciesContext().getUnitDefinition();
+						}else{
+							RationalNumber productLocationDim = new RationalNumber(product.getStructure().getDimension());
+							VCUnitDefinition smoldynProductSize = modelUnitSystem.getLengthUnit().raiseTo(productLocationDim);
+							smoldynProductUnit = smoldynSubstanceUnit.divideBy(smoldynProductSize);
 						}
-					}
-					
-					// there are special cases with 0th order reaction(no reactant, 1 product) or consuming a species (1 reactant, 0 product) in VOLUME (on mem, the unit(molecules) is fine)
-					// if using MASSACTION rate law,  0th order reaction doesn't have forward rate involved, and the reverse rate constant is in unit of 1/s
-					// consuming a species doesn't have reverse rate involved, and the forward rate constant is in unit of 1/s. So, MassAction has no problem.
-					// if using GENERAL rate law, 0th order reaction has forward rate in unit of uM/s, reverse rate in 1/s, we'll have to divide forward rate constant by KMOLE.
-					// consuming a species has forward rate in 1/s, reverse rate in uM/s, we'll have to divide reverse rate constant by KMOLE.
-					if( (reactants.size() == 1) && (products.size() == 0) && 	//consuming a species
-						reactionStep.getStructure() instanceof Feature &&  // in VOLUME
-						reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
-					{
-						reverseRate = Expression.mult(reverseRate, unitFactor);
-					}
-					else 
-					{
-						// Step (2) : if reaction is a vol reaction, N = N-1
-						if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
-							N = N-1;
-						}
+						smoldynProductsUnit = smoldynProductsUnit.multiplyBy(smoldynProductUnit); // keep track of units of all products 
 						
-						// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
-						if (N == 1) {
-							reverseRate = Expression.div(reverseRate, unitFactor);
-						} else if (N > 1) {
-							reverseRate = Expression.div(reverseRate, Expression.power(unitFactor, new Expression((double)N)));
-						}
+						RationalNumber productStoichiometry = new RationalNumber(product.getStoichiometry());
+						VCUnitDefinition productUnitFactor = (vcellProductUnit.divideBy(smoldynProductUnit)).raiseTo(productStoichiometry);						
+						reverseUnitFactor = reverseUnitFactor.multiplyBy(productUnitFactor); // accumulate unit factors for all products
 					}
-					
+
+					reverseRate = Expression.mult(reverseRate, getUnitFactor(reverseUnitFactor));
+					VCUnitDefinition smoldynExpectedReverseRateUnit = smoldynReactionRateUnit.divideBy(smoldynProductsUnit);
+							
 					// get probability
-					Expression exp = getIdentifierSubstitutions(reverseRate, reverseRateUnit, reactionStepGeometryClass);
+					Expression exp = getIdentifierSubstitutions(reverseRate, smoldynExpectedReverseRateUnit, reactionStepGeometryClass).flatten();
 					JumpProcessRateDefinition partProbRate = new MacroscopicRateConstant(exp);
 					
 					// get jump process name
