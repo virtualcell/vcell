@@ -4,11 +4,10 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -16,16 +15,18 @@ import javax.swing.JRadioButton;
 import javax.swing.JToggleButton.ToggleButtonModel;
 
 import org.jlibsedml.AbstractTask;
+import org.jlibsedml.Change;
 import org.jlibsedml.RepeatedTask;
+import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedML;
 import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.model.Model;
-import cbit.vcell.model.Structure;
 
+// we build the list of tasks (applications) we can import in vCell and
+// ask the user to choose one task only (we only support importing of one task)
 public class SEDMLChooserPanel extends JPanel {
 	
 	private SedML sedml;
@@ -44,8 +45,6 @@ public class SEDMLChooserPanel extends JPanel {
 		}
 	}
 	
-		// List<AbstractTask> taskList
-	
 	public SEDMLChooserPanel(SedML sedml) {
 		super();
 		this.sedml = sedml;
@@ -53,43 +52,65 @@ public class SEDMLChooserPanel extends JPanel {
 	}
 	
 	private void initialize() {
+		
+		Set<String> issues = new HashSet<> ();
 
 		setLayout(new GridBagLayout());
 		int gridy = 0;
-		//structureList.clear();
+		
+		// build and present to the user all the tasks that we can import; we skip those that we can't import for some reason 
+		// (incompatibility with vCell for example) and for them we create a list of problems which we show to the user 
 		for(AbstractTask at : sedml.getTasks()) {
 			
 			String text = "";
 			String tooltip = "";
+			boolean issueFound = false;
 			
 			if(at instanceof Task) {
 				Task t = (Task)at;
-				text = " Simple task, id " + t.getId() + " - " + 
+				text = " Simple task '" + t.getId() + "' - " + 
 						sedml.getModelWithId(t.getModelReference()).getClass().getSimpleName() + " '" +		// model class
-						sedml.getModelWithId(t.getModelReference()).getName() + "' : " + 
+						SEDMLUtil.getName(sedml.getModelWithId(t.getModelReference())) + "' : " + 
 						sedml.getSimulation(t.getSimulationReference()).getClass().getSimpleName() + " '" +	// simulation class
-						sedml.getSimulation(t.getSimulationReference()).getName() + "' ";
+						SEDMLUtil.getName(sedml.getSimulation(t.getSimulationReference())) + "' ";
 				tooltip = "The model has " + sedml.getModelWithId(t.getModelReference()).getListOfChanges().size() + " changes.";
 			} else if(at instanceof RepeatedTask) {
 				RepeatedTask rt = (RepeatedTask)at;
+				// Verify that all the changes are supported (setValue only, for now) and if anything else is found
+				// add an error message to the list of errors and skip the task
+				for(Change c : rt.getChanges()) {
+					if(!c.getChangeKind().equals(SEDMLTags.SET_VALUE_KIND)) {
+						issues.add("The '" + c.getChangeKind() + "' change kind is not supported.");
+						issueFound = true;
+					}
+				}
+				
 				switch(rt.getSubTasks().size()) {
 				case 0:
-					throw new RuntimeException("At least one subtask required within a repeated task: " + rt.getId());
+					issues.add("At least one subtask is required within a repeated task: " + rt.getId());
+					issueFound = true;
 				case 1:
 					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue();		// first (and only) element
 					String taskId = st.getTaskId();
 					AbstractTask t = sedml.getTaskWithId(taskId);
-					text = " Repeated task, id " + rt.getId() + " - " + 
+					text = " Repeated task '" + rt.getId() + "' - " + 
 							sedml.getModelWithId(t.getModelReference()).getClass().getSimpleName() + " '" +		// model class
-							sedml.getModelWithId(t.getModelReference()).getName() + "' : " + 
+							SEDMLUtil.getName(sedml.getModelWithId(t.getModelReference())) + "' : " + 
 							sedml.getSimulation(t.getSimulationReference()).getClass().getSimpleName() + " '" +	// simulation class
-							sedml.getSimulation(t.getSimulationReference()).getName() + "' ";
+							SEDMLUtil.getName(sedml.getSimulation(t.getSimulationReference())) + "' ";
 					tooltip = "The repeated task has " + rt.getChanges().size() + " changes and " + rt.getRanges().size() + " ranges.";
 					break;
 				default:
-					throw new RuntimeException("Multiple subtasks within a repeated task not supported at this time: " + rt.getId());
+					issues.add("Multiple subtasks within a repeated task '" + rt.getId() + "' are not supported.");
+					issueFound = true;
 				}
-				
+			} else {
+				issues.add("The task class '" + SEDMLUtil.getName(at) + "' is not supported.");
+				issueFound = true;
+			}
+			
+			if(issueFound) {
+				continue;		// we skip the tasks we don't know how to import in vCell
 			}
 			
 			JRadioButton rb = new JRadioButton(text);
@@ -111,6 +132,33 @@ public class SEDMLChooserPanel extends JPanel {
 	        add(rb, gbc);
 			gridy++;
 		}
+		
+		// we display the issues (but no more than a certain number)
+		final int MAX_ISSUES = 10;
+		int issueIndex = 0;
+		for(String issue : issues) {
+			if(issueIndex >= MAX_ISSUES) {
+				GridBagConstraints gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.anchor = GridBagConstraints.WEST;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(2, 4, 2, 4);
+				add(new JLabel("<html><font color = \"#8B0000\">" + "...More" + "</font></html>"), gbc);
+				gridy++;
+				break;
+			}
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(2, 4, 2, 4);
+			add(new JLabel("<html><font color = \"#8B0000\">" + issue + "</font></html>"), gbc);
+			gridy++;
+			issueIndex++;
+		}
+				
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;

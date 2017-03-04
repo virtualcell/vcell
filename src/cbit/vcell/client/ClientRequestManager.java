@@ -3255,15 +3255,18 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				e.printStackTrace();
 				throw new RuntimeException("failed to read document: "+e.getMessage(),e);
 			}
-		} else if(file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".sedx")) {
+		} else if(file != null && !file.getName().isEmpty() && (file.getName().toLowerCase().endsWith(".sedx") || file.getName().toLowerCase().endsWith(".omex"))) {
 			try {
 				ArchiveComponents ac = null;
 				ac = Libsedml.readSEDMLArchive(new FileInputStream(file));
 				SEDMLDocument doc = ac.getSedmlDocument();
 			
 				SedML sedml = doc.getSedMLModel();
-				if(sedml == null || sedml.getModels().isEmpty()) {
-					return;
+				if(sedml == null) {
+					throw new RuntimeException("Failed importing " + file.getName());
+				}
+				if(sedml.getModels().isEmpty()) {
+					throw new RuntimeException("Unable to find any model in " + file.getName());
 				}
 		        AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(), file.getName());
 		        
@@ -3304,7 +3307,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			} else if (documentInfo instanceof ExternalDocInfo){
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
 				File file = externalDocInfo.getFile();
-				if(file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".sedx")) {
+				if(file != null && !file.getName().isEmpty() && (file.getName().toLowerCase().endsWith(".sedx") || file.getName().toLowerCase().endsWith(".omex"))) {
 					TranslationLogger transLogger = new TranslationLogger(requester);
 					doc = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo, (SedML)hashTable.get(SEDML_MODEL), (AbstractTask)hashTable.get(SEDML_TASK));
 				} else if (!externalDocInfo.isXML()) {

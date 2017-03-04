@@ -28,14 +28,22 @@ import org.jdom.Namespace;
 import org.jdom.Text;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.ArchiveComponents;
+import org.jlibsedml.Change;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.OneStep;
 import org.jlibsedml.Output;
+import org.jlibsedml.Range;
+import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.SedML;
+import org.jlibsedml.SetValue;
 import org.jlibsedml.SteadyState;
+import org.jlibsedml.SubTask;
+import org.jlibsedml.Task;
+import org.jlibsedml.UniformRange;
 import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.VectorRange;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
@@ -47,6 +55,7 @@ import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sedml.RelativeFileModelResolver;
+import org.vcell.sedml.SEDMLUtil;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.TokenMangler;
@@ -73,6 +82,7 @@ import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -82,6 +92,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -260,7 +271,7 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
  * @param simJob - simulationJob from where simulation with overrides is obtained. 
  * @return
  */
-private static SimulationContext applyOverridesForSBML(BioModel bm, SimulationContext sc, SimulationJob simJob) {
+public static SimulationContext applyOverridesForSBML(BioModel bm, SimulationContext sc, SimulationJob simJob) {
 	SimulationContext overriddenSimContext = sc;
 	if (simJob != null ) {
 		Simulation sim = simJob.getSimulation();
@@ -581,13 +592,24 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		String sedmlOriginalModelName = null;
         
         if(selectedTask == null) {			// no task, just pick the Model and find its sbml file
-        	sedmlOriginalModelName = mmm.get(0).getName();
+        	sedmlOriginalModelName = SEDMLUtil.getName(mmm.get(0));
         } else {
-        	sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
-        	sedmlOriginalModelName = sedmlOriginalModel.getId();
-        	
-        	sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
-            sedmlKisao = KisaoOntology.getInstance().getTermById(sedmlSimulation.getAlgorithm().getKisaoID());
+        	if(selectedTask instanceof Task) {
+        		sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
+        		sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
+        	} else if(selectedTask instanceof RepeatedTask) {
+				RepeatedTask rt = (RepeatedTask)selectedTask;
+				assert(rt.getSubTasks().size() == 1);
+				SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue();		// first (and only) subtask
+				String taskId = st.getTaskId();
+				AbstractTask t = sedml.getTaskWithId(taskId);
+        		sedmlOriginalModel = sedml.getModelWithId(t.getModelReference());			// get model and simulation from subtask
+        		sedmlSimulation = sedml.getSimulation(t.getSimulationReference());
+        	} else {
+        		throw new RuntimeException("Unexpected task " + selectedTask);
+        	}
+    		sedmlOriginalModelName = sedmlOriginalModel.getId();
+    		sedmlKisao = KisaoOntology.getInstance().getTermById(sedmlSimulation.getAlgorithm().getKisaoID());
         }
         
         // UniformTimeCourse [initialTime=0.0, numberOfPoints=1000, outputEndTime=1.0, outputStartTime=0.0, 
@@ -641,11 +663,13 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         
         // -------------------------------------------------------------------------------------------
 
-        // TODO: things will get mode complicated here when we'll have to alternately parse the sedx file
         String bioModelName = FileUtils.getBaseName(externalDocInfo.getFile().getAbsolutePath());		// extract bioModel name from sedx (or sedml) file
         
+        // if we have repeated task, we ignore them, we just use the normal resolvers for archive and changes
+        // once the application and simulation are built, we iterate through the repeated tasks and
+        // add math overrides to the simulation for each repeated task
 		ArchiveComponents ac = null;
-		if(externalDocInfo.getFile().getPath().toLowerCase().endsWith("sedx")) {
+		if(externalDocInfo.getFile().getPath().toLowerCase().endsWith("sedx") || externalDocInfo.getFile().getPath().toLowerCase().endsWith("omex")) {
 			ac = Libsedml.readSEDMLArchive(new FileInputStream(externalDocInfo.getFile().getPath()));
 		}
         
@@ -680,9 +704,39 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
         newSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
     	Simulation newSimulation = new Simulation(newSimulationContext.getMathDescription());
-    	newSimulation.setName(sedmlSimulation.getName());	
+    	newSimulation.setName(SEDMLUtil.getName(sedmlSimulation));	
     	bioModel.addSimulation(newSimulation);
-		
+    	
+    	// we check the repeated tasks, if any, and add to the list of math overrides
+    	if(selectedTask instanceof RepeatedTask) {
+    		for(Change change : ((RepeatedTask) selectedTask).getChanges()) {
+    			if(!(change instanceof SetValue)) {
+    				throw new RuntimeException("Only 'SetValue' changes are supported for repeated tasks.");
+    			}
+    			SetValue setValue = (SetValue)change;
+    			// TODO: extract target from XPath
+    			// ......
+    			//
+    			String target = "s0";	// for now we just use a hardcoded thing
+    			ConstantArraySpec cas;
+    			Range range = ((RepeatedTask) selectedTask).getRange(setValue.getRangeReference());
+    			if(range instanceof UniformRange) {
+    				cas = ConstantArraySpec.createIntervalSpec(target, ((UniformRange) range).getStart(), ((UniformRange) range).getEnd(), 
+    						range.getNumElements(), ((UniformRange) range).getType() == UniformRange.UniformType.LOG ? true : false);
+    			} else if(range instanceof VectorRange) {
+//    				List<String> constants = new ArrayList<> (); 
+//    				for(int i=0; i<range.getNumElements(); i++) {
+//    					constants.add(new Constant(i+"", new Expression(range.getElementAt(i))));
+//    				}
+//    				cas = ConstantArraySpec.createListSpec(target, constants);
+    				
+    			} else {
+    				throw new RuntimeException("Only 'Uniform Range' and 'Vector Range' are supported at this time.");
+    			}
+    			
+    		}
+    	}
+    	
 		// we identify the type of sedml simulation (uniform time course, etc) 
     	// and set the vCell simulation parameters accordingly
 		if(sedmlSimulation instanceof UniformTimeCourse) {
