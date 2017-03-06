@@ -42,6 +42,7 @@ public class PropertyLoader {
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",RequiredFor.NOT,ValueType.GEN);
 	public static final String sgeModulePath				= record("vcell.htc.sge.module",RequiredFor.NOT,ValueType.GEN);
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",RequiredFor.NOT,ValueType.GEN);
+	public static final String MPI_HOME				        = record("vcell.htc.mpi.home",RequiredFor.NOT,ValueType.DIR);
 			
 
 	public static final String compilerProperty				= record("vcell.c++.compiler",RequiredFor.NOT,ValueType.GEN);
