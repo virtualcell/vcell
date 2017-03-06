@@ -60,7 +60,7 @@ public final class PbsProxy extends HtcProxy {
 			PBS_HOME += "/";
 		}
 		
-		String[] cmd = new String[]{PBS_HOME + JOB_CMD_STATUS, "-s", Long.toString(pbsJobID.getPbsJobNumber())};
+		String[] cmd = new String[]{PBS_HOME + JOB_CMD_STATUS, "-s", Long.toString(pbsJobID.getJobNumber())};
 		//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, 153 });
 
 		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmd), new int[] { 0, 153 });
@@ -116,7 +116,7 @@ public final class PbsProxy extends HtcProxy {
 		if (!PBS_HOME.endsWith("/")){
 			PBS_HOME += "/";
 		}
-		String[] cmd = new String[]{PBS_HOME + JOB_CMD_DELETE, Long.toString(pbsJobID.getPbsJobNumber())};
+		String[] cmd = new String[]{PBS_HOME + JOB_CMD_DELETE, Long.toString(pbsJobID.getJobNumber())};
 		try {
 			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			
@@ -128,14 +128,14 @@ public final class PbsProxy extends HtcProxy {
 			System.err.println(standardOut);
 			
 			if (exitStatus!=null && exitStatus==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardError!=null && standardError.toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
-				throw new HtcJobNotFoundException(standardError);
+				throw new HtcJobNotFoundException(standardError,pbsJobID);
 			}
 		}catch (ExecutableException e){
 			e.printStackTrace();
 			if (!e.getMessage().toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
 				throw e;
 			}else{
-				throw new HtcJobNotFoundException(e.getMessage());
+				throw new HtcJobNotFoundException(e.getMessage(),pbsJobID);
 			}
 		}
 	}
@@ -341,7 +341,7 @@ public final class PbsProxy extends HtcProxy {
 			cmdV.add(PBS_HOME + JOB_CMD_STATUS);
 			cmdV.add("-f");
 			for(HtcJobID htcJobID : htcJobIDs){
-				cmdV.add(Long.toString(((PbsJobID)htcJobID).getPbsJobNumber()));
+				cmdV.add(Long.toString(((PbsJobID)htcJobID).getJobNumber()));
 			}
 			//CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]),new int[] { 0, 153 });
 			

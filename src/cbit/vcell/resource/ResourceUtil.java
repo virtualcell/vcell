@@ -595,5 +595,8 @@ public class ResourceUtil {
 		return VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
 	}
 
+	public static String forceUnixPath(String filePath){
+		return filePath.replace("C:","").replace("D:","").replace("\\","/");
+	}
 
 }
