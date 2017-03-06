@@ -2100,6 +2100,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		printWriter.println(FVInputFileKeyword.ACTIVATE_FEATURE_UNDER_DEVELOPMENT + " " + chomboSolverSpec.isActivateFeatureUnderDevelopment());
 		printWriter.println(FVInputFileKeyword.SMALL_VOLFRAC_THRESHOLD + " " + chomboSolverSpec.getSmallVolfracThreshold());
 		printWriter.println(FVInputFileKeyword.BLOCK_FACTOR + " " + chomboSolverSpec.getBlockFactor());
+		printWriter.println(FVInputFileKeyword.TAGS_GROW + " " + chomboSolverSpec.getTagsGrow());
 		
 		// Refinement
 		int numLevels = chomboSolverSpec.getNumRefinementLevels();
@@ -2120,7 +2121,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 				throw new SolverException("ROI expression cannot be null");
 			}
 			// level tagsGrow ROIexpression
-			printWriter.println(roi.getLevel() + " " + roi.getTagsGrow() + " " + roi.getRoiExpression().infix()  + ";");
+			printWriter.println(roi.getLevel() + " " + roi.getRoiExpression().infix()  + ";");
 		}
 		
 		List<RefinementRoi> volRios = chomboSolverSpec.getVolumeRefinementRois();
@@ -2130,7 +2131,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			{
 				throw new SolverException("ROI expression cannot be null");
 			}
-			printWriter.println(roi.getLevel() + " " + roi.getTagsGrow() + " " + roi.getRoiExpression().infix()  + ";");
+			printWriter.println(roi.getLevel() + " " + roi.getRoiExpression().infix()  + ";");
 		}
 		printWriter.println(FVInputFileKeyword.VIEW_LEVEL + " " + chomboSolverSpec.getViewLevel());
 		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_END);

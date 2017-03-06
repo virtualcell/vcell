@@ -779,12 +779,12 @@ public class XMLTags {
   public final static String RefinementRoiTypeAttrTag = "Type";
   public final static String RefineRatios = "Ratios";
   public final static String RefineRoiLevelAttrTag = "Level";
-  public final static String TagsGrowAttrTag = "TagsGrow";
+  public final static String TagsGrowTag = "TagsGrow";
   public final static String RefinementBoxTag = "RefinementBox";
   public final static String TimeIntervalTag = "TimeInterval";
 	public final static String ActivateFeatureUnderDevelopment = "ActivateFeatureUnderDevelopment";
 	public final static String SmallVolfracThreshold = "SmallVolfracThreshold";
-	public final static String BlockFactor = "BlockFactor";
+	public final static String BlockFactorTag = "BlockFactor";
   
   //Parallel processing
   public final static String NUM_PROCESSORS = "NumberProcessors";

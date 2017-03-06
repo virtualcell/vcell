@@ -353,9 +353,7 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 				if (!bMatchFound)
 				{
 					NxComboBox.setSelectedIndex(0);
-					error = "Original mesh size for this simulation with the current domain size does not satisfy the solver requirements. "
-							+ "The mesh size has been adjusted. Please go to the Mesh tab and verify.";
-					throw new ChomboGeometryException(error);
+					throw new ChomboGeometryException(ChomboMeshValidator.ERROR_MESSAGE_INCOMPATIBLE_MESH_SIZE);
 				}
 			}
 		}

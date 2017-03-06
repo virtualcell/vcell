@@ -16,6 +16,10 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.solver.SolverDescription;
 
 public class ChomboMeshValidator {
+	public static final String ERROR_MESSAGE_INCOMPATIBLE_MESH_SIZE = 
+			"This simulation was previously saved with a mesh size which cannot be used with the current geometry because of solver requirements. "
+			+ "Please go to the Mesh tab to complete the new mesh size selection. ";
+	
 	private Extent extent;
 	private int blockFactor;
 	private int dim;

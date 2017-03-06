@@ -33,6 +33,10 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	private static double defaultFillRatio = 0.9;
 	public static final int DEFAULT_BLOCK_FACTOR = 4;
 	
+	public final static int defaultTagsGrow = 2;
+	private final static int noTagsGrow = 0;
+	private int tagsGrow = defaultTagsGrow;
+
 	private int maxBoxSize = 32;
 	private double fillRatio = defaultFillRatio;
 	private List<RefinementRoi> refinementRoiList = new ArrayList<RefinementRoi>();
@@ -65,6 +69,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		this.bActivateFeatureUnderDevelopment = css.bActivateFeatureUnderDevelopment;
 		this.smallVolfracThreshold = css.smallVolfracThreshold;
 		this.blockFactor = css.blockFactor;
+		this.tagsGrow = css.tagsGrow;
 		for (TimeInterval ti : css.timeIntervalList)
 		{
 			timeIntervalList.add(new TimeInterval(ti));
@@ -217,6 +222,11 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			return false;
 		}
 		
+		if (tagsGrow != chomboSolverSpec.tagsGrow)
+		{
+			return false;
+		}
+		
 		EqualsBuilder equalsBuilder = new EqualsBuilder();
 		equalsBuilder.append(bActivateFeatureUnderDevelopment, chomboSolverSpec.bActivateFeatureUnderDevelopment)
 			.append(smallVolfracThreshold, chomboSolverSpec.smallVolfracThreshold).append(blockFactor, chomboSolverSpec.blockFactor);
@@ -262,6 +272,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		buffer.append("\t" + VCML.ActivateFeatureUnderDevelopment + " " + bActivateFeatureUnderDevelopment + "\n");
 		buffer.append("\t" + VCML.SmallVolfracThreshold + " " + smallVolfracThreshold + "\n");
 		buffer.append("\t" + VCML.BlockFactor + " " + blockFactor + "\n");
+		buffer.append("\t" + VCML.TagsGrow + " " + tagsGrow + "\n");
 		
 		buffer.append("\t" + VCML.TimeBounds + " " + VCML.BeginBlock + "\n");
 		for (TimeInterval ti : timeIntervalList)
@@ -341,6 +352,10 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			{
 				token = tokens.nextToken();
 				blockFactor = Integer.parseInt(token);
+			}
+			else if (token.equalsIgnoreCase(VCML.TagsGrow)) {
+				token = tokens.nextToken();
+				tagsGrow = Integer.parseInt(token);
 			}
 			else
 			{
@@ -607,5 +622,25 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 
 	public void setBlockFactor(int blockFactor) {
 		this.blockFactor = blockFactor;
+	}
+	
+	public void enableTagsGrow(boolean bEnabled)
+	{
+		tagsGrow = bEnabled ? defaultTagsGrow : noTagsGrow;
+	}
+	
+	public void setTagsGrow(int tagsGrow)
+	{
+		this.tagsGrow = tagsGrow;
+	}
+	
+	public boolean isTagsGrowEnabled()
+	{
+		return tagsGrow == defaultTagsGrow;
+	}
+	
+	public int getTagsGrow()
+	{
+		return tagsGrow;
 	}
 }

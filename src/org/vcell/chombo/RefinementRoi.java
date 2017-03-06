@@ -22,21 +22,17 @@ public class RefinementRoi implements Serializable, Matchable {
 		Volume
 	}
 	
-	public final static int defaultTagsGrow = 2;
-	private final static int noTagsGrow = 0;
 	private Expression roiExpression = null;
-	private int tagsGrow = defaultTagsGrow;
 	private RoiType type = null;
 	private int level = 0;
 	
-	public RefinementRoi(RoiType type, int level, int tagsGrow, String roi) throws ExpressionException {
+	public RefinementRoi(RoiType type, int level, String roi) throws ExpressionException {
 		if (roi == null || roi.isEmpty())
 		{
 			throw new ExpressionException("ROI cannot be empty");
 		}
 		this.type = type;
 		this.level  = level;
-		this.tagsGrow = tagsGrow;
 		setRoiExpression(roi);
 	}
 	
@@ -47,7 +43,6 @@ public class RefinementRoi implements Serializable, Matchable {
 	public RefinementRoi(RefinementRoi roi) {
 		type = roi.type;
 		level = roi.level;
-		tagsGrow = roi.tagsGrow;
 		if (roi.roiExpression != null)
 		{
 			roiExpression = new Expression(roi.roiExpression);
@@ -64,7 +59,6 @@ public class RefinementRoi implements Serializable, Matchable {
 		buffer.append(VCML.RefinementRoi + " " + VCML.BeginBlock + "\n");
 		buffer.append(VCML.RefinementRoiType + " " + type + "\n");
 		buffer.append(VCML.Level + " " + level + "\n");
-		buffer.append(VCML.TagsGrow + " " + tagsGrow + "\n");
 		if (roiExpression != null)
 		{
 			buffer.append("\t" + VCML.ROIExpression + " " + roiExpression.infix() + ";\n");
@@ -99,8 +93,7 @@ public class RefinementRoi implements Serializable, Matchable {
 					level = Integer.parseInt(token);
 				}
 				else if (token.equalsIgnoreCase(VCML.TagsGrow)) {
-					token = tokens.nextToken();
-					tagsGrow = Integer.parseInt(token);
+					// backward compatible
 				}
 				else if (token.equalsIgnoreCase(VCML.ROIExpression))
 				{
@@ -137,10 +130,7 @@ public class RefinementRoi implements Serializable, Matchable {
 		{
 			return false;
 		}
-		if (tagsGrow != rl.tagsGrow)
-		{
-			return false;
-		}
+		
 		return true;
 	}
 	public Expression getRoiExpression() {
@@ -160,21 +150,6 @@ public class RefinementRoi implements Serializable, Matchable {
 		}
 		this.roiExpression = exp;
 	}
-		
-	public void enableTagsGrow(boolean bEnabled)
-	{
-		tagsGrow = bEnabled ? defaultTagsGrow : noTagsGrow;
-	}
-	
-	public boolean isTagsGrowEnabled()
-	{
-		return tagsGrow == defaultTagsGrow;
-	}
-	
-	public int getTagsGrow()
-	{
-		return tagsGrow;
-	}
 
 	public int getLevel() {
 		return level;
@@ -182,7 +157,7 @@ public class RefinementRoi implements Serializable, Matchable {
 	
 	public static RefinementRoi createNewRoi(RoiType roiType, int nextLevel) throws ExpressionException
 	{
-		return new RefinementRoi(roiType, nextLevel, defaultTagsGrow, roiType == RoiType.Membrane ? "1.0" : "0.0");
+		return new RefinementRoi(roiType, nextLevel, roiType == RoiType.Membrane ? "1.0" : "0.0");
 	}
 
 	public RoiType getType() {

@@ -22,6 +22,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -46,6 +47,8 @@ import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.VCellIcons;
 
+import com.lowagie.text.Font;
+
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.math.ReservedVariable;
@@ -54,8 +57,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
-
-import com.lowagie.text.Font;
 
 @SuppressWarnings("serial")
 public class ChomboSolverSpecPanel extends CollapsiblePanel {
@@ -87,11 +88,10 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		
 		private class RoiTableModel extends AbstractTableModel
 		{
-			private final String[] columns = new String[]{"ROI", "# of Levels", "Tags Grow", "\u0394x"};
+			private final String[] columns = new String[]{"ROI", "Refinement levels (each level doubles resolution)", "\u0394x"};
 			private final int COLUMN_ROI = 0;
 			private final int COLUMN_numLevels = 1;
-			private final int COLUMN_TagsGrow = 2;
-			private final int COLUMN_dx = 3;
+			private final int COLUMN_dx = 2;
 			private AutoCompleteSymbolFilter autoCompleteSymbolFilter = new AutoCompleteSymbolFilter() {
 				public boolean accept(SymbolTableEntry ste) {
 					int dimension = simulation.getMathDescription().getGeometry().getDimension();
@@ -140,8 +140,6 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 							return null;
 						}
 						return new ScopedExpression(roi.getRoiExpression(), ReservedVariable.X.getNameScope(), true, true, autoCompleteSymbolFilter);
-					case COLUMN_TagsGrow:
-						return roi.isTagsGrowEnabled();
 					case COLUMN_dx:
 						return roi.getDx(simulation);
 					}
@@ -168,8 +166,6 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 					return Integer.class;
 				case COLUMN_ROI:
 					return ScopedExpression.class;
-				case COLUMN_TagsGrow:
-					return Boolean.class;
 				case COLUMN_dx:
 					return Double.class;
 				}
@@ -192,9 +188,6 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 							final String str = (String)aValue;
 							roi.setRoiExpression(str);
 						}
-						break;
-					case COLUMN_TagsGrow:
-						roi.enableTagsGrow((Boolean)aValue);
 						break;
 					}
 					fireTableDataChanged();
@@ -371,6 +364,10 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 				viewLevelComboBox.setEnabled(true);
 				setViewLevel();
 			}
+			else if (e.getSource() == checkBoxTagsGrow)
+			{
+				simulation.getSolverTaskDescription().getChomboSolverSpec().enableTagsGrow(checkBoxTagsGrow.isSelected());
+			}
 		}
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == simulation.getSolverTaskDescription() && evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION)) {
@@ -408,6 +405,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	private JComboBox<Integer> maxBoxSizeComboBox = null;
 	private JTextField fillRatioTextField;
 	private JComboBox<Integer> blockFactorComboBox = null;
+	private JCheckBox checkBoxTagsGrow = null;
 	private JPanel finestInfoPanel;
 	private JTextField finestSizeTextField;
 	private JPanel refinementPanel;
@@ -491,6 +489,8 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		}
 		blockFactorComboBox.setEnabled(false);
 		
+		checkBoxTagsGrow = new JCheckBox("Tags Grow");
+		
 		viewLevelFinestRadioButton = new JRadioButton("Finest");
 		viewLevelUserSelectRadioButton = new JRadioButton("Select");
 		viewLevelFinestRadioButton.addActionListener(eventHandler);
@@ -573,12 +573,21 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.anchor = GridBagConstraints.WEST;
 		northPanel.getContentPanel().add(blockFactorComboBox, gbc);
 		
+		gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(4, 1, 4, 4);
+		gbc.gridx = 6;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.WEST;
+		northPanel.getContentPanel().add(checkBoxTagsGrow, gbc);
+		
 		getContentPanel().setLayout(new BorderLayout(0, 2));
 		getContentPanel().add(northPanel, BorderLayout.SOUTH);
 		getContentPanel().add(getRefinementPanel(), BorderLayout.CENTER);
 		
 		maxBoxSizeComboBox.addActionListener(eventHandler);
 		blockFactorComboBox.addActionListener(eventHandler);
+		checkBoxTagsGrow.addActionListener(eventHandler);
 	}
 
 	private JPanel getRefinementPanel() {
@@ -587,8 +596,8 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			membraneRoiPanel = new RefinementRoiPanel(RoiType.Membrane);
 			volumeRoiPanel = new RefinementRoiPanel(RoiType.Volume);
 			JTabbedPane tabbedPanel = new JTabbedPane();
-			tabbedPanel.add(RoiType.Membrane.name(), membraneRoiPanel);
-			tabbedPanel.add(RoiType.Volume.name(), volumeRoiPanel);
+			tabbedPanel.addTab("Refine Near Membrane", membraneRoiPanel);
+			tabbedPanel.addTab("Refine Interior Region", volumeRoiPanel);
 			refinementPanel = new JPanel();
 			refinementPanel.setLayout(new GridBagLayout());		
 			refinementPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -674,6 +683,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		maxBoxSizeComboBox.setSelectedItem(chomboSolverSpec.getMaxBoxSize());
 		blockFactorComboBox.setSelectedItem(chomboSolverSpec.getBlockFactor());
 		fillRatioTextField.setText(chomboSolverSpec.getFillRatio() + "");
+		checkBoxTagsGrow.setSelected(chomboSolverSpec.isTagsGrowEnabled());
 		
 		updateViewLevel();
 		updateFinestInfoPanel();
