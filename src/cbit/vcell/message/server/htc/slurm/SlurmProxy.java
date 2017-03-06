@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,7 +22,6 @@ import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.message.server.htc.sge.SgeJobID;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.tools.PortableCommandWrapper;
@@ -202,11 +200,11 @@ denied: job "6894" does not exist
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
-		try{
+		try {
 			return extractJobIds(output, statusMap);
-		}catch(IOException ioe){
-			ioe.printStackTrace();
-			throw new RuntimeException(ioe.getMessage(),ioe);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ExecutableException("error getting runningJobIDs: "+e.getMessage(),e);
 		}
 	}
 
@@ -362,9 +360,7 @@ denied: job "6894" does not exist
 		}
 
 		Objects.requireNonNull(postProcessingCommands);
-		StringWriter sw = new StringWriter();
-		sw.append(lsb.sb.toString());
-		PortableCommandWrapper.insertCommands(sw, postProcessingCommands);
+		PortableCommandWrapper.insertCommands(lsb.sb, postProcessingCommands);
 		lsb.newline();
 		if (hasExitProcessor) {
 			lsb.write("callExitProcessor 0");
@@ -374,127 +370,54 @@ denied: job "6894" does not exist
 	}
 
 	@Override
-	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
-		if (ncpus > 1) {
-			throw new ExecutableException("parallel processing not implemented on " + getClass( ).getName());
-		}
+	public SlurmJobID submitJob(String jobName, String sub_file, 
+			String[] command, int ncpus, double memSizeMB, String[] secondCommand, 
+			String[] exitCommand, String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
-
-			String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
-		    if (!(htcLogDirString.endsWith("/"))){
-		    	htcLogDirString = htcLogDirString+"/";
-		    }
-			
-			StringWriter sw = new StringWriter();
-
-		    sw.append("#!/usr/bin/bash\n");
-			String partition = "general";
-			sw.append("#SBATCH --partition=" + partition);
-			sw.append("#SBATCH -J " + jobName);
-			sw.append("#SBATCH -o " + htcLogDirString+jobName+".slurm.log");
-			sw.append("#SBATCH -e " + htcLogDirString+jobName+".slurm.log");
-			//
-//		    sw.append("#$ -N " + jobName + "\n");
-//		    sw.append("#$ -o " + htcLogDirString+jobName+".sge.log\n");
-////			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
-
-			int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
-
-		    long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
-//		    sw.append("#$ -j y\n");
-//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
-//		    sw.append("# -cwd\n");
-		    sw.append("# the commands to be executed\n");
-			sw.append("echo\n");
-			sw.append("echo\n");
-			sw.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
-			sw.append("echo\n");
-			sw.append("echo\n");
-		    sw.append(CommandOutput.concatCommandStrings(command)+"\n");
-		    sw.append("set retcode1 = $status\n");
-		    sw.append("echo\n");
-		    sw.append("echo\n");
-		    sw.append("echo command1 returned $retcode1\n");
-			if (secondCommand!=null){
-				sw.append("if ( $retcode1 == 0 ) then\n");
-				sw.append("		echo\n");
-				sw.append("		echo\n");
-				sw.append("     echo \"command2 = '"+CommandOutput.concatCommandStrings(secondCommand)+"'\"\n");
-				sw.append("		echo\n");
-				sw.append("		echo\n");
-				sw.append("     "+CommandOutput.concatCommandStrings(secondCommand)+"\n");
-				sw.append("     set retcode2 = $status\n");
-				sw.append("		echo\n");
-				sw.append("		echo\n");
-				sw.append("     echo command2 returned $retcode2\n");
-				sw.append("     echo returning return code $retcode2 to SLURM\n");
-				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"'\"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-				}
-				sw.append("     exit $retcode2\n");
-				sw.append("else\n");
-				sw.append("		echo \"command1 failed, skipping command2\"\n");
-				sw.append("     echo returning return code $retcode1 to SLURM\n");
-				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-				}
-				sw.append("     exit $retcode1\n");
-				sw.append("endif\n");
-			}else{
-				sw.append("echo returning return code $retcode1 to SGE\n");
-				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-				}
-				sw.append("exit $retcode1\n");
+			ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
+			commandSet.add(new ExecutableCommand(command));
+			if (secondCommand!=null && secondCommand.length>0){
+				commandSet.add(new ExecutableCommand(secondCommand));
 			}
-			if (postProcessingCommands != null) {
-				PortableCommandWrapper.insertCommands(sw, postProcessingCommands); 
+			if (exitCommand!=null && exitCommand.length>0){
+				commandSet.add(new ExecutableCommand(exitCommand));
 			}
-			
+			String text = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands);
+
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 
-			writeUnixStyleTextFile(tempFile, sw.getBuffer().toString());
-			
+			writeUnixStyleTextFile(tempFile, text);
+
 			// move submission file to final location (either locally or remotely).
-			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
+			//if (LG.isDebugEnabled()) {
+				System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
+			//}
 			commandService.pushFile(tempFile,sub_file);
-			System.out.println("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
+			//if (LG.isDebugEnabled()) {
+				System.out.println("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
+			//}
 			tempFile.delete();
 		} catch (IOException ex) {
 			ex.printStackTrace(System.out);
 			return null;
 		}
 
-//		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
-//		if (!SGE_HOME.endsWith("/")){
-//			SGE_HOME += "/";
-//		}
-		String[] completeCommand = new String[] {/*SGE_HOME +*/ JOB_CMD_SUBMIT, "-terse", sub_file};
-		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, completeCommand));
+		/**
+		 * 
+		 * > sbatch /share/apps/vcell2/deployed/test/htclogs/V_TEST_107643258_0_0.slurm.sub
+		 * Submitted batch job 5174
+		 * 
+		 */
+		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SUBMIT, sub_file};
+		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
-		
-		return new SgeJobID(jobid);
+		final String EXPECTED_STDOUT_PREFIX = "Submitted batch job ";
+		if (jobid.startsWith(EXPECTED_STDOUT_PREFIX)){
+			jobid = jobid.replace(EXPECTED_STDOUT_PREFIX, "");
+		}else{
+			throw new ExecutableException("unexpected response from '"+JOB_CMD_SUBMIT+"' while submitting simulation: '"+jobid+"'");
+		}
+		return new SlurmJobID(jobid);
 	}
 
 	/**
