@@ -486,11 +486,11 @@ denied: job "6894" does not exist
 			return null;
 		}
 
-		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
-		if (!SGE_HOME.endsWith("/")){
-			SGE_HOME += "/";
-		}
-		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-terse", sub_file};
+//		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
+//		if (!SGE_HOME.endsWith("/")){
+//			SGE_HOME += "/";
+//		}
+		String[] completeCommand = new String[] {/*SGE_HOME +*/ JOB_CMD_SUBMIT, "-terse", sub_file};
 		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, completeCommand));
 		String jobid = commandOutput.getStandardOutput().trim();
 		
