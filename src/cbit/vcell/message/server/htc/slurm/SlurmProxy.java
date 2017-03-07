@@ -201,14 +201,14 @@ denied: job "6894" does not exist
 
 		String output = commandOutput.getStandardOutput();
 		try {
-			return extractJobIds(output, statusMap);
+			return extractJobIds(output, jobNamePrefix, statusMap);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new ExecutableException("error getting runningJobIDs: "+e.getMessage(),e);
 		}
 	}
 
-	public static List<HtcJobID> extractJobIds(String output, Map<HtcJobID, JobInfoAndStatus> statusMap) throws IOException {
+	public static List<HtcJobID> extractJobIds(String output, String jobnamePrefix, Map<HtcJobID, JobInfoAndStatus> statusMap) throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();
 		if (!line.equals("JobID|JobName|Partition|Account|AllocCPUS|NCPUS|NTasks|State|ExitCode")){
@@ -227,6 +227,9 @@ denied: job "6894" does not exist
 			String state = tokens[7];
 			String exitcode = tokens[8];
 			if (jobName.equals("batch")){
+				continue;
+			}
+			if (!jobName.startsWith(jobnamePrefix)){
 				continue;
 			}
 			HtcJobID htcJobID = new SlurmJobID(jobID);
@@ -359,8 +362,9 @@ denied: job "6894" does not exist
 			lsb.write("fi");
 		}
 
-		Objects.requireNonNull(postProcessingCommands);
-		PortableCommandWrapper.insertCommands(lsb.sb, postProcessingCommands);
+		if (postProcessingCommands != null){
+			PortableCommandWrapper.insertCommands(lsb.sb, postProcessingCommands);
+		}
 		lsb.newline();
 		if (hasExitProcessor) {
 			lsb.write("callExitProcessor 0");

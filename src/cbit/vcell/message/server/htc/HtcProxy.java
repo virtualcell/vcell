@@ -17,6 +17,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.ExecutableException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.message.server.cmd.CommandService;
@@ -96,19 +97,21 @@ public abstract class HtcProxy {
 		}
 	}
 	
-	//public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
-	//temporary code for database switching test
-	public final static String HTC_SIMULATION_JOB_NAME_PREFIX; 
-	static {
-		//create alt prefix so other sites don't detect, update, or kill
-		String altPrefix = System.getProperty("vcell.simJobPrefix");
-		if (altPrefix == null) {
-			HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
+	/**
+	 * set {@link HtcProxy#HTC_SIMULATION_JOB_NAME_PREFIX}
+	 * @return V_<i>server<i> or V_
+	 */
+	private static String jobNamePrefix( ){
+		String stub = "V_";
+		try {
+			String server = PropertyLoader.getProperty(PropertyLoader.vcellServerIDProperty,"");
+			return stub + server + "_";
+		} catch (Error e) { //set regardless, just log error
+			lg.error(e);
 		}
-		else {
-			HTC_SIMULATION_JOB_NAME_PREFIX = altPrefix; 
-		}
+		return stub;
 	}
+	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = jobNamePrefix();
 	protected final CommandService commandService;
 	protected final String htcUser;
 
