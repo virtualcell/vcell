@@ -1,5 +1,7 @@
 package cbit.vcell.solver;
 
+import java.net.URL;
+
 /**
  * long descriptions of {@link SolverDescription}s
  *
@@ -445,27 +447,7 @@ interface SolverLongDesc {
 	     "much as they would in a real biological system."
 	     + "</html>";
 
-    static final String CHOMBO = 
-	     "<html>"
-	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
-	     "Chombo provides a set of tools for implementing finite difference methods for the solution of " +
-	     "partial differential equations on block-structured adaptively refined rectangular grids. Both elliptic " +
-	     "and time-dependent modules are included. Chombo supports calculations in complex geometries with both " +
-	     "embedded boundaries and mapped grids, and Chombo also supports particle methods. Most parallel platforms " +
-	     "are supported, and cross-platform self-describing file formats are included."
-	     + Description_PARAMETERS_TO_BE_SET +
-	     "<ul>" +
-				"<li>" + Description_TimeBounds + "<br>"
-				+ Description_TimeBounds_Details
-				 + "</li>"
-	  		 + "<li>" + Description_EBChombo_Mesh_Options_Advanced +
-	  		 "<ul>" +
-		     "<li>" + Description_MaxBoxSize + "</li>" +
-		     "<li>" + Description_FillRatio + "</li>"
-		     + "</ul>"
-		     + "</li>"
-		     + "</ul>"
-	     + "</html>";
+    static final URL CHOMBO = SolverLongDesc.class.getResource("help/chombo_solver.html");
     
     static final String NFSIM =
       	     "<html>"

@@ -4,8 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -88,7 +90,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		
 		private class RoiTableModel extends AbstractTableModel
 		{
-			private final String[] columns = new String[]{"ROI", "Refinement levels (each level doubles resolution)", "\u0394x"};
+			private final String[] columns = new String[]{"ROI", "Refinement levels", "\u0394x"};
 			private final int COLUMN_ROI = 0;
 			private final int COLUMN_numLevels = 1;
 			private final int COLUMN_dx = 2;
@@ -521,8 +523,8 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		fillRatioTextField = new JTextField();
 		fillRatioTextField.addFocusListener(eventHandler);
 		
-		CollapsiblePanel northPanel = new CollapsiblePanel("Advanced", false);
-		northPanel.getContentPanel().setLayout(new GridBagLayout());
+		CollapsiblePanel southPanel = new CollapsiblePanel("Advanced", false);
+		southPanel.getContentPanel().setLayout(new GridBagLayout());
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -530,7 +532,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.EAST;
-		northPanel.getContentPanel().add(new JLabel("Max Box Size"), gbc);
+		southPanel.getContentPanel().add(new JLabel("Max Box Size"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.insets = new java.awt.Insets(4, 1, 4, 4);
@@ -539,14 +541,14 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.weightx = 0.1;
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		northPanel.getContentPanel().add(maxBoxSizeComboBox, gbc);
+		southPanel.getContentPanel().add(maxBoxSizeComboBox, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.insets = new java.awt.Insets(4, 4, 4, 1);		
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.EAST;
-		northPanel.getContentPanel().add(new JLabel("Fill Ratio"), gbc);
+		southPanel.getContentPanel().add(new JLabel("Fill Ratio"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.insets = new java.awt.Insets(4, 1, 4, 4);
@@ -555,14 +557,14 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.weightx = 0.1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.WEST;
-		northPanel.getContentPanel().add(fillRatioTextField, gbc);
+		southPanel.getContentPanel().add(fillRatioTextField, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.insets = new java.awt.Insets(4, 4, 4, 1);		
 		gbc.gridx = 4;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.EAST;
-		northPanel.getContentPanel().add(new JLabel("Block Factor"), gbc);
+		southPanel.getContentPanel().add(new JLabel("Block Factor"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.insets = new java.awt.Insets(4, 1, 4, 4);
@@ -571,7 +573,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.weightx = 0.1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.WEST;
-		northPanel.getContentPanel().add(blockFactorComboBox, gbc);
+		southPanel.getContentPanel().add(blockFactorComboBox, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.insets = new java.awt.Insets(4, 1, 4, 4);
@@ -579,10 +581,21 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.WEST;
-		northPanel.getContentPanel().add(checkBoxTagsGrow, gbc);
+		southPanel.getContentPanel().add(checkBoxTagsGrow, gbc);
+		
+		JPanel northPanel = new JPanel(new GridBagLayout());
+		JLabel lbl = new JLabel("<html>Enter Boolean expressions for regions of interest to refine, and set max refinement level desired for each ROI, where each level doubles the mesh resolution.</html>");
+		gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		northPanel.add(lbl, gbc);
 		
 		getContentPanel().setLayout(new BorderLayout(0, 2));
-		getContentPanel().add(northPanel, BorderLayout.SOUTH);
+		getContentPanel().add(southPanel, BorderLayout.SOUTH);
+		getContentPanel().add(northPanel, BorderLayout.NORTH);
 		getContentPanel().add(getRefinementPanel(), BorderLayout.CENTER);
 		
 		maxBoxSizeComboBox.addActionListener(eventHandler);

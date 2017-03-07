@@ -11,6 +11,8 @@
 
 package cbit.vcell.solver;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,6 +21,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.io.IOUtils;
 
 import cbit.vcell.client.constants.VCellCodeVersion;
 import cbit.vcell.math.ProblemRequirements;
@@ -313,6 +317,7 @@ public enum SolverDescription {
 	private final String displayLabel;
 	private final String databaseName;
 	private final String fullDescription;
+	private final URL fullDescriptionUrl;
 	private final int timeOrder;
 	private final SupportedTimeSpec supportedTimeSpec;
 	private final Set<SolverFeature> supportedFeatures;
@@ -338,6 +343,7 @@ public enum SolverDescription {
 		this.displayLabel = displayLabel;
 		this.databaseName = databaseName;
 		this.fullDescription = subFullDescription(fullDescription,displayLabel);
+		this.fullDescriptionUrl = null;
 		this.timeOrder = timeOrder;
 		supportedTimeSpec = sts;
 		this.supportedFeatures = new HashSet<SolverFeature>(Arrays.asList(fset));
@@ -346,7 +352,31 @@ public enum SolverDescription {
 		this.kisao = kisao;
 		this.deprecated = deprecated;
 	}
-
+	
+	private SolverDescription(TimeStep ts, ErrorTol et,TimeSpecCreated tst,
+			String shortDisplayLabel,
+			String displayLabel, String databaseName,
+			URL fullDescriptionUrl, int timeOrder, SupportedTimeSpec sts,
+			SolverFeature[] fset,
+			SolverExecutable se, VersionedLibrary versionedLibrary, String kisao, boolean deprecated) {
+		
+		variableTimeStep = (ts == TimeStep.VARIABLE);
+		errorTolerance = ( et == ErrorTol.YES);
+		timeSpecType = tst;
+		this.shortDisplayLabel = shortDisplayLabel;
+		this.displayLabel = displayLabel;
+		this.databaseName = databaseName;
+		this.fullDescription = null;
+		this.fullDescriptionUrl = fullDescriptionUrl;
+		this.timeOrder = timeOrder;
+		supportedTimeSpec = sts;
+		this.supportedFeatures = new HashSet<SolverFeature>(Arrays.asList(fset));
+		solverExecutable = se;
+		this.versionedLibrary = versionedLibrary != null ? versionedLibrary : VersionedLibrary.NONE;
+		this.kisao = kisao;
+		this.deprecated = deprecated;
+	}
+	
 	public SolverExecutable getSolverExecutable() {
 		return solverExecutable;
 	}
@@ -368,7 +398,20 @@ public enum SolverDescription {
 	}
 
 	public String getFullDescription() {
-		return fullDescription;
+		String fullDesc = fullDescription;
+		if (fullDesc == null && fullDescriptionUrl != null)
+		{
+			try
+			{
+				fullDesc = IOUtils.toString(fullDescriptionUrl.openStream());
+				fullDesc = subFullDescription(fullDesc, displayLabel);
+			}
+			catch (IOException ex)
+			{
+				// ignore
+			}
+		}
+		return fullDesc;
 	}
 
 	/**

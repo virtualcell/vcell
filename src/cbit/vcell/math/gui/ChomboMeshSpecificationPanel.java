@@ -27,6 +27,8 @@ import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
+import com.lowagie.text.Font;
+
 import cbit.vcell.geometry.ChomboGeometryException;
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.geometry.Geometry;
@@ -151,11 +153,10 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 			getContentPanel().add(new JLabel("Geometry Size (um)"), gbc);
 
 			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 2;
+			gbc.gridx = 1;
 			gbc.gridy = gridy;
 			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			gbc.weightx = 1.0;
-			gbc.gridwidth = 2;
 			gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 			getContentPanel().add(getGeometrySizeTextField(), gbc);
 
@@ -165,20 +166,12 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
 			gbc.anchor = java.awt.GridBagConstraints.LINE_END;
-			gbc.insets = new java.awt.Insets(4, 4, 1, 4);
-			getContentPanel().add(new JLabel("Mesh Size"), gbc);
-
-			gridy++;
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = gridy;
-			gbc.anchor = java.awt.GridBagConstraints.LINE_END;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.weightx = 1.0;
-			gbc.gridwidth = 5;
+			gbc.gridwidth = 3;
 			gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 			JLabel lbl = new JLabel(
-					"<html>Enter one of the following: either \u0394x(spatial step of for discretization), or the number of points in one dimension, x, y or z. The other entries will be automatically filled in to satisfy requirements of the solver. Chosen values may be substituted by similar values that define a valid mesh.</html");
+					"<html>Enter one of the following: either \u0394x(spatial step for discretization), or the number of points in one dimension, x, y or z.</html>");
 			getContentPanel().add(lbl, gbc);
 
 			gridy++;
