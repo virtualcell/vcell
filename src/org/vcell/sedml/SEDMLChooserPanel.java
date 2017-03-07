@@ -76,6 +76,11 @@ public class SEDMLChooserPanel extends JPanel {
 				tooltip = "The model has " + sedml.getModelWithId(t.getModelReference()).getListOfChanges().size() + " changes.";
 			} else if(at instanceof RepeatedTask) {
 				RepeatedTask rt = (RepeatedTask)at;
+				
+				// TODO: we issue warning that importing repeated task is not implemented yet
+				// but we have still can import it as simple task, so we don't set issueFound to true
+				issues.add("Importing a RepeatedTask is not implemented yet, '" + SEDMLUtil.getName(rt) + "' may be imported as SimpleTask.");
+				
 				// Verify that all the changes are supported (setValue only, for now) and if anything else is found
 				// add an error message to the list of errors and skip the task
 				for(Change c : rt.getChanges()) {

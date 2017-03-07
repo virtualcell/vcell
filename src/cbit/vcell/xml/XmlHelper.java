@@ -93,10 +93,16 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ConstantArraySpec;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.xml.merge.NodeInfo;
 import cbit.xml.merge.XmlTreeDiff;
 import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
@@ -705,49 +711,66 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         newSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
     	Simulation newSimulation = new Simulation(newSimulationContext.getMathDescription());
     	newSimulation.setName(SEDMLUtil.getName(sedmlSimulation));	
-    	bioModel.addSimulation(newSimulation);
+    	
+    	// TODO: make sure that everything has proper names
     	
     	// we check the repeated tasks, if any, and add to the list of math overrides
-    	if(selectedTask instanceof RepeatedTask) {
-    		for(Change change : ((RepeatedTask) selectedTask).getChanges()) {
-    			if(!(change instanceof SetValue)) {
-    				throw new RuntimeException("Only 'SetValue' changes are supported for repeated tasks.");
-    			}
-    			SetValue setValue = (SetValue)change;
-    			// TODO: extract target from XPath
-    			// ......
-    			//
-    			String target = "s0";	// for now we just use a hardcoded thing
-    			ConstantArraySpec cas;
-    			Range range = ((RepeatedTask) selectedTask).getRange(setValue.getRangeReference());
-    			if(range instanceof UniformRange) {
-    				cas = ConstantArraySpec.createIntervalSpec(target, ((UniformRange) range).getStart(), ((UniformRange) range).getEnd(), 
-    						range.getNumElements(), ((UniformRange) range).getType() == UniformRange.UniformType.LOG ? true : false);
-    			} else if(range instanceof VectorRange) {
-//    				List<String> constants = new ArrayList<> (); 
-//    				for(int i=0; i<range.getNumElements(); i++) {
-//    					constants.add(new Constant(i+"", new Expression(range.getElementAt(i))));
-//    				}
-//    				cas = ConstantArraySpec.createListSpec(target, constants);
-    				
-    			} else {
-    				throw new RuntimeException("Only 'Uniform Range' and 'Vector Range' are supported at this time.");
-    			}
-    			
-    		}
-    	}
+//    	if(selectedTask instanceof RepeatedTask) {
+//    		for(Change change : ((RepeatedTask) selectedTask).getChanges()) {
+//    			if(!(change instanceof SetValue)) {
+//    				throw new RuntimeException("Only 'SetValue' changes are supported for repeated tasks.");
+//    			}
+//    			SetValue setValue = (SetValue)change;
+//    			// TODO: extract target from XPath
+//    			// ......
+//    			//
+//    			String target = "s0";	// for now we just use a hardcoded thing
+//    			ConstantArraySpec cas;
+//    			Range range = ((RepeatedTask) selectedTask).getRange(setValue.getRangeReference());
+//    			if(range instanceof UniformRange) {
+//    				cas = ConstantArraySpec.createIntervalSpec(target, ((UniformRange) range).getStart(), ((UniformRange) range).getEnd(), 
+//    						range.getNumElements(), ((UniformRange) range).getType() == UniformRange.UniformType.LOG ? true : false);
+//    			} else if(range instanceof VectorRange) {
+////    				List<String> constants = new ArrayList<> (); 
+////    				for(int i=0; i<range.getNumElements(); i++) {
+////    					constants.add(new Constant(i+"", new Expression(range.getElementAt(i))));
+////    				}
+////    				cas = ConstantArraySpec.createListSpec(target, constants);
+//    				
+//    			} else {
+//    				throw new RuntimeException("Only 'Uniform Range' and 'Vector Range' are supported at this time.");
+//    			}
+//    			
+//    		}
+//    	}
     	
 		// we identify the type of sedml simulation (uniform time course, etc) 
     	// and set the vCell simulation parameters accordingly
+    	SolverTaskDescription simTaskDesc = newSimulation.getSolverTaskDescription();
+		TimeBounds timeBounds = new TimeBounds();
+		TimeStep timeStep = new TimeStep();
+		double outputTimeStep = 0.1;
 		if(sedmlSimulation instanceof UniformTimeCourse) {
-			
-		} else if(sedmlSimulation instanceof OneStep) {
-			
+			// we translate initial time to zero, we provide output for the duration of the simulation
+			// because we can't select just an interval the way the SEDML simulation can
+			double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
+			double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
+			double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
+			double outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
+			outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
+			timeBounds = new TimeBounds(0, outputEndTime - initialTime);
+		} else if(sedmlSimulation instanceof OneStep) {		// for anything other than UniformTimeCourse we just ignore
 		} else if(sedmlSimulation instanceof SteadyState) {
-			
 		} else {
-			
 		}
+		OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
+		simTaskDesc.setTimeBounds(timeBounds);
+		simTaskDesc.setTimeStep(timeStep);
+		simTaskDesc.setOutputTimeSpec(outputTimeSpec);
+		
+		newSimulation.setSolverTaskDescription(simTaskDesc);
+    	bioModel.addSimulation(newSimulation);
+    	newSimulation.refreshDependencies();
 		
 		} catch (Exception e) {
 			e.printStackTrace();
