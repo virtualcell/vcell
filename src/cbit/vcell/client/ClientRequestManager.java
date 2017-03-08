@@ -67,11 +67,17 @@ import javax.swing.filechooser.FileFilter;
 import org.apache.commons.io.IOUtils;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jlibsedml.AbstractTask;
+import org.jlibsedml.ArchiveComponents;
+import org.jlibsedml.Libsedml;
+import org.jlibsedml.SEDMLDocument;
+import org.jlibsedml.SedML;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BNGLDebuggerPanel;
 import org.vcell.model.bngl.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
+import org.vcell.sedml.SEDMLChooserPanel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -2985,6 +2991,8 @@ private final static String WIN_MGR_KEY = "WIN_MGR_KY";
 private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindowManager requester, final boolean inNewWindow) {
 
 	final String DOCUMENT_INFO = "documentInfo";
+	final String SEDML_TASK = "SedMLTask";
+	final String SEDML_MODEL = "SedMLModel";
 	final String BNG_UNIT_SYSTEM = "bngUnitSystem";
 	/* asynchronous and not blocking any window */
 	bOpening = true;
@@ -3096,6 +3104,46 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				}
 			}
 			hashTable.put(BNG_UNIT_SYSTEM, bngUnitSystem);
+		} else if(file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".sedml")) {
+			try {
+				XMLSource xmlSource = externalDocInfo.createXMLSource();
+				File sedmlFile = xmlSource.getXmlFile();
+				
+				SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
+				if(sedml == null || sedml.getModels().isEmpty()) {
+					return;
+				}
+				AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(), file.getName());
+				
+				hashTable.put(SEDML_MODEL, sedml);
+				hashTable.put(SEDML_TASK, chosenTask);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to read document: "+e.getMessage(),e);
+			}
+		} else if(file != null && !file.getName().isEmpty() && (file.getName().toLowerCase().endsWith(".sedx") || file.getName().toLowerCase().endsWith(".omex"))) {
+			try {
+				ArchiveComponents ac = null;
+				ac = Libsedml.readSEDMLArchive(new FileInputStream(file));
+				SEDMLDocument doc = ac.getSedmlDocument();
+			
+				SedML sedml = doc.getSedMLModel();
+				if(sedml == null) {
+					throw new RuntimeException("Failed importing " + file.getName());
+				}
+				if(sedml.getModels().isEmpty()) {
+					throw new RuntimeException("Unable to find any model in " + file.getName());
+				}
+		        AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(), file.getName());
+		        
+				hashTable.put(SEDML_MODEL, sedml);
+				hashTable.put(SEDML_TASK, chosenTask);
+			
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to read archive: "+e.getMessage(),e);
+			}
 		}
 	} else {
 		taskName = "Loading document '" + documentInfo.getVersion().getName() + "' from database";
@@ -3125,9 +3173,12 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				doc = getDocumentManager().getGeometry(gmi);
 			} else if (documentInfo instanceof ExternalDocInfo){
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
-
-				if (!externalDocInfo.isXML()) {
-						if (hashTable.containsKey(BNG_UNIT_SYSTEM)){ 			// not XML, look for BNGL etc.
+				File file = externalDocInfo.getFile();
+				if(file != null && !file.getName().isEmpty() && (file.getName().toLowerCase().endsWith(".sedx") || file.getName().toLowerCase().endsWith(".omex"))) {
+					TranslationLogger transLogger = new TranslationLogger(requester);
+					doc = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo, (SedML)hashTable.get(SEDML_MODEL), (AbstractTask)hashTable.get(SEDML_TASK));
+				} else if (!externalDocInfo.isXML()) {
+					if (hashTable.containsKey(BNG_UNIT_SYSTEM)) { 			// not XML, look for BNGL etc.
 					// we use the BngUnitSystem already created during the 1st pass
 					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
 					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
@@ -3196,7 +3247,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 //					Simulation sim = ruleBasedSimContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,networkGenerationRequirements);
 
 					doc = bioModel;
-						}
+					}
 				}else{ // is XML
 					try (TranslationLogger transLogger = new TranslationLogger(requester)) {
 						XMLSource xmlSource = externalDocInfo.createXMLSource();
@@ -3229,6 +3280,8 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 							}
 						} else if (xmlType.equals(MicroscopyXMLTags.FRAPStudyTag)) {
 							doc = VFrapXmlHelper.VFRAPToBioModel(hashTable, xmlSource, getDocumentManager(), requester);
+						} else if (xmlType.equals(XMLTags.SedMLTypeTag)) {
+							doc = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo, (SedML)hashTable.get(SEDML_MODEL), (AbstractTask)hashTable.get(SEDML_TASK));
 						} else { // unknown XML format
 							throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 						}
