@@ -10,6 +10,8 @@
 
 package org.vcell.sbml.vcell;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import org.jdom.Element;
@@ -61,6 +63,7 @@ import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 
 import cbit.image.ImageException;
@@ -130,6 +133,8 @@ public class SBMLExporter {
 
 	private SimulationContext vcSelectedSimContext = null;
 	private SimulationJob vcSelectedSimJob = null;
+	
+	Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
 	
 	// used for exporting vcell-related annotations.
 	Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
@@ -428,6 +433,7 @@ protected void addReactions() {
 		throw new RuntimeException("This VCell model has Electrical mapping; cannot be exported to SBML at this time");
 	}
 
+	l2gMap.clear();
 	ReactionSpec[] vcReactionSpecs = getSelectedSimContext().getReactionContext().getReactionSpecs();
 	for (int i = 0; i < vcReactionSpecs.length; i++){
 		if (vcReactionSpecs[i].isExcluded()) {
@@ -530,6 +536,8 @@ protected void addReactions() {
 										if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
 											sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 										}
+										Pair<String, String> origParam = new Pair<String, String> (rxnName, origParamName);
+										l2gMap.put(origParam, newParamName);
 										bAddedParam = true;
 									} else {
 										// need to get another name for param and need to change all its refereces in the other kinParam euqations.
@@ -592,6 +600,8 @@ protected void addReactions() {
 					} else {
 						// need to get another name for param and need to change all its refereces in the other kinParam euqations.
 					}
+					Pair<String, String> origParam = new Pair<String, String> (rxnName, paramName);
+					l2gMap.put(origParam, paramName);	// keeps its name but becomes a global (?)
 					ASTNode paramFormulaNode = getFormulaFromExpression(kinParamExprs[j]);
 					AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
 					sbmlParamAssignmentRule.setVariable(paramName);
@@ -1848,6 +1858,10 @@ public void setSelectedSimContext(SimulationContext newVcSelectedSimContext) {
 
 public void setSelectedSimulationJob(SimulationJob newVcSelectedSimJob) {
 	vcSelectedSimJob = newVcSelectedSimJob;
+}
+
+public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
+	return l2gMap;
 }
 
 /**
