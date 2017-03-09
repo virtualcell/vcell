@@ -1010,6 +1010,7 @@ public static File showFileChooserDialog(TopLevelWindowManager requester, final 
 
 	// setting fileFilter for xml files
 	fileChooser.setFileFilter(fileFilter);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML2);
 	
     int returnval = fileChooser.showOpenDialog(requester.getComponent());
     if (returnval == JFileChooser.APPROVE_OPTION) {
