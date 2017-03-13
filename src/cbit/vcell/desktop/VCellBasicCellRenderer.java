@@ -37,7 +37,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
  
 public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
-	static class VCDocumentInfoNode {
+	public static class VCDocumentInfoNode {
 		private VCDocumentInfo vcDocInfo = null;
 	
 		public VCDocumentInfoNode(VCDocumentInfo vcDocInfo) {

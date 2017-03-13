@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Locale;
 
 import javax.swing.BorderFactory;
@@ -56,6 +57,7 @@ import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledOptionPaneDialog;
 import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.BeansUtilTest;
 import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCAssert;
@@ -787,9 +789,8 @@ public class DialogUtils {
 					if (userSaidYes) {
 						Throwable throwableToSend = exception; 
 						String extra = dialogMessagePanel.getSupplemental();
-						if (extra != null) {
-							throwableToSend = new RuntimeException(extra, exception);
-						}
+						extra = BeanUtils.PLAINTEXT_EMAIL_NEWLINE+(extra==null?"":extra)+collectRecordedUserEvents();
+						throwableToSend = new RuntimeException(extra, exception);
 						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend);
 					}
 				}
@@ -810,6 +811,19 @@ public class DialogUtils {
 		ContextCarrierException(String msg, Throwable payload) {
 			super(msg,payload);
 		}
+	}
+
+	public static String collectRecordedUserEvents(){
+		String content = "";
+		if(VCellClientTest.recordedUserEvents != null && VCellClientTest.recordedUserEvents.size() > 0){
+			content+= "-----Recorded User Events-----"+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;
+			Iterator<String> iter = VCellClientTest.recordedUserEvents.iterator();
+			while(iter.hasNext()){
+				content+= iter.next()+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;
+			}
+			content+= "------------------------------"+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;;
+		}
+		return content;
 	}
 
 

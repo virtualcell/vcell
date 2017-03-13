@@ -18,6 +18,7 @@ import java.util.Locale;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -184,7 +185,6 @@ public KeyValue getVersionKey() {
  */
 public String identificationString( ) { 
     StringBuffer buffer = new StringBuffer();
-    SimpleDateFormat newDateFormatter = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.US);
     buffer.append("[");
     buffer.append("Name(" + versionName + "), ");
     buffer.append("key(" + versionKey + "), ");
@@ -193,7 +193,7 @@ public String identificationString( ) {
     buffer.append("BranchPointRef(" + versionBranchPointRef + "), ");
     buffer.append("BranchID(" + versionBranchID + "), ");
     buffer.append("Flag(" + ((versionFlag!=null)?(versionFlag.toString()):"null") + "), ");
-    buffer.append("Date("+((versionDate!=null)?(newDateFormatter.format(versionDate)):"null")+ "), ");
+    buffer.append("Date("+((versionDate!=null)?(BeanUtils.vcDateFormatter.format(versionDate)):"null")+ "), ");
     if (getAnnot().length() < 25) {
 		buffer.append("Annot(" + getAnnot() + ")");
     } else {

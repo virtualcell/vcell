@@ -6418,11 +6418,9 @@ private SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlPar
 	java.util.Date date = null;	
 	temp = xmlVersion.getAttributeValue(XMLTags.DateAttrTag);
 	
-	if ( temp != null ) {
-		java.text.SimpleDateFormat newDateFormatter = new java.text.SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", java.util.Locale.US);
-		
+	if ( temp != null ) {		
 		try {
-			date = newDateFormatter.parse(temp);
+			date = BeanUtils.vcDateFormatter.parse(temp);
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Invalid date:"+temp, e);
@@ -7623,10 +7621,8 @@ private Version getVersion(Element xmlVersion) throws XmlParseException {
 	temp = xmlVersion.getAttributeValue(XMLTags.DateAttrTag);
 	
 	if ( temp != null ) {
-		java.text.SimpleDateFormat newDateFormatter = new java.text.SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", java.util.Locale.US);
-		
 		try {
-			date = newDateFormatter.parse(temp);
+			date = BeanUtils.vcDateFormatter.parse(temp);
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Invalid date:"+temp, e);

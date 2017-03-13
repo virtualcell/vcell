@@ -54,6 +54,7 @@ import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.Executors;
@@ -102,6 +103,9 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * @author:
  */
 public final class BeanUtils {
+	
+	public static final SimpleDateFormat vcDateFormatter = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.US);
+
 	private static boolean bDebugMode = false;
 	private static UserLoginInfo loginInfo = null;
 	public static void setDebug(boolean isDebug) {

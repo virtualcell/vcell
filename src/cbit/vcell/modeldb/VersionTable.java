@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
@@ -112,9 +113,7 @@ protected VersionTable(String tableName,String vp,boolean bHasParentSimRef) {
  * @return java.lang.String
  */
 public static String formatDateToOracle(java.util.Date date) {
-	//java.util.Date currentTime = new java.util.Date();
-	SimpleDateFormat oracleDateFormatter = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", java.util.Locale.US);
-	return "TO_DATE("+"'"+oracleDateFormatter.format(date)+"'"+","+"'"+"DD-MON-YYYY HH24:MI:SS"+"'"+")";
+	return "TO_DATE("+"'"+BeanUtils.vcDateFormatter.format(date)+"'"+","+"'"+"DD-MON-YYYY HH24:MI:SS"+"'"+")";
 }
 
 

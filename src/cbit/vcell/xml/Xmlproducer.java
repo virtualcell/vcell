@@ -46,6 +46,7 @@ import org.vcell.pathway.persistence.PathwayProducerBiopax3;
 import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.persistence.RelationshipProducer;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -454,9 +455,8 @@ private Element getXML(Version version, String nameParam, String descriptionPara
 		//*Flag
 		versionElement.setAttribute(XMLTags.FlagAttrTag, String.valueOf(version.getFlag().getIntValue()));		
 		//*Date
-		java.text.SimpleDateFormat newDateFormatter = new java.text.SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", java.util.Locale.US);
 		if (version.getDate() != null) {
-			versionElement.setAttribute(XMLTags.DateAttrTag, newDateFormatter.format(version.getDate()));
+			versionElement.setAttribute(XMLTags.DateAttrTag, BeanUtils.vcDateFormatter.format(version.getDate()));
 		}
 		//Specify if it comes from a versionable
 		versionElement.setAttribute(XMLTags.FromVersionableTag, "false");
