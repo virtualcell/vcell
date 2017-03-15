@@ -142,9 +142,9 @@ denied: job "6894" does not exist
 	 * 
 	 *        JobID    JobName  Partition    Account  AllocCPUS      State ExitCode
 	 *        ------------ ---------- ---------- ---------- ---------- ---------- --------
-	 *        4989         V_TEST_10+        amd      vcell          1 CANCELLED+      0:0
-	 *        4990         V_TEST_10+    general      vcell          2  COMPLETED      0:0
-	 *        4990.batch        batch                 vcell          2  COMPLETED      0:0
+	 *        4989         V_TEST_10+        amd      pi-loew          1 CANCELLED+      0:0
+	 *        4990         V_TEST_10+    general      pi-loew          2  COMPLETED      0:0
+	 *        4990.batch        batch                 pi-loew          2  COMPLETED      0:0
 	 * 
 	 * 
 	 * allowed fields: 
@@ -172,9 +172,9 @@ denied: job "6894" does not exist
 	 * UserCPU           WCKey             WCKeyID
 	 * 
 	 *  
-	 *  sacct -A vcell -P -o jobid%25,jobname%25,partition,account,alloccpus,ncpus,ntasks,state%13,exitcode
+	 *  sacct -u vcell -P -o jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode
 	 *  
-	 *  JobID|JobName|Partition|Account|AllocCPUS|NCPUS|NTasks|State|ExitCode
+	 *  JobID|JobName|Partition|User|AllocCPUS|NCPUS|NTasks|State|ExitCode
 	 *  4989|V_TEST_107541132_0_0|amd|vcell|1|1||CANCELLED by 10001|0:0
 	 *  4990|V_TEST_107541132_0_0|general|vcell|2|2||COMPLETED|0:0
 	 *  4990.batch|batch||vcell|2|2|1|COMPLETED|0:0
@@ -196,7 +196,7 @@ denied: job "6894" does not exist
 
 	@Override
 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException, IOException {
-		String[] cmds = {Slurm_HOME + JOB_CMD_STATUS,"-A","vcell","-P","-o","jobid%25,jobname%25,partition,account,alloccpus,ncpus,ntasks,state%13,exitcode"};
+		String[] cmds = {Slurm_HOME + JOB_CMD_STATUS,"-u","vcell","-P","-o","jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode"};
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
@@ -206,7 +206,7 @@ denied: job "6894" does not exist
 	public static List<HtcJobID> extractJobIds(String output, Map<HtcJobID, JobInfoAndStatus> statusMap) throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();
-		if (!line.equals("JobID|JobName|Partition|Account|AllocCPUS|NCPUS|NTasks|State|ExitCode")){
+		if (!line.equals("JobID|JobName|Partition|User|AllocCPUS|NCPUS|NTasks|State|ExitCode")){
 			throw new RuntimeException("unexpected first line from sacct: '"+line+"'");
 		}
 		statusMap.clear();
@@ -215,7 +215,7 @@ denied: job "6894" does not exist
 			String jobID = tokens[0];
 			String jobName = tokens[1];
 			String partition = tokens[2];
-			String account = tokens[3];
+			String user = tokens[3];
 			String allocCPUs = tokens[4];
 			String ncpus = tokens[5];
 			String ntasks = tokens[6];
