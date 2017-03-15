@@ -11,6 +11,7 @@
 
 package cbit.vcell.xml;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,6 +20,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 
@@ -456,7 +458,8 @@ private Element getXML(Version version, String nameParam, String descriptionPara
 		versionElement.setAttribute(XMLTags.FlagAttrTag, String.valueOf(version.getFlag().getIntValue()));		
 		//*Date
 		if (version.getDate() != null) {
-			versionElement.setAttribute(XMLTags.DateAttrTag, BeanUtils.vcDateFormatter.format(version.getDate()));
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
+			versionElement.setAttribute(XMLTags.DateAttrTag, simpleDateFormat.format(version.getDate()));
 		}
 		//Specify if it comes from a versionable
 		versionElement.setAttribute(XMLTags.FromVersionableTag, "false");

@@ -9,10 +9,11 @@
  */
 
 package cbit.vcell.modeldb;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -113,7 +114,7 @@ protected VersionTable(String tableName,String vp,boolean bHasParentSimRef) {
  * @return java.lang.String
  */
 public static String formatDateToOracle(java.util.Date date) {
-	return "TO_DATE("+"'"+BeanUtils.vcDateFormatter.format(date)+"'"+","+"'"+"DD-MON-YYYY HH24:MI:SS"+"'"+")";
+	return "TO_DATE("+"'"+(new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US)).format(date)+"'"+","+"'"+"DD-MON-YYYY HH24:MI:SS"+"'"+")";
 }
 
 

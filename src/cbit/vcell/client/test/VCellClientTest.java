@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.prefs.Preferences;
@@ -154,6 +155,7 @@ public static void main(java.lang.String[] args) {
 					}
 					Component parentComponent = mouseEvent.getComponent();
 					StringBuffer parentInfo = new StringBuffer();
+					SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
 					do{
 						String title="";
 						if(parentComponent instanceof Dialog){
@@ -165,7 +167,7 @@ public static void main(java.lang.String[] args) {
 						if(parentComponent instanceof DocumentWindow && ((DocumentWindow)parentComponent).getTopLevelWindowManager() instanceof DocumentWindowManager){
 							VCDocument vcDocument = ((DocumentWindowManager)((DocumentWindow)parentComponent).getTopLevelWindowManager()).getVCDocument();
 							if(vcDocument != null){
-								String date = (vcDocument.getVersion() != null && vcDocument.getVersion().getDate()!=null?BeanUtils.vcDateFormatter.format(vcDocument.getVersion().getDate()):"nodate");
+								String date = (vcDocument.getVersion() != null && vcDocument.getVersion().getDate()!=null?simpleDateFormat.format(vcDocument.getVersion().getDate()):"nodate");
 								parentInfo.append("doc="+vcDocument.getDocumentType()+" '"+vcDocument.getName()+"' "+date);
 							}
 						}

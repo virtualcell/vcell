@@ -10,13 +10,13 @@
 
 package org.vcell.util.document;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.io.Serializable;
-import java.math.BigDecimal;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -183,7 +183,7 @@ public KeyValue getVersionKey() {
  * messages
  * @return key elements of version
  */
-public String identificationString( ) { 
+public String identificationString( ) {
     StringBuffer buffer = new StringBuffer();
     buffer.append("[");
     buffer.append("Name(" + versionName + "), ");
@@ -193,7 +193,7 @@ public String identificationString( ) {
     buffer.append("BranchPointRef(" + versionBranchPointRef + "), ");
     buffer.append("BranchID(" + versionBranchID + "), ");
     buffer.append("Flag(" + ((versionFlag!=null)?(versionFlag.toString()):"null") + "), ");
-    buffer.append("Date("+((versionDate!=null)?(BeanUtils.vcDateFormatter.format(versionDate)):"null")+ "), ");
+    buffer.append("Date("+((versionDate!=null)?((new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US)).format(versionDate)):"null")+ "), ");
     if (getAnnot().length() < 25) {
 		buffer.append("Annot(" + getAnnot() + ")");
     } else {

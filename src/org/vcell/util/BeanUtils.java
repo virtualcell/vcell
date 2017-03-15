@@ -104,7 +104,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  */
 public final class BeanUtils {
 	
-	public static final SimpleDateFormat vcDateFormatter = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.US);
+	public static final String vcDateFormat = "dd-MMM-yyyy HH:mm:ss";
 
 	private static boolean bDebugMode = false;
 	private static UserLoginInfo loginInfo = null;

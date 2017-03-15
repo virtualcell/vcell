@@ -10,6 +10,7 @@
 
 package cbit.vcell.xml;
 import java.beans.PropertyVetoException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -28,7 +30,6 @@ import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.chombo.RefinementLevel;
 import org.vcell.chombo.RefinementRoi;
 import org.vcell.chombo.RefinementRoi.RoiType;
 import org.vcell.chombo.TimeInterval;
@@ -6420,7 +6421,8 @@ private SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlPar
 	
 	if ( temp != null ) {		
 		try {
-			date = BeanUtils.vcDateFormatter.parse(temp);
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
+			date = simpleDateFormat.parse(temp);
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Invalid date:"+temp, e);
@@ -7622,7 +7624,8 @@ private Version getVersion(Element xmlVersion) throws XmlParseException {
 	
 	if ( temp != null ) {
 		try {
-			date = BeanUtils.vcDateFormatter.parse(temp);
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
+			date = simpleDateFormat.parse(temp);
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Invalid date:"+temp, e);
