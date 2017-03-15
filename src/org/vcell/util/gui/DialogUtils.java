@@ -57,7 +57,6 @@ import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledOptionPaneDialog;
 import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.BeansUtilTest;
 import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCAssert;
