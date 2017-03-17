@@ -237,7 +237,23 @@ public static void main(java.lang.String[] args) {
 			new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
 		}
 		
-		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
+		ConnectionFactory conFactory = null;
+		int tryCount = 0;
+		Exception conFactoryException = null;
+		do{
+			try{
+				conFactoryException = null;
+				conFactory = new OraclePoolingConnectionFactory(log);
+			}catch(Exception e){
+				e.printStackTrace();
+				conFactoryException = e;
+			}
+			Thread.sleep(5000);
+		}while(tryCount++ < 10);
+		if(conFactory == null){
+			throw new Exception("Couldn't create OraclePoolingConnectionFactory after "+tryCount+" tries.",conFactoryException);
+		}
+		
 		KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 		DatabasePolicySQL.bSilent=true;
 		//
