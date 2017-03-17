@@ -10,6 +10,7 @@
 
 package cbit.vcell.xml;
 import java.beans.PropertyVetoException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -6236,11 +6238,10 @@ private SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlPar
 	java.util.Date date = null;	
 	temp = xmlVersion.getAttributeValue(XMLTags.DateAttrTag);
 	
-	if ( temp != null ) {
-		java.text.SimpleDateFormat newDateFormatter = new java.text.SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", java.util.Locale.US);
-		
+	if ( temp != null ) {		
 		try {
-			date = newDateFormatter.parse(temp);
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
+			date = simpleDateFormat.parse(temp);
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Invalid date:"+temp, e);
@@ -7398,10 +7399,9 @@ private Version getVersion(Element xmlVersion) throws XmlParseException {
 	temp = xmlVersion.getAttributeValue(XMLTags.DateAttrTag);
 	
 	if ( temp != null ) {
-		java.text.SimpleDateFormat newDateFormatter = new java.text.SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", java.util.Locale.US);
-		
 		try {
-			date = newDateFormatter.parse(temp);
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
+			date = simpleDateFormat.parse(temp);
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Invalid date:"+temp, e);
