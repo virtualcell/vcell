@@ -141,7 +141,13 @@ public enum SolverDescription {
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
 		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT_UNIFORM,
 		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic},
-		  SolverExecutable.MOVING_B, VersionedLibrary.DEPENDENT_LIBS_VCELL,"KISAO",false)
+		  SolverExecutable.MOVING_B, VersionedLibrary.DEPENDENT_LIBS_VCELL,"KISAO",false),
+	   
+       VCellPetsc(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Petsc","Petsc, Regular Grid","VCellPetsc",
+	      SolverLongDesc.VCellPetsc, 3,SupportedTimeSpec.DEFAULT_UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Hybrid, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
+	      SolverExecutable.FiniteVolume, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO", false),
+	   
    ;
 
 	public interface SupportedProblemRequirements {

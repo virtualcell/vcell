@@ -171,6 +171,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		FV_SOLVER,
 		CHOMBO_SEMIIMPLICIT_SOLVER,
 		SUNDIALS_PDE_SOLVER,
+		VCELL_PETSC_SOLVER,
 		DISCONTINUITY_TIMES,
 		BASE_FILE_NAME,
 		PRIMARY_DATA_DIR, // parallelWorkingDirectory (temporary directory to store parallel results before solver copies to user data directory)
@@ -1363,6 +1364,8 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 		}
 	} else if(solverTaskDesc.getSolverDescription().equals(SolverDescription.Chombo)){
 		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.CHOMBO_SEMIIMPLICIT_SOLVER);
+	} else if (solverTaskDesc.getSolverDescription().equals(SolverDescription.VCellPetsc)){ 
+		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.VCELL_PETSC_SOLVER);
 	} else { 
 		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.FV_SOLVER + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
 	}

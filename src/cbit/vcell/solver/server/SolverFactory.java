@@ -60,6 +60,7 @@ public class SolverFactory {
 			FACTORY.put(SolverDescription.FiniteVolumeStandalone, fv); 
 			FACTORY.put(SolverDescription.FiniteVolume, fv); 
 			FACTORY.put(SolverDescription.SundialsPDE, fv); 
+			FACTORY.put(SolverDescription.VCellPetsc, fv); 
 			Maker chomboMaker = new Maker(){
 				@Override
 				public Solver make(SimulationTask t, File userDir, File parallelWorkingDir, SessionLog sl, boolean m) throws SolverException {

@@ -476,5 +476,6 @@ interface SolverLongDesc {
    	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
    	    		 "Moving Boundary is a spatial solver which handles Moving Boundaries"
 	     + "</html>";
-    		
+    
+    static final URL VCellPetsc = SolverLongDesc.class.getResource("help/vcell_petsc.html");
 }
