@@ -11,6 +11,7 @@
 
 package cbit.vcell.xml;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,6 +20,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 
@@ -46,6 +48,7 @@ import org.vcell.pathway.persistence.PathwayProducerBiopax3;
 import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.persistence.RelationshipProducer;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -443,9 +446,9 @@ private Element getXML(Version version, String nameParam, String descriptionPara
 		//*Flag
 		versionElement.setAttribute(XMLTags.FlagAttrTag, String.valueOf(version.getFlag().getIntValue()));		
 		//*Date
-		java.text.SimpleDateFormat newDateFormatter = new java.text.SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", java.util.Locale.US);
 		if (version.getDate() != null) {
-			versionElement.setAttribute(XMLTags.DateAttrTag, newDateFormatter.format(version.getDate()));
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
+			versionElement.setAttribute(XMLTags.DateAttrTag, simpleDateFormat.format(version.getDate()));
 		}
 		//Specify if it comes from a versionable
 		versionElement.setAttribute(XMLTags.FromVersionableTag, "false");
