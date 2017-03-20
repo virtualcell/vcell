@@ -12,6 +12,7 @@ package cbit.vcell.modeldb;
 
 import java.net.MalformedURLException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,8 +43,9 @@ public class PublicationTable extends Table {
 	public final Field endnoteid			= new Field("endnoteid",		"Integer",			"");
 	public final Field url					= new Field("url",				"VARCHAR2(128)",	"");
 	public final Field wittid				= new Field("wittid",			"integer",			"");
+	public final Field pubdate				= new Field("pubDate",			"date",				"");
 	
-	private final Field fields[] = {title,authors,year,citation,pubmedid,doi,endnoteid,url,wittid };
+	private final Field fields[] = {title,authors,year,citation,pubmedid,doi,endnoteid,url,wittid,pubdate };
 	
 	public static final PublicationTable table = new PublicationTable();
 
@@ -95,6 +97,7 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 		    pubTable.endnoteid.getQualifiedColName()+", "+
 		    pubTable.url.getQualifiedColName()+", "+
 		    pubTable.wittid.getQualifiedColName()+", "+
+		    pubTable.pubdate.getQualifiedColName()+", "+
 		
 		   "(select '['||wm_concat("+"SQ1_"+biomodelTable.id.getQualifiedColName()+"||';'"+
 		   						"||"+"SQ1_"+biomodelTable.name.getQualifiedColName()+"||';'"+
@@ -168,6 +171,7 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 	String endnoteid = rset.getString(table.endnoteid.toString());
 	String url = rset.getString(table.url.toString());
 	String wittid = rset.getString(table.wittid.toString());
+	java.util.Date pubdate = VersionTable.getDate(rset,table.pubdate.toString());
 	
 	String bmRefsString = rset.getString("bmRefs");
 	ArrayList<BioModelReferenceRep> bmRefList = new ArrayList<BioModelReferenceRep>();
@@ -200,7 +204,7 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 	MathModelReferenceRep[] mmRefArray = mmRefList.toArray(new MathModelReferenceRep[0]);
 	
 	
-	return new PublicationRep(pubKey,title,authorsList.split(";"),year,citation,pubmedid,doi,endnoteid,url,bmRefArray,mmRefArray,wittid);
+	return new PublicationRep(pubKey,title,authorsList.split(";"),year,citation,pubmedid,doi,endnoteid,url,bmRefArray,mmRefArray,wittid,pubdate);
 }
 
 }

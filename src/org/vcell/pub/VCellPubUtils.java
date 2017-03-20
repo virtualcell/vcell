@@ -192,9 +192,82 @@ public class VCellPubUtils {
 		
 	}
 
+
+	private static void readNewRecords(File xmlFile) throws IOException {
+		System.out.println("starting to read");
+		/**
+		 * 	public final Field id					= new Field("title",			"VARCHAR2(4000)",	"")
+		 * 	public final Field title				= new Field("title",			"VARCHAR2(4000)",	"")
+		 *  public final Field authors				= new Field("authors",			"VARCHAR2(4000)",	"");
+		 *  public final Field year					= new Field("year",				"Integer",			"");
+		 *  public final Field citation				= new Field("citation",			"VARCHAR2(4000)",	"");
+		 *  public final Field pubmedid				= new Field("pubmedid",			"VARCHAR2(32)",		"");
+		 *  public final Field doi					= new Field("doi",				"VARCHAR2(50)",		"");
+		 *  public final Field endnodeid			= new Field("endnoteid",		"VARCHAR2(50)",		"");
+		 *  public final Field url					= new Field("url",				"VARCHAR2(128)",	"");
+		 *  public final Field wittid				= new Field("wittid",			"Integer",			"");
+		 */
+		Document doc = XmlUtil.readXML(xmlFile);
+		List<Element> recordList = doc.getRootElement().getChild("records").getChildren("record");
+		int foundCount = 0;
+		for (Element record : recordList){
+			String titleString = record.getChild("titles").getChild("title").getChild("style").getText();
+			ArrayList<String> authorsArray = new ArrayList<String>();
+			List<Element> authorElements = (List<Element>)record.getChild("contributors").getChild("authors").getChildren("author");
+			for (Element authorElement : authorElements){
+				authorsArray.add(authorElement.getChild("style").getText());
+			}
+			String title = 		"'"+TokenMangler.getSQLEscapedString(titleString)+"'";
+			String authors = 	"'"+TokenMangler.getSQLEscapedString(String.join(";",authorsArray))+"'";
+			String citation = 	"NULL";
+			String pubmedid = 	"NULL";
+			String year = "NULL";
+			try {
+				year = ""+Integer.parseInt(record.getChild("dates").getChild("year").getChild("style").getText());
+			}catch (Exception e){
+				System.err.println("failed to parse year : "+e.getMessage());
+			}
+			try {
+				pubmedid = "'"+record.getChild("accession-num").getChild("style").getText()+"'";
+			}catch (Exception e){}
+			String doi = 		"NULL";
+			try {
+				doi = "'"+record.getChild("electronic-resource-num").getChild("style").getText()+"'";
+			}catch (Exception e){}
+			String endnoteid =	record.getChild("rec-number").getText();
+			String url = 		"NULL";
+			try {
+				url = "'"+record.getChild("urls").getChild("related-urls").getChild("url").getChild("style").getText()+"'";
+			}catch (Exception e){}
+			int wittid = -1;
+			String sql = "insert into vc_publication (id, title, authors, year, citation, pubmedid, doi, endnoteid, url, wittid) "
+						+ "values (NewSeq.NEXTVAL,"+title+","+authors+","+year+","+citation+","+pubmedid+","+doi+","+endnoteid+","+url+","+wittid+")";
+			System.out.println(sql+";");
+			
+			Element biomodelRefsElement = record.getChild("custom3");
+			if (biomodelRefsElement!=null){
+				String biomodelsString = biomodelRefsElement.getChildText("style");
+				if (biomodelsString!=null){
+					String[] bmRefs = biomodelsString.replace(" ","").split(",");
+					for (String bmRef : bmRefs){
+						KeyValue pmKey = new KeyValue(bmRef);
+							String sql_link = "insert into vc_publicationmodellink (id, pubRef, bioModelRef, mathModelRef) "
+									+ "values (NewSeq.NEXTVAL,(select id from vc_publication where title = "+title+" and year is not null),"+pmKey+",NULL);";
+							System.out.println(sql_link);
+						
+					}
+				}
+			}
+			System.out.println("");
+		}
+	}
+
+
+
 	public static void main(String[] args) {
 		try {
-			read();
+			// read();
+			readNewRecords(new File("src/org/vcell/pub/NewPublishedModels_2016_11_29.xml"));
 		}catch (Exception e){
 			e.printStackTrace();
 		}

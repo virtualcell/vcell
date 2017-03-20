@@ -1,6 +1,7 @@
 package cbit.vcell.modeldb;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.vcell.util.document.KeyValue;
 
@@ -17,9 +18,10 @@ public class PublicationRep {
 	private BioModelReferenceRep[] bioModelReferenceReps = new BioModelReferenceRep[0];
 	private MathModelReferenceRep[] mathModelReferenceReps = new MathModelReferenceRep[0];
 	private final String wittid;
+	private final Date date;
 	
 	public PublicationRep(KeyValue pubKey, String title, String[] authors, Integer year, String citation, String pubmedid, String doi, String endnoteid,
-			String url, BioModelReferenceRep[] bioModelReferenceReps, MathModelReferenceRep[] mathModelReferenceReps, String wittid) {
+			String url, BioModelReferenceRep[] bioModelReferenceReps, MathModelReferenceRep[] mathModelReferenceReps, String wittid, Date date) {
 		
 		super();
 		this.pubKey = pubKey;
@@ -34,6 +36,7 @@ public class PublicationRep {
 		this.bioModelReferenceReps = bioModelReferenceReps;
 		this.mathModelReferenceReps = mathModelReferenceReps;
 		this.wittid = wittid;
+		this.date = date;
 	}
 
 	public KeyValue getPubKey() {
@@ -82,6 +85,10 @@ public class PublicationRep {
 
 	public String getWittid() {
 		return wittid;
+	}
+	
+	public Date getDate() {
+		return date;
 	}
 	
 }
