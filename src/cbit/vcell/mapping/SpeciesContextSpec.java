@@ -596,12 +596,7 @@ public void initializeForSpatial() {
 }
 
 public VCUnitDefinition computeFluxUnit() {
-	VCUnitDefinition fluxUnit = simulationContext.getModel().getUnitSystem().getFluxReactionUnit();
-//	VCUnitDefinition origWay = speciesContext.getUnitDefinition().multiplyBy(getLengthPerTimeUnit());
-//	if (!fluxUnit.compareEqual(origWay)){
-//		System.err.println("didn't match");
-//	}
-	return fluxUnit;
+	return speciesContext.getUnitDefinition().multiplyBy(getLengthPerTimeUnit());
 }
 
 
