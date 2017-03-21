@@ -94,6 +94,10 @@ import cbit.vcell.util.AmplistorUtils;
  * @author:
  */
 public final class BeanUtils {
+	
+	public static final String vcDateFormat = "dd-MMM-yyyy HH:mm:ss";
+	public static final String PLAINTEXT_EMAIL_NEWLINE = "\r\n";
+
 	private static boolean bDebugMode = false;
 	private static UserLoginInfo loginInfo = null;
 	public static void setDebug(boolean isDebug) {

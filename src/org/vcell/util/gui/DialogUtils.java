@@ -24,14 +24,13 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Locale;
 
 import javax.swing.BorderFactory;
@@ -896,15 +895,15 @@ public static void showErrorDialog(final Component requester, final String messa
 			try{
 				DialogUtils.showModalJDialogOnTop(dialog, requester);
 				if (goingToEmail) {
+					Throwable throwableToSend = null; 
 					if (haveContext) {
-						Throwable throwableToSend = null; 
 						final boolean userSelectedSendModel = panel.allowSendCb.isSelected();
 						if (userSelectedSendModel) {
 							assert(errorContext != null);
-							throwableToSend = new RuntimeException(errorContext.modelInfo,exception);
+							throwableToSend = new RuntimeException(errorContext.modelInfo + BeanUtils.PLAINTEXT_EMAIL_NEWLINE + collectRecordedUserEvents(),exception);
 						}
 						else {
-							throwableToSend = new RuntimeException("User declined to share model",exception);
+							throwableToSend = new RuntimeException("User declined to share model" + BeanUtils.PLAINTEXT_EMAIL_NEWLINE + collectRecordedUserEvents(),exception);
 						}
 						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend);
 						if (userSelectedSendModel != initialCheckState) {
@@ -913,7 +912,8 @@ public static void showErrorDialog(final Component requester, final String messa
 					}
 					else {
 						assert(haveContext == false);
-						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(exception);
+						throwableToSend = new RuntimeException("No context provided" + BeanUtils.PLAINTEXT_EMAIL_NEWLINE + collectRecordedUserEvents(),exception);
+						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend);
 					}
 					
 				}
@@ -924,6 +924,20 @@ public static void showErrorDialog(final Component requester, final String messa
 		}
 	}.dispatchConsumeException();
 }
+
+public static String collectRecordedUserEvents(){
+	String content = "";
+	if(VCellClientTest.recordedUserEvents != null && VCellClientTest.recordedUserEvents.size() > 0){
+		content+= "-----Recorded User Events-----"+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;
+		Iterator<String> iter = VCellClientTest.recordedUserEvents.iterator();
+		while(iter.hasNext()){
+			content+= iter.next()+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;
+		}
+		content+= "------------------------------"+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;;
+	}
+	return content;
+}
+
 
 /**
  * subclass to carry supplemental information about context of exception
