@@ -395,7 +395,7 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 				System.out.println(exp.flatten().infix() + " = 0.0");
 			}
 		}else{
-			throw new MappingException("compartment node is isolated in PotentialMapping, not supported");
+			throw new MappingException("compartment '"+nodes[i].getName() +"' is electrically isolated, cannot generate ciruit equations for application '"+fieldSimContext.getName()+"'.  \n\nPlease specify electrical properties for all membranes (see Structures tab in Physiology).");
 		}
 	}
 	if (!bSilent){
