@@ -14,13 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.Pair;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
 
@@ -47,6 +46,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
 public abstract class StructureMapping implements Matchable, ScopedSymbolTable, java.io.Serializable {
@@ -523,8 +523,36 @@ private static String findMappingBoundaryConflict(StructureMapping ours, Structu
  * This method was created by a SmartGuide.
  * @return java.lang.String
  */
-public cbit.vcell.math.BoundaryConditionType getBoundaryCondition(BoundaryLocation boundaryLocation) {
+public cbit.vcell.math.BoundaryConditionType getBoundaryCondition0(BoundaryLocation boundaryLocation) {
 	return boundaryConditionTypes[boundaryLocation.getNum()];
+}
+
+/**
+ * The boundary condition type is returned as stored in 'boundaryConditionTypes' array unless this structure is mapped to a SurfaceClass
+ * 
+ * This is a temporary fix for display purposes to give the correct appearance despite:
+ *   1) boundaryConditionsType for SurfaceClass are always stored as FLUX in StructureMapping
+ *   2) math generation always sets membraneSubDomain boundary condition types to VALUE in math description
+ *   3) saving mathmodels actually preserves boundary condition types in membraneSubDomains (a don't care because of (2))
+ *   4) our fully-implicit FV solver always uses "inside" BC type no matter what the membraneSubDomain bc type is.
+ * 
+ * @param boundaryLocation
+ * @return BoundaryConditionType (either saved or computed based on inside subvolume determined by DiffEquMathMapping.computeBoundaryConditionSource())
+ */
+public final BoundaryConditionType getBoundaryCondition(BoundaryLocation boundaryLocation) {
+	BoundaryConditionType savedType = getBoundaryCondition0(boundaryLocation);
+	if (simulationContext==null){
+		System.err.println("simulation context is null, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
+	}else if (getGeometryClass() instanceof SurfaceClass){
+		Pair<SubVolume, SubVolume> adjacentSubvolumes = MathMapping.computeBoundaryConditionSource(simulationContext.getModel(), simulationContext, (SurfaceClass)getGeometryClass());
+		StructureMapping[] volumeStructureMappings = simulationContext.getGeometryContext().getStructureMappings(adjacentSubvolumes.one);
+		if (volumeStructureMappings==null || volumeStructureMappings.length==0){
+			System.err.println("no structures mapped to 'inside' subvolume "+adjacentSubvolumes.one.getName()+" so can't determine Boundary Condition type, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
+		}else{
+			return volumeStructureMappings[0].getBoundaryCondition(boundaryLocation);
+		}
+	}
+	return savedType;
 }
 
 
