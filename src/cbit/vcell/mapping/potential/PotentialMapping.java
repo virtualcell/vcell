@@ -144,11 +144,7 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 			System.out.println(i+") "+spanningTrees[i]);
 		}
 	}
-	try{
-		graph.checkFundamentalCycles(true);
-	}catch(Graph.NoPathBetweenNodesForEdge e){
-		throw new MappingException(e.getMessage()+", check Protocols->Electrical->(Patch and Ground)Electrodes are not the same.");
-	}
+
 	Path fundamentalCycles[] = graph.getFundamentalCycles();
 	if (!bSilent){
 		System.out.println("fundamental cycles:");

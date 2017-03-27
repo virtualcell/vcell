@@ -333,15 +333,6 @@ public Edge[] getEdges() {
 }
 
 
-public Path[] getFundamentalCycles() {
-	return checkFundamentalCycles(false);
-}
-public static class NoPathBetweenNodesForEdge extends RuntimeException {
-	public NoPathBetweenNodesForEdge(String message){
-		super(message);
-	}
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (2/11/2002 12:11:08 AM)
@@ -349,7 +340,7 @@ public static class NoPathBetweenNodesForEdge extends RuntimeException {
  * @param node1 cbit.vcell.mapping.potential.Node
  * @param node2 cbit.vcell.mapping.potential.Node
  */
-public Path[] checkFundamentalCycles(boolean bCheckOnly) {
+public Path[] getFundamentalCycles() {
 	
 	ArrayList<Path> fundamentalCycleList = new ArrayList<Path>();
 		
@@ -369,23 +360,16 @@ public Path[] checkFundamentalCycles(boolean bCheckOnly) {
 			if (spanningTree.contains(edge.getNode1())){
 				if (!spanningTree.contains(edge)){
 					Path path = spanningTree.getTreePath(edge.getNode1(),edge.getNode2());
-					if(path == null){
-						throw new NoPathBetweenNodesForEdge("No path found for edge '"+edge.toString()+"' between nodes '"+edge.getNode1()+"' and '"+edge.getNode2()+"'");
-					}
-					if(!bCheckOnly){
-						path.addEdge(edge);
-						fundamentalCycleList.add(path);
-					}
+					path.addEdge(edge);
+					fundamentalCycleList.add(path);
 				}
 			}
 		}
 	}
-	if(!bCheckOnly){
-		Path fundamentalCycles[] = new Path[fundamentalCycleList.size()];
-		fundamentalCycleList.toArray(fundamentalCycles);
-		return fundamentalCycles;
-	}
-	return null;
+	Path fundamentalCycles[] = new Path[fundamentalCycleList.size()];
+	fundamentalCycleList.toArray(fundamentalCycles);
+
+	return fundamentalCycles;
 }
 
 
