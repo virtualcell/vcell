@@ -1,6 +1,8 @@
 namespace java org.vcell.optimization.thrift
 namespace py vcellopt
 
+typedef i32 int
+typedef i64 long
 typedef string FilePath
 
 struct ParameterDescription {
@@ -25,20 +27,48 @@ typedef list<ReferenceVariable> ReferenceVariableList
 
 // ----------------------------------------------------
 
-enum OptimizationParameterDataType {
-	dataTypeInt,
-	dataTypeFloat
+enum OptimizationParameterType {
+	Number_of_Generations,
+	Number_of_Iterations,
+	Population_Size,
+	Random_Number_Generator,
+	Seed,
+	IterationLimit,
+	Tolerance,
+	Rho,
+	Scale,
+	Swarm_Size,
+	Std_Deviation,
+	Start_Temperature,
+	Cooling_Factor,
+	Pf
 }
 
 struct CopasiOptimizationParameter {
-	1: required string optimizationParameterName;
-	2: required OptimizationParameterDataType dataType;
-	3: required double value;
+	1: required OptimizationParameterType dataType;
+	2: required double value;
 }
 typedef list<CopasiOptimizationParameter> CopasiOptimizationParameterList
 
+enum OptimizationMethodType {
+	EvolutionaryProgram,
+	SRES,
+	GeneticAlgorithm,
+	GeneticAlgorithmSR,
+	HookeJeeves,
+	LevenbergMarquardt,
+	NelderMead,
+	ParticleSwarm,
+    RandomSearch,
+	SimulatedAnnealing,
+	SteepestDescent,
+	Praxis,
+	TruncatedNewton
+}
+
+
 struct CopasiOptimizationMethod {
-	1: required string optimizationMethodName;
+	1: required OptimizationMethodType optimizationMethodType;
 	2: required CopasiOptimizationParameterList optimizationParameterList;
 }
 
@@ -52,14 +82,3 @@ struct OptProblem {
 	5: required FilePath experimentalDataFile;
 	6: required CopasiOptimizationMethod optimizationMethod;
 }
-
-
-/*
-struct ExperimentalDataRow {
-	1: required list<double> aData;
-}
-struct ReferenceData {
-	1: required list<ReferenceVariable> referenceVariableList;
-	2: required list<ExperimentalDataRow> dataRowList;
-}
-*/
