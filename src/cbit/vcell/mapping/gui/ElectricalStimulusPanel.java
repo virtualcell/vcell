@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -114,9 +115,7 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 			if (evt.getSource() == ElectricalStimulusPanel.this.getsimulationContext1() && (evt.getPropertyName().equals("electricalStimuli"))) 
 				connEtoC8(evt);
 			if (evt.getSource() == ElectricalStimulusPanel.this.getsimulationContext1() && (evt.getPropertyName().equals("model"))) 
-				connEtoM19(evt);
-			if (evt.getSource() == ElectricalStimulusPanel.this.getsimulationContext1() && (evt.getPropertyName().equals("model"))) 
-				connEtoM21(evt);
+				setupElectrodeFeatureListProvider();
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == clampComboBox) {
@@ -359,48 +358,6 @@ private void connEtoM14(java.beans.PropertyChangeEvent arg1) {
 }
 
 /**
- * connEtoM18:  (simulationContext1.this --> patchElectrodePanel.model)
- * @param value cbit.vcell.mapping.SimulationContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM18(SimulationContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getsimulationContext1() != null)) {
-			getpatchElectrodePanel().setModel(getsimulationContext1().getModel());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM19:  (simulationContext1.model --> patchElectrodePanel.model)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM19(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getpatchElectrodePanel().setModel(getsimulationContext1().getModel());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoM2:  (simulationContext1.groundElectrode --> ElectrodePanel.electrode)
  * @param arg1 java.beans.PropertyChangeEvent
  */
@@ -410,47 +367,6 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 		// user code begin {1}
 		// user code end
 		getgroundElectrodePanel().setElectrode(getsimulationContext1().getGroundElectrode());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM20:  (simulationContext1.this --> groundElectrodePanel.model)
- * @param value cbit.vcell.mapping.SimulationContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM20(SimulationContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getsimulationContext1() != null)) {
-			getgroundElectrodePanel().setModel(getsimulationContext1().getModel());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM21:  (simulationContext1.model --> groundElectrodePanel.model)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM21(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getgroundElectrodePanel().setModel(getsimulationContext1().getModel());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -905,6 +821,33 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP1SetTarget();
 }
 
+private ElectrodePanel.ElectrodeFeatureListProvider electrodeFeatureListProvider = new ElectrodePanel.ElectrodeFeatureListProvider() {
+	@Override
+	public Feature[] getFeatures(ElectrodePanel electrodePanel) {
+		ElectrodePanel otherElectrodePanel = (ElectricalStimulusPanel.this.getpatchElectrodePanel() == electrodePanel?ElectricalStimulusPanel.this.getgroundElectrodePanel():ElectricalStimulusPanel.this.getpatchElectrodePanel());
+		ArrayList<Feature> features = new ArrayList<>();
+		Structure[] structures = ElectricalStimulusPanel.this.getsimulationContext1().getModel().getStructures();
+		for (int i=0;i<structures.length;i++){
+			if (structures[i] instanceof Feature) {
+				if(otherElectrodePanel != null && otherElectrodePanel.getElectrode() != null && otherElectrodePanel.getElectrode().getFeature() != null){
+					//exclude from list the structure name set for 'otherelectrodepanel'
+					if(!otherElectrodePanel.getElectrode().getFeature().getName().equals(structures[i].getName())){
+						features.add((Feature)structures[i]);
+					}
+				}else{
+					features.add((Feature)structures[i]);
+				}
+			}
+		}
+		return features.toArray(new Feature[0]);
+	}
+};
+
+private void setupElectrodeFeatureListProvider(){
+	getgroundElectrodePanel().setElectrodeFeatureListProvider(electrodeFeatureListProvider);
+	getpatchElectrodePanel().setElectrodeFeatureListProvider(electrodeFeatureListProvider);
+}
+
 /**
  * Initialize the class.
  */
@@ -935,6 +878,7 @@ private void initialize() {
 		initConnections();
 		connEtoM7();
 		connEtoC3();
+		setupElectrodeFeatureListProvider();
 
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -1225,8 +1169,7 @@ private void setsimulationContext1(SimulationContext newValue) {
 			connEtoM11(ivjsimulationContext1);
 			connEtoC1(ivjsimulationContext1);
 			connEtoC7(ivjsimulationContext1);
-			connEtoM18(ivjsimulationContext1);
-			connEtoM20(ivjsimulationContext1);
+			setupElectrodeFeatureListProvider();
 			firePropertyChange("simulationContext", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -1295,4 +1238,5 @@ private void setsimulationContext1(SimulationContext newValue) {
     	
 
 	}
+
 }

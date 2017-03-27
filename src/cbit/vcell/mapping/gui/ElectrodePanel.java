@@ -37,14 +37,14 @@ public class ElectrodePanel extends javax.swing.JPanel {
 	private Geometry fieldGeometry = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private Geometry ivjgeometry1 = null;
-	private Model fieldModel = null;
+//	private Model fieldModel = null;
 	private boolean ivjConnPtoP3Aligning = false;
-	private Model ivjmodel1 = null;
+//	private Model ivjmodel1 = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ElectrodePanel.this.getSetFeatureButton()) 
-				connEtoC1(e);
+				selectFeature();
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ElectrodePanel.this && (evt.getPropertyName().equals("electrode"))) 
@@ -55,8 +55,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoM3(evt);
 			if (evt.getSource() == ElectrodePanel.this && (evt.getPropertyName().equals("geometry"))) 
 				connPtoP2SetTarget();
-			if (evt.getSource() == ElectrodePanel.this && (evt.getPropertyName().equals("model"))) 
-				connPtoP3SetTarget();
+//			if (evt.getSource() == ElectrodePanel.this && (evt.getPropertyName().equals("model"))) 
+//				connPtoP3SetTarget();
 		};
 	};
 /**
@@ -67,26 +67,26 @@ public ElectrodePanel() {
 	initialize();
 }
 
-/**
- * connEtoC1:  (SetFeatureButton.action.actionPerformed(java.awt.event.ActionEvent) --> ElectrodePanel.selectFeature(QModel;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getmodel1() != null)) {
-			this.selectFeature(getmodel1());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+///**
+// * connEtoC1:  (SetFeatureButton.action.actionPerformed(java.awt.event.ActionEvent) --> ElectrodePanel.selectFeature(QModel;)V)
+// * @param arg1 java.awt.event.ActionEvent
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private void connEtoC1(java.awt.event.ActionEvent arg1) {
+//	try {
+//		// user code begin {1}
+//		// user code end
+//		if ((getmodel1() != null)) {
+//			this.selectFeature(getmodel1());
+//		}
+//		// user code begin {2}
+//		// user code end
+//	} catch (java.lang.Throwable ivjExc) {
+//		// user code begin {3}
+//		// user code end
+//		handleException(ivjExc);
+//	}
+//}
 /**
  * connEtoC2:  (geometry1.this --> ElectrodePanel.enableComponents()V)
  * @param value cbit.vcell.geometry.Geometry
@@ -314,46 +314,46 @@ private void connPtoP2SetTarget() {
 		handleException(ivjExc);
 	}
 }
-/**
- * connPtoP3SetSource:  (ElectrodePanel.model <--> model1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			if ((getmodel1() != null)) {
-				this.setModel(getmodel1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connPtoP3SetTarget:  (ElectrodePanel.model <--> model1.this)
- */
-private void connPtoP3SetTarget() {
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			ivjConnPtoP3Aligning = true;
-			setmodel1(this.getModel());
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		handleException(ivjExc);
-	}
-}
+///**
+// * connPtoP3SetSource:  (ElectrodePanel.model <--> model1.this)
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private void connPtoP3SetSource() {
+//	/* Set the source from the target */
+//	try {
+//		if (ivjConnPtoP3Aligning == false) {
+//			// user code begin {1}
+//			// user code end
+//			ivjConnPtoP3Aligning = true;
+//			if ((getmodel1() != null)) {
+//				this.setModel(getmodel1());
+//			}
+//			// user code begin {2}
+//			// user code end
+//			ivjConnPtoP3Aligning = false;
+//		}
+//	} catch (java.lang.Throwable ivjExc) {
+//		ivjConnPtoP3Aligning = false;
+//		// user code begin {3}
+//		// user code end
+//		handleException(ivjExc);
+//	}
+//}
+///**
+// * connPtoP3SetTarget:  (ElectrodePanel.model <--> model1.this)
+// */
+//private void connPtoP3SetTarget() {
+//	try {
+//		if (ivjConnPtoP3Aligning == false) {
+//			ivjConnPtoP3Aligning = true;
+//			setmodel1(this.getModel());
+//			ivjConnPtoP3Aligning = false;
+//		}
+//	} catch (java.lang.Throwable ivjExc) {
+//		ivjConnPtoP3Aligning = false;
+//		handleException(ivjExc);
+//	}
+//}
 /**
  * Comment
  */
@@ -416,26 +416,6 @@ private javax.swing.JLabel getFeatureLabel() {
 	return ivjFeatureLabel;
 }
 /**
- * Insert the method's description here.
- * Creation date: (4/18/2002 10:32:25 AM)
- * @return java.lang.String[]
- * @param model cbit.vcell.model.Model
- */
-private String[] getFeatureNames(Model model) {
-	Vector<String> nameList = new Vector<String>();
-	Structure[] structures = model.getStructures();
-	for (int i=0;i<structures.length;i++){
-		if (structures[i] instanceof Feature) {
-			nameList.add(structures[i].getName());
-		}
-	}
-	
-	String names[] = new String[nameList.size()];
-	nameList.copyInto(names); 
-
-	return names; 	
-}
-/**
  * Return the FeatureValueLabel property value.
  * @return javax.swing.JLabel
  */
@@ -468,21 +448,21 @@ private Geometry getgeometry1() {
 	return ivjgeometry1;
 }
 
-/**
- * Gets the model property (cbit.vcell.model.Model) value.
- * @return The model property value.
- * @see #setModel
- */
-public Model getModel() {
-	return fieldModel;
-}
-/**
- * Return the model1 property value.
- * @return cbit.vcell.model.Model
- */
-private Model getmodel1() {
-	return ivjmodel1;
-}
+///**
+// * Gets the model property (cbit.vcell.model.Model) value.
+// * @return The model property value.
+// * @see #setModel
+// */
+//public Model getModel() {
+//	return fieldModel;
+//}
+///**
+// * Return the model1 property value.
+// * @return cbit.vcell.model.Model
+// */
+//private Model getmodel1() {
+//	return ivjmodel1;
+//}
 
 /**
  * Return the SetFeatureButton property value.
@@ -522,7 +502,7 @@ private void initConnections() throws java.lang.Exception {
 	getSetFeatureButton().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
-	connPtoP3SetTarget();
+//	connPtoP3SetTarget();
 }
 /**
  * Initialize the class.
@@ -584,21 +564,42 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
+
+interface ElectrodeFeatureListProvider {
+	Feature[] getFeatures(ElectrodePanel electrodePanel);
+}
+private ElectrodeFeatureListProvider electrodeFeatureListProvider;
+public void setElectrodeFeatureListProvider(ElectrodeFeatureListProvider electrodeFeatureListProvider){
+	this.electrodeFeatureListProvider = electrodeFeatureListProvider;
+}
 /**
  * Comment
  */
-private void selectFeature(Model model) {
-	String featureNames[] = getFeatureNames(model);
-	if (featureNames == null || featureNames.length == 0) {
+private void selectFeature() {
+	Feature features[] = (electrodeFeatureListProvider!=null?electrodeFeatureListProvider.getFeatures(this):new Feature[0]);
+	if (features == null || features.length == 0) {
 		PopupGenerator.showErrorDialog(this,"No defined feature present !");
 		return;
+	}
+	String[] featureNames = new String[features.length];
+	for (int i = 0; i < featureNames.length; i++) {
+		featureNames[i] = features[i].getName();
 	}
 	String selection = (String)PopupGenerator.showListDialog(this,featureNames,"Select feature for electrode:");
 	if (selection == null){
 		return;
 	}
+	Feature feature = null;
+	for (int i = 0; i < features.length; i++) {
+		if(features[i].getName().equals(selection)){
+			feature = features[i];
+			break;
+		}
+	}
 	try {
-		Feature feature = (Feature)model.getStructure(selection);
+		if(feature == null){
+			throw new Exception("Couldn't find Structure for selected name '"+selection+"'");
+		}
 		getelectrode1().setFeature(feature);
 	}catch (Exception e){
 		handleException(e);
@@ -693,31 +694,31 @@ private void setgeometry1(Geometry newValue) {
 		}
 	};
 }
-/**
- * Sets the model property (cbit.vcell.model.Model) value.
- * @param model The new value for the property.
- * @see #getModel
- */
-public void setModel(Model model) {
-	Model oldValue = fieldModel;
-	fieldModel = model;
-	firePropertyChange("model", oldValue, model);
-}
-/**
- * Set the model1 to a new value.
- * @param newValue cbit.vcell.model.Model
- */
-private void setmodel1(Model newValue) {
-	if (ivjmodel1 != newValue) {
-		try {
-			Model oldValue = getmodel1();
-			ivjmodel1 = newValue;
-			connPtoP3SetSource();
-			firePropertyChange("model", oldValue, newValue);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	};
-}
+///**
+// * Sets the model property (cbit.vcell.model.Model) value.
+// * @param model The new value for the property.
+// * @see #getModel
+// */
+//public void setModel(Model model) {
+//	Model oldValue = fieldModel;
+//	fieldModel = model;
+//	firePropertyChange("model", oldValue, model);
+//}
+///**
+// * Set the model1 to a new value.
+// * @param newValue cbit.vcell.model.Model
+// */
+//private void setmodel1(Model newValue) {
+//	if (ivjmodel1 != newValue) {
+//		try {
+//			Model oldValue = getmodel1();
+//			ivjmodel1 = newValue;
+//			connPtoP3SetSource();
+//			firePropertyChange("model", oldValue, newValue);
+//		} catch (java.lang.Throwable ivjExc) {
+//			handleException(ivjExc);
+//		}
+//	};
+//}
 
 }
