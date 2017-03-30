@@ -173,18 +173,18 @@ public class TextFieldAutoCompletion extends JTextField {
 		public void focusGained(FocusEvent e) {			
 		}
 		public void focusLost(FocusEvent e) {
-//			if(getOperatingSystemInfo().isLinux()) {
-//				requestFocus();
-//				SwingUtilities.invokeLater(new Runnable() {
-//					public void run() {
-//						int cp = getCaretPosition();
-//						setCaretPosition(cp);
-//						moveCaretPosition(cp);				
-//						requestFocus();
-//					}
-//				});
-//				repaint();
-//			} else {		// Windows or Mac
+			if(getOperatingSystemInfo().isLinux()) {
+				requestFocus();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						int cp = getCaretPosition();
+						setCaretPosition(cp);
+						moveCaretPosition(cp);				
+						requestFocus();
+					}
+				});
+				repaint();
+			} else {		// Windows or Mac
 				if (e.isTemporary()) {
 					if(focusCounter == 2) {
 						focusCounter--;
@@ -202,7 +202,7 @@ public class TextFieldAutoCompletion extends JTextField {
 					return;
 				}
 				repaint();
-//			}
+			}
 		}
 		
 	}
