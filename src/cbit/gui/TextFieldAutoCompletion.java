@@ -67,12 +67,13 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.resource.OperatingSystemInfo;
 
 @SuppressWarnings("serial")
 public class TextFieldAutoCompletion extends JTextField {
 	private JPopupMenu autoCompJPopupMenu = null;
-	private JList autoCompJList = null;
-	private DefaultListModel listModel = null;
+	private JList<String> autoCompJList = null;
+	private DefaultListModel<String> listModel = null;
 	private Set<String> autoCompWordList = null;
 	private static final String COMMIT_ACTION = "commit";
 	private static final String GOUPLIST_ACTION = "gouplist";
@@ -91,6 +92,8 @@ public class TextFieldAutoCompletion extends JTextField {
 	private ArrayList<String> functList = new ArrayList<String>();
 	private Rectangle highlightRectangle = null;
 	private boolean bSetText = false;
+	
+	OperatingSystemInfo osi = null;
 		
 	private class InternalEventHandler implements DocumentListener, MouseListener, KeyListener, FocusListener {
 		public void changedUpdate(DocumentEvent e) {
@@ -143,15 +146,9 @@ public class TextFieldAutoCompletion extends JTextField {
 						autoCompJPopupMenu.setVisible(false);
 					} else {
 						showPopupChoices(null);
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								requestFocus();
-							}
-						});
 					}
 				} else if (e.getKeyCode() == KeyEvent.VK_TAB) {
 					if (autoCompJPopupMenu.isVisible()) {
-						autoCompJPopupMenu.requestFocus();
 						autoCompJList.setSelectionBackground(getSelectionColor());
 					}
 				} else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -160,34 +157,22 @@ public class TextFieldAutoCompletion extends JTextField {
 			}
 		}
 
-		// typing in this text field would result in 2 focusLost temporarily events
-		// we want to hold the cursor in the text field, so we have to do a requestFocus after the second
-		private int focusCounter = 0;
 		public void keyTyped(KeyEvent e) {
-			focusCounter = 2;
 		}
 
 		public void focusGained(FocusEvent e) {			
 		}
 		public void focusLost(FocusEvent e) {
-			if (e.isTemporary()) {
-				if(focusCounter == 2) {
-					focusCounter--;
-				} else if(focusCounter == 1) {
-					focusCounter--;
-					requestFocus();
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							int cp = getCaretPosition();
-							setCaretPosition(cp);
-							moveCaretPosition(cp);				
-						}
-					});
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					int cp = getCaretPosition();
+					setCaretPosition(cp);
+					moveCaretPosition(cp);				
 				}
-				return;
-			}
+			});
 			repaint();
 		}
+		
 	}
 	
 	public TextFieldAutoCompletion() {
@@ -196,19 +181,18 @@ public class TextFieldAutoCompletion extends JTextField {
 	}
 		
 	private void initialize() {
+		osi = getOperatingSystemInfo();
 		getDocument().addDocumentListener(eventHandler);
 		addKeyListener(eventHandler);
 		addMouseListener(eventHandler);
 		
 		autoCompWordList = new HashSet<String>();		
-		listModel = new DefaultListModel();
-		autoCompJList = new JList(listModel);
+		listModel = new DefaultListModel<String>();
+		autoCompJList = new JList<String>(listModel);
 		autoCompJList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		autoCompJList.addMouseListener(eventHandler);
 
 		autoCompJPopupMenu = new JPopupMenu();
-		// force heavyweight for consistency, it'll always fire 2 focus lost events
-		autoCompJPopupMenu.setLightWeightPopupEnabled(false);
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(autoCompJList);
 		autoCompJPopupMenu.add(scrollPane);
@@ -288,7 +272,6 @@ public class TextFieldAutoCompletion extends JTextField {
 		public void actionPerformed(ActionEvent ev) {
 			if (autoCompJPopupMenu.isVisible()) {
 				autoCompJPopupMenu.setVisible(false);
-				requestFocus();
 			} else {
 				Container parent = TextFieldAutoCompletion.this.getParent();
 				if (parent instanceof JTable) {
@@ -335,7 +318,6 @@ public class TextFieldAutoCompletion extends JTextField {
 			}
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					requestFocus();
 					autoCompJPopupMenu.setVisible(false);
 				}
 			});	
@@ -488,14 +470,14 @@ public class TextFieldAutoCompletion extends JTextField {
 				
 	       		try {
 	       			Rectangle loc = modelToView(getCaretPosition());
+	       			autoCompJPopupMenu.setFocusable(false);
 	       			autoCompJPopupMenu.show(this, loc.x, loc.y + loc.height);
-	       		} catch (BadLocationException ex) {	       			
+	       		} catch (BadLocationException ex) {
 	       		}
 	       	}
 		} catch (Exception ex) {
 			ex.printStackTrace(System.out);
 		} finally {
-			 requestFocus();
 			// for mac, for some reason, when popup menu shows up
 			// the whole text was selected. So we need to de-select 
 			// everything.
@@ -564,6 +546,13 @@ public class TextFieldAutoCompletion extends JTextField {
 			tempList.addAll(tempFuncList);
 		}
 		return tempList;
+	}
+	
+	private OperatingSystemInfo getOperatingSystemInfo() {
+		if(osi == null) {
+			osi = OperatingSystemInfo.getInstance();
+		}
+		return osi;
 	}
 	
 	// test main
