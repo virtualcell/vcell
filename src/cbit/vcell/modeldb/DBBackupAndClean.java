@@ -16,6 +16,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -27,22 +28,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
-import oracle.jdbc.pool.OracleDataSource;
 
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.util.AmplistorUtils;
-import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
+import oracle.jdbc.pool.OracleDataSource;
 
 
 public class DBBackupAndClean {
@@ -54,6 +54,7 @@ public class DBBackupAndClean {
 	 */
 	public static final String OP_BACKUP = "backup";
 	public static final String OP_CLEAN = "clean";
+	public static final String OP_DELSIMSDISK = "delsimsdisk";
 	public static final String OP_CLEAN_AND_BACKUP = "cleanandbackup";
 	public static final String OP_IMPORT = "import";
 	
@@ -99,6 +100,8 @@ public class DBBackupAndClean {
 			backup(actionArgs);
 		}else if(action.equals(OP_CLEAN) && actionArgs != null){
 			clean(actionArgs);
+		}else if(action.equals(OP_DELSIMSDISK) && actionArgs != null){
+			deleteSimsFromDisk(actionArgs);
 		}else if(action.equals(OP_CLEAN_AND_BACKUP) && actionArgs != null){
 			clean(actionArgs);
 			backup(actionArgs);
@@ -772,10 +775,15 @@ public class DBBackupAndClean {
 
 		String sql =
 			"SELECT "+
-				UserTable.table.userid.getQualifiedColName()+","+
+				"TO_CHAR(SYSDATE,'dd-Mon-yyyy hh24:mi:ss') deldate "+","+
+				UserTable.table.userid.getQualifiedColName()+" userid ,"+
+				UserTable.table.id.getQualifiedColName()+" userkey ,"+
 				SimulationTable.table.id.getQualifiedColName()+" "+SIMID+","+
-				SimulationTable.table.name.getQualifiedColName()+","+
-				"TO_CHAR("+SimulationTable.table.versionDate.getQualifiedColName()+",'dd-Mon-yyyy hh24:mi:ss') "+SIMDATE+
+				SimulationTable.versionParentSimRef_ColumnName+" simpref ,"+
+				"TO_CHAR("+SimulationTable.table.versionDate.getQualifiedColName()+",'dd-Mon-yyyy hh24:mi:ss') "+SIMDATE+","+
+				SimulationTable.table.name.getQualifiedColName()+" simname"+","+
+				"'"+DelSimStatus.init+"' status"+","+
+				"null numfiles"+
 			" FROM "+
 				SimulationTable.table.getTableName()+","+
 				UserTable.table.getTableName()+
@@ -785,7 +793,11 @@ public class DBBackupAndClean {
 				UserTable.table.id.getQualifiedColName()+" = "+SimulationTable.table.ownerRef.getQualifiedColName()+
 				" ORDER BY LOWER("+UserTable.table.userid.getQualifiedColName()+")";
 
-		executeQuery(con, sql,logStringBuffer);
+		executeQuery(con, sql,logStringBuffer,false);
+		
+		String saveForDeleteSQL = 
+			"insert into vc_simdelfromdisk (deldate,userid,userkey,simid,simpref,simdate,simname,status,numfiles) "+sql;
+		executeUpdate(con, saveForDeleteSQL, logStringBuffer);
 		
 		sql =
 			"DELETE FROM "+SimulationTable.table.getTableName()+
@@ -846,7 +858,7 @@ public class DBBackupAndClean {
 					UserTable.table.id.getQualifiedColName()+" = "+MathDescTable.table.ownerRef.getQualifiedColName()+
 				" ORDER BY LOWER("+UserTable.table.userid.getQualifiedColName()+")";
 		
-		executeQuery(con, sql,logStringBuffer);
+		executeQuery(con, sql,logStringBuffer,false);
 			
 			sql =
 				"DELETE FROM "+MathDescTable.table.getTableName()+
@@ -886,7 +898,7 @@ public class DBBackupAndClean {
 			UserTable.table.id.getQualifiedColName()+" = "+GeometryTable.table.ownerRef.getQualifiedColName() +
 			" ORDER BY LOWER("+UserTable.table.userid.getQualifiedColName()+")";
 			
-		executeQuery(con, sql,logStringBuffer);
+		executeQuery(con, sql,logStringBuffer,false);
 
 		sql =
 			"DELETE FROM "+GeometryTable.table.getTableName()+
@@ -923,7 +935,7 @@ public class DBBackupAndClean {
 				SimContextTable.table.ownerRef.getQualifiedColName()+" = "+UserTable.table.id.getQualifiedColName()+
 			" ORDER BY LOWER("+UserTable.table.userid.getQualifiedColName()+")";
 		
-		executeQuery(con, sql,logStringBuffer);
+		executeQuery(con, sql,logStringBuffer,false);
 
 		sql =
 			"DELETE FROM "+SimContextTable.table.getTableName()+
@@ -963,7 +975,7 @@ public class DBBackupAndClean {
 				ModelTable.table.ownerRef.getQualifiedColName()+" = "+UserTable.table.id.getQualifiedColName()+
 			" ORDER BY LOWER("+UserTable.table.userid.getQualifiedColName()+")";
 
-		executeQuery(con, sql,logStringBuffer);
+		executeQuery(con, sql,logStringBuffer,false);
 		
 		sql =
 			"DELETE FROM "+ModelTable.table.getTableName()+
@@ -1018,18 +1030,36 @@ public class DBBackupAndClean {
 			if(stmt != null){try{stmt.close();}catch(Exception e2){logStringBuffer.append("\n"+e2.getClass().getName()+"\n"+e2.getMessage());}}
 		}
 	}
-	private static void executeQuery(Connection con, String sql,StringBuffer logStringBuffer)throws Exception{
+	private static ArrayList<Object[]> executeQuery(Connection con, String sql,StringBuffer logStringBuffer, boolean bReturnResults)throws Exception{
 		Statement stmt = null;
+		ArrayList<Object[]> queryValues = null;
+		if(bReturnResults){
+			queryValues = new ArrayList<>();
+		}
 		try{
 			logStringBuffer.append(sql+";\n");
 			stmt = con.createStatement();
 			ResultSet rset = stmt.executeQuery(sql);
 			ResultSetMetaData rsetMetaData = rset.getMetaData();
+			Object[] rowValues = null;
 			while(rset.next()){
+				if(bReturnResults){
+					rowValues = new Object[rsetMetaData.getColumnCount()];
+				}
 				for (int i = 0; i < rsetMetaData.getColumnCount(); i++) {
-					logStringBuffer.append((i==0?"":" ")+rset.getObject(i+1).toString());
+					Object colValue = rset.getObject(i+1);
+					if(rset.wasNull()){
+						colValue = null;
+					}
+					if(bReturnResults){
+						rowValues[i] = colValue;
+					}
+					logStringBuffer.append((i==0?"":" ")+(colValue==null?"NULL":colValue.toString()));
 				}
 				logStringBuffer.append("\n");
+				if(bReturnResults){
+					queryValues.add(rowValues);
+				}
 			}
 			logStringBuffer.append("\n");
 			rset.close();
@@ -1040,8 +1070,145 @@ public class DBBackupAndClean {
 		}finally{
 			if(stmt != null){try{stmt.close();}catch(Exception e2){logStringBuffer.append("\n"+e2.getClass().getName()+"\n"+e2.getMessage());}}
 		}
+		return queryValues;
 	}
+	private static enum DelSimStatus {init,notfound,delall,delsome,delnone};
+	private static void deleteSimsFromDisk(String[] args) {
+		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
+		
+		OracleDataSource oracleDataSource  = null;
+		Connection con = null;
+		
+		String baseFileName = createBaseFileName(dbBackupHelper.dbHostName, dbBackupHelper.dbSrvcName, dbBackupHelper.vcellSchema);
+		baseFileName = OP_DELSIMSDISK+"_"+baseFileName;
 
+		StringBuffer logStringBuffer = new StringBuffer();
+
+		try{
+			oracleDataSource = new OracleDataSource();
+			//jdbc:oracle:<drivertype>:<username/password>@<database>
+			//<database> = <host>:<port>:<SID>
+			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
+			oracleDataSource.setURL(url);
+
+			con = oracleDataSource.getConnection();
+			con.setAutoCommit(false);
+			
+			String sql = 
+				"SELECT simid,userid from vc_simdelfromdisk where status='"+DelSimStatus.init.name()+"' order by userid";
+			
+			ArrayList<Object[]> deleteTheseSims = executeQuery(con, sql, logStringBuffer, true);
+			
+			//Organize simIDs by userid
+			HashMap<String, TreeSet<String>> userSimsMap = new HashMap<>();
+			for(Object[] objs:deleteTheseSims){
+				BigDecimal simID = (BigDecimal)objs[0];
+				String userid = (String)objs[1];
+				TreeSet<String> userSims = userSimsMap.get(userid);
+				if(userSims == null){
+					userSims = new TreeSet<String>();
+					userSimsMap.put(userid, userSims);
+				}
+				userSims.add(simID.toString());
+			}
+
+			Iterator<String> userIter = userSimsMap.keySet().iterator();
+			while(userIter.hasNext()){
+				String userID = userIter.next();
+				TreeSet<String> userSimIDs = userSimsMap.get(userID);
+
+				FileFilter deleteTheseFilesFilter = new FileFilter() {
+					@Override
+					public boolean accept(File pathname) {
+						String name = pathname.getName();
+						String subStr = name.substring(6, name.indexOf('_', 6));
+						if(userSimIDs.contains(subStr)){
+							return true;
+						}
+						return false;
+					}
+				};
+				for(String simid:userSimsMap.get(userID)){
+					System.out.println("     "+simid);
+				}
+				File userDir = new File(dbBackupHelper.exportDir,userID);
+				File[] deleteTheseFiles = userDir.listFiles(deleteTheseFilesFilter);
+				HashMap<String, ArrayList<File>> simidToFilesMap = new HashMap<>();
+				for (int i = 0; i < deleteTheseFiles.length; i++) {
+					String name = deleteTheseFiles[i].getName();
+					String subStr = name.substring(6, name.indexOf('_', 6));
+					if(userSimIDs.contains(subStr)){
+						ArrayList<File> fileMatchSimIDFile = simidToFilesMap.get(subStr);
+						if(fileMatchSimIDFile == null){
+							fileMatchSimIDFile = new ArrayList<>();
+							simidToFilesMap.put(subStr, fileMatchSimIDFile);
+						}
+						
+						fileMatchSimIDFile.add(deleteTheseFiles[i]);
+					}
+				}
+				
+				StringBuffer fileMatchSimIDidSB = new StringBuffer();
+				for(String str:simidToFilesMap.keySet()){
+					fileMatchSimIDidSB.append((fileMatchSimIDidSB.length()>0?",":"")+str);
+				}
+				
+				TreeSet<String> simIDsNotMatchFiles = ((TreeSet<String>)userSimsMap.get(userID).clone());
+				simIDsNotMatchFiles.removeAll(simidToFilesMap.keySet());
+				ArrayList<StringBuffer> smallSB = new ArrayList<>();// breakup into pieces because oracle limit on lists size
+				int simcount = 0;
+				for(String simid:simIDsNotMatchFiles){
+					if(smallSB.size() == 0 || simcount >= 500){
+						simcount = 0;
+						smallSB.add(new StringBuffer());
+					}
+					smallSB.get(smallSB.size()-1).append((smallSB.get(smallSB.size()-1).length()>0?",":"")+simid);
+					simcount++;
+				}
+				
+				System.out.println(userID+" SimIDs deleted="+fileMatchSimIDidSB.toString());
+				for(int i=0;i<smallSB.size();i++){
+					System.out.println(userID+" SimIDs Not Found in files="+smallSB.get(i).toString());					
+				}
+				
+				for(int i=0;i<smallSB.size();i++){
+					sql = "update vc_simdelfromdisk set status='"+DelSimStatus.notfound.name()+"' where userid='"+userID+"' and simid in ("+smallSB.get(i).toString()+")";
+					executeUpdate(con, sql, logStringBuffer);
+				}
+
+				for(String simid:simidToFilesMap.keySet()){
+					ArrayList<File> files = simidToFilesMap.get(simid);
+					int delCount = 0;
+					for(File file:files){
+						if(file.delete()){
+							delCount++;
+//							System.out.println("deleted "+file.getAbsolutePath());
+						}else{
+//							System.out.println("fail delete "+file.getAbsolutePath());
+						}
+					}
+					String newStatus = DelSimStatus.delsome.name();
+					if(delCount == 0){
+						newStatus = DelSimStatus.delnone.name();
+					}else if(delCount == files.size()){
+						newStatus = DelSimStatus.delall.name();
+					}
+					sql = "update vc_simdelfromdisk set status='"+newStatus+"', numfiles="+files.size()+" where userid='"+userID+"' and simid="+simid;
+					executeUpdate(con, sql, logStringBuffer);
+				}
+			}
+		}catch(Exception e){
+			writeFile(dbBackupHelper.workingDir, baseFileName, e.getClass().getName()+"\n"+e.getMessage(),true, dbBackupHelper.exportDir);
+		}finally{
+			if(con != null){
+				try{con.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+			}
+			if(oracleDataSource != null){
+				try{oracleDataSource.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+			}
+		}		
+	}
+		
 	private static void clean(String[] args) {
 		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
 		
