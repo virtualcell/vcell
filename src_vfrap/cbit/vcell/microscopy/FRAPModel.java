@@ -140,7 +140,7 @@ public class FRAPModel implements Matchable
 		this.modelParameters = modelParameters;
 	}
 	
-	public static Parameter[] getInitialParameters(FRAPData frapData, String modelIdentifier) throws ExpressionException, OptimizationException, IOException
+	public static Parameter[] getInitialParameters(FRAPData frapData, String modelIdentifier,int startIndexForRecovery) throws ExpressionException, OptimizationException, IOException
 	{
 		Parameter[] params = null;
 		//get estimated bleach type
@@ -148,7 +148,7 @@ public class FRAPModel implements Matchable
 		int bleachType = (bleachFraction > FRAPDataAnalysis.THRESHOLD_BLEACH_TYPE)? 
 				         FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_HalfCell : FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_GaussianSpot;
 		//get analytical results 
-		FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults analysisResults = FRAPDataAnalysis.fitRecovery_diffusionOnly(frapData, bleachType);
+		FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults analysisResults = FRAPDataAnalysis.fitRecovery_diffusionOnly(frapData, bleachType,startIndexForRecovery);
 		
 		//constrain the parameters in upper and lower bounds, analytic solution may get weird results sometimes(e.g. once got diffRate = 2819000.674223344)
 		double diffusionRate = analysisResults.getRecoveryDiffusionRate();

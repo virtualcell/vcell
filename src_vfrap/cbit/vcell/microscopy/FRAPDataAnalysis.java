@@ -81,10 +81,10 @@ public class FRAPDataAnalysis {
 	 * @return FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults
 	 * @throws ExpressionException
 	 */
-	public static FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults fitRecovery_diffusionOnly(FRAPData frapData, int arg_bleachType) throws ExpressionException, OptimizationException, IOException, IllegalArgumentException
+	public static FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults fitRecovery_diffusionOnly(FRAPData frapData, int arg_bleachType,int startIndexForRecovery) throws ExpressionException, OptimizationException, IOException, IllegalArgumentException
 	{
 		
-		int startIndexForRecovery = getRecoveryIndex(frapData);
+//		int startIndexForRecovery = getRecoveryIndex(frapData);
 		//
 		// get unnormalized average background fluorescence at each time point
 		//
@@ -221,10 +221,10 @@ public class FRAPDataAnalysis {
 	 * @return FrapDataAnalysisResults.ReactionOnlyAnalysisRestults
 	 * @throws ExpressionException
 	 */
-	public static FrapDataAnalysisResults.ReactionOnlyAnalysisRestults fitRecovery_reacOffRateOnly(FRAPData frapData, Parameter fixedParam, double[][] measurementError) throws ExpressionException, OptimizationException, IOException
+	public static FrapDataAnalysisResults.ReactionOnlyAnalysisRestults fitRecovery_reacOffRateOnly(FRAPData frapData, Parameter fixedParam, double[][] measurementError,int startIndexForRecovery) throws ExpressionException, OptimizationException, IOException
 	{
 		
-		int startIndexForRecovery = getRecoveryIndex(frapData);
+//		int startIndexForRecovery = getRecoveryIndex(frapData);
 		//
 		// get unnormalized average background fluorescence at each time point
 		//
@@ -352,7 +352,7 @@ public class FRAPDataAnalysis {
 		return offRateAnalysisResults;
 	}
 	
-	public static int getRecoveryIndex(FRAPData frapData)
+	public static int calculateRecoveryIndex(FRAPData frapData)
 	{
 		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),null,null);
 		

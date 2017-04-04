@@ -317,7 +317,7 @@ public class DefineROI_SummaryPanel extends JPanel
 			}
 			if(bleachROIDefined.isSelected())
 			{
-				int index = FRAPDataAnalysis.getRecoveryIndex(frapStudy.getFrapData());
+				int index = (frapStudy.getStartingIndexForRecovery()==null?FRAPDataAnalysis.calculateRecoveryIndex(frapStudy.getFrapData()):frapStudy.getStartingIndexForRecovery());
 				startIndexCombo.setSelectedIndex(index);
 				startIndexAvaliableLabel.setText(START_IDX_AVAILABLE_STR);
 			}

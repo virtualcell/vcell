@@ -33,8 +33,8 @@ import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 
 @SuppressWarnings("serial")
-public class FRAPParametersPanel extends JPanel {
-	private FRAPEstimationPanel estimationPanel;
+public class FRAPParametersPanel_NotUsed extends JPanel {
+	private FRAPEstimationPanel_NotUsed estimationPanel;
 	private JComboBox frapDataTimesComboBox;
 	private JLabel immobileFractionValueJLabel;
 	private JTextField monitorBleachRateTextField;
@@ -48,7 +48,7 @@ public class FRAPParametersPanel extends JPanel {
 	private static String MONITOR_BLEACH_RATE_DESCRIPTION = "Monitor Bleach Rate";
 	private static String MOBILE_FRACTION_DESCRIPTION = "Primary Mobile Fraction";
 	private static String DIFFUSION_RATE_DESCRIPTION = "Primary Diffusion Rate";
-	public FRAPParametersPanel() {
+	public FRAPParametersPanel_NotUsed() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowHeights = new int[] {0};
@@ -69,13 +69,13 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 1;
 
-		estimationPanel = new FRAPEstimationPanel();
+		estimationPanel = new FRAPEstimationPanel_NotUsed();
 		estimationPanel.setBorder(new TitledBorder(new EtchedBorder(Color.gray, Color.lightGray), "FRAP Model Parameter Assistant (Select 'Estimation Method')", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 12), null));
 		estimationPanel.addPropertyChangeListener(
 			new PropertyChangeListener(){
 				public void propertyChange(PropertyChangeEvent evt) {
 					if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_PARAMETER_ESTIMATE_VALUES)){
-						FRAPEstimationPanel.FRAPParameterEstimateValues frapParamEstVals = (FRAPEstimationPanel.FRAPParameterEstimateValues)evt.getNewValue();
+						FRAPEstimationPanel_NotUsed.FRAPParameterEstimateValues frapParamEstVals = (FRAPEstimationPanel_NotUsed.FRAPParameterEstimateValues)evt.getNewValue();
 						
 						if(frapParamEstVals.startTimeRecovery != null){
 							boolean bFound = false;
@@ -415,9 +415,6 @@ public class FRAPParametersPanel extends JPanel {
 		}
 	}
 	
-	public void refreshFRAPModelParameterEstimates(FRAPData frapData) throws Exception {
-		estimationPanel.refreshFRAPModelParameterEstimates(frapData);
-	}
 	//used when changing tabs. field can be empty when saving but is not allowed when changing tabs 
 	public boolean checkIniParameters()
 	{

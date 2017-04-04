@@ -50,7 +50,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
 @SuppressWarnings("serial")
-public class FRAPEstimationPanel extends JPanel {
+public class FRAPEstimationPanel_NotUsed extends JPanel {
 	private JTable table;
 	private FRAPData initFRAPData;
 	private JLabel plotOfAverageLabel;
@@ -97,7 +97,7 @@ public class FRAPEstimationPanel extends JPanel {
 	
 	
 
-	public FRAPEstimationPanel() {
+	public FRAPEstimationPanel_NotUsed() {
 		super();
 		
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -199,7 +199,7 @@ public class FRAPEstimationPanel extends JPanel {
 					FRAPParameterEstimateEnum.BLEACH_RATE_MONITOR.value;
 
 				try{
-					int[] result = DialogUtils.showComponentOKCancelTableList(FRAPEstimationPanel.this, "Select rows to copy values to 'Initial FRAP Model Parameters'",
+					int[] result = DialogUtils.showComponentOKCancelTableList(FRAPEstimationPanel_NotUsed.this, "Select rows to copy values to 'Initial FRAP Model Parameters'",
 							FRAP_ESTIMATE_COLUMN_NAMES, rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					if(result != null && result.length > 0){
 						Double selectedDiffusionRate = null;
@@ -395,10 +395,10 @@ public class FRAPEstimationPanel extends JPanel {
 //					PLOT_TITLE_STRING+"  ('"+
 //					FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')");
 				try{
-					refreshFRAPModelParameterEstimates(initFRAPData);
+					refreshFRAPModelParameterEstimates(initFRAPData,FRAPDataAnalysis.calculateRecoveryIndex(initFRAPData));
 				}catch (Exception e2){
 					e2.printStackTrace();
-					DialogUtils.showErrorDialog(FRAPEstimationPanel.this,
+					DialogUtils.showErrorDialog(FRAPEstimationPanel_NotUsed.this,
 						"Error setting estimation method "+
 						FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+
 						"\n"+e2.getMessage());
@@ -408,7 +408,7 @@ public class FRAPEstimationPanel extends JPanel {
 		bleachEstimationComboBox.setSelectedItem(FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_GaussianSpot]);
 	}
 
-	private void displayFit(FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults diffAnalysisResults,double[] frapDataTimeStamps){
+	private void displayFit(FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults diffAnalysisResults,double[] frapDataTimeStamps,int startIndexForRecovery){
 		if (diffAnalysisResults == null){
 			FRAPParameterEstimateEnum.DIFFUSION_RATE.value = null;
 			FRAPParameterEstimateEnum.MOBILE_FRACTION.value = null;
@@ -436,7 +436,7 @@ public class FRAPEstimationPanel extends JPanel {
 			
 			
 			
-			int startIndexForRecovery = FRAPDataAnalysis.getRecoveryIndex(initFRAPData);
+//			int startIndexForRecovery = FRAPDataAnalysis.getRecoveryIndex(initFRAPData);
 			//
 			//Experiment - Cell ROI Average
 			//
@@ -511,14 +511,14 @@ public class FRAPEstimationPanel extends JPanel {
 		table.repaint();
 	}
 	
-	public void refreshFRAPModelParameterEstimates(FRAPData frapData) throws Exception {
+	public void refreshFRAPModelParameterEstimates(FRAPData frapData,int startIndexForRecovery) throws Exception {
 		this.initFRAPData = frapData;
 		FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults diffAnalysisResults = null;
 		double[] frapDataTimeStamps = null;
 		bleachEstimationComboBox.setEnabled(false);
 		if(frapData != null){
 			if(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getNonzeroPixelsCount()<1){
-				displayFit(null,null);
+				displayFit(null,null,startIndexForRecovery);
 				throw new Exception(
 						VFrap_OverlayEditorPanelJAI.INITIAL_BLEACH_AREA_TEXT+" ROI not defined.\n"+
 					"Use ROI tools under '"+FRAPStudyPanel.FRAPSTUDYPANEL_TABNAME_IMAGES+"' tab to define.");
@@ -526,11 +526,11 @@ public class FRAPEstimationPanel extends JPanel {
 			frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
 			diffAnalysisResults =
 				FRAPDataAnalysis.fitRecovery_diffusionOnly(frapData,
-					FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.getBleachTypeFromBleachTypeName(bleachEstimationComboBox.getSelectedItem().toString()));
-			FRAPParameterEstimateEnum.START_TIME_RECOVERY.value = frapDataTimeStamps[FRAPDataAnalysis.getRecoveryIndex(initFRAPData)];
+					FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.getBleachTypeFromBleachTypeName(bleachEstimationComboBox.getSelectedItem().toString()),startIndexForRecovery);
+			FRAPParameterEstimateEnum.START_TIME_RECOVERY.value = frapDataTimeStamps[startIndexForRecovery];
 			bleachEstimationComboBox.setEnabled(true);
 		}
 
-		displayFit(diffAnalysisResults,frapDataTimeStamps);
+		displayFit(diffAnalysisResults,frapDataTimeStamps,startIndexForRecovery);
 	}
 }

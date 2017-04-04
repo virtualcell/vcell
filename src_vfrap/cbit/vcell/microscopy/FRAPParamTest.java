@@ -174,7 +174,7 @@ public class FRAPParamTest
 				//get startign index
 				if(frapStudy.getStartingIndexForRecovery() == null)
 				{
-					int index = FRAPDataAnalysis.getRecoveryIndex(frapStudy.getFrapData());
+					int index = FRAPDataAnalysis.calculateRecoveryIndex(frapStudy.getFrapData());
 					frapStudy.setStartingIndexForRecovery(index);
 				}
 				//get dependent rois
@@ -226,7 +226,7 @@ public class FRAPParamTest
 					if(frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() ==null )
 					{
 						frapStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF);
-						Parameter[] initialParams = FRAPModel.getInitialParameters(frapStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
+						Parameter[] initialParams = FRAPModel.getInitialParameters(frapStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT],frapStudy.getStartingIndexForRecovery());
 						Parameter[] bestParameters = frapStudy.getFrapOptData().getBestParamters(initialParams, frapStudy.getSelectedROIsForErrorCalculation());
 						frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
 					}
@@ -238,7 +238,7 @@ public class FRAPParamTest
 					if(frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() ==null )
 					{
 						frapStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF);
-						Parameter[] initialParams = FRAPModel.getInitialParameters(frapStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
+						Parameter[] initialParams = FRAPModel.getInitialParameters(frapStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS],frapStudy.getStartingIndexForRecovery());
 						Parameter[] bestParameters = frapStudy.getFrapOptData().getBestParamters(initialParams, frapStudy.getSelectedROIsForErrorCalculation());
 						frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
 					}

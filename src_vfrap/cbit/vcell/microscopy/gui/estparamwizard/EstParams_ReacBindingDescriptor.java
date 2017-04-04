@@ -59,7 +59,7 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 			else // no parameters are available
 			{
 				try{
-			    	params = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_BINDING]);
+			    	params = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_BINDING],fStudy.getStartingIndexForRecovery());
 		    	}catch(Exception ex)
 		    	{
 		    		ex.printStackTrace(System.out);

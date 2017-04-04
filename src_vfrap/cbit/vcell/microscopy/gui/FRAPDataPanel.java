@@ -163,6 +163,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		newFrapStudy.setRoiExternalDataInfo(fStudy.getRoiExternalDataInfo());
 		newFrapStudy.setStoredRefData(fStudy.getStoredRefData());
 		newFrapStudy.setModels(fStudy.getModels());
+		newFrapStudy.setStartingIndexForRecovery(fStudy.getStartingIndexForRecovery());
 		getFrapWorkspace().setFrapStudy(newFrapStudy,false);
 	}
 	/**

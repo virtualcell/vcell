@@ -88,7 +88,7 @@ public class FRAPOptFunctions
 		}
 		setIsApplyMeasurementError(bApplyMeasurementError);
 		Parameter[] outputParams = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE];
-		FrapDataAnalysisResults.ReactionOnlyAnalysisRestults offRateResults = FRAPDataAnalysis.fitRecovery_reacOffRateOnly(frapData, fixedParam, measurementErrors);
+		FrapDataAnalysisResults.ReactionOnlyAnalysisRestults offRateResults = FRAPDataAnalysis.fitRecovery_reacOffRateOnly(frapData, fixedParam, measurementErrors,getExpFrapStudy().getStartingIndexForRecovery());
 		setOffRateResults(offRateResults);
 		
 		outputParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
