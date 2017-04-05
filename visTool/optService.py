@@ -53,7 +53,7 @@ def main():
         COPASI.CCopasiRootContainer.init()
         dataModel = COPASI.CCopasiRootContainer.addDatamodel()
         sbmlFile = optProblem.mathModelSbmlFile
-        dataModel.loadModel(sbmlFile)   # load the model
+        #dataModel.loadModel(sbmlFile)   # load the model
         dataModel.importSBML(sbmlFile)
         print("data model loaded")
 
@@ -134,7 +134,108 @@ struct OptProblem {
         result = fitTask.setMethodType(copasiFitMethod)
         assert result == True
 
- # ------------------------------------------------------------------------------
+
+        num_lines = sum(1 for line in open(optProblem.experimentalDataFile))
+
+        #endTime = .... first column (time), last row (last time)
+        endTime = 10.0
+
+        # ------------------------------------------------------------------------------
+
+        # get the trajectory task object
+        trajectoryTask = dataModel.getTask("Time-Course")
+        assert trajectoryTask != None
+
+        # run a deterministic time course
+        trajectoryTask.setMethodType(COPASI.CTaskEnum.deterministic)
+
+        # pass a pointer of the model to the problem
+        trajectoryTask.getProblem().setModel(dataModel.getModel())
+
+        # activate the task so that it will be run when the model is saved
+        # and passed to CopasiSE
+        trajectoryTask.setScheduled(True)
+
+        # get the problem for the task to set some parameters
+        problem = trajectoryTask.getProblem()
+
+        # simulate 4000 steps
+        problem.setStepNumber(num_lines-1)
+        # start at time 0
+        dataModel.getModel().setInitialTime(0.0)
+        # simulate a duration of 400 time units
+        problem.setDuration(endTime)
+        # tell the problem to actually generate time series data
+        problem.setTimeSeriesRequested(True)
+
+        # set some parameters for the LSODA method through the method
+        method = trajectoryTask.getMethod()
+
+        result = True
+        try:
+            # now we run the actual trajectory
+            result = trajectoryTask.processWithOutputFlags(True, COPASI.CCopasiTask.ONLY_TIME_SERIES)
+        except:
+            sys.stderr.write("Error. Running the time course simulation failed.\n")
+            sys.stderr.write(trajectoryTask.getProcessWarning())
+            sys.stderr.write(trajectoryTask.getProcessError())
+            # check if there are additional error messages
+            if COPASI.CCopasiMessage.size() > 0:
+                # print the messages in chronological order
+                sys.stderr.write(COPASI.CCopasiMessage.getAllMessageText(True))
+            return 1
+        if result == False:
+            sys.stderr.write("An error occured while running the time course simulation.\n")
+            dataModel.saveModel('test.cps', True)
+            sys.stderr.write(trajectoryTask.getProcessWarning())
+            sys.stderr.write(trajectoryTask.getProcessError())
+            # check if there are additional error messages
+            if COPASI.CCopasiMessage.size() > 0:
+                # print the messages in chronological order
+                sys.stderr.write(COPASI.CCopasiMessage.getAllMessageText(True))
+            return 1
+
+
+
+        '''
+
+        # we write the data to a file and add some noise to it
+        # This is necessary since COPASI can only read experimental data from
+        # file.
+        timeSeries = trajectoryTask.getTimeSeries()
+        # we simulated 100 steps, including the initial state, this should be
+        # 101 step in the timeseries
+        assert timeSeries.getRecordedSteps() == 4001
+        iMax = timeSeries.getNumVariables()
+        # there should be four variables, the three metabolites and time
+        assert iMax == 4
+        lastIndex = timeSeries.getRecordedSteps() - 1
+        # open the file
+        # we need to remember in which order the variables are written to file
+        # since we need to specify this later in the parameter fitting task
+        #indexSet = []
+        metabVector = []
+
+        # write the header
+        # the first variable in a time series is a always time, for the rest
+        # of the variables, we use the SBML id in the header
+        rand = 0.0
+        keyFactory = COPASI.CCopasiRootContainer.getKeyFactory()
+        assert keyFactory != None
+        for i in range(1, iMax):
+            key = timeSeries.getKey(i)
+            object = keyFactory.get(key)
+            assert object != None
+            # only write header data or metabolites
+            if object.__class__ == COPASI.CMetab:
+                #indexSet.append(i)
+                metabVector.append(object)
+
+        '''
+
+        # -------------------------------------------------------------------------------
+
+
         '''
         <variable type="independent" name="t"/>
         <variable type="dependent" name="C_cyt"/>
@@ -143,7 +244,6 @@ struct OptProblem {
         referenceVariableList = optProblem.referenceVariableList
         assert(isinstance(referenceVariableList, list))
         size = len(referenceVariableList)   # one independent (time), all the other dependent
-        num_lines = sum(1 for line in open(optProblem.experimentalDataFile))
 
         experiment = COPASI.CExperiment(dataModel)
         assert experiment != None
@@ -181,7 +281,19 @@ struct OptProblem {
             referenceVariable = referenceVariableList[i]
             assert referenceVariable != None
             assert (isinstance(referenceVariable, ReferenceVariable))
-            objectMap.setObjectCN(i, referenceVariable.varName)     # todo: implement getModelValue() instead of direct name use,
+            modelValues = model.getModelValues()
+            assert(isinstance(modelValues,COPASI.ModelValueVectorN))
+            copasiVar = modelValues.getByName(referenceVariable.varName)
+            assert(isinstance(copasiVar,COPASI.CModelValue))
+            '''
+            for j in range(0,model.getNumModelValues()):
+                modelValue = modelValues.[i]
+                assert(isinstance(modelValue,COPASI.CModelValue))
+                if modelValue.getObjectName() == referenceVariable.varName:
+                    copasiVar = modelValue
+            '''
+            print("copasi var name is " + copasiVar.getObjectName())
+            objectMap.setObjectCN(i, copasiVar.getCN().getString()) # todo: implement getModelValue() instead of direct name use,
                                                                     # todo: unless we are sure we used the exact same names??
 
         experimentSet = fitProblem.getParameter("Experiment Set")
@@ -255,7 +367,21 @@ struct OptProblem {
             assert (isinstance(fitParameter, COPASI.CCopasiParameter))
             fitParameter.setDblValue(optParameter.value)
 
-
+        # --------------------------------------------------------------------------------------
+        result = True
+        print ("This can take some time...")
+        result = fitTask.processWithOutputFlags(True, COPASI.CCopasiTask.ONLY_TIME_SERIES)
+        if result == False:
+            sys.stderr.write("An error occured while running the Parameter estimation.\n")
+            dataModel.saveModel('c:\\temp\\ggg\\test.cps', True)
+            sys.stderr.write(fitTask.getProcessWarning())
+            sys.stderr.write(fitTask.getProcessError())
+            # check if there are additional error messages
+            if COPASI.CCopasiMessage.size() > 0:
+                # print the messages in chronological order
+                sys.stderr.write(COPASI.CCopasiMessage.getAllMessageText(True))
+            return 1
+        assert result == True
 
 
 
