@@ -224,15 +224,15 @@ public class SolverPreprocessor  {
 	}
 	
 	public static ArrayList<String> getAllMatchingSimData(SimDataAmplistorInfo simDataAmplistorInfo,KeyValue simKey,User user) throws FileNotFoundException,Exception{
-		ArrayList<String> matchedFileNames = new ArrayList<String>();
 		String match = Simulation.createSimulationID(simKey);
 		String amplistorUserPath = simDataAmplistorInfo.getAmplistorVCellUsersRootPath()+"/"+user.getName();
-		ArrayList<String> dirList = AmplistorUtils.listDir(amplistorUserPath, simDataAmplistorInfo.getAmplistorCredential());
-		for(String fileName:dirList){
-			if(fileName.startsWith(match)){
-				matchedFileNames.add(fileName);
+		AmplistorUtils.AmplistorFileNameMatcher simidFilter = new AmplistorUtils.AmplistorFileNameMatcher() {
+			@Override
+			public boolean accept(String fileName) {
+				return fileName.startsWith(match);
 			}
-		}
+		};
+		ArrayList<String> matchedFileNames = AmplistorUtils.listDir(amplistorUserPath, simidFilter,simDataAmplistorInfo.getAmplistorCredential());
 		return matchedFileNames;
 	}
 

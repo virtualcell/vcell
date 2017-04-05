@@ -115,7 +115,7 @@ public class AmplistorUtilsTest {
 		//
 		//List amplistor test dir we created and populated
 		//
-		ArrayList<String> fileNames = AmplistorUtils.listDir(dirNameURL, amplistorCredential);
+		ArrayList<String> fileNames = AmplistorUtils.listDir(dirNameURL, null,amplistorCredential);
 		if(fileNames.size() != NUMFILES){
 			throw new Exception("Expected "+NUMFILES+" files but got "+fileNames.size());
 		}
@@ -133,6 +133,20 @@ public class AmplistorUtilsTest {
 		}
 		
 		//
+		//check filter returns correct results
+		//
+		AmplistorUtils.AmplistorFileNameMatcher onlyTheseMatchingFiles = new AmplistorUtils.AmplistorFileNameMatcher() {
+			@Override
+			public boolean accept(String fileName) {
+				return fileName.equals(tmpFiles[0].getName());
+			}
+		};
+		ArrayList<String> filteredNames = AmplistorUtils.listDir(dirNameURL, onlyTheseMatchingFiles, amplistorCredential);
+		if(filteredNames.size() != 1 || !filteredNames.get(0).equals(tmpFiles[0].getName())){
+			throw new Exception("Filter test failed, expecting 1=="+filteredNames.size()+" and "+tmpFiles[0].getName()+"=="+(filteredNames.size()==0?"null":filteredNames.get(0)));
+		}
+		
+		//
 		//set metadata on first file (this is done during upload using lastmodified of file but do it again to demonstrate)
 		//
 		Calendar calendar = Calendar.getInstance();
@@ -145,7 +159,7 @@ public class AmplistorUtilsTest {
 		//
 		//Print the http header info for one of the uploaded files
 		//
-		AmplistorUtils.AmpliCustomHeaderHelper ampliCustomHeaderHelper = AmplistorUtils.printHeaderFields(file0url);
+		AmplistorUtils.AmpliCustomHeaderHelper ampliCustomHeaderHelper = AmplistorUtils.printHeaderFields(file0url,amplistorCredential);
 		if(ampliCustomHeaderHelper.customModification == null || !ampliCustomHeaderHelper.customModification.equals(calendar.getTime())){
 			throw new Exception("Queried custom modification date "+ampliCustomHeaderHelper.customModification+" does not match set custom modification date "+calendar.getTime());
 		}		
@@ -208,7 +222,7 @@ public class AmplistorUtilsTest {
 		//
 		//there should be 1 file left
 		//
-		int numleft = AmplistorUtils.listDir(dirNameURL, amplistorCredential).size();
+		int numleft = AmplistorUtils.listDir(dirNameURL, null,amplistorCredential).size();
 		if(numleft != 1){
 			throw new Exception("Expecting 1 file in list but got "+numleft);
 		}
@@ -232,7 +246,7 @@ public class AmplistorUtilsTest {
 		//try to get dir list from vcell_logs without credentials (should fail)
 		//
 		try{
-			AmplistorUtils.listDir(AmplistorUtils.DEFAULT_AMPLI_VCELL_LOGS_URL, null);
+			AmplistorUtils.listDir(AmplistorUtils.DEFAULT_AMPLI_VCELL_LOGS_URL, null, null);
 			throw new Exception("Souldn't have gotten here, Expecting failure to get vcell_logs with no authentication");
 		}catch(AuthenticationException e){
 			//ignore, this should happen
@@ -241,7 +255,7 @@ public class AmplistorUtilsTest {
 		//
 		//try to get dir list from vcell_logs with credentials (should succeed)
 		//
-		ArrayList<String> vcell_logs_dirlist = AmplistorUtils.listDir(AmplistorUtils.DEFAULT_AMPLI_VCELL_LOGS_URL, amplistorCredential);
+		ArrayList<String> vcell_logs_dirlist = AmplistorUtils.listDir(AmplistorUtils.DEFAULT_AMPLI_VCELL_LOGS_URL, null, amplistorCredential);
 		System.out.println("Found "+vcell_logs_dirlist.size()+" files in vcell_logs directory");
 		
 		//

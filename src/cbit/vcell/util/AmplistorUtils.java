@@ -11,6 +11,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,6 +23,7 @@ import java.security.SecureRandom;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -514,19 +516,41 @@ public class AmplistorUtils {
         
         return authorizationRequest;
 	}
-	public static ArrayList<String> listDir(String dirURL,AmplistorCredential amplistorCredential) throws Exception{
-		return listOrDelete0(dirURL, null, false, amplistorCredential);
+	
+	public interface AmplistorFileNameMatcher{
+		boolean accept(String fileName);
+	}
+	public static ArrayList<String> listDir(String dirURL,AmplistorFileNameMatcher onlyTheseMatchingFiles,AmplistorCredential amplistorCredential) throws Exception{
+		return listOrDelete0(dirURL, /*null,*/ false,onlyTheseMatchingFiles, amplistorCredential);
 	}
 	public static ArrayList<String> deleteSimFilesNotInHash(String dirURL,HashSet<KeyValue> doNotDeleteTheseSimKeys,boolean bScanOnly,AmplistorCredential amplistorCredential) throws Exception{
 		if(doNotDeleteTheseSimKeys == null){
 			throw new IllegalArgumentException("Parameter doNotDeleteTheseSimKeys cannot be null (being empty is OK)");
 		}
-		return listOrDelete0(dirURL, doNotDeleteTheseSimKeys, !bScanOnly, amplistorCredential);
+		AmplistorFileNameMatcher filter = new AmplistorFileNameMatcher() {
+			@Override
+			public boolean accept(String fileName) {
+				KeyValue parsedSimIDKey = null;
+				StringTokenizer st = new StringTokenizer(fileName, "_");
+				if(st.countTokens() > 2 && st.nextToken().equals("SimID")){
+					try{
+						parsedSimIDKey = new KeyValue(Integer.parseInt(st.nextToken())+"");
+					}catch(NumberFormatException e){
+						//wasn't an integer, assume filename not SimID_xxx_ format and ignore
+					}
+				}
+				if(parsedSimIDKey != null && !doNotDeleteTheseSimKeys.contains(parsedSimIDKey)){
+					return true;
+				}
+				return false;
+			}
+		};
+		return listOrDelete0(dirURL, /*doNotDeleteTheseSimKeys,*/ !bScanOnly, filter,amplistorCredential);
 	}
 	public static long deleteAllFiles(String dirURL,AmplistorCredential amplistorCredential) throws Exception{
-		return listOrDelete0(dirURL, null, true, amplistorCredential).size();
+		return listOrDelete0(dirURL, /*null,*/ true, null,amplistorCredential).size();
 	}
-	private static ArrayList<String> listOrDelete0(String userURL,HashSet<KeyValue> doNotDeleteTheseSimKeys,boolean bDelete,AmplistorCredential amplistorCredential) throws Exception{
+	private static ArrayList<String> listOrDelete0(String userURL,/*HashSet<KeyValue> doNotDeleteTheseSimKeys,*/boolean bDelete,AmplistorFileNameMatcher onlyTheseMatchingFiles,AmplistorCredential amplistorCredential) throws Exception{
 		ArrayList<String> affectedFileNames = new ArrayList<String>();
 //		long resultCount = 0;
 		int count = 0;
@@ -547,29 +571,16 @@ public class AmplistorUtils {
 					
 					marker = fileName;
 					currentCount++;
-					if(doNotDeleteTheseSimKeys != null){
-						if((currentCount+count)%5000 == 0){
+					if(onlyTheseMatchingFiles != null){
+//						if((currentCount+count)%5000 == 0){
 //							System.out.println("checked "+(count+currentCount)+" files so far");
-						}
-						KeyValue parsedSimIDKey = null;
-						StringTokenizer st = new StringTokenizer(fileName, "_");
-						if(st.countTokens() > 2 && st.nextToken().equals("SimID")){
-							try{
-								parsedSimIDKey = new KeyValue(Integer.parseInt(st.nextToken())+"");
-							}catch(NumberFormatException e){
-								//wasn't an integer, assume filename not SimID_xxx_ format and ignore
-							}
-						}
-						if(parsedSimIDKey != null && !doNotDeleteTheseSimKeys.contains(parsedSimIDKey)){
-//							System.out.println("Amplistor  "+(bDelete?"delete":"list")+"= "+fileName);
+//						}
+						if(onlyTheseMatchingFiles.accept(fileName)){
 							affectedFileNames.add(fileName);
-//							resultCount++;
+	//						resultCount++;
 							if(bDelete){
 								ampliCheckOP(new URL(userURL+"/"+fileName), amplistorCredential, AMPLI_OP_METHOD.DELETE, null, AMPLI_OP_KIND.FILE,null);
 							}
-//							else{
-//								printHeader(userURL+"/"+fileName);
-//							}
 						}
 					}else{
 						affectedFileNames.add(fileName);
@@ -614,8 +625,8 @@ public class AmplistorUtils {
 		}
 		
 	}
-	public static AmpliCustomHeaderHelper printHeaderFields(String urlStr) throws Exception{
-		Map<String, List<String>> headerMap = getHeaderFields(urlStr);
+	public static AmpliCustomHeaderHelper printHeaderFields(String urlStr,AmplistorCredential amplistorCredential) throws Exception{
+		Map<String, List<String>> headerMap = getHeaderFields(urlStr,amplistorCredential);
 		Date customCreationDate = null;
 		Date customModifiedDate = null;
 		for(String headerFieldName:headerMap.keySet()){
@@ -624,12 +635,14 @@ public class AmplistorUtils {
 				System.out.println(headerFieldName+":"+((List<String>)headerMap.get(headerFieldName)).get(0));
 			}else if("Date".equals(headerFieldName)){
 				System.out.println(headerFieldName+":"+((List<String>)headerMap.get(headerFieldName)).get(0));
-			}else if("X-Ampli-Modification-Date".equals(headerFieldName) || "X-Ampli-Creation-Date".equals(headerFieldName) || "X-Ampli-Verification-Date".equals(headerFieldName)){
+//			}else if("X-Ampli-Modification-Date".equals(headerFieldName) || "X-Ampli-Creation-Date".equals(headerFieldName) || "X-Ampli-Verification-Date".equals(headerFieldName)){
+			}else if("Modification-Date".equals(headerFieldName) || "Creation-Date".equals(headerFieldName) || "Verification-Date".equals(headerFieldName)){
 				String dateLong = ((List<String>)headerMap.get(headerFieldName)).get(0)+"000";//add milliseconds
 				Date date = new Date(Long.parseLong(dateLong));
 				String dateStr = rfc1123Format.format(date);
 				System.out.println(headerFieldName+"("+dateLong+")"+":"+dateStr);
-			}else if("X-Ampli-Custom-Meta-creation-date".equals(headerFieldName) || "X-Ampli-Custom-Meta-modification-date".equals(headerFieldName)){
+//			}else if("X-Ampli-Custom-Meta-creation-date".equals(headerFieldName) || "X-Ampli-Custom-Meta-modification-date".equals(headerFieldName)){
+			}else if("Custom-Meta-creation-date".equals(headerFieldName) || "Custom-Meta-modification-date".equals(headerFieldName)){
 				String dateLong = ((List<String>)headerMap.get(headerFieldName)).get(0);
 				if(dateLong.indexOf('"') != -1){//get rid of quotes
 					dateLong = dateLong.substring(1, dateLong.length()-1);
@@ -655,9 +668,11 @@ public class AmplistorUtils {
 				}
 				String dateStr = rfc1123Format.format(date);
 				System.out.println(headerFieldName+"("+dateLong+")"+":"+dateStr+"   "+urlStr);
-				if("X-Ampli-Custom-Meta-creation-date".equals(headerFieldName)){
+//				if("X-Ampli-Custom-Meta-creation-date".equals(headerFieldName)){
+				if("Custom-Meta-creation-date".equals(headerFieldName)){
 					customCreationDate = date;
-				}else if("X-Ampli-Custom-Meta-modification-date".equals(headerFieldName)){
+//				}else if("X-Ampli-Custom-Meta-modification-date".equals(headerFieldName)){
+				}else if("Custom-Meta-modification-date".equals(headerFieldName)){
 					customModifiedDate = date;
 				}
 			}
@@ -665,23 +680,24 @@ public class AmplistorUtils {
 		return new AmpliCustomHeaderHelper(customCreationDate, customModifiedDate);
 	}
 
-	private static Map<String, List<String>> getHeaderFields(String urlStr) throws Exception{
-		URL url = new URL(urlStr);
-		HttpURLConnection urlCon = null;
+	private static HashMap<String, List<String>> getHeaderFields(String urlStr,AmplistorCredential amplistorCredential) throws Exception{
+		HashMap<String, List<String>> results = new HashMap<>();
+		CheckOPHelper checkOPHelper = null;
 		try{
-			urlCon = (HttpURLConnection) url.openConnection();
-			urlCon.setRequestMethod("GET");
-			urlCon.setRequestProperty("Date", getRFC1123FormattedDate());
-			
-			@SuppressWarnings("unused")
-			int responseCode = urlCon.getResponseCode();
-//			System.out.println("\nSending 'GET' request to URL : " + url);
-//			System.out.println("Response Code : " + responseCode);
-			
-			return urlCon.getHeaderFields();
+			checkOPHelper = ampliCheckOP(new URL(urlStr+"?meta=xml"), amplistorCredential, AMPLI_OP_METHOD.GET, null, AMPLI_OP_KIND.FILE,null);
+			Document doc = getResponseXML(checkOPHelper.httpURLConnection);
+			List<Element> dirEntryElements = doc.getRootElement().getChildren();
+			for(Element dirEntry:dirEntryElements){
+				ArrayList<String> values = new ArrayList<>();
+				values.add(dirEntry.getText());
+				results.put(dirEntry.getName(), values);
+			}
 		}finally{
-			if(urlCon != null){urlCon.disconnect();}
+			if(checkOPHelper != null && checkOPHelper.httpURLConnection != null){
+				checkOPHelper.httpURLConnection.disconnect();
+			}
 		}
+		return results;
 	}
 	private static final String TRY_WITH_NO_AUTHENTICATION = "";
 	private static void createWithPutXML(String urlStr,AmplistorCredential amplistorCredential,InputStream in,long contentLength,String authorizationRequest) throws Exception{
