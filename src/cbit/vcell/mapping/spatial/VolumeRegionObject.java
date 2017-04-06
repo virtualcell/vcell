@@ -152,7 +152,7 @@ public class VolumeRegionObject extends SpatialObject {
 				}
 			}
 			if (!bFound){
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "geomemtry missing volume region (subvolume "+subVolume.getName()+" region "+regionID+")", Issue.Severity.ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "geometry missing volume region (subvolume "+subVolume.getName()+" region "+regionID+")", Issue.Severity.ERROR));
 			}
 		}
 	}
