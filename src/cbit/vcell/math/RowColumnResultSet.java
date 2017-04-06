@@ -576,7 +576,7 @@ public synchronized void trimRows(int maxRowCount) {
 	double maxSquaredRatio = 10*10;
 	int t = findColumn("t");
 	final boolean haveT = t >= 0;
-	final double TOLERANCE = 0.1;
+	double TOLERANCE = 0.1;
 	LinkedList<double[]> linkedList = new LinkedList<double[]>(fieldValues);
 	while (maxRowCount<linkedList.size() && threshold<TOLERANCE){
 		ListIterator<double[]> iter = linkedList.listIterator(0);
@@ -604,10 +604,15 @@ public synchronized void trimRows(int maxRowCount) {
 			}
 		}
 		if (lg.isInfoEnabled()) {
-			lg.info("threshold = "+threshold+", size = "+linkedList.size());
+			lg.info("TOLERANCE="+TOLERANCE+", threshold="+threshold+", size="+linkedList.size());
 		}
-		threshold += 0.01;
+		threshold += TOLERANCE/10;
+		if(threshold >= TOLERANCE){
+			TOLERANCE*= 10;
+			threshold = TOLERANCE/10;
+		}
 	}
+	System.out.println("final tolerance="+TOLERANCE+" final threshold="+threshold+", "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
 	if (linkedList.size()>maxRowCount){
 		throw new RuntimeException("sample tolerance "+TOLERANCE+" exceeded while removing time points, "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
 	}
