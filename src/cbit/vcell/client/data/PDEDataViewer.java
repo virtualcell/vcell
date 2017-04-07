@@ -3273,7 +3273,7 @@ private void calcAutoAllTimes() throws Exception {
 					FunctionRangeGenerator.getFunctionStatistics(flattened.getExpression(),
 							varStatsArr.toArray(new VarStatistics[0]),
 							getPdeDataContext().getTimePoints(),
-							CartesianMesh.createSimpleCartesianMesh(getSimulation().getMeshSpecification().getGeometry()),
+							getPdeDataContext().getCartesianMesh(),
 							getPDEDataContextPanel1().getInDomainBitSet(),
 							getPdeDataContext().getDataIdentifier().getVariableType()/*,
 							10(int) (getPdeDataContext().getDataValues().length/Math.pow(10, getSimulation().getMeshSpecification().getGeometry().getDimension()))*/);
