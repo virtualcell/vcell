@@ -3198,6 +3198,17 @@ public void setPostProcessingPanelVisible(boolean bVisible){
 	}
 }
 
+private BitSet calcInDomainBitSet(){
+	BitSet inDomainBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+	inDomainBitSet.set(0, getPdeDataContext().getDataValues().length, true);
+	for (int i = 0; i < getPdeDataContext().getDataValues().length; i ++) {
+		if(!PDEDataContextPanel.isInDomain(getPdeDataContext().getCartesianMesh(), getPdeDataContext().getDataIdentifier().getDomain(), getPDEDataContextPanel1().getDataInfoProvider(), i, getPdeDataContext().getDataIdentifier().getVariableType())){
+			inDomainBitSet.set(i, false);
+		}
+	}
+	return inDomainBitSet;
+}
+
 private void calcAutoAllTimes() throws Exception {
 	HashSet<String> stateVarNames = null;
 	Variable theVariable = null;
@@ -3274,7 +3285,7 @@ private void calcAutoAllTimes() throws Exception {
 							varStatsArr.toArray(new VarStatistics[0]),
 							getPdeDataContext().getTimePoints(),
 							getPdeDataContext().getCartesianMesh(),
-							getPDEDataContextPanel1().getInDomainBitSet(),
+							calcInDomainBitSet(),
 							getPdeDataContext().getDataIdentifier().getVariableType()/*,
 							10(int) (getPdeDataContext().getDataValues().length/Math.pow(10, getSimulation().getMeshSpecification().getGeometry().getDimension()))*/);
 					getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(functionStatistics.getMinOverTime(),functionStatistics.getMaxOverTime()));																	

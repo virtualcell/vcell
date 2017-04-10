@@ -318,7 +318,6 @@ private double[] originalData = null;
 private RecodeDataForDomainInfo recodeDataForDomainInfo = null;
 private boolean bDataInfoProviderNull = true;
 private Range lastFunctionStatisticsRange;
-private BitSet inDomainBitSet;
 public void recodeDataForDomain() {
 	//This method recodes data (out of domain data is set to 'out of range' value that is displayed differently)
 	// and calculates a domain aware min,max range for variables that have a domain
@@ -371,13 +370,10 @@ private void recodeDataForDomain0() {
 		final CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
 		double minCurrTime = Double.POSITIVE_INFINITY;
 		double maxCurrTime = Double.NEGATIVE_INFINITY;
-		inDomainBitSet = new BitSet(tempRecodedData.length);
-		inDomainBitSet.set(0, tempRecodedData.length, true);
 		for (int i = 0; i < tempRecodedData.length; i ++) {
 			if (bRecoding) {
 				if(!isInDomain(cartesianMesh, varDomain, dataInfoProvider, i, vt)){
 					tempRecodedData[i] = illegalNumber;
-					inDomainBitSet.set(i, false);
 				}
 			}
 			if(!Double.isNaN(tempRecodedData[i]) && tempRecodedData[i] != illegalNumber){
@@ -403,10 +399,7 @@ private void recodeDataForDomain0() {
 	}
 }
 
-public BitSet getInDomainBitSet(){
-	return inDomainBitSet;
-}
-private static boolean isInDomain(CartesianMesh cartesianMesh,Domain varDomain,DataInfoProvider dataInfoProvider,int i,VariableType vt){
+public static boolean isInDomain(CartesianMesh cartesianMesh,Domain varDomain,DataInfoProvider dataInfoProvider,int i,VariableType vt){
 	if(!cartesianMesh.hasSubvolumeInfo()){
 		return true;
 	}
