@@ -1212,7 +1212,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 		}
 	}
 	try{
-		if(isPostProcessing(outputContext, varNames[0])){
+		if(varNames.length > 0 && isPostProcessing(outputContext, varNames[0])){
 			double[] specificTimePoints = new double[results.length];
 			int counter = 0;
 			for (int i = 0; i < dataProcessingOutputInfo.getVariableTimePoints().length; i++) {
