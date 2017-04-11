@@ -114,16 +114,6 @@ public void setExpression(Expression exp) {
 }
 
 
-
-@Override
-public double getConstantValue() throws ExpressionException {
-	if(isConstant()){
-		return exp.evaluateConstant();
-	}
-	return super.getConstantValue();
-}
-
-
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
