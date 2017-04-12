@@ -83,10 +83,11 @@ private void saveOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue s
 		tableValues = DbDriver.INSERT_CLOB_HERE+","+"null";
 	}
 	
+	KeyValue newKey = DbDriver.getNewKey(con);
 	String sql = 
 		"INSERT INTO "+ApplicationMathTable.table.getTableName()+
 		" VALUES ("+
-		DbDriver.getNewKey(con).toString()+","+
+		newKey.toString()+","+
 		(simContextRef != null?simContextRef.toString():"NULL")+","+
 		tableValues+","+
 		(mathModelRef != null?mathModelRef.toString():"NULL")+")";
@@ -95,7 +96,7 @@ private void saveOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue s
 		sql,
 		outputFunctionsXML,
 		ApplicationMathTable.table,
-		DbDriver.getNewKey(con),
+		newKey,
 		ApplicationMathTable.table.outputFuncLarge,
 		ApplicationMathTable.table.outputFuncSmall);
 }
