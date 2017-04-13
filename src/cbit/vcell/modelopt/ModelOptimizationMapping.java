@@ -152,8 +152,7 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	//
 	// create objective function (mathDesc and data)
 	//
-	StructureMapping structureMapping = simContext.getGeometryContext().getStructureMappings()[0];
-	ReferenceData referenceData = getRemappedReferenceData(mathMapping,structureMapping);
+	ReferenceData referenceData = getRemappedReferenceData(mathMapping);
 	if (referenceData==null){
 		throw new RuntimeException("no referenced data defined");
 	}
@@ -302,7 +301,7 @@ public ParameterMapping[] getParameterMappings() {
  * @return The constraintData property value.
  * @see #setConstraintData
  */
-private ReferenceData getRemappedReferenceData(MathMapping mathMapping, StructureMapping structureMapping) throws MappingException {
+private ReferenceData getRemappedReferenceData(MathMapping mathMapping) throws MappingException {
 	if (modelOptimizationSpec.getReferenceData()==null){
 		return null;
 	}
@@ -319,6 +318,8 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 	// find bound columns, (time is always mapped to the first column)
 	//
 	int mappedColumnCount=0;
+	
+	
 	for (int i = 0; i < refDataMappingSpecs.length; i++){
 		SymbolTableEntry modelObject = refDataMappingSpecs[i].getModelObject();
 		if (modelObject!=null){
@@ -367,8 +368,8 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 	for (int i = 0; i < modelObjectList.size(); i++){
 		SymbolTableEntry modelObject = (SymbolTableEntry)modelObjectList.elementAt(i);
 		try {
-			
-			Variable variable = mathMapping.getMathSymbolMapping().getVariable(modelObject);
+			// Find by name because MathSybolMapping has different 'objects' than refDataMapping 'objects'
+			Variable variable = mathMapping.getMathSymbolMapping().findVariableByName(modelObject.getName());
 			if (variable!=null){
 				String symbol = variable.getName();
 				rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
