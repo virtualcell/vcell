@@ -2943,6 +2943,17 @@ public void setPostProcessingPanelVisible(boolean bVisible){
 	}
 }
 
+private BitSet calcInDomainBitSet(){
+	BitSet inDomainBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+	inDomainBitSet.set(0, getPdeDataContext().getDataValues().length, true);
+	for (int i = 0; i < getPdeDataContext().getDataValues().length; i ++) {
+		if(!PDEDataContextPanel.isInDomain(getPdeDataContext().getCartesianMesh(), getPdeDataContext().getDataIdentifier().getDomain(), getPDEDataContextPanel1().getDataInfoProvider(), i, getPdeDataContext().getDataIdentifier().getVariableType())){
+			inDomainBitSet.set(i, false);
+		}
+	}
+	return inDomainBitSet;
+}
+
 private void calcAutoAllTimes() throws Exception {
 	HashSet<String> stateVarNames = null;
 	Variable theVariable = null;
@@ -2990,7 +3001,7 @@ private void calcAutoAllTimes() throws Exception {
 	if(getPDEDataContextPanel1().getdisplayAdapterService1().getAllTimes()){// min-max over all timepoints (allTimes)
 		if(theVariable.isConstant()){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
-			double constVal = theVariable.getConstantValue();
+			double constVal = theVariable.getExpression().evaluateConstant();
 			getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(constVal,constVal));
 		}else if(bStateVar){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
@@ -3018,8 +3029,8 @@ private void calcAutoAllTimes() throws Exception {
 					FunctionRangeGenerator.getFunctionStatistics(flattened.getExpression(),
 							varStatsArr.toArray(new VarStatistics[0]),
 							getPdeDataContext().getTimePoints(),
-							CartesianMesh.createSimpleCartesianMesh(getSimulation().getMeshSpecification().getGeometry()),
-							getPDEDataContextPanel1().getInDomainBitSet(),
+							getPdeDataContext().getCartesianMesh(),
+							calcInDomainBitSet(),
 							getPdeDataContext().getDataIdentifier().getVariableType()/*,
 							10(int) (getPdeDataContext().getDataValues().length/Math.pow(10, getSimulation().getMeshSpecification().getGeometry().getDimension()))*/);
 					getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(functionStatistics.getMinOverTime(),functionStatistics.getMaxOverTime()));																	
