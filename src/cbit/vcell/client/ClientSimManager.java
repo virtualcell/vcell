@@ -104,6 +104,8 @@ public class LocalVCSimulationDataIdentifier extends VCSimulationDataIdentifier 
 	private SimulationWorkspace simWorkspace = null;
 	private SimulationStatusHash simHash = new SimulationStatusHash();
 
+	private final static String H_FAILURES = "failures";
+
 /**
  * Insert the method's description here.
  * Creation date: (6/7/2004 10:48:50 AM)
@@ -240,6 +242,15 @@ public void showSimulationResults(OutputContext outputContext, Simulation[] simu
 	ClientTaskDispatcher.dispatch(getDocumentWindowManager().getComponent(), hashTable, taskArray, false, true, null);
 }
 
+private static void saveFailure(Hashtable<String, Object>hashTable,Simulation sim,Throwable throwable){
+	Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation,Throwable>)hashTable.get(H_FAILURES);
+	if (failures == null) {
+		failures = new Hashtable<Simulation, Throwable>();
+		hashTable.put(H_FAILURES, failures);
+	}
+	failures.put(sim, throwable);
+}
+
 private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 
 	// Create the AsynchClientTasks 
@@ -301,7 +312,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 						dataViewerControllers.put(vcSimulationIdentifier, dataViewerController);
 					} catch (Throwable exc) {
 						exc.printStackTrace(System.out);
-						failures.put(sim, exc);
+						saveFailure(hashTable,sim, exc);
 					}
 				}
 			}			
@@ -317,6 +328,9 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 			Simulation[] simsToShow = (Simulation[])hashTable.get("simsArray");
 			for (int i = 0; i < simsToShow.length; i++){
 				final Simulation sim  = simsToShow[i];
+				if(failures != null && failures.containsKey(sim)){
+					continue;
+				}
 				final VCSimulationIdentifier vcSimulationIdentifier = simsToShow[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();				
 				final SimulationWindow simWindow = documentWindowManager.haveSimulationWindow(vcSimulationIdentifier);
 				if (simWindow != null) {
@@ -349,16 +363,20 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 					}
 				}
 			}
+			StringBuffer failMessage = new StringBuffer();
 			if (failures != null) {
 				if (!failures.isEmpty()) {
+					failMessage.append("Error, "+failures.size()+" of "+simsToShow.length+" sim results failed to display:\n");
 					Enumeration<Simulation> en = failures.keys();
 					while (en.hasMoreElements()) {
 						Simulation sim = en.nextElement();
 						Throwable exc = (Throwable)failures.get(sim);
-						// notify user
-						PopupGenerator.showErrorDialog(ClientSimManager.this.getDocumentWindowManager(), "Failed to retrieve results for simulation '"+sim.getName()+"':\n"+exc.getMessage(), exc);
+						failMessage.append("'"+sim.getName()+"' - "+exc.getMessage());
 					}
 				}
+			}
+			if(failMessage.length() > 0){
+				PopupGenerator.showErrorDialog(ClientSimManager.this.getDocumentWindowManager(), failMessage.toString());
 			}
 		}			
 	};
