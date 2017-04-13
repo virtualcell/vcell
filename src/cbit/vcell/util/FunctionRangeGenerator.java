@@ -119,7 +119,7 @@ public class FunctionRangeGenerator {
 		
 		// loop through time, at each time sample state variables (and x,y,z if necessary) to estimate
 		// the min and max values for that time.
-		Random rand = new Random(System.currentTimeMillis());
+		Random rand = new Random(0);
 		double[] values = new double[symbols.size()];
 		double[] minFunctionValues = new double[times.length];
 		double[] maxFunctionValues = new double[times.length];

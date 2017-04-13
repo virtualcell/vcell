@@ -3256,7 +3256,7 @@ private void calcAutoAllTimes() throws Exception {
 	if(getPDEDataContextPanel1().getdisplayAdapterService1().getAllTimes()){// min-max over all timepoints (allTimes)
 		if(theVariable.isConstant()){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
-			double constVal = (theVariable instanceof Function?((Function)theVariable).getExpression().evaluateConstant():theVariable.getConstantValue());
+			double constVal = theVariable.getExpression().evaluateConstant();
 			getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(constVal,constVal));
 		}else if(bStateVar){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
