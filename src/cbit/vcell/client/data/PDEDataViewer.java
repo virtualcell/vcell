@@ -1860,7 +1860,7 @@ private void setupDataInfoProvider() throws Exception{
 	if (getPdeDataContext() != null && getSimulationModelInfo() != null){
 		getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 		getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
-		if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getFilterNames() != null){
+		if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo){
 			PDEPlotControlPanel.DefaultDataIdentifierFilter newFilter = new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo());
 //			if(getPdeDataContext() instanceof PDEDataViewerPostProcess.PostProcessDataPDEDataContext){
 			if(ivjJTabbedPane1.getTabCount()< 4){
