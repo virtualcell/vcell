@@ -123,7 +123,7 @@ public class PDEPlotControlPanel extends JPanel {
 		public DefaultDataIdentifierFilter(SimulationWorkspaceModelInfo simulationWorkspaceModelInfo){
 			this.simulationWorkspaceModelInfo = simulationWorkspaceModelInfo;
 			FILTER_SET_NAMES = new String[] {ALL,VOLUME_FILTER_SET,MEMBRANE_FILTER_SET,USER_DEFINED_FILTER_SET, REGION_SIZE_FILTER_SET};
-			if(simulationWorkspaceModelInfo != null && simulationWorkspaceModelInfo.getFilterNames() != null){
+			if(simulationWorkspaceModelInfo != null){
 				String[] temp = new String[FILTER_SET_NAMES.length+simulationWorkspaceModelInfo.getFilterNames().length];
 				System.arraycopy(FILTER_SET_NAMES, 0, temp, 0, FILTER_SET_NAMES.length);
 				System.arraycopy(simulationWorkspaceModelInfo.getFilterNames(),0, temp, FILTER_SET_NAMES.length, simulationWorkspaceModelInfo.getFilterNames().length);

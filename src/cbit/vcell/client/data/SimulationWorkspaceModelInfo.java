@@ -191,7 +191,7 @@ public String[] getFilterNames(){
 		}
 		return filterNames.toArray(new String[0]);		
 	}
-	return null;
+	return new String[0];
 }
 public boolean hasFilter(String filterName){
 	String[] filterNames = getFilterNames();
