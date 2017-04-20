@@ -1,0 +1,274 @@
+swagger: '2.0'
+paths:
+  /publication:
+    get:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: pubId
+          in: query
+          required: false
+          type: string
+          description: publication id
+        - name: orderBy
+          in: query
+          required: false
+          type: string
+          description: sort order (year_asc or year_desc)
+      description: list of modeling publications featuring VCell models
+  /biomodel:
+    get:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: bmName
+          in: query
+          required: false
+          type: string
+        - name: bmId
+          in: query
+          required: false
+          type: string
+        - name: category
+          in: query
+          required: false
+          type: string
+          description: 'all, public, shared, mine, tutorials, educational'
+        - name: owner
+          in: query
+          required: false
+          type: string
+          description: vcell userid of owner
+        - name: savedLow
+          in: query
+          required: false
+          type: string
+          description: minimum save date (unix timestamp)
+        - name: savedHigh
+          in: query
+          required: false
+          type: string
+          description: maximum save date (unix timestamp)
+        - name: startRow
+          in: query
+          required: false
+          type: string
+          description: result set  page starting row
+        - name: maxRows
+          in: query
+          required: false
+          type: string
+          description: result set page size
+        - name: orderBy
+          in: query
+          required: false
+          type: string
+          enum:
+            - date_desc
+            - date_asc
+            - name_asc
+            - name_desc
+          description: date_desc  date_asc name_asc name_desc
+      description: ''
+  '/biomodel/{biomodelid}':
+    get:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: biomodelid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+  '/biomodel/{biomodelid}/diagram':
+    get:
+      responses:
+        '200': null
+        description: ''
+      parameters:
+        - name: biomodelid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+  '/biomodel/{biomodelid}/biomodel.vcml':
+    get:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: biomodelid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+  '/biomodel/{biomodelid}/simulation/{simulationid}':
+    get:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: biomodelid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+        - name: simulationid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+  /simtask:
+    get:
+      responses:
+        '200':
+          description: ''
+  /simstatus:
+    get:
+      responses:
+        '200':
+          description: ''
+  '/simdata/{simulationid}':
+    get:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: simulationid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+  '/simdata/{simulationid}/jobindex/{jobindexid}':
+    get:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: simulationid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+        - name: jobindexid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+  '/publication/{publicationid}':
+    get:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: publicationid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+  /logout:
+    get:
+      responses:
+        '200':
+          description: ''
+  /loginform:
+    get:
+      responses:
+        '200':
+          description: ''
+  /login:
+    post:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: Payload
+          description: Request Body
+          required: false
+          in: body
+          schema:
+            type: object
+            properties:
+              payload:
+                type: string
+  '/biomodel/{biomodelid}/simulation/{simulationid}/startSimulation':
+    post:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: biomodelid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+        - name: simulationid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+        - name: Payload
+          description: Request Body
+          required: false
+          in: body
+          schema:
+            type: object
+            properties:
+              payload:
+                type: string
+  '/biomodel/{biomodelid}/simulation/{simulationid}/save':
+    post:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: biomodelid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+        - name: simulationid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+        - name: Payload
+          description: Request Body
+          required: false
+          in: body
+          schema:
+            type: object
+            properties:
+              payload:
+                type: string
+  '/biomodel/{biomodelid}/simulation/{simulationid}/stopSimulation':
+    post:
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: biomodelid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+        - name: simulationid
+          in: path
+          allowMultiple: false
+          required: true
+          type: string
+        - name: Payload
+          description: Request Body
+          required: false
+          in: body
+          schema:
+            type: object
+            properties:
+              payload:
+                type: string
+info:
+  title: vcellapi
+  version: 1.0.0
