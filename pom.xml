@@ -1,0 +1,422 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.vcell</groupId>
+  <artifactId>pom-vcell</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <parent>
+  	<groupId>org.scijava</groupId>
+  	<artifactId>pom-scijava</artifactId>
+  	<version>14.0.0</version>
+  </parent>
+  <name>Virtual Cell Project</name>
+  <url>http://vcell.org/</url>
+  <properties>
+  	<enforcer.skip>true</enforcer.skip>
+  </properties>
+  	<pluginRepositories>
+	    <pluginRepository>
+	      <id>maven.oracle.com</id>
+	      <name>oracle-maven-repo</name>
+	      <url>https://maven.oracle.com</url>
+	      <layout>default</layout>
+	      <releases>
+	        <enabled>true</enabled>
+	        <updatePolicy>always</updatePolicy>
+	      </releases>
+	    </pluginRepository>
+	</pluginRepositories>
+	<repositories>
+		<!-- needed for org.sbml.jsbml -->
+		<repository>
+			<id>JSBML-SNAPSHOT</id>
+			<name>The JSBML Snapshot repository</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
+
+		<!-- needed for javax.media.jai -->
+		<repository>
+			<id>com.springsource.repository.bundles.external</id>
+			<name>SpringSource Enterprise Bundle Repository - External Bundle Releases</name>
+			<url>http://repository.springsource.com/maven/bundles/external</url>
+		</repository>
+
+		<!-- needed for com.mxgraph.jgraphx -->
+		<repository>
+			<id>com.alfresco.repository.public</id>
+			<name>Alfresco Public Repository</name>
+			<url>https://artifacts.alfresco.com/nexus/content/repositories/public/</url>
+		</repository>
+
+		<!-- needed for imagej dependencies -->
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+		
+		<!-- needed for biomodels.net web services -->
+		<repository>
+    		<id>ebi-repo</id>
+    		<name>The EBI internal repository</name>
+    		<url>http://www.ebi.ac.uk/~maven/m2repo</url>
+    		<releases>
+      			<enabled>true</enabled>
+    		</releases>
+    		<snapshots>
+      			<enabled>false</enabled>
+    		</snapshots>
+  		</repository>
+		
+		<!-- needed for oracle, free oracle account registration required -->
+		<!-- see  https://blogs.oracle.com/dev2dev/entry/how_to_get_oracle_jdbc -->
+	   <repository>
+	      <id>maven.oracle.com</id>
+	      <name>oracle-maven-repo</name>
+	      <url>https://maven.oracle.com</url>
+	      <layout>default</layout>
+	      <releases>
+	        <enabled>true</enabled>
+	        <updatePolicy>always</updatePolicy>
+	      </releases>
+	  </repository>
+	</repositories>
+	<dependencies>
+	
+		<!-- http://www.ebi.ac.uk/~maven/m2repo ....  -->
+ <!--  
+	    <dependency>
+	      <groupId>org.vcell</groupId>
+	      <artifactId>vcell-oracle</artifactId>
+	      <version>0.0.1-SNAPSHOT</version>
+	      <scope>runtime</scope>
+	      <optional>true</optional>
+	    </dependency>
+-->
+	    <dependency>
+	      <groupId>uk.ac.ebi.biomodels</groupId>
+	      <artifactId>biomodels-wslib</artifactId>
+	      <version>1.21</version>
+	    </dependency>
+		<dependency> 
+			<groupId>org.sbml.jsbml</groupId> 
+			<artifactId>jsbml</artifactId> 
+			<version>1.3-SNAPSHOT</version> 
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.media.jai</groupId>
+			<artifactId>com.springsource.javax.media.jai.core</artifactId>
+			<version>1.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.5</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.6.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/jdom/jdom -->
+		<dependency>
+			<groupId>jdom</groupId>
+			<artifactId>jdom</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.mxgraph/jgraphx -->
+		<dependency>
+			<groupId>com.mxgraph</groupId>
+			<artifactId>jgraphx</artifactId>
+			<version>1.10.4.2</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/colt/colt -->
+		<dependency>
+			<groupId>colt</groupId>
+			<artifactId>colt</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
+		<dependency>
+			<groupId>commons-cli</groupId>
+			<artifactId>commons-cli</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.imglib2/imglib2 -->
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+		</dependency>
+		<!-- TEMP: For UsingOpsLabeling, for the moment. -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-legacy</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+		</dependency>
+		<!-- ImgLib2 dependencies -->
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm-fft</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm-gpl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-realtransform</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ui</artifactId>
+		</dependency>
+
+		<!-- ImageJ dependencies -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+
+		<!-- SCIFIO dependencies -->
+		<dependency>
+			<groupId>io.scif</groupId>
+			<artifactId>scifio</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jlibsedml</groupId>
+			<artifactId>jlibsedml</artifactId>
+			<version>2.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+			<version>5.14.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+			<version>5.14.4</version>
+		</dependency>
+		<dependency>
+			<groupId>edu.ucar</groupId>
+			<artifactId>netcdf</artifactId>
+			<version>4.3.23</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.jboss.netty/netty -->
+		<dependency>
+			<groupId>org.jboss.netty</groupId>
+			<artifactId>netty</artifactId>
+			<version>3.2.10.Final</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.mongodb/bson -->
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>bson</artifactId>
+			<version>2.5.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>2.8.0</version>
+		</dependency>
+		<!-- latest maven version found ... without my edits and probably not original branch 
+		<dependency>
+			<groupId>net.sourceforge.interval</groupId>
+			<artifactId>ia_math</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		-->
+		<!-- https://mvnrepository.com/artifact/javax.xml/jaxrpc-api -->
+		<dependency>
+			<groupId>javax.xml</groupId>
+			<artifactId>jaxrpc-api</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.axis/axis -->
+		<dependency>
+			<groupId>org.apache.axis</groupId>
+			<artifactId>axis</artifactId>
+			<version>1.4</version>
+		</dependency>
+
+		<!-- 
+		<dependency>
+		 <groupId>com.oracle.jdbc</groupId>
+		 <artifactId>ojdbc7</artifactId>
+		 <version>12.1.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle.jdbc</groupId>
+			<artifactId>ucp</artifactId>
+			<version>12.1.0.2</version>
+		</dependency>
+		-->
+
+
+		<!-- https://mvnrepository.com/artifact/org.hdfgroup/hdf-java -->
+<!-- haven't yet reconciled, need jarhdf-3.2.1.jar and jarhdf5-3.2.1.jar
+ 		<dependency>
+			<groupId>org.hdfgroup</groupId>
+			<artifactId>hdf-java</artifactId>
+			<version>2.6.1</version>
+		</dependency>
+-->
+		<dependency>
+			<groupId>org.scala-saddle</groupId>
+			<artifactId>jhdf5_2.10</artifactId>
+			<version>2.9</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.3</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.help/javahelp -->
+		<dependency>
+			<groupId>javax.help</groupId>
+			<artifactId>javahelp</artifactId>
+			<version>2.0.05</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openrdf.sesame/sesame-model -->
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-model</artifactId>
+			<version>2.6.10</version>  <!-- was 4.1.2 -->
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openrdf.sesame/sesame-rio-api -->
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-rio-api</artifactId>
+			<version>2.6.10</version>   <!-- was 4.1.2 -->
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openrdf.sesame/sesame-rio-rdfxml -->
+		<dependency>
+		    <groupId>org.openrdf.sesame</groupId>
+		    <artifactId>sesame-rio-rdfxml</artifactId>
+		    <version>2.6.10</version>
+		</dependency>
+<!-- 		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-compatibility</artifactId>
+			<version>4.0.1</version>
+		</dependency>
+-->
+		<!-- https://mvnrepository.com/artifact/org.apache.thrift/libthrift -->
+		<dependency>
+			<groupId>org.apache.thrift</groupId>
+			<artifactId>libthrift</artifactId>
+			<version>0.9.3</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.lowagie/itext -->
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<!--    <version>2.0.7</version> -->
+			<version>1.4.8</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.swinglabs/swing-worker -->
+		<dependency>
+			<groupId>org.swinglabs</groupId>
+			<artifactId>swing-worker</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.schmizz/sshj -->
+		<dependency>
+			<groupId>net.schmizz</groupId>
+			<artifactId>sshj</artifactId>
+			<version>0.9.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.jgrapht/jgrapht-core -->
+		<dependency>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-core</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.media/jmf -->
+		<dependency>
+			<groupId>javax.media</groupId>
+			<artifactId>jmf</artifactId>
+			<version>2.1.1e</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.sourceforge.jmatio/jmatio -->
+		<dependency>
+			<groupId>net.sourceforge.jmatio</groupId>
+			<artifactId>jmatio</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-configuration2</artifactId>
+			<version>2.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
+		<dependency>
+		    <groupId>commons-beanutils</groupId>
+		    <artifactId>commons-beanutils</artifactId>
+		    <version>1.9.3</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.scijava/scijava-common -->
+		<dependency>
+		    <groupId>org.scijava</groupId>
+		    <artifactId>scijava-common</artifactId>
+		    <version>2.62.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.github.sps.pushover.net/pushover-client -->
+		<dependency>
+		    <groupId>com.github.sps.pushover.net</groupId>
+		    <artifactId>pushover-client</artifactId>
+		    <version>1.0.0</version>
+		</dependency>
+		
+	</dependencies>
+</project>

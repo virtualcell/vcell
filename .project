@@ -1,18 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>BNG226</name>
+	<name>VCell</name>
 	<comment></comment>
 	<projects>
-		<project>VCell Application Server</project>
-		<project>VCell Client</project>
-		<project>VCell Combinatorial Reactions</project>
-		<project>VCell Database</project>
-		<project>VCell Export</project>
-		<project>VCell Model</project>
-		<project>VCell Optimization</project>
-		<project>VCell Server</project>
-		<project>VCell Solver</project>
-		<project>VCell XML</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -20,8 +10,14 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.m2e.core.maven2Builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
+		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>org.eclipse.jem.workbench.JavaEMFNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.jem.beaninfo.BeanInfoNature</nature>

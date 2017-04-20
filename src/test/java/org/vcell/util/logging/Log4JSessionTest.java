@@ -1,0 +1,74 @@
+package org.vcell.util.logging;
+
+import static org.junit.Assert.assertTrue;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.junit.Before;
+import org.junit.Test;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+
+
+
+/**
+ * compare {@link Log4JSessionTest} and {@link StdoutSessionLog}
+ * @author gweatherby
+ *
+ */
+public class Log4JSessionTest {
+	
+	/**
+	 * quick and dirty way to get stack trace with depth
+	 * @param in
+	 */
+	public void dontBeNegative(int in) {
+		if (in > 0) {
+			dontBeNegative(--in);
+		}
+		else {
+			throw new IllegalArgumentException("Don't be negative");
+		}
+	}
+	
+	public void walkThrough(SessionLog sl) {
+		sl.print("Have a good day");
+		sl.alert("A storm is coming!");
+		try {
+			dontBeNegative(4);
+		} catch (Exception e) {
+			sl.exception(e);
+		}
+	}
+	@Before
+	public void init( ) {
+		Logging.init( );
+	}
+	
+	//@Test
+	public void compare( ) {
+		System.setProperty(PropertyLoader.mongodbHost,"mongo.cam.uchc.edu");
+		System.setProperty(PropertyLoader.mongodbPort,"27017");
+		
+		StdoutSessionLog ssl = new StdoutSessionLog("JUnitTest");
+		walkThrough(ssl);
+		
+		Logger.getRootLogger().setLevel(Level.ALL);
+		Log4jSessionLog l4jl = new Log4jSessionLog("JUnitTest");
+		walkThrough(l4jl);
+	}
+	
+	@Test
+	public void makeSure( ) {
+		assertTrue(Level.WARN.isGreaterOrEqual(Level.INFO));
+	}
+	
+	
+	@Test
+	public void config( ) {
+		Log4jSessionLog l4jl = new Log4jSessionLog("ConfigTest");
+		System.err.println("config set level " + l4jl.getLogger().getEffectiveLevel());
+	}
+	
+}
