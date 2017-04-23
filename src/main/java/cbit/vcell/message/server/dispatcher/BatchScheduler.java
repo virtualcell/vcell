@@ -24,8 +24,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationRequirements;
+import cbit.vcell.server.SimulationJobStatus;
 
 /**
  * Insert the type's description here.
@@ -88,7 +88,7 @@ public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsThisSite, Ma
 	Hashtable<User, Integer> userOdeRunningJobsThisSite = new Hashtable<User, Integer>();
 	
 
-	cbit.vcell.messaging.db.SimulationJobStatus jobStatus = null;
+	cbit.vcell.server.SimulationJobStatus jobStatus = null;
 	int numRunningJobsThisSite = 0;
 	for (int i = 0; i < activeJobsThisSite.length; i++){
 		jobStatus = activeJobsThisSite[i];

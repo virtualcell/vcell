@@ -34,7 +34,7 @@ import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.StatusMessage;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**

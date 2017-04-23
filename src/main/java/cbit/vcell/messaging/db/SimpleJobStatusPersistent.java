@@ -10,6 +10,8 @@
 
 package cbit.vcell.messaging.db;
 
+import cbit.vcell.server.SimulationJobStatusPersistent;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/3/2003 10:39:26 AM)

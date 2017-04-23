@@ -23,6 +23,7 @@ import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.SimulationJobStatusPersistent;
 
 public class ServiceTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_service";

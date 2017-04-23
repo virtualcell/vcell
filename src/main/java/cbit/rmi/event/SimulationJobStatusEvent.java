@@ -13,7 +13,7 @@ package cbit.rmi.event;
 import org.vcell.util.document.User;
 
 import cbit.vcell.message.VCMessagingConstants;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 

@@ -14,9 +14,9 @@ import java.io.Serializable;
 
 import org.vcell.util.Compare;
 
-import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SchedulerStatus;
 //import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
 
 public class SimulationMessagePersistent implements Serializable {
 	

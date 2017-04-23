@@ -8,8 +8,8 @@ import java.util.Random;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
-import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 
 /**

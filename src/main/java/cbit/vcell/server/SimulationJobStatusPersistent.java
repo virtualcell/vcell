@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.messaging.db;
+package cbit.vcell.server;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,8 +18,6 @@ import org.vcell.util.document.VCellServerID;
 import cbit.vcell.message.server.htc.pbs.PbsJobID;
 import cbit.vcell.message.server.htc.sge.SgeJobID;
 import cbit.vcell.message.server.htc.slurm.SlurmJobID;
-import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
 

@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 /**
  * Insert the type's description here.

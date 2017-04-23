@@ -34,7 +34,7 @@ import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;

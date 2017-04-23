@@ -8,21 +8,19 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.messaging.db;
+package cbit.vcell.server;
 
 import java.util.Date;
-
-import cbit.vcell.messaging.db.SimulationJobStatus.SimulationQueueID;
 
 /**
  * Insert the type's description here.
  * Creation date: (1/31/2003 11:21:39 AM)
  * @author: Jim Schaff
  */
-public class SimulationQueueEntryStatus implements org.vcell.util.Matchable, java.io.Serializable {
+public class SimulationQueueEntryStatusPersistent implements org.vcell.util.Matchable, java.io.Serializable {
 	private int fieldQueuePriority = 0;
 	private Date fieldQueueDate = null;
-	private SimulationJobStatus.SimulationQueueID fieldQueueID;
+	private SimulationJobStatusPersistent.SimulationQueueID fieldQueueID;
 /**
  * SimulationQueueEntryStatus constructor comment.
  * @param simKey cbit.sql.KeyValue
@@ -32,7 +30,7 @@ public class SimulationQueueEntryStatus implements org.vcell.util.Matchable, jav
  * @param queueDate java.util.Date
  * @param queueID java.lang.Integer
  */
-public SimulationQueueEntryStatus(Date queueDate, int queuePriority, SimulationJobStatus.SimulationQueueID queueID) {
+public SimulationQueueEntryStatusPersistent(Date queueDate, int queuePriority, SimulationJobStatusPersistent.SimulationQueueID queueID) {
 	if (queueID==null){
 		throw new RuntimeException("queueID must not be null");
 	}
@@ -47,8 +45,8 @@ public SimulationQueueEntryStatus(Date queueDate, int queuePriority, SimulationJ
  * @param obj cbit.util.Matchable
  */
 public boolean compareEqual(org.vcell.util.Matchable obj) {
-	if (obj instanceof SimulationQueueEntryStatus){
-		SimulationQueueEntryStatus entryStatus = (SimulationQueueEntryStatus)obj;
+	if (obj instanceof SimulationQueueEntryStatusPersistent){
+		SimulationQueueEntryStatusPersistent entryStatus = (SimulationQueueEntryStatusPersistent)obj;
 		if (entryStatus.fieldQueueDate != null && fieldQueueDate != null && entryStatus.fieldQueueDate.getTime()/1000 != fieldQueueDate.getTime()/1000) {
 			//System.out.println("getQueueDate() not =:" + entryStatus.fieldQueueDate + "," + fieldQueueDate);
 			return false;
@@ -79,7 +77,7 @@ public Date getQueueDate() {
  * Creation date: (1/31/2003 11:23:56 AM)
  * @return int
  */
-public SimulationJobStatus.SimulationQueueID getQueueID() {
+public SimulationJobStatusPersistent.SimulationQueueID getQueueID() {
 	return fieldQueueID;
 }
 /**
@@ -95,7 +93,7 @@ public int getQueuePriority() {
  * Creation date: (5/29/2003 10:03:41 AM)
  * @param newFieldQueueID int
  */
-public void setQueueID(SimulationJobStatus.SimulationQueueID newFieldQueueID) {
+public void setQueueID(SimulationJobStatusPersistent.SimulationQueueID newFieldQueueID) {
 	if (newFieldQueueID==null){
 		throw new RuntimeException("queueID must not be null");
 	}

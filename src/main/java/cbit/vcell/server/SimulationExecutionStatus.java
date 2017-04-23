@@ -8,14 +8,12 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.messaging.db;
+package cbit.vcell.server;
 
 import java.util.Date;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
-
-import cbit.vcell.server.HtcJobID;
 
 
 /**
@@ -23,7 +21,7 @@ import cbit.vcell.server.HtcJobID;
  * Creation date: (1/31/2003 11:27:24 AM)
  * @author: Jim Schaff
  */
-public class SimulationExecutionStatusPersistent implements org.vcell.util.Matchable, java.io.Serializable {
+public class SimulationExecutionStatus implements org.vcell.util.Matchable, java.io.Serializable {
 	private Date fieldStartDate = null;
 	private Date fieldLatestUpdateDate = null;
 	private Date fieldEndDate = null;
@@ -33,7 +31,7 @@ public class SimulationExecutionStatusPersistent implements org.vcell.util.Match
 /**
  * SimulationExecutionStatus constructor comment.
  */
-public SimulationExecutionStatusPersistent(Date startDate, String computeHost, Date latestUpdateDate, Date endDate, boolean hasData, HtcJobID htcJobID) {
+public SimulationExecutionStatus(Date startDate, String computeHost, Date latestUpdateDate, Date endDate, boolean hasData, HtcJobID htcJobID) {
 	if (latestUpdateDate==null){
 		throw new IllegalArgumentException("latestUpdateDate must not be null");
 	}
@@ -50,8 +48,8 @@ public SimulationExecutionStatusPersistent(Date startDate, String computeHost, D
  * @param obj java.lang.Object
  */
 public boolean compareEqual(Matchable obj) {
-	if (obj instanceof SimulationExecutionStatusPersistent){
-		SimulationExecutionStatusPersistent exeStatus = (SimulationExecutionStatusPersistent)obj;
+	if (obj instanceof SimulationExecutionStatus){
+		SimulationExecutionStatus exeStatus = (SimulationExecutionStatus)obj;
 		if (exeStatus.fieldComputeHost != null && fieldComputeHost != null && !exeStatus.fieldComputeHost.equals(getComputeHost())){
 			//System.out.println("fieldComputeHost not = ");
 			return false;

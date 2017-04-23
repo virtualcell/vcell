@@ -18,13 +18,16 @@ import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SchedulerStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SimulationQueueID;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.modeldb.VersionTable;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.SimulationExecutionStatusPersistent;
+import cbit.vcell.server.SimulationJobStatusPersistent;
+import cbit.vcell.server.SimulationQueueEntryStatusPersistent;
+import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
+import cbit.vcell.server.SimulationJobStatusPersistent.SimulationQueueID;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
 

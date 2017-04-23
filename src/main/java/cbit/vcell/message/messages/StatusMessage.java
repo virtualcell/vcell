@@ -17,7 +17,7 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.server.SimulationJobStatus;
 
 /**
  * Insert the type's description here.

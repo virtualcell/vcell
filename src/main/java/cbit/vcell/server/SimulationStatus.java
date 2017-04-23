@@ -16,7 +16,6 @@ import org.vcell.util.BeanUtils;
 
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.message.server.dispatcher.SimulationStateMachine;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 

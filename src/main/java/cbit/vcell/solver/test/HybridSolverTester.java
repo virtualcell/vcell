@@ -39,9 +39,9 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.VCellBootstrap;

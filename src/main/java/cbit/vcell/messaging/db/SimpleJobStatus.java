@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 
 import org.vcell.util.ComparableObject;
 
+import cbit.vcell.server.SimulationJobStatus;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/3/2003 10:39:26 AM)
