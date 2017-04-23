@@ -15,7 +15,7 @@ import java.util.Date;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.server.HtcJobID;
 
 
 /**

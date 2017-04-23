@@ -1,5 +1,7 @@
 package cbit.vcell.message.server.htc;
 
+import cbit.vcell.server.HtcJobID;
+
 public class HtcJobNotFoundException extends HtcException {
 	private final HtcJobID id;
 

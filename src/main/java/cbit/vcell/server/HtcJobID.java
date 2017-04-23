@@ -1,12 +1,8 @@
-package cbit.vcell.message.server.htc;
+package cbit.vcell.server;
 
 import java.io.Serializable;
 
 import org.vcell.util.Matchable;
-
-import cbit.vcell.message.server.htc.pbs.PbsJobID;
-import cbit.vcell.message.server.htc.sge.SgeJobID;
-import cbit.vcell.message.server.htc.slurm.SlurmJobID;
 
 @SuppressWarnings("serial")
 public abstract class HtcJobID implements Serializable, Matchable {
@@ -47,21 +43,6 @@ public abstract class HtcJobID implements Serializable, Matchable {
 
 	private String toDatabaseShort(){
 		return getBatchSystemType( ).name()+":"+this.jobNumber;
-	}
-
-	public static HtcJobID fromDatabase(String databaseString){
-		String PBS_Prefix = BatchSystemType.PBS.name()+":";
-		String SGE_Prefix = BatchSystemType.SGE.name()+":";
-		String SLURM_Prefix = BatchSystemType.SLURM.name()+":";
-		if (databaseString.startsWith(PBS_Prefix)){
-			return new PbsJobID(databaseString.substring(PBS_Prefix.length()));
-		}else if (databaseString.startsWith(SLURM_Prefix)){
-			return new SlurmJobID(databaseString.substring(SLURM_Prefix.length()));
-		}else if (databaseString.startsWith(SGE_Prefix)){
-			return new SgeJobID(databaseString.substring(SGE_Prefix.length()));
-		}else {
-			return new PbsJobID(databaseString);
-		}
 	}
 
 	public String toString(){

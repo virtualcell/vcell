@@ -1,6 +1,6 @@
 package cbit.vcell.message.server.htc.pbs;
 
-import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.server.HtcJobID;
 
 @SuppressWarnings("serial")
 public class PbsJobID extends HtcJobID {

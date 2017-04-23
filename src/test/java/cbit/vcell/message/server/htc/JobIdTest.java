@@ -8,7 +8,9 @@ import java.util.Random;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
-import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
+import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.HtcJobID.BatchSystemType;
 
 /**
  * Test {@link HtcJobID#compareEqual(org.vcell.util.Matchable)},
@@ -23,7 +25,7 @@ public class JobIdTest {
 		if (server != null) {
 			dbString += "." + server;
 		}
-		return HtcJobID.fromDatabase(dbString) ;
+		return SimulationJobStatusPersistent.fromDatabase(dbString) ;
 	}
 
 	private String randomServer( ) {

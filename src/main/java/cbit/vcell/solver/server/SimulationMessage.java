@@ -14,7 +14,7 @@ import java.io.Serializable;
 
 import org.vcell.util.Compare;
 
-import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.server.HtcJobID;
 
 public class SimulationMessage implements Serializable {
 	

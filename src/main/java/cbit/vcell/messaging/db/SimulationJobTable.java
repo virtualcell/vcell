@@ -18,13 +18,13 @@ import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SimulationQueueID;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.modeldb.VersionTable;
+import cbit.vcell.server.HtcJobID;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
 
@@ -134,7 +134,7 @@ public SimulationJobStatusPersistent getSimulationJobStatus(ResultSet rset) thro
 	HtcJobID parsedHtcJobID = null;
 	String htcJobIDString = rset.getString(pbsJobID.toString());
 	if (!rset.wasNull() && htcJobIDString!=null && htcJobIDString.length()>0){
-		parsedHtcJobID = HtcJobID.fromDatabase(htcJobIDString);
+		parsedHtcJobID = SimulationJobStatusPersistent.fromDatabase(htcJobIDString);
 	}
 	
 	SimulationExecutionStatusPersistent simExeStatus = new SimulationExecutionStatusPersistent(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null, parsedHtcJobID);

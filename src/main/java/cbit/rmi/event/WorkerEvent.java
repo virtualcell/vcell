@@ -12,8 +12,8 @@ package cbit.rmi.event;
 
 import org.vcell.util.document.User;
 
-import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.server.HtcJobID;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;

@@ -17,7 +17,7 @@ import org.vcell.util.ComparableObject;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.server.HtcJobID;
 
 public class ServiceStatus implements ComparableObject, Matchable, Serializable {
 	private ServiceSpec serviceSpec = null;

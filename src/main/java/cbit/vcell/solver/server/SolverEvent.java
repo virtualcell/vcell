@@ -10,7 +10,7 @@
 
 package cbit.vcell.solver.server;
 
-import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.server.HtcJobID;
 import cbit.vcell.solvers.AbstractSolver;
 
 /**

@@ -22,10 +22,10 @@ import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
-import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.server.HtcJobID;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 
