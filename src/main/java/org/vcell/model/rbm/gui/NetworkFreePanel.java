@@ -1,4 +1,4 @@
-package org.vcell.model.rbm;
+package org.vcell.model.rbm.gui;
 
 import java.awt.Component;
 import java.awt.Container;

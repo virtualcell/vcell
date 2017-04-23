@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.model.rbm;
+package org.vcell.model.rbm.gui;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
+import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;

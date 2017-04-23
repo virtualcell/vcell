@@ -26,7 +26,7 @@ import java.util.Vector;
 import javax.swing.SwingUtilities;
 
 import org.vcell.model.rbm.NetworkConstraints;
-import org.vcell.model.rbm.NetworkFreePanel;
+import org.vcell.model.rbm.gui.NetworkFreePanel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;

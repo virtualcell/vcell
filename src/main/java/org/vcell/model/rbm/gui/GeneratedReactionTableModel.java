@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.model.rbm;
+package org.vcell.model.rbm.gui;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;

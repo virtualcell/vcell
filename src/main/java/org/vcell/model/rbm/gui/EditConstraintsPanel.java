@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.model.rbm;
+package org.vcell.model.rbm.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -44,6 +44,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.model.bngl.ParseException;
+import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.util.Matchable;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;

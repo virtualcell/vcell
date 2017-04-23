@@ -18,9 +18,9 @@ import java.util.Hashtable;
 
 import javax.swing.SwingUtilities;
 
-import org.vcell.model.rbm.EditConstraintsPanel;
-import org.vcell.model.rbm.NetworkConstraintsPanel;
-import org.vcell.model.rbm.ValidateConstraintsPanel;
+import org.vcell.model.rbm.gui.EditConstraintsPanel;
+import org.vcell.model.rbm.gui.NetworkConstraintsPanel;
+import org.vcell.model.rbm.gui.ValidateConstraintsPanel;
 import org.vcell.util.ClientTaskStatusSupport;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;

@@ -1,4 +1,4 @@
-package org.vcell.model.rbm;
+package org.vcell.model.rbm.gui;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -29,7 +29,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.model.rbm.EditConstraintsPanel.ActionButtons;
+import org.vcell.model.rbm.RbmNetworkGenerator;
+import org.vcell.model.rbm.gui.EditConstraintsPanel.ActionButtons;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;

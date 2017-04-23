@@ -26,8 +26,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.vcell.model.rbm.NetworkConstraintsPanel;
-import org.vcell.model.rbm.NetworkFreePanel;
+import org.vcell.model.rbm.gui.NetworkConstraintsPanel;
+import org.vcell.model.rbm.gui.NetworkFreePanel;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;

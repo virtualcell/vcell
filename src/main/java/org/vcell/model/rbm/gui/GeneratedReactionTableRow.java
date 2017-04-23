@@ -1,7 +1,11 @@
-package org.vcell.model.rbm;
+package org.vcell.model.rbm.gui;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
+
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.RbmUtils;
+import org.vcell.model.rbm.SpeciesPattern;
 
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
