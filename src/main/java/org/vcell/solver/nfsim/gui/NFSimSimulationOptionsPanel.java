@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.solver.nfsim;
+package org.vcell.solver.nfsim.gui;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;

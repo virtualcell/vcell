@@ -17,14 +17,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Scanner;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.swing.Timer;
 
-import org.vcell.monitor.pushover.Notify;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.TokenMangler;
@@ -36,7 +32,6 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.VCellClient;
-import cbit.vcell.client.desktop.biomodel.ApplicationSimulationsPanel.SimulationsPanelTabID;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -52,7 +47,6 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
-import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 import cbit.vcell.xml.XmlHelper;
 
