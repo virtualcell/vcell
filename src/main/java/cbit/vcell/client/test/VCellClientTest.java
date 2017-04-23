@@ -63,6 +63,7 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.xml.XmlHelper;

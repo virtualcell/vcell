@@ -1,4 +1,4 @@
-package cbit.vcell.client.test;
+package cbit.vcell.resource;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -6,8 +6,6 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
-
-import cbit.vcell.resource.NativeLib;
 
 /**
  * Start and monitor Monitor library loading in thread, show error message when done

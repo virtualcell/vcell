@@ -33,7 +33,6 @@ import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.DatabasePolicySQL;
@@ -233,9 +232,18 @@ public class StochtestRunService {
 		//
 		// make simulation
 		//
+		MathMappingCallback callback = new MathMappingCallback() {
+			@Override
+			public void setProgressFraction(float fractionDone) { }
+			@Override
+			public void setMessage(String message) { }
+			@Override
+			public boolean isInterrupted() { return false; }
+		};
+		
 		NetworkGenerationRequirements networkGenerationRequirements = NetworkGenerationRequirements.getComputeFull(bngTimeoutMS);
-		simContext.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
-		Simulation sim = simContext.addNewSimulation("stochtestrun_"+stochtestRun.key,new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
+		simContext.refreshMathDescription(callback,networkGenerationRequirements);
+		Simulation sim = simContext.addNewSimulation("stochtestrun_"+stochtestRun.key,callback,networkGenerationRequirements);
 		sim.setSimulationOwner(simContext);
 		
 		//
