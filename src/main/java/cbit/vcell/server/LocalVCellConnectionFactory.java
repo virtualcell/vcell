@@ -20,6 +20,7 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.vcell.message.server.bootstrap.LocalVCellServer;
 /**
  * This type was created in VisualAge.
  */

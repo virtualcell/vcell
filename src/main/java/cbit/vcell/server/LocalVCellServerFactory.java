@@ -21,6 +21,7 @@ import org.vcell.util.document.UserLoginInfo;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.server.bootstrap.LocalVCellServer;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;

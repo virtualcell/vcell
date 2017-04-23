@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.server;
-import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.field.db.FieldDataDBOperationResults;
 import cbit.vcell.field.db.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.*;

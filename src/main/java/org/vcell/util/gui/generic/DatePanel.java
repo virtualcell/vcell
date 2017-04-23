@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.console;
+package org.vcell.util.gui.generic;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

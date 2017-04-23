@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.server;
+package cbit.vcell.message.server.bootstrap;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
@@ -34,11 +34,14 @@ import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.server.bootstrap.ClientTopicMessageCollector;
-import cbit.vcell.message.server.bootstrap.LocalVCellConnectionMessaging;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.server.LocalVCellConnection;
+import cbit.vcell.server.ServerInfo;
+import cbit.vcell.server.VCellConnection;
+import cbit.vcell.server.VCellServer;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
 /**

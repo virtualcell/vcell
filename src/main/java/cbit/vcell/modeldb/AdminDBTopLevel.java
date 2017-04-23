@@ -40,7 +40,7 @@ import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
+import cbit.vcell.server.SimulationStatusPersistent;
 
 /**
  * This type was created in VisualAge.

@@ -53,11 +53,11 @@ import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 /**

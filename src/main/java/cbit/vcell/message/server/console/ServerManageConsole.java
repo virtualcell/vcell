@@ -65,6 +65,7 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.gui.DateRenderer;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.generic.DatePanel;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.sql.ConnectionFactory;

@@ -32,7 +32,6 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.DataSetController;
-import cbit.vcell.server.LocalVCellServer;
 import cbit.vcell.server.PerformanceMonitoringFacility;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;

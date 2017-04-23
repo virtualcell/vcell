@@ -24,9 +24,9 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.modeldb.VCInfoContainer;
+import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 
 /**
  * Insert the type's description here.

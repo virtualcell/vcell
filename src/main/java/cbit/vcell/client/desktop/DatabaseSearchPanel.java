@@ -44,10 +44,10 @@ import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
+import org.vcell.util.gui.generic.DatePanel;
 
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.message.server.console.DatePanel;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.FormalSpeciesType;
 

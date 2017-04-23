@@ -35,6 +35,7 @@ import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.simdata.DataIdentifier;
@@ -46,7 +47,6 @@ import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 import cbit.vcell.xml.XmlHelper;
 

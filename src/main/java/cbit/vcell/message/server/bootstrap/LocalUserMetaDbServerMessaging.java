@@ -32,9 +32,9 @@ import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
 import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.modeldb.VCInfoContainer;
+import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 
 
 /**
