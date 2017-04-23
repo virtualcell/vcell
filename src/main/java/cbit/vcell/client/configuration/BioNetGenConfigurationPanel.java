@@ -15,7 +15,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
+import cbit.vcell.mapping.NetworkTransformer;
 
 public class BioNetGenConfigurationPanel extends JPanel {
 
@@ -54,7 +54,7 @@ public class BioNetGenConfigurationPanel extends JPanel {
 		gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
 		jpanel.add(l1, gbc);
 
-		String location = SimulationConsolePanel.speciesLimit + "";
+		String location = NetworkTransformer.speciesLimit + "";
 		JLabel l2 = new JLabel("<html>" + location + "</html>");
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
@@ -69,7 +69,7 @@ public class BioNetGenConfigurationPanel extends JPanel {
 		gbc.insets = new Insets(4,4,2,4);
 		jpanel.add(l3, gbc);
 
-		location = SimulationConsolePanel.reactionsLimit + "";
+		location = NetworkTransformer.reactionsLimit + "";
 		JLabel l4 = new JLabel("<html>" + location + "</html>");
 		gbc.gridx = 1;
 		gbc.gridy = gridy;

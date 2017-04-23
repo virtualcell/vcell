@@ -29,8 +29,6 @@ import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
 import org.vcell.workflow.WorkflowParameter;
 
-import cbit.vcell.mongodb.VCMongoMessage;
-
 public class WorkflowTest {
 	
 	public static void main(String[] args){
@@ -42,7 +40,6 @@ public class WorkflowTest {
 			System.exit(1);
 		}
 		try {
-			VCMongoMessage.enabled=false;
 			//PropertyLoader.loadProperties();
 			// workflowInputFile "C:\\developer\\eclipse\\workspace\\VCell_5.3_vmicro\\workflow1.txt"
 			File workingDirectory = new File(args[0]);

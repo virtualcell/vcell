@@ -11,7 +11,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 
 /*
@@ -89,7 +88,7 @@ public class TaskCallbackProcessor {
 		case TaskEnd:
 			System.out.println("Task ended");
 			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()!=getPreviousIterationSpecies()) {
-				String s = SimulationConsolePanel.getInsufficientIterationsMessage();
+				String s = NetworkTransformer.getInsufficientIterationsMessage();
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 				consoleNotificationList.add(tcm);
 				sc.firePropertyChange("appendToConsole", "", tcm);
@@ -99,7 +98,7 @@ public class TaskCallbackProcessor {
 			}
 			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()==getPreviousIterationSpecies()) {
 				if(isNeedAdjustMaxMolecules()) {
-					String s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
+					String s = NetworkTransformer.getInsufficientMaxMoleculesMessage();
 					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 					consoleNotificationList.add(tcm);
 					sc.firePropertyChange("appendToConsole", "", tcm);
@@ -112,14 +111,14 @@ public class TaskCallbackProcessor {
 		case TaskEndNotificationOnly:
 			System.out.println("TaskEndNotificationOnly");
 			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()!=getPreviousIterationSpecies()) {
-				String s = SimulationConsolePanel.getInsufficientIterationsMessage();
+				String s = NetworkTransformer.getInsufficientIterationsMessage();
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 				consoleNotificationList.add(tcm);
 				sc.firePropertyChange("appendToConsole", "", tcm);
 			}
 			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()==getPreviousIterationSpecies()) {
 				if(isNeedAdjustMaxMolecules()) {
-					String s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
+					String s = NetworkTransformer.getInsufficientMaxMoleculesMessage();
 					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 					consoleNotificationList.add(tcm);
 					sc.firePropertyChange("appendToConsole", "", tcm);
@@ -157,7 +156,7 @@ public class TaskCallbackProcessor {
 			processDetail(string);
 			String s = "";
 			if(getPreviousIterationSpecies() != getCurrentIterationSpecies()) {
-				s = SimulationConsolePanel.getInsufficientIterationsMessage();
+				s = NetworkTransformer.getInsufficientIterationsMessage();
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 				consoleNotificationList.add(tcm);
 				sc.firePropertyChange("appendToConsole", "", tcm);
@@ -166,7 +165,7 @@ public class TaskCallbackProcessor {
 			}
 			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()==getPreviousIterationSpecies()) {
 				if(isNeedAdjustMaxMolecules()) {
-					s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
+					s = NetworkTransformer.getInsufficientMaxMoleculesMessage();
 					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 					consoleNotificationList.add(tcm);
 					sc.firePropertyChange("appendToConsole", "", tcm);

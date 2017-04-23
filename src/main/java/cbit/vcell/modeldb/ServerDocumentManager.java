@@ -32,7 +32,6 @@ import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
@@ -2354,7 +2353,7 @@ private KeyValue update(User user, BioModelMetaData bioModelMetaData,BioModelChi
 private static void fixNullImageName(VCImage image) throws PropertyVetoException
 {
 	if(image.getName() == null || image.getName().length() == 0){
-		String newImageName = "image" + ClientRequestManager.generateDateTimeString();
+		String newImageName = "image" + BeanUtils.generateDateTimeString();
 		image.setName(newImageName);
 	}
 }

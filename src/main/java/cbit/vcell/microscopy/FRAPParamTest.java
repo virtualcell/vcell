@@ -19,12 +19,12 @@ import java.util.ArrayList;
 
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.resource.ResourceUtil;
 /**
@@ -251,7 +251,7 @@ public class FRAPParamTest
 				ProfileData[] profileData = optData.evaluateParameters(bestParameters, ctss);
 
 				//output profile likelihood 
-				File outputDir_oneComponent = new File(getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + "OneComponent_SAVED_AT_" + ClientRequestManager.generateDateTimeString() + System.getProperty("file.separator"));
+				File outputDir_oneComponent = new File(getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + "OneComponent_SAVED_AT_" + BeanUtils.generateDateTimeString() + System.getProperty("file.separator"));
 				if(!outputDir_oneComponent.exists())
 				{
 					outputDir_oneComponent.mkdirs();
@@ -268,7 +268,7 @@ public class FRAPParamTest
 				profileData = optData.evaluateParameters(bestParameters, ctss);
 
 				//output profile likelihood
-				File outputDir_twoComponents = new File(getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + "TwoComponents_SAVED_AT_" + ClientRequestManager.generateDateTimeString() + System.getProperty("file.separator"));
+				File outputDir_twoComponents = new File(getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + "TwoComponents_SAVED_AT_" + BeanUtils.generateDateTimeString() + System.getProperty("file.separator"));
 				if(!outputDir_twoComponents.exists())
 				{
 					outputDir_twoComponents.mkdirs();

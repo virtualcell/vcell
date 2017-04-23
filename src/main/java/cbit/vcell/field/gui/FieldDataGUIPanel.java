@@ -1678,7 +1678,7 @@ private JButton getJButtonCreateGeom() {
 										Version version = ((FDSimMathModelInfo)openModelInfoHolder).getMathModelVersion();
 										String modelName = (version==null?"NoName":version.getName());
 										if(newGeom.getName() == null){
-											newGeom.setName(modelName+"_"+ClientRequestManager.generateDateTimeString());
+											newGeom.setName(modelName+"_"+BeanUtils.generateDateTimeString());
 										}
 										String message = "Confirm Setting new FieldData derived geometry on MathModel '"+modelName+"'";
 										if(DialogUtils.showWarningDialog(FieldDataGUIPanel.this, message, new String[] {OK_OPTION,"Cancel"}, OK_OPTION).equals(OK_OPTION)){
@@ -1689,7 +1689,7 @@ private JButton getJButtonCreateGeom() {
 										String modelName = (version==null?"NoName":version.getName());
 										String simContextName = ((FDSimBioModelInfo)openModelInfoHolder).getSimulationContext().getName();
 										if(newGeom.getName() == null){
-											newGeom.setName(modelName+"_"+simContextName+"_"+ClientRequestManager.generateDateTimeString());
+											newGeom.setName(modelName+"_"+simContextName+"_"+BeanUtils.generateDateTimeString());
 										}
 										String message = "Confirm Setting new FieldData derived geometry on BioModel '"+modelName+"' , Application '"+simContextName+"'";
 										if(DialogUtils.showWarningDialog(FieldDataGUIPanel.this, message, new String[] {OK_OPTION,"Cancel"}, OK_OPTION).equals(OK_OPTION)){

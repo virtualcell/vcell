@@ -1456,5 +1456,25 @@ public final class BeanUtils {
 		return new Range(min,max);
 	}
 
+	public static String generateDateTimeString(){
+		Calendar calendar = Calendar.getInstance();
+		int year = calendar.get(Calendar.YEAR);
+		int month = calendar.get(Calendar.MONTH)+1;
+		int day = calendar.get(Calendar.DAY_OF_MONTH);
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
+		int min = calendar.get(Calendar.MINUTE);
+		int sec = calendar.get(Calendar.SECOND);
+		String imageName =
+		year+""+
+		(month < 10?"0"+month:month)+""+
+		(day < 10?"0"+day:day)+
+		"_"+
+		(hour < 10?"0"+hour:hour)+""+
+		(min < 10?"0"+min:min)+""+
+		(sec < 10?"0"+sec:sec);
+	
+		return imageName;
+	}
+
 
 }

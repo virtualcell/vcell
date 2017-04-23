@@ -41,7 +41,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -1783,7 +1782,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					//Create default name for image
-					String dateTimeString = ClientRequestManager.generateDateTimeString();
+					String dateTimeString = BeanUtils.generateDateTimeString();
 					geomHolder[0].getGeometrySpec().getImage().setName("img_"+dateTimeString);
 					geomHolder[0].setName("geom_"+dateTimeString);
 					//cause update in this thread so later swing threads won't be delayed
@@ -2854,7 +2853,7 @@ private static VCImage saveImageAutoName(RequestManager requestManager,VCImage v
 	String newName = null;
 	boolean bNameIsGood = false;
 //	Calendar calendar = Calendar.getInstance();
-	newName = "image_"+ClientRequestManager.generateDateTimeString();
+	newName = "image_"+BeanUtils.generateDateTimeString();
 	while (!bNameIsGood){
 		if (imageInfos==null){
 			bNameIsGood = true; // if no image information assume image name is good
@@ -2879,25 +2878,6 @@ private static VCImage saveImageAutoName(RequestManager requestManager,VCImage v
 
 }
 
-public static String generateDateTimeString(){
-	Calendar calendar = Calendar.getInstance();
-	int year = calendar.get(Calendar.YEAR);
-	int month = calendar.get(Calendar.MONTH)+1;
-	int day = calendar.get(Calendar.DAY_OF_MONTH);
-	int hour = calendar.get(Calendar.HOUR_OF_DAY);
-	int min = calendar.get(Calendar.MINUTE);
-	int sec = calendar.get(Calendar.SECOND);
-	String imageName =
-	year+""+
-	(month < 10?"0"+month:month)+""+
-	(day < 10?"0"+day:day)+
-	"_"+
-	(hour < 10?"0"+hour:hour)+""+
-	(min < 10?"0"+min:min)+""+
-	(sec < 10?"0"+sec:sec);
-
-	return imageName;
-}
 private AsynchClientTask getSaveImageAndGeometryTask(){
 
 	final AsynchClientTask saveImageAndGeometryTask =  new AsynchClientTask("creating geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {

@@ -10,25 +10,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
@@ -44,31 +37,6 @@ public class SimulationConsolePanel extends JPanel {
 	private SimulationContext fieldSimulationContext;
 	private JTextPane netGenConsoleText;
 	
-	public final static int speciesLimit = 800;			// 1000
-	public final static int reactionsLimit = 2500;		// 3000
-	public final static String endMessage = "\nPlease go to the Specifications / Network panel and adjust the number of Iterations.";
-	public final static String endMessage2 = "\nPlease go to the Specifications / Network panel and adjust the Max number of Molecules / Species if necessary.";
-
-	public final static String getSpeciesLimitExceededMessage(BNGOutputSpec outputSpec) {
-		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + outputSpec.getBNGSpecies().length + endMessage;
-	}
-	public final static String getReactionsLimitExceededMessage(BNGOutputSpec outputSpec) {
-		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + outputSpec.getBNGReactions().length + endMessage;
-	}
-	public final static String getSpeciesLimitExceededMessage(int ourNumber) {
-		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + ourNumber + endMessage;
-	}
-	public final static String getReactionsLimitExceededMessage(int ourNumber) {
-		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + ourNumber + endMessage;
-	}
-	public final static String getInsufficientIterationsMessage() {
-		return "Warning: Max Iterations number may be insufficient." + endMessage;
-	}
-	public final static String getInsufficientMaxMoleculesMessage() {
-		return "Warning: Max Molecules / Species number may be insufficient." + endMessage2;
-	}
-
-
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
 
 		public void actionPerformed(ActionEvent e) {

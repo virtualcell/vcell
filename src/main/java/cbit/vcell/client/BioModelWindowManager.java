@@ -19,6 +19,7 @@ import java.util.Hashtable;
 
 import javax.swing.JPanel;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
@@ -131,7 +132,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 							newGeom.setName(
 								getBioModel().getName()+"_"+
 								(simulationContext.getName()+"_"+
-								ClientRequestManager.generateDateTimeString()));
+								BeanUtils.generateDateTimeString()));
 						}
 						simulationContext.setGeometry(newGeom);
 						return;

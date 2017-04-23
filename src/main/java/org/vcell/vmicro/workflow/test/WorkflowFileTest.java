@@ -12,8 +12,6 @@ import org.vcell.workflow.Repository;
 import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
 
-import cbit.vcell.mongodb.VCMongoMessage;
-
 public class WorkflowFileTest {
 	
 	public static void main(String[] args){
@@ -25,8 +23,6 @@ public class WorkflowFileTest {
 			System.exit(1);
 		}
 		try {
-			VCMongoMessage.enabled=false;
-
 			File workingDirectory = new File(args[0]);
 			LocalWorkspace localWorkspace = new LocalWorkspace(workingDirectory);
 

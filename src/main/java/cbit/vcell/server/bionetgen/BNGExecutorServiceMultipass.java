@@ -37,8 +37,8 @@ import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.BNGSpeciesComponent;
-import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage;
@@ -180,10 +180,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			int reactionsCount = correctedSR.reactionsList.size();
 			displayIterationMessage(i+1, speciesCount);
 			
-			if(speciesCount >= SimulationConsolePanel.speciesLimit) {
+			if(speciesCount >= NetworkTransformer.speciesLimit) {
 				break;		// don't continue iterations if we reach species limit
 			}
-			if(reactionsCount >= SimulationConsolePanel.reactionsLimit) {
+			if(reactionsCount >= NetworkTransformer.reactionsLimit) {
 				break;
 			}
 			if(correctedSR.speciesList.isEmpty()) {

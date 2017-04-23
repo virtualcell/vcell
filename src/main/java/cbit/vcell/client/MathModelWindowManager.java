@@ -100,7 +100,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 						if(newGeom.getName() == null){
 							newGeom.setName(
 								getMathModel().getName()+"_"+
-								ClientRequestManager.generateDateTimeString());
+								BeanUtils.generateDateTimeString());
 						}
 						((MathModel)getVCDocument()).getMathDescription().setGeometry(newGeom);
 					}

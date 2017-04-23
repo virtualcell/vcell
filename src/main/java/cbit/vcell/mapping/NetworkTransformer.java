@@ -29,7 +29,6 @@ import cbit.vcell.bionetgen.BNGParameter;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
-import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -68,6 +67,10 @@ public class NetworkTransformer implements SimContextTransformer {
 
 	private Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new LinkedHashMap<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>>();
 	private Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap = new LinkedHashMap<FakeReactionRuleRateParameter, LocalParameter>();
+	public final static int speciesLimit = 800;			// 1000
+	public final static int reactionsLimit = 2500;		// 3000
+	public final static String endMessage = "\nPlease go to the Specifications / Network panel and adjust the number of Iterations.";
+	public final static String endMessage2 = "\nPlease go to the Specifications / Network panel and adjust the Max number of Molecules / Species if necessary.";
 		
 	@Override
 	final public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
@@ -183,13 +186,13 @@ public class NetworkTransformer implements SimContextTransformer {
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);	// not an error, we just want to show it in red
 			simContext.appendToConsole(tcm);
 			if(simContext.isInsufficientIterations()) {
-				s = SimulationConsolePanel.getInsufficientIterationsMessage();
+				s = NetworkTransformer.getInsufficientIterationsMessage();
 				System.out.println(s);
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);
 				simContext.appendToConsole(tcm);
 			}
 			if(simContext.isInsufficientMaxMolecules()) {
-				s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
+				s = NetworkTransformer.getInsufficientMaxMoleculesMessage();
 				System.out.println(s);
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);
 				simContext.appendToConsole(tcm);
@@ -248,16 +251,16 @@ public class NetworkTransformer implements SimContextTransformer {
 			simContext.setMd5hash(null);					// clean the cache if the user interrupts
 			throw new UserCancelException(msg);
 		}
-		if(outputSpec.getBNGSpecies().length > SimulationConsolePanel.speciesLimit) {
-			String message = SimulationConsolePanel.getSpeciesLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGSpecies().length > NetworkTransformer.speciesLimit) {
+			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec);
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			simContext.setMd5hash(null);
 			message = "Unable to generate Math for Application " + simContext.getName() + ".\n" + message;
 			throw new RuntimeException(message);
 		}
-		if(outputSpec.getBNGReactions().length > SimulationConsolePanel.reactionsLimit) {
-			String message = SimulationConsolePanel.getReactionsLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGReactions().length > NetworkTransformer.reactionsLimit) {
+			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec);
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			simContext.setMd5hash(null);
@@ -834,6 +837,30 @@ public class NetworkTransformer implements SimContextTransformer {
 			}
 		}
 		return newExp;
+	}
+
+	public final static String getSpeciesLimitExceededMessage(BNGOutputSpec outputSpec) {
+		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + outputSpec.getBNGSpecies().length + endMessage;
+	}
+
+	public final static String getReactionsLimitExceededMessage(BNGOutputSpec outputSpec) {
+		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + outputSpec.getBNGReactions().length + endMessage;
+	}
+
+	public final static String getSpeciesLimitExceededMessage(int ourNumber) {
+		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + ourNumber + endMessage;
+	}
+
+	public final static String getReactionsLimitExceededMessage(int ourNumber) {
+		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + ourNumber + endMessage;
+	}
+
+	public final static String getInsufficientIterationsMessage() {
+		return "Warning: Max Iterations number may be insufficient." + endMessage;
+	}
+
+	public final static String getInsufficientMaxMoleculesMessage() {
+		return "Warning: Max Molecules / Species number may be insufficient." + endMessage2;
 	}
 
 }

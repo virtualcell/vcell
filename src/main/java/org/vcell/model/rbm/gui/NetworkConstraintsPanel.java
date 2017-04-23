@@ -358,12 +358,12 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		if(outputSpec == null || outputSpec.getBNGSpecies() == null || outputSpec.getBNGReactions() == null) {
 			return;
 		}
-		if(outputSpec.getBNGSpecies().length > SimulationConsolePanel.speciesLimit) {
-			String message = SimulationConsolePanel.getSpeciesLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGSpecies().length > NetworkTransformer.speciesLimit) {
+			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec);
 			appendToConsole(message);
 		}
-		if(outputSpec.getBNGReactions().length > SimulationConsolePanel.reactionsLimit) {
-			String message = SimulationConsolePanel.getReactionsLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGReactions().length > NetworkTransformer.reactionsLimit) {
+			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec);
 			appendToConsole(message);
 		}
 	}
@@ -381,12 +381,12 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		if(outputSpec == null || outputSpec.getBNGSpecies() == null || outputSpec.getBNGReactions() == null) {
 			return;
 		}
-		if(outputSpec.getBNGSpecies().length > SimulationConsolePanel.speciesLimit) {
-			String message = SimulationConsolePanel.getSpeciesLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGSpecies().length > NetworkTransformer.speciesLimit) {
+			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec);
 			appendToConsole(message);
 		}
-		if(outputSpec.getBNGReactions().length > SimulationConsolePanel.reactionsLimit) {
-			String message = SimulationConsolePanel.getReactionsLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGReactions().length > NetworkTransformer.reactionsLimit) {
+			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec);
 			appendToConsole(message);
 		}
 	}
