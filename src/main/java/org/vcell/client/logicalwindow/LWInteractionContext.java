@@ -1,7 +1,5 @@
 package org.vcell.client.logicalwindow;
 
-import org.vcell.hlglue.InteractionContext;
-
 /**
  * graphical implementation of {@link InteractionContext}
  */

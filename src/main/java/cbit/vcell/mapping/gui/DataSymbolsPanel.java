@@ -73,7 +73,6 @@ import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.psf.PointSpreadFunctionManagement;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.units.VCUnitDefinition;
 

@@ -1,6 +1,6 @@
 package cbit.vcell.client.data;
 
-import cbit.vcell.client.data.SimulationModelInfo.ModelCategoryType;
+import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class DataSymbolMetadata {

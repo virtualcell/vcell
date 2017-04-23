@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.psf;
+package cbit.vcell.mapping.gui;
 
 import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.checkNameAvailability;
 

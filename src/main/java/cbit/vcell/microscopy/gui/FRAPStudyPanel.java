@@ -76,7 +76,6 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.data.DataIdentifierFilter;
 import cbit.vcell.client.data.PDEDataViewer;
-import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -133,6 +132,7 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationSymbolTable;
 
 @SuppressWarnings("serial")

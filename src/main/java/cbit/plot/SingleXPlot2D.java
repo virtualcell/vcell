@@ -10,8 +10,8 @@
 
 package cbit.plot;
 
-import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 
 /**
  * Insert the type's description here.

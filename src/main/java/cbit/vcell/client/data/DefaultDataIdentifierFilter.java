@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
-import cbit.vcell.client.data.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 
 public class  DefaultDataIdentifierFilter implements DataIdentifierFilter{
 	private boolean bPostProcessingMode = false;

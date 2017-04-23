@@ -28,7 +28,6 @@ import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 
 import cbit.image.DisplayAdapterService;
-import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.nrrd.NrrdInfo;
@@ -37,6 +36,7 @@ import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class ImageJHelper {

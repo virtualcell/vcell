@@ -2,8 +2,6 @@
 
 package org.vcell.model.bngl;
 
-import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
-
 public class ASTModel extends SimpleNode {
 	private String prolog = null;
 

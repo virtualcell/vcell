@@ -1,4 +1,4 @@
-package org.vcell.hlglue;
+package org.vcell.client.logicalwindow;
 
 public interface InteractionContext {
 	public enum Response {

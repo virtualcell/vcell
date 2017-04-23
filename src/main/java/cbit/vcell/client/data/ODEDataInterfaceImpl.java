@@ -6,10 +6,11 @@ import java.util.ArrayList;
 
 import org.vcell.util.ObjectNotFoundException;
 
-import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
-import cbit.vcell.client.data.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.SimulationModelInfo;
+import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 

@@ -41,6 +41,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
 import sun.swing.SwingUtilities2;

@@ -8,8 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.data;
+package cbit.vcell.solver;
 
+import cbit.vcell.client.data.DataSymbolMetadata;
 import cbit.vcell.parser.SymbolTableEntry;
 
 

@@ -45,7 +45,6 @@ import cbit.plot.SingleXPlot2D;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.PDEDataViewer;
-import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
@@ -61,6 +60,7 @@ import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 
 public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	private TSJobResultsNoStats tsJobResultsNoStats = null;

@@ -17,6 +17,7 @@ import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.simdata.DataManager;
+import cbit.vcell.solver.SimulationModelInfo;
 /**
  * Insert the type's description here.
  * Creation date: (6/14/2004 9:48:35 PM)

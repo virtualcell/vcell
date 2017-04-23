@@ -12,7 +12,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Enumeration;
 
 import javax.swing.AbstractButton;
@@ -29,11 +28,10 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
-import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
-import cbit.vcell.client.ClientRequestManager.BngUnitSystem.ConcUnitSystem;
-import cbit.vcell.client.ClientRequestManager.BngUnitSystem.TimeUnitSystem;
-import cbit.vcell.client.ClientRequestManager.BngUnitSystem.VolumeUnitSystem;
+import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
+import org.vcell.model.bngl.BngUnitSystem.ConcUnitSystem;
+import org.vcell.model.bngl.BngUnitSystem.TimeUnitSystem;
+import org.vcell.model.bngl.BngUnitSystem.VolumeUnitSystem;
 
 public class BNGLUnitsPanel extends JPanel {
 	

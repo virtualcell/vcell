@@ -17,9 +17,9 @@ import javax.swing.event.ChangeListener;
 
 import org.vcell.util.Range;
 
-import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 /**
  * Insert the type's description here.
  * Creation date: (2/8/2001 12:43:18 PM)

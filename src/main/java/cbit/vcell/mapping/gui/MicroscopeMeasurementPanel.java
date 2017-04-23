@@ -61,7 +61,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.psf.PointSpreadFunctionManagement;
 
 @SuppressWarnings("serial")
 public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
