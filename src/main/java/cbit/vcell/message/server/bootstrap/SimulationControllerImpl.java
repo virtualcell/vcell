@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.server;
+package cbit.vcell.message.server.bootstrap;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
@@ -46,6 +46,9 @@ import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngine;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationJobStatus;
+import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.server.SimulationTaskID;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;

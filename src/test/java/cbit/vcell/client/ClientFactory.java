@@ -49,13 +49,13 @@ import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
-import cbit.vcell.server.LocalVCellConnectionFactory;
-import cbit.vcell.server.RMIVCellConnectionFactory;
-import cbit.vcell.server.RMIVCellServerFactory;
+import cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.RMIVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.RMIVCellServerFactory;
+import cbit.vcell.message.server.bootstrap.VCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.VCellServerFactory;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.VCellBootstrap;
-import cbit.vcell.server.VCellConnectionFactory;
-import cbit.vcell.server.VCellServerFactory;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.Simulation;
@@ -132,7 +132,7 @@ public class ClientFactory {
 		KeyFactory keyFactory = new OracleKeyFactory();
 		VCMessagingDelegate messagingDelegate = new SimpleMessagingDelegate();
 		VCMessagingService messagingService = VCMessagingServiceActiveMQ.createInstance(messagingDelegate);
-		VCellServerFactory vcServerFactory = new cbit.vcell.server.LocalVCellServerFactory(adminUserid,digestedPassword,"<<local>>",messagingService,conFactory,keyFactory,log);
+		VCellServerFactory vcServerFactory = new cbit.vcell.message.server.bootstrap.LocalVCellServerFactory(adminUserid,digestedPassword,"<<local>>",messagingService,conFactory,keyFactory,log);
 		return vcServerFactory;
 	}
 	

@@ -38,7 +38,6 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellServer;

@@ -9,8 +9,8 @@
  */
 
 package cbit.vcell.solvers;
+import cbit.vcell.message.server.bootstrap.LocalVCellConnection;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.server.LocalVCellConnection;
 
 import java.io.*;
 import java.util.*;

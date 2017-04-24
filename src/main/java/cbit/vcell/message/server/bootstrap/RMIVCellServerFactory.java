@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.server;
+package cbit.vcell.message.server.bootstrap;
 
 import java.rmi.*;
 
@@ -16,6 +16,10 @@ import org.vcell.util.AuthenticationException;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
+
+import cbit.vcell.server.ConnectionException;
+import cbit.vcell.server.VCellBootstrap;
+import cbit.vcell.server.VCellServer;
 
 /**
  * This type was created in VisualAge.

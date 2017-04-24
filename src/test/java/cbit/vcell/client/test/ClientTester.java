@@ -77,7 +77,7 @@ protected static cbit.vcell.server.VCellBootstrap VCellBootstrapInit(String args
 		System.err.println("usage: "+programName+" host port AdminUserid AdminUserKey AdminPassword");
 		throw new Exception("cannot connect");
 	}
-	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
+	cbit.vcell.message.server.bootstrap.VCellServerFactory vcServerFactory = null;
 	new org.vcell.util.PropertyLoader();
 	if (!args[0].equalsIgnoreCase("-local")) {
 		try {
@@ -99,30 +99,30 @@ protected static cbit.vcell.server.VCellBootstrap VCellBootstrapInit(String args
  * @return VCellConnection
  * @param args java.lang.String[]
  */
-protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactoryInit(String args[], String programName) throws Exception {
+protected static cbit.vcell.message.server.bootstrap.VCellConnectionFactory VCellConnectionFactoryInit(String args[], String programName) throws Exception {
 	if (args.length != 3 && args.length != 7) {
 		System.err.println("usage: " + programName + " -local userid password [driverName connectionURL userid password]");
 		System.err.println("usage: " + programName + " -jms userid password");
 		System.err.println("usage: " + programName +" host userid password");
 		throw new Exception("cannot connect");
 	}
-	cbit.vcell.server.VCellConnectionFactory vcConnFactory = null;
+	cbit.vcell.message.server.bootstrap.VCellConnectionFactory vcConnFactory = null;
 	new org.vcell.util.PropertyLoader();		
 	UserLoginInfo userLoginInfo = new UserLoginInfo(args[1], new UserLoginInfo.DigestedPassword(args[2]));
 	if (args[0].startsWith("-")) {
 		org.vcell.util.SessionLog log = new org.vcell.util.StdoutSessionLog(userLoginInfo.getUserName());
 		if (args[0].equalsIgnoreCase("-jms")) {
-			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userLoginInfo, log);
+			vcConnFactory = new cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory(userLoginInfo, log);
 		} else if (args[0].equalsIgnoreCase("-local")) {
-			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userLoginInfo, log);
+			vcConnFactory = new cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory(userLoginInfo, log);
 			if (args.length == 7) {
 				ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log, args[3], args[4], args[5], args[6]);
-				((cbit.vcell.server.LocalVCellConnectionFactory)vcConnFactory).setConnectionFactory(conFactory);
+				((cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory)vcConnFactory).setConnectionFactory(conFactory);
 			}
 		}
 	} else {
 		String host = args[0];
-		vcConnFactory = new cbit.vcell.server.RMIVCellConnectionFactory(host,userLoginInfo);
+		vcConnFactory = new cbit.vcell.message.server.bootstrap.RMIVCellConnectionFactory(host,userLoginInfo);
 	} 
 	return vcConnFactory;
 }
@@ -131,13 +131,13 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
  * @return VCellConnection
  * @param args java.lang.String[]
  */
-protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(String args[], String programName) throws Exception {
+protected static cbit.vcell.message.server.bootstrap.VCellServerFactory VCellServerFactoryInit(String args[], String programName) throws Exception {
 	if (args.length != 3 && args.length != 4) {
 		System.err.println("usage: "+programName+" [-local] userid password");
 		System.err.println("usage: "+programName+" host userid userkey password");
 		throw new Exception("cannot connect");
 	}
-	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
+	cbit.vcell.message.server.bootstrap.VCellServerFactory vcServerFactory = null;
 	org.vcell.util.PropertyLoader.loadProperties();
 	org.vcell.util.document.User user = null;
 	if (!args[0].equalsIgnoreCase("-local")) {
@@ -147,7 +147,7 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 		user = new org.vcell.util.document.User(userid, userKey);
 		String password = args[3];
 		System.setSecurityManager(new java.rmi.RMISecurityManager());
-		vcServerFactory = new cbit.vcell.server.RMIVCellServerFactory(host, user, new UserLoginInfo.DigestedPassword(password));
+		vcServerFactory = new cbit.vcell.message.server.bootstrap.RMIVCellServerFactory(host, user, new UserLoginInfo.DigestedPassword(password));
 	} else {
 		String userid = args[1];
 		String password = args[2];
@@ -156,7 +156,7 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 		cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new SimpleMessagingDelegate());
-		vcServerFactory = new cbit.vcell.server.LocalVCellServerFactory(userid,new UserLoginInfo.DigestedPassword(password),"<<local>>",vcMessagingService,conFactory,keyFactory,log);
+		vcServerFactory = new cbit.vcell.message.server.bootstrap.LocalVCellServerFactory(userid,new UserLoginInfo.DigestedPassword(password),"<<local>>",vcMessagingService,conFactory,keyFactory,log);
 	}
 	return vcServerFactory;
 }

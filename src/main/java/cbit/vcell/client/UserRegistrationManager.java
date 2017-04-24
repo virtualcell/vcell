@@ -29,8 +29,8 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.desktop.RegistrationPanel;
+import cbit.vcell.message.server.bootstrap.RMIVCellConnectionFactory;
 import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.VCellBootstrap;
 

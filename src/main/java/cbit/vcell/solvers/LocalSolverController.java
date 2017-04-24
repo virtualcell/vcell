@@ -19,8 +19,8 @@ import org.vcell.util.SessionLog;
 
 import cbit.rmi.event.WorkerEvent;
 import cbit.rmi.event.WorkerEventListener;
+import cbit.vcell.message.server.bootstrap.LocalVCellConnection;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;

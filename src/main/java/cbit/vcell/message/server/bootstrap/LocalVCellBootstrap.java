@@ -60,7 +60,6 @@ import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellServer;

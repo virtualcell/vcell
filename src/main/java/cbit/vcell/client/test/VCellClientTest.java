@@ -61,11 +61,11 @@ import cbit.vcell.client.pyvcellproxy.VCellProxyServer;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer;
+import cbit.vcell.message.server.bootstrap.RMIVCellConnectionFactory;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.

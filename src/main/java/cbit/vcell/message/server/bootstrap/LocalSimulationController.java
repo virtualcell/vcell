@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.server;
+package cbit.vcell.message.server.bootstrap;
 import java.rmi.RemoteException;
 
 import org.vcell.util.DataAccessException;
@@ -18,6 +18,8 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationController;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 /**

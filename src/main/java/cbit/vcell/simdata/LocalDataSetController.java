@@ -21,8 +21,8 @@ import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.message.server.bootstrap.LocalVCellConnection;
 import cbit.vcell.server.DataSetController;
-import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.CartesianMesh;
 /**

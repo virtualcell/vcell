@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.server;
+package cbit.vcell.message.server.bootstrap;
 
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.DataAccessException;
@@ -21,12 +21,14 @@ import org.vcell.util.document.UserLoginInfo;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.server.bootstrap.LocalVCellServer;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.server.ConnectionException;
+import cbit.vcell.server.VCellServer;
 /**
  * This type was created in VisualAge.
  */

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.server;
+package cbit.vcell.message.server.bootstrap;
 
 import ncsa.hdf.object.FileFormat;
 
@@ -20,7 +20,8 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
-import cbit.vcell.message.server.bootstrap.LocalVCellServer;
+import cbit.vcell.server.ConnectionException;
+import cbit.vcell.server.VCellConnection;
 /**
  * This type was created in VisualAge.
  */
