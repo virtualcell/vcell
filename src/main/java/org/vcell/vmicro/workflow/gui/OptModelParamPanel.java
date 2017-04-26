@@ -50,7 +50,7 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.RowColumnResultSet;
-import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
 

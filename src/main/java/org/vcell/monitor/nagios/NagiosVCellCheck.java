@@ -10,12 +10,12 @@ import org.vcell.util.BigString;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;

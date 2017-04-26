@@ -42,11 +42,12 @@ import cbit.vcell.dictionary.db.EnzymeReactionTable;
 import cbit.vcell.dictionary.db.EnzymeTable;
 import cbit.vcell.dictionary.db.ProteinAliasTable;
 import cbit.vcell.dictionary.db.ProteinTable;
-import cbit.vcell.dictionary.db.ReactionDescription;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBFormalSpecies.MatchedVCDocumentsFromSearch;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
+import cbit.vcell.model.ReactionDescription;
+import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.model.ReactionStepInfo;
 
 

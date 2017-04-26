@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.modelopt.gui;
+package cbit.vcell.modelopt;
 
 import cbit.plot.Plot2D;
 import cbit.vcell.math.RowColumnResultSet;

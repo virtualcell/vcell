@@ -15,7 +15,7 @@ import javax.swing.BoxLayout;
 import org.vcell.util.gui.BoxPanel;
 
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.DataSource;
 
 @SuppressWarnings("serial")
 public class SummaryPlotPanel extends BoxPanel

@@ -8,11 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.dictionary.db;
+package cbit.vcell.model;
 import org.vcell.util.document.KeyValue;
-
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.SpeciesDescription;
 /**
  * Insert the type's description here.
  * Creation date: (4/23/2003 1:42:35 PM)

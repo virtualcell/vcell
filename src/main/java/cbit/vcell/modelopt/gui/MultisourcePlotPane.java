@@ -31,6 +31,8 @@ import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.gui.Plot2DPanel;
 import cbit.plot.gui.PlotPane;
+import cbit.vcell.modelopt.DataReference;
+import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel.SortDataReferenceHelper;
 /**
  * Insert the type's description here.

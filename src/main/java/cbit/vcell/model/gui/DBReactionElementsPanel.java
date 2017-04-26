@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.model.gui;
-import cbit.vcell.dictionary.db.ReactionDescription;
+import cbit.vcell.model.ReactionDescription;
 /**
  * Insert the type's description here.
  * Creation date: (4/22/2003 12:54:11 PM)

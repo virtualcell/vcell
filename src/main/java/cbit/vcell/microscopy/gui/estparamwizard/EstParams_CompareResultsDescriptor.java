@@ -25,7 +25,7 @@ import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 

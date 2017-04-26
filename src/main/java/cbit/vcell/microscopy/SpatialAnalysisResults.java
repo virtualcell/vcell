@@ -15,7 +15,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
-import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.solver.ode.ODESolverResultSet;

@@ -30,7 +30,7 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.ConnectionFactory;
-import cbit.vcell.field.db.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;
 import cbit.vcell.messaging.db.SimpleJobStatusPersistent;

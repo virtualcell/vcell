@@ -31,8 +31,9 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableType;
 
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationResults.FieldDataReferenceInfo;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.BioModelSimContextLinkTable;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;

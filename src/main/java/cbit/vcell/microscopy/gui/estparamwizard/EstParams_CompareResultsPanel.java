@@ -20,7 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.DataSource;
 
 /**
  * 

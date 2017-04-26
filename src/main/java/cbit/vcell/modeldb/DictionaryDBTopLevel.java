@@ -23,10 +23,11 @@ import cbit.vcell.dictionary.FormalCompound;
 import cbit.vcell.dictionary.FormalEnzyme;
 import cbit.vcell.dictionary.FormalProtein;
 import cbit.vcell.dictionary.ProteinInfo;
-import cbit.vcell.dictionary.db.ReactionDescription;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
+import cbit.vcell.model.ReactionDescription;
+import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.model.ReactionStepInfo;
 /**
  * This type was created in VisualAge.

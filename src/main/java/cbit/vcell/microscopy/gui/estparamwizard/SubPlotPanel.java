@@ -29,7 +29,7 @@ import org.vcell.util.gui.HyperLinkLabel;
 import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
 @SuppressWarnings("serial")

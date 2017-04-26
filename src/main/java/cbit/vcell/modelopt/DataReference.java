@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.modelopt.gui;
+package cbit.vcell.modelopt;
 /**
  * Insert the type's description here.
  * Creation date: (8/31/2005 4:19:30 PM)

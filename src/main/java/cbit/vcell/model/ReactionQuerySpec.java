@@ -8,8 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.modeldb;
-import cbit.vcell.model.DBFormalSpecies;
+package cbit.vcell.model;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/15/2003 3:15:48 PM)

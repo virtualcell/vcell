@@ -20,18 +20,18 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.db.FieldDataDBOperationResults;
-import cbit.vcell.field.db.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.modeldb.ReactionQuerySpec;
-import cbit.vcell.modeldb.VCInfoContainer;
+import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
@@ -425,7 +425,7 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,Fo
  * getDictionaryReactions method comment.
  * @throws RemoteException 
  */
-public cbit.vcell.dictionary.db.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException {
+public cbit.vcell.model.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException {
 	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getDictionaryReactions");
@@ -792,7 +792,7 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws org
  * @param reactionQuerySpec cbit.vcell.modeldb.ReactionQuerySpec
  * @throws RemoteException 
  */
-public cbit.vcell.dictionary.db.ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException {
+public cbit.vcell.model.ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException {
 	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getUserReactionDescriptions()");

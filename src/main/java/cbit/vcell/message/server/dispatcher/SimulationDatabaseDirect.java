@@ -20,11 +20,11 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.db.FieldDataDBOperationResults;
-import cbit.vcell.field.db.FieldDataDBOperationSpec;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
 import cbit.vcell.messaging.db.SimulationRequirements;

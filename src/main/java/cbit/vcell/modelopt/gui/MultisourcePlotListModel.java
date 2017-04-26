@@ -18,6 +18,8 @@ import java.util.Comparator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultListModelCivilized;
 
+import cbit.vcell.modelopt.DataReference;
+import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 
 /**

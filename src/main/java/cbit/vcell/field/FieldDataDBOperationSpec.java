@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.field.db;
+package cbit.vcell.field;
 
 import java.io.Serializable;
 import org.vcell.util.document.ExternalDataIdentifier;

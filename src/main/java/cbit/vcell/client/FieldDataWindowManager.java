@@ -60,7 +60,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
-import cbit.vcell.field.db.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.gui.FieldDataDBEvent;
 import cbit.vcell.field.gui.FieldDataDBEventListener;
 import cbit.vcell.field.gui.FieldDataGUIPanel;

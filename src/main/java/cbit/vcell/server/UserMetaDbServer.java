@@ -9,23 +9,40 @@
  */
 
 package cbit.vcell.server;
-import cbit.vcell.field.db.FieldDataDBOperationResults;
-import cbit.vcell.field.db.FieldDataDBOperationSpec;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.biomodel.BioModelMetaData;
-
-import java.rmi.*;
+import java.rmi.RemoteException;
 
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.Preference;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.ReferenceQuerySpec;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VCInfoContainer;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableFamily;
 import org.vcell.util.document.VersionableType;
+
+import cbit.image.VCImageInfo;
+import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.model.DBFormalSpecies;
+import cbit.vcell.model.DBSpecies;
+import cbit.vcell.model.FormalSpeciesType;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionDescription;
+import cbit.vcell.model.ReactionQuerySpec;
+import cbit.vcell.model.ReactionStepInfo;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.numericstest.TestSuiteOP;
+import cbit.vcell.numericstest.TestSuiteOPResults;
 
 
 /**
@@ -36,10 +53,10 @@ public interface UserMetaDbServer extends java.rmi.Remote {
  * Insert the method's description here.
  * Creation date: (5/23/2006 9:42:56 AM)
  */
-org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
-UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException;
+UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 /**
  * Insert the method's description here.
@@ -93,7 +110,7 @@ void deleteVCImage(KeyValue imageKey) throws DataAccessException, ObjectNotFound
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws DataAccessException, java.rmi.RemoteException;
+TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -103,7 +120,7 @@ cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.util.document.ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -112,7 +129,7 @@ org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.util.docum
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-org.vcell.util.document.VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws RemoteException, DataAccessException, ObjectNotFoundException;
+VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws RemoteException, DataAccessException, ObjectNotFoundException;
 
 
 /**
@@ -122,14 +139,14 @@ org.vcell.util.document.VersionableFamily getAllReferences(VersionableType vType
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-org.vcell.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
  * @param bAll -- get all models user has access to 
  * @return information about models owned by logged in user (bAll == false) or all models user has access to (bAll == true)
  */
-org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
+BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -168,7 +185,7 @@ public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessExceptio
 public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit, boolean bUserOnly) throws DataAccessException, java.rmi.RemoteException;
 
 
-public cbit.vcell.dictionary.db.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, java.rmi.RemoteException;
+public ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -178,7 +195,7 @@ public cbit.vcell.dictionary.db.ReactionDescription[] getDictionaryReactions(cbi
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.geometry.GeometryInfo getGeometryInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+GeometryInfo getGeometryInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -188,7 +205,7 @@ cbit.vcell.geometry.GeometryInfo getGeometryInfo(KeyValue key) throws DataAccess
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
+GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -258,13 +275,13 @@ BigString getMathModelXML(KeyValue key) throws DataAccessException, java.rmi.Rem
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-org.vcell.util.Preference[] getPreferences() throws DataAccessException, java.rmi.RemoteException;
+Preference[] getPreferences() throws DataAccessException, java.rmi.RemoteException;
 
 
-public cbit.vcell.model.Model getReactionStepAsModel(KeyValue rxID) throws DataAccessException, java.rmi.RemoteException;
+public Model getReactionStepAsModel(KeyValue rxID) throws DataAccessException, java.rmi.RemoteException;
 
 
-public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(KeyValue reactionStepKeys[]) throws DataAccessException, java.rmi.RemoteException;
+public ReactionStepInfo[] getReactionStepInfos(KeyValue reactionStepKeys[]) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -302,7 +319,7 @@ BigString getSimulationXML(KeyValue key) throws DataAccessException, java.rmi.Re
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessException, java.rmi.RemoteException;
+TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -312,7 +329,7 @@ cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException, java.rmi.RemoteException;
+TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -321,7 +338,7 @@ cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccess
  * @return cbit.vcell.dictionary.ReactionDescription[]
  * @param reactionQuerySpec cbit.vcell.modeldb.ReactionQuerySpec
  */
-cbit.vcell.dictionary.db.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException;
+ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException;
 
 
 /**
@@ -331,7 +348,7 @@ cbit.vcell.dictionary.db.ReactionDescription[] getUserReactionDescriptions(cbit.
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.image.VCImageInfo getVCImageInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+VCImageInfo getVCImageInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -341,7 +358,7 @@ cbit.image.VCImageInfo getVCImageInfo(KeyValue key) throws DataAccessException, 
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
+VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -359,7 +376,7 @@ BigString getVCImageXML(KeyValue key) throws DataAccessException, java.rmi.Remot
  * Creation date: (9/25/2003 7:52:33 AM)
  * @return cbit.vcell.modeldb.VCInfoContainer
  */
-cbit.vcell.modeldb.VCInfoContainer getVCInfoContainer() throws DataAccessException, RemoteException;
+VCInfoContainer getVCInfoContainer() throws DataAccessException, RemoteException;
 
 
 /**
@@ -369,7 +386,7 @@ cbit.vcell.modeldb.VCInfoContainer getVCInfoContainer() throws DataAccessExcepti
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-org.vcell.util.document.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup,boolean isHidden) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup,boolean isHidden) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -379,7 +396,7 @@ org.vcell.util.document.VersionInfo groupAddUser(VersionableType vType, KeyValue
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-org.vcell.util.document.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -389,7 +406,7 @@ org.vcell.util.document.VersionInfo groupRemoveUser(VersionableType vType, KeyVa
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-org.vcell.util.document.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -399,7 +416,7 @@ org.vcell.util.document.VersionInfo groupSetPrivate(VersionableType vType, KeyVa
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-org.vcell.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -408,7 +425,7 @@ org.vcell.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyVal
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-void replacePreferences(org.vcell.util.Preference[] preferences) throws java.rmi.RemoteException, DataAccessException;
+void replacePreferences(Preference[] preferences) throws java.rmi.RemoteException, DataAccessException;
 
 
 /**

@@ -8,15 +8,12 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.modeldb;
+package org.vcell.util.document;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.image.VCImageInfo;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.

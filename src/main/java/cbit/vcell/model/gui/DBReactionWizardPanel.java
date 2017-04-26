@@ -40,7 +40,6 @@ import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.DictionaryQueryResults;
-import cbit.vcell.dictionary.db.ReactionDescription;
 import cbit.vcell.graph.BioCartoonTool;
 import cbit.vcell.graph.BioCartoonTool.RXPasteInterface;
 import cbit.vcell.graph.BioCartoonTool.UserResolvedRxElements;
@@ -53,14 +52,15 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionDescription;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionStepInfo;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.DatabaseConstants;
-import cbit.vcell.modeldb.ReactionQuerySpec;
 
 /**
  * Insert the type's description here.

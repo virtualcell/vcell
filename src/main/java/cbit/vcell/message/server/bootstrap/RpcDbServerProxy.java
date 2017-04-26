@@ -13,17 +13,17 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.VersionableFamily;
 
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.db.FieldDataDBOperationResults;
-import cbit.vcell.field.db.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
-import cbit.vcell.modeldb.ReactionQuerySpec;
-import cbit.vcell.modeldb.VCInfoContainer;
+import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
@@ -240,8 +240,8 @@ public cbit.vcell.model.DBFormalSpecies[] getDatabaseSpecies(java.lang.String li
 /**
  * getDictionaryReactions method comment.
  */
-public cbit.vcell.dictionary.db.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.dictionary.db.ReactionDescription[])rpc("getDictionaryReactions",new Object[]{userLoginInfo.getUser(), reactionQuerySpec});
+public cbit.vcell.model.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws org.vcell.util.DataAccessException {
+	return (cbit.vcell.model.ReactionDescription[])rpc("getDictionaryReactions",new Object[]{userLoginInfo.getUser(), reactionQuerySpec});
 }
 
 
@@ -434,8 +434,8 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws org
 /**
  * getUserReactionDescriptions method comment.
  */
-public cbit.vcell.dictionary.db.ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.dictionary.db.ReactionDescription[])rpc("getUserReactionDescriptions",new Object[]{userLoginInfo.getUser(), reactionQuerySpec});
+public cbit.vcell.model.ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws org.vcell.util.DataAccessException {
+	return (cbit.vcell.model.ReactionDescription[])rpc("getUserReactionDescriptions",new Object[]{userLoginInfo.getUser(), reactionQuerySpec});
 }
 
 

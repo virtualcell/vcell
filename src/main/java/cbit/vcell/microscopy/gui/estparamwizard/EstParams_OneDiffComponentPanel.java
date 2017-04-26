@@ -47,7 +47,7 @@ import cbit.vcell.microscopy.batchrun.BatchRunXmlReader;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
 import cbit.vcell.microscopy.server.FrapDataUtils;
-import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
