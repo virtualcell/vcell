@@ -26,9 +26,6 @@
 	<classpathentry kind="lib" path="lib/ucp.jar"/>
 	<classpathentry kind="lib" path="lib/libsbmlj.jar"/>
 	<classpathentry kind="lib" path="lib/GlgGraphLayoutNG.jar"/>
-	<classpathentry kind="lib" path="lib/jhdf5.jar"/>
-	<classpathentry kind="lib" path="lib/jhdf5obj.jar"/>
-	<classpathentry kind="lib" path="lib/jhdfobj.jar"/>
 	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>

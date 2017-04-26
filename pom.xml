@@ -417,6 +417,12 @@
 		    <artifactId>pushover-client</artifactId>
 		    <version>1.0.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.hdfgroup/hdf-java -->
+		<dependency>
+		    <groupId>org.hdfgroup</groupId>
+		    <artifactId>hdf-java</artifactId>
+		    <version>2.6.1</version>
+		</dependency>
 		
 	</dependencies>
 </project>
