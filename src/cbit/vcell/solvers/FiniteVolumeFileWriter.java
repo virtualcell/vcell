@@ -244,6 +244,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		SAVE_CHOMBO_OUTPUT,
 		ACTIVATE_FEATURE_UNDER_DEVELOPMENT,
 		SMALL_VOLFRAC_THRESHOLD,
+		BLOCK_FACTOR,
 		SUBDOMAINS,
 		IF,
 		USER,
@@ -383,7 +384,7 @@ private void writeSmoldyn() throws Exception {
 		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, baseName, simTask, bUseMessaging);
 		stFileWriter.write();
 	} 
-
+	
 	printWriter.println("# Smoldyn Input");
 	printWriter.println(FVInputFileKeyword.SMOLDYN_BEGIN);
 	printWriter.println(FVInputFileKeyword.SMOLDYN_INPUT_FILE + " " + inputFilename);
@@ -1392,11 +1393,11 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
     	printWriter.println(FVInputFileKeyword.TIME_STEP + " " + defaultTimeStep);
     	int keepEvery = 1;
 		if (outputTimeSpec.isDefault()) {
-        	keepEvery = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery();
+			keepEvery = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery();
 		} else if (outputTimeSpec.isUniform()) {
 			UniformOutputTimeSpec uots = (UniformOutputTimeSpec) outputTimeSpec;
 			double ots = uots.getOutputTimeStep();
-	    	keepEvery = (int)(ots / defaultTimeStep);
+	    keepEvery = (int)Math.round(ots / defaultTimeStep);
 		} else {
 			throw new RuntimeException("unexpected OutputTime specification type :"+outputTimeSpec.getClass().getName());
 		}
@@ -2095,6 +2096,8 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		printWriter.println(FVInputFileKeyword.SAVE_CHOMBO_OUTPUT + " " + chomboSolverSpec.isSaveChomboOutput());
 		printWriter.println(FVInputFileKeyword.ACTIVATE_FEATURE_UNDER_DEVELOPMENT + " " + chomboSolverSpec.isActivateFeatureUnderDevelopment());
 		printWriter.println(FVInputFileKeyword.SMALL_VOLFRAC_THRESHOLD + " " + chomboSolverSpec.getSmallVolfracThreshold());
+		printWriter.println(FVInputFileKeyword.BLOCK_FACTOR + " " + chomboSolverSpec.getBlockFactor());
+		printWriter.println(FVInputFileKeyword.TAGS_GROW + " " + chomboSolverSpec.getTagsGrow());
 		
 		// Refinement
 		int numLevels = chomboSolverSpec.getNumRefinementLevels();
@@ -2115,7 +2118,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 				throw new SolverException("ROI expression cannot be null");
 			}
 			// level tagsGrow ROIexpression
-			printWriter.println(roi.getLevel() + " " + roi.getTagsGrow() + " " + roi.getRoiExpression().infix()  + ";");
+			printWriter.println(roi.getLevel() + " " + roi.getRoiExpression().infix()  + ";");
 		}
 		
 		List<RefinementRoi> volRios = chomboSolverSpec.getVolumeRefinementRois();
@@ -2125,7 +2128,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			{
 				throw new SolverException("ROI expression cannot be null");
 			}
-			printWriter.println(roi.getLevel() + " " + roi.getTagsGrow() + " " + roi.getRoiExpression().infix()  + ";");
+			printWriter.println(roi.getLevel() + " " + roi.getRoiExpression().infix()  + ";");
 		}
 		printWriter.println(FVInputFileKeyword.VIEW_LEVEL + " " + chomboSolverSpec.getViewLevel());
 		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_END);

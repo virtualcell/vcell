@@ -7790,11 +7790,16 @@ private	Convert<Boolean> convertBoolean = new Convert<Boolean>() {
 		try 
 		{
 			ChomboSolverSpec css = new ChomboSolverSpec(maxBoxSize, fillRatio, viewLevel, bSaveVCellOutput, bSaveChomboOutput, refineRatioList);
-			Double smallVolfracThreshold = parseDoubleWithDefault(element, XMLTags.SmallVolfracThreshold, 0);
+			double smallVolfracThreshold = parseDoubleWithDefault(element, XMLTags.SmallVolfracThreshold, 0);
+			int blockFactor = parseIntWithDefault(element, XMLTags.BlockFactorTag, ChomboSolverSpec.DEFAULT_BLOCK_FACTOR);
 			boolean bActivateFeatureUnderDevelopment = parseBooleanWithDefault(element, XMLTags.ActivateFeatureUnderDevelopment, false); 
 			css.setSmallVolfracThreshold(smallVolfracThreshold);
 			css.setActivateFeatureUnderDevelopment(bActivateFeatureUnderDevelopment);
-						
+			css.setBlockFactor(blockFactor);
+			
+			int tagsGrow = parseIntWithDefault(element, XMLTags.TagsGrowTag, ChomboSolverSpec.defaultTagsGrow);
+			css.setTagsGrow(tagsGrow);
+			
 			Element timeBoundsElement = element.getChild(XMLTags.TimeBoundTag, vcNamespace);
 			List<Element> timeIntervalElementList = null;
 			boolean noTimeBounds = false;
@@ -7883,18 +7888,13 @@ private	Convert<Boolean> convertBoolean = new Convert<Boolean>() {
 							// ignore
 						}
 					}
-					String tagsGrowStr = levelElement.getAttributeValue(XMLTags.TagsGrowAttrTag);
-					int tagsGrow = RefinementLevel.defaultTagsGrow;
-					if (tagsGrowStr != null)
-					{
-						tagsGrow = Integer.parseInt(tagsGrowStr);
-					}
+					
 					Element expElement = levelElement.getChild(XMLTags.ROIExpressionTag, vcNamespace);
 					String roiExp = null;
 					if (expElement != null)
 					{
 						roiExp = expElement.getText();
-						RefinementRoi roi = new RefinementRoi(roiType, level, tagsGrow, roiExp);
+						RefinementRoi roi = new RefinementRoi(roiType, level, roiExp);
 						css.addRefinementRoi(roi);
 					}
 				}

@@ -1,0 +1,43 @@
+ <html>
+ <center><h3>DISPLAY_LABEL_TOKEN</h3></center> 
+ Chombo provides a set of tools for implementing finite difference methods for the solution of  
+ partial differential equations on block-structured adaptively refined rectangular grids. Both elliptic  
+ and time-dependent modules are included. Chombo supports calculations in complex geometries with both  
+ embedded boundaries and mapped grids, and Chombo also supports particle methods. Most parallel platforms  
+ are supported, and cross-platform self-describing file formats are included.
+ <p><u><b>Input Parameters:</b></u> 
+ <ul> 
+	<li> <b>Time Bounds</b>: Describe one or more intervals of integration and output options. For each interval, enter: <br>
+		<ul>
+		 <li><b>Starting Time</b> of the interval</li>
+		 <li><b>Ending Time</b> of the interval</li>
+		 <li><b>Time Step</b> to numerically solve ODEs/PDEs</li>
+		 <li><b>Output Interval</b>: write results at uniformly sampled time points within the interval (must be a multiple of time step)</li>
+		</ul>
+	 </li>
+
+	<li><b>EBChombo Mesh Panel</b>
+		<ul>
+			<li>Mesh Size: Choose the mesh size in one Cartesian direction or the desired spatial step from a menu of choices that are compatible with the solver's requirements, based on the aspect ratio of domain sizes in the geometry. Due to the solver's requirements, the quantities Dx, Nx, Ny and Nz are connected and cannot be set independently. When the domain aspect ratios in the geometry are not valid for the EBChombo solver, an error message will inform the user, offering suggestions for alternative geometry domain aspect ratios that are valid and render similar domain sizes. In general, for domain sizes to be handled by the EBChombo solver they should have aspect ratios that are proportional to ratios between relatively small integers, e.g. 1:1. or 3:2, or 10:1, etc.<br><br>
+			</li>
+			<li>Mesh Refinement<br>The solver can refine the mesh around desired subsets of mesh points. Use the "Refine Near Membrane" tab to refine the mesh primarily near membranes. Use the "Refine Interior Region" tab to refine the mesh in volume regions in the interior. To create a region of interest (ROI) to "tag" for mesh refinement click on the <i>+ </i>icon  (to delete a ROI select it and click the <b>x </b>icon). Inside the ROI column, click and type a boolean expression to describe the region (e.g.  <i>(x^2+y^2+z^2&lt;0.5^2)</i>). Next to each ROI expression, specify the highest refinement level desired for that region. Each level corresponds to a factor of 2 refinement (i.e. level 2 refines by 4, level 3 refines by 8, etc)
+			<br>
+				<ul>
+					<li>In the "Refine Near Membrane" case, if the ROI expression is 1, the refined region includes all mesh points near membranes, to a desired refinement level; for other Boolean expressions, the solver tags points near a membrane that satisfy the ROI expression. For example one may use the expression 1 with # levels= 2 to refine all membrane points with two levels of refinement, and then add a second ROI with #levels=4 to further refine a small region of the membrane with 4 levels.
+					</li>
+					<li>In the "Refine Interior Region" case, boolean equations describe a ROI in the volume (whether it intersects a membrane or not)
+					</li>
+				</ul>
+			</li>
+			
+			<li>Advanced:<br>
+			Chombo breaks up the computational grid into sub-grids or boxes (especially for mesh refinement and parallel computation). Parameters can affect solver performance, but should not affect the results.
+			<br>
+			<b>Max Box Size:</b>Maximum allowable box size (0 means no limit).<br>
+			<b>Fill Ratio:</b>Measure of how densely cells tagged for refinement will be covered by boxes in each refinement level. <br>
+			<b>Block Factor and Tags Grow:</b> These parameters are reserved mostly for developers use or other advanced users.
+			</li>
+		</ul>
+	</li>
+</ul>	
+ </html>
