@@ -39,6 +39,7 @@ import javax.swing.JTextArea;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.NetworkProxyUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
@@ -73,7 +74,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.LaunchVirtualFRAP;
 import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
-import cbit.vcell.message.server.bootstrap.RMIVCellConnectionFactory;
 import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
@@ -403,7 +403,7 @@ private void connEtoC18(java.awt.event.ActionEvent arg1) {
 
 private void setProxy(){
 	try {
-		RMIVCellConnectionFactory.setProxyPrefs(this);
+		NetworkProxyUtils.setProxyPrefs(this);
 		if(getTopLevelWindowManager()==null || getTopLevelWindowManager().getRequestManager()==null ||
 			getTopLevelWindowManager().getRequestManager().getDocumentManager()==null){
 			DialogUtils.showInfoDialog(this, "Update Proxy settings by restarting VCell or using menu Server->'change user' or Server->reconnect");

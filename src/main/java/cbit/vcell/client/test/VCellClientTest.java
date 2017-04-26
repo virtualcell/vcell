@@ -42,6 +42,7 @@ import javax.swing.tree.TreePath;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jdom.Document;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.NetworkProxyUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
@@ -199,16 +200,16 @@ public static void main(java.lang.String[] args) {
 	//check synchronize Proxy prefs, Proxy Properties
 	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
 	Boolean bHttp =
-		(System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST)==null && System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_HOST)==null?null:System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST) != null);
+		(System.getProperty(NetworkProxyUtils.PROXY_HTTP_HOST)==null && System.getProperty(NetworkProxyUtils.PROXY_SOCKS_HOST)==null?null:System.getProperty(NetworkProxyUtils.PROXY_HTTP_HOST) != null);
 	String currentProxyHost =
-		(bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_HOST):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_HOST)));
+		(bHttp==null?null:(bHttp?System.getProperty(NetworkProxyUtils.PROXY_HTTP_HOST):System.getProperty(NetworkProxyUtils.PROXY_SOCKS_HOST)));
 	String currentProxyPort=
-		(bHttp==null?null:(bHttp?System.getProperty(RMIVCellConnectionFactory.PROXY_HTTP_PORT):System.getProperty(RMIVCellConnectionFactory.PROXY_SOCKS_PORT)));
-	RMIVCellConnectionFactory.setProxyProperties(JOptionPane.getRootFrame(),false,
-		prefs.get(RMIVCellConnectionFactory.prefProxyType,RMIVCellConnectionFactory.prefProxyType),
+		(bHttp==null?null:(bHttp?System.getProperty(NetworkProxyUtils.PROXY_HTTP_PORT):System.getProperty(NetworkProxyUtils.PROXY_SOCKS_PORT)));
+	NetworkProxyUtils.setProxyProperties(JOptionPane.getRootFrame(),false,
+		prefs.get(NetworkProxyUtils.prefProxyType,NetworkProxyUtils.prefProxyType),
 		currentProxyHost,currentProxyPort,
-		prefs.get(RMIVCellConnectionFactory.prefProxyType,RMIVCellConnectionFactory.prefProxyType),
-		prefs.get(RMIVCellConnectionFactory.prefProxyHost,RMIVCellConnectionFactory.prefProxyHost),prefs.get(RMIVCellConnectionFactory.prefProxyPort,RMIVCellConnectionFactory.prefProxyPort));
+		prefs.get(NetworkProxyUtils.prefProxyType,NetworkProxyUtils.prefProxyType),
+		prefs.get(NetworkProxyUtils.prefProxyHost,NetworkProxyUtils.prefProxyHost),prefs.get(NetworkProxyUtils.prefProxyPort,NetworkProxyUtils.prefProxyPort));
 
 	final boolean  IS_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
 	if (!IS_DEBUG) {
