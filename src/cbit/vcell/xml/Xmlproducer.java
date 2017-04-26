@@ -4967,6 +4967,14 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 		smallVolfracThreshold.setText(chomboSolverSpec.getSmallVolfracThreshold() + "");
 		chomboElement.addContent(smallVolfracThreshold);
 		
+		Element blockFactor = new Element(XMLTags.BlockFactorTag);
+		blockFactor.setText(chomboSolverSpec.getBlockFactor() + "");
+		chomboElement.addContent(blockFactor);
+		
+		Element elementTagsGrow = new Element(XMLTags.TagsGrowTag);
+		elementTagsGrow.setText(chomboSolverSpec.getTagsGrow() + "");
+		chomboElement.addContent(elementTagsGrow);
+		
 		Element timeBoundsTag = new Element(XMLTags.TimeBoundTag); 
 		for (TimeInterval ti : chomboSolverSpec.getTimeIntervalList())
 		{
@@ -4984,7 +4992,6 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 			Element roiElement = new Element(XMLTags.RefinementRoiTag);
 			roiElement.setAttribute(XMLTags.RefineRoiLevelAttrTag, String.valueOf(roi.getLevel()));
 			roiElement.setAttribute(XMLTags.RefinementRoiTypeAttrTag, roi.getType().name());
-			roiElement.setAttribute(XMLTags.TagsGrowAttrTag, String.valueOf(roi.getTagsGrow()));
 			if (roi.getRoiExpression() != null)
 			{
 				Element expElement = new Element(XMLTags.ROIExpressionTag);
