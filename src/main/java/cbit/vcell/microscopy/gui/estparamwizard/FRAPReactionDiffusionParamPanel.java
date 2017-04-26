@@ -43,16 +43,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	private final JTextField bleachWhileMonitorRateTextField;
 	private final JLabel immobileValueLabel;
 	
-	public static String STR_FREE_DIFF_RATE = "Free particle diffusion rate";
-	public static String STR_FREE_FRACTION = "Free particle fraction";
-	public static String STR_BLEACH_MONITOR_RATE = "Bleach while monitoring rate";
-	public static String STR_COMPLEX_DIFF_RATE = "Complex diffusion rate";
-	public static String STR_COMPLEX_FRACTION = "Complex fraction";
-	public static String STR_IMMOBILE_FRACTION = "Immobile fraction";
-	public static String STR_BINDING_SITE_CONCENTRATION = "Binding site concentration";
-	public static String STR_ON_RATE = "Reaction on rate";
-	public static String STR_OFF_RATE = "Reaction off rate";
-
 	private JButton runSimbutton = null;
 	private JButton estFromDiffParamButton = null; 
 	public FRAPReactionDiffusionParamPanel() {

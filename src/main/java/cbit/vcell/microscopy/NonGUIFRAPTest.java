@@ -49,6 +49,16 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 
 public class NonGUIFRAPTest {
 
+	public static String STR_FREE_DIFF_RATE = "Free particle diffusion rate";
+	public static String STR_FREE_FRACTION = "Free particle fraction";
+	public static String STR_BLEACH_MONITOR_RATE = "Bleach while monitoring rate";
+	public static String STR_COMPLEX_DIFF_RATE = "Complex diffusion rate";
+	public static String STR_COMPLEX_FRACTION = "Complex fraction";
+	public static String STR_IMMOBILE_FRACTION = "Immobile fraction";
+	public static String STR_BINDING_SITE_CONCENTRATION = "Binding site concentration";
+	public static String STR_ON_RATE = "Reaction on rate";
+	public static String STR_OFF_RATE = "Reaction off rate";
+
 	private static class ExternalDataFileContents{
 		public ImageDataset imageData;
 		public ImageDataset cellROIData;
@@ -511,49 +521,49 @@ public class NonGUIFRAPTest {
 		Parameter[] params = null;
 		
 		Parameter freeDiff =
-			new cbit.vcell.opt.Parameter(FRAPReactionDiffusionParamPanel.STR_FREE_DIFF_RATE,
+			new cbit.vcell.opt.Parameter(STR_FREE_DIFF_RATE,
 										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
 										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
 										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(),
 					                     freeDiffRate);
 		Parameter freeFrac =
-			new cbit.vcell.opt.Parameter(FRAPReactionDiffusionParamPanel.STR_FREE_FRACTION,
+			new cbit.vcell.opt.Parameter(STR_FREE_FRACTION,
 										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
 										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
 										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(),
 					                     freeFraction);
 		Parameter bleachWhileMonitoringRate =
-			new cbit.vcell.opt.Parameter(FRAPReactionDiffusionParamPanel.STR_BLEACH_MONITOR_RATE,
+			new cbit.vcell.opt.Parameter(STR_BLEACH_MONITOR_RATE,
 										 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
 										 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
 										 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 					                     monitorBleachRate);
-		Parameter complexdiff = new Parameter(FRAPReactionDiffusionParamPanel.STR_COMPLEX_DIFF_RATE, 
+		Parameter complexdiff = new Parameter(STR_COMPLEX_DIFF_RATE, 
 										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
 										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
 										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(), 
 				                         complexDifffRate);
-		Parameter complexFrac = new Parameter(FRAPReactionDiffusionParamPanel.STR_COMPLEX_FRACTION,
+		Parameter complexFrac = new Parameter(STR_COMPLEX_FRACTION,
 										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
 										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
 										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(), 
                                          complexFraction);
-		Parameter immFrac = new Parameter(FRAPReactionDiffusionParamPanel.STR_IMMOBILE_FRACTION,
+		Parameter immFrac = new Parameter(STR_IMMOBILE_FRACTION,
 										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
 										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
 										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(), 
 						                 immFraction);
-		Parameter bsConcentration = new Parameter(FRAPReactionDiffusionParamPanel.STR_BINDING_SITE_CONCENTRATION,
+		Parameter bsConcentration = new Parameter(STR_BINDING_SITE_CONCENTRATION,
                                          0,
                                          1,
                                          1, 
                                          bsConc);
-		Parameter onReacRate = new Parameter(FRAPReactionDiffusionParamPanel.STR_ON_RATE, 
+		Parameter onReacRate = new Parameter(STR_ON_RATE, 
                                          0,
                                          1e6,
                                          1, 
                                          onRate);
-		Parameter offReacRate = new Parameter(FRAPReactionDiffusionParamPanel.STR_OFF_RATE, 
+		Parameter offReacRate = new Parameter(STR_OFF_RATE, 
 						                 0,
 						                 1e6,
 						                 1, 
