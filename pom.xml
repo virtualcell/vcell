@@ -14,18 +14,6 @@
   <properties>
   	<enforcer.skip>true</enforcer.skip>
   </properties>
-  	<pluginRepositories>
-	    <pluginRepository>
-	      <id>maven.oracle.com</id>
-	      <name>oracle-maven-repo</name>
-	      <url>https://maven.oracle.com</url>
-	      <layout>default</layout>
-	      <releases>
-	        <enabled>true</enabled>
-	        <updatePolicy>always</updatePolicy>
-	      </releases>
-	    </pluginRepository>
-	</pluginRepositories>
 	<repositories>
 		<!-- needed for org.sbml.jsbml -->
 		<repository>
@@ -67,31 +55,8 @@
     		</snapshots>
   		</repository>
 		
-		<!-- needed for oracle, free oracle account registration required -->
-		<!-- see  https://blogs.oracle.com/dev2dev/entry/how_to_get_oracle_jdbc -->
-	   <repository>
-	      <id>maven.oracle.com</id>
-	      <name>oracle-maven-repo</name>
-	      <url>https://maven.oracle.com</url>
-	      <layout>default</layout>
-	      <releases>
-	        <enabled>true</enabled>
-	        <updatePolicy>always</updatePolicy>
-	      </releases>
-	  </repository>
 	</repositories>
 	<dependencies>
-	
-		<!-- http://www.ebi.ac.uk/~maven/m2repo ....  -->
- <!--  
-	    <dependency>
-	      <groupId>org.vcell</groupId>
-	      <artifactId>vcell-oracle</artifactId>
-	      <version>0.0.1-SNAPSHOT</version>
-	      <scope>runtime</scope>
-	      <optional>true</optional>
-	    </dependency>
--->
 	    <dependency>
 	      <groupId>uk.ac.ebi.biomodels</groupId>
 	      <artifactId>biomodels-wslib</artifactId>
@@ -114,7 +79,6 @@
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.8.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
 		<dependency>
@@ -126,7 +90,6 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
-			<version>3.6.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/jdom/jdom -->
 		<dependency>
@@ -152,70 +115,6 @@
 			<artifactId>commons-cli</artifactId>
 			<version>1.2</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/net.imglib2/imglib2 -->
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>imagej</artifactId>
-		</dependency>
-		<!-- TEMP: For UsingOpsLabeling, for the moment. -->
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>imagej-legacy</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-ij</artifactId>
-		</dependency>
-		<!-- ImgLib2 dependencies -->
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithm-fft</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithm-gpl</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-ij</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-realtransform</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-ui</artifactId>
-		</dependency>
-
-		<!-- ImageJ dependencies -->
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>imagej-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij</artifactId>
-		</dependency>
-
-		<!-- SCIFIO dependencies -->
-		<dependency>
-			<groupId>io.scif</groupId>
-			<artifactId>scifio</artifactId>
-		</dependency>
-
 		<dependency>
 			<groupId>org.jlibsedml</groupId>
 			<artifactId>jlibsedml</artifactId>
@@ -409,13 +308,6 @@
 		<dependency>
 		    <groupId>org.scijava</groupId>
 		    <artifactId>scijava-common</artifactId>
-		    <version>2.62.1</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.github.sps.pushover.net/pushover-client -->
-		<dependency>
-		    <groupId>com.github.sps.pushover.net</groupId>
-		    <artifactId>pushover-client</artifactId>
-		    <version>1.0.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.hdfgroup/hdf-java -->
 		<dependency>
@@ -423,6 +315,29 @@
 		    <artifactId>hdf-java</artifactId>
 		    <version>2.6.1</version>
 		</dependency>
-		
+		<!-- https://mvnrepository.com/artifact/log4j/apache-log4j-extras -->
+		<dependency>
+		    <groupId>log4j</groupId>
+		    <artifactId>apache-log4j-extras</artifactId>
+		    <version>1.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/gov.nist.math/jama -->
+		<dependency>
+		    <groupId>gov.nist.math</groupId>
+		    <artifactId>jama</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-compress</artifactId>
+		    <version>1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.miglayout/miglayout -->
+		<dependency>
+		    <groupId>com.miglayout</groupId>
+		    <artifactId>miglayout</artifactId>
+		    <version>3.5.5</version>
+		    <scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
