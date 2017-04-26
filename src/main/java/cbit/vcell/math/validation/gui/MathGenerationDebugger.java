@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.math.gui;
+package cbit.vcell.math.validation.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -32,6 +32,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.math.gui.MathDebuggerPanel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.modeldb.MathVerifier.MathGenerationResults;

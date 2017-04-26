@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.solver.smoldyn;
+package org.vcell.solver.smoldyn.gui;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;

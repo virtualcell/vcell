@@ -33,7 +33,7 @@ import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
 import org.vcell.chombo.gui.ChomboDeveloperToolsPanel;
 import org.vcell.chombo.gui.ChomboTimeBoundsPanel;
 import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
-import org.vcell.solver.smoldyn.SmoldynSimulationOptionsPanel;
+import org.vcell.solver.smoldyn.gui.SmoldynSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
