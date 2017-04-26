@@ -16,9 +16,5 @@ package cbit.vcell.modeldb;
  * @author: Ion Moraru
  */
 public interface DatabaseConstants {
-	public static final String REACTTYPE_FLUX_REVERSIBLE = "flux";
-	public static final String REACTTYPE_SIMPLE_REVERSIBLE = "simple";
-	public static final String REACTTYPE_FLUX_IRREVERSIBLE = "flux_ir";
-	public static final String REACTTYPE_SIMPLE_IRREVERSIBLE = "simple_ir";
 	public static final String SYSDATE_COLUMN_NAME = "sysdateColumn";
 }

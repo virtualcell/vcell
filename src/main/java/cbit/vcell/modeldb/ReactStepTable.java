@@ -27,6 +27,7 @@ import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionDescription;
+import cbit.vcell.model.ReactionDescription.ReactionType;
 import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
@@ -55,10 +56,11 @@ public class ReactStepTable extends cbit.sql.Table {
 	
 	public static final ReactStepTable table = new ReactStepTable();
 
-	private static final String REACTTYPE_FLUX_REVERSIBLE = DatabaseConstants.REACTTYPE_FLUX_REVERSIBLE;
-	private static final String REACTTYPE_SIMPLE_REVERSIBLE = DatabaseConstants.REACTTYPE_SIMPLE_REVERSIBLE;
-	private static final String REACTTYPE_FLUX_IRREVERSIBLE = DatabaseConstants.REACTTYPE_FLUX_IRREVERSIBLE;
-	private static final String REACTTYPE_SIMPLE_IRREVERSIBLE = DatabaseConstants.REACTTYPE_SIMPLE_IRREVERSIBLE;
+	public static final String REACTTYPE_FLUX_REVERSIBLE = "flux";
+	public static final String REACTTYPE_SIMPLE_REVERSIBLE = "simple";
+	public static final String REACTTYPE_FLUX_IRREVERSIBLE = "flux_ir";
+	public static final String REACTTYPE_SIMPLE_IRREVERSIBLE = "simple_ir";
+	
 	//
 	static final int RXIDDN_BIOMODEL_NAME_INDEX = 3;
 	static final int RXIDDN_REACTSTEP_NAME_INDEX = 4;
@@ -208,7 +210,7 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
  * @return java.lang.String
  * @param reactionStep cbit.vcell.model.ReactionStep
  */
-private String getReactType(ReactionStep reactionStep) throws DataAccessException {
+private String getReactTypeDbString(ReactionStep reactionStep) throws DataAccessException {
 	String reactionType = null;
 	if (reactionStep instanceof SimpleReaction){
 		if (reactionStep.isReversible()){
@@ -534,7 +536,7 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
 	buffer.append(key+",");
-	buffer.append("'"+getReactType(reactionStep)+"',");
+	buffer.append("'"+getReactTypeDbString(reactionStep)+"',");
 	buffer.append(modelKey+",");
 	buffer.append(structKey+",");
 	buffer.append("EMPTY_CLOB()"+","); // keep for compatibility with release site
@@ -596,7 +598,7 @@ public ReactionDescription[] getUserReactionList(java.sql.ResultSet rset)throws 
 		}
 		//
 		if(dbfr == null){
-			String rxType = rset.getString(ReactStepTable.table.reactType.toString());
+			ReactionType rxType = ReactionType.fromDatabaseName(rset.getString(ReactStepTable.table.reactType.toString()));
 			String rxName = rset.getString(ReactStepTable.table.name.toString());
 			java.math.BigDecimal currBioModelID = rset.getBigDecimal("bmid");
 			java.math.BigDecimal currStructID = rset.getBigDecimal(ReactStepTable.table.structRef.toString());

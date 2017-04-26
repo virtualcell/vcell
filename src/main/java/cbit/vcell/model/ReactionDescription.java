@@ -16,6 +16,30 @@ import org.vcell.util.document.KeyValue;
  * @author: Frank Morgan
  */
 public class ReactionDescription implements java.io.Serializable, org.vcell.util.Cacheable{
+	
+	public enum ReactionType {
+		REACTTYPE_FLUX_REVERSIBLE("flux"),
+		REACTTYPE_SIMPLE_REVERSIBLE("simple"),
+		REACTTYPE_FLUX_IRREVERSIBLE("flux_ir"),
+		REACTTYPE_SIMPLE_IRREVERSIBLE("simple_ir"),
+		UNKNOWN_REACTIONTYPE("unknown");
+		
+		public final String databaseName;
+		
+		ReactionType(String databaseName){
+			this.databaseName = databaseName;
+		}
+		
+		public static ReactionType fromDatabaseName(String dbName){
+			for (ReactionType rt : values()){
+				if (rt.databaseName.equals(dbName)){
+					return rt;
+				}
+			}
+			return null;
+		}
+	}
+	
 	private String reactionName = null;
 	//
 	//cbit.vcell.modeldb.ReactStepTable.id
@@ -30,9 +54,8 @@ public class ReactionDescription implements java.io.Serializable, org.vcell.util
 	private java.util.Vector type = new java.util.Vector();// Character
 	private java.util.Vector resolvedSC = new java.util.Vector();//SpeciesContexts
 	//
-	private String reactionType = null;
+	private ReactionType reactionType = null;
 	//
-	public static final String UNKNOWN_REACTIONTYPE = "unknown";
 	//
 	public static final char RX_ELEMENT_PRODUCT = 'P';  // EnzymeReactionTable.REACANT_TYPE_PRODUCT;
 	public static final char RX_ELEMENT_REACTANT = 'R'; // EnzymeReactionTable.REACANT_TYPE_REACTANT;
@@ -44,21 +67,14 @@ public class ReactionDescription implements java.io.Serializable, org.vcell.util
 	}
 
 public ReactionDescription(String argReactionName){
-	this(argReactionName,UNKNOWN_REACTIONTYPE,null,null,null);
+	this(argReactionName,ReactionType.UNKNOWN_REACTIONTYPE,null,null,null);
 }
 
 
-public ReactionDescription(String argReactionName,String argReactionType,org.vcell.util.document.KeyValue argVCellRXID,KeyValue argBioModelID,KeyValue structRef){
+public ReactionDescription(String argReactionName,ReactionType argReactionType,org.vcell.util.document.KeyValue argVCellRXID,KeyValue argBioModelID,KeyValue structRef){
 	
 	if(argReactionName == null){
 		throw new IllegalArgumentException("ReactionName cannot be null");
-	}
-	if(	!argReactionType.equals(this.UNKNOWN_REACTIONTYPE) &&
-			!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX_REVERSIBLE) &&
-			!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_REVERSIBLE) &&
-			!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX_IRREVERSIBLE) &&
-			!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_IRREVERSIBLE)){
-			throw new IllegalArgumentException("Illegal reaction Type="+argReactionType);
 	}
 	this.reactionName = argReactionName;
 	this.vcellRXID = argVCellRXID;
@@ -98,9 +114,9 @@ public void addReactionElement(SpeciesDescription argReactElement,String origina
 		if(argStoich != 1){
 			throw new IllegalArgumentException("Stoichiometry must be 1 for Fluxes");
 		}
-		if(!getReactionType().equals(UNKNOWN_REACTIONTYPE) 
-				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX_REVERSIBLE)
-				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX_IRREVERSIBLE)){
+		if(getReactionType() != ReactionType.UNKNOWN_REACTIONTYPE 
+				&& getReactionType() != ReactionType.REACTTYPE_FLUX_REVERSIBLE
+				&& getReactionType() != ReactionType.REACTTYPE_FLUX_IRREVERSIBLE){
 			throw new IllegalArgumentException("Illegal Attempt to add flux to "+getReactionType()+ " reaction type");
 		}	
 	}
@@ -313,7 +329,7 @@ public String getReactionName(){
 }
 
 
-public String getReactionType(){
+public ReactionType getReactionType(){
 	return reactionType;
 }
 

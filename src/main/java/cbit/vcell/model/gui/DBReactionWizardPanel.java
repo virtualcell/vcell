@@ -53,6 +53,7 @@ import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionDescription;
+import cbit.vcell.model.ReactionDescription.ReactionType;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.model.ReactionStep;
@@ -342,18 +343,18 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 			}else if(getParameterJPanel().isVisible()){
 				if(lastReactStepSelection == null || !lastReactStepSelection.equals(getReactionStep0())){
 					lastReactStepSelection = getReactionStep0();
-					String rxType = null;
+					ReactionType rxType = null;
 					if(getReactionStep0() instanceof FluxReaction){
 						if (getReactionStep0().isReversible()){
-							rxType = DatabaseConstants.REACTTYPE_FLUX_REVERSIBLE;
+							rxType = ReactionType.REACTTYPE_FLUX_REVERSIBLE;
 						}else{
-							rxType = DatabaseConstants.REACTTYPE_FLUX_IRREVERSIBLE;
+							rxType = ReactionType.REACTTYPE_FLUX_IRREVERSIBLE;
 						}
 					}else{
 						if (getReactionStep0().isReversible()){
-							rxType = DatabaseConstants.REACTTYPE_SIMPLE_REVERSIBLE;
+							rxType = ReactionType.REACTTYPE_SIMPLE_REVERSIBLE;
 						}else{
-							rxType = DatabaseConstants.REACTTYPE_SIMPLE_IRREVERSIBLE;
+							rxType = ReactionType.REACTTYPE_SIMPLE_IRREVERSIBLE;
 						}
 					}
 					
