@@ -1,4 +1,4 @@
-package org.vcell.model.bngl;
+package org.vcell.model.bngl.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,6 +30,7 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 
+import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.RbmUtils;
 
 import cbit.gui.MultiPurposeTextPanel;

@@ -1,4 +1,4 @@
-package org.vcell.model.bngl;
+package org.vcell.model.bngl.gui;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -28,6 +28,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import org.vcell.model.bngl.BngUnitSystem;
 import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
 import org.vcell.model.bngl.BngUnitSystem.ConcUnitSystem;
 import org.vcell.model.bngl.BngUnitSystem.TimeUnitSystem;
