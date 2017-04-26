@@ -122,7 +122,7 @@ protected static cbit.vcell.message.server.bootstrap.VCellConnectionFactory VCel
 		}
 	} else {
 		String host = args[0];
-		vcConnFactory = new cbit.vcell.message.server.bootstrap.RMIVCellConnectionFactory(host,userLoginInfo);
+		vcConnFactory = new cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory(host,userLoginInfo);
 	} 
 	return vcConnFactory;
 }
@@ -147,7 +147,7 @@ protected static cbit.vcell.message.server.bootstrap.VCellServerFactory VCellSer
 		user = new org.vcell.util.document.User(userid, userKey);
 		String password = args[3];
 		System.setSecurityManager(new java.rmi.RMISecurityManager());
-		vcServerFactory = new cbit.vcell.message.server.bootstrap.RMIVCellServerFactory(host, user, new UserLoginInfo.DigestedPassword(password));
+		vcServerFactory = new cbit.vcell.message.server.bootstrap.client.RMIVCellServerFactory(host, user, new UserLoginInfo.DigestedPassword(password));
 	} else {
 		String userid = args[1];
 		String password = args[2];

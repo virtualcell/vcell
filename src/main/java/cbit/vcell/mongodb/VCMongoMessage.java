@@ -9,6 +9,8 @@ import java.util.Date;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 
+import com.mongodb.BasicDBObject;
+
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.WorkerEvent;
@@ -19,7 +21,6 @@ import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
-import cbit.vcell.message.server.dispatcher.SimulationStateMachine;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.SimulationExecutionStatus;
@@ -36,8 +37,6 @@ import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solvers.AbstractSolver;
-
-import com.mongodb.BasicDBObject;
 
 public final class VCMongoMessage {
 	public static boolean enabled = true;
@@ -427,7 +426,7 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendObsoleteJob(SimulationJobStatus jobStatus, String failureMessage, SimulationStateMachine simStateMachine) {
+	public static void sendObsoleteJob(SimulationJobStatus jobStatus, String failureMessage) {
 		if (!enabled){
 			return;
 		}

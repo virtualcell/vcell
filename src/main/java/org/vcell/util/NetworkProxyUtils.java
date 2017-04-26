@@ -8,7 +8,7 @@ import java.util.prefs.Preferences;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
-import cbit.vcell.message.server.bootstrap.RMIVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.resource.ResourceUtil;
 
 public class NetworkProxyUtils {

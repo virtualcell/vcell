@@ -8,28 +8,19 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.message.server.bootstrap.client;
 
 import java.awt.Component;
-import java.io.File;
-import java.io.FileWriter;
-import java.rmi.server.RMISocketFactory;
-import java.util.StringTokenizer;
-import java.util.prefs.Preferences;
 
 import org.vcell.util.AuthenticationException;
-import org.vcell.util.Compare;
 import org.vcell.util.NetworkProxyUtils;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 
-import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.message.server.bootstrap.VCellConnectionFactory;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
-import sun.rmi.transport.proxy.RMIHttpToPortSocketFactory;
 
 
 public class RMIVCellConnectionFactory implements VCellConnectionFactory {

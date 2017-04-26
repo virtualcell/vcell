@@ -11,11 +11,11 @@
 package cbit.vcell.client.server;
 import org.vcell.util.DataAccessException;
 
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.messaging.db.ExportJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.export.server.*;
-import cbit.vcell.messaging.db.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 public interface JobManager extends cbit.rmi.event.SimulationJobStatusListener, cbit.vcell.client.SimStatusSender {
 

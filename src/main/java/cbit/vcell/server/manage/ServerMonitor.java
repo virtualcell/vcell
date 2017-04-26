@@ -10,7 +10,7 @@
 
 package cbit.vcell.server.manage;
 
-import cbit.vcell.message.server.bootstrap.RMIVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.server.*;
 /**
  * Insert the type's description here.

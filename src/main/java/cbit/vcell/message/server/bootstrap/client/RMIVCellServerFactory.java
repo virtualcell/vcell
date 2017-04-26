@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.message.server.bootstrap.client;
 
 import java.rmi.*;
 
@@ -17,6 +17,7 @@ import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
+import cbit.vcell.message.server.bootstrap.VCellServerFactory;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellServer;
