@@ -1,20 +1,17 @@
 package cbit.vcell.client;
 
-import java.rmi.RemoteException;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
 import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.UseridIDExistsException;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.gui.DialogUtils;
 
@@ -31,94 +28,15 @@ import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.desktop.RegistrationPanel;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.server.UserMetaDbServer;
+import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.server.DBRegistrationProvider;
+import cbit.vcell.server.RMIBootstrapRegistrationProvider;
+import cbit.vcell.server.RegistrationProvider;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.VCellBootstrap;
-import cbit.vcell.server.VCellConnection;
 
 public class UserRegistrationManager {
 	
-	public interface RegistrationProvider {
-		public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException;
-		public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException;
-		public void sendLostPassword(String userid) throws DataAccessException,RemoteException;
-	}
-	
-	public static class LocalDBRegistrationProvider implements RegistrationProvider {
-		private LocalAdminDbServer localAdminDbServer;
-		public LocalDBRegistrationProvider(LocalAdminDbServer localAdminDbServer){
-			if (localAdminDbServer==null){
-				throw new IllegalArgumentException("localAdminDbServer cannot be null in LocalDBRegistrationProvider");
-			}
-			this.localAdminDbServer = localAdminDbServer;
-		}
-		@Override
-		public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException{
-			if(bUpdate){
-				throw new IllegalArgumentException("UPDATE User Info: Must use ClientserverManager NOT LocalAdminDBServer");
-			}else{
-				return localAdminDbServer.insertUserInfo(newUserInfo);
-			}
-		}
-		@Override
-		public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException{
-			return localAdminDbServer.getUserInfo(userKey);
-		}					
-		@Override
-		public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
-			localAdminDbServer.sendLostPassword(userid);
-		}
-	}
-	public static class RMIBootstrapRegistrationProvider implements RegistrationProvider{
-		private VCellBootstrap vcellBootstrap;
-		public RMIBootstrapRegistrationProvider(VCellBootstrap vcellBootstrap){
-			if (vcellBootstrap==null){
-				throw new IllegalArgumentException("vcellBootstrap cannot be null in RMIBootstrapRegistrationProvider");
-			}
-			this.vcellBootstrap = vcellBootstrap;
-		}
-		@Override
-		public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException{
-			if(bUpdate){
-				throw new IllegalArgumentException("UPDATE User Info: Must use ClientserverManager NOT VCellBootstrap");
-			}else{
-				return vcellBootstrap.insertUserInfo(newUserInfo);
-			}
-		}
-		@Override
-		public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException{
-			throw new DataAccessException("UserInfo not provided by VCellBootstrap");
-		}					
-		public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
-			vcellBootstrap.sendLostPassword(userid);
-		}
-	}
-	public static class VCellConnectionRegistrationProvider implements RegistrationProvider {
-		private VCellConnection vcellConnection;
-		public VCellConnectionRegistrationProvider(VCellConnection vcellConnection){
-			this.vcellConnection = vcellConnection;
-		}
-		@Override
-		public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException{
-			if(bUpdate){
-				newUserInfo.id = vcellConnection.getUserLoginInfo().getUser().getID();
-				return vcellConnection.getUserMetaDbServer().userRegistrationOP(
-							UserRegistrationOP.createUpdateRegisterOP(newUserInfo)).getUserInfo();								
-			}else{
-				throw new IllegalArgumentException("INSERT User Info: Not allowed to use existing VCellConnection");
-			}
-		}
-		@Override
-		public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException{
-			return vcellConnection.getUserMetaDbServer().userRegistrationOP(UserRegistrationOP.createGetUserInfoOP(userKey)).getUserInfo();
-		}					
-		@Override
-		public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
-			vcellConnection.getUserMetaDbServer().userRegistrationOP(UserRegistrationOP.createLostPasswordOP(userid));
-		}
-	}
-
-
 	private static RegistrationPanel registrationPanel = null;
 
 	public static void registrationOperationGUI(final RequestManager requestManager, final DocumentWindowManager currWindowManager, 
@@ -144,7 +62,8 @@ public class UserRegistrationManager {
 					SessionLog log = new StdoutSessionLog("Local");
 					ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 					KeyFactory keyFactory = new OracleKeyFactory();
-					registrationProvider = new LocalDBRegistrationProvider(new LocalAdminDbServer(conFactory, keyFactory, log));
+					AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory, keyFactory, log);
+					registrationProvider = new DBRegistrationProvider(adminDbServer);
 				} else {
 					String[] hosts = currentClientServerInfo.getHosts();
 					VCellBootstrap vcellBootstrap = null;

@@ -28,8 +28,6 @@ import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.UserRegistrationManager;
-import cbit.vcell.client.UserRegistrationManager.RegistrationProvider;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.controls.SessionManager;
@@ -43,9 +41,11 @@ import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.server.ExportController;
+import cbit.vcell.server.RegistrationProvider;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
+import cbit.vcell.server.VCellConnectionRegistrationProvider;
 import cbit.vcell.simdata.VCDataManager;
 /**
  * Insert the type's description here.
@@ -857,6 +857,6 @@ void setDisconnected() {
 }
 
 public RegistrationProvider getRegistrationProvider() {
-	return new UserRegistrationManager.VCellConnectionRegistrationProvider(this.vcellConnection);
+	return new VCellConnectionRegistrationProvider(this.vcellConnection);
 }
 }
