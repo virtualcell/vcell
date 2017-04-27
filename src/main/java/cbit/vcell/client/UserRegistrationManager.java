@@ -31,10 +31,93 @@ import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.desktop.RegistrationPanel;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.VCellBootstrap;
+import cbit.vcell.server.VCellConnection;
 
 public class UserRegistrationManager {
+	
+	public interface RegistrationProvider {
+		public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException;
+		public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException;
+		public void sendLostPassword(String userid) throws DataAccessException,RemoteException;
+	}
+	
+	public static class LocalDBRegistrationProvider implements RegistrationProvider {
+		private LocalAdminDbServer localAdminDbServer;
+		public LocalDBRegistrationProvider(LocalAdminDbServer localAdminDbServer){
+			if (localAdminDbServer==null){
+				throw new IllegalArgumentException("localAdminDbServer cannot be null in LocalDBRegistrationProvider");
+			}
+			this.localAdminDbServer = localAdminDbServer;
+		}
+		@Override
+		public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException{
+			if(bUpdate){
+				throw new IllegalArgumentException("UPDATE User Info: Must use ClientserverManager NOT LocalAdminDBServer");
+			}else{
+				return localAdminDbServer.insertUserInfo(newUserInfo);
+			}
+		}
+		@Override
+		public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException{
+			return localAdminDbServer.getUserInfo(userKey);
+		}					
+		@Override
+		public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
+			localAdminDbServer.sendLostPassword(userid);
+		}
+	}
+	public static class RMIBootstrapRegistrationProvider implements RegistrationProvider{
+		private VCellBootstrap vcellBootstrap;
+		public RMIBootstrapRegistrationProvider(VCellBootstrap vcellBootstrap){
+			if (vcellBootstrap==null){
+				throw new IllegalArgumentException("vcellBootstrap cannot be null in RMIBootstrapRegistrationProvider");
+			}
+			this.vcellBootstrap = vcellBootstrap;
+		}
+		@Override
+		public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException{
+			if(bUpdate){
+				throw new IllegalArgumentException("UPDATE User Info: Must use ClientserverManager NOT VCellBootstrap");
+			}else{
+				return vcellBootstrap.insertUserInfo(newUserInfo);
+			}
+		}
+		@Override
+		public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException{
+			throw new DataAccessException("UserInfo not provided by VCellBootstrap");
+		}					
+		public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
+			vcellBootstrap.sendLostPassword(userid);
+		}
+	}
+	public static class VCellConnectionRegistrationProvider implements RegistrationProvider {
+		private VCellConnection vcellConnection;
+		public VCellConnectionRegistrationProvider(VCellConnection vcellConnection){
+			this.vcellConnection = vcellConnection;
+		}
+		@Override
+		public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException{
+			if(bUpdate){
+				newUserInfo.id = vcellConnection.getUserLoginInfo().getUser().getID();
+				return vcellConnection.getUserMetaDbServer().userRegistrationOP(
+							UserRegistrationOP.createUpdateRegisterOP(newUserInfo)).getUserInfo();								
+			}else{
+				throw new IllegalArgumentException("INSERT User Info: Not allowed to use existing VCellConnection");
+			}
+		}
+		@Override
+		public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException{
+			return vcellConnection.getUserMetaDbServer().userRegistrationOP(UserRegistrationOP.createGetUserInfoOP(userKey)).getUserInfo();
+		}					
+		@Override
+		public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
+			vcellConnection.getUserMetaDbServer().userRegistrationOP(UserRegistrationOP.createLostPasswordOP(userid));
+		}
+	}
+
 
 	private static RegistrationPanel registrationPanel = null;
 
@@ -52,94 +135,16 @@ public class UserRegistrationManager {
 				throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Edit User Info requires clientServerManager not null.");			
 			}
 	
-			class RegistrationProvider {
-				private LocalAdminDbServer localAdminDbServer;
-				private VCellBootstrap vcellBootstrap;
-				private ClientServerManager clientServerManager;
-				public RegistrationProvider(ClientServerManager clientServerManager){
-					this.clientServerManager = clientServerManager;
-				}
-				public RegistrationProvider(LocalAdminDbServer localAdminDbServer){
-					this.localAdminDbServer = localAdminDbServer;
-				}
-				public RegistrationProvider(VCellBootstrap vcellBootstrap){
-					this.vcellBootstrap = vcellBootstrap;
-				}
-				public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException{
-					if(localAdminDbServer != null){
-						if(bUpdate){
-							throw new IllegalArgumentException("UPDATE User Info: Must use ClientserverManager NOT LocalAdminDBServer");
-						}else{
-							return localAdminDbServer.insertUserInfo(newUserInfo);
-						}
-					}else if(vcellBootstrap != null){
-						if(bUpdate){
-							throw new IllegalArgumentException("UPDATE User Info: Must use ClientserverManager NOT VCellBootstrap");
-						}else{
-							return vcellBootstrap.insertUserInfo(newUserInfo);
-						}
-					}else{
-						if(bUpdate){
-							newUserInfo.id = this.clientServerManager.getUser().getID();
-							return 
-								clientServerManager.getUserMetaDbServer().userRegistrationOP(
-									UserRegistrationOP.createUpdateRegisterOP(newUserInfo)).getUserInfo();								
-						}else{
-							throw new IllegalArgumentException("INSERT User Info: Not allowed to use ClientserverManager");
-						}
-					}
-				}
-				public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException{
-					if(localAdminDbServer != null){
-						return localAdminDbServer.getUserInfo(userKey);
-					}else if(vcellBootstrap != null){
-						throw new DataAccessException("UserInfo not provided by VCellBootstrap");
-					}else{
-						return 
-							clientServerManager.getUserMetaDbServer().userRegistrationOP(
-								UserRegistrationOP.createGetUserInfoOP(userKey)).getUserInfo();
-					}
-				}					
-	//			public boolean isUserIdUnique(String userid) throws DataAccessException,RemoteException{
-	//				if(localAdminDbServer != null){
-	//					UserInfo[] userInfos = localAdminDbServer.getUserInfos();
-	//					boolean bUserIdUnique = true;
-	//					for (int i = 0; i < userInfos.length; i++) {
-	//						if(userInfos[i].userid.equals(userid)){
-	//							bUserIdUnique = false;
-	//							break;
-	//						}
-	//					}
-	//					return bUserIdUnique;
-	//				}else if(vcellBootstrap != null){
-	//					throw new DataAccessException("UserInfo not provided by VCellBootstrap");
-	//				}else{
-	//					return 
-	//						clientServerManager.getUserMetaDbServer().userRegistrationOP(
-	//							UserRegistrationOP.createIsUserIdUniqueOP(userid)).isUserIdUnique();
-	//				}
-	//			}					
-				public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
-					if(localAdminDbServer != null){
-						localAdminDbServer.sendLostPassword(userid);
-					}else if(vcellBootstrap != null){
-						vcellBootstrap.sendLostPassword(userid);
-					}else{
-						clientServerManager.getUserMetaDbServer().userRegistrationOP(
-							UserRegistrationOP.createLostPasswordOP(userid));
-					}
-				}
-			}
 			RegistrationProvider registrationProvider = null;
 			if(clientServerManager != null){
-				registrationProvider = new RegistrationProvider(clientServerManager);
+				registrationProvider = clientServerManager.getRegistrationProvider();
 			} else {
 				if (currentClientServerInfo.getServerType() == ClientServerInfo.SERVER_LOCAL) {
 					PropertyLoader.loadProperties();
 					SessionLog log = new StdoutSessionLog("Local");
 					ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 					KeyFactory keyFactory = new OracleKeyFactory();
-					registrationProvider = new RegistrationProvider(new LocalAdminDbServer(conFactory, keyFactory, log));
+					registrationProvider = new LocalDBRegistrationProvider(new LocalAdminDbServer(conFactory, keyFactory, log));
 				} else {
 					String[] hosts = currentClientServerInfo.getHosts();
 					VCellBootstrap vcellBootstrap = null;
@@ -154,7 +159,7 @@ public class UserRegistrationManager {
 							}
 						}
 					}
-					registrationProvider = new RegistrationProvider(vcellBootstrap);
+					registrationProvider = new RMIBootstrapRegistrationProvider(vcellBootstrap);
 				}
 			}
 			if(userAction.equals(LoginManager.USERACTION_LOSTPASSWORD)){

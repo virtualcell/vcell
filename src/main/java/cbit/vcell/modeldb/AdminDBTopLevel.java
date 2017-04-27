@@ -35,12 +35,12 @@ import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationRequirements;
-import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.SimpleJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationStatusPersistent;
+import cbit.vcell.server.UpdateSynchronizationException;
 
 /**
  * This type was created in VisualAge.

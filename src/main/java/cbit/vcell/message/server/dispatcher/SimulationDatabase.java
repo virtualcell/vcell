@@ -15,10 +15,10 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.StateInfo;
-import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.server.UpdateSynchronizationException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 

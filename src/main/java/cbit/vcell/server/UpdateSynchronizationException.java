@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.messaging.db;
+package cbit.vcell.server;
 
 /**
  * Insert the type's description here.

@@ -8,11 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.server;
+package cbit.vcell.server;
 
 import org.vcell.util.DataAccessException;
-
-import cbit.vcell.server.DataSetController;
 
 public interface DataSetControllerProvider {
 

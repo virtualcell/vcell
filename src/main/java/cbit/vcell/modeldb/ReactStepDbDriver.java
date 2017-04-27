@@ -14,34 +14,26 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
-import org.vcell.util.Matchable;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
-import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
-import cbit.sql.StarField;
-import cbit.sql.Table;
+import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.model.Model.StructureTopology;
-import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
@@ -62,66 +54,7 @@ public class ReactStepDbDriver extends DbDriver {
 	private DictionaryDbDriver dictDB = null;
 
 	
-	public static class Flux extends ReactionParticipant
-	{
 	/**
-	 * This method was created in VisualAge.
-	 * @param reactionStep cbit.vcell.model.ReactionStep
-	 */
-	public Flux(KeyValue key, FluxReaction fluxReaction, SpeciesContext speciesContext) {
-		super(key, fluxReaction, speciesContext, 1);
-	}
-
-
-	/**
-	 * This method was created in VisualAge.
-	 * @return boolean
-	 * @param obj java.lang.Object
-	 */
-	public boolean compareEqual(Matchable obj) {
-		if (obj instanceof Flux){
-			Flux f = (Flux)obj;
-			return compareEqual0(f);
-		}else{
-			return false;
-		}
-	}
-
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @param tokens java.util.StringTokenizer
-	 * @exception java.lang.Exception The exception description.
-	 */
-	@Override
-	public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception {
-
-		throw new Exception("not implemented");
-	}
-
-
-/**
-	 * This method was created in VisualAge.
-	 * @return java.lang.String
-	 */
-	public String toString() {
-		String scName = (getSpeciesContext()!=null)?(getSpeciesContext().getName()):"null";
-		return "Flux(id="+getKey()+", speciesContext="+scName+"')";
-	}
-
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @param ps java.io.PrintStream
-	 * @exception java.lang.Exception The exception description.
-	 */
-	public void writeTokens(java.io.PrintWriter pw) {
-		System.out.println("not implemented");
-	}
-
-}	
-	
-/**
  * LocalDBManager constructor comment.
  */
 public ReactStepDbDriver(ModelDbDriver modelDB, SessionLog sessionLog,DictionaryDbDriver argDictDB) {

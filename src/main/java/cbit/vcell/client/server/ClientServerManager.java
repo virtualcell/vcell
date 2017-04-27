@@ -28,6 +28,8 @@ import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.UserRegistrationManager;
+import cbit.vcell.client.UserRegistrationManager.RegistrationProvider;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.controls.SessionManager;
@@ -39,6 +41,7 @@ import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.server.ExportController;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
@@ -851,5 +854,9 @@ public void sendErrorReport(Throwable exception, VCellConnection.ExtraContext ex
 void setDisconnected() {
 	getReconnector().start();
 	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
+}
+
+public RegistrationProvider getRegistrationProvider() {
+	return new UserRegistrationManager.VCellConnectionRegistrationProvider(this.vcellConnection);
 }
 }

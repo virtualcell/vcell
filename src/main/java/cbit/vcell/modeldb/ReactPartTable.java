@@ -17,10 +17,11 @@ import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.vcell.model.Catalyst;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.FluxReaction.Flux;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.modeldb.ReactStepDbDriver.Flux;
 /**
  * This type was created in VisualAge.
  */
@@ -70,7 +71,7 @@ public ReactionParticipant getReactionParticipant(KeyValue rpKey, java.sql.Resul
 	}else if (role.equals(ROLE_REACTANT)){
 		rp = new Reactant(key,null,null,stoichiometry);
 	}else if (role.equals(ROLE_FLUX)){
-		rp = new Flux(key,null,null);
+		rp = new FluxReaction.Flux(key,null,null);
 	}else{
 		throw new DataAccessException("unexpected value of "+ReactPartTable.table.role.toString()+"'"+role+"'");
 	}
@@ -91,7 +92,7 @@ private String getRole(ReactionParticipant rp) throws DataAccessException {
 		return ROLE_PRODUCT;
 	}else if (rp instanceof Reactant){
 		return ROLE_REACTANT;
-	}else if (rp instanceof Flux){
+	}else if (rp instanceof FluxReaction.Flux){
 		return ROLE_FLUX;
 	}else{
 		throw new DataAccessException("reactionParticipant type "+rp.getClass().toString()+" not supported");
