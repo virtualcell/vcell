@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.messaging.db;
+package cbit.vcell.server;
 import java.io.*;
 
 import org.vcell.util.Matchable;

@@ -34,6 +34,7 @@ import cbit.vcell.modeldb.MathModelSimulationLinkTable;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.server.SimpleJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.solver.MathOverrides;

@@ -12,7 +12,7 @@ package cbit.vcell.client.server;
 import org.vcell.util.DataAccessException;
 
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.messaging.db.ExportJobStatus;
+import cbit.vcell.server.ExportJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.VCSimulationIdentifier;

@@ -8,9 +8,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export.server;
+package cbit.vcell.server;
 import java.rmi.*;
 
+import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.simdata.OutputContext;
 /**

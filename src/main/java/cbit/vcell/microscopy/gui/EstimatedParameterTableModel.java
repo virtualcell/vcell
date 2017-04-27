@@ -8,12 +8,13 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.microscopy;
+package cbit.vcell.microscopy.gui;
 
 import java.awt.Component;
 import java.util.Vector;
 
 import cbit.gui.ScopedExpression;
+import cbit.vcell.microscopy.EstimatedParameter;
 import cbit.vcell.parser.ExpressionException;
 
 

@@ -23,9 +23,9 @@ import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.server.SimpleJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 
 /**

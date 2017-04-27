@@ -36,12 +36,12 @@ import javax.swing.table.TableColumn;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.microscopy.EstimatedParameter;
-import cbit.vcell.microscopy.EstimatedParameterTableModel;
-import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPUnitSystem;
 import cbit.vcell.microscopy.gui.DiffOnRateEstimationPanel;
 import cbit.vcell.microscopy.gui.DiffRateEstimationPanel;
+import cbit.vcell.microscopy.gui.EstimatedParameterTableModel;
+import cbit.vcell.microscopy.gui.EstimatedParameterTableRenderer;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

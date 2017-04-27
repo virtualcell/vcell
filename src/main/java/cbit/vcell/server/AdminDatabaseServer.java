@@ -18,7 +18,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 
 /**

@@ -16,6 +16,7 @@ import java.rmi.*;
 import org.vcell.util.DataAccessException;
 
 import cbit.vcell.export.server.*;
+import cbit.vcell.server.ExportController;
 import cbit.vcell.simdata.OutputContext;
 /**
  * Insert the type's description here.
@@ -50,7 +51,7 @@ private ClientServerManager getClientServerManager() {
  * Creation date: (6/15/2004 2:15:24 AM)
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  */
-public cbit.vcell.messaging.db.ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws RemoteException {
+public cbit.vcell.server.ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws RemoteException {
 	return null;
 }
 

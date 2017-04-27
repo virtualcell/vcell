@@ -8,9 +8,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.messaging.db;
+package cbit.vcell.server;
 
-import cbit.vcell.server.SimulationJobStatusPersistent;
+import cbit.vcell.messaging.db.SimulationDocumentLink;
+import cbit.vcell.messaging.db.SimulationMetadata;
 
 /**
  * Insert the type's description here.
