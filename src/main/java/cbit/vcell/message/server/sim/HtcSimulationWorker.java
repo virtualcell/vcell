@@ -12,25 +12,18 @@ package cbit.vcell.message.server.sim;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.message.RollbackException;
@@ -48,25 +41,13 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
-import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
-import cbit.vcell.message.server.cmd.CommandService;
-import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.message.server.htc.pbs.PbsProxy;
-import cbit.vcell.message.server.htc.sge.SgeProxy;
-import cbit.vcell.message.server.htc.slurm.SlurmProxy;
-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VtkMeshGenerator;
 import cbit.vcell.solver.SolverException;
@@ -348,75 +329,75 @@ public void stopService(){
 	super.stopService();
 }
 
-/**
- * Starts the application.
- * @param args an array of command-line arguments
- */
-public static void main(java.lang.String[] args) {
-	if (args.length != 3 && args.length != 6) {
-		System.out.println("Missing arguments: " + HtcSimulationWorker.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE|SLURM) [pbshost userid pswd] ");
-		System.exit(1);
-	}
-
-	//
-	// Create and install a security manager
-	//
-	try {
-		PropertyLoader.loadProperties();
-
-		int serviceOrdinal = Integer.parseInt(args[0]);
-		VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
-		String logdir = args[1];
-		BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
-
-		CommandService commandService = null;
-		if (args.length==6){
-			String pbsHost = args[3];
-			String pbsUser = args[4];
-			String pbsPswd = args[5];
-			commandService = new CommandServiceSsh(pbsHost,pbsUser,pbsPswd);
-			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
-		}else{
-			commandService = new CommandServiceLocal();
-		}
-		HtcProxy htcProxy = null;
-		switch(batchSystemType){
-			case PBS:{
-				htcProxy = new PbsProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-				break;
-			}
-			case SGE:{
-				htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-				break;
-			}
-			case SLURM:{
-				htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-				break;
-			}
-		}
-
-		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-		initLog(serviceInstanceStatus, logdir);
-
-		//
-		// JMX registration
-		//
-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
-
-        VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
-
-		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
-		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log, false);
-		simulationWorker.init();
-
-	} catch (Throwable e) {
-		e.printStackTrace(System.out);
-		VCMongoMessage.sendException(e);
-		VCMongoMessage.flush();
-		System.exit(-1);
-	}
-}
+///**
+// * Starts the application.
+// * @param args an array of command-line arguments
+// */
+//public static void main(java.lang.String[] args) {
+//	if (args.length != 3 && args.length != 6) {
+//		System.out.println("Missing arguments: " + HtcSimulationWorker.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE|SLURM) [pbshost userid pswd] ");
+//		System.exit(1);
+//	}
+//
+//	//
+//	// Create and install a security manager
+//	//
+//	try {
+//		PropertyLoader.loadProperties();
+//
+//		int serviceOrdinal = Integer.parseInt(args[0]);
+//		VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
+//		String logdir = args[1];
+//		BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
+//
+//		CommandService commandService = null;
+//		if (args.length==6){
+//			String pbsHost = args[3];
+//			String pbsUser = args[4];
+//			String pbsPswd = args[5];
+//			commandService = new CommandServiceSsh(pbsHost,pbsUser,pbsPswd);
+//			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
+//		}else{
+//			commandService = new CommandServiceLocal();
+//		}
+//		HtcProxy htcProxy = null;
+//		switch(batchSystemType){
+//			case PBS:{
+//				htcProxy = new PbsProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
+//				break;
+//			}
+//			case SGE:{
+//				htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
+//				break;
+//			}
+//			case SLURM:{
+//				htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
+//				break;
+//			}
+//		}
+//
+//		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+//		initLog(serviceInstanceStatus, logdir);
+//
+//		//
+//		// JMX registration
+//		//
+//		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+//		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+//
+//        VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
+//
+//		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
+//		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log, false);
+//		simulationWorker.init();
+//
+//	} catch (Throwable e) {
+//		e.printStackTrace(System.out);
+//		VCMongoMessage.sendException(e);
+//		VCMongoMessage.flush();
+//		System.exit(-1);
+//	}
+//}
 
 
 }
