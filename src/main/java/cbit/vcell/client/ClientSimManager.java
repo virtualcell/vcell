@@ -42,6 +42,7 @@ import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.client.data.DataViewerController;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.data.VCellClientDataServiceImpl;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
@@ -50,7 +51,6 @@ import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
-import cbit.vcell.client.server.DataViewerController;
 import cbit.vcell.client.server.SimResultsViewerController;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTask;

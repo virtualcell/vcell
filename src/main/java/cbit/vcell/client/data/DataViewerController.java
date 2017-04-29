@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.server;
+package cbit.vcell.client.data;
 
 import java.beans.PropertyChangeListener;
 
@@ -31,10 +31,4 @@ public interface DataViewerController extends DataListener, PropertyChangeListen
  */
 DataViewer createViewer() throws DataAccessException;
 
-/**
- * Insert the method's description here.
- * Creation date: (6/11/2004 2:43:41 PM)
- * @exception org.vcell.util.DataAccessException The exception description.
- */
-void refreshData() throws DataAccessException;
 }

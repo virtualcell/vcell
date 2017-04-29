@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.gui.graph;
+package cbit.gui.graph.gui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -31,6 +31,11 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 
+import cbit.gui.graph.GraphContainerLayout;
+import cbit.gui.graph.GraphEvent;
+import cbit.gui.graph.GraphListener;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.Shape;
 import cbit.gui.graph.GraphModel.NotReadyException;
 import cbit.vcell.graph.ReactionContainerShape;
 

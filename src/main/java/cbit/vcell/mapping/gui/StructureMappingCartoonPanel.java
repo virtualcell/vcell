@@ -23,7 +23,7 @@ import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.gui.graph.CartoonTool.Mode;
-import cbit.gui.graph.GraphPane;
+import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;

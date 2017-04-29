@@ -93,9 +93,9 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.GraphResizeManager.ZoomRangeException;
 import cbit.gui.graph.actions.GraphLayoutTasks;
+import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;

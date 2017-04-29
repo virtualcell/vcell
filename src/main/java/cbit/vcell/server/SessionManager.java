@@ -8,13 +8,14 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.desktop.controls;
+package cbit.vcell.server;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.User;
 
+import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.server.SimulationController;
 
 /**
  * Insert the type's description here.
@@ -31,13 +32,16 @@ FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec 
  * Creation date: (5/25/2004 12:50:55 PM)
  * @return cbit.vcell.server.User
  */
-org.vcell.util.document.User getUser();
+User getUser();
 /**
  * Insert the method's description here.
  * Creation date: (5/25/2004 12:51:14 PM)
  * @return cbit.vcell.server.UserMetaDbServer
  */
-cbit.vcell.server.UserMetaDbServer getUserMetaDbServer() throws org.vcell.util.DataAccessException;
+UserMetaDbServer getUserMetaDbServer() throws DataAccessException;
 
-SimulationController getSimulationController() throws org.vcell.util.DataAccessException;
+SimulationController getSimulationController() throws DataAccessException;
+
+
+AsynchMessageManager getAsynchMessageManager();
 }

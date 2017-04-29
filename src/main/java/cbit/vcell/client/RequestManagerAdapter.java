@@ -16,10 +16,10 @@ import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.client.FieldDataWindowManager.DataSymbolCallBack;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
+import cbit.vcell.client.data.DataViewerController;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.client.server.DataViewerController;
 import cbit.vcell.client.server.MergedDatasetViewerController;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;

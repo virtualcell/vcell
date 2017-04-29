@@ -33,6 +33,7 @@ import org.vcell.model.rbm.MolecularType;
 
 import cbit.gui.graph.GraphListener;
 import cbit.gui.graph.GraphResizeManager.ResizeMode;
+import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRuleParticipant;

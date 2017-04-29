@@ -19,7 +19,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DataJobListenerHolder;
 
@@ -28,18 +27,13 @@ import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.MessageEvent;
-import cbit.rmi.event.PerformanceData;
-import cbit.rmi.event.PerformanceDataEntry;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
-import cbit.vcell.client.SimStatusListener;
-import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
-import edu.uchc.connjur.wb.ExecutionTrace;
 
 /**
  * {@link AsynchMessageManager} polls from {@link VCellConnection} to get remote messages. Remote Messages include the following:
@@ -47,7 +41,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * {@link ExportEvent} : export data event.
  * {@link DataJobEvent} : spatial plot, kymograph, etc
  * {@link VCellMessageEvent} : broadcase messages.
- * {@link AsynchMessageManager} also listens to {@link ClientJobManager} if user stops the simulation, then it will notify {@link TopLevelWindowManager}
+ * {@link AsynchMessageManager} also listens to {@link ClientJobManager} if user stops the simulation, then it will notify TopLevelWindowManager
  * to update the status.
  */
 public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener,DataJobListenerHolder {

@@ -49,6 +49,7 @@ import cbit.vcell.client.desktop.TestingFrameworkWindow;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.server.SimStatusListener;
 import cbit.vcell.field.gui.FieldDataGUIPanel;
 import cbit.vcell.field.gui.FieldDataWindow;
 /**

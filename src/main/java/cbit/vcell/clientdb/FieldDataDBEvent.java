@@ -8,11 +8,12 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.field.gui;
+package cbit.vcell.clientdb;
 
-import java.util.EventListener;
+import java.util.EventObject;
 
-public interface FieldDataDBEventListener extends EventListener {
-
-	void fieldDataDBEvent(FieldDataDBEvent fieldDataDBEvent);
+public class FieldDataDBEvent extends EventObject {
+	public FieldDataDBEvent(Object source) {
+		super(source);
+	}
 }

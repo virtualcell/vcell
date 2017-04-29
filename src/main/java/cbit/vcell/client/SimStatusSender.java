@@ -10,6 +10,8 @@
 
 package cbit.vcell.client;
 
+import cbit.vcell.client.server.SimStatusListener;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/10/2004 2:00:22 PM)

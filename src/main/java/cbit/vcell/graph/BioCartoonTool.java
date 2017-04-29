@@ -38,7 +38,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.graph.GraphPane;
+import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;

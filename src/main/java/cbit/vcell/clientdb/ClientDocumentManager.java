@@ -58,14 +58,10 @@ import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.server.ClientServerManager;
-import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.gui.FieldDataDBEvent;
-import cbit.vcell.field.gui.FieldDataDBEventListener;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
@@ -88,6 +84,7 @@ import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.publish.ITextWriter;
+import cbit.vcell.server.SessionManager;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.solver.Simulation;
@@ -1635,7 +1632,7 @@ public synchronized void initAllDatabaseInfos() throws DataAccessException {
 				    }
 		    )
     	);
-		((ClientServerManager)getSessionManager()).getAsynchMessageManager().reportPerformanceMonitorEvent(pme);
+		getSessionManager().getAsynchMessageManager().reportPerformanceMonitorEvent(pme);
 
 	}catch (RemoteException e){
 		handleRemoteException(e);

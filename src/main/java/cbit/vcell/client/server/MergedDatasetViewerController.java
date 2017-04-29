@@ -23,6 +23,7 @@ import cbit.vcell.simdata.ODEDataManager;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.client.data.DataViewerController;
 import cbit.vcell.client.data.MergedDatasetViewer;
 /**
  * Insert the type's description here.

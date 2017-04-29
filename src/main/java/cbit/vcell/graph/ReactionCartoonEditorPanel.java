@@ -45,8 +45,8 @@ import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.ViewPortStabilizer;
 
 import cbit.gui.graph.CartoonTool.Mode;
+import cbit.gui.graph.gui.GraphPane;
 import cbit.gui.graph.GraphLayoutManager;
-import cbit.gui.graph.GraphPane;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.ZoomShape.Sign;
 import cbit.vcell.graph.structures.StructureSuite;

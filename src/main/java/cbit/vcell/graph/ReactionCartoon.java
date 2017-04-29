@@ -25,8 +25,8 @@ import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 
 import cbit.gui.graph.GraphContainerLayoutReactions;
 import cbit.gui.graph.GraphEvent;
-import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;

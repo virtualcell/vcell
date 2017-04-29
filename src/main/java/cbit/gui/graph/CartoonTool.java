@@ -46,6 +46,7 @@ import cbit.gui.graph.actions.CartoonToolPaintingActions;
 import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
 import cbit.gui.graph.actions.GraphViewAction;
 import cbit.gui.graph.groups.VCGroupManager;
+import cbit.gui.graph.gui.GraphPane;
 
 public abstract class CartoonTool implements GraphView, MouseListener,
 		MouseMotionListener, ActionListener, KeyListener {

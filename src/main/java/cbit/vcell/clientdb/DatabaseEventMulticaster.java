@@ -22,7 +22,7 @@ package cbit.vcell.clientdb;
  * The fix for this bug is to change the argument type of the generated remove() method to that of java.util.EventListener.
  *
  */
-public class DatabaseEventMulticaster extends java.awt.AWTEventMulticaster implements cbit.vcell.clientdb.DatabaseListener {
+public class DatabaseEventMulticaster extends java.awt.AWTEventMulticaster implements DatabaseListener {
 /**
  * Constructor to support multicast events.
  * @param a java.util.EventListener
@@ -37,8 +37,8 @@ protected DatabaseEventMulticaster(java.util.EventListener a, java.util.EventLis
  * @param a cbit.vcell.clientdb.DatabaseListener
  * @param b cbit.vcell.clientdb.DatabaseListener
  */
-public static cbit.vcell.clientdb.DatabaseListener add(cbit.vcell.clientdb.DatabaseListener a, cbit.vcell.clientdb.DatabaseListener b) {
-	return (cbit.vcell.clientdb.DatabaseListener)addInternal(a, b);
+public static DatabaseListener add(DatabaseListener a, DatabaseListener b) {
+	return (DatabaseListener)addInternal(a, b);
 }
 /**
  * Add new listener to support multicast events.
@@ -56,8 +56,8 @@ protected static java.util.EventListener addInternal(java.util.EventListener a, 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
 public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
-	((cbit.vcell.clientdb.DatabaseListener)a).databaseDelete(event);
-	((cbit.vcell.clientdb.DatabaseListener)b).databaseDelete(event);
+	((DatabaseListener)a).databaseDelete(event);
+	((DatabaseListener)b).databaseDelete(event);
 }
 /**
  * 

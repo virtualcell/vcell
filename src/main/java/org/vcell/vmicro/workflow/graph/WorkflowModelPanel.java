@@ -30,7 +30,7 @@ import cbit.vcell.graph.ZoomShape;
 @SuppressWarnings("serial")
 public class WorkflowModelPanel extends JPanel implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 	private JPanel ivjFeatureSizePanel = null;
-	private cbit.gui.graph.GraphPane ivjGraphPane = null;
+	private cbit.gui.graph.gui.GraphPane ivjGraphPane = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private boolean ivjConnPtoP1Aligning = false;
 	private JPanel ivjJPanel1 = null;
@@ -606,10 +606,10 @@ public class WorkflowModelPanel extends JPanel implements java.awt.event.ActionL
 	 * @return cbit.vcell.graph.GraphPane
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private cbit.gui.graph.GraphPane getGraphPane() {
+	private cbit.gui.graph.gui.GraphPane getGraphPane() {
 		if (ivjGraphPane == null) {
 			try {
-				ivjGraphPane = new cbit.gui.graph.GraphPane();
+				ivjGraphPane = new cbit.gui.graph.gui.GraphPane();
 				ivjGraphPane.setName("GraphPane");
 				ivjGraphPane.setBounds(0, 0, 372, 364);
 				// user code begin {1}

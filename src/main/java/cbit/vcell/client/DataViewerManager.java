@@ -13,6 +13,7 @@ import java.awt.Component;
 
 import org.vcell.util.document.User;
 
+import cbit.vcell.client.server.SimStatusListener;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.simdata.DataListener;
