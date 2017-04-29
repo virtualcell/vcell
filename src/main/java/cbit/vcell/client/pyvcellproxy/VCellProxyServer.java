@@ -6,8 +6,6 @@ import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 
-import cbit.vcell.client.VCellClient;
-
 
 public class VCellProxyServer {
 	
@@ -15,7 +13,7 @@ public class VCellProxyServer {
  * Just fork off a daemon thread
  * @param vcellClient
  */
-public static void startVCellVisitDataServerThread(VCellClient  vcellClient) {
+public static void startVCellVisitDataServerThread(VCellClientDataService  vcellClient) {
 	Thread vcellProxyThread = new VCellProxyThread(vcellClient) ;
 	vcellProxyThread.start();
 }
@@ -24,15 +22,15 @@ public static void startVCellVisitDataServerThread(VCellClient  vcellClient) {
  * start proxy server in daemon thread
  */
 private static class VCellProxyThread extends Thread {
-	final VCellClient vcellClient;
-	VCellProxyThread(VCellClient vcc) {
+	final VCellClientDataService vcellClientDataService;
+	VCellProxyThread(VCellClientDataService vcc) {
 		super("vcellProxyThread");
 		setDaemon(true);
-		vcellClient = vcc;
+		vcellClientDataService = vcc;
 	}
 	@Override
 	public void run() {
-		startSimpleVCellProxyServer(new VCellProxy.Processor<VCellProxyHandler>(new VCellProxyHandler(vcellClient)));	
+		startSimpleVCellProxyServer(new VCellProxy.Processor<VCellProxyHandler>(new VCellProxyHandler(vcellClientDataService)));	
 	}
 }
 

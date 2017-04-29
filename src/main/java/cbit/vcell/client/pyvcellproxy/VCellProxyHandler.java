@@ -1,213 +1,43 @@
 package cbit.vcell.client.pyvcellproxy;
 
-import java.awt.Component;
-import java.awt.Window;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Optional;
-import java.util.Vector;
-
-import javax.swing.JOptionPane;
 
 import org.apache.thrift.TException;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
-import org.vcell.util.Origin;
-import org.vcell.util.StdoutSessionLog;
-import org.vcell.util.VCAssert;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vis.vtk.VisMeshUtils;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.BioModelWindowManager;
-import cbit.vcell.client.LocalDataSetControllerProvider;
-import cbit.vcell.client.MathModelWindowManager;
-import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.VCellClient;
-import cbit.vcell.client.ClientSimManager.LocalVCSimulationDataIdentifier;
-import cbit.vcell.client.data.DataProcessingResultsPanel;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.clientdb.ClientDocumentManager;
-import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.math.VariableType.VariableDomain;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.simdata.VtkManager;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 
 public class VCellProxyHandler implements VCellProxy.Iface{
-
-private final VCellClient vcellClient;
+	
+	private final VCellClientDataService vcellClientDataService;
+//private final VCellClient vcellClient;
 private final File localVisDataDir;
 
-public VCellProxyHandler(VCellClient vcellClient) {
-	this.vcellClient = vcellClient;
+public VCellProxyHandler(VCellClientDataService vcellClientDataService) {
+	this.vcellClientDataService = vcellClientDataService;
 	this.localVisDataDir = ResourceUtil.getLocalVisDataDir();
 }
 
 @Override 
-public List<SimulationDataSetRef> getSimsFromOpenModels() throws cbit.vcell.client.pyvcellproxy.ThriftDataAccessException, org.apache.thrift.TException {
-	ArrayList<SimulationDataSetRef> simulationDataSetRefs = new ArrayList<SimulationDataSetRef>();
-
-	for ( TopLevelWindowManager windowManager :  vcellClient.getMdiManager().getWindowManagers() ) {
-		Simulation[] simulations = null;
-		VCDocument modelDocument = null;
-		
-		if (windowManager instanceof BioModelWindowManager){
-			BioModelWindowManager selectedBioWindowManager = (BioModelWindowManager)windowManager;
-			BioModel bioModel = selectedBioWindowManager.getBioModel();
-			simulations = bioModel.getSimulations();
-			modelDocument = bioModel;
-//			simOwnerCount = bioModel.getNumSimulationContexts();
-			
-		}else if (windowManager instanceof MathModelWindowManager){
-			MathModelWindowManager selectedMathWindowManager = (MathModelWindowManager)windowManager; 
-			MathModel mathModel = selectedMathWindowManager.getMathModel();
-			simulations = mathModel.getSimulations();
-			modelDocument = mathModel;
-//			simOwnerCount = 1;
-		}
-		if (simulations != null){
-			for (Simulation simulation : simulations){
-				if (!isVtkSupported(simulation)){
-					continue;
-				}
-				Origin origin = simulation.getMathDescription().getGeometry().getOrigin();
-				Extent extent = simulation.getMathDescription().getGeometry().getExtent();
-			    SimulationInfo simInfo=simulation.getSimulationInfo();
-				SimulationStatus simStatus = vcellClient.getRequestManager().getServerSimulationStatus(simInfo);
-				for (int jobIndex = 0; jobIndex<simulation.getScanCount(); jobIndex++){
-					if (simStatus!=null && simStatus.getHasData()){
-						SimulationDataSetRef simulationDataSetReference = createSimulationDataSetRef(simulation, modelDocument, jobIndex, false);
-						simulationDataSetRefs.add(simulationDataSetReference);
-					}
-				}
-			}
-		}
-	}
-	File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
-	String[] simtaskFilenames = localSimDir.list((dir,name) -> (name.endsWith(".simtask.xml")));
-	for (String simtaskFilename : simtaskFilenames){
-		try {
-			SimulationTask simTask = XmlHelper.XMLToSimTask(org.apache.commons.io.FileUtils.readFileToString(new File(localSimDir,simtaskFilename)));
-			VCDocument modelDocument = null;
-			SimulationDataSetRef simulationDataSetReference = createSimulationDataSetRef(simTask.getSimulation(), modelDocument, simTask.getSimulationJob().getJobIndex(), true);
-			simulationDataSetRefs.add(simulationDataSetReference);
-		}catch (ExpressionException | XmlParseException | IOException e){
-			e.printStackTrace();
-		}
-	}
-	return simulationDataSetRefs;
-}
-
-public static SimulationDataSetRef createSimulationDataSetRef(Simulation simulation, VCDocument modelDocument, int jobIndex, boolean isLocal){
-	SimulationDataSetRef simulationDataSetReference = new SimulationDataSetRef();
-	Origin origin = simulation.getMathDescription().getGeometry().getOrigin();
-	Extent extent = simulation.getMathDescription().getGeometry().getExtent();
-    SimulationInfo simInfo=simulation.getSimulationInfo();
-	simulationDataSetReference.setSimName(simInfo.getName());
-//	String simName = simInfo.getName();
-//	if (jobIndex!=0){
-//		simName = simName + " job#"+String.valueOf(jobIndex);
-//	}
-	final String modelId;
-	final boolean isMathModel;
-	final String modelName;
-	final String simContextName;
-	
-	if (modelDocument!=null){
-		modelId = modelDocument.getVersion().getVersionKey().toString();
-		isMathModel = (modelDocument instanceof MathModel);
-		modelName = modelDocument.getName();
-		if (modelDocument instanceof BioModel && simulation.getSimulationOwner() != null){
-			simContextName = simulation.getSimulationOwner().getName();
-		}else{
-			simContextName = null;
-		}
-	}else{
-		modelId = "no id";
-		isMathModel = false;
-		modelName = "no model";
-		simContextName = null;
-	}
-	simulationDataSetReference.setSimId(simInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey().toString());
-	simulationDataSetReference.setModelId(modelId);
-	simulationDataSetReference.setUsername(simInfo.getVersion().getOwner().getName());
-	simulationDataSetReference.setUserkey(simInfo.getVersion().getOwner().getID().toString());
-	simulationDataSetReference.setIsMathModel(isMathModel);
-	simulationDataSetReference.setJobIndex(jobIndex);
-	simulationDataSetReference.setModelName(modelName);
-	simulationDataSetReference.setOriginXYZ(Arrays.asList(new Double[] {origin.getX(),origin.getY(),origin.getZ()}));
-	simulationDataSetReference.setExtentXYZ(Arrays.asList(new Double[] {extent.getX(),extent.getY(),extent.getZ()}));
-	if (simContextName!=null){
-		simulationDataSetReference.setSimulationContextName(simContextName);
-	}
-	simulationDataSetReference.setSimName(simInfo.getName());
-	boolean movingBoundarySolver = simulation.getSolverTaskDescription().getSolverDescription().isMovingBoundarySolver();
-	simulationDataSetReference.setIsTimeVaryingMesh(movingBoundarySolver);
-	simulationDataSetReference.setIsLocal(isLocal);
-	return simulationDataSetReference;
-}
-
-private boolean isVtkSupported(Simulation simulation){
-	if (simulation.getMathDescription().getGeometry().getDimension()<2){
-		return false;
-	}
-	return true;
-}
-
-public VtkManager getVtkManager(SimulationDataSetRef simulationDataSetRef) throws FileNotFoundException, DataAccessException {
-	VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
-	VtkManager vtkManager = null;
-	if (!simulationDataSetRef.isLocal) {
-		vtkManager = vcellClient.getRequestManager().getVtkManager(null,vcSimulationDataIdentifier);
-	} else {
-		// ---- preliminary : construct the localDatasetControllerProvider
-		StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
-		File primaryDir = ResourceUtil.getLocalRootDir();
-		User usr = User.tempUser;
-		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-		ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-		LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
-		VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
-		vtkManager = new VtkManager(null, vcDataManager, vcSimulationDataIdentifier);
-	}
-	return vtkManager;
+public List<SimulationDataSetRef> getSimsFromOpenModels() {
+	return vcellClientDataService.getSimsFromOpenModels();
 }
 
 @Override
 public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSetRef) throws cbit.vcell.client.pyvcellproxy.ThriftDataAccessException {
 	try {
-		VtkManager vtkManager = getVtkManager(simulationDataSetRef);
+		VtkManager vtkManager = vcellClientDataService.getVtkManager(simulationDataSetRef);
 		VtuVarInfo[] vtuVarInfos = vtkManager.getVtuVarInfos();
 		ArrayList<VariableInfo> varInfoList = new ArrayList<VariableInfo>();
 		for (VtuVarInfo vtuVarInfo : vtuVarInfos){
@@ -259,9 +89,7 @@ public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSet
 
 
 private File getEmptyMeshFileLocation(SimulationDataSetRef simulationDataSetRef, String domainName, int timeIndex) throws FileNotFoundException{
-	
-	VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
-	
+		
 	//
 	// create the dataset directory if necessary
 	//
@@ -273,13 +101,11 @@ private File getEmptyMeshFileLocation(SimulationDataSetRef simulationDataSetRef,
 	//
 	// compose the specific mesh filename
 	//
-	File vtuDataFile = new File(vtuSimDataFolder, vcSimulationDataIdentifier.getID()+"_"+domainName+"_"+String.format("%06d" , timeIndex)+".vtu");
+	File vtuDataFile = new File(vtuSimDataFolder, simulationDataSetRef.getSimId()+"_"+domainName+"_"+String.format("%06d" , timeIndex)+".vtu");
 	return vtuDataFile;
 }
 
 private File getPopulatedMeshFileLocation(SimulationDataSetRef simulationDataSetRef, VariableInfo varInfo, int timeIndex) throws FileNotFoundException{
-	
-	VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
 	
 	//
 	// create the dataset directory if necessary
@@ -295,7 +121,7 @@ private File getPopulatedMeshFileLocation(SimulationDataSetRef simulationDataSet
 	String timeIndexStr = String.format("%06d" , timeIndex);
 	String domainName = varInfo.domainName;
 	String varName = varInfo.variableVtuName.replace(":", "_");
-	File vtuDataFile = new File(vtuSimDataFolder, vcSimulationDataIdentifier.getID()+"_"+domainName+"_"+varName+"_"+timeIndexStr+".vtu");
+	File vtuDataFile = new File(vtuSimDataFolder, simulationDataSetRef.getSimId()+"_"+domainName+"_"+varName+"_"+timeIndexStr+".vtu");
 	return vtuDataFile;
 }
 
@@ -313,7 +139,7 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 		//
 		// get data from server for this variable, domain, time
 		//
-		VtkManager vtkManager = getVtkManager(simulationDataSetRef);
+		VtkManager vtkManager = vcellClientDataService.getVtkManager(simulationDataSetRef);
 		VariableDomain variableDomainType = VariableDomain.VARIABLEDOMAIN_UNKNOWN;
 		if (var.variableDomainType == DomainType.MEMBRANE){
 			variableDomainType = VariableDomain.VARIABLEDOMAIN_MEMBRANE;
@@ -394,7 +220,7 @@ private File getEmptyMeshFile(SimulationDataSetRef simulationDataSetRef, String 
 
 private VtuFileContainer downloadEmptyVtuFileContainer(SimulationDataSetRef simulationDataSetRef, int timeIndex) throws ThriftDataAccessException {
 	try {
-		VtkManager vtkManager = getVtkManager(simulationDataSetRef);
+		VtkManager vtkManager = vcellClientDataService.getVtkManager(simulationDataSetRef);
 		VtuFileContainer vtuFileContainer = vtkManager.getEmptyVtuMeshFiles(timeIndex);
 		return vtuFileContainer;
 	}catch (Exception e){
@@ -403,43 +229,25 @@ private VtuFileContainer downloadEmptyVtuFileContainer(SimulationDataSetRef simu
 	}
 }
 
-private VCSimulationDataIdentifier getVCSimulationDataIdentifier(SimulationDataSetRef simulationDataSetRef) throws FileNotFoundException{
-	User user = new User(simulationDataSetRef.getUsername(),new KeyValue(simulationDataSetRef.getUserkey()));
-	KeyValue simKeyValue = new KeyValue(simulationDataSetRef.getSimId());
-	VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKeyValue, user);
-	if (simulationDataSetRef.isIsLocal()){
-		StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
-		File primaryDir = ResourceUtil.getLocalRootDir();
-		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-		ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-		LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, user, dataSetControllerImpl, localExportServiceImpl);
-		VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
-		File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
-		VCSimulationDataIdentifier simulationDataIdentifier = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
-		return simulationDataIdentifier;
-	}else{
-		VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, simulationDataSetRef.getJobIndex());
-		return vcSimulationDataIdentifier;
-	}
-}
 
 @Override
 public List<Double> getTimePoints(SimulationDataSetRef simulationDataSetRef) throws ThriftDataAccessException {
 	try {
-		VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
+		VtkManager vtkManager = vcellClientDataService.getVtkManager(simulationDataSetRef);
 		
 		ArrayList<Double> timesList = new ArrayList<Double>();
-		if (vcSimulationDataIdentifier != null) {				
-			double[] timesArray = getVtkManager(simulationDataSetRef).getDataSetTimes();
+		if (vtkManager != null) {				
+			double[] timesArray = vtkManager.getDataSetTimes();
 			for (int i=0; i<timesArray.length; i++){
 			    timesList.add(new Double(timesArray[i]));
 			}
 			return timesList;			 
 		}
-	} catch (org.vcell.util.DataAccessException | FileNotFoundException e) {
+		return null;
+	} catch (FileNotFoundException | DataAccessException e) {
 		e.printStackTrace();
+		throw new ThriftDataAccessException(e.getMessage());
 	}
-	return null;
 }
 
 @Override
@@ -449,95 +257,10 @@ public PostProcessingData getPostProcessingData(
 	return null;
 }
 
-//private PostProcessingData getMockPostProcessingData(SimulationDataSetRef simulationDataSetRef) throws ThriftDataAccessException {
-//	PostProcessingData mockPostProcessingData = new PostProcessingData();
-//	mockPostProcessingData.setVariableList(getVariableList(simulationDataSetRef));
-//	System.out.println("Var list size should be "+mockPostProcessingData.getVariableListSize());
-//	PlotData mockPlotData = new PlotData();
-//	ArrayList<Double> timePoints = (ArrayList<Double>) getTimePoints(simulationDataSetRef);
-//	mockPlotData.setTimePoints(timePoints);
-//	
-//	ArrayList<Double> mockData = new ArrayList<Double>();
-//	ListIterator<Double> listIterator = timePoints.listIterator();
-//	while (listIterator.hasNext()) {
-//		mockData.add(new Double(2+java.lang.Math.sin(listIterator.next().doubleValue())));
-//	}
-//	mockPlotData.setData(mockData);
-//	mockPostProcessingData.setPlotData(new ArrayList<PlotData>());
-//	ListIterator<VariableInfo> variableIter = mockPostProcessingData.getVariableList().listIterator();
-//	while (variableIter.hasNext()){
-//		VariableInfo var = variableIter.next();
-//		mockPostProcessingData.getPlotData().add(mockPlotData);
-//	}
-//	return mockPostProcessingData;		 
-//}
-
-private static class FindWindow {
-	public static Window getWindow(Component component) {
-		if (component == null) {
-			return JOptionPane.getRootFrame();
-		} else if (component instanceof Window) {
-			return (Window) component;
-		} else {
-			return getWindow(component.getParent());
-		}
-	}
-}
-	
 @Override
 public void displayPostProcessingDataInVCell(SimulationDataSetRef simulationDataSetRef)throws ThriftDataAccessException, TException {
 	 try {
-		 User vcUser = vcellClient.getRequestManager().getDocumentManager().getUser();
-		 VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(new KeyValue(simulationDataSetRef.getSimId()), vcUser );
-		 ClientDocumentManager clientDocumentManager = (ClientDocumentManager) vcellClient.getClientServerManager().getDocumentManager();
-		 SimulationOwner simulationOwner = null;
-		 try {
-			 if(simulationDataSetRef.isMathModel){
-				 simulationOwner = clientDocumentManager.getMathModel(new KeyValue(simulationDataSetRef.getModelId()));
-			 }else{
-				 BioModel bioModel = clientDocumentManager.getBioModel(new KeyValue(simulationDataSetRef.getModelId()));
-				 simulationOwner = bioModel.getSimulationContext(simulationDataSetRef.getSimulationContextName());
-			 }
-		 } catch (Exception e1) {
-				e1.printStackTrace();
-				throw new ThriftDataAccessException(e1.getMessage());
-		 }
-		 ArrayList<AnnotatedFunction> outputFunctionsList = simulationOwner.getOutputFunctionContext().getOutputFunctionsList();
-		 OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));
-		 VCSimulationDataIdentifier vcSimDataId = new VCSimulationDataIdentifier(vcSimId, simulationDataSetRef.getJobIndex());
-		 PDEDataManager pdeDataManager = null;
-		 try {
-			 pdeDataManager = (PDEDataManager)vcellClient.getRequestManager().getDataManager(outputContext, vcSimDataId , true);
-		} catch (org.vcell.util.DataAccessException e1) {
-			e1.printStackTrace();
-			throw new ThriftDataAccessException(e1.getMessage());
-		}
-		 final ClientPDEDataContext newClientPDEDataContext = pdeDataManager.getPDEDataContext();
-		
-//		 this was the code before the windows refactoring; appears to just always get the first window???
-//		Enumeration<TopLevelWindowManager> windowManagers = vcellClient.getMdiManager().getWindowManagers();
-//		final Window window = FindWindow.getWindow(windowManagers.nextElement().getComponent());
-		 
-		Optional<TopLevelWindowManager> first = vcellClient.getMdiManager().getWindowManagers().stream( ).findFirst();
-		VCAssert.assertTrue(first.isPresent(), "window manager not present?" );
-		
-		final Window window = FindWindow.getWindow(first.get().getComponent());
-	
-		AsynchClientTask task = new AsynchClientTask("Display Post Processing Statistics", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false,false) {
-			
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				DataProcessingResultsPanel dataProcessingResultsPanel = new DataProcessingResultsPanel();
-				dataProcessingResultsPanel.update(newClientPDEDataContext);
-				DialogUtils.showComponentOKCancelDialog(window, dataProcessingResultsPanel, "Post Processing Statistics");			
-			}
-		};
-		Hashtable<String, Object> hash = new Hashtable<String, Object>();
-		Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();
-		tasksV.add(task);
-		AsynchClientTask[] tasks = new AsynchClientTask[tasksV.size()];
-		tasksV.copyInto(tasks);
-		ClientTaskDispatcher.dispatch(window, hash, tasks, true);
+		 vcellClientDataService.displayPostProcessingDataInVCell(simulationDataSetRef);
 	} catch (Throwable exc2) {
 		 exc2.printStackTrace();
 		 throw new ThriftDataAccessException(exc2.getMessage());

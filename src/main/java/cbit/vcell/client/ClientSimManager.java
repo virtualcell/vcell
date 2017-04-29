@@ -43,13 +43,13 @@ import org.vcell.vis.io.VtuVarInfo;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
+import cbit.vcell.client.data.VCellClientDataServiceImpl;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
-import cbit.vcell.client.pyvcellproxy.VCellProxyHandler;
 import cbit.vcell.client.server.DataViewerController;
 import cbit.vcell.client.server.SimResultsViewerController;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
@@ -364,7 +364,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 						}else if (documentWindowManager instanceof MathModelWindowManager){
 							modelDocument = ((MathModelWindowManager)documentWindowManager).getMathModel();
 						}
-						SimulationDataSetRef simulationDataSetRef = VCellProxyHandler.createSimulationDataSetRef(sim, modelDocument, 0, isLocal);
+						SimulationDataSetRef simulationDataSetRef = VCellClientDataServiceImpl.createSimulationDataSetRef(sim, modelDocument, 0, isLocal);
 						
 //							Hashtable<VCSimulationIdentifier, SimulationDataSetRef> simDataSetRefs = (Hashtable<VCSimulationIdentifier, SimulationDataSetRef>)hashTable.get(H_SIM_DATASET_REFS);
 //							if (simDataSetRefs == null) {

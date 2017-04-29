@@ -56,8 +56,10 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.data.VCellClientDataServiceImpl;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
+import cbit.vcell.client.pyvcellproxy.VCellClientDataService;
 import cbit.vcell.client.pyvcellproxy.VCellProxyServer;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.desktop.BioModelNode;
@@ -308,7 +310,8 @@ public static void main(java.lang.String[] args) {
 		ResourceUtil.setNativeLibraryDirectory();
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
 
-		VCellProxyServer.startVCellVisitDataServerThread(vcellClient);
+		VCellClientDataService vcellClientDataService = new VCellClientDataServiceImpl(vcellClient);
+		VCellProxyServer.startVCellVisitDataServerThread(vcellClientDataService);
 
 		
 		//starting loading libraries
