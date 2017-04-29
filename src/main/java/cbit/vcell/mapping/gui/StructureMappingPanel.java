@@ -15,10 +15,10 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.UIManager;
 
+import org.vcell.util.IssueManager;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.mapping.GeometryContext;

@@ -37,6 +37,7 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
+import org.vcell.util.IssueManager;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.VCellIcons;

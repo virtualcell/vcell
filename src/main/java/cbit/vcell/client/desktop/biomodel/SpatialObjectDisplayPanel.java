@@ -19,6 +19,7 @@ import java.util.List;
 
 import javax.swing.JLabel;
 
+import org.vcell.util.IssueManager;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.mapping.spatial.SpatialObject;

@@ -15,11 +15,11 @@ import javax.swing.JTable;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.util.IssueManager;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 

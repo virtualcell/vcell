@@ -33,6 +33,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.vcell.util.ISize;
+import org.vcell.util.IssueManager;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -46,7 +47,6 @@ import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.task.AsynchClientTask;

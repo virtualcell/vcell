@@ -12,8 +12,8 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueManager;
 
-import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.SpeciesContext;
