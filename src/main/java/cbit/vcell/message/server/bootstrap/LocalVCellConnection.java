@@ -98,6 +98,7 @@ public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog
  * Creation date: (4/2/2001 2:59:05 AM)
  * @param event cbit.rmi.event.ExportEvent
  */
+@Override
 public void exportMessage(ExportEvent event) {
 	// if it's from one of our jobs, pass it along so it will reach the client
 	if (getUserLoginInfo().getUser().equals(event.getUser())) {
@@ -110,6 +111,7 @@ public void exportMessage(ExportEvent event) {
  * @return cbit.vcell.server.DataSetController
  * @exception java.lang.Exception The exception description.
  */
+@Override
 public DataSetController getDataSetController() throws DataAccessException {
 	getSessionLog().print("LocalVCellConnection.getDataSetController()");
 	if (localDataSetController == null) {
@@ -130,15 +132,6 @@ public String getHost() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/29/01 10:33:49 AM)
- * @return cbit.rmi.event.SimpleMessageService
- */
-MessageService getMessageService() {
-	return messageService;
-}
-
 MessageCollector getMessageCollector() {
 	return messageCollector;
 }
@@ -158,6 +151,7 @@ private SessionLog getSessionLog() {
  * @param mathDesc cbit.vcell.math.MathDescription
  * @exception java.rmi.RemoteException The exception description.
  */
+@Override
 public SimulationController getSimulationController() {
 	if (simulationController == null){
 		simulationController = new LocalSimulationController(getUserLoginInfo().getUser(),simulationControllerImpl,getSessionLog());
@@ -170,6 +164,7 @@ public SimulationController getSimulationController() {
  * This method was created by a SmartGuide.
  * @return java.lang.String
  */
+@Override
 public UserLoginInfo getUserLoginInfo() {
 	return userLoginInfo;
 }
@@ -181,6 +176,7 @@ public UserLoginInfo getUserLoginInfo() {
  * @param userid java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
+@Override
 public UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
 	getSessionLog().print("LocalVCellConnection.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServer == null) {
