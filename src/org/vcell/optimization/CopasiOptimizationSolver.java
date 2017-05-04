@@ -53,17 +53,16 @@ public class CopasiOptimizationSolver {
 			File dir = new File("C:\\temp\\ggg");
 			String prefix = "testing_"+Math.abs(new Random().nextInt(10000));
 			
-			File sbmlFile = new File(dir,prefix+".sbml.xml");
-			File dataFile = new File(dir,prefix+".csv");
-			File optProblemThriftFile = new File(dir,prefix+".optprob.bin");
-//			File optProblemXMLFile = new File(dir,prefix+".xml");
-			File optResultFile = new File(dir,prefix+".optresult.xml");
-			
-			//
-			// Setup Python COPASI opt problem and write to disk
-			//
-			OptProblem optProblem = CopasiServicePython.makeOptProblem(parameterEstimationTask, sbmlFile, dataFile);
-			CopasiServicePython.writeOptProblem(optProblemThriftFile, optProblem);
+//			File sbmlFile = new File(dir,prefix+".sbml.xml");
+//			File dataFile = new File(dir,prefix+".csv");
+//			File optProblemThriftFile = new File(dir,prefix+".optprob.bin");
+//			File optResultFile = new File(dir,prefix+".optresult.xml");
+//			
+//			//
+//			// Setup Python COPASI opt problem and write to disk
+//			//
+//			OptProblem optProblem = CopasiServicePython.makeOptProblem(parameterEstimationTask, sbmlFile, dataFile);
+//			CopasiServicePython.writeOptProblem(optProblemThriftFile, optProblem);
 
 			//
 			// JNI (C++) input XML file
@@ -76,20 +75,19 @@ public class CopasiOptimizationSolver {
 			//
 			// run Python COPASI opt problem
 			//
-			CopasiServicePython.runCopasiPython(optProblemThriftFile, optResultFile);
-			Element copasiOptResultsXML = XmlUtil.readXML(optResultFile).getRootElement();
-			String copasiOptResultsString = XmlUtil.beautify(XmlUtil.xmlToString(copasiOptResultsXML));
-			OptSolverResultSet copasiOptSolverResultSet = OptXmlReader.getOptimizationResultSet(copasiOptResultsString);
-			String[] copasiParameterNames = copasiOptSolverResultSet.getParameterNames();
-			double[] copasiParameterVals = copasiOptSolverResultSet.getBestEstimates();
-			RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, copasiParameterNames, copasiParameterVals);
-			OptimizationResultSet copasiOptimizationResultSet = new OptimizationResultSet(copasiOptSolverResultSet, copasiRcResultSet);
+//			CopasiServicePython.runCopasiPython(optProblemThriftFile, optResultFile);
+//			Element copasiOptResultsXML = XmlUtil.readXML(optResultFile).getRootElement();
+//			String copasiOptResultsString = XmlUtil.beautify(XmlUtil.xmlToString(copasiOptResultsXML));
+//			OptSolverResultSet copasiOptSolverResultSet = OptXmlReader.getOptimizationResultSet(copasiOptResultsString);
+//			String[] copasiParameterNames = copasiOptSolverResultSet.getParameterNames();
+//			double[] copasiParameterVals = copasiOptSolverResultSet.getBestEstimates();
+//			RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, copasiParameterNames, copasiParameterVals);
+//			OptimizationResultSet copasiOptimizationResultSet = new OptimizationResultSet(copasiOptSolverResultSet, copasiRcResultSet);
 			
 			
 			//
 			// run JNI COPASI Solver
 			//
-//			org.apache.commons.io.FileUtils.write(optProblemXMLFile, XmlUtil.beautify(inputXML));
 			String jniOptResultsXML = solve(inputXML, optSolverCallbacks);
 			OptSolverResultSet jniOptSolverResultSet = OptXmlReader.getOptimizationResultSet(jniOptResultsXML);
 			//get ode solution by best estimates
@@ -98,12 +96,12 @@ public class CopasiOptimizationSolver {
 			RowColumnResultSet jniRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, jniParameterNames, jniParameterVals);
 			OptimizationResultSet jniOptimizationResultSet = new OptimizationResultSet(jniOptSolverResultSet, jniRcResultSet);
 
-			System.out.println("-----------SOLUTION FROM PYTHON---------------\n"+XmlUtil.beautify(copasiOptResultsString));
+//			System.out.println("-----------SOLUTION FROM PYTHON---------------\n"+XmlUtil.beautify(copasiOptResultsString));
 			System.out.println("-----------SOLUTION FROM JNI------------------\n"+XmlUtil.beautify(jniOptResultsXML));
 
 			
-//			return jniOptimizationResultSet;
-			return copasiOptimizationResultSet;
+			return jniOptimizationResultSet;
+//			return copasiOptimizationResultSet;
 		} catch (Throwable e){
 			e.printStackTrace(System.out);
 			throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
