@@ -23,7 +23,6 @@ import javax.swing.JViewport;
 
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.graph.CartoonTool;
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.GraphLayoutManager;
@@ -33,6 +32,7 @@ import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.ShapeUtil;
 import cbit.gui.graph.actions.CartoonToolMiscActions;
+import cbit.gui.graph.gui.CartoonTool;
 
 import com.genlogic.GraphLayout.GlgCube;
 import com.genlogic.GraphLayout.GlgGraphEdge;
