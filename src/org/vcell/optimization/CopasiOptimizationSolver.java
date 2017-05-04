@@ -10,10 +10,14 @@
 
 package org.vcell.optimization;
 
+import info.aduna.xml.XMLUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
+import org.apache.commons.io.FileUtils;
+import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.optimization.thrift.OptProblem;
 
@@ -31,8 +35,10 @@ import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.xml.XmlHelper;
 
 
 public class CopasiOptimizationSolver {	
@@ -44,30 +50,60 @@ public class CopasiOptimizationSolver {
 	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask, CopasiOptSolverCallbacks optSolverCallbacks, MathMappingCallback mathMappingCallback) 
 							throws IOException, ExpressionException, OptimizationException {
 		try {
-//			File dir = new File("C:\\temp\\ggg");
-//			String prefix = "testing_"+Math.abs(new Random().nextInt(100));
-//			
-//			File sbmlFile = new File(dir,prefix+".sbml.xml");
-//			File dataFile = new File(dir,prefix+".csv");
-//			File thriftFile = new File(dir,prefix+".optprob");
-//			File optProblemXMLFile = new File(dir,prefix+".xml");
-//
-//			OptProblem optProblem = CopasiSerializationTest.makeOptProblem(parameterEstimationTask, sbmlFile, dataFile);
-//			CopasiSerializationTest.writeOptProblem(thriftFile, optProblem);
+			File dir = new File("C:\\temp\\ggg");
+			String prefix = "testing_"+Math.abs(new Random().nextInt(10000));
 			
+			File sbmlFile = new File(dir,prefix+".sbml.xml");
+			File dataFile = new File(dir,prefix+".csv");
+			File optProblemThriftFile = new File(dir,prefix+".optprob.bin");
+//			File optProblemXMLFile = new File(dir,prefix+".xml");
+			File optResultFile = new File(dir,prefix+".optresult.xml");
+			
+			//
+			// Setup Python COPASI opt problem and write to disk
+			//
+			OptProblem optProblem = CopasiServicePython.makeOptProblem(parameterEstimationTask, sbmlFile, dataFile);
+			CopasiServicePython.writeOptProblem(optProblemThriftFile, optProblem);
+
+			//
+			// JNI (C++) input XML file
+			//
 			Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask,mathMappingCallback);
 			String inputXML = XmlUtil.xmlToString(optProblemXML);
 			System.out.println(XmlUtil.beautify(inputXML));
-//			org.apache.commons.io.FileUtils.write(optProblemXMLFile, XmlUtil.beautify(inputXML));
-			String optResultsXML = solve(inputXML, optSolverCallbacks);
-			OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
-			//get ode solution by best estimates
-			String[] parameterNames = newOptResultSet.getParameterNames();
-			double[] parameterVals = newOptResultSet.getBestEstimates();
-			RowColumnResultSet rcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, parameterNames, parameterVals);
 			
-			OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, rcResultSet);
-			return optResultSet;
+			
+			//
+			// run Python COPASI opt problem
+			//
+			CopasiServicePython.runCopasiPython(optProblemThriftFile, optResultFile);
+			Element copasiOptResultsXML = XmlUtil.readXML(optResultFile).getRootElement();
+			String copasiOptResultsString = XmlUtil.beautify(XmlUtil.xmlToString(copasiOptResultsXML));
+			OptSolverResultSet copasiOptSolverResultSet = OptXmlReader.getOptimizationResultSet(copasiOptResultsString);
+			String[] copasiParameterNames = copasiOptSolverResultSet.getParameterNames();
+			double[] copasiParameterVals = copasiOptSolverResultSet.getBestEstimates();
+			RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, copasiParameterNames, copasiParameterVals);
+			OptimizationResultSet copasiOptimizationResultSet = new OptimizationResultSet(copasiOptSolverResultSet, copasiRcResultSet);
+			
+			
+			//
+			// run JNI COPASI Solver
+			//
+//			org.apache.commons.io.FileUtils.write(optProblemXMLFile, XmlUtil.beautify(inputXML));
+			String jniOptResultsXML = solve(inputXML, optSolverCallbacks);
+			OptSolverResultSet jniOptSolverResultSet = OptXmlReader.getOptimizationResultSet(jniOptResultsXML);
+			//get ode solution by best estimates
+			String[] jniParameterNames = jniOptSolverResultSet.getParameterNames();
+			double[] jniParameterVals = jniOptSolverResultSet.getBestEstimates();
+			RowColumnResultSet jniRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, jniParameterNames, jniParameterVals);
+			OptimizationResultSet jniOptimizationResultSet = new OptimizationResultSet(jniOptSolverResultSet, jniRcResultSet);
+
+			System.out.println("-----------SOLUTION FROM PYTHON---------------\n"+XmlUtil.beautify(copasiOptResultsString));
+			System.out.println("-----------SOLUTION FROM JNI------------------\n"+XmlUtil.beautify(jniOptResultsXML));
+
+			
+//			return jniOptimizationResultSet;
+			return copasiOptimizationResultSet;
 		} catch (Throwable e){
 			e.printStackTrace(System.out);
 			throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
