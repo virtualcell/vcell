@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.gui.graph;
+package cbit.gui.graph.gui;
 
 
 import java.awt.Container;
@@ -39,6 +39,10 @@ import javax.swing.MenuSelectionManager;
 
 import org.vcell.util.BeanUtils;
 
+import cbit.gui.graph.GraphLayoutManager;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.GraphView;
+import cbit.gui.graph.Shape;
 import cbit.gui.graph.actions.CartoonToolEditActions;
 import cbit.gui.graph.actions.CartoonToolGroupActions;
 import cbit.gui.graph.actions.CartoonToolMiscActions;
@@ -46,7 +50,6 @@ import cbit.gui.graph.actions.CartoonToolPaintingActions;
 import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
 import cbit.gui.graph.actions.GraphViewAction;
 import cbit.gui.graph.groups.VCGroupManager;
-import cbit.gui.graph.gui.GraphPane;
 
 public abstract class CartoonTool implements GraphView, MouseListener,
 		MouseMotionListener, ActionListener, KeyListener {

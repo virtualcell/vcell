@@ -44,11 +44,12 @@ import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.ViewPortStabilizer;
 
-import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.gui.GraphPane;
+import cbit.gui.graph.gui.CartoonTool.Mode;
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.ZoomShape.Sign;
+import cbit.vcell.graph.gui.ReactionCartoonTool;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RuleParticipantSignature;

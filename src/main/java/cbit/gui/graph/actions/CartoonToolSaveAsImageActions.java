@@ -17,8 +17,8 @@ package cbit.gui.graph.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-import cbit.gui.graph.CartoonTool;
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.gui.CartoonTool;
 
 public class CartoonToolSaveAsImageActions {
 	@SuppressWarnings("serial")

@@ -15,8 +15,8 @@ package cbit.gui.graph.actions;
 
 import java.awt.event.ActionEvent;
 
-import cbit.gui.graph.CartoonTool;
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.gui.CartoonTool;
 
 @SuppressWarnings("serial")
 public class CartoonToolWrapperAction extends GraphViewAction {

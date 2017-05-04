@@ -10,7 +10,7 @@
 
 package cbit.vcell.geometry.gui;
 
-import cbit.gui.graph.CartoonTool.Mode;
+import cbit.gui.graph.gui.CartoonTool.Mode;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 /**

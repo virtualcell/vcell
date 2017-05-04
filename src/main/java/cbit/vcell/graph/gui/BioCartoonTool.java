@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -67,7 +67,7 @@ import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 
-public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
+public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	private DocumentManager documentManager = null;
 
 	/**

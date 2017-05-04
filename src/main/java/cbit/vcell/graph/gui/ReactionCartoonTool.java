@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -90,6 +90,20 @@ import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.graph.CatalystShape;
+import cbit.vcell.graph.ContainerContainerShape;
+import cbit.vcell.graph.FluxReactionShape;
+import cbit.vcell.graph.ProductShape;
+import cbit.vcell.graph.ReactantShape;
+import cbit.vcell.graph.ReactionCartoon;
+import cbit.vcell.graph.ReactionCartoonEditorPanel;
+import cbit.vcell.graph.ReactionContainerShape;
+import cbit.vcell.graph.ReactionParticipantShape;
+import cbit.vcell.graph.ReactionRuleDiagramShape;
+import cbit.vcell.graph.ReactionStepShape;
+import cbit.vcell.graph.RuleParticipantSignatureDiagramShape;
+import cbit.vcell.graph.SimpleReactionShape;
+import cbit.vcell.graph.SpeciesContextShape;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.BioModelEntityObject;

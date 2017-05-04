@@ -21,7 +21,7 @@ import java.util.List;
 
 import javax.swing.KeyStroke;
 
-import cbit.gui.graph.CartoonTool;
+import cbit.gui.graph.gui.CartoonTool;
 
 public class CartoonToolEditActions {
 

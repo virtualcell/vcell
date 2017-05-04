@@ -35,7 +35,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RuleParticipantSignature;
 
-abstract class RuleParticipantSignatureDiagramShape extends ElipseShape {
+public abstract class RuleParticipantSignatureDiagramShape extends ElipseShape {
 	RuleParticipantSignature ruleParticipantSignature = null;
 	boolean bVisible = true;				// we may want to hide this shape (not paint it) without destroying it
 	

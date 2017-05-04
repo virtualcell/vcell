@@ -18,7 +18,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import cbit.gui.graph.CartoonTool;
+import cbit.gui.graph.gui.CartoonTool;
 
 @SuppressWarnings("serial")
 public class CartoonToolMiscActions {

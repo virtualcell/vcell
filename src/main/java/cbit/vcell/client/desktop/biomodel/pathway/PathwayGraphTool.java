@@ -33,7 +33,7 @@ import cbit.gui.graph.actions.CartoonToolEditActions;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayDiagramPanel;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.PathwayContainerShape;
-import cbit.vcell.graph.BioCartoonTool;
+import cbit.vcell.graph.gui.BioCartoonTool;
 
 public class PathwayGraphTool extends BioCartoonTool {
 	
