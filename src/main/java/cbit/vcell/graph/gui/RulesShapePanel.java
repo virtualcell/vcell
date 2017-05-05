@@ -7,12 +7,13 @@ import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
 import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
 import org.vcell.model.rbm.RuleAnalysisReport;
 
-import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.model.ModelRuleFactory;
 import cbit.vcell.model.ModelRuleFactory.ModelRuleEntry;
 import cbit.vcell.model.ModelRuleFactory.ReactionRuleDirection;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.RuleParticipantSignature;
+import cbit.vcell.model.RuleParticipantSignature.Criteria;
 
 @SuppressWarnings("serial")
 public class RulesShapePanel extends LargeShapePanel {
@@ -120,6 +121,42 @@ public class RulesShapePanel extends LargeShapePanel {
 	public void setReactionRule(ReactionRule reactionRule) {
 		this.reactionRule = reactionRule;
 		repaint();
+	}
+	@Override
+	public DisplayMode getDisplayMode() {
+		return DisplayMode.rules;
+	}
+	@Override
+	public RuleAnalysisChanged hasStateChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+		if (reactionRuleName.equals(reactionRule.getName())){
+			return hasStateChanged(molecularComponentPattern);
+		}else{
+			throw new RuntimeException("invocation exception in hasStateChanged(), wrong reactionRuleName "+reactionRuleName);
+		}
+	}
+	@Override
+	public RuleAnalysisChanged hasBondChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+		if (reactionRuleName.equals(reactionRule.getName())){
+			return hasBondChanged(molecularComponentPattern);
+		}else{
+			throw new RuntimeException("invocation exception in hasBondChanged(), wrong reactionRuleName "+reactionRuleName);
+		}
+	}
+	@Override
+	public RuleAnalysisChanged hasNoMatch(String reactionRuleName, MolecularTypePattern molecularTypePattern) {
+		if (reactionRuleName.equals(reactionRule.getName())){
+			return hasNoMatch(molecularTypePattern);
+		}else{
+			throw new RuntimeException("invocation exception in hasNoMatch(), wrong reactionRuleName "+reactionRuleName);
+		}
+	}
+	@Override
+	public RuleParticipantSignature getSignature() {
+		return null;
+	}
+	@Override
+	public Criteria getCriteria() {
+		return null;
 	}
 	
 }

@@ -23,7 +23,7 @@ import org.vcell.util.Displayable;
 import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
-import cbit.vcell.graph.gui.RulesShapePanel;
+import cbit.vcell.graph.LargeShapeCanvas.DisplayMode;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
@@ -50,7 +50,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	private int height = -1;	// -1 means it doesn't matter or that we can compute it from the shape + "tallest" bond
 	private List<MolecularTypeLargeShape> speciesShapes = new ArrayList<MolecularTypeLargeShape>();
 
-	final LargeShapePanel shapePanel;
+	final LargeShapeCanvas shapePanel;
 	
 	private Displayable owner;
 	private SpeciesPattern sp;
@@ -63,7 +63,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
 	
-	public static int calculateYLetterOffset(LargeShapePanel shapePanel) {
+	public static int calculateYLetterOffset(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return YLetterOffset;
 		} else {
@@ -72,7 +72,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			return YLetterOffset + zoomFactor;
 		}
 	}
-	public static int calculateXExtent(LargeShapePanel shapePanel) {
+	public static int calculateXExtent(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return XExtent;
 		} else {
@@ -83,7 +83,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 	
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
-	public SpeciesPatternLargeShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, boolean isError) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, LargeShapeCanvas shapePanel, boolean isError) {
 		this.owner = null;
 		this.sp = null;
 		this.xPos = xPos;
@@ -100,7 +100,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		speciesShapes.add(stls);
 	}
 		
-	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapePanel shapePanel, Displayable owner) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapeCanvas shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
@@ -308,7 +308,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		if(shapePanel == null) {
 			return;
 		}
-		if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
+		if(shapePanel.getDisplayMode()==DisplayMode.rules && shapePanel.isViewSingleRow()) {
 			return;
 		}
 		
@@ -402,7 +402,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			g.setFont(font);
 			w = 46+3*z;
 			name = buildCompartmentName(g, name, "..", w);
-		} else if(z < LargeShapePanel.SmallestZoomFactorWithText) {
+		} else if(z < LargeShapeCanvas.SmallestZoomFactorWithText) {
 			font = fontOld.deriveFont(fontOld.getSize2D()*0.8f);
 			g.setFont(font);
 			w = 20;
@@ -462,7 +462,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		if(shapePanel instanceof ParticipantSignatureShapePanel) {
+		if(shapePanel.getDisplayMode()==DisplayMode.participantSignatures) {
 			if(bMatchesSignature == true) {
 				paintMatchesSignatureContour(g);
 			}
@@ -580,7 +580,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			if(bs.mcp.getBondType().equals(BondType.Possible)) {	//		?  (Possible)
 				Graphics gc = shapePanel.getGraphics();
 				
-				if(shapePanel.getZoomFactor() >= LargeShapePanel.SmallestZoomFactorWithText) {
+				if(shapePanel.getZoomFactor() >= LargeShapeCanvas.SmallestZoomFactorWithText) {
 					Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc, shapePanel);
 					g2.setFont(font);
 					g2.setColor(fontColor);
@@ -693,7 +693,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			g2.drawLine(bp.from.x, bp.from.y+yDouble+i*separ, bp.to.x, bp.to.y+yDouble+i*separ);
 			
 			Graphics gc = shapePanel.getGraphics();
-			if(shapePanel.getZoomFactor() >= LargeShapePanel.SmallestZoomFactorWithText) {
+			if(shapePanel.getZoomFactor() >= LargeShapeCanvas.SmallestZoomFactorWithText) {
 				Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc, shapePanel);
 				g.setFont(font);
 				String nr = bp.id+"";
@@ -726,7 +726,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		if(shapePanel == null) {
 			return defaultCandidate;
 		}
-		return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+		return shapePanel.isEditable() ? defaultCandidate : LargeShapeCanvas.uneditableShape;
 	}
 
 	@Override
@@ -735,10 +735,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		// TODO: actually I need to look at the owner, sp may be null for a plain species (green circle)
 		// or for errors (where we display a red circle)
 		if(sp == null) {
-			shapePanel.sp = null;
+			shapePanel.setSpeciesPattern(null);
 			return;
 		}
-		shapePanel.sp = b ? sp : null;
+		shapePanel.setSpeciesPattern(b ? sp : null);
 	}
 	@Override
 	public boolean isHighlighted() {

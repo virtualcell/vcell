@@ -27,7 +27,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 
-import cbit.vcell.graph.gui.RulesShapePanel;
+import cbit.vcell.graph.LargeShapeCanvas.DisplayMode;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
@@ -62,7 +62,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	private int width;
 	private final int height;
 
-	final LargeShapePanel shapePanel;
+	final LargeShapeCanvas shapePanel;
 	
 	private final String name;
 	private final MolecularType mt;
@@ -72,7 +72,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	
 	List <MolecularComponentLargeShape> componentShapes = new ArrayList<MolecularComponentLargeShape>();
 		
-	private static int calculateBaseWidth(LargeShapePanel shapePanel) {
+	private static int calculateBaseWidth(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return BaseWidth;
 		} else {
@@ -81,7 +81,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			return BaseWidth + zoomFactor;
 		}
 	}
-	private static int calculateBasHeight(LargeShapePanel shapePanel) {
+	private static int calculateBasHeight(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return BaseHeight;
 		} else {
@@ -90,7 +90,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			return BaseHeight + zoomFactor;
 		}
 	}
-	private static int calculateCornerArc(LargeShapePanel shapePanel) {
+	private static int calculateCornerArc(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return CornerArc;
 		} else {
@@ -99,7 +99,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			return CornerArc + zoomFactor;
 		}
 	}
-	private static int calculateCompartmentOffset(LargeShapePanel shapePanel) {
+	private static int calculateCompartmentOffset(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return CompartmentOffset;
 		} else {
@@ -111,7 +111,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	
 	
 	// this is only called for plain species context (no pattern)
-	public MolecularTypeLargeShape(int xPos, int yPos, LargeShapePanel shapePanel, Displayable owner) {
+	public MolecularTypeLargeShape(int xPos, int yPos, LargeShapeCanvas shapePanel, Displayable owner) {
 		this.owner = owner;		// null owner means we want to display a red circle (meaning error)
 		this.pattern = false;
 		this.mt = null;
@@ -130,7 +130,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		height = baseHeight + MolecularComponentLargeShape.calculateBasHeight(shapePanel) / 2;
 	}
 	// this is only called for molecular type
-	public MolecularTypeLargeShape(int xPos, int yPos, MolecularType mt, LargeShapePanel shapePanel, Displayable owner) {
+	public MolecularTypeLargeShape(int xPos, int yPos, MolecularType mt, LargeShapeCanvas shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.pattern = false;
 		this.mt = mt;
@@ -175,7 +175,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		}
 	}
 	// called for species patterns (rules, species, observables)
-	public MolecularTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapePanel, Displayable owner, int positionInPattern) {
+	public MolecularTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapeCanvas shapePanel, Displayable owner, int positionInPattern) {
 		this.owner = owner;
 		this.pattern = true;
 		this.mt = mtp.getMolecularType();
@@ -229,7 +229,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	}
 
 	private String adjustForSize() {
-		if(shapePanel.getZoomFactor() < LargeShapePanel.SmallestZoomFactorWithText) {
+		if(shapePanel.getZoomFactor() < LargeShapeCanvas.SmallestZoomFactorWithText) {
 			// when we zoom to very small shapes we must stop writing the text
 			return "  ";
 		}
@@ -419,9 +419,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			if(mt == null || mt.getModel() == null) {
 				primaryColor = Color.blue.darker().darker();
 			} else {
-				if(shapePanel instanceof ParticipantSignatureShapePanel) {
-					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
-					if(!ssp.isShowMoleculeColor()) {
+				if(shapePanel.getDisplayMode()==DisplayMode.participantSignatures) {
+					if(!shapePanel.isShowMoleculeColor()) {
 						primaryColor = AbstractComponentShape.componentVeryLightGray;
 					} else {
 						RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
@@ -430,9 +429,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 						index = index%7;
 						primaryColor = colorTable[index].darker().darker();
 					}
-					if(ssp.isShowDifferencesOnly()) {
+					if(shapePanel.isShowDifferencesOnly()) {
 						ReactionRule reactionRule = (ReactionRule)owner;
-						switch (ssp.hasNoMatch(reactionRule.getName(), mtp)){
+						switch (shapePanel.hasNoMatch(reactionRule.getName(), mtp)){
 						case CHANGED:
 							primaryColor = AbstractComponentShape.deepOrange;
 							break;
@@ -459,9 +458,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 							break;
 						}
 					}
-				} else if(shapePanel instanceof RulesShapePanel) {
-					RulesShapePanel rsp = (RulesShapePanel)shapePanel;
-					if(!rsp.isShowMoleculeColor()) {
+				} else if(shapePanel.getDisplayMode()==DisplayMode.rules) {
+					if(!shapePanel.isShowMoleculeColor()) {
 						primaryColor = AbstractComponentShape.componentVeryLightGray;
 					} else {
 						RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
@@ -471,9 +469,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 						primaryColor = colorTable[index].darker().darker();
 					}
 					// if we show difference, we apply that now and override the color
-					if(rsp.isShowDifferencesOnly()) {
+					if(shapePanel.isShowDifferencesOnly()) {
 						ReactionRule reactionRule = (ReactionRule)owner;
-						switch (((RulesShapePanel)shapePanel).hasNoMatch(mtp)){
+						switch (shapePanel.hasNoMatch(mtp)){
 						case CHANGED:
 							primaryColor = AbstractComponentShape.deepOrange;
 							break;
@@ -567,7 +565,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			
 			if(owner instanceof ReactionRule && mtp != null && mtp.hasExplicitParticipantMatch()) {
 				int z = shapePanel.getZoomFactor();
-				if(z >= LargeShapePanel.SmallestZoomFactorWithText) {	// hide the matching too when we don't display the name
+				if(z >= LargeShapeCanvas.SmallestZoomFactorWithText) {	// hide the matching too when we don't display the name
 					FontMetrics fm = gc.getFontMetrics(font);
 					int stringWidth = fm.stringWidth(name);
 					Font smallerFont = font.deriveFont(font.getSize() * 0.8F);
@@ -592,10 +590,10 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		if(shapePanel == null) {
 			return defaultCandidate;
 		}
-		return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+		return shapePanel.isEditable() ? defaultCandidate : LargeShapeCanvas.uneditableShape;
 	}
 	
-	public static Font deriveMoleculeFontBold(Graphics gc, LargeShapePanel shapePanel) {
+	public static Font deriveMoleculeFontBold(Graphics gc, LargeShapeCanvas shapePanel) {
 		Font fontOld = gc.getFont();
 		int bh = calculateBasHeight(shapePanel);
 		Font font = fontOld.deriveFont((float) (bh*7/17)).deriveFont(Font.BOLD);
@@ -603,7 +601,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	}
 
 
-	public static void paintDummy(Graphics g, int xPos, int yPos, LargeShapePanel shapePanel) {
+	public static void paintDummy(Graphics g, int xPos, int yPos, LargeShapeCanvas shapePanel) {
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		Stroke strokeOld = g2.getStroke();
@@ -624,7 +622,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		g2.setColor(colorOld);
 		g2.setStroke(strokeOld);
 	}
-	public static int getDummyWidth(LargeShapePanel shapePanel) {
+	public static int getDummyWidth(LargeShapeCanvas shapePanel) {
 		return calculateBaseWidth(shapePanel)+30;
 	}
 	
@@ -632,15 +630,15 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	public void setHighlight(boolean b, boolean param) {
 		// param is being ignored
 		if(owner instanceof RbmObservable) {
-			shapePanel.mtp = b ? mtp : null;
+			shapePanel.setMolecularTypePattern(b ? mtp : null);
 		} else if(owner instanceof MolecularType) {
-			shapePanel.mt = b ? mt : null;
+			shapePanel.setMolecularType(b ? mt : null);
 		} else if(owner instanceof SpeciesContext) {
 			if(mtp != null) {
-				shapePanel.mtp = b ? mtp : null;	// plain species don't have sp, nor mtp
+				shapePanel.setMolecularTypePattern(b ? mtp : null);	// plain species don't have sp, nor mtp
 			}
 		} else if(owner instanceof ReactionRule) {
-			shapePanel.mtp = b ? mtp : null;
+			shapePanel.setMolecularTypePattern(b ? mtp : null);
 		} else {
 			System.out.println("Unexpected owner: " + owner);
 		}
@@ -662,7 +660,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			if(shapePanel == null) {
 				return false;
 			}
-			if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
+			if(shapePanel.getDisplayMode()==DisplayMode.rules && shapePanel.isViewSingleRow()) {
 				return false;
 			}
 

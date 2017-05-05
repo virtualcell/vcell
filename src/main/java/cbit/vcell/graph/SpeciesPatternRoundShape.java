@@ -26,6 +26,7 @@ import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
 
+import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.graph.gui.RulesShapePanel;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ProductPattern;

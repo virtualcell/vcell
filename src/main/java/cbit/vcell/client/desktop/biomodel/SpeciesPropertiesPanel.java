@@ -12,7 +12,6 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -32,14 +31,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -53,35 +50,31 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.event.HyperlinkEvent.EventType;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.ExpandVetoException;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
@@ -93,11 +86,8 @@ import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.sybil.util.miriam.XRefToURN;
 import org.vcell.util.Compare;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.VCellIcons;
 
-import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProvider;
-import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProviderServiceLocator;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
@@ -111,20 +101,22 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.HighlightableShapeInterface;
-import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularComponentLargeShape;
+import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
+import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
+import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
-import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
+import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.model.RuleParticipantSignature;
-import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
+import cbit.vcell.model.RuleParticipantSignature.Criteria;
 import cbit.vcell.model.common.VCellErrorMessages;
+import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProvider;
+import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProviderServiceLocator;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)
@@ -147,11 +139,11 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	
 	private EventHandler eventHandler = new EventHandler();
 
-	private JPopupMenu popupFromTreeMenu;
-	private JMenu addMenu;
-	private JMenuItem deleteMenuItem;	
-	private JMenuItem renameMenuItem;
-	private JMenuItem editMenuItem;
+//	private JPopupMenu popupFromTreeMenu;
+//	private JMenu addMenu;
+//	private JMenuItem deleteMenuItem;	
+//	private JMenuItem renameMenuItem;
+//	private JMenuItem editMenuItem;
 	private JCheckBox showDetailsCheckBox;
 
 	private JPopupMenu popupFromShapeMenu;
@@ -384,6 +376,56 @@ private void initialize() {
 				if(spls != null) {
 					spls.paintSelf(g);
 				}
+			}
+
+			@Override
+			public DisplayMode getDisplayMode() {
+				return DisplayMode.other;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasStateChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasStateChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasBondChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasNoMatch(String reactionRuleName, MolecularTypePattern mtp) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasNoMatch(MolecularTypePattern molecularTypePattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleParticipantSignature getSignature() {
+				return null;
+			}
+
+			@Override
+			public Criteria getCriteria() {
+				return null;
+			}
+
+			@Override
+			public boolean isViewSingleRow() {
+				return true;
 			}
 		};
 		shapePanel.setBorder(border);

@@ -53,9 +53,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -64,47 +62,43 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.ExpandVetoException;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
-
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.RbmObservable.ObservableType;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.RbmObservable.Sequence;
-import cbit.vcell.model.common.VCellErrorMessages;
-
 import org.vcell.util.Compare;
 import org.vcell.util.document.PropertyConstants;
-import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
-import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.HighlightableShapeInterface;
-import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularComponentLargeShape;
+import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
+import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
+import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.MolecularTypeLargeShape;
-import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
-import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
+import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
+import cbit.vcell.graph.gui.LargeShapePanel;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.RuleParticipantSignature;
+import cbit.vcell.model.RbmObservable.ObservableType;
+import cbit.vcell.model.RbmObservable.Sequence;
+import cbit.vcell.model.RuleParticipantSignature.Criteria;
+import cbit.vcell.model.Structure;
+import cbit.vcell.model.common.VCellErrorMessages;
 
 
 @SuppressWarnings("serial")
@@ -439,6 +433,56 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 					}
 					sps.paintSelf(g);
 				}
+			}
+
+			@Override
+			public DisplayMode getDisplayMode() {
+				return DisplayMode.other;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasStateChanged(String reactionRuleName,	MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasStateChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasBondChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasNoMatch(String reactionRuleName, MolecularTypePattern mtp) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasNoMatch(MolecularTypePattern molecularTypePattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleParticipantSignature getSignature() {
+				return null;
+			}
+
+			@Override
+			public Criteria getCriteria() {
+				return null;
+			}
+			
+			@Override
+			public boolean isViewSingleRow() {
+				return true;
 			}
 		};
 		shapePanel.setBorder(border);

@@ -25,7 +25,10 @@ import org.vcell.util.Issue;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 
-import cbit.vcell.graph.gui.RulesShapePanel;
+import cbit.vcell.graph.LargeShapeCanvas.DisplayMode;
+//import cbit.vcell.graph.gui.LargeShapePanel;
+//import cbit.vcell.graph.gui.ParticipantSignatureShapePanel;
+//import cbit.vcell.graph.gui.RulesShapePanel;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
@@ -42,7 +45,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	public final int baseHeight;
 	public final int cornerArc;
 
-	final LargeShapePanel shapePanel;
+	final LargeShapeCanvas shapePanel;
 	
 	private boolean pattern;			// we draw component or we draw component pattern (and perhaps a bond)
 	private int xPos = 0;
@@ -60,7 +63,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	
 	private final List <ComponentStateLargeShape> stateShapes = new ArrayList<ComponentStateLargeShape> ();
 	
-	public static int calculateComponentSeparation(LargeShapePanel shapePanel) {
+	public static int calculateComponentSeparation(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return ComponentSeparation;
 		} else {
@@ -70,7 +73,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			return cs < 1 ? 1 : cs;
 		}
 	}
-	private static int calculateBaseWidth(LargeShapePanel shapePanel) {
+	private static int calculateBaseWidth(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return BaseWidth;
 		} else {
@@ -79,20 +82,20 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			return BaseWidth + zoomFactor;
 		}
 	}
-	public static int calculateBasHeight(LargeShapePanel shapePanel) {
+	public static int calculateBasHeight(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return BaseHeight;
 		} else {
 			int Ratio = 2;
 			int zoomFactor = shapePanel.getZoomFactor() * Ratio;
 			int bh = BaseHeight + zoomFactor;
-			if(shapePanel.getZoomFactor() < LargeShapePanel.SmallestZoomFactorWithText) {
+			if(shapePanel.getZoomFactor() < LargeShapeCanvas.SmallestZoomFactorWithText) {
 				bh += 1;
 			}
 			return bh;
 		}
 	}
-	private static int calculateCornerArc(LargeShapePanel shapePanel) {
+	private static int calculateCornerArc(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return CornerArc;
 		} else {
@@ -101,7 +104,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			return CornerArc + zoomFactor;
 		}
 	}
-	private static int calculateXOffsetWidth(LargeShapePanel shapePanel) {
+	private static int calculateXOffsetWidth(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return ComponentStateLargeShape.XOffsetWidth;
 		} else {
@@ -117,7 +120,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		final static int XOffsetWidth = 16;
 		final int xOffsetWidth;
 
-		final LargeShapePanel shapePanel;
+		final LargeShapeCanvas shapePanel;
 		private final Font font;
 		private int xPos;
 		private int yPos;
@@ -134,7 +137,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 
 		private boolean bMatchesSignature = false;
 
-		public ComponentStateLargeShape(int x, int y, RbmElementAbstract reaComponent, RbmElementAbstract reaState, LargeShapePanel shapePanel, Displayable owner) {
+		public ComponentStateLargeShape(int x, int y, RbmElementAbstract reaComponent, RbmElementAbstract reaState, LargeShapeCanvas shapePanel, Displayable owner) {
 			this.xPos = x;
 			this.yPos = y;
 			
@@ -151,7 +154,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			this.shapePanel = shapePanel;
 			xOffsetWidth = calculateXOffsetWidth(shapePanel);
 			
-			if(shapePanel.getZoomFactor() < LargeShapePanel.SmallestZoomFactorWithText) {
+			if(shapePanel.getZoomFactor() < LargeShapeCanvas.SmallestZoomFactorWithText) {
 				// when we zoom to very small shapes we must stop writing the text
 				this.displayName = "";
 			} else {
@@ -255,17 +258,16 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			
 			RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, height, cornerArc, cornerArc);
-			if(shapePanel instanceof ParticipantSignatureShapePanel) {
+			if(shapePanel.getDisplayMode()==DisplayMode.participantSignatures) {
 				ReactionRule reactionRule = (ReactionRule)owner;
 				Color stateColor = componentHidden;
-				ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
-				if(ssp.isShowNonTrivialOnly() == true) {
+				if(shapePanel.isShowNonTrivialOnly() == true) {
 					if(csd != null) {
 						stateColor = componentPaleYellow;
 					}
 				}
-				if(ssp.isShowDifferencesOnly()) {
-					switch (ssp.hasStateChanged(reactionRule.getName(), mcp)) {
+				if(shapePanel.isShowDifferencesOnly()) {
+					switch (shapePanel.hasStateChanged(reactionRule.getName(), mcp)) {
 					case CHANGED:
 						stateColor = Color.orange;
 						break;
@@ -291,17 +293,16 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 					}
 				}
 				g2.setColor(stateColor);
-			} else if(shapePanel instanceof RulesShapePanel) {
+			} else if(shapePanel.getDisplayMode()==DisplayMode.rules) {
 				ReactionRule reactionRule = (ReactionRule)owner;
 				Color stateColor = componentHidden;
-				RulesShapePanel rsp = (RulesShapePanel)shapePanel;
-				if(rsp.isShowNonTrivialOnly() == true) {
+				if(shapePanel.isShowNonTrivialOnly() == true) {
 					if(csd != null) {
 						stateColor = componentPaleYellow;
 					}
 				}
-				if(rsp.isShowDifferencesOnly()) {
-					switch (rsp.hasStateChanged(mcp)) {
+				if(shapePanel.isShowDifferencesOnly()) {
+					switch (shapePanel.hasStateChanged(mcp)) {
 					case CHANGED:
 						stateColor = Color.orange;
 						break;
@@ -367,7 +368,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			if(shapePanel == null) {
 				return defaultCandidate;
 			}
-			return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+			return shapePanel.isEditable() ? defaultCandidate : LargeShapeCanvas.uneditableShape;
 		}
 
 		@Override
@@ -384,9 +385,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				if(shapePanel == null) {
 					return false;
 				}
-				if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
+				if(shapePanel.getDisplayMode()==DisplayMode.rules && shapePanel.isViewSingleRow()) {
 					return false;
-				} else if(shapePanel instanceof ParticipantSignatureShapePanel) {
+				} else if(shapePanel.getDisplayMode()==DisplayMode.participantSignatures) {
 					return false;
 				}
 				return shapePanel.isHighlighted(csp);
@@ -397,13 +398,13 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		public void setHighlight(boolean b, boolean param) {
 			// param is ignored
 			if(owner instanceof RbmObservable) {
-				shapePanel.csp = b ? csp : null;
+				shapePanel.setComponentStatePattern(b ? csp : null);
 			} else if(owner instanceof MolecularType) {
-				shapePanel.csd = b ? csd : null;
+				shapePanel.setComponentStateDefinition(b ? csd : null);
 			} else if(owner instanceof SpeciesContext) {
-				shapePanel.csp = b ? csp : null;
+				shapePanel.setComponentStatePattern(b ? csp : null);
 			} else if(owner instanceof ReactionRule) {
-				shapePanel.csp = b ? csp : null;
+				shapePanel.setComponentStatePattern(b ? csp : null);
 			}
 		}
 		@Override
@@ -440,7 +441,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	}	// --- end class ComponentStateLargeShape ---------------------------------------------------------------
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
-	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, LargeShapePanel shapePanel, Displayable owner) {
+	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, LargeShapeCanvas shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.pattern = false;
 		this.mcp = null;
@@ -478,7 +479,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			stateShapes.add(csls);
 		}
 	}
-	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, LargeShapePanel shapePanel, Displayable owner) {
+	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, LargeShapeCanvas shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.pattern = true;
 		this.mcp = mcp;
@@ -522,7 +523,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	}
 	private String getLongestStateName(MolecularComponent mc) {
 		String longestStateName = "";
-		if(shapePanel.getZoomFactor() < LargeShapePanel.SmallestZoomFactorWithText) {
+		if(shapePanel.getZoomFactor() < LargeShapeCanvas.SmallestZoomFactorWithText) {
 			return "";
 		}
 		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
@@ -589,7 +590,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	
 	private String adjustForComponentSize(String input) {
 		
-		if(shapePanel.getZoomFactor() < LargeShapePanel.SmallestZoomFactorWithText) {
+		if(shapePanel.getZoomFactor() < LargeShapeCanvas.SmallestZoomFactorWithText) {
 			// when we zoom to very small shapes we must stop writing the text
 			return "  ";
 		}
@@ -601,7 +602,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		}
 	}
 	private String adjustForStateSize(String input) {
-		if(shapePanel.getZoomFactor() < LargeShapePanel.SmallestZoomFactorWithText) {
+		if(shapePanel.getZoomFactor() < LargeShapeCanvas.SmallestZoomFactorWithText) {
 			// when we zoom to very small shapes we must stop writing the text
 			return "";
 		}
@@ -613,29 +614,29 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		}
 	}
 
-	public static Font deriveComponentFontBold(Graphics gc, LargeShapePanel shapePanel) {
+	public static Font deriveComponentFontBold(Graphics gc, LargeShapeCanvas shapePanel) {
 		Font fontOld = gc.getFont();
 		int bh = calculateBasHeight(shapePanel);
 		Font font = fontOld.deriveFont((float) (bh*3/5)).deriveFont(Font.BOLD);
 		return font;
 	}
-	private static Font deriveStateFont(Graphics gc, LargeShapePanel shapePanel) {
+	private static Font deriveStateFont(Graphics gc, LargeShapeCanvas shapePanel) {
 		Font fontOld = gc.getFont();
 		int bh = calculateBasHeight(shapePanel);
 		Font font = fontOld.deriveFont((float) ((float)bh*3.0/6.0));
 		return font;
 	}
-	public static int computeStateHeight(Graphics gc, LargeShapePanel shapePanel) {
+	public static int computeStateHeight(Graphics gc, LargeShapeCanvas shapePanel) {
 		Font font = deriveStateFont(gc, shapePanel);
 		FontMetrics fm = gc.getFontMetrics(font);
-		if(shapePanel.getZoomFactor() < LargeShapePanel.SmallestZoomFactorWithText) {
+		if(shapePanel.getZoomFactor() < LargeShapeCanvas.SmallestZoomFactorWithText) {
 			// when we zoom to very small shapes we stop showing text, hence no need to reserve pixels
 			return fm.getHeight() + 1;
 		} else {
 			return fm.getHeight() + 4;		// we allow 2 pixels above and below the state text
 		}
 	}
-	private static int getStateStringWidth(String s, Graphics gc, LargeShapePanel shapePanel) {
+	private static int getStateStringWidth(String s, Graphics gc, LargeShapeCanvas shapePanel) {
 		Font font = deriveStateFont(gc, shapePanel);
 		FontMetrics fm = gc.getFontMetrics(font);
 		return fm.stringWidth(s);
@@ -682,19 +683,18 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		} else if(owner instanceof ReactionRule) {
 			
 			ReactionRule reactionRule = (ReactionRule)owner;
-			if(shapePanel instanceof ParticipantSignatureShapePanel) {
+			if(shapePanel.getDisplayMode()==DisplayMode.participantSignatures) {
 				
-				ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
 				componentColor = componentHidden;
-				if(ssp.isShowNonTrivialOnly() == true) {
+				if(shapePanel.isShowNonTrivialOnly() == true) {
 					if(mcp.getBondType() != BondType.Possible) {
 						componentColor = componentPaleYellow;
 					} else {
 						componentColor = componentHidden;
 					}
 				}
-				if(ssp.isShowDifferencesOnly()) {
-					switch (ssp.hasBondChanged(reactionRule.getName(), mcp)) {
+				if(shapePanel.isShowDifferencesOnly()) {
+					switch (shapePanel.hasBondChanged(reactionRule.getName(), mcp)) {
 					case CHANGED:
 						componentColor = Color.orange;
 						break;
@@ -719,18 +719,17 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 						break;
 					}
 				}
-			} else if(shapePanel instanceof RulesShapePanel) {
-				RulesShapePanel rsp = (RulesShapePanel)shapePanel;
+			} else if(shapePanel.getDisplayMode()==DisplayMode.rules) {
 				componentColor = componentHidden;
-				if(rsp.isShowNonTrivialOnly() == true) {
+				if(shapePanel.isShowNonTrivialOnly() == true) {
 					if(mcp.getBondType() != BondType.Possible) {
 						componentColor = componentPaleYellow;
 					} else {
 						componentColor = componentHidden;
 					}
 				}
-				if(rsp.isShowDifferencesOnly()) {
-					switch (rsp.hasBondChanged(mcp)) {
+				if(shapePanel.isShowDifferencesOnly()) {
+					switch (shapePanel.hasBondChanged(mcp)) {
 					case CHANGED:
 						componentColor = Color.orange;
 						break;
@@ -862,20 +861,20 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		if(shapePanel == null) {
 			return defaultCandidate;
 		}
-		return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+		return shapePanel.isEditable() ? defaultCandidate : LargeShapeCanvas.uneditableShape;
 	}
 
 	@Override
 	public void setHighlight(boolean b, boolean param) {
 		// param is ignored
 		if(owner instanceof RbmObservable) {
-			shapePanel.mcp = b ? mcp : null;
+			shapePanel.setMolecularComponentPattern(b ? mcp : null);
 		} else if(owner instanceof MolecularType) {
-			shapePanel.mc = b ? mc : null;
+			shapePanel.setMolecularComponent(b ? mc : null);
 		} else if(owner instanceof SpeciesContext) {
-			shapePanel.mcp = b ? mcp : null;
+			shapePanel.setMolecularComponentPattern(b ? mcp : null);
 		} else if(owner instanceof ReactionRule) {
-			shapePanel.mcp = b ? mcp : null;
+			shapePanel.setMolecularComponentPattern(b ? mcp : null);
 		}
 	}
 	@Override
@@ -891,7 +890,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			if(shapePanel == null) {
 				return false;
 			}
-			if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
+			if(shapePanel.getDisplayMode()==DisplayMode.rules && shapePanel.isViewSingleRow()) {
 				return false;
 			}
 			return shapePanel.isHighlighted(mcp);

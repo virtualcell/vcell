@@ -1,6 +1,4 @@
-package cbit.vcell.graph;
-
-import java.awt.Color;
+package cbit.vcell.graph.gui;
 
 import javax.swing.JPanel;
 
@@ -12,11 +10,13 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 
+import cbit.vcell.graph.LargeShapeCanvas;
+import cbit.vcell.graph.ShapeModeInterface;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 
 @SuppressWarnings("serial")
-public class LargeShapePanel extends JPanel implements ShapeModeInterface {
+public abstract class LargeShapePanel extends JPanel implements LargeShapeCanvas, ShapeModeInterface {
 	
 	private boolean showDifferencesOnly = false;
 	private boolean bShowMoleculeColor = false;
@@ -24,18 +24,14 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 
 	// zooming the shape, 0 means normal size, a negative number means smaller shape
 	private static final int SmallestZoomFactor = -7;			// -7 is the smallest where the shapes scale decently well
-	public static final int SmallestZoomFactorWithText = -5;	// -5 is the smallest where we show text
 	private static final int DefaultZoomFactor = 0;
 	private static final int LargestZoomFactor = 0;
 	private int zoomFactor = DefaultZoomFactor;
 	
 	// by default the shapes are editable and their border and text is black / gray, aso
 	// otherwise they are a shade of brown, very much alike the DefaultScrollTableCellRenderer.uneditableForeground
-	public static final Color uneditableShape = new Color(0x9F4F07);
 	private boolean editable = true;
 
-	public static enum Highlight { on, off }
-	public static enum WhatIsHighlighted { reactant, product }
 	// the entity that is selected (for example a molecule, component, a state, a pattern...)
 	// and will be painted as "highlighted"
 	public ReactionRule rr = null;
@@ -49,6 +45,52 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	public ComponentStateDefinition csd = null;
 	public ComponentStatePattern csp = null;
 	// bonds are not being highlighted
+	
+	
+	@Override
+	public void setSpeciesPattern(SpeciesPattern sp) {
+		this.sp = sp;
+	}
+
+	@Override
+	public WhatIsHighlighted getWhatIsHighlighted() {
+		return whatIsHighlighted;
+	}
+
+	@Override
+	public void setWhatIsHighlighted(WhatIsHighlighted whatIsHighlighted) {
+		this.whatIsHighlighted = whatIsHighlighted;
+	}
+
+	@Override
+	public void setReactionRule(ReactionRule rr) {
+		this.rr = rr;
+	}
+	
+	@Override
+	public void setMolecularTypePattern(MolecularTypePattern mtp) {
+		this.mtp = mtp;
+	}
+	@Override
+	public void setMolecularType(MolecularType mt) {
+		this.mt = mt;
+	}
+	@Override
+	public void setComponentStatePattern(ComponentStatePattern csp) {
+		this.csp = csp;
+	}
+	@Override
+	public void setComponentStateDefinition(ComponentStateDefinition csd) {
+		this.csd = csd;
+	}
+	@Override
+	public void setMolecularComponentPattern(MolecularComponentPattern mcp) {
+		this.mcp = mcp;
+	}
+	@Override
+	public void setMolecularComponent(MolecularComponent mc) {
+		this.mc = mc;
+	}	
 	
 	@Override
 	public void setShowDifferencesOnly(boolean showDifferencesOnly) {
@@ -198,7 +240,5 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 		}
 		return false;
 	}
-
-	
 
 }

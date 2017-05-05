@@ -1,4 +1,4 @@
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -6,15 +6,17 @@ import java.util.Map;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RuleAnalysis;
-import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
 import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
+import org.vcell.model.rbm.RuleAnalysisReport;
 
+import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
+import cbit.vcell.graph.ShapeModeInterface;
 import cbit.vcell.model.ModelRuleFactory;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.ModelRuleFactory.ModelRuleEntry;
 import cbit.vcell.model.ModelRuleFactory.ReactionRuleDirection;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.RuleParticipantSignature.Criteria;
 
 @SuppressWarnings("serial")
@@ -38,12 +40,6 @@ public class ParticipantSignatureShapePanel extends LargeShapePanel implements S
 	
 	// ================================================================================================================
 	
-	enum RuleAnalysisChanged {
-		CHANGED,
-		UNCHANGED,
-		ANALYSISFAILED
-	}
-
 	private Map<String, ReactionRule> reactionRuleMap = null;
 	
 	private Map<String, RuleAnalysisReport> reportMap = new LinkedHashMap<>();
@@ -173,5 +169,27 @@ public class ParticipantSignatureShapePanel extends LargeShapePanel implements S
 		}else{
 			return RuleAnalysisChanged.ANALYSISFAILED;
 		}
+	}
+	@Override
+	public DisplayMode getDisplayMode() {
+		return DisplayMode.participantSignatures;
+	}
+	@Override
+	public RuleAnalysisChanged hasStateChanged(MolecularComponentPattern molecularComponentPattern) {
+		throw new RuntimeException("hasStateChanged() must specify which reaction rule, invoke other hasStateChanged()");
+	}
+	
+	@Override
+	public RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern) {
+		throw new RuntimeException("hasBondChanged() must specify which reaction rule, invoke other hasBondChanged()");
+	}
+	
+	@Override
+	public RuleAnalysisChanged hasNoMatch(MolecularTypePattern molecularTypePattern) {
+		throw new RuntimeException("hasNoMatch() must specify which reaction rule, invoke other hasNoMatch()");
+	}
+	@Override
+	public boolean isViewSingleRow() {
+		return true;
 	}
 }

@@ -19,31 +19,32 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.border.Border;
 
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.graph.HighlightableShapeInterface;
-import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.PointLocationInShapeContext;
+import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.RuleParticipantSignature.Criteria;
 import cbit.vcell.parser.ExpressionException;
 
 @SuppressWarnings("serial")
@@ -128,6 +129,56 @@ private void initialize() {
 				if(spls != null) {
 					spls.paintSelf(g);
 				}
+			}
+
+			@Override
+			public DisplayMode getDisplayMode() {
+				return DisplayMode.other;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasStateChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasStateChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasBondChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasNoMatch(String reactionRuleName, MolecularTypePattern mtp) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasNoMatch(MolecularTypePattern molecularTypePattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleParticipantSignature getSignature() {
+				return null;
+			}
+
+			@Override
+			public Criteria getCriteria() {
+				return null;
+			}
+
+			@Override
+			public boolean isViewSingleRow() {
+				return true;
 			}
 		};
 		shapePanel.addMouseMotionListener(new MouseMotionAdapter() {

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -45,7 +44,9 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.model.bngl.ParseException;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Pair;
@@ -53,17 +54,17 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGSpecies;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSpeciesTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.graph.LargeShapePanel;
+import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
+import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
-import cbit.vcell.graph.gui.ZoomShapeIcon.Sign;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.RuleParticipantSignature;
+import cbit.vcell.model.RuleParticipantSignature.Criteria;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -164,6 +165,57 @@ private void initialize() {
 					spls.paintSelf(g);
 				}
 			}
+
+			@Override
+			public DisplayMode getDisplayMode() {
+				return DisplayMode.other;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasStateChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasStateChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasBondChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasNoMatch(String reactionRuleName, MolecularTypePattern mtp) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleAnalysisChanged hasNoMatch(MolecularTypePattern molecularTypePattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+
+			@Override
+			public RuleParticipantSignature getSignature() {
+				return null;
+			}
+			
+			@Override
+			public Criteria getCriteria() {
+				return null;
+			}
+
+			@Override
+			public boolean isViewSingleRow() {
+				return true;
+			}
+
 		};
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 		shapePanel.setLayout(new GridBagLayout());

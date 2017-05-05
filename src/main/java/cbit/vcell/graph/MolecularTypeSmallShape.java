@@ -182,7 +182,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 		if(shapeManager == null) {
 			return defaultCandidate;
 		}
-		return shapeManager.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+		return shapeManager.isEditable() ? defaultCandidate : LargeShapeCanvas.uneditableShape;
 	}
 
 	public void paintSelf(Graphics g) {
@@ -237,7 +237,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 					} else {
 						primaryColor = Color.gray;
 					}
-					border = shapeManager.isEditable() ? Color.black : LargeShapePanel.uneditableShape;
+					border = shapeManager.isEditable() ? Color.black : LargeShapeCanvas.uneditableShape;
 				} else {
 					RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
 					List<MolecularType> mtList = rbmmc.getMolecularTypeList();

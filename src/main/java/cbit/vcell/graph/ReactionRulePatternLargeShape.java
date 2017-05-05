@@ -15,7 +15,7 @@ import org.vcell.util.Displayable;
 
 import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.ReactionRuleParticipantSignaturePropertiesPanel;
-import cbit.vcell.graph.gui.RulesShapePanel;
+import cbit.vcell.graph.LargeShapeCanvas.DisplayMode;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -29,7 +29,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	int yPos;
 	int height;
 	
-	LargeShapePanel shapePanel;
+	LargeShapeCanvas shapePanel;
 	private final int distanceBetweenSpeciesPatterns;
 	
 	ReactionRule rr;
@@ -41,7 +41,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	List<SpeciesPatternLargeShape> speciesPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 	
 	
-	public ReactionRulePatternLargeShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, Displayable owner, boolean isReactants) {
+	public ReactionRulePatternLargeShape(int xPos, int yPos, int height, LargeShapeCanvas shapePanel, Displayable owner, boolean isReactants) {
 
 		this.xPos = xPos;
 		this.yPos = yPos;
@@ -71,9 +71,8 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			for(int i = 0; i<rpList.size(); i++) {
 				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
 				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
-				if(shapePanel instanceof ParticipantSignatureShapePanel) {
-					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
-					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(rpList.get(i), ssp.getSignature(), ssp.getCriteria());
+				if(shapePanel.getDisplayMode()==DisplayMode.participantSignatures) {
+					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(rpList.get(i), shapePanel.getSignature(), shapePanel.getCriteria());
 					if(bMatchesSignature) {
 						sps.setMatchesSignature(true);
 					}
@@ -99,9 +98,8 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			for(int i = 0; i<ppList.size(); i++) {
 				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
 				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
-				if(shapePanel instanceof ParticipantSignatureShapePanel) {
-					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
-					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(ppList.get(i), ssp.getSignature(), ssp.getCriteria());
+				if(shapePanel.getDisplayMode()==DisplayMode.participantSignatures) {
+					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(ppList.get(i), shapePanel.getSignature(), shapePanel.getCriteria());
 					if(bMatchesSignature) {
 						sps.setMatchesSignature(true);
 					}
@@ -258,7 +256,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		if(shapePanel == null) {
 			return;
 		}
-		if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
+		if(shapePanel.getDisplayMode()==DisplayMode.rules && shapePanel.isViewSingleRow()) {
 			return;
 		}
 		
@@ -306,20 +304,20 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		if(shapePanel == null) {
 			return defaultCandidate;
 		}
-		return shapePanel.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+		return shapePanel.isEditable() ? defaultCandidate : LargeShapeCanvas.uneditableShape;
 	}
 
 	public boolean isHighlightedReactants() {
 		if(!shapePanel.isHighlighted(rr)) {
 			return false;
 		}
-		return shapePanel.whatIsHighlighted == LargeShapePanel.WhatIsHighlighted.reactant ? true : false;
+		return (shapePanel.getWhatIsHighlighted() == LargeShapeCanvas.WhatIsHighlighted.reactant) ? true : false;
 	}
 	public boolean isHighlightedProducts() {
 		if(!shapePanel.isHighlighted(rr)) {
 			return false;
 		}
-		return shapePanel.whatIsHighlighted == LargeShapePanel.WhatIsHighlighted.product ? true : false;
+		return (shapePanel.getWhatIsHighlighted() == LargeShapeCanvas.WhatIsHighlighted.product) ? true : false;
 	}
 	@Override
 	@Deprecated
@@ -329,11 +327,11 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	@Override
 	public void setHighlight(boolean highlight, boolean isReactants) {
 		if(rr == null || highlight == false) {
-			shapePanel.rr = null;
+			shapePanel.setReactionRule(null);
 			return;
 		}
-		shapePanel.rr = rr;
-		shapePanel.whatIsHighlighted = isReactants ? LargeShapePanel.WhatIsHighlighted.reactant : LargeShapePanel.WhatIsHighlighted.product;
+		shapePanel.setReactionRule(rr);
+		shapePanel.setWhatIsHighlighted(isReactants ? LargeShapeCanvas.WhatIsHighlighted.reactant : LargeShapeCanvas.WhatIsHighlighted.product);
 	}
 	@Override
 	public void turnHighlightOffRecursive(Graphics g) {

@@ -210,7 +210,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 		if(shapeManager == null) {
 			return defaultCandidate;
 		}
-		return shapeManager.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+		return shapeManager.isEditable() ? defaultCandidate : LargeShapeCanvas.uneditableShape;
 	}
 
 }

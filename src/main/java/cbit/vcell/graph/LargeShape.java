@@ -4,8 +4,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import org.vcell.model.rbm.MolecularType;
-
 public interface LargeShape {
 
 	public abstract void setX(int xPos);

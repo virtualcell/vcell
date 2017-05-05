@@ -2,19 +2,16 @@ package cbit.vcell.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 
 import cbit.vcell.graph.ModelCartoon;
-import cbit.vcell.graph.ReactionCartoon;
 
 public class RuleParticipantSignature {
 
