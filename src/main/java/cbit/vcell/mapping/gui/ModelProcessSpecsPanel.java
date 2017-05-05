@@ -33,6 +33,7 @@ import cbit.vcell.client.desktop.biomodel.ObservableTableModel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.graph.ShapeModeInterface;
+import cbit.vcell.graph.SmallShapeManager;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.mapping.ModelProcessSpec;
 import cbit.vcell.mapping.SimulationContext;

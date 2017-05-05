@@ -330,7 +330,7 @@ public void connect(InteractiveContext requester) {
 }
 
 /**
- * same as {@link #connect(TopLevelWindowManager)} but pause {@link Reconnector}
+ * same as {@link #connect(InteractiveContext)} but pause {@link Reconnector}
  * @param requester
  */
 public void reconnect(InteractiveContext requester) {

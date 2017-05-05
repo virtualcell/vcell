@@ -20,8 +20,6 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
 
-import cbit.vcell.mapping.gui.SmallShapeManager;
-
 public class SpeciesPatternSmallShape extends AbstractComponentShape implements AbstractShape, Icon {
 
 	private static final int baseHeight = 14;

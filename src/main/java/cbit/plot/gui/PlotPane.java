@@ -36,8 +36,8 @@ import org.vcell.util.gui.SpecialtyTableRenderer;
 
 import cbit.plot.Plot2D;
 import cbit.plot.SingleXPlot2D;
-import cbit.vcell.client.data.DataSymbolMetadata;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.units.VCUnitDefinition;
 /**

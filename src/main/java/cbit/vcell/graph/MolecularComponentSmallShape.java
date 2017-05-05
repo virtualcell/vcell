@@ -12,7 +12,6 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
-import cbit.vcell.mapping.gui.SmallShapeManager;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;

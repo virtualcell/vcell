@@ -1,4 +1,4 @@
-package cbit.vcell.client.data;
+package cbit.vcell.solver;
 
 import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.units.VCUnitDefinition;

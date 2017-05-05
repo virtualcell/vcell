@@ -53,6 +53,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.units.VCUnitDefinition;

@@ -8,9 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client;
-
-import cbit.vcell.client.server.SimStatusListener;
+package cbit.vcell.client.server;
 
 /**
  * Insert the type's description here.

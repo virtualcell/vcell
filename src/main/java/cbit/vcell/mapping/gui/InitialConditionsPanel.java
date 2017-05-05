@@ -49,6 +49,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.graph.SmallShapeManager;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MathMapping;

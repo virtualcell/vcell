@@ -1,8 +1,6 @@
-package cbit.vcell.mapping.gui;
+package cbit.vcell.graph;
 
 import java.awt.Color;
-
-import cbit.vcell.graph.ShapeModeInterface;
 
 public class SmallShapeManager implements ShapeModeInterface {
 	
@@ -13,7 +11,7 @@ public class SmallShapeManager implements ShapeModeInterface {
 	public final Color uneditableShape = new Color(0x9F4F07);
 	private boolean editable = true;
 	
-	SmallShapeManager(boolean showDifferencesOnly, boolean bShowMoleculeColor, boolean bShowNonTrivialOnly, boolean editable) {
+	public SmallShapeManager(boolean showDifferencesOnly, boolean bShowMoleculeColor, boolean bShowNonTrivialOnly, boolean editable) {
 		this.showDifferencesOnly = showDifferencesOnly;
 		this.bShowMoleculeColor = bShowMoleculeColor;
 		this.bShowNonTrivialOnly = bShowNonTrivialOnly;

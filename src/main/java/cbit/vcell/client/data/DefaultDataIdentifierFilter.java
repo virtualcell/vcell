@@ -10,6 +10,7 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 

@@ -8,6 +8,7 @@ import org.vcell.util.ObjectNotFoundException;
 
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;

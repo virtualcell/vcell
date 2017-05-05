@@ -25,7 +25,6 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
-import cbit.vcell.mapping.gui.SmallShapeManager;
 import cbit.vcell.model.Model.RbmModelContainer;
 
 public class MolecularTypeSmallShape implements AbstractShape, Icon {

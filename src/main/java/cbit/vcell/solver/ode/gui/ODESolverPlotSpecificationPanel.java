@@ -44,7 +44,6 @@ import org.vcell.util.gui.CollapsiblePanel;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
-import cbit.vcell.client.data.DataSymbolMetadata;
 import cbit.vcell.client.data.ODEDataInterface;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
@@ -55,6 +54,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.util.ColumnDescription;
 

@@ -10,7 +10,6 @@
 
 package cbit.vcell.solver;
 
-import cbit.vcell.client.data.DataSymbolMetadata;
 import cbit.vcell.parser.SymbolTableEntry;
 
 
