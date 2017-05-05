@@ -13,8 +13,6 @@ package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 import java.awt.Color;
 import org.vcell.pathway.Rna;
 
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
-
 public class BioPaxRnaShape extends BioPaxPhysicalEntityShape {
 
 	public BioPaxRnaShape(Rna rna, PathwayGraphModel graphModel) {

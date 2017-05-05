@@ -26,13 +26,12 @@ import java.util.ArrayList;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
-import org.vcell.util.gui.ShapePaintUtil;
 
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.ShapeSpaceManager;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
+import cbit.vcell.graph.ShapePaintUtil;
 
 public abstract class BioPaxShape extends Shape {
 	BioPaxObject bioPaxObject = null;

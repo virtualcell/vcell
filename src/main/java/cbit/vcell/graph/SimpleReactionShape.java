@@ -20,8 +20,6 @@ import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.Icon;
 
-import org.vcell.util.gui.ShapePaintUtil;
-
 import cbit.vcell.model.SimpleReaction;
 
 public class SimpleReactionShape extends ReactionStepShape {

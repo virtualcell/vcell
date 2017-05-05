@@ -6,26 +6,22 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.MultipleGradientPaint.CycleMethod;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.Icon;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
-public class GroupToolShape implements Icon {
+public class GroupToolShapeIcon implements Icon {
 	
 	private enum State { normal, selected, disabled };
 
 	private final State state;
 	private final int diameter = 20;	// area occupied by the shape
 
-	public GroupToolShape(State state) {
+	public GroupToolShapeIcon(State state) {
 		super();
 		this.state = state;
 	}
@@ -141,9 +137,9 @@ public class GroupToolShape implements Icon {
 
 	public static void setMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new GroupToolShape(State.normal);
-		Icon iconSelected = new GroupToolShape(State.selected);
-		Icon iconDisabled = new GroupToolShape(State.disabled);
+		Icon iconNormal = new GroupToolShapeIcon(State.normal);
+		Icon iconSelected = new GroupToolShapeIcon(State.selected);
+		Icon iconDisabled = new GroupToolShapeIcon(State.disabled);
 		button.setName("GroupButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);

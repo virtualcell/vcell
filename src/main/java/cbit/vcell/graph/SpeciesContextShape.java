@@ -25,7 +25,6 @@ import java.awt.geom.Point2D;
 import java.util.Map;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.util.gui.ShapePaintUtil;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;

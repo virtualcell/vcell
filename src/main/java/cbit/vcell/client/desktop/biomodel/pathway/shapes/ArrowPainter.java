@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.sybil.util.gui;
+package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 
 /*   ArrowPainter  --- by Oliver Ruebenacker, UCHC --- February 2009
  *   Creates and paints an arrow head

@@ -668,7 +668,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (groupButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				GroupToolShape.setMod(button);
+				GroupToolShapeIcon.setMod(button);
 				button.setActionCommand(Mode.GROUP.getActionCommand());
 				groupButton = button;
 			} catch (Throwable throwable) {

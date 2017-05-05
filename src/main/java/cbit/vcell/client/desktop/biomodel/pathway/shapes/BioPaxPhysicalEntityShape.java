@@ -11,7 +11,6 @@
 package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 
 import org.vcell.pathway.PhysicalEntity;
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 
 public class BioPaxPhysicalEntityShape extends BioPaxShape {
 

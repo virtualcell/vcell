@@ -13,7 +13,6 @@ package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 import java.awt.Color;
 
 import org.vcell.pathway.Complex;
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 
 public class BioPaxComplexShape extends BioPaxPhysicalEntityShape {
 

@@ -14,8 +14,6 @@ import java.awt.Color;
 
 import org.vcell.pathway.GroupObject;
 
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
-
 public class BioPaxGroupShape extends BioPaxShape {
 	public BioPaxGroupShape(GroupObject groupObject, PathwayGraphModel graphModel) {
 		super(groupObject, graphModel);

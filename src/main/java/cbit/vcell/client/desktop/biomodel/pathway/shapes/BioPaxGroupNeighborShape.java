@@ -19,13 +19,11 @@ import java.awt.Stroke;
 import org.vcell.pathway.GroupNeighbor;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionParticipant.Type;
-import org.vcell.sybil.util.gui.ArrowPainter;
 
 import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.visualstate.EdgeVisualState;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.DefaultEdgeVisualState;
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 
 public class BioPaxGroupNeighborShape extends EdgeShape implements EdgeVisualState.Owner {
 	public static final float ARROW_LENGTH = 12f;

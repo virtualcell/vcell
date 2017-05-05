@@ -14,19 +14,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.ExpandCanvasLayouter;
 import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
+import org.vcell.util.graphlayout.GraphLayouter.Client;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.ShrinkCanvasLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.graphlayout.StretchToBoundaryLayouter;
-import org.vcell.util.graphlayout.GraphLayouter.Client;
-import org.vcell.util.graphlayout.GraphLayouter.Client.Default;
 import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
-import cbit.vcell.client.task.AsynchClientTask;
 
 import edu.rpi.graphdrawing.Annealer;
 import edu.rpi.graphdrawing.Blackboard;
@@ -46,21 +43,6 @@ import edu.rpi.graphdrawing.Stabilizer;
 
 public class GraphLayoutManager {
 	
-	public static class VCellTaskClient extends Default implements Client {
-		protected final AsynchClientTask task;
-
-		public VCellTaskClient(GraphView graphView, String layoutName, AsynchClientTask task) { 
-			super(graphView, layoutName); 
-			this.task = task;
-		}
-		
-		@Override
-		public boolean isRequestingStop() { 
-			ClientTaskStatusSupport taskSupport = task.getClientTaskStatusSupport();
-			return taskSupport != null ? taskSupport.isInterrupted() : false; 
-		}
-
-	}
 
 	
 	public static class OldLayouts {

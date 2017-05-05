@@ -14,8 +14,6 @@ import java.awt.Color;
 
 import org.vcell.pathway.Interaction;
 
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
-
 public abstract class BioPaxInteractionShape extends BioPaxShape{
 	public BioPaxInteractionShape(Interaction interaction, PathwayGraphModel graphModel) {
 		super(interaction, graphModel);

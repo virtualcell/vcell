@@ -13,13 +13,33 @@ package cbit.gui.graph.actions;
 import java.awt.Component;
 import java.util.Hashtable;
 
+import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.graphlayout.GraphLayouter.Client;
+import org.vcell.util.graphlayout.GraphLayouter.Client.Default;
+
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphView;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 
+
 public class GraphLayoutTasks {
+	public static class VCellTaskClient extends Default implements Client {
+		protected final AsynchClientTask task;
 	
+		public VCellTaskClient(GraphView graphView, String layoutName, AsynchClientTask task) { 
+			super(graphView, layoutName); 
+			this.task = task;
+		}
+		
+		@Override
+		public boolean isRequestingStop() { 
+			ClientTaskStatusSupport taskSupport = task.getClientTaskStatusSupport();
+			return taskSupport != null ? taskSupport.isInterrupted() : false; 
+		}
+	
+	}
+
 	public static class PerformLayoutTask extends AsynchClientTask {
 
 		private static final int TASKTYPE = AsynchClientTask.TASKTYPE_NONSWING_BLOCKING;
@@ -29,13 +49,13 @@ public class GraphLayoutTasks {
 		
 		protected final GraphLayoutManager manager;
 		protected final GraphView graphView;
-		protected final GraphLayoutManager.VCellTaskClient client;
+		protected final VCellTaskClient client;
 		
 		public PerformLayoutTask(GraphLayoutManager manager, GraphView graphView, String layoutName) {
 			super(createTaskName(layoutName), TASKTYPE, B_SHOW_POPUP, SKIP_IF_ABORT, SKIP_IF_CANCEL);
 			this.manager = manager;
 			this.graphView = graphView;
-			this.client = new GraphLayoutManager.VCellTaskClient(graphView, layoutName, this);
+			this.client = new VCellTaskClient(graphView, layoutName, this);
 		}
 
 		public static String createTaskName(String layoutName) {

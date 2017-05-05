@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.util.gui;
+package cbit.vcell.graph;
 
 import java.awt.Color;
 import java.awt.Font;

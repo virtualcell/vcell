@@ -106,8 +106,8 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayEditor;
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphTool;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.PathwayGraphModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.BioModelEntityObject;
 

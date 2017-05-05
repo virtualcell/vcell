@@ -25,7 +25,6 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.util.gui.ShapePaintUtil;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModelPreferences;

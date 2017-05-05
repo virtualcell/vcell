@@ -15,7 +15,6 @@ import java.awt.Graphics2D;
 import org.vcell.pathway.PathwayModel;
 
 import cbit.gui.graph.ContainerShape;
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 
 public class PathwayContainerShape extends ContainerShape {
 	private PathwayModel pathwayModel = null;

@@ -12,8 +12,6 @@ package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 
 import org.vcell.pathway.MolecularInteraction;
 
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
-
 public class BioPaxMolecularInteractionShape extends BioPaxInteractionShape{
 	public BioPaxMolecularInteractionShape(MolecularInteraction interaction, PathwayGraphModel graphModel) {
 		super(interaction, graphModel);

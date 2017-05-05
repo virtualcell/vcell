@@ -25,14 +25,12 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionParticipant.Type;
-import org.vcell.sybil.util.gui.ArrowPainter;
 
 import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.visualstate.EdgeVisualState;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.DefaultEdgeVisualState;
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 import cbit.vcell.graph.CatalystShape;
 import cbit.vcell.graph.ProductShape;
 import cbit.vcell.graph.ReactantShape;

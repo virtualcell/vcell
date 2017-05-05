@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.desktop.biomodel.pathway;
+package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -43,21 +43,6 @@ import cbit.gui.graph.GraphContainerLayoutPathways;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxComplexShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxConversionShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxDnaShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxGroupNeighborShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxGroupShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxInteractionShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxInteractionParticipantShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxMolecularInteractionShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxObjectShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxPhysicalEntityShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxProteinShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxRnaShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxSmallMoleculeShape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.PathwayContainerShape;
 
 public class PathwayGraphModel extends GraphModel implements PathwayListener, RelationshipListener {
 	
