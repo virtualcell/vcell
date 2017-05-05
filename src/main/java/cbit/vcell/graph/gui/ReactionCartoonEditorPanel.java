@@ -49,13 +49,7 @@ import cbit.gui.graph.gui.CartoonTool.Mode;
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.ReactionCartoon;
-import cbit.vcell.graph.ReactionToolShapeIcon;
-import cbit.vcell.graph.ResizeCanvasShape;
-import cbit.vcell.graph.SpeciesToolShapeIcon;
-import cbit.vcell.graph.StructureToolShapeIcon;
-import cbit.vcell.graph.UngroupToolShapeIcon;
-import cbit.vcell.graph.ZoomShapeIcon;
-import cbit.vcell.graph.ZoomShapeIcon.Sign;
+import cbit.vcell.graph.gui.ZoomShapeIcon.Sign;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RuleParticipantSignature;
@@ -242,7 +236,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try {
 				shrinkCanvasButton = createToolBarButton();
 				shrinkCanvasButton.setName("ShrinkCanvasButton");
-				ResizeCanvasShape.setCanvasNormalMod(shrinkCanvasButton, ResizeCanvasShape.Sign.shrink);
+				ResizeCanvasShapeIcon.setCanvasNormalMod(shrinkCanvasButton, ResizeCanvasShapeIcon.Sign.shrink);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -255,7 +249,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try {
 				expandCanvasButton = createToolBarButton();
 				expandCanvasButton.setName("ExpandCanvasButton");
-				ResizeCanvasShape.setCanvasNormalMod(expandCanvasButton, ResizeCanvasShape.Sign.expand);
+				ResizeCanvasShapeIcon.setCanvasNormalMod(expandCanvasButton, ResizeCanvasShapeIcon.Sign.expand);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}

@@ -1,4 +1,4 @@
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -18,7 +18,7 @@ import javax.swing.Icon;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
-import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
+import cbit.vcell.graph.AbstractComponentShape;
 
 public class UngroupToolShapeIcon implements Icon {
 	

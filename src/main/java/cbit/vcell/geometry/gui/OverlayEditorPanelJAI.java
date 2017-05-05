@@ -90,8 +90,8 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager.ComboboxROIName;
-import cbit.vcell.graph.ZoomShapeIcon;
-import cbit.vcell.graph.ZoomShapeIcon.Sign;
+import cbit.vcell.graph.gui.ZoomShapeIcon;
+import cbit.vcell.graph.gui.ZoomShapeIcon.Sign;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */

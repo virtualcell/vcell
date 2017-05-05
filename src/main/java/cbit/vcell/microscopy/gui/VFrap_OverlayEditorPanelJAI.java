@@ -75,7 +75,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper;
-import cbit.vcell.graph.ZoomShapeIcon;
+import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.microscopy.VFrap_ROISourceData;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**

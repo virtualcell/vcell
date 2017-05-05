@@ -1,4 +1,4 @@
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -16,8 +16,8 @@ import javax.swing.JButton;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
-import cbit.vcell.graph.ResizeCanvasShape.Sign;
-import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
+import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.graph.gui.ResizeCanvasShapeIcon.Sign;
 
 public class StructureToolShapeIcon implements Icon {
 

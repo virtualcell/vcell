@@ -1,4 +1,4 @@
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -14,6 +14,8 @@ import java.awt.geom.Point2D;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
+
+import cbit.vcell.graph.SpeciesPatternLargeShape;
 
 public class ZoomShapeIcon implements Icon {
 

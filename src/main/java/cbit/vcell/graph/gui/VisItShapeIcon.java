@@ -1,4 +1,4 @@
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -15,8 +15,6 @@ import java.awt.geom.Point2D;
 import javax.swing.Icon;
 
 import org.vcell.util.gui.JToolBarToggleButton;
-
-import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
 
 public class VisItShapeIcon implements Icon {
 	

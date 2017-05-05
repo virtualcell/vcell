@@ -40,7 +40,7 @@ import cbit.vcell.graph.HighlightableShapeInterface;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.ZoomShapeIcon;
+import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;

@@ -1,4 +1,4 @@
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -16,7 +16,9 @@ import java.awt.geom.Point2D;
 import javax.swing.Icon;
 import javax.swing.JButton;
 
-public class ResizeCanvasShape implements Icon {
+import cbit.vcell.graph.SpeciesPatternLargeShape;
+
+public class ResizeCanvasShapeIcon implements Icon {
 
 	public static final int Side = 16;
 	public enum Sign { expand, shrink };
@@ -26,13 +28,13 @@ public class ResizeCanvasShape implements Icon {
 	private final State state;
 	private final int side;
 
-	public ResizeCanvasShape(Sign sign, State state) {
+	public ResizeCanvasShapeIcon(Sign sign, State state) {
 		super();
 		this.sign = sign;
 		this.state = state;
 		this.side = Side;
 	}
-	public ResizeCanvasShape(Sign sign, State state, int side) {
+	public ResizeCanvasShapeIcon(Sign sign, State state, int side) {
 		super();
 		this.sign = sign;
 		this.state = state;
@@ -176,8 +178,8 @@ public class ResizeCanvasShape implements Icon {
 	}
 	
 	public static void setCanvasNormalMod(JButton button, Sign sign) {
-		Icon iconNormal = new ResizeCanvasShape(sign, State.normal);
-		Icon iconPressed = new ResizeCanvasShape(sign, State.pressed);
+		Icon iconNormal = new ResizeCanvasShapeIcon(sign, State.normal);
+		Icon iconPressed = new ResizeCanvasShapeIcon(sign, State.pressed);
 		button.setIcon(iconNormal);
 		button.setPressedIcon(iconPressed);
 		button.setFocusPainted(false);
