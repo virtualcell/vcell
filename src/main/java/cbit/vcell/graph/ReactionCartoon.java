@@ -227,11 +227,6 @@ public class ReactionCartoon extends ModelCartoon {
 		}
 	}
 
-	@Override
-	public void paint(Graphics2D g, GraphPane canvas) {
-		super.paint(g, canvas);
-	}
-	
 //	private static Integer getStructureLevel(Structure s) {
 //	Structure s0 = s;
 //	int level = 0;

@@ -29,14 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.model.rbm.MolecularType;
-
-import cbit.gui.graph.GraphListener;
 import cbit.gui.graph.GraphResizeManager.ResizeMode;
-import cbit.gui.graph.gui.GraphPane;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionRuleParticipant;
 
 public abstract class GraphModel {
 	
@@ -337,7 +330,7 @@ public abstract class GraphModel {
 		fireGraphChanged(new GraphEvent(this));
 	}
 
-	public void paint(java.awt.Graphics2D g, GraphPane canvas) {
+	public void paint(java.awt.Graphics2D g) {
 		// showShapeHierarchyBottomUp();
 		// showShapeHierarchyTopDown();
 		try {
@@ -345,13 +338,8 @@ public abstract class GraphModel {
 				System.out.println("graphics is null");
 				return;
 			}
-			if (canvas == null) {
-				System.out.println("canvas is null");
-				// return;
-			}
 			Shape topShape = getTopShape();
-			if (objectShapeMap == null && canvas != null) {
-				canvas.clear(g);
+			if (objectShapeMap == null) {
 				return;
 			} else if (topShape != null) {
 				AffineTransform oldTransform = g.getTransform();

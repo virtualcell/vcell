@@ -19,7 +19,6 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 
-import cbit.gui.ShapeLayoutUtil;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.visualstate.VisualState;

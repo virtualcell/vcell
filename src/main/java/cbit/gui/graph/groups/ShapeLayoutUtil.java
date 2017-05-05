@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.gui;
+package cbit.gui.graph.groups;
 
 /* Methods to support layout of shapes
  * September 2010

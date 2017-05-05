@@ -449,7 +449,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		GraphContainerLayoutReactions containerLayout = new GraphContainerLayoutReactions();
 		containerLayout.layout(rcartoon, g, prefDim);
 		
-		rcartoon.paint(g, null);
+		rcartoon.paint(g);
 		g.dispose();
 		return bufferedImage;
 	}
@@ -786,7 +786,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 			containerLayout.layout(structMapCartoon, g, new Dimension(width,height));
 			break;
 		}
-		structMapCartoon.paint(g, null);
+		structMapCartoon.paint(g);
 		java.io.ByteArrayOutputStream bos = encodeJPEG(bufferedImage);
 		return bos;
 	}

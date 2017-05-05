@@ -283,7 +283,11 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 					containerLayout.layout(graphModel, g, graphModel.getResizeManager().unzoom(getSize()));
 					needsLayout = false;					
 //				}
-				graphModel.paint(g,this);
+				if (graphModel.getTopShape()!=null){
+					graphModel.paint(g);
+				}else{
+					clear(g);
+				}
 			}	
 		}catch (Exception e){
 			handleException(e);
