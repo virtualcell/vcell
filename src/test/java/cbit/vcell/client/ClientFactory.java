@@ -9,41 +9,23 @@ import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
-import oracle.ucp.UniversalConnectionPoolException;
-
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocument.DocumentCreationInfo;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
-import cbit.vcell.client.FieldDataWindowManager.DataSymbolCallBack;
-import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
-import cbit.vcell.client.data.DataViewerController;
-import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
-import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.client.server.MergedDatasetViewerController;
-import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.client.server.ClientServerManager.InteractiveContext;
+import cbit.vcell.client.server.ClientServerManager.InteractiveContextDefaultProvider;
 import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
@@ -54,14 +36,8 @@ import cbit.vcell.message.server.bootstrap.VCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.VCellServerFactory;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellServerFactory;
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.VCellBootstrap;
-import cbit.vcell.simdata.DataManager;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.xml.merge.XmlTreeDiff;
-import cbit.xml.merge.gui.TMLPanel;
+import oracle.ucp.UniversalConnectionPoolException;
 /**
  * This type was created in VisualAge.
  */
@@ -71,7 +47,8 @@ public class ClientFactory {
 	public static ClientServerManager createLocalClientServerManager(String userid, String password) {
 		DigestedPassword digestedPassword = new DigestedPassword(password);
 		ClientServerInfo csInfo = ClientServerInfo.createLocalServerInfo(userid, digestedPassword);
-		ClientServerManager clientServerManager = new ClientServerManager(csInfo);
+		InteractiveContextDefaultProvider defaultInteractiveContextProvider = new VCellGuiInteractiveContextDefaultProvider();
+		ClientServerManager clientServerManager = new ClientServerManager(csInfo, defaultInteractiveContextProvider);
 		clientServerManager.connect(null);
 		return clientServerManager;
 	}
@@ -79,7 +56,8 @@ public class ClientFactory {
 	public static ClientServerManager createRemoteClientServerManager(String hosts[], String username, String password) {
 		DigestedPassword digestedPassword = new DigestedPassword(password);
 		ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(hosts, username, digestedPassword);
-		ClientServerManager clientServerManager = new ClientServerManager(csInfo);
+		InteractiveContextDefaultProvider defaultInteractiveContextProvider = new VCellGuiInteractiveContextDefaultProvider();
+		ClientServerManager clientServerManager = new ClientServerManager(csInfo, defaultInteractiveContextProvider);
 		RequestManagerAdapter requestManager = new RequestManagerAdapter();
 		TopLevelWindowManager windowManager = new TopLevelWindowManager(requestManager){
 			@Override
@@ -95,7 +73,8 @@ public class ClientFactory {
 				return false;
 			}
 		};
-		clientServerManager.connect(windowManager);
+		InteractiveContext requester = new VCellGuiInteractiveContext(windowManager);
+		clientServerManager.connect(requester);
 		return clientServerManager;
 	}
 	

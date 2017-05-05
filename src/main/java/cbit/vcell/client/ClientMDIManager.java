@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.swing.JFrame;
@@ -42,7 +42,6 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.GlassPane;
 import org.vcell.util.gui.VCellIcons;
 
-import cbit.vcell.client.desktop.BNGWindow;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.desktop.TestingFrameworkWindow;

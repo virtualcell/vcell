@@ -151,6 +151,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
+import cbit.vcell.client.server.ClientServerManager.InteractiveContext;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.MergedDatasetViewerController;
 import cbit.vcell.client.server.SimResultsViewerController;
@@ -793,7 +794,7 @@ public void connectAs(final String user,  final DigestedPassword digestedPasswor
 			AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					getClientServerManager().connectAs(requester, user, digestedPassword);
+					getClientServerManager().connectAs(new VCellGuiInteractiveContext(requester), user, digestedPassword);
 				}
 			};
 			AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
@@ -830,7 +831,7 @@ public void connectAs(final String user,  final DigestedPassword digestedPasswor
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
 public void connectToServer(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) throws Exception {
-	getClientServerManager().connectNewServer(requester,clientServerInfo);
+	getClientServerManager().connectNewServer(new VCellGuiInteractiveContext(requester),clientServerInfo);
 }
 
 
@@ -3530,7 +3531,7 @@ public void reconnect(final TopLevelWindowManager requester) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getClientServerManager().reconnect(requester);
+				getClientServerManager().reconnect(new VCellGuiInteractiveContext(requester));
 
 			}
 	};

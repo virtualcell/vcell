@@ -11,9 +11,6 @@
 package cbit.vcell.client.server;
 import java.rmi.RemoteException;
 
-import org.vcell.client.logicalwindow.LWContainerHandle;
-import org.vcell.client.logicalwindow.LWModelessWarning;
-import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -26,7 +23,6 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
@@ -54,7 +50,21 @@ import cbit.vcell.simdata.VCDataManager;
  */
 public class ClientServerManager implements SessionManager,DataSetControllerProvider {
 
-
+	
+	public interface InteractiveContext {
+		void showErrorDialog(String errorMessage);
+		
+		void showWarningDialog(String warningMessage);
+		
+		void clearConnectWarning();
+		
+		void showConnectWarning(String message);
+	}
+	
+	public interface InteractiveContextDefaultProvider {
+		InteractiveContext getInteractiveContext();
+	}
+	
 	public static final String PROPERTY_NAME_CONNECTION_STATUS = "connectionStatus";
 	private class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info
@@ -197,10 +207,10 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ClientConnectionStatus fieldConnectionStatus = new ClientConnectionStatus(null, null, ConnectionStatus.NOT_CONNECTED);
 	private ReconnectStatus reconnectStat = ReconnectStatus.NOT;
+	private final InteractiveContextDefaultProvider defaultInteractiveContextProvider;
 	/**
 	 * modeless window to warn about lost connection
 	 */
-	private LWModelessWarning cantConnectWarning = null;
 	private Reconnector reconnector = null;
 
 /**
@@ -210,15 +220,16 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-public ClientServerManager(ClientServerInfo clientServerInfo) {
+public ClientServerManager(ClientServerInfo clientServerInfo, InteractiveContextDefaultProvider defaultInteractiveContextProvider) {
 	this.clientServerInfo = clientServerInfo;
+	this.defaultInteractiveContextProvider = defaultInteractiveContextProvider;
 }
 
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)
  */
-private void changeConnection(TopLevelWindowManager requester, VCellConnection newVCellConnection) {
+private void changeConnection(InteractiveContext requester, VCellConnection newVCellConnection) {
 	VCellThreadChecker.checkRemoteInvocation();
 
 	VCellConnection lastVCellConnection = getVcellConnection();
@@ -240,7 +251,7 @@ private void changeConnection(TopLevelWindowManager requester, VCellConnection n
 			setVcellConnection(null);
 			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
 			exc.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog(requester, "Server connection failed:\n\n" + exc.getMessage());
+			requester.showErrorDialog("Server connection failed:\n\n" + exc.getMessage());
 		}
 	} else if(lastVCellConnection != null) {
 		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
@@ -274,7 +285,7 @@ public MessageEvent[] getMessageEvents() throws RemoteException{
 	}
 }
 
-public static void checkClientServerSoftwareVersion(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) {
+private void checkClientServerSoftwareVersion(InteractiveContext requester, ClientServerInfo clientServerInfo) {
 	String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 	if (clientSoftwareVersion != null &&  clientSoftwareVersion.toLowerCase().contains("devel") ) {
 		return;
@@ -282,9 +293,9 @@ public static void checkClientServerSoftwareVersion(TopLevelWindowManager reques
 	if (clientServerInfo.getServerType() == ClientServerInfo.SERVER_REMOTE) {
 		String[] hosts = clientServerInfo.getHosts();
 		for (int i = 0; i < hosts.length; i ++) {
-			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(requester.getComponent(),hosts[i]);
+			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(hosts[i]);
 			if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
-					PopupGenerator.showWarningDialog(requester.getComponent(), "A new VCell client is available:\n"
+					requester.showWarningDialog("A new VCell client is available:\n"
 						+ "current version : " + clientSoftwareVersion + "\n"
 						+ "new version : " + serverSoftwareVersion + "\n"
 						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
@@ -295,7 +306,7 @@ public static void checkClientServerSoftwareVersion(TopLevelWindowManager reques
 }
 
 
-public void connectNewServer(TopLevelWindowManager requester, ClientServerInfo csi) {
+public void connectNewServer(InteractiveContext requester, ClientServerInfo csi) {
 	clientServerInfo = csi;
 	connect(requester);
 }
@@ -304,7 +315,7 @@ public void connectNewServer(TopLevelWindowManager requester, ClientServerInfo c
  * Insert the method's description here.
  * Creation date: (5/17/2004 6:26:14 PM)
  */
-public void connect(TopLevelWindowManager requester) {
+public void connect(InteractiveContext requester) {
 	asynchMessageManager.stopPolling();
 	reconnectStat = ReconnectStatus.NOT;
 	checkClientServerSoftwareVersion(requester,clientServerInfo);
@@ -323,7 +334,7 @@ public void connect(TopLevelWindowManager requester) {
  * same as {@link #connect(TopLevelWindowManager)} but pause {@link Reconnector}
  * @param requester
  */
-public void reconnect(TopLevelWindowManager requester) {
+public void reconnect(InteractiveContext requester) {
 	Reconnector rc = getReconnector();
 	try {
 		rc.start();
@@ -344,7 +355,7 @@ public void reconnect(TopLevelWindowManager requester) {
  * Creation date: (5/17/2004 6:26:14 PM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void connectAs(TopLevelWindowManager requester, String user, DigestedPassword digestedPassword) {
+public void connectAs(InteractiveContext requester, String user, DigestedPassword digestedPassword) {
 	reconnectStat = ReconnectStatus.NOT;
 	switch (getClientServerInfo().getServerType()) {
 		case ClientServerInfo.SERVER_LOCAL: {
@@ -364,7 +375,7 @@ public void connectAs(TopLevelWindowManager requester, String user, DigestedPass
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)
  */
-private VCellConnection connectToServer(TopLevelWindowManager requester) {
+private VCellConnection connectToServer(InteractiveContext requester) {
 	VCellThreadChecker.checkRemoteInvocation();
 
 	VCellConnection newVCellConnection = null;
@@ -407,33 +418,23 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 				break;
 			}
 		}
-		if (cantConnectWarning != null) { //clear warning message if it is up
-			cantConnectWarning.dispose();
-			cantConnectWarning = null;
-		}
+		requester.clearConnectWarning();
 		reconnectStat = ReconnectStatus.NOT;
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(requester, aexc.getMessage());
+		requester.showErrorDialog(aexc.getMessage());
 	} catch (ConnectionException cexc) {
 		String msg = badConnectMessage(badConnStr) + "\n" + cexc.getMessage();
 		cexc.printStackTrace(System.out);
 		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
-			LWContainerHandle lwParent = LWNamespace.findLWOwner(requester.getComponent());
-			if (cantConnectWarning == null) {
-				cantConnectWarning = new LWModelessWarning(lwParent,msg);
-			}
-			else {
-				cantConnectWarning.setMessage(msg);
-			}
-			cantConnectWarning.setVisible(true);
+			requester.showConnectWarning(msg);
 		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		String msg = badConnectMessage(badConnStr) + "\nException:\n" + exc.getMessage();
 		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
-		PopupGenerator.showErrorDialog(requester, msg);
+		requester.showErrorDialog(msg);
 	}
 
 	return newVCellConnection;
@@ -749,10 +750,10 @@ void reconnect() {
 			break;
 		default:
 		}
-		TopLevelWindowManager am = TopLevelWindowManager.activeManager();
-		VCellConnection connection = connectToServer(am);
+		InteractiveContext requester = defaultInteractiveContextProvider.getInteractiveContext();
+		VCellConnection connection = connectToServer(requester);
 		if (connection != null) { //success
-			changeConnection(am,connection);
+			changeConnection(requester,connection);
 			rc.stop();
 			asynchMessageManager.startPolling();
 			return;

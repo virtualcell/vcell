@@ -5,6 +5,7 @@ import java.awt.Frame;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.ConnectionFactory;
+import cbit.vcell.client.VCellGuiInteractiveContextDefaultProvider;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.message.SimpleMessagingDelegate;
@@ -38,7 +39,8 @@ public static cbit.vcell.client.server.ClientServerManager mainInit(String args[
 		System.err.println("usage: " + programName +" host userid password");
 		throw new Exception("cannot connect");
 	}
-	ClientServerManager clientServerManager = new ClientServerManager(csInfo);
+	VCellGuiInteractiveContextDefaultProvider defaultRequester = new VCellGuiInteractiveContextDefaultProvider();
+	ClientServerManager clientServerManager = new ClientServerManager(csInfo,defaultRequester);
 	clientServerManager.connect(null);
 	
 	return clientServerManager;
@@ -62,7 +64,8 @@ public static cbit.vcell.client.server.ClientServerManager mainInit(String args[
 		System.err.println("usage: " + programName +" host userid password");
 		throw new Exception("cannot connect");
 	}
-	ClientServerManager clientServerManager = new ClientServerManager(csInfo);
+	VCellGuiInteractiveContextDefaultProvider defaultRequester = new VCellGuiInteractiveContextDefaultProvider();
+	ClientServerManager clientServerManager = new ClientServerManager(csInfo, defaultRequester);
 	clientServerManager.connect(null);
 	
 	return clientServerManager;

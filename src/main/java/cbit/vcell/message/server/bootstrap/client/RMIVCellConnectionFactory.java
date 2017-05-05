@@ -50,19 +50,19 @@ public void changeUser(UserLoginInfo userLoginInfo) {
 }
 
 public VCellConnection createVCellConnection() throws AuthenticationException, ConnectionException {
-	return createVCellConnectionAskProxy(null);
+	return createVCellConnectionAskProxy();
 }
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.VCellConnection
  */
-public VCellConnection createVCellConnectionAskProxy(Component requester) throws AuthenticationException, ConnectionException {
+public VCellConnection createVCellConnectionAskProxy() throws AuthenticationException, ConnectionException {
 	VCellThreadChecker.checkRemoteInvocation();
 
 	VCellBootstrap vcellBootstrap = null;
 	VCellConnection vcellConnection = null;
 	try {
-		vcellBootstrap = getVCellBootstrap(requester,this.host);
+		vcellBootstrap = getVCellBootstrap(this.host);
 	} catch (Throwable e){
 		throw new ConnectionException(e.getMessage(),e);
 	}
@@ -82,11 +82,11 @@ public VCellConnection createVCellConnectionAskProxy(Component requester) throws
 /**
  * This method was created in VisualAge.
  */
-public static String getVCellSoftwareVersion(Component requester,String host) {
+public static String getVCellSoftwareVersion(String host) {
 	VCellThreadChecker.checkRemoteInvocation();
 	
 	try {
-		VCellBootstrap vcellBootstrap = getVCellBootstrap(requester,host);
+		VCellBootstrap vcellBootstrap = getVCellBootstrap(host);
 		if (vcellBootstrap != null){
 			return vcellBootstrap.getVCellSoftwareVersion();
 		}else{
@@ -104,7 +104,7 @@ public static boolean pingBootstrap(String host) {
 	VCellThreadChecker.checkRemoteInvocation();
 	
 	try {
-		VCellBootstrap vcellBootstrap = getVCellBootstrap(null,host);
+		VCellBootstrap vcellBootstrap = getVCellBootstrap(host);
 		if (vcellBootstrap != null){
 			return true;
 		}else{
@@ -119,7 +119,7 @@ public static boolean pingBootstrap(String host) {
 private static VCellBootstrap getVCellBootstrap0(String host) throws Exception{
 	return (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup("//"+host+"/"+SERVICE_NAME);
 }
-public static VCellBootstrap getVCellBootstrap(Component requester,String host) throws Exception{
+public static VCellBootstrap getVCellBootstrap(String host) throws Exception{
 	//If requester != null (called from VCell client) and connection fails then we ask user to supply proxy info
 	//If requester == null (called from VCell server) then we assume that all connection properties were set already
 //	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
