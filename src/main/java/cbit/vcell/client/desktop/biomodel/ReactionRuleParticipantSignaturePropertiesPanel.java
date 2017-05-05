@@ -82,13 +82,13 @@ import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.ReactionRulePatternLargeShape;
 import cbit.vcell.graph.RuleParticipantEdgeDiagramShape;
-import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
-import cbit.vcell.graph.ZoomShape.Sign;
-import cbit.vcell.graph.ZoomShape;
+import cbit.vcell.graph.ZoomShapeIcon.Sign;
+import cbit.vcell.graph.gui.RulesShapePanel;
+import cbit.vcell.graph.ZoomShapeIcon;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -319,7 +319,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 	private JButton getZoomLargerButton() {
 		if (zoomLargerButton == null) {
 			zoomLargerButton = new JButton();
-			ZoomShape.setZoomMod(zoomLargerButton, ZoomShape.Sign.plus);
+			ZoomShapeIcon.setZoomMod(zoomLargerButton, ZoomShapeIcon.Sign.plus);
 			zoomLargerButton.addActionListener(eventHandler);
 		}
 		return zoomLargerButton;
@@ -327,7 +327,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 	private JButton getZoomSmallerButton() {
 		if (zoomSmallerButton == null) {
 			zoomSmallerButton = new JButton();
-			ZoomShape.setZoomMod(zoomSmallerButton, ZoomShape.Sign.minus);
+			ZoomShapeIcon.setZoomMod(zoomSmallerButton, ZoomShapeIcon.Sign.minus);
 			zoomSmallerButton.addActionListener(eventHandler);
 		}
 		return zoomSmallerButton;

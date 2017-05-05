@@ -59,12 +59,12 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.graph.ResizeCanvasShape;
-import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternRoundShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
-import cbit.vcell.graph.ZoomShape;
-import cbit.vcell.graph.ZoomShape.Sign;
+import cbit.vcell.graph.ZoomShapeIcon;
+import cbit.vcell.graph.ZoomShapeIcon.Sign;
+import cbit.vcell.graph.gui.RulesShapePanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
@@ -600,7 +600,7 @@ private JButton getZoomLargerButton() {
 	if (zoomLargerButton == null) {
 		zoomLargerButton = new JButton();		// "+"
 //		ResizeCanvasShape.setCanvasNormalMod(zoomLargerButton, ResizeCanvasShape.Sign.expand);
-		ZoomShape.setZoomMod(zoomLargerButton, ZoomShape.Sign.plus);
+		ZoomShapeIcon.setZoomMod(zoomLargerButton, ZoomShapeIcon.Sign.plus);
 		zoomLargerButton.addActionListener(eventHandler);
 	}
 	return zoomLargerButton;
@@ -609,7 +609,7 @@ private JButton getZoomSmallerButton() {
 	if (zoomSmallerButton == null) {
 		zoomSmallerButton = new JButton();		// -
 //		ResizeCanvasShape.setCanvasNormalMod(zoomSmallerButton, ResizeCanvasShape.Sign.shrink);
-		ZoomShape.setZoomMod(zoomSmallerButton, ZoomShape.Sign.minus);
+		ZoomShapeIcon.setZoomMod(zoomSmallerButton, ZoomShapeIcon.Sign.minus);
 		zoomSmallerButton.addActionListener(eventHandler);
 	}
 	return zoomSmallerButton;

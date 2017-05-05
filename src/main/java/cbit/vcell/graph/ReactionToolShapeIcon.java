@@ -3,7 +3,6 @@ package cbit.vcell.graph;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -21,8 +20,10 @@ import javax.swing.JPanel;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
+import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
 
-public class ReactionToolShape implements Icon {
+
+public class ReactionToolShapeIcon implements Icon {
 
 	private enum State { normal, selected };
 	private enum Mode { plain, catalyst, flux };
@@ -32,7 +33,7 @@ public class ReactionToolShape implements Icon {
 	private final State state;
 	private final Mode mode;
 
-	public ReactionToolShape(State state, Mode mode) {
+	public ReactionToolShapeIcon(State state, Mode mode) {
 		super();
 		this.state = state;
 		this.mode = mode;
@@ -154,8 +155,8 @@ public class ReactionToolShape implements Icon {
 
 	public static void setPlainReactionToolMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new ReactionToolShape(State.normal, Mode.plain);
-		Icon iconSelected = new ReactionToolShape(State.selected, Mode.plain);
+		Icon iconNormal = new ReactionToolShapeIcon(State.normal, Mode.plain);
+		Icon iconSelected = new ReactionToolShapeIcon(State.selected, Mode.plain);
 		button.setName("LineButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);
@@ -165,8 +166,8 @@ public class ReactionToolShape implements Icon {
 	}
 	public static void setCatalystToolMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new ReactionToolShape(State.normal, Mode.catalyst);
-		Icon iconSelected = new ReactionToolShape(State.selected, Mode.catalyst);
+		Icon iconNormal = new ReactionToolShapeIcon(State.normal, Mode.catalyst);
+		Icon iconSelected = new ReactionToolShapeIcon(State.selected, Mode.catalyst);
 		button.setName("LineCatalystButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);
@@ -176,8 +177,8 @@ public class ReactionToolShape implements Icon {
 	}
 	public static void setFluxTransportToolMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new ReactionToolShape(State.normal, Mode.flux);
-		Icon iconSelected = new ReactionToolShape(State.selected, Mode.flux);
+		Icon iconNormal = new ReactionToolShapeIcon(State.normal, Mode.flux);
+		Icon iconSelected = new ReactionToolShapeIcon(State.selected, Mode.flux);
 		button.setName("FluxReactionButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);
@@ -189,7 +190,7 @@ public class ReactionToolShape implements Icon {
 	public static void main(String[] args) {
 		try {
 			Frame frame = new Frame();
-			Icon iconNormal = new ReactionToolShape(State.normal, Mode.plain);
+			Icon iconNormal = new ReactionToolShapeIcon(State.normal, Mode.plain);
 			int diameter = 20;
 			int x = 50;
 			int y = 80;

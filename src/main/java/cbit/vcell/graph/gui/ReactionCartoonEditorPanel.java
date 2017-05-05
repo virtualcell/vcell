@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -48,8 +48,14 @@ import cbit.gui.graph.gui.GraphPane;
 import cbit.gui.graph.gui.CartoonTool.Mode;
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.graph.ZoomShape.Sign;
-import cbit.vcell.graph.gui.ReactionCartoonTool;
+import cbit.vcell.graph.ReactionCartoon;
+import cbit.vcell.graph.ReactionToolShapeIcon;
+import cbit.vcell.graph.ResizeCanvasShape;
+import cbit.vcell.graph.SpeciesToolShapeIcon;
+import cbit.vcell.graph.StructureToolShapeIcon;
+import cbit.vcell.graph.UngroupToolShapeIcon;
+import cbit.vcell.graph.ZoomShapeIcon;
+import cbit.vcell.graph.ZoomShapeIcon.Sign;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RuleParticipantSignature;
@@ -376,7 +382,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (lineDirectedButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				ReactionToolShape.setPlainReactionToolMod(button);
+				ReactionToolShapeIcon.setPlainReactionToolMod(button);
 				button.setActionCommand(Mode.LINEDIRECTED.getActionCommand());
 				lineDirectedButton = button;
 //				lineDirectedButton = createModeButton("LineButton", "RX Connection Tool", Mode.LINEDIRECTED, loadIcon("/images/lineDirected.gif"));
@@ -390,7 +396,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (lineCatalystButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				ReactionToolShape.setCatalystToolMod(button);
+				ReactionToolShapeIcon.setCatalystToolMod(button);
 				button.setActionCommand(Mode.LINECATALYST.getActionCommand());
 				lineCatalystButton = button;
 //				lineCatalystButton = createModeButton("LineCatalystButton", "Set a catalyst", Mode.LINECATALYST, loadIcon("/images/lineCatalyst.gif"));
@@ -404,7 +410,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (fluxReactionButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				ReactionToolShape.setFluxTransportToolMod(button);
+				ReactionToolShapeIcon.setFluxTransportToolMod(button);
 				button.setActionCommand(Mode.FLUX.getActionCommand());
 				fluxReactionButton = button;
 //				fluxReactionButton = createModeButton("FluxReactionButton", "FluxReaction Tool", Mode.FLUX, loadIcon("/images/fluxItem.gif"));
@@ -502,7 +508,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (speciesButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				SpeciesToolShape.setSpeciesToolMod(button);
+				SpeciesToolShapeIcon.setSpeciesToolMod(button);
 				button.setActionCommand(Mode.SPECIES.getActionCommand());
 				speciesButton = button;
 //				speciesButton = createModeButton("SpeciesButton", "Species Tool", Mode.SPECIES, loadIcon("/images/species.gif"));
@@ -518,7 +524,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (structureButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				StructureToolShape.setStructureToolMod(button);
+				StructureToolShapeIcon.setStructureToolMod(button);
 				button.setActionCommand(Mode.STRUCTURE.getActionCommand());
 				structureButton = button;
 //				structureButton = createModeButton("StructureButton", "Structure Tool", Mode.STRUCTURE, loadIcon("/images/feature.gif"));
@@ -553,7 +559,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try {
 				zoomInButton = createToolBarButton();
 				zoomInButton.setName("ZoomInButton");
-				ZoomShape.setZoomToolbarMod(zoomInButton, ZoomShape.Sign.plus);
+				ZoomShapeIcon.setZoomToolbarMod(zoomInButton, ZoomShapeIcon.Sign.plus);
 				zoomInButton.setActionCommand("ZoomIn");
 			} catch (Throwable throwable) {
 				handleException(throwable);
@@ -566,7 +572,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try {
 				zoomOutButton = createToolBarButton();
 				zoomOutButton.setName("ZoomOutButton");
-				ZoomShape.setZoomToolbarMod(zoomOutButton, ZoomShape.Sign.minus);
+				ZoomShapeIcon.setZoomToolbarMod(zoomOutButton, ZoomShapeIcon.Sign.minus);
 				zoomOutButton.setActionCommand("ZoomOut");
 			} catch (Throwable throwable) {
 				handleException(throwable);
@@ -682,7 +688,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (ungroupButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				UngroupToolShape.setMod(button);
+				UngroupToolShapeIcon.setMod(button);
 				button.setActionCommand(Mode.UNGROUP.getActionCommand());
 				ungroupButton = button;
 			} catch (Throwable throwable) {

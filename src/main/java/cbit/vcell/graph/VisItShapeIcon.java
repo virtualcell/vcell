@@ -16,7 +16,9 @@ import javax.swing.Icon;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
-public class VisItShape implements Icon {
+import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
+
+public class VisItShapeIcon implements Icon {
 	
 	public enum State { enabled, disabled };
 
@@ -24,7 +26,7 @@ public class VisItShape implements Icon {
 	private final int diameter = 20;		// area occupied by the shape
 	private final int circleDiameter = 18;	// radius of the real thing
 
-	public VisItShape(State state) {
+	public VisItShapeIcon(State state) {
 		super();
 		this.state = state;
 	}
@@ -95,8 +97,8 @@ public class VisItShape implements Icon {
 
 	public static void setVisItMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new VisItShape(State.enabled);
-		Icon iconDisabled = new VisItShape(State.disabled);
+		Icon iconNormal = new VisItShapeIcon(State.enabled);
+		Icon iconDisabled = new VisItShapeIcon(State.disabled);
 		button.setName("VisItButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconNormal);

@@ -1,41 +1,33 @@
 package cbit.vcell.graph;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
+import cbit.vcell.graph.gui.RulesShapePanel;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 

@@ -13,25 +13,21 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.linear.RRQRDecomposition;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmElementAbstract;
-import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 
-import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
+import cbit.vcell.graph.gui.RulesShapePanel;
 import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
 
 public class MolecularComponentLargeShape extends AbstractComponentShape implements LargeShape, HighlightableShapeInterface {

@@ -4,36 +4,36 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
-import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
-import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
 
+import cbit.vcell.graph.gui.RulesShapePanel;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Model.RbmModelContainer;
 
 public class SpeciesPatternRoundShape extends AbstractComponentShape implements HighlightableShapeInterface {
 

@@ -75,7 +75,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper;
-import cbit.vcell.graph.ZoomShape;
+import cbit.vcell.graph.ZoomShapeIcon;
 import cbit.vcell.microscopy.VFrap_ROISourceData;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
@@ -1387,7 +1387,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 			zoomInButton = new JButton();
 			zoomInButton.setMargin(new Insets(2, 2, 2, 2));
 			zoomInButton.setPreferredSize(new Dimension(32, 32));
-			ZoomShape.setZoomOverlayEditorMod(zoomInButton, ZoomShape.Sign.plus);
+			ZoomShapeIcon.setZoomOverlayEditorMod(zoomInButton, ZoomShapeIcon.Sign.plus);
 			zoomInButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					getImagePane().setZoom(getImagePane().getZoom()*1.3f);
@@ -1403,7 +1403,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 			zoomOutButton = new JButton();
 			zoomOutButton.setPreferredSize(new Dimension(32, 32));
 			zoomOutButton.setMargin(new Insets(2, 2, 2, 2));
-			ZoomShape.setZoomOverlayEditorMod(zoomOutButton, ZoomShape.Sign.minus);
+			ZoomShapeIcon.setZoomOverlayEditorMod(zoomOutButton, ZoomShapeIcon.Sign.minus);
 			zoomOutButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					getImagePane().setZoom(getImagePane().getZoom()/1.3f);

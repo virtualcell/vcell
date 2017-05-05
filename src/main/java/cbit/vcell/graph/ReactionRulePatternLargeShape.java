@@ -15,6 +15,7 @@ import org.vcell.util.Displayable;
 
 import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.ReactionRuleParticipantSignaturePropertiesPanel;
+import cbit.vcell.graph.gui.RulesShapePanel;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;

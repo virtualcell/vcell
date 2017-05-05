@@ -16,7 +16,9 @@ import javax.swing.Icon;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
-public class SpeciesToolShape implements Icon {
+import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
+
+public class SpeciesToolShapeIcon implements Icon {
 	
 	private enum State { normal, selected };
 
@@ -24,7 +26,7 @@ public class SpeciesToolShape implements Icon {
 	private final int diameter = 20;		// area occupied by the shape
 	private final int circleDiameter = 14;	// radius of the real thing
 
-	public SpeciesToolShape(State state) {
+	public SpeciesToolShapeIcon(State state) {
 		super();
 		this.state = state;
 	}
@@ -91,8 +93,8 @@ public class SpeciesToolShape implements Icon {
 
 	public static void setSpeciesToolMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new SpeciesToolShape(State.normal);
-		Icon iconSelected = new SpeciesToolShape(State.selected);
+		Icon iconNormal = new SpeciesToolShapeIcon(State.normal);
+		Icon iconSelected = new SpeciesToolShapeIcon(State.selected);
 		button.setName("SpeciesButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);

@@ -96,7 +96,6 @@ import cbit.vcell.graph.FluxReactionShape;
 import cbit.vcell.graph.ProductShape;
 import cbit.vcell.graph.ReactantShape;
 import cbit.vcell.graph.ReactionCartoon;
-import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.ReactionContainerShape;
 import cbit.vcell.graph.ReactionParticipantShape;
 import cbit.vcell.graph.ReactionRuleDiagramShape;

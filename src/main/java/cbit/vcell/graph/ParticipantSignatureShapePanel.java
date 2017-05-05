@@ -10,7 +10,6 @@ import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
 import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
 
-import cbit.vcell.graph.RulesShapePanel.RuleAnalysisChanged;
 import cbit.vcell.model.ModelRuleFactory;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.RuleParticipantSignature;

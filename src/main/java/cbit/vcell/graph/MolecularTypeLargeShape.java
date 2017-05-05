@@ -7,15 +7,11 @@ import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.MultipleGradientPaint.CycleMethod;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
@@ -26,16 +22,15 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.Severity;
+import org.vcell.util.IssueContext;
 
+import cbit.vcell.graph.gui.RulesShapePanel;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
 
 public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeInterface {

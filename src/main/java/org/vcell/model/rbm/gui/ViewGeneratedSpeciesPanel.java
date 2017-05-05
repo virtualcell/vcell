@@ -59,8 +59,8 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
-import cbit.vcell.graph.ZoomShape;
-import cbit.vcell.graph.ZoomShape.Sign;
+import cbit.vcell.graph.ZoomShapeIcon;
+import cbit.vcell.graph.ZoomShapeIcon.Sign;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ReactionRule;
@@ -409,7 +409,7 @@ public void updateShape(int selectedRow) {
 private JButton getZoomLargerButton() {
 	if (zoomLargerButton == null) {
 		zoomLargerButton = new JButton();		// "+"
-		ZoomShape.setZoomMod(zoomLargerButton, ZoomShape.Sign.plus);
+		ZoomShapeIcon.setZoomMod(zoomLargerButton, ZoomShapeIcon.Sign.plus);
 		zoomLargerButton.addActionListener(eventHandler);
 	}
 	return zoomLargerButton;
@@ -417,7 +417,7 @@ private JButton getZoomLargerButton() {
 private JButton getZoomSmallerButton() {
 	if (zoomSmallerButton == null) {
 		zoomSmallerButton = new JButton();		// -
-		ZoomShape.setZoomMod(zoomSmallerButton, ZoomShape.Sign.minus);
+		ZoomShapeIcon.setZoomMod(zoomSmallerButton, ZoomShapeIcon.Sign.minus);
 		zoomSmallerButton.addActionListener(eventHandler);
 	}
 	return zoomSmallerButton;

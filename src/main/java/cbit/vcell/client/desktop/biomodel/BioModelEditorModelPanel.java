@@ -96,10 +96,10 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.AbstractComponentShape;
-import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
-import cbit.vcell.graph.StructureToolShape;
+import cbit.vcell.graph.StructureToolShapeIcon;
+import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.gui.ReactionCartoonTool;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.SimulationContext;
@@ -1280,7 +1280,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					Structure s = bioModel.getModel().getStructure(i);
 					String sName = s.getName();
 					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
-					menuItem.setIcon(new StructureToolShape(17));
+					menuItem.setIcon(new StructureToolShapeIcon(17));
 					menu.add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -1314,7 +1314,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						Structure s = bioModel.getModel().getStructure(i);
 						String sName = s.getName();
 						JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
-						menuItem.setIcon(new StructureToolShape(17));
+						menuItem.setIcon(new StructureToolShapeIcon(17));
 						menu.add(menuItem);
 						menuItem.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
@@ -1392,7 +1392,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					Structure s = bioModel.getModel().getStructure(i);
 					String sName = s.getName();
 					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
-					menuItem.setIcon(new StructureToolShape(17));
+					menuItem.setIcon(new StructureToolShapeIcon(17));
 					menu.add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -1483,7 +1483,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					}
 					String sName = s.getName();
 					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
-					menuItem.setIcon(new StructureToolShape(17));
+					menuItem.setIcon(new StructureToolShapeIcon(17));
 					menu.add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						@Override
@@ -1521,7 +1521,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					}
 					String sName = s.getName();
 					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
-					menuItem.setIcon(new StructureToolShape(17));
+					menuItem.setIcon(new StructureToolShapeIcon(17));
 					menu.add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						@Override
@@ -1545,7 +1545,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					Structure s = bioModel.getModel().getStructure(i);
 					String sName = s.getName();
 					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
-					menuItem.setIcon(new StructureToolShape(17));
+					menuItem.setIcon(new StructureToolShapeIcon(17));
 					menu.add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						@Override

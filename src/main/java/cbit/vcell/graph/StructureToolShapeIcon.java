@@ -17,22 +17,23 @@ import javax.swing.JButton;
 import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.vcell.graph.ResizeCanvasShape.Sign;
+import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
 
-public class StructureToolShape implements Icon {
+public class StructureToolShapeIcon implements Icon {
 
 	private enum State { normal, selected };
 
 	private final State state;
 	private final int diameter;
 
-	public StructureToolShape(State state) {
+	public StructureToolShapeIcon(State state) {
 		super();
 		this.state = state;
 		this.diameter = 20;		// recommended value
 	}
 	// at diameters different from 20, the smaller circle won't be centered inside the larger circle
 	// value for smaller icons should be at least 16
-	public StructureToolShape(int diameter) {
+	public StructureToolShapeIcon(int diameter) {
 		super();
 		this.state = State.normal;
 		this.diameter = diameter;
@@ -109,8 +110,8 @@ public class StructureToolShape implements Icon {
 	
 	public static void setStructureToolMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new StructureToolShape(State.normal);
-		Icon iconSelected = new StructureToolShape(State.selected);
+		Icon iconNormal = new StructureToolShapeIcon(State.normal);
+		Icon iconSelected = new StructureToolShapeIcon(State.selected);
 		button.setName("StructureButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);

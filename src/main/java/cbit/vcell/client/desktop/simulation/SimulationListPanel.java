@@ -54,9 +54,9 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.graph.ReactionCartoonEditorPanel;
-import cbit.vcell.graph.VisItShape;
-import cbit.vcell.graph.VisItShape.State;
+import cbit.vcell.graph.VisItShapeIcon;
+import cbit.vcell.graph.VisItShapeIcon.State;
+import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -403,8 +403,8 @@ private javax.swing.JButton getNativeResultsButton() {
 private javax.swing.JButton getPythonResultsButton() {
 	if (ivjPythonResultsButton == null) {
 		try {
-			Icon iconNormal = new VisItShape(State.enabled);
-			Icon iconDisabled = new VisItShape(State.disabled);
+			Icon iconNormal = new VisItShapeIcon(State.enabled);
+			Icon iconDisabled = new VisItShapeIcon(State.disabled);
 			ivjPythonResultsButton = new javax.swing.JButton("");
 			ivjPythonResultsButton.setName("PythonResultsButton");
 			ivjPythonResultsButton.setIcon(iconNormal);

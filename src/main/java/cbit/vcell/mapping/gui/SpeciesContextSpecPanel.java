@@ -40,7 +40,7 @@ import cbit.vcell.graph.HighlightableShapeInterface;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.ZoomShape;
+import cbit.vcell.graph.ZoomShapeIcon;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
@@ -266,7 +266,7 @@ private JButton getZoomLargerButton() {
 	if (zoomLargerButton == null) {
 		zoomLargerButton = new JButton();		// "+"
 //		ResizeCanvasShape.setCanvasNormalMod(zoomLargerButton, ResizeCanvasShape.Sign.expand);
-		ZoomShape.setZoomMod(zoomLargerButton, ZoomShape.Sign.plus);
+		ZoomShapeIcon.setZoomMod(zoomLargerButton, ZoomShapeIcon.Sign.plus);
 		zoomLargerButton.addActionListener(eventHandler);
 	}
 	return zoomLargerButton;
@@ -275,7 +275,7 @@ private JButton getZoomSmallerButton() {
 	if (zoomSmallerButton == null) {
 		zoomSmallerButton = new JButton();		// -
 //		ResizeCanvasShape.setCanvasNormalMod(zoomSmallerButton, ResizeCanvasShape.Sign.shrink);
-		ZoomShape.setZoomMod(zoomSmallerButton, ZoomShape.Sign.minus);
+		ZoomShapeIcon.setZoomMod(zoomSmallerButton, ZoomShapeIcon.Sign.minus);
 		zoomSmallerButton.addActionListener(eventHandler);
 	}
 	return zoomSmallerButton;

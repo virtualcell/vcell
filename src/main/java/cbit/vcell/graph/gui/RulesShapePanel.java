@@ -1,16 +1,18 @@
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RuleAnalysis;
-import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
 import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
+import org.vcell.model.rbm.RuleAnalysisReport;
 
+import cbit.vcell.graph.LargeShapePanel;
+import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.model.ModelRuleFactory;
-import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ModelRuleFactory.ModelRuleEntry;
 import cbit.vcell.model.ModelRuleFactory.ReactionRuleDirection;
+import cbit.vcell.model.ReactionRule;
 
 @SuppressWarnings("serial")
 public class RulesShapePanel extends LargeShapePanel {
@@ -33,11 +35,6 @@ public class RulesShapePanel extends LargeShapePanel {
 		this.bViewSingleRow = bViewSingleRow;
 	}
 
-	enum RuleAnalysisChanged {
-		CHANGED,
-		UNCHANGED,
-		ANALYSISFAILED
-	}
 	public RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern){
 		if (reactionRule == null){
 			return RuleAnalysisChanged.ANALYSISFAILED;

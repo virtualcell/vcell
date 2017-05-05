@@ -15,7 +15,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 
-public class ZoomShape implements Icon {
+public class ZoomShapeIcon implements Icon {
 
 	public static final int Diameter = 20;
 	public enum Sign { plus, minus };
@@ -28,7 +28,7 @@ public class ZoomShape implements Icon {
 	// one should invoke the static method setZoomMod below for a button using this icon
 	// to make it perform and paint properly
 	//
-	public ZoomShape(Sign sign, State state) {
+	public ZoomShapeIcon(Sign sign, State state) {
 		super();
 		this.sign = sign;
 		this.state = state;
@@ -39,7 +39,7 @@ public class ZoomShape implements Icon {
 //			this.diameter = Diameter-6;		// personally I prefer the zoom out to be smaller
 		}
 	}
-	public ZoomShape(Sign sign, State state, int diameter) {
+	public ZoomShapeIcon(Sign sign, State state, int diameter) {
 		super();
 		this.sign = sign;
 		this.state = state;
@@ -139,8 +139,8 @@ public class ZoomShape implements Icon {
 	
 	// zoom in / out in the Applications / Specifications / Network viewers
 	public static void setZoomMod(JButton button, Sign sign) {
-		Icon iconNormal = new ZoomShape(sign, State.normal);
-		Icon iconPressed = new ZoomShape(sign, State.pressed);
+		Icon iconNormal = new ZoomShapeIcon(sign, State.normal);
+		Icon iconPressed = new ZoomShapeIcon(sign, State.pressed);
 		button.setIcon(iconNormal);
 		button.setPressedIcon(iconPressed);
 		button.setBorder(BorderFactory.createEmptyBorder());
@@ -155,8 +155,8 @@ public class ZoomShape implements Icon {
 	}
 	// zoom in / out in the reaction diagram toolbar
 	public static void setZoomToolbarMod(JButton button, Sign sign) {
-		Icon iconNormal = new ZoomShape(sign, State.normal, 16);
-		Icon iconPressed = new ZoomShape(sign, State.pressed, 16);
+		Icon iconNormal = new ZoomShapeIcon(sign, State.normal, 16);
+		Icon iconPressed = new ZoomShapeIcon(sign, State.pressed, 16);
 		button.setIcon(iconNormal);
 		button.setPressedIcon(iconPressed);
 		button.setFocusPainted(false);
@@ -169,8 +169,8 @@ public class ZoomShape implements Icon {
 	}
 	// zoom in / out button in the OverlayEditorPane for vCell and vFrap 
 	public static void setZoomOverlayEditorMod(JButton button, Sign sign) {
-		Icon iconNormal = new ZoomShape(sign, State.normal, 16);
-		Icon iconPressed = new ZoomShape(sign, State.pressed, 18);
+		Icon iconNormal = new ZoomShapeIcon(sign, State.normal, 16);
+		Icon iconPressed = new ZoomShapeIcon(sign, State.pressed, 18);
 		button.setIcon(iconNormal);
 		button.setPressedIcon(iconPressed);
 //		button.setFocusPainted(false);

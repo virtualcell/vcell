@@ -10,7 +10,6 @@
 
 package cbit.vcell.graph;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -19,14 +18,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.RbmUtils;
-import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 
 import cbit.gui.graph.GraphContainerLayoutReactions;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.Shape;
-import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
@@ -53,6 +48,12 @@ import cbit.vcell.model.Structure;
 
 public class ReactionCartoon extends ModelCartoon {
 
+	public enum RuleAnalysisChanged {
+		CHANGED,
+		UNCHANGED,
+		ANALYSISFAILED
+	}
+	
 	protected StructureSuite structureSuite = null;
 	private Set<RuleParticipantSignature> ruleParticipantSignatures = new HashSet<>();
 	private RuleParticipantSignature.Criteria ruleParticipantGroupingCriteria = RuleParticipantSignature.Criteria.full;

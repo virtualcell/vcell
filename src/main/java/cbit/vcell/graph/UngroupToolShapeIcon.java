@@ -6,22 +6,28 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.MultipleGradientPaint.CycleMethod;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.Icon;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
-public class GroupToolShapeIcon implements Icon {
+import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
+
+public class UngroupToolShapeIcon implements Icon {
 	
 	private enum State { normal, selected, disabled };
 
 	private final State state;
 	private final int diameter = 20;	// area occupied by the shape
 
-	public GroupToolShapeIcon(State state) {
+	public UngroupToolShapeIcon(State state) {
 		super();
 		this.state = state;
 	}
@@ -52,7 +58,7 @@ public class GroupToolShapeIcon implements Icon {
 		case normal:
 			init = 0;
 			c1 = Color.red.darker();
-			c2 = Color.darkGray;
+			c2 = Color.lightGray;
 			c3 = Color.gray;
 			c4 = AbstractComponentShape.componentMediumPalePink;
 			break;
@@ -72,52 +78,64 @@ public class GroupToolShapeIcon implements Icon {
 			c4 = AbstractComponentShape.componentMediumPalePink;
 			break;
 		}
-		
-		g2.setStroke(new BasicStroke(1.2f));
-		g2.setPaint(c2);
-		final int delta = 15;	// the large square
-		int xx = x+init+1;
-		int yy = y+init+1;
-		Rectangle2D rect = new Rectangle2D.Double(xx, yy, delta+1, delta);
-		g2.draw(rect);
+		Rectangle2D rect;
 
 		g2.setStroke(new BasicStroke(0.8f));
-		final int delta2 = 7;
-		xx += 5;				// the lower small rectangle
-		yy += 5;
-		rect = new Rectangle2D.Double(xx, yy, delta2+1, delta2);
+		final int delta2 = 10;
+		int xx1 = x+init+5;				// the lower small rectangle
+		int yy1 = y+init+6;
+		rect = new Rectangle2D.Double(xx1, yy1, delta2+1, delta2);
 		g2.setPaint(c3);
 		g2.draw(rect);
 
-		xx -= 2;				// the upper small rectangle
-		yy -= 2;
-		rect = new Rectangle2D.Double(xx, yy, delta2+1, delta2);
+		int m = 3;
+		g2.setStroke(new BasicStroke(1.0f));	// upper right corner small red square
+		g2.setPaint(c1);
+		int xx = xx1+delta2;
+		int yy = yy1-1;
+		rect = new Rectangle2D.Double(xx, yy, m, m);
+		g2.fill(rect);
+
+		xx = xx1-1;
+		yy = yy1+delta2-1;
+		rect = new Rectangle2D.Double(xx, yy, m, m);
+		g2.fill(rect);
+
+		xx = xx1+delta2;
+		yy = yy1+delta2-1;
+		rect = new Rectangle2D.Double(xx, yy, m, m);
+		g2.fill(rect);
+		
+// ------------------------------------------------------------------------
+		
+		g2.setStroke(new BasicStroke(0.8f));
+		int xx2 = x+init+1;				// the upper small rectangle
+		int yy2 = y+init+2;
+		rect = new Rectangle2D.Double(xx2, yy2, delta2+1, delta2);
 		g2.setPaint(c4);
 		g2.fill(rect);			// overwrite some of the smaller rectangle
 		g2.setPaint(c3);
 		g2.draw(rect);
-
-// ---------------------------------------------------------------------
-		int m = 3;
+		
 		g2.setStroke(new BasicStroke(1.0f));	// upper left corner small red square
 		g2.setPaint(c1);
-		xx = x+init;
-		yy = y+init;
-		rect = new Rectangle2D.Double(xx, yy, m, m);
-		g2.fill(rect);	// g2.draw(rect);
-
-		xx = x+init+delta+1;
-		yy = y+init;
+		xx = xx2-1;
+		yy = yy2-1;
 		rect = new Rectangle2D.Double(xx, yy, m, m);
 		g2.fill(rect);
 
-		xx = x+init;
-		yy = y+init+delta;
+		xx = xx2+delta2;
+		yy = yy2-1;
 		rect = new Rectangle2D.Double(xx, yy, m, m);
 		g2.fill(rect);
 
-		xx = x+init+delta+1;
-		yy = y+init+delta;
+		xx = xx2-1;
+		yy = yy2+delta2-1;
+		rect = new Rectangle2D.Double(xx, yy, m, m);
+		g2.fill(rect);
+
+		xx = xx2+delta2;
+		yy = yy2+delta2-1;
 		rect = new Rectangle2D.Double(xx, yy, m, m);
 		g2.fill(rect);
 
@@ -137,17 +155,17 @@ public class GroupToolShapeIcon implements Icon {
 
 	public static void setMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new GroupToolShapeIcon(State.normal);
-		Icon iconSelected = new GroupToolShapeIcon(State.selected);
-		Icon iconDisabled = new GroupToolShapeIcon(State.disabled);
-		button.setName("GroupButton");
+		Icon iconNormal = new UngroupToolShapeIcon(State.normal);
+		Icon iconSelected = new UngroupToolShapeIcon(State.selected);
+		Icon iconDisabled = new UngroupToolShapeIcon(State.disabled);
+		button.setName("UngroupButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);
 		button.setDisabledIcon(iconDisabled);
 		button.setDisabledSelectedIcon(iconDisabled);
 		button.setFocusPainted(false);
 		button.setFocusable(false);
-		button.setToolTipText("Show rule participants grouped by Molecules");
+		button.setToolTipText("Show rule participants ungrouped");
 	}
 
 }
