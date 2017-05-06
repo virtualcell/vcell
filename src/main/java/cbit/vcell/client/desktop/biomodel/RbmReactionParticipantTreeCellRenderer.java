@@ -21,6 +21,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRulePartic
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.AbstractComponentShape;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
@@ -143,7 +144,7 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		if(mcp.getBondType() == BondType.Specified) {
-			Color bondColor = RbmTreeCellRenderer.bondHtmlColors[mcp.getBondId()];
+			Color bondColor = GraphConstants.bondHtmlColors[mcp.getBondId()];
 			g2.setColor(bondColor);
 			g2.drawLine(x, y, x, y+2);		// 2 lines, L-shaped
 			g2.drawLine(x+1, y, x+1, y+2);

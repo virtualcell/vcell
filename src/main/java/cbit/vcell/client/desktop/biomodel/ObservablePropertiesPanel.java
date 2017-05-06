@@ -81,6 +81,7 @@ import org.vcell.util.gui.VCellIcons;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.graph.HighlightableShapeInterface;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
@@ -767,7 +768,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 
 //	public static final int ReservedSpaceForNameOnYAxis = 20;	// enough to write some text above the shape
 	public static final int xOffsetInitial = 25;
-	public static final int ReservedSpaceForNameOnYAxis = 2;	// just a little empty spacing above the shape
+	public static final int ReservedSpaceForNameOnYAxis = GraphConstants.ObservableDisplay_ReservedSpaceForNameOnYAxis;	// just a little empty spacing above the shape
 	private void updateShape() {
 		spsList.clear();
 		int maxXOffset = xOffsetInitial;
@@ -775,12 +776,12 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		if(observable != null && observable.getSpeciesPatternList() != null && observable.getSpeciesPatternList().size() > 0) {
 			for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 				SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffsetInitial, 8+(SpeciesPatternLargeShape.defaultHeight+ReservedSpaceForNameOnYAxis)*i, 80, sp, shapePanel, observable);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffsetInitial, 8+(SpeciesPatternLargeShape.defaultHeight+GraphConstants.ObservableDisplay_ReservedSpaceForNameOnYAxis)*i, 80, sp, shapePanel, observable);
 				spsList.add(sps);
 				int xOffset = sps.getRightEnd();
 				maxXOffset = Math.max(maxXOffset, xOffset);
 			}
-			maxYOffset = Math.max(maxYOffset,8+(80+ReservedSpaceForNameOnYAxis)*observable.getSpeciesPatternList().size() + SpeciesPatternLargeShape.defaultHeight);
+			maxYOffset = Math.max(maxYOffset,8+(80+GraphConstants.ObservableDisplay_ReservedSpaceForNameOnYAxis)*observable.getSpeciesPatternList().size() + SpeciesPatternLargeShape.defaultHeight);
 		}
 		Dimension preferredSize = new Dimension(maxXOffset+200, maxYOffset);
 		shapePanel.setPreferredSize(preferredSize);

@@ -14,13 +14,11 @@ import javax.swing.Icon;
 
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
-
-import cbit.vcell.graph.gui.LargeShapePanel;
 
 public class SpeciesPatternSmallShape extends AbstractComponentShape implements AbstractShape, Icon {
 
@@ -174,7 +172,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		if(shapeManager == null) {
 			return defaultCandidate;
 		}
-		return shapeManager.isEditable() ? defaultCandidate : LargeShapePanel.uneditableShape;
+		return shapeManager.isEditable() ? defaultCandidate : LargeShapeCanvas.uneditableShape;
 	}
 
 	

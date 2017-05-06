@@ -26,8 +26,7 @@ import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
 
-import cbit.vcell.graph.gui.LargeShapePanel;
-import cbit.vcell.graph.gui.RulesShapePanel;
+import cbit.vcell.graph.LargeShapeCanvas.DisplayMode;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
@@ -45,11 +44,11 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 		private int yPos = 0;		// as above - the y position
 		public final int index;		// index of this mtp inside the sp.
 		
-		final LargeShapePanel shapePanel;
+		final LargeShapeCanvas shapePanel;
 		private Displayable owner;
 		private MolecularTypePattern mtp;
 
-		public MolecularTypeRoundShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapePanel, Displayable owner, int index) {
+		public MolecularTypeRoundShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapeCanvas shapePanel, Displayable owner, int index) {
 			this.xPos = xPos;
 			this.yPos = yPos;
 			this.shapePanel = shapePanel;
@@ -138,14 +137,14 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 	private List<MolecularTypeRoundShape> speciesShapes = new ArrayList<MolecularTypeRoundShape>();
 	private Set<Pair<Integer, Integer>> bondsSet = new HashSet<>();
 
-	final LargeShapePanel shapePanel;
+	final LargeShapeCanvas shapePanel;
 	
 	private Displayable owner;
 	private SpeciesPattern sp;
 	private String endText = new String();	// we display this after the Shape, it's position is outside "width"
 	private boolean isError = false;
 	
-	public static int calculateXExtent(LargeShapePanel shapePanel) {
+	public static int calculateXExtent(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
 			return XExtent;
 		} else {
@@ -156,7 +155,7 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 	}
 	
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
-	public SpeciesPatternRoundShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, boolean isError) {
+	public SpeciesPatternRoundShape(int xPos, int yPos, int height, LargeShapeCanvas shapePanel, boolean isError) {
 		this.owner = null;
 		this.sp = null;
 		this.xPos = xPos;
@@ -170,7 +169,7 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 		int xPattern = xPos;
 	}
 		
-	public SpeciesPatternRoundShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapePanel shapePanel, Displayable owner) {
+	public SpeciesPatternRoundShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapeCanvas shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
@@ -334,7 +333,7 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 		if(shapePanel == null) {
 			return;
 		}
-		if(shapePanel instanceof RulesShapePanel && ((RulesShapePanel)shapePanel).isViewSingleRow()) {
+		if(shapePanel.getDisplayMode()==DisplayMode.rules && shapePanel.isViewSingleRow()) {
 			return;
 		}
 		if(height == -1) {
@@ -408,7 +407,7 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 			g.setFont(font);
 			w = 46+3*z;
 			name = buildCompartmentName(g, name, "..", w);
-		} else if(z < LargeShapePanel.SmallestZoomFactorWithText) {
+		} else if(z < LargeShapeCanvas.SmallestZoomFactorWithText) {
 			font = fontOld.deriveFont(fontOld.getSize2D()*0.8f);
 			g.setFont(font);
 			w = 20;
@@ -540,10 +539,10 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 		// TODO: actually I need to look at the owner, sp may be null for a plain species (green circle)
 		// or for errors (where we display a red circle)
 		if(sp == null) {
-			shapePanel.sp = null;
+			shapePanel.setSpeciesPattern(null);
 			return;
 		}
-		shapePanel.sp = b ? sp : null;
+		shapePanel.setSpeciesPattern(b ? sp : null);
 	}
 	@Override
 	public boolean isHighlighted() {

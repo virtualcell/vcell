@@ -20,9 +20,6 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
 
-import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
-import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
-import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
 import cbit.vcell.graph.LargeShapeCanvas.DisplayMode;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
@@ -105,11 +102,11 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		this.sp = sp;
 		this.xPos = xPos;
 		if(owner instanceof RbmObservable) {
-			nameOffset = ObservablePropertiesPanel.ReservedSpaceForNameOnYAxis;
-			this.yPos = yPos+ObservablePropertiesPanel.ReservedSpaceForNameOnYAxis;
+			nameOffset = GraphConstants.ObservableDisplay_ReservedSpaceForNameOnYAxis;
+			this.yPos = yPos+GraphConstants.ObservableDisplay_ReservedSpaceForNameOnYAxis;
 		} else if(owner instanceof ReactionRule) {
-			nameOffset = ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
-			this.yPos = yPos+ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
+			nameOffset = GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis;
+			this.yPos = yPos+GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis;
 
 		} else {
 			this.yPos = yPos;
@@ -686,7 +683,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			if(shapePanel.isShowDifferencesOnly()) {
 				g2.setColor(getDefaultColor(Color.gray));
 			} else {
-				g2.setColor(getDefaultColor(RbmTreeCellRenderer.bondHtmlColors[bp.id]));
+				g2.setColor(getDefaultColor(GraphConstants.bondHtmlColors[bp.id]));
 			}
 			g2.drawLine(bp.from.x, bp.from.y, bp.from.x, bp.from.y+yDouble+i*separ);
 			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+yDouble+i*separ);

@@ -13,8 +13,6 @@ import java.util.List;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 
-import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
-import cbit.vcell.client.desktop.biomodel.ReactionRuleParticipantSignaturePropertiesPanel;
 import cbit.vcell.graph.LargeShapeCanvas.DisplayMode;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
@@ -158,7 +156,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		// compute the dimensions of the SP contour
 		// TODO: keep this code in sync!
 		int ySP = yPos-3;
-		int hSP = SpeciesPatternLargeShape.defaultHeight-2+ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
+		int hSP = SpeciesPatternLargeShape.defaultHeight-2+GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis;
 		if(height > 0 && y > ySP && y < ySP + hSP) {
 			locationContext.rrps = this;
 			return true;
@@ -200,7 +198,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		int fontSize = fontOld.getSize();
 			
 		int textX = xPos - 7;
-		int textY =  yPos - ReactionRuleParticipantSignaturePropertiesPanel.ReservedSpaceForNameOnYAxis + fontSize + 6;
+		int textY =  yPos - GraphConstants.ReactionRuleParticipantDisplay_ReservedSpaceForNameOnYAxis + fontSize + 6;
 		g2.drawString("Rule: ", textX, textY);
 
 		Font font = fontOld.deriveFont((float) (fontOld.getSize())).deriveFont(Font.BOLD);
@@ -231,7 +229,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		// TODO: keep this code in sync! xOffset is now a bit off to the right than the "contains" area, because it 
 		//		 would interfere with the painting of the -> or <-> (reaction arrow)
 		int ySP = yPos-3;
-		int hSP = SpeciesPatternLargeShape.defaultHeight-2+ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
+		int hSP = SpeciesPatternLargeShape.defaultHeight-2+GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis;
 		// the dimensions of participants contour is exactly 1 pixel wider than the dimensions of the species pattern
 		Rectangle2D rect = new Rectangle2D.Double(xOffset, ySP, 2000, hSP);
 		
@@ -274,7 +272,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		// TODO: keep this code in sync!
 		int xSp = xPos-SpeciesPatternLargeShape.calculateXExtent(shapePanel);
 		int ySP = yPos-3;
-		int hSP = SpeciesPatternLargeShape.defaultHeight-2+ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
+		int hSP = SpeciesPatternLargeShape.defaultHeight-2+GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis;
 		
 		// the dimensions of participants contour is exactly 1 pixel wider than the dimensions of the species pattern
 		Rectangle2D rect = new Rectangle2D.Double(xSp-1, ySP-1, 2000, hSP+2);

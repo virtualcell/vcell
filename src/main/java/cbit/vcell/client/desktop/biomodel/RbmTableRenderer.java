@@ -16,6 +16,8 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
+import cbit.vcell.graph.GraphConstants;
+
 public class RbmTableRenderer extends DefaultScrollTableCellRenderer {
 		
 	public RbmTableRenderer() {
@@ -62,7 +64,7 @@ public class RbmTableRenderer extends DefaultScrollTableCellRenderer {
 				boolean bShowColor = false;
 				if (mcp.getBondType() == BondType.Specified && !bSelected) {
 					bShowColor = true;
-					Color color = RbmTreeCellRenderer.bondHtmlColors[mcp.getBondId()];
+					Color color = GraphConstants.bondHtmlColors[mcp.getBondId()];
 					buffer.append("<font color=\"rgb(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ")\">");
 				}
 				buffer.append(mcp.getMolecularComponent().getName());

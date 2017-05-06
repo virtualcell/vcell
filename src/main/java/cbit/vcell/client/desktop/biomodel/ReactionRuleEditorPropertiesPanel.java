@@ -70,6 +70,7 @@ import org.vcell.util.gui.VCellIcons;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.graph.HighlightableShapeInterface;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
@@ -300,8 +301,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 //					if(locationContext.getDeepestShape() == null) {
 //						// nothing selected means all the reactant bar or all the product bar is selected 
 						int xExtent = SpeciesPatternLargeShape.calculateXExtent(shapePanel);
-						Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
-						Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
+						Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis);
+						Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis);
 						
 						if(locationContext.isInside(reactantRectangle)) {
 							reactantShape.paintSelf(g, true);
@@ -723,7 +724,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	public static final int xOffsetInitial = 25;
 	public static final int yOffsetReactantInitial = 8;
 	public static final int yOffsetProductInitial = 100;
-	public static final int ReservedSpaceForNameOnYAxis = 10;
+	public static final int ReservedSpaceForNameOnYAxis = GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis;
 	
 	private void updateShape() {
 		int maxXOffset;
@@ -812,8 +813,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		
 		boolean bReactantsZone = false;
 		int xExtent = SpeciesPatternLargeShape.calculateXExtent(shapePanel);
-		Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
-		Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
+		Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis);
+		Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+GraphConstants.ReactionRuleDisplay_ReservedSpaceForNameOnYAxis);
 		if(locationContext.isInside(reactantRectangle)) {
 			bReactantsZone = true;		// clicked inside the reactant rectangle (above yOffsetProductInitial)
 		} else if(locationContext.isInside(productRectangle)) {

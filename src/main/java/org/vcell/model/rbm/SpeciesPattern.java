@@ -17,9 +17,10 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
-import org.vcell.util.Displayable;
 
-import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
+import cbit.vcell.graph.GraphConstants;
+
+import org.vcell.util.Displayable;
 
 public class SpeciesPattern extends RbmElementAbstract implements Matchable, IssueSource, Displayable {
 	public static final String PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS = "molecularTypePatterns";
@@ -116,7 +117,7 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 			String strBondComponent = molecularComponentPattern.getMolecularComponent().getName() + "(" + molecularComponentPattern.getMolecularComponent().getIndex() + ")";
 			System.out.println("Linking to " + strBondType + strBondComponent);
 			
-			Color c = RbmTreeCellRenderer.bondHtmlColors[colorIndex];
+			Color c = GraphConstants.bondHtmlColors[colorIndex];
 			String colorTextStart = "<font color=" + "\"rgb(" + c.getRed() + "," + c.getGreen() + "," + c.getBlue() + ")\">";
 			String colorTextEnd = "</font>";
 			String str = "";
@@ -149,7 +150,7 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 			String strBondComponent = molecularComponentPattern.getMolecularComponent().getName() + "(" + molecularComponentPattern.getMolecularComponent().getIndex() + ")";
 //			System.out.println("Linking " + strThatType + strThatComponent + " to " + strBondType + strBondComponent);
 			
-			Color c = RbmTreeCellRenderer.bondHtmlColors[colorIndex];
+			Color c = GraphConstants.bondHtmlColors[colorIndex];
 			String colorTextStart = "<font color=" + "\"rgb(" + c.getRed() + "," + c.getGreen() + "," + c.getBlue() + ")\">";
 			String colorTextEnd = "</font>";
 			String str = "";

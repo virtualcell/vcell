@@ -20,6 +20,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRulePartic
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.graph.AbstractComponentShape;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
@@ -28,198 +29,147 @@ import cbit.vcell.model.common.VCellErrorMessages;
 public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 	
 	// http://www.w3schools.com/cssref/css_colornames.asp
-    public static final Color aliceblue = new Color(0xf0f8ff);
-    public static final Color antiquewhite = new Color(0xfaebd7);
-    public static final Color aqua = new Color(0x00ffff);
-    public static final Color aquamarine = new Color(0x7fffd4);
-    public static final Color azure = new Color(0xf0ffff);
-    public static final Color beige = new Color(0xf5f5dc);
-    public static final Color bisque = new Color(0xffe4c4);
-    public static final Color black = new Color(0x000000);
-    public static final Color blanchedalmond = new Color(0xffebcd);
-    public static final Color blue = new Color(0x0000ff);
-    public static final Color blueviolet = new Color(0x8a2be2);
-    public static final Color brown = new Color(0xa52a2a);
-    public static final Color burlywood = new Color(0xdeb887);
-    public static final Color cadetblue = new Color(0x5f9ea0);
-    public static final Color chartreuse = new Color(0x7fff00);
-    public static final Color chocolate = new Color(0xd2691e);
-    public static final Color coral = new Color(0xff7f50);
-    public static final Color cornflowerblue = new Color(0x6495ed);
-    public static final Color cornsilk = new Color(0xfff8dc);
-    public static final Color crimson = new Color(0xdc143c);
-    public static final Color cyan = new Color(0x00ffff);
-    public static final Color darkblue = new Color(0x00008b);
-    public static final Color darkcyan = new Color(0x008b8b);
-    public static final Color darkgoldenrod = new Color(0xb8860b);
-    public static final Color darkgray = new Color(0xa9a9a9);
-    public static final Color darkgreen = new Color(0x006400);
-    public static final Color darkkhaki = new Color(0xbdb76b);
-    public static final Color darkmagenta = new Color(0x8b008b);
-    public static final Color darkolivegreen = new Color(0x556b2f);
-    public static final Color darkorange = new Color(0xff8c00);
-    public static final Color darkorchid = new Color(0x9932cc);
-    public static final Color darkred = new Color(0x8b0000);
-    public static final Color darksalmon = new Color(0xe9967a);
-    public static final Color darkseagreen = new Color(0x8fbc8f);
-    public static final Color darkslateblue = new Color(0x483d8b);
-    public static final Color darkslategray = new Color(0x2f4f4f);
-    public static final Color darkturquoise = new Color(0x00ced1);
-    public static final Color darkviolet = new Color(0x9400d3);
-    public static final Color deeppink = new Color(0xff1493);
-    public static final Color deepskyblue = new Color(0x00bfff);
-    public static final Color dimgray = new Color(0x696969);
-    public static final Color dodgerblue = new Color(0x1e90ff);
-    public static final Color firebrick = new Color(0xb22222);
-    public static final Color floralwhite = new Color(0xfffaf0);
-    public static final Color forestgreen = new Color(0x228b22);
-    public static final Color fuchsia = new Color(0xff00ff);
-    public static final Color gainsboro = new Color(0xdcdcdc);
-    public static final Color ghostwhite = new Color(0xf8f8ff);
-    public static final Color gold = new Color(0xffd700);
-    public static final Color goldenrod = new Color(0xdaa520);
-    public static final Color gray = new Color(0x808080);
-    public static final Color green = new Color(0x008000);
-    public static final Color greenyellow = new Color(0xadff2f);
-    public static final Color honeydew = new Color(0xf0fff0);
-    public static final Color hotpink = new Color(0xff69b4);
-    public static final Color indianred = new Color(0xcd5c5c);
-    public static final Color indigo = new Color(0x4b0082);
-    public static final Color ivory = new Color(0xfffff0);
-    public static final Color khaki = new Color(0xf0e68c);
-    public static final Color lavender = new Color(0xe6e6fa);
-    public static final Color lavenderblush = new Color(0xfff0f5);
-    public static final Color lawngreen = new Color(0x7cfc00);
-    public static final Color lemonchiffon = new Color(0xfffacd);
-    public static final Color lightblue = new Color(0xadd8e6);
-    public static final Color lightcoral = new Color(0xf08080);
-    public static final Color lightcyan = new Color(0xe0ffff);
-    public static final Color lightgoldenrodyellow = new Color(0xfafad2);
-    public static final Color lightgreen = new Color(0x90ee90);
-    public static final Color lightgrey = new Color(0xd3d3d3);
-    public static final Color lightpink = new Color(0xffb6c1);
-    public static final Color lightsalmon = new Color(0xffa07a);
-    public static final Color lightseagreen = new Color(0x20b2aa);
-    public static final Color lightskyblue = new Color(0x87cefa);
-    public static final Color lightslategray = new Color(0x778899);
-    public static final Color lightsteelblue = new Color(0xb0c4de);
-    public static final Color lightyellow = new Color(0xffffe0);
-    public static final Color lime = new Color(0x00ff00);
-    public static final Color limegreen = new Color(0x32cd32);
-    public static final Color linen = new Color(0xfaf0e6);
-    public static final Color magenta = new Color(0xff00ff);
-    public static final Color maroon = new Color(0x800000);
-    public static final Color mediumaquamarine = new Color(0x66cdaa);
-    public static final Color mediumblue = new Color(0x0000cd);
-    public static final Color mediumorchid = new Color(0xba55d3);
-    public static final Color mediumpurple = new Color(0x9370db);
-    public static final Color mediumseagreen = new Color(0x3cb371);
-    public static final Color mediumslateblue = new Color(0x7b68ee);
-    public static final Color mediumspringgreen = new Color(0x00fa9a);
-    public static final Color mediumturquoise = new Color(0x48d1cc);
-    public static final Color mediumvioletred = new Color(0xc71585);
-    public static final Color midnightblue = new Color(0x191970);
-    public static final Color mintcream = new Color(0xf5fffa);
-    public static final Color mistyrose = new Color(0xffe4e1);
-    public static final Color moccasin = new Color(0xffe4b5);
-    public static final Color navajowhite = new Color(0xffdead);
-    public static final Color navy = new Color(0x000080);
-    public static final Color oldlace = new Color(0xfdf5e6);
-    public static final Color olive = new Color(0x808000);
-    public static final Color olivedrab = new Color(0x6b8e23);
-    public static final Color orange = new Color(0xffa500);
-    public static final Color orangered = new Color(0xff4500);
-    public static final Color orchid = new Color(0xda70d6);
-    public static final Color palegoldenrod = new Color(0xeee8aa);
-    public static final Color palegreen = new Color(0x98fb98);
-    public static final Color paleturquoise = new Color(0xafeeee);
-    public static final Color palevioletred = new Color(0xdb7093);
-    public static final Color papayawhip = new Color(0xffefd5);
-    public static final Color peachpuff = new Color(0xffdab9);
-    public static final Color peru = new Color(0xcd853f);
-    public static final Color pink = new Color(0xffc0cb);
-    public static final Color plum = new Color(0xdda0dd);
-    public static final Color powderblue = new Color(0xb0e0e6);
-    public static final Color purple = new Color(0x800080);
-    public static final Color red = new Color(0xff0000);
-    public static final Color rosybrown = new Color(0xbc8f8f);
-    public static final Color royalblue = new Color(0x4169e1);
-    public static final Color saddlebrown = new Color(0x8b4513);
-    public static final Color salmon = new Color(0xfa8072);
-    public static final Color sandybrown = new Color(0xf4a460);
-    public static final Color seagreen = new Color(0x2e8b57);
-    public static final Color seashell = new Color(0xfff5ee);
-    public static final Color sienna = new Color(0xa0522d);
-    public static final Color silver = new Color(0xc0c0c0);
-    public static final Color skyblue = new Color(0x87ceeb);
-    public static final Color slateblue = new Color(0x6a5acd);
-    public static final Color slategray = new Color(0x708090);
-    public static final Color snow = new Color(0xfffafa);
-    public static final Color springgreen = new Color(0x00ff7f);
-    public static final Color steelblue = new Color(0x4682b4);
-    public static final Color tan = new Color(0xd2b48c);
-    public static final Color teal = new Color(0x008080);
-    public static final Color thistle = new Color(0xd8bfd8);
-    public static final Color tomato = new Color(0xff6347);
-    public static final Color turquoise = new Color(0x40e0d0);
-    public static final Color violet = new Color(0xee82ee);
-    public static final Color wheat = new Color(0xf5deb3);
-    public static final Color white = new Color(0xffffff);
-    public static final Color whitesmoke = new Color(0xf5f5f5);
-    public static final Color yellow = new Color(0xffff00);
-    public static final Color yellowgreen = new Color(0x9acd32);
+	public static final Color aliceblue = GraphConstants.aliceblue;
+    public static final Color antiquewhite = GraphConstants.antiquewhite;
+    public static final Color aqua = GraphConstants.aqua;
+    public static final Color aquamarine = GraphConstants.aquamarine;
+    public static final Color azure = GraphConstants.azure;
+    public static final Color beige = GraphConstants.beige;
+    public static final Color bisque = GraphConstants.bisque;
+    public static final Color black = GraphConstants.black;
+    public static final Color blanchedalmond = GraphConstants.blanchedalmond;
+    public static final Color blue = GraphConstants.blue;
+    public static final Color blueviolet = GraphConstants.blueviolet;
+    public static final Color brown = GraphConstants.brown;
+    public static final Color burlywood = GraphConstants.burlywood;
+    public static final Color cadetblue = GraphConstants.cadetblue;
+    public static final Color chartreuse = GraphConstants.chartreuse;
+    public static final Color chocolate = GraphConstants.chocolate;
+    public static final Color coral = GraphConstants.coral;
+    public static final Color cornflowerblue = GraphConstants.cornflowerblue;
+    public static final Color cornsilk = GraphConstants.cornsilk;
+    public static final Color crimson = GraphConstants.crimson;
+    public static final Color cyan = GraphConstants.cyan;
+    public static final Color darkblue = GraphConstants.darkblue;
+    public static final Color darkcyan = GraphConstants.darkcyan;
+    public static final Color darkgoldenrod = GraphConstants.darkgoldenrod;
+    public static final Color darkgray = GraphConstants.darkgray;
+    public static final Color darkgreen = GraphConstants.darkgreen;
+    public static final Color darkkhaki = GraphConstants.darkkhaki;
+    public static final Color darkmagenta = GraphConstants.darkmagenta;
+    public static final Color darkolivegreen = GraphConstants.darkolivegreen;
+    public static final Color darkorange = GraphConstants.darkorange;
+    public static final Color darkorchid = GraphConstants.darkorchid;
+    public static final Color darkred = GraphConstants.darkred;
+    public static final Color darksalmon = GraphConstants.darksalmon;
+    public static final Color darkseagreen = GraphConstants.darkseagreen;
+    public static final Color darkslateblue = GraphConstants.darkslateblue;
+    public static final Color darkslategray = GraphConstants.darkslategray;
+    public static final Color darkturquoise = GraphConstants.darkturquoise;
+    public static final Color darkviolet = GraphConstants.darkviolet;
+    public static final Color deeppink = GraphConstants.deeppink;
+    public static final Color deepskyblue = GraphConstants.deepskyblue;
+    public static final Color dimgray = GraphConstants.dimgray;
+    public static final Color dodgerblue = GraphConstants.dodgerblue;
+    public static final Color firebrick = GraphConstants.firebrick;
+    public static final Color floralwhite = GraphConstants.floralwhite;
+    public static final Color forestgreen = GraphConstants.forestgreen;
+    public static final Color fuchsia = GraphConstants.fuchsia;
+    public static final Color gainsboro = GraphConstants.gainsboro;
+    public static final Color ghostwhite = GraphConstants.ghostwhite;
+    public static final Color gold = GraphConstants.gold;
+    public static final Color goldenrod = GraphConstants.goldenrod;
+    public static final Color gray = GraphConstants.gray;
+    public static final Color green = GraphConstants.green;
+    public static final Color greenyellow = GraphConstants.greenyellow;
+    public static final Color honeydew = GraphConstants.honeydew;
+    public static final Color hotpink = GraphConstants.hotpink;
+    public static final Color indianred = GraphConstants.indianred;
+    public static final Color indigo = GraphConstants.indigo;
+    public static final Color ivory = GraphConstants.ivory;
+    public static final Color khaki = GraphConstants.khaki;
+    public static final Color lavender = GraphConstants.lavender;
+    public static final Color lavenderblush = GraphConstants.lavenderblush;
+    public static final Color lawngreen = GraphConstants.lawngreen;
+    public static final Color lemonchiffon = GraphConstants.lemonchiffon;
+    public static final Color lightblue = GraphConstants.lightblue;
+    public static final Color lightcoral = GraphConstants.lightcoral;
+    public static final Color lightcyan = GraphConstants.lightcyan;
+    public static final Color lightgoldenrodyellow = GraphConstants.lightgoldenrodyellow;
+    public static final Color lightgreen = GraphConstants.lightgreen;
+    public static final Color lightgrey = GraphConstants.lightgrey;
+    public static final Color lightpink = GraphConstants.lightpink;
+    public static final Color lightsalmon = GraphConstants.lightsalmon;
+    public static final Color lightseagreen = GraphConstants.lightseagreen;
+    public static final Color lightskyblue = GraphConstants.lightskyblue;
+    public static final Color lightslategray = GraphConstants.lightslategray;
+    public static final Color lightsteelblue = GraphConstants.lightsteelblue;
+    public static final Color lightyellow = GraphConstants.lightyellow;
+    public static final Color lime = GraphConstants.lime;
+    public static final Color limegreen = GraphConstants.limegreen;
+    public static final Color linen = GraphConstants.linen;
+    public static final Color magenta = GraphConstants.magenta;
+    public static final Color maroon = GraphConstants.maroon;
+    public static final Color mediumaquamarine = GraphConstants.mediumaquamarine;
+    public static final Color mediumblue = GraphConstants.mediumblue;
+    public static final Color mediumorchid = GraphConstants.mediumorchid;
+    public static final Color mediumpurple = GraphConstants.mediumpurple;
+    public static final Color mediumseagreen = GraphConstants.mediumseagreen;
+    public static final Color mediumslateblue = GraphConstants.mediumslateblue;
+    public static final Color mediumspringgreen = GraphConstants.mediumspringgreen;
+    public static final Color mediumturquoise = GraphConstants.mediumturquoise;
+    public static final Color mediumvioletred = GraphConstants.mediumvioletred;
+    public static final Color midnightblue = GraphConstants.midnightblue;
+    public static final Color mintcream = GraphConstants.mintcream;
+    public static final Color mistyrose = GraphConstants.mistyrose;
+    public static final Color moccasin = GraphConstants.moccasin;
+    public static final Color navajowhite = GraphConstants.navajowhite;
+    public static final Color navy = GraphConstants.navy;
+    public static final Color oldlace = GraphConstants.oldlace;
+    public static final Color olive = GraphConstants.olive;
+    public static final Color olivedrab = GraphConstants.olivedrab;
+    public static final Color orange = GraphConstants.orange;
+    public static final Color orangered = GraphConstants.orangered;
+    public static final Color orchid = GraphConstants.orchid;
+    public static final Color palegoldenrod = GraphConstants.palegoldenrod;
+    public static final Color palegreen = GraphConstants.palegreen;
+    public static final Color paleturquoise = GraphConstants.paleturquoise;
+    public static final Color palevioletred = GraphConstants.palevioletred;
+    public static final Color papayawhip = GraphConstants.papayawhip;
+    public static final Color peachpuff = GraphConstants.peachpuff;
+    public static final Color peru = GraphConstants.peru;
+    public static final Color pink = GraphConstants.pink;
+    public static final Color plum = GraphConstants.plum;
+    public static final Color powderblue = GraphConstants.powderblue;
+    public static final Color purple = GraphConstants.purple;
+    public static final Color red = GraphConstants.red;
+    public static final Color rosybrown = GraphConstants.rosybrown;
+    public static final Color royalblue = GraphConstants.royalblue;
+    public static final Color saddlebrown = GraphConstants.saddlebrown;
+    public static final Color salmon = GraphConstants.salmon;
+    public static final Color sandybrown = GraphConstants.sandybrown;
+    public static final Color seagreen = GraphConstants.seagreen;
+    public static final Color seashell = GraphConstants.seashell;
+    public static final Color sienna = GraphConstants.sienna;
+    public static final Color silver = GraphConstants.silver;
+    public static final Color skyblue = GraphConstants.skyblue;
+    public static final Color slateblue = GraphConstants.slateblue;
+    public static final Color slategray = GraphConstants.slategray;
+    public static final Color snow = GraphConstants.snow;
+    public static final Color springgreen = GraphConstants.springgreen;
+    public static final Color steelblue = GraphConstants.steelblue;
+    public static final Color tan = GraphConstants.tan;
+    public static final Color teal = GraphConstants.teal;
+    public static final Color thistle = GraphConstants.thistle;
+    public static final Color tomato = GraphConstants.tomato;
+    public static final Color turquoise = GraphConstants.turquoise;
+    public static final Color violet = GraphConstants.violet;
+    public static final Color wheat = GraphConstants.wheat;
+    public static final Color white = GraphConstants.white;
+    public static final Color whitesmoke = GraphConstants.whitesmoke;
+    public static final Color yellow = GraphConstants.yellow;
+    public static final Color yellowgreen = GraphConstants.yellowgreen;
     
-	public static Color[] bondHtmlColors = {null, 
-		blue,
-		blueviolet,
-		brown,
-		burlywood ,
-		cadetblue,
-		chocolate,
-		coral,
-		cornflowerblue,
-		crimson,
-		darkblue,
-		darkcyan,
-		darkgoldenrod,
-		darkgreen,
-		darkmagenta,
-		darkolivegreen,
-		darkorange,
-		darkorange,
-		darkorchid,
-		darkred,
-		darksalmon,
-		darkviolet,
-		deeppink,
-		deepskyblue,
-		dodgerblue,
-		firebrick,
-		forestgreen,
-		fuchsia,
-		goldenrod,
-		green,
-		hotpink,
-		indianred ,
-		indigo ,
-		magenta,
-		maroon,
-		mediumblue,
-		mediumorchid,
-		mediumseagreen,
-		mediumvioletred,
-		orange,
-		orangered,
-		royalblue,
-		saddlebrown,
-		salmon,
-		seagreen,
-		sienna,
-		steelblue,
-		teal,
-		tomato,
-	};
-	
 	public RbmTreeCellRenderer() {
 		super();
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
@@ -447,7 +397,7 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 					bondText = "";
 				} else {
 					int id = mcp.getBondId();
-					String colorTextStart = bSelected ? "" : "<font color=" + "\"rgb(" + bondHtmlColors[id].getRed() + "," + bondHtmlColors[id].getGreen() + "," + bondHtmlColors[id].getBlue() + ")\">";
+					String colorTextStart = bSelected ? "" : "<font color=" + "\"rgb(" + GraphConstants.bondHtmlColors[id].getRed() + "," + GraphConstants.bondHtmlColors[id].getGreen() + "," + GraphConstants.bondHtmlColors[id].getBlue() + ")\">";
 					String colorTextEnd = bSelected ? "" : "</font>";
 					
 					bondText = colorTextStart + "<b>" + mcp.getBondId() + "</b>" + colorTextEnd;		// <sub>&nbsp;</sub>
@@ -465,7 +415,7 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 	private static final String toHtmlWorkShort(BondLocal bl) {			// used for tooltips
 		MolecularComponentPattern mcp = bl.getMolecularComponentPattern();
 		String bondText = "";
-		String colorTextStart = "<font color=" + "\"rgb(" + red.getRed() + "," + red.getGreen() + "," + red.getBlue() + ")\">";
+		String colorTextStart = "<font color=" + "\"rgb(" + GraphConstants.red.getRed() + "," + GraphConstants.red.getGreen() + "," + GraphConstants.red.getBlue() + ")\">";
 		String colorTextEnd = "</font>";
 		bondText = colorTextStart + "<b>" + "(unbound)" + "</b>" + colorTextEnd;
 
@@ -474,12 +424,12 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 			if (bondType == BondType.Specified) {
 				Bond bond = mcp.getBond();
 				if (bond == null) {
-					colorTextStart = "<font color=" + "\"rgb(" + red.getRed() + "," + red.getGreen() + "," + red.getBlue() + ")\">";
+					colorTextStart = "<font color=" + "\"rgb(" + GraphConstants.red.getRed() + "," + GraphConstants.red.getGreen() + "," + GraphConstants.red.getBlue() + ")\">";
 					colorTextEnd = "</font>";
 					bondText = colorTextStart + "<b>" + "bond (missing)" + "</b>" + colorTextEnd;
 				} else {
 					int id = mcp.getBondId();
-					colorTextStart = "<font color=" + "\"rgb(" + bondHtmlColors[id].getRed() + "," + bondHtmlColors[id].getGreen() + "," + bondHtmlColors[id].getBlue() + ")\">";
+					colorTextStart = "<font color=" + "\"rgb(" + GraphConstants.bondHtmlColors[id].getRed() + "," + GraphConstants.bondHtmlColors[id].getGreen() + "," + GraphConstants.bondHtmlColors[id].getBlue() + ")\">";
 					colorTextEnd = "</font>";
 					bondText = colorTextStart + "<b>" + "Bond<sub>" + id + "</sub></b>" + colorTextEnd;		// <sub>&nbsp;</sub>
 				}

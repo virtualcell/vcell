@@ -72,6 +72,7 @@ import org.vcell.util.gui.VCellIcons;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.graph.HighlightableShapeInterface;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
@@ -411,14 +412,14 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 
 	public static final int xOffsetInitial = 15;
 	public static final int yOffsetReactantInitial = 8;
-	public static final int ReservedSpaceForNameOnYAxis = 16;
+	public static final int ReservedSpaceForNameOnYAxis = GraphConstants.ReactionRuleParticipantDisplay_ReservedSpaceForNameOnYAxis;
 	
 	private void updateShape() {
 		int maxXOffset = 0;
 		ruleShapeList.clear();
 		
 		// all the reactants go in one single ReactionRulePatternLargeShape, all the products the other
-		int yOffset = yOffsetReactantInitial + ReservedSpaceForNameOnYAxis;
+		int yOffset = yOffsetReactantInitial + GraphConstants.ReactionRuleParticipantDisplay_ReservedSpaceForNameOnYAxis;
 		for(Map.Entry<String,ReactionRule> entry : reactionRuleMap.entrySet()) {
 			ReactionRule rr = entry.getValue();
 			ReactionRulePatternLargeShape reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffset, -1, shapePanel, rr, true);
@@ -427,14 +428,14 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			
 			ReactionRulePatternLargeShape productShape = new ReactionRulePatternLargeShape(xOffset, yOffset, -1, shapePanel, rr, false);
 			xOffset += productShape.getRightEnd();
-			yOffset += SpeciesPatternLargeShape.defaultHeight + ReservedSpaceForNameOnYAxis;
+			yOffset += SpeciesPatternLargeShape.defaultHeight + GraphConstants.ReactionRuleParticipantDisplay_ReservedSpaceForNameOnYAxis;
 			maxXOffset = Math.max(maxXOffset, xOffset);
 			
 			Pair<ReactionRulePatternLargeShape, ReactionRulePatternLargeShape> p = new Pair<> (reactantShape, productShape);
 			ruleShapeList.add(p);
 		}
-		int maxYOffset = Math.max(yOffsetReactantInitial + SpeciesPatternLargeShape.defaultHeight + ReservedSpaceForNameOnYAxis,
-				yOffsetReactantInitial + (SpeciesPatternLargeShape.defaultHeight + ReservedSpaceForNameOnYAxis)*ruleShapeList.size());
+		int maxYOffset = Math.max(yOffsetReactantInitial + SpeciesPatternLargeShape.defaultHeight + GraphConstants.ReactionRuleParticipantDisplay_ReservedSpaceForNameOnYAxis,
+				yOffsetReactantInitial + (SpeciesPatternLargeShape.defaultHeight + GraphConstants.ReactionRuleParticipantDisplay_ReservedSpaceForNameOnYAxis)*ruleShapeList.size());
 		Dimension preferredSize = new Dimension(maxXOffset, maxYOffset);
 		
 		shapePanel.setPreferredSize(preferredSize);

@@ -23,6 +23,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLoca
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.AbstractComponentShape;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.model.RbmObservable;
 
@@ -150,7 +151,7 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		if(mcp.getBondType() == BondType.Specified) {
-			Color bondColor = RbmTreeCellRenderer.bondHtmlColors[mcp.getBondId()];
+			Color bondColor = GraphConstants.bondHtmlColors[mcp.getBondId()];
 			
 //			g2.setColor(bondColor);
 //			int x = 7;						// oblique line
