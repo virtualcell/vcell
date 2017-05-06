@@ -13,6 +13,7 @@ package cbit.image.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 
+import cbit.image.ImagePaneModel;
 import cbit.image.SourceDataInfo;
 import cbit.image.ZoomEvent;
 import cbit.image.ZoomListener;

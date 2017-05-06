@@ -9,7 +9,7 @@ import cbit.vcell.clientdb.DocumentManager;
  * commonly used {@link ClientTaskDispatcher} has keys, with type information
  */
 public interface CommonTask {
-	public static final KeyInfo DOCUMENT_WINDOW_MANAGER = new KeyInfo("documentWindowManager", DocumentWindowManager.class);
-	public static final KeyInfo DOCUMENT_MANAGER = new KeyInfo("documentManager", DocumentManager.class);
+	public static final KeyInfo DOCUMENT_WINDOW_MANAGER = new KeyInfo(DocumentWindowManager.IDENT, DocumentWindowManager.class);
+	public static final KeyInfo DOCUMENT_MANAGER = new KeyInfo(DocumentManager.IDENT, DocumentManager.class);
 
 }

@@ -30,16 +30,16 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
+import cbit.image.ImagePaneModel;
 import cbit.image.SourceDataInfo;
-import cbit.image.gui.ImagePaneModel;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.ServerPDEDataContext;
-import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.MeshDisplayAdapter;
 
 /**
  * Insert the type's description here.

@@ -52,7 +52,7 @@ import GIFUtils.GIFImage;
 import GIFUtils.GIFOutputStream;
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
-import cbit.image.gui.ImagePaneModel;
+import cbit.image.ImagePaneModel;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.gloworm.atoms.UserDataEntry;
 import cbit.vcell.export.gloworm.quicktime.MediaMethods;

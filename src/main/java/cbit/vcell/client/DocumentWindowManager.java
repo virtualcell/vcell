@@ -44,6 +44,12 @@ import cbit.xml.merge.XmlTreeDiff;
  * @author: Ion Moraru
  */
 public abstract class DocumentWindowManager extends TopLevelWindowManager implements java.awt.event.ActionListener, DataViewerManager {
+	
+	/**
+	 * identifying string, for hashtable passing, et. al
+	 */
+	public final static String IDENT = "DocumentWindowManager";
+	
 	private JPanel jPanel = null;
 	private String documentID = null;
 	

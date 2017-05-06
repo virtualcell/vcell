@@ -42,7 +42,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
-import cbit.image.gui.ImagePaneModel;
+import cbit.image.ImagePaneModel;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.FormatSpecificSpecs;

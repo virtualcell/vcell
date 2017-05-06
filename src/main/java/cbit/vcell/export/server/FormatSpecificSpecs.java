@@ -26,7 +26,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.vcell.util.Coordinate;
 
-import cbit.image.gui.ImagePaneModel;
+import cbit.image.ImagePaneModel;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSampleJPEG;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSampleRaw;

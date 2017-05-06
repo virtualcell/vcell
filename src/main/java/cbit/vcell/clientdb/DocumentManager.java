@@ -27,7 +27,6 @@ import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
@@ -61,7 +60,7 @@ public interface DocumentManager {
 	/**
 	 * identifying string, for hashtable passing, et. al
 	 */
-	public static final String IDENT = CommonTask.DOCUMENT_MANAGER.name;
+	public static final String IDENT = "DocumentManager";
 
 /**
  * 

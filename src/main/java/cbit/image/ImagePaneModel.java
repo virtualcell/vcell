@@ -8,12 +8,12 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image.gui;
-import java.awt.*;
-import java.awt.image.*;
-
-import cbit.image.DisplayAdapterService;
-import cbit.image.SourceDataInfo;
+package cbit.image;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 
 /**
  * Insert the type's description here.

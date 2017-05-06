@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.constraints.gui;
+package cbit.vcell.constraints.graph;
 import java.awt.Graphics2D;
 
 public class BoundsNode extends ConstraintGraphNode {

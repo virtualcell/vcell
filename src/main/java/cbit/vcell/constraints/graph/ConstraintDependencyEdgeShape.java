@@ -8,7 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.constraints.gui;
+package cbit.vcell.constraints.graph;
+
 /**
  * This type was created in VisualAge.
  */

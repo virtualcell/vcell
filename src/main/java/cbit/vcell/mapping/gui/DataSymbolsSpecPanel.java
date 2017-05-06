@@ -21,8 +21,8 @@ import javax.swing.JCheckBox;
 
 import org.vcell.util.BeanUtils;
 
+import cbit.image.ImagePaneModel;
 import cbit.image.SourceDataInfo;
-import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePaneScrollerTest;
 import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.vcell.client.constants.GuiConstants;

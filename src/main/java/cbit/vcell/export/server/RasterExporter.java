@@ -74,9 +74,9 @@ import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProc
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
+import cbit.vcell.solvers.MeshDisplayAdapter;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 12:53:34 PM)

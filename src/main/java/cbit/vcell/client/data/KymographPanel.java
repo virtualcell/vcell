@@ -2311,7 +2311,7 @@ private void kymograph_Initialize() {
 
 	updateColorMapDisplay();
 	
-	getImagePaneScroller1().getImagePaneModel().setMode(cbit.image.gui.ImagePaneModel.MESH_MODE);
+	getImagePaneScroller1().getImagePaneModel().setMode(cbit.image.ImagePaneModel.MESH_MODE);
 	getImagePaneScroller1().initRowColumnDescriptions("simulation Time","Distance Along Sample Line");
 	getimagePaneView1().setDrawPaneModel(this);
 	getDisplayJLabel().setText(NONE_MESSAGE);

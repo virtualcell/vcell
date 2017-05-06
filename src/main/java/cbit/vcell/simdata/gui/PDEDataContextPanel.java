@@ -53,6 +53,7 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.StructureMetricsEntry;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary;
+import cbit.vcell.solvers.MeshDisplayAdapter;
 import cbit.vcell.util.FunctionRangeGenerator;
 import cbit.vcell.util.FunctionRangeGenerator.FunctionStatistics;
 

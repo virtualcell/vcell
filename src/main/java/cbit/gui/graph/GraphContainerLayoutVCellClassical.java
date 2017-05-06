@@ -23,7 +23,7 @@ import java.util.List;
 
 import cbit.gui.graph.GraphModel.NotReadyException;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxShape;
-import cbit.vcell.constraints.gui.ConstraintGraphNode;
+import cbit.vcell.constraints.graph.ConstraintGraphNode;
 import cbit.vcell.graph.ContainerContainerShape;
 import cbit.vcell.graph.FeatureShape;
 import cbit.vcell.graph.GeometryClassLegendShape;

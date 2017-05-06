@@ -40,9 +40,9 @@ import org.vcell.util.gui.DownArrowIcon;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
+import cbit.image.ImagePaneModel;
 import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
-import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.constants.GuiConstants;

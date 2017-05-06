@@ -12,6 +12,7 @@ package cbit.image.gui;
 import org.vcell.util.Range;
 
 import cbit.image.DisplayAdapterService;
+import cbit.image.ImagePaneModel;
 import cbit.image.SourceDataInfo;
 
 /**

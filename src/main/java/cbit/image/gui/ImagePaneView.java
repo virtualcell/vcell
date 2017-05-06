@@ -17,6 +17,7 @@ import java.awt.Point;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 
+import cbit.image.ImagePaneModel;
 import cbit.image.ZoomEvent;
 import cbit.image.ZoomListener;
 import cbit.vcell.geometry.gui.DrawPaneModel;
@@ -234,7 +235,7 @@ public boolean getForceZoom() {
 public ImagePaneModel getImagePaneModel() {
 	if (ivjImagePaneModel == null) {
 		try {
-			ivjImagePaneModel = new cbit.image.gui.ImagePaneModel();
+			ivjImagePaneModel = new cbit.image.ImagePaneModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
