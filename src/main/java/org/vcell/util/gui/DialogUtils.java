@@ -59,6 +59,7 @@ import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.VCAssert;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.VersionInfo;

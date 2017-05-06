@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.util.gui;
+package org.vcell.util;
 /**
  * Insert the type's description here.
  * Creation date: (6/1/2004 12:05:40 AM)

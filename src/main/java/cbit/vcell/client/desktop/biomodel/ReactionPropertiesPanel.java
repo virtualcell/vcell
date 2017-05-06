@@ -46,10 +46,10 @@ import org.vcell.pathway.Entity;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
-import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;

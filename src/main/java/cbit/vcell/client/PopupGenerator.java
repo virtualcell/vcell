@@ -15,10 +15,10 @@ import cbit.vcell.client.server.*;
 import javax.swing.*;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 3:16:43 AM)

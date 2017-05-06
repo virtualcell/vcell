@@ -64,8 +64,8 @@ import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;

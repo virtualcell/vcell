@@ -33,12 +33,12 @@ import javax.swing.tree.TreePath;
 
 import org.vcell.util.Compare;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DialogUtils.TableListResult;
-import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TestingFrameworkWindowManager;

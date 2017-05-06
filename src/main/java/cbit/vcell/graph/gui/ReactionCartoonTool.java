@@ -57,10 +57,10 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.SimpleFilenameFilter;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DialogUtils.TableListResult;
 import org.vcell.util.gui.SimpleTransferable;
-import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 
 import cbit.gui.graph.ContainerShape;

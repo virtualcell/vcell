@@ -32,10 +32,10 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.constants.GuiConstants;

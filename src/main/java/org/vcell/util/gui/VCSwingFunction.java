@@ -3,6 +3,7 @@ package org.vcell.util.gui;
 import java.awt.EventQueue;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 
 
 /**

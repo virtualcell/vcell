@@ -70,9 +70,9 @@ import org.vcell.util.Origin;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 
 import cbit.image.ImageSizeInfo;
 import cbit.image.VCImage;

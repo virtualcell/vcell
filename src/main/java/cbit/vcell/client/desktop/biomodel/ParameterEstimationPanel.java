@@ -31,10 +31,10 @@ import org.vcell.optimization.gui.ParameterMappingPanel;
 import org.vcell.optimization.gui.ReferenceDataMappingSpecTableModel;
 import org.vcell.optimization.gui.ReferenceDataPanel;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
-import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.constants.GuiConstants;

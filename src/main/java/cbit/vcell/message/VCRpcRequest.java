@@ -12,8 +12,6 @@ package cbit.vcell.message;
 
 import java.lang.reflect.InvocationTargetException;
 
-import javax.jms.JMSException;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
@@ -114,7 +112,7 @@ public String toString() {
 	return "[" + user + "," + requestedServiceType + "," + methodName + "]";
 }
 
-public final Object rpc(Object rpcServiceImpl, SessionLog log) throws DataAccessException, JMSException, ObjectNotFoundException {
+public final Object rpc(Object rpcServiceImpl, SessionLog log) throws DataAccessException, ObjectNotFoundException {
 	String methodName = getMethodName();
 	Object[] arguments = getArguments();
 	
@@ -199,9 +197,7 @@ public final Object rpc(Object rpcServiceImpl, SessionLog log) throws DataAccess
 	} catch (InvocationTargetException ex) {
 		log.exception(ex);
 	 	Throwable targetExcepton = ex.getTargetException();
-	 	if (targetExcepton instanceof JMSException) {
-		 	throw (JMSException)targetExcepton;
-	 	} else if (targetExcepton instanceof ObjectNotFoundException) {
+	 	if (targetExcepton instanceof ObjectNotFoundException) {
 		 	throw (ObjectNotFoundException)targetExcepton;
 	 	} else if (targetExcepton instanceof DataAccessException) {
 		 	throw (DataAccessException)targetExcepton;

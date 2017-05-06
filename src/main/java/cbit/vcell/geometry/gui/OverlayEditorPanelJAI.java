@@ -79,9 +79,9 @@ import org.vcell.util.CoordinateIndex;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
