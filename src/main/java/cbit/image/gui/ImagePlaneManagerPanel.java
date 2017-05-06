@@ -27,6 +27,7 @@ import org.vcell.util.NumberUtils;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.ImagePaneModel;
+import cbit.image.ImagePlaneManager;
 import cbit.image.SourceDataInfo;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.Curve;
@@ -883,7 +884,7 @@ private ImagePaneView getimagePaneView1() {
 public ImagePlaneManager getImagePlaneManager() {
 	if (ivjImagePlaneManager == null) {
 		try {
-			ivjImagePlaneManager = new cbit.image.gui.ImagePlaneManager();
+			ivjImagePlaneManager = new cbit.image.ImagePlaneManager();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

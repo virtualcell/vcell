@@ -146,6 +146,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.data.DataViewerController;
+import cbit.vcell.client.data.MergedDatasetViewerController;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.AsynchMessageManager;
@@ -153,8 +154,6 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ClientServerManager.InteractiveContext;
 import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.client.server.MergedDatasetViewerController;
-import cbit.vcell.client.server.SimResultsViewerController;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
@@ -165,7 +164,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.client.task.DeleteOldDocument;
 import cbit.vcell.client.task.DocumentToExport;
-import cbit.vcell.client.task.DocumentValid;
+import cbit.vcell.client.task.DocumentValidTask;
 import cbit.vcell.client.task.ExportDocument;
 import cbit.vcell.client.task.FinishExport;
 import cbit.vcell.client.task.FinishSave;
@@ -197,11 +196,11 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MembraneSubDomain;
@@ -3658,7 +3657,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 	AsynchClientTask[] tasks = null;
 	if (needSaveAs) {
 		// check document consistency first
-		AsynchClientTask documentValid = new DocumentValid();
+		AsynchClientTask documentValid = new DocumentValidTask();
 		AsynchClientTask setMathDescription = new SetMathDescription();
 		// get a new name
 		AsynchClientTask newName = new NewName();
@@ -3679,7 +3678,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 			};
 	} else {
 		// check document consistency first
-		AsynchClientTask documentValid = new DocumentValid();
+		AsynchClientTask documentValid = new DocumentValidTask();
 		AsynchClientTask setMathDescription = new SetMathDescription();
 		// check if unchanged document
 		AsynchClientTask checkUnchanged = new CheckUnchanged(true);
@@ -3763,7 +3762,7 @@ public void saveDocument(final DocumentWindowManager documentWindowManager, bool
 
 	/* create tasks */
 	// check document consistency first
-	AsynchClientTask documentValid = new DocumentValid();
+	AsynchClientTask documentValid = new DocumentValidTask();
 	AsynchClientTask setMathDescription = new SetMathDescription();
 	// check if unchanged document
 	AsynchClientTask checkUnchanged = new CheckUnchanged(false);
@@ -3827,7 +3826,7 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, Async
 
 	/* create tasks */
 	// check document consistency first
-	AsynchClientTask documentValid = new DocumentValid();
+	AsynchClientTask documentValid = new DocumentValidTask();
 	AsynchClientTask setMathDescription = new SetMathDescription();
 	// get a new name
 	AsynchClientTask newName = new NewName();

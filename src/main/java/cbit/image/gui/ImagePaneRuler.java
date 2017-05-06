@@ -12,6 +12,8 @@ package cbit.image.gui;
 
 import org.vcell.util.NumberUtils;
 
+import cbit.image.ImagePlaneManager;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2003 5:40:19 PM)

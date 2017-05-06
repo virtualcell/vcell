@@ -1,4 +1,4 @@
-package cbit.vcell.mapping.gui;
+package cbit.vcell.mapping;
 
 import org.vcell.util.ClientTaskStatusSupport;
 

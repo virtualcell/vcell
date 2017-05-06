@@ -66,13 +66,6 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 			+ "and every ordinary Reaction will be converted to Reaction Rule. "
 			+ "</html>";
 
-	public static String rateWarning = "In converting networks to rules, reactants with symmetric sites should have different "
-			+ "microscopic rate constants in reaction rules.<br>If this is not properly treated, the resultant rule-based model will "
-			+ "show different simulation results than its network precursor.";
-	public static String rateWarning2 = "Rates for rules and reactions have different physical meaning and are not converted automatically.";
-	public static String rateWarning3 = "Warning: rates for rules and reactions have different physical meaning (first principle "
-			+ "mass-action vs observed) and are not converted, which may lead to potentially different simulation results";
-	
 	private JButton createModelButton;
 	
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
@@ -501,7 +494,7 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		futureMolecularTypesLabel.setText((m1+s2) + "");
 		futureObservablesLabel.setText((o1+s2) +"");
 //		if(s1 > 0) {
-			rateWarningLabel.setText("<html><font color=#8C001A>" + rateWarning + "</font></html>");
+			rateWarningLabel.setText("<html><font color=#8C001A>" + SimulationContext.rateWarning + "</font></html>");
 //		} else {
 //			rateWarningLabel.setText("");
 //		}

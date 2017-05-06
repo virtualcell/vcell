@@ -32,19 +32,16 @@ import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.List;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.Range;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
@@ -54,8 +51,8 @@ import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
+import cbit.image.ImagePlaneManager;
 import cbit.image.SourceDataInfo;
-import cbit.image.gui.ImagePlaneManager;
 import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.export.nrrd.NrrdInfo.NRRDAxisNames;
@@ -65,7 +62,6 @@ import cbit.vcell.geometry.RegionImage.MembraneElementIdentifier;
 import cbit.vcell.geometry.surface.Node;
 import cbit.vcell.geometry.surface.Quadrilateral;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataOperation;

@@ -15,6 +15,9 @@ import java.awt.FlowLayout;
 import javax.swing.JLabel;
 
 import org.vcell.util.Coordinate;
+
+import cbit.image.ImagePlaneManager;
+
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -709,7 +712,7 @@ public void setImagePlaneMananager(ImagePlaneManager imagePlaneMananager) {
 private void setimagePlaneMananager1(ImagePlaneManager newValue) {
 	if (ivjimagePlaneMananager1 != newValue) {
 		try {
-			cbit.image.gui.ImagePlaneManager oldValue = getimagePlaneMananager1();
+			cbit.image.ImagePlaneManager oldValue = getimagePlaneMananager1();
 			/* Stop listening for events from the current object */
 			if (ivjimagePlaneMananager1 != null) {
 				ivjimagePlaneMananager1.removePropertyChangeListener(ivjEventHandler);

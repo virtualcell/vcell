@@ -127,7 +127,7 @@ public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geo
 	private double[] accumDistancesDataOrig = null;
 	private cbit.image.DisplayAdapterService ivjDisplayAdapterService1 = null;  //  @jve:decl-index=0:
 	private cbit.image.gui.ImagePaneScroller ivjImagePaneScroller1 = null;
-	private cbit.image.gui.ImagePlaneManager ivjImagePlaneManager1 = null;
+	private cbit.image.ImagePlaneManager ivjImagePlaneManager1 = null;
 	private javax.swing.ImageIcon cmapImageIcon = null;  //  @jve:decl-index=0:
 	private javax.swing.JLabel ivjColorMapJLabel = null;
 	private javax.swing.JLabel ivjMaxJLabel = null;
@@ -1328,10 +1328,10 @@ private cbit.image.gui.ImagePaneView getimagePaneView1() {
  * @return cbit.image.ImagePlaneManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.gui.ImagePlaneManager getImagePlaneManager1() {
+private cbit.image.ImagePlaneManager getImagePlaneManager1() {
 	if (ivjImagePlaneManager1 == null) {
 		try {
-			ivjImagePlaneManager1 = new cbit.image.gui.ImagePlaneManager();
+			ivjImagePlaneManager1 = new cbit.image.ImagePlaneManager();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

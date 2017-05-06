@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.server;
+package cbit.vcell.client.data;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -22,9 +22,6 @@ import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.ODEDataManager;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.client.data.DataViewer;
-import cbit.vcell.client.data.DataViewerController;
-import cbit.vcell.client.data.MergedDatasetViewer;
 /**
  * Insert the type's description here.
  * Creation date: (11/30/2005 5:26:31 PM)

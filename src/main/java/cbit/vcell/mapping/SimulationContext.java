@@ -23,10 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.swing.SwingUtilities;
-
 import org.vcell.model.rbm.NetworkConstraints;
-import org.vcell.model.rbm.gui.NetworkFreePanel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
@@ -41,6 +38,7 @@ import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelChildSummary.MathType;
+import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
@@ -50,7 +48,6 @@ import org.vcell.util.document.Versionable;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
-import cbit.vcell.client.task.DocumentValid;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
@@ -67,7 +64,6 @@ import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.spatial.CurveObject;
 import cbit.vcell.mapping.spatial.PointObject;
 import cbit.vcell.mapping.spatial.SpatialObject;
@@ -1139,8 +1135,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boo
 			}
 		}
 		if(isParticipantWithPattern) {
-			String message = NetworkFreePanel.rateWarning2;
-			String tooltip = NetworkFreePanel.rateWarning;
+			String message = SimulationContext.rateWarning2;
+			String tooltip = SimulationContext.rateWarning;
 			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, tooltip, Issue.Severity.WARNING));
 		}
 		for(Structure struct : getModel().getStructures()) {
@@ -2790,7 +2786,7 @@ public MathMapping createNewMathMapping() {
 
 public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGenerationRequirements networkGenReq) {
 	boolean bIgnoreMathDescription = true;
-	DocumentValid.checkIssuesForErrors(this, bIgnoreMathDescription);
+	DocumentValidUtil.checkIssuesForErrors(this, bIgnoreMathDescription);
 	
 	mostRecentlyCreatedMathMapping = null;
 	switch (applicationType) {
@@ -3010,18 +3006,7 @@ public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
 
 @Override
 public void setNewCallbackMessage(TaskCallbackMessage message) {
-	if (!SwingUtilities.isEventDispatchThread()){
-		SwingUtilities.invokeLater(new Runnable(){
-
-			@Override
-			public void run() {
-				appendToConsole(message);
-			}
-			
-		});
-	}else{
-		appendToConsole(message);
-	}
+	appendToConsole(message);
 }
 
 @Override
@@ -3083,6 +3068,12 @@ public PointObject createPointObject() {
 }
 
 private SpatialProcess[] spatialProcesses = new SpatialProcess[0];
+public static String rateWarning = "In converting networks to rules, reactants with symmetric sites should have different "
++ "microscopic rate constants in reaction rules.<br>If this is not properly treated, the resultant rule-based model will "
++ "show different simulation results than its network precursor.";
+public static String rateWarning2 = "Rates for rules and reactions have different physical meaning and are not converted automatically.";
+public static String rateWarning3 = "Warning: rates for rules and reactions have different physical meaning (first principle "
++ "mass-action vs observed) and are not converted, which may lead to potentially different simulation results";
 
 public SpatialProcess[] getSpatialProcesses(){
 	return Arrays.copyOf(spatialProcesses,spatialProcesses.length);
