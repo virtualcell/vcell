@@ -10,6 +10,8 @@
 
 package cbit.vcell.geometry.gui;
 
+import org.vcell.util.DrawPaneModel;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/3/00 11:00:48 AM)

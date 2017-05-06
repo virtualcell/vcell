@@ -8,23 +8,20 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.geometry.gui;
-import java.util.*;
-
-import cbit.vcell.solvers.CartesianMesh;
-
+package cbit.vcell.geometry;
 import java.awt.BasicStroke;
 import java.awt.Color;
-
-import cbit.vcell.geometry.*;
-
-import java.awt.geom.*;
+import java.awt.geom.Point2D;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
+import org.vcell.util.DrawPaneModel;
 
 import cbit.image.DisplayAdapterService;
+import cbit.vcell.solvers.CartesianMesh;
 
 public class CurveRenderer implements DrawPaneModel {
 	//

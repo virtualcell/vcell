@@ -10,6 +10,8 @@
 
 package cbit.vcell.geometry.gui;
 
+import cbit.vcell.geometry.CurveRenderer;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/15/00 4:40:24 PM)

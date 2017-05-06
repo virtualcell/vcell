@@ -8,10 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.geometry.gui;
-import cbit.vcell.geometry.Curve;
-import cbit.vcell.geometry.SampledCurve;
-import java.awt.geom.*;
+package cbit.vcell.geometry;
+import java.awt.geom.Point2D;
 
 import org.vcell.util.Coordinate;
 //

@@ -17,10 +17,11 @@ import java.awt.Point;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 
+import org.vcell.util.DrawPaneModel;
+
 import cbit.image.ImagePaneModel;
 import cbit.image.ZoomEvent;
 import cbit.image.ZoomListener;
-import cbit.vcell.geometry.gui.DrawPaneModel;
 import cbit.vcell.geometry.gui.VCellDrawable;
 
 /**
@@ -208,7 +209,7 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
  * Creation date: (9/4/00 4:30:35 PM)
  * @return cbit.vcell.geometry.DrawPaneModel
  */
-public cbit.vcell.geometry.gui.DrawPaneModel getDrawPaneModel() {
+public org.vcell.util.DrawPaneModel getDrawPaneModel() {
 	return fieldDrawPaneModel;
 }
 /**
@@ -466,7 +467,7 @@ public synchronized void removeZoomListener(ZoomListener l) {
  * Creation date: (9/4/00 4:30:35 PM)
  * @param dpm cbit.vcell.geometry.DrawPaneModel
  */
-public void setDrawPaneModel(cbit.vcell.geometry.gui.DrawPaneModel drawPaneModel) {
+public void setDrawPaneModel(org.vcell.util.DrawPaneModel drawPaneModel) {
 	fieldDrawPaneModel = drawPaneModel;
 }
 /**

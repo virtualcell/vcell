@@ -31,10 +31,10 @@ import cbit.image.ImagePlaneManager;
 import cbit.image.SourceDataInfo;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.CurveRenderer;
 import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveEditorToolPanel;
-import cbit.vcell.geometry.gui.CurveRenderer;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.StructureMetricsEntry;
 
@@ -59,7 +59,7 @@ public class ImagePlaneManagerPanel extends javax.swing.JPanel {
 	private ImagePaneModel ivjimagePaneModel = null;
 	private CurveEditorToolPanel ivjCurveEditorToolPanel1 = null;
 	private CurveEditorTool ivjCurveEditorTool = null;
-	private cbit.vcell.geometry.gui.CurveRenderer ivjCurveRenderer = null;
+	private cbit.vcell.geometry.CurveRenderer ivjCurveRenderer = null;
 	private DisplayAdapterServicePanel ivjDisplayAdapterServicePanel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private DisplayAdapterService ivjdisplayAdapterService1 = null;
@@ -171,7 +171,7 @@ private void calculateScaling(java.awt.Dimension ipmDimension) {
  * @param value cbit.vcell.geometry.gui.CurveRenderer
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(cbit.vcell.geometry.gui.CurveRenderer value) {
+private void connEtoC1(cbit.vcell.geometry.CurveRenderer value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -701,7 +701,7 @@ private void connPtoP5SetTarget() {
 /**
  * Comment
  */
-private void curveRenderer_This(cbit.vcell.geometry.gui.CurveRenderer arg1) {
+private void curveRenderer_This(cbit.vcell.geometry.CurveRenderer arg1) {
 	getImagePaneScroller1().getImagePaneView().setDrawPaneModel(getCurveRenderer());
 }
 /**
@@ -774,7 +774,7 @@ public boolean getCurveEditorToolPanelVisible() {
  * @return cbit.vcell.geometry.gui.CurveRenderer
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public cbit.vcell.geometry.gui.CurveRenderer getCurveRenderer() {
+public cbit.vcell.geometry.CurveRenderer getCurveRenderer() {
 	// user code begin {1}
 	// user code end
 	return ivjCurveRenderer;
@@ -1025,7 +1025,7 @@ private void imagePlaneManagerPanel_Initialize() {
 	getCurveEditorTool().setKeyboardAndMouseEvents(getImagePaneScroller1().getImagePaneView());
 	getImagePaneScroller1().getImagePaneModel().setDisplayAdapterService(getDisplayAdapterServicePanel().getDisplayAdapterService());
 	setCurveRenderer(
-		new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterServicePanel().getDisplayAdapterService()));
+		new cbit.vcell.geometry.CurveRenderer(getDisplayAdapterServicePanel().getDisplayAdapterService()));
 	getImagePaneScroller1().setImagePlaneManager(getImagePlanePanel1().getImagePlaneMananager());
 }
 /**
@@ -1158,10 +1158,10 @@ public void setCurveEditorToolPanelVisible(boolean curveEditorToolPanelVisible) 
  * @param newValue cbit.vcell.geometry.gui.CurveRenderer
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void setCurveRenderer(cbit.vcell.geometry.gui.CurveRenderer newValue) {
+public void setCurveRenderer(cbit.vcell.geometry.CurveRenderer newValue) {
 	if (ivjCurveRenderer != newValue) {
 		try {
-			cbit.vcell.geometry.gui.CurveRenderer oldValue = getCurveRenderer();
+			cbit.vcell.geometry.CurveRenderer oldValue = getCurveRenderer();
 			/* Stop listening for events from the current object */
 			if (ivjCurveRenderer != null) {
 				ivjCurveRenderer.removePropertyChangeListener(ivjEventHandler);

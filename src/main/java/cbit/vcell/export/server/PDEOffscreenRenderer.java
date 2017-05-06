@@ -158,8 +158,8 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode,int volVarM
 		// apply curve renderer
 		//
 		if (!getServerPDEDataContext().getDataIdentifier().getVariableType().equals(VariableType.POSTPROCESSING) && volVarMembrOutlineThickness > 0){
-			cbit.vcell.geometry.gui.CurveRenderer curveRenderer =
-				new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterService());
+			cbit.vcell.geometry.CurveRenderer curveRenderer =
+				new cbit.vcell.geometry.CurveRenderer(getDisplayAdapterService());
 			curveRenderer.setNormalAxis(getNormalAxis());
 
 			org.vcell.util.Origin origin = mesh.getOrigin();
@@ -188,8 +188,8 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode,int volVarM
 		//
 		// apply curve renderer
 		//
-		cbit.vcell.geometry.gui.CurveRenderer curveRenderer =
-			new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterService());
+		cbit.vcell.geometry.CurveRenderer curveRenderer =
+			new cbit.vcell.geometry.CurveRenderer(getDisplayAdapterService());
 		curveRenderer.setNormalAxis(getNormalAxis());
 
 		org.vcell.util.Origin origin = mesh.getOrigin();

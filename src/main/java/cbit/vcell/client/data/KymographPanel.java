@@ -56,7 +56,7 @@ import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel.MultiTimePlotHel
  * Creation date: (12/14/2004 9:38:13 AM)
  * @author: Frank Morgan
  */
-public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geometry.gui.DrawPaneModel {
+public class KymographPanel extends javax.swing.JPanel implements org.vcell.util.DrawPaneModel {
 	
 	private class MinMaxMeanHolder {
 		private double min;
