@@ -15,7 +15,6 @@ import java.util.HashMap;
 import org.vcell.util.BeanUtils;
 
 import cbit.rmi.event.SimulationJobStatusEvent;
-import cbit.vcell.message.server.dispatcher.SimulationStateMachine;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 
@@ -50,6 +49,17 @@ public class SimulationStatus implements java.io.Serializable {
 	private boolean hasData = false;
 	private SimulationJobStatus[] jobStatuses = null;
 	private SimulationJobStatus[] oldJobStatuses = null;		// historical entries ... for debugging and administrative use (currently unused).
+	// bitmapped counter so that allows 3 retries for each request (but preserves ordinal nature)
+	// bits 0-3: retry count
+	// bits 4-31: submit
+	// max retries must be less than 15.
+	
+	/**
+	 * used by database and SimulationStateMachine.
+	 */
+	public static final int TASKID_USERCOUNTER_MASK		= 0xFFFFFFF0;
+	public static final int TASKID_RETRYCOUNTER_MASK	= 0x0000000F;
+	public static final int TASKID_USERINCREMENT	    = 0x00000010;
 
 /**
  * Insert the method's description here.
@@ -564,12 +574,12 @@ private static SimulationStatus updateFromJobEvent0(SimulationStatus oldStatus, 
 	// figure out task ID ordinality...
 	int someOldID = oldStatus.getJobStatuses()[0].getTaskID(); // doesn't matter which one, should all be on same block
 	int newID = newJobStatus.getTaskID();
-	if (newID - newID % SimulationStateMachine.TASKID_USERINCREMENT > someOldID) {
+	if (newID - newID % SimulationStatus.TASKID_USERINCREMENT > someOldID) {
 		// upper block; event comes from a new submission; discard all old stuff
 		newSimStatus = new SimulationStatus(new SimulationJobStatus[] {newJobStatus});
 		newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
 		return newSimStatus;
-	} else if (someOldID - someOldID % SimulationStateMachine.TASKID_USERINCREMENT > newID) {
+	} else if (someOldID - someOldID % SimulationStatus.TASKID_USERINCREMENT > newID) {
 		// lower block; event comes from an old submission; ignore
 		return oldStatus;
 	}

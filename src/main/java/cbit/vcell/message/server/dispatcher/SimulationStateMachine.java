@@ -28,6 +28,7 @@ import cbit.vcell.server.RunningStateInfo;
 import cbit.vcell.server.SimulationExecutionStatus;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationQueueEntryStatus;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.UpdateSynchronizationException;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.solver.Simulation;
@@ -42,9 +43,9 @@ public class SimulationStateMachine {
 	// bits 0-3: retry count
 	// bits 4-31: submit
 	// max retries must be less than 15.
-	public static final int TASKID_USERCOUNTER_MASK		= 0xFFFFFFF0;
-	public static final int TASKID_RETRYCOUNTER_MASK	= 0x0000000F;
-	public static final int TASKID_USERINCREMENT	    = 0x00000010;
+	public static final int TASKID_USERCOUNTER_MASK		= SimulationStatus.TASKID_USERCOUNTER_MASK;
+	public static final int TASKID_RETRYCOUNTER_MASK	= SimulationStatus.TASKID_RETRYCOUNTER_MASK;
+	public static final int TASKID_USERINCREMENT	    = SimulationStatus.TASKID_USERINCREMENT;
 
 	public static final int PRIORITY_LOW = 0;
 	public static final int PRIORITY_DEFAULT = 5;
@@ -415,7 +416,7 @@ public class SimulationStateMachine {
 		
 		if (oldTaskID > -1){
 			// calculate new task
-			newTaskID = (oldTaskID & TASKID_USERCOUNTER_MASK) + TASKID_USERINCREMENT;
+			newTaskID = (oldTaskID & SimulationStatus.TASKID_USERCOUNTER_MASK) + SimulationStatus.TASKID_USERINCREMENT;
 		}else{
 			// first task, start with 0
 			newTaskID = 0;

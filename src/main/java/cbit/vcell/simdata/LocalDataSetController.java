@@ -21,8 +21,8 @@ import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.message.server.bootstrap.LocalVCellConnection;
 import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.CartesianMesh;
 /**
@@ -30,7 +30,7 @@ import cbit.vcell.solvers.CartesianMesh;
  * 
  */
 public class LocalDataSetController implements DataSetController {
-	private LocalVCellConnection vcConn = null;
+	private VCellConnection vcConn = null;
 	private SessionLog log = null;
 	private User user = null;
 	private DataServerImpl dataServerImpl = null;
@@ -38,7 +38,7 @@ public class LocalDataSetController implements DataSetController {
 /**
  * This method was created by a SmartGuide.
  */
-public LocalDataSetController (LocalVCellConnection argvcConn, SessionLog log, DataSetControllerImpl dsControllerImpl, ExportServiceImpl exportServiceImpl, User user) {
+public LocalDataSetController (VCellConnection argvcConn, SessionLog log, DataSetControllerImpl dsControllerImpl, ExportServiceImpl exportServiceImpl, User user) {
 	this.vcConn = argvcConn;
 	this.user = user;
 	this.log = log;
