@@ -31,7 +31,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.tree.TreePath;
 
-import org.vcell.util.Compare;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.KeyValue;
@@ -60,7 +59,6 @@ import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.client.task.TFUpdateTestCriteria;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.numericstest.LoadTestInfoOP;
 import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
@@ -674,17 +672,18 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 						uniqueUserIDArr = (uniqueUserIDTreeSet.size()==0?null:uniqueUserIDTreeSet.toArray(new String[0]));
 						bioAndMathModelKeyValueArr = (bioAndMathModelKeyValueV.size()==0?null:bioAndMathModelKeyValueV.toArray(new KeyValue[0]));
 					}
-					MathVerifier mathVerifier = MathVerifier.createMathVerifier(
-							enterDBAndSoftwareVersPanel.getDBHost(),
-							enterDBAndSoftwareVersPanel.getDBName(),
-							enterDBAndSoftwareVersPanel.getDBSchema(),
-							enterDBAndSoftwareVersPanel.getDBPassword());
-					mathVerifier.runLoadTest(
-							uniqueUserIDArr,
-							bioAndMathModelKeyValueArr,
-							enterDBAndSoftwareVersPanel.getSoftwareVersion(),
-							(enterDBAndSoftwareVersPanel.getSoftwareVersion().length()==0?false:true),
-							(enterDBAndSoftwareVersPanel.getSoftwareVersion().length()==0?Compare.DEFAULT_COMPARE_LOGGER:null));
+					throw new RuntimeException(TestingFrameworkWindowPanel.class.getSimpleName()+".runXMLLoadTestTask(): Run Load Test disabled, directly dependend on MathVerifier.runLoadTest(), should move to standalone admin tool.");
+//					MathVerifier mathVerifier = MathVerifier.createMathVerifier(
+//							enterDBAndSoftwareVersPanel.getDBHost(),
+//							enterDBAndSoftwareVersPanel.getDBName(),
+//							enterDBAndSoftwareVersPanel.getDBSchema(),
+//							enterDBAndSoftwareVersPanel.getDBPassword());
+//					mathVerifier.runLoadTest(
+//							uniqueUserIDArr,
+//							bioAndMathModelKeyValueArr,
+//							enterDBAndSoftwareVersPanel.getSoftwareVersion(),
+//							(enterDBAndSoftwareVersPanel.getSoftwareVersion().length()==0?false:true),
+//							(enterDBAndSoftwareVersPanel.getSoftwareVersion().length()==0?Compare.DEFAULT_COMPARE_LOGGER:null));
 				}
 			};
 			tasksV.add(runXMLLoadTestTask);

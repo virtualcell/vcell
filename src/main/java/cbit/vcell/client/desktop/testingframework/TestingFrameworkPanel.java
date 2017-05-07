@@ -44,7 +44,6 @@ import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.modeldb.TFTestSuiteTable;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
@@ -1618,13 +1617,14 @@ private JMenuItem getLockTestSuiteMenuItem(){
 			public void actionPerformed(ActionEvent e) {
 				final String lockOption = "Lock TestSuite";
 				final String cancelOption = "Cancel";
+				final String TFTestSuiteTable_Name = "vc_tfTestSuite";
 				String result = DialogUtils.showWarningDialog(TestingFrameworkPanel.this,
 						"Locking a TestSuite prevents user actions from changing the locked Testsuite.  "+
-						"Locking sets a flag (isLocked) on the "+TFTestSuiteTable.table.getTableName()+
+						"Locking sets a flag (isLocked) on the "+TFTestSuiteTable_Name+
 						" table.  A 'trigger' is defined in oracle for each of the 4 vc_tf... tables "+
 						"that checks the lock flag for a non-zero value that prevents changes if set.\n\n"+
 						"NOTE:  TestSuites can only be unlocked by using an SQL tool and first DISABLING the 'trigger' "+
-						"on the "+TFTestSuiteTable.table.getTableName()+" table "+
+						"on the "+TFTestSuiteTable_Name+" table "+
 						"[ALTER TRIGGER VCELL.TS_LOCK_TRIG DISABLE] "+
 						"which unlocks all TestSuites then set "+
 						"the 'isLocked' value for the desired row to 0, then RE_ENABLE the 'trigger' "+
