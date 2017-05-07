@@ -11,9 +11,9 @@ import org.junit.Test;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.solvers.ExecutableCommand.Container;
-import cbit.vcell.tools.PortableCommand;
 
 
 public class SgeProxyTest {

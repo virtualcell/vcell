@@ -1,4 +1,4 @@
-package cbit.vcell.modeldb;
+package cbit.vcell.server;
 
 import java.io.Serializable;
 

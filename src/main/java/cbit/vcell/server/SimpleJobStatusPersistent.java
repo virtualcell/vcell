@@ -10,8 +10,7 @@
 
 package cbit.vcell.server;
 
-import cbit.vcell.messaging.db.SimulationDocumentLink;
-import cbit.vcell.messaging.db.SimulationMetadata;
+import cbit.vcell.solver.SimulationMetadata;
 
 /**
  * Insert the type's description here.

@@ -1,5 +1,7 @@
 package cbit.vcell.tools;
 
+import cbit.vcell.simdata.PortableCommand;
+
 /**
  * PortableCommand which fails, for testing
  * @author gweatherby

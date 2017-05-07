@@ -1,5 +1,7 @@
 package cbit.vcell.messaging.db;
 
+import cbit.vcell.server.SimulationDocumentLink;
+
 public class BioModelLink extends SimulationDocumentLink {
 	public final static String bmid = "bioModelKey";
 	public final static String bmbranch = "bioModelBranchId";

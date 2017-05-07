@@ -1,5 +1,7 @@
 package cbit.vcell.messaging.db;
 
+import cbit.vcell.server.SimulationDocumentLink;
+
 public class MathModelLink extends SimulationDocumentLink {
 	public final static String mmid = "mathModelKey";
 	public final static String mmbranch = "mathModelBranchId";

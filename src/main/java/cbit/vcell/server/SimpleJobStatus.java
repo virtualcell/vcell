@@ -8,13 +8,16 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.messaging.db;
+package cbit.vcell.server;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 import org.vcell.util.ComparableObject;
 
-import cbit.vcell.server.SimulationJobStatus;
+import cbit.vcell.messaging.db.BioModelLink;
+import cbit.vcell.messaging.db.MathModelLink;
+import cbit.vcell.messaging.db.StateInfo;
+import cbit.vcell.solver.SimulationMetadata;
 
 /**
  * Insert the type's description here.

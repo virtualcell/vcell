@@ -20,7 +20,7 @@ import java.util.Set;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import cbit.vcell.tools.PortableCommand;
+import cbit.vcell.simdata.PortableCommand;
 
 
 

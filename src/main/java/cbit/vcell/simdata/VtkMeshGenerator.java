@@ -16,7 +16,6 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.tools.PortableCommand;
 
 /**
  * Generate mesh after simulation finishes, where applicable.

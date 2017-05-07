@@ -37,10 +37,10 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.OperatingSystemInfo.OsType;
+import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
-import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.tools.PortableCommandWrapper;
 import cbit.vcell.util.NativeLoader;
 /**

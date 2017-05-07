@@ -1,6 +1,6 @@
 package cbit.vcell.tools;
 
-import cbit.vcell.tools.PortableCommand;
+import cbit.vcell.simdata.PortableCommand;
 
 /**
  * test class

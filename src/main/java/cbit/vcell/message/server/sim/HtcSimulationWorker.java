@@ -48,6 +48,7 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VtkMeshGenerator;
 import cbit.vcell.solver.SolverException;
@@ -58,7 +59,6 @@ import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
-import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 /**

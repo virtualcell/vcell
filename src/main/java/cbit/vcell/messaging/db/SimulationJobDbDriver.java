@@ -31,13 +31,15 @@ import org.vcell.util.document.VCellServerID;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.MathModelSimulationLinkTable;
-import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.server.SimpleJobStatusPersistent;
+import cbit.vcell.server.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationDocumentLink;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.SimulationMetadata;
 
 import com.google.gson.Gson;
 

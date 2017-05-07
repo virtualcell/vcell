@@ -18,8 +18,8 @@ import org.vcell.util.document.UserLoginInfo;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
-import cbit.vcell.messaging.db.SimpleJobStatus;
-import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimpleJobStatus;
+import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 

@@ -24,8 +24,8 @@ import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.solvers.ExecutableCommand;
-import cbit.vcell.tools.PortableCommand;
 
 public abstract class HtcProxy {
 	protected static final Logger LG = Logger.getLogger(HtcProxy.class);

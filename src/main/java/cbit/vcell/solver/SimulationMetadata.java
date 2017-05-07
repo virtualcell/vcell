@@ -8,13 +8,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.messaging.db;
+package cbit.vcell.solver;
 import java.io.Serializable;
 
 import org.vcell.util.document.User;
-
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
  * Insert the type's description here.
