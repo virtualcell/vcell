@@ -23,7 +23,6 @@ import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
 import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.SimulationJobStatusPersistent;
 
 public class ServiceTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_service";
@@ -90,7 +89,7 @@ public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {
 	HtcJobID parsedHtcJobId = null;
 	String parsedHtcJobDatabaseString = rset.getString(pbsjobid.toString());
 	if (!rset.wasNull() && parsedHtcJobDatabaseString!=null && parsedHtcJobDatabaseString.length()>0) {
-		parsedHtcJobId = SimulationJobStatusPersistent.fromDatabase(parsedHtcJobDatabaseString);
+		parsedHtcJobId = SimulationJobTable.fromDatabase(parsedHtcJobDatabaseString);
 	}
 	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, ServiceStartupType.fromDatabaseNumber(parsedStartupType), parsedMemoryMB), 
 			parsedDate, ServiceStatusType.fromDatabaseNumber(parsedStatus), parsedStatusMsg, parsedHtcJobId);

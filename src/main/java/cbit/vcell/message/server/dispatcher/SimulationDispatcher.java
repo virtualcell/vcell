@@ -548,7 +548,18 @@ public class SimulationDispatcher extends ServiceProvider {
 				return;
 			}
 
-			WorkerEventMessage workerEventMessage = new WorkerEventMessage(simulationDatabase, vcMessage);
+			WorkerEventMessage.UserResolver userResolver = new WorkerEventMessage.UserResolver() {
+				@Override
+				public User getUser(String username) {
+					try {
+						return simulationDatabase.getUser(username);
+					}catch (SQLException | DataAccessException e){
+						throw new RuntimeException("cannot resolve user from userid "+username,e);
+					}
+				}
+			};
+			
+			WorkerEventMessage workerEventMessage = new WorkerEventMessage(userResolver, vcMessage);
 			WorkerEvent workerEvent = workerEventMessage.getWorkerEvent();
 			simDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabase, session, log);
 

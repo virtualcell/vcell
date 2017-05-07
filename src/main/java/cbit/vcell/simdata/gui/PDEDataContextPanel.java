@@ -30,7 +30,6 @@ import cbit.image.SourceDataInfo;
 import cbit.image.gui.DisplayAdapterServicePanel;
 import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.vcell.client.data.PDEDataViewer;
-import cbit.vcell.client.data.PDEDataViewer.DataInfoProvider;
 import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.CurveRenderer;
@@ -44,6 +43,8 @@ import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
+import cbit.vcell.simdata.DataInfoProvider;
+import cbit.vcell.simdata.MembraneDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
@@ -64,7 +65,7 @@ import cbit.vcell.util.FunctionRangeGenerator.FunctionStatistics;
  */
 public class PDEDataContextPanel extends javax.swing.JPanel implements CurveValueProvider {
 	//
-	private PDEDataViewer.DataInfoProvider dataInfoProvider;
+	private DataInfoProvider dataInfoProvider;
 	//
 	private java.util.Vector<Curve> membraneSamplerCurves = null;
 	private java.util.Hashtable<SampledCurve, int[]> membranesAndIndexes = null;
@@ -885,7 +886,7 @@ public String getCurveValue(CurveSelectionInfo csi) {
 							else
 							{
 								if(getDataInfoProvider() != null){
-									PDEDataViewer.MembraneDataInfo membraneDataInfo =
+									MembraneDataInfo membraneDataInfo =
 										getDataInfoProvider().getMembraneDataInfo(membraneIndexes[csi.getSegment()]);
 									infoS+= "          ";
 									infoS+= " \""+membraneDataInfo.membraneName+"\"";
@@ -1595,10 +1596,10 @@ private void updateMembraneCurves() {
 	//
 	fireDataSamplers();
 }
-public PDEDataViewer.DataInfoProvider getDataInfoProvider() {
+public DataInfoProvider getDataInfoProvider() {
 	return dataInfoProvider;
 }
-public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider) {
+public void setDataInfoProvider(DataInfoProvider dataInfoProvider) {
 	this.dataInfoProvider = dataInfoProvider;
 	getImagePlaneManagerPanel().setDataInfoProvider(getDataInfoProvider());
 	recodeDataForDomain();

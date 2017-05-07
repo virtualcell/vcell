@@ -24,6 +24,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.graph.StructureMappingShape;
 import cbit.vcell.graph.GeometryClassLegendShape;
+import cbit.vcell.graph.StructureMappingCartoon;
 import cbit.vcell.graph.StructureShape;
 import cbit.vcell.graph.gui.BioCartoonTool;
 import cbit.vcell.mapping.IllegalMappingException;

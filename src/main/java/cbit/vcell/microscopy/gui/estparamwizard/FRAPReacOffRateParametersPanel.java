@@ -41,7 +41,6 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptFunctions;
 import cbit.vcell.microscopy.FRAPOptimizationUtils;
@@ -50,6 +49,7 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.gui.ExpressionCanvas;
 
 @SuppressWarnings("serial")
 public class FRAPReacOffRateParametersPanel extends JPanel

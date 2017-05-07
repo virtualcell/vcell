@@ -10,14 +10,11 @@
 
 package cbit.vcell.geometry.surface;
 
-import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 
-import cbit.vcell.client.task.ExportDocument;
 import cbit.vcell.render.Vect3d;
 
 /**

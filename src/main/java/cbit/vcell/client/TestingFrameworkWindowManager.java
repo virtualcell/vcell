@@ -70,7 +70,6 @@ import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.DataViewerController;
 import cbit.vcell.client.data.MergedDatasetViewerController;
-import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.TestingFrameworkWindow;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
@@ -143,6 +142,7 @@ import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.DataListener;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.MergedDataInfo;
@@ -1213,7 +1213,7 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 }
 
 
-private PDEDataViewer.DataInfoProvider getDataInfoProvider(VCDocument document,PDEDataContext pdeDataContext,String refSimName) throws ObjectNotFoundException{
+private DataInfoProvider getDataInfoProvider(VCDocument document,PDEDataContext pdeDataContext,String refSimName) throws ObjectNotFoundException{
 
 	SimulationWorkspaceModelInfo simulationWorkspaceModelInfo = null;
 	if(document instanceof MathModel){
@@ -1237,8 +1237,8 @@ private PDEDataViewer.DataInfoProvider getDataInfoProvider(VCDocument document,P
 			}
 		}
 	}
-	PDEDataViewer.DataInfoProvider dataInfoProvider =
-		new PDEDataViewer.DataInfoProvider(pdeDataContext, simulationWorkspaceModelInfo);
+	DataInfoProvider dataInfoProvider =
+		new DataInfoProvider(pdeDataContext, simulationWorkspaceModelInfo);
 	return dataInfoProvider;
 }
 /**

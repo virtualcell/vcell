@@ -9,14 +9,14 @@
  */
 
 package cbit.vcell.export.server;
+import java.io.IOException;
+import java.io.Serializable;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
-import cbit.vcell.simdata.gui.*;
-
-import java.io.*;
-
-import org.vcell.util.BeanUtils;
 /**
  * This type was created in VisualAge.
  */

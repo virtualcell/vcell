@@ -31,16 +31,11 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.EventObject;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,7 +46,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -71,14 +65,12 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import org.apache.http.concurrent.Cancellable;
 import org.vcell.imagej.ImageJHelper;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -87,9 +79,7 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DataJobListenerHolder;
-import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
-import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -118,16 +108,13 @@ import cbit.plot.SingleXPlot2D;
 import cbit.plot.gui.PlotPane;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
-import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientSimManager.LocalVCSimulationDataIdentifier;
 import cbit.vcell.client.DataViewerManager;
-import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.PDEDataViewerPostProcess.PostProcessDataPDEDataContext;
-import cbit.vcell.client.desktop.geometry.GeometryDisplayPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
@@ -148,7 +135,6 @@ import cbit.vcell.export.server.RasterSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.geometry.Curve;
-import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.SubVolume;
@@ -160,27 +146,23 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
-import cbit.vcell.graph.GeometryContextGeometryShape;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFormatException;
-import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
+import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
@@ -196,12 +178,11 @@ import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel.MultiTimePlotHel
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
+import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
 import cbit.vcell.solvers.MeshDisplayAdapter;
@@ -421,7 +402,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
+							getPDEDataContextPanel1().setDataInfoProvider(new DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 							getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
 							if(getSimulationModelInfo() != null && getSimulationModelInfo().getDataSymbolMetadataResolver().getUniqueFilterCategories() != null){
 								getPDEPlotControlPanel1().setDataIdentifierFilter(new DefaultDataIdentifierFilter(getSimulationModelInfo().getDataSymbolMetadataResolver()));
@@ -699,100 +680,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 
 	}
 	
-	public static class VolumeDataInfo{
-		public final int volumeIndex;
-		public final String volumeNamePhysiology;
-		public final String volumeNameGeometry;
-		public final Integer subvolumeID0;
-		public final int volumeRegionID;
-		public VolumeDataInfo(int volumeIndex,CartesianMesh cartesianMesh,SimulationModelInfo simulationModelInfo){
-			this.volumeIndex = volumeIndex;
-			volumeRegionID = cartesianMesh.getVolumeRegionIndex(volumeIndex);
-			if(cartesianMesh.hasSubvolumeInfo()){
-				subvolumeID0 = cartesianMesh.getSubVolumeFromVolumeIndex(volumeIndex);
-				volumeNamePhysiology = simulationModelInfo.getVolumeNamePhysiology(subvolumeID0);
-				volumeNameGeometry = simulationModelInfo.getVolumeNameGeometry(subvolumeID0);				
-			}else{
-				subvolumeID0 = null;
-				volumeNamePhysiology = null;
-				volumeNameGeometry = null;							
-			}
-		}
-	}
-
-	public static class MembraneDataInfo{
-		public final int membraneIndex;
-		public final MembraneElement membraneElement;
-		public final String membraneName;
-		public final int membraneRegionID;
-		public MembraneDataInfo(int membraneIndex,CartesianMesh cartesianMesh,SimulationModelInfo simulationModelInfo){
-			this.membraneIndex = membraneIndex;
-			membraneElement = cartesianMesh.getMembraneElements()[membraneIndex];
-			membraneRegionID = cartesianMesh.getMembraneRegionIndex(membraneIndex);
-			membraneName =
-				simulationModelInfo.getMembraneName(
-						cartesianMesh.getSubVolumeFromVolumeIndex(membraneElement.getInsideVolumeIndex()),
-						cartesianMesh.getSubVolumeFromVolumeIndex(membraneElement.getOutsideVolumeIndex()), false);
-		}
-	}
-
-	public static class DataInfoProvider{
-		private PDEDataContext pdeDataContext;
-		private SimulationModelInfo simulationModelInfo;
-		public DataInfoProvider(PDEDataContext pdeDataContext, SimulationModelInfo simulationModelInfo){
-			this.pdeDataContext = pdeDataContext;
-			this.simulationModelInfo = simulationModelInfo;
-		}
-		public VolumeDataInfo getVolumeDataInfo(int volumeIndex){
-			return new VolumeDataInfo(volumeIndex,pdeDataContext.getCartesianMesh(),simulationModelInfo);
-		}
-		public MembraneDataInfo getMembraneDataInfo(int membraneIndex){
-			return new MembraneDataInfo(membraneIndex,pdeDataContext.getCartesianMesh(),simulationModelInfo);
-		}
-		public boolean isDefined(int dataIndex){
-			if (pdeDataContext.getCartesianMesh().isChomboMesh()) { //Chombo Hack
-				double sol = pdeDataContext.getDataValues()[dataIndex];
-				return sol != SimDataConstants.BASEFAB_REAL_SETVAL && !Double.isNaN(sol);
-			}
-			return isDefined(pdeDataContext.getDataIdentifier(),dataIndex);
-		}
-		public boolean isDefined(DataIdentifier dataIdentifier,int dataIndex){
-			try {
-				Domain varDomain = dataIdentifier.getDomain();
-				if (varDomain == null || dataIdentifier.getVariableType().equals(VariableType.POSTPROCESSING)) {
-					return true;
-				}
-				VariableType varType = dataIdentifier.getVariableType();
-				if (pdeDataContext.getCartesianMesh().isChomboMesh() && !Double.isNaN(pdeDataContext.getDataValues()[dataIndex]))
-				{
-					return true;
-				}
-				if(varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
-					int subvol = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(dataIndex);
-					if (simulationModelInfo.getVolumeNameGeometry(subvol) == null || simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
-						return true;
-					}				
-				}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-					String memSubdomainName = pdeDataContext.getCartesianMesh().getMembraneSubdomainNamefromMemIndex(dataIndex);
-					if (varDomain.getName().equals(memSubdomainName)){
-						return true;
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return false;
-		}
-		public final SimulationModelInfo getSimulationModelInfo() {
-			return simulationModelInfo;
-		}
-		public PDEDataContext getPDEDataContext(){
-			return pdeDataContext;
-		}
-	}
-
-
-public PDEDataViewer() {
+	public PDEDataViewer() {
 	super();
 	initialize();
 }
@@ -2244,7 +2132,7 @@ private void setupDataInfoProvider() throws Exception{
 //			(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) {
 //	}
 	if (getPdeDataContext() != null && getSimulationModelInfo() != null){
-		getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
+		getPDEDataContextPanel1().setDataInfoProvider(new DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 		getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
 		if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getDataSymbolMetadataResolver().getUniqueFilterCategories() != null){
 			DefaultDataIdentifierFilter newFilter = new DefaultDataIdentifierFilter(((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getDataSymbolMetadataResolver());

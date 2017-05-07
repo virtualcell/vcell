@@ -19,7 +19,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.AbstractMathMapping;
@@ -65,6 +64,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionTerm;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
@@ -146,8 +146,8 @@ public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, 
 public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTable testSimSymbolTable, 
 		PDEDataManager testDataManager,SimulationSymbolTable refSimSymbolTable, PDEDataManager refDataManager, String varsToCompare[],
 		double absErrorThreshold, double relErrorThreshold,
-		VCDocument refDocument,PDEDataViewer.DataInfoProvider refDataInfoProvider,
-		VCDocument testDocument,PDEDataViewer.DataInfoProvider testDataInfoProvider) throws DataAccessException, ExpressionException {
+		VCDocument refDocument,DataInfoProvider refDataInfoProvider,
+		VCDocument testDocument,DataInfoProvider testDataInfoProvider) throws DataAccessException, ExpressionException {
 
 	java.util.Hashtable<String, DataErrorSummary> tempVarHash = new java.util.Hashtable<String, DataErrorSummary>();
 	boolean bTimesEqual = true;

@@ -23,6 +23,7 @@ import org.vcell.util.BeanUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ReactionCanvas;
 import cbit.vcell.model.SimpleReaction;
 /**
  * Insert the type's description here.

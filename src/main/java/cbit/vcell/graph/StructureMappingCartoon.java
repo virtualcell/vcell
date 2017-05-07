@@ -8,30 +8,18 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.mapping.gui;
+package cbit.vcell.graph;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
+
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.graph.FeatureShape;
-import cbit.vcell.graph.GeometryClassLegendShape;
-import cbit.vcell.graph.GeometryContextContainerShape;
-import cbit.vcell.graph.GeometryContextGeometryShape;
-import cbit.vcell.graph.GeometryContextStructureShape;
-import cbit.vcell.graph.StructureMappingShape;
-import cbit.vcell.graph.StructureMappingStructureShape;
-import cbit.vcell.graph.StructureShape;
-import cbit.vcell.graph.SubVolumeContainerShape;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure;
 
 public class StructureMappingCartoon extends GraphModel implements PropertyChangeListener {

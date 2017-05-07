@@ -87,6 +87,7 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ClientPDEDataContext;
@@ -2396,8 +2397,8 @@ private void setTimeFromTextField(JTextField textField, JSlider slider) {
 }
 
 
-private PDEDataViewer.DataInfoProvider dataInfoProvider;
-public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider){
+private DataInfoProvider dataInfoProvider;
+public void setDataInfoProvider(DataInfoProvider dataInfoProvider){
 	this.dataInfoProvider = dataInfoProvider;
 }
 /**

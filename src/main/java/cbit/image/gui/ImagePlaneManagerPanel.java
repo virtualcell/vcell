@@ -29,12 +29,13 @@ import cbit.image.DisplayAdapterService;
 import cbit.image.ImagePaneModel;
 import cbit.image.ImagePlaneManager;
 import cbit.image.SourceDataInfo;
-import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.CurveRenderer;
 import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveEditorToolPanel;
+import cbit.vcell.simdata.DataInfoProvider;
+import cbit.vcell.simdata.VolumeDataInfo;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.StructureMetricsEntry;
 
@@ -45,7 +46,7 @@ import cbit.vcell.solvers.CartesianMeshChombo.StructureMetricsEntry;
  */
 public class ImagePlaneManagerPanel extends javax.swing.JPanel {
 	//
-	private PDEDataViewer.DataInfoProvider dataInfoProvider;
+	private DataInfoProvider dataInfoProvider;
 	//
 	private static final String defaultInfoString = "Info";
 	//
@@ -1465,7 +1466,7 @@ private void updateInfo(MouseEvent mouseEvent) {
 							}else if(getDataInfoProvider() != null){
 								infoS+= "          ";
 								try{
-									PDEDataViewer.VolumeDataInfo volumeDataInfo =
+									VolumeDataInfo volumeDataInfo =
 										getDataInfoProvider().getVolumeDataInfo(volumeIndex);
 									if(volumeDataInfo.subvolumeID0 != null){
 										infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
@@ -1530,10 +1531,10 @@ private void updatePanZoom() {
 		//cbit.util.BeanUtils.setCursorThroughout(getImagePaneScroller1(), defaultCursor);
 	//}
 }
-private PDEDataViewer.DataInfoProvider getDataInfoProvider() {
+private DataInfoProvider getDataInfoProvider() {
 	return dataInfoProvider;
 }
-public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider) {
+public void setDataInfoProvider(DataInfoProvider dataInfoProvider) {
 	this.dataInfoProvider = dataInfoProvider;
 }
 }

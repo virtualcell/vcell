@@ -15,9 +15,6 @@ import java.util.Date;
 import org.vcell.util.Compare;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.message.server.htc.pbs.PbsJobID;
-import cbit.vcell.message.server.htc.sge.SgeJobID;
-import cbit.vcell.message.server.htc.slurm.SlurmJobID;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
 
@@ -423,20 +420,5 @@ public void setTimeDateStamp(java.util.Date newFieldTimeDateStamp) {
 public String toString() {
 	return "SimulationJobStatus[" + fieldVCSimID + ",status=" + fieldSchedulerStatus + ",job=" + fieldJobIndex + ",task=" + fieldTaskID + "," + fieldSimulationMessage 
 	+ ",execStatus=" + fieldSimulationExecutionStatus+"]";
-}
-
-public static HtcJobID fromDatabase(String databaseString){
-	String PBS_Prefix = HtcJobID.BatchSystemType.PBS.name()+":";
-	String SGE_Prefix = HtcJobID.BatchSystemType.SGE.name()+":";
-	String SLURM_Prefix = HtcJobID.BatchSystemType.SLURM.name()+":";
-	if (databaseString.startsWith(PBS_Prefix)){
-		return new PbsJobID(databaseString.substring(PBS_Prefix.length()));
-	}else if (databaseString.startsWith(SLURM_Prefix)){
-		return new SlurmJobID(databaseString.substring(SLURM_Prefix.length()));
-	}else if (databaseString.startsWith(SGE_Prefix)){
-		return new SgeJobID(databaseString.substring(SGE_Prefix.length()));
-	}else {
-		return new PbsJobID(databaseString);
-	}
 }
 }

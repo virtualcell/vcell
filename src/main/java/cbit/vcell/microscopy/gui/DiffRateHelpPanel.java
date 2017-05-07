@@ -31,9 +31,9 @@ import javax.swing.event.DocumentListener;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.gui.ExpressionCanvas;
 
 @SuppressWarnings("serial")
 public class DiffRateHelpPanel extends JPanel

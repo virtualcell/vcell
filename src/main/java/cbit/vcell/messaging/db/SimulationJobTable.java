@@ -18,11 +18,15 @@ import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.message.server.htc.pbs.PbsJobID;
+import cbit.vcell.message.server.htc.sge.SgeJobID;
+import cbit.vcell.message.server.htc.slurm.SlurmJobID;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.modeldb.VersionTable;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.server.SimulationExecutionStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationQueueEntryStatusPersistent;
@@ -137,7 +141,7 @@ public SimulationJobStatusPersistent getSimulationJobStatus(ResultSet rset) thro
 	HtcJobID parsedHtcJobID = null;
 	String htcJobIDString = rset.getString(pbsJobID.toString());
 	if (!rset.wasNull() && htcJobIDString!=null && htcJobIDString.length()>0){
-		parsedHtcJobID = SimulationJobStatusPersistent.fromDatabase(htcJobIDString);
+		parsedHtcJobID = SimulationJobTable.fromDatabase(htcJobIDString);
 	}
 	
 	SimulationExecutionStatusPersistent simExeStatus = new SimulationExecutionStatusPersistent(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null, parsedHtcJobID);
@@ -383,5 +387,21 @@ public String getSQLValueList(KeyValue key, SimulationJobStatusPersistent simula
 	buffer.append(")");
 	
 	return buffer.toString();
+}
+
+
+public static HtcJobID fromDatabase(String databaseString){
+	String PBS_Prefix = HtcJobID.BatchSystemType.PBS.name()+":";
+	String SGE_Prefix = HtcJobID.BatchSystemType.SGE.name()+":";
+	String SLURM_Prefix = HtcJobID.BatchSystemType.SLURM.name()+":";
+	if (databaseString.startsWith(PBS_Prefix)){
+		return new PbsJobID(databaseString.substring(PBS_Prefix.length()));
+	}else if (databaseString.startsWith(SLURM_Prefix)){
+		return new SlurmJobID(databaseString.substring(SLURM_Prefix.length()));
+	}else if (databaseString.startsWith(SGE_Prefix)){
+		return new SgeJobID(databaseString.substring(SGE_Prefix.length()));
+	}else {
+		return new PbsJobID(databaseString);
+	}
 }
 }

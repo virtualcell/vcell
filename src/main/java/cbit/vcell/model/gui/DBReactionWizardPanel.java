@@ -15,7 +15,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -52,6 +51,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionCanvas;
 import cbit.vcell.model.ReactionDescription;
 import cbit.vcell.model.ReactionDescription.ReactionType;
 import cbit.vcell.model.ReactionParticipant;
@@ -61,7 +61,6 @@ import cbit.vcell.model.ReactionStepInfo;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.modeldb.DatabaseConstants;
 
 /**
  * Insert the type's description here.

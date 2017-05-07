@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,22 +27,17 @@ import org.jdom.Namespace;
 import org.jdom.Text;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.ArchiveComponents;
-import org.jlibsedml.Change;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.OneStep;
 import org.jlibsedml.Output;
-import org.jlibsedml.Range;
 import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.SedML;
-import org.jlibsedml.SetValue;
 import org.jlibsedml.SteadyState;
 import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
-import org.jlibsedml.UniformRange;
 import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.VectorRange;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
@@ -72,7 +66,6 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.client.ClientTaskManager;
-import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MathMapping;
@@ -82,7 +75,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -92,8 +84,6 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ConstantArraySpec;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -559,7 +549,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		return simString;
 	}
 
-	public static VCDocument sedmlToBioModel(TranslationLogger transLogger, ExternalDocInfo externalDocInfo, 
+	public static VCDocument sedmlToBioModel(VCLogger transLogger, ExternalDocInfo externalDocInfo, 
 			SedML sedml, AbstractTask selectedTask) throws Exception {
         if(sedml.getModels().isEmpty()) {
         	return null;

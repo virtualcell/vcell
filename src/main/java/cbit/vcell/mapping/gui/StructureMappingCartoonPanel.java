@@ -27,6 +27,7 @@ import cbit.gui.graph.gui.GraphPane;
 import cbit.gui.graph.gui.CartoonTool.Mode;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.graph.StructureMappingCartoon;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 /**

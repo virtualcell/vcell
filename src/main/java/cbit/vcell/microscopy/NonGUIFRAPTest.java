@@ -35,7 +35,6 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.microscopy.gui.estparamwizard.FRAPReactionDiffusionParamPanel;
 import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.modelopt.DataReference;
 import cbit.vcell.modelopt.DataSource;

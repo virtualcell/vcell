@@ -21,7 +21,6 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -35,6 +34,11 @@ import cbit.vcell.solver.server.SimulationMessage;
  * @author: Fei Gao
  */
 public class WorkerEventMessage {
+	
+	public interface UserResolver {
+		User getUser(String username);
+	}
+	
 	private WorkerEvent workerEvent = null;	
 	
 /**
@@ -54,8 +58,8 @@ public WorkerEventMessage(WorkerEvent event) {
  * @throws SQLException 
  * @throws DataAccessException 
  */
-public WorkerEventMessage(SimulationDatabase simulationDatabase, VCMessage message0) throws DataAccessException, SQLException {
-	parseMessage(simulationDatabase, message0);
+public WorkerEventMessage(UserResolver userResolver, VCMessage message0) throws DataAccessException, SQLException {
+	parseMessage(userResolver, message0);
 }
 
 public static String getWorkerEventSelector_ProgressAndData(){
@@ -86,7 +90,7 @@ public cbit.rmi.event.WorkerEvent getWorkerEvent() {
  * @throws DataAccessException 
  * @throws SQLException 
  */
-private void parseMessage(SimulationDatabase simDatabase, VCMessage message) throws DataAccessException, SQLException {
+private void parseMessage(UserResolver userResolver, VCMessage message) throws DataAccessException, SQLException {
 	if (message == null) {
 		throw new RuntimeException("Null message");
 	}	
@@ -119,7 +123,7 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
 		KeyValue simKey = new KeyValue(longkey + "");
 //		Simulation sim = null;
 
-		User user = simDatabase.getUser(username);
+		User user = userResolver.getUser(username);
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, user);
 		
 		String statusMessage = null;
