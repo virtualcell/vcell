@@ -1,4 +1,4 @@
-package cbit.vcell.messaging.db;
+package cbit.vcell.server;
 
 public class WaitingStateInfo extends StateInfo {
 	public final int myQueueOrdinal;

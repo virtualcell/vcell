@@ -8,13 +8,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.server;
 
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.document.UserLoginInfo;
-
-import cbit.vcell.server.ConnectionException;
-import cbit.vcell.server.VCellConnection;
 
 /**
  * This type was created in VisualAge.

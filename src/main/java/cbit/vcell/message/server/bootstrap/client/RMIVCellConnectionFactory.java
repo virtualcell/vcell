@@ -17,10 +17,10 @@ import org.vcell.util.NetworkProxyUtils;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.message.server.bootstrap.VCellConnectionFactory;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
+import cbit.vcell.server.VCellConnectionFactory;
 
 
 public class RMIVCellConnectionFactory implements VCellConnectionFactory {

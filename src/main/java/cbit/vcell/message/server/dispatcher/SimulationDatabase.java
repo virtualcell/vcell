@@ -13,11 +13,11 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.messaging.db.SimulationRequirements;
-import cbit.vcell.messaging.db.StateInfo;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.server.StateInfo;
 import cbit.vcell.server.UpdateSynchronizationException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;

@@ -14,9 +14,6 @@ import java.math.BigDecimal;
 
 import org.vcell.util.ComparableObject;
 
-import cbit.vcell.messaging.db.BioModelLink;
-import cbit.vcell.messaging.db.MathModelLink;
-import cbit.vcell.messaging.db.StateInfo;
 import cbit.vcell.solver.SimulationMetadata;
 
 /**

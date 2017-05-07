@@ -22,6 +22,7 @@ import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellConnection;
+import cbit.vcell.server.VCellConnectionFactory;
 /**
  * This type was created in VisualAge.
  */

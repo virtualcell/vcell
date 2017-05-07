@@ -32,11 +32,11 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory;
-import cbit.vcell.message.server.bootstrap.VCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.VCellServerFactory;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellServerFactory;
 import cbit.vcell.server.VCellBootstrap;
+import cbit.vcell.server.VCellConnectionFactory;
 import oracle.ucp.UniversalConnectionPoolException;
 /**
  * This type was created in VisualAge.

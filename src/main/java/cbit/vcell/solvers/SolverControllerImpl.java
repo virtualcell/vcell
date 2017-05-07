@@ -9,12 +9,11 @@
  */
 
 package cbit.vcell.solvers;
-import cbit.vcell.message.server.bootstrap.LocalVCellConnection;
+import java.io.File;
+import java.util.Date;
+
 import cbit.vcell.messaging.server.SimulationTask;
-
-import java.io.*;
-import java.util.*;
-
+import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverListener;
 /**
@@ -25,7 +24,7 @@ public class SolverControllerImpl {
 	//
 	// for inner class only
 	//
-	private LocalVCellConnection vcConn = null;
+	private VCellConnection vcConn = null;
 	private SolverListener solverListener = null;
 	
 	private SimulationTask simulationTask = null;
@@ -42,7 +41,7 @@ public class SolverControllerImpl {
  * @param directory java.lang.String
  * @param simIdentifier java.lang.String
  */
-public SolverControllerImpl (LocalVCellConnection argVCellConnection, org.vcell.util.SessionLog sessionLog, SimulationTask simulationTask, java.io.File directory) throws cbit.vcell.solver.SolverException {
+public SolverControllerImpl (VCellConnection argVCellConnection, org.vcell.util.SessionLog sessionLog, SimulationTask simulationTask, java.io.File directory) throws cbit.vcell.solver.SolverException {
 	this.simulationTask = simulationTask;
 	this.directory = directory;
 	this.sessionLog = sessionLog;

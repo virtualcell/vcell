@@ -1,4 +1,4 @@
-package cbit.vcell.messaging.db;
+package cbit.vcell.server;
 
 public class RunningStateInfo extends StateInfo {
 	public final double progress;

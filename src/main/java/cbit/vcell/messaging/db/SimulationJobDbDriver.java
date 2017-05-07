@@ -33,6 +33,8 @@ import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.MathModelSimulationLinkTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.server.BioModelLink;
+import cbit.vcell.server.MathModelLink;
 import cbit.vcell.server.SimpleJobStatusPersistent;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationDocumentLink;

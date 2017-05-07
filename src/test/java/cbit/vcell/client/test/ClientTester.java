@@ -102,14 +102,14 @@ protected static cbit.vcell.server.VCellBootstrap VCellBootstrapInit(String args
  * @return VCellConnection
  * @param args java.lang.String[]
  */
-protected static cbit.vcell.message.server.bootstrap.VCellConnectionFactory VCellConnectionFactoryInit(String args[], String programName) throws Exception {
+protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactoryInit(String args[], String programName) throws Exception {
 	if (args.length != 3 && args.length != 7) {
 		System.err.println("usage: " + programName + " -local userid password [driverName connectionURL userid password]");
 		System.err.println("usage: " + programName + " -jms userid password");
 		System.err.println("usage: " + programName +" host userid password");
 		throw new Exception("cannot connect");
 	}
-	cbit.vcell.message.server.bootstrap.VCellConnectionFactory vcConnFactory = null;
+	cbit.vcell.server.VCellConnectionFactory vcConnFactory = null;
 	new org.vcell.util.PropertyLoader();		
 	UserLoginInfo userLoginInfo = new UserLoginInfo(args[1], new UserLoginInfo.DigestedPassword(args[2]));
 	if (args[0].startsWith("-")) {

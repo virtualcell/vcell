@@ -28,7 +28,6 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory;
-import cbit.vcell.message.server.bootstrap.VCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.ConnectionException;
@@ -40,6 +39,7 @@ import cbit.vcell.server.SessionManager;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
+import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.server.VCellConnectionRegistrationProvider;
 import cbit.vcell.simdata.VCDataManager;
 /**
