@@ -32,6 +32,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.OptContext;
@@ -45,7 +46,6 @@ import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
 import org.vcell.workflow.WorkflowParameter;
 
-import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -456,7 +456,7 @@ public class OptModelParamPanel extends JPanel
 			newDataSourceArr[ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
 			
 			int roiSize = fittedROIs.length;//double valid ROI colors (not include cell and background)
-			Color[] uniqueColors = Plot2DPanel.generateAutoColor(roiSize, getBackground(), new Integer(0));
+			Color[] uniqueColors = ColorUtil.generateAutoColor(roiSize, getBackground(), new Integer(0));
 			Color[] colors = new Color[roiSize*2];
 			for (int i=0;i<roiSize;i++){
 				colors[i] = uniqueColors[i];

@@ -25,7 +25,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import cbit.plot.gui.Plot2DPanel;
+import org.vcell.util.ColorUtil;
+
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
@@ -303,7 +304,7 @@ public class DefineROI_RoiForErrorPanel extends JPanel implements ActionListener
 		if(allROIColors == null)
 		{
 			allROIColors = new Color[(FRAPData.VFRAP_ROI_ENUM.values().length-2)*2];//double valid ROI colors (not include cell and background)
-			Color[] availableColors = Plot2DPanel.generateAutoColor(allROIColors.length, getBackground(), new Integer(0));
+			Color[] availableColors = ColorUtil.generateAutoColor(allROIColors.length, getBackground(), new Integer(0));
 			System.arraycopy(availableColors, 0, allROIColors, 0, allROIColors.length);
 		}
 		return allROIColors;

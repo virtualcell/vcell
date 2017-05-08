@@ -23,13 +23,13 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ColorUtil;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DefaultListSelectionModelFixed;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
-import cbit.plot.gui.Plot2DPanel;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.modelopt.DataReference;
 import cbit.vcell.modelopt.DataSource;
@@ -78,7 +78,7 @@ private void createAutoContrastColors(){
 		return;
 	}
 	if(autoContrastColors == null || getmultisourcePlotListModel().getSize() > autoContrastColors.length){
-		autoContrastColors = Plot2DPanel.generateAutoColor(getmultisourcePlotListModel().getSize(), getBackground(),new Integer(0));
+		autoContrastColors = ColorUtil.generateAutoColor(getmultisourcePlotListModel().getSize(), getBackground(),new Integer(0));
 	}
 }
 

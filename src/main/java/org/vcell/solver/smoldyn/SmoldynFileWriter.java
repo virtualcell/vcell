@@ -35,6 +35,7 @@ import org.apache.commons.math3.random.RandomDataGenerator;
 import org.apache.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ColorUtil;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -49,7 +50,6 @@ import org.vcell.util.VCAssert;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
-import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
@@ -285,7 +285,7 @@ private void init() throws SolverException {
 	if (!bGraphicOpenGL) {
 		writeMeshFile();
 	}
-	colors = Plot2DPanel.generateAutoColor(particleVariableList.size() + resampledGeometry.getGeometrySurfaceDescription().getSurfaceClasses().length, bg, new Integer(5));
+	colors = ColorUtil.generateAutoColor(particleVariableList.size() + resampledGeometry.getGeometrySurfaceDescription().getSurfaceClasses().length, bg, new Integer(5));
 }
 
 

@@ -29,12 +29,12 @@ import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
+import org.vcell.util.ColorUtil;
 import org.vcell.util.Range;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -275,7 +275,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				//the following paragraph of code is just to get selected color for selected ROIs
 				//and make them the same as we show on ChooseModel_RoiForErrorPanel/RoiForErrorPanel 
 				int validROISize = FRAPData.VFRAP_ROI_ENUM.values().length-2;//double valid ROI colors (not include cell and background)
-				Color[] fullColors = Plot2DPanel.generateAutoColor(validROISize*2, getBackground(), new Integer(0));
+				Color[] fullColors = ColorUtil.generateAutoColor(validROISize*2, getBackground(), new Integer(0));
 				boolean[] selectedROIs = frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation();
 				int selectedROICounter = 0;
 				for (int i=0; i<selectedROIs.length; i++)

@@ -24,9 +24,9 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 
+import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.HyperLinkLabel;
 
-import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.modelopt.DataSource;
@@ -137,7 +137,7 @@ public class SubPlotPanel extends JPanel
 		//are using selectedROIsForErrorCalculation (e.g diffusion only models). for reaction off rate model,we only need color for bleahed ROI
 		int numColorSet = frapWorkspace.getWorkingFrapStudy().getNumDiffusionOnlyModels() + 1;
 		int numColorOffRate = (frapWorkspace.getWorkingFrapStudy().hasReactionOnlyOffRateModel())?1:0;
-		Color[] fullColors = Plot2DPanel.generateAutoColor(validROISize*numColorSet + numColorOffRate, getBackground(), new Integer(0));
+		Color[] fullColors = ColorUtil.generateAutoColor(validROISize*numColorSet + numColorOffRate, getBackground(), new Integer(0));
 		boolean[] selectedROIs = frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation();
 		int selectedROICounter = 0;
 		for (int i=0; i<selectedROIs.length; i++)
