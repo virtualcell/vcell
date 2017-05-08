@@ -1,11 +1,12 @@
-package org.vcell.util;
+package org.vcell.util.gui;
 
 import java.awt.Component;
 import java.rmi.server.RMISocketFactory;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
-import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.Compare;
+import org.vcell.util.UtilCancelException;
 
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.resource.ResourceUtil;

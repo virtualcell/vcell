@@ -35,7 +35,6 @@ import org.vcell.util.UserCancelException;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientSimManager;
-import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.ClientSimManager.TempSimulation;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -228,7 +227,7 @@ public class StandaloneSEDMLTest {
 	        if(bioModel.getSimulationContexts().length == 1) {
 	        	SimulationContext oldSimulationContext = bioModel.getSimulationContext(0);
 	        	String newSCName = bioModel.getFreeSimulationContextName();
-	        	newSimulationContext = ClientTaskManager.copySimulationContext(oldSimulationContext, newSCName, bSpatial, appType);
+	        	newSimulationContext = SimulationContext.copySimulationContext(oldSimulationContext, newSCName, bSpatial, appType);
 	        	bioModel.addSimulationContext(newSimulationContext);
 	        	bioModel.removeSimulationContext(oldSimulationContext);
 	        } else {

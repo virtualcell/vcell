@@ -45,6 +45,7 @@ import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
+import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
@@ -53,8 +54,10 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
@@ -3184,6 +3187,80 @@ public SpatialObject[] getSpatialObjects(GeometryClass geometryClass) {
 	}
 	return spatialObjectList.toArray(new SpatialObject[0]);
 }
+
+public static 
+	SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, Application simContextType) 
+				throws java.beans.PropertyVetoException, ExpressionException, MappingException, GeometryException, ImageException {
+		Geometry newClonedGeometry = new Geometry(srcSimContext.getGeometry());
+		newClonedGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
+		//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
+		//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
+		SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, simContextType);
+		if(srcSimContext.getApplicationType() == Application.NETWORK_STOCHASTIC && !srcSimContext.isUsingConcentration() && simContextType == Application.NETWORK_DETERMINISTIC)  
+		{
+			try {
+				destSimContext.convertSpeciesIniCondition(true);
+			} catch (MappingException e) {
+				e.printStackTrace();
+				throw new java.beans.PropertyVetoException(e.getMessage(), null);
+			}
+		}
+		if (srcSimContext.getGeometry().getDimension() > 0 && !bSpatial) { // copy the size over
+			destSimContext.setGeometry(new Geometry("nonspatial", 0));
+			StructureMapping srcStructureMappings[] = srcSimContext.getGeometryContext().getStructureMappings();
+			StructureMapping destStructureMappings[] = destSimContext.getGeometryContext().getStructureMappings();
+			for (StructureMapping destStructureMapping : destStructureMappings) {
+				for (StructureMapping srcStructureMapping : srcStructureMappings) {
+					if (destStructureMapping.getStructure() == srcStructureMapping.getStructure()) {
+						if (srcStructureMapping.getUnitSizeParameter() != null) {
+							Expression sizeRatio = srcStructureMapping.getUnitSizeParameter().getExpression();
+							GeometryClass srcGeometryClass = srcStructureMapping.getGeometryClass();
+							GeometricRegion[] srcGeometricRegions = srcSimContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(srcGeometryClass);
+							if (srcGeometricRegions != null) {
+								double size = 0;
+								for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
+									size += srcGeometricRegion.getSize();
+								}
+								destStructureMapping.getSizeParameter().setExpression(Expression.mult(sizeRatio, new Expression(size)));
+							}
+						}
+						break;
+					}
+				}
+			}
+			//If changing spatial to non-spatial
+			//set diffusion to 0, velocity and boundary to null
+//			srcSimContext.getReactionContext().getspe
+			Parameter[] allParameters = destSimContext.getAllParameters();
+			if(allParameters != null && allParameters.length > 0){
+				for (int i = 0; i < allParameters.length; i++) {
+					if(allParameters[i] instanceof SpeciesContextSpecParameter){
+						SpeciesContextSpecParameter speciesContextSpecParameter = (SpeciesContextSpecParameter)allParameters[i];
+						int role = speciesContextSpecParameter.getRole();
+						if(role == SpeciesContextSpec.ROLE_DiffusionRate){
+							speciesContextSpecParameter.setExpression(new Expression(0));
+						}else if (role == SpeciesContextSpec.ROLE_BoundaryValueXm
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueXp
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueYm
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueYp
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueZm
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueZp) {
+							speciesContextSpecParameter.setExpression(null);
+							
+						} else if (role == SpeciesContextSpec.ROLE_VelocityX
+								|| role == SpeciesContextSpec.ROLE_VelocityY
+								|| role == SpeciesContextSpec.ROLE_VelocityZ) {
+							speciesContextSpecParameter.setExpression(null);
+						}
+					}
+				}
+			}
+			
+		}
+		destSimContext.fixFlags();
+		destSimContext.setName(newSimulationContextName);	
+		return destSimContext;
+	}
 
 
 

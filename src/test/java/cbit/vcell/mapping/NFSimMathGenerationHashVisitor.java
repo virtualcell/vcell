@@ -15,7 +15,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext.Application;
@@ -100,7 +99,7 @@ public class NFSimMathGenerationHashVisitor implements VCDatabaseVisitor {
 			//
 			for (SimulationContext origSsaSimContext : origNonspatialStochSimContexts) {
 				boolean bSpatial = false;
-				SimulationContext rulebasedSimContext = ClientTaskManager.copySimulationContext(origSsaSimContext, origSsaSimContext.getName()+"_rbmCopy", bSpatial, Application.RULE_BASED_STOCHASTIC);
+				SimulationContext rulebasedSimContext = SimulationContext.copySimulationContext(origSsaSimContext, origSsaSimContext.getName()+"_rbmCopy", bSpatial, Application.RULE_BASED_STOCHASTIC);
 				try {
 					MathMapping mathMapping = rulebasedSimContext.createNewMathMapping();
 					MathDescription generatedMathDesc = mathMapping.getMathDescription();
@@ -120,7 +119,7 @@ public class NFSimMathGenerationHashVisitor implements VCDatabaseVisitor {
 			//
 			for (SimulationContext origRuleSimContext : origRulebasedSimContexts) {
 				boolean bSpatial = false;
-				SimulationContext ssaSimContext = ClientTaskManager.copySimulationContext(origRuleSimContext, origRuleSimContext.getName()+"_ssaCopy", bSpatial, Application.NETWORK_STOCHASTIC);
+				SimulationContext ssaSimContext = SimulationContext.copySimulationContext(origRuleSimContext, origRuleSimContext.getName()+"_ssaCopy", bSpatial, Application.NETWORK_STOCHASTIC);
 				try {
 					MathMapping mathMapping = ssaSimContext.createNewMathMapping();
 					MathDescription generatedMathDesc = mathMapping.getMathDescription();

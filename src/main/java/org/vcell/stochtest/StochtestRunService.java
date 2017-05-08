@@ -24,7 +24,6 @@ import cbit.sql.QueryHashtable;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientSimManager;
-import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
@@ -152,9 +151,9 @@ public class StochtestRunService {
 		    	StochtestMathType mathType = stochtestRun.mathType;
 		    	if (parentMathType != mathType){
 		    		if (parentMathType == StochtestMathType.nonspatialstochastic && mathType == StochtestMathType.rules){
-		    			simContext = ClientTaskManager.copySimulationContext(srcSimContext, "generatedRules", false, Application.RULE_BASED_STOCHASTIC);
+		    			simContext = SimulationContext.copySimulationContext(srcSimContext, "generatedRules", false, Application.RULE_BASED_STOCHASTIC);
 		    		}else if (parentMathType == StochtestMathType.rules && mathType == StochtestMathType.nonspatialstochastic){
-		    			simContext = ClientTaskManager.copySimulationContext(srcSimContext, "generatedSSA", false, Application.NETWORK_STOCHASTIC);
+		    			simContext = SimulationContext.copySimulationContext(srcSimContext, "generatedSSA", false, Application.NETWORK_STOCHASTIC);
 		    	   	}else{
 		    	   		throw new RuntimeException("unexpected copy of simcontext from "+parentMathType+" to "+mathType);
 		    	   	}

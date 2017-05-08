@@ -39,7 +39,6 @@ import javax.swing.JTextArea;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.NetworkProxyUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UtilCancelException;
@@ -50,6 +49,7 @@ import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ExecutableFinderDialog;
+import org.vcell.util.gui.NetworkProxyUtils;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
@@ -797,7 +797,7 @@ private void startVCellVisIt() {
 				String executableName = ResourceUtil.getExecutableName(VisitSupport.VISIT_EXEC_NAME, false, osi);
 				File executableLocation =
 					new ExecutableFinderDialog(DocumentWindow.this,
-						VisitSupport.getVisitManualFindMessage("https://wci.llnl.gov/codes/visit/",executableName)).find(executableName);
+						"If VisIt is installed (from "+"https://wci.llnl.gov/codes/visit/"+") but not in the system path, then press press '"+ExecutableFinderDialog.FIND+"' and navigate to '"+executableName+"'.\nElse please install VisIt, restart VCell, and try again").find(executableName);
 				VisitSupport.launchVisTool(executableLocation);
 			}
 		}

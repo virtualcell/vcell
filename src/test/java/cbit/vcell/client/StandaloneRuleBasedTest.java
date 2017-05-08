@@ -119,8 +119,8 @@ public class StandaloneRuleBasedTest {
 		bioModel.refreshDependencies();
 		
 		//create ODE and RuleBased
-		SimulationContext newODEApp = ClientTaskManager.copySimulationContext(srcSimContext, "aUniqueNewODEApp", false, Application.NETWORK_DETERMINISTIC);
-		SimulationContext newRuleBasedApp = ClientTaskManager.copySimulationContext(srcSimContext, "aUniqueNewRuleBasedApp", false, Application.RULE_BASED_STOCHASTIC);
+		SimulationContext newODEApp = SimulationContext.copySimulationContext(srcSimContext, "aUniqueNewODEApp", false, Application.NETWORK_DETERMINISTIC);
+		SimulationContext newRuleBasedApp = SimulationContext.copySimulationContext(srcSimContext, "aUniqueNewRuleBasedApp", false, Application.RULE_BASED_STOCHASTIC);
 
 		newODEApp.setBioModel(bioModel);
 		newRuleBasedApp.setBioModel(bioModel);

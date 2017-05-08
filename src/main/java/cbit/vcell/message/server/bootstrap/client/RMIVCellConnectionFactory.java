@@ -13,9 +13,9 @@ package cbit.vcell.message.server.bootstrap.client;
 import java.awt.Component;
 
 import org.vcell.util.AuthenticationException;
-import org.vcell.util.NetworkProxyUtils;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.gui.NetworkProxyUtils;
 
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellBootstrap;

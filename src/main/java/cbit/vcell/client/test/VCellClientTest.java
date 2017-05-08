@@ -42,12 +42,12 @@ import javax.swing.tree.TreePath;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jdom.Document;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.NetworkProxyUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
+import org.vcell.util.gui.NetworkProxyUtils;
 import org.vcell.util.logging.ConsoleCapture;
 import org.vcell.util.logging.Logging;
 

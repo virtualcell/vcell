@@ -20,7 +20,6 @@ import org.vcell.util.Executable;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.gui.ExecutableFinderDialog;
 import org.vcell.vis.vtk.VisMeshUtils;
 
 import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
@@ -50,12 +49,6 @@ public class VisitSupport {
 	
 	private static final Logger lg = Logger.getLogger(VisitSupport.class);
 
-	public static String getVisitManualFindMessage(String visitURL,String executableName){
-		//https://wci.llnl.gov/codes/visit/
-		return "If VisIt is installed (from "+visitURL+") but not in the system path, then press press '"+ExecutableFinderDialog.FIND+"' and navigate to '"+executableName+"'.\nElse please install VisIt, restart VCell, and try again";
-
-	}
-	
 	public static File getVisToolPythonScript()
 	{
 		File visToolScriptDir = new File(ResourceUtil.getVCellInstall(),"visTool");

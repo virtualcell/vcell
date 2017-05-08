@@ -65,7 +65,6 @@ import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
-import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MathMapping;
@@ -688,7 +687,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         SimulationContext newSimulationContext = null;		// the new application we're making from the old one
         if(bioModel.getSimulationContexts().length == 1) {
         	SimulationContext oldSimulationContext = bioModel.getSimulationContext(0);
-        	newSimulationContext = ClientTaskManager.copySimulationContext(oldSimulationContext, sedmlOriginalModelName, bSpatial, appType);
+        	newSimulationContext = SimulationContext.copySimulationContext(oldSimulationContext, sedmlOriginalModelName, bSpatial, appType);
         	bioModel.removeSimulationContext(oldSimulationContext);
         	bioModel.addSimulationContext(newSimulationContext);
         } else {	// length == 0
