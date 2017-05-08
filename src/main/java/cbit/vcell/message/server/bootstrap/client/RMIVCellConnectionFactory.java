@@ -15,8 +15,8 @@ import java.awt.Component;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.gui.NetworkProxyUtils;
 
+import cbit.vcell.resource.NetworkProxyUtils;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;

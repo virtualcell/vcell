@@ -1,19 +1,23 @@
+package cbit.vcell.client.desktop;
+
 import java.awt.Component;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.NetworkProxyUtils;
 
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
+import cbit.vcell.resource.NetworkProxyUtils;
+import cbit.vcell.resource.NetworkProxyUtils.RestartWarningProvider;
 
 public class NetworkProxyPreferences {
+
 	public static final String prefProxyType = "proxyType";
 	public static final String prefProxyHost = "proxyHost";
 	public static final String prefProxyPort = "proxyPort";
-	private static final String PROXY_FORMAT = "[http,socks]:proxyHost:portNumber";
-	public static void setProxyPrefs(Component requester) throws UtilCancelException{
+	public static final String PROXY_FORMAT = "[http,socks]:proxyHost:portNumber";
+	public static void setProxyPrefs(Component requester, RestartWarningProvider restartWarningProvider) throws UtilCancelException{
 		Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
 		String proxyType = prefs.get(prefProxyType,prefProxyType);
 		String proxyHost = prefs.get(prefProxyHost,prefProxyHost);
@@ -58,7 +62,7 @@ public class NetworkProxyPreferences {
 			}
 		} while (true);
 		
-		NetworkProxyUtils.setProxyProperties(requester,true,proxyType,proxyHost,proxyPort,prefs.get(prefProxyType,prefProxyType),prefs.get(prefProxyHost,prefProxyHost),prefs.get(prefProxyPort,prefProxyPort));
+		NetworkProxyUtils.setProxyProperties(true,restartWarningProvider,proxyType,proxyHost,proxyPort,prefs.get(prefProxyType,prefProxyType),prefs.get(prefProxyHost,prefProxyHost),prefs.get(prefProxyPort,prefProxyPort));
 	}
 
 }

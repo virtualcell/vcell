@@ -49,7 +49,6 @@ import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ExecutableFinderDialog;
-import org.vcell.util.gui.NetworkProxyUtils;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
@@ -403,7 +402,7 @@ private void connEtoC18(java.awt.event.ActionEvent arg1) {
 
 private void setProxy(){
 	try {
-		NetworkProxyUtils.setProxyPrefs(this);
+		NetworkProxyPreferences.setProxyPrefs(this, (restartMsg) -> DialogUtils.showInfoDialog(this, restartMsg) );
 		if(getTopLevelWindowManager()==null || getTopLevelWindowManager().getRequestManager()==null ||
 			getTopLevelWindowManager().getRequestManager().getDocumentManager()==null){
 			DialogUtils.showInfoDialog(this, "Update Proxy settings by restarting VCell or using menu Server->'change user' or Server->reconnect");

@@ -47,7 +47,6 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.gui.NetworkProxyUtils;
 import org.vcell.util.logging.ConsoleCapture;
 import org.vcell.util.logging.Logging;
 
@@ -58,6 +57,7 @@ import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.data.VCellClientDataServiceImpl;
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.NetworkProxyPreferences;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
 import cbit.vcell.client.pyvcellproxy.VCellClientDataService;
 import cbit.vcell.client.pyvcellproxy.VCellProxyServer;
@@ -68,6 +68,7 @@ import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.LibraryLoaderThread;
+import cbit.vcell.resource.NetworkProxyUtils;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XmlHelper;
 /**
@@ -207,11 +208,11 @@ public static void main(java.lang.String[] args) {
 		(bHttp==null?null:(bHttp?System.getProperty(NetworkProxyUtils.PROXY_HTTP_HOST):System.getProperty(NetworkProxyUtils.PROXY_SOCKS_HOST)));
 	String currentProxyPort=
 		(bHttp==null?null:(bHttp?System.getProperty(NetworkProxyUtils.PROXY_HTTP_PORT):System.getProperty(NetworkProxyUtils.PROXY_SOCKS_PORT)));
-	NetworkProxyUtils.setProxyProperties(JOptionPane.getRootFrame(),false,
-		prefs.get(NetworkProxyUtils.prefProxyType,NetworkProxyUtils.prefProxyType),
+	NetworkProxyUtils.setProxyProperties(false,null,
+		prefs.get(NetworkProxyPreferences.prefProxyType,NetworkProxyPreferences.prefProxyType),
 		currentProxyHost,currentProxyPort,
-		prefs.get(NetworkProxyUtils.prefProxyType,NetworkProxyUtils.prefProxyType),
-		prefs.get(NetworkProxyUtils.prefProxyHost,NetworkProxyUtils.prefProxyHost),prefs.get(NetworkProxyUtils.prefProxyPort,NetworkProxyUtils.prefProxyPort));
+		prefs.get(NetworkProxyPreferences.prefProxyType,NetworkProxyPreferences.prefProxyType),
+		prefs.get(NetworkProxyPreferences.prefProxyHost,NetworkProxyPreferences.prefProxyHost),prefs.get(NetworkProxyPreferences.prefProxyPort,NetworkProxyPreferences.prefProxyPort));
 
 	final boolean  IS_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
 	if (!IS_DEBUG) {

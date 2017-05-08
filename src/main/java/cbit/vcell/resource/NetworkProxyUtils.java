@@ -1,19 +1,20 @@
-package org.vcell.util.gui;
+package cbit.vcell.resource;
 
-import java.awt.Component;
 import java.rmi.server.RMISocketFactory;
 
 import org.vcell.util.Compare;
 
-import cbit.vcell.resource.ResourceUtil;
-
 public class NetworkProxyUtils {
-
+	
+	public interface RestartWarningProvider {
+		void showRestartWarning(String restartWarningMessage);
+	}
+	
 	public static final String PROXY_HTTP_HOST = "http.proxyHost";
 	public static final String PROXY_HTTP_PORT = "http.proxyPort";
 	public static final String PROXY_SOCKS_HOST = "socksProxyHost";
 	public static final String PROXY_SOCKS_PORT = "socksProxyPort";
-	public static void setProxyProperties(Component requester,boolean bRestartWarn,String proxyType ,String proxyHost ,String proxyPort,String proxyTypeNew ,String proxyHostNew ,String proxyPortNew){
+	public static void setProxyProperties(boolean bRestartWarn,RestartWarningProvider restartWarningProvider, String proxyType ,String proxyHost ,String proxyPort,String proxyTypeNew ,String proxyHostNew ,String proxyPortNew){
 		String altVMOptionsFile = System.getProperty("user.home")+System.getProperty("file.separator")+ResourceUtil.VCELL_HOME_DIR_NAME+System.getProperty("file.separator")+ResourceUtil.VCELL_PROXY_VMOPTIONS;
 		try /*(FileWriter fw = new FileWriter(new File(altVMOptionsFile),false))*/ {
 			// Set or clear java proxy system properties
@@ -42,8 +43,8 @@ public class NetworkProxyUtils {
 			String oldProxy = proxyType+":"+proxyHost+":"+proxyPort;
 			String newProxy = proxyTypeNew+":"+proxyHostNew+":"+proxyPortNew;
 			if(bChanged){
-				if(bRestartWarn){
-					DialogUtils.showInfoDialog(requester, "Proxy settings have changed from '"+oldProxy+"' to '"+newProxy+"', please restart VCell");
+				if(bRestartWarn && restartWarningProvider!=null){
+					restartWarningProvider.showRestartWarning("Proxy settings have changed from '"+oldProxy+"' to '"+newProxy+"', please restart VCell");
 				}else{
 					new Exception("Error, not expecting old proxy "+oldProxy+" doesn't match new proxy "+newProxy).printStackTrace(System.out);
 				}
