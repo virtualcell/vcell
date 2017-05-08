@@ -16,6 +16,7 @@ import java.util.Hashtable;
 
 import javax.swing.JPanel;
 
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -99,16 +100,30 @@ public class ROISummaryDescriptor extends WizardPanelDescriptor {
 								"x="+distinctCellAreaLocations[1].x+",y="+distinctCellAreaLocations[1].y+"\n"+
 						"Use ROI editing tools to define a single continuous CELL ROI");				
 					}
-					if(fStudy.getFrapData().checkROIConstraints(imgPanel))
-					{
-						fStudy.setStartingIndexForRecovery(startIndex);
-						getBatchRunWorkspace().setWorkingFRAPStudy(fStudy);
-						//generate ROI rings
-						fStudy.refreshDependentROIs();
-					}
-					else
-					{
-						throw new Exception("Please fix the ROI problem or cancel the wizard.");
+					/**
+					 * check for conflicts of background and bleach ROIs against CellROI.
+					 */
+					boolean bViolationBleachROI = fStudy.getFrapData().checkBleachROIViolatesConstraints();
+					boolean bViolationBackgroundROI = fStudy.getFrapData().checkBackgroundROIViolatesConstraints();
+					if (bViolationBleachROI || bViolationBackgroundROI){
+						final String FIX_AUTO = "Fix Automatically";
+						final String NO_THANKS = "No, Thanks";
+						String result = DialogUtils.showWarningDialog(imgPanel,
+								(bViolationBleachROI?"Bleach ROI extends beyond Cell ROI":"")+
+								(bViolationBackgroundROI && bViolationBleachROI?" and" :"")+
+								(bViolationBackgroundROI?"Background ROI overlaps Cell ROI":"")+
+								".  Ensure that the Bleach ROI is completely inside the Cell ROI and the Background ROI is completely outside the Cell ROI.\nDo you want Virtual Frap to fix it automatically?",
+								new String[] {FIX_AUTO,NO_THANKS}, FIX_AUTO);
+						if(result != null && result.equals(FIX_AUTO)){
+							if (fStudy.getFrapData().fixROIConstraints()) {
+								fStudy.setStartingIndexForRecovery(startIndex);
+								getBatchRunWorkspace().setWorkingFRAPStudy(fStudy);
+								//generate ROI rings
+								fStudy.refreshDependentROIs();
+							} else {
+								throw new Exception("Please fix the ROI problem or cancel the wizard.");
+							}
+						}
 					}
 				}
 				else throw new Exception(msg);

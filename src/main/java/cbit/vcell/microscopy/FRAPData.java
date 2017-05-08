@@ -10,7 +10,6 @@
 
 package cbit.vcell.microscopy;
 
-import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -34,7 +33,6 @@ import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -318,7 +316,42 @@ private UShortImage fastDilate(UShortImage dilateSource,int radius,UShortImage m
 	return resultImage;
 }
 
-public boolean checkROIConstraints(Component componentToDisplayMsg) throws Exception{
+/**
+ * must be consistent with fixROIConstraints()
+ * @return
+ */
+public boolean checkBleachROIViolatesConstraints() {
+	short[] cellPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ();
+	short[] bleachPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getPixelsXYZ();
+	for (int i = 0; i < cellPixels.length; i++) {
+		if(cellPixels[i] == 0 && bleachPixels[i] != 0){
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * must be consistent with fixROIConstraints()
+ * @return
+ */
+public boolean checkBackgroundROIViolatesConstraints() {
+	short[] cellPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ();
+	short[] backgroundPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getPixelsXYZ();
+	for (int i = 0; i < cellPixels.length; i++) {
+		if(cellPixels[i] != 0 && backgroundPixels[i] != 0){
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * must be consistent with checkBleachROIViolatesConstraints() and checkBackgroundROIViolatesConstraints()
+ * @return
+ * @throws Exception
+ */
+public boolean fixROIConstraints() throws Exception{
 	short[] cellPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ();
 	short[] bleachPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getPixelsXYZ();
 	short[] backgroundPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getPixelsXYZ();
@@ -335,46 +368,36 @@ public boolean checkROIConstraints(Component componentToDisplayMsg) throws Excep
 		}
 	}
 	if(bFixedBackground || bFixedBleach){
-		final String FIX_AUTO = "Fix Automatically";
-		final String NO_THANKS = "No, Thanks";
-		String result = DialogUtils.showWarningDialog(componentToDisplayMsg,
-				(bFixedBleach?"Bleach ROI extends beyond Cell ROI":"")+
-				(bFixedBackground &&bFixedBleach?" and" :"")+
-				(bFixedBackground?"Background ROI overlaps Cell ROI":"")+
-				".  Ensure that the Bleach ROI is completely inside the Cell ROI and the Background ROI is completely outside the Cell ROI.\nDo you want Virtual Frap to fix it automatically?",
-				new String[] {FIX_AUTO,NO_THANKS}, FIX_AUTO);
-		if(result != null && result.equals(FIX_AUTO)){
-			if(bFixedBleach){
-				UShortImage ushortImage =
-					new UShortImage(bleachPixels,
-						getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
-						getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
-						getCurrentlyDisplayedROI().getISize().getX(),
-						getCurrentlyDisplayedROI().getISize().getY(),
-						getCurrentlyDisplayedROI().getISize().getZ());
-				ROI newBleachROI = new ROI(ushortImage,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
-				addReplaceRoi(newBleachROI);
-			}
-			if(bFixedBackground){
-				UShortImage ushortImage =
-					new UShortImage(backgroundPixels,
-						getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
-						getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
-						getCurrentlyDisplayedROI().getISize().getX(),
-						getCurrentlyDisplayedROI().getISize().getY(),
-						getCurrentlyDisplayedROI().getISize().getZ());
-				ROI newBackgroundROI = new ROI(ushortImage,FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
-				addReplaceRoi(newBackgroundROI);
-			}
-			return true;
+		if(bFixedBleach){
+			UShortImage ushortImage =
+				new UShortImage(bleachPixels,
+					getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
+					getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+					getCurrentlyDisplayedROI().getISize().getX(),
+					getCurrentlyDisplayedROI().getISize().getY(),
+					getCurrentlyDisplayedROI().getISize().getZ());
+			ROI newBleachROI = new ROI(ushortImage,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
+			addReplaceRoi(newBleachROI);
 		}
+		if(bFixedBackground){
+			UShortImage ushortImage =
+				new UShortImage(backgroundPixels,
+					getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
+					getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+					getCurrentlyDisplayedROI().getISize().getX(),
+					getCurrentlyDisplayedROI().getISize().getY(),
+					getCurrentlyDisplayedROI().getISize().getZ());
+			ROI newBackgroundROI = new ROI(ushortImage,FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
+			addReplaceRoi(newBackgroundROI);
+		}
+		return true;
 	}
 	else //nothing to fix
 	{
 		return true;
 	}
-	return false;
 }
+
 
 protected void refreshDependentROIs()
 {
