@@ -11,6 +11,7 @@
 package cbit.vcell.client.server;
 import java.rmi.RemoteException;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.BeanUtils;
@@ -28,13 +29,13 @@ import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.server.ExportController;
+import cbit.vcell.server.LocalVCellConnectionService;
 import cbit.vcell.server.SessionManager;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
@@ -411,7 +412,8 @@ private VCellConnection connectToServer(InteractiveContext requester) {
 				new PropertyLoader();
 				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);
 				SessionLog log = new StdoutSessionLog(getClientServerInfo().getUsername());
-				vcConnFactory = new LocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo(), log);
+				LocalVCellConnectionService localVCellConnectionService = VCellServiceHelper.getInstance().loadService(LocalVCellConnectionService.class);
+				vcConnFactory = localVCellConnectionService.getLocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo(), log);
 				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), ClientServerInfo.LOCAL_SERVER, ConnectionStatus.INITIALIZING));
 				newVCellConnection = vcConnFactory.createVCellConnection();
 				break;
