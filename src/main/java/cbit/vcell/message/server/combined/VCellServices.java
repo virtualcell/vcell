@@ -21,6 +21,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.vcell.service.VCellServiceHelper;
+import org.vcell.util.LifeSignThread;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -43,7 +44,6 @@ import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
-import cbit.vcell.message.server.LifeSignThread;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;

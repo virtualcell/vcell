@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
 
-import cbit.vcell.message.server.LifeSignThread;
 import cbit.vcell.resource.VCellExecutorService;
 
 /**
@@ -203,7 +202,7 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 	}
 	
 	/**
-	 * combine functionality of {@link cbit.vcell.message.server.LifeSignThread} with
+	 * combine functionality of {@link org.vcell.util.LifeSignThread} with
 	 * flushing queue based on time
 	 */
 	private class TimeFlushLifeSign implements Runnable {

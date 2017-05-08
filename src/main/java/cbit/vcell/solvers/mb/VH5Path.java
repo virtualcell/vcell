@@ -5,6 +5,8 @@ import java.util.Objects;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.VCAssert;
 
@@ -14,7 +16,6 @@ import ncsa.hdf.object.DataFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
 import ncsa.hdf.object.h5.H5CompoundDS;
-import org.apache.log4j.Logger;
 
 /**
  * Class to recursively parse HDF5 file seeking requested data
@@ -40,7 +41,7 @@ public class VH5Path {
 			target = walk(g,names,0);
 		} catch (Exception e) {
 			exc = e;
-			if (lg.isWarnEnabled()) {
+			if (lg.isEnabledFor(Priority.WARN)) {
 				lg.warn("Error retrieving " + concat(names),exc);
 			}
 		}

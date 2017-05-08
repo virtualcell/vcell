@@ -1,6 +1,4 @@
-package cbit.vcell.message.server;
-
-import org.vcell.util.SessionLog;
+package org.vcell.util;
 
 public class LifeSignThread extends Thread{
 
