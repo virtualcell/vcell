@@ -24,13 +24,14 @@ import java.util.zip.ZipOutputStream;
 
 import javax.media.jai.operator.FileStoreDescriptor;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.StdoutSessionLog;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
@@ -99,14 +100,15 @@ public class NonGUIFRAPTest {
 			String cellROIPathName,String bleachROIPathName,
 			String backgroundROIPathName) throws Exception{
 		ExternalDataFileContents extDataFilecontents = new ExternalDataFileContents();
+			ImageDatasetReader imageDatasetReader = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class);
 			extDataFilecontents.imageData =
-				ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(imageDataPathName, null);
+					imageDatasetReader.readImageDataset(imageDataPathName, null);
 			extDataFilecontents.cellROIData =
-				ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(cellROIPathName,null);
+					imageDatasetReader.readImageDataset(cellROIPathName,null);
 			extDataFilecontents.bleachROIData =
-				ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(bleachROIPathName,null);
+					imageDatasetReader.readImageDataset(bleachROIPathName,null);
 			extDataFilecontents.backgroundROIData =
-				ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(backgroundROIPathName,null);
+					imageDatasetReader.readImageDataset(backgroundROIPathName,null);
 
 		return extDataFilecontents;
 	}

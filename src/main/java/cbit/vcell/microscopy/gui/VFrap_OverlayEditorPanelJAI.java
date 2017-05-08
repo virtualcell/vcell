@@ -12,7 +12,6 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -25,14 +24,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.Hashtable;
 
-import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -41,39 +38,34 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.microscopy.VFrap_ROISourceData;
@@ -1512,7 +1504,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 							throw UserCancelException.CANCEL_GENERIC;
 						}
 						if(!customROIImport.importROI(inputFile)){
-							ImageDataset importImageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(inputFile.getAbsolutePath(), null);
+							ImageDataset importImageDataset = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class).readImageDataset(inputFile.getAbsolutePath(), null);
 							if(importImageDataset.getISize().getX() * importImageDataset.getISize().getY() != 
 								getImagePane().getHighlightImage().getWidth()*getImagePane().getHighlightImage().getHeight()){
 								throw new Exception(
