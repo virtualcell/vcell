@@ -2,12 +2,15 @@ package cbit.vcell.server;
 
 import java.rmi.RemoteException;
 
+import org.scijava.Context;
+import org.scijava.plugin.PluginInfo;
+import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 
-public class VCellConnectionRegistrationProvider implements RegistrationProvider {
+public class VCellConnectionRegistrationProvider implements RegistrationService {
 	private VCellConnection vcellConnection;
 	public VCellConnectionRegistrationProvider(VCellConnection vcellConnection){
 		this.vcellConnection = vcellConnection;
@@ -29,5 +32,27 @@ public class VCellConnectionRegistrationProvider implements RegistrationProvider
 	@Override
 	public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
 		vcellConnection.getUserMetaDbServer().userRegistrationOP(UserRegistrationOP.createLostPasswordOP(userid));
+	}
+	@Override
+	public Context context() {
+		return null;
+	}
+	@Override
+	public Context getContext() {
+		return null;
+	}
+	@Override
+	public double getPriority() {
+		return 0;
+	}
+	@Override
+	public void setPriority(double priority) {
+	}
+	@Override
+	public PluginInfo<?> getInfo() {
+		return null;
+	}
+	@Override
+	public void setInfo(PluginInfo<?> info) {
 	}
 }

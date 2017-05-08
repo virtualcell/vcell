@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.modeldb;
-import java.rmi.RemoteException;
 import java.util.List;
 
 import org.vcell.util.DataAccessException;
@@ -40,7 +39,7 @@ public class LocalAdminDbServer implements AdminDatabaseServer {
  * @exception java.rmi.RemoteException The exception description.
  */
 public LocalAdminDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) 
-		throws RemoteException, DataAccessException {
+		throws DataAccessException {
 
 	this.log = sessionLog;
 	DbDriver.setKeyFactory(keyFactory);

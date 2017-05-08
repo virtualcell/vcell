@@ -5,20 +5,15 @@ import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
+import org.vcell.service.VCellServiceHelper;
+import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.Compare;
-import org.vcell.util.PropertyLoader;
-import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ConnectionStatus;
@@ -26,14 +21,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.desktop.RegistrationPanel;
-import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
-import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.DBRegistrationProvider;
-import cbit.vcell.server.RMIBootstrapRegistrationProvider;
-import cbit.vcell.server.RegistrationProvider;
 import cbit.vcell.server.UserRegistrationOP;
-import cbit.vcell.server.VCellBootstrap;
 
 public class UserRegistrationManager {
 	
@@ -53,33 +41,11 @@ public class UserRegistrationManager {
 				throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Edit User Info requires clientServerManager not null.");			
 			}
 	
-			RegistrationProvider registrationProvider = null;
+			RegistrationService registrationService = null;
 			if(clientServerManager != null){
-				registrationProvider = clientServerManager.getRegistrationProvider();
+				registrationService = clientServerManager.getRegistrationProvider();
 			} else {
-				if (currentClientServerInfo.getServerType() == ClientServerInfo.SERVER_LOCAL) {
-					PropertyLoader.loadProperties();
-					SessionLog log = new StdoutSessionLog("Local");
-					ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-					KeyFactory keyFactory = new OracleKeyFactory();
-					AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory, keyFactory, log);
-					registrationProvider = new DBRegistrationProvider(adminDbServer);
-				} else {
-					String[] hosts = currentClientServerInfo.getHosts();
-					VCellBootstrap vcellBootstrap = null;
-					for (int i = 0; i < hosts.length; i ++) {
-						try {
-							vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup("//" + hosts[i]	+ "/" + RMIVCellConnectionFactory.SERVICE_NAME);
-							vcellBootstrap.getVCellSoftwareVersion(); // test connection
-							break;
-						} catch (Exception ex) {
-							if (i == hosts.length - 1) {
-								throw ex;
-							}
-						}
-					}
-					registrationProvider = new RMIBootstrapRegistrationProvider(vcellBootstrap);
-				}
+				registrationService = VCellServiceHelper.getInstance().loadService(RegistrationService.class);
 			}
 			if(userAction.equals(LoginManager.USERACTION_LOSTPASSWORD)){
 				if(currentClientServerInfo.getUsername() == null || currentClientServerInfo.getUsername().length() == 0){
@@ -94,11 +60,11 @@ public class UserRegistrationManager {
 				if(!result.equals("OK")){
 					throw UserCancelException.CANCEL_GENERIC;
 				}
-				registrationProvider.sendLostPassword(currentClientServerInfo.getUsername());
+				registrationService.sendLostPassword(currentClientServerInfo.getUsername());
 				return;
 			}
 			
-			final RegistrationProvider finalRegistrationProvider = registrationProvider;
+			final RegistrationService finalRegistrationProvider = registrationService;
 			final String ORIGINAL_USER_INFO_HOLDER = "originalUserInfoHolder";
 			//final String DIGESTED_USERIDS_KEY = "DIGESTED_USERIDS_KEY";
 			AsynchClientTask gatherInfoTask = new AsynchClientTask("gathering user info for updating", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {

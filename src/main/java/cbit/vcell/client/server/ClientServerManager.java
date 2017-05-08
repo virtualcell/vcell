@@ -11,6 +11,7 @@
 package cbit.vcell.client.server;
 import java.rmi.RemoteException;
 
+import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -34,7 +35,6 @@ import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.server.ExportController;
-import cbit.vcell.server.RegistrationProvider;
 import cbit.vcell.server.SessionManager;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
@@ -856,7 +856,7 @@ void setDisconnected() {
 	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
 }
 
-public RegistrationProvider getRegistrationProvider() {
+public RegistrationService getRegistrationProvider() {
 	return new VCellConnectionRegistrationProvider(this.vcellConnection);
 }
 }
