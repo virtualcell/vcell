@@ -36,9 +36,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.server.FrapDataUtils;
-import cbit.vcell.modelopt.DataReference;
 import cbit.vcell.modelopt.DataSource;
-import cbit.vcell.modelopt.gui.MultisourcePlotListModel;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.simdata.PDEDataManager;
@@ -474,21 +472,21 @@ public class NonGUIFRAPTest {
 		for (int i = 0; i < spatialAnalysisResults.analysisParameters.length; i++) {
 			DataSource expDataSource = new DataSource.DataSourceReferenceData("experiment", referenceDataArr[i]);
 			DataSource fitDataSource = new DataSource.DataSourceRowColumnResultSet("fit", odeSolverResultSetArr[i]);
-			MultisourcePlotListModel multisourcePlotListModel =
-				new MultisourcePlotListModel();
-			multisourcePlotListModel.setDataSources(new DataSource[] {expDataSource,fitDataSource});
-			System.out.println("AnalysisParameters = "+spatialAnalysisResults.analysisParameters[i]);
-			for (int j = 0; j < multisourcePlotListModel.getSize(); j++) {
-				DataReference dataReference = (DataReference)multisourcePlotListModel.getElementAt(j);
-				DataSource dataSource = dataReference.getDataSource();
-				for (int k = 0; k < dataSource.getNumRows(); k++) {
-					for (int k2 = 0; k2 < dataSource.getNumColumns(); k2++) {
-						System.out.print(dataSource.getRowData(k)[k2]+" ");
-						fw.write(dataSource.getRowData(k)[k2]+" ");
-					}
-					System.out.println();
-					fw.write("\n");
-				}
+//			MultisourcePlotListModel multisourcePlotListModel =
+//				new MultisourcePlotListModel();
+//			multisourcePlotListModel.setDataSources(new DataSource[] {expDataSource,fitDataSource});
+//			System.out.println("AnalysisParameters = "+spatialAnalysisResults.analysisParameters[i]);
+//			for (int j = 0; j < multisourcePlotListModel.getSize(); j++) {
+//				DataReference dataReference = (DataReference)multisourcePlotListModel.getElementAt(j);
+//				DataSource dataSource = dataReference.getDataSource();
+//				for (int k = 0; k < dataSource.getNumRows(); k++) {
+//					for (int k2 = 0; k2 < dataSource.getNumColumns(); k2++) {
+//						System.out.print(dataSource.getRowData(k)[k2]+" ");
+//						fw.write(dataSource.getRowData(k)[k2]+" ");
+//					}
+//					System.out.println();
+//					fw.write("\n");
+//				}
 //				if(dataReference.getDataSource().getSource() instanceof ReferenceData){
 //					ReferenceData refData = (ReferenceData)dataReference.getDataSource().getSource();
 //					for (int k = 0; k < refData.getNumRows(); k++) {
@@ -510,7 +508,7 @@ public class NonGUIFRAPTest {
 //						fw.write("\n");
 //					}
 //				}
-			}
+//			}
 		}
 		fw.close();
 	}
