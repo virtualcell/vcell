@@ -88,7 +88,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private boolean bFloatingRequested = false;
 	private JButton floatRequestButton = null;
 	
-	public final static String IMAGE_PATH = "/sybil/images/layout/";
+	public final static String IMAGE_PATH = "/images/layout/";
 	private final static Icon randomLayoutIcon = loadIcon(IMAGE_PATH + "random.gif");
 	private final static Icon circleLayoutIcon = loadIcon(IMAGE_PATH + "circular.gif");
 	private final static Icon annealedLayoutIcon = loadIcon(IMAGE_PATH + "annealed.gif");
