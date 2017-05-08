@@ -144,10 +144,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final String FRAPSTUDYPANEL_TABNAME_2DResults = "2D Results";
 	public static final String MODEL_TYPE_PURE_DIFFUSION = "Pure_Diffusion";
 	public static final String MODEL_TYPE_REACTION_DIFFUSION = "Reaction_Diffusion";
-	public static final String VFRAP_PREFIX_EXP = "Exp";
-	public static final String VFRAP_PREFIX_MASK = "Mask";
-	public static final String VFRAP_PREFIX_SIM = "Sim";
-	public static final String[] VFRAP_DS_PREFIX = {VFRAP_PREFIX_EXP, VFRAP_PREFIX_MASK, VFRAP_PREFIX_SIM};
 	public static final String NO_THANKS_MSG = "Don't Save";
 	public static final String SAVE_CONTINUE_MSG = "Save and Continue";
 	
@@ -165,9 +161,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private Expression Norm_Exp_Fluor = null;
 	private Expression Norm_Sim = null;
 	
-	private static String Norm_Exp_Fluor_Str = "(("+VFRAP_PREFIX_MASK+".cell_mask*((max(("+VFRAP_PREFIX_EXP+".fluor-"+VFRAP_PREFIX_EXP+".bg_average),0)+1)/"+VFRAP_PREFIX_MASK+".prebleach_avg))*("+VFRAP_PREFIX_MASK+".cell_mask > 0))";
-	private static String Norm_Sim_One_Diff_Str =VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_MOBILE+" + "+VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE;
-	private static String Norm_Sim_Two_Diff_Str =VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_MOBILE+" + "+VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE+" + "+VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE;
+	private static String Norm_Exp_Fluor_Str = "(("+FRAPStudy.VFRAP_PREFIX_MASK+".cell_mask*((max(("+FRAPStudy.VFRAP_PREFIX_EXP+".fluor-"+FRAPStudy.VFRAP_PREFIX_EXP+".bg_average),0)+1)/"+FRAPStudy.VFRAP_PREFIX_MASK+".prebleach_avg))*("+FRAPStudy.VFRAP_PREFIX_MASK+".cell_mask > 0))";
+	private static String Norm_Sim_One_Diff_Str =FRAPStudy.VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_MOBILE+" + "+FRAPStudy.VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE;
+	private static String Norm_Sim_Two_Diff_Str =FRAPStudy.VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_MOBILE+" + "+FRAPStudy.VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE+" + "+FRAPStudy.VFRAP_PREFIX_SIM+"."+FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE;
 	
 	public static final LineBorder TAB_LINE_BORDER = new LineBorder(new Color(153, 186,243), 3);
 	
@@ -1366,7 +1362,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				SimulationJob simJob = new SimulationJob(sim,jobIndex,fieldDataIdentifierSpecs);
 								
 				VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
-				VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
+				VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, FRAPStudy.VFRAP_DS_PREFIX);
 								
 				PDEDataManager dataManager = new PDEDataManager(null, getLocalWorkspace().getVCDataManager(),vcDataId);
 				PDEDataContext pdeDataContext = new ClientPDEDataContext(dataManager);
@@ -1550,7 +1546,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					new AnnotatedFunction(NORM_SIM_VAR, Norm_Sim, null, null, VariableType.VOLUME, FunctionCategory.OLDUSERDEFINED)};
 							
 			VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
-			VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
+			VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, FRAPStudy.VFRAP_DS_PREFIX);
 			outputContext = new OutputContext(func);
 							
 			dataManager = new PDEDataManager(outputContext,getLocalWorkspace().getVCDataManager(),vcDataId);

@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.microscopy;
+
+import cbit.vcell.xml.XMLTags;
+
 /**
  * This class contains all the XML tags.
  * @author schaff
@@ -24,7 +27,7 @@ public class MicroscopyXMLTags {
 	public static final String ROITypeAttrTag = "ROIType";
 	
 	public static final String ImageDatasetTag = "ImageDataset";
-	public static final String OwnerNameAttrTag = "OwnerName";
+	public static final String OwnerNameAttrTag = XMLTags.OwnerNameAttrTag;
 	public static final String ImageDatasetExternalDataInfoTag = "ImageDatasetExternalDataInfo";
 	public static final String FilenameAttrTag = "Filename";
 	public static final String ExternalDataIdentifierTag = "ExternalDataIdentifier";

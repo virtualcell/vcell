@@ -12,6 +12,7 @@ package org.vcell.relationship;
 
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -25,7 +26,6 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPAXUtil.Process;
 import org.vcell.pathway.BioPaxObject;
@@ -34,15 +34,12 @@ import org.vcell.pathway.ComplexAssembly;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PhysicalEntity;
-import org.vcell.pathway.Protein;
-import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.Transport;
 import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
 import org.vcell.pathway.persistence.BiopaxProxy.PhysicalEntityProxy;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.BioPaxObjectPropertiesPanel;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
@@ -60,6 +57,65 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 
 public class PathwayMapping {
+	
+	private static List<String> commentKeywords = Arrays.asList (
+			"FUNCTION:",
+			"CATALYTIC ACTIVITY:",
+			"ENZYME REGULATION:",
+			"COFACTOR:",
+			"SUBUNIT:",
+			"DISEASE:",
+			"SIMILARITY:",
+			"GENE SYNONYMS:",
+			"SUBCELLULAR LOCATION:",
+			"TISSUE SPECIFICITY:",
+			"SEQUENCE CAUTION:",
+			"WEB RESOURCE:",
+			"MISCELLANEOUS:",
+			"ALTERNATIVE PRODUCTS:",
+			"DEVELOPMENTAL STAGE:",
+			"MASS SPECTROMETRY:",
+			"POLYMORPHISM:",
+			"PATHWAY:",
+			"INDUCTION:",
+			"PTM:",
+			"DOMAIN:",
+			"COPYRIGHT:"
+			);
+	private static List<String> otherKeywords = Arrays.asList (
+			"Name=",
+			"Named isoforms=",
+			"Sequence=",
+			"Type=",
+			"Mass=",
+			"Method=",
+			"Range=",
+			"Source=",
+			"IsoId=",
+			"Synonyms=",
+			"Event=",
+			"Comment=",
+			"Positions=",
+			"URL=",
+			"Note="
+			);
+	public static String FormatDetails(String text) {
+		for(String entry : commentKeywords) {
+			String replacement = "<br>" + "<b><font color=\"#005500\">" + entry + "</font></b>";
+			text = text.replaceAll(entry, replacement);
+		}
+		for(String entry : otherKeywords) {
+			String replacement = "<font color=\"#770000\">" + entry + "</font>";
+			text = text.replaceAll(entry, replacement);
+		}
+		if(text.startsWith("<br>")) {
+			text = text.replaceFirst("<br>", "");
+		}
+		return text;
+
+	}
+
+	
 	
 	public void createBioModelEntitiesFromBioPaxObjects(BioModel bioModel, ArrayList<ConversionTableRow> conversionTableRows, boolean addSubunits) throws Exception
 	{
@@ -204,7 +260,7 @@ public class PathwayMapping {
 		if(commentList != null && !commentList.isEmpty()) {
 			String comment = commentList.get(0);
 			if(!comment.isEmpty()) {
-				String text = BioPaxObjectPropertiesPanel.FormatDetails(comment);
+				String text = FormatDetails(comment);
 				mt.setComment(htmlStart + text + htmlEnd);
 			}
 		} else {

@@ -64,7 +64,6 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -151,6 +150,10 @@ public class FRAPStudy implements Matchable{
 	private transient double[] reducedExpTimePoints = null;
 	//temporary data structure to identify whether the current frapStudy needs a save or not
 	private transient boolean bSaveNeeded = false;
+	public static final String VFRAP_PREFIX_EXP = "Exp";
+	public static final String VFRAP_PREFIX_MASK = "Mask";
+	public static final String VFRAP_PREFIX_SIM = "Sim";
+	public static final String[] VFRAP_DS_PREFIX = {VFRAP_PREFIX_EXP, VFRAP_PREFIX_MASK, VFRAP_PREFIX_SIM};
 	
 	
 	//static functions
@@ -199,7 +202,7 @@ public class FRAPStudy implements Matchable{
 	{
 			MergedDataInfo mergedDataInfo =
 				new MergedDataInfo(LocalWorkspace.getDefaultOwner(),
-					new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId}, FRAPStudyPanel.VFRAP_DS_PREFIX);
+					new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId}, FRAPStudy.VFRAP_DS_PREFIX);
 			return
 				new File(simDataDirectory,
 					mergedDataInfo.getID()+SimDataConstants.FUNCTIONFILE_EXTENSION);

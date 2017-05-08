@@ -66,7 +66,6 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
@@ -1771,7 +1770,7 @@ private Element getXML(FieldDataSymbol fds, ModelUnitSystem modelUnitSystem) {
 	ExternalDataIdentifier edi = fds.getExternalDataIdentifier();
 	dataSetIDElement.setAttribute(XMLTags.NameAttrTag, edi.getName());
 	dataSetIDElement.setAttribute(XMLTags.KeyValueAttrTag, edi.getKey().toString());
-	dataSetIDElement.setAttribute(MicroscopyXMLTags.OwnerNameAttrTag, edi.getOwner().getName());
+	dataSetIDElement.setAttribute(XMLTags.OwnerNameAttrTag, edi.getOwner().getName());
 	dataSetIDElement.setAttribute(XMLTags.OwnerKeyAttrTag, edi.getOwner().getID().toString());
 	fieldDataSymbolElement.addContent(dataSetIDElement);
 

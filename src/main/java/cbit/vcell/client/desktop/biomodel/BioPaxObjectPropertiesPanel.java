@@ -14,19 +14,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -37,25 +31,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.text.View;
 
-import org.sbpax.schemas.util.SBPAX3Util;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.Catalysis;
 import org.vcell.pathway.CellularLocationVocabulary;
 import org.vcell.pathway.Complex;
 import org.vcell.pathway.Control;
@@ -68,7 +52,6 @@ import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionVocabulary;
-import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Protein;
 import org.vcell.pathway.PublicationXref;
@@ -82,10 +65,9 @@ import org.vcell.pathway.sbo.SBOListEx;
 import org.vcell.pathway.sbo.SBOTerm;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBMeasurable;
-import org.vcell.pathway.sbpax.SBPAXLabelUtil;
 import org.vcell.pathway.sbpax.SBVocabulary;
-import org.vcell.pathway.sbpax.UnitOfMeasurement;
 import org.vcell.relationship.AnnotationMapping;
+import org.vcell.relationship.PathwayMapping;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -273,66 +255,10 @@ private void lookupFormalName(final int tableRow){
 	
 }
 
-private static List<String> commentKeywords = Arrays.asList (
-		"FUNCTION:",
-		"CATALYTIC ACTIVITY:",
-		"ENZYME REGULATION:",
-		"COFACTOR:",
-		"SUBUNIT:",
-		"DISEASE:",
-		"SIMILARITY:",
-		"GENE SYNONYMS:",
-		"SUBCELLULAR LOCATION:",
-		"TISSUE SPECIFICITY:",
-		"SEQUENCE CAUTION:",
-		"WEB RESOURCE:",
-		"MISCELLANEOUS:",
-		"ALTERNATIVE PRODUCTS:",
-		"DEVELOPMENTAL STAGE:",
-		"MASS SPECTROMETRY:",
-		"POLYMORPHISM:",
-		"PATHWAY:",
-		"INDUCTION:",
-		"PTM:",
-		"DOMAIN:",
-		"COPYRIGHT:"
-		);
-private static List<String> otherKeywords = Arrays.asList (
-		"Name=",
-		"Named isoforms=",
-		"Sequence=",
-		"Type=",
-		"Mass=",
-		"Method=",
-		"Range=",
-		"Source=",
-		"IsoId=",
-		"Synonyms=",
-		"Event=",
-		"Comment=",
-		"Positions=",
-		"URL=",
-		"Note="
-		);
-public static String FormatDetails(String text) {
-	for(String entry : commentKeywords) {
-		String replacement = "<br>" + "<b><font color=\"#005500\">" + entry + "</font></b>";
-		text = text.replaceAll(entry, replacement);
-	}
-	for(String entry : otherKeywords) {
-		String replacement = "<font color=\"#770000\">" + entry + "</font>";
-		text = text.replaceAll(entry, replacement);
-	}
-	if(text.startsWith("<br>")) {
-		text = text.replaceFirst("<br>", "");
-	}
-	return text;
-
-}
 private static String FormatDetails(BioPaxObjectProperty property) {
 	if(property.name.equalsIgnoreCase("comment")) {		// format comments
 		String text = property.value;
-		return FormatDetails(text);
+		return PathwayMapping.FormatDetails(text);
 	}
 	return property.value;
 }

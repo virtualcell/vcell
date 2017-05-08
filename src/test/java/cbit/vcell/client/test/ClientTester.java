@@ -81,7 +81,7 @@ protected static cbit.vcell.server.VCellBootstrap VCellBootstrapInit(String args
 		System.err.println("usage: "+programName+" host port AdminUserid AdminUserKey AdminPassword");
 		throw new Exception("cannot connect");
 	}
-	cbit.vcell.message.server.bootstrap.VCellServerFactory vcServerFactory = null;
+	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
 	new org.vcell.util.PropertyLoader();
 	if (!args[0].equalsIgnoreCase("-local")) {
 		try {
@@ -135,13 +135,13 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
  * @return VCellConnection
  * @param args java.lang.String[]
  */
-protected static cbit.vcell.message.server.bootstrap.VCellServerFactory VCellServerFactoryInit(String args[], String programName) throws Exception {
+protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(String args[], String programName) throws Exception {
 	if (args.length != 3 && args.length != 4) {
 		System.err.println("usage: "+programName+" [-local] userid password");
 		System.err.println("usage: "+programName+" host userid userkey password");
 		throw new Exception("cannot connect");
 	}
-	cbit.vcell.message.server.bootstrap.VCellServerFactory vcServerFactory = null;
+	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
 	org.vcell.util.PropertyLoader.loadProperties();
 	org.vcell.util.document.User user = null;
 	if (!args[0].equalsIgnoreCase("-local")) {
