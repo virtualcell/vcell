@@ -1,4 +1,4 @@
-package org.vcell.sedml;
+package org.vcell.sedml.gui;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -21,6 +21,7 @@ import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedML;
 import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
+import org.vcell.sedml.SEDMLUtil;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 

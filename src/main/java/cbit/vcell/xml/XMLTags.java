@@ -142,6 +142,7 @@ public class XMLTags {
     //TAGS RELATED TO VERSION
     public final static String VersionTag				= "Version";
     public final static String OwnerTag					= "Owner";
+    public final static String OwnerNameAttrTag			= "OwnerName";
     public final static String IdentifierAttrTag		= "Identifier";
     public final static String AnnotationTag			= "Annotation";
     public final static String PrivacyAttrTag			= "Public";

@@ -73,7 +73,6 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageCompressed;
 import cbit.image.VCPixelClass;
-import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaData;
@@ -6355,7 +6354,7 @@ private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataCon
 		Element dataSetIDElement = dataSymbolElement.getChild(XMLTags.ExternalDataIdentifierTag, vcNamespace);
 		String name = unMangle(dataSetIDElement.getAttributeValue(XMLTags.NameAttrTag));
 		String key = unMangle(dataSetIDElement.getAttributeValue(XMLTags.KeyValueAttrTag));
-		String userID = unMangle(dataSetIDElement.getAttributeValue(MicroscopyXMLTags.OwnerNameAttrTag));
+		String userID = unMangle(dataSetIDElement.getAttributeValue(XMLTags.OwnerNameAttrTag));
 		String userKey = unMangle(dataSetIDElement.getAttributeValue(XMLTags.OwnerKeyAttrTag));
 		User owner = new User(userID, new KeyValue(userKey));
 		ExternalDataIdentifier edi = new ExternalDataIdentifier(new KeyValue(key), owner, name);

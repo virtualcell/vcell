@@ -87,7 +87,7 @@ import org.vcell.model.bngl.gui.BNGLDebuggerPanel;
 import org.vcell.model.bngl.gui.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
-import org.vcell.sedml.SEDMLChooserPanel;
+import org.vcell.sedml.gui.SEDMLChooserPanel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
