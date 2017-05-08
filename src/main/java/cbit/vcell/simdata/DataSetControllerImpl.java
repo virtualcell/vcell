@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.CacheException;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -79,7 +80,6 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldDataParameterVariable;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.db.FieldDataDBOperationDriver;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
@@ -2904,7 +2904,8 @@ FieldFunctionArguments[] fieldFuncArgumentsArr,User user,boolean bForceUpdate) t
 		userExtDataIdentifiersV.size() < fieldFuncArgumentsArr.length ||
 		bForceUpdate){
 		//must refresh
-		userExtDataIDH = FieldDataDBOperationDriver.getAllExternalDataIdentifiers();
+		ExternalDataIdentifierService extDataIDService = VCellServiceHelper.getInstance().loadService(ExternalDataIdentifierService.class);
+		userExtDataIDH = extDataIDService.getAllExternalDataIdentifiers();
 		userExtDataIdentifiersV = userExtDataIDH.get(user);
 	}
 	FieldDataIdentifierSpec[] fieldDataIdentifierSpecs =
