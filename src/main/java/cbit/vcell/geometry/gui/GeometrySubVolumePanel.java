@@ -39,7 +39,6 @@ import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.documentation.VcellHelpViewer;
-import org.vcell.util.IssueManager;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DialogUtils;
@@ -47,6 +46,7 @@ import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.AnalyticSubVolume;

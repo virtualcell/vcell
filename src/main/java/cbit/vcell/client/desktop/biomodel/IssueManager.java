@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.util;
+package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.Timer;
 
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.document.VCDocument;
 

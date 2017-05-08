@@ -28,7 +28,6 @@ import javax.swing.event.DocumentListener;
 
 import org.vcell.model.rbm.gui.NetworkConstraintsPanel;
 import org.vcell.model.rbm.gui.NetworkFreePanel;
-import org.vcell.util.IssueManager;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;

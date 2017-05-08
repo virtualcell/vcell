@@ -12,16 +12,13 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
-import org.vcell.util.IssueManager;
 
 import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.SpeciesContext;
 
 public abstract class AbstractComponentShape {
 	private MolecularComponent mc;
 	private MolecularComponentPattern mcp;
-
+	
 	class BondPair implements Comparable {
 		int id;
 		Point from;
@@ -73,12 +70,16 @@ public abstract class AbstractComponentShape {
 //	final static Color plusSignGreen = new Color(0x006b1f);
 	
 	// used to colorize components with issues
-	static protected IssueManager issueManager;
-	public final static void setIssueManager(IssueManager newValue) {
-		issueManager = newValue;
+	public interface IssueListProvider {
+		public List<Issue> getIssueList();
 	}
-	public final static IssueManager getIssueManager() {
-		return issueManager;
+
+	static protected IssueListProvider issueListProvider;
+	public final static void setIssueListProvider(IssueListProvider newValue) {
+		issueListProvider = newValue;
+	}
+	public final static IssueListProvider getIssueListProvider() {
+		return issueListProvider;
 	}
 	
 	protected static boolean isHidden(Displayable owner, MolecularComponentPattern mcp) {
@@ -101,13 +102,13 @@ public abstract class AbstractComponentShape {
 		return hidden;
 	}
 	public static boolean hasErrorIssues(Displayable owner, MolecularType mt) {
-		if(issueManager == null) {
+		if(issueListProvider == null) {
 			return false;
 		}
 		if(owner == null) {
 			return false;
 		}
-		List<Issue> allIssueList = issueManager.getIssueList();
+		List<Issue> allIssueList = issueListProvider.getIssueList();
 		for (Issue issue: allIssueList) {
 			if(issue.getSeverity() != Issue.Severity.ERROR) {
 				continue;
@@ -121,14 +122,14 @@ public abstract class AbstractComponentShape {
 		return false;
 	}
 	public static boolean hasErrorIssues(Displayable owner, MolecularComponentPattern mcp, MolecularComponent mc) {
-		if(issueManager == null) {
+		if(issueListProvider == null) {
 			return false;
 		}
 		if(owner == null) {
 			return false;
 		}
 		
-		List<Issue> allIssueList = issueManager.getIssueList();
+		List<Issue> allIssueList = issueListProvider.getIssueList();
 		for (Issue issue: allIssueList) {
 			if(issue.getSeverity() != Issue.Severity.ERROR) {
 				continue;
@@ -144,14 +145,14 @@ public abstract class AbstractComponentShape {
 		return false;
 	}
 	public static boolean hasErrorIssues(Displayable owner, ComponentStatePattern csp, ComponentStateDefinition csd) {
-		if(issueManager == null) {
+		if(issueListProvider == null) {
 			return false;
 		}
 		if(owner == null) {
 			return false;
 		}
 		
-		List<Issue> allIssueList = issueManager.getIssueList();
+		List<Issue> allIssueList = issueListProvider.getIssueList();
 		for (Issue issue: allIssueList) {
 			if(issue.getSeverity() != Issue.Severity.ERROR) {
 				continue;
@@ -167,14 +168,14 @@ public abstract class AbstractComponentShape {
 		return false;
 	}
 	public static boolean hasErrorIssues(Displayable owner, MolecularComponent mc) {
-		if(issueManager == null) {
+		if(issueListProvider == null) {
 			return false;
 		}
 		if(owner == null) {
 			return false;
 		}
 		
-		List<Issue> allIssueList = issueManager.getIssueList();
+		List<Issue> allIssueList = issueListProvider.getIssueList();
 		for (Issue issue: allIssueList) {
 			if(issue.getSeverity() != Issue.Severity.ERROR) {
 				continue;

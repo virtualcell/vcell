@@ -70,7 +70,7 @@ import org.vcell.pathway.Conversion;
 import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Displayable;
-import org.vcell.util.IssueManager;
+import org.vcell.util.Issue;
 import org.vcell.util.Pair;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -1893,7 +1893,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		molecularTypeTableModel.setIssueManager(issueManager);
 		observableTableModel.setIssueManager(issueManager);
 		structureTableModel.setIssueManager(issueManager);
-		AbstractComponentShape.setIssueManager(issueManager);
+		AbstractComponentShape.setIssueListProvider( () -> issueManager.getIssueList() );
 	}
 
 	private void showPathwayLinks() {

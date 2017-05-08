@@ -16,10 +16,8 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 
-import org.vcell.util.IssueManager;
-import org.vcell.util.IssueManager.IssueEvent;
-import org.vcell.util.IssueManager.IssueEventListener;
-
+import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
+import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 
 @SuppressWarnings("serial")

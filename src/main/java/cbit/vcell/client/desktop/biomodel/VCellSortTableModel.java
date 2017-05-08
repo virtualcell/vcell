@@ -23,14 +23,13 @@ import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.Issue;
-import org.vcell.util.IssueManager;
 import org.vcell.util.Issue.Severity;
-import org.vcell.util.IssueManager.IssueEvent;
-import org.vcell.util.IssueManager.IssueEventListener;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.sorttable.SortPreference;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
+import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
+import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 
