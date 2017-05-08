@@ -3,6 +3,7 @@ package cbit.vcell.field.db;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -10,6 +11,7 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.simdata.ExternalDataIdentifierService;
 
+@Plugin(type = ExternalDataIdentifierService.class)
 public class LocalExternalDataIdentifierServiceImpl extends AbstractService implements ExternalDataIdentifierService {
 
 	@Override
