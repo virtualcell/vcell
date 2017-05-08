@@ -9,6 +9,7 @@ import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -27,10 +28,9 @@ import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ClientServerManager.InteractiveContext;
 import cbit.vcell.client.server.ClientServerManager.InteractiveContextDefaultProvider;
 import cbit.vcell.message.SimpleMessagingDelegate;
+import cbit.vcell.message.VCMessagingDelegate;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
-import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.VCellServerFactory;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
@@ -110,7 +110,8 @@ public class ClientFactory {
 		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 		KeyFactory keyFactory = new OracleKeyFactory();
 		VCMessagingDelegate messagingDelegate = new SimpleMessagingDelegate();
-		VCMessagingService messagingService = VCMessagingServiceActiveMQ.createInstance(messagingDelegate);
+		VCMessagingService messagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		messagingService.setDelegate(messagingDelegate);
 		VCellServerFactory vcServerFactory = new cbit.vcell.message.server.bootstrap.LocalVCellServerFactory(adminUserid,digestedPassword,"<<local>>",messagingService,conFactory,keyFactory,log);
 		return vcServerFactory;
 	}

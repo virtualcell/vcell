@@ -2,8 +2,6 @@ package cbit.vcell.message;
 
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
-
 public class SimpleMessagingDelegate implements VCMessagingDelegate {
 
 	@Override

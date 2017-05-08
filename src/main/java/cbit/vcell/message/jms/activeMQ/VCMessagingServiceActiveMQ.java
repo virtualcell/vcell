@@ -12,20 +12,30 @@ import javax.jms.Session;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
+import org.scijava.Priority;
+import org.scijava.plugin.Plugin;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessagingException;
+import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.jms.VCMessagingServiceJms;
 
+@Plugin(type = VCMessagingService.class)
 public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 	private BrokerService broker = null;
 	private static String JMS_URL;
 	
-	public VCMessagingServiceActiveMQ() {
+	public VCMessagingServiceActiveMQ() throws VCMessagingException {
 		super();
+		setPriority(Priority.NORMAL_PRIORITY);
+		String jmsProvider = PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider);
+		if (!jmsProvider.equalsIgnoreCase(PropertyLoader.jmsProviderValueActiveMQ)){
+			throw new RuntimeException("unrecognized jms provider : "+jmsProvider);
+		}
+		init(false);
 	}
 	
 	@Override
@@ -35,7 +45,7 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 	}
 	
 	@Override
-	protected void init(boolean bStartBroker) throws VCMessagingException {
+	public void init(boolean bStartBroker) throws VCMessagingException {
 		if (bStartBroker){
 			this.broker = new BrokerService();
 	

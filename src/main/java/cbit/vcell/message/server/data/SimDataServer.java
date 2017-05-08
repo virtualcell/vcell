@@ -16,6 +16,7 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -167,7 +168,8 @@ public static void main(java.lang.String[] args) {
 		
 		DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);
 
-		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
+		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		vcMessagingService.setDelegate(new ServerMessagingDelegate());
 		
         SimDataServer simDataServer = new SimDataServer(serviceInstanceStatus, dataServerImpl, vcMessagingService, log, false);
         //add dataJobListener

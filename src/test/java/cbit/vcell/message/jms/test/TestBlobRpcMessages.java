@@ -14,6 +14,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 /**
@@ -50,7 +51,8 @@ public class TestBlobRpcMessages {
 	    	PropertyLoader.loadProperties();
 	    	//System.getProperties().setProperty(PropertyLoader.jmsURL,"tcp://nrcamdev5.cam.uchc.edu:61616");
 	    	
-	    	VCMessagingService messagingService = VCMessagingService.createInstance(new SimpleMessagingDelegate());
+	    	VCMessagingService messagingService = new VCMessagingServiceActiveMQ();
+	    	messagingService.setDelegate(new SimpleMessagingDelegate());
 	    	StdoutSessionLog log = new StdoutSessionLog("log");
 
 	        // reading message and computing sum

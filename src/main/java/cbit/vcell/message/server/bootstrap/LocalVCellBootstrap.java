@@ -22,6 +22,7 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
@@ -218,7 +219,8 @@ public static void main(java.lang.String[] args) {
 		if (!serverConfig.equals(MESSAGING)){
 			throw new Exception("expecting '" + MESSAGING + "' as third argument");
 		}
-		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
+		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		vcMessagingService.setDelegate(new ServerMessagingDelegate());
 		
 		SessionLog log;
 		if (logOutputStream != null) {

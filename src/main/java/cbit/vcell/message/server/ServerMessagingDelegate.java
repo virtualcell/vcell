@@ -4,7 +4,7 @@ import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
+import cbit.vcell.message.VCMessagingDelegate;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.mongodb.VCMongoMessage;
 

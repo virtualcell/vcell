@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
+import cbit.vcell.message.VCMessagingDelegate;
 import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 

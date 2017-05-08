@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
-
 
 public interface VCMessageSession {
 	public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws VCMessagingException, VCMessagingInvocationTargetException;	

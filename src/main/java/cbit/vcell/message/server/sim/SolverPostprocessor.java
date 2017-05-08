@@ -18,6 +18,7 @@ import javax.management.ObjectName;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
@@ -90,7 +91,8 @@ public class SolverPostprocessor  {
 			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
 
-	        vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
+			vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+			vcMessagingService.setDelegate(new ServerMessagingDelegate());
 			VCMessageSession session = vcMessagingService.createProducerSession();
 			WorkerEventMessage workerEventMessage;
 			if (solverExitCode==0){

@@ -8,18 +8,24 @@ import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
+import org.scijava.Priority;
+import org.scijava.plugin.Plugin;
 
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessagingException;
+import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.jms.VCMessagingServiceJms;
 
+@Plugin(type = VCMessagingService.class)
 public class VCMessagingServiceEmbedded extends VCMessagingServiceJms {
 	private BrokerService broker = null;
 	
-	public VCMessagingServiceEmbedded() {
+	public VCMessagingServiceEmbedded() throws VCMessagingException{
 		super();
+		setPriority(Priority.LOW_PRIORITY);
+		init(true);
 	}
 	
 	@Override

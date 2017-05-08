@@ -14,6 +14,7 @@ import java.io.File;
 
 import javax.jms.JMSException;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -214,7 +215,8 @@ public static void main(String[] args) {
 		PropertyLoader.loadProperties();
 		VCMongoMessage.enabled = false;
 		
-		vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
+		vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		vcMessagingService.setDelegate(new ServerMessagingDelegate());
 		
 		worker = new JavaSimulationExecutable(vcMessagingService, args);
 		worker.init();

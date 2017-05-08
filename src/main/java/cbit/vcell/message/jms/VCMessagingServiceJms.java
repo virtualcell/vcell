@@ -11,18 +11,24 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
+import org.scijava.service.AbstractService;
+
+import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingConsumer;
+import cbit.vcell.message.VCMessagingDelegate;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 
-public abstract class VCMessagingServiceJms extends VCMessagingService {
+public abstract class VCMessagingServiceJms extends AbstractService implements VCMessagingService {
 	
 	private ArrayList<ConsumerContextJms> consumerContexts = new ArrayList<ConsumerContextJms>();
     private ArrayList<MessageProducerSessionJms> messagingProducerSessions = new ArrayList<MessageProducerSessionJms>();
 	protected HashMap<String,Destination> destinationMap = new HashMap<String,Destination>();
+	private VCMessagingDelegate delegate = new SimpleMessagingDelegate();
+	
 	
 	public VCMessagingServiceJms() {
 		super();
@@ -32,6 +38,17 @@ public abstract class VCMessagingServiceJms extends VCMessagingService {
 		e.printStackTrace(System.out);
 	}
 	
+	@Override
+	public VCMessagingDelegate getDelegate(){
+		return this.delegate;
+	}
+
+	@Override
+	public void setDelegate(VCMessagingDelegate delegate){
+		this.delegate = delegate;
+	}
+	
+	@Override
 	public VCMessageSession createProducerSession(){
 		MessageProducerSessionJms messageProducerSession;
 		try {

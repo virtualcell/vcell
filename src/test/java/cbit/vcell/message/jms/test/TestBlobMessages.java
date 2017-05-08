@@ -12,6 +12,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.jms.VCMessageJms;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 
 /**
  * Hello world!
@@ -38,7 +39,8 @@ public class TestBlobMessages {
 	    	PropertyLoader.loadProperties();
 	    	//System.getProperties().setProperty(PropertyLoader.jmsURL,"tcp://nrcamdev5.cam.uchc.edu:61616");
 	    	
-	    	VCMessagingService messagingService = VCMessagingService.createInstance(new SimpleMessagingDelegate());
+	    	VCMessagingService messagingService = new VCMessagingServiceActiveMQ();
+	    	messagingService.setDelegate(new SimpleMessagingDelegate());
 	    		        
 	        // creating one messageProducer session
 	        ArrayList<VCMessageSession> sessions = new ArrayList<VCMessageSession>();

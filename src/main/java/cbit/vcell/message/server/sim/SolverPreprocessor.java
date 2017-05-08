@@ -20,6 +20,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
@@ -61,7 +62,8 @@ public class SolverPreprocessor  {
 	 * @throws VCMessagingException 
 	 */
 	public static void sendFailureAndExit(HTCSolver htcSolver, SimulationTask simTask, String hostName, SimulationMessage simMessage) throws VCMessagingException{
-		VCMessagingService service = VCMessagingService.createInstance(new ServerMessagingDelegate());
+		VCMessagingService service = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		service.setDelegate(new ServerMessagingDelegate());
 		VCMessageSession session = service.createProducerSession();
 		try {
 			WorkerEventMessage.sendFailed(session, htcSolver, simTask, hostName, simMessage);

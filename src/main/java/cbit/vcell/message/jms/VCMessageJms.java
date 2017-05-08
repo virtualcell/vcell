@@ -20,9 +20,9 @@ import org.vcell.util.PropertyLoader;
 import cbit.vcell.message.MessagePropertyNotFoundException;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
+import cbit.vcell.message.VCMessagingDelegate;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 
 public class VCMessageJms implements VCMessage {
 	

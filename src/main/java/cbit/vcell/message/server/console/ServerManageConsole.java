@@ -54,6 +54,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.BigString;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -2116,7 +2117,8 @@ public static void main(java.lang.String[] args) {
 		
 		javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 
-		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
+		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		vcMessagingService.setDelegate(new ServerMessagingDelegate());
 
 		SessionLog log = new StdoutSessionLog("Console");
 

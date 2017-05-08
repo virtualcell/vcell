@@ -2,6 +2,7 @@ package cbit.vcell.client.test;
 
 import java.awt.Frame;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.ConnectionFactory;
@@ -158,7 +159,8 @@ protected static cbit.vcell.message.server.bootstrap.VCellServerFactory VCellSer
 		org.vcell.util.SessionLog log = new org.vcell.util.NullSessionLog();
 		cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
-		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new SimpleMessagingDelegate());
+		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		vcMessagingService.setDelegate(new SimpleMessagingDelegate());
 		vcServerFactory = new cbit.vcell.message.server.bootstrap.LocalVCellServerFactory(userid,new UserLoginInfo.DigestedPassword(password),"<<local>>",vcMessagingService,conFactory,keyFactory,log);
 	}
 	return vcServerFactory;

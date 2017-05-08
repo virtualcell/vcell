@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -252,7 +253,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 			DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);        //add dataJobListener
 
-			VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
+			VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+			vcMessagingService.setDelegate(new ServerMessagingDelegate());
 
 			VCellServices vcellServices = new VCellServices(htcProxy, vcMessagingService, serviceInstanceStatus, databaseServerImpl, dataServerImpl, simulationDatabase, log);
 
