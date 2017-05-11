@@ -525,7 +525,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 					    	Set<String> allowedStructures = anchorsMap.get(molecule);
 					    	if(!allowedStructures.contains(wantedStructure)) {
 					    		// should never happen: no reactant and no rule should have placed this molecule in this structure
-					    		throw new RuntimeException("Error in " + s.getName() + "\nMolecule " + molecule + " cannot possibly be in Structure " + wantedStructure);
+					    		//throw new RuntimeException("Error in " + s.getName() + "\nMolecule " + molecule + " cannot possibly be in Structure " + wantedStructure);
 					    	}
 					    }
 					}
@@ -554,7 +554,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 					    	if(!anchorsMap.containsKey(molecule)) {
 					    		continue;	// this molecule can be anywhere, it's not anchored - nothing to verify
 					    	}
-						    Set<String> structures = entry.getValue();	// we already know from step 1 that all structures here are acceptable by the anchor
+						    Set<String> structures = anchorsMap.get(molecule);	// we already know from step 1 that all structures here are acceptable by the anchor
 						    intersection.retainAll(structures);			// intersection retains only the elements in 'structures'
 						}
 						if(intersection.size() == 0) {			// no structure satisfies the anchor rules for the molecules in this species
