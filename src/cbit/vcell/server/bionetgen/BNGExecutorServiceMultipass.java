@@ -525,7 +525,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 					    	Set<String> allowedStructures = anchorsMap.get(molecule);
 					    	if(!allowedStructures.contains(wantedStructure)) {
 					    		// should never happen: no reactant and no rule should have placed this molecule in this structure
-					    		//throw new RuntimeException("Error in " + s.getName() + "\nMolecule " + molecule + " cannot possibly be in Structure " + wantedStructure);
+					    		throw new RuntimeException("Error in " + s.getName() + "\nMolecule " + molecule + " cannot possibly be in Structure " + wantedStructure);
 					    	}
 					    }
 					}
