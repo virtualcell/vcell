@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import javax.swing.BorderFactory;
@@ -32,6 +33,7 @@ public class MovingBoundarySolverOptionsPanel extends CollapsiblePanel {
 
 	private class EventHandler implements ActionListener, FocusListener
 	{
+		@Override
 		public void actionPerformed(ActionEvent e) 
 		{
 			if (e.getSource() == comboBoxRedistMode)
@@ -51,6 +53,16 @@ public class MovingBoundarySolverOptionsPanel extends CollapsiblePanel {
 				{
 					comboBoxRedistVersion.setSelectedItem(RedistributionVersion.NOT_APPLICABLE);
 					comboBoxRedistVersion.setEnabled(false);
+				}
+				if (selectedItem == RedistributionMode.NO_REDIST)
+				{
+					textFieldRedistributionFrequency.setEnabled(false);
+					textFieldRedistributionFrequency.setValue(null);
+				}
+				else
+				{
+					textFieldRedistributionFrequency.setEnabled(true);
+					textFieldRedistributionFrequency.setValue(solverTaskDescription.getMovingBoundarySolverOptions().getRedistributionFrequency());
 				}
 			}
 			else if (e.getSource() == comboBoxRedistVersion)
@@ -73,13 +85,27 @@ public class MovingBoundarySolverOptionsPanel extends CollapsiblePanel {
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == textFieldFrontToNodeRatio)
 			{
-				String text = textFieldFrontToNodeRatio.getText();
-				solverTaskDescription.getMovingBoundarySolverOptions().setFrontToNodeRatio(Double.parseDouble(text));
+				Object text = textFieldFrontToNodeRatio.getValue();
+				if (text != null)
+				{
+					solverTaskDescription.getMovingBoundarySolverOptions().setFrontToNodeRatio((Double)text);
+				}
+				else
+				{
+					textFieldFrontToNodeRatio.setValue(solverTaskDescription.getMovingBoundarySolverOptions().getFrontToNodeRatio());
+				}
 			}
 			else if (e.getSource() == textFieldRedistributionFrequency)
 			{
-				String text = textFieldRedistributionFrequency.getText();
-				solverTaskDescription.getMovingBoundarySolverOptions().setRedistributionFrequency(Integer.parseInt(text));
+				Object text = textFieldRedistributionFrequency.getValue();
+				if (text != null)
+				{
+					solverTaskDescription.getMovingBoundarySolverOptions().setRedistributionFrequency((Integer)text);
+				}
+				else
+				{
+					textFieldRedistributionFrequency.setValue(solverTaskDescription.getMovingBoundarySolverOptions().getRedistributionFrequency());
+				}
 			}
 		}
 	}
@@ -105,7 +131,7 @@ public class MovingBoundarySolverOptionsPanel extends CollapsiblePanel {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		panel.add(new JLabel("Front To Volume Nodes Ratio"), gbc);
 			
-		textFieldFrontToNodeRatio = new JFormattedTextField(NumberFormat.getInstance());
+		textFieldFrontToNodeRatio = new JFormattedTextField(DecimalFormat.getInstance());
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
@@ -158,7 +184,6 @@ public class MovingBoundarySolverOptionsPanel extends CollapsiblePanel {
 	    integerFormatter.setValueClass(Integer.class);
 	    integerFormatter.setMinimum(1);
 	    integerFormatter.setMaximum(Integer.MAX_VALUE);
-	    integerFormatter.setAllowsInvalid(false);
 		textFieldRedistributionFrequency = new JFormattedTextField(integerFormatter);
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1;
@@ -299,10 +324,18 @@ public class MovingBoundarySolverOptionsPanel extends CollapsiblePanel {
 		{
 			setVisible(true);
 			textFieldFrontToNodeRatio.setValue(solverTaskDescription.getMovingBoundarySolverOptions().getFrontToNodeRatio());
-			textFieldRedistributionFrequency.setValue(solverTaskDescription.getMovingBoundarySolverOptions().getRedistributionFrequency());
-			comboBoxRedistMode.setSelectedItem(solverTaskDescription.getMovingBoundarySolverOptions().getRedistributionMode());
+			RedistributionMode redistributionMode = solverTaskDescription.getMovingBoundarySolverOptions().getRedistributionMode();
+			comboBoxRedistMode.setSelectedItem(redistributionMode);
 			comboBoxRedistVersion.setSelectedItem(solverTaskDescription.getMovingBoundarySolverOptions().getRedistributionVersion());
 			comboBoxExtrapolationMethod.setSelectedItem(solverTaskDescription.getMovingBoundarySolverOptions().getExtrapolationMethod());
+			if (redistributionMode == RedistributionMode.NO_REDIST)
+			{
+				textFieldRedistributionFrequency.setEnabled(false);
+			}
+			else
+			{
+				textFieldRedistributionFrequency.setValue(solverTaskDescription.getMovingBoundarySolverOptions().getRedistributionFrequency());
+			}
 		}
 		else
 		{
