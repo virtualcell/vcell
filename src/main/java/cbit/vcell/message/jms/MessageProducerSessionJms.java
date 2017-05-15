@@ -40,7 +40,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 		private Session session = null;
 		protected boolean bIndependent;
 
-		public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException {
+		public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException, VCMessagingException {
 //			System.out.println("-----\nmpjms MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
 //			Thread.dumpStack();
 			this.vcMessagingServiceJms = vcMessagingServiceJms;

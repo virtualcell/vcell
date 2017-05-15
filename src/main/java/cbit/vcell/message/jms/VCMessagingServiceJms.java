@@ -34,7 +34,8 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 		super();
 	}
 	
-	private void onException(JMSException e){
+	private void onException(Exception e){
+		delegate.onException(e);
 		e.printStackTrace(System.out);
 	}
 	
@@ -61,13 +62,13 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 			};
 			messagingProducerSessions.add(messageProducerSession);
 			return messageProducerSession;
-		} catch (JMSException e) {
+		} catch (JMSException | VCMessagingException e) {
 			onException(e);
 			throw new RuntimeException(e.getMessage());
 		}
 	}
 
-	public abstract ConnectionFactory createConnectionFactory() throws JMSException;
+	public abstract ConnectionFactory createConnectionFactory() throws JMSException, VCMessagingException;
 		
 	@Override
 	public void closeAll() throws VCMessagingException {
@@ -149,6 +150,6 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 		return new VCMessageSelectorJms(selectorString);
 	}
 
-	public abstract MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination, VCMessageSelector vcSelector, int prefetchLimit) throws JMSException;
+	public abstract MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination, VCMessageSelector vcSelector, int prefetchLimit) throws JMSException, VCMessagingException;
 	
 }

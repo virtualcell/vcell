@@ -12,6 +12,7 @@ import org.vcell.util.StdoutSessionLog;
 
 import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessagingConsumer;
+import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCTopicConsumer;
 
@@ -115,13 +116,13 @@ public class ConsumerContextJms implements Runnable {
 			this.jmsConnection.start();
 			this.jmsSession = this.jmsConnection.createSession(bTransacted, acknowledgeMode);
 			this.jmsMessageConsumer = this.vcMessagingServiceJms.createConsumer(this.jmsSession, vcConsumer.getVCDestination(), vcConsumer.getSelector(), vcConsumer.getPrefetchLimit());
-		}catch (JMSException e){
+		}catch (JMSException | VCMessagingException e){
 			e.printStackTrace(System.out);
 			onException(e);
 		}
 	}
 	
-	private void onException(JMSException e){
+	private void onException(Exception e){
 		vcMessagingServiceJms.getDelegate().onException(e);
 		e.printStackTrace(System.out);
 	}

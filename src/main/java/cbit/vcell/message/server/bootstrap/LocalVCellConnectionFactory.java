@@ -10,8 +10,6 @@
 
 package cbit.vcell.message.server.bootstrap;
 
-import ncsa.hdf.object.FileFormat;
-
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -23,6 +21,7 @@ import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
+import ncsa.hdf.object.FileFormat;
 /**
  * This type was created in VisualAge.
  */

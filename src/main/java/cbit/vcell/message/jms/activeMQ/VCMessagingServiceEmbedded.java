@@ -21,40 +21,44 @@ import cbit.vcell.message.jms.VCMessagingServiceJms;
 @Plugin(type = VCMessagingService.class)
 public class VCMessagingServiceEmbedded extends VCMessagingServiceJms {
 	private BrokerService broker = null;
+	private boolean initialized = false;
 	
 	public VCMessagingServiceEmbedded() throws VCMessagingException{
 		super();
 		setPriority(Priority.LOW_PRIORITY);
-		init(true);
 	}
 	
 	@Override
-	public ConnectionFactory createConnectionFactory(){
+	public ConnectionFactory createConnectionFactory() throws VCMessagingException {
+		if (!initialized){
+			initialized = true;
+			init();
+		}
 		return new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false&broker.useJmx=false&create=false");
 	}
 	
-	@Override
-	public void init(boolean bStartBroker) throws VCMessagingException {
-		if (bStartBroker){
-			this.broker = new BrokerService();
-			this.broker.setPersistent(false);
-			this.broker.setUseJmx(false);
-
-			try {
-//				TransportConnector connector = new TransportConnector();
-//				String jmsUrl = PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL);
-//				connector.setUri(new URI(jmsUrl));
-//				broker.addConnector(connector);
-				broker.start();
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new VCMessagingException(e.getMessage());
-			}
+	private void init() throws VCMessagingException {
+		this.broker = new BrokerService();
+		this.broker.setPersistent(false);
+		this.broker.setUseJmx(false);
+		try {
+//			TransportConnector connector = new TransportConnector();
+//			String jmsUrl = PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL);
+//			connector.setUri(new URI(jmsUrl));
+//			broker.addConnector(connector);
+			broker.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new VCMessagingException(e.getMessage(),e);
 		}
 	}
 
 	@Override
-	public MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination, VCMessageSelector vcSelector, int prefetchLimit) throws JMSException {
+	public MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination, VCMessageSelector vcSelector, int prefetchLimit) throws JMSException, VCMessagingException {
+		if (!initialized){
+			initialized = true;
+			init();
+		}
 		Destination jmsDestination;
 		MessageConsumer jmsMessageConsumer;
 		if (vcDestination instanceof VCellQueue){

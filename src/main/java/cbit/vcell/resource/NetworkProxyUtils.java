@@ -46,7 +46,7 @@ public class NetworkProxyUtils {
 				if(bRestartWarn && restartWarningProvider!=null){
 					restartWarningProvider.showRestartWarning("Proxy settings have changed from '"+oldProxy+"' to '"+newProxy+"', please restart VCell");
 				}else{
-					new Exception("Error, not expecting old proxy "+oldProxy+" doesn't match new proxy "+newProxy).printStackTrace(System.out);
+					new Exception("Error, not expecting old proxy "+oldProxy+" doesn't match new proxy "+newProxy);
 				}
 			}
 		}catch(Exception e){

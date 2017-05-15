@@ -7,7 +7,9 @@ import java.net.MalformedURLException;
 
 import javax.swing.JOptionPane;
 
+import org.scijava.Context;
 import org.scijava.plugin.Plugin;
+import org.scijava.plugin.PluginInfo;
 import org.scijava.service.AbstractService;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ISize;
@@ -21,8 +23,8 @@ import cbit.vcell.VirtualMicroscopy.Bundle;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 
-@Plugin(type = ImageDatasetReader.class)
-public class ImageDatasetReaderFactory extends AbstractService implements ImageDatasetReader {
+//@Plugin(type = ImageDatasetReader.class)
+public class ImageDatasetReaderFactory /* extends AbstractService */ implements ImageDatasetReader {
 	
 	private ImageDatasetReader imageDatasetReader = null;
 	
@@ -97,5 +99,41 @@ public class ImageDatasetReaderFactory extends AbstractService implements ImageD
 	public ImageDataset readImageDatasetFromMultiFiles(File[] files, ClientTaskStatusSupport status,
 			boolean isTimeSeries, double timeInterval) throws Exception {
 		return imageDatasetReader.readImageDatasetFromMultiFiles(files, status, isTimeSeries, timeInterval);
+	}
+
+	@Override
+	public Context context() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Context getContext() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public double getPriority() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setPriority(double priority) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public PluginInfo<?> getInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setInfo(PluginInfo<?> info) {
+		// TODO Auto-generated method stub
+		
 	}
 }

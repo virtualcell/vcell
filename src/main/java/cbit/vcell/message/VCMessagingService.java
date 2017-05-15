@@ -13,9 +13,7 @@ public interface VCMessagingService extends VCellService {
 	void removeMessageConsumer(VCMessagingConsumer vcMessagingConsumer);
 	
 	List<VCMessagingConsumer> getMessageConsumers();
-	
-	void init(boolean bStartBroker) throws VCMessagingException;
-	
+		
 	void closeAll() throws VCMessagingException;
 
 	VCMessageSelector createSelector(String clientMessageFilter);

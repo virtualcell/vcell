@@ -192,6 +192,12 @@
 		</dependency>
 		-->
 
+		<!-- https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j -->
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>jcl-over-slf4j</artifactId>
+		    <version>1.7.5</version>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.hdfgroup/hdf-java -->
 <!-- haven't yet reconciled, need jarhdf-3.2.1.jar and jarhdf5-3.2.1.jar
@@ -201,9 +207,9 @@
 			<version>2.6.1</version>
 		</dependency>
 -->
-		<dependency>
+ 		<dependency>
 			<groupId>org.scala-saddle</groupId>
-			<artifactId>jhdf5_2.10</artifactId>
+			<artifactId>jhdf5</artifactId>
 			<version>2.9</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
@@ -310,7 +316,7 @@
 		    <artifactId>scijava-common</artifactId>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.hdfgroup/hdf-java -->
-		<dependency>
+ 		<dependency>
 		    <groupId>org.hdfgroup</groupId>
 		    <artifactId>hdf-java</artifactId>
 		    <version>2.6.1</version>
