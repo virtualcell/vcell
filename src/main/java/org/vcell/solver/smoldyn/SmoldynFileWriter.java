@@ -1013,8 +1013,8 @@ private int writeInitialConcentration(ParticleInitialConditionConcentration init
 					}
 					totalCount += count;
 					localsb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + count + " " + variableName + " " + (float)lox + "-" + (float)hix);
-					if (lg.isTraceEnabled()) {
-						lg.trace("Component subdomain " + variableName + " count " + count);
+					if (lg.isDebugEnabled()) {
+						lg.debug("Component subdomain " + variableName + " count " + count);
 					}
 					if (dimension > 1) {
 						localsb.append(" " + loy + "-" + hiy);
@@ -1082,8 +1082,8 @@ private int writeInitialConcentration(ParticleInitialConditionConcentration init
 				continue;
 			}
 			totalCount += count;
-			if (lg.isTraceEnabled()) {
-				lg.trace("Membrane subdomain " + subDomain.getName( ) + ' ' + variableName + " count " + count);
+			if (lg.isDebugEnabled()) {
+				lg.debug("Membrane subdomain " + subDomain.getName( ) + ' ' + variableName + " count " + count);
 			}
 			localsb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " "
 					+ SmoldynVCellMapper.SmoldynKeyword.tri + " " + trianglePanel.name + "\n");
@@ -1134,8 +1134,8 @@ private int writeInitialCount(ParticleInitialConditionCount initialCount, SubDom
 		} else {
 			if (isCompartment) {
 				sb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + count + " " + variableName);
-				if (lg.isTraceEnabled()) {
-					lg.trace("initial count for compartment " + subDomain.getName() + ' ' + variableName  + " is " + count);
+				if (lg.isDebugEnabled()) {
+					lg.debug("initial count for compartment " + subDomain.getName() + ' ' + variableName  + " is " + count);
 				}
 				try {
 					if (initialCount.isXUniform()) {
@@ -1192,8 +1192,8 @@ private int writeInitialCount(ParticleInitialConditionCount initialCount, SubDom
 							sb.append(ct.node.getZ());
 						}
 						sb.append('\n');
-						if (lg.isTraceEnabled()) {
-							lg.trace("initial count for " + subDomain.getName() + ' ' + variableName  + " is " + count);
+						if (lg.isDebugEnabled()) {
+							lg.debug("initial count for " + subDomain.getName() + ' ' + variableName  + " is " + count);
 						}
 						return count;
 					}

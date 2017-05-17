@@ -247,7 +247,7 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 			String lastMsg = null;
 			while (!messageQueue.isEmpty()) {
 				String m = messageQueue.poll( );
-				LG.trace(m);
+				LG.debug(m);
 				if (m == endOfLife) { //don't process Strings after shutdown invoked
 					if (LG.isDebugEnabled()) {
 						LG.debug("Processed " + c + " post shutdown messages, last was " + lastMsg);

@@ -227,8 +227,8 @@ public class SimulationDispatcher extends ServiceProvider {
 						// cache is discarded after use.
 						//
 						HashMap<KeyValue,Simulation> tempSimulationMap = new HashMap<KeyValue,Simulation>();
-						if (lg.isTraceEnabled()) {
-							lg.trace(waitingJobs.length + " jobs to process");
+						if (lg.isDebugEnabled()) {
+							lg.debug(waitingJobs.length + " jobs to process");
 						}
 						for (WaitingJob waitingJob : waitingJobs){
 							SimulationJobStatus jobStatus = waitingJob.simJobStatus;
@@ -240,8 +240,8 @@ public class SimulationDispatcher extends ServiceProvider {
 									sim = simulationDatabase.getSimulation(vcSimID.getOwner(), simKey);
 									tempSimulationMap.put(simKey, sim);
 								}
-								if (lg.isTraceEnabled()) {
-									lg.trace("dispatching  " +  vcSimID);
+								if (lg.isDebugEnabled()) {
+									lg.debug("dispatching  " +  vcSimID);
 								}
 								simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession, log);
 								bDispatchedAnyJobs = true;
@@ -573,8 +573,8 @@ public class SimulationDispatcher extends ServiceProvider {
 	 * @param source used to print class name
 	 */
 	private void traceThread(Object source) {
-		if (lg.isTraceEnabled()) {
-			lg.trace(source.getClass( ).getName() + " thread id "  + Thread.currentThread().getId( ) + 
+		if (lg.isDebugEnabled()) {
+			lg.debug(source.getClass( ).getName() + " thread id "  + Thread.currentThread().getId( ) + 
 				" commencing run cycle at " +  getDateFormat( ).format(new Date( )) );
 		}
 	}

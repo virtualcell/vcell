@@ -33,6 +33,7 @@ import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.EnhancedJLabel;
 import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.SpecialtyTableRenderer;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.plot.Plot2D;
 import cbit.plot.SingleXPlot2D;
@@ -582,7 +583,7 @@ private JToolBarToggleButton getDataButton() {
 			ivjDataButton.setText("");
 			ivjDataButton.setMaximumSize(new java.awt.Dimension(28, 28));
 			ivjDataButton.setActionCommand("JPanelData");
-			ivjDataButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/data_sets_20x20.gif")));
+			ivjDataButton.setIcon(VCellIcons.dataSetsIcon);
 			ivjDataButton.setPreferredSize(new java.awt.Dimension(28, 28));
 			ivjDataButton.setMinimumSize(new java.awt.Dimension(28, 28));
 			// user code begin {1}
@@ -1040,7 +1041,7 @@ private JToolBarToggleButton getPlotButton() {
 			ivjPlotButton.setActionCommand("JPanelPlot");
 			ivjPlotButton.setSelected(true);
 			ivjPlotButton.setPreferredSize(new java.awt.Dimension(28, 28));
-			ivjPlotButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/data_exporter_20x20.gif")));
+			ivjPlotButton.setIcon(VCellIcons.dataExporterIcon);
 			ivjPlotButton.setMinimumSize(new java.awt.Dimension(28, 28));
 			// user code begin {1}
 			// user code end

@@ -225,14 +225,14 @@ class NativeGroup implements Callable<Boolean> {
 			//System.loadLibrary(stub);
 			
 			
-			if (lg.isTraceEnabled()) {
-				lg.trace("loaded "  + fullpath);
+			if (lg.isDebugEnabled()) {
+				lg.debug("loaded "  + fullpath);
 			}
 			return true;
 		}
 		catch (Error e) {
-			if (lg.isTraceEnabled()) {
-				lg.trace("load attempt "  + fullpath + " failed");
+			if (lg.isDebugEnabled()) {
+				lg.debug("load attempt "  + fullpath + " failed");
 			}
 			//System.err.println(new File (fullpath).getAbsolutePath());
 			if (isFailErrors()) {

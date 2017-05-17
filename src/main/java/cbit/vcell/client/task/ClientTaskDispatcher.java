@@ -445,8 +445,8 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			}
 			
 			FinalWindow fw = AsynchClientTask.fetch(hash, FINAL_WINDOW,FinalWindow.class,false); 
-			if (lg.isTraceEnabled() && fw != null) {
-				lg.trace("FinalWindow retrieved from hash");
+			if (lg.isDebugEnabled() && fw != null) {
+				lg.debug("FinalWindow retrieved from hash");
 			}
 			//focusOwner is legacy means of shifting focus -- FinalWindow is newer explicit invocatoin
 			if (windowParent != null) {
@@ -454,8 +454,8 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				windowParent.setCursor(Cursor.getDefaultCursor());
 				if (fw == null && focusOwner != null) {
 					fw = () -> { windowParent.requestFocusInWindow(); focusOwner.requestFocusInWindow(); };
-					if (lg.isTraceEnabled()) {
-						lg.trace("FinalWindow built from " + windowParent.toString() + " and "  + focusOwner.toString());
+					if (lg.isDebugEnabled()) {
+						lg.debug("FinalWindow built from " + windowParent.toString() + " and "  + focusOwner.toString());
 					}
 				}
 			}
@@ -469,7 +469,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				}
 			}
 			else {
-				lg.trace("no Final Window");
+				lg.debug("no Final Window");
 			}
 //			BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 //System.out.println("DISPATCHING: done at "+ new Date(System.currentTimeMillis()));
@@ -629,13 +629,13 @@ private static void setSwingWorkerThreadName(SwingWorker sw, String name) {
 private static void runTask(AsynchClientTask currentTask, Hashtable<String, Object> hash, Collection<AsynchClientTask> taskList) throws Exception {
 	if (lg.isDebugEnabled()) {
 		String msg = "Thread " + Thread.currentThread().getName() + " calling task " + currentTask.getTaskName();
-		if (lg.isTraceEnabled()) {
+		if (lg.isDebugEnabled()) {
 			Object obj = hash.get(STACK_TRACE_ARRAY);
 			StackTraceElement ste[] = BeanUtils.downcast(StackTraceElement[].class, obj);
 			if (ste != null) {
 				msg += '\n' + StringUtils.join(ste,'\n');
 			}
-			lg.trace(msg);
+			lg.debug(msg);
 		}
 		else {
 			lg.debug(msg);

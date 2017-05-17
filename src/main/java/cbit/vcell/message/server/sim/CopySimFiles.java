@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import cbit.vcell.simdata.PortableCommand;
@@ -112,8 +111,8 @@ public class CopySimFiles implements PortableCommand, FileVisitor<Path> {
 	public FileVisitResult visitFile(Path p, BasicFileAttributes attr) throws IOException {
 		Objects.requireNonNull(pw);
 		String filename = p.getFileName().toString();
-		if (lg.isEnabledFor(Level.TRACE)) {
-			lg.trace("evaluating " + filename);
+		if (lg.isDebugEnabled()) {
+			lg.debug("evaluating " + filename);
 		}
 		if (filename.startsWith(jobName)) {
 			Path destination = fs.getPath(toDirectory, filename);

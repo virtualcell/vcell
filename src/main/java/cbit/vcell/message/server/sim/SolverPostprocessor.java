@@ -100,30 +100,30 @@ public class SolverPostprocessor  {
 				Exception postProcessingException = null;
 				if (args.length > NUM_STD_ARGS) {
 					String fname = args[NUM_STD_ARGS];
-					if (lg.isTraceEnabled()) {
-						lg.trace("processing " + fname);
+					if (lg.isDebugEnabled()) {
+						lg.debug("processing " + fname);
 					}
 					postProcessingException = runPostprocessingCommands(fname,lg);
 				}
-				if (lg.isTraceEnabled()) {
-					lg.trace("postProcessingException is " + postProcessingException);
+				if (lg.isDebugEnabled()) {
+					lg.debug("postProcessingException is " + postProcessingException);
 				}
 
 				if (postProcessingException == null) {
-					lg.trace("sendWorkerExitNormal");
+					lg.debug("sendWorkerExitNormal");
 					workerEventMessage = WorkerEventMessage.sendWorkerExitNormal(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
 				}
 				else {
-					lg.trace("sendWorkerExitError postprocessing");
+					lg.debug("sendWorkerExitError postprocessing");
 					workerEventMessage = WorkerEventMessage.sendWorkerExitError(session, postProcessingException, hostName, vcSimID, jobIndex, taskID,
 							SimulationMessage.WorkerExited(postProcessingException));
 				}
 
 			}else{ //solverExitCode != 0
-				lg.trace("sendWorkerExitError solverExitCode");
+				lg.debug("sendWorkerExitError solverExitCode");
 				workerEventMessage = WorkerEventMessage.sendWorkerExitError(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
 			}
-			lg.trace(workerEventMessage);
+			lg.debug(workerEventMessage);
 			VCMongoMessage.sendWorkerEvent(workerEventMessage);
 
 		} catch (Throwable e) {
@@ -151,8 +151,8 @@ public class SolverPostprocessor  {
 	private static Exception runPostprocessingCommands(String filename, Logger lg) {
 		Collection<PortableCommand> commands = PortableCommandWrapper.getCommands(filename);
 		for (PortableCommand cmd : commands) {
-				if (lg.isTraceEnabled()) {
-					lg.trace("processing " + cmd.getClass( ).getName());
+				if (lg.isDebugEnabled()) {
+					lg.debug("processing " + cmd.getClass( ).getName());
 				}
 			if (cmd.execute() != 0) {
 				if (lg.isEnabledFor(Level.WARN)) {

@@ -162,8 +162,8 @@ public class XmlHelper {
 			e.printStackTrace();
 			throw new XmlParseException("Unable to generate Biomodel XML: ", e);
 		} 
-		if (lg.isTraceEnabled()) {
-			lg.trace(xmlString);
+		if (lg.isDebugEnabled()) {
+			lg.debug(xmlString);
 		}
 		return xmlString;
 	}

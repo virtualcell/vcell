@@ -1,7 +1,6 @@
 package cbit.vcell.resource;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -32,13 +31,13 @@ public class LibraryLoaderThread extends Thread {
 		StringBuilder sb = null;
 		for (NativeLib librarySet :NativeLib.values( )) {
 			try {
-				if (lg.isTraceEnabled()) {
-					lg.trace("loading " + librarySet + " " + librarySet.autoload);
+				if (lg.isDebugEnabled()) {
+					lg.debug("loading " + librarySet + " " + librarySet.autoload);
 				}
 				if (librarySet.autoload) {
 					librarySet.load( ); //blocks until done
-					if (lg.isTraceEnabled()) {
-						lg.trace("completed " + librarySet);
+					if (lg.isDebugEnabled()) {
+						lg.debug("completed " + librarySet);
 					}
 				}
 			} catch (Exception e) {
@@ -66,8 +65,8 @@ public class LibraryLoaderThread extends Thread {
 			// SwingUtilities.invokeLater(new Reporter(sb.toString()));
 			}
 			else {
-				if (lg.isTraceEnabled()) {
-					lg.trace("printing error " + sb.toString());
+				if (lg.isDebugEnabled()) {
+					lg.debug("printing error " + sb.toString());
 				}
 				System.err.println(sb.toString( ));
 			}

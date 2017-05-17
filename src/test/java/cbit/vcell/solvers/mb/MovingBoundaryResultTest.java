@@ -20,7 +20,7 @@ public class MovingBoundaryResultTest extends H5Client {
     public MovingBoundaryResultTest() {
     	Logging.init();
 		Logger lg = Logger.getLogger("ncsa");
-		lg.setLevel(Level.TRACE);
+		lg.setLevel(Level.DEBUG);
 		mbr = new MovingBoundaryReader(fname);
 		mbr.testquery();
 	}

@@ -18,7 +18,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.client.logicalwindow.LWChildFrame;
 import org.vcell.client.logicalwindow.LWContainerHandle;
@@ -33,7 +32,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.GuiUtils;
 
-import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.title.TitleChanger;
 //import cbit.vcell.client.desktop.biomodel.ChildWindowListener;
@@ -116,7 +114,7 @@ public class ChildWindowManager {
 			case DOCUMENT_MODAL:
 				return LWModality.PARENT_ONLY;
 			default:
-				if (LG.isEnabledFor(Level.WARN)) {
+				if (LG.isDebugEnabled()) {
 					LG.warn(ExecutionTrace.justClassName(this) + " titled " + getTitle() + 
 							" using unsupported modality "  + smt);
 				}
@@ -216,8 +214,8 @@ public class ChildWindowManager {
 		private void dispose(){			
 			if (impl != null){
 				impl.setVisible(false);
-				if (LG.isTraceEnabled()) {
-					LG.trace(impl.getTitle() + " sizes\n" + GuiUtils.getPreferredSizes(impl.self()));
+				if (LG.isDebugEnabled()) {
+					LG.debug(impl.getTitle() + " sizes\n" + GuiUtils.getPreferredSizes(impl.self()));
 				}
 				impl.dispose();
 				impl = null;
@@ -332,7 +330,7 @@ public class ChildWindowManager {
 			}
 			if (pack!=null && pack){
 				impl.pack();
-				if (LG.isTraceEnabled()) {
+				if (LG.isDebugEnabled()) {
 					
 				}
 			}
@@ -373,13 +371,13 @@ public class ChildWindowManager {
 
 		public void toFront() {
 			if(impl != null){
-				if (LG.isTraceEnabled()) {
-					LG.trace(impl.getTitle() + " toFront( )");
+				if (LG.isDebugEnabled()) {
+					LG.debug(impl.getTitle() + " toFront( )");
 				}
 				impl.toFront();
 			}
 			else { 
-				LG.trace(" toFront( ) called on unrealized window");
+				LG.debug(" toFront( ) called on unrealized window");
 			}
 		}
 		

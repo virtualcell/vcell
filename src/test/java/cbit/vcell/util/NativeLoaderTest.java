@@ -15,7 +15,6 @@ import org.vcell.util.logging.Logging;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.OperatingSystemInfo;
-import cbit.vcell.resource.OperatingSystemInfo.OsType;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solvers.NativeCVODESolver;
 import cbit.vcell.solvers.NativeIDASolver;
@@ -33,7 +32,7 @@ public class NativeLoaderTest {
 		}
 		Logging.init();
 		Logger lg = Logger.getLogger(NativeGroup.class);
-		lg.setLevel(Level.TRACE);
+		lg.setLevel(Level.DEBUG);
 		NativeLoader.clean();
 		ResourceUtil.setNativeLibraryDirectory();
 	}

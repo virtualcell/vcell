@@ -144,13 +144,13 @@ private native cbit.vcell.math.RowColumnResultSet nativeSolve(String idaInput, d
 private native String jniLibraryVersion( );
 
 private cbit.vcell.math.RowColumnResultSet callNative(String idaInput, double[] paramValues) throws Exception {
-	if (lg.isTraceEnabled()) {
+	if (lg.isDebugEnabled()) {
 		String name = "idaInput.txt";
 		try (PrintWriter pw = new PrintWriter(name)) {
 			pw.println(idaInput);
 		}
-		lg.trace("IDA input: " + idaInput);
-		lg.trace("IDA input to file " + name);
+		lg.debug("IDA input: " + idaInput);
+		lg.debug("IDA input to file " + name);
 	}
 	return nativeSolve(idaInput,paramValues);
 }

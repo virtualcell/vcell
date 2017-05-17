@@ -70,8 +70,8 @@ class SimulationWarning implements PropertyChangeListener {
 				if (sd != currentSolverDescription) {
 					currentSolverDescription = sd;
 					changeStrategy = changeStrategyFactory(currentSolverDescription);
-					if (lg.isTraceEnabled()) {
-						lg.trace("Using strategy " + changeStrategy.toString());
+					if (lg.isDebugEnabled()) {
+						lg.debug("Using strategy " + changeStrategy.toString());
 					}
 				}
 			}
@@ -257,8 +257,8 @@ class SimulationWarning implements PropertyChangeListener {
 									DiffusionValue dv = new DiffusionValue(name, value.doubleValue());
 									maxDiffValue = Math.max(maxDiffValue, dv.value);
 									diffusionList.add(dv);
-									if (lg.isTraceEnabled()) {
-										lg.trace("Added " + dv);
+									if (lg.isDebugEnabled()) {
+										lg.debug("Added " + dv);
 									}
 								}
 							} else {
@@ -275,12 +275,12 @@ class SimulationWarning implements PropertyChangeListener {
 											// diffusions are constants
 						diffusionValuesMap.putAll(dvMap);
 						/*
-						 * How about adding a ‘pre-run’ message “Time step ___
+						 * How about adding a ï¿½pre-runï¿½ message ï¿½Time step ___
 						 * may be too large, please check warnings generated
-						 * during/after the run “ (or something like that)? The
+						 * during/after the run ï¿½ (or something like that)? The
 						 * message would be generated if delta_t>[min(delta_x,
-						 * delta_y, delta_z,)]^2/max(D_1, D_2, …), where D_1,
-						 * D_2, … are diffusion coefficients of the membrane
+						 * delta_y, delta_z,)]^2/max(D_1, D_2, ï¿½), where D_1,
+						 * D_2, ï¿½ are diffusion coefficients of the membrane
 						 * variables.
 						 *
 						 */
@@ -305,8 +305,8 @@ class SimulationWarning implements PropertyChangeListener {
 						double limit = PRECHECK_LIMIT_ADJUST * minArea / maxDiffValue;
 						double timeStep = getTimeStep();
 						boolean warn = (timeStep > limit);
-						if (lg.isTraceEnabled()) {
-							lg.trace("Min delta " + minDelta + ", min area " + minArea + " time limit " + limit + " timeStep " + timeStep + " -> warn = " + warn);
+						if (lg.isDebugEnabled()) {
+							lg.debug("Min delta " + minDelta + ", min area " + minArea + " time limit " + limit + " timeStep " + timeStep + " -> warn = " + warn);
 						}
 						if (warn) {
 							String s = "Time step " + timeStep + " may be too large, performing further analysis ...";
@@ -315,7 +315,7 @@ class SimulationWarning implements PropertyChangeListener {
 						}
 					}
 				}
-				lg.trace("end of diffusion analysis");
+				lg.debug("end of diffusion analysis");
 			} catch (Exception e) {
 				lg.warn("analysis diffusion exception", e);
 			}
@@ -323,7 +323,7 @@ class SimulationWarning implements PropertyChangeListener {
 
 		void analyzeArea() {
 			boolean bDirty = dirty.get();
-			lg.trace("analyzeArea( ) with dirty " + bDirty);
+			lg.debug("analyzeArea( ) with dirty " + bDirty);
 			if (bDirty) {
 				dirty.set(false);
 				sched();
@@ -345,8 +345,8 @@ class SimulationWarning implements PropertyChangeListener {
 					for (DiffusionValue dv : entry.getValue()) {
 						double ad = avg / dv.value;
 						boolean warn = (timeStep >= ad);
-						if (lg.isTraceEnabled()) {
-							lg.trace("average area " + avg + " diffusion " + dv.value + " time step limit " + ad + "timeStep " + timeStep + " -> warn " + warn);
+						if (lg.isDebugEnabled()) {
+							lg.debug("average area " + avg + " diffusion " + dv.value + " time step limit " + ad + "timeStep " + timeStep + " -> warn " + warn);
 						}
 						if (warn) {
 							DecimalFormat f = formatter();
@@ -368,7 +368,7 @@ class SimulationWarning implements PropertyChangeListener {
 					warnings.addAll(workingList);
 				}
 
-				lg.trace("end of area analysis");
+				lg.debug("end of area analysis");
 			} catch (Exception e) {
 				lg.warn("analysis exception", e);
 			}
@@ -419,9 +419,9 @@ class SimulationWarning implements PropertyChangeListener {
 		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			if (dirty.get()) {
 				issueContext.needMoreTime();
-				lg.trace("Smoldyn strategy requesting more time to gather issues");
+				lg.debug("Smoldyn strategy requesting more time to gather issues");
 			}
-			lg.trace("Smoldyn strategy gathering issues");
+			lg.debug("Smoldyn strategy gathering issues");
 			Objects.requireNonNull(issueList);
 			synchronized (errors) {
 				for (String text : errors) {

@@ -4,7 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.MultipleGradientPaint.CycleMethod;
@@ -104,8 +103,8 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 	public void dispose( ) {
 		workingPanelTimer.stop();
 		super.dispose( );
-		if (LG.isTraceEnabled()) {
-			LG.trace(getClass( ).getName() + " " + message + " disposed");
+		if (LG.isDebugEnabled()) {
+			LG.debug(getClass( ).getName() + " " + message + " disposed");
 		}
 		
 	}

@@ -1652,7 +1652,7 @@ public String getVCML_database(boolean includeComments) throws MathException {
 	}
 	buffer.append("}\n");
 	final String rval = buffer.toString();		
-	lg.trace(rval);
+	lg.debug(rval);
 	return rval;
 }
 

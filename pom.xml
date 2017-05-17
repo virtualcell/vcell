@@ -16,12 +16,13 @@
   </properties>
 	<repositories>
 		<!-- needed for org.sbml.jsbml -->
+<!-- 
 		<repository>
 			<id>JSBML-SNAPSHOT</id>
 			<name>The JSBML Snapshot repository</name>
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
-
+-->
 		<!-- needed for javax.media.jai -->
 		<repository>
 			<id>com.springsource.repository.bundles.external</id>
@@ -62,11 +63,13 @@
 	      <artifactId>biomodels-wslib</artifactId>
 	      <version>1.21</version>
 	    </dependency>
+<!--
 		<dependency> 
 			<groupId>org.sbml.jsbml</groupId> 
 			<artifactId>jsbml</artifactId> 
 			<version>1.3-SNAPSHOT</version> 
 		</dependency>
+-->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -193,20 +196,26 @@
 		-->
 
 		<!-- https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j -->
+
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		   <!--   <version>1.7.5</version>   -->
+	    </dependency>
+
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>1.7.5</version>
+		    <version>1.7.21</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.hdfgroup/hdf-java -->
-<!-- haven't yet reconciled, need jarhdf-3.2.1.jar and jarhdf5-3.2.1.jar
  		<dependency>
-			<groupId>org.hdfgroup</groupId>
-			<artifactId>hdf-java</artifactId>
-			<version>2.6.1</version>
+		    <groupId>org.hdfgroup</groupId>
+		    <artifactId>hdf-java</artifactId>
+		    <version>2.6.1</version>
 		</dependency>
--->
+		<!-- https://mvnrepository.com/artifact/org.scala-saddle/jhdf5 -->
  		<dependency>
 			<groupId>org.scala-saddle</groupId>
 			<artifactId>jhdf5</artifactId>
@@ -314,12 +323,6 @@
 		<dependency>
 		    <groupId>org.scijava</groupId>
 		    <artifactId>scijava-common</artifactId>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.hdfgroup/hdf-java -->
- 		<dependency>
-		    <groupId>org.hdfgroup</groupId>
-		    <artifactId>hdf-java</artifactId>
-		    <version>2.6.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/log4j/apache-log4j-extras -->
 		<dependency>

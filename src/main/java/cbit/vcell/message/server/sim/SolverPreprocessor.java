@@ -196,15 +196,15 @@ public class SolverPreprocessor  {
 	private static void exitWithCode(int systemReturnCode, Logger lg) {
 		ApplicationTerminator.beginCountdown(TimeUnit.SECONDS, 10, systemReturnCode); 
 		long start = 0;
-		if (lg.isTraceEnabled()) {
-			lg.trace("starting mongo shutdown");
+		if (lg.isDebugEnabled()) {
+			lg.debug("starting mongo shutdown");
 			start = System.currentTimeMillis();
 		}
 		VCMongoMessage.shutdown( );
-		if (lg.isTraceEnabled()) {
+		if (lg.isDebugEnabled()) {
 			long stop = System.currentTimeMillis();
 			double elapsed = (stop - start) / 1000.0;
-			lg.trace("mongo shutdown " + elapsed + "seconds ");
+			lg.debug("mongo shutdown " + elapsed + "seconds ");
 		}
 		System.exit(systemReturnCode);
 	}

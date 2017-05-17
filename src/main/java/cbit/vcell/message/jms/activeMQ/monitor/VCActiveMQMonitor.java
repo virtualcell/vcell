@@ -92,13 +92,13 @@ public class VCActiveMQMonitor  implements VCJmsConfig{
 		
 		for (SiteConfig siteConfig: sites) {
 			SiteUrl su = parseSite(jmsProv, siteConfig.name);
-			if (LG.isTraceEnabled()) {
-				LG.trace(jmsProv.getName() + " parsed to " + su);
+			if (LG.isDebugEnabled()) {
+				LG.debug(jmsProv.getName() + " parsed to " + su);
 			}
 			if (su != null) {
 				String logname = su.jmsName + ".log";
 				if (LG.isInfoEnabled()){
-					LG.trace("logging " + su.jmsName + " to " + logname);
+					LG.debug("logging " + su.jmsName + " to " + logname);
 				}
 				PrintWriter pw = new PrintWriter(new FileWriter(logname,true)); //true -> append
 				pw.println("Commencing log of " + su.jmsName + " at " + now);

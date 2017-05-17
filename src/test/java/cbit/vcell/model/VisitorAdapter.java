@@ -35,7 +35,7 @@ public abstract class VisitorAdapter {
 	protected abstract void scan(VCDatabaseScanner scanner, User[] users) throws Exception;
 	
 	protected Logger lg = Logger.getLogger(VisitorAdapter.class);
-	protected Level level = Level.TRACE;
+	protected Level level = Level.DEBUG;
 	
 	/**
 	 * optional method to specify different logger than default

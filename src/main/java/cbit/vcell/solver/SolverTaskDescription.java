@@ -183,13 +183,13 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		if (fieldSolverDescription != null) {
 			Collection<SolverDescription> valid = SolverDescription.getSupportingSolverDescriptions(md);
 			if (valid.contains(fieldSolverDescription)) {
-				if (lg.isTraceEnabled()) {
-					lg.trace("resetSolverTaskDescription leaving " + fieldSolverDescription + " in place");
+				if (lg.isDebugEnabled()) {
+					lg.debug("resetSolverTaskDescription leaving " + fieldSolverDescription + " in place");
 				}
 				return; //existing is okay, don't mess with it
 			}
-			if (lg.isTraceEnabled()) {
-				lg.trace("resetSolverTaskDescription replacing existing " + fieldSolverDescription);
+			if (lg.isDebugEnabled()) {
+				lg.debug("resetSolverTaskDescription replacing existing " + fieldSolverDescription);
 			}
 		}
 		try {
@@ -1195,8 +1195,8 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
 	 */
 	public void setStochOpt(NonspatialStochSimOptions newStochOpt) {
-		if (lg.isTraceEnabled()) {
-			lg.trace("setStochOption " + Objects.hashCode(newStochOpt) +  ' ' + Objects.toString(newStochOpt));
+		if (lg.isDebugEnabled()) {
+			lg.debug("setStochOption " + Objects.hashCode(newStochOpt) +  ' ' + Objects.toString(newStochOpt));
 		}
 		
 		if (!Matchable.areEqual(fieldNonspatialStochOpt,newStochOpt)) {
@@ -1212,8 +1212,8 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
 	 */
 	public void setStochHybridOpt(NonspatialStochHybridOptions newStochHybridOpt) {
-		if (lg.isTraceEnabled()) {
-			lg.trace("setStochOption " + Objects.hashCode(newStochHybridOpt) +  ' ' + Objects.toString(newStochHybridOpt));
+		if (lg.isDebugEnabled()) {
+			lg.debug("setStochOption " + Objects.hashCode(newStochHybridOpt) +  ' ' + Objects.toString(newStochHybridOpt));
 		}
 		
 		if (!Matchable.areEqual(fieldNonspatialStochHybridOpt,newStochHybridOpt)) {

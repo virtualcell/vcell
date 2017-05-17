@@ -56,7 +56,7 @@ public void nullifyUncompressedPixels(){
 public byte[] getPixels() throws ImageException {
 	try {
 		if (uncompressed == null){
-			lg.trace("VCImageCompressed.getPixels()  <<<<<<UNCOMPRESSING>>>>>>");
+			lg.debug("VCImageCompressed.getPixels()  <<<<<<UNCOMPRESSING>>>>>>");
 			ByteArrayInputStream bis = new ByteArrayInputStream(compressedPixels);
 			InflaterInputStream iis = new InflaterInputStream(bis);
 			int temp;

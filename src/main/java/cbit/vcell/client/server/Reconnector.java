@@ -56,7 +56,7 @@ public class Reconnector {
 	 */
 	void start( ) {
 		if (active.compareAndSet(false,true)) { //returns false if already active
-			lg.trace("starting");
+			lg.debug("starting");
 			reconnectTries = 0;
 			waitTime = 0;
 			remaining = 1;
@@ -69,7 +69,7 @@ public class Reconnector {
 	 */
 	void stop( ) {
 		if (active.compareAndSet(true,false)) { //only if running
-			lg.trace("stopping");
+			lg.debug("stopping");
 			Objects.requireNonNull(countdownHandle); //logic error if this null
 			countdownHandle.cancel(true);
 			countdownHandle = null;
@@ -109,13 +109,13 @@ public class Reconnector {
 	 */
 	private void countdown( ) {
 		try {
-			lg.trace("countdown");
+			lg.debug("countdown");
 			if (!active.get( ) || paused.get()) {
 				return;
 			}
 			--remaining;
-			if (lg.isTraceEnabled()) {
-				lg.trace(remaining + " seconds remaining, " + listeners.size() + " listening");
+			if (lg.isDebugEnabled()) {
+				lg.debug(remaining + " seconds remaining, " + listeners.size() + " listening");
 			}
 
 			Runnable r = () -> listeners.stream().forEach((rl) -> rl.refactorCountdown(remaining));

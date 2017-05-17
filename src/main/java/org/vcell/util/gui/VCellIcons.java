@@ -15,6 +15,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -32,6 +33,12 @@ public abstract class VCellIcons {
 	
 	public final static int VCellIconWidth = 16;
 	public final static int VCellIconHeight = 16;
+
+	public final static Image panCursorImage = Toolkit.getDefaultToolkit().getImage(VCellIcons.class.getResource("/pan.gif"));
+	public final static Image zoomCursorImage = Toolkit.getDefaultToolkit().getImage(VCellIcons.class.getResource("/zoom.gif"));
+	
+	public final static Icon dataSetsIcon = new ImageIcon(VCellIcons.class.getResource("/data_sets_20x20.gif"));
+	public final static Icon dataExporterIcon = new ImageIcon(VCellIcons.class.getResource("/data_exporter_20x20.gif"));
 	
 	// Rule Based Modeling
 	public final static Icon rbmIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm.png"));

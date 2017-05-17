@@ -24,6 +24,7 @@ import javax.swing.ToolTipManager;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.ImagePaneModel;
@@ -50,8 +51,8 @@ public class ImagePlaneManagerPanel extends javax.swing.JPanel {
 	//
 	private static final String defaultInfoString = "Info";
 	//
-	private Cursor panCursor = Toolkit.getDefaultToolkit().createCustomCursor(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/pan.gif")), new Point(12, 12), "PanCursor");
-	private Cursor zoomCursor = Toolkit.getDefaultToolkit().createCustomCursor(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/zoom.gif")), new Point(6, 6), "ZoomCursor");
+	private Cursor panCursor = Toolkit.getDefaultToolkit().createCustomCursor(VCellIcons.panCursorImage, new Point(12, 12), "PanCursor");
+	private Cursor zoomCursor = Toolkit.getDefaultToolkit().createCustomCursor(VCellIcons.zoomCursorImage, new Point(6, 6), "ZoomCursor");
 	private ImagePaneScroller ivjImagePaneScroller1 = null;
 	private SourceDataInfo fieldSourceDataInfo = null;
 	private ImagePlaneManager ivjImagePlaneManager = null;

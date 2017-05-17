@@ -18,7 +18,6 @@ public class Log4JWatch {
 			long now = System.currentTimeMillis();
 			double seconds = (now -start) / 1000.0;
 			System.out.println(seconds + " seconds" );
-			lg.trace("trace");
 			lg.debug("debug");
 			lg.info("info");
 			lg.warn("warn");

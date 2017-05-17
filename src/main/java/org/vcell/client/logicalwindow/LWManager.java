@@ -74,8 +74,8 @@ class LWManager extends WindowAdapter{
 	
 	@Override
 	public void windowClosing(WindowEvent e) {
-		if (LG.isTraceEnabled()) {
-			LG.trace(e.getSource() +  " closing");
+		if (LG.isDebugEnabled()) {
+			LG.debug(e.getSource() +  " closing");
 		}
 	}
 

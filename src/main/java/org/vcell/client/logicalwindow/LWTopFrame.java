@@ -195,8 +195,8 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 
 			tops.removeIf( findOurself );
 			tops.addFirst(ourWr);
-			if (LG.isTraceEnabled()) {
-				LG.trace(LWTopFrame.this.menuDescription() + " gained focus");
+			if (LG.isDebugEnabled()) {
+				LG.debug(LWTopFrame.this.menuDescription() + " gained focus");
 			}
 		}
 

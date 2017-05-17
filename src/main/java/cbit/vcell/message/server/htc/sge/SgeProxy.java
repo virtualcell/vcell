@@ -175,8 +175,8 @@ denied: job "6894" does not exist
 	 * @return list of jobs, except ones already marked for deletion
 	 */
 	private List<HtcJobID> parseXML(String xmlString, String prefix) {
-		if (LG.isTraceEnabled()) {
-			LG.trace(xmlString);
+		if (LG.isDebugEnabled()) {
+			LG.debug(xmlString);
 		}
 		try {
 		statusMap.clear();
