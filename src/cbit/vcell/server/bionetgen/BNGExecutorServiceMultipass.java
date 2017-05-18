@@ -283,6 +283,12 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			// we look in first mtp of this seed species, the compartment is the same in all
 			BNGMultiStateSpecies ss = (BNGMultiStateSpecies)ourList.get(0);
 			String compartment = ss.extractCompartment();
+			if(compartment == null) {	// single compartment, we get it from the model
+				if(model.getStructures().length > 1) {
+					throw new RuntimeException("BNGExecutorServiceMultipass: Unable to extract compartment");
+				}
+				compartment = model.getStructure(0).getName();
+			}
 			masterCompartmentMap.put(networkFileIndex, compartment);
 		}
 		
