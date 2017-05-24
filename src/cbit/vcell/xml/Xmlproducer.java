@@ -3547,14 +3547,15 @@ private Element getXML(Diagram param) {
 	diagram.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 	
 	//Add NodeReferences subelements
-	if (param.getNodeList().size()>0){
-		List<NodeReference> children = param.getNodeList();
-		for (int i=0 ; i<children.size() ;i++ ){
-			NodeReference node = children.get(i);
-			diagram.addContent( getXML(node) );
-		}
+	for (NodeReference node : param.getNodeFullList()) {
+		diagram.addContent(getXML(node));
 	}
-	
+	for (NodeReference node : param.getNodeMoleculeList()) {
+		diagram.addContent(getXML(node));
+	}
+	for (NodeReference node : param.getNodeRuleList()) {
+		diagram.addContent(getXML(node));
+	}
 	return diagram;
 }
 
@@ -4180,55 +4181,55 @@ private Element getXML(NodeReference param) {
 		case NodeReference.SIMPLE_REACTION_NODE:{
 			Element simplereaction = new Element(XMLTags.SimpleReactionShapeTag);
 			//add Attributes
+			simplereaction.setAttribute(XMLTags.NodeReferenceModeAttrTag, mangle(param.mode.toValue()));
 			simplereaction.setAttribute(XMLTags.SimpleReactionRefAttrTag, mangle(param.getName()));
 			simplereaction.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
 			simplereaction.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
-
 			return simplereaction;
 		}
 		case NodeReference.FLUX_REACTION_NODE:{
 			Element fluxreaction = new Element(XMLTags.FluxReactionShapeTag);
 			//add Attributes
+			fluxreaction.setAttribute(XMLTags.NodeReferenceModeAttrTag, mangle(param.mode.toValue()));
 			fluxreaction.setAttribute(XMLTags.FluxReactionRefAttrTag, mangle(param.getName()));
 			fluxreaction.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
 			fluxreaction.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
-
 			return fluxreaction;
 		}
 		case NodeReference.SPECIES_CONTEXT_NODE:{
 			Element speciecontext = new Element(XMLTags.SpeciesContextShapeTag);
 			//add Attributes
+			speciecontext.setAttribute(XMLTags.NodeReferenceModeAttrTag, mangle(param.mode.toValue()));
 			speciecontext.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getName()));
 			speciecontext.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
 			speciecontext.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
-
 			return speciecontext;
 		}
 		case NodeReference.REACTION_RULE_NODE:{
 			Element reactionRuleNode = new Element(XMLTags.ReactionRuleShapeTag);
 			//add Attributes
+			reactionRuleNode.setAttribute(XMLTags.NodeReferenceModeAttrTag, mangle(param.mode.toValue()));
 			reactionRuleNode.setAttribute(XMLTags.ReactionRuleRef2AttrTag, mangle(param.getName()));
 			reactionRuleNode.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
 			reactionRuleNode.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
-
 			return reactionRuleNode;
 		}
 		case NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE: {
 			Element ruleParticipant = new Element(XMLTags.RuleParticipantFullShapeTag);
 			//add Attributes
+			ruleParticipant.setAttribute(XMLTags.NodeReferenceModeAttrTag, mangle(param.mode.toValue()));
 			ruleParticipant.setAttribute(XMLTags.RuleParticipantRefAttrTag, mangle(param.getName()));
 			ruleParticipant.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
 			ruleParticipant.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
-
 			return ruleParticipant;
 		}
 		case NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE: {
 			Element ruleParticipant = new Element(XMLTags.RuleParticipantShortShapeTag);
 			//add Attributes
+			ruleParticipant.setAttribute(XMLTags.NodeReferenceModeAttrTag, mangle(param.mode.toValue()));
 			ruleParticipant.setAttribute(XMLTags.RuleParticipantRefAttrTag, mangle(param.getName()));
 			ruleParticipant.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
 			ruleParticipant.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
-
 			return ruleParticipant;
 		}
 	}
