@@ -1,0 +1,34 @@
+VISUALIZATION TOOL
+------------------
+	John A.P. Sekar (johnarul.sekar@gmail.com)
+
+The visualize() action and the visualize.pl tool generate GML files. 
+They are best viewed using yEd Graph Editor available for free at 
+(http://www.yworks.com/en/products_yed_download.html).
+
+Using visualize() action
+------------------------
+   visualize({type=>"TYPE"})                 
+  
+Using visualize.pl
+------------------
+   perl visualize.pl --bngl BNGL --type TYPE
+
+Allowed values for TYPE
+-----------------------
+   conventional                         conventional rule visualization
+   compact                              compact rule visualization (using graph operation nodes)
+   regulatory                           rule-derived regulatory graph
+   opts                                 options template for regulatory graph
+   contactmap                           contact map
+   reaction_network                     reaction network
+  
+Getting help
+------------
+Using the visualize() action, try:
+    visualize({help=>1})
+	
+Using visualize.pl, try:
+	perl visualize.pl --help
+
+If you have any questions about using this tool, please email us at bionetgen.help@gmail.com
