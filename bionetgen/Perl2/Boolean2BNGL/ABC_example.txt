@@ -1,0 +1,7 @@
+A = False
+B = False
+C = True
+
+1: A* = B or C
+1: B* = not A and C
+1: C* = A and not C
