@@ -141,7 +141,7 @@ private void runSolver() {
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING);
 		if(OperatingSystemInfo.getInstance().isLinux()){
 			final String LD_LIB_PATH = "LD_LIBRARY_PATH";
-			File solversDir = ResourceUtil.getSolversDirectory();
+			File solversDir = ResourceUtil.getLocalSolversDirectory();
 			String existingLD_LIB_PATH = null;
 			Map<String, String>envMap = System.getenv();
 			Iterator<String> envIter = envMap.keySet().iterator();

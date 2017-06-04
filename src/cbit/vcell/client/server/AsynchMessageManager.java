@@ -91,7 +91,9 @@ public synchronized void startPolling() {
 }
 
 public void stopPolling() {
-	lg.trace("stopping polling");
+	if (lg.isTraceEnabled()){
+		lg.trace("stopping polling");
+	}
 	bPoll.set(false);
 }
 
@@ -104,10 +106,14 @@ public void created(DataAccessException dae) {
 }
 private void poll( )  {
 	if (!bPoll.get()) {
-		lg.trace("polling stopped");
+		if (lg.isTraceEnabled()) {
+			lg.trace("polling stopped");
+		}
 		return;
 	}
-	lg.trace("polling");
+	if (lg.isTraceEnabled()){
+		lg.trace("polling");
+	}
 	boolean report = counter%50 == 0;
 	long begin = 0;
 	long end = 0;
