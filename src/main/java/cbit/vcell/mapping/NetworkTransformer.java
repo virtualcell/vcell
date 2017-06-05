@@ -30,6 +30,7 @@ import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
@@ -733,7 +734,9 @@ public class NetworkTransformer implements SimContextTransformer {
 			VCUnitDefinition observableUnitDefinition = originalObservable.getUnitDefinition();
 			rbmmc.removeObservable(originalObservable);
 			Parameter newParameter = rbmmc.addParameter(o.getObservableGroupName(), exp, observableUnitDefinition);
-			ModelEntityMapping em = new ModelEntityMapping(originalObservable,newParameter);
+
+			RbmObservable origObservable = simContext.getModel().getRbmModelContainer().getObservable(o.getObservableGroupName());
+			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
 			entityMappings.add(em);
 		}
 		if (mathMappingCallback.isInterrupted()){
