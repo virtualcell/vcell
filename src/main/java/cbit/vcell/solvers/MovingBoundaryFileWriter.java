@@ -53,6 +53,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
+import cbit.vcell.solvers.mb.MovingBoundarySolverOptions;
 
 /**
  * Exporting simulation data to Moving Boundary XML format
@@ -281,7 +282,7 @@ private Element getnumNodesY(ISize isize) {
 private Element getfrontToNodeRatio() {
 	Element e = new Element(MBTags.frontToNodeRatio);
 	e.setAttribute("mode", "HARDCODED");
-	e.setText("5");
+	e.setText(MovingBoundarySolverOptions.DEFAULT_FRONT_TO_NODE_RATIO + "");
 	return e;
 }
 private Element getmaxTime(SolverTaskDescription std) {
