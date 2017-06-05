@@ -686,7 +686,7 @@ public void stateChanged(ChangeEvent e) {
 }
 
 private void updateSurfaceView() {
-	if (tabbedPane.getSelectedComponent() == surfaceViewer) {	
+	if (tabbedPane.getSelectedComponent() == surfaceViewer && getGeometry() != null) {	
 		AsynchClientTask surfaceGenerationTask = new AsynchClientTask ("creating new smoothed surface", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
