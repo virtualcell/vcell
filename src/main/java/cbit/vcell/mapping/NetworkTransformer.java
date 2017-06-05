@@ -727,15 +727,13 @@ public class NetworkTransformer implements SimContextTransformer {
 				Expression term = Expression.mult(new Expression(o.getSpeciesMultiplicity()[j]),new Expression(speciesMap.get(o.getListofSpecies()[j].getNetworkFileIndex())));
 				terms.add(term);
 			}
-			Expression exp = Expression.add(terms.toArray(new Expression[terms.size()]));
+			Expression exp = Expression.add(terms.toArray(new Expression[terms.size()])).flatten();
 			exp.bindExpression(rbmmc.getSymbolTable());
 			RbmObservable originalObservable = rbmmc.getObservable(o.getObservableGroupName());
 			VCUnitDefinition observableUnitDefinition = originalObservable.getUnitDefinition();
 			rbmmc.removeObservable(originalObservable);
 			Parameter newParameter = rbmmc.addParameter(o.getObservableGroupName(), exp, observableUnitDefinition);
-
-			RbmObservable origObservable = simContext.getModel().getRbmModelContainer().getObservable(o.getObservableGroupName());
-			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
+			ModelEntityMapping em = new ModelEntityMapping(originalObservable,newParameter);
 			entityMappings.add(em);
 		}
 		if (mathMappingCallback.isInterrupted()){
