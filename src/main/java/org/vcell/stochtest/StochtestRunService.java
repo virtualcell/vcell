@@ -84,7 +84,6 @@ public class StochtestRunService {
 		if (!baseDir.exists()){
 			throw new RuntimeException("base directory "+baseDir.getPath()+" not found");
 		}
-		ResourceUtilTestFixture.useUniqueSolversDirectoryForTesting(new File("C:\\temp\\solvers"));
 		
 		int numTrials = Integer.valueOf(args[1]);
 		

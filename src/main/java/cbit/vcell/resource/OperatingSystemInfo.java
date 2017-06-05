@@ -53,7 +53,6 @@ public class OperatingSystemInfo {
 	private final String exeBitSuffix;
 	private final String exeSuffix;
 	private final String nativelibSuffix;
-	private final String resourcePackage; 
 	private final Pattern sharedLibraryPattern; 
 	private String description; 
 	//private final boolean bWindows; 
@@ -93,14 +92,6 @@ public class OperatingSystemInfo {
 	public String getNativelibSuffix() {
 		return nativelibSuffix;
 	}
-
-	/**
-	 * @return operating system and bit specific package name with trailing /
-	 */
-	public String getResourcePackage() {
-		return resourcePackage;
-	}
-	
 
 	/**
 	 * @return win, mac, linux
@@ -203,7 +194,6 @@ public class OperatingSystemInfo {
 		}
 		exeBitSuffix = BIT_SUFFIX + exeSuffix;
 		nativeLibDirectory =   osnamePrefix + (b64bit ? "64/" : "32/");
-		resourcePackage = "/cbit/vcell/resource/" + nativeLibDirectory; 
 		nativelibSuffix = BIT_SUFFIX;
 	}
 	

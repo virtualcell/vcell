@@ -11,7 +11,6 @@
 package cbit.vcell.message.server.bootstrap;
 import java.io.FileNotFoundException;
 import java.rmi.ConnectException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -36,7 +35,6 @@ import cbit.vcell.server.PerformanceMonitoringFacility;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
-import cbit.vcell.server.VCellConnection.ExtraContext;
 
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
@@ -91,7 +89,7 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 		fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
 		fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
 		
-		performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser(), sessionLog);	
+		performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser()	);	
 	}	
 
 

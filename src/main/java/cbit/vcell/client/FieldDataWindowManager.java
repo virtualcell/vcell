@@ -69,7 +69,6 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.resource.VersionedLibrary;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataListener;
@@ -550,9 +549,6 @@ private static class OutputFunctionViewer extends JPanel{
 				}
 			}
 		}
-	}
-	public VersionedLibrary requiredLibrary() {
-		return null;
 	}
 }
 

@@ -26,7 +26,6 @@ import org.apache.commons.io.IOUtils;
 
 import cbit.vcell.client.constants.VCellCodeVersion;
 import cbit.vcell.math.ProblemRequirements;
-import cbit.vcell.resource.VersionedLibrary;
 
 
 /**
@@ -39,32 +38,32 @@ public enum SolverDescription {
 	   ForwardEuler(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Forward Euler 1st","Forward Euler (First Order, Fixed Time Step)","Forward Euler (First Order, Fixed Time Step)",
 	      SolverLongDesc.FORWARD_EULER, 1,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000030", false),
+	      null, "KISAO:0000030", false),
 
 	   RungeKutta2(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Runge-Kutta 2nd","Runge-Kutta (Second Order, Fixed Time Step)","Runge-Kutta (Second Order, Fixed Time Step)",
 	      SolverLongDesc.RUNGE_KUTTA2, 2,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000064", false),
+	      null, "KISAO:0000064", false),
 
 	   RungeKutta4(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Runge-Kutta 4th","Runge-Kutta (Fourth Order, Fixed Time Step)","Runge-Kutta (Fourth Order, Fixed Time Step)",
 	      SolverLongDesc.RUNGE_KUTTA4, 4,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000032", false),
+	      null, "KISAO:0000032", false),
 
 	   RungeKuttaFehlberg(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "Runge-Kutta-Fehlberg","Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)","Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)",
 	      SolverLongDesc.RUNGE_KUTTA_FEHLBERG, 4,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000086", false),
+	      null, "KISAO:0000086", false),
 
 	   AdamsMoulton(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Adams-Moulton 5th","Adams-Moulton (Fifth Order, Fixed Time Step)","Adams-Moulton (Fifth Order, Fixed Time Step)",
 	      SolverLongDesc.ADAMS_MOULTON, 5,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000280", false),
+	      null, "KISAO:0000280", false),
 
 	   IDA(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "IDA","IDA (Variable Order, Variable Time Step, ODE/DAE)","IDA (Variable Order, Variable Time Step, ODE/DAE)",
 	      SolverLongDesc.IDA, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
-	      SolverExecutable.SundialsOde, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000283", false),
+	      SolverExecutable.SundialsOde, "KISAO:0000283", false),
 
 	      /**
 	       * this is the compiled Solver we don't support any more. Left present to load old models that use it, but they
@@ -74,79 +73,79 @@ public enum SolverDescription {
 	   FiniteVolume(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Semi-Implicit Compiled","Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step) (DEPRECATED)","Finite Volume, Regular Grid",
 	      SolverLongDesc.FINITE_VOLUME, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtSpatiallyUniform},
-	      SolverExecutable.FiniteVolume, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000285", true),
+	      SolverExecutable.FiniteVolume, "KISAO:0000285", true),
 
 	   StochGibson(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson","Gibson (Next Reaction Stochastic Method)","Gibson (Next Reaction Stochastic Method)",
 	      SolverLongDesc.STOCH_GIBSON, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Gibson, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000027", false),
+	      SolverExecutable.Gibson, "KISAO:0000027", false),
 
 	   HybridEuler(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Euler-Maruyama","Hybrid (Gibson + Euler-Maruyama Method)","Hybrid (Gibson + Euler-Maruyama Method)",
 	      SolverLongDesc.HYBRID_EULER, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_EM, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000352", false),
+	      SolverExecutable.Hybrid_EM, "KISAO:0000352", false),
 
 	   HybridMilstein(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Milstein","Hybrid (Gibson + Milstein Method)","Hybrid (Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MILSTEIN, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000352", false),
+	      SolverExecutable.Hybrid_Mil, "KISAO:0000352", false),
 
 	   HybridMilAdaptive(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Adaptive Gibson + Milstein","Hybrid (Adaptive Gibson + Milstein Method)","Hybrid (Adaptive Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MIL_ADAPTIVE, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil_Adaptive, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000352", false),
+	      SolverExecutable.Hybrid_Mil_Adaptive, "KISAO:0000352", false),
 
 	   CVODE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "CVODE","CVODE (Variable Order, Variable Time Step)","CVODE (Variable Order, Variable Time Step)",
 	      SolverLongDesc.CVODE, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
-	      SolverExecutable.SundialsOde, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000019", false),
+	      SolverExecutable.SundialsOde, "KISAO:0000019", false),
 
 	   FiniteVolumeStandalone(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Semi-Implicit","Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)","Finite Volume Standalone, Regular Grid",
 	      SolverLongDesc.FINITE_VOLUME_STANDALONE, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Hybrid, SolverFeature.Feature_FastSystem, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000285", false),
+	      SolverExecutable.FiniteVolume, "KISAO:0000285", false),
 
 	   CombinedSundials(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "Combined IDA/CVODE","Combined Stiff Solver (IDA/CVODE)","Combined Stiff Solver (IDA/CVODE)",
 	      SolverLongDesc.COMBINED_SUNDIALS, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
-	      SolverExecutable.SundialsOde, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000019", false),
+	      SolverExecutable.SundialsOde, "KISAO:0000019", false),
 
        SundialsPDE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.UNIFORM, "Fully-Implicit","Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)","Sundials Stiff PDE Solver (Variable Time Step)",
 	      SolverLongDesc.SUNDIALS_PDE, 3,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_GradientSourceTerm, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000285", false),
+	      SolverExecutable.FiniteVolume, "KISAO:0000285", false),
 
 	   Smoldyn(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Smoldyn","Smoldyn (Spatial Stochastic Simulator)","Smoldyn (Spatial Stochastic Simulator)",
 	      SolverLongDesc.SMOLDYN, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_DataProcessingInstructions},
-	      SolverExecutable.Smoldyn, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000057", false),
+	      SolverExecutable.Smoldyn, "KISAO:0000057", false),
 
 	   Chombo(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "EBChombo","EBChombo, Semi-Implicit (Fixed Time Step), Experimental","Chombo Standalone",
 	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions,
 			   SolverFeature.Feature_DirichletAtMembraneBoundary, SolverFeature.Feature_Parallel,  SolverFeature.Feature_FastSystem},
-	      SolverExecutable.VCellChombo, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000285",
+	      SolverExecutable.VCellChombo, "KISAO:0000285",
 	      VCellCodeVersion.CURRENT.compare(5,4) < 0),
 
 	   NFSim(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "NFSim","NFSim (Network Free Simulator)","NFSim",
 	      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased},
-	      SolverExecutable.NFSIM, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO:0000263", false),
+	      SolverExecutable.NFSIM, "KISAO:0000263", false),
 
 	   Comsol(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Comsol","Comsol Multiphysics","Comsol",
 		  SolverLongDesc.COMSOL,1,SupportedTimeSpec.DEFAULT_UNIFORM,
 		  new SolverFeature[]{SolverFeature.Feature_Spatial, /*  SolverFeature.Feature_Moving  ,*/ SolverFeature.Feature_Deterministic},
-		  null, VersionedLibrary.NONE,"KISAO",false),
+		  null, "KISAO",false),
 
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
 		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT_UNIFORM,
 		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic},
-		  SolverExecutable.MOVING_B, VersionedLibrary.DEPENDENT_LIBS_VCELL,"KISAO",false),
+		  SolverExecutable.MOVING_B, "KISAO",false),
 	   
        VCellPetsc(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Hybrid Implicit","Finite Volume-Particle Hybrid, Implicit (Experimental)","VCellPetsc",
 	      SolverLongDesc.VCellPetsc, 3, SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Hybrid, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, VersionedLibrary.DEPENDENT_LIBS_VCELL, "KISAO", false),
+	      SolverExecutable.FiniteVolume, "KISAO", false),
 	   
    ;
 
@@ -331,7 +330,6 @@ public enum SolverDescription {
 	/**
 	 * will not be null, may be placeholder
 	 */
-	public final VersionedLibrary versionedLibrary;
 	public final String kisao;
 	public final boolean deprecated;
 
@@ -340,7 +338,7 @@ public enum SolverDescription {
 			String displayLabel, String databaseName,
 			String fullDescription, int timeOrder, SupportedTimeSpec sts,
 			SolverFeature[] fset,
-			SolverExecutable se, VersionedLibrary versionedLibrary, String kisao, boolean deprecated) {
+			SolverExecutable se, String kisao, boolean deprecated) {
 
 		variableTimeStep = (ts == TimeStep.VARIABLE);
 		errorTolerance = ( et == ErrorTol.YES);
@@ -354,7 +352,6 @@ public enum SolverDescription {
 		supportedTimeSpec = sts;
 		this.supportedFeatures = new HashSet<SolverFeature>(Arrays.asList(fset));
 		solverExecutable = se;
-		this.versionedLibrary = versionedLibrary != null ? versionedLibrary : VersionedLibrary.NONE;
 		this.kisao = kisao;
 		this.deprecated = deprecated;
 	}
@@ -364,7 +361,7 @@ public enum SolverDescription {
 			String displayLabel, String databaseName,
 			URL fullDescriptionUrl, int timeOrder, SupportedTimeSpec sts,
 			SolverFeature[] fset,
-			SolverExecutable se, VersionedLibrary versionedLibrary, String kisao, boolean deprecated) {
+			SolverExecutable se, String kisao, boolean deprecated) {
 		
 		variableTimeStep = (ts == TimeStep.VARIABLE);
 		errorTolerance = ( et == ErrorTol.YES);
@@ -378,7 +375,6 @@ public enum SolverDescription {
 		supportedTimeSpec = sts;
 		this.supportedFeatures = new HashSet<SolverFeature>(Arrays.asList(fset));
 		solverExecutable = se;
-		this.versionedLibrary = versionedLibrary != null ? versionedLibrary : VersionedLibrary.NONE;
 		this.kisao = kisao;
 		this.deprecated = deprecated;
 	}

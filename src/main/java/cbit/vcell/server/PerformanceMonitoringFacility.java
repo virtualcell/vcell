@@ -10,7 +10,7 @@
 
 package cbit.vcell.server;
 
-import org.vcell.util.SessionLog;
+import org.apache.log4j.Logger;
 import org.vcell.util.document.User;
 
 /**
@@ -20,16 +20,15 @@ import org.vcell.util.document.User;
  */
 public class PerformanceMonitoringFacility implements cbit.rmi.event.PerformanceMonitorListener {
 	private User user = null;
-	private SessionLog sessionLog = null;
+	private static Logger lg = Logger.getLogger(PerformanceMonitoringFacility.class);
 
 /**
  * Insert the method's description here.
  * Creation date: (9/17/2004 4:28:47 PM)
  * @param vcConn cbit.vcell.server.VCellConnection
  */
-public PerformanceMonitoringFacility(User user, SessionLog sessionLog) {
+public PerformanceMonitoringFacility(User user) {
 	this.user = user;
-	this.sessionLog = sessionLog;
 }
 
 
@@ -48,6 +47,8 @@ public void performanceMonitorEvent(cbit.rmi.event.PerformanceMonitorEvent pme) 
 		logEntry += pme.getPerfData().getEntries()[i].getIdentifier() + ": ";	
 		logEntry += pme.getPerfData().getEntries()[i].getValue() + "; ";	
 	}
-	sessionLog.print(logEntry);
+	if (lg.isDebugEnabled()){
+		lg.debug(logEntry);
+	}
 }
 }

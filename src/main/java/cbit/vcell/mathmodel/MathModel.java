@@ -35,7 +35,6 @@ import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.resource.VersionedLibrary;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -780,10 +779,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName) {
 		//issueContext = issueContext.newChildContext(ContextType.MathModel, this);
 		// no semantics for another override
-		return null;
-	}
-
-	public VersionedLibrary getRequiredLibrary() {
 		return null;
 	}
 

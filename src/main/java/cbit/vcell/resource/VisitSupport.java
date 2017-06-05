@@ -56,21 +56,7 @@ public class VisitSupport {
 		return visToolScript;
 	}
 
-	public static File getVisToolShellScript() throws URISyntaxException
-	{
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
-		String vcellvisitScript = null;
-		if (osi.isWindows()) {
-			vcellvisitScript = "vcellvisit.cmd";
-		}else{
-			vcellvisitScript = "vcellvisit.sh";
-		}
-		//java.net.URL url = ResourceUtil.class.getResource(ResourceUtil.RES_PACKAGE + "/" + vcellvisitScript);
-		java.net.URL url = ResourceUtil.class.getResource(osi.getResourcePackage() + vcellvisitScript);
-		return new File(url.toURI());
-	}
-
-	  private static List<File> doSearch(String command[]) throws IOException{
+	private static List<File> doSearch(String command[]) throws IOException{
 	    Process process = Runtime.getRuntime().exec(command);
 	    BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));
 	    ArrayList<File> results = new ArrayList<File>();

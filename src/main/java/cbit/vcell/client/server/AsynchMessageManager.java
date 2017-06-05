@@ -19,6 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DataJobListenerHolder;
 
@@ -27,6 +28,8 @@ import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.MessageEvent;
+import cbit.rmi.event.PerformanceData;
+import cbit.rmi.event.PerformanceDataEntry;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
@@ -34,6 +37,7 @@ import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
+import edu.uchc.connjur.wb.ExecutionTrace;
 
 /**
  * {@link AsynchMessageManager} polls from {@link VCellConnection} to get remote messages. Remote Messages include the following:
@@ -47,7 +51,7 @@ import cbit.vcell.server.VCellConnection;
 public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener,DataJobListenerHolder {
     private static final long BASE_POLL_SECONDS = 3;
     private static final long ATTEMPT_POLL_SECONDS = 3;
-//	private static Logger lg = Logger.getLogger(AsynchMessageManager.class);
+	private static Logger lg = Logger.getLogger(AsynchMessageManager.class);
 
 	private EventListenerList listenerList = new EventListenerList();
     private ClientServerManager clientServerManager = null;
@@ -98,22 +102,27 @@ public void created(DataAccessException dae) {
 }
 private void poll( )  {
 	if (!bPoll.get()) {
-//		lg.trace("polling stopped");
+		if (lg.isDebugEnabled()){
+			lg.debug("polling stopped");
+		}
 		return;
 	}
-//	lg.trace("polling");
-//	boolean report = counter%50 == 0;
-//	long begin = 0;
-//	long end = 0;
+	
+	if (lg.isDebugEnabled()){
+		lg.debug("polling");
+	}
+	boolean report = counter%50 == 0;
+	long begin = 0;
+	long end = 0;
 	 //
     // ask remote message listener (really should be "message producer") for any queued events.
     //
     try {
     	MessageEvent[] queuedEvents = null;
-//    	if (report) {
-//	    	// time the call
-//		    begin = System.currentTimeMillis();
-//    	}
+    	if (report) {
+	    	// time the call
+		    begin = System.currentTimeMillis();
+    	}
 	    synchronized (this) {
 	    	if (!clientServerManager.isStatusConnected()) {
 	    		clientServerManager.attemptReconnect( );
@@ -122,9 +131,9 @@ private void poll( )  {
 		    pollTime = BASE_POLL_SECONDS;
 	    	queuedEvents = clientServerManager.getMessageEvents();
 		}
-//    	if (report) {
-//		    end = System.currentTimeMillis();
-//    	}
+    	if (report) {
+		    end = System.currentTimeMillis();
+    	}
 	    failureCount = 0; //this is skipped if the connection has failed:w
 	    // deal with events, if any
 	    if (queuedEvents != null) {
@@ -133,17 +142,17 @@ private void poll( )  {
 		    }
 	    }
 	    // report polling call performance
-//	    if (report) {
-//		    double duration = ((double)(end - begin)) / 1000;
-//	    	PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
-//			    this, null, new PerformanceData(
-//				    "AsynchMessageManager.poll()",
-//				    MessageEvent.POLLING_STAT,
-//				    new PerformanceDataEntry[] {new PerformanceDataEntry("remote call duration", Double.toString(duration))}
-//			    )
-//			);
-//			reportPerformanceMonitorEvent(performanceMonitorEvent);
-//	    }
+	    if (report) {
+		    double duration = ((double)(end - begin)) / 1000;
+	    	PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
+			    this, null, new PerformanceData(
+				    "AsynchMessageManager.poll()",
+				    MessageEvent.POLLING_STAT,
+				    new PerformanceDataEntry[] {new PerformanceDataEntry("remote call duration", Double.toString(duration))}
+			    )
+			);
+			reportPerformanceMonitorEvent(performanceMonitorEvent);
+	    }
     } catch (Exception exc) {
 	    System.out.println(">> polling failure << " + exc.getMessage());
 	    pollTime = ATTEMPT_POLL_SECONDS;
@@ -154,9 +163,9 @@ private void poll( )  {
 	    }
     }
     finally {
-//    	if (lg.isTraceEnabled( )) {
-//    		lg.trace(ExecutionTrace.justClassName(this) + " poll time " + pollTime + " seconds");
-//    	}
+    	if (lg.isDebugEnabled()) {
+    		lg.debug(ExecutionTrace.justClassName(this) + " poll time " + pollTime + " seconds");
+    	}
     	if (bPoll.get()){
     		schedule(pollTime);
     	}

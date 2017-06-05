@@ -93,8 +93,8 @@ public class GeneralConfigurationPanel extends JPanel {
 		// -----------------------------------------------------
 		String ddap  = ResourceUtil.getDownloadDirectory().getAbsolutePath();	// C:\Users\vasilescu\.vcell\download
 		String s2 = ResourceUtil.getLocalVisDataDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\visdata
-		String s4 = ResourceUtil.getSolversDirectory().getAbsolutePath();		// C:\Users\vasilescu\.vcell\solvers_DanDev_Version_5_3_build_99
-
+		String s4 = ResourceUtil.getLocalSolversDirectory().getAbsolutePath();	// C:\Program Files\VCell_Alpha\localsolvers\win64
+		
 		gridy++;
 		title = "&nbsp;&nbsp;&nbsp;Simulation Data&nbsp;&nbsp;&nbsp;";
 		JLabel l5 = new JLabel("<html>" + title + "</html>");

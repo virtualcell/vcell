@@ -15,6 +15,8 @@ import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,9 +47,9 @@ import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.vcell.client.ClientSimManager.ViewerType;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.ClientSimManager.ViewerType;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
@@ -71,6 +73,7 @@ import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SolverUtilities;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
@@ -755,19 +758,44 @@ private void newSimulation(final NetworkGenerationRequirements networkGeneration
  */
 private boolean canQuickRun(SolverTaskDescription taskDesc) {
 	if (taskDesc.isParallel())  {
+		System.err.println("SimulationListPanel.canQuickRun(): parallel solver not supported for local simulation");
 		quickPythonRunButton.setToolTipText("Parallel solver not supported");
 		quickNativeRunButton.setToolTipText("Parallel solver not supported");
 		return false;
 	}else if (taskDesc.getSolverDescription().supports(SolverFeature.Feature_ServerOnly)) {
+		System.err.println("SimulationListPanel.canQuickRun(): server-only feature required, local solver not supported");
 		quickPythonRunButton.setToolTipText("Not supported by selected solver");
 		quickNativeRunButton.setToolTipText("Not supported by selected solver");
 		return false;
 	}else if(taskDesc.getSimulation().getScanCount() > 1){
+		System.err.println("SimulationListPanel.canQuickRun(): parameter scan, local solver not supported");
 		quickPythonRunButton.setToolTipText("Not supported for parameter scans");
 		quickNativeRunButton.setToolTipText("Not supported for parameter scans");
 		return false;
 	}
-
+	if (!taskDesc.getSolverDescription().isJavaSolver()){
+		try {
+			File[] exes = SolverUtilities.getExes(taskDesc.getSolverDescription());
+			if (exes==null || exes.length==0){
+				System.err.println("SimulationListPanel.canQuickRun(): SolverUtilities.getExes("+taskDesc.getSolverDescription()+" returned no executable paths");
+				quickPythonRunButton.setToolTipText("Not available on this operating system");
+				quickNativeRunButton.setToolTipText("Not available on this operating system");
+				return false;
+			}
+			for (File exe : exes){
+				if (!exe.exists()){
+					System.err.println("SimulationListPanel.canQuickRun(): "+exe.getAbsolutePath()+" not found");
+					quickPythonRunButton.setToolTipText("Not available on this operating system");
+					quickNativeRunButton.setToolTipText("Not available on this operating system");
+					return false;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	System.out.println("SimulationListPanel.canQuickRun(): solver "+taskDesc.getSolverDescription()+" supported for local computation");
 	quickPythonRunButton.setToolTipText(QUICK_RUN_PYTHON_TOOL_TIP);
 	quickNativeRunButton.setToolTipText(QUICK_RUN_NATIVE_TOOL_TIP);
 	return true;

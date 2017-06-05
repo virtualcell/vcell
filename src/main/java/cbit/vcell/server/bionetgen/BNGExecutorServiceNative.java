@@ -13,21 +13,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.vcell.util.Executable2;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 
-import cbit.vcell.client.constants.VCellCodeVersion;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
-import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.VersionedLibrary;
 import cbit.vcell.solvers.BioNetGenExecutable;
 
 /**
@@ -36,13 +32,6 @@ import cbit.vcell.solvers.BioNetGenExecutable;
  * @author: Fei Gao
  */
 class BNGExecutorServiceNative implements BNGExecutorService {
-	private final static String RUN_NETWORK = "run_network";
-	private final static String EXE_SUFFIX; 
-	private final static String EXE_BNG; 
-	private final static String RES_EXE_BNG; 
-	// run_network is called from within BNG2.exe, so the extension is not controlled from here
-	private final static String EXE_RUN_NETWORK;
-	private final static String RES_EXE_RUN_NETWORK;
 
 	private final static String suffix_input = ".bngl";
 	/**
@@ -52,13 +41,8 @@ class BNGExecutorServiceNative implements BNGExecutorService {
 	private final static String RUN_NETWORK_DEFAULT_STRING = "Usage:";
 
 	/**
-	 * working directory for files, and sentinel for {@link #initialize()}
-	 */
-	private static File workingDir = null;
-	/**
 	 * binary go here; as of BioNetGen-2.2.6 BNG2 expects run_network to be in "bin" subdirectory
 	 */
-	private static File binDir;
 	private BioNetGenExecutable executable = null;
 	private final BNGInput bngInput;
 	private final Long timeoutDurationMS; // ignore if null, else gives time limit for process
@@ -67,21 +51,6 @@ class BNGExecutorServiceNative implements BNGExecutorService {
 	private boolean stopped = false;
 	private long startTime = System.currentTimeMillis();
 
-	private static File file_exe_bng = null;
-	private static File file_exe_run_network = null;
-	private static String runNetworkError = null; 
-	private static int[] returnCodes = null; 
-	static {
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
-		EXE_SUFFIX = osi.isWindows() ? ".exe" : "";
-		EXE_BNG = "BNG2" + EXE_SUFFIX;
-		//RES_EXE_BNG = ResourceUtil.RES_PACKAGE + "/" + EXE_BNG;
-		RES_EXE_BNG = osi.getResourcePackage() + EXE_BNG;
-		// run_network is called from within BNG2.exe, so the extension is not controlled from here
-		EXE_RUN_NETWORK =RUN_NETWORK  + (osi.isWindows() ? ".exe" : "");
-		RES_EXE_RUN_NETWORK = osi.getResourcePackage() + EXE_RUN_NETWORK;
-	}
-	
 	private static final Logger LG = Logger.getLogger(BNGExecutorServiceNative.class);
 
 /**
@@ -119,9 +88,9 @@ public BNGOutput executeBNG() throws BNGException {
 	BNGOutput bngOutput = null;
 	startTime = System.currentTimeMillis();
 
-	initialize();	// prepare executables and working directory
-	
+	File workingDir = null;
 	try {
+		workingDir = Files.createTempDirectory("Bng_working_").toFile();
 		File bngInputFile = null;
 		FileOutputStream fos = null;
 
@@ -145,8 +114,10 @@ public BNGOutput executeBNG() throws BNGException {
 //		System.out.println("BNGExecutorService.executeBNG(): input = \n"+bngInput.getInputString());
 		System.out.println("BNGExecutorService.executeBNG()\n");
 
+		File perlExe = ResourceUtil.getPerlExe();
+		String bngPerlFilePath = ResourceUtil.getBNG2_perl_file();
 		// run BNG
-		String[] cmd = new String[] {file_exe_bng.getAbsolutePath(), bngInputFile.getAbsolutePath()};
+		String[] cmd = new String[] {perlExe.getAbsolutePath(), bngPerlFilePath, bngInputFile.getAbsolutePath()};
 		//		executable = new org.vcell.util.Executable(cmd);
 		long timeoutMS = 0;
 		if (timeoutDurationMS != null){
@@ -154,7 +125,8 @@ public BNGOutput executeBNG() throws BNGException {
 		}
 		executable = new BioNetGenExecutable(cmd,timeoutMS, workingDir);
 		executable.inheritCallbacks(getCallbacks());
-		executable.start( returnCodes ); 
+		int[] expectedReturnCodes = new int[] { 0 };
+		executable.start( expectedReturnCodes ); 
 
 		String stdoutString; 
 		if (executable.getStatus() != org.vcell.util.ExecutableStatus.STOPPED) { 
@@ -165,7 +137,7 @@ public BNGOutput executeBNG() throws BNGException {
 		}
 		if (executable.getExitValue() == 1) {
 			String stderrString = executable.getStderrString();
-			if (stderrString.contains(RUN_NETWORK)) {
+			if (stderrString.contains("run_network")) {
 				stdoutString = "run_network not supported on this operating system; partial data may be available\n"
 						+ executable.getStdoutString();
 			}
@@ -176,9 +148,6 @@ public BNGOutput executeBNG() throws BNGException {
 		ArrayList<String> filecontents = new ArrayList<String>();
 
 		for (File file : files) {
-			if (file.equals(binDir)) {
-				continue;
-			}
 			String filename = file.getName();
 			if (LG.isDebugEnabled()) {
 				LG.debug("BNG executor trying to read " + filename);
@@ -197,68 +166,15 @@ public BNGOutput executeBNG() throws BNGException {
 		}
 		throw new BNGException(executable.getStderrString(),ex);
 	} finally {
-		File[] files = workingDir.listFiles();
-		for ( File file : files) {
-			if (!file.equals(binDir)) {
+		if (workingDir!=null){
+			File[] files = workingDir.listFiles();
+			for ( File file : files) {
 				file.delete( );
 			}
+			workingDir.delete();
 		}
 	}
 	return bngOutput;
-}
-
-/**
- * @throws BNGException if problem setting up executables / directory
- */
-private static synchronized void initialize() {
-	if (workingDir == null) {
-		try {
-			File bngHome = new File(ResourceUtil.getVcellHome(), "BioNetGen" + VCellCodeVersion.CURRENT_MAJOR + '-' + VCellCodeVersion.CURRENT_MINOR);
-			binDir = new File(bngHome,"bin"); //As of 2-2-6 BNG2 expects run_network to be in "bin" subdirectory, so just go with it
-			binDir.mkdirs();
-
-			workingDir = bngHome;//createTempDirectory(prefix, bngHome);	
-			System.out.println("BNG working directory is " + bngHome.getAbsolutePath());
-
-			file_exe_bng = new java.io.File(binDir, EXE_BNG);
-			file_exe_run_network = new java.io.File(binDir, EXE_RUN_NETWORK);
-			ResourceUtil.loadExecutable(EXE_BNG, VersionedLibrary.DEPENDENT_LIBS_BNG,binDir); 
-
-			if (!file_exe_bng.exists()) {
-				ResourceUtil.writeResourceToExecutableFile(RES_EXE_BNG, file_exe_bng);
-			}
-			if (!file_exe_run_network.exists()) {	
-				ResourceUtil.writeResourceToExecutableFile(RES_EXE_RUN_NETWORK, file_exe_run_network);
-			}
-			testRunNetwork();
-			Runnable r= ( )-> org.apache.commons.io.FileUtils.deleteQuietly(workingDir);
-			Runtime.getRuntime().addShutdownHook( new Thread(r)  );
-		} catch (IOException ioe) {
-			workingDir = null;
-			ioe.printStackTrace();
-			throw new BNGException("Can't setup BioNetGen ", ioe);
-		}
-	}
-}
-
-private static void testRunNetwork( ) {
-	Executable2 e2 = new Executable2(file_exe_run_network.getAbsolutePath());
-	try {
-		e2.start();
-		runNetworkError = e2.getStderrString();
-		if (runNetworkError.startsWith(RUN_NETWORK_DEFAULT_STRING)) {
-			//expected output, 
-			runNetworkError = null;
-			returnCodes = new int[]{0};
-			return;
-		}
-	} catch (ExecutableException e) {
-		runNetworkError = e.getMessage(); 
-		if (LG.isInfoEnabled() ) {
-			LG.info(file_exe_run_network + " test error output " + runNetworkError);
-		}
-	}
-	returnCodes = new int[]{0,1};
 }
 
 /**

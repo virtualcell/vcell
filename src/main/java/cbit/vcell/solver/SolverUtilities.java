@@ -18,8 +18,6 @@ import cbit.vcell.resource.ResourceUtil;
 
 public class SolverUtilities {
 
-	private static Map<SolverExecutable,File[]>  loaded = new Hashtable<SolverExecutable,File[]>( );
-
 	public static Expression substituteSizeAndNormalFunctions(Expression origExp, VariableDomain variableDomain) throws ExpressionException {
 		Expression exp = new Expression(origExp);
 		Set<FunctionInvocation> fiSet = SolverUtilities.getSizeFunctionInvocations(exp);
@@ -87,18 +85,14 @@ public class SolverUtilities {
 	public static File[] getExes(SolverDescription sd) throws IOException {
 		SolverExecutable se = sd.getSolverExecutable(); 
 		if (se != null) {
-			if (loaded.containsKey(se)) {
-				return loaded.get(se);
-			}
 			SolverExecutable.NameInfo nameInfos[] = se.getNameInfo(); 
 			File files[] = new File[nameInfos.length];
 			for (int i = 0; i < nameInfos.length; ++i) {
 				SolverExecutable.NameInfo ni = nameInfos[i];
-				File exe = ResourceUtil.loadSolverExecutable(ni.exeName, sd.versionedLibrary);
+				File exe = ResourceUtil.findSolverExecutable(ni.exeName);
 				System.getProperties().put(ni.propertyName,exe.getAbsolutePath());
 				files[i] = exe; 
 			}
-			loaded.put(se, files);
 			return files;
 		}
 		throw new UnsupportedOperationException("SolverDescription " + sd + " has no executable");

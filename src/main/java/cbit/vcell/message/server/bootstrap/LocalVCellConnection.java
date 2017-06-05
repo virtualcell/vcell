@@ -24,7 +24,6 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.MessageCollector;
 import cbit.rmi.event.MessageEvent;
-import cbit.rmi.event.MessageService;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimpleMessageCollector;
 import cbit.rmi.event.SimpleMessageService;
@@ -38,7 +37,6 @@ import cbit.vcell.server.PerformanceMonitoringFacility;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
-import cbit.vcell.server.VCellConnection.ExtraContext;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.LocalDataSetController;
 /**
@@ -89,7 +87,7 @@ public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog
 	this.exportServiceImpl.addExportListener(this);
 	this.dataSetControllerImpl.addDataJobListener(this);
 
-	performanceMonitoringFacility = new PerformanceMonitoringFacility(this.userLoginInfo.getUser(), sessionLog);	
+	performanceMonitoringFacility = new PerformanceMonitoringFacility(this.userLoginInfo.getUser());	
 }
 
 
