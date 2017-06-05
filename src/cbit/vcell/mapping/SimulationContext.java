@@ -985,7 +985,7 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  */
 public static final String IssueInsufficientIterations = "Max Iterations number may be insufficient.";
 public static final String IssueInsufficientMolecules = "Max Molecules / Species number may be insufficient.";
-public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boolean bIgnoreMathDescription) {
 //	issueContext = issueContext.newChildContext(ContextType.SimContext, this);
 	if(applicationType.equals(Application.RULE_BASED_STOCHASTIC)) {
 		for(ReactionRuleSpec rrs : getReactionContext().getReactionRuleSpecs()) {
@@ -1056,6 +1056,11 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			}
 		}
 	}
+	if (fieldBioEvents!=null){
+		for (BioEvent bioEvent : fieldBioEvents){
+			bioEvent.gatherIssues(issueContext, issueVector);
+		}
+	}
 	
 	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		// we're going to use network transformer to flatten (or we already did)
@@ -1076,7 +1081,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	}
 	getOutputFunctionContext().gatherIssues(issueContext, issueVector);
 	getMicroscopeMeasurement().gatherIssues(issueContext, issueVector);
-	if (getMathDescription()!=null){
+	if (getMathDescription()!=null && !bIgnoreMathDescription){
 		getMathDescription().gatherIssues(issueContext, issueVector);
 	}
 	
@@ -1087,7 +1092,6 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	}
 
 }
-
 
 /**
  * Gets the analysisTasks property (cbit.vcell.modelopt.AnalysisTask[]) value.
@@ -2501,8 +2505,8 @@ public MathMapping createNewMathMapping() {
 }
 
 public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGenerationRequirements networkGenReq) {
-	
-	DocumentValid.checkIssuesForErrors(this);
+	boolean bIgnoreMathDescription = true;
+	DocumentValid.checkIssuesForErrors(this, bIgnoreMathDescription);
 	
 	mostRecentlyCreatedMathMapping = null;
 	switch (applicationType) {

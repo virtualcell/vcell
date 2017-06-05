@@ -263,6 +263,7 @@ import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
+import cbit.vcell.model.NodeReference.Mode;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
@@ -1009,11 +1010,11 @@ private Diagram getDiagram(Element param, Model model) throws XmlParseException{
 	//Add Nodereferences (Shapes)
 	List<Element> children = param.getChildren();
 	if ( children.size()>0 ) {
-		NodeReference[] arraynoderef = new NodeReference[children.size()];
+		List<NodeReference> nodeRefList = new ArrayList<>();
 		for (int i=0 ; i<children.size() ; i++) {
-			arraynoderef[i] = getNodeReference(children.get(i) );
+			nodeRefList.add(getNodeReference(children.get(i)));
 		}
-		newdiagram.setNodeReferences( arraynoderef );
+		newdiagram.setNodeReferences(nodeRefList);
 	}
 	
 	return newdiagram;
@@ -5080,50 +5081,40 @@ public ModelUnitSystem getUnitSystem(Element unitSystemNode) {
  */
 private NodeReference getNodeReference(Element param) throws XmlParseException{
 	String tempname = param.getName();
-	NodeReference newnoderef = null;
+	NodeReference newNodeRef = null;
 	
+	int type = NodeReference.UNKNOWN_NODE;
+	String name = null;
 	//determine the type of nodereference to create
 	if  ( tempname.equalsIgnoreCase(XMLTags.SpeciesContextShapeTag) ) {
-		int type = NodeReference.SPECIES_CONTEXT_NODE;
-		String name = unMangle(param.getAttributeValue( XMLTags.SpeciesContextRefAttrTag ));
-		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
-
-		newnoderef = new NodeReference(type, name, location);
+		type = NodeReference.SPECIES_CONTEXT_NODE;
+		name = unMangle(param.getAttributeValue( XMLTags.SpeciesContextRefAttrTag ));
 	} else if  ( tempname.equalsIgnoreCase(XMLTags.SimpleReactionShapeTag) ) {
-		int type = NodeReference.SIMPLE_REACTION_NODE;
-		String name = unMangle(param.getAttributeValue( XMLTags.SimpleReactionRefAttrTag ));
-		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
-
-		newnoderef = new NodeReference(type, name, location);
+		type = NodeReference.SIMPLE_REACTION_NODE;
+		name = unMangle(param.getAttributeValue( XMLTags.SimpleReactionRefAttrTag ));
 	} else if  ( tempname.equalsIgnoreCase(XMLTags.FluxReactionShapeTag) ) {
-		int type = NodeReference.FLUX_REACTION_NODE;
-		String name = unMangle(param.getAttributeValue( XMLTags.FluxReactionRefAttrTag ));
-		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
-
-		newnoderef = new NodeReference(type, name, location);
+		type = NodeReference.FLUX_REACTION_NODE;
+		name = unMangle(param.getAttributeValue( XMLTags.FluxReactionRefAttrTag ));
 	} else if  ( tempname.equalsIgnoreCase(XMLTags.ReactionRuleShapeTag) ) {
-		int type = NodeReference.REACTION_RULE_NODE;
-		String name = unMangle(param.getAttributeValue( XMLTags.ReactionRuleRef2AttrTag ));
-		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
-
-		newnoderef = new NodeReference(type, name, location);
+		type = NodeReference.REACTION_RULE_NODE;
+		name = unMangle(param.getAttributeValue( XMLTags.ReactionRuleRef2AttrTag ));
 	} else if  ( tempname.equalsIgnoreCase(XMLTags.RuleParticipantFullShapeTag) || tempname.equalsIgnoreCase(XMLTags.RuleParticipantShapeTag) ) {
-		int type = NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE;
-		String name = unMangle(param.getAttributeValue( XMLTags.RuleParticipantRefAttrTag ));
-		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
-
-		newnoderef = new NodeReference(type, name, location);
+		type = NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE;
+		name = unMangle(param.getAttributeValue( XMLTags.RuleParticipantRefAttrTag ));
 	} else if  ( tempname.equalsIgnoreCase(XMLTags.RuleParticipantShortShapeTag) ) {
-		int type = NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE;
-		String name = unMangle(param.getAttributeValue( XMLTags.RuleParticipantRefAttrTag ));
-		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
-
-		newnoderef = new NodeReference(type, name, location);
+		type = NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE;
+		name = unMangle(param.getAttributeValue( XMLTags.RuleParticipantRefAttrTag ));
 	} else {
 		throw new XmlParseException("An unknown type was found " + tempname+",when processing noderefence!");
 	}
-	
-	return newnoderef;
+	String modeString = unMangle(param.getAttributeValue(XMLTags.NodeReferenceModeAttrTag));
+	NodeReference.Mode mode = NodeReference.Mode.none;
+	if(modeString != null) {
+		mode = Mode.fromValue(modeString);
+	}
+	java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
+	newNodeRef = new NodeReference(mode, type, name, location);
+	return newNodeRef;
 }
 
 
