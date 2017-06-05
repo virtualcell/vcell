@@ -429,6 +429,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		// param1: original index of the newly created species before repairing it
 		// param2: list of the indexes of the species resulting from the original after repairing
 		Map<String, List<String>> indexesMap = new LinkedHashMap<>();
+		
+		// some reactions may end up as identity reactions after corrections caused by anchoring
+		// for instance a transport xA -> yA may become xA -> xA after correction if A is anchored to x
+		// we make a list of these and get rid of them at the end
+		Set<BNGReaction> identityReactions = new HashSet<> ();
 
 		// as we validate and we add new species, we use this index to set their network index
 		// we can't get the indexes given to the newly generated species for granted, during correction we may 
@@ -657,8 +662,21 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 //				if(!message.isEmpty()) {
 //					consoleNotification(message);
 //				}
+				
+				if(needsRepairing && existingMatch != null) {
+					if(isIdentityReaction(r)) {
+						//System.out.println("Identity reaction detected after product correction: " + r);
+						identityReactions.add(r);
+					}
+				}
 			}		// end checking reactions for this species
 		}			// end all new species
+		
+		// we may end up with "identity" reactions, where a correction caused by anchoring results in xA -> xA
+		// we'll get rid of these
+		if(!identityReactions.isEmpty()) {	// we found some
+			newReactionsList.removeAll(identityReactions);
+		}
 		
 //		System.out.println("------------- Finished checking newly generated species for this iteration. Summary:");
 		System.out.println("   Added " + newSpeciesList.size() + " new species");
@@ -679,6 +697,29 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		CorrectedSR sr = new CorrectedSR(newSpeciesList, newReactionsList);
 		return sr;
 	}
+	
+	private static boolean isIdentityReaction(BNGReaction r) {
+		//System.out.println("check if we ended up with an identity reaction because of repairing");
+		if(r.getReactants().length != r.getProducts().length) {
+			return false;
+		}
+		Set<String> reactants = new HashSet<> ();
+		Set<String> products = new HashSet<> ();
+		for(BNGSpecies reactant : r.getReactants()) {
+			String rStr = reactant.getName();
+			reactants.add(rStr);
+		}
+		for(BNGSpecies product : r.getProducts()) {
+			String pStr = product.getName();
+			products.add(pStr);
+		}
+		reactants.removeAll(products);	// extract products from reactants
+		if(reactants.size() == 0) {		// they were identical
+			return true;				// it's identity reaction
+		}
+		return false;
+	}
+	
 	private static String findRuleProductCompartment(BNGSpecies s) {
 
 		boolean needsCorrection = false;
