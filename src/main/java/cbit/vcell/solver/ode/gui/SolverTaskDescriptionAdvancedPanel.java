@@ -47,8 +47,8 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.solvers.mb.gui.MovingBoundarySolverOptionsPanel;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solvers.mb.MovingBoundarySolverOptionsPanel;
 
 /**
  * Insert the class' description here.

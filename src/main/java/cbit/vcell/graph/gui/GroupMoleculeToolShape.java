@@ -1,4 +1,4 @@
-package cbit.vcell.graph;
+package cbit.vcell.graph.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -14,16 +14,16 @@ import javax.swing.Icon;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
-import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
+import cbit.vcell.graph.AbstractComponentShape;
 
-public class GroupRuleToolShape implements Icon {
+public class GroupMoleculeToolShape implements Icon {
 	
 	private enum State { normal, selected, disabled };
 
 	private final State state;
 	private final int diameter = 20;	// area occupied by the shape
 
-	public GroupRuleToolShape(State state) {
+	public GroupMoleculeToolShape(State state) {
 		super();
 		this.state = state;
 	}
@@ -56,14 +56,14 @@ public class GroupRuleToolShape implements Icon {
 			c1 = Color.red.darker();
 			c2 = Color.darkGray;
 			c3 = Color.gray;
-			c4 = Color.yellow;
+			c4 = AbstractComponentShape.componentMediumPalePink;
 			break;
 		case selected:
 			init = 1;
 			c1 = Color.red.darker().darker();
 			c2 = Color.darkGray;
 			c3 = Color.gray;
-			c4 = Color.yellow;
+			c4 = AbstractComponentShape.componentPalePink;
 			break;
 		case disabled:
 		default:
@@ -71,7 +71,7 @@ public class GroupRuleToolShape implements Icon {
 			c1 = Color.lightGray;
 			c2 = Color.lightGray;
 			c3 = Color.lightGray;
-			c4 = AbstractComponentShape.componentPaleYellow;
+			c4 = AbstractComponentShape.componentMediumPalePink;
 			break;
 		}
 		
@@ -84,25 +84,15 @@ public class GroupRuleToolShape implements Icon {
 		g2.draw(rect);
 
 		g2.setStroke(new BasicStroke(0.8f));
-		final int delta2 = 5;
-		xx += 7;				// the lower small rectangle
-		yy += 3;
+		final int delta2 = 7;
+		xx += 5;				// the lower small rectangle
+		yy += 5;
 		rect = new Rectangle2D.Double(xx, yy, delta2+1, delta2);
-		g2.setPaint(c4);
-		g2.fill(rect);			// overwrite some of the smaller rectangle
-		g2.setPaint(c3);
-		g2.draw(rect);
-
-		xx -= 2;				// the middle small rectangle
-		yy += 2;
-		rect = new Rectangle2D.Double(xx, yy, delta2+1, delta2);
-		g2.setPaint(c4);
-		g2.fill(rect);			// overwrite some of the smaller rectangle
 		g2.setPaint(c3);
 		g2.draw(rect);
 
 		xx -= 2;				// the upper small rectangle
-		yy += 2;
+		yy -= 2;
 		rect = new Rectangle2D.Double(xx, yy, delta2+1, delta2);
 		g2.setPaint(c4);
 		g2.fill(rect);			// overwrite some of the smaller rectangle
@@ -149,17 +139,17 @@ public class GroupRuleToolShape implements Icon {
 
 	public static void setMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new GroupRuleToolShape(State.normal);
-		Icon iconSelected = new GroupRuleToolShape(State.selected);
-		Icon iconDisabled = new GroupRuleToolShape(State.disabled);
-		button.setName("GroupRuleButton");
+		Icon iconNormal = new GroupMoleculeToolShape(State.normal);
+		Icon iconSelected = new GroupMoleculeToolShape(State.selected);
+		Icon iconDisabled = new GroupMoleculeToolShape(State.disabled);
+		button.setName("GroupMoleculeButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);
 		button.setDisabledIcon(iconDisabled);
 		button.setDisabledSelectedIcon(iconDisabled);
 		button.setFocusPainted(false);
 		button.setFocusable(false);
-		button.setToolTipText("Show Rules grouped by participants' similarity");
+		button.setToolTipText("Show rule Participants grouped by Molecules");
 	}
-	
+
 }

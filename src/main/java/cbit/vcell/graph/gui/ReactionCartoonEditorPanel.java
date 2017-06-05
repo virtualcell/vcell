@@ -47,7 +47,6 @@ import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.gui.CartoonTool.Mode;
 import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.graph.GroupMoleculeToolShape;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.ReactionCartoonFull;
 import cbit.vcell.graph.ReactionCartoonMolecule;

@@ -1,4 +1,4 @@
-package cbit.vcell.solvers.mb;
+package cbit.vcell.solvers.mb.gui;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -24,6 +24,7 @@ import org.vcell.util.gui.CollapsiblePanel;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solvers.mb.MovingBoundarySolverOptions;
 import cbit.vcell.solvers.mb.MovingBoundarySolverOptions.ExtrapolationMethod;
 import cbit.vcell.solvers.mb.MovingBoundarySolverOptions.RedistributionMode;
 import cbit.vcell.solvers.mb.MovingBoundarySolverOptions.RedistributionVersion;
