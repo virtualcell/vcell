@@ -890,7 +890,7 @@ private void autoUpdateSizes(DocumentEvent e) {
 
 private Coordinate computeDxDyDz(int numX, int numY, int numZ) {
 	Extent extent = getMeshSpecification().getGeometry().getExtent();
-	if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
+	if (simulation.getSolverTaskDescription().getSolverDescription().hasCellCenteredMesh()) {
 		return new Coordinate(extent.getX()/numX, extent.getY()/numY, extent.getZ()/numZ);
 	}
 	
