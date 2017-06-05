@@ -284,7 +284,7 @@ denied: job "6894" does not exist
 		LineStringBuilder lsb = new LineStringBuilder();
 
 		lsb.write("#!/usr/bin/bash");
-		String partition = "general";
+		String partition = "vcell";
 		lsb.write("#SBATCH --partition=" + partition);
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + htcLogDirString+jobName+".slurm.log");
