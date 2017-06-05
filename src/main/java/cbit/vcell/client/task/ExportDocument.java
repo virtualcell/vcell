@@ -342,6 +342,8 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				resultString = XmlHelper.exportCellML(mathModel, null);
 			} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_23)) {
 				resultString = XmlHelper.exportSBML(mathModel, 2, 3, 0, false, null, null);
+			} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_24)) {
+				resultString = XmlHelper.exportSBML(mathModel, 2, 4, 0, false, null, null);
 			} 
 			//Export a simulation to Smoldyn input file, if there are parameter scans
 			//in simulation, we'll export multiple Smoldyn input files.
