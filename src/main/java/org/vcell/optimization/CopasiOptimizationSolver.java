@@ -10,9 +10,12 @@
 
 package org.vcell.optimization;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 import org.jdom.Element;
+import org.vcell.optimization.thrift.OptProblem;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -40,10 +43,22 @@ public class CopasiOptimizationSolver {
 	
 	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask, CopasiOptSolverCallbacks optSolverCallbacks, MathMappingCallback mathMappingCallback) 
 							throws IOException, ExpressionException, OptimizationException {
-		try {		
+		try {
+//			File dir = new File("C:\\temp\\ggg");
+//			String prefix = "testing_"+Math.abs(new Random().nextInt(100));
+//			
+//			File sbmlFile = new File(dir,prefix+".sbml.xml");
+//			File dataFile = new File(dir,prefix+".csv");
+//			File thriftFile = new File(dir,prefix+".optprob");
+//			File optProblemXMLFile = new File(dir,prefix+".xml");
+//
+//			OptProblem optProblem = CopasiSerializationTest.makeOptProblem(parameterEstimationTask, sbmlFile, dataFile);
+//			CopasiSerializationTest.writeOptProblem(thriftFile, optProblem);
+			
 			Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask,mathMappingCallback);
 			String inputXML = XmlUtil.xmlToString(optProblemXML);
-			System.out.println(inputXML);
+			System.out.println(XmlUtil.beautify(inputXML));
+//			org.apache.commons.io.FileUtils.write(optProblemXMLFile, XmlUtil.beautify(inputXML));
 			String optResultsXML = solve(inputXML, optSolverCallbacks);
 			OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
 			//get ode solution by best estimates
