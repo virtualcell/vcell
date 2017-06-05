@@ -157,13 +157,14 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				}
 				if(pasteHelper[0].rxPartMapStruct != null){
 					//Convert rxPartMapStruct instances from cloned to pasteModel
-					HashMap<ReactionParticipant,Structure> new_rxPartMapStruct = new HashMap<>();
+					HashMap<String,HashMap<ReactionParticipant,Structure>> new_rxPartMapStruct = new HashMap<>();
 					for(int i=0;reactionStepsArrOrig!= null && i<reactionStepsArrOrig.length;i++){
-						for(ReactionParticipant rxPart:pasteHelper[0].rxPartMapStruct.keySet()){
+						new_rxPartMapStruct.put(reactionStepsArrOrig[i].getName(), new HashMap<ReactionParticipant,Structure>());
+						for(ReactionParticipant rxPart:pasteHelper[0].rxPartMapStruct.get(reactionStepsArrOrig[i].getName()).keySet()){
 							ReactionParticipant[] origRXParts = reactionStepsArrOrig[i].getReactionParticipants();
 							for(int j=0;j< origRXParts.length;j++){
 								if(origRXParts[j].getName().equals(rxPart.getName())){
-									new_rxPartMapStruct.put(origRXParts[j],pasteModel.getStructure(pasteHelper[0].rxPartMapStruct.get(rxPart).getName()));
+									new_rxPartMapStruct.get(reactionStepsArrOrig[i].getName()).put(origRXParts[j],pasteModel.getStructure(pasteHelper[0].rxPartMapStruct.get(reactionStepsArrOrig[i].getName()).get(rxPart).getName()));
 								}
 							}
 						}
@@ -339,10 +340,10 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				rxMapperPanel.setSize(widthcombo+widthlabels[0], height);
 				rxMapperPanel.setPreferredSize(new Dimension(widthcombo+widthlabels[0], height));
 				jScrollPane = new JScrollPane(rxMapperPanel);
-				jScrollPane.setPreferredSize(new Dimension(100,100));
+				jScrollPane.setPreferredSize(new Dimension(150,100));
 			}
 			if(rxMapperPanel.getComponentCount() != 0){
-				int result = DialogUtils.showComponentOKCancelDialog(requester, jScrollPane, "Select Compartments for RX Participants");
+				int result = DialogUtils.showComponentOKCancelDialog(requester, jScrollPane, "Assign Compartments for RX '"+copyFromRxParticipantArr[0].getReactionStep().getName()+"' Participants");
 				if(result != JOptionPane.OK_OPTION){
 					throw UserCancelException.CANCEL_GENERIC;
 				}
@@ -375,9 +376,9 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	}
 	public static class PasteHelper {
 		public Vector<Issue> issues;
-		public HashMap<ReactionParticipant,Structure> rxPartMapStruct;
+		public HashMap<String,HashMap<ReactionParticipant,Structure>> rxPartMapStruct;
 		public HashMap<BioModelEntityObject,BioModelEntityObject> reactionsAndSpeciesContexts;
-		public PasteHelper(Vector<Issue> issues,HashMap<ReactionParticipant, Structure> rxPartMapStruct,HashMap<BioModelEntityObject,BioModelEntityObject> reactionsAndSpeciesContexts) {
+		public PasteHelper(Vector<Issue> issues,HashMap<String,HashMap<ReactionParticipant,Structure>> rxPartMapStruct,HashMap<BioModelEntityObject,BioModelEntityObject> reactionsAndSpeciesContexts) {
 			this.issues = issues;
 			this.rxPartMapStruct = rxPartMapStruct;
 			this.reactionsAndSpeciesContexts = reactionsAndSpeciesContexts;
@@ -393,7 +394,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	 * @param pasteToStructure cbit.vcell.model.Structure
 	 * @param bNew boolean
 	 */
-	private static final PasteHelper pasteReactionSteps0(HashMap<ReactionParticipant,Structure> rxPartMapStructure,Component parent,IssueContext issueContext,
+	private static final PasteHelper pasteReactionSteps0(HashMap<String,HashMap<ReactionParticipant,Structure>> rxPartMapStructure,Component parent,IssueContext issueContext,
 			ReactionStep[] copyFromRxSteps,Model pasteToModel, Structure pasteToStructure,
 			boolean bNew,/*boolean bUseDBSpecies,*/
 			UserResolvedRxElements userResolvedRxElements) throws Exception {
@@ -463,14 +464,24 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			StructureTopology toStructureTopology = pasteToModel.getStructureTopology();
 			ReactionParticipant[] copyFromRxParticipantArr = copyFromReactionStep.getReactionParticipants();
 			if(rxPartMapStructure == null){//null during 'issues' trial
-				rxPartMapStructure =
-					askUserResolveMembraneConnections(parent, pasteToModel.getStructures(), currentStruct,fromRxnStruct, toRxnStruct,
-						copyFromRxParticipantArr, toStructureTopology, structTopology);
+				rxPartMapStructure = new HashMap<String,HashMap<ReactionParticipant,Structure>>();
+			}
+			if(rxPartMapStructure.get(copyFromReactionStep.getName()) == null){// Ask user to assign species to compartments for each reaction to be pasted
+				rxPartMapStructure.put(copyFromReactionStep.getName(),
+						askUserResolveMembraneConnections(parent, pasteToModel.getStructures(), currentStruct,fromRxnStruct, toRxnStruct,copyFromRxParticipantArr, toStructureTopology, structTopology));
 			}
 			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
 				Structure pasteToStruct = currentStruct;
 				if(toRxnStruct instanceof Membrane){
-					pasteToStruct = rxPartMapStructure.get(copyFromRxParticipantArr[i]);
+					pasteToStruct = rxPartMapStructure.get(copyFromReactionStep.getName()).get(copyFromRxParticipantArr[i]);
+//					if(pasteToStruct == null){
+//						for(ReactionParticipant myRXPart:rxPartMapStructure.get(copyFromReactionStep.getName()).keySet()){
+//							if(myRXPart.getSpeciesContext().getName().equals(copyFromRxParticipantArr[i].getSpeciesContext().getName())){
+//								pasteToStruct = rxPartMapStructure.get(copyFromReactionStep.getName()).get(myRXPart);
+//								break;
+//							}
+//						}
+//					}
 				}
 				// this adds the speciesContexts and species (if any) to the model)
 				String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
