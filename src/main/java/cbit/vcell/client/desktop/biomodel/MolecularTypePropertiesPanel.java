@@ -103,13 +103,13 @@ import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.gui.LargeShapePanel;
+import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.RuleParticipantSignature;
-import cbit.vcell.model.RuleParticipantSignature.Criteria;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 
@@ -602,7 +602,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			}
 
 			@Override
-			public Criteria getCriteria() {
+			public GroupingCriteria getCriteria() {
 				return null;
 			}
 

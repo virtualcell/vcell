@@ -584,7 +584,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		
 		reactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
 		reactionCartoonEditorPanel.addPropertyChangeListener(eventHandler);
-		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
+		reactionCartoonEditorPanel.getReactionCartoonFull().addPropertyChangeListener(eventHandler);
+		reactionCartoonEditorPanel.getReactionCartoonMolecule().addPropertyChangeListener(eventHandler);
+		reactionCartoonEditorPanel.getReactionCartoonRule().addPropertyChangeListener(eventHandler);
 //		cartoonEditorPanel  = new CartoonEditorPanelFixed();
 //		cartoonEditorPanel.getStructureCartoon().addPropertyChangeListener(eventHandler);
 		
@@ -722,9 +724,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.setDefaultRenderer(Kinetics.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(RbmKineticLaw.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(ModelProcessDynamics.class, tableRenderer);
-		
-		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
-		
+				
 		DefaultScrollTableCellRenderer tableCellRenderer = new DefaultScrollTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -1741,10 +1741,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		reactionCartoonEditorPanel.setModel(bioModel.getModel());
 		reactionCartoonEditorPanel.setStructureSuite(new AllStructureSuite(this));
-		bioModel.getRelationshipModel().addRelationShipListener(
-				reactionCartoonEditorPanel.getReactionCartoon());
-		reactionCartoonEditorPanel.getReactionCartoon().refreshRelationshipInfo(
-				bioModel.getRelationshipModel());
+		bioModel.getRelationshipModel().removeRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonFull());
+		bioModel.getRelationshipModel().removeRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonMolecule());
+		bioModel.getRelationshipModel().removeRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonRule());
+		bioModel.getRelationshipModel().addRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonFull());
+		bioModel.getRelationshipModel().addRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonMolecule());
+		bioModel.getRelationshipModel().addRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonRule());
+		reactionCartoonEditorPanel.getReactionCartoonFull().refreshRelationshipInfo(bioModel.getRelationshipModel());
+		reactionCartoonEditorPanel.getReactionCartoonMolecule().refreshRelationshipInfo(bioModel.getRelationshipModel());
+		reactionCartoonEditorPanel.getReactionCartoonRule().refreshRelationshipInfo(bioModel.getRelationshipModel());
 //		cartoonEditorPanel.setBioModel(bioModel);
 		reactionTableModel.setBioModel(bioModel);
 		structureTableModel.setBioModel(bioModel);

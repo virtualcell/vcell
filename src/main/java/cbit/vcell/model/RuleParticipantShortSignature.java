@@ -8,10 +8,15 @@ public class RuleParticipantShortSignature extends RuleParticipantSignature {
 		super();
 	}
 
+	@Override
+	public GroupingCriteria getGroupingCriteria() {
+		return GroupingCriteria.molecule;
+	}
+
 	public static RuleParticipantShortSignature fromReactionRuleParticipant(ReactionRuleParticipant rrParticipant, ModelCartoon modelCartoon) {
 		RuleParticipantShortSignature ruleParticipantSignature = new RuleParticipantShortSignature();
 		ruleParticipantSignature.structure = rrParticipant.getStructure();
-		ruleParticipantSignature.speciesPattern = rrParticipant.getSpeciesPattern();
+		ruleParticipantSignature.firstSpeciesPattern = rrParticipant.getSpeciesPattern();
 		ruleParticipantSignature.modelCartoon = modelCartoon;
 		return ruleParticipantSignature;
 	}

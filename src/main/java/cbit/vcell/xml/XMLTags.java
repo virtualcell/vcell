@@ -437,6 +437,7 @@ public class XMLTags {
     public final static String FluxReactionRefAttrTag = "FluxReactionRef";
     public final static String ReactionRuleRef2AttrTag = "ReactionRuleRef2AttrTag";
     public final static String RuleParticipantRefAttrTag = "RuleParticipantRefAttrTag";
+    public final static String NodeReferenceModeAttrTag = "NodeReferenceModeAttrTag";
     public final static String LocationXAttrTag = "LocationX";
     public final static String LocationYAttrTag = "LocationY";
 

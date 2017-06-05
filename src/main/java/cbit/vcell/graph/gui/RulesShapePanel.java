@@ -8,12 +8,12 @@ import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
 import org.vcell.model.rbm.RuleAnalysisReport;
 
 import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
+import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.ModelRuleFactory;
 import cbit.vcell.model.ModelRuleFactory.ModelRuleEntry;
 import cbit.vcell.model.ModelRuleFactory.ReactionRuleDirection;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.RuleParticipantSignature;
-import cbit.vcell.model.RuleParticipantSignature.Criteria;
 
 @SuppressWarnings("serial")
 public class RulesShapePanel extends LargeShapePanel {
@@ -155,7 +155,7 @@ public class RulesShapePanel extends LargeShapePanel {
 		return null;
 	}
 	@Override
-	public Criteria getCriteria() {
+	public GroupingCriteria getCriteria() {
 		return null;
 	}
 	

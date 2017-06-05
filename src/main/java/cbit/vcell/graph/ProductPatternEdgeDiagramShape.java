@@ -9,12 +9,13 @@
  */
 
 package cbit.vcell.graph;
+import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.model.ProductPattern;
 
 public class ProductPatternEdgeDiagramShape extends RuleParticipantEdgeDiagramShape {
 
-	public ProductPatternEdgeDiagramShape(ProductPattern product, ReactionRuleDiagramShape reactionRuleShape, 
+	public ProductPatternEdgeDiagramShape(ProductPattern product, ElipseShape reactionRuleShape, 
 			RuleParticipantSignatureDiagramShape ruleParticipantSignatureShape, GraphModel graphModel) {
 		super(product, reactionRuleShape, ruleParticipantSignatureShape, graphModel);
 	}

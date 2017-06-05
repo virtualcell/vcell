@@ -1,4 +1,4 @@
-package cbit.vcell.graph.gui;
+package cbit.vcell.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -14,16 +14,16 @@ import javax.swing.Icon;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
-import cbit.vcell.graph.AbstractComponentShape;
+import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
 
-public class GroupToolShapeIcon implements Icon {
+public class GroupMoleculeToolShape implements Icon {
 	
 	private enum State { normal, selected, disabled };
 
 	private final State state;
 	private final int diameter = 20;	// area occupied by the shape
 
-	public GroupToolShapeIcon(State state) {
+	public GroupMoleculeToolShape(State state) {
 		super();
 		this.state = state;
 	}
@@ -139,17 +139,17 @@ public class GroupToolShapeIcon implements Icon {
 
 	public static void setMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new GroupToolShapeIcon(State.normal);
-		Icon iconSelected = new GroupToolShapeIcon(State.selected);
-		Icon iconDisabled = new GroupToolShapeIcon(State.disabled);
-		button.setName("GroupButton");
+		Icon iconNormal = new GroupMoleculeToolShape(State.normal);
+		Icon iconSelected = new GroupMoleculeToolShape(State.selected);
+		Icon iconDisabled = new GroupMoleculeToolShape(State.disabled);
+		button.setName("GroupMoleculeButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);
 		button.setDisabledIcon(iconDisabled);
 		button.setDisabledSelectedIcon(iconDisabled);
 		button.setFocusPainted(false);
 		button.setFocusable(false);
-		button.setToolTipText("Show rule participants grouped by Molecules");
+		button.setToolTipText("Show rule Participants grouped by Molecules");
 	}
 
 }

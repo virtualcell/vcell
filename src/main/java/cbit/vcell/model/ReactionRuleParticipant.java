@@ -79,7 +79,7 @@ public abstract class ReactionRuleParticipant implements Displayable, ModelProce
 		return false;
 	}
 
-	public static boolean matchesSignature(ReactionRuleParticipant participant, RuleParticipantSignature signature, RuleParticipantSignature.Criteria crit) {
+	public static boolean matchesSignature(ReactionRuleParticipant participant, RuleParticipantSignature signature, GroupingCriteria crit) {
 		if(signature == null) {
 			return false;
 		}

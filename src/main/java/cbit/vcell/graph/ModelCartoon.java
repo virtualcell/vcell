@@ -111,7 +111,7 @@ implements java.beans.PropertyChangeListener, Model.Owner, RelationshipListener 
 		}
 	}
 
-	public void refreshRelationshipInfo(RelationshipModel relationshipModel) {
+	public final void refreshRelationshipInfo(RelationshipModel relationshipModel) {
 		for(RelationshipObject relationship : relationshipModel.getRelationshipObjects()) {
 			BioModelEntityObject bioModelEntity = relationship.getBioModelEntityObject();
 			Shape shape = getShapeFromModelObject(bioModelEntity);

@@ -12,23 +12,23 @@ import org.vcell.model.rbm.RuleAnalysisReport;
 
 import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.graph.ShapeModeInterface;
+import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.ModelRuleFactory;
 import cbit.vcell.model.ModelRuleFactory.ModelRuleEntry;
 import cbit.vcell.model.ModelRuleFactory.ReactionRuleDirection;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.RuleParticipantSignature;
-import cbit.vcell.model.RuleParticipantSignature.Criteria;
 
 @SuppressWarnings("serial")
 public class ParticipantSignatureShapePanel extends LargeShapePanel implements ShapeModeInterface {
 	
-	RuleParticipantSignature.Criteria crit = RuleParticipantSignature.Criteria.full;
+	GroupingCriteria crit = GroupingCriteria.full;
 	RuleParticipantSignature signature = null;
 	
-	public void setCriteria(Criteria crit) {
+	public void setCriteria(GroupingCriteria crit) {
 		this.crit = crit;
 	}
-	public RuleParticipantSignature.Criteria getCriteria() {
+	public GroupingCriteria getCriteria() {
 		return this.crit;
 	}
 	public void setSignature(RuleParticipantSignature signature) {

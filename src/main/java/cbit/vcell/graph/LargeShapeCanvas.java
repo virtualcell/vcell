@@ -11,11 +11,10 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 
-import cbit.vcell.graph.LargeShapeCanvas.WhatIsHighlighted;
 import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
+import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.RuleParticipantSignature;
-import cbit.vcell.model.RuleParticipantSignature.Criteria;
 
 public interface LargeShapeCanvas {
 
@@ -86,7 +85,7 @@ public interface LargeShapeCanvas {
 
 	RuleParticipantSignature getSignature();
 
-	Criteria getCriteria();
+	GroupingCriteria getCriteria();
 
 	Color getBackground();
 

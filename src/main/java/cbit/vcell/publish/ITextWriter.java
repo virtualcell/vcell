@@ -21,7 +21,6 @@ import java.awt.image.WritableRaster;
 import java.awt.print.PageFormat;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -64,10 +63,9 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.graph.ReactionCartoon;
+import cbit.vcell.graph.ReactionCartoonFull;
 import cbit.vcell.graph.StructureMappingCartoon;
 import cbit.vcell.graph.structures.AllStructureSuite;
-import cbit.vcell.graph.structures.MembraneStructureSuite;
-import cbit.vcell.graph.structures.SingleStructureSuite;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
@@ -404,7 +402,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 //	    if (model == null || !isValidResolutionSetting(resolution)) {
 //	    	throw new IllegalArgumentException("Invalid parameters for generating reactions image for  model: " + model.getName());
 //	    }
-		ReactionCartoon rcartoon = new ReactionCartoon();
+		ReactionCartoon rcartoon = new ReactionCartoonFull();
 		rcartoon.setModel(model);
 		StructureSuite structureSuite = new AllStructureSuite(new Model.Owner() {
 			@Override

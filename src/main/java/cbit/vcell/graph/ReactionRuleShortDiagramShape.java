@@ -20,25 +20,25 @@ import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
-import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionRuleShortSignature;
 
-public abstract class ReactionRuleDiagramShape extends ElipseShape {
-	ReactionRule reactionRule = null;
+public class ReactionRuleShortDiagramShape extends ElipseShape {
+	ReactionRuleShortSignature reactionRuleShortSignature = null;
 //	Area icon = null;
 	private static boolean bDisplayLabels = false;
 
 	private static final int height = 12;			// area considered "the inside" of the shape
 	private static final int width = 12;
-	private static final int circleDiameter = 8;	// size of the 2 small rectangles we use to depict the rule
-	private static final int displacement = 3;		// distance between the 2 small rectangles we use to depict the rule
+	private static final int circleDiameter = 7;	// size of the 2 small rectangles we use to depict the rule
+	private static final int displacement = 2;		// distance between the 2 small rectangles we use to depict the rule
 	// note that the 2 small rectangles occupy 8+3=11 pixels in each direction, so with height and width of 12 the "inside"
 	// area is actually 1 pixel larger (up and right) than it needs to be
 
 	String linkText = "";
 
-	public ReactionRuleDiagramShape(ReactionRule reactionRule, GraphModel graphModel) {
+	public ReactionRuleShortDiagramShape(ReactionRuleShortSignature reactionRuleShortSignature, GraphModel graphModel) {
 		super(graphModel);
-		this.reactionRule = reactionRule;
+		this.reactionRuleShortSignature = reactionRuleShortSignature;
 		defaultBG = java.awt.Color.yellow;
 		defaultFGselect = java.awt.Color.black;
 		backgroundColor = defaultBG;
@@ -59,7 +59,7 @@ public abstract class ReactionRuleDiagramShape extends ElipseShape {
 
 	@Override
 	public Object getModelObject() {
-		return reactionRule;
+		return reactionRuleShortSignature;
 	}
 
 	@Override
@@ -73,9 +73,9 @@ public abstract class ReactionRuleDiagramShape extends ElipseShape {
 		return getSpaceManager().getSizePreferred();
 	}
 
-	public ReactionRule getReactionRule() {
-		return reactionRule;
-	}
+//	public ReactionRule getReactionRule() {
+//		return reactionRuleShortSignature.getReactionRule();
+//	}
 
 	public final void refreshLayoutSelf() {
 		int centerX = getSpaceManager().getSize().width/2;
@@ -90,7 +90,7 @@ public abstract class ReactionRuleDiagramShape extends ElipseShape {
 
 	@Override
 	public void refreshLabel() {
-		setLabel(reactionRule.getDisplayName());
+		setLabel(reactionRuleShortSignature.getDisplayName());
 	}
 	
 	@Override
@@ -106,7 +106,7 @@ public abstract class ReactionRuleDiagramShape extends ElipseShape {
 
 		int offsetX = 0;
 		int offsetY = shapeHeight-circleDiameter;
-		for(int i=0; i<2; i++) {
+		for(int i=0; i<3; i++) {
 			int x = absPosX + offsetX+i*displacement;
 			int y = absPosY + offsetY-i*displacement;
 			RoundRectangle2D icon = new RoundRectangle2D.Double(x, y, circleDiameter, circleDiameter, circleDiameter/2, circleDiameter/2);

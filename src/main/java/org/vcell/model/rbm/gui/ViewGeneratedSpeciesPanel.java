@@ -61,10 +61,10 @@ import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
+import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.RuleParticipantSignature;
-import cbit.vcell.model.RuleParticipantSignature.Criteria;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -207,7 +207,7 @@ private void initialize() {
 			}
 			
 			@Override
-			public Criteria getCriteria() {
+			public GroupingCriteria getCriteria() {
 				return null;
 			}
 

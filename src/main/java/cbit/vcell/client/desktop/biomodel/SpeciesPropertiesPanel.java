@@ -111,9 +111,9 @@ import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.graph.gui.LargeShapePanel;
+import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.RuleParticipantSignature.Criteria;
 import cbit.vcell.model.common.VCellErrorMessages;
 import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProvider;
 import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProviderServiceLocator;
@@ -419,7 +419,7 @@ private void initialize() {
 			}
 
 			@Override
-			public Criteria getCriteria() {
+			public GroupingCriteria getCriteria() {
 				return null;
 			}
 

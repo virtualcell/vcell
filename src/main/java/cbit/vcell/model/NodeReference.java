@@ -17,6 +17,41 @@ import org.vcell.util.Matchable;
  * This type was created in VisualAge.
  */
 public class NodeReference implements java.io.Serializable, Matchable {
+	
+	public enum Mode {
+		none("none"),	// old style node where Mode is missing, only used when converting from old style
+		full("full"),
+		molecule("molecule"),
+		rule("rule");
+		
+		private final String value;
+		
+		Mode(String value) {
+			this.value = value;
+		}
+		public static Mode fromValue(String value) {
+			if (value != null) {
+				for (Mode mode : values()) {
+					if (mode.value.equals(value)) {
+						return mode;
+					}
+				}
+			}
+			return none;
+			// throw new IllegalArgumentException("Invalid color: " + value);
+		}
+		public String toValue() {
+			return value;
+		}
+//	To serialize:
+//		Mode mode = Mode.rule;  
+//		String savedValue = mode.toValue();  
+//		// save value
+//	To deserialize:
+//		Mode savedMode = Mode.fromValue(savedValue);
+	}
+	
+	public Mode mode = Mode.none;	// indicates to which list it belongs
 	public int nodeType = UNKNOWN_NODE;
 	public String name = null;
 	public java.awt.Point location = null;
@@ -33,21 +68,19 @@ public class NodeReference implements java.io.Serializable, Matchable {
 
 	public static final String nodeNames[] = { "unknown", VCMODL.SimpleReaction, VCMODL.FluxStep, VCMODL.SpeciesContextSpec, VCMODL.ReactionRule, 
 		VCMODL.RuleParticipantFullSignature, VCMODL.RuleParticipantShortSignature };
-/**
- * NodeReference constructor comment.
- */
-public NodeReference(int nodeType, String name, java.awt.Point location) {
-	this.nodeType = nodeType;
-	this.name = name;
-	this.location = new java.awt.Point(location);
-}
-/**
- * This method was created in VisualAge.
- * @param nodeTypeString java.lang.String
- * @param name java.lang.String
- * @param location java.awt.Point
- */
-public NodeReference(String nodeTypeString, String name, java.awt.Point location) throws IllegalArgumentException {
+
+	public NodeReference(Mode mode, NodeReference that) {	// used to multiply old style node to multiple lists
+		this(mode, that.nodeType, that.name, that.location);
+	}
+	
+	public NodeReference(Mode mode, int nodeType, String name, java.awt.Point location) {
+		this.mode = mode;
+		this.nodeType = nodeType;
+		this.name = name;
+		this.location = new java.awt.Point(location);
+	}
+
+public NodeReference(Mode mode, String nodeTypeString, String name, java.awt.Point location) throws IllegalArgumentException {
 	if (nodeNames[SIMPLE_REACTION_NODE].equalsIgnoreCase(nodeTypeString)){
 		this.nodeType = SIMPLE_REACTION_NODE;
 	}else if (nodeNames[FLUX_REACTION_NODE].equalsIgnoreCase(nodeTypeString)){
@@ -63,14 +96,11 @@ public NodeReference(String nodeTypeString, String name, java.awt.Point location
 	}else{
 		throw new IllegalArgumentException("nodeType '"+nodeTypeString+"' unknown");
 	}
+	this.mode = mode;
 	this.name = name;
 	this.location = new java.awt.Point(location);
 }
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj cbit.util.Matchable
- */
+
 public boolean compareEqual(Matchable obj) {
 	if (obj == this){
 		return true;
@@ -81,24 +111,21 @@ public boolean compareEqual(Matchable obj) {
 	
 	NodeReference nr = (NodeReference)obj;
 
+	if(mode != nr.mode) {
+		return false;
+	}
 	if (!Compare.isEqual(getName(),nr.getName())){
 		return false;
 	}
-	
 	if (!Compare.isEqual(getTypeString(),nr.getTypeString())){
 		return false;
 	}
-	
 	if (!location.equals(nr.location)){   // java.awt.point implements .equals() properly
 		return false;
 	}
-	
 	return true;
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
+
 public String getName() {
 	if(RULE_PARTICIPANT_SIGNATURE_FULL_NODE != nodeType && RULE_PARTICIPANT_SIGNATURE_SHORT_NODE != nodeType) {
 		return name;
@@ -119,24 +146,13 @@ public SpeciesPattern getSpeciesPattern() {
 public int getType() {
 	return nodeType;
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
 public String getTypeString() {
 	return nodeNames[nodeType];
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
 void setName(String newName) {
 	name = newName;
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
+
 public void write(java.io.PrintWriter pw) {
 	pw.println(getTypeString()+" \""+getName()+"\" "+location.x+" "+location.y);
 }

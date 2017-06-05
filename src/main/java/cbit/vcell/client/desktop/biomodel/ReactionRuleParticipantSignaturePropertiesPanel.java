@@ -90,6 +90,7 @@ import cbit.vcell.graph.gui.ParticipantSignatureShapePanel;
 import cbit.vcell.graph.gui.RulesShapePanel;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.graph.gui.ZoomShapeIcon.Sign;
+import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -392,8 +393,11 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 		if(signature == null) {
 			return;
 		}
-		ReactionCartoon rc = (ReactionCartoon) signature.getModelCartoon();
-		RuleParticipantSignature.Criteria crit = rc.getRuleParticipantGroupingCriteria();
+//		ReactionCartoon rc = (ReactionCartoon) signature.getModelCartoon();
+//		RuleParticipantSignature.Criteria crit = rc.getRuleParticipantGroupingCriteria();
+//		shapePanel.setCriteria(crit);
+		
+		GroupingCriteria crit = signature.getGroupingCriteria();
 		shapePanel.setCriteria(crit);
 		for(ReactionRule rr : bioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
 			boolean found = false;

@@ -93,11 +93,11 @@ import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.graph.gui.LargeShapePanel;
+import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.RbmObservable.ObservableType;
 import cbit.vcell.model.RbmObservable.Sequence;
-import cbit.vcell.model.RuleParticipantSignature.Criteria;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
 
@@ -477,7 +477,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 
 			@Override
-			public Criteria getCriteria() {
+			public GroupingCriteria getCriteria() {
 				return null;
 			}
 			

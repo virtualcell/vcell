@@ -18,6 +18,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 
 import cbit.gui.graph.EdgeShape;
+import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.vcell.model.ReactionParticipant;
@@ -32,7 +33,7 @@ public abstract class RuleParticipantEdgeDiagramShape extends EdgeShape {
 
 	private boolean bSibling = false;
 
-	public RuleParticipantEdgeDiagramShape(ReactionRuleParticipant reactionRuleParticipant, ReactionRuleDiagramShape reactionRuleShape,
+	public RuleParticipantEdgeDiagramShape(ReactionRuleParticipant reactionRuleParticipant, ElipseShape reactionRuleShape,
 			RuleParticipantSignatureDiagramShape ruleParticipantSignatureShape, GraphModel graphModel) {
 		super(ruleParticipantSignatureShape, reactionRuleShape, graphModel);
 		this.reactionRuleParticipant = reactionRuleParticipant;
