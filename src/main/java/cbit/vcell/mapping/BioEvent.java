@@ -326,7 +326,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		this.parameterContext = new ParameterContext(getNameScope(),parameterContextSettings, parameterContextSettings);
 		for (LocalParameter p : argBioEvent.parameterContext.getLocalParameters()){
 			try {
-				parameterContext.addLocalParameter(p.getName(), new Expression(p.getExpression()), p.getRole(), p.getUnitDefinition(), p.getDescription());
+				parameterContext.addLocalParameter(p.getName(), (p.getExpression()!=null?new Expression(p.getExpression()):null), p.getRole(), p.getUnitDefinition(), p.getDescription());
 			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
 				throw new RuntimeException("failed to copy parameters for BioEvent "+getName(),e);
