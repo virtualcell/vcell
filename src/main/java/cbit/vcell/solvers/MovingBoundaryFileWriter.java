@@ -219,7 +219,25 @@ private Element getXMLProblem() throws ExpressionException, MathException {
 		e.addContent(getnumNodesY(isize));
 	}
 
-	e.addContent(getfrontToNodeRatio());
+	Element childElement = new Element(MBTags.frontToNodeRatio);
+	childElement.setText(simulation.getSolverTaskDescription().getMovingBoundarySolverOptions().getFrontToNodeRatio() + "");
+	e.addContent(childElement);
+	
+	childElement = new Element(MBTags.redistributionMode);
+	childElement.setText(simulation.getSolverTaskDescription().getMovingBoundarySolverOptions().getRedistributionMode().getValue() + "");
+	e.addContent(childElement);
+	
+	childElement = new Element(MBTags.redistributionVersion);
+	childElement.setText(simulation.getSolverTaskDescription().getMovingBoundarySolverOptions().getRedistributionVersion().getValue() + "");
+	e.addContent(childElement);
+	
+	childElement = new Element(MBTags.redistributionFrequency);
+	childElement.setText(simulation.getSolverTaskDescription().getMovingBoundarySolverOptions().getRedistributionFrequency() + "");
+	e.addContent(childElement);
+	
+	childElement = new Element(MBTags.extrapolationMethod);
+	childElement.setText(simulation.getSolverTaskDescription().getMovingBoundarySolverOptions().getExtrapolationMethod().getValue() + "");
+	e.addContent(childElement);
 
 	{
 		SolverTaskDescription std = simulation.getSolverTaskDescription();
@@ -279,12 +297,6 @@ private Element getnumNodesY(ISize isize) {
 	return e;
 }
 
-private Element getfrontToNodeRatio() {
-	Element e = new Element(MBTags.frontToNodeRatio);
-	e.setAttribute("mode", "HARDCODED");
-	e.setText(MovingBoundarySolverOptions.DEFAULT_FRONT_TO_NODE_RATIO + "");
-	return e;
-}
 private Element getmaxTime(SolverTaskDescription std) {
 	Objects.requireNonNull(std);
 	Element e = new Element(MBTags.maxTime);
@@ -717,6 +729,12 @@ private class MBTags {
 	private static final String TEXT_REPORT 			= "textReport";
 	private static final String WIDTH 					= "width";
 	private static final String PRECISION 				= "precision";
+	
+	private static final String redistributionMode = "redistributionMode";
+	private static final String redistributionVersion = "redistributionVersion";
+	private static final String redistributionFrequency = "redistributionFrequency";
+	private static final String extrapolationMethod = "extrapolationMethod";
+	
 }
 
 

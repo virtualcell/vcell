@@ -280,4 +280,11 @@ public class VCML {
 	public final static String ActivateFeatureUnderDevelopment = "ActivateFeatureUnderDevelopment";
 	public final static String SmallVolfracThreshold = "SmallVolfracThreshold";
 	public final static String BlockFactor = "BlockFactor";
+	
+	public final static String MovingBoundarySolverOptions = "MovingBoundarySolverOptions";
+	public final static String RedistributionMode = "RedistributionMode";
+	public final static String RedistributionVersion = "RedistributionVersion";
+	public final static String FrontToNodeRatio = "FrontToNodeRatio";
+	public final static String RedistributionFrequency = "RedistributionFrequency";
+	public final static String ExtrapolationMethod = "ExtrapolationMethod";
 }

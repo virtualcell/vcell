@@ -28,6 +28,7 @@ import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VCML;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.solvers.mb.MovingBoundarySolverOptions;
 
 /**
  * Insert the class' description here.
@@ -74,6 +75,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private NFsimSimulationOptions nfsimSimulationOptions = null;
 	private SundialsPdeSolverOptions sundialsPdeSolverOptions = null;
 	private ChomboSolverSpec chomboSolverSpec = null;
+	private MovingBoundarySolverOptions movingBoundarySolverOptions = null;
 	/**
 	 * number of parallel processors to use for solution, if supported by
 	 * select solver
@@ -175,6 +177,14 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		} else {
 			chomboSolverSpec = null;
 		}
+		if (solverTaskDescription.movingBoundarySolverOptions != null)
+		{
+			movingBoundarySolverOptions = new MovingBoundarySolverOptions(solverTaskDescription.movingBoundarySolverOptions);
+		}
+		else
+		{
+			movingBoundarySolverOptions = null;
+		}
 		numProcessors = solverTaskDescription.numProcessors;
 	}
 	
@@ -275,6 +285,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				return false;
 			}
 			if (!Compare.isEqualOrNull(nfsimSimulationOptions,solverTaskDescription.nfsimSimulationOptions)) {
+				return false;
+			}
+			if (!Compare.isEqualOrNull(movingBoundarySolverOptions,solverTaskDescription.movingBoundarySolverOptions)) {
 				return false;
 			}
 			return numProcessors == solverTaskDescription.numProcessors;
@@ -574,6 +587,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 		buffer.append("\t" + VCML.NUM_PROCESSORS + " " + numProcessors + "\n");
 
+		if (movingBoundarySolverOptions != null) {
+			buffer.append(movingBoundarySolverOptions.getVCML()+"\n");
+		}
 		buffer.append(VCML.EndBlock+"\n");
 
 		return buffer.toString();
@@ -669,6 +685,13 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					}
 				} else {
 					chomboSolverSpec = null;
+				}
+				if (solverDescription.isMovingBoundarySolver()) {
+					if (movingBoundarySolverOptions == null && getSimulation() != null) {
+						movingBoundarySolverOptions = new MovingBoundarySolverOptions();
+					}
+				} else {
+					movingBoundarySolverOptions = null;
 				}
 			}
 		} catch (PropertyVetoException e) {
@@ -1051,7 +1074,12 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				{
 					token = tokens.nextToken();
 					numProcessors = Integer.parseInt(token);
-				} else {
+				}
+				else if (token.equalsIgnoreCase(VCML.MovingBoundarySolverOptions))
+				{
+					movingBoundarySolverOptions = new MovingBoundarySolverOptions(tokens);
+				}
+				else {
 					throw new DataAccessException("unexpected identifier " + token);
 				}
 			}
@@ -1423,6 +1451,14 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 
 	public NonspatialStochHybridOptions getStochHybridOpt() {
 		return fieldNonspatialStochHybridOpt;
+	}
+
+	public MovingBoundarySolverOptions getMovingBoundarySolverOptions() {
+		return movingBoundarySolverOptions;
+	}
+
+	public void setMovingBoundarySolverOptions(MovingBoundarySolverOptions mb) {
+		this.movingBoundarySolverOptions = mb;
 	}
 
 	//double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception

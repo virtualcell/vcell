@@ -319,6 +319,10 @@ import cbit.vcell.solver.SundialsPdeSolverOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solvers.mb.MovingBoundarySolverOptions;
+import cbit.vcell.solvers.mb.MovingBoundarySolverOptions.ExtrapolationMethod;
+import cbit.vcell.solvers.mb.MovingBoundarySolverOptions.RedistributionMode;
+import cbit.vcell.solvers.mb.MovingBoundarySolverOptions.RedistributionVersion;
 import cbit.vcell.units.VCUnitDefinition;
 
 
@@ -6564,6 +6568,11 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 			ChomboSolverSpec chombo = getChomboSolverSpec(solverTaskDesc, chomboElement, simulation.getMathDescription().getGeometry().getDimension());
 			solverTaskDesc.setChomboSolverSpec(chombo);
 		}
+		Element mbElement = param.getChild(XMLTags.MovingBoundarySolverOptionsTag, vcNamespace);		
+		if (mbElement != null) {
+			MovingBoundarySolverOptions mb = getMovingBoundarySolverOptions(solverTaskDesc, mbElement);
+			solverTaskDesc.setMovingBoundarySolverOptions(mb);
+		}
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e);
@@ -8126,5 +8135,34 @@ private	Convert<Boolean> convertBoolean = new Convert<Boolean>() {
 		} catch (ExpressionException e) {
 			throw new XmlParseException(e);
 		}
+	}
+	
+	private MovingBoundarySolverOptions getMovingBoundarySolverOptions(SolverTaskDescription solverTaskDesc,
+			Element mbElement) {
+		double frontToNodeRatio = parseDoubleWithDefault(mbElement, XMLTags.FrontToNodeRatioTag,
+				MovingBoundarySolverOptions.DEFAULT_FRONT_TO_NODE_RATIO);
+		int redistributionFrequency = parseIntWithDefault(mbElement, XMLTags.RedistributionFrequencyTag,
+				MovingBoundarySolverOptions.DEFAULT_REDISTRIBUTION_FREQUENCY);
+
+		RedistributionMode redistributionMode = RedistributionMode.FULL_REDIST;
+		Element child = mbElement.getChild(XMLTags.RedistributionModeTag, vcNamespace);
+		if (child != null) {
+			String text = child.getText();
+			redistributionMode = RedistributionMode.valueOf(text);
+		}
+		RedistributionVersion redistributionVersion = RedistributionVersion.EQUI_BOND_REDISTRIBUTE;
+		child = mbElement.getChild(XMLTags.RedistributionVersionTag, vcNamespace);
+		if (child != null) {
+			String text = child.getText();
+			redistributionVersion = RedistributionVersion.valueOf(text);
+		}
+		ExtrapolationMethod extrapolationMethod = ExtrapolationMethod.NEAREST_NEIGHBOR;
+		child = mbElement.getChild(XMLTags.ExtrapolationMethodTag, vcNamespace);
+		if (child != null) {
+			String text = child.getText();
+			extrapolationMethod = ExtrapolationMethod.valueOf(text);
+		}
+		MovingBoundarySolverOptions mb = new MovingBoundarySolverOptions(frontToNodeRatio, redistributionMode, redistributionVersion, redistributionFrequency, extrapolationMethod);
+		return mb;
 	}
 }

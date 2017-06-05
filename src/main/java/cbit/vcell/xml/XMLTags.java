@@ -789,5 +789,13 @@ public class XMLTags {
   
   //Parallel processing
   public final static String NUM_PROCESSORS = "NumberProcessors";
+  
+  	// Moving Boundary
+	public final static String MovingBoundarySolverOptionsTag = "MovingBoundarySolverOptions";
+	public final static String RedistributionModeTag = "RedistributionMode";
+	public final static String RedistributionVersionTag = "RedistributionVersion";
+	public final static String FrontToNodeRatioTag = "FrontToNodeRatio";
+	public final static String RedistributionFrequencyTag = "RedistributionFrequency";
+	public final static String ExtrapolationMethodTag = "ExtrapolationMethod";
 
 }

@@ -279,6 +279,7 @@ import cbit.vcell.solver.SundialsPdeSolverOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solvers.mb.MovingBoundarySolverOptions;
 import cbit.vcell.units.VCUnitDefinition;
 
 /**
@@ -4768,6 +4769,11 @@ private Element getXML(SolverTaskDescription param) {
 		Element chomboElement = getXML(chomboSolverSpec);
 		solvertask.addContent(chomboElement);
 	}
+	MovingBoundarySolverOptions mb = param.getMovingBoundarySolverOptions();
+	if (mb != null) {
+		Element e = getXML(mb);
+		solvertask.addContent(e);
+	}
 	
 	Element numProcessors= new Element(XMLTags.NUM_PROCESSORS);
 	numProcessors.setText(Integer.toString(param.getNumProcessors()));
@@ -5147,6 +5153,31 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 		return chomboElement;
 	}
 
+	private Element getXML(MovingBoundarySolverOptions movingBoundarySolverOptions) {
+		Element mbElement = new Element(XMLTags.MovingBoundarySolverOptionsTag);
+		
+		Element frontToNodeRatio = new Element(XMLTags.FrontToNodeRatioTag);
+		frontToNodeRatio.setText(movingBoundarySolverOptions.getFrontToNodeRatio() + "");
+		mbElement.addContent(frontToNodeRatio);
+		
+		Element redistMode = new Element(XMLTags.RedistributionModeTag);
+		redistMode.setText(movingBoundarySolverOptions.getRedistributionMode().toString());
+		mbElement.addContent(redistMode);
+		
+		Element redistVersion = new Element(XMLTags.RedistributionVersionTag);
+		redistVersion.setText(movingBoundarySolverOptions.getRedistributionVersion().toString());
+		mbElement.addContent(redistVersion);
+		
+		Element redistFrequency = new Element(XMLTags.RedistributionFrequencyTag);
+		redistFrequency.setText(movingBoundarySolverOptions.getRedistributionFrequency() + "");
+		mbElement.addContent(redistFrequency);
+		
+		Element extrapMethod = new Element(XMLTags.ExtrapolationMethodTag);
+		extrapMethod.setText(movingBoundarySolverOptions.getExtrapolationMethod() + "");
+		mbElement.addContent(extrapMethod);
+		
+		return mbElement;
+	}
 /*
 //For rateRuleVariables in model
 public Element getXML(RateRuleVariable[] rateRuleVars) throws XmlParseException{

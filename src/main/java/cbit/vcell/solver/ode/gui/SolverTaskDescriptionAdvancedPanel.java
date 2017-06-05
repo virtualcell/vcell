@@ -48,6 +48,7 @@ import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solvers.mb.MovingBoundarySolverOptionsPanel;
 
 /**
  * Insert the class' description here.
@@ -93,6 +94,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private JButton sensitivityAnalysisHelpButton;
 	private UnitInfo unitInfo;
 	private ChomboDeveloperToolsPanel chomboDeveloperToolsPanel;
+	private MovingBoundarySolverOptionsPanel movingBoundarySolverOptionsPanel;
 
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -834,6 +836,16 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSmoldynSimulationOptionsPanel(), gbc);
+		
+		gridy ++;
+		movingBoundarySolverOptionsPanel = new MovingBoundarySolverOptionsPanel();
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(movingBoundarySolverOptionsPanel, gbc);
 
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -949,6 +961,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			getTimeBoundsPanel().setTimeBounds(getTornOffSolverTaskDescription().getTimeBounds());
 			getChomboTimeBoundsPanel().setSolverTaskDescription(getTornOffSolverTaskDescription());
 			getChomboDeveloperToolsPanel().setSolverTaskDescription(getTornOffSolverTaskDescription());
+			movingBoundarySolverOptionsPanel.setSolverTaskDescription(getTornOffSolverTaskDescription());
 			updateSensitivityAnalysisComboBox();
 			firePropertyChange("solverTaskDescription", oldValue, newValue);
 			// user code begin {1}
@@ -1012,6 +1025,7 @@ private void refresh() {
 		getChomboTimeBoundsPanel().setVisible(false);
 		getChomboDeveloperToolsPanel().setVisible(false);
 	}
+	movingBoundarySolverOptionsPanel.setVisible(getSolverTaskDescription().getSolverDescription().isMovingBoundarySolver());
 }
 
 private javax.swing.JButton getQuestionButton() {
