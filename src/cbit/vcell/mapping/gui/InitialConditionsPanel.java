@@ -369,8 +369,7 @@ private ButtonGroup getButtonGroup()
 private void updateTopScrollPanel()
 {
 	switch (getSimulationContext().getApplicationType()){
-	case NETWORK_STOCHASTIC:
-	case RULE_BASED_STOCHASTIC:
+	case NETWORK_STOCHASTIC: {
 		getRadioButtonAndCheckboxPanel().setVisible(true);
 		boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
 		getConcentrationRadioButton().setSelected(bUsingConcentration);
@@ -379,6 +378,16 @@ private void updateTopScrollPanel()
 		getRandomizeInitCondnCheckbox().setVisible(getSimulationContext().getGeometry().getDimension() == 0);
 		getRandomizeInitCondnCheckbox().setSelected(getSimulationContext().isRandomizeInitCondition());
 		break;
+	}
+	case RULE_BASED_STOCHASTIC: {
+		getRadioButtonAndCheckboxPanel().setVisible(true);
+		boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
+		getConcentrationRadioButton().setSelected(bUsingConcentration);
+		getAmountRadioButton().setSelected(!bUsingConcentration);
+		// ' make randomizeInitialCondition' checkBox invisible for now
+		getRandomizeInitCondnCheckbox().setVisible(false);
+		break;
+	}
 	default:{
 		getRadioButtonAndCheckboxPanel().setVisible(false);
 		break;

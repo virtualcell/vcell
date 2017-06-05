@@ -1527,7 +1527,14 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 		simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "true");
 	}
 	final boolean ruleBased = param.getApplicationType() == SimulationContext.Application.RULE_BASED_STOCHASTIC; 
-	setBooleanAttribute(simulationcontext,XMLTags.RuleBasedAttrTag, ruleBased); 
+	setBooleanAttribute(simulationcontext,XMLTags.RuleBasedAttrTag, ruleBased);
+	if(ruleBased) {
+		setBooleanAttribute(simulationcontext, XMLTags.ConcentrationAttrTag, param.isUsingConcentration());
+		if(param.getGeometry().getDimension() == 0) {
+			// we don't use it yet but we do propagate it
+			setBooleanAttribute(simulationcontext, XMLTags.RandomizeInitConditionTag,param.isRandomizeInitCondition());
+		}
+	}
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientIterationsTag,param.isInsufficientIterations());
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientMaxMoleculesTag,param.isInsufficientMaxMolecules());
 	NetworkConstraints constraints = param.getNetworkConstraints();

@@ -5831,6 +5831,13 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	}
 	if ((param.getAttributeValue(XMLTags.RuleBasedAttrTag)!= null) && (param.getAttributeValue(XMLTags.RuleBasedAttrTag).equals("true"))){
 		bRuleBased = true;
+		if((param.getAttributeValue(XMLTags.ConcentrationAttrTag)!= null) && (param.getAttributeValue(XMLTags.ConcentrationAttrTag).equals("false"))) {
+			bUseConcentration = false;
+		}
+		if((param.getAttributeValue(XMLTags.RandomizeInitConditionTag)!= null) && (param.getAttributeValue(XMLTags.RandomizeInitConditionTag).equals("true"))) {
+			// we propagate the flag but we don't use it for now
+			bRandomizeInitCondition = true;
+		}
 	}
 	//Retrieve Geometry
 	Geometry newgeometry = null;
