@@ -13,6 +13,7 @@ from __builtin__ import isinstance
 from vcellopt.ttypes import CopasiOptimizationMethod
 from vcellopt.ttypes import CopasiOptimizationParameter
 from vcellopt.ttypes import OptimizationParameterType
+from vcellopt.ttypes import OptimizationParameterDataType
 from vcellopt.ttypes import OptProblem
 from vcellopt.ttypes import ParameterDescription
 from vcellopt.ttypes import ReferenceVariable
@@ -105,8 +106,9 @@ enum OptimizationParameterType {
 	Pf
 }
 struct CopasiOptimizationParameter {
-	1: required OptimizationParameterType dataType;
+	1: required OptimizationParameterType paramType;
 	2: required double value;
+	3: required OptimizationParameterDataType dataType;
 }
 typedef list<CopasiOptimizationParameter> CopasiOptimizationParameterList
 struct CopasiOptimizationMethod {
@@ -236,6 +238,7 @@ struct OptProblem {
             fitItem.setStartValue(parameterDescription.initialValue)
             fitItem.setLowerBound(COPASI.CCopasiObjectName(str(parameterDescription.minValue)))
             fitItem.setUpperBound(COPASI.CCopasiObjectName(str(parameterDescription.maxValue)))
+
             # todo: what about scale?
             # add the fit item to the correct parameter group
             optimizationItemGroup.addParameter(fitItem)
@@ -261,17 +264,27 @@ struct OptProblem {
         copasiOptimizationParameterList = optProblem.optimizationMethod.optimizationParameterList
         assert(isinstance(copasiOptimizationParameterList, list))
         size = len(copasiOptimizationParameterList)
+
         for optParameter in copasiOptimizationParameterList:
             assert(isinstance(optParameter,CopasiOptimizationParameter))
-            print methodParamDict[optParameter.dataType]
-            fitParameter = fitMethod.getParameter(methodParamDict[optParameter.dataType])
-            assert (isinstance(fitParameter, COPASI.CCopasiParameter))
-            fitParameter.setDblValue(optParameter.value)
+            print methodParamDict[optParameter.paramType]
+            fitMethod.removeParameter(methodParamDict[optParameter.paramType])
+            if (optParameter.dataType == OptimizationParameterDataType.INT):
+                fitMethod.addParameter(methodParamDict[optParameter.paramType],COPASI.CCopasiParameter.INT)
+                fitParameter = fitMethod.getParameter(methodParamDict[optParameter.dataType])
+                assert (isinstance(fitParameter, COPASI.CCopasiParameter))
+                fitParameter.setIntValue(int(optParameter.value))
+            else:
+                fitMethod.addParameter(methodParamDict[optParameter.paramType],COPASI.CCopasiParameter.DOUBLE)
+                fitParameter = fitMethod.getParameter(methodParamDict[optParameter.dataType])
+                assert (isinstance(fitParameter, COPASI.CCopasiParameter))
+                fitParameter.setDblValue(optParameter.value)
+
         # --------------------------------------------------------------------------------------
         for i in range(0, optProblem.numberOfOptimizationRuns):
             result = True
             print ("This can take some time...")
-            result = fitTask.processWithOutputFlags(True, COPASI.CCopasiTask.NO_OUTPUT)
+            result = fitTask.processWithOutputFlags(True, COPASI.CCopasiTask.ONLY_TIME_SERIES)  # NO_OUTPUT
             if result == False:
                 sys.stderr.write("An error occured while running the Parameter estimation.\n")
                 dataModel.saveModel('c:\\temp\\ggg\\test.cps', True)
@@ -319,7 +332,8 @@ struct OptProblem {
             text = "parameter name=\"" + paramName + "\" bestValue=\"" + str(paramValue) + "\""
             ET.SubElement(doc, text)
         tree = ET.ElementTree(root)
-        tree.write("c:\\temp\\ggg\\myresults.xml")
+        tree.write(args.resultfile)
+        #tree.write("c:\\temp\\ggg\\myresults.xml")
 
     except:
         e_info = sys.exc_info()

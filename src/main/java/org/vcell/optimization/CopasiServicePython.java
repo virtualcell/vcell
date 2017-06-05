@@ -5,17 +5,28 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.vcell.optimization.thrift.CopasiOptimizationMethod;
 import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.optimization.thrift.OptimizationMethodType;
+import org.vcell.optimization.thrift.OptimizationParameterDataType;
 import org.vcell.optimization.thrift.OptimizationParameterType;
 import org.vcell.optimization.thrift.ParameterDescription;
 import org.vcell.optimization.thrift.ReferenceVariable;
 import org.vcell.optimization.thrift.ReferenceVariableType;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
+import org.vcell.util.Executable2;
+import org.vcell.util.ExecutableException;
+import org.vcell.util.IExecutable;
+import org.vcell.util.PropertyLoader;
+import org.vcell.vis.vismesh.thrift.VisMesh;
+import org.vcell.vis.vtk.VisMeshUtils;
+import org.vcell.vis.vtk.VtkService;
+import org.vcell.vis.vtk.VtkServicePython;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.mapping.SimulationContext;
@@ -30,8 +41,40 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.ExpressionException;
 
-public class CopasiSerializationTest {
+public class CopasiServicePython {
 	
+	public static CopasiServicePython copasiService = null;
+	protected static final Logger lg = Logger.getLogger(VtkService.class);
+
+	private static final String PYTHON_MODULE_PATH;
+	/**
+	 * path to python exe or wrapper
+	 */
+	private static final String PYTHON_EXE_PATH;
+	/**
+	 * path to python script
+	 */
+	private static final String VIS_TOOL;
+	//These aren't going to change, so just read once
+	static {
+		String pm = null;
+		String pe = "python";
+		String pv = "visTool";
+		try {
+			pm = PropertyLoader.getProperty(PropertyLoader.VTK_PYTHON_MODULE_PATH, null);
+			pe = PropertyLoader.getProperty(PropertyLoader.VTK_PYTHON_EXE_PATH, pe);
+			pv = PropertyLoader.getProperty(PropertyLoader.VIS_TOOL, pv);
+		}
+		catch (Exception e){ //make fail safe
+			lg.warn("error setting PYTHON_PATH",e);
+		}
+		finally {
+			PYTHON_MODULE_PATH = pm;
+			PYTHON_EXE_PATH = pe;
+			VIS_TOOL=pv;
+		}
+	}
+
 	public static void writeOptProblem(File optProblemFile,  OptProblem optProblem) throws IOException {
 		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
 		try {
@@ -111,53 +154,69 @@ public class CopasiSerializationTest {
 			org.vcell.optimization.thrift.CopasiOptimizationParameter p = new org.vcell.optimization.thrift.CopasiOptimizationParameter();
 			p.setValue(optParam.getValue());
 			org.vcell.optimization.thrift.OptimizationParameterType optParmType = null;
+			org.vcell.optimization.thrift.OptimizationParameterDataType optDataType = null;
 			switch(optParam.getType()) {
 				case Cooling_Factor:
 					optParmType = OptimizationParameterType.Cooling_Factor;
+					optDataType = OptimizationParameterDataType.DOUBLE;
 					break;
 				case IterationLimit:
 					optParmType = OptimizationParameterType.IterationLimit;
+					optDataType = OptimizationParameterDataType.INT;
 					break;
 				case Number_of_Generations:
 					optParmType = OptimizationParameterType.Number_of_Generations;
+					optDataType = OptimizationParameterDataType.INT;
 					break;
 				case Number_of_Iterations:
 					optParmType = OptimizationParameterType.Number_of_Iterations;
+					optDataType = OptimizationParameterDataType.INT;
 					break;
 				case Pf:
 					optParmType = OptimizationParameterType.Pf;
+					optDataType = OptimizationParameterDataType.DOUBLE;
 					break;
 				case Population_Size:
 					optParmType = OptimizationParameterType.Population_Size;
+					optDataType = OptimizationParameterDataType.INT;
 					break;
 				case Random_Number_Generator:
 					optParmType = OptimizationParameterType.Random_Number_Generator;
+					optDataType = OptimizationParameterDataType.INT;
 					break;
 				case Rho:
 					optParmType = OptimizationParameterType.Rho;
+					optDataType = OptimizationParameterDataType.DOUBLE;
 					break;
 				case Scale:
 					optParmType = OptimizationParameterType.Scale;
+					optDataType = OptimizationParameterDataType.DOUBLE;
 					break;
 				case Seed:
 					optParmType = OptimizationParameterType.Seed;
+					optDataType = OptimizationParameterDataType.INT;
 					break;
 				case Start_Temperature:
 					optParmType = OptimizationParameterType.Start_Temperature;
+					optDataType = OptimizationParameterDataType.DOUBLE;
 					break;
 				case Std_Deviation:
 					optParmType = OptimizationParameterType.Std_Deviation;
+					optDataType = OptimizationParameterDataType.DOUBLE;
 					break;
 				case Swarm_Size:
 					optParmType = OptimizationParameterType.Swarm_Size;
+					optDataType = OptimizationParameterDataType.INT;
 					break;
 				case Tolerance:
 					optParmType = OptimizationParameterType.Tolerance;
+					optDataType = OptimizationParameterDataType.DOUBLE;
 					break;
 				default:
 					throw new RuntimeException("unsupported parameter type :"+optParam.getType().name()+" in COPASI optimization solver");
 			}
-			p.setDataType(optParmType);
+			p.setParamType(optParmType);
+			p.setDataType(optDataType);
 			thriftOptMethod.addToOptimizationParameterList(p);
 		}
 		optProblem.setOptimizationMethod(thriftOptMethod);
@@ -165,6 +224,32 @@ public class CopasiSerializationTest {
 		return optProblem;
 	}
 
+	public static void runCopasiPython(File copasiOptProblemFile, File copasiResultsFile) throws IOException {
+		//It's 2015 -- forward slash works for all operating systems
+		String[] cmd = new String[] { PYTHON_EXE_PATH,VIS_TOOL+"/optService.py",copasiOptProblemFile.getAbsolutePath(), copasiResultsFile.getAbsolutePath()};
+		IExecutable exe = prepareExecutable(cmd);
+		try {
+			exe.start( new int[] { 0 });
+			if (exe.getExitValue() != 0){
+				throw new RuntimeException("copasi python solver (optService.py) failed with return code "+exe.getExitValue()+": "+exe.getStderrString());
+			}
+		} catch (ExecutableException e) {
+			e.printStackTrace();
+			throw new RuntimeException("optService.py invocation failed: "+e.getMessage(),e);
+		}
+	}
+
+	private static IExecutable prepareExecutable(String[] cmd) {
+		if (lg.isInfoEnabled()) {
+			lg.info("python command string:" + StringUtils.join(cmd," "));
+		}
+		System.out.println("python command string:" + StringUtils.join(cmd," "));
+		Executable2 exe = new Executable2(cmd);
+		if (PYTHON_MODULE_PATH != null) {
+			exe.addEnvironmentVariable("PYTHONPATH", PYTHON_MODULE_PATH);
+		}
+		return exe;
+	}
 
 	public static void main(String[] args) {
 		try {

@@ -44,10 +44,17 @@ enum OptimizationParameterType {
 	Pf
 }
 
-struct CopasiOptimizationParameter {
-	1: required OptimizationParameterType dataType;
-	2: required double value;
+enum OptimizationParameterDataType {
+	INT,
+	DOUBLE
 }
+
+struct CopasiOptimizationParameter {
+	1: required OptimizationParameterType paramType;
+	2: required double value;
+	3: required OptimizationParameterDataType dataType;
+}
+
 typedef list<CopasiOptimizationParameter> CopasiOptimizationParameterList
 
 enum OptimizationMethodType {
