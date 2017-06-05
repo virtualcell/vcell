@@ -177,7 +177,7 @@ abstract class RuleParticipantSignatureDiagramShape extends ElipseShape {
 
 			defaultBG = Color.lightGray;
 			Color interior = Color.white;
-			if(graphModel instanceof ReactionCartoon && ((ReactionCartoon)graphModel).getRuleParticipantGroupingCriteria() == RuleParticipantSignature.Criteria.full) {
+			if(graphModel instanceof ReactionCartoonFull) {
 				defaultBG = MolecularTypeLargeShape.colorTable[index];		// take color from molecular type color selection
 			}
 			backgroundColor = defaultBG;

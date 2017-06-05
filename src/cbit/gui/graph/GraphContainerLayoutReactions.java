@@ -20,6 +20,7 @@ import java.util.List;
 import cbit.vcell.graph.ContainerContainerShape;
 import cbit.vcell.graph.ReactionContainerShape;
 import cbit.vcell.graph.ReactionRuleDiagramShape;
+import cbit.vcell.graph.ReactionRuleFullDiagramShape;
 import cbit.vcell.graph.ReactionStepShape;
 import cbit.vcell.graph.RuleParticipantSignatureFullDiagramShape;
 import cbit.vcell.graph.RuleParticipantSignatureShortDiagramShape;
@@ -179,7 +180,7 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 			resizeContainerContainerShape((ContainerContainerShape)shape, newSize, g);
 		} else if(shape instanceof SpeciesContextShape || shape instanceof RuleParticipantSignatureFullDiagramShape || shape instanceof RuleParticipantSignatureShortDiagramShape) {
 			return;
-		} else if(shape instanceof ReactionStepShape || shape instanceof ReactionRuleDiagramShape) {
+		} else if(shape instanceof ReactionStepShape || shape instanceof ReactionRuleFullDiagramShape) {
 			return;
 		} else {
 			resizeShape(shape, newSize, g);

@@ -64,7 +64,9 @@ import javax.swing.event.ListSelectionListener;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Conversion;
 import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Displayable;
@@ -315,6 +317,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if(speciesTableSelection instanceof BioPaxObject){
 //						System.out.println(reactionTableSelection);
 						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{speciesTableSelection});
+					}					
+				} else if(e.getSource() == molecularTypeTable) {
+					Object moleculesTableSelection = molecularTypeTable.getValueAt(molecularTypeTable.getSelectedRow(),molecularTypeTable.getSelectedColumn());
+					if(moleculesTableSelection instanceof BioPaxObject){
+						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{moleculesTableSelection});
 					}					
 				}
 			}
@@ -576,7 +583,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		
 		reactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
 		reactionCartoonEditorPanel.addPropertyChangeListener(eventHandler);
-		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
+		reactionCartoonEditorPanel.getReactionCartoonFull().addPropertyChangeListener(eventHandler);
+		reactionCartoonEditorPanel.getReactionCartoonMolecule().addPropertyChangeListener(eventHandler);
+		reactionCartoonEditorPanel.getReactionCartoonRule().addPropertyChangeListener(eventHandler);
 //		cartoonEditorPanel  = new CartoonEditorPanelFixed();
 //		cartoonEditorPanel.getStructureCartoon().addPropertyChangeListener(eventHandler);
 		
@@ -714,9 +723,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.setDefaultRenderer(Kinetics.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(RbmKineticLaw.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(ModelProcessDynamics.class, tableRenderer);
-		
-		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
-		
+				
 		DefaultScrollTableCellRenderer tableCellRenderer = new DefaultScrollTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -729,6 +736,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						bioModelEntityObject = (BioModelEntityObject)reactionTableModel.getValueAt(row);
 					} else if (table.getModel() == speciesTableModel){
 						bioModelEntityObject = speciesTableModel.getValueAt(row);
+					} else if(table.getModel() == molecularTypeTableModel) {
+						bioModelEntityObject = molecularTypeTableModel.getValueAt(row);
 					}
 					if (bioModelEntityObject != null) {
 						Set<RelationshipObject> relationshipSet = bioModel.getRelationshipModel().getRelationshipObjects(bioModelEntityObject);
@@ -742,9 +751,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							}
 							String finalName = null;
 							BioPaxObject bioPaxObject = relationshipSet.iterator().next().getBioPaxObject();
-							if(bioPaxObject instanceof EntityImpl && ((EntityImpl)bioPaxObject).getName() != null && ((EntityImpl)bioPaxObject).getName().size() > 0){
+							if(bioPaxObject instanceof EntityImpl && ((EntityImpl)bioPaxObject).getName() != null && ((EntityImpl)bioPaxObject).getName().size() > 0) {
 								finalName = ((EntityImpl)bioPaxObject).getName().get(0);
-							}else{
+							} else if(bioPaxObject instanceof Conversion) {
+								Conversion mp = (Conversion)bioPaxObject;
+								finalName = "[" + bioPaxObject.getIDShort() + "]";
+							} else {
 								finalName = bioModelEntityObject.getName();
 							}
 							final int LIMIT = 40;
@@ -818,8 +830,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		DefaultScrollTableCellRenderer rbmReactionDefinitionCellRenderer = new DefaultScrollTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus,
-					int row, int column) {
+					Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (table.getModel() instanceof VCellSortTableModel<?>) {
 					Object selectedObject = null;
@@ -835,7 +846,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								if(rp.getStructure() != null && !rp.getSpeciesPattern().getMolecularTypePatterns().isEmpty()) {
 									text += "@" + rp.getStructure().getName() + ":";
 								}
-								text += RbmTableRenderer.toHtml(rp.getSpeciesPattern(), isSelected);
+								text += RbmUtils.toBnglString(rp.getSpeciesPattern(), null, CompartmentMode.hide, 0);
+								//text += RbmTableRenderer.toHtml(rp.getSpeciesPattern(), isSelected);
 								if(i<rr.getReactantPatterns().size()-1) {
 									text += "+";
 								}
@@ -850,7 +862,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								if(pp.getStructure() != null && !pp.getSpeciesPattern().getMolecularTypePatterns().isEmpty()) {
 									text += "@" + pp.getStructure().getName() + ":";
 								}
-								text += RbmTableRenderer.toHtml(pp.getSpeciesPattern(), isSelected);
+								text += RbmUtils.toBnglString(pp.getSpeciesPattern(), null, CompartmentMode.hide, 0);
 								if(i<rr.getProductPatterns().size()-1) {
 									text += "+";
 								}
@@ -863,20 +875,28 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							for(int i = 0; i<rs.getNumReactants(); i++) {
 								Reactant p = rs.getReactant(i);
 								if(p.getSpeciesContext().hasSpeciesPattern()) {
-									text += p.getName();			//		text += "<b>" + p.getName() + "</b>";
+									text += p.getStoichiometry()>1 ? (p.getStoichiometry()+"") : "";
+									text += p.getName();
 								} else {
+									text += p.getStoichiometry()>1 ? (p.getStoichiometry()+"") : "";
 									text += p.getName();
 								}
 								if(i < rs.getNumReactants()-1) {
 									text += " + ";
 								}
 							}
-							text += " -&gt; ";
+							if(rs.isReversible()) {
+								text += " &lt;-&gt; ";		// &lt;-&gt;  <->
+							} else {
+								text += " -&gt; ";
+							}
 							for(int i = 0; i<rs.getNumProducts(); i++) {
 								Product p = rs.getProduct(i);
 								if(p.getSpeciesContext().hasSpeciesPattern()) {
-									text += p.getName();			//			text += "<b>" + p.getName() + "</b>";
+									text += p.getStoichiometry()>1 ? (p.getStoichiometry()+"") : "";
+									text += p.getName();
 								} else {
+									text += p.getStoichiometry()>1 ? (p.getStoichiometry()+"") : "";
 									text += p.getName();
 								}
 								if(i < rs.getNumProducts()-1) {
@@ -1047,7 +1067,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							int xPos = 4;
 							for(int i = 0; i<rpList.size(); i++) {
 								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, bioModel.getRulesShapeManager(), panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
 								if(i < rpList.size()-1) {
 									spss.addEndText("+");
 								} else {
@@ -1065,7 +1085,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							xPos+= 7;
 							for(int i = 0; i<ppList.size(); i++) {
 								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, bioModel.getRulesShapeManager(), panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
 								if(i < ppList.size()-1) {
 									spss.addEndText("+");
 								}
@@ -1186,6 +1206,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEFINITION).setCellRenderer(rbmReactionDefinitionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(rbmSpeciesNameCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
+		//molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.link.ordinal()).setCellRenderer(tableCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.species_pattern.ordinal()).setCellRenderer(rbmObservablePatternCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.structure.ordinal()).setCellRenderer(tableRenderer);
 		
@@ -1719,10 +1740,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		reactionCartoonEditorPanel.setModel(bioModel.getModel());
 		reactionCartoonEditorPanel.setStructureSuite(new AllStructureSuite(this));
-		bioModel.getRelationshipModel().addRelationShipListener(
-				reactionCartoonEditorPanel.getReactionCartoon());
-		reactionCartoonEditorPanel.getReactionCartoon().refreshRelationshipInfo(
-				bioModel.getRelationshipModel());
+		bioModel.getRelationshipModel().removeRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonFull());
+		bioModel.getRelationshipModel().removeRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonMolecule());
+		bioModel.getRelationshipModel().removeRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonRule());
+		bioModel.getRelationshipModel().addRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonFull());
+		bioModel.getRelationshipModel().addRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonMolecule());
+		bioModel.getRelationshipModel().addRelationShipListener(reactionCartoonEditorPanel.getReactionCartoonRule());
+		reactionCartoonEditorPanel.getReactionCartoonFull().refreshRelationshipInfo(bioModel.getRelationshipModel());
+		reactionCartoonEditorPanel.getReactionCartoonMolecule().refreshRelationshipInfo(bioModel.getRelationshipModel());
+		reactionCartoonEditorPanel.getReactionCartoonRule().refreshRelationshipInfo(bioModel.getRelationshipModel());
 //		cartoonEditorPanel.setBioModel(bioModel);
 		reactionTableModel.setBioModel(bioModel);
 		structureTableModel.setBioModel(bioModel);

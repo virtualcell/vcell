@@ -29,9 +29,7 @@ public class Diagram implements Serializable, Matchable {
 	public static class StructureKey implements Key, Serializable {
 		
 		protected final Structure structure;
-		
 		public StructureKey(Structure structure) { this.structure = structure; }
-		
 		public Structure getStructure() { return structure; }
 
 		@Override
@@ -39,13 +37,14 @@ public class Diagram implements Serializable, Matchable {
 			return (object instanceof StructureKey) && 
 			(((StructureKey) object).getStructure().equals(structure));
 		}
-		
 		@Override
 		public int hashCode() { return structure.hashCode(); }
-		
 	}
 	
-	private List<NodeReference> nodeList = new ArrayList<NodeReference>();
+	
+	private List<NodeReference> nodeFullList = new ArrayList<NodeReference>();
+	private List<NodeReference> nodeMoleculeList = new ArrayList<NodeReference>();
+	private List<NodeReference> nodeRuleList = new ArrayList<NodeReference>();
 	private StructureKey key = null;
 	private String name = null;
 
@@ -56,8 +55,22 @@ public class Diagram implements Serializable, Matchable {
 	
 	public StructureKey getKey() { return key; }
 
-	private void addNodeReference(NodeReference nodeRef) {
-		nodeList.add(nodeRef);
+	private void addNodeReference(NodeReference.Mode mode, NodeReference nodeRef) {
+		
+		switch (mode) {		// at this point the mode cannot be 'none' anymore
+		case full:
+			nodeFullList.add(nodeRef);
+			break;
+		case molecule:
+			nodeMoleculeList.add(nodeRef);
+			break;
+		case rule:
+			nodeRuleList.add(nodeRef);
+			break;
+		case none:
+		default:
+			throw new RuntimeException("Add NodeReference, the Mode must be fully explicit.");
+		}
 	}
 
 	public boolean compareEqual(Matchable object) {
@@ -66,40 +79,73 @@ public class Diagram implements Serializable, Matchable {
 		if (object == null){
 			return false;
 		}
-		if (!(object instanceof Diagram)){
+		if (!(object instanceof Diagram)) {
 			return false;
-		}else{
+		} else {
 			diagram = (Diagram)object;
 		}
-
-		if (!Compare.isEqual(name,diagram.name)){
+		if (!Compare.isEqual(name,diagram.name)) {
 			return false;
 		}
-
-		if (!Compare.isEqual(key.getStructure(), diagram.key.getStructure())){
+		if (!Compare.isEqual(key.getStructure(), diagram.key.getStructure())) {
 			return false;
 		}
-
-		if (!Compare.isEqual(nodeList, diagram.nodeList)){
+		if (!Compare.isEqual(nodeFullList, diagram.nodeFullList)) {
 			return false;
 		}
-
+		if (!Compare.isEqual(nodeMoleculeList, diagram.nodeMoleculeList)) {
+			return false;
+		}
+		if (!Compare.isEqual(nodeRuleList, diagram.nodeRuleList)) {
+			return false;
+		}
 		return true;
 	}
 
+	
 	public void fromTokens(CommentStringTokenizer tokens) throws Exception {
 		String token = tokens.nextToken();
+		boolean oldMode = true;
 		if (token.equalsIgnoreCase(VCMODL.Diagram)){
 			token = tokens.nextToken();  // get StructureName (and discard)
 			token = tokens.nextToken();  // read '{'
-		}			
-		if (!token.equalsIgnoreCase(VCMODL.BeginBlock)){
-			throw new Exception("unexpected token "+token+" expecting "+VCMODL.BeginBlock);
-		}			
-		while (tokens.hasMoreTokens()){
+			if (!token.equalsIgnoreCase(VCMODL.BeginBlock)) {
+				throw new Exception("unexpected token "+token+" expecting "+VCMODL.BeginBlock);
+			}			
 			token = tokens.nextToken();
-			if (token.equalsIgnoreCase(VCMODL.EndBlock)){
-				break;
+			if (!token.equalsIgnoreCase(VCMODL.BeginBlock)) {
+				tokens.pushToken(token);	// old style, single block   { ... }
+				oldMode = true;
+			} else {
+				oldMode = false;			// new style, 3 blocks inside another block  { { ... } { ... } { ... } }
+			}
+		}
+		if(oldMode) {
+			processBlock(NodeReference.Mode.none, tokens);
+		} else {
+			tokens = processBlock(NodeReference.Mode.full, tokens);
+			token = tokens.nextToken();
+			if (!token.equalsIgnoreCase(VCMODL.BeginBlock)) {
+				throw new Exception("unexpected token "+token+" expecting "+VCMODL.BeginBlock);
+			}			
+			tokens = processBlock(NodeReference.Mode.molecule, tokens);
+			token = tokens.nextToken();
+			if (!token.equalsIgnoreCase(VCMODL.BeginBlock)) {
+				throw new Exception("unexpected token "+token+" expecting "+VCMODL.BeginBlock);
+			}			
+			tokens = processBlock(NodeReference.Mode.rule, tokens);
+			token = tokens.nextToken();
+			if (!token.equalsIgnoreCase(VCMODL.EndBlock)) {
+				throw new Exception("unexpected token "+token+" expecting "+VCMODL.BeginBlock);
+			}			
+		}
+	}
+	private CommentStringTokenizer processBlock(NodeReference.Mode mode, CommentStringTokenizer tokens) {
+		
+		while (tokens.hasMoreTokens()) {
+			String token = tokens.nextToken();
+			if (token.equalsIgnoreCase(VCMODL.EndBlock)) {
+				return tokens;		// the only 'legal' way to exit through here
 			}			
 			if (token.equalsIgnoreCase(VCMODL.SimpleReaction) ||
 					token.equalsIgnoreCase(VCMODL.FluxStep) ||
@@ -113,7 +159,7 @@ public class Diagram implements Serializable, Matchable {
 				String yPos = tokens.nextToken();
 				java.awt.Point pos = null;
 				boolean bFound = false;
-				while (!bFound){
+				while (!bFound) {
 					//
 					// Read tokens until both integers parse.
 					// Take extra tokens and append them to
@@ -123,7 +169,21 @@ public class Diagram implements Serializable, Matchable {
 						int x = Integer.parseInt(xPos);
 						int y = Integer.parseInt(yPos);
 						pos = new java.awt.Point(x,y);
-						addNodeReference(new NodeReference(nodeType,nodeName,pos));
+						
+						switch (mode) {
+						case none:
+							addNodeReference(NodeReference.Mode.full, new NodeReference(NodeReference.Mode.full, nodeType,nodeName,pos));
+							addNodeReference(NodeReference.Mode.molecule, new NodeReference(NodeReference.Mode.molecule, nodeType,nodeName,pos));
+							addNodeReference(NodeReference.Mode.rule, new NodeReference(NodeReference.Mode.rule, nodeType,nodeName,pos));
+							break;
+						case full:
+						case molecule:
+						case rule:
+							addNodeReference(mode, new NodeReference(mode, nodeType, nodeName, pos));
+							break;
+						default:
+							throw new RuntimeException("Diagram.fromTokens(), unexpected Node.Mode attribute");
+						}
 						bFound = true;
 					}catch (NumberFormatException e){
 						//
@@ -138,16 +198,23 @@ public class Diagram implements Serializable, Matchable {
 				}
 				continue;
 			}
-			throw new Exception("Diagram.fromTokens(), unexpected identifier "+token);
+			throw new RuntimeException("Diagram.fromTokens(), unexpected identifier "+token);
 		}	
+		throw new RuntimeException("Diagram.fromTokens(), end block token missing");
 	}
-
+	
 	public String getName() {
 		return name;
 	}
 
-	public List<NodeReference> getNodeList() {
-		return nodeList;
+	public List<NodeReference> getNodeFullList() {
+		return nodeFullList;
+	}
+	public List<NodeReference> getNodeMoleculeList() {
+		return nodeMoleculeList;
+	}
+	public List<NodeReference> getNodeRuleList() {
+		return nodeRuleList;
 	}
 
 	public Structure getStructure() {
@@ -164,7 +231,17 @@ public class Diagram implements Serializable, Matchable {
 	}
 
 	public void renameNode(String oldName, String newName) {
-		for(NodeReference nodeRef : nodeList) {
+		for(NodeReference nodeRef : nodeFullList) {
+			if (nodeRef.getName().equals(oldName)){
+				nodeRef.setName(newName);
+			}
+		}
+		for(NodeReference nodeRef : nodeMoleculeList) {
+			if (nodeRef.getName().equals(oldName)){
+				nodeRef.setName(newName);
+			}
+		}
+		for(NodeReference nodeRef : nodeRuleList) {
 			if (nodeRef.getName().equals(oldName)){
 				nodeRef.setName(newName);
 			}
@@ -175,12 +252,73 @@ public class Diagram implements Serializable, Matchable {
 		this.name = name;
 	}
 
-	public void setNodeReferences(NodeReference[] nodeReferences) {
-		nodeList.clear();
-		nodeList.addAll(Arrays.asList(nodeReferences));
+	public void setNodeReferences(List<NodeReference> list) {
+		nodeFullList.clear();
+		nodeMoleculeList.clear();
+		nodeRuleList.clear();
+		
+		for(NodeReference nr : list) {
+			switch(nr.mode) {
+			case none:	// convert old style single list to multiple lists
+				nodeFullList.add(new NodeReference(NodeReference.Mode.full, nr));
+				nodeMoleculeList.add(new NodeReference(NodeReference.Mode.molecule, nr));
+				nodeRuleList.add(new NodeReference(NodeReference.Mode.rule, nr));
+				break;
+			case full:
+				nodeFullList.add(nr);	// the node is already well defined
+				break;
+			case molecule:
+				nodeMoleculeList.add(nr);
+				break;
+			case rule:
+				nodeRuleList.add(nr);
+				break;
+			}
+		}
 	}
-	public void removeNodeReferences(List<NodeReference> nodes) {
-		nodeList.removeAll(nodes);
+	public void setNodeReferences(NodeReference.Mode mode, List<NodeReference> from) {
+		
+		List<NodeReference> to;
+		switch(mode) {
+		case full:
+			to = nodeFullList;
+			break;
+		case molecule:
+			to = nodeMoleculeList;
+			break;
+		case rule:
+			to = nodeRuleList;
+			break;
+		case none:
+		default:
+			throw new RuntimeException("setNodeReferences, the Mode must be fully explicit.");
+		}
+		to.clear();
+		for(NodeReference nr : from) {
+			to.add(nr);
+		}
+	}
+	
+	public void removeNodeReferences(NodeReference.Mode mode, List<NodeReference> nodes) {
+		for(NodeReference nr : nodes) {		// sanity check
+			if(mode != nr.mode) {
+				throw new RuntimeException("removeNodeReferences, NodeReference mode does not match List mode.");
+			}
+		}
+		switch(mode) {
+		case full:
+			nodeFullList.removeAll(nodes);
+			break;
+		case molecule:
+			nodeMoleculeList.removeAll(nodes);
+			break;
+		case rule:
+			nodeRuleList.removeAll(nodes);
+			break;
+		case none:
+		default:
+			throw new RuntimeException("removeNodeReferences, the Mode must be explicit.");
+		}
 	}
 
 	public void setStructure(Structure structure) {
@@ -194,9 +332,21 @@ public class Diagram implements Serializable, Matchable {
 
 	public void write(PrintWriter pw) {
 		pw.println(VCMODL.Diagram+" \""+getStructure().getName()+"\" { ");
-		for(NodeReference node : nodeList) {
+		pw.println("{ ");
+		for(NodeReference node : nodeFullList) {
 			node.write(pw);
 		}
+		pw.println("} ");
+		pw.println("{ ");
+		for(NodeReference node : nodeMoleculeList) {
+			node.write(pw);
+		}
+		pw.println("} ");
+		pw.println("{ ");
+		for(NodeReference node : nodeRuleList) {
+			node.write(pw);
+		}
+		pw.println("} ");
 		pw.println("} ");
 	}
 
