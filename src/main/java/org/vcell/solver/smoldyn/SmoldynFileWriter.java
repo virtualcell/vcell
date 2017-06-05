@@ -2042,11 +2042,15 @@ private void writeSpecies() throws MathException {
 	// write species
 	printWriter.println("# species declarations");
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_species + " " + (particleVariableList.size() + 1));
-	printWriter.print(SmoldynVCellMapper.SmoldynKeyword.species);
+//	printWriter.print(SmoldynVCellMapper.SmoldynKeyword.species);
+//	for (ParticleVariable pv : particleVariableList) {
+//		printWriter.print(" " + getVariableName(pv,null));
+//	}
 	for (ParticleVariable pv : particleVariableList) {
+		printWriter.print(SmoldynVCellMapper.SmoldynKeyword.species);
 		printWriter.print(" " + getVariableName(pv,null));
+		printWriter.println();
 	}
-	printWriter.println();
 	printWriter.println();
 }
 

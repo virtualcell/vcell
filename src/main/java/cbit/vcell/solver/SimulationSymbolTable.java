@@ -39,7 +39,9 @@ import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.PointVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
@@ -490,9 +492,15 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 					|| (allVariables[i] instanceof MembraneRegionVariable) 
 					|| (allVariables[i] instanceof FilamentVariable) 
 					|| (allVariables[i] instanceof FilamentRegionVariable) 
+					|| (allVariables[i] instanceof PointVariable)
+					|| (allVariables[i] instanceof ParticleVariable)
 					|| (allVariables[i] instanceof InsideVariable) 
 					|| (allVariables[i] instanceof OutsideVariable)) {
 					varVector.addElement(allVariables[i]);
+				}else if (allVariables[i] instanceof Constant ||
+						(allVariables[i] instanceof Function)){
+				}else{
+					System.err.println("SimulationSymbolTable.createAnnotatedFunctionsList() found unexpected variable type "+allVariables[i].getClass().getSimpleName()+" in spatial simulation");
 				}
 			}
 			variableNames = new String[varVector.size()];
