@@ -307,7 +307,7 @@ private void initialize() {
 							SpeciesContext sc = ((GeneratedSpeciesTableRow)selectedObject).getSpecies();
 							SpeciesPattern sp = sc.getSpeciesPattern();		// sp cannot be null
 							Graphics panelContext = table.getGraphics();
-							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected);
+							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected, issueManager);
 						}
 					} else {
 						spss = null;
@@ -388,11 +388,11 @@ public void updateShape(int selectedRow) {
 	SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, tempModel);
 	sp.resolveBonds();
 	SpeciesContext sc = new SpeciesContext(new Species("a",""), structure, sp);
-	spls = new SpeciesPatternLargeShape(20, 20, -1, sp, shapePanel, sc);
+	spls = new SpeciesPatternLargeShape(20, 20, -1, sp, shapePanel, sc, issueManager);
 	
 	} catch (ParseException | PropertyVetoException | ModelException e1) {
 		e1.printStackTrace();
-		spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
+		spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true, issueManager);	// error (red circle)
 		shapePanel.repaint();
 	}
 	

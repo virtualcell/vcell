@@ -209,7 +209,7 @@ private void initConnections() throws java.lang.Exception {
 							int xPos = 4;
 							for(int i = 0; i<rpList.size(); i++) {
 								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rr, isSelected, issueManager);
 								if(i < rpList.size()-1) {
 									spss.addEndText("+");
 								} else {
@@ -227,7 +227,7 @@ private void initConnections() throws java.lang.Exception {
 							xPos+= 7;
 							for(int i = 0; i<ppList.size(); i++) {
 								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rr, isSelected, issueManager);
 								if(i < ppList.size()-1) {
 									spss.addEndText("+");
 								}
@@ -242,7 +242,7 @@ private void initConnections() throws java.lang.Exception {
 							int extraSpace = 0;
 							for(int i = 0; i<rs.getNumReactants(); i++) {
 								SpeciesPattern sp = rs.getReactant(i).getSpeciesContext().getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rs, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rs, isSelected, issueManager);
 								if(i < rs.getNumReactants()-1) {
 									spss.addEndText("+");
 								} else {
@@ -265,7 +265,7 @@ private void initConnections() throws java.lang.Exception {
 								if(i==0 && rs.getNumReactants() == 0) {
 									xPos += 14;
 								}
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rs, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, shapeManager, panelContext, rs, isSelected, issueManager);
 								if(i==0 && rs.getNumReactants() == 0) {
 									spss.addStartText("->");
 								}

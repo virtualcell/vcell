@@ -662,7 +662,7 @@ public static final int yOffsetInitial = 10;
 private void updateShape() {
 	if(fieldSpeciesContext!= null) {
 		SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
-		spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, shapePanel, fieldSpeciesContext);
+		spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, shapePanel, fieldSpeciesContext, issueManager);
 		
 		int maxXOffset = xOffsetInitial + spls.getWidth();
 		int maxYOffset = yOffsetInitial + 80;
@@ -784,7 +784,7 @@ private void updateShape() {
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
 				Graphics gc = shapePanel.getGraphics();
-				Icon icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null);
+				Icon icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null, issueManager);
 				menuItem.setIcon(icon);
 				addMenuItem.add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
@@ -982,7 +982,7 @@ private void updateShape() {
 				MolecularTypePattern mtpTo = spBond.getMolecularTypePattern(b.molecularTypePattern.getMolecularType().getName(), b.molecularTypePattern.getIndex());
 				MolecularComponentPattern mcpTo = mtpTo.getMolecularComponentPattern(b.molecularComponentPattern.getMolecularComponent());
 				spBond.setBond(mtpTo, mcpTo, mtpFrom, mcpFrom);
-				Icon icon = new SpeciesPatternSmallShape(3,4, spBond, gc, fieldSpeciesContext, false);
+				Icon icon = new SpeciesPatternSmallShape(3,4, spBond, gc, fieldSpeciesContext, false, issueManager);
 				((SpeciesPatternSmallShape)icon).setDisplayRequirements(DisplayRequirements.highlightBonds);
 				menuItem.setIcon(icon);
 				editBondMenu.add(menuItem);

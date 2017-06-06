@@ -20,6 +20,7 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
 
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.mapping.gui.SmallShapeManager;
 
 public class SpeciesPatternSmallShape extends AbstractComponentShape implements AbstractShape, Icon {
@@ -51,11 +52,13 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		highlightBonds,
 	}
 	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, Displayable owner,
-			boolean isSelected) {
-		this(xPos, yPos, sp, null, graphicsContext, owner, isSelected);
+			boolean isSelected, IssueManager issueManager) {
+		this(xPos, yPos, sp, null, graphicsContext, owner, isSelected, issueManager);
 	}
 	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, SmallShapeManager shapeManager, 
-			Graphics graphicsContext, Displayable owner, boolean isSelected) {
+			Graphics graphicsContext, Displayable owner, boolean isSelected, IssueManager issueManager) {
+		super(issueManager);
+		
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
@@ -67,7 +70,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, shapeManager, graphicsContext, owner, this);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, shapeManager, graphicsContext, owner, this, issueManager);
 			speciesShapes.add(stls);
 			width = stls.getWidth();
 			return;
@@ -75,7 +78,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, mtp, shapeManager, graphicsContext, owner, this);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, mtp, shapeManager, graphicsContext, owner, this, issueManager);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}

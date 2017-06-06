@@ -425,11 +425,11 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 		int yOffset = yOffsetReactantInitial + ReservedSpaceForNameOnYAxis;
 		for(Map.Entry<String,ReactionRule> entry : reactionRuleMap.entrySet()) {
 			ReactionRule rr = entry.getValue();
-			ReactionRulePatternLargeShape reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffset, -1, shapePanel, rr, true);
+			ReactionRulePatternLargeShape reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffset, -1, shapePanel, rr, true, issueManager);
 			reactantShape.setWriteName(true);
 			int xOffset = reactantShape.getRightEnd() + 70;
 			
-			ReactionRulePatternLargeShape productShape = new ReactionRulePatternLargeShape(xOffset, yOffset, -1, shapePanel, rr, false);
+			ReactionRulePatternLargeShape productShape = new ReactionRulePatternLargeShape(xOffset, yOffset, -1, shapePanel, rr, false, issueManager);
 			xOffset += productShape.getRightEnd();
 			yOffset += SpeciesPatternLargeShape.defaultHeight + ReservedSpaceForNameOnYAxis;
 			maxXOffset = Math.max(maxXOffset, xOffset);

@@ -495,7 +495,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularTypeTreeModel = new MolecularTypeTreeModel(molecularTypeTree);
 		molecularTypeTree.setModel(molecularTypeTreeModel);
 		molecularTypeTree.setEditable(true);
-		molecularTypeTree.setCellRenderer(new RbmMolecularTypeTreeCellRenderer(molecularTypeTree));
+		molecularTypeTree.setCellRenderer(new RbmMolecularTypeTreeCellRenderer(molecularTypeTree, issueManager));
 		molecularTypeTree.setCellEditor(new RbmMolecularTypeTreeCellEditor(molecularTypeTree));
 		
 		int rowHeight = molecularTypeTree.getRowHeight();
@@ -774,7 +774,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			titleLabel.setToolTipText("Anchor a Molecule to a Structure to prevent it being moved to unwanted locations by a rule.");
 			molecularTypeShapeList.clear();
 			int maxYOffset = computeStatesVerticalOffset(molecularType);
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xOffsetInitial, maxYOffset, molecularType, shapePanel, molecularType);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xOffsetInitial, maxYOffset, molecularType, shapePanel, molecularType, issueManager);
 			molecularTypeShapeList.add(stls);
 
 			int maxXOffset = xOffsetInitial + stls.getWidth();

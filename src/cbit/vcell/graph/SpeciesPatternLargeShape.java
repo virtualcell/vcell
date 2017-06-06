@@ -28,6 +28,7 @@ import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
@@ -91,7 +92,9 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 	
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
-	public SpeciesPatternLargeShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, boolean isError) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, boolean isError, IssueManager issueManager) {
+		super(issueManager);
+		
 		this.owner = null;
 		this.sp = null;
 		this.xPos = xPos;
@@ -104,11 +107,14 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		xExtent = calculateXExtent(shapePanel);
 
 		int xPattern = xPos;
-		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, shapePanel, null);
+		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, shapePanel, null, issueManager);
 		speciesShapes.add(stls);
 	}
 		
-	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapePanel shapePanel, Displayable owner) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapePanel shapePanel, 
+			Displayable owner, IssueManager issueManager) {
+		super(issueManager);
+		
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
@@ -132,7 +138,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, shapePanel, owner);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, shapePanel, owner, issueManager);
 			speciesShapes.add(stls);
 			return;
 		}
@@ -140,7 +146,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, mtp, shapePanel, owner, i);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, mtp, shapePanel, owner, i, issueManager);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}

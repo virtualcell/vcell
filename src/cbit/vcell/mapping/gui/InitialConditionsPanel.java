@@ -525,7 +525,7 @@ private void initialize() {
 							SpeciesContext sc = scs.getSpeciesContext();
 							SpeciesPattern sp = sc.getSpeciesPattern();		// sp may be null for "plain" species contexts
 							Graphics panelContext = table.getGraphics();
-							spss = new SpeciesPatternSmallShape(4, 2, sp, shapeManager, panelContext, sc, isSelected);
+							spss = new SpeciesPatternSmallShape(4, 2, sp, shapeManager, panelContext, sc, isSelected, issueManager);
 						}
 					} else {
 						spss = null;
