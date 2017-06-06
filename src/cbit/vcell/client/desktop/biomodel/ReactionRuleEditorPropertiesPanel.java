@@ -729,10 +729,10 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		int maxXOffset;
 		
 		if(getViewSingleRowButton().isSelected()) {
-			reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true);
+			reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true, issueManager);
 			int xOffset = reactantShape.getRightEnd() + 70;
 			
-			productShape = new ReactionRulePatternLargeShape(xOffset, yOffsetReactantInitial, -1, shapePanel, reactionRule, false);
+			productShape = new ReactionRulePatternLargeShape(xOffset, yOffsetReactantInitial, -1, shapePanel, reactionRule, false, issueManager);
 			xOffset += productShape.getRightEnd();
 
 			// TODO: instead of offset+100 compute the exact width of the image
@@ -740,10 +740,10 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			shapePanel.setPreferredSize(preferredSize);
 			
 		} else {
-			reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true);
+			reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true, issueManager);
 			maxXOffset = Math.max(xOffsetInitial, reactantShape.getXOffset());
 			
-			productShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetProductInitial, -1, shapePanel, reactionRule, false);
+			productShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetProductInitial, -1, shapePanel, reactionRule, false, issueManager);
 			maxXOffset = Math.max(maxXOffset, productShape.getXOffset());
 	
 			Dimension preferredSize = new Dimension(maxXOffset+90, yOffsetProductInitial+80+20);
@@ -859,7 +859,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
 					Graphics gc = shapePanel.getGraphics();
-					Icon icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null);
+					Icon icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null, issueManager);
 					menuItem.setIcon(icon);
 					addMenuItem.add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
@@ -1040,7 +1040,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
 					Graphics gc = shapePanel.getGraphics();
-					Icon icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null);
+					Icon icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null, issueManager);
 					menuItem.setIcon(icon);
 					addMenuItem.add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
@@ -1414,7 +1414,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				MolecularTypePattern mtpTo = spBond.getMolecularTypePattern(b.molecularTypePattern.getMolecularType().getName(), b.molecularTypePattern.getIndex());
 				MolecularComponentPattern mcpTo = mtpTo.getMolecularComponentPattern(b.molecularComponentPattern.getMolecularComponent());
 				spBond.setBond(mtpTo, mcpTo, mtpFrom, mcpFrom);
-				Icon icon = new SpeciesPatternSmallShape(3,4, spBond, gc, reactionRule, false);
+				Icon icon = new SpeciesPatternSmallShape(3,4, spBond, gc, reactionRule, false, issueManager);
 				((SpeciesPatternSmallShape)icon).setDisplayRequirements(DisplayRequirements.highlightBonds);
 				menuItem.setIcon(icon);
 				editBondMenu.add(menuItem);

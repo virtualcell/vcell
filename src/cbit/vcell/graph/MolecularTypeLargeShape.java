@@ -32,13 +32,14 @@ import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.Severity;
 
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
 
-public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeInterface {
+public class MolecularTypeLargeShape extends IssueManagerContainer implements LargeShape, HighlightableShapeInterface {
 	
 	public static final Color colorTable[] = new Color[] {
 		Color.red,
@@ -116,7 +117,10 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	
 	
 	// this is only called for plain species context (no pattern)
-	public MolecularTypeLargeShape(int xPos, int yPos, LargeShapePanel shapePanel, Displayable owner) {
+	public MolecularTypeLargeShape(int xPos, int yPos, LargeShapePanel shapePanel, 
+			Displayable owner, IssueManager issueManager) {
+		super(issueManager);
+		
 		this.owner = owner;		// null owner means we want to display a red circle (meaning error)
 		this.pattern = false;
 		this.mt = null;
@@ -135,7 +139,10 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		height = baseHeight + MolecularComponentLargeShape.calculateBasHeight(shapePanel) / 2;
 	}
 	// this is only called for molecular type
-	public MolecularTypeLargeShape(int xPos, int yPos, MolecularType mt, LargeShapePanel shapePanel, Displayable owner) {
+	public MolecularTypeLargeShape(int xPos, int yPos, MolecularType mt, LargeShapePanel shapePanel, 
+			Displayable owner, IssueManager issueManager) {
+		super(issueManager);
+		
 		this.owner = owner;
 		this.pattern = false;
 		this.mt = mt;
@@ -158,7 +165,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			// WARNING! we create temporary component shapes whose coordinates are invented, we use them only to compute 
 			// the width of the molecular type shape; only after that is known we can finally compute the exact coordinates
 			// of the components
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, shapePanel, owner);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, shapePanel, owner, issueManager);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.calculateComponentSeparation(shapePanel);
 		}
 		name = adjustForSize();
@@ -174,13 +181,16 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			int y = yPos + height - MolecularComponentLargeShape.calculateBasHeight(shapePanel);
 			// now that we know the dimensions of the molecular type shape we create the component shapes
 			MolecularComponent mc = mt.getComponentList().get(i);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, shapePanel, owner);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, shapePanel, owner, issueManager);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.calculateComponentSeparation(shapePanel);
 			componentShapes.add(0, mlcls);
 		}
 	}
 	// called for species patterns (rules, species, observables)
-	public MolecularTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapePanel, Displayable owner, int positionInPattern) {
+	public MolecularTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapePanel, 
+			Displayable owner, int positionInPattern, IssueManager issueManager) {
+		super(issueManager);
+		
 		this.owner = owner;
 		this.pattern = true;
 		this.mt = mtp.getMolecularType();
@@ -206,7 +216,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mcp, shapePanel, owner);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mcp, shapePanel, owner, issueManager);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.calculateComponentSeparation(shapePanel);
 		}
 		name = adjustForSize();
@@ -223,7 +233,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, shapePanel, owner);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, shapePanel, owner, issueManager);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.calculateComponentSeparation(shapePanel);
 			componentShapes.add(0, mlcls);
 		}
@@ -516,7 +526,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 					} else {
 						primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker();
 					}
-					if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+					if(hasErrorIssues(owner, mt)) {
 						primaryColor = isHighlighted() ? Color.white : Color.red;
 					}
 				}
@@ -530,26 +540,26 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 
 		RoundRectangle2D inner = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, baseHeight-2, cornerArc-3, cornerArc-3);
 		if(isHighlighted()) {
-			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+			if(hasErrorIssues(owner, mt)) {
 				g2.setPaint(Color.red);
 			} else {
 				g2.setPaint(getDefaultColor(Color.BLACK));
 			}
 			g2.draw(inner);
-			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+			if(hasErrorIssues(owner, mt)) {
 				g2.setPaint(Color.red);
 			} else {
 				g2.setPaint(getDefaultColor(Color.BLACK));
 			}
 			g2.draw(rect);
 		} else {
-			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+			if(hasErrorIssues(owner, mt)) {
 				g2.setPaint(Color.red.darker());
 			} else {
 				g2.setPaint(getDefaultColor(Color.GRAY));
 			}
 			g2.draw(inner);
-			if(AbstractComponentShape.hasErrorIssues(owner, mt)) {
+			if(hasErrorIssues(owner, mt)) {
 				g2.setPaint(Color.red.darker());
 			} else {
 				g2.setPaint(getDefaultColor(Color.DARK_GRAY));

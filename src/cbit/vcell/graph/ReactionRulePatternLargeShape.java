@@ -13,6 +13,7 @@ import java.util.List;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.ReactionRuleParticipantSignaturePropertiesPanel;
 import cbit.vcell.model.ProductPattern;
@@ -40,8 +41,10 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	List<SpeciesPatternLargeShape> speciesPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 	
 	
-	public ReactionRulePatternLargeShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, Displayable owner, boolean isReactants) {
-
+	public ReactionRulePatternLargeShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, 
+			Displayable owner, boolean isReactants, IssueManager issueManager) {
+		super(issueManager);
+		
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.height = height;
@@ -69,7 +72,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			}
 			for(int i = 0; i<rpList.size(); i++) {
 				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr, issueManager);
 				if(shapePanel instanceof ParticipantSignatureShapePanel) {
 					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
 					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(rpList.get(i), ssp.getSignature(), ssp.getCriteria());
@@ -97,7 +100,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			}
 			for(int i = 0; i<ppList.size(); i++) {
 				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr, issueManager);
 				if(shapePanel instanceof ParticipantSignatureShapePanel) {
 					ParticipantSignatureShapePanel ssp = (ParticipantSignatureShapePanel)shapePanel;
 					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(ppList.get(i), ssp.getSignature(), ssp.getCriteria());

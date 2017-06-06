@@ -275,10 +275,10 @@ private void updateShape() {
 	if(reactionRule == null) {
 		return;
 	}
-	reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true);
+	reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true, issueManager);
 	int xOffset = reactantShape.getRightEnd() + 70;
 		
-	productShape = new ReactionRulePatternLargeShape(xOffset, yOffsetReactantInitial, -1, shapePanel, reactionRule, false);
+	productShape = new ReactionRulePatternLargeShape(xOffset, yOffsetReactantInitial, -1, shapePanel, reactionRule, false, issueManager);
 	xOffset += productShape.getRightEnd();
 
 	// TODO: instead of offset+100 compute the exact width of the image

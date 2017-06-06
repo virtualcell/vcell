@@ -991,7 +991,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							MolecularType mt = (MolecularType)selectedObject;
 							Graphics cellContext = table.getGraphics();
 							if(mt != null) {
-								stls = new MolecularTypeSmallShape(4, 3, mt, null, cellContext, mt, null);
+								stls = new MolecularTypeSmallShape(4, 3, mt, null, cellContext, mt, null, issueManager);
 							}
 						}
 					} else {
@@ -1026,7 +1026,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							SpeciesContext sc = (SpeciesContext)selectedObject;
 							SpeciesPattern sp = sc.getSpeciesPattern();		// sp may be null for "plain" species contexts
 							Graphics panelContext = table.getGraphics();
-							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected);
+							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected, issueManager);
 						}
 					} else {
 						spss = null;
@@ -1067,7 +1067,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							int xPos = 4;
 							for(int i = 0; i<rpList.size(); i++) {
 								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected, issueManager);
 								if(i < rpList.size()-1) {
 									spss.addEndText("+");
 								} else {
@@ -1085,7 +1085,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							xPos+= 7;
 							for(int i = 0; i<ppList.size(); i++) {
 								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected, issueManager);
 								if(i < ppList.size()-1) {
 									spss.addEndText("+");
 								}
@@ -1100,7 +1100,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							int extraSpace = 0;
 							for(int i = 0; i<rs.getNumReactants(); i++) {
 								SpeciesPattern sp = rs.getReactant(i).getSpeciesContext().getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected, issueManager);
 								if(i < rs.getNumReactants()-1) {
 									spss.addEndText("+");
 								} else {
@@ -1123,7 +1123,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								if(i==0 && rs.getNumReactants() == 0) {
 									xPos += 14;
 								}
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected, issueManager);
 								if(i==0 && rs.getNumReactants() == 0) {
 									spss.addStartText("->");
 								}
@@ -1177,7 +1177,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							spssList.clear();
 							for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 								SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, observable, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, observable, isSelected, issueManager);
 								xPos += spss.getWidth() + 6;
 								spssList.add(spss);
 							}
@@ -1897,7 +1897,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		molecularTypeTableModel.setIssueManager(issueManager);
 		observableTableModel.setIssueManager(issueManager);
 		structureTableModel.setIssueManager(issueManager);
-		AbstractComponentShape.setIssueManager(issueManager);
+//		AbstractComponentShape.setIssueManager(issueManager);
 	}
 
 	private void showPathwayLinks() {
