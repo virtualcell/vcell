@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -52,6 +53,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -101,7 +103,9 @@ import cbit.vcell.model.GeneralLumpedKinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.StructureTopology;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -379,6 +383,10 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		}
 		return null;
 	}
+	private MolecularType[] getSelectedMolecularTypeArray() {
+		List<MolecularType> mtList = getModel().getRbmModelContainer().getMolecularTypeList();
+		return (mtList.size()==0 ? null : mtList.toArray(new MolecularType[0]));
+	}
 
 	public void layout(String layoutName) throws Exception {
 		layout(layoutName,true);
@@ -484,10 +492,10 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					|| shape instanceof ReactionRuleDiagramShape) {
 				SpeciesContext[] spArray = getSelectedSpeciesContextArray();
 				ReactionStep[] rsArray = getSelectedReactionStepArray();
-				RuleParticipantSignature[] rpsArray = getSelectedRuleParticipantsArray();
+//				RuleParticipantSignature[] rpsArray = getSelectedRuleParticipantsArray();	// not needed, the rule will know its participants
 				ReactionRule[] rrArray = getSelectedReactionRuleArray();
-				
-				VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = new VCellTransferable.ReactionSpeciesCopy(spArray, rsArray);
+				MolecularType[] mtArray = getSelectedMolecularTypeArray();
+				VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = new VCellTransferable.ReactionSpeciesCopy(spArray, rsArray, rrArray, mtArray);
 				VCellTransferable.sendToClipboard(reactionSpeciesCopy);
 			}
 		} else if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
@@ -570,7 +578,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		final String RXSPECIES_PASTERX = "Reactions";
 		final String RXSPECIES_SPECIES = "Species";
 		VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = (VCellTransferable.ReactionSpeciesCopy) SimpleTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
-		if(reactionSpeciesCopy != null){
+		if(reactionSpeciesCopy != null) {
 			String response = null;
 			if(reactionSpeciesCopy.getReactStepArr() != null &&  reactionSpeciesCopy.getSpeciesContextArr() != null){
 				response = DialogUtils.showWarningDialog(getGraphPane(),"Choose Species or Reactions to paste",
@@ -593,8 +601,42 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			if(reactionSpeciesCopy.getReactStepArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
 				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,ReactionCartoonTool.this);
 			}
+			
+			Set<MolecularType> mtNewList = new HashSet<>();
+			Set<MolecularType> mtConflictList = new HashSet<>();
+			Set<MolecularType> mtAlreadyList = new HashSet<>();
+			Model modelOurs = getModel();
+			RbmModelContainer rbmmcOurs = modelOurs.getRbmModelContainer();
+			if(reactionSpeciesCopy.getMolecularTypeArr() != null) {
+				for(MolecularType mtTheirs : reactionSpeciesCopy.getMolecularTypeArr()) {	// the molecules we try to paste here
+					MolecularType mtOurs = rbmmcOurs.getMolecularType(mtTheirs.getName());
+					if(mtOurs == null) {
+						mtOurs = new MolecularType(mtTheirs, modelOurs);
+						mtNewList.add(mtOurs);
+					} else {
+						if(!mtOurs.compareEqual(mtTheirs)) {
+							// conflict: a different mt with the same name already exists
+							mtConflictList.add(mtTheirs);
+						} else {
+							mtAlreadyList.add(mtTheirs);
+							}
+					}
+				}
+				if(!mtConflictList.isEmpty()) {
+					throw new RuntimeException("Found " + mtConflictList.size() + " conflicting molecule(s).");
+				}
+				if(!mtAlreadyList.isEmpty()) {
+					System.out.println("Found " + mtAlreadyList.size() + " molecule(s) already there.");
+				}
+				try {
+					for(MolecularType mtOurs : mtNewList) {
+						rbmmcOurs.addMolecularType(mtOurs, false);
+					}
+				} catch (ModelException | PropertyVetoException e) {
+					e.printStackTrace();
+				}
+			}
 		}
-
 	}
 	
 	public static void selectAndSaveDiagram(RXPasteInterface rxPasteInterface,List<BioModelEntityObject> reactionAndSpecies){
