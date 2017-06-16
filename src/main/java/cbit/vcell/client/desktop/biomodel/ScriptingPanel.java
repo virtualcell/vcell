@@ -67,7 +67,7 @@ class ScriptingPanel extends JPanel {
 	private void initialize(){
 		String initialResultsText = "script output is displayed here\n";
 		
-		scriptTextArea = new JTextArea(getInitialScriptText());
+		scriptTextArea = new JTextArea(getInitialJythonText());
 		scriptTextArea.setEditable(true);
 		scriptTextArea.setLineWrap(false);
 		scriptTextArea.setWrapStyleWord(false);
@@ -94,7 +94,7 @@ class ScriptingPanel extends JPanel {
 		resetButton.addActionListener(eventListener);
 	}
 	
-	private String getInitialScriptText(){
+	private String getInitialJavascriptText(){
 		
 		String initialScriptText = "// vcell scripting (javascript)\n" +
 		"// predefined variables:\n" +
@@ -105,15 +105,20 @@ class ScriptingPanel extends JPanel {
 		"//   list(var)  -  lists methods/fields availlable for any variable\n" +
 		"\n" +
 		"// example script\n" +
-		"println(biomodel.name);\n" +
+		"print(biomodel.name);\n" +
 		"biomodel.name = 'myModel';   // sets name of biomodel (note label in tree is changed)\n" +
-		"println(biomodel.name);\n" +
+		"print(biomodel.name);\n" +
 		"list(biomodel)\n             // lists fields/functions available for cbit.vcell.biomodel.BioModel";
 
 		return initialScriptText;
 	}
 	
-	private String getDefaultScript(){
+	private String getInitialJythonText(){
+		
+		return getDefaultJythonScript();
+	}
+	
+	private String getDefaultJavascriptScript(){
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("biomodel.name = 'hello';\n");
 		buffer.append("list(biomodel);\n");
@@ -127,10 +132,21 @@ class ScriptingPanel extends JPanel {
 		return buffer.toString();
 	}
 
+	private String getDefaultJythonScript(){
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("app = biomodel.getSimulationContext('Application0')\n");
+		buffer.append("parest = app.getAnalysisTasks(0)\n");
+		buffer.append("# modelOptSpec = parest.getModelOptimizationSpec()\n");
+		buffer.append("# org.vcell.modelopt.ProfileLikelihood.run(parest)\n");
+		return buffer.toString();
+	}
+
+
 	private void run(){
 		// create scripting engine
 		ScriptEngineManager manager = new ScriptEngineManager();
-		ScriptEngine engine = manager.getEngineByName("JavaScript");
+		//ScriptEngine engine = manager.getEngineByName("JavaScript");
+		ScriptEngine engine = manager.getEngineByName("jython");
 		
 		// create environment for the script to run in.
 		//   1) capture stdout and send to the resultsTextField
@@ -162,18 +178,21 @@ class ScriptingPanel extends JPanel {
 		// run the script
 		//
 		try {
-			String fullScript = getPredefinedFunctions();
+			String fullScript = getPredefinedJythonFunctions();
 			fullScript += scriptTextArea.getText();
 			System.out.println(fullScript);
 			engine.eval(fullScript);
 			try {
 				Bindings engineBindings = scriptContext.getBindings(ScriptContext.ENGINE_SCOPE);
-				printWriter.println("engine variable bindings: ");
+				printWriter.println("\n\n\nengine variable bindings: ");
 				for (Map.Entry<String,Object> entry : engineBindings.entrySet()){
+					if (entry.getKey().equals("__builtins__")){
+						continue;
+					}
 					printWriter.println("  "+entry.getKey()+" : "+entry.getValue());
 				}
 				Bindings globalBindings = scriptContext.getBindings(ScriptContext.GLOBAL_SCOPE);
-				printWriter.println("global variable bindings: ");
+				printWriter.println("\nglobal variable bindings: ");
 				for (Map.Entry<String,Object> entry : globalBindings.entrySet()){
 					printWriter.println("  "+entry.getKey()+" : "+entry.getValue());
 				}
@@ -188,7 +207,12 @@ class ScriptingPanel extends JPanel {
 		}
 	}
 
-	private String getPredefinedFunctions() {
+	private String getPredefinedJythonFunctions() {
+		String functions = "print 'no function definitions'\n";
+		return functions;
+	}
+
+	private String getPredefinedJavascriptFunctions() {
 		String functions = "function list(obj) {\n" +
 				"    println('');\n"+
 				"    println('members of class '+obj.getClass().name+':');\n" +
@@ -214,7 +238,8 @@ class ScriptingPanel extends JPanel {
 	}
 
 	private void reset(){
-		scriptTextArea.setText(getDefaultScript());
+		//scriptTextArea.setText(getDefaultJavascriptScript());
+		scriptTextArea.setText(getDefaultJythonScript());
 		resultsTextArea.setText("");
 	}
 

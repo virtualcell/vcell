@@ -50,21 +50,21 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_NODE, true),
 //			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.DATA_NODE, true),
-//			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SCRIPTING_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SCRIPTING_NODE, true),
 		};
 	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[0], true);
 	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[1], true);	
 	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], false);
 	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[3], true);
 //	private BioModelNode dataNode = new BioModelNode(bioModelChildFolderNodes[4], false);	
-//	private BioModelNode scriptingNode = new BioModelNode(bioModelChildFolderNodes[5], false);	
+	private BioModelNode scriptingNode = new BioModelNode(bioModelChildFolderNodes[4], false);	
 	private BioModelNode  bioModelChildNodes[] = {
 			modelNode,
 			applicationsNode,
 			bioModelParametersNode,
 			pathwayNode,
 //			dataNode,
-//			scriptingNode,
+			scriptingNode,
 	};
 	List<BioModelNode> annotationNodes = new ArrayList<BioModelNode>();
 	List<BioModelNode> childApplicationsNodeList = new ArrayList<BioModelNode>();
