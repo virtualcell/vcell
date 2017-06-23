@@ -1,6 +1,6 @@
 The Virtual Cell plugin for ImageJ.
 
-###How to import this project
+### How to import this project
 
 * In [Eclipse](http://eclipse.org), for example, it is as simple as
   _File&gt;Import...&gt;Existing Maven Project_.
@@ -13,7 +13,7 @@ The Virtual Cell plugin for ImageJ.
 * If [jEdit](http://jedit.org) is your preferred IDE, you will need the
   [Maven Plugin](http://plugins.jedit.org/plugins/?MavenPlugin).
 
-###Eclipse: To ensure that Maven copies the plugin to your ImageJ folder
+### Eclipse: To ensure that Maven copies the plugin to your ImageJ folder
 
 1. Go to _Run Configurations..._
 2. Choose _Maven Build_
