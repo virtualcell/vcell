@@ -1,0 +1,283 @@
+[10:04:48,378  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:04:48,380  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:04:48,381  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:04:48,426 ERROR SpatialModelPlugin:266] - The spatial id "Cyt" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:04:48,427 ERROR IdentifierException:75] - An element with the metaid "Cyt" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:04:48,427  WARN AnalyticVolume:394] - Could not recognized the value Cyt for the attribute id on the 'analyticVolume' element.
+[10:04:48,429 ERROR SpatialModelPlugin:266] - The spatial id "EC" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:04:48,429 ERROR IdentifierException:75] - An element with the metaid "EC" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:04:48,430  WARN AnalyticVolume:394] - Could not recognized the value EC for the attribute id on the 'analyticVolume' element.
+[10:04:48,431  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[10:04:48,432  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[10:12:04,741  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:12:04,744  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:12:04,744  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:12:04,782 ERROR SpatialModelPlugin:266] - The spatial id "Cyt" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:12:04,783 ERROR IdentifierException:75] - An element with the metaid "Cyt" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:12:04,783  WARN AnalyticVolume:394] - Could not recognized the value Cyt for the attribute id on the 'analyticVolume' element.
+[10:12:04,785 ERROR SpatialModelPlugin:266] - The spatial id "EC" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:12:04,785 ERROR IdentifierException:75] - An element with the metaid "EC" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:12:04,785  WARN AnalyticVolume:394] - Could not recognized the value EC for the attribute id on the 'analyticVolume' element.
+[10:12:04,787  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[10:12:04,787  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[10:29:36,696  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:29:36,698  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:29:36,698  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:29:36,736 ERROR SpatialModelPlugin:266] - The spatial id "Cyt" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:29:36,737 ERROR IdentifierException:75] - An element with the metaid "Cyt" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:29:36,737  WARN AnalyticVolume:394] - Could not recognized the value Cyt for the attribute id on the 'analyticVolume' element.
+[10:29:36,739 ERROR SpatialModelPlugin:266] - The spatial id "EC" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:29:36,739 ERROR IdentifierException:75] - An element with the metaid "EC" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:29:36,740  WARN AnalyticVolume:394] - Could not recognized the value EC for the attribute id on the 'analyticVolume' element.
+[10:29:36,741  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[10:29:36,741  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[10:30:34,052  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:30:34,054  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:30:34,055  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:30:34,094 ERROR SpatialModelPlugin:266] - The spatial id "Cyt" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:30:34,094 ERROR IdentifierException:75] - An element with the metaid "Cyt" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:30:34,095  WARN AnalyticVolume:394] - Could not recognized the value Cyt for the attribute id on the 'analyticVolume' element.
+[10:30:34,097 ERROR SpatialModelPlugin:266] - The spatial id "EC" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:30:34,097 ERROR IdentifierException:75] - An element with the metaid "EC" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:30:34,097  WARN AnalyticVolume:394] - Could not recognized the value EC for the attribute id on the 'analyticVolume' element.
+[10:30:34,098  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[10:30:34,098  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[10:31:14,001  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:31:14,003  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:31:14,004  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:31:14,042 ERROR SpatialModelPlugin:266] - The spatial id "Cyt" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:31:14,042 ERROR IdentifierException:75] - An element with the metaid "Cyt" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:31:14,043  WARN AnalyticVolume:394] - Could not recognized the value Cyt for the attribute id on the 'analyticVolume' element.
+[10:31:14,045 ERROR SpatialModelPlugin:266] - The spatial id "EC" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:31:14,045 ERROR IdentifierException:75] - An element with the metaid "EC" is already present in the SBML document. The element analyticVolume will not be annotated with it.
+[10:31:14,045  WARN AnalyticVolume:394] - Could not recognized the value EC for the attribute id on the 'analyticVolume' element.
+[10:31:14,046  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[10:31:14,047  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[10:40:32,895  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:40:32,898  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:40:32,898  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:40:32,941 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:40:32,941 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[10:40:32,942  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[10:40:32,942 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:40:32,942 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[10:40:32,942  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[10:40:32,946  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[10:40:32,950  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[10:40:32,950  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[12:01:48,482  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:01:48,485  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:01:48,486  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:01:48,526 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:01:48,526 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:01:48,527  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[12:01:48,527 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:01:48,527 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:01:48,527  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[12:01:48,530  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[12:01:48,533  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[12:01:48,534  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[12:02:56,204  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:02:56,207  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:02:56,207  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:02:56,245 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:02:56,246 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:02:56,246  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[12:02:56,246 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:02:56,246 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:02:56,246  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[12:02:56,249  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[12:02:56,253  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[12:02:56,253  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[12:12:54,241  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:12:54,244  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:12:54,245  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:12:54,282 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:12:54,282 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:12:54,283  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[12:12:54,283 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:12:54,283 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:12:54,283  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[12:12:54,286  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[12:12:54,290  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[12:12:54,290  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[12:27:21,799  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:27:21,802  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:27:21,803  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:27:21,853 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:27:21,853 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:27:21,854  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[12:27:21,854 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:27:21,854 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:27:21,854  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[12:27:21,858  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[12:27:21,862  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[12:27:21,863  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[12:42:20,609  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:42:20,613  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:42:20,614  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:42:20,654 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:42:20,654 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:42:20,655  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[12:42:20,655 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:42:20,655 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:42:20,655  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[12:42:20,658  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[12:42:20,662  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[12:42:20,662  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[12:56:51,157  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:56:51,159  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:56:51,160  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:56:51,202 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:56:51,203 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:56:51,203  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[12:56:51,203 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:56:51,203 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:56:51,203  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[12:56:51,206  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[12:56:51,210  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[12:56:51,211  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[12:58:36,341  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:58:36,343  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:58:36,344  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:58:36,385 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:58:36,386 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:58:36,386  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[12:58:36,387 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:58:36,387 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:58:36,387  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[12:58:36,390  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[12:58:36,394  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[12:58:36,394  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[12:59:27,781  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:59:27,783  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:59:27,784  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[12:59:27,829 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:59:27,829 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:59:27,830  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[12:59:27,830 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[12:59:27,830 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[12:59:27,830  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[12:59:27,833  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[12:59:27,837  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[12:59:27,838  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[13:03:45,504  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[13:03:45,506  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[13:03:45,507  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[13:03:45,552 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[13:03:45,553 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[13:03:45,553  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[13:03:45,553 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[13:03:45,553 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[13:03:45,554  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[13:03:45,556  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[13:03:45,560  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[13:03:45,561  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[13:06:03,774  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[13:06:03,777  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[13:06:03,777  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[13:06:03,820 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[13:06:03,820 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[13:06:03,820  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[13:06:03,820 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[13:06:03,821 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[13:06:03,821  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[13:06:03,824  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[13:06:03,827  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[13:06:03,828  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[14:22:45,716  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:22:45,720  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:22:45,721  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:22:45,779 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:22:45,779 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:22:45,780  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[14:22:45,780 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:22:45,781 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:22:45,781  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[14:22:45,785  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[14:22:45,791  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[14:22:45,791  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[14:26:43,582  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:26:43,584  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:26:43,585  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:26:43,626 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:26:43,626 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:26:43,626  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[14:26:43,627 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:26:43,627 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:26:43,627  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[14:26:43,630  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[14:26:43,634  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[14:26:43,634  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[14:28:23,395  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:28:23,397  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:28:23,398  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:28:23,439 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:28:23,439 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:28:23,439  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[14:28:23,440 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:28:23,440 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:28:23,440  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[14:28:23,443  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[14:28:23,447  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[14:28:23,447  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[14:30:16,072  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:30:16,074  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:30:16,075  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:30:16,115 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:30:16,116 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:30:16,116  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[14:30:16,116 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:30:16,116 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:30:16,116  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[14:30:16,119  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[14:30:16,123  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[14:30:16,123  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[14:38:08,235  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:38:08,238  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:38:08,239  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:38:08,279 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:38:08,279 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:38:08,279  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[14:38:08,280 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:38:08,280 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:38:08,280  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[14:38:08,283  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[14:38:08,287  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[14:38:08,288  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[14:39:00,542  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:39:00,545  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:39:00,546  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:39:00,595 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:39:00,596 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:39:00,596  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[14:39:00,597 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:39:00,597 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:39:00,597  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[14:39:00,600  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[14:39:00,604  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[14:39:00,604  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[14:48:26,041  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:48:26,044  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:48:26,045  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:48:26,105 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:48:26,105 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:48:26,106  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[14:48:26,106 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:48:26,106 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:48:26,107  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[14:48:26,110  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[14:48:26,115  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[14:48:26,115  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[14:49:02,184  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:49:02,187  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:49:02,188  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[14:49:02,234 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:49:02,234 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:49:02,235  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[14:49:02,235 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[14:49:02,235 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[14:49:02,235  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[14:49:02,238  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[14:49:02,242  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[14:49:02,242  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.

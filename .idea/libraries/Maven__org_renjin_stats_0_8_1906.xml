@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.renjin:stats:0.8.1906">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/renjin/stats/0.8.1906/stats-0.8.1906.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/renjin/stats/0.8.1906/stats-0.8.1906-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/renjin/stats/0.8.1906/stats-0.8.1906-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

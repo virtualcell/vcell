@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <output-test url="file://$MODULE_DIR$/target/test-classes" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: net.imagej:imagej:2.0.0-rc-56" level="project" />
+    <orderEntry type="library" name="Maven: net.imagej:imagej-common:0.24.2" level="project" />
+    <orderEntry type="library" name="Maven: net.imglib2:imglib2:3.2.1" level="project" />
+    <orderEntry type="library" name="Maven: net.imglib2:imglib2-roi:0.4.4" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.trove4j:trove4j:3.0.3" level="project" />
+    <orderEntry type="library" name="Maven: edu.ucar:udunits:4.3.18" level="project" />
+    <orderEntry type="library" name="Maven: net.imagej:imagej-notebook:0.1.0" level="project" />
+    <orderEntry type="library" name="Maven: net.imagej:imagej-ops:0.35.1" level="project" />
+    <orderEntry type="library" name="Maven: net.imglib2:imglib2-algorithm:0.6.1" level="project" />
+    <orderEntry type="library" name="Maven: gov.nist.math:jama:1.0.3" level="project" />
+    <orderEntry type="library" name="Maven: net.imglib2:imglib2-algorithm-fft:0.1.2" level="project" />
+    <orderEntry type="library" name="Maven: edu.mines:mines-jtk:20151125" level="project" />
+    <orderEntry type="library" name="Maven: net.imglib2:imglib2-realtransform:2.0.0-beta-34" level="project" />
+    <orderEntry type="library" name="Maven: jitk:jitk-tps:2.1.0" level="project" />
+    <orderEntry type="library" name="Maven: com.googlecode.efficient-java-matrix-library:ejml:0.24" level="project" />
+    <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />
+    <orderEntry type="library" name="Maven: mpicbg:mpicbg:1.1.1" level="project" />
+    <orderEntry type="library" name="Maven: net.imagej:ij:1.51g" level="project" />
+    <orderEntry type="library" name="Maven: au.com.bytecode:opencsv:2.4" level="project" />
+    <orderEntry type="library" name="Maven: org.scijava:scijava-expression-parser:3.1.0" level="project" />
+    <orderEntry type="library" name="Maven: org.scijava:scripting-javascript:0.4.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-math3:3.6.1" level="project" />
+    <orderEntry type="library" name="Maven: net.imagej:imagej-updater:0.8.2" level="project" />
+    <orderEntry type="library" name="Maven: io.scif:scifio:0.31.0" level="project" />
+    <orderEntry type="library" name="Maven: io.scif:scifio-jai-imageio:1.1.0" level="project" />
+    <orderEntry type="library" name="Maven: org.mapdb:mapdb:1.0.3" level="project" />
+    <orderEntry type="library" name="Maven: org.scijava:scijava-common:2.62.0" level="project" />
+    <orderEntry type="library" name="Maven: com.googlecode.gentyref:gentyref:1.1.0" level="project" />
+    <orderEntry type="library" name="Maven: org.bushe:eventbus:1.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.imagej:imagej-deprecated:0.1.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.imagej:imagej-plugins-commands:0.7.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.sbridges.object-inspector:object-inspector:0.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.iharder:base64:2.3.8" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.imagej:imagej-plugins-tools:0.3.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.imagej:imagej-plugins-uploader-ssh:0.3.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.jcraft:jsch:0.1.49" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.imagej:imagej-plugins-uploader-webdav:0.2.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.imagej:imagej-scripting:0.4.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scripting-beanshell:0.3.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache-extras.beanshell:bsh:2.0b6" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scripting-clojure:0.1.5" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.clojure:clojure:1.8.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scripting-groovy:0.2.5" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.codehaus.groovy:groovy:2.3.6" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scripting-java:0.4.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:minimaven:2.2.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scripting-jruby:0.2.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.jruby:jruby-core:1.7.12" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.ow2.asm:asm:4.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.ow2.asm:asm-commons:4.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.ow2.asm:asm-tree:4.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.ow2.asm:asm-analysis:4.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.ow2.asm:asm-util:4.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.jruby.joni:joni:2.1.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jnr:jnr-netdb:1.1.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jnr:jnr-enxio:0.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jnr:jnr-x86asm:1.0.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jnr:jnr-unixsocket:0.3" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jnr:jnr-posix:3.0.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.jruby.extras:bytelist:1.0.11" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jnr:jnr-constants:0.8.5" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.jruby.jcodings:jcodings:1.0.10" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jnr:jnr-ffi:1.0.7" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jnr:jffi:1.2.7" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jnr:jffi:native:1.2.7" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.yaml:snakeyaml:1.13" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.jcraft:jzlib:1.1.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.headius:invokebinder:1.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.martiansoftware:nailgun-server:0.9.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.jruby:yecht:1.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: joda-time:joda-time:2.9.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.headius:options:1.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.jruby:jruby-stdlib:1.7.12" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scripting-jython:0.4.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:jython-shaded:2.7.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scripting-renjin:0.2.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:renjin-script-engine:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:renjin-core:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.commons:commons-math:2.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:gcc-runtime:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.netlib:netlib-java:0.9.3-renjin-patched-2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.netlib:lapack:0.8" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.netlib:f2jutil:0.8" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.netlib:xerbla:0.8" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.netlib:blas:0.8" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.commons:commons-vfs2:2.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: commons-logging:commons-logging:1.1.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.maven.scm:maven-scm-api:1.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.codehaus.plexus:plexus-utils:1.5.6" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.maven.scm:maven-scm-provider-svnexe:1.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.maven.scm:maven-scm-provider-svn-commons:1.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: regexp:regexp:1.3" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.commons:commons-compress:1.4.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.tukaani:xz:1.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: edu.emory.mathcs:jtransforms:2.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.sf.jung:jung-api:2.0.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.sourceforge.collections:collections-generic:4.01" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.sf.jung:jung-graph-impl:2.0.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.google.guava:guava:19.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.sun.codemodel:codemodel:2.6" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:stats:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:renjin-appl:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:renjin-gnur-runtime:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:methods:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:datasets:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:utils:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:grDevices:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.renjin:graphics:0.8.1906" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scripting-scala:0.1.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scala-lang:scala-compiler:2.12.0-M4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scala-lang:scala-library:2.12.0-M4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scala-lang:scala-reflect:2.12.0-M4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scala-lang.modules:scala-xml_2.12.0-M4:1.0.5" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scala-lang.modules:scala-parser-combinators_2.12.0-M4:1.0.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.imagej:imagej-ui-swing:0.21.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scijava-ui-awt:0.1.5" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scijava-ui-swing:0.9.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:swing-checkbox-tree:1.0.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.sourceforge.jdatepicker:jdatepicker:1.3.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.miglayout:miglayout:swing:3.7.4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.jfree:jfreechart:1.0.19" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.jfree:jcommon:1.0.23" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.jhotdraw:jhotdraw:7.6.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.imagej:imagej-ui-awt:0.3.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scijava-plugins-commands:0.2.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scijava-plugins-platforms:0.2.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scijava-plugins-text-markdown:0.1.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.markdownj:markdownj:0.3.0-1.0.2b4" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scijava-plugins-text-plain:0.1.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.commons:commons-lang3:3.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:script-editor:0.1.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.fifesoft:rsyntaxtextarea:2.5.8" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.fifesoft:languagesupport:2.5.8" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.fifesoft:autocomplete:2.5.8" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.mozilla:rhino:1.7.6" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml:jsbml:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml:jsbml-core:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-1.2-api:2.3" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.woodstox:woodstox-core:5.0.1" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.woodstox:stax2-api:3.1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.w3c.jigsaw:jigsaw:2.2.6" level="project" />
+    <orderEntry type="library" name="Maven: org.biojava:biojava-ontology:4.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.21" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.logging.log4j:log4j-slf4j-impl:2.1" level="project" />
+    <orderEntry type="library" name="Maven: com.thoughtworks.xstream:xstream:1.3.1" level="project" />
+    <orderEntry type="library" name="Maven: xpp3:xpp3_min:1.1.4c" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.staxmate:staxmate:2.3.0" level="project" />
+    <orderEntry type="library" name="Maven: com.googlecode.json-simple:json-simple:1.1.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.12" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-arrays:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-comp:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-distrib:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-dyn:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-fbc:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-groups:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-layout:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-multi:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-qual:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-render:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-req:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-spatial:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.modules:jsbml-tidy:1.2" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.jtidy:jtidy:r938" level="project" />
+  </component>
+</module>
