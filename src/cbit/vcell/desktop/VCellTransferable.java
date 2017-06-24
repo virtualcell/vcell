@@ -20,6 +20,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
@@ -79,14 +80,20 @@ public class VCellTransferable extends SimpleTransferable {
 		private ReactionStep[] reactStepArr;
 		private ReactionRule[] rrArr;
 		private MolecularType[] mtArr;
+		private Structure fromStruct;	// the structure from where we copy
+		private Structure[] structArr;	// Feature, Membrane  must always have at least one element
 		
-		public ReactionSpeciesCopy(SpeciesContext[] speciesContextArr, ReactionStep[] reactStepArr, ReactionRule[] rrArr, MolecularType[] mtArr) {
+		public ReactionSpeciesCopy(SpeciesContext[] speciesContextArr, ReactionStep[] reactStepArr, 
+				ReactionRule[] rrArr, MolecularType[] mtArr, 
+				Structure fromStruct, Structure[] structArr) {
 			this.speciesContextArr = (speciesContextArr==null || speciesContextArr.length==0 ? null : speciesContextArr);
 			this.reactStepArr = (reactStepArr==null || reactStepArr.length==0 ? null : reactStepArr);
 			this.rrArr = (rrArr==null || rrArr.length==0 ? null : rrArr);
 			this.mtArr = (mtArr==null || mtArr.length==0 ? null : mtArr);
+			this.fromStruct = fromStruct;													// can't be null
+			this.structArr = (structArr==null || structArr.length==0 ? null : structArr);	// can't be null
 			if(this.speciesContextArr == null && this.reactStepArr == null && this.rrArr == null && this.mtArr == null) {
-				throw new IllegalArgumentException(ReactionSpeciesCopy.class.getName()+" all parameters null.");
+				throw new IllegalArgumentException(ReactionSpeciesCopy.class.getName() + " all parameters null.");
 			}
 		}
 		public SpeciesContext[] getSpeciesContextArr() {
@@ -100,6 +107,12 @@ public class VCellTransferable extends SimpleTransferable {
 		}
 		public MolecularType[] getMolecularTypeArr() {
 			return mtArr;
+		}
+		public Structure[] getStructuresArr() {
+			return structArr;
+		}
+		public Structure getFromStructure() {
+			return fromStruct;
 		}
 		@Override
 		public String toString() {
@@ -128,6 +141,29 @@ public class VCellTransferable extends SimpleTransferable {
 					sb.append(rrArr[i].getName()+"\n");
 				}
 			}
+			
+			if((reactStepArr != null || speciesContextArr != null || rrArr != null) && mtArr != null) {
+				sb.append("\n");
+			}
+			if(mtArr != null) {
+//				sb.append("-----MolecularTypes-----\n");
+				for (int i = 0; i < mtArr.length; i++) {
+					sb.append(mtArr[i].getName()+"\n");
+				}
+			}
+
+			if((reactStepArr != null || speciesContextArr != null || rrArr != null || mtArr != null) && structArr != null) {
+				sb.append("\n");
+			}
+			if(structArr != null) {
+//				sb.append("-----Structures-----\n");
+				for (int i = 0; i < structArr.length; i++) {
+					sb.append(structArr[i].getName()+"\n");
+				}
+			}
+
+			System.out.println(sb.toString());
+			
 			return sb.toString();
 		}
 	}

@@ -15,8 +15,10 @@ import java.awt.Dimension;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -28,6 +30,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -42,6 +47,7 @@ import cbit.gui.graph.GraphPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
@@ -54,7 +60,9 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.StructureTopology;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -98,15 +106,24 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 	public static boolean printIssues(Vector<Issue> issueVector, Component guiRequestComponent) {
 		// now print out the issue List as a warning popup
 		if (issueVector.size() > 0) {
+			boolean hasErrors = false;
 			StringBuffer messageBuffer = new StringBuffer("Issues encountered during pasting selected reactions:\n\n");
 			for (int j = 0; j < issueVector.size(); j++) {
 				Issue issue = issueVector.get(j);
-				if (issue.getSeverity()==Issue.SEVERITY_ERROR || issue.getSeverity()==Issue.SEVERITY_WARNING) {
-					messageBuffer.append(j+1 + ". " + issue.getCategory()+" "+issue.getSeverityName()+" : "+issue.getMessage()+"\n\n");
+				if (issue.getSeverity()==Issue.Severity.ERROR || issue.getSeverity()==Issue.Severity.WARNING) {
+					if(issue.getSeverity()==Issue.Severity.ERROR) {
+						hasErrors = true;
+					}
+					messageBuffer.append(j+1 + ". " + issue.getCategory()+" "+issue.getSeverity()+" : "+issue.getMessage()+"\n\n");
 				}
 			}
-			if (issueVector.size()>0){
-				String[] choices = new String[] {"Paste Anyway", "Cancel"};
+			if (issueVector.size() > 0) {
+				String[] choices;
+				if(hasErrors) {
+					choices = new String[] {"Cancel"};
+				} else {
+					choices = new String[] {"Paste Anyway", "Cancel"};
+				}
 				String resultStr = DialogUtils.showWarningDialog(guiRequestComponent, messageBuffer.toString(), choices, "Cancel");
 				if (resultStr != null && resultStr.equals("Paste Anyway")) {
 					return true;
@@ -121,6 +138,168 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 		GraphPane getGraphPane();
 		void saveDiagram();
 	}
+	
+	private static void checkStructuresCompatibility(VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
+			Vector<Issue> issueVector, IssueContext issueContext) {
+		Structure fromStruct = rsCopy.getFromStructure();
+		if(rsCopy.getFromStructure().getDimension() != structTo.getDimension()) {
+			// the source and destination structures need to have the same dimension, can't paste from compartment to membrane or vice-versa
+			String msg = "Unable to paste from a " + fromStruct.getTypeName() + " to a " + structTo.getTypeName();
+			msg += ". Both source and destination Structures need to have the same dimension.";
+			msg += " Please choose a " + fromStruct.getTypeName() + " as destination and try again.";
+			Issue issue = new Issue(fromStruct, issueContext, IssueCategory.CopyPaste, msg, Issue.Severity.ERROR);
+			issueVector.add(issue);
+		}
+		for(Structure from : rsCopy.getStructuresArr()) {
+			Structure to = modelTo.getStructure(from.getName());
+			if(to != null && from.getDimension() != to.getDimension()) {
+				String msg = "Unable to paste " + from.getTypeName() + " " + from.getName();
+				msg += " because a " + to.getTypeName() + " with the same name already exists.";
+				msg += " Please rename the conflicting structure and try again.";
+				Issue issue = new Issue(from, issueContext, IssueCategory.CopyPaste, msg, Issue.Severity.ERROR);
+				issueVector.add(issue);
+			}
+		}
+	}
+	private static Set<MolecularType> pasteMolecules(VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, 
+			Vector<Issue> issueVector, IssueContext issueContext) {
+		// molecular types
+		Set<MolecularType> mtNewList = new HashSet<>();
+		Set<MolecularType> mtConflictList = new HashSet<>();
+		Set<MolecularType> mtAlreadyList = new HashSet<>();
+		RbmModelContainer rbmmcTo = modelTo.getRbmModelContainer();
+		if(rsCopy.getMolecularTypeArr() != null) {
+			for(MolecularType mtFrom : rsCopy.getMolecularTypeArr()) {	// the molecules we try to paste here
+				MolecularType mtTo = rbmmcTo.getMolecularType(mtFrom.getName());
+				if(mtTo == null) {
+					mtTo = new MolecularType(mtFrom, modelTo);
+					mtNewList.add(mtTo);
+				} else {
+					if(!mtTo.compareEqual(mtFrom)) {
+						// conflict: a different mt with the same name already exists
+						String msg = mtFrom.getDisplayType() + " " + RbmUtils.toBnglString(mtFrom, null, CompartmentMode.hide);
+						msg += " to be pasted conflicts with an existing molecule " + RbmUtils.toBnglString(mtTo, null, CompartmentMode.hide);
+						msg += ". Please resolve the conflict and try again.";
+						Issue issue = new Issue(mtFrom, issueContext, IssueCategory.CopyPaste, msg, Issue.Severity.ERROR);
+						issueVector.add(issue);
+						mtConflictList.add(mtFrom);
+					} else {
+						mtAlreadyList.add(mtFrom);
+					}
+				}
+			}
+			if(!mtConflictList.isEmpty()) {
+				System.out.println("Found " + mtConflictList.size() + " conflicting molecule(s).");
+			}
+			if(!mtAlreadyList.isEmpty()) {
+				System.out.println("Found " + mtAlreadyList.size() + " molecule(s) already there.");
+			}
+		}
+		return mtNewList;
+	}
+	// map the structures to be pasted to existing structures 
+	private static void mapStructures(Component requester,
+			VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
+			IssueContext issueContext) {
+		
+		Vector <Issue> issueVector = new Vector<>();	// use internally only; we exit the dialog when there are no issues left
+		Structure fromStruct = rsCopy.getFromStructure();
+		int numFromStructures = rsCopy.getStructuresArr().length;	// contains the fromStruct
+		
+		StructurePasteMappingPanel structureMappingPanel = null;
+		Hashtable<JLabel,ReactionParticipant> mapLabelToPart = null;
+		do {
+			issueVector.clear();
+			if(structureMappingPanel == null) {
+				structureMappingPanel = new StructurePasteMappingPanel(rsCopy, 
+						modelTo, structTo,
+						issueVector,  issueContext);
+				structureMappingPanel.setPreferredSize(new Dimension(400, 220));
+				
+				
+				
+				
+				
+			}
+
+			int result = DialogUtils.showComponentOKCancelDialog(requester, structureMappingPanel, "Assign 'From' structures to 'To' structures");
+			if(result != JOptionPane.OK_OPTION) {
+				throw UserCancelException.CANCEL_GENERIC;
+			}
+		} while(!issueVector.isEmpty());
+	}
+	public static final void pasteReactionsAndRules(Component requester, VCellTransferable.ReactionSpeciesCopy rsCopy,
+			Model pasteModel, Structure structTo, RXPasteInterface rxPasteInterface) {
+		
+		PasteHelper[] pasteHelper = new PasteHelper[1];
+		
+		AsynchClientTask issueTask = new AsynchClientTask("Checking Issues...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
+				clonedModel.refreshDependencies();
+				IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
+				Vector <Issue> issues = new Vector<>();
+				checkStructuresCompatibility(rsCopy, clonedModel, structTo, issues, issueContext);
+				Set<MolecularType> mtNewList = pasteMolecules(rsCopy, clonedModel, issues, issueContext);
+				if (issues.size() != 0) {	// at this point we can only have fatal error issues or no issues at all
+					if (!printIssues(issues, requester)) {
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+				}
+				try {
+					for(MolecularType mtOurs : mtNewList) {
+						clonedModel.getRbmModelContainer().addMolecularType(mtOurs, false);
+					}
+				} catch (ModelException | PropertyVetoException e) {
+					e.printStackTrace();
+					throw new RuntimeException(e.getMessage());
+				}
+				// map all the structures of the reactions, rules and their participants to existing structures
+				// at need make new structures
+				if(rsCopy.getStructuresArr().length > 1) {	// if length ==1 it's just fromStruct which automatically maps to to Struct
+					mapStructures(requester, rsCopy, clonedModel, structTo, issueContext);	// throws CANCEL_GENERIC if the user cancels
+				}
+				
+				
+//				if(pasteHelper[0].rxPartMapStruct != null){
+//					//Convert rxPartMapStruct instances from cloned to pasteModel
+//
+//				}
+			}
+		};
+		
+		
+		
+		AsynchClientTask pasteRXTask = new AsynchClientTask("Pasting Reaction...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable)throws Exception {
+				IssueContext issueContext = new IssueContext(ContextType.Model, pasteModel, null);
+
+
+				
+				
+				
+//				if (pasteHelper[0].issues.size() != 0) {
+//					printIssues(pasteHelper[0].issues, requester);
+//				}
+//				if(rxPasteInterface != null){
+//					for(BioModelEntityObject newBioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()) {
+//						ReactionCartoonTool.copyRelativePosition(rxPasteInterface.getGraphPane().getGraphModel(), pasteHelper[0].reactionsAndSpeciesContexts.get(newBioModelEntityObject), newBioModelEntityObject);
+//					}
+//					ReactionCartoonTool.selectAndSaveDiagram(rxPasteInterface, new ArrayList<BioModelEntityObject>(pasteHelper[0].reactionsAndSpeciesContexts.keySet()));
+////					//Setup to allow dispatcher to set focus on a specified component after it closes the ProgressPopup
+//					setFinalWindow(hashTable, rxPasteInterface.getGraphPane());
+//				}
+			}
+		};
+
+		
+		
+		
+		ClientTaskDispatcher.dispatch(requester, new Hashtable<>(), new AsynchClientTask[] {issueTask, pasteRXTask}, false);
+	}
+	
 	/**
 	 * pasteReactionSteps : this method clones the model argument and calls the private pasteReationSteps0 method with the cloned model to see if
 	 * there are any issues with the paste operation. If so, the issue list is popped up in a warning dialog, and user is given the option of proceeding
