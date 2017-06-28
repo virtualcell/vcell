@@ -60,7 +60,12 @@ public class ConsumerContextJms implements Runnable {
 						topicConsumer.getTopicListener().onTopicMessage(vcMessage, temporaryMessageProducerSession);
 						temporaryMessageProducerSession.commit();
 						jmsSession.commit();
-						vcMessage.removeBlobFile();
+						//
+						// if we knew this was the only subscriber for this topic, then remove file immediately.
+						// since we don't know for sure, don't remove the file here.
+						// instead, we need to periodically remove old Blob files (maybe daily) 
+						//
+						//  vcMessage.removeBlobFile();
 					}else{
 						throw new RuntimeException("unexpected VCConsumer type "+vcConsumer);
 					}
