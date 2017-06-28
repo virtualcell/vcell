@@ -388,11 +388,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JToolBarToggleButton getLineDirectedButton() {
 		if (lineDirectedButton == null) {
 			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				ReactionToolShapeIcon.setPlainReactionToolMod(button);
-				button.setActionCommand(Mode.LINEDIRECTED.getActionCommand());
-				lineDirectedButton = button;
-//				lineDirectedButton = createModeButton("LineButton", "RX Connection Tool", Mode.LINEDIRECTED, loadIcon("/images/lineDirected.gif"));
+//				JToolBarToggleButton button = new JToolBarToggleButton();
+//				ReactionToolShapeIcon.setPlainReactionToolMod(button);
+//				button.setActionCommand(Mode.LINEDIRECTED.getActionCommand());
+//				lineDirectedButton = button;
+				lineDirectedButton = createModeButton("LineButton", "RX Connection Tool", Mode.LINEDIRECTED, loadIcon("/images/lineDirected.gif"));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -402,11 +402,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JToolBarToggleButton getLineCatalystButton() {
 		if (lineCatalystButton == null) {
 			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				ReactionToolShapeIcon.setCatalystToolMod(button);
-				button.setActionCommand(Mode.LINECATALYST.getActionCommand());
-				lineCatalystButton = button;
-//				lineCatalystButton = createModeButton("LineCatalystButton", "Set a catalyst", Mode.LINECATALYST, loadIcon("/images/lineCatalyst.gif"));
+//				JToolBarToggleButton button = new JToolBarToggleButton();
+//				ReactionToolShapeIcon.setCatalystToolMod(button);
+//				button.setActionCommand(Mode.LINECATALYST.getActionCommand());
+//				lineCatalystButton = button;
+				lineCatalystButton = createModeButton("LineCatalystButton", "Set a catalyst", Mode.LINECATALYST, loadIcon("/images/lineCatalyst.gif"));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -416,11 +416,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JToolBarToggleButton getFluxReactionButton() {
 		if (fluxReactionButton == null) {
 			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				ReactionToolShapeIcon.setFluxTransportToolMod(button);
-				button.setActionCommand(Mode.FLUX.getActionCommand());
-				fluxReactionButton = button;
-//				fluxReactionButton = createModeButton("FluxReactionButton", "FluxReaction Tool", Mode.FLUX, loadIcon("/images/fluxItem.gif"));
+//				JToolBarToggleButton button = new JToolBarToggleButton();
+//				ReactionToolShapeIcon.setFluxTransportToolMod(button);
+//				button.setActionCommand(Mode.FLUX.getActionCommand());
+//				fluxReactionButton = button;
+				fluxReactionButton = createModeButton("FluxReactionButton", "FluxReaction Tool", Mode.FLUX, loadIcon("/images/fluxItem.gif"));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
