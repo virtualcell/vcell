@@ -17,7 +17,9 @@ import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,10 +41,12 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jdom.Document;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.UnzipUtility;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
@@ -69,6 +73,7 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.NetworkProxyUtils;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XmlHelper;
 /**
@@ -317,6 +322,35 @@ public static void main(java.lang.String[] args) {
 		
 		//starting loading libraries
 		new LibraryLoaderThread(true).start( );
+		
+		//download/unzip bngperl executable environment in background thread to vcell home
+		if(OperatingSystemInfo.getInstance( ).isWindows()){
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					File bngPerlHome = new File(ResourceUtil.getVcellHome(),"bngperl");
+					String bngPerlRemoteSource = "http://vcell.org/webstart/strawberry-perl-5.24.1.1-32bit-portable.zip";
+					if(!bngPerlHome.exists()){
+						InputStream instream = null;
+						try {
+							long startTime = System.currentTimeMillis();
+							instream = new URL(bngPerlRemoteSource).openStream();
+							new UnzipUtility().unzip(instream/*bngPerlZip[0].getAbsolutePath()*/, bngPerlHome.getAbsolutePath());
+							System.out.println("Finished bngperl download->extract '"+bngPerlRemoteSource+"' executable environment to dir '"+bngPerlHome.getAbsolutePath()+"' in "+((System.currentTimeMillis()-startTime)/1000)+" seconds");
+						} catch (Exception e) {
+							System.out.println("Failed downloading/extracting '"+bngPerlRemoteSource+"' executable environment to dir '"+bngPerlHome.getAbsolutePath()+"'");
+							e.printStackTrace();
+						}finally{
+							if(instream != null){
+								IOUtils.closeQuietly(instream);
+							}
+						}
+					}		
+				}
+			}).start();
+		}
+
+
 	} catch (Throwable exception) {
 		BeanUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(),csInfo.toString()+"\nvcell startup failed\n\n" + exception.getMessage());
 		JOptionPane.showMessageDialog(null, exception.getMessage(), "Fatal Error",JOptionPane.OK_OPTION);
