@@ -281,3 +281,63 @@
 [14:49:02,238  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
 [14:49:02,242  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
 [14:49:02,242  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[10:31:48,212  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:31:48,214  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:31:48,215  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:31:48,252 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:31:48,252 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[10:31:48,253  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[10:31:48,253 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:31:48,253 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[10:31:48,253  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[10:31:48,256  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[10:31:48,260  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[10:31:48,260  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+[10:33:31,420  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:33:31,422  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:33:31,423  WARN Model:4805] - registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+[10:33:31,464 ERROR SpatialModelPlugin:266] - The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:33:31,464 ERROR IdentifierException:75] - An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[10:33:31,464  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+[10:33:31,465 ERROR SpatialModelPlugin:266] - The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+[10:33:31,465 ERROR IdentifierException:75] - An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+[10:33:31,465  WARN AbstractSpatialNamedSBase:201] - Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+[10:33:31,469  WARN SampledField:898] - Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+[10:33:31,473  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+[10:33:31,473  WARN SBMLCoreParser:386] - No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+2017-06-27 11:53:49,751 WARN o.s.j.Model [SciJava-55eae153-Thread-1] registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+2017-06-27 11:53:49,755 WARN o.s.j.Model [SciJava-55eae153-Thread-1] registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+2017-06-27 11:53:49,756 WARN o.s.j.Model [SciJava-55eae153-Thread-1] registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+2017-06-27 11:53:49,800 ERROR o.s.j.e.s.SpatialModelPlugin [SciJava-55eae153-Thread-1] The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+2017-06-27 11:53:49,801 ERROR o.s.j.IdentifierException [SciJava-55eae153-Thread-1] An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+2017-06-27 11:53:49,801 WARN o.s.j.e.s.AbstractSpatialNamedSBase [SciJava-55eae153-Thread-1] Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+2017-06-27 11:53:49,801 ERROR o.s.j.e.s.SpatialModelPlugin [SciJava-55eae153-Thread-1] The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+2017-06-27 11:53:49,802 ERROR o.s.j.IdentifierException [SciJava-55eae153-Thread-1] An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+2017-06-27 11:53:49,802 WARN o.s.j.e.s.AbstractSpatialNamedSBase [SciJava-55eae153-Thread-1] Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+2017-06-27 11:53:49,805 WARN o.s.j.e.s.SampledField [SciJava-55eae153-Thread-1] Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+2017-06-27 11:53:49,809 WARN o.s.j.x.p.SBMLCoreParser [SciJava-55eae153-Thread-1] No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+2017-06-27 11:53:49,809 WARN o.s.j.x.p.SBMLCoreParser [SciJava-55eae153-Thread-1] No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+2017-06-27 12:02:31,007 WARN o.s.j.Model [SciJava-6676eed8-Thread-1] registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+2017-06-27 12:02:31,009 WARN o.s.j.Model [SciJava-6676eed8-Thread-1] registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+2017-06-27 12:02:31,010 WARN o.s.j.Model [SciJava-6676eed8-Thread-1] registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+2017-06-27 12:02:31,051 ERROR o.s.j.e.s.SpatialModelPlugin [SciJava-6676eed8-Thread-1] The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+2017-06-27 12:02:31,052 ERROR o.s.j.IdentifierException [SciJava-6676eed8-Thread-1] An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+2017-06-27 12:02:31,052 WARN o.s.j.e.s.AbstractSpatialNamedSBase [SciJava-6676eed8-Thread-1] Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+2017-06-27 12:02:31,052 ERROR o.s.j.e.s.SpatialModelPlugin [SciJava-6676eed8-Thread-1] The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+2017-06-27 12:02:31,053 ERROR o.s.j.IdentifierException [SciJava-6676eed8-Thread-1] An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+2017-06-27 12:02:31,053 WARN o.s.j.e.s.AbstractSpatialNamedSBase [SciJava-6676eed8-Thread-1] Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+2017-06-27 12:02:31,055 WARN o.s.j.e.s.SampledField [SciJava-6676eed8-Thread-1] Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+2017-06-27 12:02:31,059 WARN o.s.j.x.p.SBMLCoreParser [SciJava-6676eed8-Thread-1] No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+2017-06-27 12:02:31,060 WARN o.s.j.x.p.SBMLCoreParser [SciJava-6676eed8-Thread-1] No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.
+2017-06-27 12:32:08,853 WARN o.s.j.Model [SciJava-2ee68c74-Thread-1] registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+2017-06-27 12:32:08,857 WARN o.s.j.Model [SciJava-2ee68c74-Thread-1] registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+2017-06-27 12:32:08,858 WARN o.s.j.Model [SciJava-2ee68c74-Thread-1] registerIds: the object org.sbml.jsbml.ext.spatial.CompartmentMapping is neither a UniqueNamedSBase, a LocalParameter or a UnitDefinition so its id will not be registered in the Model.
+2017-06-27 12:32:08,894 ERROR o.s.j.e.s.SpatialModelPlugin [SciJava-2ee68c74-Thread-1] The spatial id "background" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+2017-06-27 12:32:08,895 ERROR o.s.j.IdentifierException [SciJava-2ee68c74-Thread-1] An element with the metaid "background" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+2017-06-27 12:32:08,895 WARN o.s.j.e.s.AbstractSpatialNamedSBase [SciJava-2ee68c74-Thread-1] Could not recognized the value background for the attribute id on the 'sampledVolume' element.
+2017-06-27 12:32:08,895 ERROR o.s.j.e.s.SpatialModelPlugin [SciJava-2ee68c74-Thread-1] The spatial id "cell" is already present in the spatial model assigned to the model Cry_CIB_Geometric. The new element will not be added to the model.
+2017-06-27 12:32:08,896 ERROR o.s.j.IdentifierException [SciJava-2ee68c74-Thread-1] An element with the metaid "cell" is already present in the SBML document. The element sampledVolume will not be annotated with it.
+2017-06-27 12:32:08,896 WARN o.s.j.e.s.AbstractSpatialNamedSBase [SciJava-2ee68c74-Thread-1] Could not recognized the value cell for the attribute id on the 'sampledVolume' element.
+2017-06-27 12:32:08,898 WARN o.s.j.e.s.SampledField [SciJava-2ee68c74-Thread-1] Could not recognized the value nearestNeighbor for the attribute interpolationType on the 'sampledField' element.
+2017-06-27 12:32:08,902 WARN o.s.j.x.p.SBMLCoreParser [SciJava-2ee68c74-Thread-1] No UnitDefinition matches the unitsID 'um3' of compartment 'Cyt'.
+2017-06-27 12:32:08,902 WARN o.s.j.x.p.SBMLCoreParser [SciJava-2ee68c74-Thread-1] No UnitDefinition matches the unitsID 'um3' of compartment 'EC'.

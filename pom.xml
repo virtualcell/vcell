@@ -12,12 +12,12 @@
 		<relativePath />
 	</parent>
 
-	<groupId>com.mycompany</groupId>
-	<artifactId>ImportSBML</artifactId>
+	<groupId>org.vcell</groupId>
+	<artifactId>VCell</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 
-	<name>Import SBML</name>
-	<description>A Maven project implementing an ImageJ command.</description>
+	<name>Virtual Cell</name>
+	<description>The Virtual Cell plugin for ImageJ</description>
 	<url>http://mycompany.com/imagej/gauss-filtering/</url>
 	<inceptionYear>2017</inceptionYear>
 	<organization>
@@ -80,7 +80,7 @@
 
 	<properties>
 		<package-name>org.vcell</package-name>
-		<main-class>org.vcell.ImportSBML</main-class>
+		<main-class>org.vcell.Driver</main-class>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>My Company, Inc.</license.copyrightOwners>
 	</properties>
@@ -93,14 +93,52 @@
 	</repositories>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij-ui</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.sbml.jsbml</groupId>
 			<artifactId>jsbml</artifactId>
 			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-ui-swing</artifactId>
+			<version>0.9.2</version>
+		</dependency>
+		<!--&lt;!&ndash; https://mvnrepository.com/artifact/net.imagej/imagej-ui-swing &ndash;&gt;-->
+		<!--<dependency>-->
+			<!--<groupId>net.imagej</groupId>-->
+			<!--<artifactId>imagej-ui-swing</artifactId>-->
+			<!--<version>0.11.2</version>-->
+		<!--</dependency>-->
+		<!--Do not uncomment this it is very bad-->
+
+		<!-- Currently only for debugging purposes -->
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>fiji-lib</artifactId>
+			<version>2.1.2</version>
 		</dependency>
 	</dependencies>
 </project>

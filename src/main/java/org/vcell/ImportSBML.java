@@ -8,6 +8,7 @@
 
 package org.vcell;
 
+import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imagej.ops.OpService;
 import net.imglib2.Cursor;
@@ -78,60 +79,5 @@ public class ImportSBML<T extends RealType<T>> implements Command {
         int height = sampledField.getNumSamples2();
         ArrayImg<UnsignedIntType, IntArray> img = ArrayImgs.unsignedInts(imgArray, width, height);
         displayService.createDisplay(img);
-
-        // Erode the image (just an example)
-        ArrayImg eroded = (ArrayImg) ops.morphology().erode(img, new HyperSphereShape(10));
-        displayService.createDisplay(eroded);
-
-        StringBuffer sb = new StringBuffer();
-        Cursor cursor = eroded.localizingCursor();
-        while (cursor.hasNext()) {
-            sb.append(cursor.next() + " ");
-        }
-        sampledField.setSamples(sb.toString().trim());
-
-//        File destination = new File(file.getPath() + "/eroded");
-//        SBMLWriter writer = new SBMLWriter();
-//        try {
-//            writer.write(document, destination);
-//        } catch (XMLStreamException | IOException e) {
-//            e.printStackTrace();
-//        }
-    }
-
-    /**
-     * This main function serves for development purposes.
-     *
-     * @param args whatever, it's ignored
-     * @throws Exception
-     */
-    public static void main(final String... args) throws Exception {
-
-//        String dir = "/Users/kevingaffney/Desktop/";
-//        String fluorPath = dir + "SimID_113986066_0__9times_1vars_data.nrrd";
-//        String geomPath = dir + "geom.tif";
-//
-//
-//        // create the ImageJ application context with all available services
-        final ImageJ ij = new ImageJ();
-        ij.ui().showUI();
-//        Dataset fluor = ij.scifio().datasetIO().open(fluorPath);
-//        Dataset geom = ij.scifio().datasetIO().open(geomPath);
-//        ij.ui().show(fluor);
-//        ij.ui().show(geom);
-//        ij.command().run(DeconstructGeometry.class, true);
-
-//
-//        String dir = "/Users/kevingaffney/Documents/UConn/Model Data/1J23_1I66_1J60COS7p/p1/";
-//        String path1 = dir + "TIRF_594_RFPm_495LP.tif";
-//        String path2 = dir + "TIRF_515_YFPm_495LP.tif";
-//
-//        Dataset data1 = ij.scifio().datasetIO().open(path1);
-//        Dataset data2 = ij.scifio().datasetIO().open(path2);
-//        ij.ui().show(data1);
-//        ij.ui().show(data2);
-//        ij.command().run(RatioMap.class, true);
-
-        ij.command().run(VirtualTIRF.class, true);
     }
 }
