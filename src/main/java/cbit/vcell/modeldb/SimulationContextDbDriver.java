@@ -781,7 +781,11 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	assignReactionSpecsSQL(con,simContextKey, simContext);
 	
 	for (GeometryClass gc : simContext.getGeometry().getGeometryClasses()) {
-		StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
+		try {
+			StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
 	}
 	simContext.getGeometryContext().enforceHierarchicalBoundaryConditions(simContext.getModel().getStructureTopology());
 
