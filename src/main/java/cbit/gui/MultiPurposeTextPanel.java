@@ -289,7 +289,7 @@ public class MultiPurposeTextPanel extends JPanel {
 				highlightKeywords(match, startPos);
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						textPane.requestFocusInWindow();
+//						textPane.requestFocusInWindow();
 						autoCompJPopupMenu.setVisible(false);
 					}
 				});	
@@ -375,7 +375,7 @@ public class MultiPurposeTextPanel extends JPanel {
 		public void actionPerformed(ActionEvent ev) {
 			if (autoCompJPopupMenu.isVisible()) {
 				autoCompJPopupMenu.setVisible(false);
-				textPane.requestFocusInWindow();
+//				textPane.requestFocusInWindow();
 			}
 		}
 	}
@@ -903,7 +903,7 @@ public class MultiPurposeTextPanel extends JPanel {
 	private void autoComplete(DocumentEvent ev) { 
 		autoComplete(ev, false);
 	}
-	private void autoComplete(DocumentEvent docEvent, boolean bForce) {		
+	private void autoComplete(DocumentEvent docEvent, boolean bForce) {	
 		try {
 			if (bInCompleteTask) {
 				return;
@@ -951,12 +951,13 @@ public class MultiPurposeTextPanel extends JPanel {
 	    			}
 	    		}
        			loc = textPane.modelToView(caretPosition);
+       			autoCompJPopupMenu.setFocusable(false);
        			autoCompJPopupMenu.show(textPane, loc.x, loc.y + loc.height);
 	       	}
 		} catch (Exception ex) {
 			ex.printStackTrace(System.out);
 		} finally {
-			 textPane.requestFocusInWindow();
+//			textPane.requestFocusInWindow();
 			// for mac, for some reason, when popup menu shows up
 			// the whole text was selected. So we need to de-select 
 			// everything.
