@@ -1016,7 +1016,7 @@ private void updateShape() {
 				popupFromShapeMenu.add(menuItem);
 			} else {
 				Bond b = itemMap.get(name);
-				SpeciesPattern spBond = new SpeciesPattern(sp);		// clone of the sp, with only the bond of interest
+				SpeciesPattern spBond = new SpeciesPattern(bioModel.getModel(), sp);		// clone of the sp, with only the bond of interest
 				spBond.resetBonds();
 				spBond.resetStates();
 				MolecularTypePattern mtpFrom = spBond.getMolecularTypePattern(mtp.getMolecularType().getName(), mtp.getIndex());

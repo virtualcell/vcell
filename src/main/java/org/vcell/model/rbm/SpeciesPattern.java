@@ -10,8 +10,8 @@ import java.util.Map;
 
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
-import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -19,8 +19,7 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.graph.GraphConstants;
-
-import org.vcell.util.Displayable;
+import cbit.vcell.model.Model;
 
 public class SpeciesPattern extends RbmElementAbstract implements Matchable, IssueSource, Displayable {
 	public static final String PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS = "molecularTypePatterns";
@@ -195,10 +194,10 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	
 	public SpeciesPattern() {
 	}
-	public SpeciesPattern(SpeciesPattern thatSp) {		// copy constructor
+	public SpeciesPattern(Model thisModel, SpeciesPattern thatSp) {		// copy constructor
 		Map<RbmElementAbstract, RbmElementAbstract> thatThisMap = new LinkedHashMap<RbmElementAbstract, RbmElementAbstract>();
 		for(MolecularTypePattern thatMtp : thatSp.getMolecularTypePatterns()) {
-			MolecularTypePattern thisMtp = new MolecularTypePattern(thatMtp, thatThisMap);
+			MolecularTypePattern thisMtp = new MolecularTypePattern(thisModel, thatMtp, thatThisMap);
 			molecularTypePatterns.add(thisMtp);
 			thatThisMap.put(thatMtp, thisMtp);
 		}

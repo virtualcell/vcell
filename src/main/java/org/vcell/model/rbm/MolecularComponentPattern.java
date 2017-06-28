@@ -65,9 +65,11 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	}
 	// !!! copy constructor - do never call this standalone because the bonds will be probably pointing wrong
 	// normally this should only be called from within the copy constructor of a species pattern
-	public MolecularComponentPattern(MolecularComponentPattern that) {
+	public MolecularComponentPattern(MolecularType thisMt, MolecularComponentPattern that) {
 		super();
-		this.molecularComponent = that.getMolecularComponent();
+		String thatMcName = that.getMolecularComponent().getName();
+		MolecularComponent thisMc = thisMt.getMolecularComponent(thatMcName);
+		this.molecularComponent = thisMc;
 		if(that.getMolecularComponent().getComponentStateDefinitions().isEmpty()) {
 			this.componentStatePattern = null;		// if the component has no states then the component pattern must be null
 		} else {

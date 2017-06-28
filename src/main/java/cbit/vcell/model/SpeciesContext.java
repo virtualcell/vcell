@@ -295,7 +295,7 @@ public static SpeciesContext duplicate(SpeciesContext oldSpecies, Structure s, M
 	String newName = SpeciesContext.deriveSpeciesName(oldSpecies, m);
 	Species newSpecies = new Species(newName, null);
 	SpeciesContext newSpeciesContext = new SpeciesContext(null, newName, newSpecies, s);
-	SpeciesPattern newsp = new SpeciesPattern(oldSpecies.getSpeciesPattern());
+	SpeciesPattern newsp = new SpeciesPattern(m, oldSpecies.getSpeciesPattern());
 	newSpeciesContext.setSpeciesPattern(newsp);
 	m.addSpecies(newSpecies);
 	m.addSpeciesContext(newSpeciesContext);

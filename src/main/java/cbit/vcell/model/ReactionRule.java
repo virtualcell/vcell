@@ -177,13 +177,49 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		RbmKineticLaw.duplicate(kineticLaw, oldRule);
 
 		for(ReactantPattern oldrp : oldRule.getReactantPatterns()) {
-			SpeciesPattern newsp = new SpeciesPattern(oldrp.getSpeciesPattern());
+			SpeciesPattern newsp = new SpeciesPattern(m, oldrp.getSpeciesPattern());
 			ReactantPattern newrp = new ReactantPattern(newsp, oldrp.getStructure());
 			newRule.addReactant(newrp, false, false);		// don't try to resolve matches or bonds, we want to mirror whatever is in the old rule
 		}
 		for(ProductPattern oldpp : oldRule.getProductPatterns()) {
-			SpeciesPattern newsp = new SpeciesPattern(oldpp.getSpeciesPattern());
+			SpeciesPattern newsp = new SpeciesPattern(m, oldpp.getSpeciesPattern());
 			ProductPattern newpp = new ProductPattern(newsp, oldpp.getStructure());
+			newRule.addProduct(newpp, false, false);
+		}
+		kineticLaw.bind(newRule);
+		return newRule;
+	}
+	public static ReactionRule clone(Model newModel, ReactionRule oldRule, Structure newStructure,
+			Map<Structure, String> structuresMap
+			) throws ExpressionBindingException {
+		
+		boolean reversible = oldRule.isReversible();
+		
+		String newName = oldRule.getName();
+		while(newModel.getRbmModelContainer().getReactionRule(newName) != null) {
+			newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
+		}
+		ReactionRule newRule = new ReactionRule(newModel, newName, newStructure, reversible);
+		
+		RateLawType rateLawType = oldRule.getKineticLaw().getRateLawType();
+		if(rateLawType != RateLawType.MassAction) {
+			throw new RuntimeException("Only Mass Action Kinetics supported at this time, " + ReactionRule.typeName + " \"" + oldRule.getName() + "\" uses kinetic law type \"" + rateLawType.toString() + "\"");
+		}
+		RbmKineticLaw kineticLaw = new RbmKineticLaw(newRule, rateLawType);
+		RbmKineticLaw.duplicate(kineticLaw, oldRule);
+
+		for(ReactantPattern oldrp : oldRule.getReactantPatterns()) {
+			SpeciesPattern newsp = new SpeciesPattern(newModel, oldrp.getSpeciesPattern());
+			Structure os = oldrp.getStructure();
+			Structure ns = newModel.getStructure(structuresMap.get(os));
+			ReactantPattern newrp = new ReactantPattern(newsp, ns);
+			newRule.addReactant(newrp, false, false);		// don't try to resolve matches or bonds, we want to mirror whatever is in the old rule
+		}
+		for(ProductPattern oldpp : oldRule.getProductPatterns()) {
+			SpeciesPattern newsp = new SpeciesPattern(newModel, oldpp.getSpeciesPattern());
+			Structure os = oldpp.getStructure();
+			Structure ns = newModel.getStructure(structuresMap.get(os));
+			ProductPattern newpp = new ProductPattern(newsp, ns);
 			newRule.addProduct(newpp, false, false);
 		}
 		kineticLaw.bind(newRule);
@@ -1408,12 +1444,12 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		newLaw.setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, exp);
 		
 		for(ReactantPattern oldrp : oldRule.getReactantPatterns()) {
-			SpeciesPattern newsp = new SpeciesPattern(oldrp.getSpeciesPattern());
+			SpeciesPattern newsp = new SpeciesPattern(m, oldrp.getSpeciesPattern());
 			ReactantPattern newrp = new ReactantPattern(newsp, oldrp.getStructure());
 			newRule.addReactant(newrp, false, false);		// don't try to resolve matches or bonds, we want to mirror whatever is in the old rule
 		}
 		for(ProductPattern oldpp : oldRule.getProductPatterns()) {
-			SpeciesPattern newsp = new SpeciesPattern(oldpp.getSpeciesPattern());
+			SpeciesPattern newsp = new SpeciesPattern(m, oldpp.getSpeciesPattern());
 			ProductPattern newpp = new ProductPattern(newsp, oldpp.getStructure());
 			newRule.addProduct(newpp, false, false);
 		}
@@ -1441,12 +1477,12 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		newLaw.setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, exp);
 		
 		for(ReactantPattern oldrp : oldRule.getReactantPatterns()) {
-			SpeciesPattern newsp = new SpeciesPattern(oldrp.getSpeciesPattern());
+			SpeciesPattern newsp = new SpeciesPattern(m, oldrp.getSpeciesPattern());
 			ProductPattern newrp = new ProductPattern(newsp, oldrp.getStructure());
 			newRule.addProduct(newrp, false, false);
 		}
 		for(ProductPattern oldpp : oldRule.getProductPatterns()) {
-			SpeciesPattern newsp = new SpeciesPattern(oldpp.getSpeciesPattern());
+			SpeciesPattern newsp = new SpeciesPattern(m, oldpp.getSpeciesPattern());
 			ReactantPattern newpp = new ReactantPattern(newsp, oldpp.getStructure());
 			newRule.addReactant(newpp, false, false);
 		}

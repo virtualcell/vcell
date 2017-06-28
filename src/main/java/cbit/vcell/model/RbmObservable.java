@@ -245,7 +245,7 @@ public class RbmObservable implements Serializable, Matchable, EditableSymbolTab
 		String newName = RbmObservable.deriveObservableName(oldObservable, m);
 		RbmObservable newObservable = new RbmObservable(m, newName, s, oldObservable.getType());
 		for(SpeciesPattern oldsp : oldObservable.getSpeciesPatternList()) {
-			SpeciesPattern newsp = new SpeciesPattern(oldsp);
+			SpeciesPattern newsp = new SpeciesPattern(m, oldsp);
 			newObservable.addSpeciesPattern(newsp);
 		}
 		newObservable.setSequenceLength(Sequence.PolymerLengthEqual, oldObservable.getSequenceLength(Sequence.PolymerLengthEqual));
