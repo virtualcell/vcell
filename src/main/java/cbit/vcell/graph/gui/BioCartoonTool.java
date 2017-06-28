@@ -275,16 +275,26 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	private static final String DUMMY_CHOOSE = "ChooseCompartment...";
 	private static HashMap<ReactionParticipant,Structure> askUserResolveMembraneConnections(Component requester,Structure[] allStructures,Structure currentStruct,Structure fromRxnStruct,Structure toRxnStruct,
 			ReactionParticipant[] copyFromRxParticipantArr,StructureTopology toStructureTopology,StructureTopology structTopology){
-		if(!(toRxnStruct instanceof Membrane)){
-			return null;
-		}
 		HashMap<ReactionParticipant,Structure> userMap = new HashMap<>();
-		for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
-			Structure pasteToStruct = currentStruct;
-			Membrane oldMembr = (Membrane)fromRxnStruct;
-			pasteToStruct =
-			matchMembraneAdjacentStructure(allStructures,currentStruct, copyFromRxParticipantArr[i].getStructure(), structTopology, toStructureTopology, oldMembr, pasteToStruct);
-			userMap.put(copyFromRxParticipantArr[i],pasteToStruct);
+		boolean bMembrane = toRxnStruct instanceof Membrane;
+		if(!bMembrane){
+			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
+				userMap.put(copyFromRxParticipantArr[i],null);
+				for(Structure struct:allStructures){
+					if(fromRxnStruct.getName().equals(copyFromRxParticipantArr[i].getStructure().getName())){
+						userMap.put(copyFromRxParticipantArr[i],toRxnStruct);
+					}
+				}
+			}
+//			return userMap;
+		}else{
+			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
+				Structure pasteToStruct = currentStruct;
+				Membrane oldMembr = (Membrane)fromRxnStruct;
+				pasteToStruct =
+				matchMembraneAdjacentStructure(allStructures,currentStruct, copyFromRxParticipantArr[i].getStructure(), structTopology, toStructureTopology, oldMembr, pasteToStruct);
+				userMap.put(copyFromRxParticipantArr[i],pasteToStruct);
+			}
 		}
 		JScrollPane jScrollPane = null;
 		JPanel rxMapperPanel = null;
@@ -301,7 +311,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				int widthcombo= 0;
 				mapLabelToPart = new Hashtable<>();
 				for(ReactionParticipant rxPart:userMap.keySet()){
-					if(rxPart.getStructure() instanceof Feature){
+					if(!bMembrane || (rxPart.getStructure() instanceof Feature)){
 						JPanel row = new JPanel();
 						JLabel rxpartLabel = new JLabel(rxPart.getName());
 						row.add(rxpartLabel);
@@ -327,7 +337,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 							e.printStackTrace();
 						}
 						for(Structure struct:allStructures){
-							if(struct instanceof Feature){
+							if(!bMembrane || (struct instanceof Feature)){
 								structJC.addItem(struct);
 							}
 						}
@@ -472,7 +482,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			}
 			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
 				Structure pasteToStruct = currentStruct;
-				if(toRxnStruct instanceof Membrane){
+//				if(toRxnStruct instanceof Membrane){
 					pasteToStruct = rxPartMapStructure.get(copyFromReactionStep.getName()).get(copyFromRxParticipantArr[i]);
 //					if(pasteToStruct == null){
 //						for(ReactionParticipant myRXPart:rxPartMapStructure.get(copyFromReactionStep.getName()).keySet()){
@@ -482,7 +492,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 //							}
 //						}
 //					}
-				}
+//				}
 				// this adds the speciesContexts and species (if any) to the model)
 				String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
 				SpeciesContext newSc = null;
