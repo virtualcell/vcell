@@ -43,6 +43,15 @@ public class MolecularType extends RbmElementAbstract implements BioModelEntityO
 		this.name = name;
 		this.model = model;
 	}
+	public MolecularType(MolecularType mt, Model model) {
+		// TODO: anchors not done yet, solve structures mapping first
+		// deep copy constructor
+		this.name = new String(mt.getName());
+		this.model = model;
+		for(MolecularComponent mc : mt.getComponentList()) {
+			this.componentList.add(new MolecularComponent(mc));
+		}
+	}
 	
 	public void setComment(String comment) {
 		if(comment == null) {

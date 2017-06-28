@@ -31,6 +31,15 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 		super();
 		this.name = name;
 	}
+	public MolecularComponent(MolecularComponent mc) {
+		// deep copy constructor
+		super();
+		this.name = new String(mc.getName());
+		this.index = mc.getIndex();
+		for(ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
+			this.componentStateDefinitions.add(new ComponentStateDefinition(csd));
+		}
+	}
 	public final String getName() {
 		return name;
 	}

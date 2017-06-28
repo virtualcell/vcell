@@ -22,6 +22,10 @@ public class ComponentStateDefinition extends RbmElementAbstract implements Matc
 	public ComponentStateDefinition(String name) {
 		this.name = name;
 	}
+	public ComponentStateDefinition(ComponentStateDefinition csd) {
+		// deep copy constructor
+		this.name = new String(csd.getName());
+	}
 	
 	public final String getName() {
 		return name;

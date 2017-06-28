@@ -12,10 +12,13 @@ package cbit.vcell.desktop;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.SimpleTransferable;
 
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -70,13 +73,19 @@ public class VCellTransferable extends SimpleTransferable {
 		}
 	}
 
-	public static class ReactionSpeciesCopy{
+	public static class ReactionSpeciesCopy {
+		
 		private SpeciesContext[] speciesContextArr;
 		private ReactionStep[] reactStepArr;
-		public ReactionSpeciesCopy(SpeciesContext[] speciesContextArr,ReactionStep[] reactStepArr) {
-			this.speciesContextArr = (speciesContextArr==null || speciesContextArr.length==0?null:speciesContextArr);
-			this.reactStepArr = (reactStepArr==null || reactStepArr.length==0?null:reactStepArr);
-			if(this.speciesContextArr == null && this.reactStepArr == null){
+		private ReactionRule[] rrArr;
+		private MolecularType[] mtArr;
+		
+		public ReactionSpeciesCopy(SpeciesContext[] speciesContextArr, ReactionStep[] reactStepArr, ReactionRule[] rrArr, MolecularType[] mtArr) {
+			this.speciesContextArr = (speciesContextArr==null || speciesContextArr.length==0 ? null : speciesContextArr);
+			this.reactStepArr = (reactStepArr==null || reactStepArr.length==0 ? null : reactStepArr);
+			this.rrArr = (rrArr==null || rrArr.length==0 ? null : rrArr);
+			this.mtArr = (mtArr==null || mtArr.length==0 ? null : mtArr);
+			if(this.speciesContextArr == null && this.reactStepArr == null && this.rrArr == null && this.mtArr == null) {
 				throw new IllegalArgumentException(ReactionSpeciesCopy.class.getName()+" all parameters null.");
 			}
 		}
@@ -85,6 +94,12 @@ public class VCellTransferable extends SimpleTransferable {
 		}
 		public ReactionStep[] getReactStepArr() {
 			return reactStepArr;
+		}
+		public ReactionRule[] getReactionRuleArr() {
+			return rrArr;
+		}
+		public MolecularType[] getMolecularTypeArr() {
+			return mtArr;
 		}
 		@Override
 		public String toString() {
@@ -104,9 +119,17 @@ public class VCellTransferable extends SimpleTransferable {
 					sb.append(speciesContextArr[i].getName()+"\n");
 				}
 			}
+			if((reactStepArr != null || speciesContextArr != null) && rrArr != null) {
+				sb.append("\n");
+			}
+			if(rrArr != null) {
+//				sb.append("-----ReactionRules-----\n");
+				for (int i = 0; i < rrArr.length; i++) {
+					sb.append(rrArr[i].getName()+"\n");
+				}
+			}
 			return sb.toString();
 		}
-		
 	}
 
 /**
