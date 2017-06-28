@@ -155,7 +155,10 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 	}
 	
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
-	public SpeciesPatternRoundShape(int xPos, int yPos, int height, LargeShapeCanvas shapePanel, boolean isError) {
+	public SpeciesPatternRoundShape(int xPos, int yPos, int height, LargeShapeCanvas shapePanel, boolean isError,
+			IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = null;
 		this.sp = null;
 		this.xPos = xPos;
@@ -169,7 +172,10 @@ public class SpeciesPatternRoundShape extends AbstractComponentShape implements 
 		int xPattern = xPos;
 	}
 		
-	public SpeciesPatternRoundShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapeCanvas shapePanel, Displayable owner) {
+	public SpeciesPatternRoundShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapeCanvas shapePanel, 
+			Displayable owner, IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;

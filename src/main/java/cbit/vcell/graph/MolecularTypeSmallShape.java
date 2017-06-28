@@ -6,10 +6,10 @@ import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
@@ -24,10 +24,11 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.Displayable;
 
+import cbit.vcell.graph.AbstractComponentShape.IssueListProvider;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.model.Model.RbmModelContainer;
 
-public class MolecularTypeSmallShape implements AbstractShape, Icon {
+public class MolecularTypeSmallShape extends IssueManagerContainer implements AbstractShape, Icon {
 	
 	private static final int baseWidth = 11;
 	private static final int baseHeight = 9;
@@ -50,7 +51,10 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 	
 	List <MolecularComponentSmallShape> componentShapes = new ArrayList<MolecularComponentSmallShape>();
 
-	public MolecularTypeSmallShape(int xPos, int yPos, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularTypeSmallShape(int xPos, int yPos, SmallShapeManager shapeManager, Graphics graphicsContext, 
+			Displayable owner, AbstractShape parentShape, IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mt = null;
@@ -64,7 +68,10 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 		height = baseHeight + MolecularComponentSmallShape.componentDiameter / 2;
 		// no species pattern - this is a plain species context
 	}
-	public MolecularTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, SmallShapeManager shapeManager, Graphics graphicsContext, 
+			Displayable owner, AbstractShape parentShape, IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mt = mtp.getMolecularType();
@@ -79,7 +86,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mcp, shapeManager, graphicsContext, owner, this);
+			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mcp, shapeManager, graphicsContext, owner, this, issueListProvider);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentSmallShape.componentSeparation;
 		}
 		
@@ -94,12 +101,15 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mcp, shapeManager, graphicsContext, owner, this);
+			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mcp, shapeManager, graphicsContext, owner, this, issueListProvider);
 			offsetFromRight += mcss.getWidth() + MolecularComponentSmallShape.componentSeparation;
 			componentShapes.add(0, mcss);
 		}
 	}
-	public MolecularTypeSmallShape(int xPos, int yPos, MolecularType mt, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularType mt, SmallShapeManager shapeManager, Graphics graphicsContext, 
+			Displayable owner, AbstractShape parentShape, IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mt = mt;
@@ -112,7 +122,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
 			MolecularComponent mc = getMolecularType().getComponentList().get(i);
-			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mc, shapeManager, graphicsContext, owner, this);
+			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mc, shapeManager, graphicsContext, owner, this, issueListProvider);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentSmallShape.componentSeparation;
 		}
 		
@@ -125,7 +135,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 			int y = yPos + height - MolecularComponentSmallShape.componentDiameter;
 			// now that we know the dimensions of the molecular type shape we create the component shapes
 			MolecularComponent mc = mt.getComponentList().get(i);
-			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mc, shapeManager, graphicsContext, owner, this);
+			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mc, shapeManager, graphicsContext, owner, this, issueListProvider);
 			offsetFromRight += mcss.getWidth() + MolecularComponentSmallShape.componentSeparation;
 			componentShapes.add(0, mcss);
 		}
@@ -246,7 +256,7 @@ public class MolecularTypeSmallShape implements AbstractShape, Icon {
 					primaryColor = MolecularTypeLargeShape.colorTable[index].darker().darker();
 				}
 			}
-			if(owner instanceof MolecularType && AbstractComponentShape.hasErrorIssues(owner, mt)) {
+			if(owner instanceof MolecularType && hasErrorIssues(owner, mt)) {
 				primaryColor = Color.red;
 			}
 		}

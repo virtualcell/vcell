@@ -776,7 +776,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		if(observable != null && observable.getSpeciesPatternList() != null && observable.getSpeciesPatternList().size() > 0) {
 			for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 				SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffsetInitial, 8+(SpeciesPatternLargeShape.defaultHeight+GraphConstants.ObservableDisplay_ReservedSpaceForNameOnYAxis)*i, 80, sp, shapePanel, observable);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffsetInitial, 8+(SpeciesPatternLargeShape.defaultHeight+GraphConstants.ObservableDisplay_ReservedSpaceForNameOnYAxis)*i, 80, sp, shapePanel, observable, issueManager);
 				spsList.add(sps);
 				int xOffset = sps.getRightEnd();
 				maxXOffset = Math.max(maxXOffset, xOffset);
@@ -868,7 +868,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
 				Graphics gc = splitPaneHorizontal.getGraphics();
-				Icon icon = new MolecularTypeSmallShape(4, 4, mt, null, gc, mt, null);
+				Icon icon = new MolecularTypeSmallShape(4, 4, mt, null, gc, mt, null, issueManager);
 				menuItem.setIcon(icon);
 				getAddFromShapeMenu().add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
@@ -1117,7 +1117,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				MolecularTypePattern mtpTo = spBond.getMolecularTypePattern(b.molecularTypePattern.getMolecularType().getName(), b.molecularTypePattern.getIndex());
 				MolecularComponentPattern mcpTo = mtpTo.getMolecularComponentPattern(b.molecularComponentPattern.getMolecularComponent());
 				spBond.setBond(mtpTo, mcpTo, mtpFrom, mcpFrom);
-				Icon icon = new SpeciesPatternSmallShape(3,4, spBond, gc, observable, false);
+				Icon icon = new SpeciesPatternSmallShape(3,4, spBond, gc, observable, false, issueManager);
 				((SpeciesPatternSmallShape)icon).setDisplayRequirements(DisplayRequirements.highlightBonds);
 				menuItem.setIcon(icon);
 				editBondMenu.add(menuItem);

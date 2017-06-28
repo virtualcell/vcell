@@ -342,13 +342,13 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				if(shapePanel != null && !shapePanel.isShowNonTrivialOnly()) {
 					g2.setColor(componentHidden);
 				}
-				if(AbstractComponentShape.hasErrorIssues(owner, csp, csd)) {
+				if(hasErrorIssues(owner, csp, csd)) {
 					g2.setColor(isHighlighted() ? componentBad.brighter() : componentBad);
 				}
 
 			}
 			g2.fill(normalRectangle);
-			if(AbstractComponentShape.hasErrorIssues(owner, csp, csd)) {
+			if(hasErrorIssues(owner, csp, csd)) {
 				g2.setColor(Color.red);
 			} else {
 				g.setColor(getDefaultColor(Color.black));
@@ -441,7 +441,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	}	// --- end class ComponentStateLargeShape ---------------------------------------------------------------
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
-	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, LargeShapeCanvas shapePanel, Displayable owner) {
+	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, LargeShapeCanvas shapePanel, 
+			Displayable owner, IssueListProvider issueListProvider) {
+		super(issueListProvider);
 		this.owner = owner;
 		this.pattern = false;
 		this.mcp = null;
@@ -479,7 +481,10 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			stateShapes.add(csls);
 		}
 	}
-	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, LargeShapeCanvas shapePanel, Displayable owner) {
+	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, LargeShapeCanvas shapePanel, 
+			Displayable owner, IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = owner;
 		this.pattern = true;
 		this.mcp = mcp;
@@ -761,7 +766,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				}
 			}
 		}
-		if(AbstractComponentShape.hasErrorIssues(owner, mcp, mc)) {
+		if(hasErrorIssues(owner, mcp, mc)) {
 			componentColor = highlight == true ? componentBad.brighter() : componentBad;
 		}
 		return componentColor;
@@ -821,7 +826,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
 		RoundRectangle2D innerRectangle = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, baseHeight-2, cornerArc-2, cornerArc-2);
 		g2.fill(normalRectangle);
-		if(AbstractComponentShape.hasErrorIssues(owner, mcp, mc)) {
+		if(hasErrorIssues(owner, mcp, mc)) {
 			g2.setColor(Color.red);
 		} else {
 			if(hidden == false) {

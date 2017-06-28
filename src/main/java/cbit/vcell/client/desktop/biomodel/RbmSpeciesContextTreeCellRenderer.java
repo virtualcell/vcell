@@ -41,8 +41,8 @@ public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 	Object obj = null;
 	Component owner = null;
 	
-	public RbmSpeciesContextTreeCellRenderer(Component owner) {
-		super();
+	public RbmSpeciesContextTreeCellRenderer(Component owner, IssueManager issueManager) {
+		super(issueManager);
 		this.owner = owner;
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
@@ -82,7 +82,7 @@ public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 					icon = VCellIcons.rbmMolecularTypeSimpleIcon;;
 				} else {
 					Graphics gc = owner.getGraphics();
-					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), null, gc, molecularTypePattern.getMolecularType(), null);
+					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), null, gc, molecularTypePattern.getMolecularType(), null, issueManager);
 				}
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;

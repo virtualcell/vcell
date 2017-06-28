@@ -270,7 +270,7 @@ private void updateShape() {
 		return;
 	}
 	SpeciesPattern sp = speciesContext.getSpeciesPattern();
-	spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, shapePanel, speciesContext);
+	spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, shapePanel, speciesContext, issueManager);
 	
 	Dimension preferredSize = new Dimension(spls.getRightEnd()+40, yOffsetInitial+80);
 	shapePanel.setPreferredSize(preferredSize);

@@ -37,7 +37,10 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 	private final AbstractShape parentShape;
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
-	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, SmallShapeManager shapeManager, Graphics graphicsContext, 
+			Displayable owner, AbstractShape parentShape, IssueListProvider issueListProvider) {
+		super(issueListProvider); 
+		
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mcp = null;
@@ -47,7 +50,10 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 		xPos = rightPos-width;
 		yPos = y;
 	}
-	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponentPattern mcp, SmallShapeManager shapeManager, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponentPattern mcp, SmallShapeManager shapeManager, Graphics graphicsContext, 
+			Displayable owner, AbstractShape parentShape, IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = owner;
 		this.parentShape = parentShape;
 		this.mcp = mcp;
@@ -141,7 +147,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 			}
 		}
 		
-		if(AbstractComponentShape.hasErrorIssues(owner, mcp, mc)) {
+		if(hasErrorIssues(owner, mcp, mc)) {
 			componentColor = Color.red;
 		}
 		return componentColor;
@@ -180,7 +186,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 			} else {
 				g2.setColor(componentVeryLightGray);
 				if(owner instanceof MolecularType) {
-					if(AbstractComponentShape.hasErrorIssues(owner, mc)) {
+					if(hasErrorIssues(owner, mc)) {
 						g2.setColor(Color.red);
 					} else {
 						if(shapeManager != null && !shapeManager.isShowMoleculeColor()) {

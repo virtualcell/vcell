@@ -48,12 +48,14 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		normal,
 		highlightBonds,
 	}
-	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, Displayable owner,
-			boolean isSelected) {
-		this(xPos, yPos, sp, null, graphicsContext, owner, isSelected);
+	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, 
+			Displayable owner, boolean isSelected, IssueListProvider issueListProvider) {
+		this(xPos, yPos, sp, null, graphicsContext, owner, isSelected, issueListProvider);
 	}
 	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, SmallShapeManager shapeManager, 
-			Graphics graphicsContext, Displayable owner, boolean isSelected) {
+			Graphics graphicsContext, Displayable owner, boolean isSelected, IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
@@ -65,7 +67,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, shapeManager, graphicsContext, owner, this);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, shapeManager, graphicsContext, owner, this, issueListProvider);
 			speciesShapes.add(stls);
 			width = stls.getWidth();
 			return;
@@ -73,7 +75,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, mtp, shapeManager, graphicsContext, owner, this);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, mtp, shapeManager, graphicsContext, owner, this, issueListProvider);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}

@@ -26,10 +26,11 @@ import org.vcell.util.Issue.Severity;
 import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.client.desktop.VCDocumentDecorator;
+import cbit.vcell.graph.AbstractComponentShape.IssueListProvider;
 import cbit.vcell.model.SimpleBoundsIssue;
 
 @SuppressWarnings("serial")
-public class IssueManager {
+public class IssueManager implements IssueListProvider {
 	private static final long LAST_DIRTY_MILLISECONDS = TimeUnit.SECONDS.toMillis(2);
 	private List<Issue> issueList = Collections.synchronizedList(new ArrayList<Issue>());
 	private VCDocument vcDocument = null;

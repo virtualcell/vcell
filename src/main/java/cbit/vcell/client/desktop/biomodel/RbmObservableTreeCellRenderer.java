@@ -33,8 +33,8 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 	Object obj = null;
 	Component owner = null;
 	
-	public RbmObservableTreeCellRenderer(Component owner) {
-		super();
+	public RbmObservableTreeCellRenderer(Component owner, IssueManager issueManager) {
+		super(issueManager);
 		this.owner = owner;
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
@@ -75,7 +75,7 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 					icon = VCellIcons.rbmMolecularTypeSimpleIcon;;
 				} else {
 					Graphics gc = owner.getGraphics();
-					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), null, gc, molecularTypePattern.getMolecularType(), null);
+					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), null, gc, molecularTypePattern.getMolecularType(), null, issueManager);
 				}
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
@@ -108,7 +108,7 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 					icon = VCellIcons.rbmComponentErrorIcon;
 					return this;
 				}
-				if(AbstractComponentShape.hasErrorIssues((RbmObservable)parentObject, mcp, mcp.getMolecularComponent())) {
+				if(hasErrorIssues((RbmObservable)parentObject, mcp, mcp.getMolecularComponent())) {
 					icon = VCellIcons.rbmComponentErrorIcon;
 				}
 			} else if (userObject instanceof StateLocal) {

@@ -80,7 +80,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 	
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
-	public SpeciesPatternLargeShape(int xPos, int yPos, int height, LargeShapeCanvas shapePanel, boolean isError) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, LargeShapeCanvas shapePanel, boolean isError,
+			IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = null;
 		this.sp = null;
 		this.xPos = xPos;
@@ -93,11 +96,14 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		xExtent = calculateXExtent(shapePanel);
 
 		int xPattern = xPos;
-		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, shapePanel, null);
+		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, shapePanel, null, issueListProvider);
 		speciesShapes.add(stls);
 	}
 		
-	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapeCanvas shapePanel, Displayable owner) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapeCanvas shapePanel, 
+			Displayable owner, IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
@@ -121,7 +127,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, shapePanel, owner);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, shapePanel, owner, issueListProvider);
 			speciesShapes.add(stls);
 			return;
 		}
@@ -129,7 +135,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, mtp, shapePanel, owner, i);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, mtp, shapePanel, owner, i, issueListProvider);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}

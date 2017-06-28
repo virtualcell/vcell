@@ -46,7 +46,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
@@ -62,15 +61,14 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
 import org.vcell.util.Pair;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -95,9 +93,8 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.graph.AbstractComponentShape;
-import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
+import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.gui.ReactionCartoonTool;
 import cbit.vcell.graph.gui.StructureToolShapeIcon;
@@ -121,7 +118,6 @@ import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -992,7 +988,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							MolecularType mt = (MolecularType)selectedObject;
 							Graphics cellContext = table.getGraphics();
 							if(mt != null) {
-								stls = new MolecularTypeSmallShape(4, 3, mt, null, cellContext, mt, null);
+								stls = new MolecularTypeSmallShape(4, 3, mt, null, cellContext, mt, null, issueManager);
 							}
 						}
 					} else {
@@ -1027,7 +1023,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							SpeciesContext sc = (SpeciesContext)selectedObject;
 							SpeciesPattern sp = sc.getSpeciesPattern();		// sp may be null for "plain" species contexts
 							Graphics panelContext = table.getGraphics();
-							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected);
+							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected, issueManager);
 						}
 					} else {
 						spss = null;
@@ -1068,7 +1064,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							int xPos = 4;
 							for(int i = 0; i<rpList.size(); i++) {
 								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected, issueManager);
 								if(i < rpList.size()-1) {
 									spss.addEndText("+");
 								} else {
@@ -1086,7 +1082,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							xPos+= 7;
 							for(int i = 0; i<ppList.size(); i++) {
 								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected, issueManager);
 								if(i < ppList.size()-1) {
 									spss.addEndText("+");
 								}
@@ -1101,7 +1097,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							int extraSpace = 0;
 							for(int i = 0; i<rs.getNumReactants(); i++) {
 								SpeciesPattern sp = rs.getReactant(i).getSpeciesContext().getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected, issueManager);
 								if(i < rs.getNumReactants()-1) {
 									spss.addEndText("+");
 								} else {
@@ -1124,7 +1120,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								if(i==0 && rs.getNumReactants() == 0) {
 									xPos += 14;
 								}
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected, issueManager);
 								if(i==0 && rs.getNumReactants() == 0) {
 									spss.addStartText("->");
 								}
@@ -1178,7 +1174,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							spssList.clear();
 							for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 								SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, observable, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, observable, isSelected, issueManager);
 								xPos += spss.getWidth() + 6;
 								spssList.add(spss);
 							}
@@ -1898,7 +1894,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		molecularTypeTableModel.setIssueManager(issueManager);
 		observableTableModel.setIssueManager(issueManager);
 		structureTableModel.setIssueManager(issueManager);
-		AbstractComponentShape.setIssueListProvider( () -> issueManager.getIssueList() );
+//		AbstractComponentShape.setIssueListProvider( () -> issueManager.getIssueList() );
 	}
 
 	private void showPathwayLinks() {

@@ -39,8 +39,10 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	List<SpeciesPatternLargeShape> speciesPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 	
 	
-	public ReactionRulePatternLargeShape(int xPos, int yPos, int height, LargeShapeCanvas shapePanel, Displayable owner, boolean isReactants) {
-
+	public ReactionRulePatternLargeShape(int xPos, int yPos, int height, LargeShapeCanvas shapePanel, 
+			Displayable owner, boolean isReactants, IssueListProvider issueListProvider) {
+		super(issueListProvider);
+		
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.height = height;
@@ -68,7 +70,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			}
 			for(int i = 0; i<rpList.size(); i++) {
 				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr, issueListProvider);
 				if(shapePanel.getDisplayMode()==DisplayMode.participantSignatures) {
 					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(rpList.get(i), shapePanel.getSignature(), shapePanel.getCriteria());
 					if(bMatchesSignature) {
@@ -95,7 +97,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			}
 			for(int i = 0; i<ppList.size(); i++) {
 				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr, issueListProvider);
 				if(shapePanel.getDisplayMode()==DisplayMode.participantSignatures) {
 					boolean bMatchesSignature = ReactionRuleParticipant.matchesSignature(ppList.get(i), shapePanel.getSignature(), shapePanel.getCriteria());
 					if(bMatchesSignature) {

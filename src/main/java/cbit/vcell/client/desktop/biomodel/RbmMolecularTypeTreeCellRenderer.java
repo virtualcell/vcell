@@ -39,8 +39,8 @@ public class RbmMolecularTypeTreeCellRenderer extends RbmTreeCellRenderer {
 	
 	Component owner = null;
 
-	public RbmMolecularTypeTreeCellRenderer(Component owner) {
-		super();
+	public RbmMolecularTypeTreeCellRenderer(Component owner, IssueManager issueManager) {
+		super(issueManager);
 		this.owner = owner;
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
@@ -70,7 +70,7 @@ public class RbmMolecularTypeTreeCellRenderer extends RbmTreeCellRenderer {
 					icon = VCellIcons.rbmMolecularTypeSimpleIcon;;
 				} else {
 					Graphics gc = owner.getGraphics();
-					icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null);
+					icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null, issueManager);
 				}
 			} else if (userObject instanceof MolecularComponent) {
 				BioModelNode parentNode = (BioModelNode) node.getParent();

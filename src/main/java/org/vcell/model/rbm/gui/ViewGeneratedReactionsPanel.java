@@ -269,7 +269,7 @@ public void updateShape(int selectedRow) {
 			reactionRule.addReactant(new ReactantPattern(speciesPattern, structure));
 		} catch(Throwable ex) {
 			ex.printStackTrace();
-			SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
+			SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true, issueManager);	// error (red circle)
 			reactantPatternShapeList.clear();
 			productPatternShapeList.clear();
 			reactantPatternShapeList.add(spls);
@@ -309,7 +309,7 @@ public void updateShape(int selectedRow) {
 			reactionRule.addProduct(new ProductPattern(speciesPattern, structure));
 		} catch(Throwable ex) {
 			ex.printStackTrace();
-			SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
+			SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true, issueManager);	// error (red circle)
 			reactantPatternShapeList.clear();
 			productPatternShapeList.clear();
 			reactantPatternShapeList.add(spls);
@@ -329,7 +329,7 @@ public void updateShape(int selectedRow) {
 			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 				mtp.setParticipantMatchLabel("*");
 			}
-			SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
+			SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule, issueManager);
 //			SpeciesPatternRoundShape sps = new SpeciesPatternRoundShape(xOffsetRound, 20, -1, sp, shapePanel, reactionRule);
 			if(i < rpList.size()-1) {
 				sps.addEndText("+");
@@ -354,7 +354,7 @@ public void updateShape(int selectedRow) {
 			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 				mtp.setParticipantMatchLabel("*");
 			}
-			SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
+			SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule, issueManager);
 //			SpeciesPatternRoundShape sps = new SpeciesPatternRoundShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
 			if(i < ppList.size()-1) {
 				sps.addEndText("+");
@@ -540,7 +540,7 @@ private void initialize() {
 							int xPos = 4;
 							for(int i = 0; i<rpList.size(); i++) {
 								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected, issueManager);
 								if(i < rpList.size()-1) {
 									spss.addEndText("+");
 								} else {
@@ -559,7 +559,7 @@ private void initialize() {
 							xPos+= 7;
 							for(int i = 0; i<ppList.size(); i++) {
 								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, null, panelContext, rr, isSelected, issueManager);
 								if(i < ppList.size()-1) {
 									spss.addEndText("+");
 								}

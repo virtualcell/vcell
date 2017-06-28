@@ -690,6 +690,12 @@ private void initialize() {
 		getParameterPropertiesPanel().setSelectionManager(selectionManager);
 		getReactionParticipantPropertiesPanel().setSelectionManager(selectionManager);
 		
+		// any other panels above which may display shapes (large / small) may need to have their issue manager set here
+		getSpeciesPropertiesPanel().setIssueManager(issueManager);
+		getReactionRuleParticipantSignaturePropertiesPanel().setIssueManager(issueManager);
+		getMolecularTypePropertiesPanel().setIssueManager(issueManager);
+		getObservablePropertiesPanel().setIssueManager(issueManager);
+		
 		csgObjectPropertiesPanel = new CSGObjectPropertiesPanel();
 		csgObjectPropertiesPanel.setSelectionManager(selectionManager);
 		csgObjectPropertiesPanel.setIssueManager(issueManager);

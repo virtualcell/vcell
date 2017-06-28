@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
+import java.util.List;
 
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -13,6 +14,8 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
+import org.vcell.util.Displayable;
+import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ParticipantMatchLabelLocal;
@@ -170,11 +173,37 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
     public static final Color yellow = GraphConstants.yellow;
     public static final Color yellowgreen = GraphConstants.yellowgreen;
     
-	public RbmTreeCellRenderer() {
+    protected IssueManager issueManager = null;
+    
+	public RbmTreeCellRenderer(IssueManager issueManager) {
 		super();
+		this.issueManager = issueManager;
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
 	
+	public boolean hasErrorIssues(Displayable owner, MolecularComponentPattern mcp, MolecularComponent mc) {
+		if(issueManager == null) {
+			return false;
+		}
+		if(owner == null) {
+			return false;
+		}
+		List<Issue> allIssueList = issueManager.getIssueList();
+		for (Issue issue: allIssueList) {
+			if(issue.getSeverity() != Issue.Severity.ERROR) {
+				continue;
+			}
+			Object source = issue.getSource();
+			Object detailedSource = issue.getDetailedSource();
+			if(mcp != null && source == owner && detailedSource == mcp) {
+				return true;
+			} else if(mc != null & source == owner && detailedSource == mc) {
+				return true;
+			}
+		}
+		return false;
+	}
+		
 	public static final String toHtml(SpeciesContext sc) {
 		String text = sc.getName();
 		String htmlText = "Species: <b>" + text + "</b>";

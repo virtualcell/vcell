@@ -32,8 +32,8 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 	Object obj = null;
 	Component owner = null;
 
-	public RbmReactionParticipantTreeCellRenderer(Component owner) {
-		super();
+	public RbmReactionParticipantTreeCellRenderer(Component owner, IssueManager issueManager) {
+		super(issueManager);
 		this.owner = owner;
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
@@ -74,7 +74,7 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 					icon = VCellIcons.rbmMolecularTypeSimpleIcon;;
 				} else {
 					Graphics gc = owner.getGraphics();
-					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), null, gc, molecularTypePattern.getMolecularType(), null);
+					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), null, gc, molecularTypePattern.getMolecularType(), null, issueManager);
 				}
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
