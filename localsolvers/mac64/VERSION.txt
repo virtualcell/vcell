@@ -1,0 +1,6 @@
+built using a vagrant build box with a bash script as defined in macos-sierra directory
+see https://github.com/vcelljim/vcell-numerics-build 
+master branch commit e794b16b696d9a15e224f8d1a6df525355d98975
+
+based on vcell numerics software from svn://code3.cam.uchc.edu/vcell/trunk/numerics
+SVN VERSION 21130
