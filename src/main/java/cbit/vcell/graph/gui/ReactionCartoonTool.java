@@ -116,8 +116,11 @@ import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionStep.ReactionNameScope;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
@@ -323,7 +326,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 	private ReactionStep[] getSelectedReactionStepArray() {
 		List<Shape> allSelectedShapes = getReactionCartoon().getSelectedShapes();
 		if (allSelectedShapes != null && allSelectedShapes.size() > 0) {
-			ArrayList<ReactionStep> rxStepsArr = new ArrayList<ReactionStep>();
+			List<ReactionStep> rxStepsArr = new ArrayList<>();
 			for (int i = 0; i < allSelectedShapes.size(); i += 1) {
 				if (allSelectedShapes.get(i).getModelObject() instanceof ReactionStep){
 					rxStepsArr.add((ReactionStep) allSelectedShapes.get(i).getModelObject());
@@ -336,7 +339,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 	private SpeciesContext[] getSelectedSpeciesContextArray() {
 		List<Shape> allSelectedShapes = getReactionCartoon().getSelectedShapes();
 		if (allSelectedShapes != null && allSelectedShapes.size() > 0) {
-			ArrayList<SpeciesContext> speciesContextArr = new ArrayList<SpeciesContext>();
+			List<SpeciesContext> speciesContextArr = new ArrayList<>();
 			for (int i = 0; i < allSelectedShapes.size(); i += 1) {
 				if (allSelectedShapes.get(i).getModelObject() instanceof SpeciesContext){
 					speciesContextArr.add((SpeciesContext) allSelectedShapes.get(i).getModelObject());
@@ -349,13 +352,40 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 	private ReactionParticipant[] getSelectedReactionParticipantArray() {
 		List<Shape> allSelectedShapes = getReactionCartoon().getSelectedShapes();
 		if (allSelectedShapes != null && allSelectedShapes.size() > 0) {
-			ArrayList<ReactionParticipant> reactionParticipantArr = new ArrayList<ReactionParticipant>();
+			List<ReactionParticipant> reactionParticipantArr = new ArrayList<>();
 			for (int i = 0; i < allSelectedShapes.size(); i += 1) {
 				if (allSelectedShapes.get(i).getModelObject() instanceof ReactionParticipant){
 					reactionParticipantArr.add((ReactionParticipant) allSelectedShapes.get(i).getModelObject());
 				}
 			}
 			return (reactionParticipantArr.size()==0?null:reactionParticipantArr.toArray(new ReactionParticipant[0]));
+		}
+		return null;
+	}
+	// -------------------------------------------------------------------------------------
+	private RuleParticipantSignature[] getSelectedRuleParticipantsArray() {
+		List<Shape> allSelectedShapes = getReactionCartoon().getSelectedShapes();
+		if (allSelectedShapes != null && allSelectedShapes.size() > 0) {
+			List<RuleParticipantSignature> rxStepsArr = new ArrayList<>();
+			for (int i = 0; i < allSelectedShapes.size(); i += 1) {
+				if (allSelectedShapes.get(i).getModelObject() instanceof RuleParticipantSignature){
+					rxStepsArr.add((RuleParticipantSignature) allSelectedShapes.get(i).getModelObject());
+				}
+			}
+			return (rxStepsArr.size()==0?null:rxStepsArr.toArray(new RuleParticipantSignature[0]));
+		}
+		return null;
+	}
+	private ReactionRule[] getSelectedReactionRuleArray() {
+		List<Shape> allSelectedShapes = getReactionCartoon().getSelectedShapes();
+		if (allSelectedShapes != null && allSelectedShapes.size() > 0) {
+			List<ReactionRule> rxStepsArr = new ArrayList<>();
+			for (int i = 0; i < allSelectedShapes.size(); i += 1) {
+				if (allSelectedShapes.get(i).getModelObject() instanceof ReactionRule){
+					rxStepsArr.add((ReactionRule) allSelectedShapes.get(i).getModelObject());
+				}
+			}
+			return (rxStepsArr.size()==0?null:rxStepsArr.toArray(new ReactionRule[0]));
 		}
 		return null;
 	}
@@ -457,8 +487,17 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				getGraphModel().select(speciesContext);
 			}
 		} else if (menuAction.equals(CartoonToolEditActions.Copy.MENU_ACTION)) {
-			if (shape instanceof SpeciesContextShape || shape instanceof ReactionStepShape) {
-				VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = new VCellTransferable.ReactionSpeciesCopy(getSelectedSpeciesContextArray(), getSelectedReactionStepArray());
+			if (shape instanceof SpeciesContextShape
+					|| shape instanceof ReactionStepShape
+					|| shape instanceof RuleParticipantSignatureDiagramShape	// rule participants whose rule is not selected won't
+																				// be copied since standalone they are meaningless
+					|| shape instanceof ReactionRuleDiagramShape) {
+				SpeciesContext[] spArray = getSelectedSpeciesContextArray();
+				ReactionStep[] rsArray = getSelectedReactionStepArray();
+				RuleParticipantSignature[] rpsArray = getSelectedRuleParticipantsArray();
+				ReactionRule[] rrArray = getSelectedReactionRuleArray();
+				
+				VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = new VCellTransferable.ReactionSpeciesCopy(spArray, rsArray);
 				VCellTransferable.sendToClipboard(reactionSpeciesCopy);
 			}
 		} else if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
@@ -2505,7 +2544,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		}
 		if (menuAction.equals(CartoonToolEditActions.Copy.MENU_ACTION)) {
 			if (shape instanceof SpeciesContextShape
-					|| shape instanceof ReactionStepShape) {
+					|| shape instanceof ReactionStepShape
+					|| shape instanceof RuleParticipantSignatureDiagramShape	// rule participants don't make sense without their rule
+					|| shape instanceof ReactionRuleDiagramShape) {
 				return true;
 			}
 		}
