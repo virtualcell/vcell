@@ -1064,7 +1064,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				popupFromShapeMenu.add(menuItem);
 			} else if(index > 2) {
 				Bond b = itemMap.get(name);
-				SpeciesPattern spBond = new SpeciesPattern(sp);		// clone of the sp, with only the bond of interest
+				SpeciesPattern spBond = new SpeciesPattern(bioModel.getModel(), sp);		// clone of the sp, with only the bond of interest
 				spBond.resetBonds();
 				spBond.resetStates();
 				MolecularTypePattern mtpFrom = spBond.getMolecularTypePattern(mtp.getMolecularType().getName(), mtp.getIndex());

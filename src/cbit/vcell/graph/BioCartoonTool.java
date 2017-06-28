@@ -13,11 +13,15 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -66,6 +70,7 @@ import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
@@ -73,6 +78,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
@@ -133,12 +139,12 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 		return false;
 	}
 
-
 	public interface RXPasteInterface {
 		GraphPane getGraphPane();
 		void saveDiagram();
 	}
 	
+	// --------------------------------------------------------------------------------------------------------------------------------------
 	private static void checkStructuresCompatibility(VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
 			Vector<Issue> issueVector, IssueContext issueContext) {
 		Structure fromStruct = rsCopy.getFromStructure();
@@ -146,7 +152,6 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			// the source and destination structures need to have the same dimension, can't paste from compartment to membrane or vice-versa
 			String msg = "Unable to paste from a " + fromStruct.getTypeName() + " to a " + structTo.getTypeName();
 			msg += ". Both source and destination Structures need to have the same dimension.";
-			msg += " Please choose a " + fromStruct.getTypeName() + " as destination and try again.";
 			Issue issue = new Issue(fromStruct, issueContext, IssueCategory.CopyPaste, msg, Issue.Severity.ERROR);
 			issueVector.add(issue);
 		}
@@ -155,7 +160,6 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			if(to != null && from.getDimension() != to.getDimension()) {
 				String msg = "Unable to paste " + from.getTypeName() + " " + from.getName();
 				msg += " because a " + to.getTypeName() + " with the same name already exists.";
-				msg += " Please rename the conflicting structure and try again.";
 				Issue issue = new Issue(from, issueContext, IssueCategory.CopyPaste, msg, Issue.Severity.ERROR);
 				issueVector.add(issue);
 			}
@@ -177,9 +181,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 				} else {
 					if(!mtTo.compareEqual(mtFrom)) {
 						// conflict: a different mt with the same name already exists
-						String msg = mtFrom.getDisplayType() + " " + RbmUtils.toBnglString(mtFrom, null, CompartmentMode.hide);
-						msg += " to be pasted conflicts with an existing molecule " + RbmUtils.toBnglString(mtTo, null, CompartmentMode.hide);
-						msg += ". Please resolve the conflict and try again.";
+						String msg = "Molecule " + RbmUtils.toBnglString(mtFrom, null, CompartmentMode.hide);
+						msg += " to be pasted conflicts with an existing molecule " + RbmUtils.toBnglString(mtTo, null, CompartmentMode.hide) + ".";
 						Issue issue = new Issue(mtFrom, issueContext, IssueCategory.CopyPaste, msg, Issue.Severity.ERROR);
 						issueVector.add(issue);
 						mtConflictList.add(mtFrom);
@@ -198,14 +201,17 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 		return mtNewList;
 	}
 	// map the structures to be pasted to existing structures 
-	private static void mapStructures(Component requester,
+	private static Map<Structure, String> mapStructures(Component requester,
 			VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
 			IssueContext issueContext) {
 		
-		Vector <Issue> issueVector = new Vector<>();	// use internally only; we exit the dialog when there are no issues left
-		Structure fromStruct = rsCopy.getFromStructure();
-		int numFromStructures = rsCopy.getStructuresArr().length;	// contains the fromStruct
 		
+		Vector <Issue> issueVector = new Vector<>();	// use internally only; we exit the dialog when there are no issues left
+		Structure structFrom = rsCopy.getFromStructure();
+		
+		Map<Structure, String> fullyMappedStructures = new LinkedHashMap<> ();
+		fullyMappedStructures.put(structFrom, structTo.getName());
+
 		StructurePasteMappingPanel structureMappingPanel = null;
 		Hashtable<JLabel,ReactionParticipant> mapLabelToPart = null;
 		do {
@@ -215,19 +221,55 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 						modelTo, structTo,
 						issueVector,  issueContext);
 				structureMappingPanel.setPreferredSize(new Dimension(400, 220));
-				
-				
-				
-				
-				
 			}
-
 			int result = DialogUtils.showComponentOKCancelDialog(requester, structureMappingPanel, "Assign 'From' structures to 'To' structures");
 			if(result != JOptionPane.OK_OPTION) {
 				throw UserCancelException.CANCEL_GENERIC;
 			}
-		} while(!issueVector.isEmpty());
+		} while(structureMappingPanel.hasErrors());
+		
+		Map<Structure, JComboBox<String>> structureMapping = structureMappingPanel.getStructureMap();
+		for (Map.Entry<Structure, JComboBox<String>> entry : structureMappingPanel.getStructureMap().entrySet()) {
+			if(entry.getValue().getSelectedItem().equals(StructurePasteMappingPanel.MAKE_NEW)) {
+				String newNameTo = entry.getKey().getName();	// we generate a "to" structure name based on the "from" name
+				while(modelTo.getStructure(newNameTo) != null) {
+					newNameTo = org.vcell.util.TokenMangler.getNextEnumeratedToken(newNameTo);
+				}
+				try {
+				if(entry.getKey() instanceof Membrane) {
+					modelTo.addMembrane(newNameTo);
+				} else {
+					modelTo.addFeature(newNameTo);
+				}
+				} catch(ModelException | PropertyVetoException e) {
+					
+				}
+				fullyMappedStructures.put(entry.getKey(), newNameTo);
+			} else {		// name of an existing "to" structure
+				fullyMappedStructures.put(entry.getKey(), (String) entry.getValue().getSelectedItem());
+			}
+		}
+		return fullyMappedStructures;
 	}
+	private static List<ReactionRule> pasteRules(VCellTransferable.ReactionSpeciesCopy rsCopy,
+			Model modelTo, Structure structTo,
+			Vector<Issue> issueVector, IssueContext issueContext, 
+			Map<Structure, String> structuresMap) throws ExpressionBindingException {
+		List<ReactionRule> rulesTo = new ArrayList<> ();
+		if(rsCopy.getReactionRuleArr() == null) {
+			return rulesTo;
+		}
+		//
+		//	TODO: deep compare here the id's of all objects, make sure they are all duplicated and point to the new 
+		// molecules, components and states
+		//
+		for(ReactionRule rrFrom : rsCopy.getReactionRuleArr()) {
+			ReactionRule rrTo = ReactionRule.clone(modelTo, rrFrom, structTo, structuresMap);
+			rulesTo.add(rrTo);
+		}
+		return rulesTo;
+	}
+	
 	public static final void pasteReactionsAndRules(Component requester, VCellTransferable.ReactionSpeciesCopy rsCopy,
 			Model pasteModel, Structure structTo, RXPasteInterface rxPasteInterface) {
 		
@@ -238,6 +280,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
 				clonedModel.refreshDependencies();
+//				Model clonedModel = pasteModel;
 				IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
 				Vector <Issue> issues = new Vector<>();
 				checkStructuresCompatibility(rsCopy, clonedModel, structTo, issues, issueContext);
@@ -255,12 +298,23 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 					e.printStackTrace();
 					throw new RuntimeException(e.getMessage());
 				}
-				// map all the structures of the reactions, rules and their participants to existing structures
-				// at need make new structures
-				if(rsCopy.getStructuresArr().length > 1) {	// if length ==1 it's just fromStruct which automatically maps to to Struct
-					mapStructures(requester, rsCopy, clonedModel, structTo, issueContext);	// throws CANCEL_GENERIC if the user cancels
+				// map all the structures of the reactions, rules and their participants to existing structures, at need make new structures
+				// key is the "from" structure, value is the name of the equivalent "to" structure
+				// on the first position we have the struct from where we copy (key) and the struct where we paste (value)
+				Map<Structure, String> structuresMap;
+				if(rsCopy.getStructuresArr().length > 1) {
+					structuresMap = mapStructures(requester, rsCopy, clonedModel, structTo, issueContext);	// throws CANCEL_GENERIC if the user cancels
+				} else {	// if length == 1 it's just structFrom which automatically maps to structTo
+					structuresMap = new LinkedHashMap<> ();
+					structuresMap.put(rsCopy.getFromStructure(), structTo.getName());
 				}
 				
+				
+				
+				List<ReactionRule> rulesTo = pasteRules(rsCopy, clonedModel, structTo, issues, issueContext, structuresMap);
+				for(ReactionRule rr : rulesTo) {
+					clonedModel.getRbmModelContainer().addReactionRule(rr);
+				}
 				
 //				if(pasteHelper[0].rxPartMapStruct != null){
 //					//Convert rxPartMapStruct instances from cloned to pasteModel

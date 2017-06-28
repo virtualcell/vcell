@@ -44,8 +44,8 @@ import cbit.vcell.model.Model.RbmModelContainer;
 
 public class StructurePasteMappingPanel extends JPanel {
 	
-	private static final String CHOOSE_STRUCT = "Choose Structure";
-	private static final String MAKE_NEW = "Make New Structure";
+	public static final String CHOOSE_STRUCT = "Choose Structure";
+	public static final String MAKE_NEW = "Make New Structure";
 	
 	private ReactionSpeciesCopy rsCopy;
 	private Model modelTo;
@@ -255,6 +255,14 @@ public class StructurePasteMappingPanel extends JPanel {
 		return structureMap;
 	}
 	
+	public boolean hasErrors() {
+		for(Issue issue : issueVector) {
+			if(issue.getSeverity() == Issue.Severity.ERROR) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	
 	
