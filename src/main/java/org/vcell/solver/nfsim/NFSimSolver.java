@@ -11,6 +11,7 @@
 package org.vcell.solver.nfsim;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
@@ -245,7 +247,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 //				writer.println(str);
 //				writer.close();
 //			} catch (FileNotFoundException | UnsupportedEncodingException e) {
-//				// TODO Auto-generated catch block
+//				// Auto-generated catch block
 //				e.printStackTrace();
 //			}
 		}
@@ -287,43 +289,67 @@ public class NFSimSolver extends SimpleCompiledSolver {
 	public static void main(String[] args) {
 		
 		String baseName = "SimID_";
-		String workingDir = "C:\\TEMP\\eee\\";
-		String executable = "C:\\Users\\vasilescu\\.vcell\\solvers_DanDev_Version_5_3_build_99\\NFsim_x64.exe";
+		String workingDir = "C:\\Users\\jmasison\\.vcell\\simdata\\user\\sub\\";
+		String executable = "C:\\Users\\jmasison\\workspace\\VCell_trunk\\localsolvers\\win64\\NFsim_x64.exe";
 		String blankDelimiters = " \t";
 		
+		String debugfile = "C:\\Users\\jmasison\\.vcell\\simdata\\user\\sub\\debug.txt";
+				
 		int seed = 1807259453;
-		int steps = 50;
-		double duration = 0.05;
+		int steps = 100;
+		double duration = 0.1; // unit system is in sec
+		
+		Map<Integer, Double> timestepMap = new HashMap<> ();
 		
 		BufferedReader br = null;
+		PrintWriter writer = null;
 		try {
-			for(int i = 0; i < steps; i++) {
+			writer = new PrintWriter(debugfile, "UTF-8");
+			for(int i = 1; i < steps + 1; i++) {
+//print				writer.println("\t\t\t\tentering i loop");
 				String input = workingDir + baseName + "000" + ".nfsimInput";		// C:\\TEMP\\eee\\SimID_000.nfsimInput
 				String output = workingDir + baseName + i + ".gdat";
 				String species = workingDir + baseName + i + ".species";
 				double interval = duration / steps;
-				double dur = interval * (i + 1);		// we start at timepoint 1
+				double dur = interval * (i - 1);		// we start at timepoint 0
 				String sdur = "" + dur;
 				if(sdur.length() > 6) {
 					sdur = sdur.substring(0, 6);
 				}
-				
+			
 				double averageOfAverage = 0;	// average length of patterns at this timepoint, over many simulations
 				int numSimulations = 50;
 				for(int ii = 0; ii < numSimulations; ii++) {
+//print					writer.println("\t\t\t\t\tentering ii loop");
 					int curSeed = seed + ii * 538297;		// calculate a new seed for this simulation (same start seeds will be used for each time point)
 					
-					String command = executable + " -seed " + curSeed + " -vcell -xml " + input + " -o " + output + " -sim " + sdur + " -ss " + species + " -oSteps 1" + " -notf -cb";
-					Process p = Runtime.getRuntime().exec(command);
-					p.waitFor();
-
-					command = "cmd.exe /c del " + workingDir + "*.gdat";
-					p = Runtime.getRuntime().exec(command);
-					p.waitFor();
+					//String command = executable + " -seed " + curSeed + " -vcell -xml " + input + " -o " + output + " -sim " + sdur + " -ss " + species + " -oSteps 1" + " -notf -cb";
+					//Process p = Runtime.getRuntime().exec(command);
+					//p.waitFor();
+					String curspecies = species + "_sim_" + ii;
+					String[] commands = new String[] { executable , "-seed" , Integer.toString(curSeed) , "-vcell", "-xml" , input , "-o" , output , "-sim" , sdur , "-ss" , curspecies , "-oSteps", "1" , "-notf", "-cb"};
+					MathExecutable mathExe = new MathExecutable(commands, new File(workingDir));
+					try {
+						mathExe.start();
+					} catch (ExecutableException e) {
+						e.printStackTrace();
+						System.out.println("exe failed, exitValue="+mathExe.getExitValue()+", \nstderr="+mathExe.getStderrString()+", \nstdout="+mathExe.getStdoutString());
+					}
 					
+					//command = "cmd.exe /c del " + workingDir + "*.gdat";
+					//p = Runtime.getRuntime().exec(command);
+					//p.waitFor();
+					
+					//delete the intermediate .gdat files
+//					MathExecutable mathExeDel = new MathExecutable(new String[] {"cmd.exe", "/c", "del", workingDir, "*.gdat"}, new File(workingDir));
+//					try {
+//						mathExeDel.start();
+//					} catch (ExecutableException e) {
+//						e.printStackTrace();
+//					}		
 					
 					Map<Integer, Integer> occurencesMap = new HashMap<> ();
-					br = new BufferedReader(new FileReader(species));
+					br = new BufferedReader(new FileReader(curspecies));
 					String line;			// ex: A(s!1,t!2).B(u!1).B(u!2)  5
 					while ((line = br.readLine()) != null) {
 						if(line.startsWith("#")) {
@@ -354,25 +380,55 @@ public class NFSimSolver extends SimpleCompiledSolver {
 					double down = 0;
 					for (Map.Entry<Integer, Integer> entry : occurencesMap.entrySet()) {
 						Integer key = entry.getKey();
-//						if(key == 1) {
-//							continue;
-//						}
+						if(key == 1) {
+							continue;
+						}
 						Integer value = entry.getValue();
 						up += key * value;
 						down += value;
+						
+//print						writer.println(curspecies+"_"+i+" : "+ up + ", " + down);
+											
 					}
-					double average = up/down;
+					double average;
+					if(down > 0){
+						average	= up/down;
+					}else{
+						average = 0;
+					}
+					
+//print					writer.println("average: "+average);; writer.println();
+						
 					averageOfAverage += average;
+					
+//print					writer.println("Avergae_of_average_for_sim_"+ii+"_time_"+i+" : "+average);; writer.println();
+							
 					br.close();
 				
-					command = "cmd.exe /c del " + workingDir + "*.species";
-					p = Runtime.getRuntime().exec(command);
-					p.waitFor();
+					//if uncimmented make sure to use mathexecutable
+					//command = "cmd.exe /c del " + workingDir + "*.species";
+					//p = Runtime.getRuntime().exec(command); 
+					//p.waitFor();
 				}
+				
 				averageOfAverage = averageOfAverage / numSimulations;
-				System.out.println(sdur + " " + averageOfAverage);
+//print				writer.println("Final_average_for_time_"+i+" : "+averageOfAverage); writer.println();
+				timestepMap.put(i, averageOfAverage); //save average for time step (i) to map 
+				
 			}
-		} catch (IOException | InterruptedException e) {
+		
+		//exited both loops
+			
+//print		writer.println();
+		writer.println("Time\tAverageCLusterSize");
+	    for(int j = 1; j < steps + 1; j++) {
+	    	writer.println((j-1) + "\t" + timestepMap.get(j));
+	    }		
+	    writer.println(); writer.println("Done");
+	    writer.close();
+			
+	    System.out.println("\n\n\n\nDone\n\n");
+		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			try {
@@ -382,8 +438,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
-		}
-		System.out.println("Done");
+		}	
 	}
 }
 //StringBuffer output = new StringBuffer();
