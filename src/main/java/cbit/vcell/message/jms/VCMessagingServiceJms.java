@@ -48,7 +48,7 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 					@Override
 					public boolean accept(File pathname) {
 						long ageMS = System.currentTimeMillis() - pathname.lastModified();
-						if (ageMS > BlobGarbageCollector_AgeLimitMS){
+						if (pathname.getName().startsWith("BlobMessage") && pathname.getName().endsWith(".data") && ageMS > BlobGarbageCollector_AgeLimitMS){
 							pathname.delete();
 						}
 						return false; // always return false (empty list)
