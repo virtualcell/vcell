@@ -14,9 +14,9 @@ import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 import java.util.Vector;
 
-import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 
@@ -447,12 +447,37 @@ public String infixBng() {
 		return null;
 	} else {	// clean useless leading and ending parenthesis if they are paired
 		String s = rootNode.infixString(SimpleNode.LANGUAGE_BNGL);
-		if(RbmUtils.isParenthesisMatchBothEnds(s)) {
+		if(Expression.isParenthesisMatchBothEnds(s)) {
 			s = s.substring(1, s.length() - 1); 
 		}
 		return s;
 	}
 }
+
+private static boolean isParenthesisMatchBothEnds(String str) {
+	if (!str.startsWith("(") || !str.endsWith(")")) {
+		return false;	// it's got to begin and end with matched parenthesis
+	}
+	Stack<Character> stack = new Stack<Character>();
+	char c;
+	for(int i=0; i < str.length(); i++) {
+		c = str.charAt(i);
+		if(c == '(') {
+			stack.push(c);
+		} else if(c == ')') {
+			stack.pop();
+			if(stack.empty()) {
+				if( i == str.length()-1) {
+					return true;	// found a match at the end of the string
+				} else {
+					return false;	// found a match within the string
+				}
+			}
+		}
+	}
+	return false;
+}
+
 
    /**
  * Insert the method's description here.
@@ -1007,5 +1032,6 @@ public void validateUnscopedSymbols() throws ExpressionBindingException {
 		}
 	}
 }
+
 }
 
