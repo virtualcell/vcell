@@ -19,9 +19,9 @@ import java.util.List;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import ucar.units.RationalNumber;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
+import ucar.units.RationalNumber;
 
 public class ModelUnitSystem extends VCUnitSystem implements Matchable {
 

@@ -15,7 +15,6 @@ import java.util.Vector;
 
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.units.VCUnitDefinition;

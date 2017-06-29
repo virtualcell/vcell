@@ -13,7 +13,6 @@ package cbit.vcell.microscopy.gui;
 import java.awt.Font;
 import java.io.File;
 
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;

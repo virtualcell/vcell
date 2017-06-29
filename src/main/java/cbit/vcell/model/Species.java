@@ -11,7 +11,7 @@
 package cbit.vcell.model;
 
 
-import java.beans.*;
+import java.beans.PropertyVetoException;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;

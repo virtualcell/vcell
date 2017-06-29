@@ -10,7 +10,6 @@
 
 package cbit.vcell.model;
 
-import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.Displayable;
 import org.vcell.util.document.Identifiable;
 /*

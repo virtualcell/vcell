@@ -10,7 +10,7 @@
 
 package cbit.vcell.model;
 
-import java.io.*;
+import java.io.Serializable;
 
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;

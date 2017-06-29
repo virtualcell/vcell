@@ -9,8 +9,6 @@
  */
 
 package cbit.vcell.model;
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 
@@ -18,6 +16,7 @@ import cbit.vcell.mapping.ParameterContext;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import net.sourceforge.interval.ia_math.RealInterval;
 /**
  * Insert the type's description here.
  * Creation date: (11/1/2005 9:32:59 AM)

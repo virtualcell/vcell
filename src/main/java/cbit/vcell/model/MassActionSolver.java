@@ -22,7 +22,6 @@ import org.vcell.util.Matchable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -31,7 +30,6 @@ import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.units.VCUnitDefinition;
 
 public class MassActionSolver {
 

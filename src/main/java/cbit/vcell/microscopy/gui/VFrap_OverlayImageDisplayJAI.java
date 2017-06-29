@@ -35,9 +35,9 @@ import javax.media.jai.operator.ScaleDescriptor;
 
 import org.vcell.util.Range;
 
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper.BrushRefresh;
-
 import com.sun.media.jai.widget.DisplayJAI;
+
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper.BrushRefresh;
 
 /**
  */

@@ -11,15 +11,11 @@
 package cbit.vcell.model;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
-
-import cbit.vcell.model.FluxReaction.Flux;
 
 public class FluxReaction extends ReactionStep {
 //	private Species fieldFluxCarrier = null;

@@ -41,8 +41,8 @@ import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.NumericTableCellRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentPanel;
-import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentPanel;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_ReactionOffRatePanel;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentPanel;
 
 @SuppressWarnings("serial")
 public class BatchRunResultsParamTablePanel extends JPanel implements PropertyChangeListener

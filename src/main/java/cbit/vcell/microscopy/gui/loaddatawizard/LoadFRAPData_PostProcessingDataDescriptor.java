@@ -2,7 +2,6 @@ package cbit.vcell.microscopy.gui.loaddatawizard;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Vector;
 
 import org.vcell.wizard.WizardPanelDescriptor;
 
@@ -15,13 +14,12 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataOperation;
-import cbit.vcell.simdata.DataOperationResults;
-import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
+import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
+import cbit.vcell.simdata.PDEDataManager;
 
 public class LoadFRAPData_PostProcessingDataDescriptor extends WizardPanelDescriptor {
     public static final String IDENTIFIER = "LoadFRAPData_PostProcessingDataDescriptor";

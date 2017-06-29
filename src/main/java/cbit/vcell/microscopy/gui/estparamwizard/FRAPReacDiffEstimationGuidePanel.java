@@ -45,7 +45,6 @@ import cbit.vcell.microscopy.gui.EstimatedParameterTableRenderer;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public class FRAPReacDiffEstimationGuidePanel extends JPanel {

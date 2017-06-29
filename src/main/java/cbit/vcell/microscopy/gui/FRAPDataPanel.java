@@ -13,13 +13,11 @@ package cbit.vcell.microscopy.gui;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import org.vcell.util.gui.DialogUtils;

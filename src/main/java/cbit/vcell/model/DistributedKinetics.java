@@ -13,7 +13,6 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

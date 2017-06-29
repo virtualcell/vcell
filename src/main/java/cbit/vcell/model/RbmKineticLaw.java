@@ -7,8 +7,6 @@ import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.List;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
@@ -31,6 +29,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matchable, PropertyChangeListener, IssueSource {
 	

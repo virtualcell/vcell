@@ -9,9 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 
 public class ReactionRuleShortSignature {
 

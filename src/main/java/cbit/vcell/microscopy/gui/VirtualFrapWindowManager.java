@@ -14,8 +14,6 @@ import java.awt.Component;
 import java.io.FileNotFoundException;
 import java.util.Vector;
 
-import javax.swing.JInternalFrame;
-
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;

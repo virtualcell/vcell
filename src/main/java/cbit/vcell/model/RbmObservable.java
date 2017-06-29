@@ -21,14 +21,14 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.common.RbmEventHandler;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
-import org.vcell.util.Pair;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
-import org.vcell.util.Displayable;
+import org.vcell.util.Pair;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 
@@ -36,7 +36,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class RbmObservable implements Serializable, Matchable, EditableSymbolTableEntry, PropertyChangeListener,
