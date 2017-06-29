@@ -19,7 +19,6 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.util.CharsetUtil;
-import org.vcell.util.NumberUtils;
 
 
 public class HttpResponseHandler extends SimpleChannelUpstreamHandler {

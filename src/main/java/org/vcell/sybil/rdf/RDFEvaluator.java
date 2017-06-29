@@ -25,8 +25,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.vcell.sybil.rdf.nodestore.RDFResourceSets;
 import org.vcell.sybil.rdf.nodestore.RDFValueSets;
-import org.vcell.sybil.rdf.pool.RDFObjectSets;
 import org.vcell.sybil.rdf.pool.RDFObjectPool;
+import org.vcell.sybil.rdf.pool.RDFObjectSets;
 import org.vcell.sybil.rdf.pool.UnsupportedRDFTypeException;
 
 public class RDFEvaluator {

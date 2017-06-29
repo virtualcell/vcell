@@ -10,8 +10,8 @@
 
 package org.vcell.util.gui;
 
-import java.awt.event.*;
-import java.awt.*;
+import java.awt.Window;
+import java.awt.event.WindowEvent;
 /**
  * This type was created in VisualAge.
  */

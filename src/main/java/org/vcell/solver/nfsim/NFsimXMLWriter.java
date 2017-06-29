@@ -1,6 +1,5 @@
 package org.vcell.solver.nfsim;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -17,9 +16,7 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.PropertyLoader;
 
-import cbit.vcell.mapping.RulebasedTransformer;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;

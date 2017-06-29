@@ -10,8 +10,8 @@
 
 package org.vcell.util.document;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
-import java.io.*;
 
 import org.vcell.util.Matchable;
 

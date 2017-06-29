@@ -9,7 +9,10 @@
  */
 
 package org.vcell.util.gui;
-import java.awt.datatransfer.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 
 import org.vcell.util.BeanUtils;
 

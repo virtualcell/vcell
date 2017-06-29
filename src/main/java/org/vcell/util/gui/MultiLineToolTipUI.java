@@ -10,12 +10,18 @@
 
 package org.vcell.util.gui;
 
-import java.util.Vector;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.util.StringTokenizer;
-import javax.swing.*;
-import javax.swing.plaf.*;
+import java.util.Vector;
 
-import java.awt.*;
+import javax.swing.CellRendererPane;
+import javax.swing.JComponent;
+import javax.swing.JTextArea;
+import javax.swing.JToolTip;
+import javax.swing.UIManager;
+import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicToolTipUI;
 
 /**

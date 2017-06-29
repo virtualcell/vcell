@@ -18,8 +18,8 @@ import java.util.Set;
 import org.vcell.util.geometry2d.Point2D;
 import org.vcell.util.geometry2d.Vector2D;
 import org.vcell.util.graphlayout.ContainedGraph;
-import org.vcell.util.graphlayout.NodesShift;
 import org.vcell.util.graphlayout.ContainedGraph.Node;
+import org.vcell.util.graphlayout.NodesShift;
 
 public interface EnergySum {
 	

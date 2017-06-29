@@ -1,13 +1,12 @@
 package org.vcell.util.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.util.Collection;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
-
-import java.awt.Font;
 
 /**
  * Panel which displays list of suggestions

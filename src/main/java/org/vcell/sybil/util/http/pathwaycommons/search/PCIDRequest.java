@@ -26,7 +26,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 import org.sbpax.util.SesameRioUtil;
 import org.sbpax.util.StringUtil;
 import org.vcell.sybil.util.http.pathwaycommons.PCExceptionResponse;

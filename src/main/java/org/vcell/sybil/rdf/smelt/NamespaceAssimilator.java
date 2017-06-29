@@ -25,7 +25,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.OWL;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 
 public class NamespaceAssimilator implements RDFSmelter {
 	

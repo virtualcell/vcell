@@ -13,8 +13,6 @@ package org.vcell.util.document;
 import java.math.BigDecimal;
 import java.util.Random;
 
-import cbit.vcell.resource.ResourceUtil;
-
 
 /**
  * Insert the type's description here.

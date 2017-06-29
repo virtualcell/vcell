@@ -10,9 +10,14 @@
 
 package org.vcell.util.gui;
 
-import javax.swing.plaf.*;
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.plaf.LabelUI;
 /**
  * Insert the type's description here.
  * Creation date: (2/10/2001 1:15:48 AM)

@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ucar.ma2.ForbiddenConversionException;
+
 
 /**
  * repository for translating low lever "programmer-ese" exceptions into possible user action

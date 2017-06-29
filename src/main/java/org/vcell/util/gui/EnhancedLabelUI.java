@@ -10,10 +10,15 @@
 
 package org.vcell.util.gui;
 
-import java.awt.geom.*;
-import javax.swing.*;
-import javax.swing.plaf.basic.*;
-import java.awt.*;
+import java.awt.FontMetrics;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
+
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+import javax.swing.plaf.basic.BasicLabelUI;
 /**
  * Insert the type's description here.
  * Creation date: (2/10/2001 3:13:43 AM)

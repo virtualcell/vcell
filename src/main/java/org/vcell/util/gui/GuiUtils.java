@@ -33,8 +33,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 

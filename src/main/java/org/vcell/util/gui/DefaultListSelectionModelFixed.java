@@ -10,7 +10,7 @@
 
 package org.vcell.util.gui;
 
-import javax.swing.*;
+import javax.swing.DefaultListSelectionModel;
 /**
  * Insert the type's description here.
  * Creation date: (6/25/2001 5:56:09 PM)

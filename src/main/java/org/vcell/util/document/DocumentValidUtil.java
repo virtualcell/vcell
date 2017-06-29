@@ -4,7 +4,6 @@ import java.util.Vector;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 
 import cbit.vcell.biomodel.BioModel;

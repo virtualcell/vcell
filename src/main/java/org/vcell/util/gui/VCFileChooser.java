@@ -11,6 +11,7 @@
 package org.vcell.util.gui;
 import java.awt.Component;
 import java.awt.Frame;
+
 import javax.swing.SwingUtilities;
 /**
  * Insert the type's description here.

@@ -1,10 +1,9 @@
 package org.vcell.util.gui;
 
-import javax.swing.AbstractListModel;
-
-
-import java.util.Vector;
 import java.util.Enumeration;
+import java.util.Vector;
+
+import javax.swing.AbstractListModel;
 
 /**
  * Two enhancements to javax.swing.DefaultListModel:

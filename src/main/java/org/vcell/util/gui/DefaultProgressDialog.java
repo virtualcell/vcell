@@ -9,8 +9,6 @@
  */
 
 package org.vcell.util.gui;
-import java.awt.Frame;
-
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 

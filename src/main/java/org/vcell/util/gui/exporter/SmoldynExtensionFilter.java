@@ -1,12 +1,13 @@
 package org.vcell.util.gui.exporter;
 
+import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Objects;
 
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.VCAssert;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.PopupGenerator;
@@ -15,7 +16,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
 @SuppressWarnings("serial")
 public class SmoldynExtensionFilter extends SelectorExtensionFilter{
 	/**

@@ -1,7 +1,6 @@
 package org.vcell.util;
 
 import java.io.File;
-import java.util.HashMap;
 
 /**
  * provide interface to allow switching / testing different Executable implementations

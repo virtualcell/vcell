@@ -13,6 +13,7 @@ package org.vcell.util.graphlayout;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.vcell.util.graphlayout.ContainedGraph.Container;
 import org.vcell.util.graphlayout.ContainedGraph.Edge;
 import org.vcell.util.graphlayout.ContainedGraph.Node;

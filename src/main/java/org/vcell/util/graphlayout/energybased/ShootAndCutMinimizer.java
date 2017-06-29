@@ -13,8 +13,8 @@ package org.vcell.util.graphlayout.energybased;
 import java.util.Random;
 
 import org.vcell.util.graphlayout.ContainedGraph;
-import org.vcell.util.graphlayout.ContainedGraphUtil;
 import org.vcell.util.graphlayout.ContainedGraph.Node;
+import org.vcell.util.graphlayout.ContainedGraphUtil;
 import org.vcell.util.graphlayout.NodesShift;
 import org.vcell.util.graphlayout.energybased.EnergySum.Minimizer;
 

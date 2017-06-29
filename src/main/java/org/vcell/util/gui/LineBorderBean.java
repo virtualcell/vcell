@@ -10,8 +10,9 @@
 
 package org.vcell.util.gui;
 
-import javax.swing.border.*;
-import java.awt.*;
+import java.awt.Color;
+
+import javax.swing.border.LineBorder;
 /**
  * Dummy subclass of LineBorder that has a no-parameter constructor so it can
  * be recognized by VAJava as a bean implementing the border interface.

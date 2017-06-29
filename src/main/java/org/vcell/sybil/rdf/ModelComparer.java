@@ -10,6 +10,10 @@
 
 package org.vcell.sybil.rdf;
 
+import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.Set;
+
 /*   ModelComparer  --- by Oliver Ruebenacker, UCHC --- May 2008 to November 2009
  *   Compares two models, calculating two differences, which are models
  *   containing statement of one models impossible to match with the other one
@@ -25,15 +29,10 @@ import org.openrdf.model.util.ModelUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.MultiHashMap;
 import org.sbpax.util.MultiMap;
 import org.sbpax.util.SesameRioUtil;
-
-import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.Set;
 
 public class ModelComparer {
 	

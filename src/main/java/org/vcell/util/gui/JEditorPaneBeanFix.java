@@ -11,7 +11,7 @@
 package org.vcell.util.gui;
 
 
-import java.net.*;
+import java.net.URL;
 /**
  * Insert the type's description here.
  * Creation date: (2/4/2001 7:28:43 PM)

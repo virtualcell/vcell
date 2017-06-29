@@ -10,7 +10,8 @@
 
 package org.vcell.util.gui;
 
-import javax.swing.border.*;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 /**
  * Dummy subclass of TitledBorder that has a no-parameter constructor so it can
  * be recognized by VAJava as a bean implementing the border interface.

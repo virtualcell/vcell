@@ -24,7 +24,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 
 public class RDFResourceProjection implements RDFSmelter {
 

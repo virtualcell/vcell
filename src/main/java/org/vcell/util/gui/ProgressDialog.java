@@ -19,7 +19,6 @@ import javax.swing.JProgressBar;
 import org.apache.log4j.Logger;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWDialog;
-import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.ProgressDialogListener;
 
 import cbit.vcell.client.desktop.DocumentWindow;

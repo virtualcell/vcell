@@ -18,7 +18,6 @@ import java.util.Map;
 import org.openrdf.model.Graph;
 import org.openrdf.rio.RDFFormat;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 import org.sbpax.util.SesameRioUtil;
 
 /*   UniProtRDFRequest  --- by Oliver Ruebenacker, UCHC --- January 2010

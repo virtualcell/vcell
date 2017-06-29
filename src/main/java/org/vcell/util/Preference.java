@@ -10,11 +10,6 @@
 
 package org.vcell.util;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Vector;
-
-
 /**
  * Insert the type's description here.
  * Creation date: (6/10/2004 7:17:23 PM)

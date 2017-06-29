@@ -10,7 +10,8 @@
 
 package org.vcell.util;
 
-import java.util.*;
+import java.util.NoSuchElementException;
+import java.util.Vector;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2001 9:06:34 PM)

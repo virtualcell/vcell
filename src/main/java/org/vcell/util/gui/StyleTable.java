@@ -10,12 +10,16 @@
 
 package org.vcell.util.gui;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Component;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
-import java.awt.*;
 
 /**
  * This is gonna to change a typical JTable's look and feel.

@@ -10,8 +10,10 @@
 
 package org.vcell.util.gui;
 
-import java.util.*;
-import javax.swing.*;
+import java.util.Enumeration;
+
+import javax.swing.AbstractButton;
+import javax.swing.ButtonModel;
 /**
  * Insert the type's description here.
  * Creation date: (7/13/00 2:23:46 PM)

@@ -10,8 +10,13 @@
 
 package org.vcell.util.gui;
 
-import java.awt.*;
-import java.awt.image.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Image;
+import java.awt.image.ImageObserver;
+import java.awt.image.PixelGrabber;
 /**
  * This type was created in VisualAge.
  */

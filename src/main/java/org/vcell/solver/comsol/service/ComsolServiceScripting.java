@@ -13,7 +13,6 @@ import javax.script.ScriptException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.vcell.solver.comsol.model.VCCCoefficientFormPDE;
 import org.vcell.solver.comsol.model.VCCConvectionDiffusionEquation;
 import org.vcell.solver.comsol.model.VCCGeomFeature;
 import org.vcell.solver.comsol.model.VCCGeomFeature.Keep;

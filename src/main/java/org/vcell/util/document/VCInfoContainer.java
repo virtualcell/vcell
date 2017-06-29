@@ -9,11 +9,12 @@
  */
 
 package org.vcell.util.document;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.image.VCImageInfo;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import cbit.image.VCImageInfo;
+import cbit.vcell.geometry.GeometryInfo;
 
 /**
  * Insert the type's description here.

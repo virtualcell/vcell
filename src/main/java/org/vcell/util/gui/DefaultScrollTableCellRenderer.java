@@ -13,14 +13,6 @@ package org.vcell.util.gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -43,7 +35,6 @@ import cbit.gui.ModelProcessEquation;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationsTableModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
-import cbit.vcell.client.desktop.biomodel.SpatialObjectDisplayPanel;
 import cbit.vcell.client.desktop.biomodel.SpatialObjectTableModel;
 import cbit.vcell.client.desktop.biomodel.SpatialProcessTableModel;
 import cbit.vcell.mapping.SimulationContext;

@@ -3,7 +3,6 @@ package org.vcell.stochtest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.vcell.stochtest.StochtestCompare.StochtestCompareStatus;
 import org.vcell.stochtest.TimeSeriesMultitrialData.SummaryStatistics;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
