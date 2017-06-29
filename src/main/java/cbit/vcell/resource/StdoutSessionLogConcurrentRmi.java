@@ -1,6 +1,8 @@
-package org.vcell.util;
+package cbit.vcell.resource;
 
 import java.io.OutputStream;
+
+import org.vcell.util.SessionLog;
 
 /**
  *  Concurrent {@link SessionLog} with RMI style hostname

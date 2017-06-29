@@ -1,4 +1,4 @@
-package org.vcell.util;
+package cbit.vcell.resource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
-
-import cbit.vcell.resource.VCellExecutorService;
+import org.vcell.util.LifeSignThread;
+import org.vcell.util.SessionLog;
 
 /**
  * use Java concurrent capability to make {@link SessionLog} methods as

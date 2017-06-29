@@ -1,4 +1,4 @@
-package org.vcell.util;
+package cbit.vcell.resource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
@@ -7,6 +7,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 import java.util.StringTokenizer;
+
+import org.vcell.util.SessionLog;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 

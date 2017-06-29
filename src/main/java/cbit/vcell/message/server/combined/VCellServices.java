@@ -24,8 +24,6 @@ import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.LifeSignThread;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
-import org.vcell.util.StdoutSessionLogConcurrent;
-import org.vcell.util.StdoutSessionLogConcurrent.LifeSignInfo;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.logging.WatchLogging;
 
@@ -72,6 +70,8 @@ import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.StdoutSessionLogConcurrent;
+import cbit.vcell.resource.StdoutSessionLogConcurrent.LifeSignInfo;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;

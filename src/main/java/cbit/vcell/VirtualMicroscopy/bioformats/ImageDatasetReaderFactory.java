@@ -12,7 +12,6 @@ import org.scijava.plugin.PluginInfo;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ISize;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.VCellClientClasspathUtils;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.gui.DialogUtils;
 
@@ -20,6 +19,7 @@ import cbit.image.ImageSizeInfo;
 import cbit.vcell.VirtualMicroscopy.Bundle;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.resource.VCellClientClasspathUtils;
 
 //@Plugin(type = ImageDatasetReader.class)
 public class ImageDatasetReaderFactory /* extends AbstractService */ implements ImageDatasetReader {

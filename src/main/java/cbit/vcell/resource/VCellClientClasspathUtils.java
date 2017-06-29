@@ -1,4 +1,4 @@
-package org.vcell.util;
+package cbit.vcell.resource;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.ResourceUtil;
+import org.vcell.util.FileUtils;
+
 import sun.misc.URLClassPath;
 
 public class VCellClientClasspathUtils {

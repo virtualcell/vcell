@@ -1,10 +1,15 @@
-package org.vcell.util;
+package cbit.vcell.resource;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-import org.vcell.util.StdoutSessionLogConcurrent.LifeSignInfo;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.logging.Logging;
+
+import cbit.vcell.resource.StdoutSessionLogA;
+import cbit.vcell.resource.StdoutSessionLogConcurrent;
+import cbit.vcell.resource.StdoutSessionLogConcurrent.LifeSignInfo;
 
 /**
  * 
