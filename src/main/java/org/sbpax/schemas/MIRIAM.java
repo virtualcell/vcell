@@ -20,7 +20,6 @@ import java.util.Set;
 import org.openrdf.model.Graph;
 import org.openrdf.model.URI;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 
 public class MIRIAM {
 	

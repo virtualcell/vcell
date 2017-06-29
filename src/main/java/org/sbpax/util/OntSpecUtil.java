@@ -29,6 +29,7 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.sbpax.schemas.util.DefaultNameSpaces;
+
 import cbit.util.xml.XmlUtil;
 
 public class OntSpecUtil {

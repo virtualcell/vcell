@@ -15,6 +15,8 @@ package org.sbpax.schemas.util;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
+
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -26,7 +28,6 @@ import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
-import java.util.Collection;
 
 public class OntUtil {
 

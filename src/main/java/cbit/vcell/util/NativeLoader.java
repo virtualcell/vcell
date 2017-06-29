@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.OperatingSystemInfo.OsType;
 
 /**
  * class to load native libraries. Requires external class to set

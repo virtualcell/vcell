@@ -8,9 +8,7 @@ import java.net.MalformedURLException;
 import javax.swing.JOptionPane;
 
 import org.scijava.Context;
-import org.scijava.plugin.Plugin;
 import org.scijava.plugin.PluginInfo;
-import org.scijava.service.AbstractService;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ISize;
 import org.vcell.util.UserCancelException;

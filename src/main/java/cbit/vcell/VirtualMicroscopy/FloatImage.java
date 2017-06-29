@@ -14,7 +14,6 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 

@@ -15,7 +15,9 @@ package cbit.xml.merge.gui;
  * Creation date: (7/27/2000 6:30:41 PM)
  * @author: 
  */
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JTree;
 
 import cbit.xml.merge.NodeInfo;
  

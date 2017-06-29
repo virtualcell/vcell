@@ -61,10 +61,10 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager;
-import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.MiriamManager.DataType;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelCellRenderer;

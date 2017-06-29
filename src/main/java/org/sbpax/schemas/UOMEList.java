@@ -16,11 +16,11 @@ package org.sbpax.schemas;
 
 import java.util.Arrays;
 import java.util.List;
+
 import org.openrdf.model.Graph;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.OWL;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 import org.sbpax.schemas.util.NameSpace;
 import org.sbpax.schemas.util.OntUtil;
 import org.sbpax.schemas.util.UOMEUtil;

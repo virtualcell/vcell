@@ -10,9 +10,10 @@
 
 package cbit.xml.merge;
 
-import org.jdom.Attribute;
 import java.util.Iterator;
 import java.util.List;
+
+import org.jdom.Attribute;
 import org.jdom.Element;
 /**
  * Insert the type's description here.

@@ -22,8 +22,6 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 
 import cbit.image.ImageException;
-import cbit.vcell.VirtualMicroscopy.Image;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
 
 // This represents the ROI - Region Of Interest in a given image : NOTE : subject to change!!
 /**

@@ -15,8 +15,8 @@ import java.util.HashMap;
 
 import org.vcell.util.Matchable;
 
-import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.units.parser.UnitSymbol;

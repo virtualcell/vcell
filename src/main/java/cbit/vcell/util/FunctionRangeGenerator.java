@@ -13,10 +13,8 @@ import org.vcell.util.Range;
 
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.solvers.CartesianMesh;
 

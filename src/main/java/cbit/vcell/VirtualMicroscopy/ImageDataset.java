@@ -11,6 +11,7 @@
 package cbit.vcell.VirtualMicroscopy;
 
 import java.awt.Rectangle;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;

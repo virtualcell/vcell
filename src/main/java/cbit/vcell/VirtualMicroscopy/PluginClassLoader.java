@@ -9,7 +9,6 @@ import java.security.CodeSigner;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
-import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.List;
 

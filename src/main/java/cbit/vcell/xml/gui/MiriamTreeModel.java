@@ -27,11 +27,11 @@ import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.biomodel.meta.IdentifiableComparator;
 import cbit.vcell.biomodel.meta.MiriamManager;
-import cbit.vcell.biomodel.meta.VCID;
-import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.MiriamManager.DataType;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+import cbit.vcell.biomodel.meta.VCID;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
 import cbit.vcell.desktop.Annotation;
