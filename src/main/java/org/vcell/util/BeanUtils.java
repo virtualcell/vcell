@@ -91,6 +91,7 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.util.AmplistorUtils;
 import edu.uchc.connjur.wb.ExecutionTrace;

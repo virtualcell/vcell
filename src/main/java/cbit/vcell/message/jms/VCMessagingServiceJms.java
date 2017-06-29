@@ -16,7 +16,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import org.scijava.service.AbstractService;
-import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCDestination;
@@ -26,6 +25,7 @@ import cbit.vcell.message.VCMessagingConsumer;
 import cbit.vcell.message.VCMessagingDelegate;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.resource.PropertyLoader;
 
 public abstract class VCMessagingServiceJms extends AbstractService implements VCMessagingService {
 	

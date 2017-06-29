@@ -45,7 +45,6 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
@@ -85,6 +84,7 @@ import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;

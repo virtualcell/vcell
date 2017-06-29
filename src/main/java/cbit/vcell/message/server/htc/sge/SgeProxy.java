@@ -12,7 +12,6 @@ import java.util.Objects;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.util.FileUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.util.xml.XmlUtil;
@@ -22,6 +21,7 @@ import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.solvers.ExecutableCommand;

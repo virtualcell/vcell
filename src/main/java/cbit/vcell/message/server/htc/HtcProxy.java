@@ -16,13 +16,13 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.solvers.ExecutableCommand;

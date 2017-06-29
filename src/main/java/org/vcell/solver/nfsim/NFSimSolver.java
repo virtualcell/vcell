@@ -21,11 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputTimeSpec;

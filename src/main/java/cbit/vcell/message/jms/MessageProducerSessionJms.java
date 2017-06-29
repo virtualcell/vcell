@@ -19,7 +19,6 @@ import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessage;
@@ -31,6 +30,7 @@ import cbit.vcell.message.VCMessagingInvocationTargetException;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.resource.PropertyLoader;
 
 public class MessageProducerSessionJms implements VCMessageSession {
 //		private static int tmpQCnt = 0;

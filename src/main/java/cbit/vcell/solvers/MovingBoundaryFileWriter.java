@@ -19,7 +19,6 @@ import org.vcell.movingboundary.MovingBoundarySolverSpec;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
-import org.vcell.util.PropertyLoader;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
@@ -44,6 +43,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;

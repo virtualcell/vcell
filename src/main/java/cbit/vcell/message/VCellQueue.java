@@ -1,6 +1,6 @@
 package cbit.vcell.message;
 
-import org.vcell.util.PropertyLoader;
+import cbit.vcell.resource.PropertyLoader;
 
 public class VCellQueue implements VCDestination {
 	public final static VCellQueue DataRequestQueue = new VCellQueue(PropertyLoader.jmsDataRequestQueue,null);

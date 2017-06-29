@@ -18,7 +18,6 @@ import org.vcell.optimization.thrift.ParameterDescription;
 import org.vcell.optimization.thrift.ReferenceVariable;
 import org.vcell.optimization.thrift.ReferenceVariableType;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.exe.Executable2;
 import org.vcell.util.exe.ExecutableException;
 import org.vcell.util.exe.IExecutable;
@@ -36,6 +35,7 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.PropertyLoader;
 
 public class CopasiServicePython {
 	

@@ -21,9 +21,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.VCFileChooser;
 
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.VCellConfiguration;
 
 public class ComsolConfigurationPanel extends JPanel {

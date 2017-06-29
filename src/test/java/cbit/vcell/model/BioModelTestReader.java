@@ -7,7 +7,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.junit.Test;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -18,6 +17,7 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
+import cbit.vcell.resource.PropertyLoader;
 
 public class BioModelTestReader implements VCDatabaseVisitor {
 	/**

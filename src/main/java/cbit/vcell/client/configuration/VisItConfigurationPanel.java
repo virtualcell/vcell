@@ -22,11 +22,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.VCellConfiguration;
 
 public class VisItConfigurationPanel extends JPanel {

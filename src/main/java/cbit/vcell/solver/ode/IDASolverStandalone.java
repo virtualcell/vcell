@@ -13,10 +13,10 @@ package cbit.vcell.solver.ode;
 import java.io.File;
 import java.io.PrintWriter;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;

@@ -82,7 +82,7 @@ protected static cbit.vcell.server.VCellBootstrap VCellBootstrapInit(String args
 		throw new Exception("cannot connect");
 	}
 	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
-	new org.vcell.util.PropertyLoader();
+	new cbit.vcell.resource.PropertyLoader();
 	if (!args[0].equalsIgnoreCase("-local")) {
 		try {
 			String SERVICE_NAME = "VCellBootstrapServer";
@@ -111,7 +111,7 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 		throw new Exception("cannot connect");
 	}
 	cbit.vcell.server.VCellConnectionFactory vcConnFactory = null;
-	new org.vcell.util.PropertyLoader();		
+	new cbit.vcell.resource.PropertyLoader();		
 	UserLoginInfo userLoginInfo = new UserLoginInfo(args[1], new UserLoginInfo.DigestedPassword(args[2]));
 	if (args[0].startsWith("-")) {
 		org.vcell.util.SessionLog log = new org.vcell.util.StdoutSessionLog(userLoginInfo.getUserName());
@@ -142,7 +142,7 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 		throw new Exception("cannot connect");
 	}
 	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
-	org.vcell.util.PropertyLoader.loadProperties();
+	cbit.vcell.resource.PropertyLoader.loadProperties();
 	org.vcell.util.document.User user = null;
 	if (!args[0].equalsIgnoreCase("-local")) {
 		String host = args[0];

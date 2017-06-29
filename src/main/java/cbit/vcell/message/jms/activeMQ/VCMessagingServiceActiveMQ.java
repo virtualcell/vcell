@@ -11,7 +11,6 @@ import javax.jms.Session;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
-import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessageSelector;
@@ -19,6 +18,7 @@ import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.jms.VCMessagingServiceJms;
+import cbit.vcell.resource.PropertyLoader;
 
 @Plugin(type = VCMessagingService.class)
 public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {

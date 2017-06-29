@@ -22,7 +22,6 @@ import javax.management.ObjectName;
 
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.LifeSignThread;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.StdoutSessionLogConcurrent;
@@ -71,6 +70,7 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.Cachetable;

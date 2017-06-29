@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.logging.Log4jSessionLog;
 
@@ -22,6 +21,7 @@ import com.mongodb.Mongo;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.VCellExecutorService;
 
 public class VCMongoDbDriver {

@@ -16,11 +16,11 @@ import java.io.StringWriter;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.vcell.util.ExceptionInterpreter;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SimulationMessage;

@@ -18,7 +18,6 @@ import java.util.Vector;
 
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.vcell.util.Compare;
-import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
@@ -33,6 +32,7 @@ import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;

@@ -751,7 +751,7 @@ public static void main(String[] args) {
         SessionLog log = new StdoutSessionLog("ChangeVCellSchema");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new org.vcell.util.PropertyLoader();
+        new cbit.vcell.resource.PropertyLoader();
         if (args[0].equalsIgnoreCase("ORACLE")) {
             conFactory =
                 new OraclePoolingConnectionFactory(

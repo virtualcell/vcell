@@ -47,7 +47,6 @@ import javax.swing.WindowConstants;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.optimization.ProfileData;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
@@ -75,6 +74,7 @@ import cbit.vcell.microscopy.gui.ToolBar;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.opt.Parameter;
+import cbit.vcell.resource.PropertyLoader;
 
 /**
  * This the bottom container of virtual FRAP Batch Run 

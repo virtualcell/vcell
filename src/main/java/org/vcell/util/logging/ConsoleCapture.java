@@ -9,8 +9,9 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.collections.CircularList;
+
+import cbit.vcell.resource.PropertyLoader;
 
 /**
  * Singleton to manage redirecting standard error and out to

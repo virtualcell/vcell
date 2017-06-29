@@ -47,7 +47,7 @@ protected SoftwareVersionTable() {
 public String getSQLValueList(KeyValue newVersionKey) {
 
 	String softwareVersionS =
-		org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellSoftwareVersion);
+		cbit.vcell.resource.PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.vcellSoftwareVersion);
 
 	softwareVersionS = org.vcell.util.TokenMangler.getSQLEscapedString(softwareVersionS);
 	

@@ -16,7 +16,6 @@ import java.rmi.server.UnicastRemoteObject;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -30,6 +29,7 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.PerformanceMonitoringFacility;
 import cbit.vcell.server.SimulationController;

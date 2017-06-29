@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -23,6 +22,7 @@ import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.RunningStateInfo;
 import cbit.vcell.server.SimulationExecutionStatus;

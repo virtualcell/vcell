@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -31,6 +30,7 @@ import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
+import cbit.vcell.resource.PropertyLoader;
 
 /**
  * This type was created in VisualAge.

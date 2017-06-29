@@ -14,7 +14,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnexpectedException;
 
-import org.vcell.util.PropertyLoader;
+import cbit.vcell.resource.PropertyLoader;
 /**
  * This type was created in VisualAge.
  */

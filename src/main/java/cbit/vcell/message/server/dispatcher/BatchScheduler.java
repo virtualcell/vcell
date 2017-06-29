@@ -18,13 +18,13 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.db.SimulationRequirements;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimulationJobStatus;
 
 /**

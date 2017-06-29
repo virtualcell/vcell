@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.resource.PropertyLoader;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.ConnectionException;

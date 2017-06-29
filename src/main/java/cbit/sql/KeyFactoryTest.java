@@ -64,7 +64,7 @@ public static void main(String args[]) {
 			System.exit(1);
 		}
 
-		new org.vcell.util.PropertyLoader();
+		new cbit.vcell.resource.PropertyLoader();
 		
 		KeyFactory keyFactory = null;
 		if (args[0].equalsIgnoreCase("ORACLE")){

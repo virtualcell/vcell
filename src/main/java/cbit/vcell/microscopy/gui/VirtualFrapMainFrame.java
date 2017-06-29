@@ -51,7 +51,6 @@ import javax.swing.undo.UndoableEdit;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowManager;
@@ -69,6 +68,7 @@ import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.VCellConfiguration;
 
 

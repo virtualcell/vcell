@@ -56,7 +56,6 @@ import javax.swing.Timer;
 
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.BigString;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
@@ -102,6 +101,7 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;

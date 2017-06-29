@@ -16,7 +16,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.vcell.service.VCellServiceHelper;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.VCellServerID;
@@ -43,6 +42,7 @@ import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.PropertyLoader;
 
 /**
  * Insert the type's description here.

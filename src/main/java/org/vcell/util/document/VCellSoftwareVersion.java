@@ -13,8 +13,9 @@ package org.vcell.util.document;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.logging.NoLogging;
+
+import cbit.vcell.resource.PropertyLoader;
 
 @SuppressWarnings("serial")
 @NoLogging

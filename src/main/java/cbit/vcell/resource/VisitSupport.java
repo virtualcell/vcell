@@ -17,7 +17,6 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
 import org.vcell.vis.vtk.VisMeshUtils;

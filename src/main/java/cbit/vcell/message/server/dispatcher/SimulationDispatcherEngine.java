@@ -109,7 +109,7 @@ public class SimulationDispatcherEngine {
 			return;
 		}
 
-		if (simulationScanCount > Integer.parseInt(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.maxJobsPerScan))) {
+		if (simulationScanCount > Integer.parseInt(cbit.vcell.resource.PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.maxJobsPerScan))) {
 			log.alert("Too many simulations (" + simulationScanCount + ") for parameter scan." + vcSimID);
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
 					SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Too many simulations (" + simulationScanCount + ") for parameter scan."), null, null), user.getName(), null, null);

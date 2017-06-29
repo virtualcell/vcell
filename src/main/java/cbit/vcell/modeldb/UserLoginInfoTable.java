@@ -10,13 +10,13 @@
 
 package cbit.vcell.modeldb;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.resource.PropertyLoader;
 
 public class UserLoginInfoTable extends Table {
 	private static final String TABLE_NAME = "vc_userlogininfo";

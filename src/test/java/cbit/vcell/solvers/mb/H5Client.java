@@ -3,10 +3,10 @@ package cbit.vcell.solvers.mb;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.logging.Logging;
 
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import ncsa.hdf.object.DataFormat;
 

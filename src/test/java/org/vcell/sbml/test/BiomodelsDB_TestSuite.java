@@ -46,7 +46,6 @@ import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImportException.Category;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SkipCommentLineNumberReader;
 import org.vcell.util.logging.Logging;
 
@@ -56,6 +55,7 @@ import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.bionetgen.BNGException;
 import cbit.vcell.solver.SolverException;

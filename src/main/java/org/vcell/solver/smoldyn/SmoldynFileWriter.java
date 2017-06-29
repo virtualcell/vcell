@@ -44,7 +44,6 @@ import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
 import org.vcell.util.ProgrammingException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.VCAssert;
 
 import cbit.image.ImageException;
@@ -100,6 +99,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.render.Vect3d;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;

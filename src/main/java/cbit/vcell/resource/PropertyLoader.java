@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.util;
+package cbit.vcell.resource;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,9 +24,9 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.util.ConfigurationException;
 
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.OperatingSystemInfo;
 
 public class PropertyLoader {
 

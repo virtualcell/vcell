@@ -4,11 +4,12 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.exe.Executable2;
 import org.vcell.util.exe.ExecutableException;
 import org.vcell.util.exe.IExecutable;
 import org.vcell.vis.vismesh.thrift.VisMesh;
+
+import cbit.vcell.resource.PropertyLoader;
 
 public class VtkServicePython extends VtkService {
 	private static final String PYTHON_MODULE_PATH;

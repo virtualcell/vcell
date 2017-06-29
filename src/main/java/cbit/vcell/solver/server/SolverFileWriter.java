@@ -12,11 +12,11 @@ package cbit.vcell.solver.server;
 import java.io.PrintWriter;
 
 import org.jdom.Element;
-import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.PropertyLoader;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)

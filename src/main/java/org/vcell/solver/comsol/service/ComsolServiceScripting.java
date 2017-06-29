@@ -33,8 +33,8 @@ import org.vcell.solver.comsol.model.VCCPhysicsFeature;
 import org.vcell.solver.comsol.model.VCCPhysicsFeature.VCCFluxBoundary;
 import org.vcell.solver.comsol.model.VCCStudyFeature;
 import org.vcell.solver.comsol.model.VCCTransientStudyFeature;
-import org.vcell.util.PropertyLoader;
 
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.VCellConfiguration;
 
 public class ComsolServiceScripting implements ComsolService {

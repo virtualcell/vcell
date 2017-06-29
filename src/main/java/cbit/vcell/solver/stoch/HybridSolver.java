@@ -17,7 +17,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.Function;
@@ -27,6 +26,7 @@ import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.NonspatialStochHybridOptions;
 import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.SimulationSymbolTable;
@@ -392,15 +392,15 @@ protected String[] getMathExecutableCommand() {
 	
 	if(getIntegratorType() == HybridSolver.EMIntegrator)
 	{
-		executableName = PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.hybridEMExecutableProperty);
+		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.hybridEMExecutableProperty);
 	}
 	else if (getIntegratorType() == HybridSolver.MilsteinIntegrator)
 	{
-		executableName = PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.hybridMilExecutableProperty);
+		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.hybridMilExecutableProperty);
 	}
 	else 
 	{
-		executableName = PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.hybridMilAdaptiveExecutableProperty);
+		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.hybridMilAdaptiveExecutableProperty);
 	}
 	
 	ArrayList<String> commandList = new ArrayList<String>();

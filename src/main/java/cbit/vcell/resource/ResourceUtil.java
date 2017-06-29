@@ -26,7 +26,6 @@ import java.util.prefs.BackingStoreException;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.NoLogging;

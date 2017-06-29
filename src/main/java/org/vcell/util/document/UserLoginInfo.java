@@ -14,7 +14,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.Serializable;
 
-import org.vcell.util.PropertyLoader;
+import cbit.vcell.resource.PropertyLoader;
 
 @SuppressWarnings("serial")
 public class UserLoginInfo implements Serializable {

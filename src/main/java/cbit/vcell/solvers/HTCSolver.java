@@ -15,11 +15,11 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.exe.Executable;
 
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverFactory;

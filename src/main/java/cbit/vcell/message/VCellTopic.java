@@ -2,7 +2,7 @@ package cbit.vcell.message;
 
 import java.util.Objects;
 
-import org.vcell.util.PropertyLoader;
+import cbit.vcell.resource.PropertyLoader;
 
 public class VCellTopic implements VCDestination {
 	public final static VCellTopic ClientStatusTopic = new VCellTopic(PropertyLoader.jmsClientStatusTopic, null);

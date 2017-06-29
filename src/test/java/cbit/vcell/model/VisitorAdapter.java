@@ -7,7 +7,6 @@ import java.util.Arrays;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.NullSessionLog;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
@@ -15,6 +14,7 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.Logging;
 
 import cbit.vcell.modeldb.VCDatabaseScanner;
+import cbit.vcell.resource.PropertyLoader;
 
 /**
  * provide implementations for some {@link BioModelVisitor} and / or {@link VCMultiBioVisitor} methods

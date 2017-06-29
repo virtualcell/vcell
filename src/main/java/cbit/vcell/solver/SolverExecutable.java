@@ -1,6 +1,6 @@
 package cbit.vcell.solver;
 
-import org.vcell.util.PropertyLoader;
+import cbit.vcell.resource.PropertyLoader;
 
 /**
  * enum that maps Solvers to property names to executable file stubs

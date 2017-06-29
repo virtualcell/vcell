@@ -23,7 +23,6 @@ import java.util.Date;
 
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.BioModelInfo;
@@ -38,6 +37,7 @@ import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.server.SimulationStatusPersistent;

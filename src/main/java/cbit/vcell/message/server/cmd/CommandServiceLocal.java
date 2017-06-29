@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.IOException;
 
 import org.vcell.util.FileUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.resource.PropertyLoader;
 
 public class CommandServiceLocal extends CommandService {
 	

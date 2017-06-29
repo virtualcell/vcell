@@ -14,12 +14,12 @@ import java.io.PrintWriter;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;

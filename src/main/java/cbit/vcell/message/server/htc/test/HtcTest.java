@@ -1,12 +1,11 @@
 package cbit.vcell.message.server.htc.test;
 
-import org.vcell.util.PropertyLoader;
-
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
+import cbit.vcell.resource.PropertyLoader;
 
 public class HtcTest {
 

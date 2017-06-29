@@ -11,7 +11,6 @@ import org.vcell.stochtest.StochtestCompare.StochtestCompareStatus;
 import org.vcell.stochtest.StochtestRun.StochtestRunStatus;
 import org.vcell.stochtest.TimeSeriesMultitrialData.SummaryStatistics;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 
@@ -26,6 +25,7 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XmlParseException;
 
 

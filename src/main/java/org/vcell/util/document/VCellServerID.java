@@ -65,7 +65,7 @@ public static VCellServerID getServerID(String arg_serverID) {
  * @return cbit.vcell.messaging.db.VCellServerID
  */
 public static VCellServerID getSystemServerID() {
-	return new VCellServerID(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellServerIDProperty));
+	return new VCellServerID(cbit.vcell.resource.PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.vcellServerIDProperty));
 }
 
 

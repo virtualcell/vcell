@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -46,6 +45,7 @@ import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.simdata.PortableCommand;

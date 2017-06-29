@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import org.vcell.util.FileUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
@@ -26,6 +25,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.AnnotatedFunction;

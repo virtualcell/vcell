@@ -14,7 +14,8 @@ import java.util.ArrayList;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.vcell.util.FileUtils;
-import org.vcell.util.PropertyLoader;
+
+import cbit.vcell.resource.PropertyLoader;
 
 public class FileDataContainerManager {
 	ArrayList<FileDataContainer> fileDataContainers = new ArrayList<FileDataContainer>();

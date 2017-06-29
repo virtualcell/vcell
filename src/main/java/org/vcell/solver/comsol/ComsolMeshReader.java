@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.vis.vismesh.thrift.Vect3D;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 import org.vcell.vis.vismesh.thrift.VisPoint;
@@ -15,6 +14,8 @@ import org.vcell.vis.vismesh.thrift.VisPolygon;
 import org.vcell.vis.vismesh.thrift.VisTetrahedron;
 import org.vcell.vis.vtk.VisMeshUtils;
 import org.vcell.vis.vtk.VtkService;
+
+import cbit.vcell.resource.PropertyLoader;
 
 
 public class ComsolMeshReader {

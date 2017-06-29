@@ -10,12 +10,12 @@ import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.VCellBootstrap;
 
 @Plugin(type = Service.class)

@@ -9,13 +9,13 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.message.VCellQueue;
 
 /**

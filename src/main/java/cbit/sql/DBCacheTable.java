@@ -21,9 +21,10 @@ import org.vcell.util.Cacheable;
 import org.vcell.util.Immutable;
 import org.vcell.util.Ping;
 import org.vcell.util.Pingable;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.TimeWrapper;
 import org.vcell.util.document.KeyValue;
+
+import cbit.vcell.resource.PropertyLoader;
 /**
  * This type was created in VisualAge.
  */

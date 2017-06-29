@@ -9,11 +9,11 @@
  */
 
 package cbit.vcell.modeldb;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.resource.PropertyLoader;
 /**
  * This type was created in VisualAge.
  */

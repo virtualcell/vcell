@@ -45,7 +45,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jdom.Document;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.UnzipUtility;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
@@ -74,6 +73,7 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.NetworkProxyUtils;
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XmlHelper;
 /**

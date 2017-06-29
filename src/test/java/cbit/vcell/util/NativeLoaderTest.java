@@ -9,12 +9,12 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.logging.Logging;
 
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solvers.NativeCVODESolver;
 import cbit.vcell.solvers.NativeIDASolver;

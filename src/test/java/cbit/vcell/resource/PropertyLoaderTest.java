@@ -1,4 +1,4 @@
-package org.vcell.util;
+package cbit.vcell.resource;
 
 import static org.junit.Assert.assertTrue;
 
@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Test;
+
+import cbit.vcell.resource.PropertyLoader;
 
 public class PropertyLoaderTest {
 

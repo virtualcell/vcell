@@ -27,7 +27,6 @@ import org.vcell.util.BigString;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
@@ -58,6 +57,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.solver.Simulation;
@@ -168,7 +168,7 @@ public static MathVerifier createMathVerifier(
     SessionLog sessionLog = new StdoutSessionLog("MathVerifier");
     ConnectionFactory conFactory = null;
     KeyFactory keyFactory = null;
-    new org.vcell.util.PropertyLoader();
+    new cbit.vcell.resource.PropertyLoader();
 
     String driverName = "oracle.jdbc.driver.OracleDriver";
     String connectURL = "jdbc:oracle:thin:@" + dbHostName + ":1521:" + dbName;
