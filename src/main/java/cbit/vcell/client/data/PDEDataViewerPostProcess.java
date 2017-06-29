@@ -12,7 +12,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -28,6 +27,7 @@ import cbit.image.VCImageUncompressed;
 import cbit.plot.PlotData;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.DataJobListenerHolder;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;

@@ -10,8 +10,6 @@
 
 package cbit.vcell.parser;
 
-import org.vcell.util.TokenMangler;
-
 /* JJT: 0.2.2 */
 
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -106,11 +104,11 @@ public Node flatten() throws ExpressionException {
 public String infixString(int lang) {
 	String idName = name;
 	if (lang == LANGUAGE_MATLAB){	
-		return TokenMangler.getEscapedTokenMatlab(idName);
+		return SymbolUtils.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {
-		return TokenMangler.getEscapedTokenJSCL(idName);
+		return SymbolUtils.getEscapedTokenJSCL(idName);
 	}else if (lang == LANGUAGE_ECLiPSe) {
-		return TokenMangler.getEscapedTokenECLiPSe(idName);
+		return SymbolUtils.getEscapedTokenECLiPSe(idName);
 	}else{
 		return idName;
 	}

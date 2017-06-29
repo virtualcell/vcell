@@ -33,7 +33,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.Coordinate;
-import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
@@ -42,6 +41,7 @@ import org.vcell.util.document.VCDataJobID;
 import cbit.plot.Plot2D;
 import cbit.plot.SingleXPlot2D;
 import cbit.plot.gui.PlotPane;
+import cbit.rmi.event.DataJobListenerHolder;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.task.AsynchClientTask;

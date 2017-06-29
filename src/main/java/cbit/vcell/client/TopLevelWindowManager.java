@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelInfo;
@@ -43,6 +42,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.DataJobListenerHolder;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.biomodel.BioModel;

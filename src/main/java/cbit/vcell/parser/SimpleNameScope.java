@@ -10,6 +10,9 @@
 
 package cbit.vcell.parser;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/31/2003 4:18:02 PM)
@@ -17,7 +20,7 @@ package cbit.vcell.parser;
  */
 public class SimpleNameScope extends AbstractNameScope {
 	private NameScope parent = null;
-	private NameScope children[] = new NameScope[0];
+	private ArrayList<NameScope> children = new ArrayList<NameScope>();
 	private String name = null;
 	private ScopedSymbolTable scopedSymbolTable = null;
 /**
@@ -37,21 +40,18 @@ public void addChild(NameScope childNameScope) {
 	if (childNameScope == null){
 		throw new IllegalArgumentException("AbstractNameScope.addChild(): nameScope cannot be null");
 	}
-	for (int i = 0; i < children.length; i++){
-		if (children.equals(childNameScope)){
-			return;
-		}
+	if (children.contains(childNameScope)){
+		return;
 	}
-	
-	children = (NameScope[])org.vcell.util.BeanUtils.addElement(children,childNameScope);
+	children.add(childNameScope);
 }
 /**
  * Insert the method's description here.
  * Creation date: (8/1/2003 11:04:49 AM)
  * @return cbit.vcell.parser.SymbolTable[]
  */
-public cbit.vcell.parser.NameScope[] getChildren() {
-	return children;
+public NameScope[] getChildren() {
+	return children.toArray(new NameScope[children.size()]);
 }
 /**
  * Insert the method's description here.
@@ -86,23 +86,19 @@ public void removeChild(NameScope childNameScope) {
 	if (childNameScope == null){
 		throw new IllegalArgumentException("AbstractNameScope.removeChild(): nameScope cannot be null");
 	}
-	for (int i = 0; i < children.length; i++){
-		if (children.equals(childNameScope)){
-			children = (NameScope[])org.vcell.util.BeanUtils.removeElement(children,childNameScope);
-		}
-	}
-	
+	children.remove(childNameScope);
 }
 /**
  * Insert the method's description here.
  * Creation date: (8/1/2003 11:04:49 AM)
  * @param newChildren cbit.vcell.parser.SymbolTable[]
  */
-public void setChildren(cbit.vcell.parser.NameScope[] newChildren) {
+public void setChildren(NameScope[] newChildren) {
 	if (newChildren == null){
 		throw new IllegalArgumentException("AbstractNameScope.setChildren(): nameScope[] cannot be null");
 	}
-	children = newChildren;
+	children.clear();
+	children.addAll(Arrays.asList(newChildren));
 }
 /**
  * Insert the method's description here.

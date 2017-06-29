@@ -1,6 +1,4 @@
-package org.vcell.util;
-
-import cbit.rmi.event.DataJobListener;
+package cbit.rmi.event;
 
 public interface DataJobListenerHolder {
 	void addDataJobListener(DataJobListener dataJobListener);

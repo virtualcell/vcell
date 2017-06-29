@@ -25,7 +25,6 @@ import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
@@ -45,6 +44,7 @@ import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.image.VCImageUncompressed;
 import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListenerHolder;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.PDEDataViewer;

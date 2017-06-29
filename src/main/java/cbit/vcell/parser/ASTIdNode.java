@@ -14,8 +14,6 @@ package cbit.vcell.parser;
 
 import java.util.Set;
 
-import org.vcell.util.TokenMangler;
-
 import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTIdNode extends SimpleNode {
@@ -275,11 +273,11 @@ public String infixString(int lang) {
 	if (lang == LANGUAGE_DEFAULT) {
 		return idName;
 	}else if (lang == LANGUAGE_MATLAB){	
-		return TokenMangler.getEscapedTokenMatlab(idName);
+		return SymbolUtils.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {
-		return TokenMangler.getEscapedTokenJSCL(idName);
+		return SymbolUtils.getEscapedTokenJSCL(idName);
 	}else if (lang == LANGUAGE_ECLiPSe) {
-		return TokenMangler.getEscapedTokenECLiPSe(idName);
+		return SymbolUtils.getEscapedTokenECLiPSe(idName);
 	}else if (lang == LANGUAGE_VISIT) {
 		if (idName.equals("x")){
 			return VISIT_RESERVED_X;

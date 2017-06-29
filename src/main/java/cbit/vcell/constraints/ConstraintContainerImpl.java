@@ -436,8 +436,8 @@ public String toECLiPSe() {
 		}else if (bounds.hi()==Double.NEGATIVE_INFINITY){
 			hiBoundsString = "-1.0Inf";
 		}
-		buffer.append(org.vcell.util.TokenMangler.getEscapedTokenECLiPSe(symbol)+" $>= "+lowBoundsString+",");
-		buffer.append(org.vcell.util.TokenMangler.getEscapedTokenECLiPSe(symbol)+" $=< "+hiBoundsString+",");
+		buffer.append(cbit.vcell.parser.SymbolUtils.getEscapedTokenECLiPSe(symbol)+" $>= "+lowBoundsString+",");
+		buffer.append(cbit.vcell.parser.SymbolUtils.getEscapedTokenECLiPSe(symbol)+" $=< "+hiBoundsString+",");
 	}
 
 	for (int i = 0; i < fieldGeneralConstraints.length; i++){
