@@ -10,13 +10,13 @@
 
 package cbit.util.xml;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.jdom.Element;
 import org.jdom.Document;
+import org.jdom.Element;
 import org.jdom.filter.Filter;
 
 /**

@@ -10,7 +10,8 @@
 
 package cbit.image;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Vector;
 /**
  * This type was created in VisualAge.
  */

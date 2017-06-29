@@ -54,7 +54,6 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -99,7 +98,6 @@ import javax.swing.undo.UndoManager;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.CountingLineReader;
-import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;

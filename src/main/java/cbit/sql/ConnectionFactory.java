@@ -10,8 +10,8 @@
 
 package cbit.sql;
 
-import java.sql.*;
 import java.sql.Connection;
+import java.sql.SQLException;
 /**
  * This type was created in VisualAge.
  */

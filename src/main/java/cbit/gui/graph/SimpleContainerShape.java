@@ -10,10 +10,6 @@
 
 package cbit.gui.graph;
 
-
-import cbit.gui.graph.ContainerShape;
-import cbit.gui.graph.GraphModel;
-
 public class SimpleContainerShape extends ContainerShape {
 
 	private Object fieldObject = null;

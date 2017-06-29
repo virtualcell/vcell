@@ -10,12 +10,17 @@
 
 package cbit.sql;
 
-import cbit.vcell.modeldb.SQLCreateAllTables;
-import java.sql.*;
-import javax.swing.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.JFrame;
 
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+
+import cbit.vcell.modeldb.SQLCreateAllTables;
 /**
  * This type was created in VisualAge.
  */

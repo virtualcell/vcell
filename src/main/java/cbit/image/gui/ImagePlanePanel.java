@@ -10,20 +10,18 @@
 
 package cbit.image.gui;
 
-import java.awt.FlowLayout;
+import java.awt.BorderLayout;
+import java.awt.Color;
 
 import javax.swing.JLabel;
+import javax.swing.JSlider;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.vcell.util.Coordinate;
 
 import cbit.image.ImagePlaneManager;
-
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
-import java.awt.BorderLayout;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 3:05:12 PM)

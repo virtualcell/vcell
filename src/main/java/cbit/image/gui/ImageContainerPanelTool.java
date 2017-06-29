@@ -10,9 +10,15 @@
 
 package cbit.image.gui;
 
-import java.awt.event.*;
-import java.awt.*;
-import cbit.image.*;
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+
+import cbit.image.AxisCommand;
+import cbit.image.Command;
+import cbit.image.CommandCache;
+import cbit.image.CommandListener;
 /**
  * This type was created in VisualAge.
  */

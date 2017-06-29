@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -33,9 +34,6 @@ import org.vcell.util.UserCancelException;
 
 import cbit.image.ImageSizeInfo;
 import cbit.vcell.client.ClientRequestManager;
-
-import javax.swing.JTextField;
-import javax.swing.JButton;
 
 
 public class ImageResizePanel extends JPanel {

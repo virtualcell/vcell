@@ -10,13 +10,13 @@
 
 package cbit.image;
 
+import java.io.FileNotFoundException;
 /**
  * Insert the type's description here.
  * Creation date: (1/11/2003 11:26:05 PM)
  * @author: Jim Schaff
  */
 import java.io.RandomAccessFile;
-import java.io.FileNotFoundException;
 
 public class FileTiffInputSource implements TiffInputSource {
 	private RandomAccessFile randomAccessFile = null;

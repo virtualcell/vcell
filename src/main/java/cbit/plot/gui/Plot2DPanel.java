@@ -36,7 +36,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ColorUtil;

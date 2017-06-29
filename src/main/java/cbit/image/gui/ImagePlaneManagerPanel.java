@@ -30,7 +30,6 @@ import cbit.image.DisplayAdapterService;
 import cbit.image.ImagePaneModel;
 import cbit.image.ImagePlaneManager;
 import cbit.image.SourceDataInfo;
-import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.CurveRenderer;
 import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.geometry.gui.CurveEditorTool;

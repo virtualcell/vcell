@@ -9,7 +9,7 @@
  */
 
 package cbit.image.gui;
-import java.awt.*;
+import java.awt.Frame;
 
 import org.vcell.util.Range;
 /**

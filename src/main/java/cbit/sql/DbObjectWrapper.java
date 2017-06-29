@@ -10,7 +10,7 @@
 
 package cbit.sql;
 
-import java.io.*;
+import java.io.IOException;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Cacheable;

@@ -14,7 +14,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import cbit.gui.graph.GraphModel;
+
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 import cbit.util.graph.Node;

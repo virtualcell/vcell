@@ -10,7 +10,7 @@
 
 package cbit.image;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Vector;
 
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;

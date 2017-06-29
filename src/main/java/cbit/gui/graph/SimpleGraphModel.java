@@ -10,10 +10,6 @@
 
 package cbit.gui.graph;
 
-import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.GraphEvent;
-import cbit.gui.graph.EdgeShape;
-import cbit.gui.graph.ContainerShape;
 import cbit.util.graph.Graph;
 /**
  * Insert the type's description here.

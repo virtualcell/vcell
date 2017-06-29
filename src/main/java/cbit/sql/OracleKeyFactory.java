@@ -10,7 +10,10 @@
 
 package cbit.sql;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.vcell.util.document.KeyValue;
 /**

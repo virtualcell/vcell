@@ -9,7 +9,10 @@
  */
 
 package cbit.matlab;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 /**
  * Insert the type's description here.
  * Creation date: (8/9/2005 11:31:49 AM)

@@ -24,15 +24,13 @@ import javax.swing.border.LineBorder;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.parser.ASTFuncNode;
-import cbit.vcell.parser.ASTLiteralNode;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
-import cbit.vcell.parser.ASTFuncNode.FunctionType;
-import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 
 @SuppressWarnings("serial")
 public class TableCellEditorAutoCompletion extends DefaultCellEditor {

@@ -10,7 +10,7 @@
 
 package cbit.sql;
 
-import java.util.*;
+import java.util.Hashtable;
 
 import org.vcell.util.ObjectReferenceWrapper;
 import org.vcell.util.document.KeyValue;

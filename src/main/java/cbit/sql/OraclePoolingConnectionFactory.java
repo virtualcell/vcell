@@ -19,7 +19,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.PropertyLoader;

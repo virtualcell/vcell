@@ -13,8 +13,6 @@ package cbit.gui.graph;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.GeneralPath;
-
-import cbit.gui.graph.GraphModel;
 /**
  * This type was created in VisualAge.
  */

@@ -9,7 +9,7 @@
  */
 
 package cbit.image.gui;
-import java.awt.*;
+import java.awt.Point;
 
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Range;

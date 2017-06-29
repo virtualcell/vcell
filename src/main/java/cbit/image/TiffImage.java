@@ -10,7 +10,10 @@
 
 package cbit.image;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 public class TiffImage 
 {

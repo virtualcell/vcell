@@ -10,7 +10,9 @@
 
 package cbit.rmi.event;
 
-import java.util.*;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
 /**
  * Insert the type's description here.

@@ -9,8 +9,6 @@
  */
 
 package cbit.gui.graph.gui;
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -18,10 +16,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.HashMap;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
@@ -35,8 +31,8 @@ import cbit.gui.graph.GraphContainerLayout;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphListener;
 import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.Shape;
 import cbit.gui.graph.GraphModel.NotReadyException;
+import cbit.gui.graph.Shape;
 import cbit.vcell.graph.ReactionContainerShape;
 
 @SuppressWarnings("serial")

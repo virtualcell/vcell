@@ -10,8 +10,9 @@
 
 package cbit.image;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.DeflaterOutputStream;
 /**
  * This type was created in VisualAge.
  */

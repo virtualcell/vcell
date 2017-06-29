@@ -10,8 +10,8 @@
 
 package cbit.image.gui;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -37,7 +37,6 @@ import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
 
 import cbit.image.DisplayAdapterService;
-import java.awt.Insets;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 4:21:48 PM)
