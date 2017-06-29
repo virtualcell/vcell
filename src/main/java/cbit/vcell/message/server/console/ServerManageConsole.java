@@ -69,6 +69,13 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.generic.DatePanel;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.Mongo;
+
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.message.VCMessage;
@@ -102,13 +109,6 @@ import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellServer;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XmlHelper;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
 
 /**
  * Insert the type's description here.

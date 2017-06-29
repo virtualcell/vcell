@@ -2,7 +2,6 @@ package cbit.vcell.message.server.dispatcher;
 
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 

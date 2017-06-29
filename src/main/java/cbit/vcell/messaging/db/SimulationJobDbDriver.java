@@ -28,6 +28,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
+import com.google.gson.Gson;
+
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.MathModelSimulationLinkTable;
@@ -42,8 +44,6 @@ import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.SimulationMetadata;
-
-import com.google.gson.Gson;
 
 /**
  * Insert the type's description here.

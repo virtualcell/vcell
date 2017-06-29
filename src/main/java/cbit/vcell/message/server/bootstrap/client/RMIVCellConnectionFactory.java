@@ -10,8 +10,6 @@
 
 package cbit.vcell.message.server.bootstrap.client;
 
-import java.awt.Component;
-
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.UserLoginInfo;

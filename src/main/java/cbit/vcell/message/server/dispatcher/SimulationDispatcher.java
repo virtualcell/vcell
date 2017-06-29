@@ -63,8 +63,8 @@ import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 

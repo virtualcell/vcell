@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.vcell.util.ExecutableException;
+import org.vcell.util.PropertyLoader;
+
+import cbit.vcell.mongodb.VCMongoMessage;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -11,11 +15,6 @@ import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
-
-import org.vcell.util.ExecutableException;
-import org.vcell.util.PropertyLoader;
-
-import cbit.vcell.mongodb.VCMongoMessage;
 
 public class CommandServiceSsh extends CommandService {
 	private SSHClient ssh = null;

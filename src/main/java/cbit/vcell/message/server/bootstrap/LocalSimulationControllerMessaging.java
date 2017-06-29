@@ -10,9 +10,7 @@
 
 package cbit.vcell.message.server.bootstrap;
 import java.rmi.ConnectException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;

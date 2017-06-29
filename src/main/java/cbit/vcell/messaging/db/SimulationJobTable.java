@@ -26,12 +26,10 @@ import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.modeldb.VersionTable;
 import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.server.SimulationExecutionStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent;
-import cbit.vcell.server.SimulationQueueEntryStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
-import cbit.vcell.server.SimulationJobStatusPersistent.SimulationQueueID;
+import cbit.vcell.server.SimulationQueueEntryStatusPersistent;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
 
