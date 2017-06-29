@@ -13,8 +13,6 @@ package org.vcell.util;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
-import cbit.vcell.parser.SymbolUtils;
-
 
 /**
  * This type was created in VisualAge.
@@ -299,34 +297,6 @@ public static String getRestoredString(String inputString, String[] escapeSeq, c
 		}
 	}
 	return inputString;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public static String getRestoredStringJSCL(String inputString) {
-
-	String[] escapeSeq =    {"underscore","ddoott"};
-	char[]   escapedChar =  {     '_'    ,  '.'   };
-	
-	return getRestoredString(inputString, escapeSeq, escapedChar);
-}
-
-
-/**
- * strip {@link SymbolUtils#MATLAB_PREFIX}	if present
- * @param inputString
- * @return inputString or string with prefix removed
- */
-public static String getRestoredTokenMatlab(String inputString) {
-
-	if (inputString.startsWith(SymbolUtils.MATLAB_PREFIX)){
-		return inputString.substring(SymbolUtils.MATLAB_PREFIX.length());
-	}else{
-		return inputString;
-	}
 }
 
 

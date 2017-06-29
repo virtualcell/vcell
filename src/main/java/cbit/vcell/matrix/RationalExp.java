@@ -636,7 +636,7 @@ public RationalExp simplify() {
 		if (solution!=null){
 			String[] jsclSymbols = solution.getSymbols();
 			for (int i = 0;jsclSymbols!=null && i < jsclSymbols.length; i++){
-				String restoredSymbol = org.vcell.util.TokenMangler.getRestoredStringJSCL(jsclSymbols[i]);
+				String restoredSymbol = cbit.vcell.parser.SymbolUtils.getRestoredStringJSCL(jsclSymbols[i]);
 				if (!restoredSymbol.equals(jsclSymbols[i])){
 					solution.substituteInPlace(new cbit.vcell.parser.Expression(jsclSymbols[i]),new cbit.vcell.parser.Expression(restoredSymbol));
 				}

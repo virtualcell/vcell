@@ -1,5 +1,7 @@
 package cbit.vcell.parser;
 
+import org.vcell.util.TokenMangler;
+
 public class SymbolUtils {
 
 	//private static final char badChars[] = { ' ', '-', '+', '(', ')', '/', '*', '.', '&', ';', ':', ',', '=', '<', '>', '\n', '\t', '\012', '\016' };
@@ -69,6 +71,32 @@ public class SymbolUtils {
 			return MATLAB_PREFIX+name;
 		}else{
 			return name;
+		}
+	}
+
+	/**
+	 * This method was created in VisualAge.
+	 * @return java.lang.String
+	 */
+	public static String getRestoredStringJSCL(String inputString) {
+	
+		String[] escapeSeq =    {"underscore","ddoott"};
+		char[]   escapedChar =  {     '_'    ,  '.'   };
+		
+		return TokenMangler.getRestoredString(inputString, escapeSeq, escapedChar);
+	}
+
+	/**
+	 * strip {@link MATLAB_PREFIX}	if present
+	 * @param inputString
+	 * @return inputString or string with prefix removed
+	 */
+	public static String getRestoredTokenMatlab(String inputString) {
+	
+		if (inputString.startsWith(MATLAB_PREFIX)){
+			return inputString.substring(MATLAB_PREFIX.length());
+		}else{
+			return inputString;
 		}
 	}
 
