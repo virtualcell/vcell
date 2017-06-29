@@ -28,13 +28,13 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
-import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.State;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.Version;
 
 import cbit.image.ImageException;

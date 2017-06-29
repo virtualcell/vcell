@@ -18,10 +18,8 @@ import java.awt.event.ComponentListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 
 import org.vcell.util.DataAccessException;
@@ -29,10 +27,9 @@ import org.vcell.util.DataAccessException;
 import cbit.image.DisplayAdapterService;
 import cbit.image.gui.DisplayAdapterServicePanel;
 import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.DataSelectRetrieve;
-import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.surface.Quadrilateral;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.solvers.MembraneElement;

@@ -10,21 +10,10 @@
 
 package cbit.vcell.export.server;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-
-import org.vcell.util.FileUtils;
 
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
 

@@ -11,6 +11,7 @@
 package cbit.vcell.field;
 
 import java.io.Serializable;
+
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableTypeVersion;

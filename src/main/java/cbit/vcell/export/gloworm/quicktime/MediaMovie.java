@@ -11,11 +11,12 @@
 package cbit.vcell.export.gloworm.quicktime;
 
 
-import java.util.*;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 
-import cbit.vcell.export.gloworm.atoms.*;
+import cbit.vcell.export.gloworm.atoms.Atoms;
+import cbit.vcell.export.gloworm.atoms.UserDataEntry;
 /**
  * This type was created in VisualAge.
  */

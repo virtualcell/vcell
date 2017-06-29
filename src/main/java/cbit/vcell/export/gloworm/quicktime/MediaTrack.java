@@ -9,9 +9,11 @@
  */
 
 package cbit.vcell.export.gloworm.quicktime;
-import cbit.vcell.export.gloworm.atoms.*;
-import java.util.zip.*;
-import java.util.*;
+import java.util.Hashtable;
+import java.util.Vector;
+import java.util.zip.DataFormatException;
+
+import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;
 /**
  * This type was created in VisualAge.
  */

@@ -11,7 +11,7 @@
 package cbit.vcell.export.gloworm.quicktime;
 
 
-import java.util.zip.*;
+import java.util.zip.DataFormatException;
 
 import cbit.vcell.export.gloworm.atoms.AtomConstants;
 import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;

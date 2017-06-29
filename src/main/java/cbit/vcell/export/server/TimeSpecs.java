@@ -10,7 +10,7 @@
 
 package cbit.vcell.export.server;
 
-import java.io.*;
+import java.io.Serializable;
 /**
  * This type was created in VisualAge.
  */

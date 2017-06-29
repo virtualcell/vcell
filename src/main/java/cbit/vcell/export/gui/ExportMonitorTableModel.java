@@ -10,12 +10,12 @@
 
 package cbit.vcell.export.gui;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import java.util.Vector;
 
-import java.util.*;
+import javax.swing.JProgressBar;
+import javax.swing.table.AbstractTableModel;
 
-import cbit.rmi.event.*;
+import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.ExportStatus;
 /**
  * Insert the type's description here.

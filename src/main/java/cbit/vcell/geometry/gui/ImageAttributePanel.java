@@ -11,18 +11,6 @@
 package cbit.vcell.geometry.gui;
 
 import java.awt.Graphics;
-
-import javax.swing.ImageIcon;
-import javax.swing.JTextField;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
-
-import org.vcell.util.Extent;
-
-import cbit.image.VCPixelClass;
-import cbit.image.VCImage;
-import cbit.vcell.client.PopupGenerator;
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -30,8 +18,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 
-import javax.swing.JLabel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+
+import org.vcell.util.Extent;
+
+import cbit.image.VCImage;
+import cbit.image.VCPixelClass;
+import cbit.vcell.client.PopupGenerator;
 /**
  * Insert the type's description here.
  * Creation date: (6/10/2002 3:26:22 PM)

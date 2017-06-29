@@ -11,14 +11,15 @@
 package cbit.vcell.geometry;
 
 import java.util.Map;
+
 import org.vcell.util.Coordinate;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * This type was created in VisualAge.
  *  JMW : we need to fix this class so that all exceptions/error

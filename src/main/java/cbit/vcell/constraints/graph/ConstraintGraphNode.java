@@ -10,12 +10,13 @@
 
 package cbit.vcell.constraints.graph;
 
-import cbit.vcell.constraints.ConstraintContainerImpl;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
+import cbit.vcell.constraints.ConstraintContainerImpl;
 
 public abstract class ConstraintGraphNode extends ElipseShape {
 	protected int radius = 8;

@@ -22,7 +22,6 @@ import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DefaultListModelCivilized;
 
 import cbit.image.DisplayAdapterService;
-import cbit.image.GIFImage;
 import cbit.image.ImageException;
 import cbit.image.ImagePaneModel;
 import cbit.image.SourceDataInfo;

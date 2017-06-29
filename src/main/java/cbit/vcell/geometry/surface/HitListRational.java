@@ -12,7 +12,6 @@ package cbit.vcell.geometry.surface;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 
 import cbit.vcell.matrix.RationalNumber;
 

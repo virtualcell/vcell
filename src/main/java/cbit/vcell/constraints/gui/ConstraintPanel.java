@@ -9,11 +9,11 @@
  */
 
 package cbit.vcell.constraints.gui;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.ConstraintSolver;
 import cbit.vcell.constraints.GeneralConstraint;
 import cbit.vcell.constraints.SimpleBounds;
+import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2003 2:00:45 PM)

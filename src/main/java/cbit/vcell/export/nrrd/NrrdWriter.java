@@ -9,10 +9,10 @@
  */
 
 package cbit.vcell.export.nrrd;
-import java.io.*;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import cbit.vcell.export.server.FileDataContainerManager;
-import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
 public class NrrdWriter {
 /**
  * Insert the method's description here.

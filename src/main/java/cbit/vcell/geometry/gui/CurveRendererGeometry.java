@@ -10,7 +10,11 @@
 
 package cbit.vcell.geometry.gui;
 
-import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.CurveRenderer;
+import cbit.vcell.geometry.FilamentGroup;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/00 1:02:29 PM)

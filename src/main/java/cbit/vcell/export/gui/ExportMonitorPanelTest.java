@@ -9,15 +9,16 @@
  */
 
 package cbit.vcell.export.gui;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (8/6/2001 11:14:50 PM)
  * @author: Jim Schaff
  */
-import javax.swing.*;
-import cbit.rmi.event.*;
+import javax.swing.JFrame;
+
+import cbit.rmi.event.ExportEvent;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 public class ExportMonitorPanelTest {
 /**

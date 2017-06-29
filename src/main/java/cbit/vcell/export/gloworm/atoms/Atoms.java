@@ -11,7 +11,7 @@
 package cbit.vcell.export.gloworm.atoms;
 
 
-import java.io.*;
+import java.io.DataOutputStream;
 /**
  * This type was created in VisualAge.
  */

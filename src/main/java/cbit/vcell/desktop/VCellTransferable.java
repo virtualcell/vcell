@@ -18,7 +18,6 @@ import org.vcell.util.gui.SimpleTransferable;
 
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;

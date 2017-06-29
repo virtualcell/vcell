@@ -10,11 +10,11 @@
 
 package cbit.vcell.geometry;
 
-import java.util.Vector;
+import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.io.Serializable;
-import java.beans.PropertyChangeSupport;
+import java.util.Vector;
 /**
  * Insert the type's description here.
  * Creation date: (8/19/00 3:27:35 PM)

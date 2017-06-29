@@ -18,7 +18,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -36,9 +35,9 @@ import javax.media.jai.operator.CompositeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
 
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper.BrushRefresh;
-
 import com.sun.media.jai.widget.DisplayJAI;
+
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper.BrushRefresh;
 
 /**
  */

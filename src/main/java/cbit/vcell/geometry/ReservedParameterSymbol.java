@@ -10,7 +10,10 @@
 
 package cbit.vcell.geometry;
 
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
 
 public class ReservedParameterSymbol implements SymbolTableEntry
 {

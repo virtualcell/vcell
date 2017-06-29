@@ -9,8 +9,8 @@
  */
 
 package cbit.vcell.geometry.gui;
-import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 /**
  * Insert the type's description here.
  * Creation date: (11/30/2003 9:33:58 PM)

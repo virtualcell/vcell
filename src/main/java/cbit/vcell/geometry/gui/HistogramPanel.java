@@ -25,7 +25,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -39,7 +38,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Range;
 

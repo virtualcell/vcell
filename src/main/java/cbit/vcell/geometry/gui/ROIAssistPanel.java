@@ -30,6 +30,7 @@ import java.util.Vector;
 
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -54,8 +55,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
-import javax.swing.JCheckBox;
 
 public class ROIAssistPanel extends JPanel {
 	

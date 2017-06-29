@@ -11,9 +11,10 @@
 package cbit.vcell.export.gloworm.atoms;
 
 
-import cbit.vcell.export.gloworm.quicktime.MediaMethods;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-import java.io.*;
+import cbit.vcell.export.gloworm.quicktime.MediaMethods;
 /**
  * This type was created in VisualAge.
  */

@@ -10,7 +10,7 @@
 
 package cbit.vcell.export;
 
-import javax.swing.*;
+import javax.swing.JProgressBar;
 /**
  * Insert the type's description here.
  * Creation date: (4/4/2001 1:20:44 PM)

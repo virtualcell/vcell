@@ -10,10 +10,21 @@
 
 package cbit.vcell.geometry.gui;
 
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+
 import org.vcell.util.Coordinate;
 
-import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.ControlPointCurve;
+import cbit.vcell.geometry.CurveRenderer;
+import cbit.vcell.geometry.CurveSelectionCurve;
+import cbit.vcell.geometry.CurveSelectionInfo;
+import cbit.vcell.geometry.PolyLine;
+import cbit.vcell.geometry.SinglePoint;
+import cbit.vcell.geometry.Spline;
 /**
  * This type was created in VisualAge.
  */

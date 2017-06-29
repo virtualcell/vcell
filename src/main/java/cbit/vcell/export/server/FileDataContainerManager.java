@@ -3,7 +3,6 @@ package cbit.vcell.export.server;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,7 +14,6 @@ import java.util.ArrayList;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.vcell.util.FileUtils;
-import org.vcell.util.Hex;
 import org.vcell.util.PropertyLoader;
 
 public class FileDataContainerManager {

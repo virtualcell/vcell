@@ -10,27 +10,24 @@
 
 package cbit.vcell.field.gui;
 
-import javax.swing.JPanel;
-
-import cbit.vcell.client.PopupGenerator;
-
-import javax.swing.JLabel;
-
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-import java.awt.Font;
-import javax.swing.BorderFactory;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
@@ -38,7 +35,7 @@ import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 
-import java.awt.Color;
+import cbit.vcell.client.PopupGenerator;
 
 public class FieldDataInfoPanel extends JPanel {
 	//

@@ -11,6 +11,14 @@
 package cbit.vcell.geometry.gui;
 
 import java.awt.AlphaComposite;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+
+import javax.swing.JLabel;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
@@ -18,16 +26,6 @@ import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.parser.ExpressionException;
-
-import javax.swing.JSlider;
-
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-import javax.swing.SwingConstants;
-import javax.swing.JLabel;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 /**
  * Insert the type's description here.
  * Creation date: (5/25/2004 4:45:55 PM)

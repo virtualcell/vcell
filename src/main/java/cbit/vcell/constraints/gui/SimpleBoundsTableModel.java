@@ -13,9 +13,9 @@ import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
 
-import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.SimpleBounds;
+import net.sourceforge.interval.ia_math.RealInterval;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

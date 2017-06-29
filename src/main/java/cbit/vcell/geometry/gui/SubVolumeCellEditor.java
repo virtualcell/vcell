@@ -10,9 +10,11 @@
 
 package cbit.vcell.geometry.gui;
 
+import java.awt.Component;
+
+import javax.swing.JTable;
+
 import cbit.vcell.geometry.SubVolume;
-import javax.swing.*;
-import java.awt.*;
 /**
  * Insert the type's description here.
  * Creation date: (4/9/01 3:30:31 PM)

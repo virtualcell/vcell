@@ -10,7 +10,8 @@
 
 package cbit.vcell.export.gui;
 
-import cbit.vcell.export.server.*;
+import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.RasterSpecs;
 /**
  * This type was created in VisualAge.
  */

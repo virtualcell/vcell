@@ -11,10 +11,43 @@
 package cbit.vcell.export.gloworm.quicktime;
 
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.zip.DataFormatException;
 
-import cbit.vcell.export.gloworm.atoms.*;
+import cbit.vcell.export.gloworm.atoms.AtomConstants;
+import cbit.vcell.export.gloworm.atoms.Atoms;
+import cbit.vcell.export.gloworm.atoms.BaseMediaHeader;
+import cbit.vcell.export.gloworm.atoms.BaseMediaInfo;
+import cbit.vcell.export.gloworm.atoms.BaseMediaInformation;
+import cbit.vcell.export.gloworm.atoms.ChunkOffset;
+import cbit.vcell.export.gloworm.atoms.DataInformation;
+import cbit.vcell.export.gloworm.atoms.DataReference;
+import cbit.vcell.export.gloworm.atoms.DataReferenceEntry;
+import cbit.vcell.export.gloworm.atoms.EditAtom;
+import cbit.vcell.export.gloworm.atoms.EditList;
+import cbit.vcell.export.gloworm.atoms.HandlerReference;
+import cbit.vcell.export.gloworm.atoms.MediaAtom;
+import cbit.vcell.export.gloworm.atoms.MediaData;
+import cbit.vcell.export.gloworm.atoms.MediaHeader;
+import cbit.vcell.export.gloworm.atoms.MediaInformation;
+import cbit.vcell.export.gloworm.atoms.MovieAtom;
+import cbit.vcell.export.gloworm.atoms.MovieHeader;
+import cbit.vcell.export.gloworm.atoms.SampleSize;
+import cbit.vcell.export.gloworm.atoms.SampleTable;
+import cbit.vcell.export.gloworm.atoms.SampleTableDescription;
+import cbit.vcell.export.gloworm.atoms.SampleToChunk;
+import cbit.vcell.export.gloworm.atoms.SyncSample;
+import cbit.vcell.export.gloworm.atoms.TimeToSample;
+import cbit.vcell.export.gloworm.atoms.TrackAtom;
+import cbit.vcell.export.gloworm.atoms.TrackHeader;
+import cbit.vcell.export.gloworm.atoms.TrackReference;
+import cbit.vcell.export.gloworm.atoms.UserData;
+import cbit.vcell.export.gloworm.atoms.VideoMediaInformation;
+import cbit.vcell.export.gloworm.atoms.VideoMediaInformationHeader;
 /**
  * This type was created in VisualAge.
  */

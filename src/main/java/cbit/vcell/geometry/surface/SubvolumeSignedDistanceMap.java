@@ -1,9 +1,5 @@
 package cbit.vcell.geometry.surface;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import cbit.vcell.geometry.SubVolume;
 
 

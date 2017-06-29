@@ -10,7 +10,7 @@
 
 package cbit.vcell.geometry;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.HashSet;
 /**
  * Insert the type's description here.

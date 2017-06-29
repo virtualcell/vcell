@@ -16,8 +16,6 @@ import java.awt.Insets;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
 
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;

@@ -10,7 +10,11 @@
 
 package cbit.vcell.geometry.gui;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.Filament;
+import cbit.vcell.geometry.FilamentGroup;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
 /**
  * Insert the type's description here.
  * Creation date: (8/11/00 6:18:51 PM)

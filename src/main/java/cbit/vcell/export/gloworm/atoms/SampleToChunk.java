@@ -10,10 +10,12 @@
 
 package cbit.vcell.export.gloworm.atoms;
 
-import cbit.vcell.export.gloworm.quicktime.ChunkID;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Vector;
 
-import java.io.*;
-import java.util.*;
+import cbit.vcell.export.gloworm.quicktime.ChunkID;
 /**
  * This type was created in VisualAge.
  */

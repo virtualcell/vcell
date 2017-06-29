@@ -14,7 +14,16 @@ import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 
-import cbit.vcell.export.gloworm.atoms.*;
+import cbit.vcell.export.gloworm.atoms.VRAtom;
+import cbit.vcell.export.gloworm.atoms.VRAtomContainer;
+import cbit.vcell.export.gloworm.atoms.VRImagingParentAtom;
+import cbit.vcell.export.gloworm.atoms.VRNodeHeaderAtom;
+import cbit.vcell.export.gloworm.atoms.VRNodeIDAtom;
+import cbit.vcell.export.gloworm.atoms.VRNodeLocationAtom;
+import cbit.vcell.export.gloworm.atoms.VRNodeParentAtom;
+import cbit.vcell.export.gloworm.atoms.VRObjectSampleAtom;
+import cbit.vcell.export.gloworm.atoms.VRStringAtom;
+import cbit.vcell.export.gloworm.atoms.VRWorldHeaderAtom;
 
 
 /**

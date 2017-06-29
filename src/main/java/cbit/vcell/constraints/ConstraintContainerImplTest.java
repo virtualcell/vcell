@@ -9,9 +9,11 @@
  */
 
 package cbit.vcell.constraints;
+import cbit.util.graph.Edge;
+import cbit.util.graph.Graph;
+import cbit.util.graph.Node;
 import cbit.vcell.parser.Expression;
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.util.graph.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/01 8:25:12 AM)

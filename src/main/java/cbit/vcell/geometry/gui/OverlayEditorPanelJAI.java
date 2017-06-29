@@ -10,7 +10,6 @@
 
 package cbit.vcell.geometry.gui;
 
-import java.awt.Button;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -26,7 +25,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
@@ -45,7 +43,6 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.FocusManager;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -91,7 +88,6 @@ import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager.ComboboxROIName;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
-import cbit.vcell.graph.gui.ZoomShapeIcon.Sign;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */

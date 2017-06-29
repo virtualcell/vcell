@@ -12,7 +12,11 @@ package cbit.vcell.export.gloworm.atoms;
 
 
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 import cbit.vcell.export.gloworm.quicktime.MediaChunk;
 /**

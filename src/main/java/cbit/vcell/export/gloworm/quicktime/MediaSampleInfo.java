@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.export.gloworm.quicktime;
-import cbit.vcell.export.gloworm.atoms.*;
+import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;
 /**
  * This type was created in VisualAge.
  */

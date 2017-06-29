@@ -13,8 +13,6 @@ package cbit.vcell.field.gui;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.swing.JFrame;
-
 import org.vcell.client.logicalwindow.LWTopFrame;
 
 import cbit.vcell.client.ChildWindowManager;

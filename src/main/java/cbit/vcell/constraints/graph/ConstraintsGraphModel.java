@@ -13,8 +13,8 @@ import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
 
-import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.ContainerShape;
+import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.SimpleContainerShape;

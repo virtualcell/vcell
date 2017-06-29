@@ -16,7 +16,6 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -31,7 +30,6 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.model.ModelPropertyVetoException.Category;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;

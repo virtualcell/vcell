@@ -14,8 +14,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.parser.ConstraintSymbolTableEntry;
@@ -26,6 +24,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ConstraintSolver implements SymbolTable, java.beans.PropertyChangeListener {
 	private Vector<Expression> expressionList = new java.util.Vector<Expression>();

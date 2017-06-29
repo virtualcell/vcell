@@ -10,8 +10,9 @@
 
 package cbit.vcell.export.gloworm.atoms;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.zip.DataFormatException;
 /**
  * This type was created in VisualAge.
  */

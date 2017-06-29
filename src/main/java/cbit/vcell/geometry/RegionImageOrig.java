@@ -11,7 +11,8 @@
 package cbit.vcell.geometry;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Vector;
+
 import cbit.image.VCImage;
 
 public class RegionImageOrig implements Serializable {
