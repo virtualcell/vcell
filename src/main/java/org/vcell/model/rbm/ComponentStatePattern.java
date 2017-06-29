@@ -31,14 +31,16 @@ public class ComponentStatePattern extends RbmElementAbstract implements Matchab
 		this.componentStateDefinition = componentStateDefinition;
 	}
 	
-	public ComponentStatePattern(ComponentStatePattern that) {
+	public ComponentStatePattern(MolecularComponent thisMc, ComponentStatePattern that) {
 		// copy constructor
-		if(that == null) {
+		if(that == null || that.componentStateDefinition == null) {
 			this.bAny = true;
 			this.componentStateDefinition = null;
 		} else {
-			this.bAny = that.isAny();
-			this.componentStateDefinition = that.getComponentStateDefinition();
+			this.bAny = that.bAny;
+			ComponentStateDefinition thatCsd = that.componentStateDefinition;
+			ComponentStateDefinition thisCsd = thisMc.getComponentStateDefinition(thatCsd.getName());
+			this.componentStateDefinition = thisCsd;
 		}
 	}
 

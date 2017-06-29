@@ -6,6 +6,7 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.vcell.util.Compare;
@@ -43,15 +44,18 @@ public class MolecularType extends RbmElementAbstract implements BioModelEntityO
 		this.name = name;
 		this.model = model;
 	}
-	public MolecularType(MolecularType mt, Model model) {
+	public MolecularType(MolecularType theirMt, Model ourModel, Map<Structure, String> structuresMap) {
 		// deep copy constructor
-		this.name = new String(mt.getName());
-		this.model = model;
-		// TODO: anchors not done yet, solve structures mapping first
-		//
-		// do anchors here
-		//
-		for(MolecularComponent mc : mt.getComponentList()) {
+		this.name = new String(theirMt.getName());
+		this.model = ourModel;
+		this.bAnchorAll = theirMt.bAnchorAll;
+		
+		for(Structure theirStruct : theirMt.anchorSet) {
+			Structure ourStruct = ourModel.getStructure(structuresMap.get(theirStruct));
+			this.anchorSet.add(ourStruct);
+		}
+
+		for(MolecularComponent mc : theirMt.getComponentList()) {
 			this.componentList.add(new MolecularComponent(mc));
 		}
 	}

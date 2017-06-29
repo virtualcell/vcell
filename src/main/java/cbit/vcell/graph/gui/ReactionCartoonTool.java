@@ -393,7 +393,8 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		}
 		return null;
 	}
-	private Structure[] getSelectedStructuresArray(ReactionRule[] rrArray, ReactionStep[] rsArray, SpeciesContext[] scArray) {
+	private Structure[] getSelectedStructuresArray(ReactionRule[] rrArray, ReactionStep[] rsArray, 
+			SpeciesContext[] scArray, MolecularType[] mtArray) {
 		// returns the structures where the species, reactions, rules and their participants are located
 		Set<Structure> fSet = new HashSet<>();
 		if(rrArray != null) {
@@ -417,15 +418,42 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				fSet.add(sc.getStructure());
 			}
 		}
+		if(mtArray != null) {
+			for(MolecularType mt : mtArray) {
+				fSet.addAll(mt.getAnchors());
+			}
+		}
 		return (fSet.size()==0 ? null : fSet.toArray(new Structure[0]));
 	}
-	private MolecularType[] getSelectedMolecularTypeArray(ReactionRule[] rrArray) {
-		// returns the molecules mentioned within the rules
+	private MolecularType[] getSelectedMolecularTypeArray(ReactionRule[] rrArray, ReactionStep[] rsArray, SpeciesContext[] scArray) {
+		// returns the molecules mentioned within the rules, and species contexts (if they have species patterns)
 		Set<MolecularType> mtSet = new HashSet<>();
 		if(rrArray != null) {
 			for(ReactionRule rr : rrArray) {
 				for(ReactionRuleParticipant p : rr.getReactionRuleParticipants()) {
 					SpeciesPattern sp = p.getSpeciesPattern();
+					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+						mtSet.add(mtp.getMolecularType());
+					}
+				}
+			}
+		}
+		if(rsArray != null) {
+			for(ReactionStep rs : rsArray) {	// the reaction participants may have species patterns
+				for(ReactionParticipant p : rs.getReactionParticipants()) {
+					if(p.getSpeciesContext().hasSpeciesPattern()) {
+						SpeciesPattern sp = p.getSpeciesContext().getSpeciesPattern();
+						for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+							mtSet.add(mtp.getMolecularType());
+						}
+					}
+				}
+			}
+		}
+		if(scArray != null) {
+			for(SpeciesContext sc : scArray) {
+				if(sc.hasSpeciesPattern()) {
+					SpeciesPattern sp = sc.getSpeciesPattern();
 					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 						mtSet.add(mtp.getMolecularType());
 					}
@@ -539,10 +567,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					|| shape instanceof ReactionRuleDiagramShape) {
 				SpeciesContext[] spArray = getSelectedSpeciesContextArray();
 				ReactionStep[] rsArray = getSelectedReactionStepArray();
-//				RuleParticipantSignature[] rpsArray = getSelectedRuleParticipantsArray();
 				ReactionRule[] rrArray = getSelectedReactionRuleArray();
-				MolecularType[] mtArray = getSelectedMolecularTypeArray(rrArray);
-				Structure[] structArray = getSelectedStructuresArray(rrArray, rsArray, spArray);
+				MolecularType[] mtArray = getSelectedMolecularTypeArray(rrArray, rsArray, spArray);
+				Structure[] structArray = getSelectedStructuresArray(rrArray, rsArray, spArray, mtArray);
 				Structure fromStruct = null;
 				ReactionContainerShape rcs = null;
 				Shape parentShape =  shape.getParent();

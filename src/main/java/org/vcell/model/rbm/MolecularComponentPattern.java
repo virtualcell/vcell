@@ -73,7 +73,7 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 		if(that.getMolecularComponent().getComponentStateDefinitions().isEmpty()) {
 			this.componentStatePattern = null;		// if the component has no states then the component pattern must be null
 		} else {
-			this.componentStatePattern = new ComponentStatePattern(that.getComponentStatePattern());	// we clone the component state pattern
+			this.componentStatePattern = new ComponentStatePattern(thisMc, that.getComponentStatePattern());	// we clone the component state pattern
 		}
 		this.bVisible = that.isbVisible();
 		// we can't initialize the bond here properly, we are in the middle of cloning and the 

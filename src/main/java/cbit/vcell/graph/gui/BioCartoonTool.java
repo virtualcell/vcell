@@ -164,10 +164,12 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			}
 		}
 	}
-	private static Set<MolecularType> pasteMolecules(VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, 
+	// returns a list with the "from" molecules we need to add to the modelTo
+	// it's a "strict" list, where we have eliminated any conflicting molecules and the ones already present
+	private static Set<MolecularType> getMoleculesFromStrict(VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, 
 			Vector<Issue> issueVector, IssueContext issueContext) {
 		// molecular types
-		Set<MolecularType> mtNewList = new HashSet<>();
+		Set<MolecularType> mtFromListStrict = new HashSet<>();
 		Set<MolecularType> mtConflictList = new HashSet<>();
 		Set<MolecularType> mtAlreadyList = new HashSet<>();
 		RbmModelContainer rbmmcTo = modelTo.getRbmModelContainer();
@@ -175,8 +177,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			for(MolecularType mtFrom : rsCopy.getMolecularTypeArr()) {	// the molecules we try to paste here
 				MolecularType mtTo = rbmmcTo.getMolecularType(mtFrom.getName());
 				if(mtTo == null) {
-					mtTo = new MolecularType(mtFrom, modelTo);
-					mtNewList.add(mtTo);
+//					mtTo = new MolecularType(mtFrom, modelTo);
+					mtFromListStrict.add(mtFrom);
 				} else {
 					if(!mtTo.compareEqual(mtFrom)) {
 						// conflict: a different mt with the same name already exists
@@ -197,13 +199,26 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				System.out.println("Found " + mtAlreadyList.size() + " molecule(s) already there.");
 			}
 		}
-		return mtNewList;
+		return mtFromListStrict;
 	}
+	
+	private static void pasteMolecules(Set<MolecularType> mtFromListStrict, Model modelTo, Map<Structure, String> structuresMap) {
+		
+		for(MolecularType mtFrom : mtFromListStrict) {
+			try {
+				MolecularType mtTo = new MolecularType(mtFrom, modelTo, structuresMap);
+				modelTo.getRbmModelContainer().addMolecularType(mtTo, false);
+			} catch (ModelException | PropertyVetoException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+	}
+	
 	// map the structures to be pasted to existing structures 
 	private static Map<Structure, String> mapStructures(Component requester,
 			VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
 			IssueContext issueContext) {
-		
 		
 		Vector <Issue> issueVector = new Vector<>();	// use internally only; we exit the dialog when there are no issues left
 		Structure structFrom = rsCopy.getFromStructure();
@@ -234,6 +249,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				String newNameTo = entry.getKey().getName();	// we generate a "to" structure name based on the "from" name
 				while(modelTo.getStructure(newNameTo) != null) {
 					newNameTo = org.vcell.util.TokenMangler.getNextEnumeratedToken(newNameTo);
+					// TODO: make sure that name is safe to use
+					//  if (Model.isNameUnused(speciesName, model)
 				}
 				try {
 				if(entry.getKey() instanceof Membrane) {
@@ -259,10 +276,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		if(rsCopy.getReactionRuleArr() == null) {
 			return rulesTo;
 		}
-		//
-		//	TODO: deep compare here the id's of all objects, make sure they are all duplicated and point to the new 
-		// molecules, components and states
-		//
+
 		for(ReactionRule rrFrom : rsCopy.getReactionRuleArr()) {
 			ReactionRule rrTo = ReactionRule.clone(modelTo, rrFrom, structTo, structuresMap);
 			rulesTo.add(rrTo);
@@ -284,20 +298,13 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
 				Vector <Issue> issues = new Vector<>();
 				checkStructuresCompatibility(rsCopy, clonedModel, structTo, issues, issueContext);
-				Set<MolecularType> mtNewList = pasteMolecules(rsCopy, clonedModel, issues, issueContext);
+				Set<MolecularType> mtFromListStrict = getMoleculesFromStrict(rsCopy, clonedModel, issues, issueContext);
 				if (issues.size() != 0) {	// at this point we can only have fatal error issues or no issues at all
 					if (!printIssues(issues, requester)) {
 						throw UserCancelException.CANCEL_GENERIC;
 					}
 				}
-				try {
-					for(MolecularType mtOurs : mtNewList) {
-						clonedModel.getRbmModelContainer().addMolecularType(mtOurs, false);
-					}
-				} catch (ModelException | PropertyVetoException e) {
-					e.printStackTrace();
-					throw new RuntimeException(e.getMessage());
-				}
+
 				// map all the structures of the reactions, rules and their participants to existing structures, at need make new structures
 				// key is the "from" structure, value is the name of the equivalent "to" structure
 				// on the first position we have the struct from where we copy (key) and the struct where we paste (value)
@@ -308,8 +315,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 					structuresMap = new LinkedHashMap<> ();
 					structuresMap.put(rsCopy.getFromStructure(), structTo.getName());
 				}
-				
-				
+
+				pasteMolecules(mtFromListStrict, clonedModel, structuresMap);
 				
 				List<ReactionRule> rulesTo = pasteRules(rsCopy, clonedModel, structTo, issues, issueContext, structuresMap);
 				for(ReactionRule rr : rulesTo) {

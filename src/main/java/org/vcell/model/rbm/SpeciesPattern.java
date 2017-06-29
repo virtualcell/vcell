@@ -213,7 +213,8 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 			}
 			// we also reproduce all the matches
 			MolecularTypePattern thisMtp = (MolecularTypePattern)thatThisMap.get(thatMtp);
-			thisMtp.setParticipantMatchLabel(thatMtp.getParticipantMatchLabel());
+			String thisLabel = new String(thatMtp.getParticipantMatchLabel());
+			thisMtp.setParticipantMatchLabel(thisLabel);
 		}
 	}
 	
