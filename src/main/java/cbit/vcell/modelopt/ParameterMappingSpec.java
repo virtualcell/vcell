@@ -38,6 +38,16 @@ public ParameterMappingSpec(Parameter argModelParameter) throws ExpressionExcept
 	this.current = argModelParameter.getExpression().evaluateConstant();
 }
 
+public ParameterMappingSpec(ParameterMappingSpec argModelParameterSpec) {
+	super();
+	this.modelParameter = argModelParameterSpec.modelParameter;
+	this.current = argModelParameterSpec.current;
+	this.low = argModelParameterSpec.low;
+	this.high = argModelParameterSpec.high;
+	this.current = argModelParameterSpec.current;
+	this.selected = argModelParameterSpec.selected;
+}
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */

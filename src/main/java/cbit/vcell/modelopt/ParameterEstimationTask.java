@@ -39,7 +39,7 @@ public class ParameterEstimationTask extends AnalysisTask implements IssueSource
 	public static final String PROPERTY_NAME_OPTIMIZATION_RESULT_SET = "optimizationResultSet";
 	private ModelOptimizationSpec fieldModelOptimizationSpec = null; //parameters to be estimated, reference data and referece data/model var mapping
 	private OptimizationSolverSpec fieldOptimizationSolverSpec = null; //solver selection and setting
-	private OptimizationResultSet fieldOptimizationResultSet = null; //contains best paramters and least function value and number of evaluations
+	private OptimizationResultSet fieldOptimizationResultSet = null; //contains best parameters and least function value and number of evaluations
 	
 	private transient ModelOptimizationMapping fieldModelOptimizationMapping = null; //objective function, constraints, model vars/parameters mapping, math symbol mapping
 	private transient MathSymbolMapping fieldMathSymbolMapping = null; //MathSymbolMapping is a field in ModelOptimizationMapping too.

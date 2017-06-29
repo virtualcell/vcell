@@ -62,7 +62,7 @@ public class CopasiOptimizationSolver {
 			//
 			Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask,mathMappingCallback);
 			String inputXML = XmlUtil.xmlToString(optProblemXML);
-			System.out.println(XmlUtil.beautify(inputXML));
+//			System.out.println(XmlUtil.beautify(inputXML));
 			
 			
 			//
