@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import cbit.vcell.units.parser.UnitSymbol;
-import ucar.units.Unit;
+import ucar.units_vcell.Unit;
 
 public abstract class VCUnitSystem implements Serializable {
 

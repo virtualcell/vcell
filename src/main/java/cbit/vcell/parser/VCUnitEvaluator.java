@@ -15,7 +15,7 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 import cbit.vcell.units.VCUnitSystem;
-import ucar.units.RationalNumber;
+import ucar.units_vcell.RationalNumber;
 /**
  * This class may not exist in the future, and its functionality may be spread on one or more classes.
  

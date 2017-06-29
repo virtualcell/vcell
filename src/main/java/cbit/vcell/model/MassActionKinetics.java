@@ -136,13 +136,13 @@ protected void refreshUnits() {
 				if (reactionParticipants[i] instanceof Reactant){
 					cbit.vcell.units.VCUnitDefinition reactantUnit = reactionParticipants[i].getSpeciesContext().getUnitDefinition();
 					if (reactionParticipants[i].getStoichiometry()!=1){
-						reactantUnit = reactantUnit.raiseTo(new ucar.units.RationalNumber(reactionParticipants[i].getStoichiometry()));
+						reactantUnit = reactantUnit.raiseTo(new ucar.units_vcell.RationalNumber(reactionParticipants[i].getStoichiometry()));
 					}
 					kfUnits = kfUnits.divideBy(reactantUnit);
 				}else if (reactionParticipants[i] instanceof Product){
 					cbit.vcell.units.VCUnitDefinition productUnit = reactionParticipants[i].getSpeciesContext().getUnitDefinition();
 					if (reactionParticipants[i].getStoichiometry()!=1){
-						productUnit = productUnit.raiseTo(new ucar.units.RationalNumber(reactionParticipants[i].getStoichiometry()));
+						productUnit = productUnit.raiseTo(new ucar.units_vcell.RationalNumber(reactionParticipants[i].getStoichiometry()));
 					}
 					krUnits = krUnits.divideBy(productUnit);
 				}

@@ -151,7 +151,7 @@ public class SBMLUnitTranslator extends LibSBMLClient {
 	*/
     
 	
-private static List<Unit> convert(ucar.units.Unit vcUcarUnit,  long level, long version) throws SbmlException {
+private static List<Unit> convert(ucar.units_vcell.Unit vcUcarUnit,  long level, long version) throws SbmlException {
 	ArrayList<Unit> allSbmlUnitsList = new ArrayList<>();
 	String ucarString = vcUcarUnit.toString();
 	try {
@@ -187,16 +187,16 @@ private static List<Unit> convert(ucar.units.Unit vcUcarUnit,  long level, long 
  *  convertVCUnitsToSbmlUnits :
  *  --------- !!!! Ignoring OFFSET for UNITS, since SBML L2V2 gets rid of the offset field. !!!! ---------
  */
-private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, ucar.units.Unit vcUcarUnit, ArrayList<Unit> allSbmlUnitsList, long level, long version) {
+private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, ucar.units_vcell.Unit vcUcarUnit, ArrayList<Unit> allSbmlUnitsList, long level, long version) {
 	int unitScale = 0;
-	if (vcUcarUnit instanceof ucar.units.UnitImpl) {
-		ucar.units.UnitImpl unitImpl = (ucar.units.UnitImpl)vcUcarUnit;
-		if (unitImpl instanceof ucar.units.DerivedUnitImpl) {
-			ucar.units.DerivedUnitImpl baseUnit = (ucar.units.DerivedUnitImpl)unitImpl;
-			ucar.units.Factor factors [] = baseUnit.getDimension().getFactors();
+	if (vcUcarUnit instanceof ucar.units_vcell.UnitImpl) {
+		ucar.units_vcell.UnitImpl unitImpl = (ucar.units_vcell.UnitImpl)vcUcarUnit;
+		if (unitImpl instanceof ucar.units_vcell.DerivedUnitImpl) {
+			ucar.units_vcell.DerivedUnitImpl baseUnit = (ucar.units_vcell.DerivedUnitImpl)unitImpl;
+			ucar.units_vcell.Factor factors [] = baseUnit.getDimension().getFactors();
 			for (int i = 0; i < factors.length; i++) {
-				ucar.units.RationalNumber exponent = factors[i].getExponent();
-				String baseName  = ((ucar.units.BaseUnit)factors[i].getBase()).getName();
+				ucar.units_vcell.RationalNumber exponent = factors[i].getExponent();
+				String baseName  = ((ucar.units_vcell.BaseUnit)factors[i].getBase()).getName();
 				Unit sbmlUnit = null;
 				if (factors.length > 1) {
 					// Units override each other's mult/multiplier before getting to the level of derived unit. 
@@ -227,16 +227,16 @@ private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, 
 				}
 			}
 			return allSbmlUnitsList;
-		} else if (unitImpl instanceof ucar.units.ScaledUnit) {
-			ucar.units.ScaledUnit multdUnit = (ucar.units.ScaledUnit)unitImpl;
+		} else if (unitImpl instanceof ucar.units_vcell.ScaledUnit) {
+			ucar.units_vcell.ScaledUnit multdUnit = (ucar.units_vcell.ScaledUnit)unitImpl;
 			unitMultiplier *= multdUnit.getScale();
 			if (multdUnit.getUnit() != multdUnit.getDerivedUnit()){
 				return convertVCUnitsToSbmlUnits(unitMultiplier, multdUnit.getUnit(), allSbmlUnitsList, level, version);
 			}
 		} 
 		/***** COMMENTED OUT SINCE OFFSET IS NOT GOING TO BE USED FROM SBML L2 V2 ... ****
-		  else if (unitImpl instanceof ucar.units.OffsetUnit) {
-			ucar.units.OffsetUnit offsetUnit = (ucar.units.OffsetUnit)unitImpl;
+		  else if (unitImpl instanceof ucar.units_vcell.OffsetUnit) {
+			ucar.units_vcell.OffsetUnit offsetUnit = (ucar.units_vcell.OffsetUnit)unitImpl;
 			unitOffset += offsetUnit.getOffset();
 			if (offsetUnit.getUnit() != offsetUnit.getDerivedUnit()){
 				return convertVCUnitsToSbmlUnits(unitMultiplier, offsetUnit.getUnit(), allSbmlUnitsList);
@@ -278,7 +278,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 		
 		sbmlUnitDefn = new UnitDefinition(level, version);
 		sbmlUnitDefn.setId(TokenMangler.mangleToSName(TokenMangler.mangleToSName(sbmlUnitSymbol))); 
-		ucar.units.Unit vcUcarUnit = vcUnitDefn.getUcarUnit();
+		ucar.units_vcell.Unit vcUcarUnit = vcUnitDefn.getUcarUnit();
 		//ArrayList<Unit> sbmlUnitsList = convertVCUnitsToSbmlUnits(1.0, vcUcarUnit, new ArrayList<Unit>(), level, version);
 		List<Unit> sbmlUnitsList = convert(vcUcarUnit, level, version);
 

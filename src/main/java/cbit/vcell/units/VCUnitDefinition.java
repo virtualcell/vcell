@@ -33,7 +33,7 @@ public class VCUnitDefinition implements Matchable, Serializable{
 	//
 	private transient HashMap<VCUnitDefinition, VCUnitDefinition> divideByMap = null;
 	private transient HashMap<VCUnitDefinition, VCUnitDefinition> multiplyByMap = null;
-	private transient HashMap<ucar.units.RationalNumber, VCUnitDefinition> powerMap = null;
+	private transient HashMap<ucar.units_vcell.RationalNumber, VCUnitDefinition> powerMap = null;
 	
 	VCUnitDefinition(InternalUnitDefinition unitDefinition, VCUnitSystem vcUnitSystem, UnitSymbol unitsymbol) {
 		super();
@@ -104,7 +104,7 @@ public class VCUnitDefinition implements Matchable, Serializable{
 		}
 	}
 
-	public VCUnitDefinition raiseTo(ucar.units.RationalNumber rationalNumber) {
+	public VCUnitDefinition raiseTo(ucar.units_vcell.RationalNumber rationalNumber) {
 		VCUnitDefinition powerUnit = null;
 		if (powerMap != null){
 			powerUnit = powerMap.get(rationalNumber);
@@ -112,7 +112,7 @@ public class VCUnitDefinition implements Matchable, Serializable{
 				return powerUnit;
 			}
 		}else{
-			powerMap = new HashMap<ucar.units.RationalNumber, VCUnitDefinition>();
+			powerMap = new HashMap<ucar.units_vcell.RationalNumber, VCUnitDefinition>();
 		}
 		
 		RationalExp origRationalExpWithoutNumericScale = getSymbolRationalExpWithoutNumericScale(fieldUnitSymbol);
@@ -182,7 +182,7 @@ public class VCUnitDefinition implements Matchable, Serializable{
 		return fieldUnitDefinition.convertTo(conversionFactor, targetUnit.fieldUnitDefinition);
 	}
 
-	public ucar.units.Unit getUcarUnit() {
+	public ucar.units_vcell.Unit getUcarUnit() {
 		return fieldUnitDefinition.getUcarUnit();
 	}
 	

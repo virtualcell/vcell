@@ -17,17 +17,17 @@ import org.jdom.Namespace;
 
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
-import ucar.units.BaseUnit;
-import ucar.units.DerivedUnitImpl;
-import ucar.units.Factor;
-import ucar.units.OffsetUnit;
-import ucar.units.RationalNumber;
-import ucar.units.ScaledUnit;
-import ucar.units.StandardUnitDB;
-import ucar.units.Unit;
-import ucar.units.UnitException;
-import ucar.units.UnitImpl;
-import ucar.units.UnitName;
+import ucar.units_vcell.BaseUnit;
+import ucar.units_vcell.DerivedUnitImpl;
+import ucar.units_vcell.Factor;
+import ucar.units_vcell.OffsetUnit;
+import ucar.units_vcell.RationalNumber;
+import ucar.units_vcell.ScaledUnit;
+import ucar.units_vcell.StandardUnitDB;
+import ucar.units_vcell.Unit;
+import ucar.units_vcell.UnitException;
+import ucar.units_vcell.UnitImpl;
+import ucar.units_vcell.UnitName;
 
 /**
 This class provides unit translation support for the  VCML translations with SBML and CellML. Its placed here to preserve the 

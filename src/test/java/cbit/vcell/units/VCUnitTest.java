@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import org.junit.Test;
 
-import ucar.units.Unit;
+import ucar.units_vcell.Unit;
 
 public class VCUnitTest {
 

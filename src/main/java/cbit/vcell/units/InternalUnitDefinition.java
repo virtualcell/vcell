@@ -15,23 +15,23 @@ import java.util.Iterator;
 
 import org.vcell.util.Matchable;
 
-import ucar.units.Base;
-import ucar.units.BaseQuantity;
-import ucar.units.BaseUnit;
-import ucar.units.DerivedUnitImpl;
-import ucar.units.Dimension;
-import ucar.units.Factor;
-import ucar.units.OffsetUnit;
-import ucar.units.ParseException;
-import ucar.units.QuantityDimension;
-import ucar.units.RationalNumber;
-import ucar.units.ScaledUnit;
-import ucar.units.StandardUnitFormat;
-import ucar.units.TimeScaleUnit;
-import ucar.units.Unit;
-import ucar.units.UnitDimension;
-import ucar.units.UnitException;
-import ucar.units.UnitName;
+import ucar.units_vcell.Base;
+import ucar.units_vcell.BaseQuantity;
+import ucar.units_vcell.BaseUnit;
+import ucar.units_vcell.DerivedUnitImpl;
+import ucar.units_vcell.Dimension;
+import ucar.units_vcell.Factor;
+import ucar.units_vcell.OffsetUnit;
+import ucar.units_vcell.ParseException;
+import ucar.units_vcell.QuantityDimension;
+import ucar.units_vcell.RationalNumber;
+import ucar.units_vcell.ScaledUnit;
+import ucar.units_vcell.StandardUnitFormat;
+import ucar.units_vcell.TimeScaleUnit;
+import ucar.units_vcell.Unit;
+import ucar.units_vcell.UnitDimension;
+import ucar.units_vcell.UnitException;
+import ucar.units_vcell.UnitName;
 
 /**
  The wrapper around a ucar unit.
@@ -107,7 +107,7 @@ class InternalUnitDefinition implements Matchable, Serializable {
     private final Unit ucarUnit;
     private final String forcedSymbol;
 
-    //private static ucar.units.PrefixDB prefixDB = null;
+    //private static ucar.units_vcell.PrefixDB prefixDB = null;
 
     static {
         numberFormatForRounding.setMaximumFractionDigits(12);
@@ -170,10 +170,10 @@ class InternalUnitDefinition implements Matchable, Serializable {
         InternalUnitDefinition unit_umol_um3_per_L = null;
    
         try {
-            //prefixDB = ucar.units.PrefixDBManager.instance();
-            ucar.units.UnitDB unitDB = ucar.units.UnitSystemManager.instance().getUnitDB();
+            //prefixDB = ucar.units_vcell.PrefixDBManager.instance();
+            ucar.units_vcell.UnitDB unitDB = ucar.units_vcell.UnitSystemManager.instance().getUnitDB();
             unitDB.addUnit(
-                du("molar", "M", ucar.units.SI.MOLE.divideBy(ucar.units.SI.LITER)));
+                du("molar", "M", ucar.units_vcell.SI.MOLE.divideBy(ucar.units_vcell.SI.LITER)));
             //unitDB.addUnit(du("molecules", "molecules", new ScaledUnit(1, SI.ITEM)));
             unitDB.addAlias("molecules", "item", "molecules");
 
@@ -303,10 +303,10 @@ private InternalUnitDefinition(String argSymbol) {
 	}else{
 		try {
 			StandardUnitFormat standardUnitFormat = new StandardUnitFormat(new java.io.ByteArrayInputStream(argSymbol.trim().getBytes()));
-			dUnit = standardUnitFormat.unitSpec(ucar.units.UnitSystemManager.instance().getUnitDB());
-			ucar.units.Factor factors[] = dUnit.getDerivedUnit().getDimension().getFactors();
+			dUnit = standardUnitFormat.unitSpec(ucar.units_vcell.UnitSystemManager.instance().getUnitDB());
+			ucar.units_vcell.Factor factors[] = dUnit.getDerivedUnit().getDimension().getFactors();
 			for (int i = 0; i < factors.length; i++){
-				if (factors[i].getBase() instanceof ucar.units.UnknownUnit){
+				if (factors[i].getBase() instanceof ucar.units_vcell.UnknownUnit){
 					throw new VCUnitException("invalid symbol '"+factors[i].getBase()+"'");
 				}
 			}
@@ -396,8 +396,8 @@ private InternalUnitDefinition(String argSymbol) {
      * @param quantity		The definition of the unit.
      * @return			The derived unit corresponding to the arguments.
      */
-    private static ucar.units.Unit du(String name, String symbol, ucar.units.Unit definition) throws ucar.units.NameException {
-		return definition.clone(ucar.units.UnitName.newUnitName(name, null, symbol));
+    private static ucar.units_vcell.Unit du(String name, String symbol, ucar.units_vcell.Unit definition) throws ucar.units_vcell.NameException {
+		return definition.clone(ucar.units_vcell.UnitName.newUnitName(name, null, symbol));
     }
 
 
@@ -405,8 +405,8 @@ private InternalUnitDefinition(String argSymbol) {
  * Insert the method's description here.
  * Creation date: (4/15/2004 1:54:00 PM)
  * @return boolean
- * @param ucarUnit1 ucar.units.Unit
- * @param ucarUnit2 ucar.units.Unit
+ * @param ucarUnit1 ucar.units_vcell.Unit
+ * @param ucarUnit2 ucar.units_vcell.Unit
  */
 private static boolean equivalent(Unit ucarUnit1, Unit ucarUnit2) {
 	
@@ -474,15 +474,15 @@ static InternalUnitDefinition getInstance(String symbol) {
 		Unit dUnit;
 		try {
 			StandardUnitFormat standardUnitFormat = new StandardUnitFormat(new java.io.ByteArrayInputStream(symbol.trim().getBytes()));
-            ucar.units.UnitDB unitDB = ucar.units.UnitSystemManager.instance().getUnitDB();
+            ucar.units_vcell.UnitDB unitDB = ucar.units_vcell.UnitSystemManager.instance().getUnitDB();
 			dUnit = standardUnitFormat.unitSpec(unitDB);
-			ucar.units.Factor factors[] = dUnit.getDerivedUnit().getDimension().getFactors();
+			ucar.units_vcell.Factor factors[] = dUnit.getDerivedUnit().getDimension().getFactors();
 			for (int i = 0; i < factors.length; i++){
-				if (factors[i].getBase() instanceof ucar.units.UnknownUnit){
+				if (factors[i].getBase() instanceof ucar.units_vcell.UnknownUnit){
 					throw new VCUnitException("invalid symbol '"+factors[i].getBase()+"'");
 				}
 			}
-		} catch (ucar.units.ParseException e) {
+		} catch (ucar.units_vcell.ParseException e) {
 			e.printStackTrace();
 			throw new VCUnitException("Unable to get unit: " + symbol + ": " + e.getMessage());
 		} catch (UnitException e) {
@@ -540,7 +540,7 @@ static InternalUnitDefinition getInstance(Unit ucarUnit) {
 					newSymbol += " "+nonNum;
 				}
 				StandardUnitFormat standardUnitFormat = new StandardUnitFormat(new java.io.ByteArrayInputStream(newSymbol.trim().getBytes()));
-	            ucar.units.UnitDB unitDB = ucar.units.UnitSystemManager.instance().getUnitDB();
+	            ucar.units_vcell.UnitDB unitDB = ucar.units_vcell.UnitSystemManager.instance().getUnitDB();
 				ucarUnit = standardUnitFormat.unitSpec(unitDB);
 			}
 		}
@@ -588,7 +588,7 @@ static InternalUnitDefinition getInstance(Unit ucarUnit) {
 		//if (ucarUnit instanceof ScaledUnit){
 			//try {
 				//symbol += prefixDB.getPrefixByValue(((ScaledUnit)ucarUnit).getScale());
-			//}catch (ucar.units.PrefixDBAccessException e){
+			//}catch (ucar.units_vcell.PrefixDBAccessException e){
 				//e.printStackTrace(System.out);
 			//}
 			//return symbol + ((ScaledUnit)ucarUnit).getUnit().getSymbol();
@@ -722,8 +722,8 @@ private static void showUChar(String pad, String attribute, Object obj) {
 		System.out.println(pad+attribute+" = "+((obj!=null)?(obj.getClass().getName()+"@"+Integer.toHexString(obj.hashCode())+" '"+obj+"'"):("null")));
 	}
 	pad += "   ";
-	if (obj instanceof ucar.units.UnitImpl){
-		ucar.units.UnitImpl unitImpl = (ucar.units.UnitImpl)obj;
+	if (obj instanceof ucar.units_vcell.UnitImpl){
+		ucar.units_vcell.UnitImpl unitImpl = (ucar.units_vcell.UnitImpl)obj;
 		if (unitImpl.getDerivedUnit()!=obj){                           // stops infinite recursion
 			showUChar(pad,"derivedUnit",unitImpl.getDerivedUnit());
 		}
@@ -738,8 +738,8 @@ private static void showUChar(String pad, String attribute, Object obj) {
 				showUChar(pad,"unitDimension",derivedUnitImpl.getDimension());
 			}
 			showUChar(pad,"quantityDimension",derivedUnitImpl.getQuantityDimension());
-			if (derivedUnitImpl instanceof ucar.units.BaseUnit){
-				ucar.units.BaseUnit baseUnit = (ucar.units.BaseUnit)derivedUnitImpl;
+			if (derivedUnitImpl instanceof ucar.units_vcell.BaseUnit){
+				ucar.units_vcell.BaseUnit baseUnit = (ucar.units_vcell.BaseUnit)derivedUnitImpl;
 				showUChar(pad,"baseQuantity",baseUnit.getBaseQuantity());
 				showUChar(pad,"id",baseUnit.getID());
 			}

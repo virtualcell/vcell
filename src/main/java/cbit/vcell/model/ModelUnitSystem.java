@@ -21,7 +21,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
-import ucar.units.RationalNumber;
+import ucar.units_vcell.RationalNumber;
 
 public class ModelUnitSystem extends VCUnitSystem implements Matchable {
 
