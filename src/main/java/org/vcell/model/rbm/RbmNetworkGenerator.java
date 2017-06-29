@@ -1,6 +1,5 @@
 package org.vcell.model.rbm;
 
-import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
 import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
@@ -22,8 +20,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
@@ -33,7 +29,6 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
-import cbit.vcell.model.ModelPropertyVetoException;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -42,10 +37,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;

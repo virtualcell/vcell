@@ -10,7 +10,7 @@
 
 package org.vcell.pathway;
 
-import static org.vcell.pathway.PathwayXMLHelper.*;
+import static org.vcell.pathway.PathwayXMLHelper.urlHashtable;
 
 import java.util.HashMap;
 import java.util.HashSet;

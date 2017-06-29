@@ -9,18 +9,18 @@
  */
 
 package org.vcell.cellml;
-import cbit.util.xml.VCLogger;
-import cbit.util.xml.XmlUtil;
-
-import org.jdom.Document;
-import org.jdom.Element; 
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter; 
-import org.vcell.util.document.VCDocument;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
+import org.vcell.util.document.VCDocument;
+
+import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlUtil;
 
 public abstract class Translator {
 

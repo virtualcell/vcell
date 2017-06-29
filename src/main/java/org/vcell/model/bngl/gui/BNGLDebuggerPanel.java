@@ -1,42 +1,24 @@
 package org.vcell.model.bngl.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Rectangle;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
-import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Element;
-import javax.swing.text.Highlighter;
 
 import org.vcell.model.bngl.ParseException;
-import org.vcell.model.rbm.RbmUtils;
 
 import cbit.gui.MultiPurposeTextPanel;
-import cbit.vcell.math.BoundaryConditionType;
-import cbit.vcell.math.VCML;
-import cbit.vcell.math.gui.MathDescEditor;
 
 public class BNGLDebuggerPanel extends JPanel {
 	

@@ -10,16 +10,27 @@
 
 package org.vcell.relationship;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.RemoteException;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.util.DataAccessException;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import cbit.util.xml.XmlUtil;
-
 import uk.ac.ebi.jdbfetch.exceptions.DbfConnException;
 import uk.ac.ebi.jdbfetch.exceptions.DbfException;
 import uk.ac.ebi.jdbfetch.exceptions.DbfNoEntryFoundException;
@@ -33,16 +44,6 @@ import uk.ac.ebi.www.webservices.chebi.StarsCategory;
 import uk.ac.ebi.www.ws.services.WSDbfetch.InputException;
 import uk.ac.ebi.www.ws.services.WSDbfetch.WSDBFetchServer;
 import uk.ac.ebi.www.ws.services.WSDbfetch.WSDBFetchServerServiceLocator;
-
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.*;
 
 
 /**

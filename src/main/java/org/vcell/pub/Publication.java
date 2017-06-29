@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
 public class Publication implements Serializable {

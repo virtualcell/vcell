@@ -6,11 +6,6 @@
  */
 package org.vcell.optimization.thrift;
 
-
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum OptimizationMethodType implements org.apache.thrift.TEnum {
   EvolutionaryProgram(0),
   SRES(1),

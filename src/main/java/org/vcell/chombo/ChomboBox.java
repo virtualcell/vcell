@@ -3,8 +3,6 @@ package org.vcell.chombo;
 import java.io.Serializable;
 import java.util.StringTokenizer;
 
-import javax.swing.BoxLayout;
-
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;

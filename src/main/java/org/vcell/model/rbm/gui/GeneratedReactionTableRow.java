@@ -8,7 +8,6 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 
 import cbit.vcell.bionetgen.BNGReaction;
-import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;

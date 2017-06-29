@@ -10,7 +10,7 @@
 
 package org.vcell.pathway.commons;
 
-import static org.vcell.pathway.PathwayXMLHelper.*;
+import static org.vcell.pathway.PathwayXMLHelper.showUnexpected;
 
 import java.io.File;
 

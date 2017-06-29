@@ -109,7 +109,6 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
-import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;

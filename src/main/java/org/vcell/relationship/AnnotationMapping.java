@@ -36,11 +36,6 @@ import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.Identifiable;
 
-import uk.ac.ebi.jdbfetch.exceptions.DbfConnException;
-import uk.ac.ebi.jdbfetch.exceptions.DbfException;
-import uk.ac.ebi.jdbfetch.exceptions.DbfNoEntryFoundException;
-import uk.ac.ebi.jdbfetch.exceptions.DbfParamsException;
-import uk.ac.ebi.www.ws.services.WSDbfetch.InputException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
@@ -52,6 +47,11 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
+import uk.ac.ebi.jdbfetch.exceptions.DbfConnException;
+import uk.ac.ebi.jdbfetch.exceptions.DbfException;
+import uk.ac.ebi.jdbfetch.exceptions.DbfNoEntryFoundException;
+import uk.ac.ebi.jdbfetch.exceptions.DbfParamsException;
+import uk.ac.ebi.www.ws.services.WSDbfetch.InputException;
 
 public class AnnotationMapping {
 		

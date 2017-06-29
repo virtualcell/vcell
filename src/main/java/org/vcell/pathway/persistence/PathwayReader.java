@@ -10,6 +10,9 @@
 
 package org.vcell.pathway.persistence;
 
+import static org.vcell.pathway.PathwayXMLHelper.showIgnored;
+import static org.vcell.pathway.PathwayXMLHelper.showUnexpected;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -97,13 +100,18 @@ import org.vcell.pathway.TransportWithBiochemicalReaction;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.Xref;
-import org.vcell.pathway.persistence.BiopaxProxy.*;
-
+import org.vcell.pathway.persistence.BiopaxProxy.CellularLocationVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.InteractionOrPathwayProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.InteractionProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.PathwayProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.PathwayStepProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.PhysicalEntityProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.XrefProxy;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
 import cbit.util.xml.XmlUtil;
-import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class PathwayReader {
 	

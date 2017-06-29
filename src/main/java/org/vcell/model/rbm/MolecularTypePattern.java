@@ -5,17 +5,15 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.model.Model;

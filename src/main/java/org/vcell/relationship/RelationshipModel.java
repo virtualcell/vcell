@@ -19,7 +19,6 @@ import java.util.Set;
 
 import org.vcell.pathway.BioPaxObject;
 
-
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.model.BioModelEntityObject;
 

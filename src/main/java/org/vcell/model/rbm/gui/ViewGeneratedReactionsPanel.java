@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -54,24 +53,19 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGReaction;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.SpeciesPatternRoundShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
-import cbit.vcell.graph.gui.ResizeCanvasShapeIcon;
 import cbit.vcell.graph.gui.RulesShapePanel;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
-import cbit.vcell.graph.gui.ZoomShapeIcon.Sign;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")

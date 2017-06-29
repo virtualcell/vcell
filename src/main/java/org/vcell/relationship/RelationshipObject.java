@@ -13,12 +13,11 @@ package org.vcell.relationship;
 
 import java.util.HashSet;
 
-import cbit.vcell.biomodel.meta.IdentifiableProvider;
-import cbit.vcell.biomodel.meta.VCID;
-
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.document.Identifiable;
 
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
+import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.model.BioModelEntityObject;
 
 public class RelationshipObject implements Identifiable{

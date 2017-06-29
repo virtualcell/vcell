@@ -30,7 +30,6 @@ import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.XMLTriple;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.sybil.rdf.RDFChopper;

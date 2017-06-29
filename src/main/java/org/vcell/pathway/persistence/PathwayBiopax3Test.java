@@ -16,7 +16,6 @@ import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
-
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.pathway.PathwayModel;
 

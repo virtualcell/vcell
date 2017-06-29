@@ -2,7 +2,6 @@ package org.vcell.optimization;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,10 +22,7 @@ import org.vcell.util.Executable2;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.IExecutable;
 import org.vcell.util.PropertyLoader;
-import org.vcell.vis.vismesh.thrift.VisMesh;
-import org.vcell.vis.vtk.VisMeshUtils;
 import org.vcell.vis.vtk.VtkService;
-import org.vcell.vis.vtk.VtkServicePython;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.mapping.SimulationContext;

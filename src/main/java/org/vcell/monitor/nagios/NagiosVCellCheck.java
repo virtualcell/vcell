@@ -10,8 +10,8 @@ import org.vcell.util.BigString;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+import org.vcell.util.document.VCInfoContainer;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.biomodel.BioModel;

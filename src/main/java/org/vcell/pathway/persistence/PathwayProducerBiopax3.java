@@ -10,9 +10,16 @@
 
 package org.vcell.pathway.persistence;
 
+import static org.vcell.pathway.PathwayXMLHelper.schemaBoolean;
+import static org.vcell.pathway.PathwayXMLHelper.schemaDouble;
+import static org.vcell.pathway.PathwayXMLHelper.schemaInt;
+import static org.vcell.pathway.PathwayXMLHelper.schemaString;
+import static org.vcell.pathway.PathwayXMLHelper.showUnexpected;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbpax.schemas.util.DefaultNameSpaces;
@@ -76,14 +83,11 @@ import org.vcell.pathway.TemplateReaction;
 import org.vcell.pathway.TemplateReactionRegulation;
 import org.vcell.pathway.TransportWithBiochemicalReaction;
 import org.vcell.pathway.Xref;
+import org.vcell.pathway.id.URIUtil;
 import org.vcell.pathway.sbpax.SBEntity;
-import org.vcell.pathway.sbpax.SBEntityImpl;
 import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.pathway.sbpax.UnitOfMeasurement;
-
-import org.vcell.pathway.id.URIUtil;
-import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class PathwayProducerBiopax3 {
 

@@ -23,11 +23,11 @@ import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBMeasurable;
 
 import cbit.vcell.model.Catalyst;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Model.ModelParameter;
 
 public class KineticContext {
 	

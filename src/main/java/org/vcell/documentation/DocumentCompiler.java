@@ -13,7 +13,6 @@ package org.vcell.documentation;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -32,10 +31,10 @@ import org.jdom.Element;
 import org.jdom.Text;
 import org.vcell.util.FileUtils;
 
+import com.sun.java.help.search.Indexer;
+
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.XmlParseException;
-
-import com.sun.java.help.search.Indexer;
 
 public class DocumentCompiler {
 	public final static int MAX_IMG_FILE_SIZE = 50000;

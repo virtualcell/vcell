@@ -19,7 +19,6 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.VCDocument;
 
 import cbit.util.xml.JDOMTreeWalker;
@@ -30,9 +29,9 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

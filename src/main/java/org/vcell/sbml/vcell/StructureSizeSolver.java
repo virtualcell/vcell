@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.constraints.AbstractConstraint;
@@ -40,6 +38,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.units.VCUnitDefinition;
+import net.sourceforge.interval.ia_math.RealInterval;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2006 3:03:22 PM)

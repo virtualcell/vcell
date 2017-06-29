@@ -27,8 +27,6 @@ import org.vcell.util.executable.LiveProcess.LiveProcessStatus;
 import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.VCLogger;
-import cbit.util.xml.VCLogger.ErrorType;
-import cbit.util.xml.VCLogger.Priority;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XMLSource;

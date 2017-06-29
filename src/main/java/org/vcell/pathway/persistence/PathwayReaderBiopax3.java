@@ -10,6 +10,9 @@
 
 package org.vcell.pathway.persistence;
 
+import static org.vcell.pathway.PathwayXMLHelper.showIgnored;
+import static org.vcell.pathway.PathwayXMLHelper.showUnexpected;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,8 +100,43 @@ import org.vcell.pathway.TransportWithBiochemicalReaction;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.Xref;
-
-import org.vcell.pathway.persistence.BiopaxProxy.*;
+import org.vcell.pathway.persistence.BiopaxProxy.BioPaxObjectProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.BioSourceProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.CellVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.CellularLocationVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.ChemicalStructureProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.ConversionProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.DnaRegionReferenceProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.EntityFeatureProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.EntityReferenceProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.EntityReferenceTypeVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.EvidenceCodeVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.EvidenceProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.ExperimentalFormProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.ExperimentalFormVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.GeneProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.InteractionProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.InteractionVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.PathwayProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.PathwayStepProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.PhenotypeVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.PhysicalEntityProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.ProvenanceProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.RelationshipTypeVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.RnaRegionReferenceProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.SBEntityProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.SBMeasurableProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.SBStateProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.SBVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.ScoreProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.SequenceLocationProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.SequenceModificationVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.SequenceRegionVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.SequenceSiteProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.StoichiometryProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.TissueVocabularyProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.XrefProxy;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBEntityImpl;
 import org.vcell.pathway.sbpax.SBMeasurable;
@@ -108,7 +146,6 @@ import org.vcell.pathway.sbpax.UnitOfMeasurement;
 import org.vcell.pathway.sbpax.UnitOfMeasurementPool;
 
 import cbit.util.xml.XmlUtil;
-import static org.vcell.pathway.PathwayXMLHelper.*;
 
 
 public class PathwayReaderBiopax3 {

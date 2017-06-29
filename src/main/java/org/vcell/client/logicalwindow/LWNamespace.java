@@ -4,13 +4,13 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Window;
-import java.awt.Dialog.ModalityType;
 import java.util.Objects;
 
 import javax.swing.JMenuBar;

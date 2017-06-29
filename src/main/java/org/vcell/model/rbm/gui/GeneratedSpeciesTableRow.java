@@ -7,14 +7,11 @@ import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
 
 import cbit.vcell.bionetgen.BNGSpecies;
-import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;

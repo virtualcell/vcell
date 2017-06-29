@@ -9,13 +9,13 @@ import java.util.Map;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
-import org.vcell.util.Pair;
 import org.vcell.util.Issue;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.Pair;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.PropertyConstants;
 
 public class MolecularComponent extends RbmElementAbstract implements Matchable, VetoableChangeListener, 

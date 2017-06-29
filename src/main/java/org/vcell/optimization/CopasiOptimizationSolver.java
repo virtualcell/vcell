@@ -10,16 +10,11 @@
 
 package org.vcell.optimization;
 
-import info.aduna.xml.XMLUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
-import org.apache.commons.io.FileUtils;
-import org.jdom.Document;
 import org.jdom.Element;
-import org.vcell.optimization.thrift.OptProblem;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -35,10 +30,8 @@ import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.NativeLib;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.xml.XmlHelper;
 
 
 public class CopasiOptimizationSolver {	

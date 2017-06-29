@@ -13,7 +13,6 @@ package org.vcell.optimization.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;

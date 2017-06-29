@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.jdom.Element;
@@ -17,7 +16,6 @@ import org.vcell.model.rbm.RuleAnalysisReport.DeleteBondOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.DeleteMolecularTypeOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.DeleteParticipantOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.Operation;
-import org.vcell.util.Pair;
 
 public class RuleAnalysis {
 		

@@ -1,17 +1,16 @@
 package org.vcell.pathway.sbo;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.HashMap;
-import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /*
  * This file automatically generates the SBOListEx.java by parsing the SBO ontology file

@@ -10,15 +10,12 @@
 
 package org.vcell.model.rbm.gui;
 
-import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
 
-import org.vcell.pathway.BioPaxObject;
-import org.vcell.relationship.ConversionTableRow;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;

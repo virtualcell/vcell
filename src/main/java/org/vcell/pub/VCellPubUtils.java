@@ -15,9 +15,9 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.util.xml.XmlUtil;
-
 import com.google.gson.Gson;
+
+import cbit.util.xml.XmlUtil;
 
 public class VCellPubUtils {
 	

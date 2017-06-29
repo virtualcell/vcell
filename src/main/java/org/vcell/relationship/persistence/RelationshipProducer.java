@@ -10,14 +10,16 @@
 
 package org.vcell.relationship.persistence;
 
-import java.util.HashSet;
-import org.jdom.Element;
+import static org.vcell.pathway.PathwayXMLHelper.showUnexpected;
 
+import java.util.HashSet;
+
+import org.jdom.Element;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.RelationshipObject;
+
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.xml.XMLTags;
-import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class RelationshipProducer {
 

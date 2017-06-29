@@ -22,9 +22,9 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import cbit.vcell.opt.OptSolverResultSet;
+import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 import cbit.vcell.opt.OptXmlTags;
 import cbit.vcell.opt.OptimizationStatus;
-import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 
 public class OptXmlReader {	
 	public static Element stringToXML(String xmlString){

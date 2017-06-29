@@ -9,26 +9,25 @@
  */
 
 package org.vcell.cellml;
-import ucar.units.RationalNumber;
-import cbit.vcell.units.UnitSystemProvider;
+import java.util.ArrayList;
+import java.util.TreeMap;
+
+import org.jdom.Element;
+import org.jdom.Namespace;
+
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import ucar.units.BaseUnit;
 import ucar.units.DerivedUnitImpl;
 import ucar.units.Factor;
 import ucar.units.OffsetUnit;
+import ucar.units.RationalNumber;
 import ucar.units.ScaledUnit;
 import ucar.units.StandardUnitDB;
 import ucar.units.Unit;
 import ucar.units.UnitException;
 import ucar.units.UnitImpl;
 import ucar.units.UnitName;
-
-import org.jdom.Element;
-import org.jdom.Namespace;
-
-import java.util.ArrayList;
-import java.util.TreeMap;
 
 /**
 This class provides unit translation support for the  VCML translations with SBML and CellML. Its placed here to preserve the 

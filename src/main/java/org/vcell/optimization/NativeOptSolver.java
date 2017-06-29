@@ -11,7 +11,6 @@
 package org.vcell.optimization;
 
 import cbit.vcell.resource.NativeLib;
-import cbit.vcell.resource.ResourceUtil;
 
 /**
  * Insert the type's description here.

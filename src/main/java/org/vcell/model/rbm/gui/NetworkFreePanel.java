@@ -28,7 +28,6 @@ import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
-import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.mapping.SimulationContext;

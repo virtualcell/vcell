@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.vcell.pathway.InteractionParticipant.Type;
-import org.vcell.pathway.persistence.BiopaxProxy.*;
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.relationship.PathwayMapping;
 
 public class InteractionImpl extends EntityImpl implements Interaction {

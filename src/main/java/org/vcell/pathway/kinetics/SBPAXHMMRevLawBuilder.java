@@ -10,8 +10,6 @@
 
 package org.vcell.pathway.kinetics;
 
-import java.beans.PropertyVetoException;
-
 import org.vcell.pathway.sbo.SBOList;
 
 import cbit.vcell.model.Catalyst;

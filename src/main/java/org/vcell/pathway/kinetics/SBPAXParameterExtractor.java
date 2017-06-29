@@ -13,9 +13,9 @@ import org.vcell.pathway.sbo.SBOTerm;
 import org.vcell.pathway.sbpax.SBMeasurable;
 
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 

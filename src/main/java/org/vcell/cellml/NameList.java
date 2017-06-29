@@ -9,7 +9,8 @@
  */
 
 package org.vcell.cellml;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 public class NameList {
   Hashtable<String, String> nameList;

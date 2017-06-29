@@ -18,7 +18,6 @@ import javax.swing.tree.TreeNode;
 import org.sbpax.util.StringUtil;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.sbpax.SBEntity;
-import org.vcell.pathway.sbpax.SBEntityImpl;
 import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.sybil.util.text.NumberText;
 

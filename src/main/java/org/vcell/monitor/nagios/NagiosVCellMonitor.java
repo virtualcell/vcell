@@ -18,15 +18,14 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.jdom.Element;
-import org.vcell.monitor.nagios.NagiosVCellMonitor.NVM_PARAMS;
 import org.vcell.util.BigString;
 import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+import org.vcell.util.document.VCInfoContainer;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.biomodel.BioModel;
@@ -42,7 +41,6 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-import net.schmizz.sshj.SSHClient;
 
 public class NagiosVCellMonitor {
 

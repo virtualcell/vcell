@@ -10,16 +10,16 @@
 
 package org.vcell.relationship.persistence;
 
+import static org.vcell.pathway.PathwayXMLHelper.showUnexpected;
+
 import org.jdom.Attribute;
 import org.jdom.Element;
-
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.RelationshipObject;
+
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
-import cbit.vcell.biomodel.meta.VCID.InvalidVCIDException;
 import cbit.vcell.xml.XMLTags;
-import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class RelationshipReader {
 

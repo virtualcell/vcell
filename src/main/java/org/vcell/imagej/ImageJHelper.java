@@ -27,7 +27,6 @@ import org.vcell.util.ISize;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 
-import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.nrrd.NrrdInfo;

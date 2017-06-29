@@ -19,7 +19,6 @@ import org.vcell.client.logicalwindow.LWHandle;
 import org.vcell.client.logicalwindow.LWMenuItemFactory;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTraits;
-import org.vcell.client.logicalwindow.LWHandle.LWModality;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 
 /**
