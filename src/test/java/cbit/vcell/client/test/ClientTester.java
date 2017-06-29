@@ -114,7 +114,7 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 	new cbit.vcell.resource.PropertyLoader();		
 	UserLoginInfo userLoginInfo = new UserLoginInfo(args[1], new UserLoginInfo.DigestedPassword(args[2]));
 	if (args[0].startsWith("-")) {
-		org.vcell.util.SessionLog log = new org.vcell.util.StdoutSessionLog(userLoginInfo.getUserName());
+		org.vcell.util.SessionLog log = new cbit.vcell.resource.StdoutSessionLog(userLoginInfo.getUserName());
 		if (args[0].equalsIgnoreCase("-jms")) {
 			vcConnFactory = new cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory(userLoginInfo, log);
 		} else if (args[0].equalsIgnoreCase("-local")) {

@@ -17,7 +17,6 @@ import javax.jms.JMSException;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.FileUtils;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.message.MessagePropertyNotFoundException;
@@ -37,6 +36,7 @@ import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;

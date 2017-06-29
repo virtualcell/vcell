@@ -7,9 +7,9 @@ import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 
 
 

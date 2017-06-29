@@ -14,7 +14,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.vcell.util.StdoutSessionLog;
+import cbit.vcell.resource.StdoutSessionLog;
 /**
  * This type was created in VisualAge.
  */

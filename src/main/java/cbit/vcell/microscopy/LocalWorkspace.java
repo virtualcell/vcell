@@ -13,11 +13,11 @@ package cbit.vcell.microscopy;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.simdata.Cachetable;

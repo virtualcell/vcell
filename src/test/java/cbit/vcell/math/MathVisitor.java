@@ -17,7 +17,6 @@ import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -33,6 +32,7 @@ import cbit.vcell.modeldb.BadMathVisitor;
 import cbit.vcell.modeldb.BatchTester;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 
 public class MathVisitor implements BadMathVisitor {
 	final PrintWriter loadErrorWriter;

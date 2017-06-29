@@ -18,7 +18,6 @@ import javax.management.ObjectName;
 
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.rmi.event.DataJobListener;
@@ -46,6 +45,7 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;

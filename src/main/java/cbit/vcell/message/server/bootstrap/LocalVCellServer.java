@@ -27,7 +27,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.CacheStatus;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -37,6 +36,7 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.VCellConnection;

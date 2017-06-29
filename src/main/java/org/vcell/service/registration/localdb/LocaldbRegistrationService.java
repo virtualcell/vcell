@@ -11,7 +11,6 @@ import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
@@ -21,6 +20,7 @@ import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;
 import oracle.ucp.UniversalConnectionPoolException;
 

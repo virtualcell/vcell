@@ -10,7 +10,6 @@ import java.util.ArrayList;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -38,6 +37,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.OutputTimeSpec;

@@ -17,7 +17,6 @@ import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 
@@ -28,6 +27,7 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;

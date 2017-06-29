@@ -7,7 +7,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -17,6 +16,7 @@ import org.vcell.vmicro.workflow.data.LocalWorkspace;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;

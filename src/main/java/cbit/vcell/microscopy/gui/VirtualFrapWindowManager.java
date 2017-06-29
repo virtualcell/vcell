@@ -17,7 +17,6 @@ import java.util.Vector;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 
 import cbit.rmi.event.DataJobEvent;
@@ -31,6 +30,7 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.microscopy.LocalWorkspace;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.DataEvent;
 import cbit.vcell.simdata.DataListener;
 import cbit.vcell.simdata.DataServerImpl;

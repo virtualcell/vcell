@@ -18,9 +18,9 @@ import java.sql.SQLException;
 import javax.swing.JFrame;
 
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 
 import cbit.vcell.modeldb.SQLCreateAllTables;
+import cbit.vcell.resource.StdoutSessionLog;
 /**
  * This type was created in VisualAge.
  */

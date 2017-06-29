@@ -8,13 +8,13 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 
 import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessagingConsumer;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCTopicConsumer;
+import cbit.vcell.resource.StdoutSessionLog;
 
 public class ConsumerContextJms implements Runnable {
 	public static final long CONSUMER_POLLING_INTERVAL_MS = 2000;

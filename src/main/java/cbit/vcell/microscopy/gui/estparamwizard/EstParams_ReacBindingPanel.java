@@ -31,7 +31,6 @@ import javax.swing.border.LineBorder;
 
 import org.vcell.util.ColorUtil;
 import org.vcell.util.Range;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 
@@ -56,6 +55,7 @@ import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;

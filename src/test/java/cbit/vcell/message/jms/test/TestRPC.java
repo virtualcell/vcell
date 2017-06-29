@@ -1,7 +1,6 @@
 package cbit.vcell.message.jms.test;
 
 import org.vcell.service.VCellServiceHelper;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -16,6 +15,7 @@ import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 
 /**
  * Hello world!

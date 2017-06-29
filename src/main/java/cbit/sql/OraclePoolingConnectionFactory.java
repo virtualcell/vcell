@@ -22,11 +22,11 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import oracle.ucp.UniversalConnectionPoolAdapter;
 import oracle.ucp.UniversalConnectionPoolException;
 import oracle.ucp.admin.UniversalConnectionPoolManager;

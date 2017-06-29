@@ -19,7 +19,7 @@ public class StringSessionLog implements org.vcell.util.SessionLog {
  */
 public StringSessionLog(String name) {
 	java.io.PrintStream logPrintStream = new java.io.PrintStream(byteArrayOutputStream);
-	log = new org.vcell.util.StdoutSessionLog(name,logPrintStream);
+	log = new cbit.vcell.resource.StdoutSessionLog(name,logPrintStream);
 }
 /**
  * This method was created in VisualAge.

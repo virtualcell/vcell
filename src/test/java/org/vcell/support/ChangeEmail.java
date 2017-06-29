@@ -19,11 +19,11 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.modeldb.UserDbDriverExtended;
+import cbit.vcell.resource.StdoutSessionLog;
 import net.miginfocom.swing.MigLayout;
 import oracle.jdbc.pool.OracleDataSource;
 

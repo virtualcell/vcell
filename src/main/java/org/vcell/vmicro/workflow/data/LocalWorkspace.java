@@ -14,10 +14,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
 

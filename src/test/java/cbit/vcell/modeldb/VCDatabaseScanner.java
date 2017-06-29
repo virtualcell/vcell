@@ -58,7 +58,7 @@ public class VCDatabaseScanner {
 	 * @throws Exception
 	 */
 public static VCDatabaseScanner createDatabaseScanner() throws Exception{
-	return createDatabaseScanner(new org.vcell.util.StdoutSessionLog("Admin"));
+	return createDatabaseScanner(new cbit.vcell.resource.StdoutSessionLog("Admin"));
 }
 
 /**

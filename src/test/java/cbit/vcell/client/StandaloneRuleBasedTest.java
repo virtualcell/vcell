@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import org.vcell.stochtest.StochtestFileUtils;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
@@ -25,6 +24,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.AnnotatedFunction;

@@ -27,7 +27,6 @@ import javax.media.jai.operator.FileStoreDescriptor;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
-import org.vcell.util.StdoutSessionLog;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -40,6 +39,7 @@ import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.VCSimulationDataIdentifier;

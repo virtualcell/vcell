@@ -4,7 +4,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.logging.Logging;
 
 import cbit.vcell.resource.StdoutSessionLogA;

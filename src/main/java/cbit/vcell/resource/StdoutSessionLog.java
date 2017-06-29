@@ -8,11 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.util;
+package cbit.vcell.resource;
 
 import java.io.PrintStream;
-
-import cbit.vcell.resource.StdoutSessionLogA;
 /**
  * Direct implementation of writing to designed output stream; use object level
  * synchronization for concurrency control

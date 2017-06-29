@@ -17,7 +17,6 @@ import javax.management.ObjectName;
 
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.ConnectionFactory;
@@ -43,6 +42,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 
 /**
  * Insert the type's description here.

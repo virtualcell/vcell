@@ -3,9 +3,8 @@ package cbit.vcell.server.test;
 import java.io.File;
 import java.util.Vector;
 
-import org.vcell.util.StdoutSessionLog;
-
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/01 3:01:11 PM)

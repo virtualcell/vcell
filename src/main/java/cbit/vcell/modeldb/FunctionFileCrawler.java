@@ -15,7 +15,6 @@ import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
@@ -24,6 +23,7 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.FunctionFileGenerator;

@@ -28,7 +28,6 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -58,6 +57,7 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.solver.Simulation;
@@ -757,7 +757,7 @@ public static class MathGenerationResults{
 public MathGenerationResults testMathGeneration(KeyValue simContextKey) throws SQLException, ObjectNotFoundException, DataAccessException, XmlParseException, MappingException, MathException, MatrixException, ExpressionException, ModelException, PropertyVetoException{
 
 	User adminUser = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-    SessionLog userLog = new org.vcell.util.StdoutSessionLog(adminUser.toString());
+    SessionLog userLog = new cbit.vcell.resource.StdoutSessionLog(adminUser.toString());
 
     userLog.print("Testing SimContext with key '" + simContextKey + "'");
     // get biomodel refs
@@ -898,7 +898,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 		User user = users[i];
 		BioModelInfo[] bioModelInfos0 = dbServerImpl.getBioModelInfos(user,false);
 		MathModelInfo[] mathModelInfos0 = dbServerImpl.getMathModelInfos(user,false);
-		SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
+		SessionLog userLog = new cbit.vcell.resource.StdoutSessionLog(user.toString());
 		userLog.print("Testing user '"+user+"'");
 
 		Vector<VCDocumentInfo> userBioAndMathModelInfoV =
@@ -1147,7 +1147,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 	
 
 	User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-	SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
+	SessionLog userLog = new cbit.vcell.resource.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
 		userLog.print("Testing bioModel with key '"+bioModelKeys[i]+"'");
@@ -1387,7 +1387,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
     final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
     User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-    SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
+    SessionLog userLog = new cbit.vcell.resource.StdoutSessionLog(user.toString());
     for (int i = 0; i < simContextKeys.length; i++) {
         userLog.print("Testing SimContext with key '" + simContextKeys[i] + "'");
         // get biomodel refs

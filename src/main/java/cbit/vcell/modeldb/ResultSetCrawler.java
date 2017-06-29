@@ -104,7 +104,7 @@ public class ResultSetCrawler {
 			}
 			
 			// initialize database
-			SessionLog log = new org.vcell.util.StdoutSessionLog("ResultSetCrawler");		
+			SessionLog log = new cbit.vcell.resource.StdoutSessionLog("ResultSetCrawler");		
 			conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 			cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 			DbDriver.setKeyFactory(keyFactory);

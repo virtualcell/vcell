@@ -19,7 +19,6 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -27,6 +26,7 @@ import cbit.sql.MysqlConnectionFactory;
 import cbit.sql.MysqlKeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.vcell.resource.StdoutSessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2003 11:59:47 PM)

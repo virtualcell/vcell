@@ -1,11 +1,12 @@
 package cbit.vcell.server.test;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
+
+import cbit.vcell.resource.StdoutSessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/01 3:24:35 PM)

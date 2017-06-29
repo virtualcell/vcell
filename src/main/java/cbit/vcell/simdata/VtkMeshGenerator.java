@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.vis.io.VtuFileContainer;
@@ -14,6 +13,7 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 

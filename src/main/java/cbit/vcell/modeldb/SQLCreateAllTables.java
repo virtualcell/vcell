@@ -22,7 +22,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.Field;
@@ -32,6 +31,7 @@ import cbit.sql.MysqlKeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.sql.Table;
+import cbit.vcell.resource.StdoutSessionLog;
 /**
  * This type was created in VisualAge.
  */
