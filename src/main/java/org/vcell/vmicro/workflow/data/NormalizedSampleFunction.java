@@ -10,9 +10,9 @@ import org.vcell.util.Origin;
 import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.Image;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
 
 public class NormalizedSampleFunction {
 	private final FloatImage sampleImage;

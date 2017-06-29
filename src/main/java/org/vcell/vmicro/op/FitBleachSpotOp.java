@@ -14,7 +14,6 @@ import org.vcell.util.Origin;
 import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
-import cbit.vcell.VirtualMicroscopy.ROI;
 
 public class FitBleachSpotOp  {
 	

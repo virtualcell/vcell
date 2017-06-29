@@ -6,7 +6,6 @@ import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 
 import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.FloatImage;
-import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.math.RowColumnResultSet;
 

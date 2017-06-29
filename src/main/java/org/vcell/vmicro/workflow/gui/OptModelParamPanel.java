@@ -35,9 +35,9 @@ import javax.swing.event.UndoableEditListener;
 import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptContextSolver;
-import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.vmicro.workflow.task.DisplayProfileLikelihoodPlots;
 import org.vcell.vmicro.workflow.task.RunProfileLikelihoodGeneral;
 import org.vcell.workflow.MemoryRepository;
@@ -46,7 +46,6 @@ import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
 import org.vcell.workflow.WorkflowParameter;
 
-import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.RowColumnResultSet;

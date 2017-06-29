@@ -5,13 +5,6 @@ import java.util.List;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-
 import org.vcell.vis.chombo.ChomboBoundaries;
 import org.vcell.vis.chombo.ChomboBoundaries.BorderCellInfo;
 import org.vcell.vis.chombo.ChomboBoundaries.MeshMetrics;
@@ -26,10 +19,15 @@ import org.vcell.vis.chombo.ChomboMeshData;
 import org.vcell.vis.core.Face;
 import org.vcell.vis.core.Vect3D;
 import org.vcell.vis.io.ChomboFiles.ChomboFileEntry;
-import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
 
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.FeaturePhaseVol;
+import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.object.Attribute;
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
 
 public class ChomboFileReader {
 	//private static final String METRICS_DATASET = "metrics";

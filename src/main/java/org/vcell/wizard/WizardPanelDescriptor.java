@@ -1,16 +1,16 @@
 package org.vcell.wizard;
 
-import java.awt.*;
+import java.awt.Component;
 import java.util.ArrayList;
 
-import javax.swing.*;
+import javax.swing.JPanel;
 
 import org.vcell.util.ClientTaskStatusSupport;
 
 import cbit.vcell.client.task.AsynchClientTask;
 
 /**
- * Copyright © 2008, 2010 Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
+ * Copyright ï¿½ 2008, 2010 Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
 

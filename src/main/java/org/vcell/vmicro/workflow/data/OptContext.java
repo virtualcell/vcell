@@ -2,7 +2,6 @@ package org.vcell.vmicro.workflow.data;
 
 import java.util.ArrayList;
 
-import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.opt.Parameter;
 

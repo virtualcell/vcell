@@ -2,14 +2,12 @@ package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.op.display.DisplayInteractiveModelOp;
-import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
+import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
-
-import cbit.vcell.VirtualMicroscopy.ROI;
 
 public class DisplayInteractiveModel extends Task {
 	

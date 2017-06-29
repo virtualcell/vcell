@@ -5,8 +5,8 @@ import java.awt.event.WindowListener;
 import javax.swing.JFrame;
 
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
+import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.gui.OptModelParamPanel;
 
 import cbit.vcell.parser.ExpressionException;

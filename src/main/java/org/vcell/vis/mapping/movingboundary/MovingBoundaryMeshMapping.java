@@ -1,29 +1,22 @@
 package org.vcell.vis.mapping.movingboundary;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import org.vcell.util.ISize;
-import org.vcell.vis.core.Box3D;
-import org.vcell.vis.vcell.CartesianMesh;
-import org.vcell.vis.vcell.MembraneElement;
-import org.vcell.vis.vismesh.thrift.FiniteVolumeIndex;
 import org.vcell.vis.vismesh.thrift.MovingBoundaryVolumeIndex;
 import org.vcell.vis.vismesh.thrift.Vect3D;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 import org.vcell.vis.vismesh.thrift.VisPoint;
 import org.vcell.vis.vismesh.thrift.VisPolygon;
-import org.vcell.vis.vismesh.thrift.VisVoxel;
 
 import cbit.vcell.solvers.mb.MovingBoundaryReader;
-import cbit.vcell.solvers.mb.Vect3Didx;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.Element;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.Element.Position;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.MeshInfo;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.Plane;
 import cbit.vcell.solvers.mb.PointIndex;
+import cbit.vcell.solvers.mb.Vect3Didx;
 
 public class MovingBoundaryMeshMapping {
 	

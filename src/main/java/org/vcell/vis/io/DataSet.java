@@ -26,18 +26,17 @@ import java.util.zip.ZipEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 //import java.util.zip.ZipFile;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
+import ncsa.hdf.object.Attribute;
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
 
 public class DataSet implements java.io.Serializable
 {

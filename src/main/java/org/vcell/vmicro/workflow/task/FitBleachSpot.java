@@ -11,7 +11,6 @@ import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
-import cbit.vcell.VirtualMicroscopy.ROI;
 
 public class FitBleachSpot extends Task {
 	

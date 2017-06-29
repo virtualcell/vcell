@@ -6,11 +6,6 @@
  */
 package org.vcell.vis.vismesh.thrift;
 
-
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum Face implements org.apache.thrift.TEnum {
   Xm(0),
   Xp(1),

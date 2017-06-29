@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.vcell.vis.core.Vect3D;
+
 import ncsa.hdf.object.Attribute;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
 import ncsa.hdf.object.h5.H5CompoundDS;
 import ncsa.hdf.object.h5.H5ScalarDS;
-
-import org.vcell.vis.core.Vect3D;
 
 public class Hdf5Reader {
 
