@@ -27,8 +27,8 @@ import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
-import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
+import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 

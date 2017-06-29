@@ -25,7 +25,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;

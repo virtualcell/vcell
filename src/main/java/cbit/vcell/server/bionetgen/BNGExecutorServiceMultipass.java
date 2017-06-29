@@ -20,8 +20,8 @@ import java.util.TreeSet;
 
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BngUnitSystem;
-import org.vcell.model.bngl.ParseException;
 import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
+import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;

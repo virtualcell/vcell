@@ -10,11 +10,11 @@
 
 package cbit.vcell.parser;
 
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 /* JJT: 0.2.2 */
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.vcell.parser.ASTFuncNode.FunctionType;
 
 public class ASTOrNode extends SimpleNode {
 

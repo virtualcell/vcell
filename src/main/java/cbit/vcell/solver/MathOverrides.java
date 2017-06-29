@@ -26,7 +26,6 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.DiffEquMathMapping;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFunctionDefinitions;

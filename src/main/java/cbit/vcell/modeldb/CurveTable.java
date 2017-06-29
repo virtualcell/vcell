@@ -14,8 +14,9 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.geometry.*;
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.geometry.ControlPointCurve;
 /**
  * This type was created in VisualAge.
  */

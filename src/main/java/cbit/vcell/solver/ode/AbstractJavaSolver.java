@@ -18,7 +18,6 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.UserStopException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;

@@ -16,9 +16,12 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.model.*;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.Structure;
 /**
  * This type was created in VisualAge.
  */

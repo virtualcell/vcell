@@ -1,7 +1,7 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.solver.SimulationModelInfo;
 
 public class DataInfoProvider{

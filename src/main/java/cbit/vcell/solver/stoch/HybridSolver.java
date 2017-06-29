@@ -20,7 +20,6 @@ import java.util.StringTokenizer;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
-import ucar.ma2.ArrayDouble;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
@@ -40,6 +39,7 @@ import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
 import cbit.vcell.solvers.SimpleCompiledSolver;
+import ucar.ma2.ArrayDouble;
 /**
  * The HybridSolver is used to solve stochastic stiff problem.
  * Two types of solvers are provided in this class, which are fixed time step methods (Gibson_Euler

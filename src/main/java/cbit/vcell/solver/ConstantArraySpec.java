@@ -9,9 +9,9 @@
  */
 
 package cbit.vcell.solver;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.VCML;
+import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (9/23/2005 1:25:30 PM)

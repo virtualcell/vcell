@@ -9,25 +9,23 @@
  */
 
 package cbit.vcell.simdata;
-import java.io.File;
-import java.io.InputStream;
-import java.io.FileInputStream;
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.zip.ZipEntry;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import java.util.zip.ZipEntry;
-
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.HObject;
-
 import org.vcell.util.DataAccessException;
 
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.OutsideVariable;
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.HObject;
 
 
 /**

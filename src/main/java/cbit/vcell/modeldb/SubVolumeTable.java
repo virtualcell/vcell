@@ -10,7 +10,8 @@
 
 package cbit.vcell.modeldb;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.jdom.Element;
 import org.vcell.util.DataAccessException;
@@ -18,13 +19,20 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.geometry.*;
-import cbit.vcell.parser.*;
-import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CSGObject;
+import cbit.vcell.geometry.CompartmentSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.ImageSubVolume;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;
-import cbit.sql.*;
 /**
  * This type was created in VisualAge.
  */

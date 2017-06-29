@@ -26,8 +26,6 @@ import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.ReferenceQueryResult;
 import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.VersionInfo;

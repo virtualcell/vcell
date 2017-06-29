@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.solver;
-import java.io.*;
+import java.io.Serializable;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;

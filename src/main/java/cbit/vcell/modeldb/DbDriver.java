@@ -27,7 +27,6 @@ import java.util.Vector;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;

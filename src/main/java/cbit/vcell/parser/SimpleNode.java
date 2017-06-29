@@ -13,8 +13,8 @@ package cbit.vcell.parser;
 import java.util.Set;
 import java.util.Vector;
 
-import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.parser.Expression.FunctionFilter;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public abstract class SimpleNode implements Node, java.io.Serializable {
   protected Node parent;

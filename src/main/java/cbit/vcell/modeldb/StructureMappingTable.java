@@ -13,11 +13,15 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.Table;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.StructureMapping;
 /**
  * This type was created in VisualAge.
  */

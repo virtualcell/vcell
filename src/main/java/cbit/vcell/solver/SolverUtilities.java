@@ -3,8 +3,6 @@ package cbit.vcell.solver;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 
 import cbit.vcell.math.MathFunctionDefinitions;

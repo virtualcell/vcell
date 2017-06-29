@@ -15,10 +15,11 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
-import cbit.vcell.model.*;
-import cbit.vcell.dictionary.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.vcell.dictionary.db.DBSpeciesTable;
+import cbit.vcell.model.DBSpecies;
+import cbit.vcell.model.Species;
 /**
  * This type was created in VisualAge.
  */

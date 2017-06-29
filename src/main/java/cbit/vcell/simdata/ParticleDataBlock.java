@@ -10,14 +10,20 @@
 
 package cbit.vcell.simdata;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.io.*;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;

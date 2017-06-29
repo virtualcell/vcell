@@ -10,8 +10,13 @@
 
 package cbit.vcell.numericstest;
 
-import cbit.vcell.math.*;
 import java.util.Enumeration;
+
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.

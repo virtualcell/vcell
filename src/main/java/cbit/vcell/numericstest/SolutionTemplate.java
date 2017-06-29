@@ -10,7 +10,7 @@
 
 package cbit.vcell.numericstest;
 
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2003 10:58:02 AM)

@@ -13,7 +13,8 @@ package cbit.vcell.modeldb;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
  */

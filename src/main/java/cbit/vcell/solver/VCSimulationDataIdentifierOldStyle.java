@@ -11,10 +11,9 @@
 package cbit.vcell.solver;
 
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimResampleInfoProvider;
 
 import cbit.vcell.Historical;
-
-import org.vcell.util.document.SimResampleInfoProvider;
 
 
 /**

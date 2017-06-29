@@ -10,11 +10,13 @@
 
 package cbit.vcell.modeldb;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
  */

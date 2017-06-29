@@ -10,11 +10,12 @@
 
 package cbit.vcell.pslid;
 
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.VCellThreadChecker;

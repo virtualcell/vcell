@@ -11,9 +11,9 @@
 package cbit.vcell.simdata;
 import org.vcell.util.Coordinate;
 
+import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.geometry.CurveSelectionInfo;
 /**
  * Insert the type's description here.
  * Creation date: (2/26/2001 3:48:34 PM)

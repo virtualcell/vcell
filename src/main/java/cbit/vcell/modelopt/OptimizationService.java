@@ -12,7 +12,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.resource.OperatingSystemInfo;

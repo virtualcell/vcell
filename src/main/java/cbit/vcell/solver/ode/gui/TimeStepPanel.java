@@ -10,15 +10,11 @@
 
 package cbit.vcell.solver.ode.gui;
 
-import javax.swing.InputVerifier;
-import javax.swing.JComponent;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;

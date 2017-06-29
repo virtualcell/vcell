@@ -24,12 +24,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.solver.SolverTaskDescription;
 
 /**
  * Insert the type's description here.

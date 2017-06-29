@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.server.bionetgen;
-import java.io.StringBufferInputStream;
 import java.util.HashSet;
 
 import org.jdom.Document;

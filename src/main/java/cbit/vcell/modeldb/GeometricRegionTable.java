@@ -10,15 +10,15 @@
 
 package cbit.vcell.modeldb;
 
-import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.units.VCUnitSystem;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
+import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.units.VCUnitSystem;
 /**
  * This type was created in VisualAge.
  */

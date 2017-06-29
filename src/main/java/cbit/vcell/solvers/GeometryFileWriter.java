@@ -9,18 +9,17 @@
  */
 
 package cbit.vcell.solvers;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Writer;
-import cbit.vcell.geometry.RegionImage;
-
 import java.util.Comparator;
 import java.util.Vector;
 import java.util.zip.DeflaterOutputStream;
-import java.io.ByteArrayOutputStream;
 
 import org.vcell.util.ISize;
 
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;

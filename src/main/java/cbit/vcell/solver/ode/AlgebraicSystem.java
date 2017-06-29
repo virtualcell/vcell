@@ -10,8 +10,8 @@
 
 package cbit.vcell.solver.ode;
 
-import Jama.*;
-import cbit.vcell.parser.*;
+import Jama.Matrix;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:56:17 PM)

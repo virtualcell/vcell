@@ -10,6 +10,11 @@
 
 package cbit.vcell.solver.ode;
 
+import java.util.Enumeration;
+import java.util.Vector;
+
+import javax.swing.event.ChangeListener;
+
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -18,9 +23,8 @@ import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.parser.*;
-import java.util.*;
-import javax.swing.event.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /**
  * The Jacobian class represents the jacobian of the nonlinear system C'(t) = f(C,t).
  * For simplicity, only ODE's are considered within a single subDomain.

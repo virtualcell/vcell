@@ -11,8 +11,12 @@
 package cbit.vcell.opt.solvers;
 import org.vcell.optimization.DefaultOptSolverCallbacks;
 
-import cbit.vcell.parser.*;
-import cbit.function.*;
+import cbit.function.DynamicScalarFunction;
+import cbit.function.DynamicVectorFunction;
+import cbit.function.ScalarFunction;
+import cbit.function.VectorFunction;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2002 2:44:49 PM)

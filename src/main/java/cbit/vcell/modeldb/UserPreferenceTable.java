@@ -10,9 +10,6 @@
 
 package cbit.vcell.modeldb;
 
-import cbit.sql.Field;
-import cbit.sql.Table;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
@@ -20,6 +17,9 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Preference;
 import org.vcell.util.TokenMangler;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
 
 /**
  * This type was created in VisualAge.

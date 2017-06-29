@@ -9,11 +9,9 @@
  */
 
 package cbit.vcell.modeldb;
-import cbit.sql.*;
-import cbit.vcell.math.MathDescription;
-import java.sql.SQLException;
-import java.sql.ResultSet;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -23,6 +21,10 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.math.MathDescription;
 /**
  * This type was created in VisualAge.
  */

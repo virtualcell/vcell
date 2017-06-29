@@ -10,7 +10,19 @@
 
 package cbit.vcell.modeldb;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.Field;
@@ -20,11 +32,6 @@ import cbit.sql.MysqlKeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.sql.Table;
-import java.sql.*;
-import javax.swing.*;
-
-import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 /**
  * This type was created in VisualAge.
  */

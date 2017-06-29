@@ -13,13 +13,13 @@ package cbit.vcell.opt.solvers;
 import org.vcell.optimization.OptSolverCallbacks;
 
 import cbit.vcell.opt.OptSolverResultSet;
+import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.

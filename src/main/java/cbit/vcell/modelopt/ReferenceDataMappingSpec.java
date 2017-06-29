@@ -12,7 +12,6 @@ package cbit.vcell.modelopt;
 
 import java.util.List;
 
-import org.vcell.sbml.vcell.SBMLImporter.SBMLIssueSource;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;

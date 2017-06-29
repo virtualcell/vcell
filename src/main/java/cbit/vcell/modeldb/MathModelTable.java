@@ -9,11 +9,9 @@
  */
 
 package cbit.vcell.modeldb;
-import cbit.sql.*;
-
-import java.sql.SQLException;
-import java.sql.ResultSet;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.vcell.util.DataAccessException;
@@ -25,6 +23,8 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.solver.AnnotatedFunction;
 /**

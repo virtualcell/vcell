@@ -10,7 +10,7 @@
 
 package cbit.vcell.opt.solvers;
 
-import cbit.function.*;
+import cbit.function.ScalarFunction;
 /**
  * Insert the type's description here.
  *

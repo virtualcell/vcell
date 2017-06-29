@@ -10,7 +10,7 @@
 
 package cbit.vcell.psf;
 
-import static cbit.vcell.psf.BesselFunctionsIntegerOrder.*;
+import static cbit.vcell.psf.BesselFunctionsIntegerOrder.J1;
 
 public class PointSpreadFunction2D {
 

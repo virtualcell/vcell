@@ -10,8 +10,9 @@
 
 package cbit.vcell.solver.ode;
 
-import cbit.vcell.math.*;
-import cbit.vcell.parser.*;
+import cbit.vcell.math.Variable;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 9:00:31 PM)

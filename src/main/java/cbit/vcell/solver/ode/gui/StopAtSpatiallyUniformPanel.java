@@ -16,8 +16,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 
 import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.solver.SolverTaskDescription;
 
 /**
  * Insert the type's description here.

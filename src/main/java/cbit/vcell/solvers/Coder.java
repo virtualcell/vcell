@@ -10,7 +10,7 @@
 
 package cbit.vcell.solvers;
 
-import java.io.*;
+import java.io.OutputStream;
 
 
 public interface Coder

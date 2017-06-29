@@ -9,9 +9,9 @@
  */
 
 package cbit.vcell.modeldb;
-import cbit.sql.*;
-import cbit.image.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -21,7 +21,14 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
+import cbit.image.GIFImage;
 import cbit.image.GifParsingException;
+import cbit.image.ImageException;
+import cbit.image.VCImage;
+import cbit.image.VCImageCompressed;
+import cbit.image.VCImageInfo;
+import cbit.sql.Field;
+import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
  */

@@ -7,12 +7,6 @@ import java.util.List;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-
 import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
@@ -20,6 +14,11 @@ import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+
+import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
 
 
 public class CartesianMeshMovingBoundary extends CartesianMesh 

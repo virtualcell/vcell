@@ -10,10 +10,6 @@
 
 package cbit.vcell.simdata.gui;
 
-import java.awt.Polygon;
-import java.awt.Shape;
-import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.Vector;
@@ -46,17 +42,15 @@ import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.MembraneDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SimulationData.SolverDataType;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
-import cbit.vcell.simdata.SimulationData.SolverDataType;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.StructureMetricsEntry;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary;
 import cbit.vcell.solvers.MeshDisplayAdapter;
-import cbit.vcell.util.FunctionRangeGenerator;
-import cbit.vcell.util.FunctionRangeGenerator.FunctionStatistics;
 
 /**
  * Insert the type's description here.

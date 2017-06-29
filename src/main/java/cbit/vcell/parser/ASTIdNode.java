@@ -13,8 +13,10 @@ package cbit.vcell.parser;
 /* JJT: 0.2.2 */
 
 import java.util.Set;
-import net.sourceforge.interval.ia_math.RealInterval;
+
 import org.vcell.util.TokenMangler;
+
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTIdNode extends SimpleNode {
 

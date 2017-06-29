@@ -31,7 +31,6 @@ import java.util.Vector;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
-import ucar.ma2.ArrayDouble;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.parser.Expression;
@@ -43,6 +42,7 @@ import cbit.vcell.solver.stoch.NetCDFEvaluator;
 import cbit.vcell.solver.stoch.NetCDFReader;
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.util.ColumnDescription;
+import ucar.ma2.ArrayDouble;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:57:59 PM)

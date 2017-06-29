@@ -10,13 +10,13 @@
 
 package cbit.vcell.solver.ode;
 
-import java.io.*;
+import java.io.File;
 
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.solver.*;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.SolverException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:55 PM)

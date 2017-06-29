@@ -10,13 +10,14 @@
 
 package cbit.vcell.numericstest.gui;
 
-import cbit.vcell.desktop.*;
 import javax.swing.JLabel;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
+
+import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
+import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
 /**
  * Insert the type's description here.
  * Creation date: (5/8/2003 10:01:34 AM)

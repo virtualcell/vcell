@@ -20,15 +20,6 @@ import org.apache.commons.math3.random.RandomDataGenerator;
 import org.vcell.util.Compare;
 import org.vcell.util.PropertyLoader;
 
-import ucar.ma2.ArrayChar;
-import ucar.ma2.ArrayDouble;
-import ucar.ma2.ArrayInt;
-import ucar.ma2.ArrayLong;
-import ucar.ma2.DataType;
-import ucar.ma2.Index;
-import ucar.ma2.InvalidRangeException;
-import ucar.nc2.Dimension;
-import ucar.nc2.NetcdfFileWriteable;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
@@ -48,6 +39,15 @@ import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import ucar.ma2.ArrayChar;
+import ucar.ma2.ArrayDouble;
+import ucar.ma2.ArrayInt;
+import ucar.ma2.ArrayLong;
+import ucar.ma2.DataType;
+import ucar.ma2.Index;
+import ucar.ma2.InvalidRangeException;
+import ucar.nc2.Dimension;
+import ucar.nc2.NetcdfFileWriteable;
 
 /**
  * This class is used to write input file for stochastic hybrid solvers.

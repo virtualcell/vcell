@@ -10,8 +10,9 @@
 
 package cbit.vcell.numericstest.gui;
 
+import cbit.vcell.numericstest.ConstructedSolutionTemplate;
+import cbit.vcell.numericstest.SolutionTemplate;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.numericstest.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

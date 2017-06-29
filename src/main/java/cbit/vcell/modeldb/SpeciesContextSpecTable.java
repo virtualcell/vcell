@@ -13,8 +13,9 @@ package cbit.vcell.modeldb;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
-import cbit.vcell.mapping.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.mapping.SpeciesContextSpec;
 /**
  * This type was created in VisualAge.
  */

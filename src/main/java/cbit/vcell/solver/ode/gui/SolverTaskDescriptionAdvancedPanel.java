@@ -28,8 +28,8 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.vcell.chombo.ChomboMeshValidator;
-import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
+import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.gui.ChomboDeveloperToolsPanel;
 import org.vcell.chombo.gui.ChomboTimeBoundsPanel;
 import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
@@ -47,8 +47,8 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
-import cbit.vcell.solvers.mb.gui.MovingBoundarySolverOptionsPanel;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solvers.mb.gui.MovingBoundarySolverOptionsPanel;
 
 /**
  * Insert the class' description here.

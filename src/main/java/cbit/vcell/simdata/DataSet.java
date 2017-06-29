@@ -20,26 +20,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 //import java.util.zip.ZipEntry;
 import java.util.zip.ZipEntry;
 //import java.util.zip.ZipFile;
 
-
-
-
-
-
-
 import javax.swing.tree.DefaultMutableTreeNode;
-
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -50,6 +37,11 @@ import cbit.vcell.simdata.SimulationData.SolverDataType;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary.MBSDataGroup;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary.MSBDataAttribute;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary.MSBDataAttributeValue;
+import ncsa.hdf.object.Attribute;
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
 
 public class DataSet implements java.io.Serializable
 {

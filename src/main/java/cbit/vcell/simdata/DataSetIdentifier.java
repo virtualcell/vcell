@@ -12,8 +12,8 @@ package cbit.vcell.simdata;
 import org.vcell.util.Compare;
 
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;

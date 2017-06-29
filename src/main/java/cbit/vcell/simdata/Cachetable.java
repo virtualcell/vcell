@@ -10,8 +10,8 @@
 
 package cbit.vcell.simdata;
 
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.vcell.util.CacheException;
 import org.vcell.util.CacheStatus;

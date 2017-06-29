@@ -11,11 +11,9 @@
 package cbit.vcell.modelopt.gui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultListModelCivilized;
 
 import cbit.vcell.modelopt.DataReference;

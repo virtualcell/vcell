@@ -12,7 +12,6 @@ package cbit.vcell.parser;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 /**
  * This type was created in VisualAge.
  */

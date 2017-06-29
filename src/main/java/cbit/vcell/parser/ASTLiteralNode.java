@@ -10,11 +10,11 @@
 
 package cbit.vcell.parser;
 
+import org.vcell.util.TokenMangler;
+
 /* JJT: 0.2.2 */
 
 import net.sourceforge.interval.ia_math.RealInterval;
-
-import org.vcell.util.TokenMangler;
 
 public class ASTLiteralNode extends SimpleNode {
 

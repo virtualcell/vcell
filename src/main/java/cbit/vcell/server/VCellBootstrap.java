@@ -10,13 +10,12 @@
 
 package cbit.vcell.server;
 
-import java.rmi.*;
+import java.rmi.RemoteException;
 
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.UseridIDExistsException;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;

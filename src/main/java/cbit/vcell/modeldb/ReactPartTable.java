@@ -18,7 +18,6 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.FluxReaction.Flux;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;

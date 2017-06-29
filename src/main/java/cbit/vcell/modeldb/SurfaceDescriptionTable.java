@@ -9,15 +9,17 @@
  */
 
 package cbit.vcell.modeldb;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 /**
  * This type was created in VisualAge.
  */

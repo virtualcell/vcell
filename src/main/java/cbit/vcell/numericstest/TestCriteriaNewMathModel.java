@@ -11,8 +11,8 @@
 package cbit.vcell.numericstest;
 import org.vcell.util.document.MathModelInfo;
 
-import cbit.vcell.solver.test.*;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.test.VariableComparisonSummary;
 /**
  * Insert the type's description here.
  * Creation date: (11/11/2004 1:32:38 PM)

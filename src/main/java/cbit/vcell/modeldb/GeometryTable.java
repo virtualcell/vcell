@@ -10,8 +10,10 @@
 
 package cbit.vcell.modeldb;
 
-import java.beans.*;
-import java.sql.*;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -22,8 +24,10 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
-import cbit.sql.*;
-import cbit.vcell.geometry.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
 /**
  * This type was created in VisualAge.
  */

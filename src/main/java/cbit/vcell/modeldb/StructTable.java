@@ -14,8 +14,11 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
-import cbit.vcell.model.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Structure;
 /**
  * This type was created in VisualAge.
  */

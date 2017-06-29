@@ -1,11 +1,11 @@
 package cbit.vcell.server.test;
 
-/*©
+import java.io.ByteArrayOutputStream;
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.io.IOException;
-import java.io.ByteArrayOutputStream;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/01 5:54:05 PM)

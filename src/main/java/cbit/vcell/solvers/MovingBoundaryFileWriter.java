@@ -36,9 +36,9 @@ import cbit.vcell.math.PointVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType.VariableDomain;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.math.VolVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -53,7 +53,6 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
-import cbit.vcell.solvers.mb.MovingBoundarySolverOptions;
 
 /**
  * Exporting simulation data to Moving Boundary XML format

@@ -11,7 +11,8 @@
 package cbit.vcell.solver.ode;
 
 import java.util.Vector;
-import cbit.vcell.math.*;
+
+import cbit.vcell.math.Variable;
 /**
  * Insert the class' description here.
  * This holds the values of:

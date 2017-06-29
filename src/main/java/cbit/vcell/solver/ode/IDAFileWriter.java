@@ -34,7 +34,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 /**
  * Insert the type's description here.

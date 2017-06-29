@@ -6,8 +6,6 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
-import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
-
 public class DataOperation implements Serializable{
 	private static final long serialVersionUID = 6857219802563294204L;
 	

@@ -21,7 +21,6 @@ import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.SimulationJob;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)

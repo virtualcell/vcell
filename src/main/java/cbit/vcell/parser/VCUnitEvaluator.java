@@ -9,13 +9,13 @@
  */
 
 package cbit.vcell.parser;
-import ucar.units.RationalNumber;
+import java.util.ArrayList;
+
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 import cbit.vcell.units.VCUnitSystem;
-
-import java.util.ArrayList;
+import ucar.units.RationalNumber;
 /**
  * This class may not exist in the future, and its functionality may be spread on one or more classes.
  

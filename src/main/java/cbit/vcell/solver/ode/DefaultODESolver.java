@@ -35,7 +35,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;

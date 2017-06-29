@@ -12,6 +12,7 @@ package cbit.vcell.simdata;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.vcell.math.Function;
 import cbit.vcell.solver.AnnotatedFunction;
 
 public interface DataManager {

@@ -12,8 +12,8 @@ package cbit.vcell.modeldb;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 
-import cbit.sql.Table;
 import cbit.sql.Field;
+import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
  */

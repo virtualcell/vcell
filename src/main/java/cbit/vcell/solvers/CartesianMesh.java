@@ -47,7 +47,6 @@ import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.VCML;

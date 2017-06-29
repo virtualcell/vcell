@@ -11,8 +11,8 @@
 package cbit.vcell.publish;
 import java.io.FileOutputStream;
 
-import com.lowagie.text.DocumentException;
 import com.lowagie.text.DocWriter;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.html.HtmlWriter;
 
 /**

@@ -11,7 +11,8 @@
 package cbit.vcell.modeldb;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 /**
  * Insert the type's description here.
  * Creation date: (5/4/2005 6:27:59 AM)

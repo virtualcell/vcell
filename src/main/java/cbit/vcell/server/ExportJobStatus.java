@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.server;
-import java.io.*;
+import java.io.Serializable;
 
 import org.vcell.util.Matchable;
 /**

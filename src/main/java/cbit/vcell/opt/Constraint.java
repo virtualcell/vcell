@@ -9,7 +9,8 @@
  */
 
 package cbit.vcell.opt;
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (3/3/00 12:09:47 AM)

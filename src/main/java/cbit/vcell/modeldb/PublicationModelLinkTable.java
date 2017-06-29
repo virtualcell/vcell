@@ -12,7 +12,6 @@ package cbit.vcell.modeldb;
 
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

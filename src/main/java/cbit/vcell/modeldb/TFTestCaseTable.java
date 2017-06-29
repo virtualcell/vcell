@@ -10,7 +10,8 @@
 
 package cbit.vcell.modeldb;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
  */

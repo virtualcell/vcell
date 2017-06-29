@@ -19,7 +19,6 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;

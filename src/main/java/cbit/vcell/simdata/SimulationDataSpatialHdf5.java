@@ -13,20 +13,12 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-//import java.util.zip.ZipFile;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-import ncsa.hdf.object.h5.H5CompoundDS;
-
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+//import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.vcell.chombo.ChomboBox;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -38,6 +30,13 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mongodb.VCMongoMessage;
+import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.object.Attribute;
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
+import ncsa.hdf.object.h5.H5CompoundDS;
 
 public class SimulationDataSpatialHdf5
 {

@@ -1,6 +1,5 @@
 package cbit.vcell.modeldb;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 import org.vcell.util.document.KeyValue;

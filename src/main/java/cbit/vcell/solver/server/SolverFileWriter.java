@@ -10,8 +10,8 @@
 
 package cbit.vcell.solver.server;
 import java.io.PrintWriter;
-import org.jdom.Element;
 
+import org.jdom.Element;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.VCellQueue;

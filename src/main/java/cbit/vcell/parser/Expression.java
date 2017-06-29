@@ -16,14 +16,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
 public class Expression implements java.io.Serializable, org.vcell.util.Matchable, IssueSource {

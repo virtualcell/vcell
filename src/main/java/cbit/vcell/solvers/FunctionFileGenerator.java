@@ -25,8 +25,8 @@ import org.vcell.util.TokenMangler;
 
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;

@@ -10,12 +10,15 @@
 
 package cbit.vcell.modeldb;
 
-import cbit.sql.*;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
 
 /**
  * This type was created in VisualAge.

@@ -13,10 +13,16 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.parser.Expression;
-import cbit.sql.*;
-import cbit.vcell.mapping.*;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.Table;
+import cbit.vcell.mapping.CurrentDensityClampStimulus;
+import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.TotalCurrentClampStimulus;
+import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */

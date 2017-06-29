@@ -16,7 +16,6 @@ import java.util.Comparator;
 import java.util.Vector;
 
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;

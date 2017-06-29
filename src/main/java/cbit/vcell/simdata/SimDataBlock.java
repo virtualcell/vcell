@@ -10,8 +10,8 @@
 
 package cbit.vcell.simdata;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import cbit.vcell.math.VariableType;
 /**
