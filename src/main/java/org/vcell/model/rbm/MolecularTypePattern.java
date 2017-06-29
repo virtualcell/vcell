@@ -266,28 +266,30 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 			IssueSource owner = issueContext.getContextObject(ownerContextType);
 			RbmModelContainer c = ((Model)m).getRbmModelContainer();
 			if(!c.getMolecularTypeList().contains(mt)) {
-				issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, MolecularType.typeName + " '" + mt.getName() + "' missing from the " + mt.getDisplayType() + " table.", Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, MolecularType.typeName + " '" + mt.getName() + "' missing from the " + mt.getDisplayType() + " table.", Issue.Severity.ERROR));
 			}
 			for(MolecularComponentPattern mcp : getComponentPatternList()) {
 				MolecularComponent mc = mcp.getMolecularComponent();
 				if(!mt.getComponentList().contains(mc)) {
-					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, MolecularComponent.typeName + " '" + mc.toString() + "' missing from the " + mt.getDisplayType() + " definition.", Issue.SEVERITY_ERROR));
+					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, MolecularComponent.typeName + " '" + mc.toString() + "' missing from the " + mt.getDisplayType() + " definition.", Issue.Severity.ERROR));
 				}
 				ComponentStatePattern csp = mcp.getComponentStatePattern();
 				if(csp != null && !csp.isAny()) {
 					ComponentStateDefinition cs = csp.getComponentStateDefinition();
 					if(cs == null) {
-						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the " + ComponentStatePattern.typeName + ".", Issue.SEVERITY_ERROR));
+						String msg = "A " + ComponentStateDefinition.typeName + " of " + MolecularComponentPattern.typeName + " '" + mc.toString() + "' is null.";
+						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 					}
 					if(!mc.getComponentStateDefinitions().contains(cs)) {
-						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the " + mt.getDisplayType() + " definition.", Issue.SEVERITY_ERROR));
+						String msg = "State '" + cs.getDisplayName() + "' missing from the definition of " + mc.getDisplayType() + " '" + mc.getDisplayName() + "'.";
+						issueList.add(new Issue(owner, mcp, issueContext, IssueCategory.Identifiers, msg, msg, Issue.Severity.ERROR));
 					}
 				}
 			}
 			for(MolecularComponent mc : mt.getComponentList()) {
 				MolecularComponentPattern mcp = getMolecularComponentPattern(mc);
 				if(mcp == null) {
-					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, MolecularComponentPattern.typeName + " missing for the " + mc.getDisplayType() + " '" + mc.getDisplayName(), Issue.SEVERITY_ERROR));
+					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, MolecularComponentPattern.typeName + " missing for the " + mc.getDisplayType() + " '" + mc.getDisplayName(), Issue.Severity.ERROR));
 				}
 			}
 		}			

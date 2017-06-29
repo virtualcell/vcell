@@ -111,7 +111,15 @@ public class ReactionRulePropertiesPanel extends JTabbedPaneEnhanced {
 			return;
 		}
 		bioModel = newValue;
-	}	
+	}
+	
+	public void setIssueManager(IssueManager newValue) {
+		this.issueManager = newValue;
+		
+		kpp.setIssueManager(newValue);
+		epp.setIssueManager(newValue);
+	}
+
 	
 //	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {

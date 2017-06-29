@@ -695,6 +695,7 @@ private void initialize() {
 		getReactionRuleParticipantSignaturePropertiesPanel().setIssueManager(issueManager);
 		getMolecularTypePropertiesPanel().setIssueManager(issueManager);
 		getObservablePropertiesPanel().setIssueManager(issueManager);
+		getReactionRulePropertiesPanel().setIssueManager(issueManager);
 		
 		csgObjectPropertiesPanel = new CSGObjectPropertiesPanel();
 		csgObjectPropertiesPanel.setSelectionManager(selectionManager);
