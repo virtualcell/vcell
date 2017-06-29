@@ -2,7 +2,7 @@ package org.vcell.util.executable;
 
 import java.util.concurrent.TimeUnit;
 
-import org.vcell.util.ExecutableException;
+import org.vcell.util.exe.ExecutableException;
 
 public class LiveProcessTest {
 	

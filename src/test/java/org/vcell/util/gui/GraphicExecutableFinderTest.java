@@ -11,7 +11,7 @@ import java.util.prefs.BackingStoreException;
 import javax.swing.JFrame;
 
 import org.junit.Test;
-import org.vcell.util.ExecutableException;
+import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VisitSupport;

@@ -11,9 +11,9 @@ import java.io.PrintWriter;
 
 import org.vcell.sbml.test.VCellSBMLSolver;
 import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.util.Executable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.exe.Executable;
 import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.VCLogger;

@@ -14,11 +14,11 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLStandaloneImporter;
-import org.vcell.util.Executable;
-import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.exe.Executable;
+import org.vcell.util.exe.ExecutableException;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
