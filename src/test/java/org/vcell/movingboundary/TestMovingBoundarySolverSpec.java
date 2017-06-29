@@ -1,11 +1,11 @@
 package org.vcell.movingboundary;
 
+import static junit.framework.Assert.assertTrue;
+
 import org.junit.Test;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.logging.Logging;
-
-import static junit.framework.Assert.assertTrue;
 
 public class TestMovingBoundarySolverSpec {
 	static {

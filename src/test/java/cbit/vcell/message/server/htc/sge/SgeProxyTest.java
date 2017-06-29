@@ -1,17 +1,13 @@
 package cbit.vcell.message.server.htc.sge;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.solvers.ExecutableCommand.Container;
 

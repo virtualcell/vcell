@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.solvers.ExecutableCommand.Container;
 

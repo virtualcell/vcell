@@ -10,8 +10,6 @@
 
 package cbit.vcell.simdata;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 import org.vcell.util.document.KeyValue;
 

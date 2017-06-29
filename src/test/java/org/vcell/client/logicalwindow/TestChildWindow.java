@@ -1,15 +1,11 @@
 package org.vcell.client.logicalwindow;
 
 import java.awt.BorderLayout;
+import java.awt.ComponentOrientation;
 
 import javax.swing.JButton;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-
-import org.vcell.client.logicalwindow.LWButton;
-import org.vcell.client.logicalwindow.LWChildFrame;
-import org.vcell.client.logicalwindow.LWContainerHandle;
-import java.awt.ComponentOrientation;
 
 @SuppressWarnings("serial")
 public class TestChildWindow extends LWChildFrame implements ProofOfConceptContainer {

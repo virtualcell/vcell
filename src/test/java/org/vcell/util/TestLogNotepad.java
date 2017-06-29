@@ -2,11 +2,10 @@ package org.vcell.util;
 
 import java.util.concurrent.CountDownLatch;
 
-import junit.framework.Assert;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.vcell.util.Notepad;
+
+import junit.framework.Assert;
 
 public class TestLogNotepad {
 	CountDownLatch latch;

@@ -1,12 +1,7 @@
 package cbit.vcell.server.test;
 
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.server.*;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Vector;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;

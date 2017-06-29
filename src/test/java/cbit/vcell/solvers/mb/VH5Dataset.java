@@ -11,10 +11,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.VCAssert;
 
 import edu.uchc.connjur.wb.ExecutionTrace;
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.hdf5lib.HDF5Constants;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.Datatype;
 import ncsa.hdf.object.h5.H5CompoundDS;

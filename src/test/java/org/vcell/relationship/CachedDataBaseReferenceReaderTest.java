@@ -8,7 +8,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import org.junit.Test;
-import org.vcell.relationship.CachedDataBaseReferenceReader;
 
 public class CachedDataBaseReferenceReaderTest {
 	

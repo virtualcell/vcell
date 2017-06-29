@@ -14,7 +14,6 @@ import org.vcell.util.document.MathModelInfo;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MembraneSubDomain;

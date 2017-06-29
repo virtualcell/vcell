@@ -1,12 +1,7 @@
 package org.vcell.sbml;
 
 import java.io.File;
-import java.util.Enumeration;
 
-import javax.swing.JFileChooser;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.vcell.sbml.vcell.SBMLStandaloneImporter;
 import org.vcell.util.logging.Logging;
 

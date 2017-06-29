@@ -9,15 +9,10 @@ import java.net.URISyntaxException;
 import java.util.prefs.BackingStoreException;
 
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.plaf.metal.MetalBorders.OptionDialogBorder;
 
 import org.junit.Test;
 import org.vcell.util.ExecutableException;
 
-import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VisitSupport;
 

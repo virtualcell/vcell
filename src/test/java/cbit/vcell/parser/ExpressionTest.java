@@ -1,13 +1,12 @@
 package cbit.vcell.parser;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
-import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
+/*ï¿½
+ * (C) Copyright University of Connecticut Health Center 2001.
+ * All rights reserved.
+ï¿½*/
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ExpressionTest {
 	public static void main(java.lang.String[] args) {

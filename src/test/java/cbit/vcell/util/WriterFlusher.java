@@ -1,10 +1,10 @@
 package cbit.vcell.util;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.io.IOException;
-import java.io.Writer;
 
 /**
  * periodically flush Writers./

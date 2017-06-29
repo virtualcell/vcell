@@ -12,6 +12,8 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 
+import com.google.gson.Gson;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
@@ -36,8 +38,6 @@ import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-
-import com.google.gson.Gson;
 
 
 public class RuleBasedTest {

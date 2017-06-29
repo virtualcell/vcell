@@ -2,7 +2,6 @@ package cbit.vcell.message.jms.test;
 
 import java.util.ArrayList;
 
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.RollbackException;
@@ -13,7 +12,6 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceEmbedded;
-import cbit.vcell.message.server.ServerMessagingDelegate;
 
 /**
  * Hello world!

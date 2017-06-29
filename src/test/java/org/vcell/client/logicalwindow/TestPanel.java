@@ -7,7 +7,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.vcell.client.logicalwindow.LWInteractionContext;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 

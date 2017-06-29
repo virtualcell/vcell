@@ -2,7 +2,6 @@ package cbit.vcell.util;
 
 import java.io.File;
 
-import org.junit.Test;
 import org.vcell.util.Executable2;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.IExecutable;

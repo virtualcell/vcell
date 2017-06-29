@@ -11,7 +11,6 @@ import org.vcell.util.logging.Logging;
 
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.simdata.PortableCommand;
-import cbit.vcell.tools.PortableCommandWrapper;
 
 /**
  * test {@link PortableCommandWrapper}

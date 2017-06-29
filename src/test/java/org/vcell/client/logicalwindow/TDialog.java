@@ -6,9 +6,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
-import org.vcell.client.logicalwindow.LWContainerHandle;
-import org.vcell.client.logicalwindow.LWDialog;
-
 @SuppressWarnings("serial")
 public class TDialog extends LWDialog implements ProofOfConceptHandle{
 	private final LWContainerHandle parent;

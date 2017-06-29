@@ -50,8 +50,6 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SkipCommentLineNumberReader;
 import org.vcell.util.logging.Logging;
 
-import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
-import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
@@ -66,6 +64,8 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import cbit.vcell.util.WriterFlusher;
+import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
+import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 
 public class BiomodelsDB_TestSuite {
 

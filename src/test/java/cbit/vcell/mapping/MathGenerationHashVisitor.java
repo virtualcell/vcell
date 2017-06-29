@@ -5,32 +5,19 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
 import java.util.Formatter;
 
-import net.schmizz.sshj.transport.digest.SHA1;
-
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.BioModelChildSummary.ApplicationInfo;
-import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathUtilities;
-import cbit.vcell.math.MembraneSubDomain;
-import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.SubDomain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 
 public class MathGenerationHashVisitor implements VCDatabaseVisitor {
 

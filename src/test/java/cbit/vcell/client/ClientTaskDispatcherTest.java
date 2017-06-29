@@ -1,17 +1,18 @@
 package cbit.vcell.client;
 
-import cbit.vcell.client.task.AsynchClientTaskFunction;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-
-import java.awt.Component;
-import java.awt.Label;
-import java.util.Hashtable; 
 import static cbit.vcell.client.task.AsynchClientTask.TASKTYPE_NONSWING_BLOCKING;
 import static cbit.vcell.client.task.AsynchClientTask.TASKTYPE_SWING_BLOCKING;
 import static cbit.vcell.client.task.AsynchClientTask.TASKTYPE_SWING_NONBLOCKING;
 
+import java.awt.Component;
+import java.awt.Label;
+import java.util.Hashtable;
+
 import org.junit.Test;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.AsynchClientTaskFunction;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 
 public class ClientTaskDispatcherTest {
 	private Hashtable<String,Object> ht  = new Hashtable<>(); 
