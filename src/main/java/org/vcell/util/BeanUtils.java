@@ -86,7 +86,6 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.vcell.util.document.UserLoginInfo;
 
 import edu.uchc.connjur.wb.ExecutionTrace;
 /**
