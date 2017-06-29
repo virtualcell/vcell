@@ -27,8 +27,6 @@ import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
-import com.lowagie.text.Font;
-
 import cbit.vcell.geometry.ChomboGeometryException;
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.geometry.Geometry;

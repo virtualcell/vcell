@@ -9,13 +9,14 @@
  */
 
 package cbit.vcell.math;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Vector;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 
 public class JumpProcess implements org.vcell.util.Matchable,java.io.Serializable {
 	private String processName=null;

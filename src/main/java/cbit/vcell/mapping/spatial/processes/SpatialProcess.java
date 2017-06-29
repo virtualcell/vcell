@@ -7,8 +7,6 @@ import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 import java.util.List;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
@@ -34,6 +32,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public abstract class SpatialProcess implements Serializable, IssueSource, PropertyChangeListener, Matchable {
 	private static final String PROPERTY_NAME_NAME = "name";

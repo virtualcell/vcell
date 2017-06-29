@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
 import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Discontinuity;

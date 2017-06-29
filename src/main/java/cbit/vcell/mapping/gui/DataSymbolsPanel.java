@@ -74,7 +74,6 @@ import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * This type was created in VisualAge.

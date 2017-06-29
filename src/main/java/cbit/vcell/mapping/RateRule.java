@@ -13,7 +13,6 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class RateRule implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener{

@@ -1,7 +1,5 @@
 package cbit.vcell.math;
 
-import java.beans.PropertyVetoException;
-
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
 

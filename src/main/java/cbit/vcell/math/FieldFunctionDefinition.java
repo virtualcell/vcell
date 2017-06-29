@@ -12,8 +12,8 @@ package cbit.vcell.math;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
 
 public class FieldFunctionDefinition extends SimpleSymbolTableFunctionEntry implements SymbolTableFunctionEntry.Differentiable {
 	

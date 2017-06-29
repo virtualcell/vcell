@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import cbit.util.graph.Edge;
-import cbit.util.graph.Graph;
 import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;

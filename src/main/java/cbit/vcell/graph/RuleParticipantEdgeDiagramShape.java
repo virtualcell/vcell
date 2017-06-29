@@ -21,7 +21,6 @@ import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
-import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRuleParticipant;
 
 public abstract class RuleParticipantEdgeDiagramShape extends EdgeShape {

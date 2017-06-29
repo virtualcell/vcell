@@ -14,14 +14,12 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
 
-import ucar.units.RationalNumber;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -80,6 +78,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import ucar.units.RationalNumber;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object

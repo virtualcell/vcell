@@ -1,10 +1,5 @@
 package cbit.vcell.math;
 
-import java.util.function.Predicate;
-
-import org.vcell.util.BeanUtils;
-
-
 /**
  * boolean getters of {@link MathDescription} that
  * determine which Solver to select

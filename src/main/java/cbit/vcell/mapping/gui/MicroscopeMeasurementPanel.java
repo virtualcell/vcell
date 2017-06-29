@@ -12,7 +12,6 @@ package cbit.vcell.mapping.gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -25,7 +24,6 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -48,7 +46,6 @@ import javax.swing.event.ListSelectionListener;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;

@@ -15,7 +15,6 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 
 /**

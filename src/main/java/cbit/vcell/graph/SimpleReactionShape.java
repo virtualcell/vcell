@@ -18,8 +18,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 
-import javax.swing.Icon;
-
 import cbit.vcell.model.SimpleReaction;
 
 public class SimpleReactionShape extends ReactionStepShape {

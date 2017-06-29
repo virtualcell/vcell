@@ -3,7 +3,6 @@ package cbit.vcell.math;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.vcell.util.CommentStringTokenizer;

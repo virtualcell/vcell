@@ -3,13 +3,12 @@ package cbit.vcell.graph.gui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
-import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
 

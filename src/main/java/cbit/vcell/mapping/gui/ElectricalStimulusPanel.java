@@ -16,10 +16,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -53,11 +50,10 @@ import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model.ReservedSymbol;
-import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.StructureTopology;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 /**

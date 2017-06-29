@@ -10,10 +10,12 @@
 
 package cbit.vcell.mapping.vcell_4_8;
 
-import cbit.vcell.geometry.*;
+import java.util.Vector;
+
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.model.*;
-import java.util.*;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Structure;
 /**
  * This type was created in VisualAge.
  */

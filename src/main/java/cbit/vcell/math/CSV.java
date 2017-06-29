@@ -12,8 +12,6 @@ package cbit.vcell.math;
 
 import java.text.ParseException;
 
-import cbit.vcell.math.ODESolverResultSetColumnDescription;
-
 /**
  * 	the format assumed by this class should:
  *		-have first line for names of each variable

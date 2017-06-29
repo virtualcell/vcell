@@ -15,7 +15,6 @@ import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.mapping.AbstractMathMapping;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;

@@ -9,13 +9,22 @@
  */
 
 package cbit.vcell.mapping;
-import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.vcell.constraints.*;
-import cbit.vcell.model.*;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.parser.Expression;
+import cbit.vcell.constraints.AbstractConstraint;
+import cbit.vcell.constraints.ConstraintContainerImpl;
+import cbit.vcell.constraints.GeneralConstraint;
+import cbit.vcell.constraints.SimpleBounds;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.math.*;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.Variable;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.MassActionKinetics;
+import cbit.vcell.parser.Expression;
+import net.sourceforge.interval.ia_math.RealInterval;
 /**
  * Insert the type's description here.
  * Creation date: (12/29/2004 1:34:26 PM)

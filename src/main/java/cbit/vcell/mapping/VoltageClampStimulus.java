@@ -13,7 +13,8 @@ import java.beans.PropertyVetoException;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.

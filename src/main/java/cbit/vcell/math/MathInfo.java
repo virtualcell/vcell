@@ -10,7 +10,7 @@
 
 package cbit.vcell.math;
 
-import java.io.*;
+import java.io.Serializable;
 
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;

@@ -33,14 +33,12 @@ import org.vcell.util.Pair;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.ColorIconEx;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
-import org.vcell.util.gui.VCellIcons;
 
 import cbit.image.DisplayAdapterService;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.DiffEquMathMapping;
-import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;

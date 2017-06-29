@@ -11,14 +11,11 @@
 package cbit.vcell.mapping.gui;
 
 import java.awt.GridBagConstraints;
-import java.util.Vector;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.Structure;
 /**
  * Insert the type's description here.
  * Creation date: (4/18/2002 9:29:41 AM)

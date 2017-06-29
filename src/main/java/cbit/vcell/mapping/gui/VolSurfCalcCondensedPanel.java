@@ -1,15 +1,14 @@
 package cbit.vcell.mapping.gui;
 
-import javax.swing.JPanel;
-import java.awt.GridBagLayout;
-import javax.swing.JLabel;
 import java.awt.GridBagConstraints;
-import javax.swing.JComboBox;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
-import javax.swing.JTextField;
+
 import javax.swing.JButton;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 public class VolSurfCalcCondensedPanel extends JPanel {
 	private JTextField attrTextField;

@@ -13,10 +13,9 @@ import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Vector;
 
-import jscl.text.ParseException;
-
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import jscl.text.ParseException;
 
 /**
  * Insert the type's description here.

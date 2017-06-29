@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -60,6 +58,7 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, IssueSource {

@@ -2,28 +2,17 @@ package cbit.vcell.mapping.gui;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.NetworkConstraints;
-import org.vcell.model.rbm.RbmUtils;
-import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.common.NetworkConstraintsEntity;
-import org.vcell.model.rbm.common.RbmStoichiometry;
-import org.vcell.pathway.Entity;
-import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
-import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;

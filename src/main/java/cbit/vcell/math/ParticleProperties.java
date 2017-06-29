@@ -12,7 +12,6 @@ package cbit.vcell.math;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Map;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -21,9 +20,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
 public class ParticleProperties implements Serializable, Matchable {

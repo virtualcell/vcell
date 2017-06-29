@@ -13,15 +13,12 @@ package cbit.vcell.matlab;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.TokenMangler;
 
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VolVariable;

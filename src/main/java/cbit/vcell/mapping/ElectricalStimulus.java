@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -26,7 +24,6 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.ParameterContext.GlobalParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
@@ -37,7 +34,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -48,6 +44,7 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
+import net.sourceforge.interval.ia_math.RealInterval;
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 11:14:58 AM)

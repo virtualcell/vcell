@@ -7,9 +7,7 @@ import java.awt.geom.Rectangle2D;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
 
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;

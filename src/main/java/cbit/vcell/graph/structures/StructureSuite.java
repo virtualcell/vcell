@@ -15,6 +15,7 @@ package cbit.vcell.graph.structures;
  */
 
 import java.util.Collection;
+
 import cbit.vcell.model.Structure;
 
 public abstract class StructureSuite {

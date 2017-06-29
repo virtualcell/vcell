@@ -1,13 +1,8 @@
 package cbit.vcell.math;
 
-import java.util.Enumeration;
-import java.util.Vector;
-
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
 public class ComputeCentroidComponentEquation extends MeasureEquation {

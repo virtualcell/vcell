@@ -1,8 +1,6 @@
 package cbit.vcell.mapping.spatial;
 
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.vcell.util.Compare;
@@ -16,7 +14,6 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 
 /**
  * VolumeObjects will be used to specify the velocity of the volume.

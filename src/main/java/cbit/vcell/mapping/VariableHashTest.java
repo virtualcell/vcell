@@ -1,12 +1,12 @@
 package cbit.vcell.mapping;
 
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Variable.Domain;
 /**
  * Insert the type's description here.
  * Creation date: (4/12/2002 4:26:51 PM)

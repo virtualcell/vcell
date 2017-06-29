@@ -12,12 +12,10 @@ import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 
 import javax.swing.Icon;
-import javax.swing.JButton;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.gui.ResizeCanvasShapeIcon.Sign;
 
 public class StructureToolShapeIcon implements Icon {
 

@@ -11,7 +11,6 @@
 package cbit.vcell.mapping.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -26,13 +25,10 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
-import cbit.vcell.client.desktop.biomodel.ObservableTableModel;
-import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
-import cbit.vcell.graph.ShapeModeInterface;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.graph.SmallShapeManager;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.mapping.ModelProcessSpec;

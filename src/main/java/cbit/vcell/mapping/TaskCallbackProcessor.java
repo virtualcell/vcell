@@ -1,15 +1,11 @@
 package cbit.vcell.mapping;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 

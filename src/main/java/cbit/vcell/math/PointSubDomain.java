@@ -10,16 +10,11 @@
 
 package cbit.vcell.math;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.math.ComputeNormalComponentEquation.NormalComponent;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**

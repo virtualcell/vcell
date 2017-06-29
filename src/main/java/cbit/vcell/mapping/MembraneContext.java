@@ -10,7 +10,6 @@
 
 package cbit.vcell.mapping;
 import java.beans.PropertyChangeEvent;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;

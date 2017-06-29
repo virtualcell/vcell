@@ -18,7 +18,6 @@ import javax.swing.JPanel;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.parser.ExpressionException;
 /**

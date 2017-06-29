@@ -3,7 +3,6 @@ package cbit.vcell.math;
 import java.util.Objects;
 
 import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.EqualsUtil;
 import org.vcell.util.Matchable;
 import org.vcell.util.Token;
 import org.vcell.util.VCAssert;

@@ -17,7 +17,6 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -25,7 +24,6 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model.StructureTopology;
-import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -35,7 +33,6 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */

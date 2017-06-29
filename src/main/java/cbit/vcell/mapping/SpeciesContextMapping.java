@@ -10,9 +10,9 @@
 
 package cbit.vcell.mapping;
 
-import cbit.vcell.model.*;
-import cbit.vcell.math.*;
-import cbit.vcell.parser.*;
+import cbit.vcell.math.Variable;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */

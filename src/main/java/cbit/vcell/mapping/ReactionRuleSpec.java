@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.mapping;
-import java.io.Serializable;
 import java.util.List;
 
 import org.vcell.util.Issue;
@@ -17,7 +16,6 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ReactionRule;
 
 public class ReactionRuleSpec implements ModelProcessSpec {

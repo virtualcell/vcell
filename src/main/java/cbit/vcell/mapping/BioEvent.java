@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
@@ -47,6 +45,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
 public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener, IssueSource {

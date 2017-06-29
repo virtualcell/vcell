@@ -9,10 +9,8 @@
  */
 
 package cbit.vcell.mapping;
-import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 

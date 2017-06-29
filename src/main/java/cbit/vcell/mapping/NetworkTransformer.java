@@ -30,7 +30,6 @@ import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;

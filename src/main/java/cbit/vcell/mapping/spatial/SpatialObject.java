@@ -10,20 +10,15 @@ import java.util.List;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.ApplicationQuantity;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.units.VCUnitDefinition;
 
 public abstract class SpatialObject implements Serializable, IssueSource, Matchable {

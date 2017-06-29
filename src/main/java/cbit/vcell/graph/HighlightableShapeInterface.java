@@ -2,7 +2,6 @@ package cbit.vcell.graph;
 
 import java.awt.Graphics;
 
-import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
 
 /*

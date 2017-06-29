@@ -6,17 +6,17 @@ import java.util.List;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
-import org.vcell.util.Issue.IssueCategory;
 
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.spatial.SpatialObject;
-import cbit.vcell.mapping.spatial.SurfaceRegionObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
+import cbit.vcell.mapping.spatial.SurfaceRegionObject;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;

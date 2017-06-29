@@ -26,8 +26,6 @@ import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleMappingType;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.ColumnType;
-import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;

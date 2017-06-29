@@ -11,7 +11,6 @@
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
 
-import cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameterType;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;

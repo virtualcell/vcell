@@ -3,8 +3,9 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 �*/
-import cbit.gui.graph.*;
-import cbit.vcell.mapping.*;
+import cbit.gui.graph.EdgeShape;
+import cbit.gui.graph.GraphModel;
+import cbit.vcell.mapping.StructureMapping;
 /**
  * This type was created in VisualAge.
  */

@@ -17,14 +17,13 @@ import org.vcell.util.CommentStringTokenizer;
 
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.SymbolTableFunctionEntry;
-import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
-import cbit.vcell.units.VCUnitDefinition;
 
 public class MathFunctionDefinitions {
 	public final static String FUNCTION_regionarea_indexed	= "vcRegionArea(StructureName:LITERAL,RegionIndex:NUMERIC)";

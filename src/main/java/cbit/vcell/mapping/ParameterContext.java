@@ -16,8 +16,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -48,6 +46,7 @@ import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 import cbit.vcell.units.VCUnitSystem;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ParameterContext implements Matchable, ScopedSymbolTable, Serializable {
 	
