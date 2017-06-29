@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.util;
+package org.vcell.util.exe;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.TokenMangler;
 
 import cbit.vcell.resource.ResourceUtil;
 
@@ -100,7 +103,7 @@ public Executable(String[] command, long arg_timeoutMS) {
 /**
  * This method was created by a SmartGuide.
  */
-protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.ExecutableException {
+protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.exe.ExecutableException {
 	
 	System.out.println("Executable.executeProcess(" + getCommand() + ") starting...");
 	try {
@@ -131,7 +134,7 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 			active.set(false);
 		}
 		// log what happened and update status
-		if (getStatus().equals(org.vcell.util.ExecutableStatus.STOPPED)) {
+		if (getStatus().equals(org.vcell.util.exe.ExecutableStatus.STOPPED)) {
 			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") STOPPED\n");
 		} else {
 			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") executable returned with returncode = " + getExitValue() + "\n");
@@ -241,7 +244,7 @@ private java.lang.Process getProcess() {
  * Creation date: (10/23/2002 12:23:37 PM)
  * @return cbit.vcell.solvers.ExecutableStatus
  */
-public synchronized org.vcell.util.ExecutableStatus getStatus() {
+public synchronized org.vcell.util.exe.ExecutableStatus getStatus() {
 	return status;
 }
 
@@ -413,18 +416,18 @@ private void setProcess(java.lang.Process newProcess) {
  * Creation date: (10/23/2002 12:23:37 PM)
  * @param newStatus cbit.vcell.solvers.ExecutableStatus
  */
-private synchronized void setStatus(org.vcell.util.ExecutableStatus newStatus) {
+private synchronized void setStatus(org.vcell.util.exe.ExecutableStatus newStatus) {
 	status = newStatus;
 }
 
-public final void start() throws org.vcell.util.ExecutableException {
+public final void start() throws org.vcell.util.exe.ExecutableException {
 	start(new int[] { 0 });
 }
 
 /**
  * This method was created in VisualAge.
  */
-public final void start(int[] expectedReturnCodes) throws org.vcell.util.ExecutableException {
+public final void start(int[] expectedReturnCodes) throws org.vcell.util.exe.ExecutableException {
 
     setStatus(ExecutableStatus.RUNNING);
     try {

@@ -19,11 +19,11 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.exe.ExecutableException;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.message.RollbackException;

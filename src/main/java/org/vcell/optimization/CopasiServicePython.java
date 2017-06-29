@@ -18,10 +18,10 @@ import org.vcell.optimization.thrift.ParameterDescription;
 import org.vcell.optimization.thrift.ReferenceVariable;
 import org.vcell.optimization.thrift.ReferenceVariableType;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
-import org.vcell.util.Executable2;
-import org.vcell.util.ExecutableException;
-import org.vcell.util.IExecutable;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.exe.Executable2;
+import org.vcell.util.exe.ExecutableException;
+import org.vcell.util.exe.IExecutable;
 import org.vcell.vis.vtk.VtkService;
 
 import cbit.util.xml.XmlUtil;

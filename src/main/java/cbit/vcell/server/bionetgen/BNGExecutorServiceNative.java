@@ -19,8 +19,8 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
+import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.resource.ResourceUtil;
@@ -129,7 +129,7 @@ public BNGOutput executeBNG() throws BNGException {
 		executable.start( expectedReturnCodes ); 
 
 		String stdoutString; 
-		if (executable.getStatus() != org.vcell.util.ExecutableStatus.STOPPED) { 
+		if (executable.getStatus() != org.vcell.util.exe.ExecutableStatus.STOPPED) { 
 			stdoutString = executable.getStdoutString();
 		}
 		else {

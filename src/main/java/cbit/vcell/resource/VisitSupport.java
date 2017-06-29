@@ -16,10 +16,10 @@ import java.util.StringTokenizer;
 //import java.util.prefs.BackingStoreException;
 
 import org.apache.log4j.Logger;
-import org.vcell.util.Executable;
-import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.exe.Executable;
+import org.vcell.util.exe.ExecutableException;
 import org.vcell.vis.vtk.VisMeshUtils;
 
 import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;

@@ -1,4 +1,4 @@
-package org.vcell.util;
+package org.vcell.util.exe;
 
 import java.io.File;
 
@@ -17,17 +17,17 @@ public interface IExecutable {
 	/**
 	 * start process, wait for exit before returning
 	 * @param expectedReturnCodes
-	 * @throws org.vcell.util.ExecutableException if fails, or return code not in expectedReturnCodes
+	 * @throws org.vcell.util.exe.ExecutableException if fails, or return code not in expectedReturnCodes
 	 */
 	public void start(int[] expectedReturnCodes)
-			throws org.vcell.util.ExecutableException;
+			throws org.vcell.util.exe.ExecutableException;
 
 	/**
 	 * start process, wait for exit before returning
 	 * calls {@link #start(int[])} with {@link #DEFAULT_RETURN} codes
-	 * @throws org.vcell.util.ExecutableException
+	 * @throws org.vcell.util.exe.ExecutableException
 	 */
-	public void start() throws org.vcell.util.ExecutableException;
+	public void start() throws org.vcell.util.exe.ExecutableException;
 
 	public void stop();
 
@@ -39,7 +39,7 @@ public interface IExecutable {
 
 	public File getWorkingDir();
 
-	public org.vcell.util.ExecutableStatus getStatus();
+	public org.vcell.util.exe.ExecutableStatus getStatus();
 
 	public java.lang.Integer getExitValue();
 

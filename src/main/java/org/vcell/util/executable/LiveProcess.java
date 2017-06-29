@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.log4j.Logger;
-import org.vcell.util.ExecutableException;
+import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.resource.ResourceUtil;
 
@@ -73,17 +73,17 @@ public class LiveProcess<I extends IProcessInput, O extends IProcessOut, E exten
 	/**
 	 * begin process without blocking
 	 * lable with first command
-	 * @throws org.vcell.util.ExecutableException
+	 * @throws org.vcell.util.exe.ExecutableException
 	 */
-	public final void begin() throws org.vcell.util.ExecutableException {
+	public final void begin() throws org.vcell.util.exe.ExecutableException {
 		begin(commands[0]);
 	}
 	/**
 	 * begin process without blocking
 	 * @param label only used to label threads
-	 * @throws org.vcell.util.ExecutableException
+	 * @throws org.vcell.util.exe.ExecutableException
 	 */
-	public final void begin(String label) throws org.vcell.util.ExecutableException {
+	public final void begin(String label) throws org.vcell.util.exe.ExecutableException {
 		try {
 			ProcessBuilder pb = new ProcessBuilder(commands);
 			ResourceUtil.setEnvForOperatingSystem(pb.environment());

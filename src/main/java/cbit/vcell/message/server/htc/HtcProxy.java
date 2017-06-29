@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;

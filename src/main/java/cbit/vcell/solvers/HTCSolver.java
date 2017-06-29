@@ -15,9 +15,9 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.exe.Executable;
 
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SolverException;

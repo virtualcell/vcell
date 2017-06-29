@@ -164,7 +164,7 @@ private void runSolver() {
 		getMathExecutable().start();
 		cleanup();
 		//  getMathExecutable().start() may end prematurely (error or user stop), so check status before firing...
-		if (getMathExecutable().getStatus().equals(org.vcell.util.ExecutableStatus.COMPLETE)) {
+		if (getMathExecutable().getStatus().equals(org.vcell.util.exe.ExecutableStatus.COMPLETE)) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVER_FINISHED));
 			fireSolverFinished();
 		}
@@ -173,7 +173,7 @@ private void runSolver() {
 		cleanup();
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(integratorException.getMessage())));
 		fireSolverAborted(SimulationMessage.solverAborted(integratorException.getMessage()));
-	} catch (org.vcell.util.ExecutableException executableException) {
+	} catch (org.vcell.util.exe.ExecutableException executableException) {
 		getSessionLog().exception(executableException);
 		cleanup();
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not execute code: " + executableException.getMessage())));

@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 import net.schmizz.sshj.SSHClient;

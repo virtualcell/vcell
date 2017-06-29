@@ -11,9 +11,9 @@ import java.util.Objects;
 
 import org.jdom.Document;
 import org.jdom.Element;
-import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.exe.ExecutableException;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.message.server.cmd.CommandService;

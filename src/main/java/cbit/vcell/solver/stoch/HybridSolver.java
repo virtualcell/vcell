@@ -73,7 +73,7 @@ public HybridSolver(SimulationTask simTask, java.io.File directory, SessionLog s
  */
 public void cleanup() 
 {
-	if (getMathExecutable()==null || !getMathExecutable().getStatus().equals(org.vcell.util.ExecutableStatus.COMPLETE)) {
+	if (getMathExecutable()==null || !getMathExecutable().getStatus().equals(org.vcell.util.exe.ExecutableStatus.COMPLETE)) {
 		return;
 	}
 	try

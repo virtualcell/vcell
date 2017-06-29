@@ -1,4 +1,4 @@
-package org.vcell.util;
+package org.vcell.util.exe;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -40,7 +40,7 @@ public class Executable2 implements IExecutable {
 		additionalEnvironmental = null;
 	}
 
-	public final void start(int[] expectedReturnCodes) throws org.vcell.util.ExecutableException {
+	public final void start(int[] expectedReturnCodes) throws org.vcell.util.exe.ExecutableException {
 		out = null;
 		err = null;
 		Process process = null;
@@ -117,7 +117,7 @@ public class Executable2 implements IExecutable {
 		return false;
 	}
 
-	public final void start() throws org.vcell.util.ExecutableException {
+	public final void start() throws org.vcell.util.exe.ExecutableException {
 		start(DEFAULT_RETURN);
 	}
 

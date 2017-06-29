@@ -15,7 +15,7 @@ import java.io.File;
 import cbit.vcell.resource.ResourceUtil;
 
 
-public class MathExecutable extends org.vcell.util.Executable {
+public class MathExecutable extends org.vcell.util.exe.Executable {
 	protected int currentStringPosition = 0;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected java.lang.String fieldApplicationMessage = new String();
@@ -115,7 +115,7 @@ public static void main(java.lang.String[] args) {
 	try {
 		MathExecutable mathExecutable = new MathExecutable(args,ResourceUtil.getVcellHome());
 		mathExecutable.start();
-	}catch (org.vcell.util.ExecutableException e) {
+	}catch (org.vcell.util.exe.ExecutableException e) {
 		System.out.println("\nExecutable Exception thrown, normally handled upstream by other classes...");
 	}
 }

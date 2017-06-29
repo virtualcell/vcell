@@ -21,9 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
