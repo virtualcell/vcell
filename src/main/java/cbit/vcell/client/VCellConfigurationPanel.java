@@ -1,41 +1,29 @@
 package cbit.vcell.client;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileFilter;
 
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
-import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeSelectionModel;
-
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.configuration.BioNetGenConfigurationPanel;
 import cbit.vcell.client.configuration.ComsolConfigurationPanel;
 import cbit.vcell.client.configuration.ConfigurationModelNode;
 import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel;
-import cbit.vcell.client.configuration.GeneralConfigurationPanel;
 import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel.ConfigurationOptionsTreeFolderNode;
+import cbit.vcell.client.configuration.GeneralConfigurationPanel;
 import cbit.vcell.client.configuration.VisItConfigurationPanel;
 
 public class VCellConfigurationPanel extends JPanel {

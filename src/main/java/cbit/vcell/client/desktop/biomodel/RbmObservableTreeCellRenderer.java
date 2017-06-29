@@ -2,7 +2,6 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
@@ -14,8 +13,6 @@ import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern.Bond;
-import org.vcell.util.Displayable;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;

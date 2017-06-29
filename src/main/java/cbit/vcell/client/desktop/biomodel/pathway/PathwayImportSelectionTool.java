@@ -16,6 +16,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 
 import org.vcell.pathway.BioPaxObject;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 

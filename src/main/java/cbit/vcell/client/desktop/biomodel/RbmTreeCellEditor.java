@@ -39,11 +39,10 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.gui.VCellIcons;
 
+import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.desktop.BioModelNode;
 
 public class RbmTreeCellEditor extends DefaultTreeCellEditor {
 

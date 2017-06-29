@@ -10,17 +10,15 @@
 
 package cbit.vcell.bionetgen;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.Matchable;
 import org.vcell.util.Pair;
 
-import cbit.vcell.bionetgen.SpeciesIsomorphismInspector.ComponentVertex;
 import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.

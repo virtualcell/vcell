@@ -9,21 +9,10 @@
  */
 
 package cbit.vcell.client.data;
-import java.awt.AWTEventMulticaster;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.ref.WeakReference;
-import java.util.EventObject;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.stream.Stream;
 
-import javax.swing.SwingUtilities;
-
-import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.RenderDataViewerDoubleWithTooltip;
@@ -32,10 +21,7 @@ import org.vcell.util.gui.SpecialtyTableRenderer;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
-import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.AsynchClientTaskFunction;
-import cbit.vcell.client.task.AsynchClientTaskFunctionTrack;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
@@ -44,7 +30,6 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
-import sun.swing.SwingUtilities2;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:01:46 AM)

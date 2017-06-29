@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import cbit.function.DefaultScalarFunction;
-import cbit.function.DynamicScalarFunction;
 import cbit.vcell.parser.Expression;
 
 // detects if 2 species are isomorphic (identical except for the bond numbering)

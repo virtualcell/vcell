@@ -14,8 +14,6 @@ import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCriteriaNew;
-import cbit.vcell.numericstest.TestCriteriaNewBioModel;
-import cbit.vcell.numericstest.TestCriteriaNewMathModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.solver.Simulation;

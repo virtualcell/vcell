@@ -12,11 +12,9 @@ package cbit.vcell.client.data;
 
 import java.beans.PropertyChangeListener;
 
-import cbit.vcell.client.data.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.simdata.DataListener;
-
 import org.vcell.util.DataAccessException;
+
+import cbit.vcell.simdata.DataListener;
 
 /**
  * Insert the type's description here.

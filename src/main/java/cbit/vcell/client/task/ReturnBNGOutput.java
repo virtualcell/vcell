@@ -11,14 +11,9 @@
 package cbit.vcell.client.task;
 
 import java.awt.Dimension;
-import java.awt.Robot;
-import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
-import javax.swing.SwingUtilities;
-
-import org.vcell.model.rbm.gui.EditConstraintsPanel;
 import org.vcell.model.rbm.gui.NetworkConstraintsPanel;
 import org.vcell.model.rbm.gui.ValidateConstraintsPanel;
 import org.vcell.util.ClientTaskStatusSupport;

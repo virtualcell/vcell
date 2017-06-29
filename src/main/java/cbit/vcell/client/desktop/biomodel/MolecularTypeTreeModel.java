@@ -5,17 +5,16 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.util.Displayable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.Displayable;
 
 import cbit.vcell.desktop.BioModelNode;
 

@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.Timer;
 
 import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.Severity;
+import org.vcell.util.IssueContext;
 import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.client.desktop.VCDocumentDecorator;

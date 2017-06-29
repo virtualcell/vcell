@@ -11,6 +11,7 @@
 package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 
 import java.awt.Color;
+
 import org.vcell.pathway.Dna;
 
 public class BioPaxDnaShape extends BioPaxPhysicalEntityShape {

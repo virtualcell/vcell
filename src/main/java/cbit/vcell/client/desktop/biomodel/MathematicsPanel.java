@@ -30,16 +30,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-
-
-
-
-
 import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.AsynchClientTaskFunctionTrack;
+import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;

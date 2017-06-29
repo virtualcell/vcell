@@ -11,8 +11,8 @@ import javax.swing.border.EmptyBorder;
 
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;

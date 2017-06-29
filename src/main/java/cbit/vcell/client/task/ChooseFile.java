@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client.task;
+import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
+
 import java.awt.Component;
 import java.io.File;
 import java.util.ArrayList;
@@ -21,7 +23,6 @@ import java.util.TreeSet;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.filechooser.FileFilter;
 
@@ -48,7 +49,6 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mathmodel.MathModel;
-import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.

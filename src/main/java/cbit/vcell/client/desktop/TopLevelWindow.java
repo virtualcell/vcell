@@ -11,8 +11,9 @@
 package cbit.vcell.client.desktop;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 
-import cbit.vcell.client.*;
-import cbit.vcell.client.server.*;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.server.ConnectionStatus;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 3:37:07 PM)

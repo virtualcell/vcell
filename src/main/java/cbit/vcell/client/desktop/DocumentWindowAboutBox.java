@@ -11,9 +11,6 @@
 package cbit.vcell.client.desktop;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -26,9 +23,6 @@ import javax.swing.JPanel;
 
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.KeySequenceListener;
-
-import cbit.vcell.resource.ResourceUtil;
 
 @SuppressWarnings("serial")
 public class DocumentWindowAboutBox extends JPanel {

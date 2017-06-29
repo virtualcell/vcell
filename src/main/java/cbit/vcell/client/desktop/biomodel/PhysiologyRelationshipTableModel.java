@@ -34,7 +34,6 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.ModelProcess;
-import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 
 @SuppressWarnings("serial")

@@ -6,8 +6,8 @@ import javax.swing.tree.TreeNode;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.SpeciesPattern;
 
-import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
+import cbit.vcell.model.ReactionRuleParticipant;
 
 public class RbmDefaultTreeModel extends DefaultTreeModel {
 

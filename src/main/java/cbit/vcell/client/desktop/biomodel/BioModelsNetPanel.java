@@ -45,13 +45,13 @@ import org.jdom.Element;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 
-import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
-import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.xml.ExternalDocInfo;
+import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
+import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 
 @SuppressWarnings("serial")
 public class BioModelsNetPanel extends DocumentEditorSubPanel {

@@ -4,22 +4,15 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector;
 import org.jgrapht.graph.SimpleGraph;
-import org.vcell.model.bngl.ASTBondState;
-import org.vcell.model.bngl.ASTMolecularComponentPattern;
-import org.vcell.model.bngl.ASTMolecularTypePattern;
-import org.vcell.model.bngl.ASTSpeciesPattern;
 import org.vcell.model.bngl.BNGLParser;
-import org.vcell.model.bngl.Node;
-import org.vcell.model.bngl.ParseException;
 import org.vcell.util.Pair;
 
 import cbit.vcell.parser.Expression;

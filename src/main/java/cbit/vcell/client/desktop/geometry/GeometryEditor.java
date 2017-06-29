@@ -10,7 +10,9 @@
 
 package cbit.vcell.client.desktop.geometry;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
 /**
  * Insert the type's description here.
  * Creation date: (5/11/2004 4:50:11 PM)

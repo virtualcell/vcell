@@ -35,7 +35,6 @@ import org.vcell.pathway.Complex;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PathwaySelectionExpander;
 import org.vcell.pathway.PhysicalEntity;
-import org.vcell.relationship.ConversionTableRow;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.sorttable.JSortTable;

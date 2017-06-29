@@ -21,24 +21,15 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 
-import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionParticipant.Type;
 
 import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.Shape;
-import cbit.gui.graph.visualstate.EdgeVisualState;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.DefaultEdgeVisualState;
-import cbit.vcell.graph.CatalystShape;
-import cbit.vcell.graph.ProductShape;
-import cbit.vcell.graph.ReactantShape;
-import cbit.vcell.graph.ReactionParticipantShape;
-import cbit.vcell.graph.ReactionStepShape;
-import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
 
 public class BioPaxInteractionParticipantShape extends EdgeShape {
 

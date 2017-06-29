@@ -10,9 +10,10 @@
 
 package cbit.vcell.client.task;
 
+import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
+
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.Flushable;
@@ -20,10 +21,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Writer;
-import java.nio.channels.FileChannel;
 import java.util.Hashtable;
 
-import org.openrdf.rio.rdfxml.util.RDFXMLPrettyWriter;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.exporter.ExtensionFilter;
@@ -46,7 +45,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
-import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
 
 /**
  * Insert the type's description here.

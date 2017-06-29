@@ -9,12 +9,12 @@
  */
 
 package cbit.vcell.client;
-import javax.swing.*;
+import java.util.Collection;
+
+import javax.swing.JFrame;
 
 import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.client.server.*;
-
-import java.util.*;
+import cbit.vcell.client.server.ConnectionStatus;
 public interface MDIManager {
 /**
  * Insert the method's description here.

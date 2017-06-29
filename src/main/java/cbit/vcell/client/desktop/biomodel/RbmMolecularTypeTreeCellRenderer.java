@@ -1,39 +1,21 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 
 import javax.swing.Icon;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
-import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.gui.VCellIcons;
 
-import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
-import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
-import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
-import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
-import cbit.vcell.client.desktop.biomodel.RbmTreeCellEditor.MolecularComponentPatternCellEditor;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.MolecularTypeSmallShape;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
-import cbit.vcell.model.common.VCellErrorMessages;
-import cbit.vcell.model.SpeciesContext;
 @SuppressWarnings("serial")
 public class RbmMolecularTypeTreeCellRenderer extends RbmTreeCellRenderer {
 	

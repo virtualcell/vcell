@@ -5,19 +5,16 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
-import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -25,7 +22,6 @@ import org.vcell.util.gui.GuiUtils;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;

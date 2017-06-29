@@ -21,7 +21,6 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
-import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 

@@ -52,6 +52,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DialogUtils;
 
+import com.lowagie.text.Font;
+
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.constants.GuiConstants;
@@ -63,8 +65,6 @@ import cbit.vcell.simdata.SimulationDataSpatialHdf5;
 import cbit.vcell.simdata.SimulationDataSpatialHdf5.SimDataSet;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-
-import com.lowagie.text.Font;
 
 public class ChomboSimpleDataViewer extends JFrame {
 	

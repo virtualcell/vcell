@@ -38,7 +38,6 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -69,16 +68,16 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 
 @SuppressWarnings("serial")
 public class OutputFunctionsPanel extends DocumentEditorSubPanel {

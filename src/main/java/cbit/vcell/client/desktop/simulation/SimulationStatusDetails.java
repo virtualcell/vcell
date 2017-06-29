@@ -9,11 +9,11 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import javax.swing.JProgressBar;
+
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
-
-import javax.swing.JProgressBar;
 
 /**
  * Insert the type's description here.

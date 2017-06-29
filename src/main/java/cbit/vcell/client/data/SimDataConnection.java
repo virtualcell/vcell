@@ -2,16 +2,15 @@ package cbit.vcell.client.data;
 import java.io.File;
 import java.util.List;
 
+import org.vcell.util.document.KeyValue;
+
+import cbit.vcell.simdata.SimulationData;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.FileAttributes;
 import net.schmizz.sshj.sftp.RemoteResourceFilter;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
-
-import org.vcell.util.document.KeyValue;
-
-import cbit.vcell.simdata.SimulationData;
 
 
 public class SimDataConnection {

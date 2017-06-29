@@ -23,12 +23,12 @@ import javax.swing.JLabel;
 
 import org.vcell.util.gui.DialogUtils;
 
-import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
-import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.xml.ExternalDocInfo;
+import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
+import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 
 @SuppressWarnings("serial")
 public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {

@@ -7,11 +7,11 @@ import javax.swing.filechooser.FileFilter;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
+import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.client.FieldDataWindowManager.DataSymbolCallBack;

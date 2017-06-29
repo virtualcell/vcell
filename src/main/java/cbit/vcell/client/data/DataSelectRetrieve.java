@@ -13,7 +13,6 @@ package cbit.vcell.client.data;
 import java.awt.event.ActionEvent;
 import java.util.Hashtable;
 
-
 import org.vcell.util.Range;
 
 import cbit.vcell.client.PopupGenerator;

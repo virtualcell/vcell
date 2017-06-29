@@ -9,22 +9,22 @@
  */
 
 package cbit.vcell.bionetgen;
-import cbit.vcell.model.Model;
-import cbit.vcell.parser.Expression;
-
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.Vector;
 import java.util.StringTokenizer;
-import java.io.*;
+import java.util.Vector;
 
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.Pair;
 
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.

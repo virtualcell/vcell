@@ -19,10 +19,9 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
-import org.vcell.util.Displayable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
@@ -30,11 +29,10 @@ import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.RbmObservable.ObservableType;
-import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 

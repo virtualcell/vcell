@@ -13,6 +13,7 @@ package cbit.vcell.client.desktop.biomodel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+
 import javax.swing.JPanel;
 import javax.swing.JTable;
 

@@ -10,14 +10,14 @@
 
 package cbit.vcell.client.desktop;
 
+import java.awt.BorderLayout;
+
+import javax.swing.JMenuBar;
+
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTopFrame;
 
 import cbit.vcell.client.ChildWindowManager;
-
-import javax.swing.JMenuBar;
-
-import java.awt.BorderLayout;
 
 /**
  * Insert the type's description here.

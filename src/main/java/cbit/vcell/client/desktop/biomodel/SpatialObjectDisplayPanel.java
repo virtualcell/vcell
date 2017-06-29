@@ -15,7 +15,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JLabel;
 

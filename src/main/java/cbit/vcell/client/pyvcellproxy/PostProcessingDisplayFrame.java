@@ -1,9 +1,9 @@
 package cbit.vcell.client.pyvcellproxy;
 
-import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
+import cbit.vcell.simdata.PDEDataContext;
 
 public class PostProcessingDisplayFrame {
 

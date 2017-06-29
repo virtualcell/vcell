@@ -27,7 +27,6 @@ import java.util.WeakHashMap;
 
 import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
-import swingthreads.SwingWorker;
 import javax.swing.Timer;
 
 import org.apache.commons.lang3.ClassUtils;
@@ -47,6 +46,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask.KeyInfo;
 import cbit.vcell.simdata.PDEDataContext;
+import swingthreads.SwingWorker;
 /**
  * Insert the type's description here.
  * Creation date: (5/28/2004 2:44:22 AM)

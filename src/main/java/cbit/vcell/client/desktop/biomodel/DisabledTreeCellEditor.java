@@ -7,13 +7,12 @@ import java.awt.event.FocusListener;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeCellRenderer;
 
 public class DisabledTreeCellEditor extends DefaultTreeCellEditor {
     public DisabledTreeCellEditor(JTree tree, RbmTreeCellRenderer renderer) {
                    super(tree, (DefaultTreeCellRenderer)renderer);
 //Note: http://stackoverflow.com/questions/5031101/why-i-lose-the-focus-for-a-short-time-from-jtree-after-editing-a-node?rq=1 
-//André mentions "The tree adds a DefaultCellEditor to the JTree hierarchy when editing starts. This textfield gains the focus."                    
+//Andrï¿½ mentions "The tree adds a DefaultCellEditor to the JTree hierarchy when editing starts. This textfield gains the focus."                    
 //it's not as simple as just this.addFocusListener()
 
 //2 variables: editingComponent and editingContainer, are inherited from DefaultTreeCellEditor

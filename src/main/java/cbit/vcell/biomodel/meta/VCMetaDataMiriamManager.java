@@ -38,9 +38,9 @@ import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier.DateQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef;
+import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.miriam.MIRIAMizer;
 import org.vcell.sybil.models.miriam.RefGroup;
-import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;

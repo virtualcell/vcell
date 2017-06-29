@@ -44,13 +44,12 @@ import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.StructureTopology;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
