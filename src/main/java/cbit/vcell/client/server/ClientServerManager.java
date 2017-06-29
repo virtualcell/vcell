@@ -14,7 +14,6 @@ import java.rmi.RemoteException;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.AuthenticationException;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.VCellThreadChecker;
@@ -29,6 +28,7 @@ import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.model.common.VCellErrorMessages;
+import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.ConnectionException;
@@ -427,14 +427,14 @@ private VCellConnection connectToServer(InteractiveContext requester) {
 	} catch (ConnectionException cexc) {
 		String msg = badConnectMessage(badConnStr) + "\n" + cexc.getMessage();
 		cexc.printStackTrace(System.out);
-		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
+		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
 			requester.showConnectWarning(msg);
 		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		String msg = badConnectMessage(badConnStr) + "\nException:\n" + exc.getMessage();
-		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
+		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		requester.showErrorDialog(msg);
 	}
 

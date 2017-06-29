@@ -51,7 +51,7 @@ public class LibraryLoaderThread extends Thread {
 				sb.append(BeanUtils.getMessageRecursive(e));
 				sb.append(newline);
 				if (isGui){
-					BeanUtils.sendErrorReport(e, sb.toString());
+					ErrorUtils.sendErrorReport(e, sb.toString());
 				
 				}
 			} 

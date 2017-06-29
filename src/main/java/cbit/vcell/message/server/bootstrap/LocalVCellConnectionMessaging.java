@@ -14,7 +14,6 @@ import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -29,6 +28,7 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.PerformanceMonitoringFacility;
@@ -263,14 +263,14 @@ public boolean isTimeout() throws java.rmi.RemoteException {
 @Override
 public void sendErrorReport(Throwable exception) throws RemoteException {
 	VCMongoMessage.sendClientException(exception, getUserLoginInfo());
-	BeanUtils.sendErrorReport(exception, null);
+	ErrorUtils.sendErrorReport(exception, null);
 }
 
 @Override
 public void sendErrorReport(Throwable exception, ExtraContext extra)
 		throws RemoteException {
 	VCMongoMessage.sendClientException(exception, getUserLoginInfo());
-	BeanUtils.sendErrorReport(exception,(extra == null?null:extra.toString()));
+	ErrorUtils.sendErrorReport(exception,(extra == null?null:extra.toString()));
 	
 }
 

@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +41,8 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
 
 /**
  * General Xml utility methods.
@@ -386,5 +389,12 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 		assert(name != null);
 		assert(clzz != null);
 		return filterList(e.getChildren(name),clzz);
+	}
+
+	public static org.jdom.Document getJDOMDocument(URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
+		//parse content
+		final String contentString = BeanUtils.downloadBytes(url, clientTaskStatusSupport);
+		org.jdom.Document jdomDocument = stringToXML(contentString, null);
+		return jdomDocument;
 	}
 }

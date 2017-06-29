@@ -31,7 +31,6 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.common.NetworkConstraintsEntity;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -66,6 +65,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -111,7 +111,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 									URI uri = new URI(url);
 									Desktop.getDesktop().browse(uri);
 								} catch (URISyntaxException | IOException e1) {
-									BeanUtils.sendRemoteLogMessage(null, "Can't open IssuePanel URI "  + url + ' ' +e1.getMessage());
+									ErrorUtils.sendRemoteLogMessage(null, "Can't open IssuePanel URI "  + url + ' ' +e1.getMessage());
 								}
 							}
 						}

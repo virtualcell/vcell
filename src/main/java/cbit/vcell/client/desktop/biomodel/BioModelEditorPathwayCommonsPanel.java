@@ -59,6 +59,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import cbit.gui.TextFieldAutoCompletion;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
@@ -339,7 +340,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				System.out.println(url.toString());				
 				String ERROR_CODE_TAG = "error_code";
 //				String ERROR_MSG_TAG = "error_msg";
-				org.jdom.Document jdomDocument = BeanUtils.getJDOMDocument(url, getClientTaskStatusSupport());
+				org.jdom.Document jdomDocument = XmlUtil.getJDOMDocument(url, getClientTaskStatusSupport());
 				org.jdom.Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){

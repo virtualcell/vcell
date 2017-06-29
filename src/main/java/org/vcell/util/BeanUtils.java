@@ -45,7 +45,6 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -88,12 +87,7 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCellSoftwareVersion;
 
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.util.AmplistorUtils;
 import edu.uchc.connjur.wb.ExecutionTrace;
 /**
  * Insert the type's description here.
@@ -103,17 +97,6 @@ import edu.uchc.connjur.wb.ExecutionTrace;
 public final class BeanUtils {
 	
 	public static final String vcDateFormat = "dd-MMM-yyyy HH:mm:ss";
-
-	private static boolean bDebugMode = false;
-	private static UserLoginInfo loginInfo = null;
-	public static void setDebug(boolean isDebug) {
-		bDebugMode = isDebug;
-	}
-
-	public static void setLoginInfo(UserLoginInfo loginInfo) {
-		BeanUtils.loginInfo = loginInfo;
-	}
-
 
 	/**
 	 * newline used in email of Content-Type: text/plain
@@ -904,53 +887,6 @@ public final class BeanUtils {
 		Transport.send(msg);
 	}
 
-	public static void sendErrorReport(Throwable exception) throws RuntimeException {
-		sendErrorReport(exception,null);
-	}
-	/**
-	 * send error report
-	 * @param exception
-	 * @param supplement extra information to add, may be null
-	 * @throws RuntimeException
-	 */
-	public static void sendErrorReport(Throwable exception, String supplement) throws RuntimeException {
-		if (exception == null) {
-			throw new RuntimeException("Send Error Report, exception is null");
-		}
-		String smtpHost = PropertyLoader.getProperty(PropertyLoader.vcellSMTPHostName, null);
-		if (smtpHost == null) {
-			return;
-		}
-		String smtpPort = PropertyLoader.getProperty(PropertyLoader.vcellSMTPPort, null);
-		if (smtpPort == null) {
-			return;
-		}
-		String from = "VCell";
-		String to = PropertyLoader.getProperty(PropertyLoader.vcellSMTPEmailAddress, null);
-		if (to == null) {
-			return;
-		}
-		String subject = "VCell Error Report from " + PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-		String content = BeanUtils.getStackTrace(exception)+"\n";
-		String platform = "Running under Java major version: ONE point "+ ResourceUtil.getJavaVersion().toString()+".  Specifically: Java "+(System.getProperty("java.version"))+
-			", published by "+(System.getProperty("java.vendor"))+", on the "+ (System.getProperty("os.arch"))+" architecture running version "+(System.getProperty("os.version"))+
-			" of the "+(System.getProperty("os.name"))+" operating system";
-		content = content + platform;
-		if (supplement != null) {
-			content += PLAINTEXT_EMAIL_NEWLINE + supplement;
-		}
-
-		try {
-			BeanUtils.sendSMTP(smtpHost, Integer.parseInt(smtpPort), from, to, subject, content);
-		} catch (AddressException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
-		} catch (MessagingException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
-		}
-	}
-
 	public static final KeyStroke CLOSE_WINDOW_KEY_STROKE;
 	static { //allow initialization in headless environment
 		KeyStroke ks;
@@ -1203,13 +1139,6 @@ public final class BeanUtils {
 		}
 	}
 
-	public static org.jdom.Document getJDOMDocument(URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
-		//parse content
-		final String contentString = downloadBytes(url, clientTaskStatusSupport);
-		org.jdom.Document jdomDocument = XmlUtil.stringToXML(contentString, null);
-		return jdomDocument;
-	}
-
 	public static final String SQL_ESCAPE_CHARACTER = "/";
 	public static String convertToSQLSearchString(String searchString){
 		if(searchString == null || searchString.length() == 0){return searchString;}
@@ -1234,35 +1163,6 @@ public final class BeanUtils {
 		//A wildcard character is treated as a literal if preceded by the character designated as the escape character.
 		//Default ESCAPE character for VCell = '/' defined in DictionaryDbDriver.getDatabaseSpecies
 		return convertedLikeString;
-	}
-
-	/**
-	 * send message to Virtual Cell server, if not in debug mode
-	 * @param userLoginInfo; if null, user previously set info if available
-	 * @param message
-	 */
-	public static void sendRemoteLogMessage(UserLoginInfo argUserLoginInfo,final String message){
-		final UserLoginInfo userLoginInfo = argUserLoginInfo != null ? argUserLoginInfo : BeanUtils.loginInfo;
-		if (!bDebugMode && userLoginInfo != null) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					try{
-						final String formattedMessage = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())+"\n"+
-							"vers='"+VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString()+"' java='"+userLoginInfo.getJava_version()+"' os='"+userLoginInfo.getOs_name()+"' osvers='"+userLoginInfo.getOs_version()+"' arch='"+userLoginInfo.getOs_arch()+"'\n"+
-							message;
-						AmplistorUtils.uploadString(AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+userLoginInfo.getUserName()+"_"+System.currentTimeMillis(), null, formattedMessage);
-					}catch(Exception e){
-						e.printStackTrace();
-						System.err.println("Failed to upload message to Amplistor "+AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+" : "+message);
-						//ignore
-					}
-				}
-			}).start();
-		}
-		else {
-			System.err.println("Remote log message: " + message);
-		}
 	}
 
 	/**

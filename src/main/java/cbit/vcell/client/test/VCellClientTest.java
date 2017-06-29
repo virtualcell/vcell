@@ -70,6 +70,7 @@ import cbit.vcell.desktop.VCellBasicCellRenderer;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.NetworkProxyUtils;
 import cbit.vcell.resource.OperatingSystemInfo;
@@ -225,7 +226,7 @@ public static void main(java.lang.String[] args) {
 		ConsoleCapture.getInstance().captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
 	}
 	Logging.init();
-	BeanUtils.setDebug(IS_DEBUG);
+	ErrorUtils.setDebug(IS_DEBUG);
 	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
 		List<String> newArgs = new ArrayList<String>();
 		newArgs.addAll(Arrays.asList(args));
@@ -352,7 +353,7 @@ public static void main(java.lang.String[] args) {
 
 
 	} catch (Throwable exception) {
-		BeanUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(),csInfo.toString()+"\nvcell startup failed\n\n" + exception.getMessage());
+		ErrorUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(),csInfo.toString()+"\nvcell startup failed\n\n" + exception.getMessage());
 		JOptionPane.showMessageDialog(null, exception.getMessage(), "Fatal Error",JOptionPane.OK_OPTION);
 		System.err.println("Exception occurred in main() of VCellApplication");
 		exception.printStackTrace(System.out);

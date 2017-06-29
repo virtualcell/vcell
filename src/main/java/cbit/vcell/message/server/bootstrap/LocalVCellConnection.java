@@ -13,7 +13,6 @@ import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -32,6 +31,7 @@ import cbit.sql.KeyFactory;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.LocalUserMetaDbServer;
+import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.PerformanceMonitoringFacility;
 import cbit.vcell.server.SimulationController;
@@ -204,12 +204,12 @@ public void dataJobMessage(DataJobEvent event) {
 @Override
 public void sendErrorReport(Throwable exception, ExtraContext extra)
 		throws RemoteException {
-	BeanUtils.sendErrorReport(exception,extra !=null ? extra.toString():null);
+	ErrorUtils.sendErrorReport(exception,extra !=null ? extra.toString():null);
 }
 
 
 public void sendErrorReport(Throwable exception) {
-	BeanUtils.sendErrorReport(exception);
+	ErrorUtils.sendErrorReport(exception);
 }
 
 public MessageEvent[] getMessageEvents() {

@@ -45,11 +45,11 @@ import org.vcell.pathway.sbo.SBOListEx;
 import org.vcell.pathway.sbo.SBOTerm;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBVocabulary;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayStringObject;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -370,7 +370,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 				final URL url = new URL("http://sabiork.h-its.org/sabioRestWebServices/searchKineticLaws/biopax?q=" + command);
 				System.out.println(url.toString());				
 				String ERROR_CODE_TAG = "error_code";
-				Document jdomDocument = BeanUtils.getJDOMDocument(url, getClientTaskStatusSupport());
+				Document jdomDocument = XmlUtil.getJDOMDocument(url, getClientTaskStatusSupport());
 				Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){
@@ -414,7 +414,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 //				final URL url = new URL("http://sabiork.h-its.org/sabioRestWebServices/searchKineticLaws/biopax?q=EntryID:33107");
 				System.out.println(url.toString());
 				String ERROR_CODE_TAG = "error_code";
-				Document jdomDocument = BeanUtils.getJDOMDocument(url, getClientTaskStatusSupport());
+				Document jdomDocument = XmlUtil.getJDOMDocument(url, getClientTaskStatusSupport());
 				Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){

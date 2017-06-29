@@ -33,7 +33,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
@@ -53,6 +52,7 @@ import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.resource.ErrorUtils;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
@@ -244,7 +244,7 @@ protected void handleException(java.lang.Throwable exception) {
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 	exception.printStackTrace(System.out);
-	BeanUtils.sendErrorReport(exception);
+	ErrorUtils.sendErrorReport(exception);
 }
 
 protected abstract JPanel getBottomPanel();

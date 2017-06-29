@@ -17,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
@@ -36,6 +35,7 @@ import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.ErrorUtils;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:24:03 PM)
@@ -302,7 +302,7 @@ public static void login(final RequestManager requestManager, final ClientServer
 						VCellClient.login(requestManager,clientServerInfo, currWindowManager);
 					}
 					else {
-						BeanUtils.setLoginInfo(clientServerInfo.getUserLoginInfo());
+						ErrorUtils.setLoginInfo(clientServerInfo.getUserLoginInfo());
 					}
 				}
 			};
