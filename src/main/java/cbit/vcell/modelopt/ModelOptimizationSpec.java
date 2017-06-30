@@ -515,6 +515,15 @@ public void removeUncoupledParameters() {
  * @return cbit.vcell.modelopt.ParameterMappingSpec
  * @param parameter cbit.vcell.model.Parameter
  */
+public ParameterMappingSpec getParameterMappingSpec(String parameterName) {
+	for (int i = 0;fieldParameterMappingSpecs!=null && i < fieldParameterMappingSpecs.length; i++){
+		if (fieldParameterMappingSpecs[i].getModelParameter().getName().equals(parameterName)){
+			return fieldParameterMappingSpecs[i];
+		}
+	}
+	return null;
+}
+
 public ParameterMappingSpec getParameterMappingSpec(Parameter parameter) {
 	for (int i = 0;fieldParameterMappingSpecs!=null && i < fieldParameterMappingSpecs.length; i++){
 		if (fieldParameterMappingSpecs[i].getModelParameter().equals(parameter)){
@@ -690,7 +699,7 @@ public void refreshDependencies(boolean isRemoveUncoupledParameters) {
 		updateListenersList(model, true);
 	}
 	if(isRemoveUncoupledParameters) {
-		System.err.println("not calling removeUncoupledParameters() during ModelOptimizationSpec.refreshDependencies() ... need to invoke removeUncoupledParameters functionality a different way");
+		//System.err.println("not calling removeUncoupledParameters() during ModelOptimizationSpec.refreshDependencies() ... need to invoke removeUncoupledParameters functionality a different way");
 		//removeUncoupledParameters();
 	}
 }
