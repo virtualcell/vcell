@@ -3,7 +3,9 @@ package org.vcell;
 import net.imagej.Dataset;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.xml.crypto.Data;
+import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -14,11 +16,13 @@ public class DatasetListPanel extends JPanel {
     private JList<Dataset> list;
 
     public DatasetListPanel(ArrayList<Dataset> datasets) {
+        setLayout(new BorderLayout());
         list = new JList<>();
         list.setModel(getListModel(datasets));
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setCellRenderer(new DefaultListCellRenderer());
-        add(list);
+        JScrollPane scrollPane = new JScrollPane(list);
+        add(scrollPane, BorderLayout.CENTER);
     }
 
     private ListModel<Dataset> getListModel(ArrayList<Dataset> datasets) {

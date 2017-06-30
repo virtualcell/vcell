@@ -28,6 +28,11 @@ public class VCellModel {
         notifyChangeListeners();
     }
 
+    public void setVCellProjectTitle(String title) {
+        this.project.setTitle(title);
+        notifyChangeListeners();
+    }
+
     public void addData(Dataset data) {
         project.getExperimentalDatasets().add(data);
         notifyChangeListeners();
@@ -41,6 +46,14 @@ public class VCellModel {
     public void addResult(Dataset result) {
         project.getvCellResults().add(result);
         notifyChangeListeners();
+    }
+
+    public boolean delete(Dataset dataset) {
+        boolean success = project.getExperimentalDatasets().remove(dataset)
+                || project.getGeometryDefinitions().remove(dataset)
+                || project.getvCellResults().remove(dataset);
+        notifyChangeListeners();
+        return success;
     }
 
     public void addChangeListener(ChangeListener e) {

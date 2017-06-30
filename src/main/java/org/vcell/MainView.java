@@ -1,8 +1,16 @@
 package org.vcell;
 
 import net.imagej.Dataset;
+import net.miginfocom.layout.AC;
 import org.scijava.Context;
+import org.scijava.display.Display;
+import org.scijava.ui.UserInterface;
+import org.scijava.ui.swing.viewer.SwingDisplayPanel;
 import org.scijava.ui.swing.viewer.SwingDisplayWindow;
+import org.scijava.ui.viewer.AbstractDisplayViewer;
+import org.scijava.ui.viewer.DisplayWindow;
+import sun.jvm.hotspot.debugger.cdbg.DoubleType;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -13,7 +21,6 @@ import java.util.ArrayList;
  */
 public class MainView extends SwingDisplayWindow {
 
-    private JPanel contentPane;
     private JTabbedPane tabbedPane;
     private JLabel lblImageDescription;
     private JLabel lblProjectDescription;
@@ -55,13 +62,13 @@ public class MainView extends SwingDisplayWindow {
 
     private void initializeContentPane(VCellModel model) {
 
-        contentPane = new JPanel();
+        JPanel contentPane = new JPanel();
 
         BorderLayout borderLayout = new BorderLayout();
         contentPane.setLayout(borderLayout);
 
         // Project label initialization
-        lblProjectDescription = new JLabel("Project title", SwingConstants.CENTER);
+        lblProjectDescription = new JLabel("", SwingConstants.CENTER);
         contentPane.add(lblProjectDescription, BorderLayout.PAGE_START);
 
         // Tabbed pane initialization
@@ -101,12 +108,14 @@ public class MainView extends SwingDisplayWindow {
         mniOpen = new JMenuItem("Open...");
         mniSave = new JMenuItem("Save");
         mniSaveAs = new JMenuItem("Save as...");
+
         mnuFile.add(mniNew);
         mnuFile.add(mniOpen);
         mnuFile.add(mniSave);
         mnuFile.add(mniSaveAs);
 
         JMenu mnuImport = new JMenu("Import");
+
         mniImportData = new JMenuItem("Experimental data...");
         mniImportGeometry = new JMenuItem("Geometry definition...");
         mniImportResults = new JMenuItem("VCell results...");
@@ -120,14 +129,14 @@ public class MainView extends SwingDisplayWindow {
 
         // Delete menu
         JMenu mnuEdit = new JMenu("Edit");
-        mniDelete = new JMenuItem("Delete");
+        mniDelete = new JMenuItem("Delete...");
         mnuEdit.add(mniDelete);
 
         // Experiments menu
         JMenu mnuExperiments = new JMenu("Experiments");
 
         JMenu mnuTIRF = new JMenu("TIRF");
-        mniConstructTIRFGeometry = new JMenuItem("Construct TIRF geometry");
+        mniConstructTIRFGeometry = new JMenuItem("Construct TIRF geometry...");
         mnuTIRF.add(mniConstructTIRFGeometry);
         mnuExperiments.add(mnuTIRF);
 
@@ -135,6 +144,19 @@ public class MainView extends SwingDisplayWindow {
         menuBar.add(mnuEdit);
         menuBar.add(mnuExperiments);
         setJMenuBar(menuBar);
+
+        setProjectDependentMenuItemsEnabled(false);
+    }
+
+    public void setProjectDependentMenuItemsEnabled(boolean enabled) {
+        mniSave.setEnabled(enabled);
+        mniSaveAs.setEnabled(enabled);
+        mniImportData.setEnabled(enabled);
+        mniImportGeometry.setEnabled(enabled);
+        mniImportResults.setEnabled(enabled);
+        mniExport.setEnabled(enabled);
+        mniDelete.setEnabled(enabled);
+        mniConstructTIRFGeometry.setEnabled(enabled);
     }
 
     public Dataset getSelectedDataset() {
@@ -146,6 +168,8 @@ public class MainView extends SwingDisplayWindow {
         model.addChangeListener(e -> {
             System.out.println("View heard model changed.");
             VCellProject project = model.getVCellProject();
+            if (project == null) return;
+            setProjectDependentMenuItemsEnabled(true);
             lblProjectDescription.setText(project.getTitle());
             pnlData.updateList(project.getExperimentalDatasets());
             pnlGeometry.updateList(project.getGeometryDefinitions());
@@ -173,8 +197,24 @@ public class MainView extends SwingDisplayWindow {
         mniImportData.addActionListener(l);
     }
 
+    public void addImportGeometryListener(ActionListener l) {
+        mniImportGeometry.addActionListener(l);
+    }
+
+    public void addImportResultsListener(ActionListener l) {
+        mniImportResults.addActionListener(l);
+    }
+
     public void addExportListener(ActionListener l) {
         mniExport.addActionListener(l);
+    }
+
+    public void addDeleteListener(ActionListener l) {
+        mniDelete.addActionListener(l);
+    }
+
+    public void addConstructTIRFGeometry(ActionListener l) {
+        mniConstructTIRFGeometry.addActionListener(l);
     }
 
     public void addDisplayListener(ActionListener l) {

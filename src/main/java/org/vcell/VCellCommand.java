@@ -18,7 +18,7 @@ public class VCellCommand implements Command {
     public void run() {
         VCellModel model = new VCellModel();
         MainView view = new MainView(model, ij.getContext());
-        new MasterController(model, view, ij.getContext());
+        new MainController(model, view, ij.getContext());
         view.setVisible(true);
     }
 }

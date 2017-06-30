@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
-    <output url="file://$MODULE_DIR$/target/classes" />
-    <output-test url="file://$MODULE_DIR$/target/test-classes" />
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8" inherit-compiler-output="true">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
@@ -137,8 +135,6 @@
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.fifesoft:autocomplete:2.5.8" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.mozilla:rhino:1.7.6" level="project" />
     <orderEntry type="library" name="Maven: net.imagej:ij:1.51g" level="project" />
-    <orderEntry type="library" name="Maven: net.imagej:ij-core:unknown" level="project" />
-    <orderEntry type="library" name="Maven: net.imagej:ij-ui:unknown" level="project" />
     <orderEntry type="library" name="Maven: org.sbml.jsbml:jsbml:1.2" level="project" />
     <orderEntry type="library" name="Maven: org.sbml.jsbml:jsbml-core:1.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.3" level="project" />

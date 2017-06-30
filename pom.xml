@@ -109,14 +109,6 @@
 			<artifactId>ij</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij-ui</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.sbml.jsbml</groupId>
 			<artifactId>jsbml</artifactId>
 			<version>1.2</version>
