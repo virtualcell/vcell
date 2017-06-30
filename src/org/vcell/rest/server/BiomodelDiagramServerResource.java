@@ -2,13 +2,10 @@ package org.vcell.rest.server;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageOutputStreamImpl;
 
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;

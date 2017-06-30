@@ -12,9 +12,6 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.messaging.db.BioModelLink;
-import cbit.vcell.messaging.db.MathModelLink;
-import cbit.vcell.messaging.db.SimulationDocumentLink;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.modeldb.BioModelRep;
@@ -22,6 +19,9 @@ import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.server.BioModelLink;
+import cbit.vcell.server.MathModelLink;
+import cbit.vcell.server.SimulationDocumentLink;
 
 
 public class SimulationRepresentation {

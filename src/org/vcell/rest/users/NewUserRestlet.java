@@ -15,9 +15,10 @@ import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+
+import cbit.vcell.resource.PropertyLoader;
 
 public final class NewUserRestlet extends Restlet {
 	public NewUserRestlet(Context context) {

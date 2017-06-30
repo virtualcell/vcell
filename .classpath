@@ -105,6 +105,6 @@
 	<classpathentry kind="lib" path="lib/org.restlet.ext.cyrpto.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/VCell"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/VCell_6.2"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

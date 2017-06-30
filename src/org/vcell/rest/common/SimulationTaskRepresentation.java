@@ -1,10 +1,10 @@
 package org.vcell.rest.common;
 
-import cbit.vcell.messaging.db.BioModelLink;
-import cbit.vcell.messaging.db.MathModelLink;
-import cbit.vcell.messaging.db.RunningStateInfo;
-import cbit.vcell.messaging.db.SimpleJobStatus;
-import cbit.vcell.messaging.db.WaitingStateInfo;
+import cbit.vcell.server.BioModelLink;
+import cbit.vcell.server.MathModelLink;
+import cbit.vcell.server.RunningStateInfo;
+import cbit.vcell.server.SimpleJobStatus;
+import cbit.vcell.server.WaitingStateInfo;
 
 public class SimulationTaskRepresentation {
 	

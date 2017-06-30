@@ -30,10 +30,9 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
-import cbit.vcell.messaging.db.SimpleJobStatus;
-
 import com.google.gson.Gson;
 
+import cbit.vcell.server.SimpleJobStatus;
 import freemarker.template.Configuration;
 
 public class SimulationTasksServerResource extends AbstractServerResource implements SimulationTasksResource {

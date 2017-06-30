@@ -13,7 +13,6 @@ import org.restlet.data.Reference;
 import org.restlet.data.Status;
 import org.restlet.ext.crypto.CookieAuthenticator;
 import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;

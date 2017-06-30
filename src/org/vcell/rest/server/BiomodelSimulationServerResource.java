@@ -28,15 +28,14 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
+import com.google.gson.Gson;
+
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XmlParseException;
-
-import com.google.gson.Gson;
-
 import freemarker.template.Configuration;
 
 public class BiomodelSimulationServerResource extends AbstractServerResource implements SimulationResource {

@@ -1,8 +1,5 @@
 package org.vcell.rest.common;
 
-import java.util.ArrayList;
-
-import cbit.vcell.modeldb.BioModelReferenceRep;
 import cbit.vcell.modeldb.PublicationRep;
 import cbit.vcell.parser.ExpressionException;
 

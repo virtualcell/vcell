@@ -1,6 +1,5 @@
 package org.vcell.rest.server;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,16 +24,13 @@ import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.SimDataValuesRepresentation;
 import org.vcell.rest.common.SimDataValuesResource;
-import org.vcell.rest.common.SimDataVariableValuesRepresentation;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
-import cbit.vcell.simdata.DataSetTimeSeries;
-
 import com.google.gson.Gson;
 
+import cbit.vcell.simdata.DataSetTimeSeries;
 import freemarker.template.Configuration;
 
 public class SimDataValuesServerResource extends AbstractServerResource implements SimDataValuesResource {

@@ -30,11 +30,10 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
-import cbit.vcell.modeldb.PublicationRep;
-import cbit.vcell.parser.ExpressionException;
-
 import com.google.gson.Gson;
 
+import cbit.vcell.modeldb.PublicationRep;
+import cbit.vcell.parser.ExpressionException;
 import freemarker.template.Configuration;
 
 public class PublicationsServerResource extends AbstractServerResource implements PublicationsResource {

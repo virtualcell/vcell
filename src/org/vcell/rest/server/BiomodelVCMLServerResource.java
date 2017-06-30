@@ -3,7 +3,6 @@ package org.vcell.rest.server;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.james.mime4j.field.ContentDispositionField;
 import org.restlet.data.Status;
 import org.restlet.ext.wadl.MethodInfo;
 import org.restlet.ext.wadl.ParameterInfo;

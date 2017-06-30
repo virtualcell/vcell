@@ -1,6 +1,5 @@
 package org.vcell.rest.server;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,15 +23,13 @@ import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.BiomodelRepresentation;
 import org.vcell.rest.common.BiomodelResource;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
-import cbit.vcell.modeldb.BioModelRep;
-
 import com.google.gson.Gson;
 
+import cbit.vcell.modeldb.BioModelRep;
 import freemarker.template.Configuration;
 
 public class BiomodelServerResource extends AbstractServerResource implements BiomodelResource {

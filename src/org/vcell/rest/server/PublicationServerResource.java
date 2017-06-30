@@ -21,17 +21,15 @@ import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
-import org.vcell.rest.common.BiomodelRepresentation;
 import org.vcell.rest.common.PublicationRepresentation;
 import org.vcell.rest.common.PublicationResource;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
-import cbit.vcell.modeldb.PublicationRep;
-
 import com.google.gson.Gson;
 
+import cbit.vcell.modeldb.PublicationRep;
 import freemarker.template.Configuration;
 
 public class PublicationServerResource extends AbstractServerResource implements PublicationResource {

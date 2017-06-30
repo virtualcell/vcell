@@ -26,7 +26,6 @@ import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.SimulationStatusRepresentation;
 import org.vcell.rest.common.SimulationStatusesResource;
-import org.vcell.rest.common.SimulationTaskRepresentation;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;

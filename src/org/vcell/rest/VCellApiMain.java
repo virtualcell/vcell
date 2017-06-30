@@ -21,9 +21,8 @@ import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
 import org.restlet.util.Series;
 import org.vcell.rest.server.RestDatabaseService;
-import org.vcell.util.PropertyLoader;
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.logging.WatchLogging;
@@ -34,10 +33,12 @@ import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
+import cbit.vcell.message.VCMessagingDelegate;
 import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
@@ -47,6 +48,8 @@ import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
@@ -106,7 +109,8 @@ public class VCellApiMain {
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
 			
 			lg.trace("messaging service (next)");
-			vcMessagingService = VCMessagingService.createInstance(new VCMessagingDelegate() {
+			vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+			vcMessagingService.setDelegate(new VCMessagingDelegate() {
 				
 				@Override
 				public void onTraceEvent(String string) {

@@ -1,7 +1,5 @@
 package org.vcell.rest.common;
 
-import java.util.ArrayList;
-
 import cbit.vcell.math.Constant;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
