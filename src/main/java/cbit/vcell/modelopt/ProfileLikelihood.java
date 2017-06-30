@@ -1,12 +1,8 @@
 package cbit.vcell.modelopt;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-
-import org.vcell.optimization.gui.ParameterEstimationRunTaskPanel;
-import org.vcell.util.BeanUtils;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;

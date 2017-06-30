@@ -5,9 +5,6 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ucar.ma2.ForbiddenConversionException;
-
-
 /**
  * repository for translating low lever "programmer-ese" exceptions into possible user action
  * @author gweatherby
@@ -19,7 +16,7 @@ public class ExceptionInterpreter {
 		final String key;
 		final String regex;
 		/**
-		 * lazily evaluated pattern {@link ForbiddenConversionException} #regex:w
+		 * lazily evaluated pattern #regex:w
 		 * 
 		 */
 		Pattern pattern = null;
