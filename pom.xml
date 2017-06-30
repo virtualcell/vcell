@@ -133,12 +133,13 @@
 			<artifactId>activemq-broker</artifactId>
 			<version>5.14.4</version>
 		</dependency>
+		 <!-- https://mvnrepository.com/artifact/edu.ucar/netcdf -->
 		<dependency>
-			<groupId>edu.ucar</groupId>
-			<artifactId>netcdf</artifactId>
-			<version>4.3.23</version>
+		    <groupId>edu.ucar</groupId>
+		    <artifactId>netcdf</artifactId>
+		    <version>2.2.20</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+ 		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
@@ -196,18 +197,11 @@
 		-->
 
 		<!-- https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j -->
-
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
 		   <!--   <version>1.7.5</version>   -->
 	    </dependency>
-
-		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>1.7.21</version>
-		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.hdfgroup/hdf-java -->
  		<dependency>
