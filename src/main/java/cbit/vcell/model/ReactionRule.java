@@ -187,6 +187,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			ProductPattern newpp = new ProductPattern(newsp, oldpp.getStructure());
 			newRule.addProduct(newpp, false, false);
 		}
+		newRule.setKineticLaw(kineticLaw);
 		kineticLaw.bind(newRule);
 		return newRule;
 	}
