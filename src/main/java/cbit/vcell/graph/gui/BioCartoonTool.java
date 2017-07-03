@@ -215,20 +215,19 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		}
 	}
 	
-	// map the structures to be pasted to existing structures 
+	// map the structures to be pasted to existing structures in the cloned model
+	// we may need to generate some name iteratively until we solve all naming conflicts
 	private static Map<Structure, String> mapStructures(Component requester,
 			VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
 			IssueContext issueContext) {
 		
 		Vector <Issue> issueVector = new Vector<>();	// use internally only; we exit the dialog when there are no issues left
 		Structure structFrom = rsCopy.getFromStructure();
-		int numFromStructures = rsCopy.getStructuresArr().length;	// contains the fromStruct
 		
 		Map<Structure, String> fullyMappedStructures = new LinkedHashMap<> ();
 		fullyMappedStructures.put(structFrom, structTo.getName());
 
 		StructurePasteMappingPanel structureMappingPanel = null;
-		Hashtable<JLabel,ReactionParticipant> mapLabelToPart = null;
 		do {
 			issueVector.clear();
 			if(structureMappingPanel == null) {
@@ -243,23 +242,28 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			}
 		} while(structureMappingPanel.hasErrors());
 		
-		Map<Structure, JComboBox<String>> structureMapping = structureMappingPanel.getStructureMap();
 		for (Map.Entry<Structure, JComboBox<String>> entry : structureMappingPanel.getStructureMap().entrySet()) {
 			if(entry.getValue().getSelectedItem().equals(StructurePasteMappingPanel.MAKE_NEW)) {
 				String newNameTo = entry.getKey().getName();	// we generate a "to" structure name based on the "from" name
 				while(modelTo.getStructure(newNameTo) != null) {
 					newNameTo = org.vcell.util.TokenMangler.getNextEnumeratedToken(newNameTo);
-					// TODO: make sure that name is safe to use
-					//  if (Model.isNameUnused(speciesName, model)
+					for(Structure sFrom : rsCopy.getStructuresArr()) {
+						if(newNameTo.equals(sFrom.getName())) {	// the new name must not match any existing "from" name either
+							newNameTo = org.vcell.util.TokenMangler.getNextEnumeratedToken(newNameTo);
+							break;
+						}
+					}
 				}
 				try {
-				if(entry.getKey() instanceof Membrane) {
-					modelTo.addMembrane(newNameTo);
-				} else {
-					modelTo.addFeature(newNameTo);
-				}
+				// we need to make the new structures right away as we generate the names for them
+				// as to avoid risk of duplicates / conflicting names
+					if(entry.getKey() instanceof Membrane) {
+						modelTo.addMembrane(newNameTo);
+					} else {
+						modelTo.addFeature(newNameTo);
+					}
 				} catch(ModelException | PropertyVetoException e) {
-					
+					throw new RuntimeException("Failed to generate the missing 'from' Structures in the cloned model, " + e.getMessage());
 				}
 				fullyMappedStructures.put(entry.getKey(), newNameTo);
 			} else {		// name of an existing "to" structure
@@ -267,6 +271,25 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			}
 		}
 		return fullyMappedStructures;
+	}	
+	private static void mapStructures(Map<Structure, String> fullyMappedStructures, Model modelTo) {
+		// all the 'from' structures are now fully mapped to unique names for the paste model
+		// we only need to generate now those structures if they are missing, using these names
+		for (Map.Entry<Structure, String> entry : fullyMappedStructures.entrySet()) {
+			String nameTo = entry.getKey().getName();
+			if(modelTo.getStructure(nameTo) != null) {
+				continue;	// this structure is in the pasteModel already, nothing to do, go to the next
+			}
+			try {
+				if(entry.getKey() instanceof Membrane) {
+					modelTo.addMembrane(nameTo);
+				} else {
+					modelTo.addFeature(nameTo);
+				}
+			} catch(ModelException | PropertyVetoException e) {
+				throw new RuntimeException("Failed to generate the missing 'from' Structures in the paste model, " + e.getMessage());
+			}
+		}
 	}
 	private static List<ReactionRule> pasteRules(VCellTransferable.ReactionSpeciesCopy rsCopy,
 			Model modelTo, Structure structTo,
@@ -278,7 +301,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		}
 
 		for(ReactionRule rrFrom : rsCopy.getReactionRuleArr()) {
-			ReactionRule rrTo = ReactionRule.clone(modelTo, rrFrom, structTo, structuresMap);
+			ReactionRule rrTo = ReactionRule.clone(modelTo, rrFrom, structTo, structuresMap, rsCopy);
 			rulesTo.add(rrTo);
 		}
 		return rulesTo;
@@ -323,23 +346,28 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 					clonedModel.getRbmModelContainer().addReactionRule(rr);
 				}
 				
-//				if(pasteHelper[0].rxPartMapStruct != null){
-//					//Convert rxPartMapStruct instances from cloned to pasteModel
-//
-//				}
+				// TODO: make any final verifications in the cloned model here
+				// if anything is wrong exit here with some helpful message
+				// .....
+				
+				// otherwise go directly to populating the real model
+				
+				mapStructures(structuresMap, pasteModel);
+				pasteMolecules(mtFromListStrict, pasteModel, structuresMap);
+				
+				// we repeat all the steps to paste the rules in the real model instead of the clone
+				rulesTo = pasteRules(rsCopy, pasteModel, structTo, issues, issueContext, structuresMap);
+				for(ReactionRule rr : rulesTo) {
+					pasteModel.getRbmModelContainer().addReactionRule(rr);
+				}
+				
 			}
 		};
-		
-		
 		
 		AsynchClientTask pasteRXTask = new AsynchClientTask("Pasting Reaction...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable)throws Exception {
 				IssueContext issueContext = new IssueContext(ContextType.Model, pasteModel, null);
-
-
-				
-				
 				
 //				if (pasteHelper[0].issues.size() != 0) {
 //					printIssues(pasteHelper[0].issues, requester);
@@ -355,9 +383,6 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			}
 		};
 
-		
-		
-		
 		ClientTaskDispatcher.dispatch(requester, new Hashtable<>(), new AsynchClientTask[] {issueTask, pasteRXTask}, false);
 	}
 	

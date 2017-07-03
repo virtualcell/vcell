@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -37,6 +38,7 @@ import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.PropertyConstants;
 
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.StructureTopology;
@@ -189,14 +191,42 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		return newRule;
 	}
 	public static ReactionRule clone(Model newModel, ReactionRule oldRule, Structure newStructure,
-			Map<Structure, String> structuresMap
+			Map<Structure, String> structuresMap,
+			VCellTransferable.ReactionSpeciesCopy rsCopy
 			) throws ExpressionBindingException {
 		
 		boolean reversible = oldRule.isReversible();
 		
 		String newName = oldRule.getName();
-		while(newModel.getRbmModelContainer().getReactionRule(newName) != null) {
+		while (true) {
+			if (Model.isNameUnused(newName, newModel)) {
+				break;
+			}	
 			newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
+			if(rsCopy.getReactionRuleArr() != null) {
+				for(ReactionRule from : rsCopy.getReactionRuleArr()) {
+					if(from.getName().equalsIgnoreCase(newName)) {	// make another new name if current new name is used elsewhere
+						newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
+						break;
+					}
+				}
+			}
+			if(rsCopy.getReactStepArr() != null) {
+				for(ReactionStep from : rsCopy.getReactStepArr()) {
+					if(from.getName().equalsIgnoreCase(newName)) {
+						newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
+						break;
+					}
+				}
+			}
+			if(rsCopy.getSpeciesContextArr() != null) {
+				for(SpeciesContext from : rsCopy.getSpeciesContextArr()) {
+					if(from.getName().equalsIgnoreCase(newName)) {
+						newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
+						break;
+					}
+				}
+			}
 		}
 		ReactionRule newRule = new ReactionRule(newModel, newName, newStructure, reversible);
 		
