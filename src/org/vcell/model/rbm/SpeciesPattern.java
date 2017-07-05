@@ -226,6 +226,16 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	public void removeMolecularTypePattern(MolecularTypePattern molecularTypePattern) {
 		List<MolecularTypePattern> newValue = new ArrayList<MolecularTypePattern>(molecularTypePatterns);
 		newValue.remove(molecularTypePattern);
+		for(MolecularComponentPattern mcp : molecularTypePattern.getComponentPatternList()) {
+			BondType btBefore = mcp.getBondType();
+			if(btBefore == BondType.Specified) {
+				// change the partner to possible
+				mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+				mcp.getBond().molecularComponentPattern.setBond(null);
+			}
+			mcp.setBondType(BondType.None);
+			mcp.setBond(null);
+		}
 		setMolecularTypePatterns(newValue);
 	}
 
