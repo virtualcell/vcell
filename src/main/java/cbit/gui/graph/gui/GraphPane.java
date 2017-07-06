@@ -281,8 +281,6 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 //				}
 				if (graphModel.getTopShape()!=null){
 					graphModel.paint(g);
-				}else{
-					clear(g);
 				}
 			}	
 		}catch (Exception e){
