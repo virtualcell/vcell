@@ -149,9 +149,14 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 		
 		@Override
 		public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
-			String oldValue = fieldParameterName;
+			String oldValue = getName();
 			super.fireVetoableChange("name", oldValue, name);
-			fieldParameterName = name;
+			try {
+				renameLocalParameter(getName(), name);
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to change parameter "+oldValue+" to "+name+": "+e.getMessage(),e);
+			}
 			super.firePropertyChange("name", oldValue, name);
 		}
 		
@@ -671,7 +676,7 @@ public void renameLocalParameter(String oldName, String newName) throws Expressi
 		//
 		// replaces parameter with name 'oldName' with new parameter with name 'newName' and original expression.
 		//
-		parameter.setName(newName);
+		parameter.fieldParameterName = newName;
 		
 		//
 		// go through all parameters' expressions and replace references to 'oldName' with 'newName'
@@ -693,6 +698,7 @@ public void renameLocalParameter(String oldName, String newName) throws Expressi
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}
+		parameter.firePropertyChange("name",oldName,newName);
 	}
 }
 

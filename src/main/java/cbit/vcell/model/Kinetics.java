@@ -424,7 +424,12 @@ java.io.Serializable, IssueSource
 		public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 			String oldValue = fieldParameterName;
 			super.fireVetoableChange(PROPERTYNAME_NAME, oldValue, name);
-			fieldParameterName = name;
+			try {
+				renameParameter(oldValue, name);
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to change kinetic parameter "+oldValue+" to "+name+": "+e.getMessage(),e);
+			}
 			super.firePropertyChange(PROPERTYNAME_NAME, oldValue, name);
 		}
 
