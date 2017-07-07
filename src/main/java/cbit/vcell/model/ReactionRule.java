@@ -231,13 +231,6 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		}
 		ReactionRule newRule = new ReactionRule(newModel, newName, newStructure, reversible);
 		
-		RateLawType rateLawType = oldRule.getKineticLaw().getRateLawType();
-		if(rateLawType != RateLawType.MassAction) {
-			throw new RuntimeException("Only Mass Action Kinetics supported at this time, " + ReactionRule.typeName + " \"" + oldRule.getName() + "\" uses kinetic law type \"" + rateLawType.toString() + "\"");
-		}
-		RbmKineticLaw kineticLaw = new RbmKineticLaw(newRule, rateLawType);
-		RbmKineticLaw.duplicate(kineticLaw, oldRule);
-
 		for(ReactantPattern oldrp : oldRule.getReactantPatterns()) {
 			SpeciesPattern newsp = new SpeciesPattern(newModel, oldrp.getSpeciesPattern());
 			Structure os = oldrp.getStructure();
@@ -252,7 +245,18 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			ProductPattern newpp = new ProductPattern(newsp, ns);
 			newRule.addProduct(newpp, false, false);
 		}
-		kineticLaw.bind(newRule);
+
+		RateLawType rateLawType = oldRule.getKineticLaw().getRateLawType();
+		if(rateLawType != RateLawType.MassAction) {
+			throw new RuntimeException("Only Mass Action Kinetics supported at this time, " + ReactionRule.typeName + " \"" + oldRule.getName() + "\" uses kinetic law type \"" + rateLawType.toString() + "\"");
+		}
+
+		RbmKineticLaw newKineticLaw = new RbmKineticLaw(newRule, rateLawType);
+//		RbmKineticLaw.duplicate(kineticLaw, oldRule);
+		RbmKineticLaw.clone(newKineticLaw, oldRule, newRule);
+		
+		newRule.setKineticLaw(newKineticLaw);
+		newKineticLaw.bind(newRule);
 		return newRule;
 	}
 	

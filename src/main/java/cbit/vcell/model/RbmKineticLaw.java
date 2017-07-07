@@ -250,6 +250,72 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 			throw new RuntimeException("Problem attempting to set RbmKineticLaw expression: "+ e.getMessage());
 		}
 	}
+	public static void clone(RbmKineticLaw toKineticLaw, ReactionRule fromRule, ReactionRule toRule) {
+		
+		RbmKineticLaw fromKineticLaw = fromRule.getKineticLaw();
+		Model toModel = toRule.getModel();
+		Model fromModel = fromRule.getModel();
+		try {
+		for (LocalParameter fromLocalParameter : fromKineticLaw.parameterContext.getLocalParameters()) {
+			if (fromLocalParameter.getRole() != RbmKineticLawParameterType.UserDefined){
+				// find built-in parameter with same role and copy expression.
+				// copy name also in case it was changed.
+				LocalParameter toLocalParameter = toKineticLaw.parameterContext.getLocalParameterFromRole(fromLocalParameter.getRole());
+				String toName = new String(fromLocalParameter.getName());
+				if(!toName.equals(toLocalParameter.getName())) {	// new name must be different from existing name, no point to rename otherwise
+					toLocalParameter.setName(toName);
+				}
+				Expression fromExpression = fromLocalParameter.getExpression();
+				if(fromExpression != null) {
+					Expression toExpression = new Expression(fromExpression);
+					toKineticLaw.setParameterValue(toLocalParameter, toExpression, true);
+				}
+				// TODO: units are not updated!
+			}
+		}
+		for (LocalParameter fromLocalParameter : fromKineticLaw.parameterContext.getLocalParameters()) {
+			if (fromLocalParameter.getRole() == RbmKineticLawParameterType.UserDefined) {
+				LocalParameter toLocalParameter = toKineticLaw.getLocalParameter(fromLocalParameter.getName());
+				if (toLocalParameter == null) {
+					//
+					// after lazy parameter creation we didn't find a user-defined rule parameter with this same name.
+					// 
+					// there must be a global symbol with the same name, that the local reaction parameter has overridden.
+					//
+					ParameterContext.LocalProxyParameter rule_proxy_parameter = null;
+					for (ProxyParameter proxyParameter : fromKineticLaw.getProxyParameters()) {
+						if (proxyParameter.getName().equals(fromLocalParameter.getName())) {
+							rule_proxy_parameter = (LocalProxyParameter) proxyParameter;
+						}
+					}
+					if (rule_proxy_parameter != null) {
+						boolean bConvertToGlobal = false;  // we want to convert to local
+						toKineticLaw.convertParameterType(rule_proxy_parameter, bConvertToGlobal);
+					} else {
+						// could find neither local parameter nor proxy parameter
+						throw new RuntimeException("user defined parameter "+fromLocalParameter.getName()+" from reactionRule "+fromRule.getName()+" didn't map to a reactionRule parameter");
+					}
+				} else if (toLocalParameter.getRole() == RbmKineticLawParameterType.UserDefined) {
+					Expression expression = fromLocalParameter.getExpression();
+					if(expression != null) {
+						toKineticLaw.setParameterValue(toLocalParameter, expression, true);
+					}
+					// TODO: make copy constructor for VCUnitDefinition
+//					VCUnitDefinition toUnitDefinition = new VCUnitDefinition(fromLocalParameter.getUnitDefinition());
+//					toLocalParameter.setUnitDefinition(toUnitDefinition);
+				} else {
+					throw new RuntimeException("user defined parameter "+fromLocalParameter.getName()+" from reactionRule "+fromRule.getName()+" mapped to a reactionRule parameter with unexpected role "+toLocalParameter.getRole().getDescription());
+				}
+			}
+		}
+		// TODO: some params were assumed to be local but they are global in the 'from'
+		// need to find if we have a global with same name, rename at need and make it global
+		
+		} catch (PropertyVetoException | ExpressionException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Problem attempting to set RbmKineticLaw expression: "+ e.getMessage());
+		}
+	}
 	
 	public RbmKineticLaw.RateLawType getRateLawType() {
 		return rateLawType;
