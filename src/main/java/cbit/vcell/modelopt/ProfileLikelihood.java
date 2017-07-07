@@ -4,8 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.junit.runners.parameterized.ParametersRunnerFactory;
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathException;
 import cbit.vcell.opt.OptSolverResultSet;
 import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -15,41 +20,66 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+//call parameter est.
+//save the values
+//take the first parameter remove from list
+//drag a parameter from current value in positive direction until error becomes 2x as large
+//repeat in negative direction as 2x as large
+//record parameter min and max values until this happens
+//restore original parameter and go onto next parameter
+//repeat for all parameters
 
 public class ProfileLikelihood {
 	//this creates the data set and parameter scan that is being used to update the parameters
 	public static class ProfilelikelihoodDataset {
 		
-		final ParestRun bestFitParestRun;
+		final double bestObjectiveFunctionValue;
+		final String[] paramNames; 
+		final double[] bestParamValues;
 		final ParameterEstimationTask originalTask;
-		HashMap<String,ParameterScan> paramterScanMap = new HashMap<String,ParameterScan>(); 
+		final ArrayList<ParameterScan> parameterScans = new ArrayList<ParameterScan>();
 		
-		public ProfilelikelihoodDataset(ParameterEstimationTask argTask, ParestRun argBestFitParestRun){
+		public ProfilelikelihoodDataset(ParameterEstimationTask argTask, String[] paramNames, double[] bestParamValues, double bestObjectiveFunctionValue){
 			this.originalTask = argTask;
-			this.bestFitParestRun = argBestFitParestRun;
+			this.paramNames = paramNames;
+			this.bestParamValues = bestParamValues;
+			this.bestObjectiveFunctionValue = bestObjectiveFunctionValue;
 		}
 		
+		//creates the parameter scan which calls the result set and the current objective value and the limit
 		public ParameterScan createParameterScan(String parameterName){
-			ParameterEstimationTask taskCopy1 = ParestRun.cloneParameterEstimationTask(originalTask);
-			OptSolverResultSet optSolverResultSet = taskCopy1.getOptimizationResultSet().getOptSolverResultSet();
-			Double leastObjectiveFunctionValue = optSolverResultSet.getLeastObjectiveFunctionValue();
 			//Double  = set.getOptSolverResultSet().getLeastObjectiveFunctionValue();
-			ParameterScan scan = new ParameterScan(taskCopy1,parameterName,leastObjectiveFunctionValue, leastObjectiveFunctionValue*1.5,optSolverResultSet);
-			paramterScanMap.put(parameterName, scan);
-			System.out.println(leastObjectiveFunctionValue);
-			System.out.println(leastObjectiveFunctionValue*1.5);
+			//final double objectiveFunctionLimit = leastObjectiveFunctionValue*1.5;
+			final double objectiveFunctionLimit = bestObjectiveFunctionValue * 1.5;
+			ParameterScan scan = new ParameterScan(originalTask,parameterName,bestObjectiveFunctionValue, objectiveFunctionLimit,paramNames,bestParamValues);
+			parameterScans.add(scan);
+			System.out.println(bestObjectiveFunctionValue);
+			System.out.println(bestObjectiveFunctionValue*1.5);
 			return scan;
 		}
 		
+		//prints out a report for the parameter estimation run
 		public String getReport(){
 			StringBuffer buffer = new StringBuffer();
 			buffer.append("Dataset\n");
 			buffer.append("best fit parameter run (starting point of analysis)\n");
-			buffer.append(bestFitParestRun.getReport());
+			buffer.append(Arrays.asList(paramNames) + " = " + Arrays.asList(bestParamValues) + "\n");
 			buffer.append("scans:\n");
-			for (String paramName : paramterScanMap.keySet()){
-				ParameterScan scan = paramterScanMap.get(paramName);
+			for (ParameterScan scan : parameterScans){
 				buffer.append(scan.getReport());
+			}
+			return buffer.toString();
+		}
+
+		//prints out a summary for the end of the run
+		public String getSummary(){
+			StringBuffer buffer = new StringBuffer();
+			buffer.append("Dataset\n");
+			buffer.append("best fit parameter run (starting point of analysis)\n");
+			buffer.append(Arrays.asList(paramNames) + " = " + Arrays.asList(bestParamValues) + "\n");
+			buffer.append("scans:\n");
+			for (ParameterScan scan : parameterScans){
+				buffer.append(scan.getSummary());
 			}
 			return buffer.toString();
 		}
@@ -58,106 +88,135 @@ public class ProfileLikelihood {
 	
 	//creates the parameter scan and array lists for the increasing and decreasing values
 	public static class ParameterScan {
+		final double bestObjectiveFunction;
 		final double objectiveFunctionLimit;
 		final String parameterName;
-		private OptSolverResultSet bestResultSet;
-		final ParameterEstimationTask task;
+		final String[] paramNames;
+		final double[] bestParamValues;
+		//private OptSolverResultSet bestResultSet;
+		final ParameterEstimationTask origTask;
 		
 		public final ArrayList<ParestRun> increasingParestRuns = new ArrayList<ParestRun>();
 		public final ArrayList<ParestRun> decreasingParestRuns = new ArrayList<ParestRun>();
 		public double epsilon = 0.01;
 		
 		public ParameterScan(
-				ParameterEstimationTask task, String paramName, double bestValue, 
-				double objectiveFunctionLimit, OptSolverResultSet bestFit) {
-			this.task = task;
+				ParameterEstimationTask origTask, String paramName, double bestObjectiveFunction, 
+				double objectiveFunctionLimit, String[] paramNames, double[] bestParamValues) {
+			this.origTask = origTask;
 			this.parameterName = paramName;
-			this.bestResultSet = bestFit;
+			this.paramNames = paramNames;
+			this.bestParamValues = bestParamValues;
+			this.bestObjectiveFunction = bestObjectiveFunction;
 			this.objectiveFunctionLimit = objectiveFunctionLimit;
 		}
 		
 		
-		//for when the parameter estimation reaches a certain limit, stop running 
+		//for when the parameter estimation reaches a certain increasing limit, stop running 
 		public boolean reachedIncreasingRunErrorLimit(){
 			if (increasingParestRuns.size()==0){
 				return false;
 			}
 			ParestRun lastIncreasingParestRun = increasingParestRuns.get(increasingParestRuns.size()-1);
-			Double lastIncreasingObjFuncValue = lastIncreasingParestRun.resultSet.getOptSolverResultSet().getLeastObjectiveFunctionValue();
-			System.out.println(lastIncreasingObjFuncValue);
-			System.out.println(objectiveFunctionLimit);
+			Double lastIncreasingObjFuncValue = lastIncreasingParestRun.getObjectiveFunctionValue();
+System.out.println(lastIncreasingObjFuncValue);
+System.out.println(objectiveFunctionLimit);
 			
-			return lastIncreasingObjFuncValue > 2;
-//			return (lastIncreasingObjFuncValue > this.objectiveFunctionLimit);
-//				System.out.println("exceeded upper limit");
-//				return false;
+			double highLimit = origTask.getModelOptimizationSpec().getParameterMappingSpec(parameterName).getHigh();
+			double current = lastIncreasingParestRun.getFittedParameterValues()[ParestRun.getParamIndex(paramNames, parameterName)];
+//			origTask.getModelOptimizationSpec().getParameterMappingSpec(parameterName).getCurrent();
+
 			
+			return (current>highLimit) || (lastIncreasingObjFuncValue > objectiveFunctionLimit);
 		}
 		
+		//for when the parameter estimation reaches a certain increasing limit, stop running 
 		public boolean reachedDecreasingRunErrorLimit(){
 			if (decreasingParestRuns.size()==0){
 				return false;
 			}
 			ParestRun lastDecreasingParestRun = decreasingParestRuns.get(decreasingParestRuns.size()-1);
-			Double lastDecreasingObjFuncValue = lastDecreasingParestRun.resultSet.getOptSolverResultSet().getLeastObjectiveFunctionValue();
-			System.out.println(lastDecreasingObjFuncValue);
-			System.out.println(objectiveFunctionLimit);
+			Double lastDecreasingObjFuncValue = lastDecreasingParestRun.getObjectiveFunctionValue();
+System.out.println(lastDecreasingObjFuncValue);
+System.out.println(objectiveFunctionLimit);
 			
-			return lastDecreasingObjFuncValue > 1.2;
-			//return (lastDecreasingObjFuncValue > this.objectiveFunctionLimit);
+			double lowLimit = origTask.getModelOptimizationSpec().getParameterMappingSpec(parameterName).getLow();
+			double current = lastDecreasingParestRun.getFittedParameterValues()[ParestRun.getParamIndex(paramNames, parameterName)];
+			
+			return (current<lowLimit) || (lastDecreasingObjFuncValue > objectiveFunctionLimit);
 		}
 		
-		//creates the increasing and decreasing runs
+		//creates the increasing run
 		public ParestRun createIncreasingRun(double factor){
-			ParameterEstimationTask clonedTask = ParestRun.cloneParameterEstimationTask(task);
-			ParameterMappingSpec[] clonedSpecs = clonedTask.getModelOptimizationSpec().getParameterMappingSpecs();
+			ParameterEstimationTask clonedTask = ParestRun.cloneParameterEstimationTask(origTask);
+			//clonedTask.setOptimizationResultSet(null);
+
+			//ParameterMappingSpec[] clonedSpecs = clonedTask.getModelOptimizationSpec().getParameterMappingSpecs();
 			
 			//
 			// set all parameter values to "best", then change the "scan parameter"
 			//
-			for (int i=0;i<bestResultSet.getParameterNames().length;i++){
-				String name = bestResultSet.getParameterNames()[i];
-				double value = bestResultSet.getBestEstimates()[i];
+			for (int i=0;i<paramNames.length;i++){
+				String name = paramNames[i];
+				double value = bestParamValues[i];
 				clonedTask.getModelOptimizationSpec().getParameterMappingSpec(name).setCurrent(value);
 			}
-			ParameterMappingSpec clonedSpec = ParestRun.findByParameterName(clonedSpecs, parameterName);
+			ParameterMappingSpec clonedSpec = ParestRun.findByParameterName(clonedTask.getModelOptimizationSpec().getParameterMappingSpecs(), parameterName);
 			int N = this.increasingParestRuns.size()+1;
 			double currentIncreasingValue = clonedSpec.getCurrent() * Math.pow(factor,N);
 			clonedSpec.setCurrent(currentIncreasingValue);
-			clonedSpec.setHigh(currentIncreasingValue+epsilon);
-			clonedSpec.setLow(currentIncreasingValue-epsilon);
+			clonedSpec.setHigh(currentIncreasingValue*(1+epsilon));
+			clonedSpec.setLow(currentIncreasingValue*(1-epsilon));
 
-			ParestRun incParestRun = new ParestRun(clonedTask, bestResultSet);
+			ParestRun incParestRun = new ParestRun(clonedTask, paramNames, bestParamValues);
 			
 			this.increasingParestRuns.add(incParestRun);
+			
 			return incParestRun;
+			
 		}
 		
+		
+		
+		//creates the decreasing run
 		public ParestRun createDecreasingRun(double factor) throws Exception{
-			ParameterEstimationTask clonedTask = ParestRun.cloneParameterEstimationTask(task);
-			ParameterMappingSpec[] clonedSpecs = clonedTask.getModelOptimizationSpec().getParameterMappingSpecs();
+			ParameterEstimationTask clonedTask = ParestRun.cloneParameterEstimationTask(origTask);
+			//clonedTask.setOptimizationResultSet(null);
 			
 			//
 			// set all parameter values to "best", then change the "scan parameter"
 			//
-			for (int i=0;i<bestResultSet.getParameterNames().length;i++){
-				String name = bestResultSet.getParameterNames()[i];
-				double value = bestResultSet.getBestEstimates()[i];
+			for (int i=0;i<paramNames.length;i++){
+				String name = paramNames[i];
+				double value = bestParamValues[i];
 				clonedTask.getModelOptimizationSpec().getParameterMappingSpec(name).setCurrent(value);
 			}
-			ParameterMappingSpec clonedSpec = ParestRun.findByParameterName(clonedSpecs, parameterName);
+			ParameterMappingSpec clonedSpec = ParestRun.findByParameterName(clonedTask.getModelOptimizationSpec().getParameterMappingSpecs(), parameterName);
 			int N = this.decreasingParestRuns.size()+1;
 			double currentDecreasingValue = clonedSpec.getCurrent() * Math.pow(1.0/factor,N);
 			clonedSpec.setCurrent(currentDecreasingValue);
-			clonedSpec.setHigh(currentDecreasingValue+epsilon);
-			clonedSpec.setLow(currentDecreasingValue-epsilon);
+			clonedSpec.setHigh(currentDecreasingValue*(1+epsilon));
+			clonedSpec.setLow(currentDecreasingValue*(1-epsilon));
 			
-			ParestRun decParestRun = new ParestRun(clonedTask,bestResultSet);
+			ParestRun decParestRun = new ParestRun(clonedTask,paramNames,bestParamValues);
 			
 			this.decreasingParestRuns.add(decParestRun);
+			
 			return decParestRun;
 		}
 		
+		public void resetRun(ParameterEstimationTask t){
+			ParameterEstimationTask clonedTask = ParestRun.cloneParameterEstimationTask(t);
+			ParameterMappingSpec[] clonedSpecs = clonedTask.getModelOptimizationSpec().getParameterMappingSpecs();
+			ParameterMappingSpec clonedSpec = ParestRun.findByParameterName(clonedSpecs, parameterName);
+			double current = clonedSpec.getCurrent();
+			double high = clonedSpec.getHigh();
+			double low = clonedSpec.getLow();
+			clonedSpec.setCurrent(current);
+			clonedSpec.setHigh(high);
+			clonedSpec.setLow(low);
+			return;
+		}
 //		public ParestRun getInitialParameters(ParameterMappingSpec[] parameterMappingSpecs){
 //			ParameterEstimationTask clonedTask = ParestRun.cloneParameterEstimationTask(task);
 //			ParameterMappingSpec[] origSpecs = clonedTask.getModelOptimizationSpec().getParameterMappingSpecs();
@@ -188,19 +247,62 @@ public class ProfileLikelihood {
 			}
 			return buffer.toString();
 		}
-	}
+		//reports the output
+		public String getSummary(){
+			StringBuffer buffer = new StringBuffer();
+			buffer.append("Scan for parameter "+parameterName+"\n");
+			ParestRun lastIncreasingRun = increasingParestRuns.get(increasingParestRuns.size()-1);
+			int paramIndex = ParestRun.getParamIndex(paramNames, parameterName);
+			buffer.append("last increasing run (" + parameterName + " = " + lastIncreasingRun.getParameterInitialGuess()[paramIndex] + ") \n");
+			buffer.append("     "+lastIncreasingRun.getReport());
+			ParestRun lastDecreasingRun = decreasingParestRuns.get(decreasingParestRuns.size()-1);
+			buffer.append("last decreasing run (" + parameterName + " = " + lastDecreasingRun.getParameterInitialGuess()[paramIndex] + ") \n");
+			buffer.append("     "+lastDecreasingRun.getReport());
 
+			HashMap<Double,Double> map = getParameterScanValuesMap();
+			Double[] paramValues = map.keySet().toArray(new Double[0]);
+			Arrays.sort(paramValues);
+			for (Double paramValue : paramValues){
+				double objectiveFunctionValue = map.get(paramValue);
+				buffer.append(paramValue + " --> " + objectiveFunctionValue + "\n");
+			}
+			return buffer.toString();
+			
+		}
+
+		
+		public HashMap<Double,Double> getParameterScanValuesMap(){
+			HashMap<Double,Double> parameterToObjectiveFunctionMap = new HashMap<>();
+			int paramIndex = ParestRun.getParamIndex(paramNames,parameterName);
+			// best fit at nominal value
+			parameterToObjectiveFunctionMap.put(bestParamValues[paramIndex],bestObjectiveFunction);
+			for (ParestRun decRun : decreasingParestRuns){
+				parameterToObjectiveFunctionMap.put(decRun.getParameterInitialGuess()[paramIndex], decRun.getObjectiveFunctionValue());
+			}
+			for (ParestRun incRun : increasingParestRuns){
+				parameterToObjectiveFunctionMap.put(incRun.getParameterInitialGuess()[paramIndex], incRun.getObjectiveFunctionValue());
+			}
+			return parameterToObjectiveFunctionMap;
+		}
+	}
 	
+
+	//this is where the parameter estimation run is continued and updated
 	public static class ParestRun {
+		
+		//bFakeOptiimization is for a "fake" run to test how it runs
 		static boolean bFakeOptimization = false;
 		ParameterEstimationTask task;
-		final OptSolverResultSet bestFit;
+		final String[] paramNames;
+		final double[] bestParamValues;
+//		final OptSolverResultSet bestFit;
 		OptimizationResultSet resultSet;
 		
-		public ParestRun(ParameterEstimationTask task, OptSolverResultSet bestFit){
+		public ParestRun(ParameterEstimationTask task, String[] paramNames, double[] bestParamValues){
 			// make a snapshot of the current parameter mapping spec values (since the object will be altered later)
 			this.task = task;
-			this.bestFit = bestFit;
+			this.paramNames = paramNames;
+			this.bestParamValues = bestParamValues;
 		}
 		
 		public static ParameterMappingSpec findByParameterName(ParameterMappingSpec[] specs, String name){
@@ -212,27 +314,35 @@ public class ProfileLikelihood {
 			throw new RuntimeException("couldn't find parameterMappingSpec with name " + name);
 		}
 
-		public static ParameterMappingSpec[] cloneParameterMappingSpecs(ParameterMappingSpec[] argParameterMappingSpecs) {
-			ParameterMappingSpec[] specs = new ParameterMappingSpec[argParameterMappingSpecs.length];
-			for (int i=0; i<specs.length;i++){
-				specs[i] = (argParameterMappingSpecs[i]);
+		public static ParameterEstimationTask cloneParameterEstimationTask(ParameterEstimationTask originalTask) {
+			BioModel clonedBioModel;
+			try {
+				clonedBioModel = XmlHelper.XMLToBioModel(new XMLSource(XmlHelper.bioModelToXML(originalTask.getSimulationContext().getBioModel())));
+				clonedBioModel.refreshDependencies();
+				SimulationContext clonedSimContext = clonedBioModel.getSimulationContext(originalTask.getSimulationContext().getName());
+				ParameterEstimationTask taskCopy1 = (ParameterEstimationTask)clonedSimContext.getAnalysisTasks(0);
+				taskCopy1.refreshMappings();
+				return taskCopy1;
+			} catch (XmlParseException | MappingException | MathException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to clone BioModel");
 			}
-			return specs;
 		}
 		
-		public static ParameterEstimationTask cloneParameterEstimationTask(ParameterEstimationTask originalTask) {
-			BioModel clonedBioModel = originalTask.getSimulationContext().getBioModel();
-			clonedBioModel.refreshDependencies();
-			SimulationContext clonedSimContext = clonedBioModel.getSimulationContext(originalTask.getSimulationContext().getName());
-			ParameterEstimationTask taskCopy1 = (ParameterEstimationTask)clonedSimContext.getAnalysisTasks(0);
-			return taskCopy1;
+		static int getParamIndex(String[] paramNames, String parameterName) {
+			int paramIndex = 0;
+			for (;paramIndex<paramNames.length;paramIndex++){
+				if (paramNames[paramIndex].equals(parameterName)){
+					break;
+				}
+			}
+			return paramIndex;
 		}
 
+		//this runs the parameter estimation and updates results
 		public void optimize() throws Exception{
-			if (bFakeOptimization && bestFit!=null){
+			if (bFakeOptimization && bestParamValues!=null){
 				double objFunction = 1; // bestFit.getLeastObjectiveFunctionValue();
-				String[] paramNames = bestFit.getParameterNames();
-				double[] bestParamValues = bestFit.getBestEstimates();
 				ParameterMappingSpec[] currentParmMappingSpecs = task.getModelOptimizationSpec().getParameterMappingSpecs();
 				double[] currParamValues = new double[bestParamValues.length];
 				for (int i=0; i<paramNames.length;i++){
@@ -245,35 +355,139 @@ public class ProfileLikelihood {
 				OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION,"worked");
 				OptRunResultSet runResults = new OptRunResultSet(currParamValues, objFunction, 100L, status);
 				this.resultSet = new OptimizationResultSet(new OptSolverResultSet(paramNames, runResults),null);
+				task.setOptimizationResultSet(this.resultSet);
 			}else{
 				this.resultSet = OptimizationService.optimize(task);
+				task.setOptimizationResultSet(this.resultSet);
+				if (bFakeOptimization){
+					ParameterMappingSpec[] currentParmMappingSpecs = task.getModelOptimizationSpec().getParameterMappingSpecs();
+					double[] currParamValues = new double[paramNames.length];
+					for (int i=0; i<paramNames.length;i++){
+						ParameterMappingSpec currSpec = ParestRun.findByParameterName(currentParmMappingSpecs, paramNames[i]);
+						double currParamValue = currSpec.getCurrent();
+						currParamValues[i] = currParamValue;
+					}
+					double objFunction = 1; // bestFit.getLeastObjectiveFunctionValue();
+					OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION,"worked");
+					OptRunResultSet runResults = new OptRunResultSet(currParamValues, objFunction, 100L, status);
+					this.resultSet = new OptimizationResultSet(new OptSolverResultSet(paramNames, runResults),null);
+					task.setOptimizationResultSet(this.resultSet);
+				}
 			}
-			System.out.println("ParestRun.optimize():  bFake="+bFakeOptimization+", report="+getReport());
+			try {
+				System.out.println("ParestRun.optimize():  bFake="+bFakeOptimization+", report="+getReport());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
-		public static double[] getParameterValues(ParameterEstimationTask task){
+		public String[] getParameterNames(){
+			return getParameterNames(this.task);
+		}
+		
+		public static String[] getParameterNames(ParameterEstimationTask task){
+			ParameterMappingSpec[] specs = task.getModelOptimizationSpec().getParameterMappingSpecs();
+			String[] names = new String[task.getModelOptimizationSpec().getNumberSelectedParameters()];
+			int index = 0;
+			for (int i=0;i<specs.length;i++){
+				if (specs[i].isSelected()){
+					names[index++] = specs[i].getModelParameter().getName();
+				}
+			}
+			return names;
+		}
+		
+		public double[] getParameterLimitsLow(){
+			return getParameterLimitsLow(this.task);
+		}
+		public double[] getParameterLimitsHigh(){
+			return getParameterLimitsHigh(this.task);
+		}
+		public double[] getParameterInitialGuess(){
+			return getParameterInitialGuess(this.task);
+		}
+		
+		public static double[] getParameterLimitsLow(ParameterEstimationTask task){
+			ParameterMappingSpec[] specs = task.getModelOptimizationSpec().getParameterMappingSpecs();
+			double[] lowLimits = new double[task.getModelOptimizationSpec().getNumberSelectedParameters()];
+			int index = 0;
+			for (int i=0;i<specs.length;i++){
+				if (specs[i].isSelected()){
+					lowLimits[index++] = specs[i].getLow();
+				}
+			}
+			return lowLimits;
+		}
+		
+		public static double[] getParameterLimitsHigh(ParameterEstimationTask task){
+			ParameterMappingSpec[] specs = task.getModelOptimizationSpec().getParameterMappingSpecs();
+			double[] highLimits = new double[task.getModelOptimizationSpec().getNumberSelectedParameters()];
+			int index = 0;
+			for (int i=0;i<specs.length;i++){
+				if (specs[i].isSelected()){
+					highLimits[index++] = specs[i].getHigh();
+				}
+			}
+			return highLimits;
+		}
+		
+		public static double[] getParameterInitialGuess(ParameterEstimationTask task){
+			ParameterMappingSpec[] specs = task.getModelOptimizationSpec().getParameterMappingSpecs();
+			double[] current = new double[task.getModelOptimizationSpec().getNumberSelectedParameters()];
+			int index = 0;
+			for (int i=0;i<specs.length;i++){
+				if (specs[i].isSelected()){
+					current[index++] = specs[i].getCurrent();
+				}
+			}
+			return current;
+		}
+		
+		public double[] getFittedParameterValues(){
+			return getFittedParameterValues(this.task);
+		}
+		
+		public static double[] getFittedParameterValues(ParameterEstimationTask task){
 			ParameterMappingSpec[] specs = task.getModelOptimizationSpec().getParameterMappingSpecs();
 			double[] values = new double[task.getModelOptimizationSpec().getNumberSelectedParameters()];
 			int index = 0;
 			for (int i=0;i<specs.length;i++){
 				if (specs[i].isSelected()){
-					values[index++] = specs[i].getCurrent();
+					values[index++] = task.getCurrentSolution(specs[i]);
 				}
 			}
 			return values;
+		}		
+
+		public String getReport(){
+			if (bestParamValues!=null){
+				return "Run:  objectiveValue = "+ getObjectiveFunctionValue() + "\n" +
+						"params  [" + Arrays.toString(paramNames) + "]" + "\n" +
+						"best**  [" + Arrays.toString(bestParamValues) + "]" + "\n" +
+						"fitted  [" + Arrays.toString(getFittedParameterValues()) + "]" + "\n" +
+						"low     [" + Arrays.toString(getParameterLimitsLow()) +"]\n" +
+						"initial [" + Arrays.toString(getParameterInitialGuess()) +"]\n" +
+						"high    [" + Arrays.toString(getParameterLimitsHigh()) +"]\n\n";
+			}else{
+				return "Run:  objectiveValue = "+ getObjectiveFunctionValue() + "\n" +
+						"params  [" + Arrays.toString(paramNames) + "]" + "\n" +
+						"best**  []" + "\n" +
+						"fitted  [" + Arrays.toString(getFittedParameterValues()) + "]" + "\n" +
+						"low     [" + Arrays.toString(getParameterLimitsLow()) +"]\n" +
+						"initial [" + Arrays.toString(getParameterInitialGuess()) +"]\n" +
+						"high    [" + Arrays.toString(getParameterLimitsHigh()) +"]\n\n";
+			}
 		}
 		
-		public String getReport(){
-			double data[] = getParameterValues(task);
-
-			double leastObjectiveFunctionValue = this.resultSet.getOptSolverResultSet().getLeastObjectiveFunctionValue();
-			
-			return "params2 [" + Arrays.toString(data) + "], objectiveValue = "+ leastObjectiveFunctionValue + "\n";
+		public double getObjectiveFunctionValue() {
+			return task.getOptimizationResultSet().getOptSolverResultSet().getLeastObjectiveFunctionValue();
+			//lastDecreasingParestRun.resultSet.getOptSolverResultSet().getLeastObjectiveFunctionValue();
 		}
 		
 	}
 
-	
+	//main
 	public static void main(String[] args) {
 		try {
 			ResourceUtil.setNativeLibraryDirectory();
@@ -284,7 +498,7 @@ public class ProfileLikelihood {
 			SimulationContext app = biomodel.getSimulationContext("Deterministic");
 			AnalysisTask[] task = app.getAnalysisTasks();
 			
-			ParestRun.bFakeOptimization = true;
+			//ParestRun.bFakeOptimization = true;
 
 		
 			final ProfileLikelihoodCallback callback = new ProfileLikelihoodCallback() {
@@ -312,189 +526,31 @@ public class ProfileLikelihood {
 
 	
 	public void run(ParameterEstimationTask taskOrig) throws Exception {
-		//ModelOptimizationSpec specOrig = taskOrig.getModelOptimizationSpec();
-		//ParameterMappingSpec[] parameterMappingSpecsOrig = specOrig.getParameterMappingSpecs();
-		
-		//run with current parameters
-		
-//		double keepCurrent = parameterMappingSpecsOrig[1].getCurrent();
-//		double keepHigh = parameterMappingSpecsOrig[1].getHigh();
-//		double keepLow = parameterMappingSpecsOrig[1].getLow();
-//		OptimizationResultSet objvalueOrig = OptimizationService.optimize(taskOrig);
-		ParestRun bestFitRun = new ParestRun(ParestRun.cloneParameterEstimationTask(taskOrig),null);
+		String[] parameterNames = ParestRun.getParameterNames(taskOrig);
+		ParestRun bestFitRun = new ParestRun(ParestRun.cloneParameterEstimationTask(taskOrig),parameterNames,null);
 		bestFitRun.optimize();
 		
-		ProfilelikelihoodDataset dataset = new ProfilelikelihoodDataset(taskOrig,bestFitRun);
-		
+		ProfilelikelihoodDataset dataset = new ProfilelikelihoodDataset(taskOrig,bestFitRun.getParameterNames(),bestFitRun.getFittedParameterValues(),bestFitRun.getObjectiveFunctionValue());
 
-//		double objectiveFunctionLimit = 2 * objfuncOrig;
-		
-		
-		//this will set new parameters in the positive direction
-		double factor = 1.2;
-		
-
-		ParameterMappingSpec[] parameterMappingSpecsCopy = taskOrig.getModelOptimizationSpec().getParameterMappingSpecs();
-		for (ParameterMappingSpec parameterMappingSpec : parameterMappingSpecsCopy){
-			if (!parameterMappingSpec.isSelected()){
-				continue;
-			}
-			String parameterName = parameterMappingSpec.getModelParameter().getName();
+		for (String parameterName : parameterNames){
+			double factor = 1.2;
 			ParameterScan scan = dataset.createParameterScan(parameterName);
-			double keepcurrent = parameterMappingSpecsCopy[1].getCurrent();
-			double keephigh = parameterMappingSpecsCopy[1].getHigh();
-			double keeplow = parameterMappingSpecsCopy[1].getLow();
 			while (!scan.reachedDecreasingRunErrorLimit()){
 				ParestRun run = scan.createDecreasingRun(factor);
 				run.optimize();
-//				System.out.println(parameterMappingSpecsCopy[1].getCurrent());
-//				System.out.println(parameterMappingSpecsCopy[1].getHigh());
-//				System.out.println(parameterMappingSpecsCopy[1].getLow());
 				System.out.println(run.getReport());
 			}
-			parameterMappingSpecsCopy[1].setCurrent(keepcurrent);
-			parameterMappingSpecsCopy[1].setHigh(keephigh);
-			parameterMappingSpecsCopy[1].setLow(keeplow);
 			while (!scan.reachedIncreasingRunErrorLimit()){
 				ParestRun run = scan.createIncreasingRun(factor);
 				run.optimize();
-				System.out.println(parameterMappingSpecsCopy[1].getCurrent());
-				System.out.println(parameterMappingSpecsCopy[1].getHigh());
-				System.out.println(parameterMappingSpecsCopy[1].getLow());
 				System.out.println(run.getReport());
 			}
 		}
+		System.out.println(dataset.getSummary());
 		//System.out.println(dataset.getReport());
 	}
-	//call parameter est.
-			//save the values
-			//take the first parameter remove from list
-			//drag a parameter from current value in positive direction until error becomes 2x as large
-			//repeat in negative direction as 2x as large
-			//record parameter min and max values until this happens
-			//restore original parameter and go onto next parameter
-			//repeat for all parameters
+	
 	
 }
 			//serializable didn't work, this clones the biomodel to get a copy
-			
-			
-			
-			//should be operating on the copy of the model/parameter specs
-			
-				//have j be iterations until 2x obj value is goal
-//		int j = 0;
-//			while (j < 3){
-//				
-//				ParestRun parestRun = scan.createIncreasingRun(factor);
-//				parestRun.optimize();
-//				System.out.println(parestRun.getReport());
-				
-				
-				
-						//System.out.println("Check2");
-				//int n=1;
-				
-				//forward
-				
-				
-						
-//				double Current = parameterMappingSpecsCopy[n].getCurrent();
-//				//multiply by 2 to increase parameters 
-//				double newCurrent = Current * 1.1; 
-//				parameterMappingSpecsCopy[n].setCurrent(newCurrent);
-//				//parameterMappingSpec.setCurrent(newCurrent);
-//						
-//				double High = parameterMappingSpecsCopy[n].getHigh();
-//				double newHigh = High * 1.1;
-//				parameterMappingSpecsCopy[n].setHigh(newHigh);
-//				//parameterMappingSpec.setHigh(newHigh);
-//						
-//				double Low = parameterMappingSpecsCopy[n].getLow();
-//				double newLow = Low * 1.1;
-//				parameterMappingSpecsCopy[n].setLow(newLow);
-//				//parameterMappingSpec.setLow(newLow);
-//				
-//				OptimizationResultSet objvalueCopy = OptimizationService.optimize(taskCopy1);
-//				double objfuncCopy = objvalueCopy.getOptSolverResultSet().getLeastObjectiveFunctionValue();
-//				data[j] = (int) objfuncCopy;
-//				System.out.println(data);
-//				System.out.println("This is the new current guess: " + newCurrent);
-//				System.out.println("This is the new current high: " + newHigh);
-//				System.out.println("This is the new current low: " + newLow);
-//				System.out.println(objfuncOrig + "," + objfuncCopy);
-//					
-//				//System.out.println("Check3");
-//				System.out.println("Initial current guess: " + keepCurrent);
-//				System.out.println("Initial current high: " + keepHigh);
-//				System.out.println("Initial current low: " + keepLow);
-				//double newobj1 = objvalue.getOptSolverResultSet().getLeastObjectiveFunctionValue();
-				//System.out.println(newobj1);
-				//j++;
-//				if (objfuncCopy < obj2){
-//				//specOrig = specCopy;
-//				j++;
-//				}
-//				else{
-//					System.out.println("TEST");
-//				}
-				
-				//negative direction
-//				while (j < 3){
-//					OptimizationResultSet objvalueCopy2 = OptimizationService.optimize(taskCopy);
-//							
-//					double Current2 = parameterMappingSpecsCopy[n].getCurrent();
-//					//multiply by 2 to increase parameters 
-//					double newCurrent2 = Current / 1.1; 
-//					parameterMappingSpecsCopy[n].setCurrent(newCurrent);
-//					parameterMappingSpec.setCurrent(newCurrent);
-//							
-//					double High2 = parameterMappingSpecsCopy[n].getHigh();
-//					double newHigh2 = High / 1.1;
-//					parameterMappingSpecsCopy[n].setHigh(newHigh);
-//					//parameterMappingSpec.setHigh(newHigh);
-//							
-//					double Low2 = parameterMappingSpecsCopy[n].getLow();
-//					double newLow2 = Low / 1.1;
-//					parameterMappingSpecsCopy[n].setLow(newLow);
-//					//parameterMappingSpec.setLow(newLow);
-//							
-//					double objfuncCopy2 = objvalueCopy.getOptSolverResultSet().getLeastObjectiveFunctionValue();
-
-
-
-
-
-					
-
-	
-			//System.out.println(keepCurrent);
-			//parameterMappingSpecs[n].setCurrent(keepCurrent);
-			//System.out.println(keepHigh);
-			//parameterMappingSpecs[n].setHigh(keepHigh);
-			//System.out.println(keepLow);
-			//parameterMappingSpecs[n].setLow(keepLow);
-			
-		
-		
-
-
-
-
-
-
-
-
-
-
-//	public static OptimizationResultSet calculateFittingError(ParameterEstimationTask t2) throws Exception {
-//		OptimizationResultSet objvalue = OptimizationService.optimize(t2);
-//		double objfunc = objvalue.getOptSolverResultSet().getLeastObjectiveFunctionValue();
-//		System.out.println("The best value for this set of parameters is: " + objfunc);	
-//		return objvalue;
-//	}
-
-
-	
-
 
