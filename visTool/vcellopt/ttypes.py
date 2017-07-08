@@ -80,6 +80,20 @@ class OptimizationParameterType:
     "Pf": 13,
   }
 
+class OptimizationParameterDataType:
+  INT = 0
+  DOUBLE = 1
+
+  _VALUES_TO_NAMES = {
+    0: "INT",
+    1: "DOUBLE",
+  }
+
+  _NAMES_TO_VALUES = {
+    "INT": 0,
+    "DOUBLE": 1,
+  }
+
 class OptimizationMethodType:
   EvolutionaryProgram = 0
   SRES = 1
@@ -340,19 +354,22 @@ class ReferenceVariable:
 class CopasiOptimizationParameter:
   """
   Attributes:
-   - dataType
+   - paramType
    - value
+   - dataType
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'dataType', None, None, ), # 1
+    (1, TType.I32, 'paramType', None, None, ), # 1
     (2, TType.DOUBLE, 'value', None, None, ), # 2
+    (3, TType.I32, 'dataType', None, None, ), # 3
   )
 
-  def __init__(self, dataType=None, value=None,):
-    self.dataType = dataType
+  def __init__(self, paramType=None, value=None, dataType=None,):
+    self.paramType = paramType
     self.value = value
+    self.dataType = dataType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -365,12 +382,17 @@ class CopasiOptimizationParameter:
         break
       if fid == 1:
         if ftype == TType.I32:
-          self.dataType = iprot.readI32();
+          self.paramType = iprot.readI32();
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.DOUBLE:
           self.value = iprot.readDouble();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.dataType = iprot.readI32();
         else:
           iprot.skip(ftype)
       else:
@@ -383,29 +405,36 @@ class CopasiOptimizationParameter:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('CopasiOptimizationParameter')
-    if self.dataType is not None:
-      oprot.writeFieldBegin('dataType', TType.I32, 1)
-      oprot.writeI32(self.dataType)
+    if self.paramType is not None:
+      oprot.writeFieldBegin('paramType', TType.I32, 1)
+      oprot.writeI32(self.paramType)
       oprot.writeFieldEnd()
     if self.value is not None:
       oprot.writeFieldBegin('value', TType.DOUBLE, 2)
       oprot.writeDouble(self.value)
       oprot.writeFieldEnd()
+    if self.dataType is not None:
+      oprot.writeFieldBegin('dataType', TType.I32, 3)
+      oprot.writeI32(self.dataType)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.dataType is None:
-      raise TProtocol.TProtocolException(message='Required field dataType is unset!')
+    if self.paramType is None:
+      raise TProtocol.TProtocolException(message='Required field paramType is unset!')
     if self.value is None:
       raise TProtocol.TProtocolException(message='Required field value is unset!')
+    if self.dataType is None:
+      raise TProtocol.TProtocolException(message='Required field dataType is unset!')
     return
 
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.dataType)
+    value = (value * 31) ^ hash(self.paramType)
     value = (value * 31) ^ hash(self.value)
+    value = (value * 31) ^ hash(self.dataType)
     return value
 
   def __repr__(self):
