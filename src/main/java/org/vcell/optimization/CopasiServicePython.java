@@ -36,6 +36,8 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.VCellConfiguration;
 
 public class CopasiServicePython {
 	
@@ -222,7 +224,8 @@ public class CopasiServicePython {
 
 	public static void runCopasiPython(File copasiOptProblemFile, File copasiResultsFile) throws IOException {
 		//It's 2015 -- forward slash works for all operating systems
-		String[] cmd = new String[] { PYTHON_EXE_PATH,VIS_TOOL+"/optService.py",copasiOptProblemFile.getAbsolutePath(), copasiResultsFile.getAbsolutePath()};
+		final String PYTHON = "/Users/schaff/anaconda/bin/python";
+		String[] cmd = new String[] { PYTHON,VIS_TOOL+"/optService.py",copasiOptProblemFile.getAbsolutePath(), copasiResultsFile.getAbsolutePath()};
 		IExecutable exe = prepareExecutable(cmd);
 		try {
 			exe.start( new int[] { 0 });
