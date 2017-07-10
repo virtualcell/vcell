@@ -1,15 +1,8 @@
 package org.vcell;
 
 import net.imagej.Dataset;
-import net.miginfocom.layout.AC;
 import org.scijava.Context;
-import org.scijava.display.Display;
-import org.scijava.ui.UserInterface;
-import org.scijava.ui.swing.viewer.SwingDisplayPanel;
 import org.scijava.ui.swing.viewer.SwingDisplayWindow;
-import org.scijava.ui.viewer.AbstractDisplayViewer;
-import org.scijava.ui.viewer.DisplayWindow;
-import sun.jvm.hotspot.debugger.cdbg.DoubleType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +25,8 @@ public class MainView extends SwingDisplayWindow {
     private JMenuItem mniSaveAs;
     private JMenuItem mniImportData;
     private JMenuItem mniImportGeometry;
-    private JMenuItem mniImportResults;
+    private JMenuItem mniImportResultsTimeSeries;
+    private JMenuItem mniImportResultsSingle;
     private JMenuItem mniExport;
 
     // Menu items under "Edit"
@@ -40,6 +34,7 @@ public class MainView extends SwingDisplayWindow {
 
     // Menu items under "Experiments"
     private JMenuItem mniConstructTIRFGeometry;
+    private JMenuItem mniConstructTIRFImage;
 
     // Panels of datasets
     private DatasetListPanel pnlData;
@@ -51,7 +46,7 @@ public class MainView extends SwingDisplayWindow {
 
     private Context context;
 
-    public MainView(VCellModel model, Context context) {
+    public MainView(MainModel model, Context context) {
         this.context = context;
         initializeContentPane(model);
         initializeMenuBar();
@@ -60,7 +55,7 @@ public class MainView extends SwingDisplayWindow {
         pack();
     }
 
-    private void initializeContentPane(VCellModel model) {
+    private void initializeContentPane(MainModel model) {
 
         JPanel contentPane = new JPanel();
 
@@ -72,11 +67,11 @@ public class MainView extends SwingDisplayWindow {
         contentPane.add(lblProjectDescription, BorderLayout.PAGE_START);
 
         // Tabbed pane initialization
-        VCellProject project = model.getVCellProject();
+        Project project = model.getProject();
         if (project != null) {
-            pnlData = new DatasetListPanel(project.getExperimentalDatasets());
-            pnlGeometry = new DatasetListPanel(project.getGeometryDefinitions());
-            pnlResults = new DatasetListPanel(project.getvCellResults());
+            pnlData = new DatasetListPanel(project.getData());
+            pnlGeometry = new DatasetListPanel(project.getGeometry());
+            pnlResults = new DatasetListPanel(project.getResults());
         } else {
             pnlData = new DatasetListPanel(new ArrayList<>());
             pnlGeometry = new DatasetListPanel(new ArrayList<>());
@@ -118,10 +113,14 @@ public class MainView extends SwingDisplayWindow {
 
         mniImportData = new JMenuItem("Experimental data...");
         mniImportGeometry = new JMenuItem("Geometry definition...");
-        mniImportResults = new JMenuItem("VCell results...");
         mnuImport.add(mniImportData);
         mnuImport.add(mniImportGeometry);
-        mnuImport.add(mniImportResults);
+        JMenu mnuImportResults = new JMenu("VCell results");
+        mniImportResultsSingle = new JMenuItem("Single image...");
+        mniImportResultsTimeSeries = new JMenuItem("Time series...");
+        mnuImportResults.add(mniImportResultsSingle);
+        mnuImportResults.add(mniImportResultsTimeSeries);
+        mnuImport.add(mnuImportResults);
         mnuFile.add(mnuImport);
 
         mniExport = new JMenuItem("Export...");
@@ -137,7 +136,9 @@ public class MainView extends SwingDisplayWindow {
 
         JMenu mnuTIRF = new JMenu("TIRF");
         mniConstructTIRFGeometry = new JMenuItem("Construct TIRF geometry...");
+        mniConstructTIRFImage = new JMenuItem("Construct TIRF image...");
         mnuTIRF.add(mniConstructTIRFGeometry);
+        mnuTIRF.add(mniConstructTIRFImage);
         mnuExperiments.add(mnuTIRF);
 
         menuBar.add(mnuFile);
@@ -152,8 +153,8 @@ public class MainView extends SwingDisplayWindow {
         mniSave.setEnabled(enabled);
         mniSaveAs.setEnabled(enabled);
         mniImportData.setEnabled(enabled);
-        mniImportGeometry.setEnabled(enabled);
-        mniImportResults.setEnabled(enabled);
+        mniImportResultsSingle.setEnabled(enabled);
+        mniImportResultsTimeSeries.setEnabled(enabled);
         mniExport.setEnabled(enabled);
         mniDelete.setEnabled(enabled);
         mniConstructTIRFGeometry.setEnabled(enabled);
@@ -164,16 +165,16 @@ public class MainView extends SwingDisplayWindow {
         return selectedPanel.getSelectedDataset();
     }
 
-    private void registerModelChangeListener(VCellModel model) {
+    private void registerModelChangeListener(MainModel model) {
         model.addChangeListener(e -> {
             System.out.println("View heard model changed.");
-            VCellProject project = model.getVCellProject();
+            Project project = model.getProject();
             if (project == null) return;
             setProjectDependentMenuItemsEnabled(true);
             lblProjectDescription.setText(project.getTitle());
-            pnlData.updateList(project.getExperimentalDatasets());
-            pnlGeometry.updateList(project.getGeometryDefinitions());
-            pnlResults.updateList(project.getvCellResults());
+            pnlData.updateList(project.getData());
+            pnlGeometry.updateList(project.getGeometry());
+            pnlResults.updateList(project.getResults());
         });
     }
 
@@ -201,8 +202,12 @@ public class MainView extends SwingDisplayWindow {
         mniImportGeometry.addActionListener(l);
     }
 
-    public void addImportResultsListener(ActionListener l) {
-        mniImportResults.addActionListener(l);
+    public void addImportResultsSingleListener(ActionListener l) {
+        mniImportResultsSingle.addActionListener(l);
+    }
+
+    public void addImportResultsTimeSeriesListener(ActionListener l) {
+        mniImportResultsTimeSeries.addActionListener(l);
     }
 
     public void addExportListener(ActionListener l) {
@@ -213,8 +218,12 @@ public class MainView extends SwingDisplayWindow {
         mniDelete.addActionListener(l);
     }
 
-    public void addConstructTIRFGeometry(ActionListener l) {
+    public void addConstructTIRFGeometryListener(ActionListener l) {
         mniConstructTIRFGeometry.addActionListener(l);
+    }
+
+    public void addConstructTIRFImageListener(ActionListener l) {
+        mniConstructTIRFImage.addActionListener(l);
     }
 
     public void addDisplayListener(ActionListener l) {

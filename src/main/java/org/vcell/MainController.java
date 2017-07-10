@@ -1,22 +1,19 @@
 package org.vcell;
 
 import io.scif.services.DatasetIOService;
-import javafx.stage.FileChooser;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.ops.OpService;
+import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
-import org.scijava.command.Command;
-import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.display.DisplayService;
-import org.scijava.plugin.PluginService;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
 
 
 /**
@@ -24,29 +21,35 @@ import java.util.concurrent.Future;
  */
 public class MainController {
 
-    private VCellModel model;
+    private MainModel model;
     private MainView view;
     private Context context;
-    private VCellProjectService vCellProjectService;
     private DatasetService datasetService;
     private DatasetIOService datasetIOService;
     private CommandService commandService;
+    private OpService opService;
+    private DisplayService displayService;
+    private ProjectService projectService;
+    private VCellResultsService vCellResultsService;
 
-    public MainController(VCellModel model, MainView view, Context context) {
+    public MainController(MainModel model, MainView view, Context context) {
         this.model = model;
         this.view = view;
         this.context = context;
-        vCellProjectService = new VCellProjectService();
         datasetService = context.getService(DatasetService.class);
         datasetIOService = context.getService(DatasetIOService.class);
         commandService = context.getService(CommandService.class);
+        opService = context.getService(OpService.class);
+        displayService = context.getService(DisplayService.class);
+        projectService = new ProjectService(datasetIOService, opService, displayService);
+        vCellResultsService = new VCellResultsService(opService, datasetService);
         addActionListenersToView();
     }
 
     private void addActionListenersToView() {
 
         view.addNewListener(event -> {
-            model.setVCellProject(new VCellProject("New project"));
+            model.setProject(new Project("New project"));
         });
 
         view.addOpenListener(event -> {
@@ -54,12 +57,12 @@ public class MainController {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int returnVal = fileChooser.showOpenDialog(view);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                model.setVCellProject(vCellProjectService.load(fileChooser.getSelectedFile(), datasetIOService));
+                model.setProject(projectService.load(fileChooser.getSelectedFile()));
             }
         });
 
         view.addSaveListener(event -> {
-            vCellProjectService.save(model.getVCellProject(), datasetIOService);
+            projectService.save(model.getProject());
         });
 
         view.addSaveAsListener(event -> {
@@ -67,8 +70,8 @@ public class MainController {
             int returnVal = fileChooser.showSaveDialog(view);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
-                vCellProjectService.saveAs(model.getVCellProject(), file, datasetIOService);
-                model.setVCellProjectTitle(file.getName());
+                projectService.saveAs(model.getProject(), file);
+                model.setProjectTitle(file.getName());
             }
         });
 
@@ -90,12 +93,25 @@ public class MainController {
             }
         });
 
-        view.addImportResultsListener(event -> {
+        view.addImportResultsSingleListener(event -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             if (presentOpenFileChooser(fileChooser)) {
                 Dataset dataset = getDatasetFromFile(fileChooser.getSelectedFile());
                 model.addResult(dataset);
+            }
+        });
+
+        view.addImportResultsTimeSeriesListener(event -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (presentOpenFileChooser(fileChooser)) {
+                try {
+                    Dataset dataset = vCellResultsService.importCsv(fileChooser.getSelectedFile());
+                    model.addResult(dataset);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -124,26 +140,70 @@ public class MainController {
             }
         });
 
-        view.addConstructTIRFGeometry(event -> {
-            System.out.println("Construct TIRF geometry started");
-            Dataset dataset = view.getSelectedDataset();
-            DisplayService displayService = context.getService(DisplayService.class);
-            if (displayService.getDisplays(dataset).isEmpty()) {
-                displayService.createDisplay(dataset);
+        view.addConstructTIRFGeometryListener(event -> {
+
+            ArrayList<Dataset> dataList = model.getProject().getData();
+            Dataset[] dataArray = dataList.toArray(new Dataset[dataList.size()]);
+
+            ConstructTIRFGeometryInputPanel panel = new ConstructTIRFGeometryInputPanel(dataArray);
+            int returnVal = JOptionPane.showConfirmDialog(
+                    view,
+                    panel,
+                    "Construct TIRF Geometry",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE);
+
+            if (returnVal == JOptionPane.OK_OPTION) {
+                Dataset dataset = panel.getData();
+                int sliceIndex = panel.getSliceIndex();
+                double wavelength = panel.getWavelength();
+                double angle = panel.getAngle();
+                double zSpacing = panel.getZSpacing();
+                Dataset geometry = (Dataset) opService.run(
+                        "constructTIRFGeometry", dataset, sliceIndex, wavelength, angle, zSpacing);
+                String baseName = FilenameUtils.getBaseName(dataset.getName());
+                String extension = FilenameUtils.getExtension(dataset.getName());
+                geometry.setName(baseName + "_geometry." + extension);
+                model.addGeometry(geometry);
             }
-            Future<CommandModule> commandModuleFuture = commandService.run(ConstructTIRFGeometry.class, true);
-//            try {
-//                System.out.println("About to get");
-//                commandModuleFuture.get();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            } catch (ExecutionException e) {
-//                e.printStackTrace();
-//            }
+        });
+
+        view.addConstructTIRFImageListener(event -> {
+            ArrayList<Dataset> geometry = model.getProject().getGeometry();
+            ArrayList<Dataset> results = model.getProject().getResults();
+            Dataset[] geometryArray = geometry.toArray(new Dataset[geometry.size()]);
+            Dataset[] resultsArray = results.toArray(new Dataset[results.size()]);
+            ConstructTIRFImageInputPanel panel = new ConstructTIRFImageInputPanel(geometryArray, resultsArray);
+
+            int returnVal = JOptionPane.showConfirmDialog(
+                    view,
+                    panel,
+                    "Construct TIRF Image",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE);
+
+            if (returnVal == JOptionPane.OK_OPTION) {
+                Dataset selectedGeometry = panel.getGeometry();
+                Dataset selectedMembraneResults = panel.getMembraneResults();
+                Dataset selectedVolumeResults = panel.getVolumeResults();
+                double wavelength = panel.getWavelength();
+                double angle = panel.getAngle();
+                double zSpacing = panel.getZSpacing();
+                double xySpacing = panel.getXSpacing() * panel.getYSpacing();
+                Dataset result = (Dataset) opService.run(
+                        "constructTIRFImage", selectedGeometry, selectedMembraneResults, selectedVolumeResults,
+                        wavelength, angle, zSpacing, xySpacing);
+                String baseName = FilenameUtils.getBaseName(selectedGeometry.getName());
+                if (baseName.endsWith("_geometry")) {
+                    baseName = baseName.substring(0, baseName.length() - "_geometry".length());
+                }
+                String extension = FilenameUtils.getExtension(selectedGeometry.getName());
+                result.setName(baseName + "_constructed_TIRF." + extension);
+                model.addResult(result);
+            }
         });
 
         view.addDisplayListener(event -> {
-            DisplayService displayService = context.getService(DisplayService.class);
             displayService.createDisplay(view.getSelectedDataset());
         });
     }

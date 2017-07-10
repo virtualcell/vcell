@@ -5,16 +5,24 @@ import net.imagej.DatasetService;
 import net.imagej.ops.AbstractOp;
 import net.imagej.ops.Op;
 import net.imagej.ops.OpService;
+import net.imagej.ops.Ops;
 import net.imglib2.*;
 import net.imglib2.algorithm.labeling.ConnectedComponents;
+import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.roi.labeling.*;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.ByteType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.Intervals;
+import net.imglib2.view.Views;
 import org.scijava.ItemIO;
 import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
@@ -29,7 +37,7 @@ import java.util.Iterator;
 public class ConstructTIRFGeometry<T extends RealType<T>> extends AbstractOp {
 
     @Parameter
-    private Img<T> data;
+    private RandomAccessibleInterval<T> data;
 
     @Parameter
     private int sliceIndex;
@@ -45,9 +53,6 @@ public class ConstructTIRFGeometry<T extends RealType<T>> extends AbstractOp {
 
     @Parameter
     private OpService ops;
-
-    @Parameter
-    private CopyConvert<T> copyConvert;
 
     @Parameter
     private DatasetService datasetService;
@@ -67,38 +72,29 @@ public class ConstructTIRFGeometry<T extends RealType<T>> extends AbstractOp {
         Interval interval = Intervals.createMinMax(0, 0, sliceIndex, maxX, maxY, sliceIndex);
         RandomAccessibleInterval<T> croppedRAI = ops.transform().crop(data, interval, true);
 
-        // Copy RAI to II to find minimum pixel value
-        IterableInterval<T> subtractedII = copyConvert.raiToIi(croppedRAI);
-        double min = ops.stats().min(subtractedII).getRealDouble();
-
         // Subtract lowest pixel value
-        Cursor<T> croppedCursor = subtractedII.cursor();
-        while (croppedCursor.hasNext()) {
-            double val = croppedCursor.next().getRealDouble();
-            croppedCursor.get().setReal(val - min);
+        IterableInterval<T> dataII = Views.iterable(croppedRAI);
+        double min = ops.stats().min(dataII).getRealDouble();
+        Cursor<T> dataCursor = dataII.cursor();
+        while (dataCursor.hasNext()) {
+            double val = dataCursor.next().getRealDouble();
+            dataCursor.get().setReal(val - min);
         }
 
-        // Segment slice
+        // Perform Gaussian blur
         RandomAccessibleInterval<T> blurredRAI = ops.filter().gauss(croppedRAI, 2);
-        IterableInterval<T> blurredII = copyConvert.raiToIi(blurredRAI);
-        IterableInterval<BitType> thresholded = ops.threshold().huang(blurredII);
+        IterableInterval<T> blurredII = Views.iterable(blurredRAI);
 
-        Img<BitType> thresholdedImg = ops.create().img(thresholded);
-        Cursor<BitType> thresholdedCursor = thresholded.localizingCursor();
-        RandomAccess<BitType> thresholdedImgRA = thresholdedImg.randomAccess();
-        while (thresholdedCursor.hasNext()) {
-            thresholdedCursor.fwd();
-            thresholdedImgRA.setPosition(thresholdedCursor);
-            thresholdedImgRA.get().set(thresholdedCursor.get());
-        }
+        // Segment slice by threshold and fill holes
+        IterableInterval<BitType> thresholded = ops.threshold().huang(blurredII);
+        Img<BitType> thresholdedImg = ops.convert().bit(thresholded);
         RandomAccessibleInterval<BitType> thresholdedRAI = ops.morphology().fillHoles(thresholdedImg);
 
-
         // Get the largest region
-        RandomAccessibleInterval<LabelingType<ByteType>> labeling = ops.labeling().cca(thresholdedRAI, ConnectedComponents.StructuringElement.EIGHT_CONNECTED);
+        RandomAccessibleInterval<LabelingType<ByteType>> labeling = ops.labeling().cca(thresholdedRAI,
+                ConnectedComponents.StructuringElement.EIGHT_CONNECTED);
         LabelRegions<ByteType> labelRegions = new LabelRegions<>(labeling);
         Iterator<LabelRegion<ByteType>> iterator = labelRegions.iterator();
-        System.out.println(labelRegions.getExistingLabels().size());
         LabelRegion<ByteType> maxRegion = iterator.next();
         while (iterator.hasNext()) {
             LabelRegion<ByteType> currRegion = iterator.next();
@@ -108,12 +104,12 @@ public class ConstructTIRFGeometry<T extends RealType<T>> extends AbstractOp {
         }
 
         // Generate z index map
-        double iMax = ops.stats().max(subtractedII).getRealDouble();
-        Img<T> subtractedImg = copyConvert.iiToImg(subtractedII);
-        Img<UnsignedShortType> zMap = ops.convert().uint16(ops.create().img(subtractedII));
+        double iMax = ops.stats().max(dataII).getRealDouble();
+        Img<UnsignedShortType> dataImg = ops.convert().uint16(dataII);
+        Img<UnsignedShortType> zMap = ops.convert().uint16(ops.create().img(dataII));
         LabelRegionCursor cursor = maxRegion.localizingCursor();
         RandomAccess<UnsignedShortType> zMapRA = zMap.randomAccess();
-        RandomAccess<T> dataRA = subtractedImg.randomAccess();
+        RandomAccess<UnsignedShortType> dataRA = dataImg.randomAccess();
 
         theta = theta * 2 * Math.PI / 360; // Angle of incidence in radians
         double n1 = 1.52; // Refractive index of glass
@@ -130,10 +126,12 @@ public class ConstructTIRFGeometry<T extends RealType<T>> extends AbstractOp {
         }
 
         // Use map to construct 3D geometry
-        int maxZ = (int) ops.stats().max(zMap).getRealDouble();
+        int maxZ = (int) ops.stats().max(zMap).getRealDouble() + 5; // Add 5 slices of padding on top
         long[] resultDimensions = {maxX, maxY, maxZ};
-        Img<DoubleType> result = ops.create().img(resultDimensions);
-        RandomAccess<DoubleType> resultRA = result.randomAccess();
+
+        Img<BitType> result = new ArrayImgFactory<BitType>()
+                .create(resultDimensions, new BitType());
+        RandomAccess<BitType> resultRA = result.randomAccess();
 
         cursor.reset();
         while (cursor.hasNext()) {
@@ -143,12 +141,12 @@ public class ConstructTIRFGeometry<T extends RealType<T>> extends AbstractOp {
             int[] position = {cursor.getIntPosition(0), cursor.getIntPosition(1), zIndex};
             while (position[2] < maxZ) {
                 resultRA.setPosition(position);
-                resultRA.get().set(1);
+                resultRA.get().set(true);
                 position[2]++;
             }
         }
 
         output = datasetService.create(result);
-        System.out.println("Done constructing :)");
+        System.out.println("Done constructing geometry");
     }
 }

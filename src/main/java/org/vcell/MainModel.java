@@ -1,6 +1,5 @@
 package org.vcell;
 
-import net.imagej.Data;
 import net.imagej.Dataset;
 
 import javax.swing.event.ChangeEvent;
@@ -10,48 +9,48 @@ import java.util.ArrayList;
 /**
  * Created by kevingaffney on 6/26/17.
  */
-public class VCellModel {
+public class MainModel {
 
-    private VCellProject project;
+    private Project project;
     private ArrayList<ChangeListener> changeListeners;
 
-    public VCellModel() {
+    public MainModel() {
         this.changeListeners = new ArrayList<>();
     }
 
-    public VCellProject getVCellProject() {
+    public Project getProject() {
         return project;
     }
 
-    public void setVCellProject(VCellProject project) {
+    public void setProject(Project project) {
         this.project = project;
         notifyChangeListeners();
     }
 
-    public void setVCellProjectTitle(String title) {
+    public void setProjectTitle(String title) {
         this.project.setTitle(title);
         notifyChangeListeners();
     }
 
     public void addData(Dataset data) {
-        project.getExperimentalDatasets().add(data);
+        project.getData().add(data);
         notifyChangeListeners();
     }
 
     public void addGeometry(Dataset geometry) {
-        project.getGeometryDefinitions().add(geometry);
+        project.getGeometry().add(geometry);
         notifyChangeListeners();
     }
 
     public void addResult(Dataset result) {
-        project.getvCellResults().add(result);
+        project.getResults().add(result);
         notifyChangeListeners();
     }
 
     public boolean delete(Dataset dataset) {
-        boolean success = project.getExperimentalDatasets().remove(dataset)
-                || project.getGeometryDefinitions().remove(dataset)
-                || project.getvCellResults().remove(dataset);
+        boolean success = project.getData().remove(dataset)
+                || project.getGeometry().remove(dataset)
+                || project.getResults().remove(dataset);
         notifyChangeListeners();
         return success;
     }
