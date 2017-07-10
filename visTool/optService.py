@@ -195,7 +195,8 @@ def main():
         # get FitProblem
         #
         fitProblem = fitTask.getProblem()
-        assert(isinstance(fitProblem, COPASI.CFitProblem))
+        assert(isinstance(fitProblem, COPASI.COptProblem))  # works for all COPASI builds >= 140
+        #assert(isinstance(fitProblem, COPASI.CFitProblem)) # not CFitProblem in COPASI build 140
         #fitProblem.setRandomizeStartValues(True)
 
         experimentSet = fitProblem.getParameter("Experiment Set")
@@ -294,7 +295,7 @@ def main():
             #fitItem = optimizationItemGroup.getParameter(0)
             #assert(isinstance(fitItem,COPASI.CFitItem))
         model.compileIfNecessary()
-        print optimizationItemGroup.printToString()
+        #print optimizationItemGroup.printToString()  # debug anyway, not present in COPASI build 140
 
         # --------------------------------------------------------------------------------------
         #  Run the optimization (N times)

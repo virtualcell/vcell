@@ -114,8 +114,8 @@ public class PythonConfigurationPanel extends JPanel {
 	}
 	
 	private void browsePythonExe() {
-		File pythonExe = chooseExecutableFile("find Anaconda Python executable", 
-				(File f) -> { return f.getAbsolutePath().toUpperCase().contains("ANACONDA") && f.getName().toUpperCase().contains("PYTHON"); });
+		File pythonExe = chooseExecutableFile("find Anaconda or Miniconda Python executable", 
+				(File f) -> { return f.getAbsolutePath().toUpperCase().contains("CONDA") && f.getName().toUpperCase().contains("PYTHON"); });
 		if (pythonExe == null){
 			return;
 		}
