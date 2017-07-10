@@ -39,9 +39,9 @@ public class OptimizationService {
 
 	public static OptimizationResultSet optimize(ParameterEstimationTask parameterEstimationTask) throws Exception {
 		
-		if (OperatingSystemInfo.getInstance().isMac()){
-			throw new RuntimeException("parameter estimation not currently available on Mac\n\n   try Windows or Linux.\n\n   coming soon on Mac.");
-		}
+//		if (OperatingSystemInfo.getInstance().isMac()){
+//			throw new RuntimeException("parameter estimation not currently available on Mac\n\n   try Windows or Linux.\n\n   coming soon on Mac.");
+//		}
 		copasiOptCallbacks.reset();
 
 		updateMath(parameterEstimationTask.getSimulationContext(), NetworkGenerationRequirements.ComputeFullStandardTimeout);

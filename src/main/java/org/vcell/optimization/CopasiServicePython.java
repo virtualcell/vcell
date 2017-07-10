@@ -224,8 +224,11 @@ public class CopasiServicePython {
 
 	public static void runCopasiPython(File copasiOptProblemFile, File copasiResultsFile) throws IOException {
 		//It's 2015 -- forward slash works for all operating systems
-		final String PYTHON = "/Users/schaff/anaconda/bin/python";
-		String[] cmd = new String[] { PYTHON,VIS_TOOL+"/optService.py",copasiOptProblemFile.getAbsolutePath(), copasiResultsFile.getAbsolutePath()};
+		File PYTHON = VCellConfiguration.getFileProperty(PropertyLoader.pythonExe);
+		if (PYTHON==null || !PYTHON.exists()){
+			throw new RuntimeException("python executable not specified, set python location in VCell menu File->Preferences...->Python Properties");
+		}
+		String[] cmd = new String[] { PYTHON.getAbsolutePath(),VIS_TOOL+"/optService.py",copasiOptProblemFile.getAbsolutePath(), copasiResultsFile.getAbsolutePath()};
 		IExecutable exe = prepareExecutable(cmd);
 		try {
 			exe.start( new int[] { 0 });

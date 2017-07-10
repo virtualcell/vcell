@@ -24,11 +24,13 @@ import cbit.vcell.client.configuration.ConfigurationModelNode;
 import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel;
 import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel.ConfigurationOptionsTreeFolderNode;
 import cbit.vcell.client.configuration.GeneralConfigurationPanel;
+import cbit.vcell.client.configuration.PythonConfigurationPanel;
 import cbit.vcell.client.configuration.VisItConfigurationPanel;
 
 public class VCellConfigurationPanel extends JPanel {
 	
 	private GeneralConfigurationPanel generalConfigurationPanel = null;
+	private PythonConfigurationPanel pythonConfigurationPanel = null;
 	private VisItConfigurationPanel visItConfigurationPanel = null;
 	private ComsolConfigurationPanel comsolConfigurationPanel = null;
 	private BioNetGenConfigurationPanel bioNetGenConfigurationPanel = null;
@@ -59,6 +61,8 @@ public class VCellConfigurationPanel extends JPanel {
 
 		generalConfigurationPanel = new GeneralConfigurationPanel();
 		generalConfigurationPanel.setName("generalConfigurationPanel");
+		pythonConfigurationPanel = new PythonConfigurationPanel();
+		pythonConfigurationPanel.setName("pythonConfigurationPanel");
 		visItConfigurationPanel = new VisItConfigurationPanel();
 		visItConfigurationPanel.setName("visItConfigurationPanel");
 		comsolConfigurationPanel = new ComsolConfigurationPanel();
@@ -83,6 +87,9 @@ public class VCellConfigurationPanel extends JPanel {
 		    	switch(cotfn.getFolderClass()) {
 		    	case GENERAL_NODE:
 		    		splitPane.setRightComponent(generalConfigurationPanel);
+		    		break;
+		    	case PYTHON_NODE:
+		    		splitPane.setRightComponent(pythonConfigurationPanel);
 		    		break;
 		    	case VISIT_NODE:
 		    		splitPane.setRightComponent(visItConfigurationPanel);

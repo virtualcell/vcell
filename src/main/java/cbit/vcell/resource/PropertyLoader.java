@@ -73,6 +73,9 @@ public class PropertyLoader {
 	//VisIt properties
 	public static final String visitExe						= record("vcell.visit.executable",ValueType.EXE);
 
+	//Python properties
+	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
+
 	//Stoch properties
 	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);
 	public static final String hybridEMExecutableProperty	= record("vcell.hybridEM.executable",ValueType.EXE);

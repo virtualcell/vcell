@@ -47,6 +47,7 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 	public enum ConfigurationOptionsTreeFolderClass {
 		
 		GENERAL_NODE("General Properties"),
+		PYTHON_NODE("Python Properties"),
 		VISIT_NODE("VisIt Properties"),
 		COMSOL_NODE("Comsol Properties"),
 		BIONETGEN_NODE("BioNetGen Preferences");
@@ -62,6 +63,7 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 
 	public ConfigurationOptionsTreeFolderNode configurationChildFolderNodes[] = {
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.GENERAL_NODE, true),
+			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.PYTHON_NODE, true),
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.VISIT_NODE, true),
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.COMSOL_NODE, true),
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.BIONETGEN_NODE, true),
