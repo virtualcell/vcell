@@ -2,6 +2,7 @@ package org.vcell.util.gui.exporter;
 
 import java.io.File;
 
+import org.apache.commons.io.FileUtils;
 import org.vcell.util.VCAssert;
 
 import cbit.vcell.biomodel.BioModel;
@@ -41,6 +42,8 @@ public class MatlabExtensionFilter extends SelectorExtensionFilter {
 				coder.write_V6_MFile(pw,functionName);
 				pw.flush();
 				pw.close();
+				String resultString = sw.getBuffer().toString();
+				FileUtils.writeStringToFile(exportFile, resultString);
 	}
 	
 
