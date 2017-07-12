@@ -1,25 +1,26 @@
 package cbit.vcell.mongodb;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.vcell.util.SessionLog;
 import org.vcell.util.logging.Log4jSessionLog;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.InsertManyOptions;
 
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.VCellExecutorService;
@@ -30,7 +31,7 @@ public class VCMongoDbDriver {
 	private final String mongoDbDatabaseName;
 	private final String mongoDbLoggingCollectionName;
 
-	private Mongo m = null;
+	private MongoClient m = null;
 	private ConcurrentLinkedQueue<VCMongoMessage> messageOutbox = new ConcurrentLinkedQueue<VCMongoMessage>();
 	private boolean processing = false;
 
@@ -65,7 +66,7 @@ public class VCMongoDbDriver {
    			try {
 	   			// create DBObjects for each message (to send to MongoDB)
 	   			final int limit = messageOutbox.size( ) + 16; //padded in case more messages arrive while processing queue
-	   			ArrayList<DBObject> dbObjectsToSend = new ArrayList<DBObject>(limit);
+	   			List<Document> dbObjectsToSend = new ArrayList<Document>(limit);
 	   			for ( VCMongoMessage message = messageOutbox.poll(); message != null && dbObjectsToSend.size() < limit; message = messageOutbox.poll()) {
 	    			dbObjectsToSend.add(message.getDbObject());
 	    		}
@@ -74,27 +75,24 @@ public class VCMongoDbDriver {
 	        	if (m==null){
 	        		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
 	        		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
-	        		m = new Mongo(mongoDbHost,mongoDbPort);
+	        		m = new MongoClient(mongoDbHost,mongoDbPort);
 	        	}
 	        	
-	        	DB db = m.getDB(mongoDbDatabaseName);
-	        	DBCollection dbCollection = db.getCollection(mongoDbLoggingCollectionName);
-	        	WriteConcern writeConcern = WriteConcern.SAFE;
-	        	WriteResult writeResult = dbCollection.insert(dbObjectsToSend, writeConcern);
-	        	
-	        	//
-	        	// error handling?? ... if couldn't save, then log it locally
-	        	//
-	        	String errorString = writeResult.getError();////???????
-	        	if (StringUtils.isNotEmpty(errorString) && lg.isEnabledFor(Level.WARN)) {
-        			lg.warn("VCMongoMessage failedToSend : "+ errorString);
-	        	}else if (lg.isDebugEnabled()){
-	        		lg.debug("VCMongoMessage sent : "+ dbObjectsToSend.size() + " messages");
-	        	}
-//   			} catch (MongoException e){
-//   				e.printStackTrace(System.out);
-//   			} catch (UnknownHostException e) {
-//   				e.printStackTrace(System.out);
+	        	MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
+	        	MongoCollection<Document> dbCollection = db.getCollection(mongoDbLoggingCollectionName);
+	        	//WriteConcern writeConcern = WriteConcern.ACKNOWLEDGED;
+	        	InsertManyOptions options = new InsertManyOptions().ordered(true);
+	        	try {
+		        	dbCollection.insertMany(dbObjectsToSend, options);
+		        	if (lg.isDebugEnabled()) {
+		        		lg.debug("VCMongoMessage sent : "+ dbObjectsToSend.size() + " messages");
+		        	}
+	        	} catch (MongoException e){
+		        	lg.debug("failed to write to mongodb", e);
+		        	if (lg.isEnabledFor(Level.WARN)) {
+	        			lg.warn("VCMongoMessage failedToSend : "+ e.getMessage());
+		        	}
+		        }
    			} catch (Exception e) {
    				e.printStackTrace(System.out);
    				try {
@@ -203,10 +201,11 @@ public class VCMongoDbDriver {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		MongoClient m = null;
 		try {
 			PropertyLoader.loadProperties();
 			VCMongoDbDriver mongoDbDriver = VCMongoDbDriver.getInstance();
-			BasicDBObject doc = new BasicDBObject();
+			Document doc = new Document();
 			doc.put(VCMongoMessage.MongoMessage_msgtype,  VCMongoMessage.MongoMessage_type_testing);
 			doc.put(VCMongoMessage.MongoMessage_msgTime, System.currentTimeMillis());
 			mongoDbDriver.addMessage(new VCMongoMessage(doc));
@@ -220,23 +219,25 @@ public class VCMongoDbDriver {
 			//
     		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
     		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
-    		Mongo m = new Mongo(mongoDbHost,mongoDbPort);
+    		m = new MongoClient(mongoDbHost,mongoDbPort);
         	String mongoDbDatabaseName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
-        	DB db = m.getDB(mongoDbDatabaseName);
+        	MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
         	String mongoDbLoggingCollectionName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbLoggingCollection);
-        	DBCollection dbCollection = db.getCollection(mongoDbLoggingCollectionName);
+        	MongoCollection<Document> dbCollection = db.getCollection(mongoDbLoggingCollectionName);
 
-            BasicDBObject query = new BasicDBObject();
+            Bson filter = Filters.eq(VCMongoMessage.MongoMessage_msgtype, VCMongoMessage.MongoMessage_type_testing);
 
-            query.put(VCMongoMessage.MongoMessage_msgtype, VCMongoMessage.MongoMessage_type_testing);
-
-            DBCursor cur = dbCollection.find(query);
-            while(cur.hasNext()) {
-                System.out.println(cur.next());
-            }
+            FindIterable<Document> cur = dbCollection.find(filter);
+            for (Document document : cur) {
+            	System.out.println(document);
+			}
             
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
+		} finally {
+			if (m!=null){
+				m.close();
+			}
 		}
 	}
 
