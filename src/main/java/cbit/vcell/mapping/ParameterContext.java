@@ -150,6 +150,9 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 		@Override
 		public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 			String oldValue = getName();
+			if(name.equals(oldValue)) {
+				return;
+			}
 			super.fireVetoableChange("name", oldValue, name);
 			try {
 				renameLocalParameter(getName(), name);
