@@ -291,10 +291,12 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		observableComputationHelpButton.setBorder(border);
 		
 		moleculeDistanceCheckBox = new JCheckBox("Set the distance to molecules that might have to be updated:");
-		moleculeDistanceTextField = new JTextField();
+		moleculeDistanceTextField = new JTextField(NFsimSimulationOptions.DefaultDistanceToMolecules+"");
 		moleculeDistanceHelpButton = new JButton(" ? ");
 		moleculeDistanceHelpButton.setFont(font);
 		moleculeDistanceHelpButton.setBorder(border);
+		moleculeDistanceCheckBox.setSelected(true);
+		moleculeDistanceCheckBox.setEnabled(false);
 		
 		aggregateBookkeepingCheckBox = new JCheckBox("Turn on aggregate bookkeeping.");
 		aggregateBookkeepingTextField = new JTextField();
@@ -532,12 +534,17 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		}
 		Integer utl = nfsimSimulationOptions.getMoleculeDistance();
 		if (utl == null) {
-			moleculeDistanceTextField.setEditable(false);
-			moleculeDistanceCheckBox.setSelected(false);
+			// we always force this parameter, even for legacy simulations where it was optional
+			// the default value is DefaultDistanceToMolecules but the user may still choose something else
+			moleculeDistanceTextField.setEditable(true);
+			moleculeDistanceTextField.setText(NFsimSimulationOptions.DefaultDistanceToMolecules+"");
+			moleculeDistanceCheckBox.setSelected(true);
+			moleculeDistanceCheckBox.setEnabled(false);
 		} else {			
 			moleculeDistanceTextField.setEditable(true);
-			moleculeDistanceCheckBox.setSelected(true);
 			moleculeDistanceTextField.setText(""+utl);
+			moleculeDistanceCheckBox.setSelected(true);
+			moleculeDistanceCheckBox.setEnabled(false);
 		}
 		boolean cb = nfsimSimulationOptions.getAggregateBookkeeping();
 		if (cb == false) {

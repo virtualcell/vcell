@@ -40,6 +40,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	
 	public static final String PROPERTY_NAME_RANDOM_SEED = "randomSeed";
 	public static final Integer DefaultMaxMoleculesPerSpecies = 200000;
+	public static final Integer DefaultDistanceToMolecules = 1000;
 	
 	public NFsimSimulationOptions() {
 		removeVetoableChangeListener(this);
