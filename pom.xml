@@ -104,27 +104,23 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.sbml.jsbml</groupId>
 			<artifactId>jsbml</artifactId>
 			<version>1.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-ui-swing</artifactId>
 			<version>0.9.2</version>
 		</dependency>
-		<!--&lt;!&ndash; https://mvnrepository.com/artifact/net.imagej/imagej-ui-swing &ndash;&gt;-->
-		<!--<dependency>-->
-			<!--<groupId>net.imagej</groupId>-->
-			<!--<artifactId>imagej-ui-swing</artifactId>-->
-			<!--<version>0.11.2</version>-->
-		<!--</dependency>-->
-		<!--Do not uncomment this it is very bad-->
 
 		<!-- Currently only for debugging purposes -->
 		<dependency>
@@ -132,23 +128,19 @@
 			<artifactId>fiji-lib</artifactId>
 			<version>2.1.2</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-		<!--<dependency>-->
-			<!--<groupId>com.google.guava</groupId>-->
-			<!--<artifactId>guava</artifactId>-->
-			<!--<version>22.0</version>-->
-		<!--</dependency>-->
-		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
 		</dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.0.0-M4</version>
         </dependency>
+
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -169,5 +161,6 @@
 			<version>1.0.0-M4</version>
 			<scope>test</scope>
 		</dependency>
+
     </dependencies>
 </project>

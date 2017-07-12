@@ -2,7 +2,10 @@ package org.vcell;
 
 import net.imagej.Dataset;
 import org.scijava.Context;
+import org.scijava.display.Display;
+import org.scijava.ui.swing.viewer.SwingDisplayPanel;
 import org.scijava.ui.swing.viewer.SwingDisplayWindow;
+import org.scijava.ui.viewer.DisplayWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,9 +35,13 @@ public class MainView extends SwingDisplayWindow {
     // Menu items under "Edit"
     private JMenuItem mniDelete;
 
-    // Menu items under "Experiments"
+    // Menu items under "Analysis"
+    private JMenuItem mniSubtractBackground;
     private JMenuItem mniConstructTIRFGeometry;
     private JMenuItem mniConstructTIRFImage;
+
+    // Menu items under "Modeling"
+    private JMenuItem mniModelTIRF;
 
     // Panels of datasets
     private DatasetListPanel pnlData;
@@ -131,19 +138,28 @@ public class MainView extends SwingDisplayWindow {
         mniDelete = new JMenuItem("Delete...");
         mnuEdit.add(mniDelete);
 
-        // Experiments menu
-        JMenu mnuExperiments = new JMenu("Experiments");
+        // Analysis menu
+        JMenu mnuAnalysis = new JMenu("Analysis");
+
+        mniSubtractBackground = new JMenuItem("Subtract background...");
+        mnuAnalysis.add(mniSubtractBackground);
 
         JMenu mnuTIRF = new JMenu("TIRF");
         mniConstructTIRFGeometry = new JMenuItem("Construct TIRF geometry...");
         mniConstructTIRFImage = new JMenuItem("Construct TIRF image...");
         mnuTIRF.add(mniConstructTIRFGeometry);
         mnuTIRF.add(mniConstructTIRFImage);
-        mnuExperiments.add(mnuTIRF);
+        mnuAnalysis.add(mnuTIRF);
+
+        // Modeling menu
+        JMenu mnuModeling = new JMenu("Modeling");
+        mniModelTIRF = new JMenuItem("Photoactivation TIRF...");
+        mnuModeling.add(mniModelTIRF);
 
         menuBar.add(mnuFile);
         menuBar.add(mnuEdit);
-        menuBar.add(mnuExperiments);
+        menuBar.add(mnuAnalysis);
+        menuBar.add(mnuModeling);
         setJMenuBar(menuBar);
 
         setProjectDependentMenuItemsEnabled(false);
@@ -218,12 +234,20 @@ public class MainView extends SwingDisplayWindow {
         mniDelete.addActionListener(l);
     }
 
+    public void addSubtractBackgroundListener(ActionListener l) {
+        mniSubtractBackground.addActionListener(l);
+    }
+
     public void addConstructTIRFGeometryListener(ActionListener l) {
         mniConstructTIRFGeometry.addActionListener(l);
     }
 
     public void addConstructTIRFImageListener(ActionListener l) {
         mniConstructTIRFImage.addActionListener(l);
+    }
+
+    public void addModelTIRFListener(ActionListener l) {
+        mniModelTIRF.addActionListener(l);
     }
 
     public void addDisplayListener(ActionListener l) {

@@ -14,7 +14,7 @@ public class Driver {
         ij.command().run(MainCommand.class, true);
 
 //        String path = "/Users/kevingaffney/Desktop/op_PM";
-//        VCellResultsService resultsService = new VCellResultsService();
+//        VCellResultService resultsService = new VCellResultService();
 //        Img<FloatType> img = resultsService.importCsv(new File(path), ij.getContext().getService(OpService.class));
 //
 //        DisplayService displayService = ij.getContext().getService(DisplayService.class);

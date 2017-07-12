@@ -12,6 +12,10 @@ public class VCellModel {
     private String name;
     private ArrayList<VCellModelParameter> parameters;
 
+    public VCellModel(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }

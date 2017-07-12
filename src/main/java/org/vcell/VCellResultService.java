@@ -16,12 +16,12 @@ import java.util.Scanner;
 /**
  * Created by kevingaffney on 7/5/17.
  */
-public class VCellResultsService {
+public class VCellResultService {
 
     private OpService ops;
     private DatasetService datasetService;
 
-    public VCellResultsService(OpService ops, DatasetService datasetService) {
+    public VCellResultService(OpService ops, DatasetService datasetService) {
         this.ops = ops;
         this.datasetService = datasetService;
     }

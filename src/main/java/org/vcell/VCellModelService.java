@@ -18,12 +18,19 @@ public class VCellModelService {
     private final static String VCELL_PREFIX = "vcell";
     private final static String VCELL_SOURCE = "http://sourceforge.net/projects/vcell";
 
-    public void exportSBML(VCellModel vCellModel, File destination) throws IOException, XMLStreamException {
+    public void writeSBMLToFile(VCellModel vCellModel, File destination) throws IOException, XMLStreamException {
 
         String name = destination.getName();
         if (!FilenameUtils.getExtension(name).equalsIgnoreCase("xml")) {
             // TODO: Add extension?
         }
+
+        SBMLDocument sbmlDocument = generateSBML(vCellModel);
+        SBMLWriter sbmlWriter = new SBMLWriter();
+        sbmlWriter.write(sbmlDocument, destination);
+    }
+
+    public SBMLDocument generateSBML(VCellModel vCellModel) {
 
         SBMLDocument sbmlDocument = new SBMLDocument();
         sbmlDocument.setLevelAndVersion(3, 1);
@@ -268,12 +275,9 @@ public class VCellModelService {
         bindingReaction.setKineticLaw(bindingLaw);
         model.addReaction(bindingReaction);
 
-
         sbmlDocument.setModel(model);
-        SBMLWriter sbmlWriter = new SBMLWriter();
-        String sbmlString = sbmlWriter.writeSBMLToString(sbmlDocument);
-        System.out.println(sbmlString);
-        sbmlWriter.write(sbmlDocument, destination);
+
+        return sbmlDocument;
     }
 
     private Annotation simpleReactionAnnotation(Compartment compartment) {

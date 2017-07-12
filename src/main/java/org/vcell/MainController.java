@@ -3,10 +3,13 @@ package org.vcell;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
+import net.imagej.display.OverlayService;
 import net.imagej.ops.OpService;
 import org.apache.commons.io.FilenameUtils;
+import org.sbml.jsbml.SBMLDocument;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
+import org.scijava.display.Display;
 import org.scijava.display.DisplayService;
 
 import javax.swing.*;
@@ -14,6 +17,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 /**
@@ -28,9 +33,10 @@ public class MainController {
     private DatasetIOService datasetIOService;
     private CommandService commandService;
     private OpService opService;
+    private OverlayService overlayService;
     private DisplayService displayService;
     private ProjectService projectService;
-    private VCellResultsService vCellResultsService;
+    private VCellResultService vCellResultService;
 
     public MainController(MainModel model, MainView view, Context context) {
         this.model = model;
@@ -40,9 +46,10 @@ public class MainController {
         datasetIOService = context.getService(DatasetIOService.class);
         commandService = context.getService(CommandService.class);
         opService = context.getService(OpService.class);
+        overlayService = context.getService(OverlayService.class);
         displayService = context.getService(DisplayService.class);
         projectService = new ProjectService(datasetIOService, opService, displayService);
-        vCellResultsService = new VCellResultsService(opService, datasetService);
+        vCellResultService = new VCellResultService(opService, datasetService);
         addActionListenersToView();
     }
 
@@ -107,7 +114,7 @@ public class MainController {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (presentOpenFileChooser(fileChooser)) {
                 try {
-                    Dataset dataset = vCellResultsService.importCsv(fileChooser.getSelectedFile());
+                    Dataset dataset = vCellResultService.importCsv(fileChooser.getSelectedFile());
                     model.addResult(dataset);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -137,6 +144,18 @@ public class MainController {
                     JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.OK_OPTION) {
                 model.delete(dataset);
+            }
+        });
+
+        view.addSubtractBackgroundListener(event -> {
+            Display activeDisplay = displayService.getActiveDisplay();
+            int returnVal = JOptionPane.showConfirmDialog(
+                    view,
+                    "Select rectangle that contains only background, then press OK",
+                    "Background selection",
+                    JOptionPane.OK_CANCEL_OPTION);
+            if (returnVal == JOptionPane.OK_OPTION) {
+                System.out.println(overlayService.getOverlays().toArray().length);
             }
         });
 
@@ -200,6 +219,30 @@ public class MainController {
                 String extension = FilenameUtils.getExtension(selectedGeometry.getName());
                 result.setName(baseName + "_constructed_TIRF." + extension);
                 model.addResult(result);
+            }
+        });
+
+        view.addModelTIRFListener(event -> {
+            ModelParameterInputPanel panel = new ModelParameterInputPanel(new ArrayList<>());
+            int returnVal = JOptionPane.showConfirmDialog(
+                    view,
+                    panel,
+                    "Model TIRF",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE);
+            if (returnVal == JOptionPane.OK_OPTION) {
+                VCellModelService vCellModelService = new VCellModelService();
+                SBMLDocument sbmlDocument = vCellModelService.generateSBML(new VCellModel("TIRF_model_test"));
+                VCellService vCellService = new VCellService(vCellResultService);
+                Future<VCellResult> vCellResultFuture = vCellService.runSimulation(sbmlDocument);
+                try {
+                    VCellResult vCellResult = vCellResultFuture.get();
+                    System.out.println(vCellResult.toString());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
