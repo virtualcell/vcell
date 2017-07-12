@@ -1,11 +1,23 @@
 package org.vcell;
 
-import io.scif.services.DatasetIOService;
-import net.imagej.Dataset;
-import org.sbml.jsbml.SBMLDocument;
-
 import java.io.File;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
+import org.sbml.jsbml.SBMLDocument;
+import org.vcell.vcellij.api.SBMLModel;
+import org.vcell.vcellij.api.SimulationInfo;
+import org.vcell.vcellij.api.SimulationService;
+import org.vcell.vcellij.api.SimulationSpec;
+
+import net.imagej.Dataset;
 
 /**
  * Created by kevingaffney on 7/10/17.
@@ -17,24 +29,29 @@ public class VCellService {
     public VCellService(VCellResultService vCellResultService) {
         this.vCellResultService = vCellResultService;
     }
+    
+    public org.vcell.vcellij.api.Dataset runSimulation(SBMLModel sbmlModel) {
+        try {
+            TTransport transport;
 
-    public Future<VCellResult> runSimulation(SBMLDocument sbmlDocument) {
+            transport = new TSocket("localhost", 9091);
+            transport.open();
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+            TProtocol protocol = new  TBinaryProtocol(transport);
+            SimulationService.Client client = new SimulationService.Client(protocol);
 
-        Callable<VCellResult> callable = () -> {
+        	sbmlModel.setFilepath("filepath");
+        	SimulationSpec simSpec = new SimulationSpec();
+            SimulationInfo simInfo = client.computeModel(sbmlModel, simSpec);
+            org.vcell.vcellij.api.Dataset dataset = client.getDataset(simInfo);
+            System.out.println(dataset.toString());
 
-            // TODO: Run actual VCell simulation
-            // Instead of importing results locally, we will have VCell run an actual simulation and return the result
-            // VCell will use the sbmlDocument parameter to construct the model and run the simulation
-            String dir = "/Users/kevingaffney/Desktop/myproj/";
-            Dataset membraneDataset = vCellResultService.importCsv(new File(dir + "op_PM"));
-            Dataset volumeDataset = vCellResultService.importCsv(new File(dir + "op_Cyt"));
-            Thread.sleep(5000);
-
-            return new VCellResult(membraneDataset, volumeDataset);
-        };
-
-        return executorService.submit(callable);
+            transport.close();
+            
+            return dataset;
+        } catch (TException x) {
+            x.printStackTrace();
+        }
+		return null;
     }
 }

@@ -34,6 +34,10 @@ public class ProjectService<T extends RealType<T>> {
         this.opService = opService;
         this.displayService = displayService;
     }
+    
+    public File getCurrentProjectRoot() {
+    	return currentProjectRoot;
+    }
 
     public Project load(File root) {
 

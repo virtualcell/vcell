@@ -9,6 +9,7 @@ import org.sbml.jsbml.xml.XMLTriple;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 /**
  * Created by kevingaffney on 7/7/17.

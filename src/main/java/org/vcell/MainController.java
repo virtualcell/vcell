@@ -11,11 +11,15 @@ import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.display.Display;
 import org.scijava.display.DisplayService;
+import org.vcell.vcellij.api.SBMLModel;
 
 import javax.swing.*;
+import javax.xml.stream.XMLStreamException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -231,18 +235,33 @@ public class MainController {
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE);
             if (returnVal == JOptionPane.OK_OPTION) {
+            	
+            	// Generate SBML document and save locally
                 VCellModelService vCellModelService = new VCellModelService();
                 SBMLDocument sbmlDocument = vCellModelService.generateSBML(new VCellModel("TIRF_model_test"));
-                VCellService vCellService = new VCellService(vCellResultService);
-                Future<VCellResult> vCellResultFuture = vCellService.runSimulation(sbmlDocument);
+                VCellModel vCellModel = new VCellModel("TIRF_model_test");
+                File filepath = Paths.get(projectService.getCurrentProjectRoot().getAbsolutePath(), vCellModel.getName()).toFile();
+                
                 try {
-                    VCellResult vCellResult = vCellResultFuture.get();
-                    System.out.println(vCellResult.toString());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+					vCellModelService.writeSBMLToFile(new VCellModel("TIRF_model_test"), filepath);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (XMLStreamException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                VCellService vCellService = new VCellService(vCellResultService);
+                SBMLModel sbmlModel = new SBMLModel();
+                sbmlModel.setFilepath(filepath.getAbsolutePath());
+                org.vcell.vcellij.api.Dataset datasetVC = vCellService.runSimulation(sbmlModel);
+                
+                try {
+					Dataset datasetImageJ = datasetIOService.open(datasetVC.getFilepath());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
         });
 

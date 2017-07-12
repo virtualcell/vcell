@@ -77,7 +77,7 @@ public class ModelParameterInputPanel extends JPanel {
         add(new JLabel(generateHtml(parameter.getUnit())));
     }
 
-    private String generateHtml(String text) {
+    public String generateHtml(String text) {
 
         Pattern pattern = Pattern.compile("(\\D-\\d+)|(\\D\\d+)");
         Matcher matcher = pattern.matcher(text);
