@@ -28,7 +28,7 @@ import cbit.vcell.math.VCML;
 public class NFsimSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
 	boolean observableComputationOff = true;
-	Integer moleculeDistance = null;
+	Integer moleculeDistance = DefaultDistanceToMolecules;
 	boolean aggregateBookkeeping = false;
 	Integer maxMoleculesPerType = null;
 	Integer equilibrateTime = null;
