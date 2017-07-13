@@ -15,20 +15,12 @@ import java.util.stream.Stream;
  */
 public class ModelParameterInputPanel extends JPanel {
 
-    private ArrayList<JTextField> textFields;
-
-//    private JTextField txtCytConc;
-//    private JTextField txtCytDiff;
-//    private JTextField txtPMConc;
-//    private JTextField txtPMDiff;
-//    private JTextField txtActivationRate;
-//    private JTextField txtBindingRate;
+	private Hashtable<VCellModelParameter, JTextField> parameterTable;
 
     public ModelParameterInputPanel(ArrayList<VCellModelParameter> parameters) {
 
         super(new GridLayout(0, 3, 10, 10));
-        Hashtable<VCellModelParameter, JTextField> textField = new Hashtable<>();
-        textFields = new ArrayList<>(parameters.size());
+        parameterTable = new Hashtable<>();
 
         List<VCellModelParameter> concentrationParameters = parameters.stream()
                 .filter(p -> p.getParameterType() == VCellModelParameter.CONCENTRATION)
@@ -72,7 +64,7 @@ public class ModelParameterInputPanel extends JPanel {
         idLabel.setHorizontalAlignment(JLabel.RIGHT);
         add(idLabel);
         JTextField textField = new JTextField();
-        textFields.add(textField);
+        parameterTable.put(parameter, textField);
         add(textField);
         add(new JLabel(generateHtml(parameter.getUnit())));
     }

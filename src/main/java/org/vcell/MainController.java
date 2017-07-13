@@ -13,6 +13,8 @@ import org.scijava.display.Display;
 import org.scijava.display.DisplayService;
 import org.vcell.vcellij.api.SBMLModel;
 
+import com.google.common.util.concurrent.FutureCallback;
+
 import javax.swing.*;
 import javax.xml.stream.XMLStreamException;
 
@@ -251,17 +253,31 @@ public class MainController {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+                
                 VCellService vCellService = new VCellService(vCellResultService);
                 SBMLModel sbmlModel = new SBMLModel();
                 sbmlModel.setFilepath(filepath.getAbsolutePath());
-                org.vcell.vcellij.api.Dataset datasetVC = vCellService.runSimulation(sbmlModel);
                 
-                try {
-					Dataset datasetImageJ = datasetIOService.open(datasetVC.getFilepath());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                
+                FutureCallback<org.vcell.vcellij.api.Dataset> callback = new FutureCallback<org.vcell.vcellij.api.Dataset>() {
+                	
+					@Override
+					public void onSuccess(org.vcell.vcellij.api.Dataset result) {
+						try {
+							Dataset datasetImageJ = datasetIOService.open(result.getFilepath());
+							model.addResult(datasetImageJ);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					
+					@Override
+					public void onFailure(Throwable t) {
+						t.printStackTrace();
+					}
+                };
+                
+                vCellService.runSimulation(sbmlModel, callback);
             }
         });
 
