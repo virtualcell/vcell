@@ -62,6 +62,12 @@
 	      <groupId>uk.ac.ebi.biomodels</groupId>
 	      <artifactId>biomodels-wslib</artifactId>
 	      <version>1.21</version>
+	      <exclusions>
+	      	<exclusion>
+	      		<groupId>axis</groupId>
+	      		<artifactId>axis</artifactId>
+	      	</exclusion>
+	      </exclusions>
 	    </dependency>
 <!--
 		<dependency> 
