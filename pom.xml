@@ -133,6 +133,10 @@
 					<groupId>jdom</groupId>
 					<artifactId>jdom</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -154,6 +158,10 @@
 		    	<exclusion>
 		    		<groupId>jdom</groupId>
 		    		<artifactId>jdom</artifactId>
+		    	</exclusion>
+		    	<exclusion>
+		    		<groupId>xml-apis</groupId>
+		    		<artifactId>xml-apis</artifactId>
 		    	</exclusion>
 		    </exclusions>
 		</dependency>
