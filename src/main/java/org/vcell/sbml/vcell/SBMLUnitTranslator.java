@@ -11,26 +11,13 @@
 package org.vcell.sbml.vcell;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
-import org.sbml.libsbml.Model;
-import org.sbml.libsbml.SBMLConstructorException;
-import org.sbml.libsbml.SBMLDocument;
-import org.sbml.libsbml.SBMLReader;
-import org.sbml.libsbml.SBMLWriter;
-import org.sbml.libsbml.Unit;
-import org.sbml.libsbml.UnitDefinition;
-import org.sbml.libsbml.libsbml;
-import org.sbml.libsbml.libsbmlConstants;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.Unit.Kind;
+import org.sbml.jsbml.UnitDefinition;
 import org.vcell.sbml.SbmlException;
-import org.vcell.sbml.vcell.UnitRepresentation.Fundamental;
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
@@ -39,155 +26,44 @@ import cbit.vcell.units.VCUnitSystem;
  * Creation date: (2/28/2006 5:22:58 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class SBMLUnitTranslator extends LibSBMLClient {
-	private static class UnitD extends Unit {
-
-		UnitD(long level, long version) throws SBMLConstructorException, SbmlException {
-			super(level, version);
-			validate( super.setScale(0) );
-			validate( super.setMultiplier(1) );
-			validate( super.setExponent(1) );
-			validate( super.setKind(libsbmlConstants.UNIT_KIND_DIMENSIONLESS) );
-		}
-		
-		UnitD(UnitRepresentation.Fundamental f, long level, long version) throws SBMLConstructorException, SbmlException {
-			super(level, version);
-			validate( super.setScale(0) );
-			validate( super.setMultiplier(1) );
-			validate( super.setExponent(f.power) );
-			setKindString(f.unit);
-		}
-		
-		void setKindString(String k) throws SbmlException {
-			int kind = libsbml.UnitKind_forName(k);
-			if ( !valid( setKind(kind)) ) {
-				//throw new SbmlException("unsupported type name " +k);
-				System.err.println("unsupported type name " + k);
-			}
-		}
-		
-		
-	}
-
-	// special units
-	public static final String DIMENSIONLESS = "dimensionless";
-	public static final String ITEM = "item";
-	//default built-in units
-	public static final String SUBSTANCE = "substance";
-	public static final String VOLUME = "volume";
-	public static final String AREA = "area";
-	public static final String LENGTH = "length";
-	public static final String TIME = "time";
+public class SBMLUnitTranslator {
 	
-	private static Map<String, String> SbmlDefaultUnits = new TreeMap<String, String>();  
-	static {            
-		SbmlDefaultUnits.put("substance", "mol");
-		SbmlDefaultUnits.put("volume", "litre");
-		SbmlDefaultUnits.put("area", "m2");
-		SbmlDefaultUnits.put("length", "m");
-		SbmlDefaultUnits.put("time", "s");
-//		SbmlDefaultUnits.put("substance", "mole");
-//		SbmlDefaultUnits.put("volume", "litre");
-//		SbmlDefaultUnits.put("area", "metre2");
-//		SbmlDefaultUnits.put("length", "metre");
-//		SbmlDefaultUnits.put("time", "second");
-	}
+/**
+ *
+ *   BaseUnit definitions copied from ucar.units_vcell.SI (as modified for Virtual Cell and SBML ... including item and molecules)
+ *   
+ *   (PRIMARY BASE SI UNITS)
+ *   AMPERE = 		bu("ampere",    "A",   BaseQuantity.ELECTRIC_CURRENT)
+ *   CANDELA = 		bu("candela",   "cd",  BaseQuantity.LUMINOUS_INTENSITY)
+ *   KELVIN = 		bu("kelvin",    "K",   BaseQuantity.THERMODYNAMIC_TEMPERATURE)
+ *   KILOGRAM = 	bu("kilogram",  "kg",  BaseQuantity.MASS)
+ *   METER = 		bu("metre",     "m",   BaseQuantity.LENGTH)	// NIST
+ *   METRE = 		bu("metre",     "m",   BaseQuantity.LENGTH)	// ISO
+ *   MOLE = 		bu("mole",      "mol", BaseQuantity.AMOUNT_OF_SUBSTANCE)
+ *   SECOND = 		bu("second",    "s",   BaseQuantity.TIME)
+ *   
+ *   (SUPPLEMENTARY BASE SI UNITS ... DIMENSIONLESS DERIVED UNITS) ... note that BaseUnit
+ *   RADIAN = 		bu("radian",    "rad", BaseQuantity.PLANE_ANGLE)
+ *   STERADIAN = 	bu("steradian", "sr",  BaseQuantity.SOLID_ANGLE)
+ *   
+ *   (VCELL/SBML introduced base SI unit for items/molecules)
+ *   ITEM =			bu("item",      "item", BaseQuantity.ITEM)
+ */
 
-	private static ArrayList<String> SbmlBaseUnits = new ArrayList<String>();
-    static {
-		SbmlBaseUnits.add("ampere");
-		SbmlBaseUnits.add("avogadro");
-		SbmlBaseUnits.add("becquerel");
-		SbmlBaseUnits.add("candela");
-		SbmlBaseUnits.add("coulomb");
-		SbmlBaseUnits.add("dimensionless");
-		SbmlBaseUnits.add("farad");
-		SbmlBaseUnits.add("gram");
-		SbmlBaseUnits.add("gray");
-		SbmlBaseUnits.add("henry");
-		SbmlBaseUnits.add("hertz");
-		SbmlBaseUnits.add("item");
-		SbmlBaseUnits.add("joule");
-		SbmlBaseUnits.add("katal");
-		SbmlBaseUnits.add("kelvin");
-		SbmlBaseUnits.add("kilogram");
-		SbmlBaseUnits.add("litre");
-		SbmlBaseUnits.add("lumen");
-		SbmlBaseUnits.add("lux");
-		SbmlBaseUnits.add("metre");
-		SbmlBaseUnits.add("mole");
-		SbmlBaseUnits.add("newton");
-		SbmlBaseUnits.add("ohm");
-		SbmlBaseUnits.add("pascal");
-		SbmlBaseUnits.add("radian");
-		SbmlBaseUnits.add("second");
-		SbmlBaseUnits.add("siemens");
-		SbmlBaseUnits.add("sievert");
-		SbmlBaseUnits.add("steradian");
-		SbmlBaseUnits.add("tesla");
-		SbmlBaseUnits.add("volt");
-		SbmlBaseUnits.add("watt");
-		SbmlBaseUnits.add("weber");	
-    }	
-    
-	private static Map<String, String> ucarToSbml = new HashMap<String, String>(4);  
-	static {
-		ucarToSbml.put("m","metre");
-		ucarToSbml.put("A","ampere");
-		ucarToSbml.put("mol","mole");	
-		ucarToSbml.put("s","second");	
-		ucarToSbml.put("M","1000 mole.m3");
-	}
-	
-	/*
-	private static String translate(String ucar) {
-		
-		String out = ucarToSbml.get(ucar);
-		if (out == null) {
-			return ucar;
-		}
-		return out;
-	}
-	*/
-    
-	
-private static List<Unit> convert(ucar.units_vcell.Unit vcUcarUnit,  long level, long version) throws SbmlException {
-	ArrayList<Unit> allSbmlUnitsList = new ArrayList<>();
-	String ucarString = vcUcarUnit.toString();
-	try {
-		UnitRepresentation unitRep = UnitRepresentation.parseUcar(ucarString,ucarToSbml);
-		final int unitScale = unitRep.getScale();
-		List<Fundamental> fUnits = unitRep.getFundamentals();
 
-		//if single unit, add scale to that
-		if (fUnits.size() == 1) {
-			UnitD unit = new UnitD(fUnits.get(0), level,version);
-			unit.setScale(unitScale);
-			allSbmlUnitsList.add(unit);
-			return allSbmlUnitsList;
-
-		}
-
-		//otherwise, put scale (if present) in dimensonless unit
-		if (unitScale != 0) {
-			UnitD scaleUnit = new UnitD(level,version);
-			scaleUnit.setScale(unitScale);
-			allSbmlUnitsList.add(scaleUnit);
-		}
-		for (Fundamental f: fUnits) {
-			UnitD unit = new UnitD(f, level,version);
-			allSbmlUnitsList.add(unit);
-		}
-		return allSbmlUnitsList;
-	} catch (SBMLConstructorException ce) {
-		throw new SbmlException("unable to convert " + ucarString, ce);
-	}
-}
+/**
+ * @param unitMultiplier
+ * @param vcUcarUnit
+ * @param allSbmlUnitsList
+ * @param level
+ * @param version
+ * @return
+ */
 /*
  *  convertVCUnitsToSbmlUnits :
  *  --------- !!!! Ignoring OFFSET for UNITS, since SBML L2V2 gets rid of the offset field. !!!! ---------
  */
-private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, ucar.units_vcell.Unit vcUcarUnit, ArrayList<Unit> allSbmlUnitsList, long level, long version) {
+private static ArrayList<Unit> convertVCUnitsToSbmlUnits_NOT_USED(double unitMultiplier, ucar.units_vcell.Unit vcUcarUnit, ArrayList<Unit> allSbmlUnitsList, int level, int version) {
 	int unitScale = 0;
 	if (vcUcarUnit instanceof ucar.units_vcell.UnitImpl) {
 		ucar.units_vcell.UnitImpl unitImpl = (ucar.units_vcell.UnitImpl)vcUcarUnit;
@@ -203,14 +79,14 @@ private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, 
 					// To avoid that, add a dimensionless unit. 
 					if (i == 0) {
 						Unit dimensionlessUnit = new Unit(level, version);
-						dimensionlessUnit.setKind(libsbmlConstants.UNIT_KIND_DIMENSIONLESS);
+						dimensionlessUnit.setKind(Kind.DIMENSIONLESS);
 						dimensionlessUnit.setExponent(1);
 						dimensionlessUnit.setScale(unitScale);
 						dimensionlessUnit.setMultiplier(unitMultiplier);
 	 					allSbmlUnitsList.add(dimensionlessUnit);
 					}
 					sbmlUnit = new Unit(level, version);
-					int kind = libsbml.UnitKind_forName(baseName);
+					Kind kind = Kind.valueOf(baseName);
 					sbmlUnit.setKind(kind);
 					sbmlUnit.setExponent(exponent.intValue());
 					sbmlUnit.setScale(unitScale);
@@ -218,7 +94,7 @@ private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, 
 					allSbmlUnitsList.add(sbmlUnit);
 				} else {
 					sbmlUnit = new Unit(level, version);
-					int kind = libsbml.UnitKind_forName(baseName);
+					Kind kind = Kind.valueOf(baseName);
 					sbmlUnit.setKind(kind);
 					sbmlUnit.setExponent(exponent.intValue());
 					sbmlUnit.setScale(unitScale);
@@ -231,7 +107,7 @@ private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, 
 			ucar.units_vcell.ScaledUnit multdUnit = (ucar.units_vcell.ScaledUnit)unitImpl;
 			unitMultiplier *= multdUnit.getScale();
 			if (multdUnit.getUnit() != multdUnit.getDerivedUnit()){
-				return convertVCUnitsToSbmlUnits(unitMultiplier, multdUnit.getUnit(), allSbmlUnitsList, level, version);
+				return convertVCUnitsToSbmlUnits_NOT_USED(unitMultiplier, multdUnit.getUnit(), allSbmlUnitsList, level, version);
 			}
 		} 
 		/***** COMMENTED OUT SINCE OFFSET IS NOT GOING TO BE USED FROM SBML L2 V2 ... ****
@@ -243,214 +119,362 @@ private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, 
 			}
 		} */
 		if (unitImpl.getDerivedUnit() != vcUcarUnit) {                           //i.e. we have not reached the base unit, yet
-			return convertVCUnitsToSbmlUnits(unitMultiplier, unitImpl.getDerivedUnit(), allSbmlUnitsList, level, version);
+			return convertVCUnitsToSbmlUnits_NOT_USED(unitMultiplier, unitImpl.getDerivedUnit(), allSbmlUnitsList, level, version);
 		} 
 	} else {
-		System.err.println("Unable to process unit translation for CellML: " + " " + vcUcarUnit.getSymbol());
+		System.err.println("Unable to process unit translation: " + " " + vcUcarUnit.getSymbol());
 	}
 
-	return null;
+	throw new RuntimeException("unexpected vcell unit during transformation to sbml units: "+vcUcarUnit);
+//	return null;
 }
 
 
-public static String getDefaultSBMLUnitSymbol(String builtInName) {
-	return SbmlDefaultUnits.get(builtInName);
-}
-
-
-public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, long level, long version, VCUnitSystem vcUnitSystem) throws SbmlException {
-	UnitDefinition sbmlUnitDefn = null;
-	String sbmlUnitSymbol = TokenMangler.mangleToSName(vcUnitDefn.getSymbol());
-
-	// If VC unit is DIMENSIONLESS ...
-	if (vcUnitDefn.isTBD()) {
-		throw new RuntimeException("TBD unit has no SBML equivalent");
-	} else if (vcUnitDefn.isCompatible(vcUnitSystem.getInstance_DIMENSIONLESS())) {
+public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, int level, int version, VCUnitSystem vcUnitSystem) throws SbmlException {
+	UnitDefinition sbmlUnitDefn = new UnitDefinition(3,1);
+	if (vcUnitDefn.isCompatible(vcUnitSystem.getInstance_DIMENSIONLESS())){
+		double multiplier = Double.parseDouble(vcUnitDefn.getSymbol());
+		sbmlUnitDefn.addUnit(new Unit(multiplier,0,Kind.DIMENSIONLESS,1.0,3,1));
+		return sbmlUnitDefn;
+	}
+	String vcSymbol = vcUnitDefn.getSymbol();
+	double overallMultiplier = 1.0;
+	if (vcSymbol.contains(" ")){
+		String[] unitParts = vcSymbol.split(" ");
+		overallMultiplier = Double.parseDouble(unitParts[0]);
+		vcSymbol = unitParts[1];
+	}
+	String sbmlUnitSymbol = TokenMangler.mangleToSName(vcSymbol);
+	String[] symbols = vcSymbol.split("\\.");
+	if (symbols.length==0){
+		symbols = new String[] { vcSymbol };
+	}
+	for (int i=0;i<symbols.length;i++){
 		double multiplier = 1.0;
-		multiplier = vcUnitDefn.convertTo(multiplier, vcUnitSystem.getInstance_DIMENSIONLESS());
-		sbmlUnitDefn = new UnitDefinition(level, version);
-		sbmlUnitDefn.setId(TokenMangler.mangleToSName(TokenMangler.mangleToSName(vcUnitDefn.getSymbol())));
-		Unit dimensionlessUnit = new UnitD(level, version);
-		dimensionlessUnit.setMultiplier(multiplier);
-		sbmlUnitDefn.addUnit(dimensionlessUnit);
-	} else {
-		// Translate the VCUnitDef into libSBML UnitDef : convert the units of VCUnitDef into libSBML units and add them to sbmlUnitDefn
-		
-		sbmlUnitDefn = new UnitDefinition(level, version);
-		sbmlUnitDefn.setId(TokenMangler.mangleToSName(TokenMangler.mangleToSName(sbmlUnitSymbol))); 
-		ucar.units_vcell.Unit vcUcarUnit = vcUnitDefn.getUcarUnit();
-		//ArrayList<Unit> sbmlUnitsList = convertVCUnitsToSbmlUnits(1.0, vcUcarUnit, new ArrayList<Unit>(), level, version);
-		List<Unit> sbmlUnitsList = convert(vcUcarUnit, level, version);
-
-		for (int i = 0; i < sbmlUnitsList.size(); i++){
-			Unit sbmlUnit = sbmlUnitsList.get(i);
-			sbmlUnitDefn.addUnit(sbmlUnit);
+		if (i==0){
+			multiplier *= overallMultiplier;
 		}
+		double exponent = 1.0;
+		int scale = 0;
+		String symbol = symbols[i];
+//		if (symbol.contains(" ")){
+//			String[] unitParts = symbol.split(" ");
+//			multiplier = Double.parseDouble(unitParts[0]);
+//			symbol = unitParts[1];
+//		}
+		if (symbol.contains("-")){
+			String[] symbolAndExp = symbol.split("\\-");
+			symbol = symbolAndExp[0];
+			exponent = -1 * Integer.parseInt(symbolAndExp[1]);
+		}else if (Character.isDigit(symbol.charAt(symbol.length()-1))){
+			exponent = Integer.parseInt(symbol.substring(symbol.length()-1));
+			symbol = symbol.substring(0, symbol.length()-1);
+		}
+		VCUnitDefinition vcUnit = vcUnitSystem.getInstance(symbol);
+		boolean bFoundMatch = false;
+		// check sbml builtin units (base SI and supported derived units) first.
+		for (Kind kind : Kind.values()){
+			String kindSymbol = kind.getSymbol();
+			if (kind==Kind.AVOGADRO || kind==Kind.CELSIUS || kind==Kind.INVALID || kind==Kind.BECQUEREL || kind==Kind.HERTZ){
+				continue;
+			}
+			if (kind==Kind.OHM){
+				kindSymbol = "Ohm";
+			}
+			if (kind==Kind.ITEM){
+				kindSymbol = "molecules";
+			}
+			VCUnitDefinition kindVcUnit = vcUnitSystem.getInstance(kindSymbol);
+			if (kindVcUnit.isCompatible(vcUnit)){
+				if (kindVcUnit.isEquivalent(vcUnit)){
+					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, kind, exponent, 3, 1));
+				}else{
+					double factor = vcUnit.convertTo(1.0, kindVcUnit);
+					double logFactor = Math.log10(factor);
+					if (logFactor == (int)logFactor){
+						scale = (int)logFactor;
+					}else{
+						scale = 0;
+						multiplier = multiplier*factor;
+					}
+					Unit sbmlUnit = new Unit(multiplier, scale, kind, exponent, 3, 1);
+					sbmlUnitDefn.addUnit(sbmlUnit);
+					System.err.println("kind = "+kind.name()+" is equivalent to vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnit);
+				}
+				bFoundMatch = true;
+				break;
+			}
+		}
+		if (!bFoundMatch){
+			// check for molar, kind of crazy that this one is missing.
+			VCUnitDefinition kindVcUnit = vcUnitSystem.getInstance("molar");
+			if (kindVcUnit.isCompatible(vcUnit)){
+				if (kindVcUnit.isEquivalent(vcUnit)){
+					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, Kind.MOLE, exponent, 3, 1));
+					sbmlUnitDefn.addUnit(new Unit(1, 0, Kind.LITRE, -exponent, 3, 1));
+				}else{
+					double factor = vcUnit.convertTo(1.0, kindVcUnit);
+					double logFactor = Math.log10(factor);
+					if (logFactor == (int)logFactor){
+						scale = (int)logFactor;
+					}else{
+						scale = 0;
+						multiplier = multiplier*factor;
+					}
+					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, Kind.MOLE, exponent, 3, 1));
+					sbmlUnitDefn.addUnit(new Unit(1, 0, Kind.LITRE, -exponent, 3, 1));
+					System.err.println("matched to liter ... had to create a replacement for molar, vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnitDefn);
+				}
+				bFoundMatch = true;
+			}
+		}
+		if (!bFoundMatch){
+			System.out.println("Still didn't find a match for vcUnit "+vcUnit.getSymbol());
+		}
+//		ucar.units_vcell.Unit ucarUnit = vcUnit.getUcarUnit();
+//		if (ucarUnit instanceof ScaledUnit){
+//			ScaledUnit scaledUnit = (ScaledUnit)ucarUnit;
+//			double parsedScale = scaledUnit.getScale();
+//			double logScale = Math.log10(parsedScale);
+//			if (logScale == (int)logScale){
+//				scale = (int)logScale;
+//			}else{
+//				scale = 0;
+//				multiplier = multiplier*parsedScale;
+//			}
+//			ucar.units_vcell.Unit insideUnit = scaledUnit.getUnit();
+//			boolean bFoundMatch = false;
+//			for (Kind kind : Kind.values()){
+//				String kindSymbol = kind.getSymbol();
+//				if (kind==Kind.AVOGADRO){
+//					continue;
+//				}
+//				if (kind==Kind.CELSIUS){
+//					continue;
+//				}
+//				if (kind==Kind.INVALID){
+//					continue;
+//				}
+//				if (kind==Kind.OHM){
+//					kindSymbol = "Ohm";
+//				}
+//				String sym = insideUnit.toString();
+//				if (vcUnitSystem.getInstance(kindSymbol).isEquivalent(vcUnitSystem.getInstance(sym))){
+//					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, kind, exponent, 3, 1));
+//					bFoundMatch = true;
+//					break;
+//				}
+//			}
+//			if (!bFoundMatch){
+//				System.err.println("couldn't find an SBML unit for vcUnit "+vcUnit.getSymbol());
+//				System.err.println("couldn't find an SBML unit for vcUnit "+vcUnit.getSymbol());
+//			}
+//		}
+//		System.err.println("vcUnit is "+symbols[i]+",  ucarUnit is "+ucarUnit.getSymbol());
 	}
-
 	return sbmlUnitDefn;
+//
+//	// If VC unit is DIMENSIONLESS ...
+//	if (vcUnitDefn.isTBD()) {
+//		throw new RuntimeException("TBD unit has no SBML equivalent");
+//	} else if (vcUnitDefn.isCompatible(vcUnitSystem.getInstance_DIMENSIONLESS())) {
+//		double multiplier = 1.0;
+//		multiplier = vcUnitDefn.convertTo(multiplier, vcUnitSystem.getInstance_DIMENSIONLESS());
+//		sbmlUnitDefn = new UnitDefinition(level, version);
+//		sbmlUnitDefn.setId(TokenMangler.mangleToSName(TokenMangler.mangleToSName(vcSymbol)));
+//		Unit dimensionlessUnit = new UnitD(level, version);
+//		dimensionlessUnit.setMultiplier(multiplier);
+//		sbmlUnitDefn.addUnit(dimensionlessUnit);
+//	} else {
+//		// Translate the VCUnitDef into libSBML UnitDef : convert the units of VCUnitDef into libSBML units and add them to sbmlUnitDefn
+//		
+//		sbmlUnitDefn = new UnitDefinition(level, version);
+//		sbmlUnitDefn.setId(TokenMangler.mangleToSName(TokenMangler.mangleToSName(sbmlUnitSymbol))); 
+//		ucar.units_vcell.Unit vcUcarUnit = vcUnitDefn.getUcarUnit();
+//		//ArrayList<Unit> sbmlUnitsList = convertVCUnitsToSbmlUnits(1.0, vcUcarUnit, new ArrayList<Unit>(), level, version);
+//		List<Unit> sbmlUnitsList = convert(vcUcarUnit, level, version);
+//
+//		for (int i = 0; i < sbmlUnitsList.size(); i++){
+//			Unit sbmlUnit = sbmlUnitsList.get(i);
+//			sbmlUnitDefn.addUnit(sbmlUnit);
+//		}
+//	}
+//
+//	return sbmlUnitDefn;
 }
 
 
 	/*
 	 *  getVCUnit : 
 	 */
-	private static VCUnitDefinition getVCUnit(org.sbml.libsbml.Unit unit, VCUnitSystem vcUnitSystem) {
+	private static VCUnitDefinition getVCUnit(org.sbml.jsbml.Unit unit, VCUnitSystem vcUnitSystem) {
 		// Get the attributes of the unit 'element', 'kind', 'multiplier', 'scale', 'offset', etc.
-		String unitKind = org.sbml.libsbml.libsbml.UnitKind_toString(unit.getKind());
-		int unitExponent = unit.getExponent();
+		Kind unitKind = unit.getKind();
+
+		if (unit.getExponent() != (int)unit.getExponent()){
+			throw new RuntimeException("non-integer units not supported for VCell/SBML unit translation: sbml unit = "+unit.toString());
+		}
+		int unitExponent = (int)unit.getExponent();
 		int unitScale = unit.getScale();
 		double unitMultiplier = unit.getMultiplier();
-		String vcScaleStr = Double.toString(Math.pow((unitMultiplier*Math.pow(10, unitScale)), unitExponent));
-
-		VCUnitDefinition vcUnit = null;
+		
+		
+		String unitKindSymbol = unitKind.getName();
+		if (unit.getKind().getSymbol()!=null && "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".contains(unit.getKind().getSymbol().substring(0,1))){
+			unitKindSymbol = unitKind.getSymbol();
+		}
+		if (unit.isSecond() && ((unitMultiplier==60 && unitScale==0) || (unitMultiplier==6 && unitScale==1))){
+			unitKindSymbol = "min";
+			unitMultiplier = 1;
+			unitScale = 0;
+		}
+		if (unit.isSecond() && ((unitMultiplier==3600 && unitScale==0) || (unitMultiplier==3.6 && unitScale==3))){
+			unitKindSymbol = "hour";
+			unitMultiplier = 1;
+			unitScale = 0;
+		}
+		if (unit.isSecond() && ((unitMultiplier==86400 && unitScale==0) || (unitMultiplier==86.4 && unitScale==3) || (unitMultiplier==8.64 && unitScale==4))){
+			unitKindSymbol = "day";
+			unitMultiplier = 1;
+			unitScale = 0;
+		}
+		if (unit.isItem()){
+			System.out.println("SBML 'item' unit found, interpreted as 'molecule'");
+			unitKindSymbol = "molecules";
+		}
 
 		// convert the sbmlUnit into a vcell unit with the appropriate multiplier, scale, exponent, offset, etc ..
-		if (unit.isDimensionless()) {        //'dimensionless' can be part of a bigger unit definition     
-			vcUnit = vcUnitSystem.getInstance(vcScaleStr);
+		if (unit.getKind() == Kind.DIMENSIONLESS) {  //'dimensionless' can be part of a bigger unit definition     
+			String vcScaleStr = Double.toString(Math.pow((unitMultiplier*Math.pow(10, unitScale)), unitExponent));
+			VCUnitDefinition vcUnit = vcUnitSystem.getInstance(vcScaleStr);
 			return vcUnit;
 		} else {
-			if (unit.isItem()) {
-				System.out.println("SBML 'item' unit found, interpreted as 'molecule'");
-				vcUnit = vcUnitSystem.getInstance(vcScaleStr + " molecules" + unitExponent);
-			} else {
-				if (unit.isMetre()){
-					unitKind = "m";
-					if (unitMultiplier==1){
-						if (unitScale==-3){
-							return vcUnitSystem.getInstance("mm" + unitExponent);
-						}else if (unitScale==-6){
-							return vcUnitSystem.getInstance("um" + unitExponent);
-						}else if (unitScale==-9){
-							return vcUnitSystem.getInstance("nm" + unitExponent);
-						}
-					}
-				}
-				if (unit.isSecond()){
-					unitKind = "s";
-					if (unitMultiplier==1){
-						if (unitScale==-3){
-							return vcUnitSystem.getInstance("ms" + unitExponent);
-						}else if (unitScale==-6){
-							return vcUnitSystem.getInstance("us" + unitExponent);
-						}
-					}else if (unitMultiplier==60 && unitScale==0){
-						return vcUnitSystem.getInstance("minute");
-					}else if (unitMultiplier==3600 && unitScale==0){
-						return vcUnitSystem.getInstance("hour");
-					}else if (unitMultiplier==86400 && unitScale==0){
-						return vcUnitSystem.getInstance("day");
-					}
-				}
-				if (unit.isMole()){
-					unitKind = "mol";
-					if (unitMultiplier==1){
-						if (unitScale==0){
-							return vcUnitSystem.getInstance("mol" + unitExponent);
-						}
-						if (unitScale==-3){
-							return vcUnitSystem.getInstance("mmol" + unitExponent);
-						}
-						if (unitScale==-6){
-							return vcUnitSystem.getInstance("umol" + unitExponent);
-						}
-						if (unitScale==-9){
-							return vcUnitSystem.getInstance("nmol" + unitExponent);
-						}
-						if (unitScale==-12){
-							return vcUnitSystem.getInstance("pmol" + unitExponent);
-						}
-					}
-				}
-				if (unit.isItem()){
-					unitKind = "molecules";
-				}
-				
-				vcUnit = vcUnitSystem.getInstance(vcScaleStr + " " + unitKind + unitExponent);
+			String prefix = "";
+			switch (unitScale){
+			case -3:{
+				prefix = "m";
+				unitScale = 0;
+				break;
 			}
+			case -6:{
+				prefix = "u";
+				unitScale = 0;
+				break;
+			}
+			case -9:{
+				prefix = "n";
+				unitScale = 0;
+				break;
+			}
+			case -12:{
+				prefix = "p";
+				unitScale = 0;
+				break;
+			}
+			}
+			String vcScaleStr = Double.toString(unitMultiplier*Math.pow((Math.pow(10, unitScale)), unitExponent));
+			VCUnitDefinition vcUnit = vcUnitSystem.getInstance(vcScaleStr + " " + prefix+unitKindSymbol + unitExponent);
+			return vcUnit;
 		}
-		return vcUnit;
 	}
 
 
-public static VCUnitDefinition getVCUnitDefinition(org.sbml.libsbml.UnitDefinition sbmlUnitDefn, VCUnitSystem vcUnitSystem) {
+public static VCUnitDefinition getVCUnitDefinition(org.sbml.jsbml.UnitDefinition sbmlUnitDefn, VCUnitSystem vcUnitSystem) {
 	// Each SBML UnitDefinition contains a list of Units, the total unit (VC unit) as represented by
 	// an SBML UnitDefinition is the product of the list of units it contains.
 	VCUnitDefinition vcUnitDefn = null;
-	org.sbml.libsbml.ListOf listofUnits = sbmlUnitDefn.getListOfUnits();
-	for (int j = 0; j < sbmlUnitDefn.getNumUnits(); j++) {
-		org.sbml.libsbml.Unit sbmlUnit = (org.sbml.libsbml.Unit)listofUnits.get(j);
+	for (Unit sbmlUnit : sbmlUnitDefn.getListOfUnits()){
 		VCUnitDefinition vcUnit = getVCUnit(sbmlUnit, vcUnitSystem);
 		if (vcUnitDefn == null) {
 			vcUnitDefn = vcUnit;
 		} else {
-			vcUnitDefn = vcUnitDefn.multiplyBy(vcUnit);        //?
+			vcUnitDefn = vcUnitDefn.multiplyBy(vcUnit);
 		}
 	}
-	return vcUnitDefn;
-}
-
-public static boolean isSbmlBaseUnit(String symbol) {
-	return SbmlBaseUnits.contains(symbol);
-}
-
-/**
- * convert sbml string into XML (SBML) document, add unit definitions from above selected unitSystem and re-convert to string.
- * @param sbmlStr
- * @return
- * @throws SbmlException 
- */
-public static String addUnitDefinitionsToSbmlModel(String sbmlStr, ModelUnitSystem vcModelUnitSystem) throws SbmlException {
-	if (sbmlStr == null || sbmlStr.length() == 0) {
-		throw new RuntimeException("SBMl string is empty, cannot add unit definitions to SBML model.");
+	String originalSymbol = vcUnitDefn.getSymbol();
+	String symbol = "."+originalSymbol+".";
+	final String[] moleSymbols = new String[] {  "umol", "nmol", "mol", "mmol", "pmol" };
+	final String[] molarSymbols = new String[] { "uM",   "nM",   "M",   "mM",   "pM" };
+	for (int i=0;i<moleSymbols.length;i++){
+		String mol = moleSymbols[i];
+		String M = molarSymbols[i];
+		if (symbol.contains(mol)){
+			symbol = symbol.replace("."+mol+".l-1.", "."+M+".");
+			symbol = symbol.replace(".l-1."+mol+".", "."+M+".");
+			symbol = symbol.replace("."+mol+"-1.l.", "."+M+"-1.");
+			symbol = symbol.replace(".l."+mol+"-1.", "."+M+"-1.");
+			symbol = symbol.replace("."+mol+"2.l-2.", "."+M+"2.");
+			symbol = symbol.replace(".l-2."+mol+"2.", "."+M+"2.");
+			symbol = symbol.replace("."+mol+"-2.l2.", "."+M+"-2.");
+			symbol = symbol.replace(".l2."+mol+"-2.", "."+M+"-2.");
+		}
 	}
-	NativeLib.SBML.load( );
-
-	// create a libsbml (sbml) model object, create sbml unitDefinitions for the units above, add to model.
-	SBMLReader sbmlReader = new SBMLReader();
-	SBMLDocument sbmlDocument = sbmlReader.readSBMLFromString(sbmlStr);
-		
-	Model sbmlModel = sbmlDocument.getModel();
-	long sbmlLevel = sbmlModel.getLevel();
-	long sbmlVersion = sbmlModel.getVersion();
-	
-	// Define SUBSTANCE
-	UnitDefinition subsUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getVolumeSubstanceUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
-	subsUnitDefn.setId(SUBSTANCE);
-	sbmlModel.addUnitDefinition(subsUnitDefn);
-
-	// Define VOLUME
-	UnitDefinition volUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getVolumeUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
-	volUnitDefn.setId(VOLUME);
-	sbmlModel.addUnitDefinition(volUnitDefn);
-
-	// Define AREA
-	UnitDefinition areaUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getAreaUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
-	areaUnitDefn.setId(AREA);
-	sbmlModel.addUnitDefinition(areaUnitDefn);
-
-	// Define LENGTH
-	UnitDefinition lengthUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getLengthUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
-	lengthUnitDefn.setId(LENGTH);
-	sbmlModel.addUnitDefinition(lengthUnitDefn);
-
-	// Define TIME
-	UnitDefinition timeUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getTimeUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
-	timeUnitDefn.setId(TIME);
-	sbmlModel.addUnitDefinition(timeUnitDefn);
-	
-	// convert sbml model to string and return
-	SBMLWriter sbmlWriter = new SBMLWriter();
-	String modifiedSbmlStr = sbmlWriter.writeToString(sbmlDocument);
-
-	// cleanup
-	sbmlModel.delete();
-	sbmlDocument.delete();
-	sbmlReader.delete();
-	sbmlWriter.delete();	
-
-	return modifiedSbmlStr;
-	
+	symbol = symbol.substring(1,symbol.length()-1);
+	if (!symbol.equals(vcUnitDefn.getSymbol())){
+		System.err.println("new symbol is "+symbol+",   old symbol is "+vcUnitDefn.getSymbol());
+		VCUnitDefinition new_vcUnitDefn = vcUnitSystem.getInstance(symbol);
+		if (!new_vcUnitDefn.isEquivalent(vcUnitDefn)){
+			throw new RuntimeException("failed to simplify unit "+vcUnitDefn.getSymbol()+", created wrong symbol "+symbol);
+		}
+		return new_vcUnitDefn;
+	}else{
+		return vcUnitDefn;
+	}
 }
+
+///**
+// * convert sbml string into XML (SBML) document, add unit definitions from above selected unitSystem and re-convert to string.
+// * @param sbmlStr
+// * @return
+// * @throws SbmlException 
+// * @throws XMLStreamException 
+// * @throws SBMLException 
+// */
+//public static String addUnitDefinitionsToSbmlModel(String sbmlStr, ModelUnitSystem vcModelUnitSystem) throws SbmlException, SBMLException, XMLStreamException {
+//	if (sbmlStr == null || sbmlStr.length() == 0) {
+//		throw new RuntimeException("SBMl string is empty, cannot add unit definitions to SBML model.");
+//	}
+//	NativeLib.SBML.load( );
+//
+//	// create a libsbml (sbml) model object, create sbml unitDefinitions for the units above, add to model.
+//	SBMLReader sbmlReader = new SBMLReader();
+//	SBMLDocument sbmlDocument = sbmlReader.readSBMLFromString(sbmlStr);
+//		
+//	Model sbmlModel = sbmlDocument.getModel();
+//	int sbmlLevel = sbmlModel.getLevel();
+//	int sbmlVersion = sbmlModel.getVersion();
+//	
+//	// Define SUBSTANCE
+//	UnitDefinition subsUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getVolumeSubstanceUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+//	subsUnitDefn.setId(SUBSTANCE);
+//	sbmlModel.addUnitDefinition(subsUnitDefn);
+//
+//	// Define VOLUME
+//	UnitDefinition volUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getVolumeUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+//	volUnitDefn.setId(VOLUME);
+//	sbmlModel.addUnitDefinition(volUnitDefn);
+//
+//	// Define AREA
+//	UnitDefinition areaUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getAreaUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+//	areaUnitDefn.setId(AREA);
+//	sbmlModel.addUnitDefinition(areaUnitDefn);
+//
+//	// Define LENGTH
+//	UnitDefinition lengthUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getLengthUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+//	lengthUnitDefn.setId(LENGTH);
+//	sbmlModel.addUnitDefinition(lengthUnitDefn);
+//
+//	// Define TIME
+//	UnitDefinition timeUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getTimeUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+//	timeUnitDefn.setId(TIME);
+//	sbmlModel.addUnitDefinition(timeUnitDefn);
+//	
+//	// convert sbml model to string and return
+//	SBMLWriter sbmlWriter = new SBMLWriter();
+//	String modifiedSbmlStr = sbmlWriter.writeSBMLToString(sbmlDocument);
+//
+//	return modifiedSbmlStr;
+//	
+//}
 
 }

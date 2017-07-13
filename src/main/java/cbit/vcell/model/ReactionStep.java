@@ -625,6 +625,36 @@ public Product getProduct(int thatIndex) {
 	}
 	return null;
 }
+public Catalyst getCatalyst(String name) {
+	if(!hasCatalyst()) {
+		return null;
+	}
+	for(int i=0; i<getReactionParticipants().length; i++) {
+		ReactionParticipant p = getReactionParticipants(i);
+		if(p instanceof Catalyst) {
+			if(p.getName().equals(name)) {
+				return (Catalyst)p;
+			}
+		}
+	}
+	return null;
+}
+public Catalyst getCatalyst(int thatIndex) {
+	if(!hasCatalyst()) {
+		return null;
+	}
+	int thisIndex = 0;
+	for(int i=0; i<getReactionParticipants().length; i++) {
+		ReactionParticipant p = getReactionParticipants(i);
+		if(p instanceof Catalyst) {
+			if(thisIndex == thatIndex) {
+				return (Catalyst)p;
+			}
+			thisIndex++;
+		}
+	}
+	return null;
+}
 
 /**
  * This method was created by a SmartGuide.

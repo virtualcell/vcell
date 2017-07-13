@@ -3,12 +3,15 @@ package org.vcell.optimization;
 import java.io.File;
 import java.io.IOException;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.sbml.jsbml.SBMLException;
 import org.vcell.optimization.thrift.CopasiOptimizationMethod;
 import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.optimization.thrift.OptimizationMethodType;
@@ -36,7 +39,6 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;
 
 public class CopasiServicePython {
@@ -85,7 +87,7 @@ public class CopasiServicePython {
 	}
 	
 	
-	public static OptProblem makeOptProblem(ParameterEstimationTask parameterEstimationTask, File outputModelSbmlFile, File outputDataFile) throws IOException, ExpressionException{
+	public static OptProblem makeOptProblem(ParameterEstimationTask parameterEstimationTask, File outputModelSbmlFile, File outputDataFile) throws IOException, ExpressionException, SBMLException, XMLStreamException{
 		OptimizationSpec optimizationSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();			
 
 		SimulationContext simulationContext = parameterEstimationTask.getSimulationContext();

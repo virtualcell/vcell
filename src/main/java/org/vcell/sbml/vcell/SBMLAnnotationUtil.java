@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.jdom.Element;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
@@ -24,11 +26,12 @@ import org.openrdf.model.URI;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.sbml.libsbml.SBase;
-import org.sbml.libsbml.XMLAttributes;
-import org.sbml.libsbml.XMLNamespaces;
-import org.sbml.libsbml.XMLNode;
-import org.sbml.libsbml.XMLTriple;
+import org.sbml.jsbml.Annotation;
+import org.sbml.jsbml.SBase;
+import org.sbml.jsbml.xml.XMLAttributes;
+import org.sbml.jsbml.xml.XMLNamespaces;
+import org.sbml.jsbml.xml.XMLNode;
+import org.sbml.jsbml.xml.XMLTriple;
 import org.sbpax.impl.HashGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.SesameRioUtil;
@@ -111,7 +114,7 @@ public class SBMLAnnotationUtil {
 	}
 	
 	public void writeAnnotation(Identifiable identifiable, SBase sBase, 
-			Element vcellImportRelatedElement) {
+			Element vcellImportRelatedElement) throws XMLStreamException {
 		// Deal with RDF annotation 
 		XMLNode rootAnnotation = new XMLNode(tripleAnnotation, new XMLAttributes());
 		Resource resource = metaData.getRegistry().getEntry(identifiable).getResource();
@@ -173,7 +176,7 @@ public class SBMLAnnotationUtil {
 		writeMetaID(identifiable, sBase);
 	}
 
-	public void writeNotes(Identifiable identifiable, SBase sBaseObj) {
+	public void writeNotes(Identifiable identifiable, SBase sBaseObj) throws XMLStreamException {
 		// get XHTML notes for 'identifiable' from NonRDFAnnotation from VCMetadata
 		Element notesElement = metaData.getXhtmlNotes(identifiable);
 		if (notesElement != null) {
@@ -187,13 +190,15 @@ public class SBMLAnnotationUtil {
 	 * 				elements in the SBML annotation is required for building the corresponding VCell element.  
 	 * @param sBase - the corresponding SBML element
 	 * @return - the <VcellRelatedInfo> element
+	 * @throws XMLStreamException 
 	 */
-	public Element readVCellSpecificAnnotation(SBase sBase) {
+	public Element readVCellSpecificAnnotation(SBase sBase) throws XMLStreamException {
 		Element vcellSpecificElement = null;
-		XMLNode annotationRoot = sBase.getAnnotation();
+		Annotation annotation = sBase.getAnnotation();
+		XMLNode annotationRoot = annotation.getXMLNode();
 		if (annotationRoot != null) {
 			long childCount = annotationRoot.getNumChildren();
-			for(long i = 0; i < childCount; ++i) {
+			for(int i = 0; i < childCount; ++i) {
 				XMLNode annotationBranch = annotationRoot.getChild(i);
 				String namespace = annotationBranch.getNamespaceURI(annotationBranch.getPrefix());
 				if((namespace != null) && (namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
@@ -232,16 +237,17 @@ public class SBMLAnnotationUtil {
 	 * 				is read here.
 	 * @param identifiable - vcReaction, vcSpecies, vcCompartment, vcBiomodel
 	 * @param sBase - corresponding SBML elements
+	 * @throws XMLStreamException 
 	 * @throws  
 	 * @throws RDFHandlerException 
 	 * @throws RDFParseException 
 	 */
-	public void readAnnotation(Identifiable identifiable, SBase sBase) {
+	public void readAnnotation(Identifiable identifiable, SBase sBase) throws XMLStreamException {
 		readMetaID(identifiable, sBase);
-		XMLNode annotationRoot = sBase.getAnnotation();
+		XMLNode annotationRoot = sBase.getAnnotation().getXMLNode();
 		if (annotationRoot != null) {
 			long childCount = annotationRoot.getNumChildren();
-			for(long i = 0; i < childCount; ++i) {
+			for(int i = 0; i < childCount; ++i) {
 				XMLNode annotationBranch = annotationRoot.getChild(i);
 				String namespace = annotationBranch.getNamespaceURI(annotationBranch.getPrefix());
 				if(namespace != null) {
@@ -283,10 +289,10 @@ public class SBMLAnnotationUtil {
 //						String xmlString = annotationBranch.toXMLString();
 //						Element annotationElement = null;
 						try {
-							XMLNode clonedAnnotRoot = annotationRoot.cloneObject();
-							clonedAnnotRoot.setNamespaces(sBase.getNamespaces());
+							XMLNode clonedAnnotRoot = new XMLNode(annotationRoot);
+							clonedAnnotRoot.setNamespaces(annotationRoot.getNamespaces());
 							clonedAnnotRoot.removeChildren();
-							clonedAnnotRoot.addChild(annotationBranch.cloneObject());
+							clonedAnnotRoot.addChild(annotationBranch.clone());
 							elementXML = (XmlUtil.stringToXML(clonedAnnotRoot.toXMLString(), null)).getRootElement();//(XmlUtil.stringToXML(xmlString, null)).getRootElement();
 						} catch (Exception e) {
 //							e.printStackTrace(System.out);
@@ -328,7 +334,7 @@ public class SBMLAnnotationUtil {
 		}
 	}
 	
-	public void readNotes(Identifiable identifiable, SBase sBaseObj) {
+	public void readNotes(Identifiable identifiable, SBase sBaseObj) throws XMLStreamException {
  		// convert XMLNode of xhtml notes to JDOM element, set it on the non-RDFAnnotation of 
 		// identifiable in metaData
 		XMLNode notesNode = sBaseObj.getNotes();
@@ -341,7 +347,7 @@ public class SBMLAnnotationUtil {
 	}
 
 	// Converts from libSBML XMLNode to JDOM element (used in VCML) 
- 	private static Element xmlNodeToElement(XMLNode xmlNode) {
+ 	private static Element xmlNodeToElement(XMLNode xmlNode) throws XMLStreamException {
 		String xmlString = xmlNode.toXMLString();
 		Element annotationElement = null;
 		try {
@@ -354,7 +360,7 @@ public class SBMLAnnotationUtil {
 	}
 	
 	// Converts from JDOM element (used in VCML) to libSBML XMLNode
-	private static XMLNode elementToXMLNode(Element element) {
+	private static XMLNode elementToXMLNode(Element element) throws XMLStreamException {
 		String xmlString = XmlUtil.xmlToString(element);
 		XMLNode xmlNode = XMLNode.convertStringToXMLNode(xmlString);
 
@@ -363,8 +369,8 @@ public class SBMLAnnotationUtil {
 		// xml string are added as xmlNode children to the dummy root. So loop through the children of the created 
 		// xmlnode and return the child which is an 'element'
 		if(!xmlNode.isElement()) {
-			long numChildren = xmlNode.getNumChildren();
-			for(long iChild = 0; iChild < numChildren; ++iChild) {
+			int numChildren = xmlNode.getNumChildren();
+			for(int iChild = 0; iChild < numChildren; ++iChild) {
 				XMLNode child = xmlNode.getChild(iChild);
 				if(child.isElement()) {
 					xmlNode = child;
@@ -382,8 +388,9 @@ public class SBMLAnnotationUtil {
 	 *  <ReactionRate>, etc. This needs to be read in. If any other element is encountered, return null.
 	 * @param node - the XMLNode to parse into JDOM element.
 	 * @return
+	 * @throws XMLStreamException 
 	 */
-	private Element processOldStyleVCellInfo(XMLNode node) {
+	private Element processOldStyleVCellInfo(XMLNode node) throws XMLStreamException {
 		Element vcellElement = xmlNodeToElement(node);
 		if (vcellElement != null && (vcellElement.getName().equals(XMLTags.ReactionRateTag) || vcellElement.getName().equals(XMLTags.SpeciesTag) ||
 									 vcellElement.getName().equals(XMLTags.SimpleReactionTag) || vcellElement.getName().equals(XMLTags.FluxStepTag))) {

@@ -6,6 +6,9 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.sbml.jsbml.SBMLException;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
@@ -100,7 +103,7 @@ public class SBMLExportTest {
 		return null;
 	}
 
-	void export(SimulationContext sc) throws XmlParseException, IOException  {
+	void export(SimulationContext sc) throws XmlParseException, IOException, SBMLException, XMLStreamException  {
 		BioModel bioModel = sc.getBioModel();
 		String resultString = XmlHelper.exportSBML(bioModel, 3,1,0,true, sc, null);
 		String niceName = bioModel.getName().replace(' ', '_') + ".sbml";

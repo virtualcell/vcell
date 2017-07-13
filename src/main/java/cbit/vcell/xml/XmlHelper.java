@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.log4j.Logger;
 import org.jdom.Comment;
 import org.jdom.Document;
@@ -43,6 +45,7 @@ import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.KisaoOntology;
 import org.jlibsedml.modelsupport.KisaoTerm;
+import org.sbml.jsbml.SBMLException;
 import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
@@ -238,17 +241,14 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
 			sbmlExporter.setSelectedSimContext(simContextFromModifiedBioModel);
 			sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
 			return sbmlExporter.getSBMLFile();
-		} catch (ExpressionException | SbmlException e) {
+		} catch (ExpressionException | SbmlException | SBMLException | XMLStreamException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException(e);
 		}
 	} else if (vcDoc instanceof MathModel) {
 		try {
 			return MathModel_SBMLExporter.getSBMLString((MathModel)vcDoc, level, version);
-		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
-			throw new XmlParseException(e);
-		} catch (IOException e) {
+		} catch (ExpressionException | IOException | SBMLException | XMLStreamException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException(e);
 		}

@@ -142,7 +142,7 @@ public void importSbml(String bngSbmlStr) {
 	}
 
 	try {
-		String modifiedSbmlStr = SBMLUnitTranslator.addUnitDefinitionsToSbmlModel(bngSbmlStr, forcedModelUnitSystem);
+		String modifiedSbmlStr = bngSbmlStr; // SBMLUnitTranslator.addUnitDefinitionsToSbmlModel(bngSbmlStr, forcedModelUnitSystem);
 
 		// Create a default VCLogger - SBMLImporter needs it
 		cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {

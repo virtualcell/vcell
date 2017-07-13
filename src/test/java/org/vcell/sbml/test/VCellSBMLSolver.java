@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.vcell.sbml.SBMLSolver;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
@@ -69,7 +71,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 	}
 	
-	private BioModel importSBML(String filename,VCLogger logger,boolean isSpatial) throws ClassNotFoundException, IOException, ExecutableException, XmlParseException {
+	private BioModel importSBML(String filename,VCLogger logger,boolean isSpatial) throws ClassNotFoundException, IOException, ExecutableException, XmlParseException, XMLStreamException {
 			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(filename,logger, false);
 			BioModel bioModel = sbmlImporter.getBioModel();
 		//EXPORT_NOTE isolates JVM from SBML crashes -- generally not needed

@@ -16,8 +16,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.jdom.CDATA;
 import org.jdom.Element;
+import org.sbml.jsbml.SBMLException;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
@@ -76,7 +79,7 @@ import cbit.vcell.xml.XmlParseException;
 
 public class OptXmlWriter {
 	
-	public static Element getCoapsiOptProblemDescriptionXML(ParameterEstimationTask parameterEstimationTask, MathMappingCallback mathMappingCallback) throws IOException, XmlParseException, ExpressionException{
+	public static Element getCoapsiOptProblemDescriptionXML(ParameterEstimationTask parameterEstimationTask, MathMappingCallback mathMappingCallback) throws IOException, XmlParseException, ExpressionException, SBMLException, XMLStreamException{
 		OptimizationSpec optimizationSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();			
 
 		Element optProblemDescriptionElement = new Element(OptXmlTags.OptProblemDescription_Tag);
