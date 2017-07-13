@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.vcell.db.ConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
@@ -28,7 +29,6 @@ import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.sql.ConnectionFactory;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;

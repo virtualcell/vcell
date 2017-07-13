@@ -20,6 +20,9 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.LifeSignThread;
 import org.vcell.util.SessionLog;
@@ -28,10 +31,6 @@ import org.vcell.util.logging.WatchLogging;
 
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportListener;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
@@ -237,9 +236,9 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				new LifeSignThread(log,lifeSignMessageInterval_MS).start();
 			}
 
-			KeyFactory keyFactory = new OracleKeyFactory();
+			KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 			DbDriver.setKeyFactory(keyFactory);
-			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
+			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
 			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
 			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true, log);

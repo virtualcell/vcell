@@ -27,6 +27,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -59,7 +60,6 @@ import org.vcell.util.document.VersionableTypeVersion;
 import cbit.image.VCImageInfo;
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
-import cbit.sql.KeyFactory;
 import cbit.sql.RecordChangedException;
 import cbit.sql.StarField;
 import cbit.sql.Table;
@@ -989,8 +989,8 @@ protected static Object getLOB(ResultSet rset,String columnName)
 		return null;
 	}
 	//If its a BLOB return a byte[]
-	if (lob_object instanceof oracle.sql.BLOB) {
-		oracle.sql.BLOB blob_object = (oracle.sql.BLOB) lob_object;
+	if (lob_object instanceof java.sql.Blob) {
+		java.sql.Blob blob_object = (java.sql.Blob) lob_object;
 		try{
 			return blob_object.getBytes((long) 1, (int) blob_object.length());
 		}catch(Exception e){
@@ -998,8 +998,8 @@ protected static Object getLOB(ResultSet rset,String columnName)
 		}
 	//If its a CLOB return a String
 	} else
-		if (lob_object instanceof oracle.sql.CLOB) {
-			oracle.sql.CLOB clob_object = (oracle.sql.CLOB) lob_object;
+		if (lob_object instanceof java.sql.Clob) {
+			java.sql.Clob clob_object = (java.sql.Clob) lob_object;
 			byte[] ins = new byte[(int) clob_object.length()];
 			try {
 				clob_object.getAsciiStream().read(ins);
@@ -4309,14 +4309,14 @@ protected static void updateCleanLOB(Connection con,String conditionalColumnName
 		ResultSet rset = s.executeQuery(sql);
 		if(rset.next()){
 			Object lob_object = rset.getObject(column);
-			if(lob_data instanceof byte[] && lob_object instanceof oracle.sql.BLOB){
-				//oracle.sql.BLOB selectedBLOB = ((oracle.jdbc.OracleResultSet) rset).getBLOB(1);
-				oracle.sql.BLOB selectedBLOB = (oracle.sql.BLOB)lob_object;
-				selectedBLOB.putBytes(1,(byte[])lob_data);
-			}else if (lob_data instanceof String && lob_object instanceof oracle.sql.CLOB){
-				//oracle.sql.CLOB selectedCLOB = ((oracle.jdbc.OracleResultSet) rset).getCLOB(1);
-				oracle.sql.CLOB selectedCLOB = (oracle.sql.CLOB)lob_object;
-				selectedCLOB.putString(1,(String)lob_data);
+			if(lob_data instanceof byte[] && lob_object instanceof java.sql.Blob){
+				//java.sql.Blob selectedBLOB = ((oracle.jdbc.OracleResultSet) rset).getBLOB(1);
+				java.sql.Blob selectedBLOB = (java.sql.Blob)lob_object;
+				selectedBLOB.setBytes(1,(byte[])lob_data);
+			}else if (lob_data instanceof String && lob_object instanceof java.sql.Clob){
+				//java.sql.Clob selectedCLOB = ((oracle.jdbc.OracleResultSet) rset).getCLOB(1);
+				java.sql.Clob selectedCLOB = (java.sql.Clob)lob_object;
+				selectedCLOB.setString(1,(String)lob_data);
 			}
 			else{
 				throw new DataAccessException("DataType="+lob_data.getClass().toString()+" to store did not match column="+column+" DataType="+lob_object.getClass().toString());

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1999-2011 University of Connecticut Health Center
+ * Copyright (C) 1999-2017 University of Connecticut Health Center
  *
  * Licensed under the MIT License (the "License").
  * You may not use this file except in compliance with the License.
@@ -8,43 +8,37 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.sql;
+package org.vcell.db.oracle;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.vcell.db.KeyFactory;
 import org.vcell.util.document.KeyValue;
+
+import cbit.sql.Table;
+
 /**
- * This type was created in VisualAge.
+ * oracle implementation of KeyFactory with appropriate syntax for oracle sql.
  */
 public class OracleKeyFactory implements KeyFactory {
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
+
 public String getCreateSQL() {
 	String sql = "CREATE SEQUENCE "+Table.SEQ;
 	return sql;
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
+
 public String getDestroySQL() {
 	String sql = "DROP SEQUENCE "+Table.SEQ;
 	return sql;
 }
-/**
- * getNewKey method comment.
- */
+
 public KeyValue getNewKey(Connection con) throws SQLException {
 	return new KeyValue(getUniqueBigDecimal(con));
 }
-/**
- * getNewKey method comment.
- */
+
 public java.math.BigDecimal getUniqueBigDecimal(Connection con) throws SQLException {
 	String sql;
 	sql = " SELECT " + Table.NewSEQ + " FROM DUAL";

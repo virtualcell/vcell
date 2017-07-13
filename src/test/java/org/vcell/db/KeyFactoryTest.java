@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.sql;
+package org.vcell.db;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -68,11 +68,11 @@ public static void main(String args[]) {
 		
 		KeyFactory keyFactory = null;
 		if (args[0].equalsIgnoreCase("ORACLE")){
-			conFactory = new OraclePoolingConnectionFactory(new StdoutSessionLog("KeyFactoryTest"));
-			keyFactory = new OracleKeyFactory();
-		}else if (args[0].equalsIgnoreCase("MYSQL")){
-			conFactory = new MysqlConnectionFactory();
-			keyFactory = new MysqlKeyFactory();
+			conFactory = DatabaseService.getInstance().createConnectionFactory(new StdoutSessionLog("KeyFactoryTest"));
+			keyFactory = DatabaseService.getInstance().createKeyFactory();
+//		}else if (args[0].equalsIgnoreCase("MYSQL")){
+//			conFactory = new MysqlConnectionFactory();
+//			keyFactory = new MysqlKeyFactory();
 		}else{
 			System.out.println("usage: KeyFactoryTest (oracle|mysql)");
 			System.exit(1);

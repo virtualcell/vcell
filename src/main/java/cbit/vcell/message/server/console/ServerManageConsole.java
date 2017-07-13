@@ -54,6 +54,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.BigString;
 import org.vcell.util.SessionLog;
@@ -74,8 +77,6 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
@@ -2122,9 +2123,9 @@ public static void main(java.lang.String[] args) {
 
 		SessionLog log = new StdoutSessionLog("Console");
 
-		KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();	
+		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 		DbDriver.setKeyFactory(keyFactory);
-		ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
 

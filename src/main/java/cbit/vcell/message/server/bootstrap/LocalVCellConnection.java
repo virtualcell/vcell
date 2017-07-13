@@ -13,6 +13,8 @@ import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -26,8 +28,6 @@ import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimpleMessageCollector;
 import cbit.rmi.event.SimpleMessageService;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.LocalUserMetaDbServer;

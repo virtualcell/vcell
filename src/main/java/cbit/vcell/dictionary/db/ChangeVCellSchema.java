@@ -18,14 +18,12 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
+import org.vcell.db.oracle.OracleKeyFactory;
 import org.vcell.util.SessionLog;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.MysqlConnectionFactory;
-import cbit.sql.MysqlKeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.resource.StdoutSessionLog;
 /**
  * Insert the type's description here.
@@ -753,17 +751,16 @@ public static void main(String[] args) {
         KeyFactory keyFactory = null;
         new cbit.vcell.resource.PropertyLoader();
         if (args[0].equalsIgnoreCase("ORACLE")) {
-            conFactory =
-                new OraclePoolingConnectionFactory(
+            conFactory =DatabaseService.getInstance().createConnectionFactory(
                     log,
                     driverName,
                     connectURL,
                     dbSchemaUser,
                     dbPassword);
             keyFactory = new OracleKeyFactory();
-        } else if (args[0].equalsIgnoreCase("MYSQL")) {
-                conFactory = new MysqlConnectionFactory();
-                keyFactory = new MysqlKeyFactory();
+//        } else if (args[0].equalsIgnoreCase("MYSQL")) {
+//                conFactory = new MysqlConnectionFactory();
+//                keyFactory = new MysqlKeyFactory();
 		} else {
                 System.out.println(
                     "Usage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword");

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.sql;
+package org.vcell.db.oracle;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -20,6 +20,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.vcell.db.ConnectionFactory;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserInfo;
@@ -94,10 +95,10 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	executorService.scheduleAtFixedRate(( ) -> statCheck( ), 1,2,TimeUnit.MINUTES);
 }
 
-/**
- * scheduled method to check connection status. Log status if either the log4j level is already
- * set to INFO or higher, or the number of connections is relatively low
- */
+//
+// scheduled method to check connection status. Log status if either the log4j level is already
+// set to INFO or higher, or the number of connections is relatively low
+//
 private void statCheck( ) {
 	boolean infoOn = lg.isInfoEnabled();
 	if (infoOn) {
@@ -107,21 +108,16 @@ private void statCheck( ) {
 
 }
 
-/**
- * info log pool statistics; {@link #lg} {@link Logger#isInfoEnabled()} must be true for this to do anything
- */
 private void logStat( ) {
 	if (lg.isInfoEnabled()) {
 		JDBCConnectionPoolStatistics stats = poolDataSource.getStatistics();
 		lg.info(stats.toString());
 	}
 }
+
 public synchronized void closeAll() throws java.sql.SQLException {
 }
-/**
- * This method was created in VisualAge.
- * @param con java.sql.Connection
- */
+
 public void failed(Connection con, Object lock) throws SQLException {
 	log.print("OraclePoolingConnectionFactory.failed("+con+")");
 	release(con, lock);
@@ -170,10 +166,7 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 	}
 	return conn;
 }
-/**
- * This method was created in VisualAge.
- * @param con java.sql.Connection
- */
+
 public void release(Connection con, Object lock) throws SQLException {
 	if (con != null) {
 		con.close();
@@ -250,4 +243,5 @@ public static void main(String[] args) {
 		e.printStackTrace();
 	}
 }
+
 }

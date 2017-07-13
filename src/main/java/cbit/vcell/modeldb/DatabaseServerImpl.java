@@ -13,6 +13,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Vector;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -33,8 +35,6 @@ import org.vcell.util.document.VersionableType;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataDBOperationResults;

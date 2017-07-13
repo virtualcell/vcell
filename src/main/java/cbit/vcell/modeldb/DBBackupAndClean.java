@@ -38,11 +38,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.util.AmplistorUtils;
-import oracle.jdbc.pool.OracleDataSource;
 
 
 public class DBBackupAndClean {
@@ -169,7 +173,7 @@ public class DBBackupAndClean {
 		String baseFileName = OP_IMPORT+"_"+createBaseFileName(importServerName, importDBSrvcName, vcellSchema);;
 
 		StringBuffer logStringBuffer = new StringBuffer();
-		OracleDataSource oracleDataSource  = null;
+		ConnectionFactory connectionFactory = null;
 		Connection con = null;
 		try{
 			if(dumpFileHostPrefix.indexOf('.') != -1){
@@ -243,14 +247,15 @@ public class DBBackupAndClean {
 
 			//			BeanUtils.copyFileChannel(oracleDumpFiles[0], dumpCopy, true);
 			
-			oracleDataSource = new OracleDataSource();
 			//jdbc:oracle:<drivertype>:<username/password>@<database>
 			//<database> = <host>:<port>:<SID>
 			String url = "jdbc:oracle:thin:"+"system"+"/"+password+"@//"+importServerName+":1521/"+importDBSrvcName;
 			System.out.println(url);
-			oracleDataSource.setURL(url);
+			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
+			SessionLog sessionLog = new StdoutSessionLog("test");
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory(sessionLog, dbDriverName, url, "system", password);
 
-			con = oracleDataSource.getConnection();
+			con = connectionFactory.getConnection(new Object());
 			con.setAutoCommit(false);
 
 			boolean bHasVCellUser = false;
@@ -326,8 +331,8 @@ public class DBBackupAndClean {
 			if(con != null){
 				try{con.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
-			if(oracleDataSource != null){
-				try{oracleDataSource.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+			if(connectionFactory != null){
+				try{connectionFactory.closeAll();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
 		}
 		
@@ -1076,7 +1081,7 @@ public class DBBackupAndClean {
 	private static void deleteSimsFromDisk(String[] args) {
 		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
 		
-		OracleDataSource oracleDataSource  = null;
+		ConnectionFactory connectionFactory  = null;
 		Connection con = null;
 		
 		String baseFileName = createBaseFileName(dbBackupHelper.dbHostName, dbBackupHelper.dbSrvcName, dbBackupHelper.vcellSchema);
@@ -1085,13 +1090,14 @@ public class DBBackupAndClean {
 		StringBuffer logStringBuffer = new StringBuffer();
 
 		try{
-			oracleDataSource = new OracleDataSource();
 			//jdbc:oracle:<drivertype>:<username/password>@<database>
 			//<database> = <host>:<port>:<SID>
 			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
-			oracleDataSource.setURL(url);
+			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
+			SessionLog sessionLog = new StdoutSessionLog("test");
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory(sessionLog, dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
 
-			con = oracleDataSource.getConnection();
+			con = connectionFactory.getConnection(new Object());
 			con.setAutoCommit(false);
 			
 			String sql = 
@@ -1203,8 +1209,8 @@ public class DBBackupAndClean {
 			if(con != null){
 				try{con.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
-			if(oracleDataSource != null){
-				try{oracleDataSource.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+			if(connectionFactory != null){
+				try{connectionFactory.closeAll();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
 		}		
 	}
@@ -1212,7 +1218,7 @@ public class DBBackupAndClean {
 	private static void clean(String[] args) {
 		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
 		
-		OracleDataSource oracleDataSource  = null;
+		ConnectionFactory connectionFactory  = null;
 		Connection con = null;
 		
 		String baseFileName = createBaseFileName(dbBackupHelper.dbHostName, dbBackupHelper.dbSrvcName, dbBackupHelper.vcellSchema);
@@ -1221,13 +1227,14 @@ public class DBBackupAndClean {
 		StringBuffer logStringBuffer = new StringBuffer();
 
 		try{
-			oracleDataSource = new OracleDataSource();
+			SessionLog log = new StdoutSessionLog("test");
 			//jdbc:oracle:<drivertype>:<username/password>@<database>
 			//<database> = <host>:<port>:<SID>
 			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
-			oracleDataSource.setURL(url);
+			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory(log, dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
 
-			con = oracleDataSource.getConnection();
+			con = connectionFactory.getConnection(new Object());
 			con.setAutoCommit(false);
 			
 			cleanClearVersionBranchPointRef(con,SimulationTable.table, logStringBuffer);
@@ -1259,8 +1266,8 @@ public class DBBackupAndClean {
 			if(con != null){
 				try{con.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
-			if(oracleDataSource != null){
-				try{oracleDataSource.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+			if(connectionFactory != null){
+				try{connectionFactory.closeAll();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
 		}
 		

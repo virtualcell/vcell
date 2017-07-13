@@ -10,14 +10,13 @@
 
 package cbit.vcell.message.server.bootstrap;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
@@ -53,9 +52,9 @@ public void changeUser(UserLoginInfo userLoginInfo) {
 public VCellConnection createVCellConnection() throws AuthenticationException, ConnectionException {
 	try {
 		if (connectionFactory == null) {
-			connectionFactory = new OraclePoolingConnectionFactory(sessionLog);
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory(sessionLog);
 		}
-		KeyFactory keyFactory = new OracleKeyFactory();
+		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 		LocalVCellConnection.setDatabaseResources(connectionFactory, keyFactory);
 		LocalVCellServer vcServer = (LocalVCellServer)(new LocalVCellServerFactory(null,null,"<<local>>",null,connectionFactory, keyFactory, sessionLog)).getVCellServer();
 		VCellConnection vcc = vcServer.getVCellConnection(userLoginInfo);
@@ -75,7 +74,7 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
  * Creation date: (8/9/2001 12:34:14 PM)
  * @param newConFactory cbit.sql.ConnectionFactory
  */
-public void setConnectionFactory(cbit.sql.ConnectionFactory newConnectionFactory) {
+public void setConnectionFactory(ConnectionFactory newConnectionFactory) {
 	connectionFactory = newConnectionFactory;
 }
 

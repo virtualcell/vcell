@@ -10,6 +10,8 @@
 
 package cbit.vcell.message.server.bootstrap;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
@@ -17,8 +19,6 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;

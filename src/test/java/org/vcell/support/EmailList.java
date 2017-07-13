@@ -12,7 +12,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import oracle.jdbc.pool.OracleDataSource;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 
 /**
  * read database to get user emails (with notify="on"), dump to file
@@ -131,9 +135,14 @@ public class EmailList {
 	 * @throws SQLException
 	 */
 	private Connection getConnection( ) throws SQLException {
-		OracleDataSource ds = new OracleDataSource();
-		ds.setURL(JDBC_URL);
-		Connection conn = ds.getConnection(USER_ID,password);
+		String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
+		ConnectionFactory connectionFactory = DatabaseService.getInstance().createConnectionFactory(
+				new StdoutSessionLog("test"),
+			dbDriverName,
+			EmailList.JDBC_URL,
+			USER_ID,
+			password);
+		Connection conn = connectionFactory.getConnection(new Object());
 		return conn;
 	}
 

@@ -21,10 +21,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
 
-import oracle.jdbc.pool.OracleConnectionPoolDataSource;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 
 public class VCStatistics {
-	private OracleConnectionPoolDataSource oracleConnection = null;
+	private ConnectionFactory connectionFactory = null;
 	private ArrayList<String> userNameList = new ArrayList<String>();
 	private ArrayList<Integer> userIDList = new ArrayList<Integer>();
 	private static String simDataDir = "\\\\cfs02.cam.uchc.edu\\ifs\\raid\\vcell\\users\\";
@@ -62,11 +66,13 @@ public class VCStatistics {
 		}
 	}
 	private VCStatistics(String dbServer,String dbName,String dbUserid,String dbPassword) throws Exception {
-		oracleConnection = new OracleConnectionPoolDataSource();
 		String dbConnectURL = "jdbc:oracle:thin:@"+dbServer+":1521:"+dbName;
-		oracleConnection.setURL(dbConnectURL);
-		oracleConnection.setUser(dbUserid);
-		oracleConnection.setPassword(dbPassword);		
+		connectionFactory = DatabaseService.getInstance().createConnectionFactory(
+				new StdoutSessionLog("test"),
+				PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
+				dbConnectURL,
+				dbUserid,
+				dbPassword);
 	}
 	public static void main(String[] args) {
 		if(args.length != 4){
@@ -140,7 +146,7 @@ public class VCStatistics {
 	}
 
 	private Connection getConnection() throws SQLException {	
-		return oracleConnection.getConnection();
+		return connectionFactory.getConnection(this);
 	}
 
 	private void release(Connection con) throws SQLException {

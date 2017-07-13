@@ -17,6 +17,9 @@ import java.sql.SQLException;
 
 import javax.swing.JFrame;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.modeldb.SQLCreateAllTables;
@@ -206,19 +209,17 @@ public static void main(java.lang.String[] args) {
         //
         if (args[0].equalsIgnoreCase("ORACLE")) {
             String driverName = "oracle.jdbc.driver.OracleDriver";
-            conFactory =
-                new OraclePoolingConnectionFactory(
+            conFactory = DatabaseService.getInstance().createConnectionFactory(
                     log,
                     driverName,
                     connectURL,
                     dbSchemaUser,
                     dbPassword);
-            keyFactory = new OracleKeyFactory();
-        } else
-            if (args[0].equalsIgnoreCase("MYSQL")) {
-                conFactory = new MysqlConnectionFactory();
-                keyFactory = new MysqlKeyFactory();
-            } else {
+            keyFactory = DatabaseService.getInstance().createKeyFactory();
+//        } else if (args[0].equalsIgnoreCase("MYSQL")) {
+//                conFactory = new MysqlConnectionFactory();
+//                keyFactory = new MysqlKeyFactory();
+        } else {
                 System.out.println(
                     "Usage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword");
                 System.exit(1);

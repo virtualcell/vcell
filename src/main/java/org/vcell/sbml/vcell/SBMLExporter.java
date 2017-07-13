@@ -130,7 +130,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.units.VCUnitDefinition;
@@ -276,11 +275,6 @@ public class SBMLExporter {
 		public void close() throws Exception {
 			//document.delete();
 		}
-	}
-
-	static
-	{
-		NativeLib.SBML.load( );
 	}
 
 	/**

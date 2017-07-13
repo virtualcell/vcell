@@ -23,6 +23,9 @@ import java.util.Vector;
 import javax.swing.JFrame;
 
 import org.apache.log4j.Level;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -37,11 +40,7 @@ import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
-import cbit.sql.ConnectionFactory;
 import cbit.sql.Field;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModel;
@@ -82,9 +81,9 @@ public class MathVerifier {
 	//
 //	private java.util.Hashtable resolvedFileHash = new java.util.Hashtable();
 	private AdminDatabaseServer adminDbServer = null;
-	private cbit.sql.ConnectionFactory conFactory = null;
+	private ConnectionFactory conFactory = null;
 	private DatabaseServerImpl dbServerImpl = null;
-	private cbit.sql.KeyFactory keyFactory = null;
+	private KeyFactory keyFactory = null;
 	private org.vcell.util.SessionLog log = null;
 	private cbit.vcell.modeldb.MathDescriptionDbDriver mathDescDbDriver = null;
 	private java.util.HashSet skipHash = new java.util.HashSet(); // holds KeyValues of BioModels to skip
@@ -176,14 +175,13 @@ public static MathVerifier createMathVerifier(
     //
     // get appropriate database factory objects
     //
-    conFactory =
-        new OraclePoolingConnectionFactory(
+    conFactory =DatabaseService.getInstance().createConnectionFactory(
         	sessionLog,
             driverName,
             connectURL,
             dbSchemaUser,
             dbPassword);
-    keyFactory = new OracleKeyFactory();
+    keyFactory = DatabaseService.getInstance().createKeyFactory();
     
     AdminDatabaseServer adminDbServer =
     	new LocalAdminDbServer(conFactory, keyFactory, sessionLog);
@@ -1671,7 +1669,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
 /**
  * Insert the method's description here.
  * Creation date: (6/7/2004 12:01:12 PM)
- * @param simContexts cbit.sql.KeyValue[]
+ * @param simContexts KeyValue[]
  */
 public void setSkipList(KeyValue[] simContextKeys) {
 	for (int i = 0; i < simContextKeys.length; i++){

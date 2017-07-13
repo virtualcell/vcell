@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.modeldb;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -28,8 +30,6 @@ import org.vcell.util.document.VersionableFamily;
 import org.vcell.util.document.VersionableType;
 
 import cbit.image.VCImageInfo;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;

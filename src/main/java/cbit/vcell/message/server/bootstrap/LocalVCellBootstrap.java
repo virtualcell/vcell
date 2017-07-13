@@ -22,6 +22,10 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
+import org.vcell.db.oracle.OraclePoolingConnectionFactory;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.DataAccessException;
@@ -35,9 +39,6 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.logging.Logging;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
@@ -58,8 +59,8 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.resource.StdoutSessionLogConcurrent;
-import cbit.vcell.resource.StdoutSessionLogConcurrentRmi;
 import cbit.vcell.resource.StdoutSessionLogConcurrent.LifeSignInfo;
+import cbit.vcell.resource.StdoutSessionLogConcurrentRmi;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
@@ -243,7 +244,7 @@ public static void main(java.lang.String[] args) {
 		do{
 			try{
 				conFactoryException = null;
-				conFactory = new OraclePoolingConnectionFactory(log);
+				conFactory = DatabaseService.getInstance().createConnectionFactory(log);
 			}catch(Exception e){
 				e.printStackTrace();
 				conFactoryException = e;
@@ -254,7 +255,7 @@ public static void main(java.lang.String[] args) {
 			throw new Exception("Couldn't create OraclePoolingConnectionFactory after "+tryCount+" tries.",conFactoryException);
 		}
 		
-		KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
+		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 		DatabasePolicySQL.bSilent=true;
 		//
 		// don't timeout entries, and use vcell.properties for cacheSize

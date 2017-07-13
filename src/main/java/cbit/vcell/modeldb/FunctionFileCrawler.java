@@ -13,15 +13,15 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.Vector;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.KeyFactory;
+import org.vcell.db.oracle.OracleKeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;

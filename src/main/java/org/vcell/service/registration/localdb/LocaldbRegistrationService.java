@@ -7,22 +7,19 @@ import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.service.registration.RegistrationService;
-import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;
-import oracle.ucp.UniversalConnectionPoolException;
 
 @Plugin(type = Service.class)
 public class LocaldbRegistrationService extends AbstractService implements RegistrationService {
@@ -38,10 +35,10 @@ public class LocaldbRegistrationService extends AbstractService implements Regis
 			SessionLog log = new StdoutSessionLog("Local");
 			ConnectionFactory conFactory;
 			try {
-				conFactory = new OraclePoolingConnectionFactory(log);
-				KeyFactory keyFactory = new OracleKeyFactory();
+				conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+				KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 				adminDbServer = new LocalAdminDbServer(conFactory, keyFactory, log);
-			} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | ConfigurationException | SQLException | UniversalConnectionPoolException e) {
+			} catch (SQLException e) {
 				e.printStackTrace();
 				throw new RuntimeException("failed to establish database connection for RegistrationService: "+e.getMessage(),e);
 			} catch (DataAccessException e) {

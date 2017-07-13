@@ -246,7 +246,6 @@ public class BiomodelsDB_TestSuite {
 			 * vcell.mathematica.kernel.executable = "C:\\Program Files\\Wolfram Research\\Mathematica\\7.0\\MathKernel.exe"
 			 */
 			ResourceUtil.setNativeLibraryDirectory();
-			NativeLib.SBML.load();
 			NativeLib.COPASI.load();
 			NativeLib.COPASI_JAVA.load();
 

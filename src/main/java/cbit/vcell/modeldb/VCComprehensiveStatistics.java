@@ -21,6 +21,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -29,10 +32,6 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
@@ -44,10 +43,9 @@ import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-import oracle.jdbc.pool.OracleConnectionPoolDataSource;
 
 public class VCComprehensiveStatistics {
-	private OracleConnectionPoolDataSource oracleConnection = null;
+	private ConnectionFactory oracleConnection = null;
 	private ArrayList<UserStat> userStatList = new ArrayList<UserStat>();
 	
 	private static double MONTH_IN_DAY = 365.0/12; // in days
@@ -91,17 +89,14 @@ public class VCComprehensiveStatistics {
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 		
 		SessionLog sessionLog = new StdoutSessionLog("VCComprehensiveStatistics");
-		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-		KeyFactory keyFactory = new OracleKeyFactory();
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 		DbDriver.setKeyFactory(keyFactory);
 		
 		localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory, sessionLog);
 		dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,sessionLog);
 		
-		oracleConnection = new OracleConnectionPoolDataSource();
-		oracleConnection.setURL(PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL));
-		oracleConnection.setUser(PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid));
-		oracleConnection.setPassword(PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword));
+		oracleConnection = DatabaseService.getInstance().createConnectionFactory(sessionLog);
 		
 		internalDeveloper.add("fgao");
 		internalDeveloper.add("anu");
@@ -531,7 +526,7 @@ public class VCComprehensiveStatistics {
 	}
 	
 	private void collectUserStats(long startDateInMs, long endDateInMs) throws SQLException {
-		Connection con = oracleConnection.getConnection();
+		Connection con = oracleConnection.getConnection(new Object());
 		Statement stmt = con.createStatement();
 		try {			
 			String sql = "select vc_userinfo.id, vc_userinfo.userid, vc_userstat.lastlogin from vc_userinfo, vc_userstat where vc_userstat.userref=vc_userinfo.id";

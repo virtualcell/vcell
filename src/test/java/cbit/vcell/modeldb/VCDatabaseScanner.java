@@ -9,6 +9,9 @@ import java.util.HashSet;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -19,8 +22,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VersionableType;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
@@ -74,8 +75,8 @@ public static VCDatabaseScanner createDatabaseScanner(SessionLog log) throws Exc
 	DatabasePolicySQL.bSilent = true;
 	DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	
-	cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
-	cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
+	ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+	KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 	DbDriver.setKeyFactory(keyFactory);
 
 	VCDatabaseScanner databaseScanner = new VCDatabaseScanner(conFactory, keyFactory, log);

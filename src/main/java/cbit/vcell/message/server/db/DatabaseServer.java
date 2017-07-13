@@ -15,14 +15,13 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCPooledQueueConsumer;
@@ -121,8 +120,8 @@ public static void main(java.lang.String[] args) {
  		
 		final SessionLog log = new StdoutSessionLog("DatabaseServer");
 		
-		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-		KeyFactory	keyFactory = new OracleKeyFactory();
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+		KeyFactory	keyFactory = DatabaseService.getInstance().createKeyFactory();
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 		
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);

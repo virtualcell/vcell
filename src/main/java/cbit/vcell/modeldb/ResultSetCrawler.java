@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -29,7 +32,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
-import cbit.sql.ConnectionFactory;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.util.AmplistorUtils;
@@ -105,8 +107,8 @@ public class ResultSetCrawler {
 			
 			// initialize database
 			SessionLog log = new cbit.vcell.resource.StdoutSessionLog("ResultSetCrawler");		
-			conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
-			cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
+			conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+			KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 			DbDriver.setKeyFactory(keyFactory);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
 			DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);

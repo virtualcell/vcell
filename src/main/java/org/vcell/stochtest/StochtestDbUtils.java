@@ -3,12 +3,12 @@ package org.vcell.stochtest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.db.ConnectionFactory;
 import org.vcell.stochtest.TimeSeriesMultitrialData.SummaryStatistics;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.ConnectionFactory;
 import cbit.vcell.modeldb.StochtestCompareTable;
 import cbit.vcell.modeldb.StochtestRunTable;
 import cbit.vcell.modeldb.StochtestTable;

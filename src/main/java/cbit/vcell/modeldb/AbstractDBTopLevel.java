@@ -10,10 +10,9 @@
 
 package cbit.vcell.modeldb;
 
+import org.vcell.db.ConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-
-import cbit.sql.ConnectionFactory;
 /**
  * Insert the type's description here.
  * Creation date: (8/28/2003 4:57:38 PM)
@@ -29,7 +28,7 @@ public abstract class AbstractDBTopLevel {
  * @param confactory cbit.sql.ConnectionFactory
  * @param argSessionLog cbit.vcell.server.SessionLog
  */
-AbstractDBTopLevel(cbit.sql.ConnectionFactory argConFactory, org.vcell.util.SessionLog argSessionLog) {
+AbstractDBTopLevel(ConnectionFactory argConFactory, org.vcell.util.SessionLog argSessionLog) {
 	this.conFactory = argConFactory;
 	this.log = argSessionLog;
 }

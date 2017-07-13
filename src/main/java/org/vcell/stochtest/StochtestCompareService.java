@@ -7,6 +7,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.stochtest.StochtestCompare.StochtestCompareStatus;
 import org.vcell.stochtest.StochtestRun.StochtestRunStatus;
 import org.vcell.stochtest.TimeSeriesMultitrialData.SummaryStatistics;
@@ -14,10 +17,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 
 import cbit.image.ImageException;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.MappingException;
@@ -31,9 +30,9 @@ import cbit.vcell.xml.XmlParseException;
 
 public class StochtestCompareService {
 	
-	private cbit.sql.ConnectionFactory conFactory = null;
+	private ConnectionFactory conFactory = null;
 	private DatabaseServerImpl dbServerImpl = null;
-	private cbit.sql.KeyFactory keyFactory = null;
+	private KeyFactory keyFactory = null;
 	private File baseDir = null;
 
 
@@ -69,8 +68,9 @@ public class StochtestCompareService {
 	    //
 	    // get appropriate database factory objects
 	    //
-	    ConnectionFactory conFactory = new OraclePoolingConnectionFactory(sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
-	    KeyFactory keyFactory = new OracleKeyFactory();    
+	    ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(
+	    		sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
+	    KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();   
 	    StochtestCompareService stochtestService = new StochtestCompareService(baseDir, conFactory, keyFactory, sessionLog);
 	    
 	    while (true){

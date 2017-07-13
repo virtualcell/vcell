@@ -18,14 +18,16 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.modeldb.UserDbDriverExtended;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import net.miginfocom.swing.MigLayout;
-import oracle.jdbc.pool.OracleDataSource;
 
 @SuppressWarnings("serial")
 public class ChangeEmail extends JFrame {
@@ -188,11 +190,17 @@ public class ChangeEmail extends JFrame {
 	 * @throws SQLException
 	 */
 	private Connection getConnection( ) throws SQLException {
-			if (dbConn == null) {
-		OracleDataSource ds = new OracleDataSource();
-		ds.setURL(EmailList.JDBC_URL);
-		char[] pw = pwField.getPassword();
-		dbConn = ds.getConnection(EmailList.USER_ID,new String(pw));
+		if (dbConn == null) {
+			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
+			char[] pw = pwField.getPassword();
+			ConnectionFactory connectionFactory = DatabaseService.getInstance().createConnectionFactory(
+				new StdoutSessionLog("test"),
+				dbDriverName,
+				EmailList.JDBC_URL,
+				EmailList.USER_ID,
+				new String(pw));
+		
+			dbConn = connectionFactory.getConnection(new Object());
 		}
 		return dbConn;
 	}

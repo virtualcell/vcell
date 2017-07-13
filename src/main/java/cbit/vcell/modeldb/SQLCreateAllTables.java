@@ -21,15 +21,13 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
+import org.vcell.db.oracle.OracleKeyFactory;
 import org.vcell.util.SessionLog;
 
-import cbit.sql.ConnectionFactory;
 import cbit.sql.Field;
-import cbit.sql.KeyFactory;
-import cbit.sql.MysqlConnectionFactory;
-import cbit.sql.MysqlKeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.sql.Table;
 import cbit.vcell.resource.StdoutSessionLog;
 /**
@@ -344,23 +342,21 @@ public static void main(java.lang.String[] args) {
         new cbit.vcell.resource.PropertyLoader();
         if (args[0].equalsIgnoreCase("ORACLE")) {
             String driverName = "oracle.jdbc.driver.OracleDriver";
-            conFactory =
-                new OraclePoolingConnectionFactory(
+            conFactory = DatabaseService.getInstance().createConnectionFactory(
                     log,
                     driverName,
                     connectURL,
                     dbSchemaUser,
                     dbPassword);
             keyFactory = new OracleKeyFactory();
-        } else
-            if (args[0].equalsIgnoreCase("MYSQL")) {
-                conFactory = new MysqlConnectionFactory();
-                keyFactory = new MysqlKeyFactory();
-            } else {
-                System.out.println(
-                    "Usage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword");
-                System.exit(1);
-            }
+//        } else if (args[0].equalsIgnoreCase("MYSQL")) {
+//            conFactory = new MysqlConnectionFactory();
+//            keyFactory = new MysqlKeyFactory();
+        } else {
+            System.out.println(
+                "Usage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword");
+            System.exit(1);
+        }
         destroyAndRecreateTables(log, conFactory, keyFactory);
     } catch (Throwable e) {
         e.printStackTrace(System.out);

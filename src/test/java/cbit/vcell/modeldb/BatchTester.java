@@ -203,7 +203,7 @@ public class BatchTester extends VCDatabaseScanner {
 									bioModelXML = dbServerImpl.getBioModelXML(user,modelKey);
 								} catch (DataAccessException dae) {
 									Throwable cause = dae.getCause();
-									if (cause instanceof  oracle.ucp.UniversalConnectionPoolException) {
+									if (cause.getClass().getSimpleName().equals("UniversalConnectionPoolException")) {
 										printWriter.println("No db connection for  " + modelIdent.statusId + ", sleeping " + dbSleepTime + " seconds");
 										Thread.currentThread().sleep(dbSleepTime * 1000); 
 										dbSleepTime *= 1.5; //wait a little longer next time
@@ -391,7 +391,7 @@ public class BatchTester extends VCDatabaseScanner {
 									 mathModelXML = dbServerImpl.getMathModelXML(BatchTester.ADMINISTRATOR, modelKey);
 								} catch (DataAccessException dae) {
 									Throwable cause = dae.getCause();
-									if (cause instanceof  oracle.ucp.UniversalConnectionPoolException) {
+									if (cause.getClass().getSimpleName().equals("UniversalConnectionPoolException")) {
 										printWriter.println("No db connection for  " + modelIdent.id + ", sleeping " + dbSleepTime + " seconds");
 										Thread.currentThread().sleep(dbSleepTime * 1000); 
 										dbSleepTime *= 1.5; //wait a little longer next time

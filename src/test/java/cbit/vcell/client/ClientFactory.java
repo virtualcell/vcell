@@ -9,6 +9,9 @@ import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
@@ -18,10 +21,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ClientServerManager.InteractiveContext;
@@ -37,7 +36,6 @@ import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.server.VCellServerFactory;
-import oracle.ucp.UniversalConnectionPoolException;
 /**
  * This type was created in VisualAge.
  */
@@ -103,12 +101,12 @@ public class ClientFactory {
 	public static VCellServerFactory createLocalVCellServerFactory(String adminUserid, String adminPassword) 
 			throws FileNotFoundException, SQLException, DataAccessException, ClassNotFoundException, 
 					IllegalAccessException, InstantiationException, ConfigurationException, 
-					UniversalConnectionPoolException, VCMessagingException{
+					VCMessagingException{
 		
 		SessionLog log = new StdoutSessionLog(adminUserid);
 		DigestedPassword digestedPassword = new DigestedPassword(adminPassword);
-		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-		KeyFactory keyFactory = new OracleKeyFactory();
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 		VCMessagingDelegate messagingDelegate = new SimpleMessagingDelegate();
 		VCMessagingService messagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 		messagingService.setDelegate(messagingDelegate);

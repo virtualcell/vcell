@@ -8,13 +8,14 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.sql;
+package org.vcell.db.mysql;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.vcell.db.KeyFactory;
 import org.vcell.util.document.KeyValue;
 /**
  * This type was created in VisualAge.

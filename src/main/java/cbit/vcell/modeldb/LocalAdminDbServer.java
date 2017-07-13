@@ -11,6 +11,8 @@
 package cbit.vcell.modeldb;
 import java.util.List;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.UseridIDExistsException;
@@ -20,8 +22,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.SimpleJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent;

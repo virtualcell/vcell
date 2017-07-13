@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Vector;
 
+import org.vcell.db.ConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -36,7 +37,6 @@ import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.image.VCImage;
-import cbit.sql.ConnectionFactory;
 import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;

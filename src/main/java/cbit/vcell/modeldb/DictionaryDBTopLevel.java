@@ -12,11 +12,11 @@ package cbit.vcell.modeldb;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.vcell.db.ConnectionFactory;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.sql.ConnectionFactory;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.EnzymeInfo;
 import cbit.vcell.dictionary.FormalCompound;

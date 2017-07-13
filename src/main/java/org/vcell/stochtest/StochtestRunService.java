@@ -8,16 +8,15 @@ import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.image.ImageException;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.sql.QueryHashtable;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
@@ -54,9 +53,9 @@ import cbit.vcell.xml.XmlParseException;
 
 public class StochtestRunService {
 	
-	private cbit.sql.ConnectionFactory conFactory = null;
+	private ConnectionFactory conFactory = null;
 	private DatabaseServerImpl dbServerImpl = null;
-	private cbit.sql.KeyFactory keyFactory = null;
+	private KeyFactory keyFactory = null;
 	private File baseDir = null;
 	private int numTrials;
 	private long bngTimeoutMS;
@@ -100,8 +99,9 @@ public class StochtestRunService {
 	    //
 	    // get appropriate database factory objects
 	    //
-	    ConnectionFactory conFactory = new OraclePoolingConnectionFactory(sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
-	    KeyFactory keyFactory = new OracleKeyFactory();    
+	    ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(
+	    		sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
+	    KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();    
 	    StochtestRunService stochtestService = new StochtestRunService(baseDir, numTrials, bngTimeoutMS, conFactory, keyFactory, sessionLog);
 	    
 	    while (true){

@@ -2,10 +2,12 @@ package cbit.vcell.client.test;
 
 import java.awt.Frame;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.sql.ConnectionFactory;
 import cbit.vcell.client.VCellGuiInteractiveContextDefaultProvider;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
@@ -120,7 +122,8 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 		} else if (args[0].equalsIgnoreCase("-local")) {
 			vcConnFactory = new cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory(userLoginInfo, log);
 			if (args.length == 7) {
-				ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log, args[3], args[4], args[5], args[6]);
+				ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(
+						log, args[3], args[4], args[5], args[6]);
 				((cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory)vcConnFactory).setConnectionFactory(conFactory);
 			}
 		}
@@ -157,8 +160,8 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 		String password = args[2];
 //		cbit.vcell.server.SessionLog log = new cbit.vcell.server.StdoutSessionLog(userid);
 		org.vcell.util.SessionLog log = new org.vcell.util.NullSessionLog();
-		cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
-		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 		vcMessagingService.setDelegate(new SimpleMessagingDelegate());
 		vcServerFactory = new cbit.vcell.message.server.bootstrap.LocalVCellServerFactory(userid,new UserLoginInfo.DigestedPassword(password),"<<local>>",vcMessagingService,conFactory,keyFactory,log);
