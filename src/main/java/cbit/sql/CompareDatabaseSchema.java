@@ -170,17 +170,14 @@ private static void compareSchemas(SessionLog log, ConnectionFactory conFactory,
 public static void main(java.lang.String[] args) {
     //
     try {
-        if (args.length != 5) {
+        if (args.length != 4) {
             System.out.println(
-                "Usage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword");
+                "Usage: (oracle|mysql) connectURL schemaUser schemaUserPassword");
             System.exit(0);
         }
-        String driverName = "oracle.jdbc.driver.OracleDriver";
-        String host = args[1];
-        String db = args[2];
-        String connectURL = "jdbc:oracle:thin:@" + host + ":1521/" + db;
-        String dbSchemaUser = args[3];
-        String dbPassword = args[4];
+        String connectURL = args[1];
+        String dbSchemaUser = args[2];
+        String dbPassword = args[3];
         //
         int ok =
             javax.swing.JOptionPane.showConfirmDialog(
@@ -208,6 +205,7 @@ public static void main(java.lang.String[] args) {
         // get appropriate database factory objects
         //
         if (args[0].equalsIgnoreCase("ORACLE")) {
+            String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory =
                 new OraclePoolingConnectionFactory(
                     log,

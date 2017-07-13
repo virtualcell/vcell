@@ -293,11 +293,15 @@ public static Table[] getVCellTables() {
 		cbit.vcell.messaging.db.ServiceTable.table,
 		cbit.vcell.modeldb.ApiClientTable.table,
 		cbit.vcell.modeldb.ApiAccessTokenTable.table,
-		cbit.vcell.modeldb.StochtestTable.table,
-		cbit.vcell.modeldb.StochtestRunTable.table,
-		cbit.vcell.modeldb.StochtestCompareTable.table,
 		cbit.vcell.modeldb.PublicationTable.table,
-		cbit.vcell.modeldb.PublicationModelLinkTable.table
+		cbit.vcell.modeldb.PublicationModelLinkTable.table,
+		cbit.vcell.modeldb.ApplicationMathTable.table, // new
+		cbit.vcell.modeldb.DataSymbolTable.table, // new
+		cbit.vcell.modeldb.GlobalModelParameterTable.table, // new
+		cbit.vcell.modeldb.MathVerifier.LoadModelsStatTable.table, // new
+		cbit.vcell.modeldb.SurfaceClassTable.table, // new
+		cbit.vcell.modeldb.UserLoginInfoTable.table, // new
+		cbit.vcell.modeldb.VCMetaDataTable.table, // new
 		};
 	return tables;
 }
@@ -308,17 +312,14 @@ public static Table[] getVCellTables() {
 public static void main(java.lang.String[] args) {
     //
     try {
-        if (args.length != 5) {
+        if (args.length != 4) {
             System.out.println(
-                "Usage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword");
+                "Usage: (oracle|mysql) connectUrl schemaUser schemaUserPassword");
             System.exit(0);
         }
-        String driverName = "oracle.jdbc.driver.OracleDriver";
-        String host = args[1];
-        String db = args[2];
-        String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
-        String dbSchemaUser = args[3];
-        String dbPassword = args[4];
+        String connectURL = args[1];
+        String dbSchemaUser = args[2];
+        String dbPassword = args[3];
         //
         int ok =
             javax.swing.JOptionPane.showConfirmDialog(
@@ -342,6 +343,7 @@ public static void main(java.lang.String[] args) {
         KeyFactory keyFactory = null;
         new cbit.vcell.resource.PropertyLoader();
         if (args[0].equalsIgnoreCase("ORACLE")) {
+            String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory =
                 new OraclePoolingConnectionFactory(
                     log,
