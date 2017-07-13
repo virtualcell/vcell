@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import org.junit.runners.parameterized.ParametersRunnerFactory;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.biomodel.BioModel;

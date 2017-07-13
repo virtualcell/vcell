@@ -13,3 +13,7 @@ thrift --out ../visTool --gen py VisMesh.thrift
 # Copasi stuff
 thrift --out ../src/main/java --gen java VCellOpt.thrift
 thrift --out ../visTool --gen py VCellOpt.thrift
+
+# ImageJ
+thrift --out ../src/main/java --gen java VCellImageJ.thrift
+thrift --out ../visTool --gen py VCellImageJ.thrift
