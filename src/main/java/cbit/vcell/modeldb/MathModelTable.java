@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -24,6 +25,7 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -34,9 +36,9 @@ public class MathModelTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_mathmodel";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field mathRef			= new Field("mathRef",			"integer",	"NOT NULL "+MathDescTable.REF_TYPE);
-	public final Field childSummaryLarge	= new Field("childSummaryLRG",	"CLOB",				"");
-	public final Field childSummarySmall	= new Field("childSummarySML",	"VARCHAR2(4000)",	"");
+	public final Field mathRef				= new Field("mathRef",			SQLDataType.integer,		"NOT NULL "+MathDescTable.REF_TYPE);
+	public final Field childSummaryLarge	= new Field("childSummaryLRG",	SQLDataType.clob_text,		"");
+	public final Field childSummarySmall	= new Field("childSummarySML",	SQLDataType.varchar2_4000,	"");
 	
 	private final Field fields[] = {mathRef,childSummaryLarge,childSummarySmall};
 	
@@ -57,13 +59,13 @@ private MathModelTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log,DatabaseSyntax dbSyntax) throws SQLException,org.vcell.util.DataAccessException {
 
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	
-	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,MathModelTable.table.childSummarySmall,MathModelTable.table.childSummaryLarge);
+	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,MathModelTable.table.childSummarySmall,MathModelTable.table.childSummaryLarge,dbSyntax);
 
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
@@ -99,7 +101,7 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public MathModelMetaData getMathModelMetaData(ResultSet rset, SessionLog log, MathModelDbDriver mathModelDbDriver, Connection con) 
+public MathModelMetaData getMathModelMetaData(ResultSet rset, SessionLog log, MathModelDbDriver mathModelDbDriver, Connection con, DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
@@ -117,7 +119,7 @@ public MathModelMetaData getMathModelMetaData(ResultSet rset, SessionLog log, Ma
 	KeyValue simKeys[] = mathModelDbDriver.getSimulationEntriesFromMathModel(con, mathModelKey);
 
 //	MathModelMetaData mathModelMetaData = new MathModelMetaData(version,mathRef,simKeys);
-	MathModelMetaData mathModelMetaData = populateOutputFunctions(con, mathRef, version, simKeys);
+	MathModelMetaData mathModelMetaData = populateOutputFunctions(con, mathRef, version, simKeys, dbSyntax);
 
 	return mathModelMetaData;
 }
@@ -129,7 +131,7 @@ public MathModelMetaData getMathModelMetaData(ResultSet rset, SessionLog log, Ma
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public MathModelMetaData getMathModelMetaData(ResultSet rset, Connection con,SessionLog log, KeyValue simulationKeys[]) 
+public MathModelMetaData getMathModelMetaData(ResultSet rset, Connection con,SessionLog log, KeyValue simulationKeys[], DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
@@ -141,13 +143,13 @@ public MathModelMetaData getMathModelMetaData(ResultSet rset, Connection con,Ses
 	KeyValue mathDescrRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
 	
 //	MathModelMetaData mathModelMetaData = new MathModelMetaData(version,mathRef,simulationKeys);
-	MathModelMetaData mathModelMetaData = populateOutputFunctions(con,mathDescrRef,mathModelVersion,simulationKeys);
+	MathModelMetaData mathModelMetaData = populateOutputFunctions(con,mathDescrRef,mathModelVersion,simulationKeys,dbSyntax);
 
 	return mathModelMetaData;
 }
 
-private MathModelMetaData populateOutputFunctions(Connection con,KeyValue mathDescrRef,Version mathModelVersion,KeyValue[] simulationKeys) throws SQLException,DataAccessException{
-	ArrayList<AnnotatedFunction> outputFunctions = ApplicationMathTable.table.getOutputFunctionsMathModel(con, mathModelVersion.getVersionKey());
+private MathModelMetaData populateOutputFunctions(Connection con,KeyValue mathDescrRef,Version mathModelVersion,KeyValue[] simulationKeys,DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
+	ArrayList<AnnotatedFunction> outputFunctions = ApplicationMathTable.table.getOutputFunctionsMathModel(con, mathModelVersion.getVersionKey(),dbSyntax);
 	return new MathModelMetaData(mathModelVersion,mathDescrRef,simulationKeys,outputFunctions);
 }
 /**

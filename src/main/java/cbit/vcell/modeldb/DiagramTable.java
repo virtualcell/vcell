@@ -13,11 +13,13 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.model.Diagram;
 /**
@@ -27,12 +29,12 @@ public class DiagramTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_diagram";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field name				= new Field("name",			"varchar(255)",	"NOT NULL");
-	public final Field modelRef 		= new Field("modelRef",		"integer",		"NOT NULL "+ModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field structRef		= new Field("structRef",	"integer",		"NOT NULL "+StructTable.REF_TYPE);
-	public final Field language 		= new Field("language",		"CLOB",			"");
-	public final Field diagramLarge		= new Field("diagramLRG",	"CLOB",				"");
-	public final Field diagramSmall		= new Field("diagramSML",	"VARCHAR2(4000)",	"");
+	public final Field name				= new Field("name",			SQLDataType.varchar_255,	"NOT NULL");
+	public final Field modelRef 		= new Field("modelRef",		SQLDataType.integer,		"NOT NULL "+ModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field structRef		= new Field("structRef",	SQLDataType.integer,		"NOT NULL "+StructTable.REF_TYPE);
+	public final Field language 		= new Field("language",		SQLDataType.clob_text,		"");
+	public final Field diagramLarge		= new Field("diagramLRG",	SQLDataType.clob_text,		"");
+	public final Field diagramSmall		= new Field("diagramSML",	SQLDataType.varchar2_4000,	"");
 
 	private final Field fields[] = {name,modelRef,structRef,language,diagramLarge,diagramSmall};
 	
@@ -50,7 +52,7 @@ private DiagramTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public Diagram getDiagram(ResultSet rset, SessionLog log) throws SQLException, DataAccessException {
+public Diagram getDiagram(ResultSet rset, SessionLog log, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
 
 	KeyValue key = new KeyValue(rset.getBigDecimal(id.toString()));
 	String mName = rset.getString(name.toString());
@@ -58,7 +60,7 @@ public Diagram getDiagram(ResultSet rset, SessionLog log) throws SQLException, D
 	Diagram diagram = new Diagram(null,mName);
 	
 	String languageString =
-		DbDriver.varchar2_CLOB_get(rset,DiagramTable.table.diagramSmall,DiagramTable.table.diagramLarge);
+		DbDriver.varchar2_CLOB_get(rset,DiagramTable.table.diagramSmall,DiagramTable.table.diagramLarge,dbSyntax);
 	if(languageString == null || languageString.length() == 0){
 		throw new DataAccessException("no data stored for Diagram");
 	}
@@ -85,23 +87,34 @@ public Diagram getDiagram(ResultSet rset, SessionLog log) throws SQLException, D
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(KeyValue key, Diagram diagram, KeyValue modelID, KeyValue structID) {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("(");
-	buffer.append(key+",");
-	buffer.append("'"+diagram.getName()+"',");
-	buffer.append(modelID+",");
-	buffer.append(structID+",");
-	buffer.append("EMPTY_CLOB()"+","); //keep for compatibility with release site
+public String getSQLValueList(KeyValue key, Diagram diagram, KeyValue modelID, KeyValue structID, DatabaseSyntax dbSyntax) {
+	switch (dbSyntax){
+	case ORACLE:{
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(key+",");
+		buffer.append("'"+diagram.getName()+"',");
+		buffer.append(modelID+",");
+		buffer.append(structID+",");
+		buffer.append("EMPTY_CLOB()"+","); //keep for compatibility with release site
+		
+		if(DbDriver.varchar2_CLOB_is_Varchar2_OK(diagram.getVCML())){
+			buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE);
+		}else{
+			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null");
+		}
+		
+		buffer.append(")");
 	
-	if(DbDriver.varchar2_CLOB_is_Varchar2_OK(diagram.getVCML())){
-		buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE);
-	}else{
-		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null");
+		return buffer.toString();
+	}	
+	case POSTGRES:{
+		// TODO: POSTGRES
+		throw new RuntimeException("DiagramTable.getSQLValueList() not yet implemented for Postgres");
 	}
-	
-	buffer.append(")");
-
-	return buffer.toString();
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 }

@@ -16,6 +16,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.message.server.ServiceSpec;
 import cbit.vcell.message.server.ServiceSpec.ServiceStartupType;
@@ -28,19 +29,23 @@ public class ServiceTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_service";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	private static final String[] serverIDAndTypeAndOrdinalUniqueConstraint =
-		new String[] {
-		"service_sid_type_ord_unique UNIQUE(serverID,type,ordinal)"};
-	
-	public final Field serverID	= new Field("serverID",	"varchar(20)",	"NOT NULL");
-	public final Field type		= new Field("type",	"varchar(64)",	"NOT NULL");
-	public final Field ordinal	= new Field("ordinal",	"integer",	"NOT NULL");
-	public final Field startupType = new Field("startupType", "integer", "NOT NULL");
-	public final Field memoryMB	= new Field("memoryMB",	"integer",	"NOT NULL");	
-	public final Field date		= new Field("lastUpdate", "date",	"NOT NULL");
-	public final Field status	= new Field("status", "integer", "NOT NULL");
-	public final Field statusMsg = new Field("statusMsg", "varchar(2048)",	"NOT NULL");
-	public final Field pbsjobid		= new Field("pbsjobid",	"varchar(128)",	"");
+	private static final String[] serverIDAndTypeAndOrdinalUniqueConstraintOracle =
+			new String[] {
+			"service_sid_type_ord_unique UNIQUE(serverID,type,ordinal)"};
+		
+	private static final String[] serverIDAndTypeAndOrdinalUniqueConstraintPostgres =
+			new String[] {
+			"service_sid_type_ord_unique UNIQUE(serverID,type,ordinal)"};
+		
+	public final Field serverID	= new Field("serverID",	SQLDataType.varchar_20,	"NOT NULL");
+	public final Field type		= new Field("type",	SQLDataType.varchar_64,	"NOT NULL");
+	public final Field ordinal	= new Field("ordinal",	SQLDataType.integer,	"NOT NULL");
+	public final Field startupType = new Field("startupType", SQLDataType.integer, "NOT NULL");
+	public final Field memoryMB	= new Field("memoryMB",	SQLDataType.integer,	"NOT NULL");	
+	public final Field date		= new Field("lastUpdate", SQLDataType.date,	"NOT NULL");
+	public final Field status	= new Field("status", SQLDataType.integer, "NOT NULL");
+	public final Field statusMsg = new Field("statusMsg", SQLDataType.varchar_2048,	"NOT NULL");
+	public final Field pbsjobid		= new Field("pbsjobid",	SQLDataType.varchar_128,	"");
 	
 	private final Field fields[] = {serverID, type, ordinal, startupType, memoryMB, date, status, statusMsg, pbsjobid};
 	
@@ -50,7 +55,7 @@ public class ServiceTable extends cbit.sql.Table {
  * ModelTable constructor comment.
  */
 private ServiceTable() {
-	super(TABLE_NAME, serverIDAndTypeAndOrdinalUniqueConstraint);
+	super(TABLE_NAME, serverIDAndTypeAndOrdinalUniqueConstraintOracle,serverIDAndTypeAndOrdinalUniqueConstraintPostgres);
 	addFields(fields);
 }
 
@@ -119,7 +124,7 @@ public String getSQLUpdateList(ServiceStatus serviceStatus){
 	//memory
 	buffer.append(memoryMB + "=" + serviceStatus.getServiceSpec().getMemoryMB() + ",");
 	//date
-	buffer.append(date + "=sysdate,");
+	buffer.append(date + "=current_timestamp,");
 	//status
 	buffer.append(status + "=" + serviceStatus.getStatus().getDatabaseNumber() + ",");
 	//statusMsg
@@ -159,7 +164,7 @@ public String getSQLValueList(KeyValue key, ServiceStatus serviceStatus) {
 	//memory
 	buffer.append(serviceStatus.getServiceSpec().getMemoryMB() + ",");
 	//date
-	buffer.append("sysdate,");
+	buffer.append("current_timestamp,");
 	//status
 	buffer.append(serviceStatus.getStatus().getDatabaseNumber() + ",");
 	//statusMsg

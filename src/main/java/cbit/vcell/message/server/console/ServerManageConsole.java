@@ -99,7 +99,6 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
@@ -2123,9 +2122,8 @@ public static void main(java.lang.String[] args) {
 
 		SessionLog log = new StdoutSessionLog("Console");
 
-		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
-		DbDriver.setKeyFactory(keyFactory);
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+		KeyFactory keyFactory = conFactory.getKeyFactory();
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
 

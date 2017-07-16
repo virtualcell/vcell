@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -24,8 +25,8 @@ public class BioModelSimContextLinkTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_biomodelsimcontext";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field bioModelRef 		= new Field("biomodelRef",		"integer",	"NOT NULL "+BioModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field simContextRef	= new Field("simContextRef",	"integer",	"NOT NULL "+SimContextTable.REF_TYPE);
+	public final Field bioModelRef 		= new Field("biomodelRef",		SQLDataType.integer,	"NOT NULL "+BioModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field simContextRef	= new Field("simContextRef",	SQLDataType.integer,	"NOT NULL "+SimContextTable.REF_TYPE);
 
 	private final Field fields[] = {bioModelRef,simContextRef};
 	

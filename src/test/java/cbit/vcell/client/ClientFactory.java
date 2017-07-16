@@ -106,7 +106,7 @@ public class ClientFactory {
 		SessionLog log = new StdoutSessionLog(adminUserid);
 		DigestedPassword digestedPassword = new DigestedPassword(adminPassword);
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
-		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
+		KeyFactory keyFactory = conFactory.getKeyFactory();
 		VCMessagingDelegate messagingDelegate = new SimpleMessagingDelegate();
 		VCMessagingService messagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 		messagingService.setDelegate(messagingDelegate);

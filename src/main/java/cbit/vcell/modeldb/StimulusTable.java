@@ -14,6 +14,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
@@ -37,15 +38,15 @@ public class StimulusTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_stimulus";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field structRef		= new Field("structRef",	"integer",	"NOT NULL "+StructTable.REF_TYPE);
-	public final Field simContextRef	= new Field("simContextRef","integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field name				= new Field("name",	        "varchar(255)",		"");
-	public final Field stimulusType 	= new Field("stimulusType",	"integer",	"NOT NULL");
-	public final Field expression		= new Field("expression",	"varchar2(4000)",		"");
-	public final Field positionX		= new Field("posX",			"NUMBER",	"NOT NULL");
-	public final Field positionY		= new Field("posY",			"NUMBER",	"NOT NULL");
-	public final Field positionZ		= new Field("posZ",			"NUMBER",	"NOT NULL");
-	public final Field params			= new Field("params",		"VARCHAR2(4000)",	"");
+	public final Field structRef		= new Field("structRef",	SQLDataType.integer,			"NOT NULL "+StructTable.REF_TYPE);
+	public final Field simContextRef	= new Field("simContextRef",SQLDataType.integer,			"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field name				= new Field("name",	        SQLDataType.varchar_255,		"");
+	public final Field stimulusType 	= new Field("stimulusType",	SQLDataType.integer,			"NOT NULL");
+	public final Field expression		= new Field("expression",	SQLDataType.varchar2_4000,		"");
+	public final Field positionX		= new Field("posX",			SQLDataType.number_as_real,		"NOT NULL");
+	public final Field positionY		= new Field("posY",			SQLDataType.number_as_real,		"NOT NULL");
+	public final Field positionZ		= new Field("posZ",			SQLDataType.number_as_real,		"NOT NULL");
+	public final Field params			= new Field("params",		SQLDataType.varchar2_4000,		"");
 
 
 	private final Field fields[] = {structRef,simContextRef,name,stimulusType,

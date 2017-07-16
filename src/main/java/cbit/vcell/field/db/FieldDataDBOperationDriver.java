@@ -23,6 +23,7 @@ import java.util.Vector;
 
 import javax.swing.Timer;
 
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -99,14 +100,14 @@ public class FieldDataDBOperationDriver{
 		}
 
 	}
-	public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, User user,
+	public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, KeyFactory keyFactory, User user,
 			FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
 		
 		if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_COPY_NO_CONFLICT){
 			//get all current ExtDataIDs
 			ExternalDataIdentifier[] existingExtDataIDArr =
 				FieldDataDBOperationDriver.fieldDataDBOperation(
-					con, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+					con, keyFactory, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
 			//Rename FieldFunc names if necessary
 			Hashtable<String,String> newNameOrigNameHash = new Hashtable<String, String>();
 			for(int i=0;i<fieldDataDBOperationSpec.sourceNames.length;i+= 1){
@@ -131,7 +132,7 @@ public class FieldDataDBOperationDriver{
 			//Add new ExternalDataIdentifier (FieldData ID) to DB
 			//Copy source annotation
 			FieldDataDBOperationResults sourceUserExtDataInfo =
-				fieldDataDBOperation(con,user,
+				fieldDataDBOperation(con,keyFactory, user,
 						FieldDataDBOperationSpec.createGetExtDataIDsSpec(
 								fieldDataDBOperationSpec.sourceOwner.getVersion().getOwner()));
 			ExternalDataIdentifier[] sourceUserExtDataIDArr = sourceUserExtDataInfo.extDataIDArr;
@@ -160,7 +161,7 @@ public class FieldDataDBOperationDriver{
 				}
 				//
 				FieldDataDBOperationResults fieldDataDBOperationResults =
-					fieldDataDBOperation(con,user,
+					fieldDataDBOperation(con,keyFactory, user,
 							FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(
 									user, newFieldFuncNamesArr[i],origAnnotation));
 //				errorCleanupExtDataIDV.add(fieldDataDBOperationResults.extDataID);
@@ -270,7 +271,7 @@ public class FieldDataDBOperationDriver{
 						"Field Data names can contain only letters,digits and underscores");
 			}
 			
-			KeyValue newKey = DbDriver.getNewKey(con);
+			KeyValue newKey = keyFactory.getNewKey(con);
 			String sql =
 				"INSERT INTO "+ExternalDataTable.table.getTableName()+" "+
 				ExternalDataTable.table.getSQLColumnList()+
@@ -283,7 +284,7 @@ public class FieldDataDBOperationDriver{
 			DbDriver.updateCleanSQL(con,sql);
 			ExternalDataIdentifier[] fdiArr =
 				FieldDataDBOperationDriver.fieldDataDBOperation(
-					con, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+					con, keyFactory, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
 			for (int i = 0; i < fdiArr.length; i++) {
 				if(fdiArr[i].getName().equals(fieldDataDBOperationSpec.newExtDataIDName)){
 					FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();

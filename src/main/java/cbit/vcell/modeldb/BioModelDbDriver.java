@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -54,8 +56,8 @@ public class BioModelDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public BioModelDbDriver(SessionLog sessionLog) {
-	super(sessionLog);
+public BioModelDbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory, SessionLog sessionLog) {
+	super(dbSyntax, keyFactory, sessionLog);
 }
 
 
@@ -133,6 +135,7 @@ private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioMo
  * @param vType int
  * @param versionKey cbit.sql.KeyValue
  */
+@Override
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws DependencyException, ObjectNotFoundException,
 						SQLException,DataAccessException,PermissionException {
@@ -193,7 +196,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 		//showMetaData(rset);
 
 		if (rset.next()) {
-			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,log,simContextKeys,simKeys);
+			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,log,simContextKeys,simKeys,dbSyntax);
 		} else {
 			throw new ObjectNotFoundException("BioModel id=" + bioModelKey + " not found for user '" + user + "'");
 		}
@@ -244,7 +247,7 @@ BioModelMetaData[] getBioModelMetaDatas(Connection con,User user, boolean bAll)
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			BioModelMetaData bioModelMetaData = bioModelTable.getBioModelMetaData(rset,log,this,con);
+			BioModelMetaData bioModelMetaData = bioModelTable.getBioModelMetaData(rset,log,this,con, dbSyntax);
 			bioModelMetaDataList.addElement(bioModelMetaData);
 		}
 	} finally {
@@ -455,7 +458,7 @@ private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData b
 	Enumeration<KeyValue> simEnum = bioModel.getSimulationKeys();
 	while (simEnum.hasMoreElements()){
 		KeyValue simKey = (KeyValue)simEnum.nextElement();
-		insertSimulationEntryLinkSQL(con, getNewKey(con), bioModelKey, simKey);
+		insertSimulationEntryLinkSQL(con, keyFactory.getNewKey(con), bioModelKey, simKey);
 	}
 	//
 	// insert SimulationContext Links
@@ -463,13 +466,13 @@ private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData b
 	Enumeration<KeyValue> scEnum = bioModel.getSimulationContextKeys();
 	while (scEnum.hasMoreElements()){
 		KeyValue scKey = (KeyValue)scEnum.nextElement();
-		insertSimContextEntryLinkSQL(con, getNewKey(con), bioModelKey, scKey);
+		insertSimContextEntryLinkSQL(con, keyFactory.getNewKey(con), bioModelKey, scKey);
 	}
 	//
 	//Insert VCMetaData
 	//
 //	MIRIAMTable.table.insertMIRIAM(con, bioModel, newVersion.getVersionKey());
-	VCMetaDataTable.insertVCMetaData(con,bioModel.getVCMetaDataXML(),bioModelKey,getNewKey(con));
+	VCMetaDataTable.insertVCMetaData(con,bioModel.getVCMetaDataXML(),bioModelKey,keyFactory.getNewKey(con),dbSyntax);
 	
 }
 
@@ -489,7 +492,7 @@ private void insertBioModelMetaDataSQL(Connection con,User user, BioModelMetaDat
 		bmcs_serialization = bmcs.toDatabaseSerialization();
 	}
 	Object[] o = {bioModel,bmcs_serialization};
-	sql = DatabasePolicySQL.enforceOwnershipInsert(user,bioModelTable,o,newVersion);
+	sql = DatabasePolicySQL.enforceOwnershipInsert(user,bioModelTable,o,newVersion,dbSyntax);
 
 	if (bmcs_serialization!=null){
 		
@@ -500,7 +503,8 @@ private void insertBioModelMetaDataSQL(Connection con,User user, BioModelMetaDat
 			BioModelTable.table,
 			newVersion.getVersionKey(),
 			BioModelTable.table.childSummaryLarge,
-			BioModelTable.table.childSummarySmall
+			BioModelTable.table.childSummarySmall,
+			dbSyntax
 			);
 	}else{
 		updateCleanSQL(con,sql);

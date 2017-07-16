@@ -16,6 +16,8 @@ import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -47,8 +49,8 @@ public class MathModelDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public MathModelDbDriver(SessionLog sessionLog) {
-	super(sessionLog);
+public MathModelDbDriver(DatabaseSyntax dbSyntax,KeyFactory keyFactory, SessionLog sessionLog) {
+	super(dbSyntax,keyFactory,sessionLog);
 }
 
 
@@ -204,7 +206,7 @@ private MathModelMetaData getMathModelMetaData(Connection con,User user, KeyValu
 		//showMetaData(rset);
 
 		if (rset.next()) {
-			mathModelMetaData = mathModelTable.getMathModelMetaData(rset,con,log,simKeys);
+			mathModelMetaData = mathModelTable.getMathModelMetaData(rset,con,log,simKeys,dbSyntax);
 		} else {
 			throw new ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
 		}
@@ -255,7 +257,7 @@ MathModelMetaData[] getMathModelMetaDatas(Connection con,User user, boolean bAll
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			MathModelMetaData mathModelMetaData = mathModelTable.getMathModelMetaData(rset,log,this,con);
+			MathModelMetaData mathModelMetaData = mathModelTable.getMathModelMetaData(rset,log,this,con,dbSyntax);
 			mathModelMetaDataList.addElement(mathModelMetaData);
 		}
 	} finally {
@@ -348,10 +350,10 @@ private void insertMathModelMetaData(Connection con,User user ,MathModelMetaData
 	Enumeration<KeyValue> simEnum = mathModel.getSimulationKeys();
 	while (simEnum.hasMoreElements()){
 		KeyValue simKey = (KeyValue)simEnum.nextElement();
-		insertSimulationEntryLinkSQL(con, getNewKey(con), mathModelKey, simKey);
+		insertSimulationEntryLinkSQL(con, keyFactory.getNewKey(con), mathModelKey, simKey);
 	}
 	
-	ApplicationMathTable.table.saveOutputFunctionsMathModel(con, mathModelKey, mathModel.getOutputFunctions());
+	ApplicationMathTable.table.saveOutputFunctionsMathModel(con, mathModelKey, mathModel.getOutputFunctions(),dbSyntax,keyFactory);
 }
 
 
@@ -370,7 +372,7 @@ private void insertMathModelMetaDataSQL(Connection con,User user, MathModelMetaD
 		mmcs_serialization = mmcs.toDatabaseSerialization();
 	}
 	Object[] o = {mathModel,mmcs_serialization};
-	sql = DatabasePolicySQL.enforceOwnershipInsert(user,mathModelTable,o,newVersion);
+	sql = DatabasePolicySQL.enforceOwnershipInsert(user,mathModelTable,o,newVersion,dbSyntax);
 
 	if (mmcs_serialization!=null){
 		
@@ -381,8 +383,8 @@ private void insertMathModelMetaDataSQL(Connection con,User user, MathModelMetaD
 			MathModelTable.table,
 			newVersion.getVersionKey(),
 			MathModelTable.table.childSummaryLarge,
-			MathModelTable.table.childSummarySmall
-			);
+			MathModelTable.table.childSummarySmall,
+			dbSyntax);
 	}else{
 		updateCleanSQL(con,sql);
 	}

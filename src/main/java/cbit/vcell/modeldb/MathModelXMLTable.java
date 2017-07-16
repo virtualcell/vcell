@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -18,9 +19,9 @@ public class MathModelXMLTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_mathmodelxml";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field mathModelRef =	new Field("mathmodelRef",		"integer",	"UNIQUE NOT NULL "+MathModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field mmXML =			new Field("mmxml",	"CLOB",	"NOT NULL");
-	public final Field changeDate =		new Field("changeDate","DATE","NOT NULL");
+	public final Field mathModelRef =	new Field("mathmodelRef",	SQLDataType.integer,	"UNIQUE NOT NULL "+MathModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field mmXML =			new Field("mmxml",			SQLDataType.clob_text,	"NOT NULL");
+	public final Field changeDate =		new Field("changeDate",		SQLDataType.date,		"NOT NULL");
 	
 	private final Field fields[] = {mathModelRef,mmXML,changeDate};
 	

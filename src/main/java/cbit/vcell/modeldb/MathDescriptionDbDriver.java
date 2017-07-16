@@ -52,7 +52,7 @@ public class MathDescriptionDbDriver extends DbDriver {
  * @param sessionLog cbit.vcell.server.SessionLog
  */
 public MathDescriptionDbDriver(GeomDbDriver argGeomDB,SessionLog sessionLog) {
-	super(sessionLog);
+	super(argGeomDB.dbSyntax,argGeomDB.keyFactory,sessionLog);
 	this.geomDB = argGeomDB;
 }
 /**
@@ -115,7 +115,7 @@ private MathDescription getMathDescriptionSQL(QueryHashtable dbc, Connection con
 			//
 			// note: must call mathDescTable.getMathDescription() first (rset.getBytes(language) must be called first)
 			//
-			mathDescription = mathDescTable.getMathDescription(rset,con,log);
+			mathDescription = mathDescTable.getMathDescription(rset,con,log,dbSyntax);
 			//
 			// get Geometry reference and assign to mathDescription
 			//
@@ -176,13 +176,13 @@ private void insertMathDescriptionSQL(InsertHashtable hash, Connection con, User
 					
 	String sql = null;
 	Object[] o = {mathDescription, updatedGeometryKey};
-	sql = DatabasePolicySQL.enforceOwnershipInsert(user,mathDescTable,o,newVersion);
+	sql = DatabasePolicySQL.enforceOwnershipInsert(user,mathDescTable,o,newVersion,dbSyntax);
 	//
 	updateCleanSQL(con,sql);
 	updateCleanLOB(	con,mathDescTable.id.toString(),newVersion.getVersionKey(),
 			mathDescTable.tableName,
-			mathDescTable.language.getUnqualifiedColName(),
-			mathDescription.getVCML_database());
+			mathDescTable.language,
+			mathDescription.getVCML_database(),dbSyntax);
 
 	hash.put(mathDescription,newVersion.getVersionKey());
 	
@@ -214,14 +214,14 @@ private void insertMathDescExternalDataLink(Connection con,User user,MathDescrip
 	try{
 		ExternalDataIdentifier[] extDataIDArr =
 			fieldDataDBOperation(
-					con, user, FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+					con, keyFactory, user, FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
 		boolean bExtDataInserted[] = new boolean[extDataIDArr.length];
 		FieldFunctionArguments[] fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathDesc);
 		for(int i=0;i<fieldFuncArgsArr.length;i+= 1){
 			for(int k=0;k<extDataIDArr.length;k+= 1){
 				if( !bExtDataInserted[k] && extDataIDArr[k].getName().equals(fieldFuncArgsArr[i].getFieldName())){
 					bExtDataInserted[k] = true;
-					KeyValue newKey = getNewKey(con);
+					KeyValue newKey = keyFactory.getNewKey(con);
 					updateCleanSQL(con,
 							"INSERT INTO "+
 							MathDescExternalDataLinkTable.table.getTableName()+

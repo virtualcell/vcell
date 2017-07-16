@@ -25,7 +25,6 @@ import javax.management.ObjectName;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
-import org.vcell.db.oracle.OraclePoolingConnectionFactory;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.DataAccessException;
@@ -255,7 +254,7 @@ public static void main(java.lang.String[] args) {
 			throw new Exception("Couldn't create OraclePoolingConnectionFactory after "+tryCount+" tries.",conFactoryException);
 		}
 		
-		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
+		KeyFactory keyFactory = conFactory.getKeyFactory();
 		DatabasePolicySQL.bSilent=true;
 		//
 		// don't timeout entries, and use vcell.properties for cacheSize

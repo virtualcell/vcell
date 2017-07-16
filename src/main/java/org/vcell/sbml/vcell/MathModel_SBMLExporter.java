@@ -80,7 +80,6 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.ExpressionMathMLPrinter.MathType;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.xml.XMLSource;
 /**
  * Insert the type's description here.
@@ -88,10 +87,6 @@ import cbit.vcell.xml.XMLSource;
  * @author: Jim Schaff
  */
 public class MathModel_SBMLExporter {
-	static
-	{
-		NativeLib.SBML.load( );
-	}
 
 /**
  * Insert the method's description here.

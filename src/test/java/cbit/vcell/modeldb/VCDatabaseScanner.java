@@ -76,8 +76,7 @@ public static VCDatabaseScanner createDatabaseScanner(SessionLog log) throws Exc
 	DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	
 	ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
-	KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
-	DbDriver.setKeyFactory(keyFactory);
+	KeyFactory keyFactory = conFactory.getKeyFactory();
 
 	VCDatabaseScanner databaseScanner = new VCDatabaseScanner(conFactory, keyFactory, log);
 	

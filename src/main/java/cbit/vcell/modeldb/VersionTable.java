@@ -29,6 +29,7 @@ import org.vcell.util.document.VersionableType;
 
 import cbit.image.VCImage;
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.geometry.Geometry;
@@ -43,21 +44,21 @@ import cbit.vcell.solver.Simulation;
 public abstract class VersionTable extends cbit.sql.Table {
 	
 	public static final String name_ColumnName = "name";
-	public final Field name				= new Field(name_ColumnName,			"varchar(255)",	"NOT NULL");
+	public final Field name				= new Field(name_ColumnName,			SQLDataType.varchar_255,	"NOT NULL");
 	public static final String ownerRef_ColumnName = "ownerRef";
-	public final Field ownerRef 		= new Field(ownerRef_ColumnName,		"integer",		"NOT NULL "+UserTable.REF_TYPE);
+	public final Field ownerRef 		= new Field(ownerRef_ColumnName,		SQLDataType.integer,		"NOT NULL "+UserTable.REF_TYPE);
 	public static final String privacy_ColumnName = "privacy";
-	public final Field privacy 			= new Field(privacy_ColumnName,			"integer",		"NOT NULL");
+	public final Field privacy 			= new Field(privacy_ColumnName,			SQLDataType.integer,		"NOT NULL");
 	public static final String versionBranchPointRef_ColumnName = "versionPRef";
 	public final Field versionBranchPointRef;
 	public static final String versionDate_ColumnName = "versionDate";
-	public final Field versionDate		= new Field(versionDate_ColumnName,		"date",			"NOT NULL");
+	public final Field versionDate		= new Field(versionDate_ColumnName,		SQLDataType.date,			"NOT NULL");
 	public static final String versionFlag_ColumnName = "versionFlag";
-	public final Field versionFlag		= new Field(versionFlag_ColumnName,		"integer",		"NOT NULL");
+	public final Field versionFlag		= new Field(versionFlag_ColumnName,		SQLDataType.integer,		"NOT NULL");
 	public static final String versionAnnot_ColumnName = "versionAnnot";
-	public final Field versionAnnot		= new Field(versionAnnot_ColumnName,	"varchar(4000)",	"");
+	public final Field versionAnnot		= new Field(versionAnnot_ColumnName,	SQLDataType.varchar_4000,	"");
 	public static final String versionBranchID_ColumnName = "versionBranchID";
-	public final Field versionBranchID	=new Field(versionBranchID_ColumnName,	"integer",	"NOT NULL");
+	public final Field versionBranchID	=new Field(versionBranchID_ColumnName,	SQLDataType.integer,		"NOT NULL");
 	//
 	// the following field is used only for Simulation objects (and is defined in the constructor)
 	//
@@ -85,10 +86,10 @@ protected VersionTable(String tableName,String vp) {
  */
 protected VersionTable(String tableName,String vp,boolean bHasParentSimRef) {
 	super(tableName);
-	this.versionBranchPointRef = new Field(versionBranchPointRef_ColumnName,"integer",vp);
+	this.versionBranchPointRef = new Field(versionBranchPointRef_ColumnName,SQLDataType.integer,vp);
 
 	if (bHasParentSimRef){
-		this.versionParentSimRef = new Field(versionParentSimRef_ColumnName,"integer",  SimulationTable.REF_TYPE);
+		this.versionParentSimRef = new Field(versionParentSimRef_ColumnName,SQLDataType.integer,  SimulationTable.REF_TYPE);
 		versionFields = new Field[] {this.name,this.ownerRef,this.privacy,this.versionBranchPointRef,this.versionDate,this.versionFlag,this.versionAnnot,this.versionBranchID,this.versionParentSimRef};
 	}else{
 		this.versionParentSimRef = null;

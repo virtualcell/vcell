@@ -12,11 +12,13 @@ package cbit.vcell.modeldb;
 
 import java.sql.Connection;
 
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.model.ReactionStep;
@@ -29,7 +31,7 @@ public class MIRIAMTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_miriam";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    private static final String[] miriamTableConstraint =
+    private static final String[] miriamTableConstraintOracle =
 		new String[] {
 			"miriam_only_1 CHECK("+
 			"DECODE(bioModelRef,NULL,0,bioModelRef,1)+"+
@@ -42,13 +44,26 @@ public class MIRIAMTable extends cbit.sql.Table {
 			"DECODE(userNotes,NULL,0,reactStepRef,1) > 0)"
 		};
 
-	public final Field bioModelRef		= new Field("bioModelRef",	"integer",			BioModelTable.REF_TYPE+ " ON DELETE CASCADE");
+    private static final String[] miriamTableConstraintPostgres =
+		new String[] {
+			"miriam_only_1 CHECK("+
+			"(CASE WHEN bioModelRef IS NULL THEN 0 ELSE 1 END)+"+
+//			"(CASE WHEN mathModelRef IS NULL THEN 0 ELSE 1 END)+"+
+			"(CASE WHEN speciesRef IS NULL THEN 0 ELSE 1 END)+"+
+			"(CASE WHEN structRef IS NULL THEN 0 ELSE 1 END)+"+
+			"(CASE WHEN reactStepRef IS NULL THEN 0 ELSE 1 END) = 1)",
+			"miriam_info_not_null CHECK("+
+			"(CASE WHEN annotation IS NULL THEN 0 ELSE 1 END)+"+
+			"(CASE WHEN userNotes IS NULL THEN 0 ELSE 1 END) > 0)"
+		};
+
+	public final Field bioModelRef		= new Field("bioModelRef",	SQLDataType.integer,		BioModelTable.REF_TYPE+ " ON DELETE CASCADE");
 //	public final Field mathModelRef		= new Field("mathModelRef",	"integer",			MathModelTable.REF_TYPE+ " ON DELETE CASCADE");
-	public final Field speciesRef		= new Field("speciesRef",	"integer",			SpeciesTable.REF_TYPE+ " ON DELETE CASCADE");
-	public final Field structRef		= new Field("structRef",	"integer",			StructTable.REF_TYPE+ " ON DELETE CASCADE");
-	public final Field reactStepRef		= new Field("reactStepRef",	"integer",			ReactStepTable.REF_TYPE+ " ON DELETE CASCADE");
-	public final Field annotation		= new Field("annotation",	"varchar2(4000)",	"");
-	public final Field userNotes		= new Field("userNotes",	"varchar2(4000)",	"");
+	public final Field speciesRef		= new Field("speciesRef",	SQLDataType.integer,		SpeciesTable.REF_TYPE+ " ON DELETE CASCADE");
+	public final Field structRef		= new Field("structRef",	SQLDataType.integer,		StructTable.REF_TYPE+ " ON DELETE CASCADE");
+	public final Field reactStepRef		= new Field("reactStepRef",	SQLDataType.integer,		ReactStepTable.REF_TYPE+ " ON DELETE CASCADE");
+	public final Field annotation		= new Field("annotation",	SQLDataType.varchar2_4000,	"");
+	public final Field userNotes		= new Field("userNotes",	SQLDataType.varchar2_4000,	"");
 	
 	private final Field fields[] = {bioModelRef,/*mathModelRef,*/speciesRef,structRef,reactStepRef,annotation,userNotes};
 	
@@ -57,7 +72,7 @@ public class MIRIAMTable extends cbit.sql.Table {
  * ModelTable constructor comment.
  */
 private MIRIAMTable() {
-	super(TABLE_NAME,miriamTableConstraint);
+	super(TABLE_NAME,miriamTableConstraintOracle,miriamTableConstraintPostgres);
 	addFields(fields);
 }
 /**
@@ -165,11 +180,11 @@ public void setMIRIAMAnnotation(Connection con,Identifiable identifiable,KeyValu
  */
 private String getSQLValueList(
 		Identifiable miriamAnnotatable,KeyValue referenceKey,
-		String miriamAnnotation,String miriamNotes) throws DataAccessException {
+		String miriamAnnotation,String miriamNotes, KeyFactory keyFactory) throws DataAccessException {
 
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
-	buffer.append(NewSEQ+",");
+	buffer.append(keyFactory.nextSEQ()+",");
 	buffer.append((miriamAnnotatable instanceof BioModelMetaData?referenceKey:"null")+",");
 //	buffer.append((miriamAnnotatable instanceof MathModelMetaData?referenceKey:"null")+",");
 	buffer.append((miriamAnnotatable instanceof Species?referenceKey:"null")+",");

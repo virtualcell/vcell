@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -18,12 +19,12 @@ public class StochtestTable extends Table {
 	private static final String TABLE_NAME = "stochtest";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field simcontextref			= new Field("simcontextref",			"integer",	"NOT NULL " + SimContextTable.REF_TYPE + " ON DELETE CASCADE");
-	public final Field biomodelref				= new Field("biomodelref",				"integer",	"NOT NULL " + BioModelTable.REF_TYPE + " ON DELETE CASCADE");
-	public final Field mathref					= new Field("mathref",					"integer",	"NOT NULL " + MathDescTable.REF_TYPE + " ON DELETE CASCADE");
-	public final Field dimension				= new Field("dimension",				"integer",	"NOT NULL");
-	public final Field numcompartments			= new Field("numcompartments",			"integer",	"");
-	public final Field mathtype					= new Field("mathtype",					"varchar2(64)",	"");
+	public final Field simcontextref		= new Field("simcontextref",	SQLDataType.integer,		"NOT NULL " + SimContextTable.REF_TYPE + " ON DELETE CASCADE");
+	public final Field biomodelref			= new Field("biomodelref",		SQLDataType.integer,		"NOT NULL " + BioModelTable.REF_TYPE + " ON DELETE CASCADE");
+	public final Field mathref				= new Field("mathref",			SQLDataType.integer,		"NOT NULL " + MathDescTable.REF_TYPE + " ON DELETE CASCADE");
+	public final Field dimension			= new Field("dimension",		SQLDataType.integer,		"NOT NULL");
+	public final Field numcompartments		= new Field("numcompartments",	SQLDataType.integer,		"");
+	public final Field mathtype				= new Field("mathtype",			SQLDataType.varchar2_64,	"");
 
 	private final Field fields[] = {simcontextref,biomodelref,mathref,dimension,numcompartments,mathtype};
 	

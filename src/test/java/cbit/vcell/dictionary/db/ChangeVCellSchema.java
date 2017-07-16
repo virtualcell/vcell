@@ -20,6 +20,7 @@ import java.util.Vector;
 
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.db.oracle.OracleKeyFactory;
 import org.vcell.util.SessionLog;
@@ -56,7 +57,7 @@ private static void addOnDeleteCascade(Statement s, String fromTable, String fro
  * Insert the method's description here.
  * Creation date: (2/8/2003 12:04:27 AM)
  */
-private static void changeSchema(SessionLog log,ConnectionFactory conFactory,KeyFactory keyFactory) {
+private static void changeSchema(SessionLog log,ConnectionFactory conFactory,KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
 	
 	
 	String sql = null;
@@ -141,7 +142,7 @@ private static void changeSchema(SessionLog log,ConnectionFactory conFactory,Key
 				//
 				sql = 	"ALTER TABLE "+ProteinTable.table.getTableName() + " ADD (" +
 							ProteinTable.table.keywords.getUnqualifiedColName() + " " +
-							ProteinTable.table.keywords.getSqlType() + " " +
+							ProteinTable.table.keywords.getSqlType(dbSyntax) + " " +
 							ProteinTable.table.keywords.getSqlConstraints() +
 						")";
 				doUpdate(sql,s);
@@ -150,7 +151,7 @@ private static void changeSchema(SessionLog log,ConnectionFactory conFactory,Key
 				//
 				sql = 	"ALTER TABLE "+ProteinTable.table.getTableName() + " ADD (" +
 							ProteinTable.table.description.getUnqualifiedColName() + " " +
-							ProteinTable.table.description.getSqlType() + " " +
+							ProteinTable.table.description.getSqlType(dbSyntax) + " " +
 							ProteinTable.table.description.getSqlConstraints() +
 						")";
 				doUpdate(sql,s);
@@ -160,7 +161,7 @@ private static void changeSchema(SessionLog log,ConnectionFactory conFactory,Key
 				//
 				sql = 	"ALTER TABLE "+EnzymeTable.table.getTableName() + " ADD (" +
 							EnzymeTable.table.casID.getUnqualifiedColName() + " " +
-							EnzymeTable.table.casID.getSqlType() + " " +
+							EnzymeTable.table.casID.getSqlType(dbSyntax) + " " +
 							EnzymeTable.table.casID.getSqlConstraints() +
 						")";
 				doUpdate(sql,s);
@@ -300,11 +301,11 @@ private static void changeSchema(SessionLog log,ConnectionFactory conFactory,Key
 				//
 
 				// Create NEW DBSpeciesTable
-				sql = DBSpeciesTable.table.getCreateSQL();
+				sql = DBSpeciesTable.table.getCreateSQL(dbSyntax);
 				doUpdate(sql,s);
 				
 				// Create Temp SpeciesTable
-				sql = cbit.vcell.modeldb.SpeciesTable.table.getCreateSQL();
+				sql = cbit.vcell.modeldb.SpeciesTable.table.getCreateSQL(dbSyntax);
 				int index = sql.indexOf(cbit.vcell.modeldb.SpeciesTable.table.getTableName());
 				sql = 	sql.substring(0,index)+
 							"vc_species_temp"+
@@ -373,7 +374,7 @@ private static void changeSchema(SessionLog log,ConnectionFactory conFactory,Key
 				sql =	"ALTER TABLE " + cbit.vcell.modeldb.SpeciesContextModelTable.table.getTableName() +
 						" ADD (" + 
 							cbit.vcell.modeldb.SpeciesContextModelTable.table.hasOverride.toString() + " " +
-							cbit.vcell.modeldb.SpeciesContextModelTable.table.hasOverride.getSqlType() + ")";
+							cbit.vcell.modeldb.SpeciesContextModelTable.table.hasOverride.getSqlType(dbSyntax) + ")";
 				doUpdate(sql,s);
 				//Populate with hasOverride 'true'
 				sql =	"UPDATE " + cbit.vcell.modeldb.SpeciesContextModelTable.table.getTableName() +
@@ -715,17 +716,18 @@ public static void main(String[] args) {
 	
 	
     try {
-        if (args.length != 6) {
-            System.out.println("\nUsage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword bPrintOnly\n\n");
+    	final String oracle = "oracle";
+    	final String postgres = "postgres";
+    	final String usage = "\nUsage: ("+oracle+"|"+postgres+") url schemaUser schemaUserPassword bPrintOnly\n\n";
+    	
+        if (args.length != 5) {
+            System.out.println(usage);
             System.exit(0);
         }
-        String driverName = "oracle.jdbc.driver.OracleDriver";
-        String host = args[1];
-        String db = args[2];
-        String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
-        String dbSchemaUser = args[3];
-        String dbPassword = args[4];
-        bPrintOnly = Boolean.valueOf(args[5]).booleanValue();
+        String connectURL = args[1];
+        String dbSchemaUser = args[2];
+        String dbPassword = args[3];
+        bPrintOnly = Boolean.valueOf(args[4]).booleanValue();
         
         //
         int ok =
@@ -748,25 +750,28 @@ public static void main(String[] args) {
 
         SessionLog log = new StdoutSessionLog("ChangeVCellSchema");
         ConnectionFactory conFactory = null;
-        KeyFactory keyFactory = null;
         new cbit.vcell.resource.PropertyLoader();
-        if (args[0].equalsIgnoreCase("ORACLE")) {
-            conFactory =DatabaseService.getInstance().createConnectionFactory(
+        if (args[0].equalsIgnoreCase(oracle)) {
+            String driverName = "oracle.jdbc.driver.OracleDriver";
+            conFactory = DatabaseService.getInstance().createConnectionFactory(
                     log,
                     driverName,
                     connectURL,
                     dbSchemaUser,
                     dbPassword);
-            keyFactory = new OracleKeyFactory();
-//        } else if (args[0].equalsIgnoreCase("MYSQL")) {
-//                conFactory = new MysqlConnectionFactory();
-//                keyFactory = new MysqlKeyFactory();
+        }else if (args[0].equalsIgnoreCase(postgres)){
+        	String driverName = "org.postgresql.Driver";
+            conFactory = DatabaseService.getInstance().createConnectionFactory(
+                    log,
+                    driverName,
+                    connectURL,
+                    dbSchemaUser,
+                    dbPassword);
 		} else {
-                System.out.println(
-                    "Usage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword");
-                System.exit(1);
+            System.out.println(usage);
+            System.exit(1);
 		}
-        changeSchema(log, conFactory, keyFactory);
+        changeSchema(log, conFactory, conFactory.getKeyFactory(), conFactory.getDatabaseSyntax());
     } catch (Throwable e) {
         e.printStackTrace(System.out);
     }

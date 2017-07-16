@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -18,17 +19,21 @@ public class TFTestSuiteTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_tfTestSuite";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    private static final String[] tsBuildAndNumericsUniqueConstraint =
-    			new String[] {
-    			"ts_bld_num_unique UNIQUE(vcBuildVersion,vcNumericsVersion)"};
-    			
-	public final Field tsVersion =				new Field("tsVersion",			"VARCHAR2(64)",	"UNIQUE NOT NULL ");
-	public final Field vcBuildVersion =			new Field("vcBuildVersion",		"VARCHAR2(64)",	"NOT NULL");
-	public final Field vcNumericsVersion =		new Field("vcNumericsVersion",	"VARCHAR2(64)",	"NOT NULL");
-	public final Field creationDate =			new Field("creationDate",		"DATE",			"NOT NULL");
-	public final Field changeDate =				new Field("changeDate",			"DATE",			"");
-	public final Field tsAnnotation =			new Field("tsAnnotation",		"VARCHAR2(512)",	"");
-	public final Field isLocked =				new Field("isLocked",			"INTEGER",		"NOT NULL");
+    private static final String[] tsBuildAndNumericsUniqueConstraintOracle =
+			new String[] {
+			"ts_bld_num_unique UNIQUE(vcBuildVersion,vcNumericsVersion)"};
+			
+    private static final String[] tsBuildAndNumericsUniqueConstraintPostgres =
+			new String[] {
+			"ts_bld_num_unique UNIQUE(vcBuildVersion,vcNumericsVersion)"};
+			
+	public final Field tsVersion =			new Field("tsVersion",			SQLDataType.varchar2_64,	"UNIQUE NOT NULL ");
+	public final Field vcBuildVersion =		new Field("vcBuildVersion",		SQLDataType.varchar2_64,	"NOT NULL");
+	public final Field vcNumericsVersion =	new Field("vcNumericsVersion",	SQLDataType.varchar2_64,	"NOT NULL");
+	public final Field creationDate =		new Field("creationDate",		SQLDataType.date,			"NOT NULL");
+	public final Field changeDate =			new Field("changeDate",			SQLDataType.date,			"");
+	public final Field tsAnnotation =		new Field("tsAnnotation",		SQLDataType.varchar2_512,	"");
+	public final Field isLocked =			new Field("isLocked",			SQLDataType.integer,		"NOT NULL");
 	
 	private final Field fields[] = {tsVersion,vcBuildVersion,vcNumericsVersion,creationDate,changeDate,tsAnnotation,isLocked};
 	
@@ -39,7 +44,7 @@ public class TFTestSuiteTable extends cbit.sql.Table {
  * ModelTable constructor comment.
  */
 private TFTestSuiteTable() {
-	super(TABLE_NAME,tsBuildAndNumericsUniqueConstraint);
+	super(TABLE_NAME,tsBuildAndNumericsUniqueConstraintOracle,tsBuildAndNumericsUniqueConstraintPostgres);
 	addFields(fields);
 }
 public String getCreateTriggerSQL(){

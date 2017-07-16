@@ -25,4 +25,8 @@ public interface ConnectionFactory {
 	java.sql.Connection getConnection(Object lock) throws java.sql.SQLException;
 	
 	void release(java.sql.Connection con, Object lock) throws SQLException;
+	
+	KeyFactory getKeyFactory();
+
+	DatabaseSyntax getDatabaseSyntax();
 }

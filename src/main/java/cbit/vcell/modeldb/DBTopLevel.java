@@ -14,6 +14,8 @@ import java.sql.SQLException;
 import java.util.Vector;
 
 import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -59,15 +61,15 @@ import cbit.vcell.solver.Simulation;
  * This type was created in VisualAge.
  */
 public class DBTopLevel extends AbstractDBTopLevel{
-	private GeomDbDriver geomDB = null;
-	private MathDescriptionDbDriver mathDB = null;
-	private ModelDbDriver modelDB = null;
-	private ReactStepDbDriver reactStepDB = null;
-	private SimulationDbDriver simulationDB = null;
-	private SimulationContextDbDriver simContextDB = null;
-	private BioModelDbDriver bioModelDB = null;
-	private MathModelDbDriver mathModelDB = null;
-	private UserDbDriver userDB = null;
+	private final GeomDbDriver geomDB;
+	private final MathDescriptionDbDriver mathDB;
+	private final ModelDbDriver modelDB;
+	private final ReactStepDbDriver reactStepDB;
+	private final SimulationDbDriver simulationDB;
+	private final SimulationContextDbDriver simContextDB;
+	private final BioModelDbDriver bioModelDB;
+	private final MathModelDbDriver mathModelDB;
+	private final UserDbDriver userDB;
 //	private DBCacheTable dbCacheTable = null;
 
 	private static final int SQL_ERROR_CODE_BADCONNECTION = 1010; //??????????????????????????????????????
@@ -77,16 +79,19 @@ public class DBTopLevel extends AbstractDBTopLevel{
  */
 DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog) throws SQLException{
 	super(aConFactory,newLog);
-	this.geomDB = new GeomDbDriver(log);
+	
+	KeyFactory keyFactory = conFactory.getKeyFactory();
+	DatabaseSyntax databaseSyntax = conFactory.getDatabaseSyntax();
+	this.geomDB = new GeomDbDriver(databaseSyntax, keyFactory, log);
 	this.mathDB = new MathDescriptionDbDriver(this.geomDB,log);
-	this.reactStepDB = new ReactStepDbDriver(null, log,new DictionaryDbDriver(newLog));
+	this.reactStepDB = new ReactStepDbDriver(databaseSyntax, keyFactory, null, log, new DictionaryDbDriver(keyFactory, newLog));
 	this.modelDB = new ModelDbDriver(this.reactStepDB,log);
 	this.reactStepDB.init(modelDB);
 	this.simulationDB = new SimulationDbDriver(this.mathDB,log);
 	this.simContextDB = new SimulationContextDbDriver(this.geomDB,this.modelDB,this.mathDB,log);
 	this.userDB = new UserDbDriver(log); 
-	this.bioModelDB = new BioModelDbDriver(log);
-	this.mathModelDB = new MathModelDbDriver(log);
+	this.bioModelDB = new BioModelDbDriver(databaseSyntax,keyFactory,log);
+	this.mathModelDB = new MathModelDbDriver(databaseSyntax, keyFactory, log);
 }
 
 
@@ -114,7 +119,7 @@ private VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRe
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user);
+		VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user,conFactory.getDatabaseSyntax());
 		con.commit();
 		return newVCDocumentInfo;
 	} catch (Throwable e) {
@@ -151,7 +156,7 @@ FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperation
 	Connection con = conFactory.getConnection(lock);
 	try {
 		FieldDataDBOperationResults fieldDataDBOperationResults =
-			DbDriver.fieldDataDBOperation(con, user,fieldDataDBOperationSpec);
+			DbDriver.fieldDataDBOperation(con, conFactory.getKeyFactory(), user,fieldDataDBOperationSpec);
 		con.commit();
 		return fieldDataDBOperationResults;
 	} catch (Throwable e) {
@@ -286,7 +291,7 @@ TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop,User u
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		TestSuiteOPResults tsor  = DbDriver.testSuiteOP(tsop,con,user,log);
+		TestSuiteOPResults tsor  = DbDriver.testSuiteOP(tsop,con,user,log,conFactory.getKeyFactory());
 		con.commit();
 		return tsor;
 	} catch (Throwable e) {
@@ -824,7 +829,7 @@ TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS,User user,boolean bEnab
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.testSuiteGet(getThisTS,con,user,log);
+		return DbDriver.testSuiteGet(getThisTS,con,user,log,conFactory.getDatabaseSyntax());
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
@@ -898,7 +903,7 @@ VCInfoContainer getVCInfoContainer(User user, boolean bEnableRetry) throws DataA
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.getVCInfoContainer(user,con,log);
+		return DbDriver.getVCInfoContainer(user,con,log,conFactory.getDatabaseSyntax());
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
@@ -991,7 +996,7 @@ Vector<VersionInfo> getVersionableInfos(User user, KeyValue key, VersionableType
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.getVersionableInfos(con,log,user,versionableType, bAll, key, bCheckPermission);
+		return DbDriver.getVersionableInfos(con,log,user,versionableType, bAll, key, bCheckPermission,conFactory.getDatabaseSyntax());
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
@@ -1023,7 +1028,7 @@ void groupAddUser(User user, VersionableType versionableType, KeyValue key, bool
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupAddUser(con, log, user, versionableType, key, userAddToGroup,isHidden);
+		DbDriver.groupAddUser(con, conFactory.getKeyFactory(), log, user, versionableType, key, userAddToGroup,isHidden,conFactory.getDatabaseSyntax());
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -1062,7 +1067,7 @@ void groupRemoveUser(User user, VersionableType versionableType, KeyValue key, b
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupRemoveUser(con, log, user, versionableType, key,userRemoveFromGroup,isHiddenFromOwner);
+		DbDriver.groupRemoveUser(con, conFactory.getKeyFactory(), log, user, versionableType, key,userRemoveFromGroup,isHiddenFromOwner,conFactory.getDatabaseSyntax());
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -1101,7 +1106,7 @@ void groupSetPrivate(User user, VersionableType versionableType, KeyValue key, b
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupSetPrivate(con, log, user, versionableType, key);
+		DbDriver.groupSetPrivate(con, log, user, versionableType, key, conFactory.getDatabaseSyntax());
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -1140,7 +1145,7 @@ void groupSetPublic(User user, VersionableType versionableType, KeyValue key, bo
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupSetPublic(con, log, user, versionableType, key);
+		DbDriver.groupSetPublic(con, log, user, versionableType, key, conFactory.getDatabaseSyntax());
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -1500,7 +1505,7 @@ void insertVersionableChildSummary(User user,VersionableType vType,KeyValue vKey
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.insertVersionableChildSummary(con,serialDBChildSummary,vType,vKey);
+		DbDriver.insertVersionableChildSummary(con,serialDBChildSummary,vType,vKey,conFactory.getDatabaseSyntax());
 		con.commit();
 	} catch (Throwable e) {
 		log.exception(e);
@@ -1538,7 +1543,7 @@ void insertVersionableXML(User user,VersionableType vType,KeyValue vKey,String x
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.insertVersionableXML(con,xml,vType,vKey);
+		DbDriver.insertVersionableXML(con,xml,vType,vKey,conFactory.getDatabaseSyntax());
 		con.commit();
 	} catch (Throwable e) {
 		log.exception(e);

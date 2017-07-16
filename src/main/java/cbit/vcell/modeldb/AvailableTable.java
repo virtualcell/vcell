@@ -13,6 +13,7 @@ package cbit.vcell.modeldb;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -21,10 +22,10 @@ public class AvailableTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_available";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field insertDate			= new Field("insertDate",			"date",			"NOT NULL ");
-	public final Field isAvailable			= new Field("isAvailable",			"varchar2(5)",	"NOT NULL ");
-	public final Field letUserAskForCallback= new Field("letUserAskForCallback","varchar2(5)",	"");
-	public final Field offlineMessage		= new Field("offlineMessage",		"varchar2(512)","");
+	public final Field insertDate			= new Field("insertDate",			SQLDataType.date,			"NOT NULL ");
+	public final Field isAvailable			= new Field("isAvailable",			SQLDataType.varchar2_5,		"NOT NULL ");
+	public final Field letUserAskForCallback= new Field("letUserAskForCallback",SQLDataType.varchar2_5,		"");
+	public final Field offlineMessage		= new Field("offlineMessage",		SQLDataType.varchar2_512,	"");
 
 	private final Field fields[] = {insertDate,isAvailable,letUserAskForCallback,offlineMessage};
 	
@@ -44,7 +45,7 @@ private AvailableTable() {
 public static final String getCreateInitAvailStatusSQL(KeyValue key) {
 	String sql = "INSERT INTO "+AvailableTable.table.getTableName()+
 			" VALUES ("+key.toString()+","+
-						"SYSDATE"+","+	//insertDate
+						"current_timestamp"+","+	//insertDate
 						"'true'"+","+	//isAvailable
 						"NULL"+","+		//letUserAskForCallback
 						"NULL"+")";		//offlineMessage

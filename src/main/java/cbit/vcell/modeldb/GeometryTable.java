@@ -25,6 +25,7 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
@@ -35,12 +36,12 @@ public class GeometryTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_geometry";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field dimension	= new Field("dimension",	"integer",	"NOT NULL");
-	public final Field originX		= new Field("originX",		"NUMBER",	"NOT NULL");
-	public final Field originY		= new Field("originY",		"NUMBER",	"NOT NULL");
-	public final Field originZ		= new Field("originZ",		"NUMBER",	"NOT NULL");
-	public final Field extentRef	= new Field("extentRef",	"integer",	"NOT NULL "+ExtentTable.REF_TYPE);
-	public final Field imageRef		= new Field("imageRef",		"integer",	ImageTable.REF_TYPE);
+	public final Field dimension	= new Field("dimension",	SQLDataType.integer,	"NOT NULL");
+	public final Field originX		= new Field("originX",		SQLDataType.number_as_real,	"NOT NULL");
+	public final Field originY		= new Field("originY",		SQLDataType.number_as_real,	"NOT NULL");
+	public final Field originZ		= new Field("originZ",		SQLDataType.number_as_real,	"NOT NULL");
+	public final Field extentRef	= new Field("extentRef",	SQLDataType.integer,	"NOT NULL "+ExtentTable.REF_TYPE);
+	public final Field imageRef		= new Field("imageRef",		SQLDataType.integer,	ImageTable.REF_TYPE);
 	
 	private final Field fields[] = {dimension,originX,originY,originZ,extentRef,imageRef};
 	

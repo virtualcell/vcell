@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -25,6 +26,7 @@ import org.vcell.util.document.User;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
@@ -36,14 +38,14 @@ public class DataSymbolTable extends Table {
 	private static final String TABLE_NAME = "vc_datasymbol";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field dataSymbolName		= new Field("dataSymbolName",	"varchar2(255)",	"NOT NULL");
-	public final Field dataSymbolType		= new Field("dataSymbolType",	"varchar2(32)",	"NOT NULL");
-	public final Field dataSymbolVCUnitDef	= new Field("dataSymbolVCUnitDef",	"varchar2(64)",	"NOT NULL");
-	public final Field simContextRef		= new Field("simContextRef",	"integer",		"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field fieldDataRef			= new Field("fieldDataRef",		"integer",		ExternalDataTable.REF_TYPE);
-	public final Field fieldDataVarName		= new Field("fieldDataVarName",	"varchar2(255)",	"");
-	public final Field fieldDataVarType		= new Field("fieldDataVarType",	"varchar2(255)",	"");
-	public final Field fieldDataVarTime		= new Field("fieldDataVarTime",	"number",	"");
+	public final Field dataSymbolName		= new Field("dataSymbolName",	SQLDataType.varchar2_255,	"NOT NULL");
+	public final Field dataSymbolType		= new Field("dataSymbolType",	SQLDataType.varchar2_32,	"NOT NULL");
+	public final Field dataSymbolVCUnitDef	= new Field("dataSymbolVCUnitDef",	SQLDataType.varchar2_64,	"NOT NULL");
+	public final Field simContextRef		= new Field("simContextRef",	SQLDataType.integer,		"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field fieldDataRef			= new Field("fieldDataRef",		SQLDataType.integer,		ExternalDataTable.REF_TYPE);
+	public final Field fieldDataVarName		= new Field("fieldDataVarName",	SQLDataType.varchar2_255,	"");
+	public final Field fieldDataVarType		= new Field("fieldDataVarType",	SQLDataType.varchar2_255,	"");
+	public final Field fieldDataVarTime		= new Field("fieldDataVarTime",	SQLDataType.number_as_real,	"");
 	
 	private final Field fields[] = {dataSymbolName,dataSymbolType,dataSymbolVCUnitDef,simContextRef,fieldDataRef,fieldDataVarName,fieldDataVarType,fieldDataVarTime};
 	
@@ -56,7 +58,7 @@ private DataSymbolTable() {
 	addFields(fields);
 }
 
-public String getSQLValueList(DataSymbol dataSymbol,KeyValue simContextKey) throws DataAccessException {
+public String getSQLValueList(DataSymbol dataSymbol,KeyValue simContextKey, KeyFactory keyFactory) throws DataAccessException {
 
 	FieldDataSymbol fieldDataSymbol = null;
 	if(dataSymbol instanceof FieldDataSymbol){
@@ -64,7 +66,7 @@ public String getSQLValueList(DataSymbol dataSymbol,KeyValue simContextKey) thro
 	}
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
-	buffer.append(Table.NewSEQ + ",");
+	buffer.append(keyFactory.nextSEQ() + ",");
 	buffer.append("'" + dataSymbol.getName() + "',");
 	buffer.append("'" + dataSymbol.getDataSymbolType().toString() + "',");
 	buffer.append("'" + TokenMangler.getSQLEscapedString(dataSymbol.getUnitDefinition().getSymbol()) + "',");
@@ -78,7 +80,7 @@ public String getSQLValueList(DataSymbol dataSymbol,KeyValue simContextKey) thro
 	
 	return buffer.toString();
 }
-public void saveDataSymbols(Connection con,KeyValue simContextRef,DataContext dataContext,User simcontextOwner) throws SQLException,DataAccessException{
+public void saveDataSymbols(Connection con,KeyFactory keyFactory,KeyValue simContextRef,DataContext dataContext,User simcontextOwner) throws SQLException,DataAccessException{
 	DataSymbol[] dataSymbols = dataContext.getDataSymbols();
 	if(dataSymbols == null){
 		return;
@@ -92,7 +94,7 @@ public void saveDataSymbols(Connection con,KeyValue simContextRef,DataContext da
 			"INSERT INTO "+DataSymbolTable.table.getTableName()+
 			DataSymbolTable.table.getSQLColumnList()+
 			" VALUES "+
-			getSQLValueList(dataSymbols[i], simContextRef);
+			getSQLValueList(dataSymbols[i], simContextRef, keyFactory);
 		
 		DbDriver.updateCleanSQL(con, sql);
 	}

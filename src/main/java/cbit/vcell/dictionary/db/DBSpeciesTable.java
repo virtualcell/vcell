@@ -11,6 +11,7 @@
 package cbit.vcell.dictionary.db;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.FormalSpeciesType;
@@ -26,14 +27,19 @@ public class DBSpeciesTable extends cbit.sql.Table {
     public static final String REF_TYPE =
         "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    private static final String[] dbSpeciesTableConstraint =
+    private static final String[] dbSpeciesTableConstraintOracle =
     			new String[] {
     			"com_enz_pro_unique UNIQUE(compoundRef,enzymeRef,proteinRef)",
     			"com_enz_pro_only_1 CHECK(DECODE(compoundref,NULL,0,compoundref,1)+DECODE(enzymeref,NULL,0,enzymeref,1)+DECODE(proteinref,NULL,0,proteinref,1) = 1)"};
 
-    public final Field compoundRef 	= new Field("compoundRef", 	CompoundTable.REF_TYPE, "");
-	public final Field enzymeRef 	= new Field("enzymeRef", 	EnzymeTable.REF_TYPE, "");
-	public final Field proteinRef 	= new Field("proteinRef", 	ProteinTable.REF_TYPE, "");
+    private static final String[] dbSpeciesTableConstraintPostgres =
+				new String[] {
+				"com_enz_pro_unique UNIQUE(compoundRef,enzymeRef,proteinRef)",
+				"com_enz_pro_only_1 CHECK((CASE WHEN compoundref IS NULL THEN 0 ELSE 1 END)+(CASE WHEN enzymeref IS NULL THEN 0 ELSE 1 END)+(CASE WHEN proteinref IS NULL THEN 0 ELSE 1 END) = 1)"};
+    
+    public final Field compoundRef 	= new Field("compoundRef", 	SQLDataType.integer, CompoundTable.REF_TYPE);
+	public final Field enzymeRef 	= new Field("enzymeRef", 	SQLDataType.integer, EnzymeTable.REF_TYPE);
+	public final Field proteinRef 	= new Field("proteinRef", 	SQLDataType.integer, ProteinTable.REF_TYPE);
 	
 	private final Field fields[] = {compoundRef,enzymeRef,proteinRef};
 
@@ -45,7 +51,7 @@ public class DBSpeciesTable extends cbit.sql.Table {
  * @param argTableName java.lang.String
  */
 public DBSpeciesTable() {
-	super(TABLE_NAME,dbSpeciesTableConstraint);
+	super(TABLE_NAME,dbSpeciesTableConstraintOracle,dbSpeciesTableConstraintPostgres);
 	addFields(fields);
 }
 /**

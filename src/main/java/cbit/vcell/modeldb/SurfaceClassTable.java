@@ -17,6 +17,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.vcell.geometry.Geometry;
@@ -27,10 +28,10 @@ public class SurfaceClassTable extends Table {
 	private static final String TABLE_NAME = "vc_surfaceclass";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field name		 		= new Field("name",				"varchar(255)",	"NOT NULL");
-	public final Field geometryRef		= new Field("geometryRef",		"integer",		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field subVolumeRef1	= new Field("subVolumeRef1",	"integer",	SubVolumeTable.REF_TYPE);
-	public final Field subVolumeRef2	= new Field("subVolumeRef2",	"integer",	SubVolumeTable.REF_TYPE);
+	public final Field name		 		= new Field("name",				SQLDataType.varchar_255,	"NOT NULL");
+	public final Field geometryRef		= new Field("geometryRef",		SQLDataType.integer,		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field subVolumeRef1	= new Field("subVolumeRef1",	SQLDataType.integer,		SubVolumeTable.REF_TYPE);
+	public final Field subVolumeRef2	= new Field("subVolumeRef2",	SQLDataType.integer,		SubVolumeTable.REF_TYPE);
 	
 	private final Field fields[] = {name,geometryRef,subVolumeRef1,subVolumeRef2};
 	

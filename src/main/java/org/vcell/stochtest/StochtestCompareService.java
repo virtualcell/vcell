@@ -70,7 +70,7 @@ public class StochtestCompareService {
 	    //
 	    ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(
 	    		sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
-	    KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();   
+	    KeyFactory keyFactory = conFactory.getKeyFactory();
 	    StochtestCompareService stochtestService = new StochtestCompareService(baseDir, conFactory, keyFactory, sessionLog);
 	    
 	    while (true){

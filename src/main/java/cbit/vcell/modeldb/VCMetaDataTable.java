@@ -14,19 +14,21 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 
 public class VCMetaDataTable extends Table {
 	private static final String TABLE_NAME = "vc_metadata";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field bioModelRef			= new Field("bioModelRef",		"integer",	"NOT NULL "+BioModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field vcMetaDataLarge		= new Field("vcMetaDataLarge",	"CLOB",				"");
-	public final Field vcMetaDataSmall		= new Field("vcMetaDataSmall",	"VARCHAR2(4000)",	"");
+	public final Field bioModelRef		= new Field("bioModelRef",		SQLDataType.integer,		"NOT NULL "+BioModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field vcMetaDataLarge	= new Field("vcMetaDataLarge",	SQLDataType.clob_text,		"");
+	public final Field vcMetaDataSmall	= new Field("vcMetaDataSmall",	SQLDataType.varchar2_4000,	"");
 	
 	private final Field fields[] = {bioModelRef,vcMetaDataLarge,vcMetaDataSmall};
 	
@@ -37,13 +39,13 @@ public class VCMetaDataTable extends Table {
 		addFields(fields);
 	}
 	
-	public static String getVCMetaDataXML(ResultSet rset) throws DataAccessException,SQLException{
+	public static String getVCMetaDataXML(ResultSet rset, DatabaseSyntax dbSyntax) throws DataAccessException,SQLException{
 		String vcMetaDataXML =
-			DbDriver.varchar2_CLOB_get(rset,VCMetaDataTable.table.vcMetaDataSmall,VCMetaDataTable.table.vcMetaDataLarge);
+			DbDriver.varchar2_CLOB_get(rset,VCMetaDataTable.table.vcMetaDataSmall,VCMetaDataTable.table.vcMetaDataLarge,dbSyntax);
 		return vcMetaDataXML;
 
 	}
-	public static void insertVCMetaData(Connection con,String vcMetaDataXML,final KeyValue bioModelKey,KeyValue newVCMetaDataKey)
+	public static void insertVCMetaData(Connection con,String vcMetaDataXML,final KeyValue bioModelKey,KeyValue newVCMetaDataKey,DatabaseSyntax dbSyntax)
 		throws DataAccessException,SQLException{
 
 		String sql;
@@ -59,7 +61,8 @@ public class VCMetaDataTable extends Table {
 							VCMetaDataTable.table,
 							newVCMetaDataKey,
 							VCMetaDataTable.table.vcMetaDataLarge,
-							VCMetaDataTable.table.vcMetaDataSmall);
+							VCMetaDataTable.table.vcMetaDataSmall,
+							dbSyntax);
 
 	}
 	private static String getSQLValueList(String vcMetaDataXML,KeyValue bioModelKey,KeyValue newVCMetaDataKey){

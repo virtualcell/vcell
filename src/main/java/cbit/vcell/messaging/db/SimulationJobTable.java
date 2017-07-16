@@ -17,6 +17,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.message.server.htc.pbs.PbsJobID;
 import cbit.vcell.message.server.htc.sge.SgeJobID;
@@ -37,25 +38,25 @@ public class SimulationJobTable extends Table {
 	private static final String TABLE_NAME = "vc_simulationjob";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field simRef 			= new Field("simRef",			"integer",		"UNIQUE NOT NULL " + SimulationTable.REF_TYPE + " ON DELETE CASCADE");
-	public final Field submitDate		= new Field("submitDate",		"date",			"NOT NULL");
-	public final Field taskID			= new Field("taskID",			"integer",		"NOT NULL");		
-	public final Field schedulerStatus	= new Field("schedulerStatus",	"integer",		"NOT NULL");
-	public final Field statusMsg		= new Field("statusMsg",		"varchar(4000)",	"");	
+	public final Field simRef 			= new Field("simRef",			SQLDataType.integer,		"UNIQUE NOT NULL " + SimulationTable.REF_TYPE + " ON DELETE CASCADE");
+	public final Field submitDate		= new Field("submitDate",		SQLDataType.date,			"NOT NULL");
+	public final Field taskID			= new Field("taskID",			SQLDataType.integer,		"NOT NULL");		
+	public final Field schedulerStatus	= new Field("schedulerStatus",	SQLDataType.integer,		"NOT NULL");
+	public final Field statusMsg		= new Field("statusMsg",		SQLDataType.varchar_4000,	"");	
 		
-	public final Field queueDate		= new Field("queueDate",		"date",			"");
-	public final Field queuePriority	= new Field("queuePriority",	"integer",		"");	
-	public final Field queueID			= new Field("queueID",			"integer",		"");	
+	public final Field queueDate		= new Field("queueDate",		SQLDataType.date,			"");
+	public final Field queuePriority	= new Field("queuePriority",	SQLDataType.integer,		"");	
+	public final Field queueID			= new Field("queueID",			SQLDataType.integer,		"");	
 
-	public final Field startDate		= new Field("startDate",		"date",			"");
-	public final Field computeHost		= new Field("computeHost",		"varchar(255)",	"");
-	public final Field latestUpdateDate = new Field("latestUpdateDate",	"date",			"NOT NULL");
-	public final Field endDate			= new Field("endDate",			"date",			"");	
-	public final Field hasData			= new Field("hasData",			"char(1)",		"");
+	public final Field startDate		= new Field("startDate",		SQLDataType.date,			"");
+	public final Field computeHost		= new Field("computeHost",		SQLDataType.varchar_255,	"");
+	public final Field latestUpdateDate = new Field("latestUpdateDate",	SQLDataType.date,			"NOT NULL");
+	public final Field endDate			= new Field("endDate",			SQLDataType.date,			"");	
+	public final Field hasData			= new Field("hasData",			SQLDataType.char_1,			"");
 
-	public final Field serverID			= new Field("serverID",			"varchar(20)",	"NOT NULL");
-	public final Field jobIndex			= new Field("jobIndex",			"integer",		"");	
-	public final Field pbsJobID			= new Field("pbsJobID",			"varchar(100)",	"");	
+	public final Field serverID			= new Field("serverID",			SQLDataType.varchar_20,		"NOT NULL");
+	public final Field jobIndex			= new Field("jobIndex",			SQLDataType.integer,		"");	
+	public final Field pbsJobID			= new Field("pbsJobID",			SQLDataType.varchar_100,	"");	
 	
 	private final Field fields[] = {simRef,submitDate, taskID, schedulerStatus, statusMsg,
 		queueDate,queuePriority,queueID, 
@@ -175,7 +176,7 @@ public String getSQLUpdateList(SimulationJobStatusPersistent simulationJobStatus
 	//simRef
 	buffer.append(simRef + "=" + simulationJobStatus.getVCSimulationIdentifier().getSimulationKey() + ",");
 	//submiteDate
-	buffer.append(submitDate + "=" + (simulationJobStatus.getSubmitDate() == null ? "sysdate," : VersionTable.formatDateToOracle(simulationJobStatus.getSubmitDate()) + ","));
+	buffer.append(submitDate + "=" + (simulationJobStatus.getSubmitDate() == null ? "current_timestamp," : VersionTable.formatDateToOracle(simulationJobStatus.getSubmitDate()) + ","));
 	//taskID
 	buffer.append(taskID + "=" + simulationJobStatus.getTaskID() + ",");
 	//schedulerStatus
@@ -194,7 +195,7 @@ public String getSQLUpdateList(SimulationJobStatusPersistent simulationJobStatus
 		buffer.append(VersionTable.formatDateToOracle(simQueueEntryStatus.getQueueDate()) + ",");
 	} else {
 		if (simulationJobStatus.getSchedulerStatus().inQueue()) {
-			buffer.append("sysdate,");
+			buffer.append("current_timestamp,");
 		} else {
 			buffer.append("null,");
 		}
@@ -231,7 +232,7 @@ public String getSQLUpdateList(SimulationJobStatusPersistent simulationJobStatus
 		if (simulationJobStatus.getSchedulerStatus().isWaiting()) {	
 			buffer.append("null,");
 		} else {
-			buffer.append("sysdate,");
+			buffer.append("current_timestamp,");
 		}
 	}
 	//computeHost
@@ -242,7 +243,7 @@ public String getSQLUpdateList(SimulationJobStatusPersistent simulationJobStatus
 		buffer.append("null,");
 	}
 	//latestUpdateDate
-	buffer.append(latestUpdateDate + "=sysdate,");
+	buffer.append(latestUpdateDate + "=current_timestamp,");
 
 	//endDate
 	buffer.append(endDate + "=");
@@ -250,7 +251,7 @@ public String getSQLUpdateList(SimulationJobStatusPersistent simulationJobStatus
 		buffer.append(VersionTable.formatDateToOracle(simExecutionStatus.getEndDate()) + ",");
 	} else {
 		if (simulationJobStatus.getSchedulerStatus().isDone()) {
-			buffer.append("sysdate,");
+			buffer.append("current_timestamp,");
 		} else {
 			buffer.append("null,");
 		}
@@ -303,7 +304,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatusPersistent simula
 	buffer.append(simulationJobStatus.getVCSimulationIdentifier().getSimulationKey() + ",");
 	//submitDate
 	if (simulationJobStatus.getSubmitDate() == null) {
-		buffer.append("sysdate,");
+		buffer.append("current_timestamp,");
 	} else {
 		buffer.append(VersionTable.formatDateToOracle(simulationJobStatus.getSubmitDate()) + ",");
 	}
@@ -320,7 +321,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatusPersistent simula
 	SimulationQueueEntryStatusPersistent simQueueEntryStatus = simulationJobStatus.getSimulationQueueEntryStatus();
 	//queueDate
 	if (simulationJobStatus.getSchedulerStatus().inQueue()) {
-		buffer.append("sysdate,");
+		buffer.append("current_timestamp,");
 	} else {		
 		if (simQueueEntryStatus != null && simQueueEntryStatus.getQueueDate() != null) {
 			buffer.append(VersionTable.formatDateToOracle(simQueueEntryStatus.getQueueDate()) + ",");
@@ -341,14 +342,14 @@ public String getSQLValueList(KeyValue key, SimulationJobStatusPersistent simula
 	// execution stuff
 	SimulationExecutionStatusPersistent simExecutionStatus = simulationJobStatus.getSimulationExecutionStatus();
 	if (simExecutionStatus == null){
-		buffer.append("null,null,sysdate,null,null,");
+		buffer.append("null,null,current_timestamp,null,null,");
 	} else {
 		//startDate
 		if (simExecutionStatus.getStartDate() != null) {
 			buffer.append(VersionTable.formatDateToOracle(simExecutionStatus.getStartDate()) + ",");
 		} else {
 			if (simulationJobStatus.getSchedulerStatus() == SchedulerStatus.COMPLETED) {
-				buffer.append("sysdate,");
+				buffer.append("current_timestamp,");
 			} else {
 				buffer.append("null,");
 			}
@@ -360,13 +361,13 @@ public String getSQLValueList(KeyValue key, SimulationJobStatusPersistent simula
 			buffer.append("null,");
 		}
 		//LatestUpdateDate
-		buffer.append("sysdate,");
+		buffer.append("current_timestamp,");
 		//endDate
 		if (simExecutionStatus.getEndDate() != null) {
 			buffer.append(VersionTable.formatDateToOracle(simExecutionStatus.getEndDate()) + ",");
 		} else {
 			if (simulationJobStatus.getSchedulerStatus().isDone()) {
-				buffer.append("sysdate,");
+				buffer.append("current_timestamp,");
 			} else {
 				buffer.append("null,");
 			}

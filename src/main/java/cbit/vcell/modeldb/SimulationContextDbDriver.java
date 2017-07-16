@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -82,7 +83,7 @@ public class SimulationContextDbDriver extends DbDriver {
  */
 public SimulationContextDbDriver(GeomDbDriver argGeomDB,ModelDbDriver argModelDB,
 		MathDescriptionDbDriver argMathDescDB,SessionLog sessionLog) {
-	super(sessionLog);
+	super(argGeomDB.dbSyntax, argGeomDB.keyFactory, sessionLog);
 	this.geomDB = argGeomDB;
 	this.modelDB = argModelDB;
 	this.mathDescDB = argMathDescDB;
@@ -105,7 +106,7 @@ private void assignAnalysisTasksSQL(Connection con,KeyValue simContextKey, Simul
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
-			String analysisXML = (String)getLOB(rset,analysisTaskTable.analysisTaskXML.toString());
+			String analysisXML = (String)getLOB(rset,analysisTaskTable.analysisTaskXML,dbSyntax);
 			org.jdom.Element rootElement = XmlUtil.stringToXML(analysisXML,null).getRootElement();
 			cbit.vcell.modelopt.ParameterEstimationTask parameterEstimationTask = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getParameterEstimationTask(rootElement,simContext);
 			simContext.addAnalysisTask(parameterEstimationTask);
@@ -767,13 +768,13 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 
 	DataSymbolTable.table.populateDataSymbols(con, simContextKey, simContext.getDataContext(),user, simContext.getModel().getUnitSystem());
 	
-	ArrayList<AnnotatedFunction> outputFunctionList = ApplicationMathTable.table.getOutputFunctionsSimcontext(con, simContextKey);
+	ArrayList<AnnotatedFunction> outputFunctionList = ApplicationMathTable.table.getOutputFunctionsSimcontext(con, simContextKey,dbSyntax);
 	if(outputFunctionList != null){
 		OutputFunctionContext outputFnContext = simContext.getOutputFunctionContext();
 		outputFnContext.setOutputFunctions(outputFunctionList);
 	}
 	
-	SimContextTable.table.readAppComponents(con, simContext);
+	SimContextTable.table.readAppComponents(con, simContext,dbSyntax);
 	
 	assignStimuliSQL(con,simContextKey, simContext);
 	assignStructureMappingsSQL(dbc, con,simContextKey, simContext);
@@ -830,33 +831,43 @@ public Versionable getVersionable(QueryHashtable dbc, Connection con, User user,
 /**
  * This method was created in VisualAge.
  */
-private void insertAnalysisTasksSQL(Connection con, KeyValue simContextKey, SimulationContext simContext) 
-			throws SQLException, DataAccessException {
+private void insertAnalysisTasksSQL(Connection con, KeyValue simContextKey, SimulationContext simContext, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
+	switch(dbSyntax){
+	case ORACLE:{
+		AnalysisTaskXMLTable analysisTaskXMLTable = AnalysisTaskXMLTable.table;
+	
+		cbit.vcell.modelopt.AnalysisTask[] analysisTasks = simContext.getAnalysisTasks();
+		//
+		// store analysisTasks
+		//
+		if (analysisTasks != null) {
+			for (int i=0;i<analysisTasks.length;i++){
+				cbit.vcell.modelopt.AnalysisTask analysisTask = analysisTasks[i];
+				String analysisTaskXML = null;
+				if (analysisTask instanceof cbit.vcell.modelopt.ParameterEstimationTask){				
+					org.jdom.Element xmlRootElement = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getXML((cbit.vcell.modelopt.ParameterEstimationTask)analysisTask);
+					analysisTaskXML = cbit.util.xml.XmlUtil.xmlToString(xmlRootElement);
+				}else{
+					throw new DataAccessException("can't generate xml for analysisTask type '"+analysisTask.getClass().getName()+"'");
+				}
+	
+				KeyValue newID = keyFactory.getNewKey(con);
 				
-	AnalysisTaskXMLTable analysisTaskXMLTable = AnalysisTaskXMLTable.table;
-
-	cbit.vcell.modelopt.AnalysisTask[] analysisTasks = simContext.getAnalysisTasks();
-	//
-	// store analysisTasks
-	//
-	if (analysisTasks != null) {
-		for (int i=0;i<analysisTasks.length;i++){
-			cbit.vcell.modelopt.AnalysisTask analysisTask = analysisTasks[i];
-			String analysisTaskXML = null;
-			if (analysisTask instanceof cbit.vcell.modelopt.ParameterEstimationTask){				
-				org.jdom.Element xmlRootElement = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getXML((cbit.vcell.modelopt.ParameterEstimationTask)analysisTask);
-				analysisTaskXML = cbit.util.xml.XmlUtil.xmlToString(xmlRootElement);
-			}else{
-				throw new DataAccessException("can't generate xml for analysisTask type '"+analysisTask.getClass().getName()+"'");
+				updateCleanSQL(con,"INSERT INTO "+analysisTaskXMLTable.getTableName()+
+					" VALUES (" + newID +","+simContextKey.toString()+",EMPTY_CLOB(),current_timestamp)");
+				
+				updateCleanLOB(con,analysisTaskXMLTable.id.toString(),newID,analysisTaskXMLTable.getTableName(),analysisTaskXMLTable.analysisTaskXML,analysisTaskXML,dbSyntax);
 			}
-
-			KeyValue newID = getNewKey(con);
-			
-			updateCleanSQL(con,"INSERT INTO "+analysisTaskXMLTable.getTableName()+
-				" VALUES (" + newID +","+simContextKey.toString()+",EMPTY_CLOB(),SYSDATE)");
-			
-			updateCleanLOB(con,analysisTaskXMLTable.id.toString(),newID,analysisTaskXMLTable.getTableName(),analysisTaskXMLTable.analysisTaskXML.toString(),analysisTaskXML);
 		}
+		break;
+	}
+	case POSTGRES:{
+		// TODO: POSTGRES
+		throw new RuntimeException("SimulationContextDbDriver.insertAnalysisTasksSQL() not yet implemented for Postgres");
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
 	}
 }
 
@@ -871,7 +882,7 @@ private void insertReactionSpecsSQL(Connection con, KeyValue simContextKey, Simu
 	ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
 	for (int i=0;i<reactionSpecs.length;i++){
 		//
-		KeyValue newReactionSpecKey = getNewKey(con);
+		KeyValue newReactionSpecKey = keyFactory.getNewKey(con);
 		KeyValue reactionStepKey = updatedModel.getReactionStep(reactionSpecs[i].getReactionStep().getName()).getKey();
 		//
 		sql = 	"INSERT INTO " + reactionSpecTable.getTableName() + " " + reactionSpecTable.getSQLColumnList() +
@@ -961,9 +972,9 @@ private void insertSimulationContext(InsertHashtable hash, Connection con, User 
 	insertStimuliSQL(hash,con, newVersion.getVersionKey(), simContext); // inserts Stimuli
 	insertSpeciesContextSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to speciesContext
 	insertReactionSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to reactionSteps
-	insertAnalysisTasksSQL(con, newVersion.getVersionKey(), simContext); // inserts AnalysisTasks
-	ApplicationMathTable.table.saveOutputFunctionsSimContext(con, newVersion.getVersionKey(), simContext.getOutputFunctionContext().getOutputFunctionsList());
-	DataSymbolTable.table.saveDataSymbols(con,newVersion.getVersionKey(),simContext.getDataContext(),user);
+	insertAnalysisTasksSQL(con, newVersion.getVersionKey(), simContext,dbSyntax); // inserts AnalysisTasks
+	ApplicationMathTable.table.saveOutputFunctionsSimContext(con, newVersion.getVersionKey(), simContext.getOutputFunctionContext().getOutputFunctionsList(),dbSyntax,keyFactory);
+	DataSymbolTable.table.saveDataSymbols(con,keyFactory,newVersion.getVersionKey(),simContext.getDataContext(),user);
 	
 	hash.put(simContext,newVersion.getVersionKey());
 }
@@ -979,7 +990,7 @@ private void insertSimulationContextSQL(Connection con, User user,SimulationCont
 	String sql = null;
 	String appComponentXmlStr = SimContextTable.getAppComponentsForDatabase(simContext);
 	Object[] o = {simContext,mathDescKey,modelKey,geomKey, appComponentXmlStr};
-	sql = DatabasePolicySQL.enforceOwnershipInsert(user,simContextTable,o,version);
+	sql = DatabasePolicySQL.enforceOwnershipInsert(user,simContextTable,o,version,dbSyntax);
 //System.out.println(sql);
 	if (appComponentXmlStr!=null){
 		varchar2_CLOB_update(
@@ -989,8 +1000,8 @@ private void insertSimulationContextSQL(Connection con, User user,SimulationCont
 			SimContextTable.table,
 			version.getVersionKey(),
 			SimContextTable.table.appComponentsLarge,
-			SimContextTable.table.appComponentsSmall
-			);
+			SimContextTable.table.appComponentsSmall,
+			dbSyntax);
 	}else{
 		updateCleanSQL(con,sql);
 	}
@@ -1009,7 +1020,7 @@ private void insertSpeciesContextSpecsSQL(Connection con, KeyValue simContextKey
 	for (int i=0;i<speciesContextSpecs.length;i++){
 		SpeciesContextSpec speciesContextSpec = speciesContextSpecs[i];
 		KeyValue scKey = updatedModel.getSpeciesContext(speciesContextSpec.getSpeciesContext().getName()).getKey();
-		KeyValue newSpeciesContextSpecKey = getNewKey(con);
+		KeyValue newSpeciesContextSpecKey = keyFactory.getNewKey(con);
 		//
 		sql = 	"INSERT INTO " + speciesContextSpecTable.getTableName() + " " + speciesContextSpecTable.getSQLColumnList() + 
 				" VALUES " + speciesContextSpecTable.getSQLValueList(newSpeciesContextSpecKey, simContextKey, speciesContextSpec, scKey);
@@ -1033,7 +1044,7 @@ private void insertStimuliSQL(InsertHashtable hash, Connection con, KeyValue sim
 	//
 	for (int i=0;i<stimuli.length;i++){
 		ElectricalStimulus stimulus = stimuli[i];
-		KeyValue newStimuliKey = getNewKey(con);
+		KeyValue newStimuliKey = keyFactory.getNewKey(con);
 		//
 		String sql = "INSERT INTO " + stimulusTable.getTableName() + " " + stimulusTable.getSQLColumnList() +
 					" VALUES " + stimulusTable.getSQLValueList(hash, newStimuliKey, simContextKey, stimulus);
@@ -1045,7 +1056,7 @@ private void insertStimuliSQL(InsertHashtable hash, Connection con, KeyValue sim
 	//
 	Electrode groundElectrode = simContext.getGroundElectrode();
 	if (groundElectrode != null){
-		KeyValue newStimuliKey = getNewKey(con);
+		KeyValue newStimuliKey = keyFactory.getNewKey(con);
 		//
 		String sql = "INSERT INTO " + stimulusTable.getTableName() + " " + stimulusTable.getSQLColumnList() +
 					" VALUES " + stimulusTable.getSQLValueList(hash, newStimuliKey, simContextKey, groundElectrode);
@@ -1070,7 +1081,7 @@ private void insertStructureMappingsSQL(InsertHashtable hash, Connection con, Ke
 		// it's ok to have missing StructureMappings in the database, assignStructureMappingsSQL() is tolerant of this.
 		//
 		//
-		KeyValue newStuctureMappingKey = getNewKey(con);
+		KeyValue newStuctureMappingKey = keyFactory.getNewKey(con);
 		//
 		sql = 	"INSERT INTO " + structureMappingTable.getTableName() + " " + structureMappingTable.getSQLColumnList() +
 				" VALUES " + structureMappingTable.getSQLValueList(hash, newStuctureMappingKey, simContextKey, structureMapping);

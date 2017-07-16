@@ -14,6 +14,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -22,8 +23,8 @@ public class FilamentTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_filament";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field filamentName	= new Field("filamentName",	"varchar(255)",	"NOT NULL");
-	public final Field geometryRef	= new Field("geometryRef",	"integer",		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field filamentName	= new Field("filamentName",	SQLDataType.varchar_255,	"NOT NULL");
+	public final Field geometryRef	= new Field("geometryRef",	SQLDataType.integer,		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
 	
 	private final Field fields[] = {filamentName,geometryRef};
 	

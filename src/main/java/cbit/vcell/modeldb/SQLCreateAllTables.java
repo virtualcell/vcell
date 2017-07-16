@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.db.oracle.OracleKeyFactory;
 import org.vcell.util.SessionLog;
@@ -41,7 +42,7 @@ public class SQLCreateAllTables {
  * @param vcTable cbit.sql.Table
  * @param vcTable_Field cbit.sql.Field
  */
-private static void createIndex(Connection con,String indexName, Table vcTable, Field vcTable_Field) throws SQLException{
+private static void createIndex(Connection con,String indexName, Table vcTable, Field vcTable_Field, DatabaseSyntax dbSyntax) throws SQLException{
 	
 	//
 	// create indices for faster lookup
@@ -50,7 +51,13 @@ private static void createIndex(Connection con,String indexName, Table vcTable, 
 	try{
 		stmt = con.createStatement();
 		try{
-			stmt.executeUpdate("DROP INDEX "+indexName);
+			if (dbSyntax==DatabaseSyntax.ORACLE){
+				stmt.executeUpdate("DROP INDEX "+indexName);
+			}else if (dbSyntax==DatabaseSyntax.POSTGRES){
+				stmt.executeUpdate("DROP INDEX IF EXISTS " + indexName);
+			}else{
+				throw new RuntimeException("unexpected Database Syntax '"+dbSyntax+"'");
+			}
 		}catch (SQLException e){
 			if(e.getErrorCode() != 1418){
 				throw e;
@@ -84,7 +91,7 @@ private static void createSequence(Connection con, KeyFactory keyFactory) throws
 /**
  * This method was created in VisualAge.
  */
-private static void createTables(Connection con, Table tables[]) throws SQLException {
+private static void createTables(Connection con, Table tables[], DatabaseSyntax dbSyntax) throws SQLException {
 
 	//
 	// make tables
@@ -92,7 +99,7 @@ private static void createTables(Connection con, Table tables[]) throws SQLExcep
 	boolean status;
 	PreparedStatement pps;
 	for (int i=0;i<tables.length;i++){
-		String sql = tables[i].getCreateSQL();
+		String sql = tables[i].getCreateSQL(dbSyntax);
 		System.out.println(sql);
 		pps = con.prepareStatement(sql);
 		status = pps.execute();
@@ -102,7 +109,7 @@ private static void createTables(Connection con, Table tables[]) throws SQLExcep
 /**
  * This method was created in VisualAge.
  */
-private static void destroyAndRecreateTables(SessionLog log, ConnectionFactory conFactory, KeyFactory keyFactory) {
+private static void destroyAndRecreateTables(SessionLog log, ConnectionFactory conFactory, KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
 	try {
 		JPanel panel = new JPanel(new BorderLayout());
 		JCheckBox c1 = new JCheckBox("Drop all tables");
@@ -123,11 +130,11 @@ private static void destroyAndRecreateTables(SessionLog log, ConnectionFactory c
 				System.out.println("connected....");
 				Table tables[] = getVCellTables();
 				if (c1.isSelected()) {
-					dropTables(con, tables);
+					dropTables(con, tables, dbSyntax);
 					dropSequence(con, keyFactory);
 				}
 				if (c2.isSelected()) {
-					createTables(con, tables);
+					createTables(con, tables, dbSyntax);
 					createSequence(con, keyFactory);
 					//
 					// Add special table entries
@@ -148,12 +155,12 @@ private static void destroyAndRecreateTables(SessionLog log, ConnectionFactory c
 					//
 					//Create Indexes
 					//
-					createIndex(con,"grp_grpid",cbit.vcell.modeldb.GroupTable.table,cbit.vcell.modeldb.GroupTable.table.groupid);
-					createIndex(con,"browse_imgref",cbit.vcell.modeldb.BrowseImageDataTable.table,cbit.vcell.modeldb.BrowseImageDataTable.table.imageRef);
-					createIndex(con,"geom_extentref",cbit.vcell.modeldb.GeometryTable.table,cbit.vcell.modeldb.GeometryTable.table.extentRef);
-					createIndex(con,"geom_imageref",cbit.vcell.modeldb.GeometryTable.table,cbit.vcell.modeldb.GeometryTable.table.imageRef);
-					createIndex(con,"mathdesc_geomref",cbit.vcell.modeldb.MathDescTable.table,cbit.vcell.modeldb.MathDescTable.table.geometryRef);
-					createIndex(con,"simcstat_simcref",cbit.vcell.modeldb.SimContextStatTable.table,cbit.vcell.modeldb.SimContextStatTable.table.simContextRef);
+					createIndex(con,"grp_grpid",cbit.vcell.modeldb.GroupTable.table,cbit.vcell.modeldb.GroupTable.table.groupid, dbSyntax);
+					createIndex(con,"browse_imgref",cbit.vcell.modeldb.BrowseImageDataTable.table,cbit.vcell.modeldb.BrowseImageDataTable.table.imageRef, dbSyntax);
+					createIndex(con,"geom_extentref",cbit.vcell.modeldb.GeometryTable.table,cbit.vcell.modeldb.GeometryTable.table.extentRef, dbSyntax);
+					createIndex(con,"geom_imageref",cbit.vcell.modeldb.GeometryTable.table,cbit.vcell.modeldb.GeometryTable.table.imageRef, dbSyntax);
+					createIndex(con,"mathdesc_geomref",cbit.vcell.modeldb.MathDescTable.table,cbit.vcell.modeldb.MathDescTable.table.geometryRef, dbSyntax);
+					createIndex(con,"simcstat_simcref",cbit.vcell.modeldb.SimContextStatTable.table,cbit.vcell.modeldb.SimContextStatTable.table.simContextRef, dbSyntax);
 				}
 				con.commit();
 			} catch (SQLException exc) {
@@ -197,12 +204,15 @@ private static void dropSequence(Connection con, KeyFactory keyFactory) throws S
 /**
  * This method was created in VisualAge.
  */
-private static void dropTables(Connection con, Table tables[]) throws SQLException {
+private static void dropTables(Connection con, Table tables[], DatabaseSyntax dbSyntax) throws SQLException {
 	boolean status;
 	PreparedStatement pps = null;
 	for (int i = tables.length-1; i >= 0; i--) {
 		try {
 			String sql = "DROP TABLE " + tables[i].getTableName() + " CASCADE CONSTRAINTS";
+			if (dbSyntax==DatabaseSyntax.POSTGRES){
+				sql = "DROP TABLE IF EXISTS " + tables[i].getTableName() + " CASCADE";
+			}
 			System.out.println(sql);
 			pps = con.prepareStatement(sql);
 			status = pps.execute();
@@ -228,6 +238,14 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.CellTypeTable.table,
 		cbit.vcell.modeldb.StructTable.table,
 		cbit.vcell.modeldb.ReactStepTable.table,
+		cbit.vcell.dictionary.db.ProteinTable.table,
+		cbit.vcell.dictionary.db.ProteinAliasTable.table,
+		cbit.vcell.dictionary.db.CompoundTable.table,
+		cbit.vcell.dictionary.db.CompoundAliasTable.table,
+		cbit.vcell.dictionary.db.EnzymeTable.table,
+		cbit.vcell.dictionary.db.EnzymeAliasTable.table,
+		cbit.vcell.dictionary.db.EnzymeReactionTable.table,
+		cbit.vcell.dictionary.db.DBSpeciesTable.table,
 		cbit.vcell.modeldb.SpeciesTable.table,
 		cbit.vcell.modeldb.SpeciesContextModelTable.table,
 		cbit.vcell.modeldb.ModelStructLinkTable.table,
@@ -240,6 +258,7 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.ImageRegionTable.table,
 		cbit.vcell.modeldb.GeometryTable.table,
 		cbit.vcell.modeldb.SubVolumeTable.table,
+		cbit.vcell.modeldb.SurfaceClassTable.table, // new
 		cbit.vcell.modeldb.MathDescTable.table,
 		cbit.vcell.modeldb.SimContextTable.table,
 		cbit.vcell.modeldb.SpeciesContextSpecTable.table,
@@ -260,20 +279,12 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.AvailableTable.table,
 		cbit.vcell.modeldb.UserStatTable.table,
 		cbit.vcell.modeldb.UserLogTable.table,
-		cbit.vcell.dictionary.db.ProteinTable.table,
-		cbit.vcell.dictionary.db.ProteinAliasTable.table,
-		cbit.vcell.dictionary.db.CompoundTable.table,
-		cbit.vcell.dictionary.db.CompoundAliasTable.table,
-		cbit.vcell.dictionary.db.EnzymeTable.table,
-		cbit.vcell.dictionary.db.EnzymeAliasTable.table,
-		cbit.vcell.dictionary.db.EnzymeReactionTable.table,
 		cbit.vcell.modeldb.SimContextStatTable.table,
 		cbit.vcell.modeldb.SimContextStat2Table.table,
 		cbit.vcell.modeldb.StochtestTable.table,
 		cbit.vcell.modeldb.StochtestRunTable.table,
 		cbit.vcell.modeldb.StochtestCompareTable.table,
-		cbit.vcell.dictionary.db.DBSpeciesTable.table,
-		cbit.vcell.modeldb.ResultSetExportsTable.table,
+		//cbit.vcell.modeldb.ResultSetExportsTable.table, // not used anymore
 		cbit.vcell.messaging.db.SimulationJobTable.table,
 		cbit.vcell.modeldb.BioModelXMLTable.table,
 		cbit.vcell.modeldb.MathModelXMLTable.table,
@@ -297,7 +308,6 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.DataSymbolTable.table, // new
 		cbit.vcell.modeldb.GlobalModelParameterTable.table, // new
 		cbit.vcell.modeldb.MathVerifier.LoadModelsStatTable.table, // new
-		cbit.vcell.modeldb.SurfaceClassTable.table, // new
 		cbit.vcell.modeldb.UserLoginInfoTable.table, // new
 		cbit.vcell.modeldb.VCMetaDataTable.table, // new
 		};
@@ -310,10 +320,13 @@ public static Table[] getVCellTables() {
 public static void main(java.lang.String[] args) {
     //
     try {
+    	final String oracle = "oracle";
+    	final String postgres = "postgres";
+    	final String usage = "\nUsage: ("+oracle+"|"+postgres+") connectUrl schemaUser schemaUserPassword\n";
+    	
         if (args.length != 4) {
-            System.out.println(
-                "Usage: (oracle|mysql) connectUrl schemaUser schemaUserPassword");
-            System.exit(0);
+            System.out.println(usage);
+            System.exit(1);
         }
         String connectURL = args[1];
         String dbSchemaUser = args[2];
@@ -340,7 +353,7 @@ public static void main(java.lang.String[] args) {
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
         new cbit.vcell.resource.PropertyLoader();
-        if (args[0].equalsIgnoreCase("ORACLE")) {
+        if (args[0].equalsIgnoreCase(oracle)) {
             String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(
                     log,
@@ -348,16 +361,19 @@ public static void main(java.lang.String[] args) {
                     connectURL,
                     dbSchemaUser,
                     dbPassword);
-            keyFactory = new OracleKeyFactory();
-//        } else if (args[0].equalsIgnoreCase("MYSQL")) {
-//            conFactory = new MysqlConnectionFactory();
-//            keyFactory = new MysqlKeyFactory();
+        }else if (args[0].equalsIgnoreCase(postgres)){
+            String driverName = "org.postgresql.Driver";
+            conFactory = DatabaseService.getInstance().createConnectionFactory(
+                    log,
+                    driverName,
+                    connectURL,
+                    dbSchemaUser,
+                    dbPassword);
         } else {
-            System.out.println(
-                "Usage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword");
+            System.out.println(usage);
             System.exit(1);
         }
-        destroyAndRecreateTables(log, conFactory, keyFactory);
+        destroyAndRecreateTables(log, conFactory, conFactory.getKeyFactory(), conFactory.getDatabaseSyntax());
     } catch (Throwable e) {
         e.printStackTrace(System.out);
     }

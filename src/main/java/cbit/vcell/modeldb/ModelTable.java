@@ -18,6 +18,7 @@ import java.sql.Statement;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
@@ -28,6 +29,7 @@ import org.vcell.util.document.VersionInfo;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
@@ -44,10 +46,10 @@ public class ModelTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_model";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field unitSystemXML	= new Field("unitSystemXML",	"VARCHAR2(4000)",	"");
+	public final Field unitSystemXML	= new Field("unitSystemXML",	SQLDataType.varchar2_4000,	"");
 	
-	public final Field rbmLarge	= new Field("rbmLRG",	"CLOB",				"");
-	public final Field rbmSmall	= new Field("rbmSML",	"VARCHAR2(4000)",	"");
+	public final Field rbmLarge			= new Field("rbmLRG",			SQLDataType.clob_text,		"");
+	public final Field rbmSmall			= new Field("rbmSML",			SQLDataType.varchar2_4000,	"");
 
 	private final Field fields[] = { unitSystemXML,rbmLarge,rbmSmall };
 	
@@ -76,7 +78,7 @@ public static String getRbmForDatabase(Model model) {
 	}
 	return null;
 }
-public static void readRbmElement(Connection con,Model model) throws SQLException, DataAccessException {
+public static void readRbmElement(Connection con,Model model,DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
 	Statement stmt = null;
 	try{
 		stmt = con.createStatement();
@@ -86,7 +88,7 @@ public static void readRbmElement(Connection con,Model model) throws SQLExceptio
 				" WHERE "+
 				ModelTable.table.id.getUnqualifiedColName()+" = "+model.getVersion().getVersionKey().toString());
 		if(rset.next()){
-			String rbmXMLStr = DbDriver.varchar2_CLOB_get(rset, ModelTable.table.rbmSmall, ModelTable.table.rbmLarge);
+			String rbmXMLStr = DbDriver.varchar2_CLOB_get(rset, ModelTable.table.rbmSmall, ModelTable.table.rbmLarge,dbSyntax);
 			rset.close();
 			if(rbmXMLStr != null){
 				Element rbmElement = XmlUtil.stringToXML(rbmXMLStr, null).getRootElement();

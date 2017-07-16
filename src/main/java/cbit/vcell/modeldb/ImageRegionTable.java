@@ -18,6 +18,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.image.VCPixelClass;
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 
 /**
@@ -27,9 +28,9 @@ public class ImageRegionTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_imageregion";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field regionName 	= new Field("regionName",	"varchar(255)",	"NOT NULL");
-	public final Field imageRef 		= new Field("imageRef",		"integer",		"NOT NULL "+ImageTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field pixelValue	= new Field("pixelValue",	"integer",		"NOT NULL");
+	public final Field regionName 	= new Field("regionName",	SQLDataType.varchar_255,	"NOT NULL");
+	public final Field imageRef 	= new Field("imageRef",		SQLDataType.integer,		"NOT NULL "+ImageTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field pixelValue	= new Field("pixelValue",	SQLDataType.integer,		"NOT NULL");
 	
 	private final Field fields[] = {regionName,imageRef,pixelValue};
 	

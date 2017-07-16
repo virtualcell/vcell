@@ -14,6 +14,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 
 /**
  * Represents a table for storing enzyme names and aliases in a db table
@@ -25,9 +26,9 @@ public class EnzymeAliasTable extends Table {
     public static final String REF_TYPE =
         "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    public final Field enzymeRef =	new Field("enzymeRef", 	"number", 			EnzymeTable.REF_TYPE+" ON DELETE CASCADE NOT NULL");
-    public final Field name = 		new Field("name", 		"varchar2(256)", 	"NOT NULL");
-    public final Field preferred =	new Field("preferred", 	"varchar2(1)", 		"NOT NULL");//'T'rue or 'F'alse
+    public final Field enzymeRef =	new Field("enzymeRef", 	SQLDataType.number_as_integer,	EnzymeTable.REF_TYPE+" ON DELETE CASCADE NOT NULL");
+    public final Field name = 		new Field("name", 		SQLDataType.varchar2_256,	 	"NOT NULL");
+    public final Field preferred =	new Field("preferred", 	SQLDataType.varchar2_1, 		"NOT NULL");//'T'rue or 'F'alse
 
     private final Field fields[] = { enzymeRef, name, preferred };
 

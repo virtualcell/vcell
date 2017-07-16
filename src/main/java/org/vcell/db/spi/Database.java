@@ -7,6 +7,8 @@ import org.vcell.util.SessionLog;
 
 public interface Database extends SciJavaPlugin {
 	
+	String getDriverClassName();
+	
 	ConnectionFactory createConnctionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword);
 
 	KeyFactory createKeyFactory();

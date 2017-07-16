@@ -19,6 +19,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 /**
  * This type was created in VisualAge.
@@ -27,11 +28,11 @@ public class SurfaceDescriptionTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_surfacedesc";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field geometryRef	= new Field("geometryRef",		"integer",	"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field sampleSizeX	= new Field("sampleSizeX",		"integer",	"NOT NULL");
-	public final Field sampleSizeY	= new Field("sampleSizeY",		"integer",	"NOT NULL");
-	public final Field sampleSizeZ	= new Field("sampleSizeZ",		"integer",	"NOT NULL");
-	public final Field filterFreq	= new Field("filterFreq",		"NUMBER",	"NOT NULL");
+	public final Field geometryRef	= new Field("geometryRef",	SQLDataType.integer,		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field sampleSizeX	= new Field("sampleSizeX",	SQLDataType.integer,		"NOT NULL");
+	public final Field sampleSizeY	= new Field("sampleSizeY",	SQLDataType.integer,		"NOT NULL");
+	public final Field sampleSizeZ	= new Field("sampleSizeZ",	SQLDataType.integer,		"NOT NULL");
+	public final Field filterFreq	= new Field("filterFreq",	SQLDataType.number_as_real,	"NOT NULL");
 	
 	private final Field fields[] = {geometryRef,sampleSizeX,sampleSizeY,sampleSizeZ,filterFreq};
 	

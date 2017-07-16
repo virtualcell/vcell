@@ -1,4 +1,4 @@
-package org.vcell.db.oracle;
+package org.vcell.db.postgres;
 
 import java.sql.SQLException;
 
@@ -11,12 +11,12 @@ import org.vcell.util.SessionLog;
 import oracle.ucp.UniversalConnectionPoolException;
 
 @Plugin(type = Database.class)
-public class OraclePoolingConnectionFactoryProvider implements Database {
+public class PostgresConnectionFactoryProvider implements Database {
 
 	@Override
 	public ConnectionFactory createConnctionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) {
 		try {
-			return new OraclePoolingConnectionFactory(sessionLog, argDriverName, argConnectURL, argUserid, argPassword);
+			return new PostgresConnectionFactory(sessionLog, argDriverName, argConnectURL, argUserid, argPassword);
 		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | SQLException 
 				| UniversalConnectionPoolException e) {
 			e.printStackTrace();
@@ -26,12 +26,12 @@ public class OraclePoolingConnectionFactoryProvider implements Database {
 
 	@Override
 	public KeyFactory createKeyFactory() {
-		return new OracleKeyFactory();
+		return new PostgresKeyFactory();
 	}
 
 	@Override
 	public String getDriverClassName() {
-		return "oracle.jdbc.driver.OracleDriver";
+		return "org.postgresql.Driver";
 	}
 
 }

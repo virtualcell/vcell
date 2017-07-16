@@ -121,7 +121,7 @@ public static void main(java.lang.String[] args) {
 		final SessionLog log = new StdoutSessionLog("DatabaseServer");
 		
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
-		KeyFactory	keyFactory = DatabaseService.getInstance().createKeyFactory();
+		KeyFactory keyFactory = conFactory.getKeyFactory();
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 		
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);

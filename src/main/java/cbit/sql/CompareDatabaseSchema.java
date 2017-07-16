@@ -19,6 +19,7 @@ import javax.swing.JFrame;
 
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.SessionLog;
 
@@ -31,7 +32,7 @@ public class CompareDatabaseSchema {
 /**
  * This method was created in VisualAge.
  */
-private static void compareSchemas(SessionLog log, ConnectionFactory conFactory, KeyFactory keyFactory, Table tables[]) throws SQLException {
+private static void compareSchemas(SessionLog log, ConnectionFactory conFactory, KeyFactory keyFactory, Table tables[], DatabaseSyntax dbSyntax) throws SQLException {
 	Connection con = null;
 	Object lock = new Object();
 	try {
@@ -112,12 +113,12 @@ private static void compareSchemas(SessionLog log, ConnectionFactory conFactory,
 					// compare detailed data types (especially strings)
 					//
 					boolean databaseIsVarchar = typeName.startsWith("VARCHAR");
-					boolean vcellIsVarchar = field.getSqlType().toUpperCase().startsWith("VARCHAR");
+					boolean vcellIsVarchar = field.getSqlType(dbSyntax).toUpperCase().startsWith("VARCHAR");
 					if (databaseIsVarchar != vcellIsVarchar){
-						System.out.println("vcell field "+field.getQualifiedColName()+" is of type "+field.getSqlType()+" and database is of type "+typeName);
+						System.out.println("vcell field "+field.getQualifiedColName()+" is of type "+field.getSqlType(dbSyntax)+" and database is of type "+typeName);
 					}
-					if (databaseIsVarchar && vcellIsVarchar && field.getSqlType().indexOf("("+colSize+")")<0){
-						System.out.println("vcell field "+field.getQualifiedColName()+" is of type "+field.getSqlType()+" and database is of type "+typeName+"("+colSize+")");
+					if (databaseIsVarchar && vcellIsVarchar && field.getSqlType(dbSyntax).indexOf("("+colSize+")")<0){
+						System.out.println("vcell field "+field.getQualifiedColName()+" is of type "+field.getSqlType(dbSyntax)+" and database is of type "+typeName+"("+colSize+")");
 					}
 					boolean databaseIsNullable = isNullable.equalsIgnoreCase("yes");
 					boolean vcellIsNullable = (field.getSqlConstraints().toUpperCase().indexOf("NOT NULL")<0) && (field.getSqlConstraints().toUpperCase().indexOf("PRIMARY KEY")<0);
@@ -137,7 +138,7 @@ private static void compareSchemas(SessionLog log, ConnectionFactory conFactory,
 			if (!bTableFound){
 				System.out.println("WARNING: table \""+table.getTableName()+"\" not found in database");
 				System.out.println("suggested SQL to fix it:");
-				System.out.println(table.getCreateSQL());
+				System.out.println(table.getCreateSQL(dbSyntax));
 			}
 
 			if (fieldsNotYetFoundList.size()>0){
@@ -145,7 +146,7 @@ private static void compareSchemas(SessionLog log, ConnectionFactory conFactory,
 				System.out.println("WARNING: table \""+table.getTableName()+"\" has "+fields.length+" columns in VCell software and "+fieldCount+" columns in Database");
 				for (int j = 0; j < fieldsNotYetFoundList.size(); j++){
 					Field field = (Field)fieldsNotYetFoundList.elementAt(j);
-					System.out.println("database didn't contain column: name=\""+field.getUnqualifiedColName()+"\", type=\""+field.getSqlType()+"\", constraints=\""+field.getSqlConstraints()+"\"");
+					System.out.println("database didn't contain column: name=\""+field.getUnqualifiedColName()+"\", type=\""+field.getSqlType(dbSyntax)+"\", constraints=\""+field.getSqlConstraints()+"\"");
 				}
 				System.out.println("suggested SQL to fix it:");
 				System.out.print("ALTER TABLE "+table.getTableName().toUpperCase()+" ADD(");
@@ -154,7 +155,7 @@ private static void compareSchemas(SessionLog log, ConnectionFactory conFactory,
 					if (j>0){
 						System.out.print(",");
 					}
-					System.out.print(field.getUnqualifiedColName().toUpperCase()+" "+field.getSqlType().toUpperCase()+" "+field.getSqlConstraints().toUpperCase());
+					System.out.print(field.getUnqualifiedColName().toUpperCase()+" "+field.getSqlType(dbSyntax).toUpperCase()+" "+field.getSqlConstraints().toUpperCase());
 				}
 				System.out.println(")");
 			}
@@ -173,9 +174,12 @@ private static void compareSchemas(SessionLog log, ConnectionFactory conFactory,
 public static void main(java.lang.String[] args) {
     //
     try {
-        if (args.length != 4) {
-            System.out.println(
-                "Usage: (oracle|mysql) connectURL schemaUser schemaUserPassword");
+    	final String oracle = "oracle";
+    	final String postgres = "postgres";
+    	final String usage = "Usage: ("+oracle+"|"+postgres+") connectURL schemaUser schemaUserPassword";
+    	
+        if (args.length != 4 || (!args[0].equalsIgnoreCase(oracle) && !args[0].equalsIgnoreCase(postgres))) {
+            System.out.println(usage);
             System.exit(0);
         }
         String connectURL = args[1];
@@ -207,7 +211,9 @@ public static void main(java.lang.String[] args) {
         //
         // get appropriate database factory objects
         //
-        if (args[0].equalsIgnoreCase("ORACLE")) {
+        DatabaseSyntax dbSyntax = null;
+        if (args[0].equalsIgnoreCase(oracle)) {
+        	dbSyntax = DatabaseSyntax.ORACLE;
             String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(
                     log,
@@ -215,21 +221,27 @@ public static void main(java.lang.String[] args) {
                     connectURL,
                     dbSchemaUser,
                     dbPassword);
-            keyFactory = DatabaseService.getInstance().createKeyFactory();
-//        } else if (args[0].equalsIgnoreCase("MYSQL")) {
-//                conFactory = new MysqlConnectionFactory();
-//                keyFactory = new MysqlKeyFactory();
+            keyFactory = conFactory.getKeyFactory();
+        } else if (args[0].equalsIgnoreCase(postgres)) {
+        	dbSyntax = DatabaseSyntax.POSTGRES;
+            String driverName = "org.postgresql.Driver";
+            conFactory = DatabaseService.getInstance().createConnectionFactory(
+                    log,
+                    driverName,
+                    connectURL,
+                    dbSchemaUser,
+                    dbPassword);
+            keyFactory = conFactory.getKeyFactory();
         } else {
-                System.out.println(
-                    "Usage: (oracle|mysql) host databaseSID schemaUser schemaUserPassword");
+                System.out.println(usage);
                 System.exit(1);
-            }
+        }
 
         //
         // compare with VCell Software 'tables'
         //
 		Table tables[] = SQLCreateAllTables.getVCellTables();
-        compareSchemas(log, conFactory, keyFactory, tables);
+        compareSchemas(log, conFactory, keyFactory, tables, dbSyntax);
     } catch (Throwable e) {
         e.printStackTrace(System.out);
     }

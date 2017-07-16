@@ -18,6 +18,8 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Vector;
 
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -75,8 +77,8 @@ public class GeomDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public GeomDbDriver(SessionLog sessionLog) {
-	super(sessionLog);
+public GeomDbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory, SessionLog sessionLog) {
+	super(dbSyntax,keyFactory,sessionLog);
 }
 
 
@@ -248,9 +250,9 @@ private void getFilaments(Connection con, Geometry geom) throws SQLException, Da
 		while(rset.next()){
 			String filColName = filamentTable.filamentName.toString();
 			String filamentType = rset.getString(filColName);
-			String curveColName = curveTable.curveData.toString();
+			Field curveCol = curveTable.curveData;
 			//Curve curve = CurveTable.decodeCurve(new String(rset.getBytes(curveColName)));
-			String curveString = (String) DbDriver.getLOB(rset,curveColName);
+			String curveString = (String) DbDriver.getLOB(rset,curveCol,dbSyntax);
 			Curve curve = CurveTable.decodeCurve(curveString);
 			//
 			geom.getGeometrySpec().getFilamentGroup().addCurve(filamentType,curve);
@@ -808,7 +810,7 @@ private VCImage getVCImage(QueryHashtable dbc, Connection con, User user, KeyVal
 	ResultSet rset = stmt.executeQuery(sql);
 	
 		if (rset.next()) {
-			vcImage = imageTable.getImage(rset,con,log,imageDataTable);
+			vcImage = imageTable.getImage(rset,con,log,imageDataTable,dbSyntax);
 			getImageRegionsForVCImage(dbc, con, vcImage);
 		}else{
 			throw new ObjectNotFoundException("Image id="+imageKey+" not found for user '"+user+"'");
@@ -859,7 +861,7 @@ private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue ima
 	String sql;
 	sql = "INSERT INTO " + browseImageDataTable.getTableName() + " " + 
 		browseImageDataTable.getSQLColumnList() + " VALUES " + 
-		browseImageDataTable.getSQLValueList(key, imageKey);
+		browseImageDataTable.getSQLValueList(key, imageKey, dbSyntax);
 	//	System.out.println(sql);
 
 	byte[] gifEncodedImage = null;
@@ -887,8 +889,8 @@ private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue ima
 	updateCleanSQL(con,sql);
 	updateCleanLOB(	con,browseImageDataTable.id.toString(),key,
 					browseImageDataTable.tableName,
-					browseImageDataTable.data.getUnqualifiedColName(),
-					gifEncodedImage);
+					browseImageDataTable.data,
+					gifEncodedImage,dbSyntax);
 	/*
 	PreparedStatement pps;
 	pps = con.prepareStatement(sql);
@@ -929,7 +931,7 @@ private void insertFilamentsSQL(Connection con, Geometry geom, KeyValue geomKey)
 	String sql;
 	Filament[] filaments = geom.getGeometrySpec().getFilamentGroup().getFilaments();
 	for (int i = 0; i < filaments.length; i++) { //Iterate through Filaments
-		KeyValue newFilamentKey = getNewKey(con);
+		KeyValue newFilamentKey = keyFactory.getNewKey(con);
 		//
 		//Insert Filament
 		//
@@ -942,15 +944,15 @@ private void insertFilamentsSQL(Connection con, Geometry geom, KeyValue geomKey)
 		//
 		Curve[] curves = currentFilament.getCurves();
 		for (int j = 0; j < curves.length; j += 1) {
-			KeyValue newCurveKey = getNewKey(con);
+			KeyValue newCurveKey = keyFactory.getNewKey(con);
 			sql = 	"INSERT INTO " + curveTable.getTableName() + " " + curveTable.getSQLColumnList() + 
-					" VALUES " + curveTable.getSQLValueList(newCurveKey,newFilamentKey);
+					" VALUES " + curveTable.getSQLValueList(newCurveKey,newFilamentKey,dbSyntax);
 			//
 			updateCleanSQL(con,sql);
 			updateCleanLOB(	con,curveTable.id.toString(),newCurveKey,
 					curveTable.tableName,
-					curveTable.curveData.getUnqualifiedColName(),
-					CurveTable.encodeCurve(curves[j]));
+					curveTable.curveData,
+					CurveTable.encodeCurve(curves[j]),dbSyntax);
 			/*
 			PreparedStatement pps = con.prepareStatement(sql);
 			try {
@@ -1004,7 +1006,7 @@ private void insertGeometry(InsertHashtable hash, QueryHashtable dbc, Connection
 	}
 	//
 	if (extentKey == null) {
-		extentKey = getNewKey(con);
+		extentKey = keyFactory.getNewKey(con);
 		insertExtentSQL(con, extentKey, geometrySpec.getExtent().getX(), geometrySpec.getExtent().getY(), geometrySpec.getExtent().getZ());
 	}
 	//
@@ -1039,7 +1041,7 @@ private void insertSurfaceClassesSQL(InsertHashtable hash, Connection con, Geome
 	for (int i=0;i<surfaceClasses.length;i++){
 		SurfaceClass surfaceClass = surfaceClasses[i];
 		if (hash.getDatabaseKey(surfaceClass)==null){
-			KeyValue newSurfaceClassKey = getNewKey(con);
+			KeyValue newSurfaceClassKey = keyFactory.getNewKey(con);
 			String sql = "INSERT INTO " + SurfaceClassTable.table.getTableName() + " " + SurfaceClassTable.table.getSQLColumnList() + 
 				" VALUES " + SurfaceClassTable.table.getSQLValueList(hash,newSurfaceClassKey, geom, surfaceClass,geomKey);
 	//System.out.println(sql);
@@ -1056,7 +1058,7 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 							throws SQLException,DataAccessException {
 	String sql;
 	Object[] o = {imageKey,geom,sizeKey};
-	sql = DatabasePolicySQL.enforceOwnershipInsert(user,geomTable,o,version);
+	sql = DatabasePolicySQL.enforceOwnershipInsert(user,geomTable,o,version,dbSyntax);
 //System.out.println(sql);
 	updateCleanSQL(con,sql);
 }
@@ -1075,7 +1077,7 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 	//
 	// store GeometrySurfaceDescription (sampleSize and filterFrequency for now)
 	//
-	KeyValue newGeomSurfDescKey = getNewKey(con);
+	KeyValue newGeomSurfDescKey = keyFactory.getNewKey(con);
 	sql = "INSERT INTO " + geoSurfaceTable.getTableName() + " " + geoSurfaceTable.getSQLColumnList() +
 		" VALUES " + geoSurfaceTable.getSQLValueList(newGeomSurfDescKey,geoSurfaceDescription,geomKey);
 //System.out.println(sql);
@@ -1105,7 +1107,7 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 		if (regions[i] instanceof VolumeGeometricRegion){
 			VolumeGeometricRegion volumeRegion = (VolumeGeometricRegion)regions[i];
 			if (hash.getDatabaseKey(volumeRegion)==null){
-				KeyValue newVolumeRegionKey = getNewKey(con);
+				KeyValue newVolumeRegionKey = keyFactory.getNewKey(con);
 				KeyValue subvolumeKey = hash.getDatabaseKey(volumeRegion.getSubVolume());
 				sql = "INSERT INTO " + geoRegionTable.getTableName() + " " + geoRegionTable.getSQLColumnList() + 
 					" VALUES " + geoRegionTable.getSQLValueList(newVolumeRegionKey,volumeRegion,subvolumeKey,geomKey);
@@ -1122,7 +1124,7 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 		if (regions[i] instanceof SurfaceGeometricRegion){
 			SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)regions[i];
 			if (hash.getDatabaseKey(surfaceRegion)==null){
-				KeyValue newSurfaceRegionKey = getNewKey(con);
+				KeyValue newSurfaceRegionKey = keyFactory.getNewKey(con);
 				KeyValue volumeRegion1Key = hash.getDatabaseKey((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0]);
 				KeyValue volumeRegion2Key = hash.getDatabaseKey((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]);
 				sql = "INSERT INTO " + geoRegionTable.getTableName() + " " + geoRegionTable.getSQLColumnList() + 
@@ -1145,13 +1147,13 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 private void insertImageDataSQL(Connection con, KeyValue key, KeyValue imageKey, VCImage image) throws SQLException, DataAccessException,ImageException {
 	String sql;
 	sql = "INSERT INTO " + imageDataTable.getTableName() + " " + imageDataTable.getSQLColumnList() + " VALUES " + 
-		imageDataTable.getSQLValueList(key, imageKey);
+		imageDataTable.getSQLValueList(key, imageKey, dbSyntax);
 //System.out.println(sql);
 	updateCleanSQL(con,sql);
 	updateCleanLOB(	con,imageDataTable.id.toString(),key,
 			imageDataTable.tableName,
-			imageDataTable.data.getUnqualifiedColName(),
-			image.getPixelsCompressed());
+			imageDataTable.data,
+			image.getPixelsCompressed(), dbSyntax);
 	/*
 	PreparedStatement pps;
 	pps = con.prepareStatement(sql);
@@ -1176,7 +1178,7 @@ private void insertImageSQL(Connection con, VCImage image, KeyValue keySizeRef,V
 
 	String sql;
 	Object[] o = {image, keySizeRef};
-	sql = DatabasePolicySQL.enforceOwnershipInsert(user,imageTable,o,version);
+	sql = DatabasePolicySQL.enforceOwnershipInsert(user,imageTable,o,version,dbSyntax);
 //System.out.println(sql);
 
 	updateCleanSQL(con,sql);
@@ -1213,7 +1215,7 @@ private void insertSubVolumesSQL(InsertHashtable hash, Connection con, Geometry 
 	for (int i=0;i<subVolumes.length;i++){
 		SubVolume sv = (SubVolume) subVolumes[i];
 		if (hash.getDatabaseKey(sv)==null){
-			KeyValue newSVKey = getNewKey(con);
+			KeyValue newSVKey = keyFactory.getNewKey(con);
 			sql = "INSERT INTO " + subVolumeTable.getTableName() + " " + subVolumeTable.getSQLColumnList() + 
 				" VALUES " + subVolumeTable.getSQLValueList(hash,newSVKey, geom, sv,geomKey, ordinal);
 	//System.out.println(sql);
@@ -1235,10 +1237,10 @@ private void insertVCImage(InsertHashtable hash, Connection con, User user,VCIma
 				throws ImageException, DataAccessException, SQLException {
 
 	//Connection con = conFact.getConnection();
-	//KeyValue imageKey = getNewKey(con);
-	KeyValue keySizeRef = getNewKey(con);
-	KeyValue imageDataKey = getNewKey(con);
-	KeyValue browseImageKey = getNewKey(con);
+	//KeyValue imageKey = keyFactory.getNewKey(con);
+	KeyValue keySizeRef = keyFactory.getNewKey(con);
+	KeyValue imageDataKey = keyFactory.getNewKey(con);
+	KeyValue browseImageKey = keyFactory.getNewKey(con);
 	insertExtentSQL(con, keySizeRef, image.getExtent().getX(), image.getExtent().getY(), image.getExtent().getZ());
 	insertImageSQL(con, image, keySizeRef, newVersion,user);
 	insertImageDataSQL(con, imageDataKey, newVersion.getVersionKey()/*imageKey*/, image);
@@ -1250,7 +1252,7 @@ private void insertVCImage(InsertHashtable hash, Connection con, User user,VCIma
 	}
 	VCPixelClass vcPixelClasses[] = image.getPixelClasses();
 	for (int i = 0; i < vcPixelClasses.length; i++){
-		KeyValue keyPixelClass = getNewKey(con);
+		KeyValue keyPixelClass = keyFactory.getNewKey(con);
 		insertPixelClassSQL(con, keyPixelClass, newVersion.getVersionKey()/*imageKey*/, vcPixelClasses[i]);
 		hash.put(vcPixelClasses[i],keyPixelClass);
 	}

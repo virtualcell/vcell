@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.jdom.Element;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -29,6 +30,7 @@ import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
@@ -54,13 +56,13 @@ public class SimContextTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_simcontext";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field mathRef 		= new Field("mathRef",		"integer",	MathDescTable.REF_TYPE);
-	public final Field modelRef 		= new Field("modelRef",		"integer",	"NOT NULL "+ModelTable.REF_TYPE);
-	public final Field geometryRef 	= new Field("geometryRef",	"integer",	"NOT NULL "+GeometryTable.REF_TYPE);
-	public final Field charSize		= new Field("charSize",		"NUMBER",	"");
+	public final Field mathRef 				= new Field("mathRef",		SQLDataType.integer,			MathDescTable.REF_TYPE);
+	public final Field modelRef 			= new Field("modelRef",		SQLDataType.integer,			"NOT NULL "+ModelTable.REF_TYPE);
+	public final Field geometryRef 			= new Field("geometryRef",	SQLDataType.integer,			"NOT NULL "+GeometryTable.REF_TYPE);
+	public final Field charSize				= new Field("charSize",		SQLDataType.number_as_real,		"");
 
-	public final Field appComponentsLarge	= new Field("appComponentsLRG",	"CLOB",				"");
-	public final Field appComponentsSmall	= new Field("appComponentsSML",	"VARCHAR2(4000)",	"");
+	public final Field appComponentsLarge	= new Field("appComponentsLRG",	SQLDataType.clob_text,		"");
+	public final Field appComponentsSmall	= new Field("appComponentsSML",	SQLDataType.varchar2_4000,	"");
 
 	private final Field fields[] = {mathRef,modelRef,geometryRef,charSize, appComponentsLarge, appComponentsSmall};
 	
@@ -334,7 +336,7 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
  * @throws SQLException
  * @throws DataAccessException
  */
-private Element getAppComponentsElement(Connection con, KeyValue simContextRef) throws SQLException, DataAccessException {
+private Element getAppComponentsElement(Connection con, KeyValue simContextRef, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
 	Statement stmt = null;
 	stmt = con.createStatement();
 	ResultSet rset =
@@ -346,7 +348,7 @@ private Element getAppComponentsElement(Connection con, KeyValue simContextRef) 
 	if(!rset.next()){
 		return null;
 	}
-	String appComponentsXMLStr = DbDriver.varchar2_CLOB_get(rset, SimContextTable.table.appComponentsSmall, SimContextTable.table.appComponentsLarge);
+	String appComponentsXMLStr = DbDriver.varchar2_CLOB_get(rset, SimContextTable.table.appComponentsSmall, SimContextTable.table.appComponentsLarge, dbSyntax);
 	rset.close();
 	if(appComponentsXMLStr == null){
 		return null;
@@ -366,10 +368,10 @@ private Element getAppComponentsElement(Connection con, KeyValue simContextRef) 
  * @throws DataAccessException
  * @throws PropertyVetoException 
  */
-public void readAppComponents(Connection con, SimulationContext simContext) throws SQLException, DataAccessException, PropertyVetoException {
+public void readAppComponents(Connection con, SimulationContext simContext, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException, PropertyVetoException {
 	
 	try {
-		Element appComponentsElement = getAppComponentsElement(con, simContext.getVersion().getVersionKey());
+		Element appComponentsElement = getAppComponentsElement(con, simContext.getVersion().getVersionKey(), dbSyntax);
 		if (appComponentsElement != null) {
 			Element appRelatedFlags = appComponentsElement.getChild(XMLTags.ApplicationSpecificFlagsTag);
 			if (appRelatedFlags != null) {

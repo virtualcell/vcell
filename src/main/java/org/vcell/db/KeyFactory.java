@@ -18,6 +18,10 @@ public interface KeyFactory {
 	
 	String getDestroySQL();
 	
+	String nextSEQ();
+	
+	String currSEQ();
+	
 	KeyValue getNewKey(java.sql.Connection con) throws java.sql.SQLException;
 	
 	java.math.BigDecimal getUniqueBigDecimal(java.sql.Connection con) throws java.sql.SQLException;

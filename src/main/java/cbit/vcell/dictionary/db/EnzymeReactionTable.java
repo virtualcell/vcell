@@ -16,6 +16,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.EnzymeInfo;
@@ -34,13 +35,13 @@ public class EnzymeReactionTable extends Table {
     public static final String REF_TYPE =
         "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
         
-    public final Field reactionId = 	new Field("reactionId", 	"varchar2(32)",	"NOT NULL");
-    public final Field enzymeRef = 		new Field("enzymeRef", 		"number",		EnzymeTable.REF_TYPE+" ON DELETE CASCADE");
+    public final Field reactionId = 	new Field("reactionId", 	SQLDataType.varchar2_32,			"NOT NULL");
+    public final Field enzymeRef = 		new Field("enzymeRef", 		SQLDataType.number_as_integer,		EnzymeTable.REF_TYPE+" ON DELETE CASCADE");
     //
-    public final Field compoundRef = 	new Field("compoundRef", 	"number",		CompoundTable.REF_TYPE+" ON DELETE CASCADE NOT NULL");
-    public final Field type = 			new Field("type", 			"varchar2(1)",	"NOT NULL"); // "R(reactant)","P(product)"
-    public final Field stoich = 		new Field("stoich", 		"number",		"NOT NULL");
-    public final Field parsedECNumber = new Field("parsedECNumber", "varchar2(32)",	"");
+    public final Field compoundRef = 	new Field("compoundRef", 	SQLDataType.number_as_integer,		CompoundTable.REF_TYPE+" ON DELETE CASCADE NOT NULL");
+    public final Field type = 			new Field("type", 			SQLDataType.varchar2_1,				"NOT NULL"); // "R(reactant)","P(product)"
+    public final Field stoich = 		new Field("stoich", 		SQLDataType.number_as_integer,		"NOT NULL");
+    public final Field parsedECNumber = new Field("parsedECNumber", SQLDataType.varchar2_32,			"");
     
     private final Field fields[] = {reactionId, enzymeRef, compoundRef, type, stoich,parsedECNumber};
 

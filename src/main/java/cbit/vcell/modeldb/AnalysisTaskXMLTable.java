@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -18,9 +19,9 @@ public class AnalysisTaskXMLTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_analysisTask";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field simContextRef =	new Field("simContextRef",		"integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field analysisTaskXML =	new Field("analysisTaskXML",	"CLOB",	"NOT NULL");
-	public final Field insertDate =		new Field("insertDate","DATE","NOT NULL");
+	public final Field simContextRef =		new Field("simContextRef",		SQLDataType.integer,	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field analysisTaskXML =	new Field("analysisTaskXML",	SQLDataType.clob_text,	"NOT NULL");
+	public final Field insertDate =			new Field("insertDate",			SQLDataType.date,		"NOT NULL");
 	
 	private final Field fields[] = {simContextRef,analysisTaskXML,insertDate};
 	

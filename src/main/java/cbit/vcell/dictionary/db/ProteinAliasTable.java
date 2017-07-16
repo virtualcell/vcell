@@ -15,6 +15,7 @@ import org.vcell.util.document.KeyValue;
 //import cbit.vcell.server.DataAccessException;
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 
 /**
  * Represents a table for storing Protein names and aliases in a db table
@@ -26,9 +27,9 @@ public class ProteinAliasTable extends Table {
     public static final String REF_TYPE =
         "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    public final Field proteinRef = new Field("proteinRef", "number", 		ProteinTable.REF_TYPE+" ON DELETE CASCADE NOT NULL");
-    public final Field name = 		new Field("name", 		"varchar2(256)", "NOT NULL");
-    public final Field preferred = 	new Field("preferred", 	"varchar2(1)", 	"NOT NULL");//'T'rue or 'F'alse
+    public final Field proteinRef = new Field("proteinRef", SQLDataType.number_as_integer, 	ProteinTable.REF_TYPE+" ON DELETE CASCADE NOT NULL");
+    public final Field name = 		new Field("name", 		SQLDataType.varchar2_256, 		"NOT NULL");
+    public final Field preferred = 	new Field("preferred", 	SQLDataType.varchar2_1, 		"NOT NULL");//'T'rue or 'F'alse
 
     private final Field fields[] = { proteinRef, name, preferred};
 

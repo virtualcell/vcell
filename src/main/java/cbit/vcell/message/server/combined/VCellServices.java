@@ -61,7 +61,6 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.message.server.sim.HtcSimulationWorker;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.LibraryLoaderThread;
@@ -236,9 +235,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				new LifeSignThread(log,lifeSignMessageInterval_MS).start();
 			}
 
-			KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
-			DbDriver.setKeyFactory(keyFactory);
 			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+			KeyFactory keyFactory = conFactory.getKeyFactory();
 			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
 			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true, log);

@@ -19,6 +19,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -27,11 +28,13 @@ public class ExternalDataTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_externaldata";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    private static final String[] fieldDataTableConstraint = new String[] {"own_fdn_unique UNIQUE("+VersionTable.ownerRef_ColumnName+",externaldataname)"};
+    private static final String[] fieldDataTableConstraintOracle = new String[] {"own_fdn_unique UNIQUE("+VersionTable.ownerRef_ColumnName+",externaldataname)"};
 
-    public final Field ownerRef 		= new Field(VersionTable.ownerRef_ColumnName,	"integer",		"NOT NULL " + UserTable.REF_TYPE);
-	public final Field externalDataName	= new Field("externaldataname",					"varchar(255)",	"NOT NULL");
-	public final Field annotation		= new Field("annotation",						"varchar(1024)","");
+    private static final String[] fieldDataTableConstraintPostgres = new String[] {"own_fdn_unique UNIQUE("+VersionTable.ownerRef_ColumnName+",externaldataname)"};
+
+    public final Field ownerRef 		= new Field(VersionTable.ownerRef_ColumnName,	SQLDataType.integer,		"NOT NULL " + UserTable.REF_TYPE);
+	public final Field externalDataName	= new Field("externaldataname",					SQLDataType.varchar_255,	"NOT NULL");
+	public final Field annotation		= new Field("annotation",						SQLDataType.varchar_1024,	"");
 	
 	private final Field fields[] = {ownerRef, externalDataName,annotation};
 	    			
@@ -41,7 +44,7 @@ public class ExternalDataTable extends cbit.sql.Table {
  * ModelTable constructor comment.
  */
 private ExternalDataTable() {
-	super(TABLE_NAME,fieldDataTableConstraint);
+	super(TABLE_NAME,fieldDataTableConstraintOracle,fieldDataTableConstraintPostgres);
 	addFields(fields);
 }
 

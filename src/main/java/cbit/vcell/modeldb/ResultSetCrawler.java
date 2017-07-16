@@ -108,8 +108,7 @@ public class ResultSetCrawler {
 			// initialize database
 			SessionLog log = new cbit.vcell.resource.StdoutSessionLog("ResultSetCrawler");		
 			conFactory = DatabaseService.getInstance().createConnectionFactory(log);
-			KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
-			DbDriver.setKeyFactory(keyFactory);
+			KeyFactory keyFactory = conFactory.getKeyFactory();
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
 			DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
 			

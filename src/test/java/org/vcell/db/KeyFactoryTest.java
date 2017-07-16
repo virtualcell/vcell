@@ -59,24 +59,15 @@ public static void main(String args[]) {
 	Connection con = null;
 	Object lock = new Object();
 	try {
-		if (args.length != 1){
-			System.out.println("usage: KeyFactoryTest (oracle|mysql)");
+		if (args.length != 0){
+			System.out.println("usage: KeyFactoryTest");
 			System.exit(1);
 		}
 
 		new cbit.vcell.resource.PropertyLoader();
 		
-		KeyFactory keyFactory = null;
-		if (args[0].equalsIgnoreCase("ORACLE")){
-			conFactory = DatabaseService.getInstance().createConnectionFactory(new StdoutSessionLog("KeyFactoryTest"));
-			keyFactory = DatabaseService.getInstance().createKeyFactory();
-//		}else if (args[0].equalsIgnoreCase("MYSQL")){
-//			conFactory = new MysqlConnectionFactory();
-//			keyFactory = new MysqlKeyFactory();
-		}else{
-			System.out.println("usage: KeyFactoryTest (oracle|mysql)");
-			System.exit(1);
-		}
+		conFactory = DatabaseService.getInstance().createConnectionFactory(new StdoutSessionLog("KeyFactoryTest"));
+		KeyFactory keyFactory = conFactory.getKeyFactory();
 		
 		con = conFactory.getConnection(lock);
 

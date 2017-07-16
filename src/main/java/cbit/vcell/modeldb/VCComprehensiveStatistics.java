@@ -90,8 +90,7 @@ public class VCComprehensiveStatistics {
 		
 		SessionLog sessionLog = new StdoutSessionLog("VCComprehensiveStatistics");
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
-		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
-		DbDriver.setKeyFactory(keyFactory);
+		KeyFactory keyFactory = conFactory.getKeyFactory();
 		
 		localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory, sessionLog);
 		dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,sessionLog);

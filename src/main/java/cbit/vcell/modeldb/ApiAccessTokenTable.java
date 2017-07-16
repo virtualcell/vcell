@@ -20,6 +20,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 /**
@@ -29,12 +30,12 @@ public class ApiAccessTokenTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_apiaccesstoken";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field accesstoken		= new Field("accesstoken",	"varchar(255)",	"NOT NULL");
-	public final Field clientRef 		= new Field("clientRef",	"integer",		"NOT NULL "+ApiClientTable.REF_TYPE);
-	public final Field userref			= new Field("userRef",		"integer",		"NOT NULL "+UserTable.REF_TYPE);
-	public final Field creationDate		= new Field("creationDate",	"date",			"NOT NULL");
-	public final Field expireDate		= new Field("expireDate",	"date",			"NOT NULL");
-	public final Field status			= new Field("status",		"varchar(20)",	"");  // does not cover the case of an expired token
+	public final Field accesstoken		= new Field("accesstoken",	SQLDataType.varchar_255,	"NOT NULL");
+	public final Field clientRef 		= new Field("clientRef",	SQLDataType.integer,		"NOT NULL "+ApiClientTable.REF_TYPE);
+	public final Field userref			= new Field("userRef",		SQLDataType.integer,		"NOT NULL "+UserTable.REF_TYPE);
+	public final Field creationDate		= new Field("creationDate",	SQLDataType.date,			"NOT NULL");
+	public final Field expireDate		= new Field("expireDate",	SQLDataType.date,			"NOT NULL");
+	public final Field status			= new Field("status",		SQLDataType.varchar_20,		"");  // does not cover the case of an expired token
 
 	private final Field fields[] = {accesstoken,clientRef,userref,creationDate,expireDate,status};
 	

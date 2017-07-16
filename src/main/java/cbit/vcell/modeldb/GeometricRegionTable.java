@@ -15,6 +15,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
@@ -30,21 +31,21 @@ public class GeometricRegionTable extends cbit.sql.Table {
 	public static final String VOLUME1_NAME_COLUMN = "volume1Name";
 	public static final String VOLUME2_NAME_COLUMN = "volume2Name";
 
-	public final Field name			= new Field("name",				"VARCHAR(255)",	"NOT NULL");
-	public final Field type			= new Field("regiontype",		"integer",		"NOT NULL");
-	public final Field geometryRef	= new Field("geometryRef",		"integer",		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field size			= new Field("regionSize",		"NUMBER",		"NOT NULL");
-	public final Field sizeUnit		= new Field("sizeUnit",			"VARCHAR(50)",	"NOT NULL");
+	public final Field name			= new Field("name",				SQLDataType.varchar_255,	"NOT NULL");
+	public final Field type			= new Field("regiontype",		SQLDataType.integer,		"NOT NULL");
+	public final Field geometryRef	= new Field("geometryRef",		SQLDataType.integer,		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field size			= new Field("regionSize",		SQLDataType.number_as_real,	"NOT NULL");
+	public final Field sizeUnit		= new Field("sizeUnit",			SQLDataType.varchar_50,		"NOT NULL");
 	//
 	// for membraneGeometryRegions
 	//
-	public final Field volRegion1	= new Field("volRegion1",		"integer",		GeometricRegionTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field volRegion2	= new Field("volRegion2",		"integer",		GeometricRegionTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field volRegion1	= new Field("volRegion1",		SQLDataType.integer,		GeometricRegionTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field volRegion2	= new Field("volRegion2",		SQLDataType.integer,		GeometricRegionTable.REF_TYPE+" ON DELETE CASCADE");
 	//
 	// for volumeGeometryRegions:
 	//
-	public final Field regionID		= new Field("regionID",			"integer",		"");
-	public final Field subVolumeRef	= new Field("subvolumeRef",		"integer",		SubVolumeTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field regionID		= new Field("regionID",			SQLDataType.integer,		"");
+	public final Field subVolumeRef	= new Field("subvolumeRef",		SQLDataType.integer,		SubVolumeTable.REF_TYPE+" ON DELETE CASCADE");
 	
 	private final Field fields[] = {name,type,geometryRef,size,sizeUnit,volRegion1,volRegion2,regionID,subVolumeRef};
 	

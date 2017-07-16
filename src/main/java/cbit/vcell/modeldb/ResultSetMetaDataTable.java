@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 
 /**
@@ -22,11 +23,11 @@ public class ResultSetMetaDataTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_rsetMetaData";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	private final Field simRef 		= new Field("simRef",		"integer",		"UNIQUE NOT NULL "+SimulationTable.REF_TYPE+" ON DELETE CASCADE");
-	private final Field startDate	= new Field("startDate",	"date",			"NOT NULL");
-	private final Field endDate		= new Field("endDate",		"date",			"");
-	private final Field dataFilePath	= new Field("dataFilePath",	"varchar(255)",	"NOT NULL");
-	private final Field jobIndex		= new Field("jobIndex",		"integer",		"");	
+	private final Field simRef 			= new Field("simRef",		SQLDataType.integer,		"UNIQUE NOT NULL "+SimulationTable.REF_TYPE+" ON DELETE CASCADE");
+	private final Field startDate		= new Field("startDate",	SQLDataType.date,			"NOT NULL");
+	private final Field endDate			= new Field("endDate",		SQLDataType.date,			"");
+	private final Field dataFilePath	= new Field("dataFilePath",	SQLDataType.varchar_255,	"NOT NULL");
+	private final Field jobIndex		= new Field("jobIndex",		SQLDataType.integer,		"");	
 	
 
 	private final Field fields[] = {simRef,startDate,endDate,dataFilePath,jobIndex};

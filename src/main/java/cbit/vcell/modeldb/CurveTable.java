@@ -10,11 +10,13 @@
 
 package cbit.vcell.modeldb;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.geometry.ControlPointCurve;
 /**
@@ -25,8 +27,8 @@ public class CurveTable extends cbit.sql.Table {
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
 	//public final Field curveData 	= new Field("curveData",	"long raw",		"NOT NULL");
-	public final Field curveData 	= new Field("curveData",	"CLOB",		"NOT NULL");
-	public final Field filamentRef	= new Field("filamentRef",	"integer",		"NOT NULL "+FilamentTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field curveData 	= new Field("curveData",	SQLDataType.clob_text,		"NOT NULL");
+	public final Field filamentRef	= new Field("filamentRef",	SQLDataType.integer,		"NOT NULL "+FilamentTable.REF_TYPE+" ON DELETE CASCADE");
 	
 	private final Field fields[] = {curveData,filamentRef};
 	
@@ -126,14 +128,24 @@ public static String encodeCurve(cbit.vcell.geometry.Curve curve) {
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(KeyValue key,KeyValue filamentKey) throws DataAccessException {
-
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("(");
-	buffer.append(key + ",");
-	buffer.append("EMPTY_CLOB()" + ",");
-	buffer.append(filamentKey + ")");
-	
-	return buffer.toString();
+public String getSQLValueList(KeyValue key,KeyValue filamentKey,DatabaseSyntax dbSyntax) throws DataAccessException {
+	switch (dbSyntax){
+	case ORACLE:{
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(key + ",");
+		buffer.append("EMPTY_CLOB()" + ",");
+		buffer.append(filamentKey + ")");
+		
+		return buffer.toString();
+	}
+	case POSTGRES:{
+		// TODO: POSTGRES
+		throw new RuntimeException("CurveTable.getSQLValueList() not yet implemented for Postgres");
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 }

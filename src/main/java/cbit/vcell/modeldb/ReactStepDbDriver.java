@@ -17,6 +17,8 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -50,15 +52,15 @@ public class ReactStepDbDriver extends DbDriver {
 	public static final SpeciesContextModelTable speciesContextTable = SpeciesContextModelTable.table;
 	public static final SpeciesTable speciesTable = SpeciesTable.table;
 	public static final ModelStructLinkTable modelStructLinkTable = ModelStructLinkTable.table;
-	private ModelDbDriver modelDB = null;
-	private DictionaryDbDriver dictDB = null;
+	private ModelDbDriver modelDB = null; // is assigned after constructor using init()
+	private final DictionaryDbDriver dictDB;
 
 	
 	/**
  * LocalDBManager constructor comment.
  */
-public ReactStepDbDriver(ModelDbDriver modelDB, SessionLog sessionLog,DictionaryDbDriver argDictDB) {
-	super(sessionLog);
+public ReactStepDbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory, ModelDbDriver modelDB, SessionLog sessionLog,DictionaryDbDriver argDictDB) {
+	super(dbSyntax, keyFactory, sessionLog);
 	this.modelDB = modelDB;
 	this.dictDB = argDictDB;
 }
@@ -298,7 +300,7 @@ private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultS
 	KeyValue structKey = new KeyValue(rset.getBigDecimal(ReactStepTable.table.structRef.toString()));
 	
 	Structure structure = getStructure(dbc, con, structKey);
-	rs = reactStepTable.getReactionStep(structure, model, rsKey, rset, log);
+	rs = reactStepTable.getReactionStep(structure, model, rsKey, rset, log,dbSyntax);
 
 	//
 	// add reaction participants for this reactionStep
@@ -865,7 +867,7 @@ KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, Rea
 	//
 	// insert reactionStep
 	//
-	KeyValue rsKey = getNewKey(con);
+	KeyValue rsKey = keyFactory.getNewKey(con);
 	insertReactionStepSQL(con,modelKey,hash.getDatabaseKey(structure),reactionStep,rsKey);
 
 	//
@@ -873,7 +875,7 @@ KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, Rea
 	//
 	ReactionParticipant react_participants[] = reactionStep.getReactionParticipants();
 	for (int i = 0; i < react_participants.length; i++) {
-		KeyValue rpKey = getNewKey(con);
+		KeyValue rpKey = keyFactory.getNewKey(con);
 		insertReactionParticipantSQL(hash, con,rpKey,react_participants[i],rsKey);
 	}
 	
@@ -893,7 +895,7 @@ private void insertReactionStepSQL(Connection con, KeyValue modelKey, KeyValue s
 	sql =
 		"INSERT INTO "+ReactStepTable.table.getTableName()+" "+
 		ReactStepTable.table.getSQLColumnList()+
-		" VALUES "+ReactStepTable.table.getSQLValueList(reactionStep,modelKey,structKey,newKey);
+		" VALUES "+ReactStepTable.table.getSQLValueList(reactionStep,modelKey,structKey,newKey,dbSyntax);
 		
 	varchar2_CLOB_update(
 						con,
@@ -902,7 +904,8 @@ private void insertReactionStepSQL(Connection con, KeyValue modelKey, KeyValue s
 						ReactStepTable.table,
 						newKey,
 						ReactStepTable.table.kineticsLarge,
-						ReactStepTable.table.kineticsSmall);
+						ReactStepTable.table.kineticsSmall,
+						dbSyntax);
 	
 //	MIRIAMTable.table.insertMIRIAM(con,reactionStep,newKey);
 }
@@ -917,7 +920,7 @@ public KeyValue insertSpecies(InsertHashtable hash, Connection con,cbit.vcell.mo
 	if (key!=null){
 		return key;
 	}else{
-		key = getNewKey(con);
+		key = keyFactory.getNewKey(con);
 	}
 	KeyValue ownerKey = user.getID();
 	String sql;
@@ -951,7 +954,7 @@ public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell
 	if (key != null){
 		return key;
 	}else{
-		key = getNewKey(con);
+		key = keyFactory.getNewKey(con);
 	}
 	KeyValue cellTypeKey = null;
 	String sql;

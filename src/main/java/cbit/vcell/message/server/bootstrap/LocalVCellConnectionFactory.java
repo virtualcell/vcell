@@ -54,7 +54,7 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 		if (connectionFactory == null) {
 			connectionFactory = DatabaseService.getInstance().createConnectionFactory(sessionLog);
 		}
-		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
+		KeyFactory keyFactory = connectionFactory.getKeyFactory();
 		LocalVCellConnection.setDatabaseResources(connectionFactory, keyFactory);
 		LocalVCellServer vcServer = (LocalVCellServer)(new LocalVCellServerFactory(null,null,"<<local>>",null,connectionFactory, keyFactory, sessionLog)).getVCellServer();
 		VCellConnection vcc = vcServer.getVCellConnection(userLoginInfo);

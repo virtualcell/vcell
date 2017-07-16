@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -24,6 +25,7 @@ import org.vcell.util.document.VersionInfo;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 import cbit.vcell.math.MathDescription;
 /**
  * This type was created in VisualAge.
@@ -32,9 +34,8 @@ public class MathDescTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_math";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field geometryRef	= new Field("geometryRef",	"integer",	"NOT NULL "+GeometryTable.REF_TYPE);
-	//public final Field language 		= new Field("language",		"long raw",	"NOT NULL");
-	public final Field language 		= new Field("language",		"CLOB",	"NOT NULL");
+	public final Field geometryRef		= new Field("geometryRef",	SQLDataType.integer,	"NOT NULL "+GeometryTable.REF_TYPE);
+	public final Field language 		= new Field("language",		SQLDataType.clob_text,	"NOT NULL");
 	
 	private final Field fields[] = {geometryRef,language};
 	
@@ -98,7 +99,7 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public MathDescription getMathDescription(ResultSet rset, Connection con,SessionLog log) 
+public MathDescription getMathDescription(ResultSet rset, Connection con,SessionLog log, DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
@@ -130,7 +131,7 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
 	String mathDescriptionDataString = new String(mathDescriptionData);
 	*/
 	//
-	String mathDescriptionDataString = (String) DbDriver.getLOB(rset,MathDescTable.table.language.toString());
+	String mathDescriptionDataString = (String) DbDriver.getLOB(rset,MathDescTable.table.language,dbSyntax);
 	if(mathDescriptionDataString == null || mathDescriptionDataString.length() == 0){
 		throw new DataAccessException("no data stored for MathDescription");
 	}
@@ -162,13 +163,23 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(MathDescription mathDescription,KeyValue geomKey,Version version) {
-
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("(");
-	buffer.append(getVersionGroupSQLValue(version) + ",");
-	buffer.append(geomKey+",");
-	buffer.append("EMPTY_CLOB()"+")");
-	return buffer.toString();
+public String getSQLValueList(MathDescription mathDescription,KeyValue geomKey,Version version, DatabaseSyntax dbSyntax) {
+	switch (dbSyntax){
+	case ORACLE:{
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(getVersionGroupSQLValue(version) + ",");
+		buffer.append(geomKey+",");
+		buffer.append("EMPTY_CLOB()"+")");
+		return buffer.toString();
+	}
+	case POSTGRES:{
+		// TODO: POSTGRES
+		throw new RuntimeException("MathDescTable.getSQLValueList() not yet implemented for Postgres");
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 }

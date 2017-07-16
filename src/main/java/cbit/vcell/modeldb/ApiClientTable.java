@@ -18,6 +18,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -26,9 +27,9 @@ public class ApiClientTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_apiclient";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field clientName		= new Field("clientname",	"varchar(255)",	"NOT NULL");
-	public final Field clientId			= new Field("clientId",		"varchar(255)",	"NOT NULL");
-	public final Field clientSecret		= new Field("clientSecret",	"varchar(255)",	"NOT NULL");
+	public final Field clientName		= new Field("clientname",	SQLDataType.varchar_255,	"NOT NULL");
+	public final Field clientId			= new Field("clientId",		SQLDataType.varchar_255,	"NOT NULL");
+	public final Field clientSecret		= new Field("clientSecret",	SQLDataType.varchar_255,	"NOT NULL");
 
 	private final Field fields[] = {clientName,clientId,clientSecret};
 	

@@ -14,6 +14,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.vcell.geometry.GeometryClass;
@@ -29,27 +30,27 @@ public class StructureMappingTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_structmapping";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field subVolumeRef			= new Field("subVolumeRef",	"integer",	SubVolumeTable.REF_TYPE);
-	public final Field structRef			= new Field("structRef",	"integer",	"NOT NULL "+StructTable.REF_TYPE);
-	public final Field simContextRef		= new Field("simContextRef","integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field bResolved 			= new Field("bResolved",	"integer",	"NOT NULL");
-	public final Field surfToVolExp			= new Field("surfToVolExp",	"varchar(1024)",	"");
-	public final Field volFractExp			= new Field("volFractExp",	"varchar(1024)",	"");
-	public final Field boundaryTypeXm 		= new Field("boundaryTypeXm", "varchar(10)", "");
-	public final Field boundaryTypeXp 		= new Field("boundaryTypeXp", "varchar(10)", "");
-	public final Field boundaryTypeYm		= new Field("boundaryTypeYm", "varchar(10)", "");
-	public final Field boundaryTypeYp 		= new Field("boundaryTypeYp", "varchar(10)", "");
-	public final Field boundaryTypeZm 		= new Field("boundaryTypeZm", "varchar(10)", "");
-	public final Field boundaryTypeZp 		= new Field("boundaryTypeZp", "varchar(10)", "");
-	public final Field bCalculateVoltage 	= new Field("bCalculateV",	"integer", "");
-	public final Field specificCap     		= new Field("specificCap",	"number", "");
-	public final Field initialVoltage  		= new Field("initialV",		"varchar(1024)", "");
-	public final Field sizeExp				= new Field("sizeExp",	"varchar(1024)",	""); //added Dec 23, 2006
-	public final Field volPerUnitAreaExp	= new Field("volPerUnitAreaExp",	"varchar(1024)",	"");
-	public final Field volPerUnitVolExp		= new Field("volPerUnitVolExp",	"varchar(1024)",	"");
-	public final Field areaPerUnitAreaExp	= new Field("areaPerUnitAreaExp",	"varchar(1024)",	"");
-	public final Field areaPerUnitVolExp	= new Field("areaPerUnitVolExp",	"varchar(1024)",	"");
-	public final Field surfaceClassRef		= new Field("surfaceClassRef",	"integer",	SurfaceClassTable.REF_TYPE);
+	public final Field subVolumeRef			= new Field("subVolumeRef",		SQLDataType.integer,		SubVolumeTable.REF_TYPE);
+	public final Field structRef			= new Field("structRef",		SQLDataType.integer,		"NOT NULL "+StructTable.REF_TYPE);
+	public final Field simContextRef		= new Field("simContextRef",	SQLDataType.integer,		"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field bResolved 			= new Field("bResolved",		SQLDataType.integer,		"NOT NULL");
+	public final Field surfToVolExp			= new Field("surfToVolExp",		SQLDataType.varchar_1024,	"");
+	public final Field volFractExp			= new Field("volFractExp",		SQLDataType.varchar_1024,	"");
+	public final Field boundaryTypeXm 		= new Field("boundaryTypeXm",	SQLDataType.varchar_10, 	"");
+	public final Field boundaryTypeXp 		= new Field("boundaryTypeXp",	SQLDataType.varchar_10, 	"");
+	public final Field boundaryTypeYm		= new Field("boundaryTypeYm",	SQLDataType.varchar_10, 	"");
+	public final Field boundaryTypeYp 		= new Field("boundaryTypeYp",	SQLDataType.varchar_10, 	"");
+	public final Field boundaryTypeZm 		= new Field("boundaryTypeZm",	SQLDataType.varchar_10, 	"");
+	public final Field boundaryTypeZp 		= new Field("boundaryTypeZp",	SQLDataType.varchar_10, 	"");
+	public final Field bCalculateVoltage 	= new Field("bCalculateV",		SQLDataType.integer, 		"");
+	public final Field specificCap     		= new Field("specificCap",		SQLDataType.number_as_real, "");
+	public final Field initialVoltage  		= new Field("initialV",			SQLDataType.varchar_1024, 	"");
+	public final Field sizeExp				= new Field("sizeExp",			SQLDataType.varchar_1024,	""); //added Dec 23, 2006
+	public final Field volPerUnitAreaExp	= new Field("volPerUnitAreaExp",SQLDataType.varchar_1024,	"");
+	public final Field volPerUnitVolExp		= new Field("volPerUnitVolExp",	SQLDataType.varchar_1024,	"");
+	public final Field areaPerUnitAreaExp	= new Field("areaPerUnitAreaExp",SQLDataType.varchar_1024,	"");
+	public final Field areaPerUnitVolExp	= new Field("areaPerUnitVolExp",SQLDataType.varchar_1024,	"");
+	public final Field surfaceClassRef		= new Field("surfaceClassRef",	SQLDataType.integer,		SurfaceClassTable.REF_TYPE);
 
 	private final Field fields[] = {subVolumeRef,structRef,simContextRef,bResolved,surfToVolExp,volFractExp,
 					boundaryTypeXm,boundaryTypeXp,boundaryTypeYm,boundaryTypeYp,boundaryTypeZm,boundaryTypeZp,

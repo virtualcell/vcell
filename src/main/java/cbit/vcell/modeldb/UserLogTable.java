@@ -9,7 +9,10 @@
  */
 
 package cbit.vcell.modeldb;
+import org.vcell.db.KeyFactory;
+
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -18,13 +21,13 @@ public class UserLogTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_userlog";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field userRef				= new Field("userRef",				"integer",		"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field eventDate			= new Field("eventDate",			"date",			"NOT NULL");
-	public final Field logText				= new Field("logText",				"varchar2(255)","NOT NULL");
-	public final Field filePath				= new Field("filePath",				"varchar2(255)","");
-	public final Field eventType			= new Field("eventType",			"varchar2(10)",	"NOT NULL");
-	public final Field swVersion			= new Field("swVersion",			"varchar2(10)", "");
-	public final Field ipAddress			= new Field("ipAddress",			"varchar2(40)",	"");
+	public final Field userRef		= new Field("userRef",		SQLDataType.integer,		"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field eventDate	= new Field("eventDate",	SQLDataType.date,			"NOT NULL");
+	public final Field logText		= new Field("logText",		SQLDataType.varchar2_255,	"NOT NULL");
+	public final Field filePath		= new Field("filePath",		SQLDataType.varchar2_255,	"");
+	public final Field eventType	= new Field("eventType",	SQLDataType.varchar2_10,	"NOT NULL");
+	public final Field swVersion	= new Field("swVersion",	SQLDataType.varchar2_10, 	"");
+	public final Field ipAddress	= new Field("ipAddress",	SQLDataType.varchar2_40,	"");
 
 	private final Field fields[] = {userRef,eventDate,logText,filePath,eventType,swVersion,ipAddress};
 	
@@ -51,7 +54,7 @@ private UserLogTable() {
  * @param swVersion java.lang.String
  * @param ipAddress java.lang.String
  */
-public String getSQLValueList(String argUserid, java.util.Date argDate, String argText, String argFilePath, String argEventType, String argSWVersion, String argIPAddress) {
+public String getSQLValueList(String argUserid, java.util.Date argDate, String argText, String argFilePath, String argEventType, String argSWVersion, String argIPAddress, KeyFactory keyFactory) {
 
 	//public final Field userRef			= new Field("userRef",				"integer",		"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
 	//public final Field eventDate			= new Field("eventDate",			"date",			"NOT NULL");
@@ -64,7 +67,7 @@ public String getSQLValueList(String argUserid, java.util.Date argDate, String a
 	
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
-	buffer.append(Table.NewSEQ + ",");
+	buffer.append(keyFactory.nextSEQ() + ",");
 	buffer.append("(SELECT id from "+UserTable.table.getTableName()+" where "+UserTable.table.userid.getUnqualifiedColName()+" = '"+argUserid+"')" + ",");
 	buffer.append(VersionTable.formatDateToOracle(argDate) + ",");
 	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(argText,255)+"'"+",");

@@ -36,7 +36,7 @@ public class LocaldbRegistrationService extends AbstractService implements Regis
 			ConnectionFactory conFactory;
 			try {
 				conFactory = DatabaseService.getInstance().createConnectionFactory(log);
-				KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
+				KeyFactory keyFactory = conFactory.getKeyFactory();
 				adminDbServer = new LocalAdminDbServer(conFactory, keyFactory, log);
 			} catch (SQLException e) {
 				e.printStackTrace();

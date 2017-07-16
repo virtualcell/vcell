@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -56,16 +57,18 @@ public class SimulationJobDbDriver {
 	private static final cbit.vcell.modeldb.UserTable userTable = cbit.vcell.modeldb.UserTable.table;
 	private static final cbit.vcell.modeldb.MathDescTable mathDescTable = cbit.vcell.modeldb.MathDescTable.table;
 	private static final cbit.vcell.modeldb.GeometryTable geometryTable = cbit.vcell.modeldb.GeometryTable.table;
-	private org.vcell.util.SessionLog log = null;
-	private java.lang.String standardJobStatusSQL = null;
+	private final SessionLog log;
+	private final DatabaseSyntax dbSyntax;
+	private String standardJobStatusSQL = null;
 
 /**
  * LocalDBManager constructor comment.
  */
-public SimulationJobDbDriver(SessionLog sessionLog) {
+public SimulationJobDbDriver(DatabaseSyntax dbSyntax,SessionLog sessionLog) {
 	super();
+	this.dbSyntax = dbSyntax;
 	this.log = sessionLog;
-	standardJobStatusSQL = "SELECT sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName()+".*," + simTable.ownerRef.getQualifiedColName() + "," + userTable.userid.getQualifiedColName()
+	standardJobStatusSQL = "SELECT current_timestamp as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName()+".*," + simTable.ownerRef.getQualifiedColName() + "," + userTable.userid.getQualifiedColName()
 			+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName()
 			+ " WHERE " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName()
 			+ " AND " + simTable.id.getQualifiedColName() + "=" + jobTable.simRef.getQualifiedColName();
@@ -95,7 +98,7 @@ private int executeUpdate(Connection con, String sql) throws SQLException {
  * @param imageName java.lang.String
  */
 public SimulationJobStatusPersistent[] getActiveJobs(Connection con, VCellServerID serverID) throws SQLException {
-	String sql = "SELECT sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName()+".*," + simTable.ownerRef.getQualifiedColName() 
+	String sql = "SELECT current_timestamp as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName()+".*," + simTable.ownerRef.getQualifiedColName() 
 			+ "," + userTable.userid.getQualifiedColName() 
 			+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName()
 			+ " WHERE " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName()
@@ -400,7 +403,7 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 	final String MMLINK = "mmlink";
 
 	String subquery = "SELECT " +
-		"sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME
+		"current_timemstamp as " + DatabaseConstants.SYSDATE_COLUMN_NAME
 		+ "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() + "," + userTable.id.getQualifiedColName()+" as ownerkey"
 		+ "," + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName()
 		+ "," + "vc_sim_1." + simTable.name.getUnqualifiedColName()
@@ -523,7 +526,7 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 				mathModelLink.clearZeroPadding();
 				simulationDocumentLink = mathModelLink;
 			}
-			CommentStringTokenizer mathOverridesTokens = SimulationTable.getMathOverridesTokenizer(rset);
+			CommentStringTokenizer mathOverridesTokens = SimulationTable.getMathOverridesTokenizer(rset,dbSyntax);
 			List<MathOverrides.Element> mathOverrideElements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokens);
 			int scanCount = 1;
 			for (MathOverrides.Element element : mathOverrideElements) {

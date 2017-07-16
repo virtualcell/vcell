@@ -18,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -33,6 +34,7 @@ import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
 import cbit.vcell.math.MathDescription;
@@ -50,15 +52,15 @@ public class SimulationTable extends VersionTable {
 	private static final String TABLE_NAME = "vc_simulation";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field mathRef				= new Field("mathRef",			"integer",			"NOT NULL "+MathDescTable.REF_TYPE);
-	public final Field mathOverridesOrig	= new Field("mathOverrides",	"CLOB",				"");
-	public final Field mathOverridesLarge	= new Field("mathOverridesLRG",	"CLOB",				"");
-	public final Field mathOverridesSmall	= new Field("mathOverridesSML",	"VARCHAR2(4000)",	"");
-	public final Field taskDescription		= new Field("taskDesc",			"VARCHAR2(4000)",	"");
-	public final Field meshSpecX			= new Field("meshspecx",		"integer",			"");
-	public final Field meshSpecY			= new Field("meshspecy",		"integer",			"");
-	public final Field meshSpecZ			= new Field("meshspecz",		"integer",			"");
-	public final Field dataProcInstr		= new Field("dataProcInstr",	"VARCHAR2(4000)",	"");
+	public final Field mathRef				= new Field("mathRef",			SQLDataType.integer,		"NOT NULL "+MathDescTable.REF_TYPE);
+	public final Field mathOverridesOrig	= new Field("mathOverrides",	SQLDataType.clob_text,		"");
+	public final Field mathOverridesLarge	= new Field("mathOverridesLRG",	SQLDataType.clob_text,		"");
+	public final Field mathOverridesSmall	= new Field("mathOverridesSML",	SQLDataType.varchar2_4000,	"");
+	public final Field taskDescription		= new Field("taskDesc",			SQLDataType.varchar2_4000,	"");
+	public final Field meshSpecX			= new Field("meshspecx",		SQLDataType.integer,		"");
+	public final Field meshSpecY			= new Field("meshspecy",		SQLDataType.integer,		"");
+	public final Field meshSpecZ			= new Field("meshspecz",		SQLDataType.integer,		"");
+	public final Field dataProcInstr		= new Field("dataProcInstr",	SQLDataType.varchar2_4000,	"");
 	
 	private final Field fields[] = {mathRef,mathOverridesOrig,mathOverridesLarge,mathOverridesSmall,taskDescription,meshSpecX,meshSpecY,meshSpecZ,dataProcInstr };
 	
@@ -119,7 +121,7 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, SessionLog log, Connection con, User user, MathDescriptionDbDriver mathDB) 
+public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, SessionLog log, Connection con, User user, MathDescriptionDbDriver mathDB, DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException,PropertyVetoException {
 
 	//
@@ -145,7 +147,7 @@ public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, SessionLog l
 	String mathOverridesString = new String(mathOverridesData);
 	*/
 	//
-	CommentStringTokenizer mathOverrideTokens = getMathOverridesTokenizer(rset);
+	CommentStringTokenizer mathOverrideTokens = getMathOverridesTokenizer(rset, dbSyntax);
 
 	String dataProcessingInstructionString = rset.getString(dataProcInstr.getUnqualifiedColName());
 	DataProcessingInstructions dpi = null;
@@ -189,9 +191,9 @@ public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, SessionLog l
 
 	return simulation;
 }
-public static CommentStringTokenizer getMathOverridesTokenizer(ResultSet rset) throws SQLException, DataAccessException {
+public static CommentStringTokenizer getMathOverridesTokenizer(ResultSet rset, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
 	String mathOverridesString =
-		DbDriver.varchar2_CLOB_get(rset,SimulationTable.table.mathOverridesSmall,SimulationTable.table.mathOverridesLarge);
+		DbDriver.varchar2_CLOB_get(rset,SimulationTable.table.mathOverridesSmall,SimulationTable.table.mathOverridesLarge, dbSyntax);
 	if(mathOverridesString == null || mathOverridesString.length() == 0){
 		throw new DataAccessException("no data stored for MathOverrides");
 	}
@@ -211,39 +213,50 @@ public static CommentStringTokenizer getMathOverridesTokenizer(ResultSet rset) t
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version version) {
+public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version version, DatabaseSyntax dbSyntax) {
 
-	SolverTaskDescription 	solverTD 		= simulation.getSolverTaskDescription();
-	String					mathOverrides	= simulation.getMathOverrides().getVCML();
-	
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("(");
-	buffer.append(getVersionGroupSQLValue(version) + ",");
-	buffer.append(mathKey+",");
-	buffer.append("EMPTY_CLOB()"+","); // MathOverridesOrig keep for compatibility with old VCell
-	
-	if(DbDriver.varchar2_CLOB_is_Varchar2_OK(mathOverrides)){
-		buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
-	}else{
-		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
+	switch (dbSyntax){
+	case ORACLE:{
+		SolverTaskDescription 	solverTD 		= simulation.getSolverTaskDescription();
+		String					mathOverrides	= simulation.getMathOverrides().getVCML();
+		
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(getVersionGroupSQLValue(version) + ",");
+		buffer.append(mathKey+",");
+		buffer.append("EMPTY_CLOB()"+","); // MathOverridesOrig keep for compatibility with old VCell
+		
+		if(DbDriver.varchar2_CLOB_is_Varchar2_OK(mathOverrides)){
+			buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
+		}else{
+			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
+		}
+		
+		buffer.append((solverTD != null?"'"+TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
+		if (simulation.getMathDescription() != null &&
+			simulation.getMathDescription().getGeometry() != null &&
+			simulation.getMathDescription().getGeometry().getDimension()>0){
+			MeshSpecification	meshSpec = simulation.getMeshSpecification();
+			buffer.append(meshSpec.getSamplingSize().getX()+","+meshSpec.getSamplingSize().getY()+","+meshSpec.getSamplingSize().getZ());
+		}else{
+			buffer.append("null,null,null");
+		}
+		if (simulation.getDataProcessingInstructions()!=null){
+			buffer.append(",'"+TokenMangler.getSQLEscapedString(simulation.getDataProcessingInstructions().getDbXml())+"'");
+		}else{
+			buffer.append(",null");
+		}
+		buffer.append(")");
+		return buffer.toString();
 	}
-	
-	buffer.append((solverTD != null?"'"+TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
-	if (simulation.getMathDescription() != null &&
-		simulation.getMathDescription().getGeometry() != null &&
-		simulation.getMathDescription().getGeometry().getDimension()>0){
-		MeshSpecification	meshSpec = simulation.getMeshSpecification();
-		buffer.append(meshSpec.getSamplingSize().getX()+","+meshSpec.getSamplingSize().getY()+","+meshSpec.getSamplingSize().getZ());
-	}else{
-		buffer.append("null,null,null");
+	case POSTGRES:{
+		// TODO: POSTGRES
+		throw new RuntimeException("SimulationTable.getSQLValueList() not yet implemented for Postgres");
 	}
-	if (simulation.getDataProcessingInstructions()!=null){
-		buffer.append(",'"+TokenMangler.getSQLEscapedString(simulation.getDataProcessingInstructions().getDbXml())+"'");
-	}else{
-		buffer.append(",null");
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
 	}
-	buffer.append(")");
-	return buffer.toString();
+}
 }
 
 
@@ -327,7 +340,7 @@ public void setPreparedStatement_SimulationRep(PreparedStatement stmt, KeyValue 
 
 
 
-public SimulationRep getSimulationRep(ResultSet rset) throws IllegalArgumentException, SQLException, DataAccessException {
+public SimulationRep getSimulationRep(ResultSet rset, DatabaseSyntax dbSyntax) throws IllegalArgumentException, SQLException, DataAccessException {
 	KeyValue scKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
 	String name = rset.getString(table.name.toString());
 	BigDecimal branchID = rset.getBigDecimal(table.versionBranchID.toString());
@@ -344,7 +357,7 @@ public SimulationRep getSimulationRep(ResultSet rset) throws IllegalArgumentExce
 //		e.printStackTrace();
 	}
 
-	CommentStringTokenizer mathOverridesTokenizer = getMathOverridesTokenizer(rset);
+	CommentStringTokenizer mathOverridesTokenizer = getMathOverridesTokenizer(rset,dbSyntax);
 	List<Element> mathOverrideElements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokenizer);
 
 	return new SimulationRep(scKey,branchID,name,owner,mathKey,solverTaskDescription,mathOverrideElements.toArray(new MathOverrides.Element[0]));

@@ -20,8 +20,8 @@ import org.vcell.util.SessionLog;
  */
 public abstract class AbstractDBTopLevel {
 	
-	protected ConnectionFactory conFactory = null;
-	protected SessionLog log = null;
+	protected final ConnectionFactory conFactory;
+	protected final SessionLog log;
 /**
  * Insert the method's description here.
  * Creation date: (9/4/2003 3:02:41 PM)

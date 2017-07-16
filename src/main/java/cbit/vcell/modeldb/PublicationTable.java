@@ -24,6 +24,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 /**
@@ -33,16 +34,16 @@ public class PublicationTable extends Table {
 	private static final String TABLE_NAME = "vc_publication";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field title				= new Field("title",			"VARCHAR2(4000)",	"");
-	public final Field authors				= new Field("authors",			"VARCHAR2(4000)",	"");
-	public final Field year					= new Field("year",				"integer",			"");
-	public final Field citation				= new Field("citation",			"VARCHAR2(4000)",	"");
-	public final Field pubmedid				= new Field("pubmedid",			"VARCHAR2(64)",		"");
-	public final Field doi					= new Field("doi",				"VARCHAR2(128)",	"");
-	public final Field endnoteid			= new Field("endnoteid",		"Integer",			"");
-	public final Field url					= new Field("url",				"VARCHAR2(128)",	"");
-	public final Field wittid				= new Field("wittid",			"integer",			"");
-	public final Field pubdate				= new Field("pubDate",			"date",				"");
+	public final Field title				= new Field("title",			SQLDataType.varchar2_4000,	"");
+	public final Field authors				= new Field("authors",			SQLDataType.varchar2_4000,	"");
+	public final Field year					= new Field("year",				SQLDataType.integer,		"");
+	public final Field citation				= new Field("citation",			SQLDataType.varchar2_4000,	"");
+	public final Field pubmedid				= new Field("pubmedid",			SQLDataType.varchar2_64,	"");
+	public final Field doi					= new Field("doi",				SQLDataType.varchar2_128,	"");
+	public final Field endnoteid			= new Field("endnoteid",		SQLDataType.integer,		"");
+	public final Field url					= new Field("url",				SQLDataType.varchar2_128,	"");
+	public final Field wittid				= new Field("wittid",			SQLDataType.integer,		"");
+	public final Field pubdate				= new Field("pubDate",			SQLDataType.date,			"");
 	
 	private final Field fields[] = {title,authors,year,citation,pubmedid,doi,endnoteid,url,wittid,pubdate };
 	

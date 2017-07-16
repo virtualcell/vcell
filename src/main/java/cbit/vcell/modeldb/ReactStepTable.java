@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.modeldb;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
@@ -16,6 +17,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.db.DBSpeciesTable;
@@ -40,17 +42,17 @@ public class ReactStepTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_reactstep";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field reactType			= new Field("reactType",	"varchar(10)",	"NOT NULL");
-	public final Field modelRef 			= new Field("modelRef",		"integer",		"NOT NULL "+ModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field structRef			= new Field("structRef",	"integer",		"NOT NULL "+StructTable.REF_TYPE);
+	public final Field reactType			= new Field("reactType",	SQLDataType.varchar_10,	"NOT NULL");
+	public final Field modelRef 			= new Field("modelRef",		SQLDataType.integer,		"NOT NULL "+ModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field structRef			= new Field("structRef",	SQLDataType.integer,		"NOT NULL "+StructTable.REF_TYPE);
 	//public final Field kinetics 			= new Field("kinetics",		"long raw",		"NOT NULL");
-	public final Field kinetics 			= new Field("kinetics",		"CLOB",		"");
-	public final Field name	 				= new Field("name",			"varchar2(255)",	"");
-	public final Field chargeValence		= new Field("chargeValence","integer",		"");
-	public final Field physicsOptions		= new Field("physicsOptions","integer",		"");
-	public final Field kineticsLarge		= new Field("kineticsLRG",	"CLOB",				"");
-	public final Field kineticsSmall		= new Field("kineticsSML",	"VARCHAR2(4000)",	"");
-	public final Field annotation			= new Field("annotation",	"VARCHAR2(4000)",	"");
+	public final Field kinetics 			= new Field("kinetics",		SQLDataType.clob_text,		"");
+	public final Field name	 				= new Field("name",			SQLDataType.varchar2_255,	"");
+	public final Field chargeValence		= new Field("chargeValence",SQLDataType.integer,		"");
+	public final Field physicsOptions		= new Field("physicsOptions",SQLDataType.integer,		"");
+	public final Field kineticsLarge		= new Field("kineticsLRG",	SQLDataType.clob_text,		"");
+	public final Field kineticsSmall		= new Field("kineticsSML",	SQLDataType.varchar2_4000,	"");
+	public final Field annotation			= new Field("annotation",	SQLDataType.varchar2_4000,	"");
 
 	private final Field fields[] = {reactType,modelRef,structRef,kinetics,name,chargeValence,physicsOptions,kineticsLarge,kineticsSmall,annotation};
 	
@@ -88,7 +90,7 @@ private ReactStepTable() {
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public ReactionStep getReactionStep(Structure structure, Model model, KeyValue rsKey, java.sql.ResultSet rset, SessionLog log) throws java.sql.SQLException, DataAccessException {
+public ReactionStep getReactionStep(Structure structure, Model model, KeyValue rsKey, java.sql.ResultSet rset, SessionLog log,DatabaseSyntax dbSyntax) throws java.sql.SQLException, DataAccessException {
 	
 	KeyValue key = rsKey;
 	if (rset.wasNull()){
@@ -134,7 +136,7 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 	// New procedure for getting kinetics
 	//
 	String kinetics_vcml =
-		DbDriver.varchar2_CLOB_get(rset,ReactStepTable.table.kineticsSmall,ReactStepTable.table.kineticsLarge);
+		DbDriver.varchar2_CLOB_get(rset,ReactStepTable.table.kineticsSmall,ReactStepTable.table.kineticsLarge,dbSyntax);
 	if(kinetics_vcml == null || kinetics_vcml.length() == 0){
 		throw new DataAccessException("no data stored for kinetics");
 	}
@@ -407,7 +409,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user) {
 	}
 	//
 	String sql = null;
-	Field specialBMField = new Field("id bmid","integer","");
+	Field specialBMField = new Field("id bmid",SQLDataType.integer,"");
 	specialBMField.setTableName(BioModelTable.table.getTableName());
 	Field[] f =
 	{
@@ -529,46 +531,57 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user) {
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyValue structKey,KeyValue key) throws DataAccessException {
+public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyValue structKey,KeyValue key, DatabaseSyntax dbSyntax) throws DataAccessException {
 
-	String	kinetics = reactionStep.getKinetics().getVCML();
-
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("(");
-	buffer.append(key+",");
-	buffer.append("'"+getReactTypeDbString(reactionStep)+"',");
-	buffer.append(modelKey+",");
-	buffer.append(structKey+",");
-	buffer.append("EMPTY_CLOB()"+","); // keep for compatibility with release site
-	if (reactionStep.getName()==null){
-		buffer.append("null"+",");
-	}else{
-		buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getName())+"',");
-	}
-	try {
-		KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getChargeValenceParameter();
-		int valence = 1;
-		if (chargeValenceParameter!=null){
-			valence = (int)chargeValenceParameter.getExpression().evaluateConstant();
+	switch (dbSyntax){
+	case ORACLE:{
+		String	kinetics = reactionStep.getKinetics().getVCML();
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(key+",");
+		buffer.append("'"+getReactTypeDbString(reactionStep)+"',");
+		buffer.append(modelKey+",");
+		buffer.append(structKey+",");
+		buffer.append("EMPTY_CLOB()"+","); // keep for compatibility with release site
+		if (reactionStep.getName()==null){
+			buffer.append("null"+",");
+		}else{
+			buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getName())+"',");
 		}
-		buffer.append(valence+",");
-	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage());
-	}
-	buffer.append(reactionStep.getPhysicsOptions()+",");
-
-	// New kinetics format
-	if(DbDriver.varchar2_CLOB_is_Varchar2_OK(kinetics)){
-		buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
-	}else{
-		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
-	}
-
-	buffer.append("NULL");
-	buffer.append(")");
+		try {
+			KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getChargeValenceParameter();
+			int valence = 1;
+			if (chargeValenceParameter!=null){
+				valence = (int)chargeValenceParameter.getExpression().evaluateConstant();
+			}
+			buffer.append(valence+",");
+		}catch (cbit.vcell.parser.ExpressionException e){
+			e.printStackTrace(System.out);
+			throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage());
+		}
+		buffer.append(reactionStep.getPhysicsOptions()+",");
 	
-	return buffer.toString();
+		// New kinetics format
+		if(DbDriver.varchar2_CLOB_is_Varchar2_OK(kinetics)){
+			buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
+		}else{
+			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
+		}
+	
+		buffer.append("NULL");
+		buffer.append(")");
+		
+		return buffer.toString();
+	}
+	case POSTGRES:{
+		// TODO: POSTGRES
+		throw new RuntimeException("ReactStepTable.getSQLValueList() not yet implemented for Postgres");
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
+	
 }
 
 

@@ -13,11 +13,13 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 
 /**
@@ -27,9 +29,8 @@ public class ImageDataTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_imagedata";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field imageRef 		= new Field("imageRef",	"integer",	"NOT NULL "+ImageTable.REF_TYPE+" ON DELETE CASCADE");
-	//public final Field data 			= new Field("data",		"long raw",	"NOT NULL");
-	public final Field data 			= new Field("data",		"BLOB",	"NOT NULL");
+	public final Field imageRef 		= new Field("imageRef",	SQLDataType.integer,	"NOT NULL "+ImageTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field data 			= new Field("data",		SQLDataType.blob_bytea,	"NOT NULL");
 	
 
 	private final Field fields[] = {imageRef,data};
@@ -48,10 +49,10 @@ private ImageDataTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public byte[] getData(ResultSet rset, SessionLog log) throws SQLException,DataAccessException {
+public byte[] getData(ResultSet rset, SessionLog log, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 
 	//byte byteData[] = rset.getBytes(data.toString());
-	byte byteData[] = (byte[]) DbDriver.getLOB(rset,data.toString());
+	byte byteData[] = (byte[]) DbDriver.getLOB(rset,data,dbSyntax);
 	return byteData;
 	
 }
@@ -61,14 +62,24 @@ public byte[] getData(ResultSet rset, SessionLog log) throws SQLException,DataAc
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(KeyValue key, KeyValue imageKey) {
+public String getSQLValueList(KeyValue key, KeyValue imageKey, DatabaseSyntax dbSyntax) {
+	switch (dbSyntax){
+	case ORACLE:{
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(key+",");
+		buffer.append(imageKey+",");
+		buffer.append("EMPTY_BLOB())");
 	
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("(");
-	buffer.append(key+",");
-	buffer.append(imageKey+",");
-	buffer.append("EMPTY_BLOB())");
-
-	return buffer.toString();
+		return buffer.toString();
+	}
+	case POSTGRES:{
+		// TODO: POSTGRES
+		throw new RuntimeException("ImageDataTable.getSQLValueList() not yet implemented for Postgres");
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 }

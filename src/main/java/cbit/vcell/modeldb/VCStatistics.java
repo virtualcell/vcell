@@ -65,11 +65,10 @@ public class VCStatistics {
 			return sb.toString();
 		}
 	}
-	private VCStatistics(String dbServer,String dbName,String dbUserid,String dbPassword) throws Exception {
-		String dbConnectURL = "jdbc:oracle:thin:@"+dbServer+":1521:"+dbName;
+	private VCStatistics(String dbDriverName, String dbConnectURL,String dbUserid,String dbPassword) throws Exception {
 		connectionFactory = DatabaseService.getInstance().createConnectionFactory(
 				new StdoutSessionLog("test"),
-				PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
+				dbDriverName,
 				dbConnectURL,
 				dbUserid,
 				dbPassword);
@@ -77,7 +76,7 @@ public class VCStatistics {
 	public static void main(String[] args) {
 		if(args.length != 4){
 			//e.g in your eclipse debug configuration put arguments: dbs6.cam.uchc.edu orcl ID password
-			System.out.println("Usage:VCStatistics dbServer dbName dbUserID dbPassword");
+			System.out.println("Usage:VCStatistics dbDriverName connectUrl dbUserID dbPassword");
 			System.exit(1);
 		}
 		try {

@@ -17,11 +17,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import org.jdom.Element;
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.xml.XmlParseException;
@@ -36,14 +39,18 @@ public class ApplicationMathTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_applicationmath";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    private static final String[] appMathTableConstraint =
+    private static final String[] appMathTableConstraintOracle =
 		new String[] {
 		"math_or_app CHECK(DECODE(simContextRef,NULL,0,simContextRef,1)+DECODE(mathModelRef,NULL,0,mathModelRef,1) = 1)"};
 
-	public final Field simContextRef	= new Field("simContextRef",	"integer",SimContextTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field outputFuncLarge	= new Field("outputFuncLRG",	"CLOB",				"");
-	public final Field outputFuncSmall	= new Field("outputFuncSML",	"VARCHAR2(4000)",	"");
-	public final Field mathModelRef		= new Field("mathModelRef",		"integer",MathModelTable.REF_TYPE+" ON DELETE CASCADE");
+    private static final String[] appMathTableConstraintPostgres =
+		new String[] {
+		"math_or_app CHECK((CASE WHEN simContextRef IS NULL THEN 0 ELSE 1 END)+(CASE WHEN mathModelRef IS NULL THEN 0 ELSE 1 END) = 1)"};
+
+	public final Field simContextRef	= new Field("simContextRef",	SQLDataType.integer,		SimContextTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field outputFuncLarge	= new Field("outputFuncLRG",	SQLDataType.clob_text,		"");
+	public final Field outputFuncSmall	= new Field("outputFuncSML",	SQLDataType.varchar2_4000,	"");
+	public final Field mathModelRef		= new Field("mathModelRef",		SQLDataType.integer,		MathModelTable.REF_TYPE+" ON DELETE CASCADE");
 
 	private final Field fields[] = {simContextRef,outputFuncLarge,outputFuncSmall,mathModelRef};
 	
@@ -52,17 +59,17 @@ public class ApplicationMathTable extends cbit.sql.Table {
  * ModelTable constructor comment.
  */
 private ApplicationMathTable() {
-	super(TABLE_NAME,appMathTableConstraint);
+	super(TABLE_NAME,appMathTableConstraintOracle,appMathTableConstraintPostgres);
 	addFields(fields);
 }
 
-public void saveOutputFunctionsSimContext(Connection con,KeyValue simContextRef,ArrayList<AnnotatedFunction> outputFunctionsList) throws SQLException,DataAccessException{
-	saveOutputFunctions(con, null, simContextRef, outputFunctionsList);
+public void saveOutputFunctionsSimContext(Connection con,KeyValue simContextRef,ArrayList<AnnotatedFunction> outputFunctionsList, DatabaseSyntax dbSyntax, KeyFactory keyFactory) throws SQLException,DataAccessException{
+	saveOutputFunctions(con, null, simContextRef, outputFunctionsList, dbSyntax, keyFactory);
 }
-public void saveOutputFunctionsMathModel(Connection con,KeyValue mathModelRef,ArrayList<AnnotatedFunction> outputFunctionsList) throws SQLException,DataAccessException{
-	saveOutputFunctions(con, mathModelRef, null, outputFunctionsList);
+public void saveOutputFunctionsMathModel(Connection con,KeyValue mathModelRef,ArrayList<AnnotatedFunction> outputFunctionsList, DatabaseSyntax dbSyntax, KeyFactory keyFactory) throws SQLException,DataAccessException{
+	saveOutputFunctions(con, mathModelRef, null, outputFunctionsList, dbSyntax, keyFactory);
 }
-private void saveOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue simContextRef,ArrayList<AnnotatedFunction> outputFunctionsList) throws SQLException,DataAccessException{
+private void saveOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue simContextRef,ArrayList<AnnotatedFunction> outputFunctionsList, DatabaseSyntax dbSyntax, KeyFactory keyFactory) throws SQLException,DataAccessException{
 	
 	if(outputFunctionsList == null || outputFunctionsList.size() == 0){
 		return;
@@ -83,7 +90,7 @@ private void saveOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue s
 		tableValues = DbDriver.INSERT_CLOB_HERE+","+"null";
 	}
 	
-	KeyValue newKey = DbDriver.getNewKey(con);
+	KeyValue newKey = keyFactory.getNewKey(con);
 	String sql = 
 		"INSERT INTO "+ApplicationMathTable.table.getTableName()+
 		" VALUES ("+
@@ -98,16 +105,17 @@ private void saveOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue s
 		ApplicationMathTable.table,
 		newKey,
 		ApplicationMathTable.table.outputFuncLarge,
-		ApplicationMathTable.table.outputFuncSmall);
+		ApplicationMathTable.table.outputFuncSmall,
+		dbSyntax);
 }
 
-public ArrayList<AnnotatedFunction> getOutputFunctionsSimcontext(Connection con,KeyValue simContextRef) throws SQLException,DataAccessException{
-	return getOutputFunctions(con, null, simContextRef);
+public ArrayList<AnnotatedFunction> getOutputFunctionsSimcontext(Connection con,KeyValue simContextRef, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
+	return getOutputFunctions(con, null, simContextRef, dbSyntax);
 }
-public ArrayList<AnnotatedFunction> getOutputFunctionsMathModel(Connection con,KeyValue mathModelRef) throws SQLException,DataAccessException{
-	return getOutputFunctions(con, mathModelRef, null);
+public ArrayList<AnnotatedFunction> getOutputFunctionsMathModel(Connection con,KeyValue mathModelRef, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
+	return getOutputFunctions(con, mathModelRef, null, dbSyntax);
 }
-private ArrayList<AnnotatedFunction> getOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue simContextRef) throws SQLException,DataAccessException{
+private ArrayList<AnnotatedFunction> getOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue simContextRef,DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
 	Statement stmt = null;
 	try{
 		stmt = con.createStatement();
@@ -122,7 +130,7 @@ private ArrayList<AnnotatedFunction> getOutputFunctions(Connection con,KeyValue 
 			return null;
 		}
 		String outputFunctionsXML =
-			DbDriver.varchar2_CLOB_get(rset, ApplicationMathTable.table.outputFuncSmall, ApplicationMathTable.table.outputFuncLarge);
+			DbDriver.varchar2_CLOB_get(rset, ApplicationMathTable.table.outputFuncSmall, ApplicationMathTable.table.outputFuncLarge,dbSyntax);
 		rset.close();
 		if(outputFunctionsXML == null){
 			return null;

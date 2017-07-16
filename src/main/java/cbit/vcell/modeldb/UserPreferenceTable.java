@@ -19,6 +19,7 @@ import org.vcell.util.Preference;
 import org.vcell.util.TokenMangler;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 
 /**
@@ -28,9 +29,9 @@ public class UserPreferenceTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_userpref";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field userRef 			= new Field("userRef",				"integer",			"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field userPrefKey 		= new Field("userPrefKey",			"varchar("+Preference.MAX_KEY_LENGTH+")",	"NOT NULL");
-	public final Field userPrefValue	= new Field("userPrefValue",		"varchar("+Preference.MAX_VALUE_LENGTH+")", "NOT NULL");
+	public final Field userRef 			= new Field("userRef",		SQLDataType.integer,		"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field userPrefKey 		= new Field("userPrefKey",	SQLDataType.varchar_128,	"NOT NULL");
+	public final Field userPrefValue	= new Field("userPrefValue",SQLDataType.varchar_4000,	"NOT NULL");
 	
 
 	private final Field fields[] = {userRef,userPrefKey,userPrefValue};

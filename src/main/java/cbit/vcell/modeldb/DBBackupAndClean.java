@@ -780,7 +780,7 @@ public class DBBackupAndClean {
 
 		String sql =
 			"SELECT "+
-				"TO_CHAR(SYSDATE,'dd-Mon-yyyy hh24:mi:ss') deldate "+","+
+				"TO_CHAR(current_timestamp,'dd-Mon-yyyy hh24:mi:ss') deldate "+","+
 				UserTable.table.userid.getQualifiedColName()+" userid ,"+
 				UserTable.table.id.getQualifiedColName()+" userkey ,"+
 				SimulationTable.table.id.getQualifiedColName()+" "+SIMID+","+

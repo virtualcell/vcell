@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
@@ -64,13 +65,16 @@ public class DictionaryDbDriver {
     public static final ProteinTable proteinTable = ProteinTable.table;
 	public static final DBSpeciesTable dbSpeciesTable = DBSpeciesTable.table;
 	
-    private SessionLog log = null;
+    private final SessionLog log;
+    private final KeyFactory keyFactory;
+    
 
 /**
  * DictionaryDBManager constructor.
  */
-public DictionaryDbDriver(SessionLog sessionLog) {
+public DictionaryDbDriver(KeyFactory keyFactory, SessionLog sessionLog) {
 	super();
+	this.keyFactory = keyFactory;
 	this.log = sessionLog;
 }
 
@@ -147,7 +151,7 @@ public DBSpecies getBoundSpecies(Connection con,DBFormalSpecies dbfs) throws SQL
 
 	//Create new binding
 	//Add entry to binding table
-	KeyValue newKey = DbDriver.getNewKey(con);
+	KeyValue newKey = keyFactory.getNewKey(con);
 	String sql = 	"INSERT INTO " + DBSpeciesTable.table.getTableName() +
 					" VALUES " + DBSpeciesTable.table.getSQLValueList(newKey,dbfs);
 
@@ -849,7 +853,7 @@ public KeyValue insertCompound(Connection con, CompoundInfo compound)
     }
     log.print(
         "DictionaryDbDriver.insertCompound(compound=" + compound.getFormalID() + ")");
-    KeyValue key = DbDriver.getNewKey(con);
+    KeyValue key = keyFactory.getNewKey(con);
     insertCompoundSQL(con, key, compound);
     return key;
 }
@@ -885,7 +889,7 @@ private void insertCompoundSQL(Connection con, KeyValue key, CompoundInfo compou
     //
     String names[] = compound.getNames();
     for (int i = 0; i < names.length; i++) {
-        KeyValue newKey = DbDriver.getNewKey(con);
+        KeyValue newKey = keyFactory.getNewKey(con);
         sql =
             "INSERT INTO "
                 + compoundAliasTable.getTableName()
@@ -912,7 +916,7 @@ public KeyValue insertEnzyme(Connection con, EnzymeInfo enzyme)
         throw new SQLException("Improper parameters for insertEnzyme");
     }
     log.print("DictionaryDbDriver.insertEnzyme(enzyme=" + enzyme.getFormalID() + ")");
-    KeyValue key = DbDriver.getNewKey(con);
+    KeyValue key = keyFactory.getNewKey(con);
     insertEnzymeSQL(con, key, enzyme);
     return key;
 }
@@ -948,7 +952,7 @@ private void insertEnzymeSQL(Connection con, KeyValue key, EnzymeInfo enzyme)
     //
     String names[] = enzyme.getNames();
     for (int i = 0; i < names.length; i++) {
-        KeyValue newKey = DbDriver.getNewKey(con);
+        KeyValue newKey = keyFactory.getNewKey(con);
         sql =
             "INSERT INTO "
                 + enzymeAliasTable.getTableName()
@@ -975,7 +979,7 @@ public KeyValue insertProtein(Connection con, ProteinInfo protein)
         throw new SQLException("Improper parameters for insertProtein");
     }
     //log.print("DictionaryDbDriver.insertProtein(protein=" + protein.getDBID() + ")");
-    KeyValue key = DbDriver.getNewKey(con);
+    KeyValue key = keyFactory.getNewKey(con);
     insertProteinSQL(con, key, protein);
     return key;
 }
@@ -1011,7 +1015,7 @@ private void insertProteinSQL(Connection con, KeyValue key, ProteinInfo protein)
     //
     String names[] = protein.getNames();
     for (int i = 0; i < names.length; i++) {
-        KeyValue newKey = DbDriver.getNewKey(con);
+        KeyValue newKey = keyFactory.getNewKey(con);
         sql =
             "INSERT INTO "
                 + proteinAliasTable.getTableName()

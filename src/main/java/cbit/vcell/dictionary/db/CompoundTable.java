@@ -17,6 +17,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 import cbit.vcell.dictionary.BoundCompound;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.FormalCompound;
@@ -32,9 +33,9 @@ public class CompoundTable extends Table {
     public static final String REF_TYPE =
         "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    public final Field formula = 	new Field("formula", 	"varchar2(256)", "");
-    public final Field casID = 		new Field("casId", 		"varchar2(256)", "");
-    public final Field keggID = 	new Field("keggId", 	"varchar2(32)", "UNIQUE NOT NULL");
+    public final Field formula = 	new Field("formula", 	SQLDataType.varchar2_256, "");
+    public final Field casID = 		new Field("casId", 		SQLDataType.varchar2_256, "");
+    public final Field keggID = 	new Field("keggId", 	SQLDataType.varchar2_32, "UNIQUE NOT NULL");
 
     private final Field fields[] = { formula, casID, keggID };
 

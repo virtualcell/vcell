@@ -20,6 +20,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -260,14 +261,14 @@ public UserInfo[] getUserInfos(Connection con) throws SQLException, DataAccessEx
 /**
  * addModel method comment.
  */
-public KeyValue insertUserInfo(Connection con, UserInfo userInfo) throws SQLException {
+public KeyValue insertUserInfo(Connection con, KeyFactory keyFactory, UserInfo userInfo) throws SQLException {
 	if (userInfo == null){
 		throw new SQLException("Improper parameters for insertModel");
 	}
 	log.print("UserDbDriver.insertUserInfo(userinfo="+userInfo+")");
 	//Connection con = conFact.getConnection();
-	KeyValue key = DbDriver.getNewKey(con);
-	insertUserInfoSQL(con,key,userInfo);
+	KeyValue key = keyFactory.getNewKey(con);
+	insertUserInfoSQL(con,keyFactory,key,userInfo);
 	return key;
 }
 /**
@@ -276,7 +277,7 @@ public KeyValue insertUserInfo(Connection con, UserInfo userInfo) throws SQLExce
  * @param userid java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-private void insertUserInfoSQL(Connection con, KeyValue key, UserInfo userInfo) throws SQLException {
+private void insertUserInfoSQL(Connection con, KeyFactory keyFactory, KeyValue key, UserInfo userInfo) throws SQLException {
 	if (userInfo == null || con == null){
 		throw new IllegalArgumentException("Improper parameters for insertUserSQL");
 	}
@@ -289,7 +290,7 @@ private void insertUserInfoSQL(Connection con, KeyValue key, UserInfo userInfo) 
 	
 	sql = "INSERT INTO " + UserStatTable.table.getTableName() + " " +
 		UserStatTable.table.getSQLColumnList() + " VALUES " +
-		UserStatTable.table.getSQLValueList(key);
+		UserStatTable.table.getSQLValueList(key,keyFactory);
 	DbDriver.updateCleanSQL(con,sql);
 }
 /**
@@ -352,14 +353,14 @@ private void updateUserInfoSQL(Connection con, UserInfo userInfo) throws SQLExce
 	DbDriver.updateCleanSQL(con,sql);
 }
 
-public void updateUserStat(Connection con,UserLoginInfo userLoginInfo) throws SQLException {
+public void updateUserStat(Connection con,KeyFactory keyFactory, UserLoginInfo userLoginInfo) throws SQLException {
 	User user = getUserFromUserid(con, userLoginInfo.getUserName());
 	String sql;
 	sql =	"UPDATE " + UserStatTable.table.getTableName() +
 			" SET "   +
 				UserStatTable.table.loginCount +" = "+
 				UserStatTable.table.loginCount+" + 1"+","+
-				UserStatTable.table.lastLogin + " = SYSDATE"+
+				UserStatTable.table.lastLogin + " = current_timestamp"+
 			" WHERE " + UserStatTable.table.userRef + " = " + user.getID();
 	DbDriver.updateCleanSQL(con,sql);
 	//
@@ -384,16 +385,16 @@ public void updateUserStat(Connection con,UserLoginInfo userLoginInfo) throws SQ
 		sql = 
 			"INSERT INTO " + UserLoginInfoTable.table.getTableName() + " " +
 			UserLoginInfoTable.table.getSQLColumnList() + " VALUES " +
-			UserLoginInfoTable.getSQLValueList(user.getID(), 1,userLoginInfo);
+			UserLoginInfoTable.getSQLValueList(user.getID(), 1,userLoginInfo, keyFactory);
 		DbDriver.updateCleanSQL(con, sql);
 	}else{
 		DbDriver.updateCleanSQL(con, UserLoginInfoTable.getSQLUpdateLoginCount(user.getID(), userLoginInfo));
 	}
 }
 
-public ApiAccessToken generateApiAccessToken(Connection con, KeyValue apiClientKey, User user, Date expirationDate) throws SQLException {
+public ApiAccessToken generateApiAccessToken(Connection con, KeyFactory keyFactory, KeyValue apiClientKey, User user, Date expirationDate) throws SQLException {
 	String sql;
-	KeyValue key = DbDriver.getNewKey(con);
+	KeyValue key = keyFactory.getNewKey(con);
 	UUID idOne = UUID.randomUUID();
 	Date creationDate = new Date();
 	String token = idOne.toString();

@@ -10,9 +10,11 @@
 
 package cbit.vcell.modeldb;
 
+import org.vcell.db.KeyFactory;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -21,15 +23,15 @@ public class UserStatTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_userstat";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field userRef				= new Field("userRef",				"integer",		"UNIQUE NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field loginCount			= new Field("loginCount",			"number",		"");
-	public final Field lastLogin			= new Field("lastLogin",			"date",			"");
-	public final Field emailLostPasswordOK	= new Field("emailLostPasswordOK",	"varchar2(5)",	"");
-	public final Field wantsOnlineCallback	= new Field("wantsOnlineCallback",	"varchar2(5)",	"");
-	public final Field userAgent			= new Field("userAgent",			"varchar2(255)","");
-	public final Field useMac				= new Field("useMac",				"number",		"");
-	public final Field useWin				= new Field("useWin",				"number",		"");
-	public final Field useLin				= new Field("useLin",				"number",		"");
+	public final Field userRef				= new Field("userRef",				SQLDataType.integer,		"UNIQUE NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field loginCount			= new Field("loginCount",			SQLDataType.number_as_integer,		"");
+	public final Field lastLogin			= new Field("lastLogin",			SQLDataType.date,			"");
+	public final Field emailLostPasswordOK	= new Field("emailLostPasswordOK",	SQLDataType.varchar2_5,	"");
+	public final Field wantsOnlineCallback	= new Field("wantsOnlineCallback",	SQLDataType.varchar2_5,	"");
+	public final Field userAgent			= new Field("userAgent",			SQLDataType.varchar2_255,"");
+	public final Field useMac				= new Field("useMac",				SQLDataType.number_as_integer,		"");
+	public final Field useWin				= new Field("useWin",				SQLDataType.number_as_integer,		"");
+	public final Field useLin				= new Field("useLin",				SQLDataType.number_as_integer,		"");
 
 	private final Field fields[] = {userRef,loginCount,
 									lastLogin,
@@ -45,10 +47,10 @@ private UserStatTable() {
 	addFields(fields);
 }
 
-public String getSQLValueList(KeyValue key) {
+public String getSQLValueList(KeyValue key,KeyFactory keyFactory) {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
-	buffer.append(Table.NewSEQ+",");
+	buffer.append(keyFactory.nextSEQ()+",");
 	buffer.append(key.toString()+",");
 	buffer.append("0,");
 	buffer.append("NULL,");

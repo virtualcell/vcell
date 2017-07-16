@@ -14,6 +14,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.mapping.SpeciesContextSpec;
 /**
@@ -27,25 +28,25 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 		new String[] {
 		"initcndcnstr CHECK (not (initCondExp is null and initCondCountExp is null)  and  not (initCondExp is not null and initCondCountExp is not null))"};
 
-	public final Field specContextRef= new Field("specContextRef","integer",	"NOT NULL "+SpeciesContextModelTable.REF_TYPE);
-	public final Field simContextRef	= new Field("simContextRef","integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field bEnableDif	= new Field("bEnableDif",	"integer",	"NOT NULL");
-	public final Field bForceConst	= new Field("bForceConst",	"integer",	"NOT NULL");
-	public final Field bForceIndep	= new Field("bForceIndep",	"integer",	"NOT NULL");
-	public final Field initCondExp	= new Field("initCondExp",	"varchar(2048)","");
-	public final Field diffRateExp	= new Field("diffRateExp",	"varchar(1024)", "NOT NULL");
-	public final Field boundaryXmExp	= new Field("boundaryXmExp","varchar(255)",	"");
-	public final Field boundaryXpExp	= new Field("boundaryXpExp","varchar(255)",	"");
-	public final Field boundaryYmExp	= new Field("boundaryYmExp","varchar(255)",	"");
-	public final Field boundaryYpExp	= new Field("boundaryYpExp","varchar(255)",	"");
-	public final Field boundaryZmExp	= new Field("boundaryZmExp","varchar(255)",	"");
-	public final Field boundaryZpExp	= new Field("boundaryZpExp","varchar(255)",	"");
-	public final Field initCondCountExp	= new Field("initCondCountExp",	"varchar(1024)","");
-	public final Field velocityXExp	= new Field("velocityXExp",	"varchar(1024)",	"");
-	public final Field velocityYExp	= new Field("velocityYExp",	"varchar(1024)",	"");
-	public final Field velocityZExp	= new Field("velocityZExp",	"varchar(1024)",	"");
-	public final Field bWellMixed		= new Field("bWellMixed",	"integer",	"");
-	public final Field bForceContinuous	= new Field("bForceContinuous",	"integer",	"");
+	public final Field specContextRef	= new Field("specContextRef",SQLDataType.integer,		"NOT NULL "+SpeciesContextModelTable.REF_TYPE);
+	public final Field simContextRef	= new Field("simContextRef",SQLDataType.integer,		"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field bEnableDif		= new Field("bEnableDif",	SQLDataType.integer,		"NOT NULL");
+	public final Field bForceConst		= new Field("bForceConst",	SQLDataType.integer,		"NOT NULL");
+	public final Field bForceIndep		= new Field("bForceIndep",	SQLDataType.integer,		"NOT NULL");
+	public final Field initCondExp		= new Field("initCondExp",	SQLDataType.varchar_2048,	"");
+	public final Field diffRateExp		= new Field("diffRateExp",	SQLDataType.varchar_1024, 	"NOT NULL");
+	public final Field boundaryXmExp	= new Field("boundaryXmExp",SQLDataType.varchar_255,	"");
+	public final Field boundaryXpExp	= new Field("boundaryXpExp",SQLDataType.varchar_255,	"");
+	public final Field boundaryYmExp	= new Field("boundaryYmExp",SQLDataType.varchar_255,	"");
+	public final Field boundaryYpExp	= new Field("boundaryYpExp",SQLDataType.varchar_255,	"");
+	public final Field boundaryZmExp	= new Field("boundaryZmExp",SQLDataType.varchar_255,	"");
+	public final Field boundaryZpExp	= new Field("boundaryZpExp",SQLDataType.varchar_255,	"");
+	public final Field initCondCountExp	= new Field("initCondCountExp",	SQLDataType.varchar_1024,"");
+	public final Field velocityXExp		= new Field("velocityXExp",	SQLDataType.varchar_1024,	"");
+	public final Field velocityYExp		= new Field("velocityYExp",	SQLDataType.varchar_1024,	"");
+	public final Field velocityZExp		= new Field("velocityZExp",	SQLDataType.varchar_1024,	"");
+	public final Field bWellMixed		= new Field("bWellMixed",	SQLDataType.integer,		"");
+	public final Field bForceContinuous	= new Field("bForceContinuous",	SQLDataType.integer,	"");
 	
 	private final Field fields[] = {specContextRef,simContextRef,bEnableDif,bForceConst,bForceIndep,initCondExp,diffRateExp,
 											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp,

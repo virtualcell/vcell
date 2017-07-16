@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.Vector;
 
 import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.db.oracle.OracleKeyFactory;
 import org.vcell.util.DataAccessException;
@@ -134,8 +135,9 @@ public static void main(String[] args) {
 		}
 			
 		PropertyLoader.loadProperties();
-		SessionLog log = new StdoutSessionLog("FunctionFileCrawler");		
-		KeyFactory keyFactory = new OracleKeyFactory();
+		SessionLog log = new StdoutSessionLog("FunctionFileCrawler");
+		conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+		KeyFactory keyFactory = conFactory.getKeyFactory();
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
 			
 		FunctionFileCrawler crawler = new FunctionFileCrawler(adminDbServer, log, outputdir);

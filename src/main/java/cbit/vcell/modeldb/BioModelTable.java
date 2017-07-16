@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -27,6 +28,7 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
@@ -38,9 +40,9 @@ public class BioModelTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_biomodel";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field modelRef				= new Field("modelRef",			"integer",	"NOT NULL "+ModelTable.REF_TYPE);
-	public final Field childSummaryLarge	= new Field("childSummaryLRG",	"CLOB",				"");
-	public final Field childSummarySmall	= new Field("childSummarySML",	"VARCHAR2(4000)",	"");
+	public final Field modelRef				= new Field("modelRef",			SQLDataType.integer,		"NOT NULL "+ModelTable.REF_TYPE);
+	public final Field childSummaryLarge	= new Field("childSummaryLRG",	SQLDataType.clob_text,		"");
+	public final Field childSummarySmall	= new Field("childSummarySML",	SQLDataType.varchar2_4000,	"");
 	
 	private final Field fields[] = {modelRef,childSummaryLarge,childSummarySmall};
 	
@@ -58,7 +60,7 @@ private BioModelTable() {
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public BioModelMetaData getBioModelMetaData(ResultSet rset, SessionLog log, BioModelDbDriver bioModelDbDriver, Connection con) 
+public BioModelMetaData getBioModelMetaData(ResultSet rset, SessionLog log, BioModelDbDriver bioModelDbDriver, Connection con,DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
@@ -83,7 +85,7 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, SessionLog log, BioM
 	//
 	//Get VCMetaData XML
 	//
-	String vcMetaDataXML = VCMetaDataTable.getVCMetaDataXML(rset);
+	String vcMetaDataXML = VCMetaDataTable.getVCMetaDataXML(rset,dbSyntax);
 	
 	BioModelMetaData bioModelMetaData = new BioModelMetaData(version,modelRef,simContextKeys,simKeys,vcMetaDataXML);
 	//
@@ -99,7 +101,7 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, SessionLog log, BioM
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,SessionLog log, KeyValue simContextKeys[], KeyValue simulationKeys[]) 
+public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,SessionLog log, KeyValue simContextKeys[], KeyValue simulationKeys[],DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
@@ -110,7 +112,7 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,Sessi
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
 
-	String vcMetaDataXML = VCMetaDataTable.getVCMetaDataXML(rset);
+	String vcMetaDataXML = VCMetaDataTable.getVCMetaDataXML(rset,dbSyntax);
 	BioModelMetaData bioModelMetaData = new BioModelMetaData(version,modelRef,simContextKeys,simulationKeys,vcMetaDataXML);
 	//
 	// setMathDescription is done in calling parent
@@ -125,14 +127,14 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,Sessi
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log,DatabaseSyntax dbSyntax) throws SQLException,org.vcell.util.DataAccessException {
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
 	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	VCellSoftwareVersion vcSoftwareVersion = VCellSoftwareVersion.fromString(softwareVersion);
-	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge);
+	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge,dbSyntax);
 	
 	return new org.vcell.util.document.BioModelInfo(version, modelRef, serialDbChildSummary, vcSoftwareVersion);
 }

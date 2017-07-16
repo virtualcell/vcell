@@ -169,7 +169,7 @@ public class ListservMail {
 				" FROM "+
 					UserTable.table.getTableName()+","+SimulationJobTable.table.getTableName()+","+SimulationTable.table.getTableName()+" " +
 				" WHERE "+
-					SimulationJobTable.table.startDate.getQualifiedColName()+" >= (SYSDATE - (5*365)) "+
+					SimulationJobTable.table.startDate.getQualifiedColName()+" >= (CURRENT_TIMESTAMP - (5*365)) "+
 				" AND "+
 					SimulationJobTable.table.simRef.getQualifiedColName() + " = " + SimulationTable.table.id.getQualifiedColName() +
 				" AND " +

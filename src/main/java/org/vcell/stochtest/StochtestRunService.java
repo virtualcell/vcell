@@ -101,7 +101,7 @@ public class StochtestRunService {
 	    //
 	    ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(
 	    		sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
-	    KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();    
+	    KeyFactory keyFactory = conFactory.getKeyFactory();
 	    StochtestRunService stochtestService = new StochtestRunService(baseDir, numTrials, bngTimeoutMS, conFactory, keyFactory, sessionLog);
 	    
 	    while (true){

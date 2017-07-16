@@ -11,6 +11,7 @@
 package cbit.vcell.modeldb;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -19,9 +20,9 @@ public class BioModelXMLTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_biomodelxml";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field bioModelRef =	new Field("biomodelRef",		"integer",	"UNIQUE NOT NULL "+BioModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field bmXML =			new Field("bmxml",	"CLOB",	"NOT NULL");
-	public final Field changeDate =		new Field("changeDate","DATE","NOT NULL");
+	public final Field bioModelRef =	new Field("biomodelRef",	SQLDataType.integer,	"UNIQUE NOT NULL "+BioModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field bmXML =			new Field("bmxml",			SQLDataType.clob_text,	"NOT NULL");
+	public final Field changeDate =		new Field("changeDate",		SQLDataType.date,		"NOT NULL");
 	
 	private final Field fields[] = {bioModelRef,bmXML,changeDate};
 	

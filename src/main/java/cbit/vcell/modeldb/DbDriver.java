@@ -27,6 +27,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -59,6 +60,7 @@ import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.image.VCImageInfo;
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.StarField;
@@ -117,14 +119,15 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
 public abstract class DbDriver {
 	private static final Logger lg = Logger.getLogger(DbDriver.class);
 	//
-	private static final int ORACLE_VARCHAR2_SIZE_LIMIT = 4000;
+	private static final int VARCHAR_SIZE_LIMIT = 4000;
 	public static final String INSERT_VARCHAR2_HERE = "INSERT_VARCHAR2_HERE";
 	public static final String INSERT_CLOB_HERE = "INSERT_CLOB_HERE";
 	//
 
-	protected SessionLog log = null;
+	protected final SessionLog log;
+	protected final DatabaseSyntax dbSyntax;
 
-	private static KeyFactory keyFactory = null;
+	protected final KeyFactory keyFactory;
 	
 //	protected DBCacheTable dbc = null;
 	private static Hashtable<BigDecimal, GroupAccess> groupAccessHash = new Hashtable<BigDecimal, GroupAccess>();
@@ -134,7 +137,9 @@ public abstract class DbDriver {
 /**
  * DBService constructor comment.
  */
-public DbDriver(SessionLog sessionLog) {
+public DbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory, SessionLog sessionLog) {
+	this.dbSyntax = dbSyntax;
+	this.keyFactory = keyFactory;
 	this.log = sessionLog;
 }
 
@@ -409,7 +414,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
  * Insert the method's description here.
  * Creation date: (5/23/2006 10:44:52 AM)
  */
-public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user) throws DataAccessException,SQLException{
+public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DatabaseSyntax dbSyntax) throws DataAccessException,SQLException{
 
 	VersionableType vType = null;
 	if(curateSpec.getVCDocumentInfo() instanceof BioModelInfo){
@@ -463,7 +468,7 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 	}
 
 	
-	VCDocumentInfo dbVCDocumentInfo = (VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
+	VCDocumentInfo dbVCDocumentInfo = (VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false,dbSyntax).elementAt(0);
 	return dbVCDocumentInfo;
 }
 
@@ -476,10 +481,10 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
  * @param user cbit.vcell.server.User
  * @param fieldNames java.lang.String[]
  */
-public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, User user,
+public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, KeyFactory keyFactory, User user,
 		FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
 	
-	return FieldDataDBOperationDriver.fieldDataDBOperation(con, user, fieldDataDBOperationSpec);
+	return FieldDataDBOperationDriver.fieldDataDBOperation(con, keyFactory, user, fieldDataDBOperationSpec);
 }
 
 
@@ -504,7 +509,7 @@ protected void deleteVersionableInit(Connection con, User user, VersionableType 
 					throws DependencyException,ObjectNotFoundException,SQLException,DataAccessException,
 							PermissionException {
 	
-	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,vType,true,versionKey,true);
+	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,vType,true,versionKey,true,dbSyntax);
 	if(versionInfoVector.size() == 0){
 		throw new ObjectNotFoundException("DbDriver:deleteVersionableInit "+vType.getTypeName()+"("+versionKey+") not found for user="+user);
 	}
@@ -978,39 +983,72 @@ public static GroupAccess getGroupAccessFromGroupID(java.sql.Connection con,BigD
  * @param rset oracle.jdbc.OracleResultSet
  * @param columnName java.lang.String
  */
-protected static Object getLOB(ResultSet rset,String columnName)
-	throws DataAccessException, SQLException {
-	//This method returns (byte[] for BLOB) or a (String for CLOB)
-	//
-	//try to get the LOB
-	Object lob_object = rset.getObject(columnName);
-	if(rset.wasNull()){
-		//return null if the column actually contains a null
-		return null;
-	}
-	//If its a BLOB return a byte[]
-	if (lob_object instanceof java.sql.Blob) {
-		java.sql.Blob blob_object = (java.sql.Blob) lob_object;
-		try{
-			return blob_object.getBytes((long) 1, (int) blob_object.length());
-		}catch(Exception e){
-			throw new DataAccessException(e.toString());
+protected final static Object getLOB(ResultSet rset,Field column,DatabaseSyntax dbSyntax) throws DataAccessException, SQLException {
+	
+	switch (dbSyntax){
+	case ORACLE:{
+		//This method returns (byte[] for BLOB) or a (String for CLOB)
+		//
+		//try to get the LOB
+		Object lob_object = rset.getObject(column.getUnqualifiedColName());
+		if(rset.wasNull()){
+			//return null if the column actually contains a null
+			return null;
 		}
-	//If its a CLOB return a String
-	} else
-		if (lob_object instanceof java.sql.Clob) {
-			java.sql.Clob clob_object = (java.sql.Clob) lob_object;
-			byte[] ins = new byte[(int) clob_object.length()];
-			try {
-				clob_object.getAsciiStream().read(ins);
-			} catch (Exception e) {
+		//If its a BLOB return a byte[]
+		if (lob_object instanceof java.sql.Blob) {
+			java.sql.Blob blob_object = (java.sql.Blob) lob_object;
+			try{
+				return blob_object.getBytes((long) 1, (int) blob_object.length());
+			}catch(Exception e){
 				throw new DataAccessException(e.toString());
 			}
-			return new String(ins);
+		//If its a CLOB return a String
+		} else
+			if (lob_object instanceof java.sql.Clob) {
+				java.sql.Clob clob_object = (java.sql.Clob) lob_object;
+				byte[] ins = new byte[(int) clob_object.length()];
+				try {
+					clob_object.getAsciiStream().read(ins);
+				} catch (Exception e) {
+					throw new DataAccessException(e.toString());
+				}
+				return new String(ins);
+			}
+		//
+		throw new DataAccessException(
+			"ResultSet column=" + column.getUnqualifiedColName() + " was not a BLOB or CLOB");
+	}
+	case POSTGRES:{
+		// TODO: POSTGRES need to test.
+		if (column.getSqlDataType()==SQLDataType.blob_bytea){
+			//
+			// binary data (bytea)
+			//
+			String result = rset.getString(column.getUnqualifiedColName());
+			if (rset.wasNull()){
+				return null;
+			}else{
+				return result;
+			}
+		}else if (column.getSqlDataType()==SQLDataType.clob_text){
+			//
+			// text data
+			//
+			byte[] bytes = rset.getBytes(column.getUnqualifiedColName());
+			if (rset.wasNull()){
+				return null;
+			}else{
+				return bytes;
+			}
+		}else{
+			throw new DataAccessException("unexpected SQLDataType "+column.getSqlDataType());
 		}
-	//
-	throw new DataAccessException(
-		"ResultSet column=" + columnName + " was not a BLOB or CLOB");
+	}
+	default:{
+		throw new DataAccessException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 
 }
 
@@ -1038,17 +1076,8 @@ private java.util.Date getNewDate(java.sql.Connection con) {
  * This method was created in VisualAge.
  * @return cbit.sql.KeyValue
  */
-private static java.math.BigDecimal getNewGroupID(Connection con) throws java.sql.SQLException {
+private static java.math.BigDecimal getNewGroupID(Connection con, KeyFactory keyFactory) throws java.sql.SQLException {
 	return keyFactory.getUniqueBigDecimal(con);
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- */
-public static KeyValue getNewKey(Connection con) throws java.sql.SQLException {
-	return keyFactory.getNewKey(con);
 }
 
 
@@ -1153,7 +1182,7 @@ private static User getUserFromUserid(Connection con, String userid) throws SQLE
  * Creation date: (9/24/2003 12:54:32 PM)
  * @return cbit.vcell.modeldb.VCInfoContainer
  */
-public static VCInfoContainer getVCInfoContainer(User user,Connection con,SessionLog mySessionLog) throws SQLException,DataAccessException{
+public static VCInfoContainer getVCInfoContainer(User user,Connection con,SessionLog mySessionLog, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
 
 	VCInfoContainer results = null;
 	//
@@ -1186,7 +1215,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			ArrayList<BioModelInfo> tempInfos = new ArrayList<BioModelInfo>();
 			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
-				BioModelInfo versionInfo = (BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog);
+				BioModelInfo versionInfo = (BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog,dbSyntax);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1215,7 +1244,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			ArrayList<MathModelInfo> tempInfos = new ArrayList<MathModelInfo>();
 			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
-				MathModelInfo versionInfo = (MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog);
+				MathModelInfo versionInfo = (MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog,dbSyntax);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1244,7 +1273,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			ArrayList<VCImageInfo> tempInfos = new ArrayList<VCImageInfo>();
 			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
-				VCImageInfo versionInfo = (VCImageInfo)ImageTable.table.getInfo(rset,con,mySessionLog);
+				VCImageInfo versionInfo = (VCImageInfo)ImageTable.table.getInfo(rset,con,mySessionLog,dbSyntax);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1306,7 +1335,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
  * @param user cbit.vcell.server.User
  * @param vType int
  */
-public static Vector<VersionInfo> getVersionableInfos(Connection con,SessionLog gvilog,User user, VersionableType vType, boolean bAll,KeyValue versionKey,boolean bCheckPermission) 
+public static Vector<VersionInfo> getVersionableInfos(Connection con,SessionLog gvilog,User user, VersionableType vType, boolean bAll,KeyValue versionKey,boolean bCheckPermission, DatabaseSyntax dbSyntax) 
 							throws ObjectNotFoundException, SQLException, DataAccessException {
 								
 	if (user == null) {
@@ -1364,15 +1393,15 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,SessionLog 
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
 			if (vType.equals(VersionableType.BioModelMetaData)){
-				vInfo = ((BioModelTable)vTable).getInfo(rset,con,gvilog);
+				vInfo = ((BioModelTable)vTable).getInfo(rset,con,gvilog,dbSyntax);
 			}else if (vType.equals(VersionableType.MathModelMetaData)){
-				vInfo = ((MathModelTable)vTable).getInfo(rset,con,gvilog);
+				vInfo = ((MathModelTable)vTable).getInfo(rset,con,gvilog,dbSyntax);
 			}else if (vType.equals(VersionableType.Simulation)){
 				vInfo = ((SimulationTable)vTable).getInfo(rset,con,gvilog);
 			}else if (vType.equals(VersionableType.Geometry)){
 				vInfo = ((GeometryTable)vTable).getInfo(rset,con,gvilog);
 			}else if (vType.equals(VersionableType.VCImage)){
-				vInfo = ((ImageTable)vTable).getInfo(rset,con,gvilog);
+				vInfo = ((ImageTable)vTable).getInfo(rset,con,gvilog,dbSyntax);
 			}else if (vType.equals(VersionableType.Model)){
 				vInfo = ((ModelTable)vTable).getInfo(rset,con,gvilog);
 			}else if (vType.equals(VersionableType.SimulationContext)){
@@ -1412,15 +1441,15 @@ public String getVersionableXML(Connection con,VersionableType vType, KeyValue v
 
 	String xmlTableName = null;
 	String versionableRefColName = null;
-	String xmlColName = null;
+	Field xmlCol = null;
 	if (vType.equals(VersionableType.BioModelMetaData)){
 		xmlTableName = BioModelXMLTable.table.getTableName();
 		versionableRefColName = BioModelXMLTable.table.bioModelRef.toString();
-		xmlColName = BioModelXMLTable.table.bmXML.toString();
+		xmlCol = BioModelXMLTable.table.bmXML;
 	}else if(vType.equals(VersionableType.MathModelMetaData)){
 		xmlTableName = MathModelXMLTable.table.getTableName();
 		versionableRefColName = MathModelXMLTable.table.mathModelRef.toString();
-		xmlColName = MathModelXMLTable.table.mmXML.toString();
+		xmlCol = MathModelXMLTable.table.mmXML;
 	}else{
 		throw new IllegalArgumentException("vType " + vType + " not supported by " + this.getClass());
 	}
@@ -1428,12 +1457,12 @@ public String getVersionableXML(Connection con,VersionableType vType, KeyValue v
 	Statement s = null;
 	try {
 		s = con.createStatement();
-		String sql = "SELECT " + xmlColName + " FROM " + xmlTableName +
+		String sql = "SELECT " + xmlCol.getUnqualifiedColName() + " FROM " + xmlTableName +
 					" WHERE " + versionableRefColName + " = " + vKey;
 		//oracle.jdbc.OracleResultSet rset = (oracle.jdbc.OracleResultSet)s.executeQuery(sql);
 		ResultSet rset = s.executeQuery(sql);
 		if(rset.next()){
-			return (String)getLOB(rset,xmlColName);
+			return (String)getLOB(rset,xmlCol,dbSyntax);
 		}else{
 			throw new ObjectNotFoundException("getVersionableXML for "+vType+" key="+vKey+" Not Found");
 		}
@@ -1504,9 +1533,9 @@ private static Version getVersionFromKeyValue(Connection con,VersionableType vTy
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public static void groupAddUser(Connection con,SessionLog newLog, User owner,
+public static void groupAddUser(Connection con, KeyFactory keyFactory, SessionLog newLog, User owner,
 										VersionableType vType, KeyValue vKey,
-										String userAddToGroupString,boolean isHiddenFromOwner) 
+										String userAddToGroupString,boolean isHiddenFromOwner,DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
 
 
@@ -1578,7 +1607,7 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
 	//
 	if(updatedGroupID == null){
 		// Create new Group id
-		updatedGroupID = getNewGroupID(con);
+		updatedGroupID = getNewGroupID(con,keyFactory);
 		int groupMemberCount = 1;
 		// Get all the members of the currentVersion Group or skip if currentVersion group is GroupAccessNone
 		// Don't worry about GroupAccessAll, we couldn't have gotten this far
@@ -1587,7 +1616,7 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
 		//
 		sql = "INSERT INTO "+GroupTable.table.getTableName()+
 				" VALUES ( "+
-				getNewKey(con).toString()+","+
+				keyFactory.getNewKey(con).toString()+","+
 				updatedGroupID+","+
 				userAddToGroup.getID().toString()+","+
 				(isHiddenFromOwner?"1":"0")+","+
@@ -1602,7 +1631,7 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
 				String userRef = normalUsers[i].getID().toString();
 				sql = "INSERT INTO "+GroupTable.table.getTableName()+
 						" VALUES ( "+
-						getNewKey(con).toString()+","+
+						keyFactory.getNewKey(con).toString()+","+
 						updatedGroupID+","+
 						userRef+","+
 						(false?"1":"0")+","+
@@ -1616,7 +1645,7 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
 				String userRef = hiddenUsers[i].getID().toString();
 				sql = "INSERT INTO "+GroupTable.table.getTableName()+
 						" VALUES ( "+
-						getNewKey(con).toString()+","+
+						keyFactory.getNewKey(con).toString()+","+
 						updatedGroupID+","+
 						userRef+","+
 						(true?"1":"0")+","+
@@ -1638,7 +1667,7 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
 		//
 		// check if update failed
 		//
-		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true,dbSyntax);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("Add User "+userAddToGroup+" Permission to access failed, "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1655,9 +1684,9 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
+public static void groupRemoveUser(Connection con,KeyFactory keyFactory, SessionLog newLog, User owner,
 										VersionableType vType, KeyValue vKey,
-										String userRemoveFromGroupString,boolean isHiddenFromOwner) 
+										String userRemoveFromGroupString,boolean isHiddenFromOwner,DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
 
 
@@ -1723,7 +1752,7 @@ public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
 	// group not found, must create new one
 	//
 	if(updatedGroupID == null){
-		updatedGroupID = getNewGroupID(con);
+		updatedGroupID = getNewGroupID(con,keyFactory);
 		//
 		// Re-Add Normal users not removed
 		//
@@ -1733,7 +1762,7 @@ public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
 				String userRef = normalUsers[i].getID().toString();
 				sql = "INSERT INTO "+GroupTable.table.getTableName()+
 						" VALUES ( "+
-						getNewKey(con).toString()+","+
+						keyFactory.getNewKey(con).toString()+","+
 						updatedGroupID+","+
 						userRef+","+
 						(false?"1":"0")+","+
@@ -1751,7 +1780,7 @@ public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
 				String userRef = hiddenUsers[i].getID().toString();
 				sql = "INSERT INTO "+GroupTable.table.getTableName()+
 						" VALUES ( "+
-						getNewKey(con).toString()+","+
+						keyFactory.getNewKey(con).toString()+","+
 						updatedGroupID+","+
 						userRef+","+
 						(true?"1":"0")+","+
@@ -1773,7 +1802,7 @@ public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
 		//
 		// check if update failed, or just already updated
 		//
-		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true,dbSyntax);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("Remove User "+userRemoveFromGroup+" Permission to access failed, "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1791,7 +1820,7 @@ public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
  * @param versionable cbit.sql.Versionable
  */
 public static void groupSetPrivate(Connection con,SessionLog newLog,User owner, 
-										VersionableType vType, KeyValue vKey) 
+										VersionableType vType, KeyValue vKey,DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException/*, DependencyException*/ {
 
 
@@ -1814,7 +1843,7 @@ public static void groupSetPrivate(Connection con,SessionLog newLog,User owner,
 		//
 		// check if update failed, or just already updated
 		//
-		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true,dbSyntax);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("groupSetPrivate failed "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1832,7 +1861,7 @@ public static void groupSetPrivate(Connection con,SessionLog newLog,User owner,
  * @param versionable cbit.sql.Versionable
  */
 public static void groupSetPublic(Connection con,SessionLog newLog,User owner, 
-										VersionableType vType, KeyValue vKey) 
+										VersionableType vType, KeyValue vKey, DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
 
 
@@ -1856,7 +1885,7 @@ public static void groupSetPublic(Connection con,SessionLog newLog,User owner,
 		//
 		// check if update failed, or just already updated
 		//
-		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true,dbSyntax);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("groupSetPublic failed "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1877,7 +1906,7 @@ private void insertSoftwareVersion(Connection con, KeyValue versionKey) throws S
 	updateCleanSQL(con,
 		"INSERT INTO "+SoftwareVersionTable.table.getTableName()+" "+
 		SoftwareVersionTable.table.getSQLColumnList()+
-		" VALUES "+SoftwareVersionTable.table.getSQLValueList(versionKey)
+		" VALUES "+SoftwareVersionTable.table.getSQLValueList(versionKey,keyFactory)
 		);
 }
 
@@ -1889,7 +1918,7 @@ private void insertSoftwareVersion(Connection con, KeyValue versionKey) throws S
  * @param pRef cbit.sql.KeyValue
  * @param bCommit boolean
  */
-public static void insertVersionableChildSummary(Connection con,String serialDBChildSummary,VersionableType vType,KeyValue vKey)
+public static void insertVersionableChildSummary(Connection con,String serialDBChildSummary,VersionableType vType,KeyValue vKey, DatabaseSyntax dbSyntax)
 						throws SQLException,DataAccessException {
 						
 	Table csTable = null;
@@ -1922,7 +1951,7 @@ public static void insertVersionableChildSummary(Connection con,String serialDBC
 			) +
 		" WHERE " + csTable.id.getUnqualifiedColName()+" = "+vKey.toString();
 
-	varchar2_CLOB_update(con,sql,serialDBChildSummary,csTable,vKey,csLargeCol,csSmallCol);
+	varchar2_CLOB_update(con,sql,serialDBChildSummary,csTable,vKey,csLargeCol,csSmallCol,dbSyntax);
 }
 
 
@@ -1948,7 +1977,7 @@ throws SQLException,DataAccessException{
 	User owner = user;
 	//AccessInfo accessInfo = new AccessInfo(AccessInfo.PRIVATE_CODE);
 	GroupAccess accessInfo = new GroupAccessNone();
-	KeyValue versionKey = getNewKey(con);
+	KeyValue versionKey = keyFactory.getNewKey(con);
 	java.util.Date date = getNewDate(con);
 //	if(versionable.getVersion().getVersionKey() != null){
 //		throw new DataAccessException("GeomDbDriver:insertVersionable, VersionKey must be null to insert");
@@ -1986,30 +2015,41 @@ throws SQLException,DataAccessException{
  * @param pRef cbit.sql.KeyValue
  * @param bCommit boolean
  */
-public static void insertVersionableXML(Connection con,String xml,VersionableType vType,KeyValue vKey) 
+public static void insertVersionableXML(Connection con,String xml,VersionableType vType,KeyValue vKey, DatabaseSyntax dbSyntax) 
 					throws DataAccessException, SQLException, RecordChangedException {
-						
-	String xmlTableName = null;
-	String versionableRefColName = null;
-	String xmlColName = null;
-	if (vType.equals(VersionableType.BioModelMetaData)){
-		xmlTableName = BioModelXMLTable.table.getTableName();
-		versionableRefColName = BioModelXMLTable.table.bioModelRef.toString();
-		xmlColName = BioModelXMLTable.table.bmXML.toString();
-	}else if(vType.equals(VersionableType.MathModelMetaData)){
-		xmlTableName = MathModelXMLTable.table.getTableName();
-		versionableRefColName = MathModelXMLTable.table.mathModelRef.toString();
-		xmlColName = MathModelXMLTable.table.mmXML.toString();
-	}else{
-		throw new IllegalArgumentException("vType " + vType + " not supported");
-	}
+	switch (dbSyntax){
+	case ORACLE:{
+		String xmlTableName = null;
+		String versionableRefColName = null;
+		Field xmlCol = null;
+		if (vType.equals(VersionableType.BioModelMetaData)){
+			xmlTableName = BioModelXMLTable.table.getTableName();
+			versionableRefColName = BioModelXMLTable.table.bioModelRef.toString();
+			xmlCol = BioModelXMLTable.table.bmXML;
+		}else if(vType.equals(VersionableType.MathModelMetaData)){
+			xmlTableName = MathModelXMLTable.table.getTableName();
+			versionableRefColName = MathModelXMLTable.table.mathModelRef.toString();
+			xmlCol = MathModelXMLTable.table.mmXML;
+		}else{
+			throw new IllegalArgumentException("vType " + vType + " not supported");
+		}
 		updateCleanSQL(con,"DELETE FROM "+xmlTableName +
 			" WHERE " + versionableRefColName + " = " + vKey.toString());
 		
 		updateCleanSQL(con,"INSERT INTO "+xmlTableName+
-			" VALUES (NEWSEQ.NEXTVAL,"+vKey.toString()+",EMPTY_CLOB(),SYSDATE)");
+			" VALUES (NEWSEQ.NEXTVAL,"+vKey.toString()+",EMPTY_CLOB(),current_timestamp)");
 		
-		updateCleanLOB(con,versionableRefColName,vKey,xmlTableName,xmlColName,xml);
+		updateCleanLOB(con,versionableRefColName,vKey,xmlTableName,xmlCol,xml,dbSyntax);
+		break;
+	}
+	case POSTGRES:{
+		// TODO: POSTGRES
+		throw new RuntimeException("DbDriver.insertVersionableXML() not yet implemented for Postgres");
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 
 
@@ -2152,15 +2192,6 @@ public static void replacePreferences(Connection con, User user, Preference[] pr
 
 /**
  * This method was created in VisualAge.
- * @param keyFactory cbit.sql.KeyFactory
- */
-public static void setKeyFactory(KeyFactory aKeyFactory) {
-	keyFactory = aKeyFactory;
-}
-
-
-/**
- * This method was created in VisualAge.
  * @param vTable cbit.sql.VersionTable
  * @param versionKey cbit.sql.KeyValue
  */
@@ -2218,7 +2249,7 @@ public static void showMetaData(ResultSet rset) throws SQLException {
  * Creation date: (10/16/2004 2:39:49 PM)
  * @return cbit.vcell.numericstest.TestSuiteInfoNew[]
  */
-public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User user,SessionLog sessionLog)
+public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User user,SessionLog sessionLog,DatabaseSyntax dbSyntax)
 			throws SQLException, DataAccessException {
 	
 	if(!user.isTestAccount()){
@@ -2352,7 +2383,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 
 			SimulationInfo simInfo = (SimulationInfo)simulationInfoH.get(simRef);
 			if(simInfo == null){
-				Vector<VersionInfo> simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRef),false);
+				Vector<VersionInfo> simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRef),false,dbSyntax);
 				if (simVector != null && simVector.size() > 0) {
 					simInfo = (SimulationInfo)simVector.firstElement();
 					simulationInfoH.put(simRef,simInfo);
@@ -2364,7 +2395,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			if(simRegrRef != null){
 				regrSimInfo = (SimulationInfo)simulationInfoH.get(simRegrRef);
 				if(regrSimInfo == null){
-					Vector<VersionInfo> regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRegrRef),false);
+					Vector<VersionInfo> regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRegrRef),false,dbSyntax);
 					if (regSimVector != null && regSimVector.size() > 0) {
 						regrSimInfo = (SimulationInfo)regSimVector.firstElement();
 						simulationInfoH.put(simRegrRef,regrSimInfo);
@@ -2372,7 +2403,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 				}
 				regrMathModelInfo = (MathModelInfo)mathModelInfoH.get(mathRegrRef);
 				if(regrMathModelInfo == null){
-					Vector<VersionInfo> regMathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mathRegrRef),false);
+					Vector<VersionInfo> regMathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mathRegrRef),false,dbSyntax);
 					if (regMathVector != null && regMathVector.size() > 0) {
 						regrMathModelInfo = (MathModelInfo)regMathVector.firstElement();
 						mathModelInfoH.put(mathRegrRef,regrMathModelInfo);
@@ -2480,7 +2511,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 
 			SimulationInfo simInfo = (SimulationInfo)simulationInfoH.get(tcSimRef);
 			if(simInfo == null){
-				Vector<VersionInfo> simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(tcSimRef),false);
+				Vector<VersionInfo> simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(tcSimRef),false,dbSyntax);
 				if (simVector != null && simVector.size() == 1) {
 					simInfo = (SimulationInfo)simVector.firstElement();
 					simulationInfoH.put(tcSimRef,simInfo);
@@ -2494,7 +2525,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			if(regrSimRef != null){
 				regrSimInfo = (SimulationInfo)simulationInfoH.get(regrSimRef);
 				if(regrSimInfo == null){
-					Vector<VersionInfo> regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(regrSimRef),false);
+					Vector<VersionInfo> regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(regrSimRef),false,dbSyntax);
 					if (regSimVector != null && regSimVector.size() == 1) {
 						regrSimInfo = (SimulationInfo)regSimVector.firstElement();
 						simulationInfoH.put(regrSimRef,regrSimInfo);
@@ -2504,7 +2535,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 				}
 				regrBioModelInfo = (BioModelInfo)mathModelInfoH.get(regrBioModelRef);
 				if(regrBioModelInfo == null){
-					Vector<VersionInfo> regBioModelVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(regrBioModelRef),false);
+					Vector<VersionInfo> regBioModelVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(regrBioModelRef),false,dbSyntax);
 					if (regBioModelVector != null && regBioModelVector.size() == 1) {
 						regrBioModelInfo = (BioModelInfo)regBioModelVector.firstElement();
 						mathModelInfoH.put(regrBioModelRef,regrBioModelInfo);
@@ -2631,7 +2662,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			if(mmRef != null){
 				mmInfo = (MathModelInfo)mathModelInfoH.get(mmRef);		
 				if(mmInfo == null){
-					Vector<VersionInfo> mathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mmRef),false);
+					Vector<VersionInfo> mathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mmRef),false,dbSyntax);
 					if (mathVector != null && mathVector.size() > 0) {
 						mmInfo = (MathModelInfo)mathVector.firstElement();
 						mathModelInfoH.put(mmRef,mmInfo);
@@ -2640,7 +2671,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			}else if(bioModelRef != null){
 				bmInfo = (BioModelInfo)bioModelInfoH.get(bioModelRef);		
 				if(bmInfo == null){
-					Vector<VersionInfo> bmAppVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(bioModelRef),false);
+					Vector<VersionInfo> bmAppVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(bioModelRef),false,dbSyntax);
 					if (bmAppVector != null && bmAppVector.size() > 0) {
 						bmInfo = (BioModelInfo)bmAppVector.firstElement();
 						bioModelInfoH.put(bioModelRef,bmInfo);
@@ -2966,7 +2997,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
  * @return cbit.vcell.numericstest.TestSuiteNew
  * @param tsop cbit.vcell.numericstest.TestSuiteOP
  */
-public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,User user,SessionLog sessionLog) 
+public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,User user,SessionLog sessionLog, KeyFactory keyFactory) 
 			throws SQLException,DataAccessException{
 
 	java.util.TreeSet<BigDecimal> changedTestSuiteKeys = new java.util.TreeSet<BigDecimal>();
@@ -3235,7 +3266,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				"INSERT INTO "+TFTestSuiteTable.table.getTableName()+" VALUES("+
 					changedTSKey+",'"+addts_tsop.getTestSuiteVersionID()+"',"+
 					"'"+addts_tsop.getVCellBuildVersionID()+"'"+","+"'"+addts_tsop.getNumericsBuildVersionID()+"'"+","+
-					"SYSDATE,SYSDATE,"+(annotation == null?"NULL":"'"+annotation+"'")+","+NOT_LOCKED+")";
+					"current_timestamp,current_timestamp,"+(annotation == null?"NULL":"'"+annotation+"'")+","+NOT_LOCKED+")";
 			stmt.executeUpdate(sql);
 			if(addts_tsop.getAddTestCasesOPs() != null){
 				for(int i=0;i<addts_tsop.getAddTestCasesOPs().length;i+= 1){
@@ -3248,7 +3279,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 								((AddTestCasesOPMathModel)atcOP).getMathModelKey(),
 								atcOP.getTestCaseType(),atcOP.getAnnotation(),
 								((AddTestCasesOPMathModel)atcOP).getAddTestCriteriaOPsMathModel()),
-							con,user,sessionLog);
+							con,user,sessionLog,keyFactory);
 					}else if(atcOP instanceof AddTestCasesOPBioModel){
 						testSuiteOP(
 							new AddTestCasesOPBioModel(
@@ -3257,7 +3288,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 								((AddTestCasesOPBioModel)atcOP).getSimContextKey(),
 								atcOP.getTestCaseType(),atcOP.getAnnotation(),
 								((AddTestCasesOPBioModel)atcOP).getAddTestCriteriaOPsBioModel()),
-							con,user,sessionLog);
+							con,user,sessionLog,keyFactory);
 					}
 				}
 			}
@@ -3296,7 +3327,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			stmt.executeUpdate(
 				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
 					tcKey.toString()+","+addtc_tsop.getTestSuiteKey().toString()+",NULL,"+
-					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"SYSDATE"+","+bmSimContextLinkRef.toString()+")");
+					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+","+bmSimContextLinkRef.toString()+")");
 			if(addtc_tsop.getAddTestCriteriaOPsBioModel() != null){
 				for(int i=0;i<addtc_tsop.getAddTestCriteriaOPsBioModel().length;i+= 1){
 					//Set new TSKey,TCaseKey and do child OPs
@@ -3306,7 +3337,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 							tcKey,atcritOP.getBioModelSimKey(),
 							atcritOP.getRegressionBioModelKey(),atcritOP.getRegressionBioModelSimKey(),
 							atcritOP.getMaxAbsoluteError(),atcritOP.getMaxRelativeError(),atcritOP.getAddTestResultsOP()),
-						con,user,sessionLog);
+						con,user,sessionLog,keyFactory);
 				}
 			}
 			changedTestSuiteKeys.add(addtc_tsop.getTestSuiteKey());
@@ -3323,7 +3354,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			stmt.executeUpdate(
 				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
 					tcKey.toString()+","+addtc_tsop.getTestSuiteKey().toString()+","+mmKey.toString()+","+
-					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"SYSDATE"+",NULL)");
+					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+",NULL)");
 			if(addtc_tsop.getAddTestCriteriaOPsMathModel() != null){
 				for(int i=0;i<addtc_tsop.getAddTestCriteriaOPsMathModel().length;i+= 1){
 					//Set new TSKey,TCaseKey and do child OPs
@@ -3334,7 +3365,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 							atcritOP.getRegressionMathModelKey(),
 							atcritOP.getRegressionMathModelSimKey(),
 							atcritOP.getMaxAbsoluteError(),atcritOP.getMaxRelativeError(),atcritOP.getAddTestResultsOP()),
-						con,user,sessionLog);
+						con,user,sessionLog,keyFactory);
 				}
 			}
 			changedTestSuiteKeys.add(addtc_tsop.getTestSuiteKey());			
@@ -3443,14 +3474,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 						addtcrit_tsop.getRegressionMathModelKey(),
 						addtcrit_tsop.getRegressionMathModelSimKey(),
 						addtcrit_tsop.getMaxAbsoluteError(),addtcrit_tsop.getMaxRelativeError()),
-					con,user,sessionLog);
+					con,user,sessionLog,keyFactory);
 			}
 			if(addtcrit_tsop.getAddTestResultsOP() != null){
 				AddTestResultsOP atrOP = addtcrit_tsop.getAddTestResultsOP();
 				//Set new TSKey,TCritKey and do child OPs
 				testSuiteOP(
 					new AddTestResultsOP(tcritKey,atrOP.getVariableComparisonSummaries()),
-					con,user,sessionLog);
+					con,user,sessionLog, keyFactory);
 			}
 			
 			rset = stmt.executeQuery(
@@ -3541,14 +3572,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 						addtcrit_tsop.getRegressionBioModelKey(),
 						addtcrit_tsop.getRegressionBioModelSimKey(),
 						addtcrit_tsop.getMaxAbsoluteError(),addtcrit_tsop.getMaxRelativeError()),
-					con,user,sessionLog);
+					con,user,sessionLog,keyFactory);
 			}
 			if(addtcrit_tsop.getAddTestResultsOP() != null){
 				AddTestResultsOP atrOP = addtcrit_tsop.getAddTestResultsOP();
 				//Set new TSKey,TCritKey and do child OPs
 				testSuiteOP(
 					new AddTestResultsOP(tcritKey,atrOP.getVariableComparisonSummaries()),
-					con,user,sessionLog);
+					con,user,sessionLog,keyFactory);
 			}			
 				
 			rset = stmt.executeQuery(
@@ -3696,7 +3727,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
 			if(newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
-				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[] {tcritKey}), con, user, sessionLog);
+				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[] {tcritKey}), con, user, sessionLog,keyFactory);
 			}
 
 			ResultSet rset = stmt.executeQuery(
@@ -3750,7 +3781,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog,keyFactory);
 
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3820,7 +3851,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog,keyFactory);
 			
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3852,7 +3883,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+maxRelErrorArr[i]:"")+
 					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString()
 					);
-				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
+				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog, keyFactory);
 			}
 			ResultSet rset = stmt.executeQuery(
 					"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3932,7 +3963,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					for (int j = 0; j < tcritKeyV.size(); j++) {
 						EditTestCriteriaOPReportStatus etcors = 
 							new EditTestCriteriaOPReportStatus(tcritKeyV.elementAt(j),TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null);
-						testSuiteOP(etcors, con, user, sessionLog);
+						testSuiteOP(etcors, con, user, sessionLog, keyFactory);
 						
 					}
 				}
@@ -4290,43 +4321,55 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
  * This method was created in VisualAge.
  * @param sql java.lang.String
  */
-protected static void updateCleanLOB(Connection con,String conditionalColumnName,KeyValue conditionalValue,String table,String column,Object lob_data) throws SQLException,DataAccessException {
+protected final static void updateCleanLOB(Connection con,String conditionalColumnName,KeyValue conditionalValue,String table,Field column,Object lob_data, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 	if (table == null || con == null || column == null || lob_data == null) {
 		throw new IllegalArgumentException("Improper parameters for updateCleanLOB");
 	}
 	if(!(lob_data instanceof byte[]) && !(lob_data instanceof String)){
 		throw new IllegalArgumentException("Wrong DataType "+lob_data.getClass().toString()+" for updateCleanLOB.   only byte[] and String allowed");
 	}
-	//Select the LOB(column) from the table
-	String sql = "SELECT "+	column + " FROM " + table +
-				" WHERE "+conditionalColumnName+" = " + conditionalValue +
-				" FOR UPDATE OF " + table+"."+column;
-	//
-	//System.out.println(sql);
-	//
-	Statement s = con.createStatement();
-	try {
-		ResultSet rset = s.executeQuery(sql);
-		if(rset.next()){
-			Object lob_object = rset.getObject(column);
-			if(lob_data instanceof byte[] && lob_object instanceof java.sql.Blob){
-				//java.sql.Blob selectedBLOB = ((oracle.jdbc.OracleResultSet) rset).getBLOB(1);
-				java.sql.Blob selectedBLOB = (java.sql.Blob)lob_object;
-				selectedBLOB.setBytes(1,(byte[])lob_data);
-			}else if (lob_data instanceof String && lob_object instanceof java.sql.Clob){
-				//java.sql.Clob selectedCLOB = ((oracle.jdbc.OracleResultSet) rset).getCLOB(1);
-				java.sql.Clob selectedCLOB = (java.sql.Clob)lob_object;
-				selectedCLOB.setString(1,(String)lob_data);
+	switch (dbSyntax){
+	case ORACLE:{
+		//Select the LOB(column) from the table
+		String sql = "SELECT "+	column.getUnqualifiedColName() + " FROM " + table +
+					" WHERE "+conditionalColumnName+" = " + conditionalValue +
+					" FOR UPDATE OF " + table+"."+column.getUnqualifiedColName();
+		//
+		//System.out.println(sql);
+		//
+		Statement s = con.createStatement();
+		try {
+			ResultSet rset = s.executeQuery(sql);
+			if(rset.next()){
+				Object lob_object = rset.getObject(column.getUnqualifiedColName());
+				if(lob_data instanceof byte[] && lob_object instanceof java.sql.Blob){
+					//java.sql.Blob selectedBLOB = ((oracle.jdbc.OracleResultSet) rset).getBLOB(1);
+					java.sql.Blob selectedBLOB = (java.sql.Blob)lob_object;
+					selectedBLOB.setBytes(1,(byte[])lob_data);
+				}else if (lob_data instanceof String && lob_object instanceof java.sql.Clob){
+					//java.sql.Clob selectedCLOB = ((oracle.jdbc.OracleResultSet) rset).getCLOB(1);
+					java.sql.Clob selectedCLOB = (java.sql.Clob)lob_object;
+					selectedCLOB.setString(1,(String)lob_data);
+				}
+				else{
+					throw new DataAccessException("DataType="+lob_data.getClass().toString()+" to store did not match column="+column+" DataType="+lob_object.getClass().toString());
+				}
+			}else{
+				throw new DataAccessException("updateCleanLOB: No results on select "+conditionalColumnName+"="+conditionalValue+" from "+table+"."+column+" for LOB update");
 			}
-			else{
-				throw new DataAccessException("DataType="+lob_data.getClass().toString()+" to store did not match column="+column+" DataType="+lob_object.getClass().toString());
-			}
-		}else{
-			throw new DataAccessException("updateCleanLOB: No results on select "+conditionalColumnName+"="+conditionalValue+" from "+table+"."+column+" for LOB update");
+		} finally {
+			s.close();
 		}
-	} finally {
-		s.close();
+		break;
 	}
+	case POSTGRES:{
+		// TODO: POSTGRES
+		throw new RuntimeException("DbDriver.updateCleanLOB() not yet implemented for Postgres");
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}	
 }
 
 
@@ -4407,7 +4450,7 @@ protected Version updateVersionableInit(InsertHashtable hash, Connection con, Us
 	}
 
 	
-	KeyValue versionKey = getNewKey(con);
+	KeyValue versionKey = keyFactory.getNewKey(con);
 	java.util.Date date = getNewDate(con);
 
 	//
@@ -4445,26 +4488,51 @@ protected Version updateVersionableInit(InsertHashtable hash, Connection con, Us
  * @return java.lang.String
  * @param size int
  */
-public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field clobField) throws SQLException,DataAccessException{
+public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field clob_or_text_Field, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
 
-	String results;
+	if (clob_or_text_Field.getSqlDataType()!=SQLDataType.clob_text){
+		throw new DataAccessException("expecting clobField to be data type "+SQLDataType.clob_text);
+	}
 	
+	//
+	// first check the varchar field
+	//
 	String temp = rset.getString(varchar2Field.getUnqualifiedColName());
 	if(rset.wasNull() || temp == null || temp.length() == 0){
-		temp = (String) DbDriver.getLOB(rset,clobField.getUnqualifiedColName());
-		if(rset.wasNull() || temp == null || temp.length() == 0){
-			results = null;
-		}else{
-			//Strings have to be SQL unmangled
-			results = TokenMangler.getSQLRestoredString(temp);
+		//
+		// varchar empty, next try the "CLOB" or "TEXT" field
+		//
+		switch (dbSyntax){
+		case ORACLE:{
+			//
+			// Oracle uses CLOBs
+			//
+			temp = (String) DbDriver.getLOB(rset,clob_or_text_Field,dbSyntax);
+			if(rset.wasNull() || temp == null || temp.length() == 0){
+				return null;
+			}else{
+				return TokenMangler.getSQLRestoredString(temp);
+			}
+		}
+		case POSTGRES:{
+			// TODO: POSTGRES need to test
+			//
+			// Postgres uses TEXT
+			//
+			temp = rset.getString(clob_or_text_Field.getUnqualifiedColName());
+			if(rset.wasNull() || temp == null || temp.length() == 0){
+				return null;
+			}else{
+				return TokenMangler.getSQLRestoredString(temp);
+			}
+		}
+		default:{
+			throw new DataAccessException("unexpected DatabaseSyntax "+dbSyntax);
+		}
 		}
 	}else{
-		//CLOBs do not have to be SQL unmangled
-		results = temp;
+		return TokenMangler.getSQLRestoredString(temp);
 	}
-
-	return results;
-
 }
 
 
@@ -4475,9 +4543,7 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
  * @param size int
  */
 public static boolean varchar2_CLOB_is_Varchar2_OK(String data) {
-
-	return (TokenMangler.getSQLEscapedString(data).length() <= ORACLE_VARCHAR2_SIZE_LIMIT);
-	
+	return (TokenMangler.getSQLEscapedString(data).length() <= VARCHAR_SIZE_LIMIT);
 }
 
 
@@ -4487,32 +4553,64 @@ public static boolean varchar2_CLOB_is_Varchar2_OK(String data) {
  * @return java.lang.String
  * @param size int
  */
-public static void varchar2_CLOB_update(
+public final static void varchar2_CLOB_update(
     Connection con,
     String sql,//marked sql
     String data,
     Table targetTable,//Where data gets stored
     KeyValue targetID,//for clob if necessary
     Field targetCLOBField,
-    Field targetVarchar2Field)
+    Field targetVarchar2Field,
+    DatabaseSyntax dbSyntax)
 		throws SQLException,DataAccessException{
+	
+	if (targetCLOBField.getSqlDataType() != SQLDataType.clob_text){
+		throw new DataAccessException("unexpected clob field SQLDataType "+targetCLOBField.getSqlDataType());
+	}
 
     int marker_index;
     if ((marker_index = sql.indexOf(INSERT_CLOB_HERE)) != -1) {
-	    //Store in CLOB
-        StringBuffer sb = new StringBuffer(sql);
-        sb.replace(
-            marker_index,
-            marker_index + INSERT_CLOB_HERE.length(),
-            "EMPTY_CLOB()");
-        updateCleanSQL(con, sb.toString());
-        updateCleanLOB(
-            con,
-            targetTable.id.getUnqualifiedColName(),
-            targetID,
-            targetTable.tableName,
-            targetCLOBField.getUnqualifiedColName(),
-            data);
+    	switch (dbSyntax){
+    	case ORACLE:{
+    		//
+		    //Store in CLOB
+    		//
+	        StringBuffer sb = new StringBuffer(sql);
+	        sb.replace(
+	            marker_index,
+	            marker_index + INSERT_CLOB_HERE.length(),
+	            "EMPTY_CLOB()");
+	        updateCleanSQL(con, sb.toString());
+	        updateCleanLOB(
+	            con,
+	            targetTable.id.getUnqualifiedColName(),
+	            targetID,
+	            targetTable.tableName,
+	            targetCLOBField,
+	            data,
+	            dbSyntax);
+	        break;
+    	}
+    	case POSTGRES:{
+    		// TODO: POSTGRES need to test
+    		//
+		    //Store in TEXT
+    		//
+	        StringBuffer sb = new StringBuffer(sql);
+	        sb.replace(
+	            marker_index,
+	            marker_index + INSERT_CLOB_HERE.length(),
+	            "?");
+	        try (PreparedStatement pstmt = con.prepareStatement(sb.toString())){
+	        	pstmt.setString(0, data);
+	        	pstmt.executeUpdate();
+	        }
+	        break;
+    	}
+    	default:{
+    		throw new DataAccessException("unexpected DatabaseSyntax "+dbSyntax);
+    	}
+    	}
     } else if ((marker_index = sql.indexOf(INSERT_VARCHAR2_HERE)) != -1){
 	    //Store in VARCHAR2
         StringBuffer sb = new StringBuffer(sql);
@@ -4528,4 +4626,5 @@ public static void varchar2_CLOB_update(
 	    throw new RuntimeException("Expected charchar2_CLOB Marker Not Found in sql");
     }
 }
+
 }

@@ -60,7 +60,7 @@ public class ModelDbDriver extends DbDriver {
  * LocalDBManager constructor comment.
  */
 public ModelDbDriver(ReactStepDbDriver argReactStepDB,SessionLog sessionLog) {
-	super(sessionLog);
+	super(argReactStepDB.dbSyntax,argReactStepDB.keyFactory,sessionLog);
 	this.reactStepDB = argReactStepDB;
 }
 
@@ -102,6 +102,7 @@ private void deleteModelSQL(Connection con, User user, KeyValue modelKey)
  * @param vType int
  * @param versionKey cbit.sql.KeyValue
  */
+@Override
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws org.vcell.util.DependencyException, ObjectNotFoundException,
 						SQLException,DataAccessException,org.vcell.util.PermissionException {
@@ -123,7 +124,7 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
 private Diagram getDiagram(QueryHashtable dbc, Connection con,ResultSet rset, StructureTopology structureTopology) throws SQLException, DataAccessException {
 
 	KeyValue structKey = new KeyValue(rset.getBigDecimal(diagramTable.structRef.toString()));
-	Diagram diagram = diagramTable.getDiagram(rset,log);
+	Diagram diagram = diagramTable.getDiagram(rset,log,dbSyntax);
 	diagram.setStructure(reactStepDB.getStructure(dbc, con,structKey));
 	
 	return diagram;
@@ -346,7 +347,7 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 		//
 		//add rbm
 		//
-		ModelTable.readRbmElement(con, model);
+		ModelTable.readRbmElement(con, model, dbSyntax);
 		
 		if(!model.getRbmModelContainer().isEmpty()) {
 			for(SpeciesContext sc : model.getSpeciesContexts()) {
@@ -526,7 +527,7 @@ private void insertDiagramSQL(Connection con, KeyValue key, Diagram diagram, Key
 
 	String sql =
 		"INSERT INTO " + diagramTable.getTableName() + " " + diagramTable.getSQLColumnList() + 
-		" VALUES " + diagramTable.getSQLValueList(key, diagram, modelKey, structKey);
+		" VALUES " + diagramTable.getSQLValueList(key, diagram, modelKey, structKey, dbSyntax);
 			
 	varchar2_CLOB_update(
 						con,
@@ -535,7 +536,8 @@ private void insertDiagramSQL(Connection con, KeyValue key, Diagram diagram, Key
 						DiagramTable.table,
 						key,
 						DiagramTable.table.diagramLarge,
-						DiagramTable.table.diagramSmall);
+						DiagramTable.table.diagramSmall,
+						dbSyntax);
 }
 
 
@@ -581,7 +583,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 		if (hash.getDatabaseKey(structure) == null) {
 			structureKey = reactStepDB.insertStructure(hash,con,structure);
 		}
-		KeyValue linkKey = getNewKey(con);
+		KeyValue linkKey = keyFactory.getNewKey(con);
 		insertModelStructLinkSQL(con, linkKey, newVersion.getVersionKey()/*modelKey*/, hash.getDatabaseKey(structure));
 	}
 
@@ -625,7 +627,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 	for (int i=0;i<speciesContexts.length;i++){
 		SpeciesContext sc = speciesContexts[i];
 		if (hash.getDatabaseKey(sc) == null) {
-			insertSpeciesContextSQL(hash,con,getNewKey(con),sc,newVersion.getVersionKey());
+			insertSpeciesContextSQL(hash,con,keyFactory.getNewKey(con),sc,newVersion.getVersionKey());
 		}
 	}
 
@@ -646,7 +648,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 	Diagram diagrams[] = model.getDiagrams();
 	for (int i=0;i<diagrams.length;i++){
 		Diagram diagram = diagrams[i];
-		KeyValue key = getNewKey(con);
+		KeyValue key = keyFactory.getNewKey(con);
 		KeyValue structKey = hash.getDatabaseKey(diagram.getStructure());
 		if (structKey != null){
 			insertDiagramSQL(con, key, diagram, newVersion.getVersionKey()/*modelKey*/, hash.getDatabaseKey(diagram.getStructure()));
@@ -666,7 +668,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 //	}
 //	//-----------------
 	
-	GlobalModelParameterTable.table.insertModelParameters(con, model.getModelParameters(),newVersion.getVersionKey());
+	GlobalModelParameterTable.table.insertModelParameters(con, keyFactory, model.getModelParameters(),newVersion.getVersionKey());
 }
 
 
@@ -682,7 +684,7 @@ private void insertModelSQL(Connection con,User user, Model model,Version newVer
 	String sql;
 	String rbmXmlStr = ModelTable.getRbmForDatabase(model);
 	Object[] o = {model,rbmXmlStr};
-	sql = DatabasePolicySQL.enforceOwnershipInsert(user,modelTable,o,newVersion);
+	sql = DatabasePolicySQL.enforceOwnershipInsert(user,modelTable,o,newVersion,dbSyntax);
 //System.out.println(sql);
 	
 	if (rbmXmlStr!=null){
@@ -693,8 +695,8 @@ private void insertModelSQL(Connection con,User user, Model model,Version newVer
 			ModelTable.table,
 			newVersion.getVersionKey(),
 			ModelTable.table.rbmLarge,
-			ModelTable.table.rbmSmall
-			);
+			ModelTable.table.rbmSmall,
+			dbSyntax);
 	}else{
 		updateCleanSQL(con,sql);
 	}

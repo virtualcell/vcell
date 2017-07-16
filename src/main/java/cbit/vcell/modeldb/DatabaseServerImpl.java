@@ -88,7 +88,6 @@ public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory, S
 						throws DataAccessException {
 	super();
 	this.log = sessionLog;
-	DbDriver.setKeyFactory(keyFactory);
 	try {
 		dbTop = new DBTopLevel(conFactory,log);
 	} catch (SQLException e) {

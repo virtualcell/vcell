@@ -16,6 +16,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.dictionary.BoundEnzyme;
 import cbit.vcell.dictionary.EnzymeInfo;
@@ -32,10 +33,10 @@ public class EnzymeTable extends Table {
     public static final String REF_TYPE =
         "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    public final Field reaction = 	new Field("reaction", 	"varchar2(512)", "");
-    public final Field ecNumber = 	new Field("ecnumber", 	"varchar2(32)", "UNIQUE NOT NULL");
-    public final Field sysname = 	new Field("sysname", 	"varchar2(512)", "");
-    public final Field casID = 		new Field("casid", 		"varchar2(256)", "");
+    public final Field reaction = 	new Field("reaction", 	SQLDataType.varchar2_512, "");
+    public final Field ecNumber = 	new Field("ecnumber", 	SQLDataType.varchar2_32, "UNIQUE NOT NULL");
+    public final Field sysname = 	new Field("sysname", 	SQLDataType.varchar2_512, "");
+    public final Field casID = 		new Field("casid", 		SQLDataType.varchar2_256, "");
     
     private final Field fields[] = { reaction, ecNumber, sysname, casID };
 

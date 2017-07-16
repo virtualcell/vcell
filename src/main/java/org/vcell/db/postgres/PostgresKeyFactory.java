@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.db.oracle;
+package org.vcell.db.postgres;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -23,10 +23,9 @@ import cbit.sql.Table;
 /**
  * oracle implementation of KeyFactory with appropriate syntax for oracle sql.
  */
-public class OracleKeyFactory implements KeyFactory {
-	
-OracleKeyFactory(){
-	
+public class PostgresKeyFactory implements KeyFactory {
+
+PostgresKeyFactory() {
 }
 
 public String getCreateSQL() {
@@ -35,7 +34,7 @@ public String getCreateSQL() {
 }
 
 public String getDestroySQL() {
-	String sql = "DROP SEQUENCE "+Table.SEQ;
+	String sql = "DROP SEQUENCE IF EXISTS "+Table.SEQ+" CASCADE";
 	return sql;
 }
 
@@ -45,7 +44,7 @@ public KeyValue getNewKey(Connection con) throws SQLException {
 
 public java.math.BigDecimal getUniqueBigDecimal(Connection con) throws SQLException {
 	String sql;
-	sql = " SELECT " + nextSEQ() + " FROM DUAL";
+	sql = " SELECT " + nextSEQ();
 	Statement stmt = con.createStatement();
 	java.math.BigDecimal bigD = null;
 	try {
@@ -63,12 +62,12 @@ public java.math.BigDecimal getUniqueBigDecimal(Connection con) throws SQLExcept
 
 @Override
 public String nextSEQ() {
-	return Table.SEQ + ".NEXTVAL";
+	return "nextval('"+Table.SEQ+"')";
 }
 
 @Override
 public String currSEQ() {
-	return Table.SEQ + ".CURRVAL";
+	return "currval('"+Table.SEQ+"')";
 }
 
 }

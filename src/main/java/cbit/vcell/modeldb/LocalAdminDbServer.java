@@ -42,7 +42,6 @@ public LocalAdminDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, S
 		throws DataAccessException {
 
 	this.log = sessionLog;
-	DbDriver.setKeyFactory(keyFactory);
 	try {
 		adminDbTop = new AdminDBTopLevel(conFactory,log);
 	} catch (Throwable e) {

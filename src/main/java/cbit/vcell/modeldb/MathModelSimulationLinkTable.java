@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -24,8 +25,8 @@ public class MathModelSimulationLinkTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_mathmodelsim";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field mathModelRef 		= new Field("mathmodelRef",		"integer",	"NOT NULL "+MathModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field simRef			= new Field("simRef",			"integer",	"NOT NULL "+SimulationTable.REF_TYPE);
+	public final Field mathModelRef 	= new Field("mathmodelRef",		SQLDataType.integer,	"NOT NULL "+MathModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field simRef			= new Field("simRef",			SQLDataType.integer,	"NOT NULL "+SimulationTable.REF_TYPE);
 
 	private final Field fields[] = {mathModelRef,simRef};
 	

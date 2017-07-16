@@ -13,6 +13,7 @@ package cbit.vcell.modeldb;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.mapping.ReactionSpec;
 /**
@@ -22,9 +23,9 @@ public class ReactionSpecTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_reactionspec";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field reactionStepRef= new Field("reactStepRef","integer",	"NOT NULL "+ReactStepTable.REF_TYPE);
-	public final Field simContextRef	= new Field("simContextRef","integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field mapping	= new Field("mapping",	"integer",	"NOT NULL");
+	public final Field reactionStepRef	= new Field("reactStepRef", SQLDataType.integer,	"NOT NULL "+ReactStepTable.REF_TYPE);
+	public final Field simContextRef	= new Field("simContextRef",SQLDataType.integer,	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field mapping			= new Field("mapping",		SQLDataType.integer,	"NOT NULL");
 	
 	private final Field fields[] = {reactionStepRef,simContextRef,mapping};
 	

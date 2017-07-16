@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -28,6 +29,7 @@ import cbit.image.VCImage;
 import cbit.image.VCImageCompressed;
 import cbit.image.VCImageInfo;
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -36,10 +38,10 @@ public class ImageTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_image";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field numX			= new Field("numX",			"integer",	"NOT NULL");
-	public final Field numY			= new Field("numY",			"integer",	"NOT NULL");
-	public final Field numZ			= new Field("numZ",			"integer",	"NOT NULL");
-	public final Field extentRef	= new Field("extentRef",	"integer",	"NOT NULL "+ExtentTable.REF_TYPE);
+	public final Field numX			= new Field("numX",			SQLDataType.integer,	"NOT NULL");
+	public final Field numY			= new Field("numY",			SQLDataType.integer,	"NOT NULL");
+	public final Field numZ			= new Field("numZ",			SQLDataType.integer,	"NOT NULL");
+	public final Field extentRef	= new Field("extentRef",	SQLDataType.integer,	"NOT NULL "+ExtentTable.REF_TYPE);
 
 	private final Field fields[] = {numX,numY,numZ,extentRef};
 	
@@ -60,9 +62,9 @@ private ImageTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public VCImageCompressed getImage(ResultSet rset,Connection con,SessionLog log,ImageDataTable imageDataTable) throws SQLException, DataAccessException{
+public VCImageCompressed getImage(ResultSet rset,Connection con,SessionLog log,ImageDataTable imageDataTable,DatabaseSyntax dbSyntax) throws SQLException, DataAccessException{
 	
-	byte data[] = imageDataTable.getData(rset,log);
+	byte data[] = imageDataTable.getData(rset,log, dbSyntax);
 	
 	int nx = rset.getInt(numX.toString());
 	int ny = rset.getInt(numY.toString());
@@ -91,12 +93,12 @@ public VCImageCompressed getImage(ResultSet rset,Connection con,SessionLog log,I
  * @param rset ResultSet
  * @param log SessionLog
  */
-public VersionInfo getInfo(ResultSet rset, Connection con,SessionLog log) throws SQLException,DataAccessException {
+public VersionInfo getInfo(ResultSet rset, Connection con,SessionLog log,DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 
 	GIFImage gifImage = null;
 	try{
 		//gifImage = new GIFImage(rset.getBytes(BrowseImageDataTable.table.data.toString()));
-		byte[] gifData = (byte[]) DbDriver.getLOB(rset,BrowseImageDataTable.table.data.toString());
+		byte[] gifData = (byte[]) DbDriver.getLOB(rset,BrowseImageDataTable.table.data,dbSyntax);
 		gifImage = new GIFImage(gifData);
 		//
 	}catch (GifParsingException e){

@@ -161,7 +161,7 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 //		cbit.vcell.server.SessionLog log = new cbit.vcell.server.StdoutSessionLog(userid);
 		org.vcell.util.SessionLog log = new org.vcell.util.NullSessionLog();
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
-		KeyFactory keyFactory = DatabaseService.getInstance().createKeyFactory();
+		KeyFactory keyFactory = conFactory.getKeyFactory();
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 		vcMessagingService.setDelegate(new SimpleMessagingDelegate());
 		vcServerFactory = new cbit.vcell.message.server.bootstrap.LocalVCellServerFactory(userid,new UserLoginInfo.DigestedPassword(password),"<<local>>",vcMessagingService,conFactory,keyFactory,log);

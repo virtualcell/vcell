@@ -15,6 +15,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.dictionary.BoundProtein;
 import cbit.vcell.dictionary.FormalProtein;
@@ -31,12 +32,12 @@ public class ProteinTable extends Table {
     public static final String REF_TYPE =
         "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    public final Field organism = 			new Field("organism", 			"varchar2(1024)", 	"");
-    public final Field accessionNumber = 	new Field("accessionnumber", 	"varchar2(1024)", 	"");
-    public final Field swissProtEntryName = new Field("swissprotid", 		"varchar2(32)", 	"UNIQUE NOT NULL");
-    public final Field keywords = 			new Field("keywords", 			"varchar2(1024)", 	"");
-    public final Field description = 		new Field("description", 		"varchar2(1024)", 	"");
-    public final Field molWeight = 			new Field("molWeight", 			"NUMBER", 			"");
+    public final Field organism = 			new Field("organism", 			SQLDataType.varchar2_1024, 	"");
+    public final Field accessionNumber = 	new Field("accessionnumber", 	SQLDataType.varchar2_1024, 	"");
+    public final Field swissProtEntryName = new Field("swissprotid", 		SQLDataType.varchar2_32, 	"UNIQUE NOT NULL");
+    public final Field keywords = 			new Field("keywords", 			SQLDataType.varchar2_1024, 	"");
+    public final Field description = 		new Field("description", 		SQLDataType.varchar2_1024, 	"");
+    public final Field molWeight = 			new Field("molWeight", 			SQLDataType.number_as_real, "");
 
     private final Field fields[] = { organism, accessionNumber, swissProtEntryName, keywords, description, molWeight};
 

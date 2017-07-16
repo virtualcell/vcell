@@ -40,48 +40,22 @@ public class DatabaseService {
 	}
 	
 	public ConnectionFactory createConnectionFactory(SessionLog sessionLog) throws SQLException {
-		try {
-			List<Database> databases = scijava.plugin().createInstancesOfType(Database.class);
-			if (databases.size()>0){
-				Database database = databases.get(0);
-				return database.createConnctionFactory(sessionLog,
+		return createConnectionFactory(sessionLog,
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL),
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid),
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword));
-			}else{
-				throw new SQLException("no database provider found");
-			}
-		} catch (ServiceConfigurationError serviceError){
-			serviceError.printStackTrace();
-			throw new SQLException("database provider configuration error: "+serviceError.getMessage(),serviceError);
-		}
 	}
 	
 	public ConnectionFactory createConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {
 		try {
 			List<Database> databases = scijava.plugin().createInstancesOfType(Database.class);
-			if (databases.size()>0){
-				Database database = databases.get(0);
-				return database.createConnctionFactory(sessionLog, argDriverName, argConnectURL, argUserid, argPassword);
-			}else{
-				throw new SQLException("no database provider found");
+			for (Database database : databases){
+				if (database.getDriverClassName().equals(argDriverName)){
+					return database.createConnctionFactory(sessionLog, argDriverName, argConnectURL, argUserid, argPassword);
+				}
 			}
-		} catch (ServiceConfigurationError serviceError){
-			serviceError.printStackTrace();
-			throw new SQLException("database provider configuration error: "+serviceError.getMessage(),serviceError);
-		}
-	}
-	
-	public KeyFactory createKeyFactory() throws SQLException {
-		try {
-			List<Database> databases = scijava.plugin().createInstancesOfType(Database.class);
-			if (databases.size()>0){
-				Database database = databases.get(0);
-				return database.createKeyFactory();
-			}else{
-				throw new SQLException("no database provider found");
-			}
+			throw new SQLException("no database provider found");
 		} catch (ServiceConfigurationError serviceError){
 			serviceError.printStackTrace();
 			throw new SQLException("database provider configuration error: "+serviceError.getMessage(),serviceError);

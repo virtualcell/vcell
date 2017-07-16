@@ -14,6 +14,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 /**
  * This type was created in VisualAge.
  */
@@ -21,9 +22,9 @@ public class ExtentTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_geomextent";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field extentX		= new Field("extentX",		"NUMBER",				"NOT NULL");
-	public final Field extentY		= new Field("extentY",		"NUMBER",				"NOT NULL");
-	public final Field extentZ		= new Field("extentZ",		"NUMBER",				"NOT NULL");
+	public final Field extentX		= new Field("extentX",		SQLDataType.number_as_real,				"NOT NULL");
+	public final Field extentY		= new Field("extentY",		SQLDataType.number_as_real,				"NOT NULL");
+	public final Field extentZ		= new Field("extentZ",		SQLDataType.number_as_real,				"NOT NULL");
 
 	private final Field fields[] = {extentX,extentY,extentZ};
 	

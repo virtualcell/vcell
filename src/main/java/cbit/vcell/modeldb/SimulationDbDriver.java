@@ -50,7 +50,7 @@ public class SimulationDbDriver extends DbDriver {
  * @param sessionLog cbit.vcell.server.SessionLog
  */
 public SimulationDbDriver(MathDescriptionDbDriver argMathDB,SessionLog sessionLog) {
-	super(sessionLog);
+	super(argMathDB.dbSyntax, argMathDB.keyFactory, sessionLog);
 	this.mathDB = argMathDB;
 }
 
@@ -161,7 +161,7 @@ private Simulation getSimulationSQL(QueryHashtable dbc, Connection con,User user
 			// note: must call simulationTable.getSimulation() first (rset.getBytes(language) must be called first)
 			//
 			try {
-				simulation = simTable.getSimulation(dbc, rset,log,con,user,mathDB);
+				simulation = simTable.getSimulation(dbc, rset,log,con,user,mathDB,dbSyntax);
 			}catch (PropertyVetoException e){
 				log.exception(e);
 				throw new DataAccessException(e.getMessage());
@@ -211,7 +211,7 @@ private void insertSimulationSQL(InsertHashtable hash, Connection con, User user
 	
 	String sql = null;
 	Object[] o = {simulation, updatedMathKey};
-	sql = DatabasePolicySQL.enforceOwnershipInsert(user,simTable,o,newVersion);
+	sql = DatabasePolicySQL.enforceOwnershipInsert(user,simTable,o,newVersion,dbSyntax);
 
 	varchar2_CLOB_update(
 						con,
@@ -220,7 +220,8 @@ private void insertSimulationSQL(InsertHashtable hash, Connection con, User user
 						SimulationTable.table,
 						newVersion.getVersionKey(),
 						SimulationTable.table.mathOverridesLarge,
-						SimulationTable.table.mathOverridesSmall);
+						SimulationTable.table.mathOverridesSmall,
+						dbSyntax);
 
 	hash.put(simulation,newVersion.getVersionKey());
 }
@@ -366,7 +367,7 @@ public SimulationRep[] getSimulationReps(Connection con, KeyValue startingSimKey
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			SimulationRep simulationRep = simTable.getSimulationRep(rset);
+			SimulationRep simulationRep = simTable.getSimulationRep(rset,dbSyntax);
 			simulationReps.add(simulationRep);
 		}
 	} finally {
@@ -392,7 +393,7 @@ public SimulationRep getSimulationRep(Connection con, KeyValue simKey)
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			SimulationRep simulationRep = simTable.getSimulationRep(rset);
+			SimulationRep simulationRep = simTable.getSimulationRep(rset,dbSyntax);
 			simulationReps.add(simulationRep);
 		}
 	} finally {

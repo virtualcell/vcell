@@ -11,6 +11,7 @@
 package cbit.vcell.modeldb;
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.sql.Field.SQLDataType;
 /**
  * This type was created in VisualAge.
  */
@@ -20,20 +21,24 @@ public class TFTestCriteriaTable extends cbit.sql.Table {
 
 	public static final int MAX_MESSAGE_SIZE = 512;
 	
-    private static final String[] tcrefAndsimrefUniqueConstraint =
-    			new String[] {
-    			"tcr_tcr_simr_unique UNIQUE(testCaseRef,simulationRef)"};
-    			
-	public final Field testCaseRef = 		new Field("testCaseRef",		"INTEGER",		"NOT NULL "+TFTestCaseTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field simulationRef = 		new Field("simulationRef",		"INTEGER",		"UNIQUE NOT NULL "+SimulationTable.REF_TYPE);
-	private final Field simDataRef = 		new Field("simDataRef",			"INTEGER",		"UNIQUE "+ResultSetMetaDataTable.REF_TYPE);  // no longer used.
-	public final Field regressionMMSimRef = new Field("regressionSimRef",	"INTEGER",		""+MathModelSimulationLinkTable.REF_TYPE);
-	public final Field maxRelError = 		new Field("maxRelError",		"NUMBER",		"");
-	public final Field maxAbsError = 		new Field("maxAbsError",		"NUMBER",		"");
-	public final Field regressionBMAPPRef = new Field("regressionBMAPPRef",	"INTEGER",		""+BioModelSimContextLinkTable.REF_TYPE);
-	public final Field regressionBMSimRef = new Field("regressionBMSimRef",	"INTEGER",		""+BioModelSimulationLinkTable.REF_TYPE);
-	public final Field reportStatus = 		new Field("reportStatus",		"VARCHAR2(32)",	"");
-	public final Field reportMessage= 		new Field("reportMessage",		"VARCHAR2("+MAX_MESSAGE_SIZE+")","");
+    private static final String[] tcrefAndsimrefUniqueConstraintOracle =
+			new String[] {
+			"tcr_tcr_simr_unique UNIQUE(testCaseRef,simulationRef)"};
+			
+    private static final String[] tcrefAndsimrefUniqueConstraintPostgres =
+			new String[] {
+			"tcr_tcr_simr_unique UNIQUE(testCaseRef,simulationRef)"};
+			
+	public final Field testCaseRef = 		new Field("testCaseRef",		SQLDataType.integer,		"NOT NULL "+TFTestCaseTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field simulationRef = 		new Field("simulationRef",		SQLDataType.integer,		"UNIQUE NOT NULL "+SimulationTable.REF_TYPE);
+	private final Field simDataRef = 		new Field("simDataRef",			SQLDataType.integer,		"UNIQUE "+ResultSetMetaDataTable.REF_TYPE);  // no longer used.
+	public final Field regressionMMSimRef = new Field("regressionSimRef",	SQLDataType.integer,		""+MathModelSimulationLinkTable.REF_TYPE);
+	public final Field maxRelError = 		new Field("maxRelError",		SQLDataType.number_as_real,	"");
+	public final Field maxAbsError = 		new Field("maxAbsError",		SQLDataType.number_as_real,	"");
+	public final Field regressionBMAPPRef = new Field("regressionBMAPPRef",	SQLDataType.integer,		""+BioModelSimContextLinkTable.REF_TYPE);
+	public final Field regressionBMSimRef = new Field("regressionBMSimRef",	SQLDataType.integer,		""+BioModelSimulationLinkTable.REF_TYPE);
+	public final Field reportStatus = 		new Field("reportStatus",		SQLDataType.varchar2_32,	"");
+	public final Field reportMessage= 		new Field("reportMessage",		SQLDataType.varchar2_512,	"");
 	
 	private final Field fields[] = {testCaseRef,simulationRef, simDataRef, regressionMMSimRef,
 									maxRelError,maxAbsError,regressionBMAPPRef,regressionBMSimRef,reportStatus,reportMessage};
@@ -44,7 +49,7 @@ public class TFTestCriteriaTable extends cbit.sql.Table {
  * ModelTable constructor comment.
  */
 private TFTestCriteriaTable() {
-	super(TABLE_NAME,tcrefAndsimrefUniqueConstraint);
+	super(TABLE_NAME,tcrefAndsimrefUniqueConstraintOracle,tcrefAndsimrefUniqueConstraintPostgres);
 	addFields(fields);
 }
 public String getCreateTriggerSQL(){

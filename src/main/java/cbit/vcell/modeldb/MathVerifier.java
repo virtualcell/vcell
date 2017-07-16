@@ -41,6 +41,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModel;
@@ -99,7 +100,7 @@ public MathVerifier(ConnectionFactory argConFactory, KeyFactory argKeyFactory,
 	this.keyFactory = argKeyFactory;
 	this.log = argSessionLog;
 	this.adminDbServer = argAdminDbServer;
-	GeomDbDriver geomDB = new GeomDbDriver(argSessionLog);
+	GeomDbDriver geomDB = new GeomDbDriver(conFactory.getDatabaseSyntax(), conFactory.getKeyFactory(), argSessionLog);
 	this.mathDescDbDriver = new MathDescriptionDbDriver(geomDB,argSessionLog);
 	this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,argSessionLog);
 }
@@ -113,33 +114,40 @@ public static class LoadModelsStatTable extends Table{
 	private static final String TABLE_NAME = "loadmodelstat";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    private static final String[] loadModelsStatTableConstraint =
+    private static final String[] loadModelsStatTableConstraintOracle =
 		new String[] {
 			"ldmdlstat_only_1 CHECK("+
 			"DECODE(bioModelRef,NULL,0,bioModelRef,1)+"+
 			"DECODE(mathModelRef,NULL,0,mathModelRef,1) = 1)"
 		};
 
+    private static final String[] loadModelsStatTableConstraintPostgres =
+		new String[] {
+			"ldmdlstat_only_1 CHECK("+
+			"(CASE WHEN bioModelRef IS NULL THEN 0 ELSE 1 END)+"+
+			"(CASE WHEN mathModelRef IS NULL THEN 0 ELSE 1 END) = 1)"
+		};
+
 	public static final int RESULTFLAG_SUCCESS = 0;
 	public static final int RESULTFLAG_FAILURE = 1;
-	public static final int MAX_ERROR_MSG_SIZE = 255;
-	public static final int SOFTWARE_VERS_SIZE = 32;
+	public static final int MAX_ERROR_MSG_SIZE = 255; // see varchar2_255 below
+	public static final int SOFTWARE_VERS_SIZE = 32;  // see varchar2_32 below
 	
-	public final Field bioModelRef		= new Field("bioModelRef",	"integer",			BioModelTable.REF_TYPE+ " ON DELETE CASCADE");
-	public final Field mathModelRef		= new Field("mathModelRef",	"integer",			MathModelTable.REF_TYPE+ " ON DELETE CASCADE");
-	public final Field resultFlag		= new Field("resultFlag",	"integer",	"");
-	public final Field errorMessage		= new Field("errorMessage",	"varchar2("+MAX_ERROR_MSG_SIZE+")",	"");
-	public final Field timeStamp		= new Field("timeStamp",	"varchar2(32)",	"NOT NULL");
-	public final Field loadTime			= new Field("loadTime",		"integer",	"");
-	public final Field softwareVers		= new Field("softwareVers",	"varchar2("+SOFTWARE_VERS_SIZE+")",	"NOT NULL");
-	public final Field loadOriginalXMLTime	= new Field("loadOriginalXMLTime",		"integer",	"");
-	public final Field loadUnresolvedTime	= new Field("loadUnresolvedTime",		"integer",	"");
-	public final Field bSameCachedAndNotCachedXML		= new Field("bSameCachedAndNotCachedXML",	"integer",	"");
-	public final Field bSameCachedAndNotCachedObj		= new Field("bSameCachedAndNotCachedObj",	"integer",	"");
-	public final Field bSameSelfXMLCachedRoundtrip		= new Field("bSameSelfXMLCachedRoundtrip",	"integer",	"");
-	public final Field bSameCachedAndNotCachedXMLExc	= new Field("bSameCachedAndNotCachedXMLExc",	"varchar2("+MAX_ERROR_MSG_SIZE+")",	"");
-	public final Field bSameCachedAndNotCachedObjExc	= new Field("bSameCachedAndNotCachedObjExc",	"varchar2("+MAX_ERROR_MSG_SIZE+")",	"");
-	public final Field bSameSelfXMLCachedRoundtripExc	= new Field("bSameSelfXMLCachedRoundtripExc",	"varchar2("+MAX_ERROR_MSG_SIZE+")",	"");
+	public final Field bioModelRef						= new Field("bioModelRef",					SQLDataType.integer,		BioModelTable.REF_TYPE+ " ON DELETE CASCADE");
+	public final Field mathModelRef						= new Field("mathModelRef",					SQLDataType.integer,		MathModelTable.REF_TYPE+ " ON DELETE CASCADE");
+	public final Field resultFlag						= new Field("resultFlag",					SQLDataType.integer,		"");
+	public final Field errorMessage						= new Field("errorMessage",					SQLDataType.varchar2_255,	"");
+	public final Field timeStamp						= new Field("timeStamp",					SQLDataType.varchar2_32,	"NOT NULL");
+	public final Field loadTime							= new Field("loadTime",						SQLDataType.integer,		"");
+	public final Field softwareVers						= new Field("softwareVers",					SQLDataType.varchar2_32,	"NOT NULL");
+	public final Field loadOriginalXMLTime				= new Field("loadOriginalXMLTime",			SQLDataType.integer,		"");
+	public final Field loadUnresolvedTime				= new Field("loadUnresolvedTime",			SQLDataType.integer,		"");
+	public final Field bSameCachedAndNotCachedXML		= new Field("bSameCachedAndNotCachedXML",	SQLDataType.integer,		"");
+	public final Field bSameCachedAndNotCachedObj		= new Field("bSameCachedAndNotCachedObj",	SQLDataType.integer,		"");
+	public final Field bSameSelfXMLCachedRoundtrip		= new Field("bSameSelfXMLCachedRoundtrip",	SQLDataType.integer,		"");
+	public final Field bSameCachedAndNotCachedXMLExc	= new Field("bSameCachedAndNotCachedXMLExc",SQLDataType.varchar2_255,	"");
+	public final Field bSameCachedAndNotCachedObjExc	= new Field("bSameCachedAndNotCachedObjExc",SQLDataType.varchar2_255,	"");
+	public final Field bSameSelfXMLCachedRoundtripExc	= new Field("bSameSelfXMLCachedRoundtripExc",SQLDataType.varchar2_255,	"");
 	
 	private final Field fields[] =
 		{bioModelRef,mathModelRef,resultFlag,errorMessage,timeStamp,loadTime,softwareVers,
@@ -152,7 +160,7 @@ public static class LoadModelsStatTable extends Table{
 	 * ModelTable constructor comment.
 	 */
 	private LoadModelsStatTable() {
-		super(TABLE_NAME,loadModelsStatTableConstraint);
+		super(TABLE_NAME,loadModelsStatTableConstraintOracle,loadModelsStatTableConstraintPostgres);
 		addFields(fields);
 	}
 	
@@ -181,7 +189,7 @@ public static MathVerifier createMathVerifier(
             connectURL,
             dbSchemaUser,
             dbPassword);
-    keyFactory = DatabaseService.getInstance().createKeyFactory();
+    keyFactory = conFactory.getKeyFactory();
     
     AdminDatabaseServer adminDbServer =
     	new LocalAdminDbServer(conFactory, keyFactory, sessionLog);
@@ -288,7 +296,7 @@ public void runLoadTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,Stri
 	User[] scanUsers = createUsersFromUserids(scanUserids);
     try{
     	if(bUpdateDatabase){
-    		MathVerifier.initLoadModelsStatTable(softwareVersion,(scanUserids==null?null:scanUsers),bioAndMathModelKeys,this.timeStamp,this.conFactory,this.log);
+    		MathVerifier.initLoadModelsStatTable(softwareVersion,(scanUserids==null?null:scanUsers),bioAndMathModelKeys,this.timeStamp,this.conFactory,this.keyFactory,this.log);
     	}
     	this.scan(scanUsers, bUpdateDatabase, bioAndMathModelKeys);
     }finally{
@@ -306,7 +314,7 @@ public void runMathTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,bool
     }
 }
 private static void initLoadModelsStatTable(String softwareVersion,User[] users,KeyValue[] bioAndMathModelKeys,Timestamp timestamp,
-		ConnectionFactory conFactory,SessionLog sessionLog) throws Exception{
+		ConnectionFactory conFactory,KeyFactory keyFactory,SessionLog sessionLog) throws Exception{
 	java.sql.Connection con = null;
 	java.sql.Statement stmt = null;
 	try {
@@ -402,7 +410,7 @@ private static void initLoadModelsStatTable(String softwareVersion,User[] users,
 			sql.append(
 				"INSERT INTO " + LoadModelsStatTable.table.getTableName() + " " +
 				" VALUES (" +
-					Table.NewSEQ+","+
+					keyFactory.nextSEQ()+","+
 					bioModelKeyS+","+
 					mathModelKeyS+",NULL,NULL,"+
 					"'"+timestamp.toString()+"'"+

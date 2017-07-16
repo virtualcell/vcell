@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserInfo;
@@ -48,14 +50,14 @@ public final class OraclePoolingConnectionFactory implements ConnectionFactory  
 	private final ScheduledExecutorService executorService;
 	private static final Logger lg = Logger.getLogger(OraclePoolingConnectionFactory.class);
 
-public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, ConfigurationException, UniversalConnectionPoolException {
+OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, ConfigurationException, UniversalConnectionPoolException {
 	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
 			PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL),
 			PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid),
 			PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword));
 }
 
-public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, UniversalConnectionPoolException {
+OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, UniversalConnectionPoolException {
 	this.log = sessionLog;
 	connectionCacheName = "UCP_ManagedPool_" + System.nanoTime();
 
@@ -242,6 +244,16 @@ public static void main(String[] args) {
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
+}
+
+@Override
+public KeyFactory getKeyFactory() {
+	return new OracleKeyFactory();
+}
+
+@Override
+public DatabaseSyntax getDatabaseSyntax() {
+	return DatabaseSyntax.ORACLE;
 }
 
 }

@@ -14,7 +14,6 @@ import cbit.vcell.util.NativeLoader;
  */
 public enum NativeLib {
 	NATIVE_SOLVERS("NativeSolvers"),
-	SBML("sbmlj"),
 	COPASI("vcellCopasiOptDriver"),
 	HDF5("jhdf5",false),
 	/**

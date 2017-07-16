@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.modeldb;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.document.User;
 
 import cbit.sql.Field;
@@ -53,7 +54,7 @@ public static String enforceOwnershipDelete(User user, VersionTable vTable, Stri
  * @param conditions java.lang.String[]
  * @param special java.lang.String
  */
-public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, org.vcell.util.document.Version version) 
+public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, org.vcell.util.document.Version version, DatabaseSyntax dbSyntax) 
 									throws org.vcell.util.DataAccessException {
 	//
 	if (!version.getOwner().compareEqual(user)) {
@@ -82,11 +83,11 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
 	}else if (vTable instanceof MathDescTable) {
 		sb.append(((MathDescTable) vTable).getSQLValueList(	(cbit.vcell.math.MathDescription) valueData[0], 
 															(org.vcell.util.document.KeyValue) valueData[1], 
-															version));
+															version, dbSyntax));
 	}else if (vTable instanceof SimulationTable) {
 		sb.append(((SimulationTable) vTable).getSQLValueList(	(cbit.vcell.solver.Simulation) valueData[0], 
 															(org.vcell.util.document.KeyValue) valueData[1], 
-															version));
+															version, dbSyntax));
 	}else if (vTable instanceof BioModelTable) {
 		sb.append(((BioModelTable) vTable).getSQLValueList(	(cbit.vcell.biomodel.BioModelMetaData) valueData[0],
 															(String) valueData[1],

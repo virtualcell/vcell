@@ -16,10 +16,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.jdom.Element;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.model.Model;
@@ -33,8 +35,8 @@ public class GlobalModelParameterTable  extends Table{
 	private static final String TABLE_NAME = "vc_globalmodelparam";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field modelRef		= new Field("modelRef","integer","NOT NULL "+ModelTable.REF_TYPE+ " ON DELETE CASCADE");
-	public final Field xmlFragment	= new Field("xmlFragment","varchar(4000)","NOT NULL");
+	public final Field modelRef		= new Field("modelRef",		SQLDataType.integer,		"NOT NULL "+ModelTable.REF_TYPE+ " ON DELETE CASCADE");
+	public final Field xmlFragment	= new Field("xmlFragment",	SQLDataType.varchar_4000,	"NOT NULL");
 	
 	private final Field fields[] = {modelRef,xmlFragment};
 	
@@ -44,10 +46,10 @@ public class GlobalModelParameterTable  extends Table{
  * ModelTable constructor comment.
  */
 private GlobalModelParameterTable() {
-	super(TABLE_NAME,null);
+	super(TABLE_NAME);
 	addFields(fields);
 }
-public void insertModelParameters(Connection con,Model.ModelParameter[] modelParametersArr,KeyValue modelKey) throws DataAccessException,SQLException{
+public void insertModelParameters(Connection con,KeyFactory keyFactory,Model.ModelParameter[] modelParametersArr,KeyValue modelKey) throws DataAccessException,SQLException{
 	String modelParameeterXML = null;
 	if(modelParametersArr != null && modelParametersArr.length > 0){
 		Xmlproducer xmlProducer = new Xmlproducer(true);
@@ -64,7 +66,7 @@ public void insertModelParameters(Connection con,Model.ModelParameter[] modelPar
 			modelParameeterXMLS = org.vcell.util.TokenMangler.getSQLEscapedString(modelParameeterXMLS);
 		}
 		String modelParameeterXMLValues =
-			GlobalModelParameterTable.table.getSQLValueList(modelKey,modelParameeterXMLS);
+			GlobalModelParameterTable.table.getSQLValueList(modelKey,modelParameeterXMLS,keyFactory);
 		String sql = "INSERT INTO " + GlobalModelParameterTable.table.getTableName() + " " + 
 		GlobalModelParameterTable.table.getSQLColumnList() + " VALUES " + modelParameeterXMLValues;
 //		System.out.println(sql);
@@ -72,11 +74,11 @@ public void insertModelParameters(Connection con,Model.ModelParameter[] modelPar
 	}
 }
 
-private String getSQLValueList(KeyValue modelKey,String modelParameeterXMLS) throws DataAccessException {
+private String getSQLValueList(KeyValue modelKey,String modelParameeterXMLS, KeyFactory keyFactory) throws DataAccessException {
 
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
-	buffer.append(NewSEQ+",");
+	buffer.append(keyFactory.nextSEQ()+",");
 	buffer.append(modelKey+",");
 	buffer.append("'"+modelParameeterXMLS+"'"+")");
 	

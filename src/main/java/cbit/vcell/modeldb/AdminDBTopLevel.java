@@ -57,7 +57,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel{
 public AdminDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog) throws SQLException{
 	super(aConFactory,newLog);
 	userDB = new UserDbDriver(log);
-	jobDB = new SimulationJobDbDriver(log); 
+	jobDB = new SimulationJobDbDriver(aConFactory.getDatabaseSyntax(),log); 
 	serviceStatusDB = new ServiceStatusDbDriver();
 }
 
@@ -68,7 +68,7 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner,b
 	Connection con = conFactory.getConnection(lock);
 	try {
 		return DbDriver.fieldDataDBOperation(
-				con, null,
+				con, conFactory.getKeyFactory(), null,
 				FieldDataDBOperationSpec.createGetExtDataIDsSpec(fieldDataOwner)).extDataIDArr;
 	} catch (Throwable e) {
 		log.exception(e);
@@ -471,7 +471,7 @@ public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user, D
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		ApiAccessToken apiAccessToken = userDB.generateApiAccessToken(con, apiClientKey, user, expirationDate);
+		ApiAccessToken apiAccessToken = userDB.generateApiAccessToken(con, conFactory.getKeyFactory(), apiClientKey, user, expirationDate);
 		con.commit();
 		return apiAccessToken;
 	} catch (Throwable e) {
@@ -746,7 +746,7 @@ public void insertSimulationJobStatus(SimulationJobStatusPersistent simulationJo
  * Creation date: (10/3/2005 3:33:09 PM)
  */
 void insertSimulationJobStatus(Connection con, SimulationJobStatusPersistent simulationJobStatus) throws SQLException, UpdateSynchronizationException {
-	jobDB.insertSimulationJobStatus(con,simulationJobStatus, DbDriver.getNewKey(con));
+	jobDB.insertSimulationJobStatus(con,simulationJobStatus, conFactory.getKeyFactory().getNewKey(con));
 	VCMongoMessage.sendSimJobStatusInsert(simulationJobStatus);
 }
 
@@ -764,7 +764,7 @@ KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 		if(userDB.getUserFromUserid(con,newUserInfo.userid) != null){
 			throw new UseridIDExistsException("Insert new user failed: username '"+newUserInfo.userid+"' already exists");
 		}
-		KeyValue key = userDB.insertUserInfo(con,newUserInfo);
+		KeyValue key = userDB.insertUserInfo(con,conFactory.getKeyFactory(),newUserInfo);
 		con.commit();
 		return key;
 	} catch (Throwable e) {
@@ -871,7 +871,7 @@ void updateUserStat(UserLoginInfo userLoginInfo,boolean bEnableRetry) throws SQL
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		userDB.updateUserStat(con,userLoginInfo);
+		userDB.updateUserStat(con,conFactory.getKeyFactory(),userLoginInfo);
 		con.commit();
 	} catch (Throwable e) {
 		log.exception(e);
@@ -906,7 +906,7 @@ public ServiceStatus insertServiceStatus(ServiceStatus serviceStatus, boolean bE
 		if (currentServiceStatus != null){
 			throw new UpdateSynchronizationException("service already exists:" + currentServiceStatus);
 		}
-		serviceStatusDB.insertServiceStatus(con, serviceStatus, DbDriver.getNewKey(con));
+		serviceStatusDB.insertServiceStatus(con, serviceStatus, conFactory.getKeyFactory().getNewKey(con));
 		con.commit();
 		ServiceStatus newServiceStatus = serviceStatusDB.getServiceStatus(con,serviceStatus.getServiceSpec().getServerID(), 
 				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);		
@@ -940,7 +940,7 @@ public void deleteServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetr
 		if (currentServiceStatus == null){
 			throw new UpdateSynchronizationException("service doesn't exist:" + currentServiceStatus);
 		}
-		serviceStatusDB.deleteServiceStatus(con, serviceStatus, DbDriver.getNewKey(con));
+		serviceStatusDB.deleteServiceStatus(con, serviceStatus, conFactory.getKeyFactory().getNewKey(con));
 		con.commit();
 	}  catch (Throwable e) {
 		log.exception(e);

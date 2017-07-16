@@ -11,6 +11,7 @@
 package cbit.vcell.modeldb;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -22,10 +23,10 @@ public class ResultSetExportsTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_rsetexport";
 	private static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	private final Field simulationRef	= new Field("simulationRef",	"integer",			"NOT NULL "+SimulationTable.REF_TYPE+" ON DELETE CASCADE");
-	private final Field exportDate		= new Field("exportDate",		"date",				"NOT NULL");
-	private final Field exportFormat		= new Field("exportFormat",		"varchar2(1024)",	"NOT NULL");
-	private final Field exportURL		= new Field("exportURL",		"varchar2(1024)",	"NOT NULL");
+	private final Field simulationRef	= new Field("simulationRef",	SQLDataType.integer,		"NOT NULL "+SimulationTable.REF_TYPE+" ON DELETE CASCADE");
+	private final Field exportDate		= new Field("exportDate",		SQLDataType.date,			"NOT NULL");
+	private final Field exportFormat	= new Field("exportFormat",		SQLDataType.varchar2_1024,	"NOT NULL");
+	private final Field exportURL		= new Field("exportURL",		SQLDataType.varchar2_1024,	"NOT NULL");
 	
 
 	private final Field fields[] = {simulationRef,exportDate,exportFormat,exportURL};
@@ -180,7 +181,7 @@ private ResultSetExportsTable() {
 //	buffer.append("(");
 //	buffer.append(Table.NewSEQ+",");
 //	buffer.append(simKey+",");
-//	buffer.append("SYSDATE"+",");
+//	buffer.append("CURRENT_TIMESTAMP"+",");
 //	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(exportFormat)+"',");
 //	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(exportURL)+"'");
 //	buffer.append(")");

@@ -16,17 +16,21 @@ import java.sql.SQLException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 
 public class MathDescExternalDataLinkTable extends Table {
 	private static final String TABLE_NAME = "vc_mathdescextdata";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    private static final String[] mathDescAndExtDataConstraint =
+    private static final String[] mathDescAndExtDataConstraintOracle =
 		new String[] {"md_ed_unq UNIQUE (MATHDESCREF, EXTDATAREF)"};
 
-	public final Field mathDescRef		= new Field("mathDescRef",		"integer",	"NOT NULL "+MathDescTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field extDataRef 		= new Field("extDataRef",		"integer",	"NOT NULL "+ExternalDataTable.REF_TYPE);
+    private static final String[] mathDescAndExtDataConstraintPostgres =
+		new String[] {"md_ed_unq UNIQUE (MATHDESCREF, EXTDATAREF)"};
+
+	public final Field mathDescRef		= new Field("mathDescRef",	SQLDataType.integer,	"NOT NULL "+MathDescTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field extDataRef 		= new Field("extDataRef",	SQLDataType.integer,	"NOT NULL "+ExternalDataTable.REF_TYPE);
 
 	private final Field fields[] = {mathDescRef,extDataRef};
 	
@@ -35,7 +39,7 @@ public class MathDescExternalDataLinkTable extends Table {
  * ModelTable constructor comment.
  */
 private MathDescExternalDataLinkTable() {
-	super(TABLE_NAME,mathDescAndExtDataConstraint);
+	super(TABLE_NAME,mathDescAndExtDataConstraintOracle,mathDescAndExtDataConstraintPostgres);
 	addFields(fields);
 }
 /**

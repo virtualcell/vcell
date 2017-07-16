@@ -24,6 +24,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
@@ -32,9 +33,9 @@ public class PublicationModelLinkTable extends Table {
 	private static final String TABLE_NAME = "vc_publicationmodellink";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field pubRef				= new Field("pubRef",			"integer",	"NOT NULL "+PublicationTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field bioModelRef	 		= new Field("biomodelRef",		"integer",	" "+BioModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field mathModelRef	 		= new Field("mathmodelRef",		"integer",	" "+MathModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field pubRef				= new Field("pubRef",			SQLDataType.integer,	"NOT NULL "+PublicationTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field bioModelRef	 		= new Field("biomodelRef",		SQLDataType.integer,	" "+BioModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field mathModelRef	 		= new Field("mathmodelRef",		SQLDataType.integer,	" "+MathModelTable.REF_TYPE+" ON DELETE CASCADE");
 	
 	private final Field fields[] = {pubRef, bioModelRef, mathModelRef };
 	

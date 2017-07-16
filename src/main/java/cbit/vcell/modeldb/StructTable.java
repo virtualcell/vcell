@@ -15,6 +15,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
@@ -26,13 +27,13 @@ public class StructTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_struct";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field strName			= new Field("strName",		"varchar(255)",	"NOT NULL");
-	public final Field structType		= new Field("structType",	"varchar(10)",	"NOT NULL");
-	public final Field parentRef 		= new Field("parentRef",	"integer",		StructTable.REF_TYPE);
-	public final Field cellTypeRef 		= new Field("cellTypeRef",	"integer",  	CellTypeTable.REF_TYPE);
-	public final Field memVoltName		= new Field("memVoltName",	"varchar(64)",	"");
-	public final Field negFeatureRef 	= new Field("negFeatureRef",	"integer",		StructTable.REF_TYPE);
-	public final Field posFeatureRef 	= new Field("posFeatureRef",	"integer",		StructTable.REF_TYPE);
+	public final Field strName			= new Field("strName",			SQLDataType.varchar_255,	"NOT NULL");
+	public final Field structType		= new Field("structType",		SQLDataType.varchar_10,		"NOT NULL");
+	public final Field parentRef 		= new Field("parentRef",		SQLDataType.integer,		StructTable.REF_TYPE);
+	public final Field cellTypeRef 		= new Field("cellTypeRef",		SQLDataType.integer,  		CellTypeTable.REF_TYPE);
+	public final Field memVoltName		= new Field("memVoltName",		SQLDataType.varchar_64,		"");
+	public final Field negFeatureRef 	= new Field("negFeatureRef",	SQLDataType.integer,		StructTable.REF_TYPE);
+	public final Field posFeatureRef 	= new Field("posFeatureRef",	SQLDataType.integer,		StructTable.REF_TYPE);
 
 	private final Field fields[] = {strName,structType,parentRef,cellTypeRef,memVoltName, negFeatureRef, posFeatureRef};
 	

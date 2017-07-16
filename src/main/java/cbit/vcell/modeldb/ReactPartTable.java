@@ -14,6 +14,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.vcell.model.Catalyst;
@@ -28,10 +29,10 @@ public class ReactPartTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_reactpart";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field role			= new Field("role",				"varchar(10)",	"NOT NULL");
-	public final Field stoich		= new Field("stoich",			"integer",		"NOT NULL");
-	public final Field reactStepRef	= new Field("reactStepRef",		"integer",		"NOT NULL "+ReactStepTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field scRef			= new Field("scRef",			"integer",		"NOT NULL "+SpeciesContextModelTable.REF_TYPE);
+	public final Field role			= new Field("role",				SQLDataType.varchar_10,	"NOT NULL");
+	public final Field stoich		= new Field("stoich",			SQLDataType.integer,	"NOT NULL");
+	public final Field reactStepRef	= new Field("reactStepRef",		SQLDataType.integer,	"NOT NULL "+ReactStepTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field scRef		= new Field("scRef",			SQLDataType.integer,	"NOT NULL "+SpeciesContextModelTable.REF_TYPE);
 
 	private final Field fields[] = {role,stoich,reactStepRef,scRef};
 	

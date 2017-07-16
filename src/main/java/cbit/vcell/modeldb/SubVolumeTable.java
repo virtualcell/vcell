@@ -20,6 +20,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
@@ -40,12 +41,12 @@ public class SubVolumeTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_subvolume";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field name		 	= new Field("name",				"varchar(255)",	"NOT NULL");
-	public final Field imageRegionRef= new Field("imageRegionRef",	"integer",		ImageRegionTable.REF_TYPE);
-	public final Field geometryRef	= new Field("geometryRef",		"integer",		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field expression 	= new Field("expression",		"varchar(2048)",	"");
-	public final Field handle	 	= new Field("handle",			"integer",		"NOT NULL");
-	public final Field ordinal	 	= new Field("ordinal",			"integer",		"NOT NULL");
+	public final Field name		 	= new Field("name",				SQLDataType.varchar_255,	"NOT NULL");
+	public final Field imageRegionRef= new Field("imageRegionRef",	SQLDataType.integer,		ImageRegionTable.REF_TYPE);
+	public final Field geometryRef	= new Field("geometryRef",		SQLDataType.integer,		"NOT NULL "+GeometryTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field expression 	= new Field("expression",		SQLDataType.varchar_2048,	"");
+	public final Field handle	 	= new Field("handle",			SQLDataType.integer,		"NOT NULL");
+	public final Field ordinal	 	= new Field("ordinal",			SQLDataType.integer,		"NOT NULL");
 	
 	private final Field fields[] = {name,imageRegionRef,geometryRef,expression,handle,ordinal};
 	

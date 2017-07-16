@@ -18,6 +18,7 @@ import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.resource.PropertyLoader;
 /**
@@ -35,22 +36,22 @@ public class UserTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_userinfo";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field userid		= new Field("USERID",		"varchar(255)",255,		"UNIQUE NOT NULL");
-	public final Field password		= new Field("PASSWORD",		"varchar(255)",255,		"NOT NULL");
-	public final Field email		= new Field("EMAIL",		"varchar(255)",255,		"NOT NULL");
-	public final Field dbWholeName	= new Field("FIRSTNAME",	"varchar(255)",255,		"NOT NULL");
-	public final Field lastName		= new Field("LASTNAME",		"varchar(255)",255,		"");
-	public final Field title		= new Field("TITLE",		"varchar(255)",255,		"");
-	public final Field companyName	= new Field("COMPANYNAME",	"varchar(255)",255,		"");
-	public final Field address1		= new Field("ADDRESS1",		"varchar(255)",255,		"");
-	public final Field address2		= new Field("ADDRESS2",		"varchar(255)",255,		"");
-	public final Field city			= new Field("CITY",			"varchar(255)",255,		"");
-	public final Field state		= new Field("STATE",		"varchar(255)",255,		"");
-	public final Field country		= new Field("COUNTRY",		"varchar(255)",255,		"");
-	public final Field zip			= new Field("ZIP",			"varchar(255)",255,		"");
-	public final Field notify		= new Field("NOTIFY",		"varchar(255)",255,		"NOT NULL");
-	public final Field insertDate	= new Field("insertDate",	"date",				"NOT NULL");
-	public final Field digestPW		= new Field("DIGESTPW",		"varchar(255)",255,		"NOT NULL");
+	public final Field userid		= new Field("USERID",		SQLDataType.varchar_255,255,		"UNIQUE NOT NULL");
+	public final Field password		= new Field("PASSWORD",		SQLDataType.varchar_255,255,		"NOT NULL");
+	public final Field email		= new Field("EMAIL",		SQLDataType.varchar_255,255,		"NOT NULL");
+	public final Field dbWholeName	= new Field("FIRSTNAME",	SQLDataType.varchar_255,255,		"NOT NULL");
+	public final Field lastName		= new Field("LASTNAME",		SQLDataType.varchar_255,255,		"");
+	public final Field title		= new Field("TITLE",		SQLDataType.varchar_255,255,		"");
+	public final Field companyName	= new Field("COMPANYNAME",	SQLDataType.varchar_255,255,		"");
+	public final Field address1		= new Field("ADDRESS1",		SQLDataType.varchar_255,255,		"");
+	public final Field address2		= new Field("ADDRESS2",		SQLDataType.varchar_255,255,		"");
+	public final Field city			= new Field("CITY",			SQLDataType.varchar_255,255,		"");
+	public final Field state		= new Field("STATE",		SQLDataType.varchar_255,255,		"");
+	public final Field country		= new Field("COUNTRY",		SQLDataType.varchar_255,255,		"");
+	public final Field zip			= new Field("ZIP",			SQLDataType.varchar_255,255,		"");
+	public final Field notify		= new Field("NOTIFY",		SQLDataType.varchar_255,255,		"NOT NULL");
+	public final Field insertDate	= new Field("insertDate",	SQLDataType.date,					"NOT NULL");
+	public final Field digestPW		= new Field("DIGESTPW",		SQLDataType.varchar_255,255,		"NOT NULL");
 
 	private final Field fields[] = {userid, password, email, dbWholeName, lastName, title, companyName, 
 											address1, address2, city, state, country, zip, notify, insertDate,digestPW };
@@ -77,7 +78,7 @@ public final static String getCreateVoidUserSQL() {
 			"'"+password+"'"+","+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
-			"SYSDATE,"+"'"+(new UserLoginInfo.DigestedPassword(""+password)).getString()+"'"+
+			"CURRENT_TIMESTAMP,"+"'"+(new UserLoginInfo.DigestedPassword(""+password)).getString()+"'"+
 			" )";
 	return sql;
 }
@@ -90,7 +91,7 @@ public final static String getCreateAdministratorUserSQL() {
 			"'"+password+"'"+","+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
-			"SYSDATE,"+"'"+(new UserLoginInfo.DigestedPassword(""+password)).getString()+"'"+
+			"CURRENT_TIMESTAMP,"+"'"+(new UserLoginInfo.DigestedPassword(""+password)).getString()+"'"+
 			" )";
 	return sql;
 }

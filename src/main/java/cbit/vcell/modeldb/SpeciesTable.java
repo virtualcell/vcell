@@ -16,6 +16,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.dictionary.db.DBSpeciesTable;
 import cbit.vcell.model.DBSpecies;
@@ -27,9 +28,9 @@ public class SpeciesTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_species";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field commonName		= new Field("commonName",	"varchar(255)",		"NOT NULL");
-	public final Field dbSpeciesRef		= new Field("dbSpeciesRef",	"integer",			DBSpeciesTable.REF_TYPE);
-	public final Field annotation		= new Field("annotation",	"varchar(1024)",	"");
+	public final Field commonName		= new Field("commonName",	SQLDataType.varchar_255,	"NOT NULL");
+	public final Field dbSpeciesRef		= new Field("dbSpeciesRef",	SQLDataType.integer,		DBSpeciesTable.REF_TYPE);
+	public final Field annotation		= new Field("annotation",	SQLDataType.varchar_1024,	"");
 	
 	private final Field fields[] = {commonName,dbSpeciesRef,annotation};
 	

@@ -9,6 +9,12 @@
  */
 
 package cbit.sql;
+
+import org.vcell.db.DatabaseSyntax;
+
+import cbit.sql.Field.SQLDataType;
+import cbit.vcell.modeldb.DbDriver;
+
 /**
  * This type was created in VisualAge.
  */
@@ -17,32 +23,36 @@ public abstract class Table {
 	public static final String SQL_GLOBAL_HINT = "";//" /*+ RULE */ ";
 	
 	public static final String SEQ = "newSeq";
-	public static final String NewSEQ = SEQ + ".NEXTVAL";
-	public static final String CurrSEQ = SEQ + ".CURRVAL";
 
 	public final String tableName;
-	public final String[] tableConstraints;
+	public final String[] tableConstraintsOracle;
+	public final String[] tableConstraintsPostgres;
 	private java.util.Vector fields = new java.util.Vector();
 
 	public static final String id_ColumnName = "id";
-	public final Field id = new Field(id_ColumnName,"integer","PRIMARY KEY");
+	public final Field id = new Field(id_ColumnName,SQLDataType.integer,"PRIMARY KEY");
 
 /**
  * Table constructor comment.
  */
 protected Table(String argTableName) {
-	this(argTableName,null);
+	this(argTableName,null,null);
 	//this.tableName = argTableName;
 	//addField(this.id);
 }
 
-
 /**
  * Table constructor comment.
  */
-protected Table(String argTableName,String[] argTableConstraints) {
+protected Table(String argTableName,String[] argTableConstraintsOracle, String[] argTableConstraintsPostgres) {
 	this.tableName = argTableName;
-	this.tableConstraints = argTableConstraints;
+	if (argTableConstraintsOracle!=null || argTableConstraintsPostgres!=null){
+		if ((argTableConstraintsOracle==null) || (argTableConstraintsPostgres==null) || (argTableConstraintsOracle.length != argTableConstraintsPostgres.length)){
+			throw new RuntimeException("table constraints for oracle must match table constraints for postgres");
+		}
+	}
+	this.tableConstraintsOracle = argTableConstraintsOracle;
+	this.tableConstraintsPostgres = argTableConstraintsPostgres;
 	addField(this.id);
 }
 
@@ -77,11 +87,7 @@ protected void addFields(Field[] argFields) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public final String getCreateSQL() {
+public final String getCreateSQL(DatabaseSyntax dbSyntax) {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("CREATE TABLE "+tableName+"(");
 	Field[] allFields = getFields();
@@ -89,15 +95,25 @@ public final String getCreateSQL() {
 		if (i>0){
 			buffer.append(",");
 		}
-		buffer.append(allFields[i].getUnqualifiedColName()+" "+allFields[i].getSqlType()+" "+allFields[i].getSqlConstraints());
+		buffer.append(allFields[i].getUnqualifiedColName()+" "+allFields[i].getSqlType(dbSyntax)+" "+allFields[i].getSqlConstraints());
 	}
-	if(getTableConstraints() != null){
+	if(tableConstraintsOracle != null){
+		// if tableConstraintsOracle is non-null, then tableConstraintsPostgres must also be non-null
 		//buffer.append(", CONSTRAINT ");
-		for(int i=0;i<tableConstraints.length;i+= 1){
+		for(int i=0;i<tableConstraintsOracle.length;i+= 1){
 			//if(i != 0){
 				//buffer.append(",");
 			//}
-			buffer.append(", CONSTRAINT "+tableConstraints[i]);
+			switch (dbSyntax){
+			case ORACLE:{
+				buffer.append(", CONSTRAINT "+tableConstraintsOracle[i]);
+				break;
+			}
+			case POSTGRES:{
+				buffer.append(", CONSTRAINT "+tableConstraintsPostgres[i]);
+				break;
+			}
+			}
 		}
 	}
 	buffer.append(")");
@@ -149,16 +165,6 @@ public String getSQLColumnList(boolean bQualified, boolean bParentheses, String 
 	}
 	return buffer.toString();
 }
-
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public String[] getTableConstraints() {
-	return tableConstraints;
-}
-
 
 /**
  * This method was created in VisualAge.

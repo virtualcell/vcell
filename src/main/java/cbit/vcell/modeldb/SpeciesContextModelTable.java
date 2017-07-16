@@ -15,6 +15,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
+import cbit.sql.Field.SQLDataType;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.vcell.model.SpeciesContext;
@@ -25,14 +26,14 @@ public class SpeciesContextModelTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_modelsc";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field modelRef 	= new Field("modelRef",	"integer",	"NOT NULL "+ModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field speciesRef	= new Field("speciesRef",	"integer",		"NOT NULL "+SpeciesTable.REF_TYPE);
-	public final Field structRef	= new Field("structRef",	"integer",		"NOT NULL "+StructTable.REF_TYPE);
-	public final Field name			= new Field("name",			"varchar(255)",	"NOT NULL");
-	//public final Field diffRate		= new Field("diffRate",		"varchar(255)",	"NOT NULL");
-	//public final Field initCond		= new Field("initCond",		"varchar(255)",	"NOT NULL");
-	public final Field hasOverride	= new Field("hasOverride",	"varchar2(1)",	"NOT NULL");// 'T' or 'F'
-	public final Field speciesPattern=new Field("speciesPattern","varchar2(255)","");
+	public final Field modelRef 	= new Field("modelRef",		SQLDataType.integer,		"NOT NULL "+ModelTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field speciesRef	= new Field("speciesRef",	SQLDataType.integer,		"NOT NULL "+SpeciesTable.REF_TYPE);
+	public final Field structRef	= new Field("structRef",	SQLDataType.integer,		"NOT NULL "+StructTable.REF_TYPE);
+	public final Field name			= new Field("name",			SQLDataType.varchar_255,	"NOT NULL");
+	//public final Field diffRate		= new Field("diffRate",		"varchar(255)",			"NOT NULL");
+	//public final Field initCond		= new Field("initCond",		"varchar(255)",			"NOT NULL");
+	public final Field hasOverride	= new Field("hasOverride",	SQLDataType.varchar2_1,		"NOT NULL");// 'T' or 'F'
+	public final Field speciesPattern=new Field("speciesPattern",SQLDataType.varchar2_255,	"");
 	
 	private final Field fields[] = {modelRef,speciesRef,structRef,name,/*diffRate,initCond,*/hasOverride,speciesPattern};
 	
