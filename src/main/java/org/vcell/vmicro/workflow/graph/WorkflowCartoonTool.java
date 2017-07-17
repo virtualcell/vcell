@@ -13,7 +13,6 @@ import java.awt.Rectangle;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,12 +21,6 @@ import java.util.Vector;
 import javax.swing.JViewport;
 
 import org.vcell.util.gui.DialogUtils;
-
-import com.genlogic.GraphLayout.GlgCube;
-import com.genlogic.GraphLayout.GlgGraphEdge;
-import com.genlogic.GraphLayout.GlgGraphLayout;
-import com.genlogic.GraphLayout.GlgGraphNode;
-import com.genlogic.GraphLayout.GlgPoint;
 
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.EdgeShape;
@@ -184,80 +177,80 @@ public class WorkflowCartoonTool extends CartoonTool {
 		getGraphPane().repaint();
 	}
 
-	public void layoutGlg() {
-		// Create graph object
-		GlgGraphLayout graph = new GlgGraphLayout();
-		graph.SetUntangle(true); // true
-		GlgCube graphDim = new GlgCube();
-		GlgPoint newPoint = new GlgPoint(0, 0, 0);
-		graphDim.p1 = newPoint;
-		// newPoint = new com.genlogic.GlgPoint(getGraphPane().getWidth()-20,
-		// getGraphPane().getHeight()-10, 0);//400,400,0
-		newPoint = new GlgPoint(1600, 1600, 0);
-		graphDim.p2 = newPoint;
-		graph.dimensions = graphDim;
-		com.genlogic.GraphLayout.GlgGraphNode graphNode;
-		java.util.HashMap<Shape, GlgGraphNode> nodeMap = new java.util.HashMap<Shape, GlgGraphNode>();
-		for(Shape shape : getGraphModel().getShapes()) {
-			// add to the graph
-			if (ShapeUtil.isMovable(shape)) {
-				graphNode = graph.AddNode(null, 0, null);
-			} else {
-				continue;
-			}
-			// add to the hashmap
-			nodeMap.put(shape, graphNode);
-		}
-		for(Shape shape : getGraphModel().getShapes()) {
-			if (shape instanceof EdgeShape) {
-				EdgeShape eShape = (EdgeShape) shape;
-				graph.AddEdge(nodeMap.get(eShape.getStartShape()), nodeMap
-						.get(eShape.getEndShape()), null, 0, null);
-			}
-		}
-		// call layout algorithm
-		while (!graph.SpringIterate()) {
-			;
-		}
-		graph.Update();
-		// resize and scale the graph
-		// com.genlogic.GlgObject edgeArray = graph.edge_array;
-		@SuppressWarnings("unchecked")
-		List<GlgGraphEdge> edgeVector = graph.edge_array;
-		double distance, minDistance = Double.MAX_VALUE;
-		for (int i = 0; i < edgeVector.size(); i++) {
-			GlgGraphEdge edge = edgeVector.get(i);
-			distance = Point2D.distance(edge.start_node.display_position.x,
-					edge.start_node.display_position.y,
-					edge.end_node.display_position.x,
-					edge.end_node.display_position.y);
-			minDistance = distance < minDistance ? distance : minDistance;
-		}
-		double ratio = 1.0;
-		if (minDistance > 40) {
-			ratio = 40.0 / minDistance;
-		}
-		Point place;
-		com.genlogic.GraphLayout.GlgPoint glgPoint;
-		for(Shape shape : getGraphModel().getShapes()) {
-			// test if it is contained in the nodeMap
-			graphNode = nodeMap.get(shape);
-			if (graphNode != null) {
-				glgPoint = graph.GetNodePosition(graphNode);
-				// glgPoint = graphNode.display_position;
-				place = new Point();
-				place.setLocation(glgPoint.x * ratio, glgPoint.y * ratio + 30);
-				shape.getSpaceManager().setAbsLoc(place);
-			}
-		}
-		Dimension graphSize = new Dimension((int) (1600 * ratio) + 50,
-				(int) (1600 * ratio) + 50);
-		getGraphPane().setSize(graphSize);
-		getGraphPane().setPreferredSize(graphSize);
-		// update the window
-		getGraphPane().invalidate();
-		((JViewport) getGraphPane().getParent()).revalidate();
-	}
+//	public void layoutGlg() {
+//		// Create graph object
+//		GlgGraphLayout graph = new GlgGraphLayout();
+//		graph.SetUntangle(true); // true
+//		GlgCube graphDim = new GlgCube();
+//		GlgPoint newPoint = new GlgPoint(0, 0, 0);
+//		graphDim.p1 = newPoint;
+//		// newPoint = new com.genlogic.GlgPoint(getGraphPane().getWidth()-20,
+//		// getGraphPane().getHeight()-10, 0);//400,400,0
+//		newPoint = new GlgPoint(1600, 1600, 0);
+//		graphDim.p2 = newPoint;
+//		graph.dimensions = graphDim;
+//		com.genlogic.GraphLayout.GlgGraphNode graphNode;
+//		java.util.HashMap<Shape, GlgGraphNode> nodeMap = new java.util.HashMap<Shape, GlgGraphNode>();
+//		for(Shape shape : getGraphModel().getShapes()) {
+//			// add to the graph
+//			if (ShapeUtil.isMovable(shape)) {
+//				graphNode = graph.AddNode(null, 0, null);
+//			} else {
+//				continue;
+//			}
+//			// add to the hashmap
+//			nodeMap.put(shape, graphNode);
+//		}
+//		for(Shape shape : getGraphModel().getShapes()) {
+//			if (shape instanceof EdgeShape) {
+//				EdgeShape eShape = (EdgeShape) shape;
+//				graph.AddEdge(nodeMap.get(eShape.getStartShape()), nodeMap
+//						.get(eShape.getEndShape()), null, 0, null);
+//			}
+//		}
+//		// call layout algorithm
+//		while (!graph.SpringIterate()) {
+//			;
+//		}
+//		graph.Update();
+//		// resize and scale the graph
+//		// com.genlogic.GlgObject edgeArray = graph.edge_array;
+//		@SuppressWarnings("unchecked")
+//		List<GlgGraphEdge> edgeVector = graph.edge_array;
+//		double distance, minDistance = Double.MAX_VALUE;
+//		for (int i = 0; i < edgeVector.size(); i++) {
+//			GlgGraphEdge edge = edgeVector.get(i);
+//			distance = Point2D.distance(edge.start_node.display_position.x,
+//					edge.start_node.display_position.y,
+//					edge.end_node.display_position.x,
+//					edge.end_node.display_position.y);
+//			minDistance = distance < minDistance ? distance : minDistance;
+//		}
+//		double ratio = 1.0;
+//		if (minDistance > 40) {
+//			ratio = 40.0 / minDistance;
+//		}
+//		Point place;
+//		com.genlogic.GraphLayout.GlgPoint glgPoint;
+//		for(Shape shape : getGraphModel().getShapes()) {
+//			// test if it is contained in the nodeMap
+//			graphNode = nodeMap.get(shape);
+//			if (graphNode != null) {
+//				glgPoint = graph.GetNodePosition(graphNode);
+//				// glgPoint = graphNode.display_position;
+//				place = new Point();
+//				place.setLocation(glgPoint.x * ratio, glgPoint.y * ratio + 30);
+//				shape.getSpaceManager().setAbsLoc(place);
+//			}
+//		}
+//		Dimension graphSize = new Dimension((int) (1600 * ratio) + 50,
+//				(int) (1600 * ratio) + 50);
+//		getGraphPane().setSize(graphSize);
+//		getGraphPane().setPreferredSize(graphSize);
+//		// update the window
+//		getGraphPane().invalidate();
+//		((JViewport) getGraphPane().getParent()).revalidate();
+//	}
 
 	@Override
 	public void mouseClicked(java.awt.event.MouseEvent event) {

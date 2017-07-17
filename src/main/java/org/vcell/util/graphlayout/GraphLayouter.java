@@ -13,6 +13,7 @@ package org.vcell.util.graphlayout;
 import java.util.Arrays;
 import java.util.List;
 
+import org.vcell.util.graphlayout.energybased.EnergyMinimizingLayouter;
 import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
 import org.vcell.util.graphlayout.energybased.WerewolfLayouter;
 
@@ -52,7 +53,7 @@ public interface GraphLayouter {
 		public static final List<String> NAMES = 
 			Arrays.asList(RandomLayouter.LAYOUT_NAME, EdgeTugLayouter.LAYOUT_NAME, 
 					ShootAndCutLayouter.LAYOUT_NAME, SimpleElipticalLayouter.LAYOUT_NAME,
-					GenericLogicGraphLayouter.LAYOUT_NAME, WerewolfLayouter.LAYOUT_NAME, ShrinkCanvasLayouter.LAYOUT_NAME,
+					EnergyMinimizingLayouter.LAYOUT_NAME, WerewolfLayouter.LAYOUT_NAME, ShrinkCanvasLayouter.LAYOUT_NAME,
 					ExpandCanvasLayouter.LAYOUT_NAME);		
 	}
 	

@@ -346,7 +346,7 @@ public class WorkflowModelPanel extends JPanel implements java.awt.event.ActionL
 		try {
 			// user code begin {1}
 			// user code end
-			getWorkflowCartoonTool().layoutGlg();
+//			getWorkflowCartoonTool().layoutGlg();
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

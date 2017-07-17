@@ -36,10 +36,10 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.graphlayout.ExpandCanvasLayouter;
-import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.ShrinkCanvasLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
+import org.vcell.util.graphlayout.energybased.EnergyMinimizingLayouter;
 import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.ViewPortStabilizer;
 
@@ -156,7 +156,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				});
 			}
 			else if (source == getGlgLayoutJButton())
-				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
+				System.out.println("GLG Layout has been removed");
+	//			getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
 			else if (source == getShrinkCanvasButton())
 				getReactionCartoonTool().layout(ShrinkCanvasLayouter.LAYOUT_NAME);
 			else if (source == getExpandCanvasButton())
@@ -236,6 +237,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				glgLayoutJButton.setName("GlgLayoutJButton");
 				glgLayoutJButton.setToolTipText("Layout GLG");
 				glgLayoutJButton.setIcon(glgLayoutIcon);
+				glgLayoutJButton.setEnabled(false);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -812,7 +814,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	public void specialLayout(){
 		//if(getModel() != null && getModel().getDiagrams() != null && getModel().getDiagrams().length == 1 && getModel().getDiagrams()[0].getNodeList().size() == 0){
 			try{
-				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME,false);
+				getReactionCartoonTool().layout(EnergyMinimizingLayouter.LAYOUT_NAME,false);
 			}catch(Exception e){
 				System.out.println("Error:  "+this.getClass().getName()+" setStructureSuite(...)->reactioncartoontool.layout(...)");
 				e.printStackTrace();

@@ -25,7 +25,6 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.modeldb.UserTable;
-import oracle.ucp.UniversalConnectionPoolException;
 
 /**
  * This type was created in VisualAge.y
@@ -37,7 +36,7 @@ public final class PostgresConnectionFactory implements ConnectionFactory  {
 	private static final Logger lg = Logger.getLogger(PostgresConnectionFactory.class);
 
 
-PostgresConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, UniversalConnectionPoolException {
+PostgresConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword)  {
 	this.log = sessionLog;
 	poolDataSource = new PGConnectionPoolDataSource();
 	poolDataSource.setUrl(argConnectURL);
