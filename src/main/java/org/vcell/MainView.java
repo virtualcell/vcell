@@ -41,7 +41,7 @@ public class MainView extends SwingDisplayWindow {
     private JMenuItem mniConstructTIRFImage;
 
     // Menu items under "Modeling"
-    private JMenuItem mniModelTIRF;
+    private JMenuItem mniNewModel;
 
     // Panels of datasets
     private DatasetListPanel pnlData;
@@ -153,9 +153,9 @@ public class MainView extends SwingDisplayWindow {
 
         // Modeling menu
         JMenu mnuModeling = new JMenu("Modeling");
-        mniModelTIRF = new JMenuItem("Photoactivation TIRF...");
-        mnuModeling.add(mniModelTIRF);
-
+        mniNewModel = new JMenuItem("New model...");
+        mnuModeling.add(mniNewModel);
+        
         menuBar.add(mnuFile);
         menuBar.add(mnuEdit);
         menuBar.add(mnuAnalysis);
@@ -246,10 +246,10 @@ public class MainView extends SwingDisplayWindow {
         mniConstructTIRFImage.addActionListener(l);
     }
 
-    public void addModelTIRFListener(ActionListener l) {
-        mniModelTIRF.addActionListener(l);
+    public void addNewModelListener(ActionListener l) {
+        mniNewModel.addActionListener(l);
     }
-
+    
     public void addDisplayListener(ActionListener l) {
         btnDisplay.addActionListener(l);
     }

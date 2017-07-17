@@ -32,7 +32,7 @@ public class ModelParameterInputPanel extends JPanel {
 
         if (!concentrationParameters.isEmpty()) {
 
-            add(newHeaderLabel("Concentration"));
+            add(newHeaderLabel("Initial concentrations"));
             add(new JPanel());
             add(new JPanel());
 
@@ -43,7 +43,7 @@ public class ModelParameterInputPanel extends JPanel {
 
         if (!diffusionParameters.isEmpty()) {
 
-            add(newHeaderLabel("Diffusion"));
+            add(newHeaderLabel("Diffusion constants"));
             add(new JPanel());
             add(new JPanel());
 

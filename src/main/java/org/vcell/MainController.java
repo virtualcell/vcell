@@ -7,6 +7,7 @@ import net.imagej.display.OverlayService;
 import net.imagej.ops.OpService;
 import org.apache.commons.io.FilenameUtils;
 import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLReader;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.display.Display;
@@ -228,58 +229,26 @@ public class MainController {
             }
         });
 
-        view.addModelTIRFListener(event -> {
-            ModelParameterInputPanel panel = new ModelParameterInputPanel(new ArrayList<>());
-            int returnVal = JOptionPane.showConfirmDialog(
-                    view,
-                    panel,
-                    "Model TIRF",
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE);
-            if (returnVal == JOptionPane.OK_OPTION) {
-            	
-            	// Generate SBML document and save locally
-                VCellModelService vCellModelService = new VCellModelService();
-                SBMLDocument sbmlDocument = vCellModelService.generateSBML(new VCellModel("TIRF_model_test"));
-                VCellModel vCellModel = new VCellModel("TIRF_model_test");
-                File filepath = Paths.get(projectService.getCurrentProjectRoot().getAbsolutePath(), vCellModel.getName()).toFile();
-                
-                try {
-					vCellModelService.writeSBMLToFile(new VCellModel("TIRF_model_test"), filepath);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (XMLStreamException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-                
-                VCellService vCellService = new VCellService(vCellResultService);
-                SBMLModel sbmlModel = new SBMLModel();
-                sbmlModel.setFilepath(filepath.getAbsolutePath());
-                
-                
-                FutureCallback<org.vcell.vcellij.api.Dataset> callback = new FutureCallback<org.vcell.vcellij.api.Dataset>() {
-                	
-					@Override
-					public void onSuccess(org.vcell.vcellij.api.Dataset result) {
-						try {
-							Dataset datasetImageJ = datasetIOService.open(result.getFilepath());
-							model.addResult(datasetImageJ);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-					
-					@Override
-					public void onFailure(Throwable t) {
-						t.printStackTrace();
-					}
-                };
-                
-                vCellService.runSimulation(sbmlModel, callback);
-            }
+        view.addNewModelListener(event -> {
+    		File sbmlFile = new File("/Users/kevingaffney/Desktop/optoPlexin_PRG.xml");
+    		SBMLDocument sbmlDocument = null;
+			try {
+				sbmlDocument = SBMLReader.read(sbmlFile);
+			} catch (XMLStreamException | IOException e) {
+				e.printStackTrace();
+			}
+    		VCellModel model1 = new VCellModel(sbmlDocument.getModel().getName());
+    		model1.setSbmlDocument(sbmlDocument);
+    		
+    		VCellModel[] models = {model1};
+
+    		
+    		VCellModelDialog dialog = new VCellModelDialog(view, models);
+    		
+    		int resultVal = dialog.display();
+    		System.out.println(resultVal);
         });
+        
 
         view.addDisplayListener(event -> {
             displayService.createDisplay(view.getSelectedDataset());
@@ -300,5 +269,58 @@ public class MainController {
             e.printStackTrace();
         }
         return dataset;
+    }
+    
+    private void simulateModel() {
+    	ModelParameterInputPanel panel = new ModelParameterInputPanel(new ArrayList<>());
+        int returnVal = JOptionPane.showConfirmDialog(
+                view,
+                panel,
+                "Model TIRF",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (returnVal == JOptionPane.OK_OPTION) {
+        	
+        	// Generate SBML document and save locally
+            VCellModelService vCellModelService = new VCellModelService();
+            SBMLDocument sbmlDocument = vCellModelService.generateSBML(new VCellModel("TIRF_model_test"));
+            VCellModel vCellModel = new VCellModel("TIRF_model_test");
+            File filepath = Paths.get(projectService.getCurrentProjectRoot().getAbsolutePath(), vCellModel.getName()).toFile();
+            
+            try {
+				vCellModelService.writeSBMLToFile(new VCellModel("TIRF_model_test"), filepath);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (XMLStreamException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            
+            VCellService vCellService = new VCellService(vCellResultService);
+            SBMLModel sbmlModel = new SBMLModel();
+            sbmlModel.setFilepath(filepath.getAbsolutePath());
+            
+            
+            FutureCallback<org.vcell.vcellij.api.Dataset> callback = new FutureCallback<org.vcell.vcellij.api.Dataset>() {
+            	
+				@Override
+				public void onSuccess(org.vcell.vcellij.api.Dataset result) {
+					try {
+						Dataset datasetImageJ = datasetIOService.open(result.getFilepath());
+						model.addResult(datasetImageJ);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				@Override
+				public void onFailure(Throwable t) {
+					t.printStackTrace();
+				}
+            };
+            
+            vCellService.runSimulation(sbmlModel, callback);
+        }
     }
 }

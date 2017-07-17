@@ -17,6 +17,8 @@ import org.vcell.vcellij.api.SBMLModel;
 import org.vcell.vcellij.api.SimulationInfo;
 import org.vcell.vcellij.api.SimulationService;
 import org.vcell.vcellij.api.SimulationSpec;
+import org.vcell.vcellij.api.SimulationState;
+import org.vcell.vcellij.api.SimulationStatus;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -54,6 +56,10 @@ public class VCellService {
 			public Dataset call() throws Exception {
 				transport.open();
 				SimulationInfo simInfo = client.computeModel(sbmlModel, simSpec);
+				SimulationStatus simStatus = client.getStatus(simInfo);
+				while (simStatus.simState == SimulationState.running) {
+					// TODO: wait until done
+				}
 	            Dataset dataset = client.getDataset(simInfo);
 				return dataset;
 			}

@@ -1,12 +1,17 @@
 package org.vcell;
 
-import net.imagej.Dataset;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.xml.crypto.Data;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.util.ArrayList;
+
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
+
+import net.imagej.Dataset;
 
 /**
  * Created by kevingaffney on 6/28/17.
