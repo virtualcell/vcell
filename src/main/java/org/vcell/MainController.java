@@ -44,6 +44,7 @@ public class MainController {
     private DisplayService displayService;
     private ProjectService projectService;
     private VCellResultService vCellResultService;
+    private VCellModelService vCellModelService;
 
     public MainController(MainModel model, MainView view, Context context) {
         this.model = model;
@@ -57,6 +58,7 @@ public class MainController {
         displayService = context.getService(DisplayService.class);
         projectService = new ProjectService(datasetIOService, opService, displayService);
         vCellResultService = new VCellResultService(opService, datasetService);
+    	vCellModelService = new VCellModelService();
         addActionListenersToView();
     }
 
@@ -230,26 +232,11 @@ public class MainController {
         });
 
         view.addNewModelListener(event -> {
-    		File sbmlFile = new File("/Users/kevingaffney/Desktop/optoPlexin_PRG.xml");
-    		SBMLDocument sbmlDocument = null;
-			try {
-				sbmlDocument = SBMLReader.read(sbmlFile);
-			} catch (XMLStreamException | IOException e) {
-				e.printStackTrace();
-			}
-    		VCellModel model1 = new VCellModel(sbmlDocument.getModel().getName());
-    		model1.setSbmlDocument(sbmlDocument);
-    		
-    		VCellModel[] models = {model1};
-
-    		
-    		VCellModelDialog dialog = new VCellModelDialog(view, models);
-    		
+    		VCellModelDialog dialog = new VCellModelDialog(view, vCellModelService);
     		int resultVal = dialog.display();
     		System.out.println(resultVal);
         });
         
-
         view.addDisplayListener(event -> {
             displayService.createDisplay(view.getSelectedDataset());
         });

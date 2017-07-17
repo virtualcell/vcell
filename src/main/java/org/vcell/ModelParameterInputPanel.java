@@ -18,10 +18,15 @@ public class ModelParameterInputPanel extends JPanel {
 	private Hashtable<VCellModelParameter, JTextField> parameterTable;
 
     public ModelParameterInputPanel(ArrayList<VCellModelParameter> parameters) {
-
-        super(new GridLayout(0, 3, 10, 10));
-        parameterTable = new Hashtable<>();
-
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setParameters(parameters);
+    }
+    
+    public void setParameters(ArrayList<VCellModelParameter> parameters) {
+    	
+    	parameterTable = new Hashtable<>();
+    	removeAll();
+    	
         List<VCellModelParameter> concentrationParameters = parameters.stream()
                 .filter(p -> p.getParameterType() == VCellModelParameter.CONCENTRATION)
                 .collect(Collectors.toList());
@@ -33,8 +38,6 @@ public class ModelParameterInputPanel extends JPanel {
         if (!concentrationParameters.isEmpty()) {
 
             add(newHeaderLabel("Initial concentrations"));
-            add(new JPanel());
-            add(new JPanel());
 
             for (VCellModelParameter parameter : concentrationParameters) {
                 addParameterInput(parameter);
@@ -44,13 +47,12 @@ public class ModelParameterInputPanel extends JPanel {
         if (!diffusionParameters.isEmpty()) {
 
             add(newHeaderLabel("Diffusion constants"));
-            add(new JPanel());
-            add(new JPanel());
 
             for (VCellModelParameter parameter : diffusionParameters) {
                 addParameterInput(parameter);
             }
         }
+        revalidate();
     }
 
     private JLabel newHeaderLabel(String text) {
@@ -60,16 +62,24 @@ public class ModelParameterInputPanel extends JPanel {
     }
 
     private void addParameterInput(VCellModelParameter parameter) {
+    	
         JLabel idLabel = new JLabel(parameter.getId());
         idLabel.setHorizontalAlignment(JLabel.RIGHT);
-        add(idLabel);
-        JTextField textField = new JTextField();
+        
+        JLabel unitLabel = new JLabel(generateHtml(parameter.getUnit()));
+        
+        JTextField textField = new JTextField(10);
         parameterTable.put(parameter, textField);
-        add(textField);
-        add(new JLabel(generateHtml(parameter.getUnit())));
+        
+        JPanel parameterPanel = new JPanel(new BorderLayout());
+        parameterPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        parameterPanel.add(idLabel, BorderLayout.LINE_START);
+        parameterPanel.add(textField, BorderLayout.CENTER);
+        parameterPanel.add(unitLabel, BorderLayout.LINE_END);
+        add(parameterPanel);
     }
 
-    public String generateHtml(String text) {
+    private String generateHtml(String text) {
 
         Pattern pattern = Pattern.compile("(\\D-\\d+)|(\\D\\d+)");
         Matcher matcher = pattern.matcher(text);
@@ -88,4 +98,5 @@ public class ModelParameterInputPanel extends JPanel {
         stringBuilder.append("</html>");
         return stringBuilder.toString();
     }
+
 }

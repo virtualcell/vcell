@@ -169,6 +169,13 @@
 			<version>1.0.0-M4</version>
 			<scope>test</scope>
 		</dependency>
+		
+		
+<!-- 		<dependency>
+			<groupId>org.vcell</groupId>
+		 	<artifactId>pom-vcell</artifactId>
+		 	<version>0.0.1-SNAPSHOT</version>
+		</dependency> -->
 
     </dependencies>
 </project>

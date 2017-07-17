@@ -27,11 +27,4 @@ public class ModelParameterInputPanelTest {
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
     }
-
-    @Test
-    public void generateHtml() throws Exception {
-        ModelParameterInputPanel panel = new ModelParameterInputPanel(new ArrayList<>());
-        String html = panel.generateHtml("Binding (molecules.µm2.s-1)");
-        assertEquals("<html>Binding (molecules.µm<sup>2</sup>.s<sup>-1</sup>)</html>", html);
-    }
 }

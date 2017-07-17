@@ -1,15 +1,42 @@
 package org.vcell;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.xml.XMLAttributes;
 import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.jsbml.xml.XMLTriple;
+import org.vcell.api.client.VCellApiClient;
+import org.vcell.api.client.query.BioModelsQuerySpec;
+import org.vcell.api.common.BiomodelRepresentation;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+
+import javax.imageio.ImageIO;
 import javax.xml.stream.XMLStreamException;
+
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by kevingaffney on 7/7/17.
@@ -18,6 +45,60 @@ public class VCellModelService {
 
     private final static String VCELL_PREFIX = "vcell";
     private final static String VCELL_SOURCE = "http://sourceforge.net/projects/vcell";
+    
+    // VCell API
+    private final static String HOST = "vcellapi.cam.uchc.edu";
+    private final static int PORT = 8080;
+    private final static String DEFAULT_CLIENT_ID = "85133f8d-26f7-4247-8356-d175399fc2e6";
+    
+    public void getVCellModels(FutureCallback<VCellModel[]> callback) {
+    	
+		ListeningExecutorService listeningExecutor = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
+		ListenableFuture<VCellModel[]> future = listeningExecutor.submit(new Callable<VCellModel[]>() {
+
+			@Override
+			public VCellModel[] call() throws Exception {
+				return getVCellModels();
+			}
+		});
+		
+    	Executor executor = Executors.newSingleThreadExecutor();
+        Futures.addCallback(future, callback, executor);
+    }
+    
+    private VCellModel[] getVCellModels() {
+    	
+    	boolean bIgnoreCertProblems = true;
+		boolean bIgnoreHostMismatch = true;
+		VCellApiClient vCellApiClient = null;
+		BiomodelRepresentation[] biomodelReps = null;
+		
+    	try {
+    		vCellApiClient = new VCellApiClient(HOST, PORT, DEFAULT_CLIENT_ID, bIgnoreCertProblems, bIgnoreHostMismatch);
+			biomodelReps = vCellApiClient.getBioModels(new BioModelsQuerySpec());
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+    	
+    	VCellModel[] vCellModels = new VCellModel[biomodelReps.length];
+    	
+    	for (int i = 0; i < vCellModels.length; i++) {
+    		BiomodelRepresentation biomodelRep = biomodelReps[i];
+    		VCellModel vCellModel = new VCellModel(biomodelRep.getName());
+    		vCellModel.getParameters().add(new VCellModelParameter("param1", null, "uM", VCellModelParameter.CONCENTRATION));
+    		vCellModel.getParameters().add(new VCellModelParameter("param2", null, "µm2", VCellModelParameter.CONCENTRATION));
+			try {
+	    		BufferedImage img = ImageIO.read(new URL("https://" + HOST + ":" + PORT + "/biomodel/" + biomodelRep.getBmKey() + "/diagram"));
+	    		vCellModel.setImage(img);
+			} catch (IOException e) {
+				System.out.println("Could not load image for: " + biomodelRep.getName());
+			}
+    		vCellModels[i] = vCellModel;
+    	}
+    	
+    	return vCellModels;
+    }
+    
 
     public void writeSBMLToFile(VCellModel vCellModel, File destination) throws IOException, XMLStreamException {
 
