@@ -17,9 +17,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="lib/ojdbc5.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/ucp.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/GlgGraphLayoutNG.jar"/>
 	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
