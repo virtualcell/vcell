@@ -11,6 +11,7 @@
 package cbit.vcell.modeldb;
 
 import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 /**
@@ -81,7 +82,7 @@ protected void handle_SQLException(Throwable t) throws java.sql.SQLException {
  */
 protected boolean isBadConnection(java.sql.Connection con) {
 
-	return isBadConnection(con, log);
+	return isBadConnection(con, log, conFactory.getDatabaseSyntax());
 }
 /**
  * Insert the method's description here.
@@ -89,17 +90,31 @@ protected boolean isBadConnection(java.sql.Connection con) {
  * @return boolean
  * @param con java.sql.Connection
  */
-public static boolean isBadConnection(java.sql.Connection con, SessionLog log) {
+public static boolean isBadConnection(java.sql.Connection con, SessionLog log, DatabaseSyntax dbSyntax) {
 
 	//if(throwable instanceof cbit.vcell.server.DataAccessException){
 	//	return false;
 	//}else if(throwable instanceof cbit.vcell.server.PermissionException){
 	//	return false;
 	//}
-	String sql = "SELECT null FROM DUAL";
+	String sql = null;
+	switch (dbSyntax){
+	case ORACLE:{
+		sql = "SELECT null FROM DUAL";
+		break;
+	}
+	case POSTGRES:{
+		sql = "SELECT null";
+		break;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 	java.sql.Statement stmt = null;
 	try{
 		stmt = con.createStatement();
+		
 		java.sql.ResultSet rset = stmt.executeQuery(sql);
 		if(rset.next()){
 			return false;

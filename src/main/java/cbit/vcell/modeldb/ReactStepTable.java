@@ -35,6 +35,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -241,7 +242,7 @@ private String getReactTypeDbString(ReactionStep reactionStep) throws DataAccess
  * @return java.lang.String
  * @param likeString java.lang.String
  */
-public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user) {
+public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user, DatabaseSyntax dbSyntax) {
 	//Get Descriptive name for rxID
 	//watch for multiple copies of reactionsteps being return because of
 	//DatabasePolicy.  Happens because PermissionTable can have more than 1
@@ -293,7 +294,7 @@ public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user) {
 		" AND " +
 		BioModelTable.table.ownerRef.getQualifiedColName() + " = " + UserTable.table.id.getQualifiedColName();
 	String special = " ORDER BY " + ReactStepTable.table.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,special,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,true);
 	StringBuffer sb = new StringBuffer(sql);
 	//LOBs cannot be accessed if the query uses the DISTINCT or UNIQUE keyword
 	sb.insert(7," DISTINCT ");
@@ -307,7 +308,7 @@ public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user) {
  * @return java.lang.String
  * @param likeString java.lang.String
  */
-public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user) {
+public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, DatabaseSyntax dbSyntax) {
 	
 	String reactant_or_flux_likeString = rqs.getReactantLikeString();
 	String catalyst_likeString = rqs.getCatalystLikeString();
@@ -517,7 +518,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user) {
 		ReactStepTable.table.modelRef.getQualifiedColName() + " = " + BioModelTable.table.modelRef.getQualifiedColName();
 
 	String special = " ORDER BY " + ReactStepTable.table.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,special,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,true);
 	StringBuffer sb = new StringBuffer(sql);
 	//LOBs cannot be accessed if the query uses the DISTINCT or UNIQUE keyword
 	sb.insert(7,Table.SQL_GLOBAL_HINT+" DISTINCT ");
@@ -574,8 +575,43 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 		return buffer.toString();
 	}
 	case POSTGRES:{
-		// TODO: POSTGRES
-		throw new RuntimeException("ReactStepTable.getSQLValueList() not yet implemented for Postgres");
+		String	kinetics = reactionStep.getKinetics().getVCML();
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(key+",");
+		buffer.append("'"+getReactTypeDbString(reactionStep)+"',");
+		buffer.append(modelKey+",");
+		buffer.append(structKey+",");
+		buffer.append("null"+","); // keep for compatibility with release site
+		if (reactionStep.getName()==null){
+			buffer.append("null"+",");
+		}else{
+			buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getName())+"',");
+		}
+		try {
+			KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getChargeValenceParameter();
+			int valence = 1;
+			if (chargeValenceParameter!=null){
+				valence = (int)chargeValenceParameter.getExpression().evaluateConstant();
+			}
+			buffer.append(valence+",");
+		}catch (cbit.vcell.parser.ExpressionException e){
+			e.printStackTrace(System.out);
+			throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage());
+		}
+		buffer.append(reactionStep.getPhysicsOptions()+",");
+	
+		// New kinetics format
+		if(DbDriver.varchar2_CLOB_is_Varchar2_OK(kinetics)){
+			buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
+		}else{
+			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
+		}
+	
+		buffer.append("NULL");
+		buffer.append(")");
+		
+		return buffer.toString();
 	}
 	default:{
 		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);

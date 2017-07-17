@@ -31,6 +31,8 @@ import cbit.image.VCImageInfo;
 import cbit.sql.Field;
 import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
+import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -128,7 +130,7 @@ public VersionInfo getInfo(ResultSet rset, Connection con,SessionLog log,Databas
  * This method was created in VisualAge.
  * @return java.lang.String
  */
-public String getInfoSQL(User user,String extraConditions,String special,boolean bCheckPermission) {
+public String getInfoSQL(User user,String extraConditions,String special,boolean bCheckPermission, DatabaseSyntax dbSyntax) {
 	UserTable userTable = UserTable.table;
 	ImageTable iTable = this;
 	ExtentTable eTable = ExtentTable.table;
@@ -137,16 +139,36 @@ public String getInfoSQL(User user,String extraConditions,String special,boolean
 	
 	String sql;
 	Field[] f = {userTable.userid,new cbit.sql.StarField(iTable),eTable.extentX,eTable.extentY,eTable.extentZ,bTable.data,swvTable.softwareVersion};
-	Table[] t = {iTable,userTable,eTable,bTable,swvTable};	
-	String condition = iTable.extentRef.getQualifiedColName() + " = " + eTable.id.getQualifiedColName() +
-			" AND " + bTable.imageRef.getQualifiedColName() + " = " + iTable.id.getQualifiedColName() +
-			" AND " + userTable.id.getQualifiedColName() + " = " + iTable.ownerRef.getQualifiedColName() +  // links in the userTable
-			" AND " + iTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-	if (extraConditions != null && extraConditions.trim().length()>0){
-		condition += " AND "+extraConditions;
+	Table[] t = {iTable,userTable,eTable,bTable,swvTable};
+	
+	switch (dbSyntax){
+	case ORACLE:{
+		String condition = iTable.extentRef.getQualifiedColName() + " = " + eTable.id.getQualifiedColName() +
+				" AND " + bTable.imageRef.getQualifiedColName() + " = " + iTable.id.getQualifiedColName() +
+				" AND " + userTable.id.getQualifiedColName() + " = " + iTable.ownerRef.getQualifiedColName() +  // links in the userTable
+				" AND " + iTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,bCheckPermission);
+		return sql;
 	}
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,special,bCheckPermission);
-	return sql;
+	case POSTGRES:{
+		String condition = iTable.extentRef.getQualifiedColName() + " = " + eTable.id.getQualifiedColName() +
+				" AND " + bTable.imageRef.getQualifiedColName() + " = " + iTable.id.getQualifiedColName() +
+				" AND " + userTable.id.getQualifiedColName() + " = " + iTable.ownerRef.getQualifiedColName() + " "; // links in the userTable
+			//	" AND " + iTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+		OuterJoin outerJoin = new OuterJoin(iTable, swvTable, JoinOp.LEFT_OUTER_JOIN, iTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax,bCheckPermission);
+		return sql;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 
 

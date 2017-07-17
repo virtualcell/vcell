@@ -42,7 +42,7 @@ public class DictionaryDBTopLevel extends AbstractDBTopLevel{
      */
     DictionaryDBTopLevel(ConnectionFactory aConFactory, SessionLog newLog) throws SQLException {
 	super(aConFactory,newLog);
-	this.dictionaryDB = new DictionaryDbDriver(aConFactory.getKeyFactory(), log);
+	this.dictionaryDB = new DictionaryDbDriver(aConFactory.getKeyFactory(), aConFactory.getDatabaseSyntax(), log);
 
 	this.reactStepDB = new ReactStepDbDriver(conFactory.getDatabaseSyntax(),conFactory.getKeyFactory(),null,this.log,this.dictionaryDB);
 		ModelDbDriver modelDB = new ModelDbDriver(this.reactStepDB,this.log);

@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SessionLog;
@@ -67,14 +68,16 @@ public class DictionaryDbDriver {
 	
     private final SessionLog log;
     private final KeyFactory keyFactory;
+    private final DatabaseSyntax dbSyntax;
     
 
 /**
  * DictionaryDBManager constructor.
  */
-public DictionaryDbDriver(KeyFactory keyFactory, SessionLog sessionLog) {
+public DictionaryDbDriver(KeyFactory keyFactory, DatabaseSyntax dbSyntax, SessionLog sessionLog) {
 	super();
 	this.keyFactory = keyFactory;
+	this.dbSyntax = dbSyntax;
 	this.log = sessionLog;
 }
 
@@ -794,7 +797,7 @@ public String[] getProteinKeyWords(Connection con, String likeString) throws SQL
  * Creation date: (4/18/2003 10:23:37 AM)
  */
 public ReactionStepInfo[] getReactionStepInfos(Connection con,User user,KeyValue reactionStepKeys[]) throws SQLException{
-	String sql = ReactStepTable.table.getSQLReactionStepInfosQuery(reactionStepKeys,user);
+	String sql = ReactStepTable.table.getSQLReactionStepInfosQuery(reactionStepKeys,user,dbSyntax);
 	Statement stmt = con.createStatement();
 	Vector<ReactionStepInfo> reactionStepInfoList = new Vector<ReactionStepInfo>();
     try {
@@ -827,7 +830,7 @@ public ReactionStepInfo[] getReactionStepInfos(Connection con,User user,KeyValue
  */
 public ReactionDescription[] getUserReactionDescriptions(Connection con,User user,ReactionQuerySpec reactionQuerySpec) throws SQLException{
 
-	String sql = ReactStepTable.table.getSQLUserReactionListQuery(reactionQuerySpec,user);
+	String sql = ReactStepTable.table.getSQLUserReactionListQuery(reactionQuerySpec,user,dbSyntax);
 
 	ReactionDescription[] rxArr = null;
 	

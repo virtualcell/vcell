@@ -56,6 +56,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
@@ -279,7 +280,7 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, KeyV
 	String condition = geomTable.id.getQualifiedColName() + " = " + geomKey +
 					" AND " + userTable.id.getQualifiedColName() + " = " + geomTable.ownerRef.getQualifiedColName() +
 					" AND " + extentTable.id.getQualifiedColName() + " = " + geomTable.extentRef.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,bCheckPermission);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,bCheckPermission);
 //System.out.println(sql);
 	
   	Geometry geom = null;
@@ -301,7 +302,7 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, KeyV
 					// At least 1 parent of the geometry exists that's shared to this user so give them the geometry
 					rset.close();
 					//Get the geometry without checking the geometry permission
-					sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,false);
+					sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,false);
 					rset = stmt.executeQuery(sql);
 					if(rset.next()){
 						geom = getGeometry(dbc, con, user,rset);
@@ -799,7 +800,7 @@ private VCImage getVCImage(QueryHashtable dbc, Connection con, User user, KeyVal
 					" AND " + imageTable.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName() +
 					" AND " + imageTable.id.getQualifiedColName() + " = " + imageDataTable.imageRef.getQualifiedColName()+
 					" AND " + imageTable.extentRef.getQualifiedColName() + " = " + extentTable.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,bCheckPermission);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,bCheckPermission);
 //System.out.println(sql);
 	
 	//Connection con = conFact.getConnection();
@@ -886,21 +887,23 @@ private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue ima
 				new VCImageUncompressed(null, new byte[BrowseImage.BROWSE_XSIZE*BrowseImage.BROWSE_YSIZE], new Extent(1, 1, 1), BrowseImage.BROWSE_XSIZE, BrowseImage.BROWSE_YSIZE, 1)).getGifEncodedData();
 		
 	}
-	updateCleanSQL(con,sql);
-	updateCleanLOB(	con,browseImageDataTable.id.toString(),key,
-					browseImageDataTable.tableName,
-					browseImageDataTable.data,
-					gifEncodedImage,dbSyntax);
-	/*
-	PreparedStatement pps;
-	pps = con.prepareStatement(sql);
-	try {
-		pps.setBytes(1, BrowseImage.makeBrowseGIFImage(image).getGifEncodedData());
-		pps.executeUpdate();
-	} finally {
-		pps.close();
+	switch (dbSyntax){
+	case ORACLE:{
+		updateCleanSQL(con,sql);
+		updateCleanLOB(	con,browseImageDataTable.id.toString(),key,
+						browseImageDataTable.tableName,
+						browseImageDataTable.data,
+						gifEncodedImage,dbSyntax);
+		break;
 	}
-	*/
+	case POSTGRES:{
+		updatePreparedCleanSQL(con, sql, gifEncodedImage);
+		break;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 
 
@@ -948,20 +951,23 @@ private void insertFilamentsSQL(Connection con, Geometry geom, KeyValue geomKey)
 			sql = 	"INSERT INTO " + curveTable.getTableName() + " " + curveTable.getSQLColumnList() + 
 					" VALUES " + curveTable.getSQLValueList(newCurveKey,newFilamentKey,dbSyntax);
 			//
-			updateCleanSQL(con,sql);
-			updateCleanLOB(	con,curveTable.id.toString(),newCurveKey,
-					curveTable.tableName,
-					curveTable.curveData,
-					CurveTable.encodeCurve(curves[j]),dbSyntax);
-			/*
-			PreparedStatement pps = con.prepareStatement(sql);
-			try {
-				pps.setBytes(1, CurveTable.encodeCurve(curves[j]).getBytes());
-				pps.executeUpdate();
-			} finally {
-				pps.close();
+			switch (dbSyntax){
+			case ORACLE:{
+				updateCleanSQL(con,sql);
+				updateCleanLOB(	con,curveTable.id.toString(),newCurveKey,
+						curveTable.tableName,
+						curveTable.curveData,
+						CurveTable.encodeCurve(curves[j]),dbSyntax);
+				break;
 			}
-			*/
+			case POSTGRES:{
+				updatePreparedCleanSQL(con,sql,CurveTable.encodeCurve(curves[j]));
+				break;
+			}
+			default:{
+				throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+			}
+			}
 		}
 	}
 }
@@ -1149,21 +1155,23 @@ private void insertImageDataSQL(Connection con, KeyValue key, KeyValue imageKey,
 	sql = "INSERT INTO " + imageDataTable.getTableName() + " " + imageDataTable.getSQLColumnList() + " VALUES " + 
 		imageDataTable.getSQLValueList(key, imageKey, dbSyntax);
 //System.out.println(sql);
-	updateCleanSQL(con,sql);
-	updateCleanLOB(	con,imageDataTable.id.toString(),key,
-			imageDataTable.tableName,
-			imageDataTable.data,
-			image.getPixelsCompressed(), dbSyntax);
-	/*
-	PreparedStatement pps;
-	pps = con.prepareStatement(sql);
-	try {
-		pps.setBytes(1, image.getPixelsCompressed());
-		pps.executeUpdate();
-	} finally {
-		pps.close();
+	switch (dbSyntax){
+	case ORACLE:{
+		updateCleanSQL(con,sql);
+		updateCleanLOB(	con,imageDataTable.id.toString(),key,
+				imageDataTable.tableName,
+				imageDataTable.data,
+				image.getPixelsCompressed(), dbSyntax);
+		break;
 	}
-	*/
+	case POSTGRES:{
+		updatePreparedCleanSQL(con, sql, image.getPixelsCompressed());
+		break;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 
 

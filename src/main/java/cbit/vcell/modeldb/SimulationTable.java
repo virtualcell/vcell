@@ -38,6 +38,8 @@ import cbit.sql.Field.SQLDataType;
 import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MathOverrides.Element;
@@ -93,7 +95,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
  * This method was created in VisualAge.
  * @return java.lang.String
  */
-public String getInfoSQL(User user,String extraConditions,String special) {
+public String getInfoSQL(User user,String extraConditions,String special,DatabaseSyntax dbSyntax) {
 	
 	UserTable userTable = UserTable.table;
 	SimulationTable vTable = SimulationTable.table;
@@ -106,14 +108,31 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 
 	Table[] t = {vTable,userTable,swvTable};
 
-	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
-	           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-	if (extraConditions != null && extraConditions.trim().length()>0){
-		condition += " AND "+extraConditions;
+	switch (dbSyntax){
+	case ORACLE:{
+		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
+		           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+	
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax);
+		return sql;
 	}
-
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,special);
-	return sql;
+	case POSTGRES:{
+		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() + " "; // links in the userTable
+		          // " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+		OuterJoin outerJoin = new OuterJoin( vTable, swvTable, JoinOp.LEFT_OUTER_JOIN, vTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax);
+		return sql;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 /**
  * This method was created in VisualAge.
@@ -215,48 +234,52 @@ public static CommentStringTokenizer getMathOverridesTokenizer(ResultSet rset, D
  */
 public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version version, DatabaseSyntax dbSyntax) {
 
+	SolverTaskDescription 	solverTD 		= simulation.getSolverTaskDescription();
+	String					mathOverrides	= simulation.getMathOverrides().getVCML();
+	
+	StringBuffer buffer = new StringBuffer();
 	switch (dbSyntax){
 	case ORACLE:{
-		SolverTaskDescription 	solverTD 		= simulation.getSolverTaskDescription();
-		String					mathOverrides	= simulation.getMathOverrides().getVCML();
-		
-		StringBuffer buffer = new StringBuffer();
 		buffer.append("(");
 		buffer.append(getVersionGroupSQLValue(version) + ",");
 		buffer.append(mathKey+",");
 		buffer.append("EMPTY_CLOB()"+","); // MathOverridesOrig keep for compatibility with old VCell
-		
-		if(DbDriver.varchar2_CLOB_is_Varchar2_OK(mathOverrides)){
-			buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
-		}else{
-			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
-		}
-		
-		buffer.append((solverTD != null?"'"+TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
-		if (simulation.getMathDescription() != null &&
-			simulation.getMathDescription().getGeometry() != null &&
-			simulation.getMathDescription().getGeometry().getDimension()>0){
-			MeshSpecification	meshSpec = simulation.getMeshSpecification();
-			buffer.append(meshSpec.getSamplingSize().getX()+","+meshSpec.getSamplingSize().getY()+","+meshSpec.getSamplingSize().getZ());
-		}else{
-			buffer.append("null,null,null");
-		}
-		if (simulation.getDataProcessingInstructions()!=null){
-			buffer.append(",'"+TokenMangler.getSQLEscapedString(simulation.getDataProcessingInstructions().getDbXml())+"'");
-		}else{
-			buffer.append(",null");
-		}
-		buffer.append(")");
-		return buffer.toString();
+		break;
 	}
 	case POSTGRES:{
-		// TODO: POSTGRES
-		throw new RuntimeException("SimulationTable.getSQLValueList() not yet implemented for Postgres");
+		buffer.append("(");
+		buffer.append(getVersionGroupSQLValue(version) + ",");
+		buffer.append(mathKey+",");
+		buffer.append("null"+","); // MathOverridesOrig keep for compatibility with old VCell
+		break;
 	}
 	default:{
 		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
 	}
-}
+	}
+	
+	if(DbDriver.varchar2_CLOB_is_Varchar2_OK(mathOverrides)){
+		buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
+	}else{
+		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
+	}
+	
+	buffer.append((solverTD != null?"'"+TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
+	if (simulation.getMathDescription() != null &&
+		simulation.getMathDescription().getGeometry() != null &&
+		simulation.getMathDescription().getGeometry().getDimension()>0){
+		MeshSpecification	meshSpec = simulation.getMeshSpecification();
+		buffer.append(meshSpec.getSamplingSize().getX()+","+meshSpec.getSamplingSize().getY()+","+meshSpec.getSamplingSize().getZ());
+	}else{
+		buffer.append("null,null,null");
+	}
+	if (simulation.getDataProcessingInstructions()!=null){
+		buffer.append(",'"+TokenMangler.getSQLEscapedString(simulation.getDataProcessingInstructions().getDbXml())+"'");
+	}else{
+		buffer.append(",null");
+	}
+	buffer.append(")");
+	return buffer.toString();
 }
 
 

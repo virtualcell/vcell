@@ -84,7 +84,7 @@ DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog) throws SQLException
 	DatabaseSyntax databaseSyntax = conFactory.getDatabaseSyntax();
 	this.geomDB = new GeomDbDriver(databaseSyntax, keyFactory, log);
 	this.mathDB = new MathDescriptionDbDriver(this.geomDB,log);
-	this.reactStepDB = new ReactStepDbDriver(databaseSyntax, keyFactory, null, log, new DictionaryDbDriver(keyFactory, newLog));
+	this.reactStepDB = new ReactStepDbDriver(databaseSyntax, keyFactory, null, log, new DictionaryDbDriver(keyFactory, databaseSyntax, newLog));
 	this.modelDB = new ModelDbDriver(this.reactStepDB,log);
 	this.reactStepDB.init(modelDB);
 	this.simulationDB = new SimulationDbDriver(this.mathDB,log);
@@ -465,7 +465,7 @@ BioModelMetaData[] getBioModelMetaDatas(User user, boolean bAll, boolean bEnable
 		//dbCacheTable.put((Cacheable) dbV);
 		//return (Versionable) dbV;
 		//NewEnd
-		return bioModelDB.getBioModelMetaDatas(con,user,bAll);
+		return bioModelDB.getBioModelMetaDatas(con,user,bAll,conFactory.getDatabaseSyntax());
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
@@ -1543,7 +1543,7 @@ void insertVersionableXML(User user,VersionableType vType,KeyValue vKey,String x
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.insertVersionableXML(con,xml,vType,vKey,conFactory.getDatabaseSyntax());
+		DbDriver.insertVersionableXML(con,xml,vType,vKey,conFactory.getKeyFactory(),conFactory.getDatabaseSyntax());
 		con.commit();
 	} catch (Throwable e) {
 		log.exception(e);

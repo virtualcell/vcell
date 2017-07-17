@@ -109,8 +109,23 @@ public String getSQLValueList(KeyValue key, Diagram diagram, KeyValue modelID, K
 		return buffer.toString();
 	}	
 	case POSTGRES:{
-		// TODO: POSTGRES
-		throw new RuntimeException("DiagramTable.getSQLValueList() not yet implemented for Postgres");
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(key+",");
+		buffer.append("'"+diagram.getName()+"',");
+		buffer.append(modelID+",");
+		buffer.append(structID+",");
+		buffer.append("null"+","); //keep for compatibility with release site
+		
+		if(DbDriver.varchar2_CLOB_is_Varchar2_OK(diagram.getVCML())){
+			buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE);
+		}else{
+			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null");
+		}
+		
+		buffer.append(")");
+	
+		return buffer.toString();
 	}
 	default:{
 		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);

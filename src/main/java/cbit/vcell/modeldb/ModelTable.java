@@ -33,6 +33,8 @@ import cbit.sql.Field.SQLDataType;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelInfo;
 import cbit.vcell.model.ModelUnitSystem;
@@ -122,20 +124,38 @@ public VersionInfo getInfo(ResultSet rset, Connection con,SessionLog log) throws
  * This method was created in VisualAge.
  * @return java.lang.String
  */
-public String getInfoSQL(User user,String extraConditions,String special) {
+public String getInfoSQL(User user,String extraConditions,String special,DatabaseSyntax dbSyntax) {
 	UserTable userTable = UserTable.table;
 	ModelTable vTable = ModelTable.table;
 	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
 	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion};
 	Table[] t = {vTable,userTable,swvTable};
-	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
-	           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-	if (extraConditions != null && extraConditions.trim().length()>0){
-		condition += " AND "+extraConditions;
+	
+	switch (dbSyntax){
+	case ORACLE:{
+		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
+		           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax);
+		return sql;
 	}
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,special);
-	return sql;
+	case POSTGRES:{
+		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() + " "; // links in the userTable
+		         //  " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+		OuterJoin outerJoin = new OuterJoin(vTable, swvTable, JoinOp.LEFT_OUTER_JOIN, vTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax);
+		return sql;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 /**
  * This method was created in VisualAge.

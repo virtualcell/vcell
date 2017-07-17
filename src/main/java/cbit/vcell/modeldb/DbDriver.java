@@ -1020,26 +1020,25 @@ protected final static Object getLOB(ResultSet rset,Field column,DatabaseSyntax 
 			"ResultSet column=" + column.getUnqualifiedColName() + " was not a BLOB or CLOB");
 	}
 	case POSTGRES:{
-		// TODO: POSTGRES need to test.
 		if (column.getSqlDataType()==SQLDataType.blob_bytea){
 			//
 			// binary data (bytea)
-			//
-			String result = rset.getString(column.getUnqualifiedColName());
-			if (rset.wasNull()){
-				return null;
-			}else{
-				return result;
-			}
-		}else if (column.getSqlDataType()==SQLDataType.clob_text){
-			//
-			// text data
 			//
 			byte[] bytes = rset.getBytes(column.getUnqualifiedColName());
 			if (rset.wasNull()){
 				return null;
 			}else{
 				return bytes;
+			}
+		}else if (column.getSqlDataType()==SQLDataType.clob_text){
+			//
+			// text data
+			//
+			String result = rset.getString(column.getUnqualifiedColName());
+			if (rset.wasNull()){
+				return null;
+			}else{
+				return result;
 			}
 		}else{
 			throw new DataAccessException("unexpected SQLDataType "+column.getSqlDataType());
@@ -1209,7 +1208,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 						BioModelTable.table.name.getQualifiedColName() + "," + 
 						BioModelTable.table.versionBranchID.getQualifiedColName() + "," + 
 						BioModelTable.table.versionDate.getQualifiedColName();
-			sql = new StringBuffer(BioModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null)));
+			sql = new StringBuffer(BioModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null),dbSyntax));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
 			ArrayList<BioModelInfo> tempInfos = new ArrayList<BioModelInfo>();
@@ -1238,7 +1237,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 						MathModelTable.table.name.getQualifiedColName() + "," + 
 						MathModelTable.table.versionBranchID.getQualifiedColName() + "," + 
 						MathModelTable.table.versionDate.getQualifiedColName();
-			sql = new StringBuffer(MathModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null)));
+			sql = new StringBuffer(MathModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null),dbSyntax));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
 			ArrayList<MathModelInfo> tempInfos = new ArrayList<MathModelInfo>();
@@ -1267,7 +1266,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 						ImageTable.table.name.getQualifiedColName() + "," + 
 						ImageTable.table.versionBranchID.getQualifiedColName() + "," + 
 						ImageTable.table.versionDate.getQualifiedColName();
-			sql = new StringBuffer(ImageTable.table.getInfoSQL(user,null,(enableSpecial?special:null),true));
+			sql = new StringBuffer(ImageTable.table.getInfoSQL(user,null,(enableSpecial?special:null),true,dbSyntax));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
 			ArrayList<VCImageInfo> tempInfos = new ArrayList<VCImageInfo>();
@@ -1296,7 +1295,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 						GeometryTable.table.name.getQualifiedColName() + "," + 
 						GeometryTable.table.versionBranchID.getQualifiedColName() + "," + 
 						GeometryTable.table.versionDate.getQualifiedColName();
-			sql = new StringBuffer(GeometryTable.table.getInfoSQL(user,null,(enableSpecial?special:null),true));
+			sql = new StringBuffer(GeometryTable.table.getInfoSQL(user,null,(enableSpecial?special:null),true,dbSyntax));
 			sql.insert(7,Table.SQL_GLOBAL_HINT+(enableDistinct?"DISTINCT ":""));
 			rset = stmt.executeQuery(sql.toString());
 			ArrayList<GeometryInfo> tempInfos = new ArrayList<GeometryInfo>();
@@ -1361,21 +1360,21 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,SessionLog 
 
 
 	if (vType.equals(VersionableType.BioModelMetaData)){
-		sql = ((BioModelTable)vTable).getInfoSQL(user,conditions.toString(),special);
+		sql = ((BioModelTable)vTable).getInfoSQL(user,conditions.toString(),special,dbSyntax);
 	}else if (vType.equals(VersionableType.MathModelMetaData)){
-		sql = ((MathModelTable)vTable).getInfoSQL(user,conditions.toString(),special);
+		sql = ((MathModelTable)vTable).getInfoSQL(user,conditions.toString(),special,dbSyntax);
 	}else if (vType.equals(VersionableType.Simulation)){
-		sql = ((SimulationTable)vTable).getInfoSQL(user,conditions.toString(),special);
+		sql = ((SimulationTable)vTable).getInfoSQL(user,conditions.toString(),special,dbSyntax);
 	}else if (vType.equals(VersionableType.Geometry)){
-		sql = ((GeometryTable)vTable).getInfoSQL(user,conditions.toString(),special,bCheckPermission);
+		sql = ((GeometryTable)vTable).getInfoSQL(user,conditions.toString(),special,bCheckPermission,dbSyntax);
 	}else if (vType.equals(VersionableType.VCImage)){
-		sql = ((ImageTable)vTable).getInfoSQL(user,conditions.toString(),special,bCheckPermission);
+		sql = ((ImageTable)vTable).getInfoSQL(user,conditions.toString(),special,bCheckPermission,dbSyntax);
 	}else if (vType.equals(VersionableType.Model)){
-		sql = ((ModelTable)vTable).getInfoSQL(user,conditions.toString(),special);
+		sql = ((ModelTable)vTable).getInfoSQL(user,conditions.toString(),special,dbSyntax);
 	}else if (vType.equals(VersionableType.SimulationContext)){
-		sql = ((SimContextTable)vTable).getInfoSQL(user,conditions.toString(),special);
+		sql = ((SimContextTable)vTable).getInfoSQL(user,conditions.toString(),special,dbSyntax);
 	}else if (vType.equals(VersionableType.MathDescription)){
-		sql = ((MathDescTable)vTable).getInfoSQL(user,conditions.toString(),special);
+		sql = ((MathDescTable)vTable).getInfoSQL(user,conditions.toString(),special,dbSyntax);
 	}else{
 		throw new RuntimeException("VersionInfo not availlable for type '"+vType.getTypeName()+"'");
 	}
@@ -2015,36 +2014,37 @@ throws SQLException,DataAccessException{
  * @param pRef cbit.sql.KeyValue
  * @param bCommit boolean
  */
-public static void insertVersionableXML(Connection con,String xml,VersionableType vType,KeyValue vKey, DatabaseSyntax dbSyntax) 
+public static void insertVersionableXML(Connection con,String xml,VersionableType vType,KeyValue vKey, KeyFactory keyFactory, DatabaseSyntax dbSyntax) 
 					throws DataAccessException, SQLException, RecordChangedException {
+	String xmlTableName = null;
+	String versionableRefColName = null;
+	Field xmlCol = null;
+	if (vType.equals(VersionableType.BioModelMetaData)){
+		xmlTableName = BioModelXMLTable.table.getTableName();
+		versionableRefColName = BioModelXMLTable.table.bioModelRef.toString();
+		xmlCol = BioModelXMLTable.table.bmXML;
+	}else if(vType.equals(VersionableType.MathModelMetaData)){
+		xmlTableName = MathModelXMLTable.table.getTableName();
+		versionableRefColName = MathModelXMLTable.table.mathModelRef.toString();
+		xmlCol = MathModelXMLTable.table.mmXML;
+	}else{
+		throw new IllegalArgumentException("vType " + vType + " not supported");
+	}
+	updateCleanSQL(con,"DELETE FROM "+xmlTableName +
+			" WHERE " + versionableRefColName + " = " + vKey.toString());
+
 	switch (dbSyntax){
 	case ORACLE:{
-		String xmlTableName = null;
-		String versionableRefColName = null;
-		Field xmlCol = null;
-		if (vType.equals(VersionableType.BioModelMetaData)){
-			xmlTableName = BioModelXMLTable.table.getTableName();
-			versionableRefColName = BioModelXMLTable.table.bioModelRef.toString();
-			xmlCol = BioModelXMLTable.table.bmXML;
-		}else if(vType.equals(VersionableType.MathModelMetaData)){
-			xmlTableName = MathModelXMLTable.table.getTableName();
-			versionableRefColName = MathModelXMLTable.table.mathModelRef.toString();
-			xmlCol = MathModelXMLTable.table.mmXML;
-		}else{
-			throw new IllegalArgumentException("vType " + vType + " not supported");
-		}
-		updateCleanSQL(con,"DELETE FROM "+xmlTableName +
-			" WHERE " + versionableRefColName + " = " + vKey.toString());
-		
 		updateCleanSQL(con,"INSERT INTO "+xmlTableName+
-			" VALUES (NEWSEQ.NEXTVAL,"+vKey.toString()+",EMPTY_CLOB(),current_timestamp)");
+			" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",EMPTY_CLOB(),current_timestamp)");
 		
 		updateCleanLOB(con,versionableRefColName,vKey,xmlTableName,xmlCol,xml,dbSyntax);
 		break;
 	}
 	case POSTGRES:{
-		// TODO: POSTGRES
-		throw new RuntimeException("DbDriver.insertVersionableXML() not yet implemented for Postgres");
+		updatePreparedCleanSQL(con,"INSERT INTO "+xmlTableName+
+				" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",?,current_timestamp)",xml);
+		break;
 	}
 	default:{
 		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
@@ -4363,8 +4363,7 @@ protected final static void updateCleanLOB(Connection con,String conditionalColu
 		break;
 	}
 	case POSTGRES:{
-		// TODO: POSTGRES
-		throw new RuntimeException("DbDriver.updateCleanLOB() not yet implemented for Postgres");
+		throw new RuntimeException("DbDriver.updateCleanLOB() not intended for Postgres - use BYTEA or TEXT instead for large objects.");
 	}
 	default:{
 		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
@@ -4387,6 +4386,42 @@ System.out.println("updateClean SQL "+sql);
 		return s.executeUpdate(sql);
 	} finally {
 		s.close();
+	}
+}
+
+
+public static int updatePreparedCleanSQL(Connection con, String sql, String data) throws SQLException {
+	if (sql == null || con == null || data == null) {
+		throw new IllegalArgumentException("Improper parameters for DbDriver.updatePreparedCleanSQL");
+	}
+	if (sql.contains("EMPTY_CLOB()")){
+		throw new RuntimeException("CLOBs not supported in DbDriver.updatePreparedCleanSQL(): "+sql);
+	}
+	if (!sql.contains("?")){
+		throw new RuntimeException("expected exactly one '?' in prepared statement in DbDriver.updatePreparedCleanSQL(): "+sql);
+	}
+System.out.println("DbDriver.updatePreparedCleanSQL(): "+sql);
+	try (PreparedStatement ps = con.prepareStatement(sql)){
+		ps.setString(1, data);
+		return ps.executeUpdate();
+	}
+}
+
+
+public static int updatePreparedCleanSQL(Connection con, String sql, byte[] data) throws SQLException {
+	if (sql == null || con == null || data == null) {
+		throw new IllegalArgumentException("Improper parameters for DbDriver.updatePreparedCleanSQL");
+	}
+	if (sql.contains("EMPTY_BLOB()")){
+		throw new RuntimeException("BLOBs not supported in DbDriver.updatePreparedCleanSQL(): "+sql);
+	}
+	if (!sql.contains("?")){
+		throw new RuntimeException("expected exactly one '?' in prepared statement in DbDriver.updatePreparedCleanSQL(): "+sql);
+	}
+System.out.println("DbDriver.updatePreparedCleanSQL(): "+sql);
+	try (PreparedStatement ps = con.prepareStatement(sql)){
+		ps.setBytes(1, data);
+		return ps.executeUpdate();
 	}
 }
 
@@ -4515,7 +4550,6 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
 			}
 		}
 		case POSTGRES:{
-			// TODO: POSTGRES need to test
 			//
 			// Postgres uses TEXT
 			//
@@ -4592,7 +4626,6 @@ public final static void varchar2_CLOB_update(
 	        break;
     	}
     	case POSTGRES:{
-    		// TODO: POSTGRES need to test
     		//
 		    //Store in TEXT
     		//
@@ -4601,10 +4634,7 @@ public final static void varchar2_CLOB_update(
 	            marker_index,
 	            marker_index + INSERT_CLOB_HERE.length(),
 	            "?");
-	        try (PreparedStatement pstmt = con.prepareStatement(sb.toString())){
-	        	pstmt.setString(0, data);
-	        	pstmt.executeUpdate();
-	        }
+	        updatePreparedCleanSQL(con, sb.toString(), data);
 	        break;
     	}
     	default:{

@@ -988,9 +988,9 @@ public void updateStructureKeys(Connection con, StructureKeys structureKeys) thr
 	KeyValue structKey = structureKeys.structKey;
 	String sql;
 	sql = "UPDATE " + structTable.getTableName() + " " + 
-		 	" SET " + structTable.parentRef.getQualifiedColName() + " = "+parentKey + " " + "," +
-					  structTable.negFeatureRef.getQualifiedColName() + " = "+negFeatureKey + " " + "," +
-					  structTable.posFeatureRef.getQualifiedColName() + " = "+posFeatureKey + " " +
+		 	" SET " + structTable.parentRef.getUnqualifiedColName() + " = "+parentKey + " " + "," +
+					  structTable.negFeatureRef.getUnqualifiedColName() + " = "+negFeatureKey + " " + "," +
+					  structTable.posFeatureRef.getUnqualifiedColName() + " = "+posFeatureKey + " " +
 			" WHERE " + structTable.id.getQualifiedColName() + " = " + structKey;	
 
 //System.out.println(sql);

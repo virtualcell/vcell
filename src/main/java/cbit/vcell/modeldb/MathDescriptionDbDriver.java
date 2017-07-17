@@ -38,6 +38,7 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -104,7 +105,7 @@ private MathDescription getMathDescriptionSQL(QueryHashtable dbc, Connection con
 	Table[] t = {mathDescTable,userTable};
 	String condition = mathDescTable.id.getQualifiedColName() + " = " + mathDescKey +
 			" AND " + userTable.id.getQualifiedColName() + " = " + mathDescTable.ownerRef.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
 //System.out.println(sql);
 	MathDescription mathDescription = null;
 	Statement stmt = con.createStatement();
@@ -178,12 +179,23 @@ private void insertMathDescriptionSQL(InsertHashtable hash, Connection con, User
 	Object[] o = {mathDescription, updatedGeometryKey};
 	sql = DatabasePolicySQL.enforceOwnershipInsert(user,mathDescTable,o,newVersion,dbSyntax);
 	//
-	updateCleanSQL(con,sql);
-	updateCleanLOB(	con,mathDescTable.id.toString(),newVersion.getVersionKey(),
-			mathDescTable.tableName,
-			mathDescTable.language,
-			mathDescription.getVCML_database(),dbSyntax);
-
+	switch (dbSyntax){
+	case ORACLE:{
+		updateCleanSQL(con,sql);
+		updateCleanLOB(	con,mathDescTable.id.toString(),newVersion.getVersionKey(),
+				mathDescTable.tableName,
+				mathDescTable.language,
+				mathDescription.getVCML_database(),dbSyntax);
+		break;
+	}
+	case POSTGRES:{
+		updatePreparedCleanSQL(con, sql, mathDescription.getVCML_database());
+		break;
+	}
+	default:{
+		
+	}
+	}
 	hash.put(mathDescription,newVersion.getVersionKey());
 	
 	insertMathDescExternalDataLink(con,user,mathDescription,newVersion.getVersionKey());

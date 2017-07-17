@@ -40,6 +40,8 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.StarField;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 /**
  * This type was created in VisualAge.
@@ -152,7 +154,7 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
 /**
  * getModel method comment.
  */
-private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue bioModelKey) 
+private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue bioModelKey, DatabaseSyntax dbSyntax) 
 					throws SQLException, DataAccessException, ObjectNotFoundException {
 	if (user == null || bioModelKey == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelMetaData");
@@ -179,15 +181,34 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 	// get BioModelMetaData object for bioModelKey
 	//
 	String sql;
-	Field[] f = {new StarField(bioModelTable),userTable.userid,new StarField(VCMetaDataTable.table)};
-	Table[] t = {bioModelTable,userTable,VCMetaDataTable.table};
-	String condition =	bioModelTable.id.getQualifiedColName() + " = " + bioModelKey + 
-					" AND " + 
-						userTable.id.getQualifiedColName() + " = " + bioModelTable.ownerRef.getQualifiedColName()+
-					" AND "+
-						VCMetaDataTable.table.bioModelRef.getQualifiedColName() + "(+) = " + bioModelTable.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,true);
-
+	VCMetaDataTable vcMetadataTable = VCMetaDataTable.table;
+	Field[] f = {new StarField(bioModelTable),userTable.userid,new StarField(vcMetadataTable)};
+	Table[] t = {bioModelTable,userTable,vcMetadataTable};
+	
+	switch (dbSyntax){
+	case ORACLE:{
+		String condition =	bioModelTable.id.getQualifiedColName() + " = " + bioModelKey + 
+						" AND " + 
+							userTable.id.getQualifiedColName() + " = " + bioModelTable.ownerRef.getQualifiedColName()+
+						" AND "+
+							vcMetadataTable.bioModelRef.getQualifiedColName() + "(+) = " + bioModelTable.id.getQualifiedColName();
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,null,condition,null,dbSyntax,true);
+		break;
+	}
+	case POSTGRES:{
+		String condition =	bioModelTable.id.getQualifiedColName() + " = " + bioModelKey + 
+						" AND " + 
+							userTable.id.getQualifiedColName() + " = " + bioModelTable.ownerRef.getQualifiedColName()+" ";
+//						" AND "+ VCMetaDataTable.table.bioModelRef.getQualifiedColName() + "(+) = " + bioModelTable.id.getQualifiedColName();
+		OuterJoin outerJoin = new OuterJoin(vcMetadataTable,bioModelTable,JoinOp.RIGHT_OUTER_JOIN,vcMetadataTable.bioModelRef,bioModelTable.id);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,null,dbSyntax,true);
+		break;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
+	
 	Statement stmt = con.createStatement();
 	BioModelMetaData bioModelMetaData = null;
 	try {
@@ -210,7 +231,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 /**
  * getModel method comment.
  */
-BioModelMetaData[] getBioModelMetaDatas(Connection con,User user, boolean bAll) 
+BioModelMetaData[] getBioModelMetaDatas(Connection con,User user, boolean bAll,DatabaseSyntax dbSyntax) 
 					throws SQLException, DataAccessException, ObjectNotFoundException {
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelMetaDatas");
@@ -233,7 +254,7 @@ BioModelMetaData[] getBioModelMetaDatas(Connection con,User user, boolean bAll)
 	if (!bAll) {
 		condition += " AND " + userTable.id.getQualifiedColName() + " = " + user.getID();
 	}
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
 	//
 	StringBuffer newSQL = new StringBuffer(sql);
 	newSQL.insert(7,Table.SQL_GLOBAL_HINT);
@@ -428,7 +449,7 @@ public Versionable getVersionable(QueryHashtable dbc, Connection con, User user,
 		return versionable;
 	} else {
 		if (vType.equals(VersionableType.BioModelMetaData)){
-			versionable = getBioModelMetaData(con, user, vKey);
+			versionable = getBioModelMetaData(con, user, vKey, dbSyntax);
 		}else{
 			throw new IllegalArgumentException("vType " + vType + " not supported by " + this.getClass());
 		}

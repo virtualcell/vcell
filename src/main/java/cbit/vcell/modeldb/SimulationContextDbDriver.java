@@ -57,6 +57,7 @@ import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -751,7 +752,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	String condition =	simContextTable.id.getQualifiedColName() + " = " + simContextKey + 
 					" AND " + 
 						simContextTable.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
 //System.out.println(sql);
 
 	Statement stmt = con.createStatement();
@@ -832,42 +833,44 @@ public Versionable getVersionable(QueryHashtable dbc, Connection con, User user,
  * This method was created in VisualAge.
  */
 private void insertAnalysisTasksSQL(Connection con, KeyValue simContextKey, SimulationContext simContext, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
-	switch(dbSyntax){
-	case ORACLE:{
-		AnalysisTaskXMLTable analysisTaskXMLTable = AnalysisTaskXMLTable.table;
+	AnalysisTaskXMLTable analysisTaskXMLTable = AnalysisTaskXMLTable.table;
 	
-		cbit.vcell.modelopt.AnalysisTask[] analysisTasks = simContext.getAnalysisTasks();
-		//
-		// store analysisTasks
-		//
-		if (analysisTasks != null) {
-			for (int i=0;i<analysisTasks.length;i++){
-				cbit.vcell.modelopt.AnalysisTask analysisTask = analysisTasks[i];
-				String analysisTaskXML = null;
-				if (analysisTask instanceof cbit.vcell.modelopt.ParameterEstimationTask){				
-					org.jdom.Element xmlRootElement = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getXML((cbit.vcell.modelopt.ParameterEstimationTask)analysisTask);
-					analysisTaskXML = cbit.util.xml.XmlUtil.xmlToString(xmlRootElement);
-				}else{
-					throw new DataAccessException("can't generate xml for analysisTask type '"+analysisTask.getClass().getName()+"'");
-				}
-	
-				KeyValue newID = keyFactory.getNewKey(con);
-				
+	cbit.vcell.modelopt.AnalysisTask[] analysisTasks = simContext.getAnalysisTasks();
+	//
+	// store analysisTasks
+	//
+	if (analysisTasks != null) {
+		for (int i=0;i<analysisTasks.length;i++){
+			cbit.vcell.modelopt.AnalysisTask analysisTask = analysisTasks[i];
+			String analysisTaskXML = null;
+			if (analysisTask instanceof cbit.vcell.modelopt.ParameterEstimationTask){				
+				org.jdom.Element xmlRootElement = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getXML((cbit.vcell.modelopt.ParameterEstimationTask)analysisTask);
+				analysisTaskXML = cbit.util.xml.XmlUtil.xmlToString(xmlRootElement);
+			}else{
+				throw new DataAccessException("can't generate xml for analysisTask type '"+analysisTask.getClass().getName()+"'");
+			}
+
+			KeyValue newID = keyFactory.getNewKey(con);
+			
+			switch(dbSyntax){
+			case ORACLE:{
 				updateCleanSQL(con,"INSERT INTO "+analysisTaskXMLTable.getTableName()+
 					" VALUES (" + newID +","+simContextKey.toString()+",EMPTY_CLOB(),current_timestamp)");
 				
 				updateCleanLOB(con,analysisTaskXMLTable.id.toString(),newID,analysisTaskXMLTable.getTableName(),analysisTaskXMLTable.analysisTaskXML,analysisTaskXML,dbSyntax);
+				break;
+			}
+			case POSTGRES:{
+				updatePreparedCleanSQL(con,"INSERT INTO "+analysisTaskXMLTable.getTableName()+
+						" VALUES (" + newID +","+simContextKey.toString()+",?,current_timestamp)",analysisTaskXML);
+					
+				break;
+			}
+			default:{
+				throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+			}
 			}
 		}
-		break;
-	}
-	case POSTGRES:{
-		// TODO: POSTGRES
-		throw new RuntimeException("SimulationContextDbDriver.insertAnalysisTasksSQL() not yet implemented for Postgres");
-	}
-	default:{
-		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
-	}
 	}
 }
 

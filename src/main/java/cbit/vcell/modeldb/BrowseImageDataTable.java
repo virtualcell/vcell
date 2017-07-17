@@ -54,8 +54,13 @@ public String getSQLValueList(KeyValue key, KeyValue imageKey, DatabaseSyntax db
 		return buffer.toString();
 	}
 	case POSTGRES:{
-		// TODO: POSTGRES
-		throw new RuntimeException("BrowseImageDataTable.getSQLValueList() not yet implemented for Postgres");
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(key+",");
+		buffer.append(imageKey+",");
+		buffer.append("?"+")");
+
+		return buffer.toString();
 	}
 	default:{
 		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);

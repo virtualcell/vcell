@@ -413,7 +413,7 @@ public class TestMissingSimData {
 		String itemSelectSQL = " select vc_userinfo.userid,vc_userinfo.id userkey,vc_userinfo.digestpw,vc_simulation.id simjobsimref ";
 
 		String sqlPart =
-				" from missingdata,vc_simulation,vc_userinfo,vc_softwareversion "+
+				" from missingdata,vc_simulation RIGHT OUTER JOIN vc_softwareversion ON vc_softwareversion.versionableref = vc_simulation.id,vc_userinfo,vc_softwareversion "+
 //				" from missingdata,vc_simulation,vc_userinfo,vc_softwareversion,vc_biomodelsim,vc_biomodel "+
 //				" from vc_simulation,vc_userinfo,vc_biomodelsim,vc_biomodel "+
 				" where "+
@@ -433,7 +433,6 @@ public class TestMissingSimData {
 //				" and (missingdata.notes like '%too_many_jobs%')" +
 				" and vc_simulation.parentsimref is null "+
 				" and (softwareversion is null or regexp_substr(softwareversion,'^((release)|(rel)|(alpha)|(beta))_version_([[:digit:]]+\\.?)+_build_([[:digit:]]+\\.?)+',1,1,'i') is not null) "+
-				" and vc_softwareversion.versionableref (+) = vc_simulation.id " +
 				" order by vc_userinfo.userid";
 
 //		(mdt.dataexists = 'false' or mdt.dataexists like 'error - %') and

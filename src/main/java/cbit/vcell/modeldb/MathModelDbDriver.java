@@ -37,6 +37,7 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -196,7 +197,7 @@ private MathModelMetaData getMathModelMetaData(Connection con,User user, KeyValu
 	String condition =	mathModelTable.id.getQualifiedColName() + " = " + mathModelKey + 
 					" AND " + 
 						userTable.id.getQualifiedColName() + " = " + mathModelTable.ownerRef.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,true);
 
 	Statement stmt = con.createStatement();
 	MathModelMetaData mathModelMetaData = null;
@@ -243,7 +244,7 @@ MathModelMetaData[] getMathModelMetaDatas(Connection con,User user, boolean bAll
 	if (!bAll) {
 		condition += " AND " + userTable.id.getQualifiedColName() + " = " + user.getID();
 	}
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,true);
 	//
 	StringBuffer newSQL = new StringBuffer(sql);
 	newSQL.insert(7,Table.SQL_GLOBAL_HINT);

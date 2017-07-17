@@ -34,6 +34,7 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 import cbit.vcell.solver.Simulation;
 /**
  * This type was created in VisualAge.
@@ -149,7 +150,7 @@ private Simulation getSimulationSQL(QueryHashtable dbc, Connection con,User user
 	Table[] t = {simTable,userTable};
 	String condition = simTable.id.getQualifiedColName() + " = " + simKey +
 			" AND " + userTable.id.getQualifiedColName() + " = " + simTable.ownerRef.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
 //System.out.println(sql);
 	Simulation simulation = null;
 	Statement stmt = con.createStatement();

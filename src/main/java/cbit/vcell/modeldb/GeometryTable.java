@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.GroupAccess;
@@ -29,6 +30,8 @@ import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -134,7 +137,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con, SessionLog log) throws
  * This method was created in VisualAge.
  * @return java.lang.String
  */
-public String getInfoSQL(User user,String extraConditions,String special,boolean bCheckPermission) {
+public String getInfoSQL(User user,String extraConditions,String special,boolean bCheckPermission,DatabaseSyntax dbSyntax) {
 	UserTable userTable = UserTable.table;
 	GeometryTable gTable = this;
 	ExtentTable eTable = ExtentTable.table;
@@ -142,14 +145,33 @@ public String getInfoSQL(User user,String extraConditions,String special,boolean
 	String sql;
 	Field[] f = {userTable.userid,new cbit.sql.StarField(gTable),eTable.extentX,eTable.extentY,eTable.extentZ,swvTable.softwareVersion};
 	Table[] t = {gTable,userTable,eTable,swvTable};
-	String condition = eTable.id.getQualifiedColName() + " = " + gTable.extentRef.getQualifiedColName() +             // links in the extent table
-					   " AND " + userTable.id.getQualifiedColName() + " = " + gTable.ownerRef.getQualifiedColName() +  // links in the userTable
-			           " AND " + gTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-	if (extraConditions != null && extraConditions.trim().length()>0){
-		condition += " AND "+extraConditions;
+	
+	switch (dbSyntax){
+	case ORACLE:{
+		String condition = eTable.id.getQualifiedColName() + " = " + gTable.extentRef.getQualifiedColName() +             // links in the extent table
+						   " AND " + userTable.id.getQualifiedColName() + " = " + gTable.ownerRef.getQualifiedColName() +  // links in the userTable
+				           " AND " + gTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,bCheckPermission);
+		return sql;
 	}
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,special,bCheckPermission);
-	return sql;
+	case POSTGRES:{
+		String condition = eTable.id.getQualifiedColName() + " = " + gTable.extentRef.getQualifiedColName() +             // links in the extent table
+						   " AND " + userTable.id.getQualifiedColName() + " = " + gTable.ownerRef.getQualifiedColName() +  " "; // links in the userTable
+				        //   " AND " + gTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+		OuterJoin outerJoin = new OuterJoin(gTable, swvTable, JoinOp.LEFT_OUTER_JOIN, gTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax,bCheckPermission);
+		return sql;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 /**
  * This method was created in VisualAge.

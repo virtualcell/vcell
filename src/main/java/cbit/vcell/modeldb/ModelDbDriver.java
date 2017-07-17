@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
@@ -43,6 +44,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 import cbit.vcell.modeldb.ReactStepDbDriver.StructureKeys;
 import cbit.vcell.xml.XmlReader;
 /**
@@ -134,16 +136,31 @@ private Diagram getDiagram(QueryHashtable dbc, Connection con,ResultSet rset, St
 /**
  * getModels method comment.
  */
-private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Connection con,KeyValue modelKey, StructureTopology structureTopology) throws SQLException, DataAccessException {
+private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Connection con,KeyValue modelKey, StructureTopology structureTopology, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
 	//log.print("ModelDbDriver.getDiagramsFromModel(modelKey=" + modelKey + ")");
 	String sql;
-	
-	sql = 	" SELECT *" + 
-			" FROM " + diagramTable.getTableName() + "," + SoftwareVersionTable.table.getTableName() +
-			" WHERE " + diagramTable.modelRef + " = " + modelKey +
-			" AND " + diagramTable.modelRef + " = " + SoftwareVersionTable.table.versionableRef.getUnqualifiedColName() +"(+)" +
-			" ORDER BY "+diagramTable.id.getQualifiedColName();
-			
+	switch (dbSyntax){
+	case ORACLE:{
+		sql = 	" SELECT *" + 
+				" FROM " + diagramTable.getTableName() + "," + SoftwareVersionTable.table.getTableName() +
+				" WHERE " + diagramTable.modelRef + " = " + modelKey +
+				" AND " + diagramTable.modelRef + " = " + SoftwareVersionTable.table.versionableRef.getUnqualifiedColName() +"(+)" +
+				" ORDER BY "+diagramTable.id.getQualifiedColName();
+		break;
+	}
+	case POSTGRES:{
+		sql = 	" SELECT *" + 
+				" FROM " + diagramTable.getTableName() + " LEFT OUTER JOIN " + SoftwareVersionTable.table.getTableName() + 
+				" ON " + diagramTable.modelRef + " = " + SoftwareVersionTable.table.versionableRef.getUnqualifiedColName() +
+				" WHERE " + diagramTable.modelRef + " = " + modelKey +
+				//" AND " + diagramTable.modelRef + " = " + SoftwareVersionTable.table.versionableRef.getUnqualifiedColName() +"(+)" +
+				" ORDER BY "+diagramTable.id.getQualifiedColName();
+		break;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 	Statement stmt = con.createStatement();
 	Vector<Diagram> diagramList = new Vector<Diagram>();
 	String softwareVersion = null;
@@ -225,7 +242,7 @@ private cbit.vcell.model.Model getModel(QueryHashtable dbc, Connection con,User 
 	String condition =	modelTable.id.getQualifiedColName() + " = " + modelKey + 
 					" AND " + 
 						userTable.id.getQualifiedColName() + " = " + modelTable.ownerRef.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
 
 	Statement stmt = con.createStatement();
 	Model model = null;
@@ -341,7 +358,7 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 		//
 		// add diagrams for this model
 		//
-		Diagram diagrams[] = getDiagramsFromModel(dbc, con,modelKey, structureTopology);
+		Diagram diagrams[] = getDiagramsFromModel(dbc, con,modelKey, structureTopology, dbSyntax);
 		model.setDiagrams(diagrams);
 		
 		//

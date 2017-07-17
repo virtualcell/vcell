@@ -9,12 +9,18 @@
  */
 
 package cbit.vcell.modeldb;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.document.User;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.resource.PropertyLoader;
+import java.util.Arrays;
 /**
  * This type was created in VisualAge.
  */
@@ -115,8 +121,8 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
  * @param conditions java.lang.String[]
  * @param special java.lang.String
  */ 
-public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, String conditions, String special) {
-	return enforceOwnershipSelect(user,fields,tables,conditions,special,false);
+public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, OuterJoin outerJoin, String conditions, String special, DatabaseSyntax dbSyntax) {
+	return enforceOwnershipSelect(user,fields,tables,outerJoin,conditions,special,dbSyntax,false);
 }
 
 
@@ -127,11 +133,51 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
  * @param conditions java.lang.String[]
  * @param special java.lang.String
  */ 
-public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, String conditions, String special, boolean bCheckPermission) {
+public enum JoinOp {
+	RIGHT_OUTER_JOIN("RIGHT OUTER JOIN"),
+	LEFT_OUTER_JOIN("LEFT OUTER JOIN");
+	
+	final String opString;
+	private JoinOp(String op){
+		this.opString = op;
+	}
+}
+
+public static class OuterJoin {
+	public final Table table1;
+	public final Table table2;
+	public final JoinOp joinOp;
+	public final Field leftField;
+	public final Field rightField;
+	public OuterJoin(Table t1, Table t2, JoinOp op, Field left, Field right){
+		this.table1 = t1;
+		this.table2 = t2;
+		this.joinOp = op;
+		this.leftField = left;
+		this.rightField = right;
+		if (t1==t2){
+			throw new RuntimeException("table1 and table2 must be unique");
+		}
+		if (left==right){
+			throw new RuntimeException("left and right fields must be unique");
+		}
+		boolean LEFT_T1_RIGHT_T1 = (leftField.getTableName().equals(table1.getTableName()) && rightField.getTableName().equals(table2.getTableName()));
+		boolean LEFT_T2_RIGHT_T2 = (leftField.getTableName().equals(table2.getTableName()) && rightField.getTableName().equals(table1.getTableName()));
+		if (!LEFT_T1_RIGHT_T1 && !LEFT_T2_RIGHT_T2){
+			throw new RuntimeException("DatabasePolicy.Join left and right fields must match tables");
+		}
+	}
+}
+
+public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, OuterJoin outerJoin, String conditions, String special, DatabaseSyntax dbSyntax, boolean bCheckPermission) {
 
 	boolean isAdministrator = user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 	if (bAllowAdministrativeAccess && isAdministrator){
 		bCheckPermission = false;
+	}
+	
+	if (dbSyntax==DatabaseSyntax.POSTGRES && conditions.contains("(+)")){
+		throw new RuntimeException("Postgres does not support (+) syntax for outer joins");
 	}
 		
  /**
@@ -208,15 +254,53 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
 	if (bCheckPermission){
 		sb.append(GroupTable.table.getTableName()+",");
 	}
-	//
-	// Add caller's tables
-	//
-	for(int c = 0;c < tables.length;c+= 1){
-		Table table = tables[c];
-		sb.append(table.getTableName());
-		if(c != (tables.length-1)){
-			sb.append(",");
+	switch (dbSyntax){
+	case ORACLE:{
+		//
+		// Add caller's tables
+		//
+		for(int c = 0;c < tables.length;c+= 1){
+			Table table = tables[c];
+			sb.append(table.getTableName());
+			if(c != (tables.length-1)){
+				sb.append(",");
+			}
 		}
+		if (outerJoin!=null){
+			throw new RuntimeException("explicit outer join syntax not yet implemented for ORACLE");
+		}
+		break;
+	}
+	case POSTGRES:{
+		//
+		// Add caller's tables not mentioned in outer join
+		//
+		for(int c = 0;c < tables.length;c+= 1){
+			Table table = tables[c];
+			if (outerJoin!=null && ((table == outerJoin.table1) || (table == outerJoin.table2))){
+				continue;
+			}
+			sb.append(table.getTableName());
+			if(c != (tables.length-1)){
+				sb.append(",");
+			}
+		}
+		//
+		// add outer join clause
+		//
+		if (outerJoin!=null){
+			List<Table> tableList = Arrays.asList(tables);
+			if (!tableList.contains(outerJoin.table1) || !tableList.contains(outerJoin.table2)){
+				throw new RuntimeException("outerJoin tables must be taken from table list");
+			}
+			sb.append(outerJoin.table1.getTableName()+" "+outerJoin.joinOp.opString+" "+outerJoin.table2.getTableName()+
+					" ON "+outerJoin.leftField.getQualifiedColName()+" = "+outerJoin.rightField.getQualifiedColName());
+		}
+		break;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
 	}
 	//
 	sb.append(" WHERE ");

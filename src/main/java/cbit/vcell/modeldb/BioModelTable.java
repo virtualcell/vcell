@@ -31,6 +31,8 @@ import cbit.sql.Field;
 import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
+import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 
 /**
@@ -142,7 +144,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log,Database
  * This method was created in VisualAge.
  * @return java.lang.String
  */
-public String getInfoSQL(User user,String extraConditions,String special) {
+public String getInfoSQL(User user,String extraConditions,String special, DatabaseSyntax dbSyntax) {
 	
 	UserTable userTable = UserTable.table;
 	BioModelTable vTable = BioModelTable.table;
@@ -150,13 +152,33 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 	String sql;
 	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion};
 	Table[] t = {vTable,userTable,swvTable};
-	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
-			           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-	if (extraConditions != null && extraConditions.trim().length()>0){
-		condition += " AND "+extraConditions;
+	
+	switch (dbSyntax){
+	case ORACLE:{
+		// outer join using (+) syntax in WHERE clause.
+		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
+				           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,null,condition,special,dbSyntax,true);
+		return sql;
 	}
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,special,true);
-	return sql;
+	case POSTGRES:{
+		// outer join in FROM clause explicitly, encoded in "OuterJoin" class and removed from WHERE clause.
+		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() + " "; // links in the userTable
+				        //   " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
+		if (extraConditions != null && extraConditions.trim().length()>0){
+			condition += " AND "+extraConditions;
+		}
+		OuterJoin outerJoin = new OuterJoin(vTable, swvTable, JoinOp.LEFT_OUTER_JOIN, vTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax,true);
+		return sql;
+	}
+	default:{
+		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
+	}
+	}
 }
 /**
  * This method was created in VisualAge.

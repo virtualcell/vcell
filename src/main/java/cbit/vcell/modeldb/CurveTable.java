@@ -140,8 +140,13 @@ public String getSQLValueList(KeyValue key,KeyValue filamentKey,DatabaseSyntax d
 		return buffer.toString();
 	}
 	case POSTGRES:{
-		// TODO: POSTGRES
-		throw new RuntimeException("CurveTable.getSQLValueList() not yet implemented for Postgres");
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("(");
+		buffer.append(key + ",");
+		buffer.append("?" + ",");
+		buffer.append(filamentKey + ")");
+		
+		return buffer.toString();
 	}
 	default:{
 		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
