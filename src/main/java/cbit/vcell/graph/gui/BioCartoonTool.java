@@ -50,7 +50,6 @@ import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
@@ -70,6 +69,7 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionSpeciesCopy;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
@@ -144,7 +144,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	}
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------
-	private static void checkStructuresCompatibility(VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
+	private static void checkStructuresCompatibility(ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
 			Vector<Issue> issueVector, IssueContext issueContext) {
 		Structure fromStruct = rsCopy.getFromStructure();
 		if(rsCopy.getFromStructure().getDimension() != structTo.getDimension()) {
@@ -166,7 +166,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	}
 	// returns a list with the "from" molecules we need to add to the modelTo
 	// it's a "strict" list, where we have eliminated any conflicting molecules and the ones already present
-	private static Set<MolecularType> getMoleculesFromStrict(VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, 
+	private static Set<MolecularType> getMoleculesFromStrict(ReactionSpeciesCopy rsCopy, Model modelTo, 
 			Vector<Issue> issueVector, IssueContext issueContext) {
 		// molecular types
 		Set<MolecularType> mtFromListStrict = new HashSet<>();
@@ -218,7 +218,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	// map the structures to be pasted to existing structures in the cloned model
 	// we may need to generate some name iteratively until we solve all naming conflicts
 	private static Map<Structure, String> mapStructures(Component requester,
-			VCellTransferable.ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
+			ReactionSpeciesCopy rsCopy, Model modelTo, Structure structTo,
 			IssueContext issueContext) {
 		
 		Vector <Issue> issueVector = new Vector<>();	// use internally only; we exit the dialog when there are no issues left
@@ -291,7 +291,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			}
 		}
 	}
-	private static List<ReactionRule> pasteRules(VCellTransferable.ReactionSpeciesCopy rsCopy,
+	private static List<ReactionRule> pasteRules(ReactionSpeciesCopy rsCopy,
 			Model modelTo, Structure structTo,
 			Vector<Issue> issueVector, IssueContext issueContext, 
 			Map<Structure, String> structuresMap) throws ExpressionBindingException {
@@ -307,7 +307,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		return rulesTo;
 	}
 	
-	public static final void pasteReactionsAndRules(Component requester, VCellTransferable.ReactionSpeciesCopy rsCopy,
+	public static final void pasteReactionsAndRules(Component requester, ReactionSpeciesCopy rsCopy,
 			Model pasteModel, Structure structTo, RXPasteInterface rxPasteInterface) {
 		
 		PasteHelper[] pasteHelper = new PasteHelper[1];

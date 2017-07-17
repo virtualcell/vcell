@@ -28,9 +28,9 @@ import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext;
 
-import cbit.vcell.desktop.VCellTransferable.ReactionSpeciesCopy;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionSpeciesCopy;
 import cbit.vcell.model.Structure;
 
 public class StructurePasteMappingPanel extends JPanel {

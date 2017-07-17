@@ -1,10 +1,6 @@
 package org.vcell.vcellij;
 
 
-import cbit.vcell.client.pyvcellproxy.VCellClientDataService;
-import cbit.vcell.client.pyvcellproxy.VCellProxy;
-import cbit.vcell.client.pyvcellproxy.VCellProxyHandler;
-import cbit.vcell.message.server.dispatcher.SimulationDispatcher;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;

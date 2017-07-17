@@ -38,7 +38,6 @@ import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.PropertyConstants;
 
-import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.StructureTopology;
@@ -193,7 +192,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 	}
 	public static ReactionRule clone(Model newModel, ReactionRule oldRule, Structure newStructure,
 			Map<Structure, String> structuresMap,
-			VCellTransferable.ReactionSpeciesCopy rsCopy
+			ReactionSpeciesCopy rsCopy
 			) throws ExpressionBindingException {
 		
 		boolean reversible = oldRule.isReversible();

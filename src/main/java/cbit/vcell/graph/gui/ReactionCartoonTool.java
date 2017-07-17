@@ -122,6 +122,7 @@ import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRuleParticipant;
+import cbit.vcell.model.ReactionSpeciesCopy;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionStep.ReactionNameScope;
 import cbit.vcell.model.RuleParticipantSignature;
@@ -577,7 +578,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					rcs = (ReactionContainerShape)parentShape;
 					fromStruct = rcs.getStructure();
 				}
-				VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = new VCellTransferable.ReactionSpeciesCopy(spArray, rsArray, rrArray, mtArray, fromStruct, structArray);
+				ReactionSpeciesCopy reactionSpeciesCopy = new ReactionSpeciesCopy(spArray, rsArray, rrArray, mtArray, fromStruct, structArray);
 				VCellTransferable.sendToClipboard(reactionSpeciesCopy);
 			}
 		} else if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
@@ -659,7 +660,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 	private void pasteReactionsAndSpecies(Structure structure){
 		final String RXSPECIES_PASTERX = "Reactions";
 		final String RXSPECIES_SPECIES = "Species";
-		VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = (VCellTransferable.ReactionSpeciesCopy) SimpleTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
+		ReactionSpeciesCopy reactionSpeciesCopy = (ReactionSpeciesCopy) SimpleTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
 		if(reactionSpeciesCopy != null) {
 			
 			// TODO: here we may want to warn the user about compartment number / type / name mismatch
@@ -2737,7 +2738,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		}
 		if (shape instanceof ReactionContainerShape) {
 			if (menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
-				VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = (VCellTransferable.ReactionSpeciesCopy)VCellTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
+				ReactionSpeciesCopy reactionSpeciesCopy = (ReactionSpeciesCopy)VCellTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
 				if(reactionSpeciesCopy != null){
 					Structure targetStructure = ((ReactionContainerShape) shape).getStructure();
 					if(reactionSpeciesCopy.getReactStepArr() != null){
