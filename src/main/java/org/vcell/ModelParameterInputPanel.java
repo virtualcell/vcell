@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  */
 public class ModelParameterInputPanel extends JPanel {
 
-	private Hashtable<VCellModelParameter, JTextField> parameterTable;
+	private HashMap<VCellModelParameter, JTextField> parameterTable;
 
     public ModelParameterInputPanel(ArrayList<VCellModelParameter> parameters) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -24,7 +24,7 @@ public class ModelParameterInputPanel extends JPanel {
     
     public void setParameters(ArrayList<VCellModelParameter> parameters) {
     	
-    	parameterTable = new Hashtable<>();
+    	parameterTable = new HashMap<>();
     	removeAll();
     	
         List<VCellModelParameter> concentrationParameters = parameters.stream()

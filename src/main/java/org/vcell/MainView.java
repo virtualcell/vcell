@@ -1,24 +1,37 @@
 package org.vcell;
 
-import net.imagej.Dataset;
-import org.scijava.Context;
-import org.scijava.display.Display;
-import org.scijava.ui.swing.viewer.SwingDisplayPanel;
-import org.scijava.ui.swing.viewer.SwingDisplayWindow;
-import org.scijava.ui.viewer.DisplayWindow;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+
+import org.scijava.Context;
+import org.scijava.ui.swing.viewer.SwingDisplayWindow;
+import org.scijava.ui.viewer.DisplayPanel;
+
+import net.imagej.Dataset;
+import net.imagej.ui.swing.viewer.image.SwingImageDisplayPanel;
 
 /**
  * Created by kevingaffney on 6/26/17.
  */
+@SuppressWarnings("serial")
 public class MainView extends SwingDisplayWindow {
 
+	private SwingImageDisplayPanel imagePanel;
+	private JPanel rightPanel;
+	
     private JTabbedPane tabbedPane;
-    private JLabel lblImageDescription;
     private JLabel lblProjectDescription;
 
     // Menu items under "File"
@@ -37,6 +50,7 @@ public class MainView extends SwingDisplayWindow {
 
     // Menu items under "Analysis"
     private JMenuItem mniSubtractBackground;
+    private JMenuItem mniCompareROIMean;
     private JMenuItem mniConstructTIRFGeometry;
     private JMenuItem mniConstructTIRFImage;
 
@@ -51,10 +65,7 @@ public class MainView extends SwingDisplayWindow {
     // Display button
     private JButton btnDisplay;
 
-    private Context context;
-
     public MainView(MainModel model, Context context) {
-        this.context = context;
         initializeContentPane(model);
         initializeMenuBar();
         registerModelChangeListener(model);
@@ -89,12 +100,18 @@ public class MainView extends SwingDisplayWindow {
         tabbedPane.addTab("Data", pnlData);
         tabbedPane.addTab("Geometry", pnlGeometry);
         tabbedPane.addTab("Results", pnlResults);
-        tabbedPane.setPreferredSize(new Dimension(300, 300));
-        contentPane.add(tabbedPane, BorderLayout.CENTER);
 
         // Display button initialization
         btnDisplay = new JButton("Display");
-        contentPane.add(btnDisplay, BorderLayout.PAGE_END);
+        
+        JPanel leftPanel = new JPanel(new BorderLayout());
+        leftPanel.add(tabbedPane, BorderLayout.CENTER);
+        leftPanel.add(btnDisplay, BorderLayout.PAGE_END);
+        contentPane.add(leftPanel, BorderLayout.LINE_START);
+        
+        rightPanel = new JPanel(new BorderLayout());
+        rightPanel.setPreferredSize(new Dimension(400, 400));
+        contentPane.add(rightPanel, BorderLayout.CENTER);
 
         setContentPane(contentPane);
     }
@@ -142,7 +159,9 @@ public class MainView extends SwingDisplayWindow {
         JMenu mnuAnalysis = new JMenu("Analysis");
 
         mniSubtractBackground = new JMenuItem("Subtract background...");
+        mniCompareROIMean = new JMenuItem("Compare ROI mean...");
         mnuAnalysis.add(mniSubtractBackground);
+        mnuAnalysis.add(mniCompareROIMean);
 
         JMenu mnuTIRF = new JMenu("TIRF");
         mniConstructTIRFGeometry = new JMenuItem("Construct TIRF geometry...");
@@ -163,6 +182,13 @@ public class MainView extends SwingDisplayWindow {
         setJMenuBar(menuBar);
 
         setProjectDependentMenuItemsEnabled(false);
+    }
+    
+    @Override
+    public void setContent(DisplayPanel panel) {
+    	imagePanel = (SwingImageDisplayPanel) panel;
+    	rightPanel.removeAll();
+        rightPanel.add(imagePanel, BorderLayout.CENTER);
     }
 
     public void setProjectDependentMenuItemsEnabled(boolean enabled) {
@@ -236,6 +262,10 @@ public class MainView extends SwingDisplayWindow {
 
     public void addSubtractBackgroundListener(ActionListener l) {
         mniSubtractBackground.addActionListener(l);
+    }
+    
+    public void addCompareROIMeanListener(ActionListener l) {
+    	mniCompareROIMean.addActionListener(l);
     }
 
     public void addConstructTIRFGeometryListener(ActionListener l) {

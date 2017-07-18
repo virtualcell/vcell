@@ -1,9 +1,15 @@
 package org.vcell;
 
+import net.imagej.Dataset;
 import net.imagej.ImageJ;
+
+import java.io.IOException;
+
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+
+import io.scif.services.DatasetIOService;
 
 /**
  * Created by kevingaffney on 6/26/17.

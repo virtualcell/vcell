@@ -1,31 +1,39 @@
 package org.vcell;
 
-import io.scif.services.DatasetIOService;
-import net.imagej.Dataset;
-import net.imagej.DatasetService;
-import net.imagej.display.OverlayService;
-import net.imagej.ops.OpService;
-import org.apache.commons.io.FilenameUtils;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLReader;
-import org.scijava.Context;
-import org.scijava.command.CommandService;
-import org.scijava.display.Display;
-import org.scijava.display.DisplayService;
-import org.vcell.vcellij.api.SBMLModel;
-
-import com.google.common.util.concurrent.FutureCallback;
-
-import javax.swing.*;
-import javax.xml.stream.XMLStreamException;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.List;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.xml.stream.XMLStreamException;
+
+import org.apache.commons.io.FilenameUtils;
+import org.sbml.jsbml.SBMLDocument;
+import org.scijava.Context;
+import org.scijava.command.CommandService;
+import org.scijava.display.Display;
+import org.scijava.display.DisplayService;
+import org.scijava.event.EventService;
+import org.scijava.plugin.PluginInfo;
+import org.scijava.plugin.PluginService;
+import org.scijava.thread.ThreadService;
+import org.scijava.ui.UIService;
+import org.scijava.ui.swing.viewer.SwingDisplayWindow;
+import org.scijava.ui.viewer.DisplayViewer;
+import org.vcell.vcellij.api.SBMLModel;
+
+import com.google.common.util.concurrent.FutureCallback;
+
+import io.scif.services.DatasetIOService;
+import net.imagej.Dataset;
+import net.imagej.DatasetService;
+import net.imagej.display.OverlayService;
+import net.imagej.ops.OpService;
+import net.imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
 
 
 /**
@@ -42,6 +50,10 @@ public class MainController {
     private OpService opService;
     private OverlayService overlayService;
     private DisplayService displayService;
+    private EventService eventService;
+    private UIService uiService;
+    private PluginService pluginService;
+    private ThreadService threadService;
     private ProjectService projectService;
     private VCellResultService vCellResultService;
     private VCellModelService vCellModelService;
@@ -56,6 +68,10 @@ public class MainController {
         opService = context.getService(OpService.class);
         overlayService = context.getService(OverlayService.class);
         displayService = context.getService(DisplayService.class);
+        eventService = context.getService(EventService.class);
+        uiService = context.getService(UIService.class);
+        pluginService = context.getService(PluginService.class);
+        threadService = context.getService(ThreadService.class);
         projectService = new ProjectService(datasetIOService, opService, displayService);
         vCellResultService = new VCellResultService(opService, datasetService);
     	vCellModelService = new VCellModelService();
@@ -155,17 +171,38 @@ public class MainController {
                 model.delete(dataset);
             }
         });
+        
+        view.addCompareROIMeanListener(event -> {
+        	
+        	ArrayList<Dataset> datasetList = model.getProject().getData();
+        	datasetList.addAll(model.getProject().getGeometry());
+        	datasetList.addAll(model.getProject().getResults());
+        	Dataset[] datasetArray = datasetList.toArray(new Dataset[datasetList.size()]);
+        	
+        	DatasetSelectionPanel panel = new DatasetSelectionPanel();
+        	String descriptionA = "Dataset A:";
+        	String descriptionB = "Dataset B:";
+        	panel.addComboBox(datasetArray, descriptionA);
+        	panel.addComboBox(datasetArray, descriptionB);
+        	int returnVal = JOptionPane.showConfirmDialog(
+        			view, 
+        			panel, 
+        			"Select datasets to compare",
+        			JOptionPane.OK_CANCEL_OPTION,
+        			JOptionPane.PLAIN_MESSAGE);
+        	
+        	if (returnVal == JOptionPane.OK_OPTION) {
+        		Dataset datasetA = panel.getSelectedDatasetForDescription(descriptionA);
+        		Dataset datasetB = panel.getSelectedDatasetForDescription(descriptionB);
+        		CompareView compareView = new CompareView();
+        		compareView.setVisible(true);
+        		displayDataset(datasetA, compareView);
+        		displayDataset(datasetB, compareView);
+        	}
+        });
 
         view.addSubtractBackgroundListener(event -> {
-            Display activeDisplay = displayService.getActiveDisplay();
-            int returnVal = JOptionPane.showConfirmDialog(
-                    view,
-                    "Select rectangle that contains only background, then press OK",
-                    "Background selection",
-                    JOptionPane.OK_CANCEL_OPTION);
-            if (returnVal == JOptionPane.OK_OPTION) {
-                System.out.println(overlayService.getOverlays().toArray().length);
-            }
+        	System.out.println("Subtract background");
         });
 
         view.addConstructTIRFGeometryListener(event -> {
@@ -238,7 +275,8 @@ public class MainController {
         });
         
         view.addDisplayListener(event -> {
-            displayService.createDisplay(view.getSelectedDataset());
+        	Dataset dataset = view.getSelectedDataset();
+        	displayDataset(dataset, view);
         });
     }
 
@@ -256,6 +294,50 @@ public class MainController {
             e.printStackTrace();
         }
         return dataset;
+    }
+    
+    private void displayDataset(Dataset dataset, SwingDisplayWindow window) {
+    	
+		Display<?> display = displayService.createDisplayQuietly(dataset);
+		display.setName(dataset.getName());
+
+		final SwingImageDisplayViewer finalViewer = getDisplayViewer(display);
+		if (finalViewer == null) return;
+
+		threadService.queue(() -> {
+			finalViewer.view(window, display);
+			uiService.addDisplayViewer(finalViewer);
+			window.showDisplay(true);
+			display.update();
+		});
+    }
+    
+    private SwingImageDisplayViewer getDisplayViewer(Display<?> display) {
+    	
+    	if (uiService.getDisplayViewer(display) != null) {
+			// display is already being shown
+			return null;
+		}
+
+		final List<PluginInfo<DisplayViewer<?>>> viewers =
+			uiService.getViewerPlugins();
+
+		DisplayViewer<?> displayViewer = null;
+		for (final PluginInfo<DisplayViewer<?>> info : viewers) {
+			// check that viewer can actually handle the given display
+			final DisplayViewer<?> viewer = pluginService.createInstance(info);
+			if (!(viewer instanceof SwingImageDisplayViewer)) continue;
+			displayViewer = viewer;
+			break; // found a suitable viewer; we are done
+		}
+		
+		if (displayViewer == null) {
+			System.err.println("For UI '" + getClass().getName() +
+				"': no suitable viewer for display: " + display);
+			return null;
+		}
+		
+		return (SwingImageDisplayViewer) displayViewer;
     }
     
     private void simulateModel() {
