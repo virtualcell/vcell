@@ -10,8 +10,8 @@
 
 package cbit.vcell.modeldb;
 import cbit.sql.Field;
-import cbit.sql.Table;
 import cbit.sql.Field.SQLDataType;
+import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
  */
@@ -31,7 +31,7 @@ public class TFTestCriteriaTable extends cbit.sql.Table {
 			
 	public final Field testCaseRef = 		new Field("testCaseRef",		SQLDataType.integer,		"NOT NULL "+TFTestCaseTable.REF_TYPE+" ON DELETE CASCADE");
 	public final Field simulationRef = 		new Field("simulationRef",		SQLDataType.integer,		"UNIQUE NOT NULL "+SimulationTable.REF_TYPE);
-	private final Field simDataRef = 		new Field("simDataRef",			SQLDataType.integer,		"UNIQUE "+ResultSetMetaDataTable.REF_TYPE);  // no longer used.
+	private final Field simDataRef = 		new Field("simDataRef",			SQLDataType.integer,		"");  // UNIQUE "+ResultSetMetaDataTable.REF_TYPE);  // no longer used.
 	public final Field regressionMMSimRef = new Field("regressionSimRef",	SQLDataType.integer,		""+MathModelSimulationLinkTable.REF_TYPE);
 	public final Field maxRelError = 		new Field("maxRelError",		SQLDataType.number_as_real,	"");
 	public final Field maxAbsError = 		new Field("maxAbsError",		SQLDataType.number_as_real,	"");

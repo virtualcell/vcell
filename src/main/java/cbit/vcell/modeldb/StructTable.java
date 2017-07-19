@@ -29,7 +29,7 @@ public class StructTable extends cbit.sql.Table {
 
 	public final Field strName			= new Field("strName",			SQLDataType.varchar_255,	"NOT NULL");
 	public final Field structType		= new Field("structType",		SQLDataType.varchar_10,		"NOT NULL");
-	public final Field parentRef 		= new Field("parentRef",		SQLDataType.integer,		StructTable.REF_TYPE);
+	public final Field parentRef 		= new Field("parentRef",		SQLDataType.integer,		"");  // StructTable.REF_TYPE);
 	public final Field cellTypeRef 		= new Field("cellTypeRef",		SQLDataType.integer,  		CellTypeTable.REF_TYPE);
 	public final Field memVoltName		= new Field("memVoltName",		SQLDataType.varchar_64,		"");
 	public final Field negFeatureRef 	= new Field("negFeatureRef",	SQLDataType.integer,		StructTable.REF_TYPE);

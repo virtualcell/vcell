@@ -114,8 +114,10 @@ private static void destroyAndRecreateTables(SessionLog log, ConnectionFactory c
 		JPanel panel = new JPanel(new BorderLayout());
 		JCheckBox c1 = new JCheckBox("Drop all tables");
 		JCheckBox c2 = new JCheckBox("Create all tables");
+		JCheckBox c3 = new JCheckBox("initialize User, Group, and Available tables");
 		panel.add(c1, BorderLayout.NORTH);
-		panel.add(c2, BorderLayout.SOUTH);
+		panel.add(c2, BorderLayout.CENTER);
+		panel.add(c3, BorderLayout.SOUTH);
 		int ok =
 			JOptionPane.showConfirmDialog(
 				new JFrame(),
@@ -139,18 +141,20 @@ private static void destroyAndRecreateTables(SessionLog log, ConnectionFactory c
 					//
 					// Add special table entries
 					//
-					Statement s = con.createStatement();
-					try {
-						// Add void user
-						s.executeUpdate(cbit.vcell.modeldb.UserTable.getCreateVoidUserSQL());
-						// Add PRIVATE group
-						s.executeUpdate(cbit.vcell.modeldb.GroupTable.getCreateGroupPrivateSQL(keyFactory.getNewKey(con)));
-						// Add PUBLIC group
-						s.executeUpdate(cbit.vcell.modeldb.GroupTable.getCreateGroupPublicSQL(keyFactory.getNewKey(con)));
-						// Add Initial Available Status
-						s.executeUpdate(cbit.vcell.modeldb.AvailableTable.getCreateInitAvailStatusSQL(keyFactory.getNewKey(con)));
-					}finally {
-						s.close();
+					if (c3.isSelected()){
+						Statement s = con.createStatement();
+						try {
+							// Add void user
+							s.executeUpdate(cbit.vcell.modeldb.UserTable.getCreateVoidUserSQL());
+							// Add PRIVATE group
+							s.executeUpdate(cbit.vcell.modeldb.GroupTable.getCreateGroupPrivateSQL(keyFactory.getNewKey(con)));
+							// Add PUBLIC group
+							s.executeUpdate(cbit.vcell.modeldb.GroupTable.getCreateGroupPublicSQL(keyFactory.getNewKey(con)));
+							// Add Initial Available Status
+							s.executeUpdate(cbit.vcell.modeldb.AvailableTable.getCreateInitAvailStatusSQL(keyFactory.getNewKey(con)));
+						}finally {
+							s.close();
+						}
 					}
 					//
 					//Create Indexes
@@ -269,8 +273,8 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.FilamentTable.table,
 		cbit.vcell.modeldb.CurveTable.table,
 		cbit.vcell.modeldb.SimulationTable.table,
-		cbit.vcell.modeldb.SimStatTable.table,
-		cbit.vcell.modeldb.ResultSetMetaDataTable.table,
+		cbit.vcell.modeldb.SimStatTable.table,  // not production
+		//cbit.vcell.modeldb.ResultSetMetaDataTable.table,
 		cbit.vcell.modeldb.BioModelTable.table,
 		cbit.vcell.modeldb.BioModelSimContextLinkTable.table,
 		cbit.vcell.modeldb.BioModelSimulationLinkTable.table,
@@ -279,8 +283,8 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.AvailableTable.table,
 		cbit.vcell.modeldb.UserStatTable.table,
 		cbit.vcell.modeldb.UserLogTable.table,
-		cbit.vcell.modeldb.SimContextStatTable.table,
-		cbit.vcell.modeldb.SimContextStat2Table.table,
+		cbit.vcell.modeldb.SimContextStatTable.table, // not production
+		cbit.vcell.modeldb.SimContextStat2Table.table, // not production
 		cbit.vcell.modeldb.StochtestTable.table,
 		cbit.vcell.modeldb.StochtestRunTable.table,
 		cbit.vcell.modeldb.StochtestCompareTable.table,

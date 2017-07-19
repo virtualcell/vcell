@@ -16,12 +16,12 @@ import cbit.sql.Table;
 /**
  * This type was created in VisualAge.
  */
-public class ResultSetMetaDataTable extends cbit.sql.Table {
+class ResultSetMetaDataTable extends cbit.sql.Table {
 	//=======================================================================================================
 	//  T H I S    T A B L E    I S    N O T    U S E D    I N     V I R T U A L   C E L L    A N Y M O R E
 	//=======================================================================================================
 	private static final String TABLE_NAME = "vc_rsetMetaData";
-	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
+	private static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
 	private final Field simRef 			= new Field("simRef",		SQLDataType.integer,		"UNIQUE NOT NULL "+SimulationTable.REF_TYPE+" ON DELETE CASCADE");
 	private final Field startDate		= new Field("startDate",	SQLDataType.date,			"NOT NULL");

@@ -22,10 +22,10 @@ public class GroupTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_group";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field groupid				= new Field("groupid",			SQLDataType.integer,	"NOT NULL");
-	public final Field userRef				= new Field("userRef",			SQLDataType.integer,	"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field isHiddenFromOwner	= new Field("isHiddenFromOwner",SQLDataType.integer,	"NOT NULL");
-	public final Field groupMemberHash		= new Field("groupMemberHash",	SQLDataType.integer,	"NOT NULL");
+	public final Field groupid				= new Field("groupid",			SQLDataType.integer,			"NOT NULL");
+	public final Field userRef				= new Field("userRef",			SQLDataType.integer,			"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field isHiddenFromOwner	= new Field("isHiddenFromOwner",SQLDataType.integer,			"NOT NULL");
+	public final Field groupMemberHash		= new Field("groupMemberHash",	SQLDataType.integer_as_numeric,	"NOT NULL");
 
 	private final Field fields[] = {groupid,userRef,isHiddenFromOwner,groupMemberHash};
 	

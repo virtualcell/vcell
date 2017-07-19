@@ -10,6 +10,8 @@
 
 package cbit.sql;
 
+import java.sql.JDBCType;
+
 import org.vcell.db.DatabaseSyntax;
 
 /**
@@ -17,52 +19,65 @@ import org.vcell.db.DatabaseSyntax;
  */
 public class Field {
 	
+	public enum BasicDataType {
+		VARCHAR,
+		CHAR,
+		BLOB,
+		CLOB,
+		DATE,
+		BIGINT,
+		NUMERIC
+	}
+	
 
 	public enum SQLDataType {
 		
-		integer("integer","integer"),
+		integer("integer","bigint",BasicDataType.BIGINT),
+		integer_as_numeric("integer","numeric",BasicDataType.BIGINT),
 		@Deprecated
-		number_as_integer("number","integer"),
-		number_as_real("number","real"),
-		varchar2_4000("varchar2(4000)","varchar(4000)"),
-		varchar2_1024("varchar2(1024)","varchar(1024)"),
-		varchar2_512("varchar2(512)","varchar(512)"),
-		varchar2_256("varchar2(256)","varchar(256)"),
-		varchar2_255("varchar2(255)","varchar(255)"),
-		varchar2_128("varchar2(128)","varchar(128)"),
-		varchar2_64("varchar2(64)","varchar(64)"),
-		varchar2_40("varchar2(40)","varchar(40)"),
-		varchar2_32("varchar2(32)","varchar(32)"),
-		varchar2_10("varchar2(10)","varchar(10)"),
-		varchar2_5("varchar2(5)","varchar(5)"),
-		varchar2_1("varchar2(1)","varchar(1)"),
+		number_as_integer("number","bigint",BasicDataType.BIGINT),
+		number_as_real("number","numeric",BasicDataType.NUMERIC),
+		varchar2_4000("varchar2(4000)","varchar(4000)",BasicDataType.VARCHAR),
+		varchar2_1024("varchar2(1024)","varchar(1024)",BasicDataType.VARCHAR),
+		varchar2_512("varchar2(512)","varchar(512)",BasicDataType.VARCHAR),
+		varchar2_256("varchar2(256)","varchar(256)",BasicDataType.VARCHAR),
+		varchar2_255("varchar2(255)","varchar(255)",BasicDataType.VARCHAR),
+		varchar2_128("varchar2(128)","varchar(128)",BasicDataType.VARCHAR),
+		varchar2_64("varchar2(64)","varchar(64)",BasicDataType.VARCHAR),
+		varchar2_40("varchar2(40)","varchar(40)",BasicDataType.VARCHAR),
+		varchar2_32("varchar2(32)","varchar(32)",BasicDataType.VARCHAR),
+		varchar2_10("varchar2(10)","varchar(10)",BasicDataType.VARCHAR),
+		varchar2_5("varchar2(5)","varchar(5)",BasicDataType.VARCHAR),
+		varchar2_1("varchar2(1)","varchar(1)",BasicDataType.VARCHAR),
 
-		varchar_10("varchar(10)","varchar(10)"),
-		varchar_20("varchar(20)","varchar(20)"),
-		varchar_50("varchar(50)","varchar(50)"),
-		varchar_64("varchar(64)","varchar(64)"),
-		varchar_100("varchar(100)","varchar(100)"),
-		varchar_128("varchar(128)","varchar(128)"),
-		varchar_255("varchar(255)","varchar(255)"),
-		varchar_1024("varchar(1024)","varchar(1024)"),
-		varchar_2048("varchar(2048)","varchar(2048)"),
-		varchar_4000("varchar(4000)","varchar(4000)"),
+		varchar_10("varchar(10)","varchar(10)",BasicDataType.VARCHAR),
+		varchar_20("varchar(20)","varchar(20)",BasicDataType.VARCHAR),
+		varchar_50("varchar(50)","varchar(50)",BasicDataType.VARCHAR),
+		varchar_64("varchar(64)","varchar(64)",BasicDataType.VARCHAR),
+		varchar_100("varchar(100)","varchar(100)",BasicDataType.VARCHAR),
+		varchar_128("varchar(128)","varchar(128)",BasicDataType.VARCHAR),
+		varchar_255("varchar(255)","varchar(255)",BasicDataType.VARCHAR),
+		varchar_1024("varchar(1024)","varchar(1024)",BasicDataType.VARCHAR),
+		varchar_2048("varchar(2048)","varchar(2048)",BasicDataType.VARCHAR),
+		varchar_4000("varchar(4000)","varchar(4000)",BasicDataType.VARCHAR),
 
-		char_1("char(1)","char(1)"),
+		char_1("char(1)","char(1)",BasicDataType.CHAR),
 		
-		blob_bytea("blob","bytea"),
+		blob_bytea("blob","bytea",BasicDataType.BLOB),
 		
-		clob_text("clob","text"),
+		clob_text("clob","text",BasicDataType.CLOB),
 		
-		date("date","date");
+		date("date","date",BasicDataType.DATE);
 		
-		private SQLDataType(String oracleDataType, String postgresDataType){
+		private SQLDataType(String oracleDataType, String postgresDataType, BasicDataType basicDataType){
 			this.oracleDataType = oracleDataType;
 			this.postgresDataType = postgresDataType;
+			this.basicDataType = basicDataType;
 		}
 		
 		private final String oracleDataType;
 		private final String postgresDataType;
+		public final BasicDataType basicDataType;
 		
 		public String getDbSQLType(DatabaseSyntax dbSyntax){
 			switch (dbSyntax){

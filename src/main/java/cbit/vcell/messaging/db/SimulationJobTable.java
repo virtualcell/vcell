@@ -38,7 +38,16 @@ public class SimulationJobTable extends Table {
 	private static final String TABLE_NAME = "vc_simulationjob";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field simRef 			= new Field("simRef",			SQLDataType.integer,		"UNIQUE NOT NULL " + SimulationTable.REF_TYPE + " ON DELETE CASCADE");
+    private static final String[] simJobTableConstraintOracle = new String[] {
+			"sim_job_task_unique UNIQUE(simref,jobindex,taskid)"
+	};
+
+    private static final String[] simJobTableConstraintPostgres = new String[] {
+			"sim_job_task_unique UNIQUE(simref,jobindex,taskid)"
+	};
+
+
+public final Field simRef 			= new Field("simRef",			SQLDataType.integer,		"NOT NULL " + SimulationTable.REF_TYPE + " ON DELETE CASCADE");
 	public final Field submitDate		= new Field("submitDate",		SQLDataType.date,			"NOT NULL");
 	public final Field taskID			= new Field("taskID",			SQLDataType.integer,		"NOT NULL");		
 	public final Field schedulerStatus	= new Field("schedulerStatus",	SQLDataType.integer,		"NOT NULL");
@@ -68,7 +77,7 @@ public class SimulationJobTable extends Table {
  * ModelTable constructor comment.
  */
 private SimulationJobTable() {
-	super(TABLE_NAME);
+	super(TABLE_NAME,simJobTableConstraintOracle,simJobTableConstraintPostgres);
 	addFields(fields);
 }
 
