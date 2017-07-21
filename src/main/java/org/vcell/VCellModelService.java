@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import javax.imageio.ImageIO;
+import javax.swing.SwingWorker;
 import javax.xml.stream.XMLStreamException;
 
 import java.awt.image.BufferedImage;
@@ -34,9 +35,15 @@ import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by kevingaffney on 7/7/17.
@@ -51,55 +58,85 @@ public class VCellModelService {
     private final static int PORT = 8080;
     private final static String DEFAULT_CLIENT_ID = "85133f8d-26f7-4247-8356-d175399fc2e6";
     
-    public void getVCellModels(FutureCallback<VCellModel[]> callback) {
+    public void getVCellModels(FutureProgressCallback<VCellModel[]> callback) {
     	
 		ListeningExecutorService listeningExecutor = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
 		ListenableFuture<VCellModel[]> future = listeningExecutor.submit(new Callable<VCellModel[]>() {
 
 			@Override
 			public VCellModel[] call() throws Exception {
-				return getVCellModels();
+				return getModels(callback);
 			}
 		});
-		
+		listeningExecutor.shutdown();
     	Executor executor = Executors.newSingleThreadExecutor();
         Futures.addCallback(future, callback, executor);
     }
     
-    private VCellModel[] getVCellModels() {
+    private VCellModel[] getModels(FutureProgressCallback<VCellModel[]> callback) {
+    	final long startTime = System.currentTimeMillis();
     	
     	boolean bIgnoreCertProblems = true;
 		boolean bIgnoreHostMismatch = true;
 		VCellApiClient vCellApiClient = null;
-		BiomodelRepresentation[] biomodelReps = null;
+		VCellModel[] vCellModels = null;
 		
     	try {
     		vCellApiClient = new VCellApiClient(HOST, PORT, DEFAULT_CLIENT_ID, bIgnoreCertProblems, bIgnoreHostMismatch);
-			biomodelReps = vCellApiClient.getBioModels(new BioModelsQuerySpec());
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
-    	
-    	VCellModel[] vCellModels = new VCellModel[biomodelReps.length];
-    	
-    	for (int i = 0; i < vCellModels.length; i++) {
-    		BiomodelRepresentation biomodelRep = biomodelReps[i];
-    		VCellModel vCellModel = new VCellModel(biomodelRep.getName());
-    		vCellModel.getParameters().add(new VCellModelParameter("param1", null, "uM", VCellModelParameter.CONCENTRATION));
-    		vCellModel.getParameters().add(new VCellModelParameter("param2", null, "µm2", VCellModelParameter.CONCENTRATION));
-			try {
-	    		BufferedImage img = ImageIO.read(new URL("https://" + HOST + ":" + PORT + "/biomodel/" + biomodelRep.getBmKey() + "/diagram"));
-	    		vCellModel.setImage(img);
-			} catch (IOException e) {
-				System.out.println("Could not load image for: " + biomodelRep.getName());
-			}
-    		vCellModels[i] = vCellModel;
+			BioModelsQuerySpec querySpec = new BioModelsQuerySpec();
+			querySpec.owner = "tutorial";
+			final BiomodelRepresentation[] biomodelReps = vCellApiClient.getBioModels(querySpec);
+
+	    	vCellModels = new VCellModel[biomodelReps.length];
+	    	List<Callable<Object>> tasks = new ArrayList<>();
+	    	
+	    	ExecutorService executor = Executors.newFixedThreadPool(4);
+	    	CompletionService<Object> completionService = new ExecutorCompletionService<>(executor);
+	    	
+	    	int remainingFutures = 0;
+	    	
+	    	for (int i = 0; i < vCellModels.length; i++) {
+	    		BiomodelRepresentation biomodelRep = biomodelReps[i];
+        		VCellModel vCellModel = new VCellModel(biomodelRep.getName());
+        		vCellModels[i] = vCellModel;
+        		vCellModel.getParameters().add(new VCellModelParameter("param1", null, "uM", VCellModelParameter.CONCENTRATION));
+        		vCellModel.getParameters().add(new VCellModelParameter("param2", null, "µm2", VCellModelParameter.DIFFUSION_CONSTANT));
+        		
+        		remainingFutures++;
+        		completionService.submit(Executors.callable(() -> {
+        			setVCellImageForModel(vCellModel, biomodelRep);
+        		}));
+	    	}
+	    	
+	    	int maxFutures = remainingFutures;
+	    	while (remainingFutures > 0) {
+	    		completionService.take();
+	    		remainingFutures--;
+	    		callback.progressOccurred(maxFutures - remainingFutures, maxFutures);
+	    	}
+	    	
+	    	executor.invokeAll(tasks);
+	    	executor.shutdown();
+	    	executor.awaitTermination(30, TimeUnit.SECONDS);
+	    	
+    	} catch (Exception e) {
+    		e.printStackTrace(System.out);
     	}
-    	
+    	final long endTime = System.currentTimeMillis();
+    	System.out.println(endTime - startTime);
     	return vCellModels;
     }
     
-
+    private void setVCellImageForModel(VCellModel vCellModel, BiomodelRepresentation biomodelRep) {
+    	try {
+    		BufferedImage img = ImageIO.read(new URL("https://" + HOST + ":" + PORT + "/biomodel/" + biomodelRep.getBmKey() + "/diagram"));
+    		System.out.println("read " + img.toString());
+    		vCellModel.setImage(img);
+		} catch (IOException e) {
+			System.out.println("Could not load image for: " + biomodelRep.getName());
+		}
+    }
+    
     public void writeSBMLToFile(VCellModel vCellModel, File destination) throws IOException, XMLStreamException {
 
         String name = destination.getName();

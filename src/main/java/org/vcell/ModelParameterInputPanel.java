@@ -1,14 +1,24 @@
 package org.vcell;
 
-import javax.swing.*;
-import javax.swing.text.html.HTML;
-import java.awt.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /**
  * Created by kevingaffney on 7/10/17.
@@ -18,7 +28,7 @@ public class ModelParameterInputPanel extends JPanel {
 	private HashMap<VCellModelParameter, JTextField> parameterTable;
 
     public ModelParameterInputPanel(ArrayList<VCellModelParameter> parameters) {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new GridBagLayout());
         setParameters(parameters);
     }
     
@@ -34,49 +44,72 @@ public class ModelParameterInputPanel extends JPanel {
         List<VCellModelParameter> diffusionParameters = parameters.stream()
                 .filter(p -> p.getParameterType() == VCellModelParameter.DIFFUSION_CONSTANT)
                 .collect(Collectors.toList());
+        
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridy = 0;
 
         if (!concentrationParameters.isEmpty()) {
-
-            add(newHeaderLabel("Initial concentrations"));
-
+            addHeaderLabel("Initial concentrations", c);
             for (VCellModelParameter parameter : concentrationParameters) {
-                addParameterInput(parameter);
+                addParameterInput(parameter, c);
             }
         }
 
         if (!diffusionParameters.isEmpty()) {
-
-            add(newHeaderLabel("Diffusion constants"));
-
+            addHeaderLabel("Diffusion constants", c);
             for (VCellModelParameter parameter : diffusionParameters) {
-                addParameterInput(parameter);
+                addParameterInput(parameter, c);
             }
         }
+        
+        // Add empty panel to occupy any extra space at bottom (pushes components to the top of the panel)
+        c.gridy++;
+        c.weighty = 1.0;
+        add(new JPanel(), c);
+        
         revalidate();
     }
-
-    private JLabel newHeaderLabel(String text) {
-        JLabel headerLabel = new JLabel(text);
-        headerLabel.setFont(new Font(headerLabel.getFont().getName(), Font.BOLD, 20));
-        return headerLabel;
+    
+    private void addHeaderLabel(String text, GridBagConstraints c) {
+    	
+    	JLabel headerLabel = new JLabel(text);
+        headerLabel.setFont(new Font(headerLabel.getFont().getName(), Font.BOLD, 14));
+        
+        c.gridx = 0;
+        c.gridy++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.ipady = 20;
+        add(headerLabel, c);
+        c.gridwidth = 1;
+        c.ipady = 0;
     }
 
-    private void addParameterInput(VCellModelParameter parameter) {
+    private void addParameterInput(VCellModelParameter parameter, GridBagConstraints c) {
     	
         JLabel idLabel = new JLabel(parameter.getId());
-        idLabel.setHorizontalAlignment(JLabel.RIGHT);
+        
+        JTextField textField = new JTextField();
+        parameterTable.put(parameter, textField);
         
         JLabel unitLabel = new JLabel(generateHtml(parameter.getUnit()));
         
-        JTextField textField = new JTextField(10);
-        parameterTable.put(parameter, textField);
+        JCheckBox checkBox = new JCheckBox("Scan?");
         
-        JPanel parameterPanel = new JPanel(new BorderLayout());
-        parameterPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        parameterPanel.add(idLabel, BorderLayout.LINE_START);
-        parameterPanel.add(textField, BorderLayout.CENTER);
-        parameterPanel.add(unitLabel, BorderLayout.LINE_END);
-        add(parameterPanel);
+        c.gridx = 0;
+        c.gridy++;
+        add(idLabel, c);
+        c.gridx = GridBagConstraints.RELATIVE;
+        
+        c.weightx = 1.0;
+        add(textField, c);
+        c.weightx = 0.0;
+        
+        c.ipadx = 20;
+        add(unitLabel, c);
+        c.ipadx = 0;
+        
+        add(checkBox, c);
     }
 
     private String generateHtml(String text) {
@@ -98,5 +131,4 @@ public class ModelParameterInputPanel extends JPanel {
         stringBuilder.append("</html>");
         return stringBuilder.toString();
     }
-
 }

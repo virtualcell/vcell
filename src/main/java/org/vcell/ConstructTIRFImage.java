@@ -1,28 +1,21 @@
 package org.vcell;
 
+import org.scijava.ItemIO;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.ops.AbstractOp;
 import net.imagej.ops.Op;
 import net.imagej.ops.OpService;
-import net.imagej.ops.Ops;
 import net.imglib2.Cursor;
-import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
-import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.view.Views;
-import org.scijava.ItemIO;
-import org.scijava.command.Command;
-import org.scijava.command.CommandService;
-import org.scijava.display.DisplayService;
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
 
 /**
  * Created by kevingaffney on 7/5/17.
@@ -82,7 +75,7 @@ public class ConstructTIRFImage<T extends RealType<T>> extends AbstractOp {
         final double pixelArea = pixelSpacing * pixelSpacing; // um2
         final double voxelVolume = pixelArea * zSpacing / 1000; // um3
         final double kmole = 1.0 / 602.0; // uM.um3.molecules-1
-        final double fluorPerMolecule = 500;
+        final double fluorPerMolecule = 250;
 
         // Create empty image of X-Y-Time dimensions
         long[] dimensions = {geometry.dimension(0), geometry.dimension(1), volumeResults.dimension(1)};

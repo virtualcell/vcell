@@ -7,7 +7,7 @@ import java.io.IOException;
 /**
  * Created by kevingaffney on 6/23/17.
  */
-public class Driver {
+public class VCellPlugin {
     public static void main(String... args) throws IOException {
         ImageJ ij = new ImageJ();
         ij.ui().showUI();

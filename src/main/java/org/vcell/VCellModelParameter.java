@@ -12,6 +12,7 @@ public class VCellModelParameter {
     private String id;
     private String value;
     private String unit;
+    private boolean shouldScan;
     private int parameterType;
 
     public VCellModelParameter(String id, String value, String unit, int parameterType) {

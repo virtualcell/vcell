@@ -49,8 +49,7 @@ public class MainView extends SwingDisplayWindow {
     private JMenuItem mniDelete;
 
     // Menu items under "Analysis"
-    private JMenuItem mniSubtractBackground;
-    private JMenuItem mniCompareROIMean;
+    private JMenuItem mniCompareDatasets;
     private JMenuItem mniConstructTIRFGeometry;
     private JMenuItem mniConstructTIRFImage;
 
@@ -158,10 +157,8 @@ public class MainView extends SwingDisplayWindow {
         // Analysis menu
         JMenu mnuAnalysis = new JMenu("Analysis");
 
-        mniSubtractBackground = new JMenuItem("Subtract background...");
-        mniCompareROIMean = new JMenuItem("Compare ROI mean...");
-        mnuAnalysis.add(mniSubtractBackground);
-        mnuAnalysis.add(mniCompareROIMean);
+        mniCompareDatasets = new JMenuItem("Compare datasets...");
+        mnuAnalysis.add(mniCompareDatasets);
 
         JMenu mnuTIRF = new JMenu("TIRF");
         mniConstructTIRFGeometry = new JMenuItem("Construct TIRF geometry...");
@@ -195,11 +192,15 @@ public class MainView extends SwingDisplayWindow {
         mniSave.setEnabled(enabled);
         mniSaveAs.setEnabled(enabled);
         mniImportData.setEnabled(enabled);
+        mniImportGeometry.setEnabled(enabled);
         mniImportResultsSingle.setEnabled(enabled);
         mniImportResultsTimeSeries.setEnabled(enabled);
         mniExport.setEnabled(enabled);
         mniDelete.setEnabled(enabled);
+        mniCompareDatasets.setEnabled(enabled);
         mniConstructTIRFGeometry.setEnabled(enabled);
+        mniConstructTIRFImage.setEnabled(enabled);
+        mniNewModel.setEnabled(enabled);
     }
 
     public Dataset getSelectedDataset() {
@@ -259,13 +260,9 @@ public class MainView extends SwingDisplayWindow {
     public void addDeleteListener(ActionListener l) {
         mniDelete.addActionListener(l);
     }
-
-    public void addSubtractBackgroundListener(ActionListener l) {
-        mniSubtractBackground.addActionListener(l);
-    }
     
-    public void addCompareROIMeanListener(ActionListener l) {
-    	mniCompareROIMean.addActionListener(l);
+    public void addCompareDatasetsListener(ActionListener l) {
+    	mniCompareDatasets.addActionListener(l);
     }
 
     public void addConstructTIRFGeometryListener(ActionListener l) {

@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 /**
  * Created by kevingaffney on 6/27/17.
  */
-public class ProjectService<T extends RealType<T>> {
+public class ProjectService {
 
     private File currentProjectRoot;
     private DatasetIOService datasetIOService;

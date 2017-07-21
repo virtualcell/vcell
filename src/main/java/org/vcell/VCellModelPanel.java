@@ -10,7 +10,9 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
@@ -26,17 +28,45 @@ public class VCellModelPanel extends JPanel {
 	private VCellModel selectedModel;
 	private JLabel imageLabel;
 	private JScrollPane imageScrollPane;
+	private JProgressBar progressBar;
 	private VCellModelService vCellModelService;
 	
 	public VCellModelPanel(VCellModelService vCellModelService) {
 		this.vCellModelService = vCellModelService;
 		initializeComponents();
 		setPreferredSize(new Dimension(600, 400));
-		getModels();
+	}
+	
+	public VCellModel getSelectedModel() {
+		return list.getSelectedValue();
+	}
+	
+	public void displayImageOfSelectedModel() {
+		displayScaledImageOfSelectedModel(imageScrollPane.getHeight() - 6);
+	}
+	
+	private void displayScaledImageOfSelectedModel(int height) {
+		Image image = getImageOfSelectedModel();
+		if (image == null) return;
+		
+		image = image.getScaledInstance(-1, height, Image.SCALE_FAST);
+		imageLabel.setIcon(new ImageIcon(image));
+	}
+	
+	private Image getImageOfSelectedModel() {
+		VCellModel selectedModel = list.getSelectedValue();
+		if (selectedModel == null) return null;
+		return selectedModel.getImage();
 	}
 	
 	private void initializeComponents() {
 		setLayout(new BorderLayout());
+		
+		progressBar = new JProgressBar();
+		progressBar.setStringPainted(true);
+		progressBar.setString("Loading models...");
+		progressBar.setIndeterminate(false);
+		add(progressBar, BorderLayout.PAGE_START);
 		
 		listModel = new DefaultListModel<>();
 		
@@ -61,6 +91,11 @@ public class VCellModelPanel extends JPanel {
 		JSplitPane splitPane = new JSplitPane(
 				JSplitPane.HORIZONTAL_SPLIT, 
 				leftScrollPane, verticalSplitPane);
+		
+		verticalSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, event -> {
+			displayScaledImageOfSelectedModel((int) event.getNewValue() - 6);
+		});
+		
 		add(splitPane, BorderLayout.CENTER);
 		
 		list.addListSelectionListener(e -> {
@@ -72,34 +107,24 @@ public class VCellModelPanel extends JPanel {
 		});
 	}
 	
-	public void displayImageOfSelectedModel() {
-		
-		VCellModel selectedModel = list.getSelectedValue();
-		if (selectedModel == null) return;
-		
-		Image image = selectedModel.getImage();
-		if (image == null) return;
-		
-		image = image.getScaledInstance(-1, imageScrollPane.getHeight(), Image.SCALE_FAST);
-		imageLabel.setIcon(new ImageIcon(image));
-	}
-	
-	public VCellModel getSelectedModel() {
-		return list.getSelectedValue();
-	}
-	
-	private void getModels() {
-		vCellModelService.getVCellModels(new FutureCallback<VCellModel[]>() {
+	public void getModels() {
+		vCellModelService.getVCellModels(new FutureProgressCallback<VCellModel[]>() {
 			
 			@Override
 			public void onSuccess(VCellModel[] result) {
-				System.out.println("success");
+				progressBar.setVisible(false);
 				updateList(result, listModel);
 			}
 
 			@Override
 			public void onFailure(Throwable t) {
 				t.printStackTrace();
+			}
+			
+			@Override
+			public void progressOccurred(int current, int max) {
+				progressBar.setMaximum(max);
+				progressBar.setValue(current);
 			}
 		});
 	}

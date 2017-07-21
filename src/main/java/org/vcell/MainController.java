@@ -20,6 +20,7 @@ import org.scijava.display.DisplayService;
 import org.scijava.event.EventService;
 import org.scijava.plugin.PluginInfo;
 import org.scijava.plugin.PluginService;
+import org.scijava.plugin.SciJavaPlugin;
 import org.scijava.thread.ThreadService;
 import org.scijava.ui.UIService;
 import org.scijava.ui.swing.viewer.SwingDisplayWindow;
@@ -31,9 +32,15 @@ import com.google.common.util.concurrent.FutureCallback;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
+import net.imagej.autoscale.AutoscaleService;
+import net.imagej.autoscale.DataRange;
+import net.imagej.display.DatasetView;
+import net.imagej.display.ImageDisplayService;
 import net.imagej.display.OverlayService;
 import net.imagej.ops.OpService;
+import net.imagej.plugins.commands.display.interactive.BrightnessContrast;
 import net.imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
+import net.imglib2.type.numeric.RealType;
 
 
 /**
@@ -54,6 +61,8 @@ public class MainController {
     private UIService uiService;
     private PluginService pluginService;
     private ThreadService threadService;
+    private ImageDisplayService imageDisplayService;
+    private AutoscaleService autoscaleService;
     private ProjectService projectService;
     private VCellResultService vCellResultService;
     private VCellModelService vCellModelService;
@@ -72,6 +81,8 @@ public class MainController {
         uiService = context.getService(UIService.class);
         pluginService = context.getService(PluginService.class);
         threadService = context.getService(ThreadService.class);
+        imageDisplayService = context.getService(ImageDisplayService.class);
+        autoscaleService = context.getService(AutoscaleService.class);
         projectService = new ProjectService(datasetIOService, opService, displayService);
         vCellResultService = new VCellResultService(opService, datasetService);
     	vCellModelService = new VCellModelService();
@@ -172,7 +183,7 @@ public class MainController {
             }
         });
         
-        view.addCompareROIMeanListener(event -> {
+        view.addCompareDatasetsListener(event -> {
         	
         	ArrayList<Dataset> datasetList = model.getProject().getData();
         	datasetList.addAll(model.getProject().getGeometry());
@@ -192,17 +203,16 @@ public class MainController {
         			JOptionPane.PLAIN_MESSAGE);
         	
         	if (returnVal == JOptionPane.OK_OPTION) {
-        		Dataset datasetA = panel.getSelectedDatasetForDescription(descriptionA);
-        		Dataset datasetB = panel.getSelectedDatasetForDescription(descriptionB);
-        		CompareView compareView = new CompareView();
+        		ArrayList<Dataset> datasets = new ArrayList<>();
+        		datasets.add(panel.getSelectedDatasetForDescription(descriptionA));
+        		datasets.add(panel.getSelectedDatasetForDescription(descriptionB));
+        		CompareView compareView = new CompareView(datasets);
+        		new CompareController(compareView, context);
         		compareView.setVisible(true);
-        		displayDataset(datasetA, compareView);
-        		displayDataset(datasetB, compareView);
+        		for (Dataset dataset : datasets) {
+        			displayDataset(dataset, compareView);
+        		}
         	}
-        });
-
-        view.addSubtractBackgroundListener(event -> {
-        	System.out.println("Subtract background");
         });
 
         view.addConstructTIRFGeometryListener(event -> {
@@ -296,10 +306,9 @@ public class MainController {
         return dataset;
     }
     
-    private void displayDataset(Dataset dataset, SwingDisplayWindow window) {
+    public void displayDataset(Dataset dataset, SwingDisplayWindow window) {
     	
 		Display<?> display = displayService.createDisplayQuietly(dataset);
-		display.setName(dataset.getName());
 
 		final SwingImageDisplayViewer finalViewer = getDisplayViewer(display);
 		if (finalViewer == null) return;
@@ -309,7 +318,16 @@ public class MainController {
 			uiService.addDisplayViewer(finalViewer);
 			window.showDisplay(true);
 			display.update();
+			
+			autoscale(imageDisplayService.getActiveDatasetView());
 		});
+    }
+    
+    private void autoscale(DatasetView datasetView) {
+		DataRange range = autoscaleService.getDefaultIntervalRange(datasetView.getData());
+		datasetView.setChannelRanges(range.getMin(), range.getMax());
+		datasetView.getProjector().map();
+		datasetView.update();
     }
     
     private SwingImageDisplayViewer getDisplayViewer(Display<?> display) {
@@ -352,7 +370,7 @@ public class MainController {
         	
         	// Generate SBML document and save locally
             VCellModelService vCellModelService = new VCellModelService();
-            SBMLDocument sbmlDocument = vCellModelService.generateSBML(new VCellModel("TIRF_model_test"));
+            vCellModelService.generateSBML(new VCellModel("TIRF_model_test"));
             VCellModel vCellModel = new VCellModel("TIRF_model_test");
             File filepath = Paths.get(projectService.getCurrentProjectRoot().getAbsolutePath(), vCellModel.getName()).toFile();
             

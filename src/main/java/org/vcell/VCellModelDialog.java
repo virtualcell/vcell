@@ -6,21 +6,23 @@ import java.awt.event.ComponentEvent;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
 
 public class VCellModelDialog extends JDialog {
 	
 	private JOptionPane optionPane;
+	private VCellModelPanel vCellModelPanel;
 
 	public VCellModelDialog(Frame owner, VCellModelService vCellModelService) {
 		
 		super(owner, "Select a model", true);
 		
-		VCellModelPanel vCellModelPanel = new VCellModelPanel(vCellModelService);
+		vCellModelPanel = new VCellModelPanel(vCellModelService);
 		optionPane = new JOptionPane(vCellModelPanel, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 
 		setContentPane(optionPane);
 		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		optionPane.addPropertyChangeListener(e -> {
 			if (isVisible() 
 					&& e.getSource() == optionPane 
@@ -39,7 +41,12 @@ public class VCellModelDialog extends JDialog {
 	
 	public int display() {
 		pack();
+		vCellModelPanel.getModels();
 		setVisible(true);
-		return (int) optionPane.getValue();
+		Object value = optionPane.getValue();
+		if (Integer.class.isInstance(value)) {
+			return (int) optionPane.getValue();
+		}
+		return JOptionPane.CANCEL_OPTION; // If something goes wrong, dispose and do nothing
 	}
 }
