@@ -147,40 +147,37 @@ class SimulationWarning {
 	}
 
 	private static void analyzeArea(Simulation simulation, double timeStep, Map<MembraneSubDomain, List<DiffusionValue>> diffusionValuesMap, IssueContext issueContext, List<Issue> issueList) {
-		List<String> workingList = new ArrayList<>();
-		try (ThreadPrioritySetter tps = new ThreadPrioritySetter(Thread.MIN_PRIORITY)) {
-			SmoldynSurfaceTessellator sst = new SmoldynSurfaceTessellator(simulation);
-			for (Entry<MembraneSubDomain, List<DiffusionValue>> entry : diffusionValuesMap.entrySet()) {
-				MembraneSubDomain msd = entry.getKey();
-				List<Triangle> tessellation = sst.getTessellation(msd.getName());
-				/*
-				 * performance note -- for a test case, the parallel stream was slightly faster than sequential; the traditional
-				 * loop was slightly faster than either stream; less than a factor of 3 and on the order of 3 milliseconds
-				 */
-				double sum = tessellation.parallelStream().mapToDouble( (t) -> t.getArea()).sum( );
-				double avg = sum / tessellation.size();
-				for (DiffusionValue dv : entry.getValue()) {
-					double ad = avg / dv.value;
-					boolean warn = (timeStep >= ad);
+		double dx = simulation.getMeshSpecification().getDx(true);
+		double dy = simulation.getMeshSpecification().getDy(true);
+		double dz = simulation.getMeshSpecification().getDz(true);
+		int dim = simulation.getMathDescription().getGeometry().getDimension();
+		if (dim<3){
+			throw new RuntimeException("suggested timestep analysis for smoldyn not implemented for "+dim+"D simulations");
+		}
+		double smallestQuadArea = Math.min(Math.min(dx*dy, dy*dz), dx*dz);
+		double averageTriangleSize = smallestQuadArea/4;   // 1/2 for quad to triangle, 1/2 for smoother surface
+		for (Entry<MembraneSubDomain, List<DiffusionValue>> entry : diffusionValuesMap.entrySet()) {
+			MembraneSubDomain msd = entry.getKey();
+			for (DiffusionValue dv : entry.getValue()) {
+				double ad = averageTriangleSize / dv.value;
+				boolean warn = (timeStep >= ad);
+				if (lg.isDebugEnabled()) {
+					lg.debug("average area " + averageTriangleSize + " diffusion " + dv.value + " time step limit " + ad + "timeStep " + timeStep + " -> warn " + warn);
+				}
+				if (warn) {
+					DecimalFormat f = new DecimalFormat("0.##E0");
+					String limit = f.format(ad);
+					String m = "Solver time step " + timeStep
+							+ " may yield inaccurate results for given mesh size and diffusion coefficient of species "
+							+ dv.name + " on membrane " + msd.getName()
+							+ "; it is recommended that the time step not exceed " + limit;
+					Issue i = new Issue(simulation, issueContext, IssueCategory.SMOLYDN_DIFFUSION, m,m,Severity.WARNING);
+					issueList.add(i);
 					if (lg.isDebugEnabled()) {
-						lg.debug("average area " + avg + " diffusion " + dv.value + " time step limit " + ad + "timeStep " + timeStep + " -> warn " + warn);
-					}
-					if (warn) {
-						DecimalFormat f = new DecimalFormat("0.##E0");
-						String limit = f.format(ad);
-						String m = "Solver time step " + timeStep
-								+ " may yield inaccurate results for given mesh size and diffusion coefficient of species "
-								+ dv.name + " on membrane " + msd.getName()
-								+ "; it is recommended that the time step not exceed " + limit;
-						workingList.add(m);
-						if (lg.isDebugEnabled()) {
-							lg.debug("Warning " + m);
-						}
+						lg.debug("Warning " + m);
 					}
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
