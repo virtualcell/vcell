@@ -131,7 +131,7 @@ private static ArrayList<Unit> convertVCUnitsToSbmlUnits_NOT_USED(double unitMul
 
 
 public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, int level, int version, VCUnitSystem vcUnitSystem) throws SbmlException {
-	UnitDefinition sbmlUnitDefn = new UnitDefinition(3,1);
+	final UnitDefinition sbmlUnitDefn = new UnitDefinition(3,1);
 	if (vcUnitDefn.isCompatible(vcUnitSystem.getInstance_DIMENSIONLESS())){
 		double multiplier = Double.parseDouble(vcUnitDefn.getSymbol());
 		sbmlUnitDefn.addUnit(new Unit(multiplier,0,Kind.DIMENSIONLESS,1.0,3,1));
@@ -144,7 +144,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 		overallMultiplier = Double.parseDouble(unitParts[0]);
 		vcSymbol = unitParts[1];
 	}
-	String sbmlUnitSymbol = TokenMangler.mangleToSName(vcSymbol);
+//	String sbmlUnitSymbol = TokenMangler.mangleToSName(vcSymbol);
 	String[] symbols = vcSymbol.split("\\.");
 	if (symbols.length==0){
 		symbols = new String[] { vcSymbol };
@@ -229,7 +229,8 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			}
 		}
 		if (!bFoundMatch){
-			System.out.println("Still didn't find a match for vcUnit "+vcUnit.getSymbol());
+			throw new RuntimeException("didn't find a match for vcUnit "+vcUnit.getSymbol());
+			//System.out.println("Still didn't find a match for vcUnit "+vcUnit.getSymbol());
 		}
 //		ucar.units_vcell.Unit ucarUnit = vcUnit.getUcarUnit();
 //		if (ucarUnit instanceof ScaledUnit){
@@ -272,6 +273,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 //		}
 //		System.err.println("vcUnit is "+symbols[i]+",  ucarUnit is "+ucarUnit.getSymbol());
 	}
+	sbmlUnitDefn.setId(TokenMangler.mangleToSName(vcSymbol));
 	return sbmlUnitDefn;
 //
 //	// If VC unit is DIMENSIONLESS ...

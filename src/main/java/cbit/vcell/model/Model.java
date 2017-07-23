@@ -3619,7 +3619,20 @@ public void setModelParameters(ModelParameter[] modelParameters) throws java.bea
 	fireVetoableChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
 	fieldModelParameters = modelParameters;
 	firePropertyChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
-	
+
+//System.out.print("vcModel model parameters [");
+//for (ModelParameter p : oldValue){
+//System.out.print(" "+p.getName()+" ");
+//}
+//System.out.print("]  -->  [");
+//for (ModelParameter p : modelParameters){
+//System.out.print(" "+p.getName()+" ");
+//}
+//System.out.println("]");
+//if (oldValue.length>0 && modelParameters.length==0){
+//System.out.println("removed model parameters.");
+//}
+
 	ModelParameter newValue[] = modelParameters;
 	if (oldValue != null) {
 		for (int i=0;i<oldValue.length;i++){	

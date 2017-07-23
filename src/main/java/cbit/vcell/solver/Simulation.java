@@ -96,10 +96,8 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	private java.lang.String fieldSimulationIdentifier = null;
 	private MeshSpecification fieldMeshSpecification = null;
 	private boolean fieldIsDirty = false;
-	private final transient SimulationWarning simWarning;
 
 private Simulation( ) {
-	simWarning = new SimulationWarning(this);
 }
 /**
  * One of three ways to construct a Simulation.  This constructor
@@ -928,9 +926,6 @@ public boolean isSerialParameterScan() {
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}
-		if (bIsMath)  {
-			simWarning.mathDescriptionChange(md);
-		}
 	}
 
 	private void refreshMeshSpec() throws PropertyVetoException{
@@ -959,6 +954,6 @@ public boolean isSerialParameterScan() {
 	 * @param issueList
 	 */
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-		simWarning.gatherIssues(issueContext, issueList);
+		SimulationWarning.gatherIssues(this, issueContext, issueList);
 	}
 }

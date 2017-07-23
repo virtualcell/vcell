@@ -52,6 +52,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
@@ -87,14 +88,11 @@ Identifiable, IdentifiableProvider, IssueSource
 	private final RelationshipModel relationshipModel = new RelationshipModel();
 	private static final Logger lg = Logger.getLogger(BioModel.class);
 
-	/**
-	 * BioModel constructor comment.
-	 */
-	public BioModel(Version version) {
+	public BioModel(Version version, ModelUnitSystem modelUnitSystem){
 		super();
 		fieldName = new String("NoName");
 		vcMetaData = new VCMetaData(this, null);
-		setModel(new Model("unnamed"));
+		setModel(new Model("unnamed",modelUnitSystem));
 		addVetoableChangeListener(this);
 		addPropertyChangeListener(this);
 		try {
@@ -103,6 +101,12 @@ Identifiable, IdentifiableProvider, IssueSource
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}
+	}
+	/**
+	 * BioModel constructor comment.
+	 */
+	public BioModel(Version version) {
+		this(version, ModelUnitSystem.createDefaultVCModelUnitSystem());
 	}
 
 	/**

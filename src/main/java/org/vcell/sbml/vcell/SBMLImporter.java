@@ -64,7 +64,9 @@ import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.SBase;
+import org.sbml.jsbml.ext.spatial.SpatialNamedSBase;
 import org.sbml.jsbml.SpeciesReference;
+import org.sbml.jsbml.Unit;
 import org.sbml.jsbml.UnitDefinition;
 import org.sbml.jsbml.ext.spatial.AdjacentDomains;
 import org.sbml.jsbml.ext.spatial.AdvectionCoefficient;
@@ -150,6 +152,7 @@ import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
@@ -216,7 +219,7 @@ public class SBMLImporter {
 
 	private String sbmlFileName = null;
 	private org.sbml.jsbml.Model sbmlModel = null;
-	private SimulationContext simContext = null;
+//	private SimulationContext vcBioModel.getSimulationContext(0) = null;
 	private LambdaFunction[] lambdaFunctions = null;
 	private BioModel vcBioModel = null;
 	private HashMap<String, Expression> assignmentRulesHash = new HashMap<String, Expression>();
@@ -286,7 +289,6 @@ public class SBMLImporter {
 		super();
 		this.sbmlFileName = argSbmlFileName;
 		this.logger = argVCLogger;
-		this.vcBioModel = new BioModel(null);
 		this.bSpatial = isSpatial;
 	}
 	
@@ -337,7 +339,7 @@ public class SBMLImporter {
 			}
 
 			// Second pass - connect the structures
-			Model model = simContext.getModel();
+			Model model = vcBioModel.getSimulationContext(0).getModel();
 			for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 				org.sbml.jsbml.Compartment sbmlCompartment = (org.sbml.jsbml.Compartment) listofCompartments
 						.get(i);
@@ -371,14 +373,14 @@ public class SBMLImporter {
 				}
 			}
 
-			// set the structures in vc simContext
+			// set the structures in vc vcBioModel.getSimulationContext(0)
 			Structure[] structures = structList
 					.toArray(new Structure[structList.size()]);
 			model.setStructures(structures);
 
 			// Third pass thro' the list of compartments : set the sizes on the
 			// structureMappings - can be done only after setting
-			// the structures on simContext.
+			// the structures on vcBioModel.getSimulationContext(0).
 			boolean allSizesSet = true;
 			for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 				org.sbml.jsbml.Compartment compartment = (org.sbml.jsbml.Compartment) listofCompartments
@@ -435,7 +437,7 @@ public class SBMLImporter {
 
 					// Now set the size of the compartment.
 					Structure struct = model.getStructure(compartmentName);
-					StructureMapping.StructureMappingParameter mappingParam = simContext
+					StructureMapping.StructureMappingParameter mappingParam = vcBioModel.getSimulationContext(0)
 							.getGeometryContext().getStructureMapping(struct)
 							.getSizeParameter();
 					mappingParam.setExpression(sizeExpr);
@@ -445,7 +447,7 @@ public class SBMLImporter {
 			// Handle the absolute size to surface_vol/volFraction conversion if
 			// size is set
 			if (allSizesSet) {
-				StructureSizeSolver.updateRelativeStructureSizes(simContext);
+				StructureSizeSolver.updateRelativeStructureSizes(vcBioModel.getSimulationContext(0));
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -464,7 +466,7 @@ public class SBMLImporter {
 
 			ListOf<Event> listofEvents = sbmlModel.getListOfEvents();
 
-			Model vcModel = simContext.getModel();
+			Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 			for (int i = 0; i < sbmlModel.getNumEvents(); i++) {
 				try {
 					Event event = listofEvents.get(i);
@@ -483,15 +485,15 @@ public class SBMLImporter {
 					if (eventName == null || eventName.length() == 0) {
 						eventName = TokenMangler.mangleToSName(event.getName());
 						// if event name is still null, get free event name from
-						// simContext.
+						// vcBioModel.getSimulationContext(0).
 						if (eventName == null || eventName.length() == 0) {
-							eventName = simContext.getFreeEventName(null);
+							eventName = vcBioModel.getSimulationContext(0).getFreeEventName(null);
 						}
 					}
 
 					// delay
 					BioEvent vcEvent = new BioEvent(eventName,
-							TriggerType.GeneralTrigger, true, simContext);
+							TriggerType.GeneralTrigger, true, vcBioModel.getSimulationContext(0));
 					if (event.isSetDelay()) {
 						Expression durationExpr = null;
 						durationExpr = getExpressionFromFormula(event
@@ -521,7 +523,7 @@ public class SBMLImporter {
 						org.sbml.jsbml.EventAssignment sbmlEvntAssgn = event
 								.getEventAssignment(j);
 						String varName = sbmlEvntAssgn.getVariable();
-						SymbolTableEntry varSTE = simContext.getEntry(varName);
+						SymbolTableEntry varSTE = vcBioModel.getSimulationContext(0).getEntry(varName);
 						if (varSTE != null) {
 							Expression evntAssgnExpr = getExpressionFromFormula(sbmlEvntAssgn
 									.getMath());
@@ -540,7 +542,7 @@ public class SBMLImporter {
 
 					vcEvent.setEventAssignmentsList(vcEvntAssgnList);
 					vcEvent.bind();
-					simContext.addBioEvent(vcEvent);
+					vcBioModel.getSimulationContext(0).addBioEvent(vcEvent);
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
 					throw new SBMLImportException(e.getMessage(), e);
@@ -576,7 +578,7 @@ public class SBMLImporter {
 			System.out.println("No Initial Assignments specified");
 			return;
 		}
-		Model vcModel = simContext.getModel();
+		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 
 		for (int i = 0; i < sbmlModel.getNumInitialAssignments(); i++) {
 			try {
@@ -620,11 +622,11 @@ public class SBMLImporter {
 						vcModel);
 				// set the init assgn expr on VCell species init condn or global
 				// parameter expression
-				SpeciesContextSpec scs = simContext.getReactionContext()
+				SpeciesContextSpec scs = vcBioModel.getSimulationContext(0).getReactionContext()
 						.getSpeciesContextSpec(
-								simContext.getModel().getSpeciesContext(
+								vcBioModel.getSimulationContext(0).getModel().getSpeciesContext(
 										initAssgnSymbol));
-				ModelParameter mp = simContext.getModel().getModelParameter(
+				ModelParameter mp = vcBioModel.getSimulationContext(0).getModel().getModelParameter(
 						initAssgnSymbol);
 				if (scs != null) {
 					scs.getInitialConditionParameter().setExpression(
@@ -724,7 +726,7 @@ public class SBMLImporter {
 			System.out.println("No Global Parameters");
 			return;
 		}
-		Model vcModel = simContext.getModel();
+		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 		ArrayList<ModelParameter> vcModelParamsList = new ArrayList<Model.ModelParameter>();
 
 		// create a hash of reserved symbols so that if there is any reserved
@@ -822,7 +824,7 @@ public class SBMLImporter {
 						// in vcell; set its diff param to param value.
 						paramSpContext = vcModel.getSpeciesContext(diffCoeff.getVariable());
 						if (paramSpContext != null) {
-							vcSpContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(paramSpContext);
+							vcSpContextsSpec = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(paramSpContext);
 							vcSpContextsSpec.getDiffusionParameter().setExpression(valueExpr);
 						}
 						// go to the next parameter - do not add the diffusion
@@ -839,7 +841,7 @@ public class SBMLImporter {
 						// in vcell; set its adv param to param value.
 						paramSpContext = vcModel.getSpeciesContext(advCoeff.getVariable());
 						if (paramSpContext != null) {
-							vcSpContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(paramSpContext);
+							vcSpContextsSpec = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(paramSpContext);
 							CoordinateKind coordKind = advCoeff.getCoordinate();
 							SpeciesContextSpecParameter param = null;
 							switch (coordKind){
@@ -876,8 +878,8 @@ public class SBMLImporter {
 						if (paramSpContext == null) {
 							throw new RuntimeException("unable to process boundary condition for variable "+bCondn.getVariable());
 						}
-						StructureMapping sm = simContext.getGeometryContext().getStructureMapping(paramSpContext.getStructure());
-						vcSpContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(paramSpContext);
+						StructureMapping sm = vcBioModel.getSimulationContext(0).getGeometryContext().getStructureMapping(paramSpContext.getStructure());
+						vcSpContextsSpec = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(paramSpContext);
 						for (CoordinateComponent coordComp : getSbmlGeometry().getListOfCoordinateComponents()){
 							if (bCondn.getSpatialRef().equals(coordComp.getBoundaryMinimum().getSpatialId())){
 								switch (coordComp.getType()){
@@ -979,7 +981,7 @@ public class SBMLImporter {
 	 *
 	 **/
 	private void addReactionParticipants(org.sbml.jsbml.Reaction sbmlRxn, ReactionStep vcRxn) throws Exception {
-		Model vcModel = simContext.getModel();
+		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 		//VCReactionProxy proxy = VCReactionProxy.factory(vcRxn);
 		//VCAssert.assertTrue(vcModel == proxy.getModel(), "mismatch in Model between ReactionStep and SimulationContext" );
 
@@ -1286,7 +1288,7 @@ public class SBMLImporter {
 						.getSpecies(assgnRuleVar);
 				if (ruleSpecies != null) {
 					if (assignmentRuleMathExpr != null) {
-						Model vcModel = simContext.getModel();
+						Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 						if (!bSpatial) {
 							if (assignmentRuleMathExpr.hasSymbol(vcModel.getX()
 									.getName())
@@ -1341,14 +1343,14 @@ public class SBMLImporter {
 					rateruleName = TokenMangler.mangleToSName(sbmlRateRule
 							.getName());
 					// if rate rule name is still null, get free rate rule name
-					// from simContext.
+					// from vcBioModel.getSimulationContext(0).
 					if (rateruleName == null || rateruleName.length() == 0) {
-						rateruleName = simContext.getFreeRateRuleName();
+						rateruleName = vcBioModel.getSimulationContext(0).getFreeRateRuleName();
 					}
 				}
 				// rate rule variable
 				String varName = sbmlRateRule.getVariable();
-				SymbolTableEntry rateRuleVar = simContext.getEntry(varName);
+				SymbolTableEntry rateRuleVar = vcBioModel.getSimulationContext(0).getEntry(varName);
 				if (rateRuleVar instanceof Structure) {
 					throw new SBMLImportException(
 							"Compartment '"
@@ -1361,11 +1363,11 @@ public class SBMLImporter {
 								.getMath());
 						cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(
 								rateruleName, rateRuleVar, vcRateRuleExpr,
-								simContext);
+								vcBioModel.getSimulationContext(0));
 						vcRateRule.bind();
 						rateRulesHash
 								.put(rateRuleVar.getName(), vcRateRuleExpr);
-						simContext.addRateRule(vcRateRule);
+						vcBioModel.getSimulationContext(0).addRateRule(vcRateRule);
 					}
 				} catch (PropertyVetoException e) {
 					e.printStackTrace(System.out);
@@ -1440,7 +1442,7 @@ public class SBMLImporter {
 				// Get matching compartment name (of sbmlSpecies[i]) from
 				// feature list
 				String compartmentId = sbmlSpecies.getCompartment();
-				Structure spStructure = simContext.getModel().getStructure(
+				Structure spStructure = vcBioModel.getSimulationContext(0).getModel().getStructure(
 						compartmentId);
 				vcSpeciesContexts[i] = new SpeciesContext(vcSpecies,
 						spStructure);
@@ -1464,7 +1466,7 @@ public class SBMLImporter {
 			} // end - for sbmlSpecies
 
 			// set the species & speciesContexts on model
-			Model vcModel = simContext.getModel();
+			Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 			vcModel.setSpecies(vcSpeciesHash.values().toArray(new Species[0]));
 			vcModel.setSpeciesContexts(vcSpeciesContexts);
 
@@ -1499,7 +1501,7 @@ public class SBMLImporter {
 	private void setSpeciesInitialConditions() {
 		try {
 			// fill in SpeciesContextSpec for each speciesContext
-			Model vcModel = simContext.getModel();
+			Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 			SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 			for (int i = 0; i < vcSpeciesContexts.length; i++) {
 				org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) sbmlModel
@@ -1598,7 +1600,7 @@ public class SBMLImporter {
 				// rule, expand it.
 				substituteGlobalParamRulesInPlace(initExpr, false);
 
-				SpeciesContextSpec speciesContextSpec = simContext
+				SpeciesContextSpec speciesContextSpec = vcBioModel.getSimulationContext(0)
 						.getReactionContext().getSpeciesContextSpec(
 								vcSpeciesContexts[i]);
 				speciesContextSpec.getInitialConditionParameter()
@@ -1853,7 +1855,7 @@ public class SBMLImporter {
 	// if (exprSymbols == null || exprSymbols.length == 0) {
 	// return;
 	// }
-	// Model vcModel = simContext.getModel();
+	// Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 	// for (int kk = 0; kk < exprSymbols.length; kk++) {
 	// ModelParameter mp = vcModel.getModelParameter(exprSymbols[kk]);
 	// if (mp != null) {
@@ -1928,32 +1930,31 @@ public class SBMLImporter {
 			// this.version = sbmlModel.getVersion();
 			String ns = document.getNamespace();
 
-			// SBML annotation
-			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, ns);
-
 			try {
-				// create SBML unit system to pass into VCModel
-				Model vcModel;
+				// create SBML unit system for the model and create the bioModel.
+				ModelUnitSystem modelUnitSystem;
 				try {
-					vcModel = new Model(modelName,
-							createSBMLUnitSystemForVCModel());
+					modelUnitSystem = createSBMLUnitSystemForVCModel();
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
 					throw new SBMLImportException(
 							"Inconsistent unit system. Cannot import SBML model into VCell",
 							Category.INCONSISTENT_UNIT, e);
 				}
-				Geometry geometry = new Geometry(
-						BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
-				simContext = new SimulationContext(vcModel, geometry);
-				simContext.setName(simContext.getModel().getName());
-				// simContext.setName(simContext.getModel().getName()+"_"+simContext.getGeometry().getName());
+				Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
+				vcBioModel = new BioModel(null,modelUnitSystem);
+				SimulationContext simulationContext = new SimulationContext(vcBioModel.getModel(), geometry, null, null, Application.NETWORK_DETERMINISTIC);
+				vcBioModel.addSimulationContext(simulationContext);
+				simulationContext.setName(vcBioModel.getSimulationContext(0).getModel().getName());
+				// vcBioModel.getSimulationContext(0).setName(vcBioModel.getSimulationContext(0).getModel().getName()+"_"+vcBioModel.getSimulationContext(0).getGeometry().getName());
 			} catch (PropertyVetoException e) {
 				e.printStackTrace(System.out);
-				throw new SBMLImportException(
-						"Could not create simulation context corresponding to the input SBML model",
-						e);
+				throw new SBMLImportException("Could not create simulation context corresponding to the input SBML model",e);
 			}
+			
+			// SBML annotation
+			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, ns);
+
 			translateSBMLModel();
 
 			try {
@@ -1970,11 +1971,6 @@ public class SBMLImporter {
 				}
 				vcBioModel.setName(biomodelName);
 				// **** end - TEMPORARY BLOCK
-
-				// bioModel.setName(modelName);
-				vcBioModel.setModel(simContext.getModel());
-				vcBioModel
-						.setSimulationContexts(new SimulationContext[] { simContext });
 			} catch (Exception e) {
 				e.printStackTrace(System.out);
 				throw new SBMLImportException("Could not create Biomodel", e);
@@ -2094,38 +2090,53 @@ public class SBMLImporter {
 		long sbmlLevel = sbmlModel.getLevel();
 		if (sbmlLevel < 3) {
 			// SBML predefined unit identifiers
-			sbmlUnitIdentifierHash.put("substance",
-					tempVCUnitSystem.getInstance("mole"));
-			sbmlUnitIdentifierHash.put("volume",
-					tempVCUnitSystem.getInstance("litre"));
-			sbmlUnitIdentifierHash.put("area",
-					tempVCUnitSystem.getInstance("m2"));
-			sbmlUnitIdentifierHash.put("length",
-					tempVCUnitSystem.getInstance("m"));
-			sbmlUnitIdentifierHash.put("time",
-					tempVCUnitSystem.getInstance("s"));
+			sbmlUnitIdentifierHash.put(UnitDefinition.SUBSTANCE, tempVCUnitSystem.getInstance("mole"));
+			sbmlUnitIdentifierHash.put(UnitDefinition.VOLUME, tempVCUnitSystem.getInstance("litre"));
+			sbmlUnitIdentifierHash.put(UnitDefinition.AREA, tempVCUnitSystem.getInstance("m2"));
+			sbmlUnitIdentifierHash.put(UnitDefinition.LENGTH, tempVCUnitSystem.getInstance("m"));
+			sbmlUnitIdentifierHash.put(UnitDefinition.TIME, tempVCUnitSystem.getInstance("s"));
 		}
 
+		if (sbmlModel.isSetSubstanceUnits()){
+			UnitDefinition ud = sbmlModel.getSubstanceUnitsInstance();
+			VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
+			sbmlUnitIdentifierHash.put(UnitDefinition.SUBSTANCE, vcUnitDef);
+		}
+		if (sbmlModel.isSetVolumeUnits()){
+			UnitDefinition ud = sbmlModel.getVolumeUnitsInstance();
+			VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
+			sbmlUnitIdentifierHash.put(UnitDefinition.VOLUME, vcUnitDef);
+		}
+		if (sbmlModel.isSetAreaUnits()){
+			UnitDefinition ud = sbmlModel.getAreaUnitsInstance();
+			VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
+			sbmlUnitIdentifierHash.put(UnitDefinition.AREA, vcUnitDef);
+		}
+		if (sbmlModel.isSetLengthUnits()){
+			UnitDefinition ud = sbmlModel.getLengthUnitsInstance();
+			VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
+			sbmlUnitIdentifierHash.put(UnitDefinition.LENGTH, vcUnitDef);
+		}
+		if (sbmlModel.isSetTimeUnits()){
+			UnitDefinition ud = sbmlModel.getTimeUnitsInstance();
+			VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
+			sbmlUnitIdentifierHash.put(UnitDefinition.TIME, vcUnitDef);
+		}
 		// read unit definition (identifiers) declared in SBML model
 		for (int i = 0; i < sbmlModel.getNumUnitDefinitions(); i++) {
-			UnitDefinition ud = (org.sbml.jsbml.UnitDefinition) listofUnitDefns
-					.get(i);
+			UnitDefinition ud = (org.sbml.jsbml.UnitDefinition) listofUnitDefns.get(i);
 			String unitName = ud.getId();
-			VCUnitDefinition vcUnitDef = SBMLUnitTranslator
-					.getVCUnitDefinition(ud, tempVCUnitSystem);
+			VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
 			sbmlUnitIdentifierHash.put(unitName, vcUnitDef);
 		}
 
 		// For SBML level 2
 		// default units
-		VCUnitDefinition defaultSubstanceUnit = sbmlUnitIdentifierHash
-				.get("substance");
-		VCUnitDefinition defaultVolumeUnit = sbmlUnitIdentifierHash
-				.get("volume");
-		VCUnitDefinition defaultAreaUnit = sbmlUnitIdentifierHash.get("area");
-		VCUnitDefinition defaultLengthUnit = sbmlUnitIdentifierHash
-				.get("length");
-		VCUnitDefinition defaultTimeUnit = sbmlUnitIdentifierHash.get("time");
+		VCUnitDefinition defaultSubstanceUnit = sbmlUnitIdentifierHash.get(UnitDefinition.SUBSTANCE);
+		VCUnitDefinition defaultVolumeUnit = sbmlUnitIdentifierHash.get(UnitDefinition.VOLUME);
+		VCUnitDefinition defaultAreaUnit = sbmlUnitIdentifierHash.get(UnitDefinition.AREA);
+		VCUnitDefinition defaultLengthUnit = sbmlUnitIdentifierHash.get(UnitDefinition.LENGTH);
+		VCUnitDefinition defaultTimeUnit = sbmlUnitIdentifierHash.get(UnitDefinition.TIME);
 
 		VCUnitDefinition modelSubstanceUnit = null;
 		VCUnitDefinition modelVolumeUnit = null;
@@ -2300,8 +2311,7 @@ public class SBMLImporter {
 					// check time unit
 					unitStr = kineticLaw.getTimeUnits();
 					if (unitStr != null && unitStr.length() > 0) {
-						sbmlUnitDefinition = sbmlUnitIdentifierHash
-								.get(unitStr);
+						sbmlUnitDefinition = sbmlUnitIdentifierHash.get(unitStr);
 					} else {
 						// apply default time unit
 						sbmlUnitDefinition = defaultTimeUnit;
@@ -2438,7 +2448,7 @@ public class SBMLImporter {
 			throws Exception {
 		Structure struct = null;
 		String structName = null;
-		Model vcModel = simContext.getModel();
+		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 
 		// if sbml model is spatial, see if reaction has compartment atribute,
 		// return structure from vcmodel, if present.
@@ -2480,7 +2490,7 @@ public class SBMLImporter {
 					Compartment sbmlCompartment = sbmlModel
 							.getCompartment(symbol);
 					if (sbmlCompartment != null) {
-						return simContext.getModel().getStructure(
+						return vcBioModel.getSimulationContext(0).getModel().getStructure(
 								sbmlCompartment.getId());
 					}
 				}
@@ -2712,9 +2722,9 @@ public class SBMLImporter {
 		// Sort VCell-model Structures in structure array according to reaction
 		// adjacency and parentCompartment.
 		Structure[] sortedStructures = StructureSorter
-				.sortStructures(simContext.getModel());
+				.sortStructures(vcBioModel.getSimulationContext(0).getModel());
 		try {
-			simContext.getModel().setStructures(sortedStructures);
+			vcBioModel.getSimulationContext(0).getModel().setStructures(sortedStructures);
 		} catch (PropertyVetoException e1) {
 			e1.printStackTrace(System.out);
 			throw new SBMLImportException("Error while sorting compartments: "
@@ -2844,7 +2854,7 @@ public class SBMLImporter {
 		}
 		ArrayList<ReactionStep> vcReactionList = new ArrayList<>(); //all reactions
 		ArrayList<ReactionStep> fastReactionList = new ArrayList<>(); //just the fast ones
-		Model vcModel = simContext.getModel();
+		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 		ModelUnitSystem vcModelUnitSystem = vcModel.getUnitSystem();
 		SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 		try {
@@ -3123,7 +3133,7 @@ public class SBMLImporter {
 			ReactionStep[] array = vcReactionList.toArray(new ReactionStep[vcReactionList.size()]);
 			vcModel.setReactionSteps( array); 
 			
-			final ReactionContext rc = simContext.getReactionContext();
+			final ReactionContext rc = vcBioModel.getSimulationContext(0).getReactionContext();
 			for (ReactionStep frs: fastReactionList) {
 					final ReactionSpec rs = rc.getReactionSpec(frs);
 					rs.setReactionMapping(ReactionSpec.FAST);
@@ -3411,7 +3421,12 @@ public class SBMLImporter {
 
 			// gcw gcw gcw
 			String sfn = sfg.getSampledField();
-			SampledField sf = sbmlGeometry.getListOfSampledFields().get(sfn);
+			SampledField sf = null;
+			for (SampledField sampledField : sbmlGeometry.getListOfSampledFields()){
+				if (sampledField.getSpatialId().equals(sfn)){
+					sf = sampledField;
+				}
+			}
 			int numX = sf.getNumSamples1();
 			int numY = sf.getNumSamples2();
 			int numZ = sf.getNumSamples3();
@@ -3490,7 +3505,7 @@ public class SBMLImporter {
 					SampledVolume sVol = sampledVolumes.get(i);
 					// from subVolume, get pixelClass?
 					final int scaled = (int) (scaleFactor * sVol.getSampledValue());
-					vcpixelClasses[i] = new VCPixelClass(null, sVol.getId(),scaled);
+					vcpixelClasses[i] = new VCPixelClass(null, sVol.getDomainType(),scaled);
 				}
 				vcImage.setPixelClasses(vcpixelClasses);
 				// now create image geometry
@@ -3600,7 +3615,7 @@ public class SBMLImporter {
 				int idx = 0;
 				for (SampledVolume sVol: sampledVolumes) {
 					// from subVolume, get pixelClass?
-					final String name =  sVol.getId();
+					final String name =  sVol.getDomainType();
 					final int pixelValue = SBMLUtils.ignoreZeroFraction( sVol.getSampledValue() );
 					VCPixelClass pc = new VCPixelClass(null, name,  pixelValue); 
 					vcpixelClasses[idx] = pc; 
@@ -3668,10 +3683,16 @@ public class SBMLImporter {
 		for (Domain domain : listOfDomains){
 			String domainType = domain.getDomainType();
 			InteriorPoint interiorPt = domain.getListOfInteriorPoints().get(0);
-			if (interiorPt == null
-					&& sbmlGeometry.getListOfDomainTypes().get(domainType)
-							.getSpatialDimensions() == 2) {
-				continue;
+			if (interiorPt == null){
+				DomainType currDomainType = null;
+				for (DomainType dt : sbmlGeometry.getListOfDomainTypes()){
+					if (dt.getSpatialId().equals(domainType)){
+						currDomainType = dt;
+					}
+				}
+				if (currDomainType.getSpatialDimensions() == 2){
+					continue;
+				}
 			}
 			Coordinate sbmlInteriorPtCoord = new Coordinate(
 					interiorPt.getCoord1(), interiorPt.getCoord2(),
@@ -3766,7 +3787,7 @@ public class SBMLImporter {
 					Iterator<Domain> iterator = adjacentDomainsSet.iterator();
 					while (iterator.hasNext()) {
 						Domain dom = iterator.next();
-						DomainType dt = sbmlGeometry.getListOfDomainTypes().get(dom.getDomainType());
+						DomainType dt = getBySpatialID(sbmlGeometry.getListOfDomainTypes(),dom.getDomainType());
 						if (dt.getSpatialDimensions() == 3) {
 							// for domain type with sp. dim = 3, get
 							// correspoinding subVol from VC geometry.
@@ -3805,11 +3826,11 @@ public class SBMLImporter {
 		// structureMappings in VC from compartmentMappings in SBML
 		try {
 			// set geometry first and then set structureMappings?
-			simContext.setGeometry(vcGeometry);
+			vcBioModel.getSimulationContext(0).setGeometry(vcGeometry);
 			// update simContextName ...
-			simContext.setName(simContext.getName() + "_"
+			vcBioModel.getSimulationContext(0).setName(vcBioModel.getSimulationContext(0).getName() + "_"
 					+ vcGeometry.getName());
-			Model vcModel = simContext.getModel();
+			Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 			ModelUnitSystem vcModelUnitSystem = vcModel.getUnitSystem();
 
 			Vector<StructureMapping> structMappingsVector = new Vector<StructureMapping>();
@@ -3830,7 +3851,7 @@ public class SBMLImporter {
 						double unitSize = compMapping.getUnitSize();
 						Feature feat = BeanUtils.downcast(Feature.class,struct);
 						if (feat != null) {
-							FeatureMapping featureMapping = new FeatureMapping(feat, simContext, vcModelUnitSystem);
+							FeatureMapping featureMapping = new FeatureMapping(feat, vcBioModel.getSimulationContext(0), vcModelUnitSystem);
 							featureMapping.setGeometryClass(geometryClass);
 							if (geometryClass instanceof SubVolume) {
 								featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
@@ -3839,7 +3860,7 @@ public class SBMLImporter {
 							}
 							structMappingsVector.add(featureMapping);
 						} else if (struct instanceof Membrane) {
-							MembraneMapping membraneMapping = new MembraneMapping( (Membrane) struct, simContext, vcModelUnitSystem); membraneMapping.setGeometryClass(geometryClass);
+							MembraneMapping membraneMapping = new MembraneMapping( (Membrane) struct, vcBioModel.getSimulationContext(0), vcModelUnitSystem); membraneMapping.setGeometryClass(geometryClass);
 							if (geometryClass instanceof SubVolume) {
 								membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
 							} else if (geometryClass instanceof SurfaceClass) {
@@ -3852,7 +3873,7 @@ public class SBMLImporter {
 			}
 			StructureMapping[] structMappings = structMappingsVector
 					.toArray(new StructureMapping[0]);
-			simContext.getGeometryContext()
+			vcBioModel.getSimulationContext(0).getGeometryContext()
 					.setStructureMappings(structMappings);
 
 			// if type from SBML parameter Boundary Condn is not the same as the
@@ -3873,11 +3894,11 @@ public class SBMLImporter {
 				if (bCondn.isSetVariable()) {
 					// get the var of boundaryCondn; find appropriate spContext
 					// in vcell;
-					SpeciesContext paramSpContext = simContext.getModel()
+					SpeciesContext paramSpContext = vcBioModel.getSimulationContext(0).getModel()
 							.getSpeciesContext(bCondn.getVariable());
 					if (paramSpContext != null) {
 						Structure s = paramSpContext.getStructure();
-						StructureMapping sm = simContext.getGeometryContext()
+						StructureMapping sm = vcBioModel.getSimulationContext(0).getGeometryContext()
 								.getStructureMapping(s);
 						if (sm != null) {
 							BoundaryConditionType bct = null;
@@ -3937,8 +3958,8 @@ public class SBMLImporter {
 				} // end if (bCondn.isSetVar())
 			} // end for (sbmlModel.numParams)
 
-			simContext.getGeometryContext().refreshStructureMappings();
-			simContext.refreshSpatialObjects();
+			vcBioModel.getSimulationContext(0).getGeometryContext().refreshStructureMappings();
+			vcBioModel.getSimulationContext(0).refreshSpatialObjects();
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			throw new SBMLImportException(
@@ -4024,17 +4045,29 @@ public class SBMLImporter {
 			org.sbml.jsbml.ext.spatial.Geometry sbmlGeom, Domain d) {
 		Set<Domain> adjacentDomainsSet = new HashSet<Domain>();
 		for (AdjacentDomains adjDomains : sbmlGeom.getListOfAdjacentDomains()){
-			if (adjDomains.getDomain1().equals(d.getId())
-					|| adjDomains.getDomain2().equals(d.getId())) {
-				if (!adjacentDomainsSet.contains(sbmlGeom.getListOfDomains().get(adjDomains.getDomain1()))) {
-					adjacentDomainsSet.add(sbmlGeom.getListOfDomains().get(adjDomains.getDomain1()));
+			Domain domain1 = getBySpatialID(sbmlGeom.getListOfDomains(),adjDomains.getDomain1());
+			Domain domain2 = getBySpatialID(sbmlGeom.getListOfDomains(),adjDomains.getDomain2());
+			if (adjDomains.getDomain1().equals(d.getId())){
+				if (!adjacentDomainsSet.contains(domain2)) {
+					adjacentDomainsSet.add(domain2);
 				}
-				if (!adjacentDomainsSet.contains(sbmlGeom.getListOfDomains().get(adjDomains.getDomain2()))) {
-					adjacentDomainsSet.add(sbmlGeom.getListOfDomains().get(adjDomains.getDomain2()));
+			}
+			if (adjDomains.getDomain2().equals(d.getId())) {
+				if (domain1 != null && !adjacentDomainsSet.contains(domain1)) {
+					adjacentDomainsSet.add(domain1);
 				}
 			}
 		}
 		return adjacentDomainsSet;
+	}
+	
+	private <T extends SpatialNamedSBase> T getBySpatialID(ListOf<T> list, String spatialId) {
+		for (T t : list){
+			if (t.getSpatialId().equals(spatialId)){
+				return t;
+			}
+		}
+		return null;
 	}
 
 }

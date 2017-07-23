@@ -11,6 +11,7 @@
 package cbit.vcell.geometry;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.Serializable;
 
 import org.vcell.util.Matchable;
@@ -19,6 +20,7 @@ import org.vcell.util.document.KeyValue;
 public interface GeometryClass extends Matchable, Serializable {
 	
 	public String getName();
+	public void setName(String name) throws PropertyVetoException;
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 	public void removePropertyChangeListener(PropertyChangeListener listener);

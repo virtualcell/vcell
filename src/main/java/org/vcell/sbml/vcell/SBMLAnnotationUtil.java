@@ -150,8 +150,10 @@ public class SBMLAnnotationUtil {
 		// VCell specific info to be exported to SBML as annotation - used for import, not needed for metadata
 		if (vcellImportRelatedElement != null) {
 			XMLNode xn = elementToXMLNode(vcellImportRelatedElement);
-			xn.removeNamespace(XMLTags.VCELL_NS_PREFIX);
-			rootVCellInfo.addChild(xn);
+			if (xn != null){
+				xn.removeNamespace(XMLTags.VCELL_NS_PREFIX);
+				rootVCellInfo.addChild(xn);
+			}
 		}
 		if (rootVCellInfo.getNumChildren() > 0) {
 			rootAnnotation.addChild(rootVCellInfo);
@@ -180,7 +182,10 @@ public class SBMLAnnotationUtil {
 		// get XHTML notes for 'identifiable' from NonRDFAnnotation from VCMetadata
 		Element notesElement = metaData.getXhtmlNotes(identifiable);
 		if (notesElement != null) {
-			sBaseObj.setNotes(elementToXMLNode(notesElement));
+			XMLNode notes = elementToXMLNode(notesElement);
+			if (notes!=null){
+				sBaseObj.setNotes(notes);
+			}
 		}
 	}	
 
@@ -206,6 +211,9 @@ public class SBMLAnnotationUtil {
 					int numChildren = (int)annotationBranch.getNumChildren();
 					for (int j = 0; j < numChildren; j++) {
 						XMLNode child = annotationBranch.getChild(j);
+						if (!child.isElement()){
+							continue;
+						}
 						// if this child has a prefix, but no explicit namespace (it is defined in its parent); try getting prefix from parent
 						String childPrefix = child.getPrefix();
 						if (childPrefix != null) {
@@ -275,7 +283,7 @@ public class SBMLAnnotationUtil {
 						int numChildren = (int)annotationBranch.getNumChildren();
 						for (int j = 0; j < numChildren; j++) {
 							XMLNode child = annotationBranch.getChild(j);
-							if (child.getName().equals(XMLTags.FreeTextAnnotationTag)) {
+							if (child.isElement() && child.getName().equals(XMLTags.FreeTextAnnotationTag)) {
 								XMLNode contentFreeText = child.getChild(0);						
 								// read in the string (not XML string, but character string) from the XMLNode;
 								// set free text annotation for identifiable in metadata. 
@@ -363,7 +371,10 @@ public class SBMLAnnotationUtil {
 	private static XMLNode elementToXMLNode(Element element) throws XMLStreamException {
 		String xmlString = XmlUtil.xmlToString(element);
 		XMLNode xmlNode = XMLNode.convertStringToXMLNode(xmlString);
-
+		if (xmlNode==null){
+			System.err.println("failed to parse annotation from "+xmlString);
+			return null;
+		}
 		// When XMLNode is constructed from xml String (JDOM element), if the top level XML element is not 
 		// <html>, <body>, <annotation> , <notes>, the xmlNode root returned is a dummy node and xml elements in the
 		// xml string are added as xmlNode children to the dummy root. So loop through the children of the created 

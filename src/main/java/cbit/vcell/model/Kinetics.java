@@ -2081,6 +2081,15 @@ void setKineticsParameters(KineticsParameter[] kineticsParameters) throws java.b
 	KineticsParameter[] oldValue = fieldKineticsParameters;
 	fireVetoableChange(PROPERTY_NAME_KINETICS_PARAMETERS, oldValue, kineticsParameters);
 	fieldKineticsParameters = kineticsParameters;
+
+//System.out.print("kineticsParams (reaction "+getReactionStep().getName()+") [");
+//if (fieldKineticsParameters!=null){
+//for (KineticsParameter kpp : fieldKineticsParameters){
+//System.out.print(" "+kpp.getName()+"="+kpp.getExpression().infix()+" ");
+//}
+//}
+//System.out.println("]");
+
 	firePropertyChange(PROPERTY_NAME_KINETICS_PARAMETERS, oldValue, kineticsParameters);
 }
 
@@ -2123,7 +2132,7 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 	boolean bBound = false;
 	try {
 		KineticsParameter newKineticsParameters[] = (KineticsParameter[])fieldKineticsParameters.clone();
-		KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])fieldProxyParameters.clone();
+		//KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])fieldProxyParameters.clone();
 		String symbols[] = exp.getSymbols();
 		ModelUnitSystem modelUnitSystem = getReactionStep().getModel().getUnitSystem();
 		for (int i = 0; symbols!=null && i < symbols.length; i++){
@@ -2134,7 +2143,7 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 		}
 		parm.setExpression(exp);
 		setKineticsParameters(newKineticsParameters);
-		setProxyParameters(newProxyParameters);
+		//setProxyParameters(newProxyParameters);
 		exp.bindExpression(reactionStep);
 		bBound = true;
 	}finally{
@@ -2161,6 +2170,15 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 private void setUnresolvedParameters(UnresolvedParameter[] unresolvedParameters) {
 	UnresolvedParameter[] oldValue = fieldUnresolvedParameters;
 	fieldUnresolvedParameters = unresolvedParameters;
+
+//System.out.print("unresolvedParams (reaction "+getReactionStep().getName()+") [");
+//if (fieldUnresolvedParameters!=null){
+//for (UnresolvedParameter kpp : fieldUnresolvedParameters){
+//System.out.print(" "+kpp.getName()+" ");
+//}
+//}
+//System.out.println("]");
+
 	firePropertyChange("unresolvedParameters", oldValue, unresolvedParameters);
 }
 
@@ -2173,6 +2191,15 @@ private void setUnresolvedParameters(UnresolvedParameter[] unresolvedParameters)
 private void setProxyParameters(KineticsProxyParameter[] proxyParameters) {
 	KineticsProxyParameter[] oldValue = fieldProxyParameters;
 	fieldProxyParameters = proxyParameters;
+
+//System.out.print("proxyParams (reaction "+getReactionStep().getName()+") [");
+//if (fieldProxyParameters!=null){
+//for (KineticsProxyParameter kpp : fieldProxyParameters){
+//System.out.print(" "+kpp.getName()+" ");
+//}
+//}
+//System.out.println("]");
+
 	firePropertyChange("proxyParameters", oldValue, proxyParameters);
 }
 
