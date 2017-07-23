@@ -55,11 +55,14 @@ def main():
         try:
             #sbmlFile = "C:\\COPASI-4.19.140-Source\\copasi\\bindings\\python\\examples\\exampleDeni.xml"
             sbmlFile = vcellOptProblem.mathModelSbmlFile
-            dataModel.importSBML(sbmlFile)
+            dataModel.importSBML(str(sbmlFile))
             print("data model loaded")
         except:
-            sys.stderr.write("Error importing SBML file")
-            return 1
+            e_info = sys.exc_info()
+            traceback.print_exception(e_info[0],e_info[1],e_info[2],file=sys.stdout)
+            sys.stderr.write("exception: error importing sbml file: "+str(e_info[0])+": "+str(e_info[1])+"\n")
+            sys.stderr.flush()
+            return -1
 
         model = dataModel.getModel()
         assert(isinstance(model,COPASI.CModel))
@@ -207,7 +210,7 @@ def main():
         experiment = COPASI.CExperiment(dataModel)
         assert(isinstance(experiment,COPASI.CExperiment))
         experiment.setIsRowOriented(True)
-        experiment.setFileName(vcellOptProblem.experimentalDataFile)
+        experiment.setFileName(str(vcellOptProblem.experimentalDataFile))
         experiment.setFirstRow(1)
         experiment.setKeyValue("Experiment_1")
         num_lines = sum(1 for line in open(vcellOptProblem.experimentalDataFile))
@@ -250,7 +253,7 @@ def main():
         for refIndex in range(1,num_ref_variables):  # skip first columnn (time)
             refVar = vcellReferenceVariableList[refIndex]
             assert(isinstance(refVar,VCELLOPT.ReferenceVariable))
-            modelValue = getModelValue(model,refVar.varName)
+            modelValue = getModelValue(model,str(refVar.varName))
             assert(isinstance(modelValue,COPASI.CModelValue))
             objectMap.setRole(refIndex, COPASI.CExperiment.dependent)
             modelValueReference = modelValue.getObject(COPASI.CCopasiObjectName("Reference=Value"))
@@ -276,7 +279,7 @@ def main():
         vcellParameterDescriptionList = vcellOptProblem.parameterDescriptionList
         for vcellParam in vcellParameterDescriptionList:
             assert(isinstance(vcellParam,VCELLOPT.ParameterDescription))
-            paramModelValue = getModelValue(model,vcellParam.name)
+            paramModelValue = getModelValue(model,str(vcellParam.name))
             assert(isinstance(paramModelValue,COPASI.CModelValue))
             paramModelValueRef = paramModelValue.getInitialValueReference()
             assert(isinstance(paramModelValueRef,COPASI.CCopasiObject))
