@@ -19,15 +19,14 @@ import org.vcell.util.Matchable;
  */
 @SuppressWarnings("serial")
 public class OptimizationSolverSpec implements Matchable, java.io.Serializable {
-	private String solverType = SOLVERTYPE_CFSQP;
+	private String solverType = SOLVERTYPE_POWELL;
 	private double objectiveFunctionChangeTolerance;
 	private int numOfRuns = 1;
 
 	private CopasiOptimizationMethod copasiOptimizationMethod = null;
 	
-	public final static String SOLVERTYPE_CFSQP = "CFSQP";
 	public final static String SOLVERTYPE_POWELL = "Powell Method";	
-	public final static String[] SOLVER_TYPES = { SOLVERTYPE_CFSQP, SOLVERTYPE_POWELL};
+	public final static String[] SOLVER_TYPES = { SOLVERTYPE_POWELL};
 		
 	//public final static String SOLVERTYPE_CONJUGATE_GRADIENT = "Conjugate Gradient";	
 	//public final static String SOLVERTYPE_SIMULTANEOUS = "Simultaneous Method";
@@ -84,7 +83,7 @@ public OptimizationSolverSpec(String argSolverName, double argObjectiveFunctionC
 	if (bFound){		
 		solverType = argSolverName;
 	} else {
-		solverType = SOLVERTYPE_CFSQP;		// default to CFSQP
+		solverType = SOLVERTYPE_POWELL;		// default to POWELL
 	}
 	this.objectiveFunctionChangeTolerance = argObjectiveFunctionChangeTolerance;
 }

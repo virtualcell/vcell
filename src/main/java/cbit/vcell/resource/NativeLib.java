@@ -13,13 +13,7 @@ import cbit.vcell.util.NativeLoader;
  * @author gweatherby
  */
 public enum NativeLib {
-	NATIVE_SOLVERS("NativeSolvers"),
-	COPASI("vcellCopasiOptDriver"),
-	HDF5("jhdf5",false),
-	/**
-	 * SBML testing, not supported all platforms
-	 */
-	COPASI_JAVA("CopasiJava", false);
+	HDF5("jhdf5",false);
 
 	private final String libName;
 	/**

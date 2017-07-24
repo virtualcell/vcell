@@ -27,7 +27,7 @@ import cbit.vcell.opt.PdeObjectiveFunction;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.SpatialReferenceData;
 import cbit.vcell.opt.Weights;
-import cbit.vcell.opt.solvers.NewOptimizationSolver;
+import cbit.vcell.opt.solvers.PowellOptimizationSolver;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 /**
@@ -38,7 +38,7 @@ public class CurveFitting {
 	public static OptimizationResultSet solve(ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs, Parameter[] parameters, double[] time, double[][] data, String[] colNames, Weights weights) throws ExpressionException, OptimizationException, IOException {
 
 		//choose optimization solver, currently we have Powell and CFSQP 
-		NewOptimizationSolver optService = new NewOptimizationSolver();
+		PowellOptimizationSolver optService = new PowellOptimizationSolver();
 		OptimizationSpec optSpec = new OptimizationSpec();
 		//create simple reference data, columns: t + dataColumns
 		double[][] realData = new double[1 + data.length][time.length];
@@ -69,7 +69,7 @@ public class CurveFitting {
 			optSpec.addParameter(parameters[i]);
 		}
 		//Parameters in OptimizationSolverSpec are solver type and objective function change tolerance. 
-		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
+		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL,0.000001);
 		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 		OptimizationResultSet optResultSet = null;
 		optResultSet = optService.solve(optSpec, optSolverSpec, optSolverCallbacks);
@@ -90,7 +90,7 @@ public class CurveFitting {
 	public static OptimizationResultSet solveSpatial(Simulation sim, Parameter[] parameters, SpatialReferenceData refData, File dataDir, FieldDataIdentifierSpec[] fieldDataIDSs) throws ExpressionException, OptimizationException, IOException {
 
 		//choose optimization solver, currently we have Powell and CFSQP 
-		NewOptimizationSolver optService = new NewOptimizationSolver();
+		PowellOptimizationSolver optService = new PowellOptimizationSolver();
 		OptimizationSpec optSpec = new OptimizationSpec();
 
 		//send to optimization service	
@@ -107,7 +107,7 @@ public class CurveFitting {
 			optSpec.addParameter(parameters[i]);
 		}
 		//Parameters in OptimizationSolverSpec are solver type and objective function change tolerance. 
-		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
+		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL,0.000001);
 		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 
 		OptimizationResultSet optResultSet = null;

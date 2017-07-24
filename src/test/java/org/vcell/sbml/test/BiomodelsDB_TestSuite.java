@@ -53,7 +53,6 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
@@ -246,8 +245,6 @@ public class BiomodelsDB_TestSuite {
 			 * vcell.mathematica.kernel.executable = "C:\\Program Files\\Wolfram Research\\Mathematica\\7.0\\MathKernel.exe"
 			 */
 			ResourceUtil.setNativeLibraryDirectory();
-			NativeLib.COPASI.load();
-			NativeLib.COPASI_JAVA.load();
 
 			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log"),true));
 			flusher.add(printWriter);

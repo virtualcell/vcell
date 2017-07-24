@@ -21,7 +21,6 @@ import cbit.vcell.opt.Constraint;
 import cbit.vcell.opt.ConstraintType;
 import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.ImplicitObjectiveFunction;
-import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
@@ -288,10 +287,6 @@ public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(Optimizat
 		// build objective function
 		//
 		objFunction = new DynamicScalarFunction(explicitObjectiveFunction.getScaledExpression(origSymbols,scaledSymbols,scaleFactors),scaledSymbols);
-	} else if (optSpec.getObjectiveFunction() instanceof OdeObjectiveFunction){
-		OdeObjectiveFunction odeObjectiveFunction = (OdeObjectiveFunction)optSpec.getObjectiveFunction();
-		OdeLSFunction odeLSFunction = new OdeLSFunction(odeObjectiveFunction,origSymbols,scaleFactors,optSolverCallbacks);
-		objFunction = odeLSFunction;
 	}else if (optSpec.getObjectiveFunction() instanceof ImplicitObjectiveFunction){
 		ImplicitObjectiveFunction implicitObjectiveFunction = (ImplicitObjectiveFunction)optSpec.getObjectiveFunction();
 		//

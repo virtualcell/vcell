@@ -38,10 +38,6 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 
 
 public class CopasiOptimizationSolver {	
-	static {
-		NativeLib.COPASI.load( );
-	}
-	private static native String solve(String optProblemXml, CopasiOptSolverCallbacks optSolverCallbacks);
 	
 	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask, CopasiOptSolverCallbacks optSolverCallbacks, MathMappingCallback mathMappingCallback) 
 							throws IOException, ExpressionException, OptimizationException {
@@ -64,6 +60,9 @@ public class CopasiOptimizationSolver {
 			// run Python COPASI opt problem
 			//
 			CopasiServicePython.runCopasiPython(optProblemThriftFile, optResultFile);
+			if (!optResultFile.exists()){
+				throw new RuntimeException("COPASI optimization output file not found:\n"+optResultFile.getAbsolutePath());
+			}
 			Element copasiOptResultsXML = XmlUtil.readXML(optResultFile).getRootElement();
 			String copasiOptResultsString = XmlUtil.beautify(XmlUtil.xmlToString(copasiOptResultsXML));
 			OptSolverResultSet copasiOptSolverResultSet = OptXmlReader.getOptimizationResultSet(copasiOptResultsString);
@@ -75,32 +74,6 @@ public class CopasiOptimizationSolver {
 			System.out.println("-----------SOLUTION FROM PYTHON---------------\n"+XmlUtil.beautify(copasiOptResultsString));
 			
 			
-			if (! OperatingSystemInfo.getInstance().isMac()){
-				//
-				// JNI (C++) input XML file
-				//
-				Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask,mathMappingCallback);
-				String inputXML = XmlUtil.xmlToString(optProblemXML);
-				System.out.println(XmlUtil.beautify(inputXML));
-				
-				
-				//
-				// run JNI COPASI Solver
-				//
-				String jniOptResultsXML = solve(inputXML, optSolverCallbacks);
-				OptSolverResultSet jniOptSolverResultSet = OptXmlReader.getOptimizationResultSet(jniOptResultsXML);
-				//get ode solution by best estimates
-				String[] jniParameterNames = jniOptSolverResultSet.getParameterNames();
-				double[] jniParameterVals = jniOptSolverResultSet.getBestEstimates();
-				RowColumnResultSet jniRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, jniParameterNames, jniParameterVals);
-				OptimizationResultSet jniOptimizationResultSet = new OptimizationResultSet(jniOptSolverResultSet, jniRcResultSet);
-
-				System.out.println("-----------SOLUTION FROM JNI------------------\n"+XmlUtil.beautify(jniOptResultsXML));
-			}
-			
-
-			
-//			return jniOptimizationResultSet;
 			return copasiOptimizationResultSet;
 		} catch (Throwable e){
 			e.printStackTrace(System.out);

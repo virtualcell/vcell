@@ -54,7 +54,7 @@ public ParameterEstimationTask(SimulationContext simContext) throws ExpressionEx
 	simulationContext = simContext;
 	fieldModelOptimizationSpec = new ModelOptimizationSpec(this);
 	fieldModelOptimizationMapping = new ModelOptimizationMapping(fieldModelOptimizationSpec);
-	fieldOptimizationSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP);
+	fieldOptimizationSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL);
 }
 
 

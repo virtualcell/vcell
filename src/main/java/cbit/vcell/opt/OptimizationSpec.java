@@ -329,9 +329,7 @@ public void read(CommentStringTokenizer tokens) {
 				continue;
 			}
 			if (token.equalsIgnoreCase("OdeObjectiveFunction")){
-				ObjectiveFunction objFunction = OdeObjectiveFunction.fromVCML(tokens);
-				setObjectiveFunction(objFunction);
-				continue;
+				throw new RuntimeException("OdeObjectiveFunction no longer supported");
 			}
 			if (token.equalsIgnoreCase(ConstraintType.LinearEquality.toString())){
 				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);

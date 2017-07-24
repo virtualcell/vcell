@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
@@ -14,8 +12,6 @@ import cbit.vcell.opt.OptSolverResultSet;
 import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationStatus;
-import cbit.vcell.resource.NativeLib;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -489,8 +485,6 @@ System.out.println(objectiveFunctionLimit);
 	//main
 	public static void main(String[] args) {
 		try {
-			ResourceUtil.setNativeLibraryDirectory();
-			NativeLib.COPASI.load( );
 			File newXML = new File(args[0]);
 			XMLSource source = new XMLSource(newXML);
 			BioModel biomodel = XmlHelper.XMLToBioModel(source);

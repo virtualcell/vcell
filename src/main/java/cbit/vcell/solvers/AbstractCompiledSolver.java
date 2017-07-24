@@ -130,7 +130,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
  * Insert the method's description here.
  * Creation date: (6/26/2001 3:08:31 PM)
  */
-private void runSolver() {
+public void runSolver() {
 	try {
 		setCurrentTime(simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, SimulationMessage.MESSAGE_SOLVER_STARTING_INIT));

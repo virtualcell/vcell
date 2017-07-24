@@ -68,9 +68,6 @@ public double f(double[] x) {
 		OptSolverCallbacks.EvaluationHolder evaluationHolder = new OptSolverCallbacks.EvaluationHolder((double[]) x.clone(), (penalty + objFunValue));
 		
 		ODESolverResultSet resultSet = null;
-		if (fobj instanceof OdeLSFunction) {
-			resultSet = ((OdeLSFunction) fobj).getOdeSolverResultSet();
-		}
 		optSolverCallbacks.addEvaluation(evaluationHolder, resultSet);
 		
 

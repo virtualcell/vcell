@@ -28,7 +28,7 @@ import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.opt.solvers.NewOptimizationSolver;
+import cbit.vcell.opt.solvers.PowellOptimizationSolver;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
@@ -97,7 +97,7 @@ public class ReactionDominantTest
 //		Expression Fbleached_bleachFast = Fbleached_bleachFastExp.flatten();
 		
 		//choose optimization solver, currently we have Powell and CFSQP 
-		NewOptimizationSolver optService = new NewOptimizationSolver();
+		PowellOptimizationSolver optService = new PowellOptimizationSolver();
 		OptimizationSpec optSpec = new OptimizationSpec();
 		//create simple reference data
 		double[][] realData = new double[2][t.length];
@@ -120,7 +120,7 @@ public class ReactionDominantTest
 			optSpec.addParameter(parameters[i]);
 		}
 		//Parameters in OptimizationSolverSpec are solver type and objective function change tolerance. 
-		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
+		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL,0.000001);
 		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 		OptimizationResultSet optResultSet = null;
 		optResultSet = optService.solve(optSpec, optSolverSpec, optSolverCallbacks);

@@ -30,7 +30,7 @@ import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.SpatialReferenceData;
 import cbit.vcell.opt.VariableWeights;
 import cbit.vcell.opt.Weights;
-import cbit.vcell.opt.solvers.NewOptimizationSolver;
+import cbit.vcell.opt.solvers.PowellOptimizationSolver;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
@@ -96,7 +96,7 @@ public class CurveFitting {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
 		//investigate the return information 
-		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_CFSQP, optSolverResultSet);
+		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_POWELL, optSolverResultSet);
 		
 		//
 		// construct final equation
@@ -182,7 +182,7 @@ public class CurveFitting {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
 		//investigate the return information 
-		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_CFSQP, optSolverResultSet);
+		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_POWELL, optSolverResultSet);
 		
 		// construct recovery under bleached region by diffusion only expression
 		Expression fit = new Expression(modelExp);
@@ -309,7 +309,7 @@ public class CurveFitting {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
 		//investigate the return information 
-		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_CFSQP, optSolverResultSet);
+		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_POWELL, optSolverResultSet);
 		//return objective function value
 		return optSolverResultSet.getLeastObjectiveFunctionValue();
 	}
@@ -340,8 +340,8 @@ public class CurveFitting {
 	
 	public static OptimizationResultSet solve(ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs, Parameter[] parameters, double[] time, double[][] data, String[] colNames, Weights weights) throws ExpressionException, OptimizationException, IOException {
 
-		//choose optimization solver, currently we have Powell and CFSQP 
-		NewOptimizationSolver optService = new NewOptimizationSolver();
+		//choose optimization solver, currently we have Powell 
+		PowellOptimizationSolver optService = new PowellOptimizationSolver();
 		OptimizationSpec optSpec = new OptimizationSpec();
 		//create simple reference data, columns: t + dataColumns
 		double[][] realData = new double[1 + data.length][time.length];
@@ -372,7 +372,7 @@ public class CurveFitting {
 			optSpec.addParameter(parameters[i]);
 		}
 		//Parameters in OptimizationSolverSpec are solver type and objective function change tolerance. 
-		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
+		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL,0.000001);
 		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 		OptimizationResultSet optResultSet = null;
 		optResultSet = optService.solve(optSpec, optSolverSpec, optSolverCallbacks);
@@ -392,8 +392,8 @@ public class CurveFitting {
 
 	public static OptimizationResultSet solveSpatial(Simulation sim, Parameter[] parameters, SpatialReferenceData refData, File dataDir, FieldDataIdentifierSpec[] fieldDataIDSs) throws ExpressionException, OptimizationException, IOException {
 
-		//choose optimization solver, currently we have Powell and CFSQP 
-		NewOptimizationSolver optService = new NewOptimizationSolver();
+		//choose optimization solver, currently we have Powell 
+		PowellOptimizationSolver optService = new PowellOptimizationSolver();
 		OptimizationSpec optSpec = new OptimizationSpec();
 
 		//send to optimization service	
@@ -410,7 +410,7 @@ public class CurveFitting {
 			optSpec.addParameter(parameters[i]);
 		}
 		//Parameters in OptimizationSolverSpec are solver type and objective function change tolerance. 
-		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
+		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL,0.000001);
 		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 
 		OptimizationResultSet optResultSet = null;
@@ -430,7 +430,7 @@ public class CurveFitting {
 	{
 		int returnCode = optResultSet.getOptimizationStatus().getReturnCode(); 
 		//the normal termination code for both CFSQP and POWELL is 0. 
-		if(solverType.equals(OptimizationSolverSpec.SOLVERTYPE_CFSQP) || solverType.equals(OptimizationSolverSpec.SOLVERTYPE_POWELL))
+		if(solverType.equals(OptimizationSolverSpec.SOLVERTYPE_POWELL))
 		{
 			String messageToUser = "Return code is: " + returnCode + ". The explaination of the return code is : \n" + optResultSet.getOptimizationStatus().getReturnMessage();
 			//if return code is abnormal termination, but we still can get best solution, let the program continue

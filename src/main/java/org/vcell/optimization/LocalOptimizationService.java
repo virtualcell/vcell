@@ -16,7 +16,6 @@ import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.solvers.NewOptimizationSolver;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.opt.solvers.OptimizationSolver;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
@@ -46,8 +45,6 @@ public OptimizationResultSet solve(OptimizationSpec optSpec, OptimizationSolverS
 		optSolver = new PowellOptimizationSolver();
 	//}else if (optSolverSpec.getSolverType().equals(OptimizationSolverSpec.SOLVERTYPE_CONJUGATE_GRADIENT)){
 		//optSolver = new ConjugateGradientOptimizationSolver();
-	} else if (optSolverSpec.getSolverType().equals(OptimizationSolverSpec.SOLVERTYPE_CFSQP)) { 
-			optSolver = new NewOptimizationSolver();
 	} else {
 		throw new RuntimeException("unsupported solver type '"+optSolverSpec.getSolverType()+"'");
 	}

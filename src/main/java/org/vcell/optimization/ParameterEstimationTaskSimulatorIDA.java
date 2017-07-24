@@ -1,8 +1,12 @@
 package org.vcell.optimization;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.Random;
 import java.util.Vector;
+
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.User;
 
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FunctionColumnDescription;
@@ -15,6 +19,8 @@ import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
@@ -22,16 +28,17 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.ode.IDAFileWriter;
+import cbit.vcell.solver.ode.IDASolverStandalone;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solvers.NativeIDASolver;
 
 public class ParameterEstimationTaskSimulatorIDA {
 	
 	public RowColumnResultSet getRowColumnRestultSetByBestEstimations(ParameterEstimationTask parameterEstimationTask, String[] paramNames, double[] paramValues) throws Exception
 	{
 		//create a temp simulation based on math description
-		Simulation simulation = new Simulation(parameterEstimationTask.getSimulationContext().getMathDescription());
+		KeyValue key = new KeyValue(""+Math.abs(new Random().nextLong()));
+		SimulationVersion dummyVersion = new SimulationVersion(key, "name", new User("temp",new KeyValue("1")), null, null, null, null, null, null, null);
+		Simulation simulation = new Simulation(dummyVersion, parameterEstimationTask.getSimulationContext().getMathDescription());
 		
 		ReferenceData refData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
 		double[] times = refData.getDataByColumn(0);
@@ -45,18 +52,17 @@ public class ParameterEstimationTaskSimulatorIDA {
 		for (int i = 0; i < paramNames.length; i++){
 			mathOverrides.putConstant(new Constant(paramNames[i],new Expression(paramValues[i])));
 		}
-		//get input model string
-		StringWriter stringWriter = new StringWriter();
-		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationTask(new SimulationJob(simulation, 0, null),0));
-		idaFileWriter.write();
-		stringWriter.close();
-		StringBuffer buffer = stringWriter.getBuffer();
-		String idaInputString = buffer.toString();
-		
-		RowColumnResultSet rcResultSet = null;
-		NativeIDASolver nativeIDASolver = new NativeIDASolver();
-		rcResultSet = nativeIDASolver.solve(idaInputString);
-		return rcResultSet;
+		SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
+		SessionLog sessionLog = new StdoutSessionLog("idaSolver");
+		IDASolverStandalone idaSolver = new IDASolverStandalone(simTask, ResourceUtil.getLocalSimDir("temp"), sessionLog, false);
+		idaSolver.runSolver();	//startSolver();
+		Thread.sleep(1000);
+		long startTimeMS = System.currentTimeMillis();
+		while (idaSolver.getSolverStatus().isRunning() && System.currentTimeMillis() < (startTimeMS+10000L)){
+			Thread.sleep(500);
+		}
+		ODESolverResultSet resultset = idaSolver.getODESolverResultSet();
+		return resultset;
 	}
 
 	public ODESolverResultSet getOdeSolverResultSet(ParameterEstimationTask parameterEstimationTask) throws Exception {
