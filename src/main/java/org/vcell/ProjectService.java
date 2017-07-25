@@ -50,7 +50,9 @@ public class ProjectService {
         if (dataFiles != null) {
             for (File dataFile : dataFiles) {
                 try {
-                    project.getData().add(datasetIOService.open(dataFile.getAbsolutePath()));
+                	Dataset data = datasetIOService.open(dataFile.getAbsolutePath());
+//                	printAxes(data);
+                    project.getData().add(data);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -63,11 +65,14 @@ public class ProjectService {
                     Dataset geometry = datasetIOService.open(geometryFile.getAbsolutePath());
 
                     // Geometry datasets are saved as 8-bit images so we must convert back to 1-bit
-                    Img<UnsignedByteType> img = (Img<UnsignedByteType>) geometry.getImgPlus().getImg();
-                    Img<BitType> converted = opService.convert().bit(img);
-                    ImgPlus<BitType> convertedImgPlus = new ImgPlus<>(converted, geometry.getName());
-                    geometry.setImgPlus(convertedImgPlus);
-
+                    if (geometry.firstElement() instanceof UnsignedByteType) {
+                        Img<UnsignedByteType> img = (Img<UnsignedByteType>) geometry.getImgPlus().getImg();
+                        Img<BitType> converted = opService.convert().bit(img);
+                        ImgPlus<BitType> convertedImgPlus = new ImgPlus<>(converted, geometry.getName());
+                        geometry.setImgPlus(convertedImgPlus);
+                    }
+                    
+//                    printAxes(geometry);
                     project.getGeometry().add(geometry);
 
                 } catch (IOException e) {
@@ -79,7 +84,9 @@ public class ProjectService {
         if (resultsFiles != null) {
             for (File resultsFile : resultsFiles) {
                 try {
-                    project.getResults().add(datasetIOService.open(resultsFile.getAbsolutePath()));
+                	Dataset results = datasetIOService.open(resultsFile.getAbsolutePath());
+//                	printAxes(results);
+                    project.getResults().add(results);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -123,6 +130,8 @@ public class ProjectService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        currentProjectRoot = root;
     }
 
     public void save(Project project) {
@@ -148,5 +157,14 @@ public class ProjectService {
 
         Path filePath = Paths.get(path.toString(), name);
         datasetIOService.save(datasetToSave, filePath.toString());
+        
+//        printAxes(datasetToSave);
+    }
+    
+    private void printAxes(Dataset dataset) {
+    	System.out.println(dataset.getName());
+    	System.out.println("0: " + dataset.axis(0).type());
+    	System.out.println("1: " + dataset.axis(1).type());
+    	System.out.println("2: " + dataset.axis(2).type());
     }
 }

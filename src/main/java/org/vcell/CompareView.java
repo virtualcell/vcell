@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -32,7 +33,11 @@ public class CompareView extends SwingDisplayWindow {
 	
 	// Menu items under "Plot"
 	private JMenuItem mniPlotEntireFrame;
+	private JMenuItem mniPlotCellRegion;
 	private JMenuItem mniPlotMeanROI;
+	
+	// Menu items under "Compare"
+	private JMenuItem mniDeltaMap;
 	
 	public CompareView(List<Dataset> datasets) {
 		this.datasets = datasets;
@@ -47,12 +52,16 @@ public class CompareView extends SwingDisplayWindow {
 		return datasets;
 	}
 	
+	public List<ImageDisplay> getImageDisplays() {
+		return datasetImagePanelMap.values().stream().collect(Collectors.toList());
+	}
+	
 	public HashMap<Dataset, List<Overlay>> getDatasetOverlayMap(OverlayService overlayService) {
 		HashMap<Dataset, List<Overlay>> result = new HashMap<>();
 		for (Dataset dataset : datasetImagePanelMap.keySet()) {
 			ImageDisplay display = datasetImagePanelMap.get(dataset);
 			
-			// Bug in ImageJ that returns two of each overlay, so must remove duplicates
+			// Bug in ImageJ that returns two of each overlay, so must refrain from adding duplicates
 			List<Overlay> overlays = new ArrayList<>();
 			for (Overlay overlay : overlayService.getOverlays(display)) {
 				if (!overlays.contains(overlay)) {
@@ -84,17 +93,32 @@ public class CompareView extends SwingDisplayWindow {
 		
 		// Top buttons initialization
 		final JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		
+		// Plot button
 		final DropDownButton btnPlot = new DropDownButton("Plot");
 		btnPlot.setAlignmentX(LEFT_ALIGNMENT);
 		JMenu mnuPlotMean = new JMenu("Mean vs. Time");
 		mniPlotEntireFrame = new JMenuItem("Entire Frame");
+		mniPlotCellRegion = new JMenuItem("Cell Region");
 		mniPlotMeanROI = new JMenuItem("ROI");
 		mnuPlotMean.add(mniPlotEntireFrame);
+		mnuPlotMean.add(mniPlotCellRegion);
 		mnuPlotMean.add(mniPlotMeanROI);
 		btnPlot.getMenu().add(mnuPlotMean);
-		topPanel.add(btnPlot);
 		
-		// Multi image display initialization
+		// Compare button
+		final DropDownButton btnCompare = new DropDownButton("Compare");
+		btnCompare.setAlignmentX(LEFT_ALIGNMENT);
+		mniDeltaMap = new JMenuItem("Delta map");
+		if (datasets.size() != 2) {
+			mniDeltaMap.setEnabled(false);
+		}
+		btnCompare.getMenu().add(mniDeltaMap);
+		
+		topPanel.add(btnPlot);
+		topPanel.add(btnCompare);
+		
+		// Multiple image display initialization
 		final JPanel centerPanel = new JPanel(new GridLayout(0, 2));
 		
 		for (int i = 0; i < numDatasets; i++) {
@@ -113,7 +137,15 @@ public class CompareView extends SwingDisplayWindow {
 		mniPlotEntireFrame.addActionListener(l);
 	}
 	
+	public void addPlotCellRegionListener(ActionListener l) {
+		mniPlotCellRegion.addActionListener(l);
+	}
+	
 	public void addPlotROIListener(ActionListener l) {
 		mniPlotMeanROI.addActionListener(l);
+	}
+	
+	public void addDeltaMapListener(ActionListener l) {
+		mniDeltaMap.addActionListener(l);
 	}
 }

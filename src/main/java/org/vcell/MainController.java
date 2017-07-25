@@ -206,8 +206,19 @@ public class MainController {
         		ArrayList<Dataset> datasets = new ArrayList<>();
         		datasets.add(panel.getSelectedDatasetForDescription(descriptionA));
         		datasets.add(panel.getSelectedDatasetForDescription(descriptionB));
+        		
+        		
+        		if (!Datasets.areSameSize(datasets.toArray(new Dataset[datasets.size()]), 0, 1)) {
+        			JOptionPane.showMessageDialog(
+        					view, 
+        					"The selected datasets are not the same size.", 
+        					"Incompatible datasets", 
+        					JOptionPane.ERROR_MESSAGE);
+        			return;
+        		}
+        		
         		CompareView compareView = new CompareView(datasets);
-        		new CompareController(compareView, context);
+        		new CompareController(compareView, model, context);
         		compareView.setVisible(true);
         		for (Dataset dataset : datasets) {
         			displayDataset(dataset, compareView);

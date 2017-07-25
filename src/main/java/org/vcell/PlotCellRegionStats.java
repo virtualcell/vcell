@@ -2,6 +2,7 @@ package org.vcell;
 
 import java.util.List;
 
+import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -13,25 +14,26 @@ import net.imagej.ops.OpService;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.Pair;
 
-
-@Plugin(type = Op.class, name = "plotImageStats")
-public class PlotImageStats<T extends RealType<T>> extends AbstractOp {
+@Plugin(type = Op.class, name = "plotCellRegionStats")
+public class PlotCellRegionStats<T extends RealType<T>> extends AbstractOp {
 	
 	@Parameter
 	private List<RandomAccessibleInterval<T>> datasets;
 	
-	@Parameter(required = false)
+	@Parameter
 	private IterableInterval<T> mask;
 	
 	@Parameter
 	private OpService ops;
 	
+	@Parameter
+	private DisplayService displayService;
+	
 	@Override
 	public void run() {
 		
-		Plot plot = new ColorPlot("Frame mean intensity", "Time", "Mean intensity");
+		Plot plot = new ColorPlot("Cell region mean intensity", "Time", "Mean intensity");
 		StringBuilder legendLabels = new StringBuilder();
 		
 		for (int i = 0; i < datasets.size(); i++) {
@@ -43,20 +45,10 @@ public class PlotImageStats<T extends RealType<T>> extends AbstractOp {
 				legendLabels.append(": ");
 			}
 			
-			Pair<double[], double[]> xyPair = (Pair<double[], double[]>) ops.run(
-					"imageStatsForPlotting", 
-					ImageStatsForPlotting.MEAN, 
-					data,
-					mask);
-			 
-			plot.addPoints(xyPair.getA(), xyPair.getB(), Plot.LINE);
+			RandomAccessibleInterval<T> cropped = ops.transform().crop(data, mask);
 			
-			legendLabels.append("ROI ");
-			legendLabels.append(i + 1);
-			legendLabels.append("\n");
+			displayService.createDisplay(cropped);
 		}
 		
-		plot.addLegend(legendLabels.toString());
-		plot.show();
 	}
 }

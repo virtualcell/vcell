@@ -6,6 +6,9 @@ import org.scijava.plugin.Plugin;
 
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
+import net.imagej.axis.Axes;
+import net.imagej.axis.CalibratedAxis;
+import net.imagej.axis.DefaultLinearAxis;
 import net.imagej.ops.AbstractOp;
 import net.imagej.ops.Op;
 import net.imagej.ops.OpService;
@@ -75,7 +78,7 @@ public class ConstructTIRFImage<T extends RealType<T>> extends AbstractOp {
         final double pixelArea = pixelSpacing * pixelSpacing; // um2
         final double voxelVolume = pixelArea * zSpacing / 1000; // um3
         final double kmole = 1.0 / 602.0; // uM.um3.molecules-1
-        final double fluorPerMolecule = 250;
+        final double fluorPerMolecule = 270;
 
         // Create empty image of X-Y-Time dimensions
         long[] dimensions = {geometry.dimension(0), geometry.dimension(1), volumeResults.dimension(1)};
@@ -130,5 +133,13 @@ public class ConstructTIRFImage<T extends RealType<T>> extends AbstractOp {
         }
 
         output = datasetService.create(img);
+        
+        CalibratedAxis[] axes = new DefaultLinearAxis[] {
+        		new DefaultLinearAxis(Axes.X),
+        		new DefaultLinearAxis(Axes.Y),
+        		new DefaultLinearAxis(Axes.TIME)
+        };
+        
+        output.setAxes(axes);
     }
 }
