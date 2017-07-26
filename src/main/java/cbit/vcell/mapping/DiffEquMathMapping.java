@@ -1799,8 +1799,9 @@ private void addSubdomains(Model model, ArrayList<CompartmentSubdomainContext> c
 			//
 			CompartmentSubDomain outerCompartment = mathDesc.getCompartmentSubDomain(outerSubVolume.getName());
 			CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
+			
 	
-			MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment);
+			MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment,surfaceClass.getName());
 			mathDesc.addSubDomain(memSubDomain);
 			membraneSubdomainContexts.add(new MembraneSubdomainContext(memSubDomain, new Domain(memSubDomain), surfaceClass, innerSubVolume, outerSubVolume, surfaceRegionObjects.toArray(new SurfaceRegionObject[0])));
 		}

@@ -69,8 +69,9 @@ public class MembraneSubDomain extends SubDomain {
  * @param inside cbit.vcell.math.CompartmentSubDomain
  * @param outside cbit.vcell.math.CompartmentSubDomain
  */
-public MembraneSubDomain(CompartmentSubDomain inside, CompartmentSubDomain outside) {
-	super(SurfaceClass.createName(inside.getName(), outside.getName()));
+public MembraneSubDomain(CompartmentSubDomain inside, CompartmentSubDomain outside, String name) {
+//	super(SurfaceClass.createName(inside.getName(), outside.getName()));
+	super(name);
 	this.insideCompartment = inside;
 	this.outsideCompartment = outside;
 }

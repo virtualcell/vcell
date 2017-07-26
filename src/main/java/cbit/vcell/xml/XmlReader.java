@@ -4266,7 +4266,11 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 		throw new XmlParseException("The reference to the outside CompartmentSubDomain "+ name+ ", could not be resolved!" );
 	}
 	//*** create new Membrane SubDomain ***
-	MembraneSubDomain subDomain = new MembraneSubDomain(insideRef, outsideRef);
+	SubVolume insideSubVolume = mathDesc.getGeometry().getGeometrySpec().getSubVolume(insideRef.getName());
+	SubVolume outsideSubVolume = mathDesc.getGeometry().getGeometrySpec().getSubVolume(outsideRef.getName());
+	SurfaceClass surfaceClass = mathDesc.getGeometry().getGeometrySurfaceDescription().getSurfaceClass(insideSubVolume, outsideSubVolume);
+	
+	MembraneSubDomain subDomain = new MembraneSubDomain(insideRef, outsideRef,surfaceClass.getName());
 	transcribeComments(param,subDomain);
 
 	//Process BoundaryConditions

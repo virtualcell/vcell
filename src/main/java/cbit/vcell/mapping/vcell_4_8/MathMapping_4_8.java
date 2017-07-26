@@ -2438,7 +2438,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		CompartmentSubDomain outerCompartment = mathDesc.getCompartmentSubDomain(outerSubVolume.getName());
 		CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
 
-		MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment);
+		SurfaceClass surfaceClass = simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceClass(innerSubVolume, outerSubVolume);
+		
+		MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment,surfaceClass.getName());
 		mathDesc.addSubDomain(memSubDomain);
 
 		//

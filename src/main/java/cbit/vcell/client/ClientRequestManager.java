@@ -187,6 +187,7 @@ import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.RayCaster;
@@ -895,11 +896,14 @@ private MathModel createMathModel(String name, Geometry geometry) {
 			for (int i = 0; i < regions.length; i++){
 				if (regions[i] instanceof SurfaceGeometricRegion){
 					SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)regions[i];
-					CompartmentSubDomain compartment1 = mathDesc.getCompartmentSubDomain(((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0]).getSubVolume().getName());
-					CompartmentSubDomain compartment2 = mathDesc.getCompartmentSubDomain(((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]).getSubVolume().getName());
+					SubVolume subVolume1 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0]).getSubVolume();
+					SubVolume subVolume2 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]).getSubVolume();
+					CompartmentSubDomain compartment1 = mathDesc.getCompartmentSubDomain(subVolume1.getName());
+					CompartmentSubDomain compartment2 = mathDesc.getCompartmentSubDomain(subVolume2.getName());
 					MembraneSubDomain membraneSubDomain = mathDesc.getMembraneSubDomain(compartment1,compartment2);
 					if (membraneSubDomain==null){
-						membraneSubDomain = new MembraneSubDomain(compartment1,compartment2);
+						SurfaceClass surfaceClass = geometry.getGeometrySurfaceDescription().getSurfaceClass(subVolume1, subVolume2);
+						membraneSubDomain = new MembraneSubDomain(compartment1,compartment2,surfaceClass.getName());
 						mathDesc.addSubDomain(membraneSubDomain);
 					}
 				}
