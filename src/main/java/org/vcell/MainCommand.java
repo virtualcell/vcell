@@ -1,15 +1,13 @@
 package org.vcell;
 
-import net.imagej.Dataset;
-import net.imagej.ImageJ;
-
-import java.io.IOException;
+import javax.swing.SwingUtilities;
 
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.service.ServiceHelper;
 
-import io.scif.services.DatasetIOService;
+import net.imagej.ImageJ;
 
 /**
  * Created by kevingaffney on 6/26/17.
@@ -22,9 +20,17 @@ public class MainCommand implements Command {
 
     @Override
     public void run() {
+    	loadServices();
         MainModel model = new MainModel();
         MainView view = new MainView(model, ij.getContext());
         new MainController(model, view, ij.getContext());
-        view.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+        	view.setVisible(true);
+        });
+    }
+    
+    private void loadServices() {
+        ServiceHelper helper = new ServiceHelper(ij.getContext());
+        helper.loadService(InFrameDisplayService.class);
     }
 }

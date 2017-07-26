@@ -25,9 +25,13 @@ import net.imagej.ui.swing.viewer.image.SwingImageDisplayPanel;
 /**
  * Created by kevingaffney on 6/26/17.
  */
-@SuppressWarnings("serial")
 public class MainView extends SwingDisplayWindow {
-
+	
+	private static final long serialVersionUID = 5324502530475640306L;
+	
+	// Services
+	private InFrameDisplayService inFrameDisplayService;
+	
 	private SwingImageDisplayPanel imagePanel;
 	private JPanel rightPanel;
 	
@@ -46,6 +50,7 @@ public class MainView extends SwingDisplayWindow {
     private JMenuItem mniExport;
 
     // Menu items under "Edit"
+    private JMenuItem mniChangeAxes;
     private JMenuItem mniDelete;
 
     // Menu items under "Analysis"
@@ -65,11 +70,32 @@ public class MainView extends SwingDisplayWindow {
     private JButton btnDisplay;
 
     public MainView(MainModel model, Context context) {
+    	
+    	inFrameDisplayService = context.getService(InFrameDisplayService.class);
+    	
         initializeContentPane(model);
         initializeMenuBar();
-        registerModelChangeListener(model);
+        registerModelChangeListeners(model);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
+    }
+    
+    @Override
+    public void setContent(DisplayPanel panel) {
+    	imagePanel = (SwingImageDisplayPanel) panel;
+    	rightPanel.removeAll();
+        rightPanel.add(imagePanel, BorderLayout.CENTER);
+    }
+    
+    public Dataset getSelectedDataset() {
+        DatasetListPanel selectedPanel = (DatasetListPanel) tabbedPane.getSelectedComponent();
+        return selectedPanel.getSelectedDataset();
+    }
+    
+    public void displaySelectedDataset() {
+    	Dataset dataset = getSelectedDataset();
+    	if (dataset == null) return;
+    	inFrameDisplayService.displayDataset(dataset, this);
     }
 
     private void initializeContentPane(MainModel model) {
@@ -149,9 +175,11 @@ public class MainView extends SwingDisplayWindow {
         mniExport = new JMenuItem("Export...");
         mnuFile.add(mniExport);
 
-        // Delete menu
+        // Edit menu
         JMenu mnuEdit = new JMenu("Edit");
+        mniChangeAxes = new JMenuItem("Change axes...");
         mniDelete = new JMenuItem("Delete...");
+        mnuEdit.add(mniChangeAxes);
         mnuEdit.add(mniDelete);
 
         // Analysis menu
@@ -180,15 +208,8 @@ public class MainView extends SwingDisplayWindow {
 
         setProjectDependentMenuItemsEnabled(false);
     }
-    
-    @Override
-    public void setContent(DisplayPanel panel) {
-    	imagePanel = (SwingImageDisplayPanel) panel;
-    	rightPanel.removeAll();
-        rightPanel.add(imagePanel, BorderLayout.CENTER);
-    }
 
-    public void setProjectDependentMenuItemsEnabled(boolean enabled) {
+    private void setProjectDependentMenuItemsEnabled(boolean enabled) {
         mniSave.setEnabled(enabled);
         mniSaveAs.setEnabled(enabled);
         mniImportData.setEnabled(enabled);
@@ -196,21 +217,18 @@ public class MainView extends SwingDisplayWindow {
         mniImportResultsSingle.setEnabled(enabled);
         mniImportResultsTimeSeries.setEnabled(enabled);
         mniExport.setEnabled(enabled);
+        mniChangeAxes.setEnabled(enabled);
         mniDelete.setEnabled(enabled);
         mniCompareDatasets.setEnabled(enabled);
         mniConstructTIRFGeometry.setEnabled(enabled);
         mniConstructTIRFImage.setEnabled(enabled);
         mniNewModel.setEnabled(enabled);
     }
-
-    public Dataset getSelectedDataset() {
-        DatasetListPanel selectedPanel = (DatasetListPanel) tabbedPane.getSelectedComponent();
-        return selectedPanel.getSelectedDataset();
-    }
-
-    private void registerModelChangeListener(MainModel model) {
-        model.addChangeListener(e -> {
-            System.out.println("View heard model changed.");
+    
+    private void registerModelChangeListeners(MainModel model) {
+    	
+        model.addDataChangeListener(e -> {
+            System.out.println("View heard model data changed.");
             Project project = model.getProject();
             if (project == null) return;
             setProjectDependentMenuItemsEnabled(true);
@@ -218,6 +236,11 @@ public class MainView extends SwingDisplayWindow {
             pnlData.updateList(project.getData());
             pnlGeometry.updateList(project.getGeometry());
             pnlResults.updateList(project.getResults());
+        });
+        
+        model.addDisplayChangeListener(e -> {
+        	System.out.println("View heard model display changed.");
+        	displaySelectedDataset();
         });
     }
 
@@ -255,6 +278,10 @@ public class MainView extends SwingDisplayWindow {
 
     public void addExportListener(ActionListener l) {
         mniExport.addActionListener(l);
+    }
+    
+    public void addChangeAxesListener(ActionListener l) {
+    	mniChangeAxes.addActionListener(l);
     }
 
     public void addDeleteListener(ActionListener l) {

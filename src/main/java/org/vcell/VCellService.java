@@ -26,8 +26,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
-import org.vcell.vcellij.api.Dataset;
-
 import io.scif.services.DatasetIOService;
 
 /**
@@ -42,33 +40,33 @@ public class VCellService {
         this.vCellResultService = vCellResultService;
     }
     
-    public void runSimulation(SBMLModel sbmlModel, FutureCallback<Dataset> callback) {
-    	
-    	sbmlModel.setFilepath("filepath");
-    	SimulationSpec simSpec = new SimulationSpec();
-        TTransport transport = new TSocket("localhost", 9091);
-        TProtocol protocol = new  TBinaryProtocol(transport);
-        SimulationService.Client client = new SimulationService.Client(protocol);
-        ListeningExecutorService listeningExecutor = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
-        
-    	ListenableFuture<Dataset> future = listeningExecutor.submit(new Callable<Dataset>() {
-			@Override
-			public Dataset call() throws Exception {
-				transport.open();
-				SimulationInfo simInfo = client.computeModel(sbmlModel, simSpec);
-				SimulationStatus simStatus = client.getStatus(simInfo);
-				while (simStatus.simState == SimulationState.running) {
-					// TODO: wait until done
-				}
-	            Dataset dataset = client.getDataset(simInfo);
-				return dataset;
-			}
-    	});
-    	
-    	Executor executor = Executors.newSingleThreadExecutor();
-    	
-        Futures.addCallback(future, callback, executor);
-        
-        transport.close();
-    }
+//    public void runSimulation(SBMLModel sbmlModel, FutureCallback<Dataset> callback) {
+//    	
+////    	sbmlModel.setFilepath("filepath");
+////    	SimulationSpec simSpec = new SimulationSpec();
+////        TTransport transport = new TSocket("localhost", 9091);
+////        TProtocol protocol = new  TBinaryProtocol(transport);
+////        SimulationService.Client client = new SimulationService.Client(protocol);
+////        ListeningExecutorService listeningExecutor = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
+////        
+////    	ListenableFuture<Dataset> future = listeningExecutor.submit(new Callable<Dataset>() {
+////			@Override
+////			public Dataset call() throws Exception {
+////				transport.open();
+////				SimulationInfo simInfo = client.computeModel(sbmlModel, simSpec);
+////				SimulationStatus simStatus = client.getStatus(simInfo);
+////				while (simStatus.simState == SimulationState.running) {
+////					// TODO: wait until done
+////				}
+////	            Dataset dataset = client.getDataset(simInfo);
+////				return dataset;
+////			}
+////    	});
+////    	
+////    	Executor executor = Executors.newSingleThreadExecutor();
+////    	
+////        Futures.addCallback(future, callback, executor);
+////        
+////        transport.close();
+//    }
 }

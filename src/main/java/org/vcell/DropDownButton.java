@@ -15,13 +15,13 @@ public class DropDownButton extends JButton {
 	private JPopupMenu menu;
 	
 	public DropDownButton(String text) {
-		super(text);
+		super(text + "   "); // Add some extra space for the arrow
 		menu = new JPopupMenu();
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				Component component = e.getComponent();
-				menu.show(component, component.getX() + 2, component.getY() + component.getHeight() - 10);
+				menu.show(component, 7, component.getHeight() - 4);
 			}
 		});
 	}
@@ -34,11 +34,14 @@ public class DropDownButton extends JButton {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Rectangle bounds = g.getClipBounds();
+		
+		int maxX = (int) bounds.getMaxX();
 		int[] xCoordinates = {
-				(int) bounds.getMaxX() - 20,
-				(int) bounds.getMaxX() - 15,
-				(int) bounds.getMaxX() - 10
+				maxX - 25,
+				maxX - 20,
+				maxX - 14
 		};
+		
 		int midY = (int) ((bounds.getMinY() + bounds.getMaxY()) / 2);
 		int[] yCoordinates = {
 				midY - 3,

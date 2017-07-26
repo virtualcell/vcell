@@ -34,7 +34,5 @@ public class SimpleClient {
     	model.setFilepath("filepath");
     	SimulationSpec simSpec = new SimulationSpec();
         SimulationInfo simulationInfo = client.computeModel(model, simSpec);
-        Dataset dataset = client.getDataset(simulationInfo);
-        System.out.println(dataset.toString());
     }
 }

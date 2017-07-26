@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import org.scijava.ui.swing.viewer.SwingDisplayWindow;
 import org.scijava.ui.viewer.DisplayPanel;
@@ -38,6 +39,8 @@ public class CompareView extends SwingDisplayWindow {
 	
 	// Menu items under "Compare"
 	private JMenuItem mniDeltaMap;
+	private JMenuItem mniRatioMap;
+	private JMenuItem mniPercentDifferenceMap;
 	
 	public CompareView(List<Dataset> datasets) {
 		this.datasets = datasets;
@@ -109,11 +112,20 @@ public class CompareView extends SwingDisplayWindow {
 		// Compare button
 		final DropDownButton btnCompare = new DropDownButton("Compare");
 		btnCompare.setAlignmentX(LEFT_ALIGNMENT);
-		mniDeltaMap = new JMenuItem("Delta map");
+		mniDeltaMap = new JMenuItem("Delta Map");
+		mniRatioMap = new JMenuItem("Ratio Map");
+		mniPercentDifferenceMap = new JMenuItem("Percent Difference Map");
+		
 		if (datasets.size() != 2) {
 			mniDeltaMap.setEnabled(false);
+			mniRatioMap.setEnabled(false);
+			mniPercentDifferenceMap.setEnabled(false);
 		}
-		btnCompare.getMenu().add(mniDeltaMap);
+		
+		JPopupMenu mnuCompare = btnCompare.getMenu();
+		mnuCompare.add(mniDeltaMap);
+		mnuCompare.add(mniRatioMap);
+		mnuCompare.add(mniPercentDifferenceMap);
 		
 		topPanel.add(btnPlot);
 		topPanel.add(btnCompare);
@@ -147,5 +159,13 @@ public class CompareView extends SwingDisplayWindow {
 	
 	public void addDeltaMapListener(ActionListener l) {
 		mniDeltaMap.addActionListener(l);
+	}
+	
+	public void addRatioMapListener(ActionListener l) {
+		mniRatioMap.addActionListener(l);
+	}
+	
+	public void addPercentDifferenceMapListener(ActionListener l) {
+		mniPercentDifferenceMap.addActionListener(l);
 	}
 }

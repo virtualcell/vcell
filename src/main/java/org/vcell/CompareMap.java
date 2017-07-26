@@ -1,5 +1,6 @@
 package org.vcell;
 
+import org.scijava.display.Display;
 import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -17,14 +18,21 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
 
-@Plugin(type = Op.class, name = "deltaMap")
-public class DeltaMap<T extends RealType<T>> extends AbstractOp {
+@Plugin(type = Op.class, name = "compareMap")
+public class CompareMap<T extends RealType<T>> extends AbstractOp {
+	
+	public static final int DELTA = 0;
+	public static final int RATIO = 1;
+	public static final int PERCENT_DIFFERENCE = 2;
 	
 	@Parameter
 	private IterableInterval<T> data0;
 	
 	@Parameter
 	private IterableInterval<T> data1;
+	
+	@Parameter
+	private int comparisonType;
 	
 	@Parameter
 	private OpService ops;
@@ -49,9 +57,25 @@ public class DeltaMap<T extends RealType<T>> extends AbstractOp {
 			data0Cursor.fwd();
 			data1RA.setPosition(data0Cursor);
 			resultRA.setPosition(data0Cursor);
-			resultRA.get().set(data0Cursor.get().get() - data1RA.get().get());
+			
+			int val0 = data0Cursor.get().get();
+			int val1 = data1RA.get().get();
+			
+			switch (comparisonType) {
+			case DELTA:
+				resultRA.get().set(val0 - val1);
+				break;
+			case RATIO:
+				break;
+			case PERCENT_DIFFERENCE:
+				resultRA.get().set((val0 - val1) * 100 / val0);
+				break;
+			default:
+				break;
+			}
+			
 		}
 		
-		displayService.createDisplay(resultConverted);
+		Display<?> display = displayService.createDisplay(resultConverted);
 	}
 }

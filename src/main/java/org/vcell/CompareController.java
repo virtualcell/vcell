@@ -22,16 +22,18 @@ import net.imglib2.type.logic.BitType;
 
 public class CompareController {
 	
+	private CompareView view;
 	private OverlayService overlayService;
 	private OpService opService;
 	
 	public CompareController(CompareView view, MainModel model, Context context) {
+		this.view = view;
 		this.overlayService = context.getService(OverlayService.class);
 		this.opService = context.getService(OpService.class);
-		addActionListenersToView(view, model, context);
+		addActionListenersToView(model);
 	}
 	
-	private void addActionListenersToView(CompareView view, MainModel model, Context context) {
+	private void addActionListenersToView(MainModel model) {
 		
 		view.addPlotEntireFrameListener(event -> {
 			List<Dataset> datasets = view.getDatasets();
@@ -67,13 +69,24 @@ public class CompareController {
 		});
 		
 		view.addDeltaMapListener(event -> {
-			List<Dataset> datasets = view.getDatasets();
-			if (datasets.size() != 2) {
-				System.err.println("Cannot construct delta map with number of images not equal to 2");
-				return;
-			}
-			
-			opService.run("deltaMap", datasets.get(0), datasets.get(1));
+			compareMap(CompareMap.DELTA);
 		});
+		
+		view.addRatioMapListener(event -> {
+//			compareMap(CompareMap.RATIO);
+		});
+		
+		view.addPercentDifferenceMapListener(event -> {
+//			compareMap(CompareMap.PERCENT_DIFFERENCE);
+		});
+	}
+	
+	private void compareMap(int comparisonType) {
+		List<Dataset> datasets = view.getDatasets();
+		if (datasets.size() != 2) {
+			System.err.println("Cannot construct comparison map with number of images not equal to 2");
+			return;
+		}
+		opService.run("compareMap", datasets.get(0), datasets.get(1), comparisonType);
 	}
 }
