@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.thrift.TException;
 import org.junit.After;
@@ -35,8 +36,6 @@ public class SimulationServiceImplTest {
 		
 		SimulationSpec simSpec = new SimulationSpec();
 		SimulationInfo simInfo = simService.computeModel(sbmlModel, simSpec);
-		Dataset dataset = simService.getDataset(simInfo);
-		Assert.assertNull(dataset);
 		
 		long timeMS = System.currentTimeMillis();
 		while (simService.getStatus(simInfo).simState==SimulationState.running){
@@ -50,8 +49,8 @@ public class SimulationServiceImplTest {
 			}
 		}
 		
-		dataset = simService.getDataset(simInfo);
-		Assert.assertNotNull(dataset);
+		List<VariableInfo> vars = simService.getVariableList(simInfo);
+		Assert.assertNotNull(vars);
 	}
 
 }

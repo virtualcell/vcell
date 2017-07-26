@@ -24,7 +24,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
-    print('  Dataset getDataset(SimulationInfo simInfo)')
+    print('  Data getData(SimulationInfo simInfo, VariableInfo varInfo, TimeIndex timeIndex)')
+    print('  TimePoints getTimePoints(SimulationInfo simInfo)')
+    print('  VariableList getVariableList(SimulationInfo simInfo)')
     print('  SimulationStatus getStatus(SimulationInfo simInfo)')
     print('  SimulationInfo computeModel(SBMLModel model, SimulationSpec simSpec)')
     print('')
@@ -106,11 +108,23 @@ protocol = TBinaryProtocol(transport)
 client = SimulationService.Client(protocol)
 transport.open()
 
-if cmd == 'getDataset':
-    if len(args) != 1:
-        print('getDataset requires 1 args')
+if cmd == 'getData':
+    if len(args) != 3:
+        print('getData requires 3 args')
         sys.exit(1)
-    pp.pprint(client.getDataset(eval(args[0]),))
+    pp.pprint(client.getData(eval(args[0]), eval(args[1]), eval(args[2]),))
+
+elif cmd == 'getTimePoints':
+    if len(args) != 1:
+        print('getTimePoints requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.getTimePoints(eval(args[0]),))
+
+elif cmd == 'getVariableList':
+    if len(args) != 1:
+        print('getVariableList requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.getVariableList(eval(args[0]),))
 
 elif cmd == 'getStatus':
     if len(args) != 1:

@@ -7,6 +7,10 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.vcell.vcellij.api.SimulationService;
 
+import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
+
 
 public class VCellIJServer {
 
@@ -14,8 +18,9 @@ public class VCellIJServer {
 	 * Just fork off a daemon thread
 	 *
 	 */
-	public static void startVCellVisitDataServerThread(SimulationService simService) {
+	public static void startVCellVisitDataServerThread(SimulationService.Iface simService, boolean bDaemon) {
 		Thread vcellProxyThread = new SimulationServerThread();
+		vcellProxyThread.setDaemon(bDaemon);
 		vcellProxyThread.start();
 	}
 
@@ -44,6 +49,18 @@ public class VCellIJServer {
 				e.printStackTrace();
 			}
 
+		}
+	}
+	
+	public static void main(String[] args){
+		try {
+			PropertyLoader.loadProperties();
+			ResourceUtil.setNativeLibraryDirectory();
+			NativeLib.HDF5.load();
+			SimulationService.Iface simService = new SimulationServiceImpl();
+			VCellIJServer.startVCellVisitDataServerThread(simService, false);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }

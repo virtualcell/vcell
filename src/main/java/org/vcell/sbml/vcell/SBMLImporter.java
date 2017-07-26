@@ -3811,7 +3811,7 @@ public class SBMLImporter {
 					SurfaceClass surfacClass = vcGsd.getSurfaceClass(
 							adjacentSubVolumesVector.get(0),
 							adjacentSubVolumesVector.get(1));
-					surfacClass.setName(surfaceClassDomainType.getId());
+					surfacClass.setName(surfaceClassDomainType.getSpatialId());
 					// get surfaceGeometricRegion that has adjVolGeomRegions as
 					// its adjacent vol geom regions and set its name from
 					// domain 'd'

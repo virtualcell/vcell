@@ -13,6 +13,21 @@ import sys
 from thrift.transport import TTransport
 
 
+class DomainType(object):
+    VOLUME = 0
+    MEMBRANE = 1
+
+    _VALUES_TO_NAMES = {
+        0: "VOLUME",
+        1: "MEMBRANE",
+    }
+
+    _NAMES_TO_VALUES = {
+        "VOLUME": 0,
+        "MEMBRANE": 1,
+    }
+
+
 class SimulationState(object):
     running = 0
     done = 1
@@ -155,19 +170,28 @@ class SBMLModel(object):
         return not (self == other)
 
 
-class Dataset(object):
+class VariableInfo(object):
     """
     Attributes:
-     - filepath
+     - variableVtuName
+     - variableDisplayName
+     - domainName
+     - variableDomainType
     """
 
     thrift_spec = (
         None,  # 0
-        (1, TType.STRING, 'filepath', 'UTF8', None, ),  # 1
+        (1, TType.STRING, 'variableVtuName', 'UTF8', None, ),  # 1
+        (2, TType.STRING, 'variableDisplayName', 'UTF8', None, ),  # 2
+        (3, TType.STRING, 'domainName', 'UTF8', None, ),  # 3
+        (4, TType.I32, 'variableDomainType', None, None, ),  # 4
     )
 
-    def __init__(self, filepath=None,):
-        self.filepath = filepath
+    def __init__(self, variableVtuName=None, variableDisplayName=None, domainName=None, variableDomainType=None,):
+        self.variableVtuName = variableVtuName
+        self.variableDisplayName = variableDisplayName
+        self.domainName = domainName
+        self.variableDomainType = variableDomainType
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -180,7 +204,22 @@ class Dataset(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.filepath = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                    self.variableVtuName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.variableDisplayName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.domainName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I32:
+                    self.variableDomainType = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             else:
@@ -192,17 +231,77 @@ class Dataset(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('Dataset')
-        if self.filepath is not None:
-            oprot.writeFieldBegin('filepath', TType.STRING, 1)
-            oprot.writeString(self.filepath.encode('utf-8') if sys.version_info[0] == 2 else self.filepath)
+        oprot.writeStructBegin('VariableInfo')
+        if self.variableVtuName is not None:
+            oprot.writeFieldBegin('variableVtuName', TType.STRING, 1)
+            oprot.writeString(self.variableVtuName.encode('utf-8') if sys.version_info[0] == 2 else self.variableVtuName)
+            oprot.writeFieldEnd()
+        if self.variableDisplayName is not None:
+            oprot.writeFieldBegin('variableDisplayName', TType.STRING, 2)
+            oprot.writeString(self.variableDisplayName.encode('utf-8') if sys.version_info[0] == 2 else self.variableDisplayName)
+            oprot.writeFieldEnd()
+        if self.domainName is not None:
+            oprot.writeFieldBegin('domainName', TType.STRING, 3)
+            oprot.writeString(self.domainName.encode('utf-8') if sys.version_info[0] == 2 else self.domainName)
+            oprot.writeFieldEnd()
+        if self.variableDomainType is not None:
+            oprot.writeFieldBegin('variableDomainType', TType.I32, 4)
+            oprot.writeI32(self.variableDomainType)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.filepath is None:
-            raise TProtocolException(message='Required field filepath is unset!')
+        if self.variableVtuName is None:
+            raise TProtocolException(message='Required field variableVtuName is unset!')
+        if self.variableDisplayName is None:
+            raise TProtocolException(message='Required field variableDisplayName is unset!')
+        if self.domainName is None:
+            raise TProtocolException(message='Required field domainName is unset!')
+        if self.variableDomainType is None:
+            raise TProtocolException(message='Required field variableDomainType is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SimulationSpec(object):
+
+    thrift_spec = (
+    )
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('SimulationSpec')
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
         return
 
     def __repr__(self):
@@ -269,48 +368,6 @@ class ThriftDataAccessException(TException):
 
     def __str__(self):
         return repr(self)
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-
-
-class SimulationSpec(object):
-
-    thrift_spec = (
-    )
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
-            return
-        oprot.writeStructBegin('SimulationSpec')
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
 
     def __repr__(self):
         L = ['%s=%r' % (key, value)

@@ -4,8 +4,20 @@ namespace py vcellij
 typedef i32 int
 typedef i64 long
 
-typedef string FilePath
+enum DomainType {
+   VOLUME
+   MEMBRANE
+}
 
+typedef int TimeIndex
+typedef double TimePoint
+typedef double Datum 
+typedef string DomainName
+typedef string FilePath
+typedef string SimDataID
+
+typedef list<TimePoint> TimePoints
+typedef list<Datum> Data
 
 struct SimulationInfo {
     1: required int id;
@@ -15,16 +27,20 @@ struct SBMLModel {
     1: required FilePath filepath;
 }
 
-struct Dataset {
-    1: required FilePath filepath;
-}
-
-exception ThriftDataAccessException {
-   1: required string message;
+struct VariableInfo{
+   1: required string variableVtuName;
+   2: required string variableDisplayName;
+   3: required DomainName domainName;
+   4: required DomainType variableDomainType;
 }
 
 struct SimulationSpec {
+}
 
+typedef list<VariableInfo> VariableList
+
+exception ThriftDataAccessException {
+   1: required string message;
 }
 
 enum SimulationState {
@@ -47,10 +63,19 @@ service SimulationService {
 //        1: SBMLModel sbmlModel)
 //        throws (1:ThriftDataAccessException dataAccessException);
 
-
-    Dataset getDataset(
-        1: SimulationInfo simInfo)
-        throws (1:ThriftDataAccessException dataAccessException);
+    Data getData(
+    	1:SimulationInfo simInfo, 
+    	2:VariableInfo varInfo, 
+    	3:TimeIndex timeIndex) 
+    	throws (1:ThriftDataAccessException dataAccessException)
+    
+    TimePoints getTimePoints(
+    	1: SimulationInfo simInfo) 
+    	throws (1:ThriftDataAccessException dataAccessException);    
+    
+    VariableList getVariableList(
+    	1: SimulationInfo simInfo) 
+    	throws (1: ThriftDataAccessException dataAccessException);
         
     SimulationStatus getStatus(
     	1: SimulationInfo simInfo)

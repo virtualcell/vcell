@@ -221,8 +221,8 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 	sbmlDocument.setConsistencyChecks(CHECK_CATEGORY.SBO_CONSISTENCY, false);
 	sbmlDocument.setConsistencyChecks(CHECK_CATEGORY.UNITS_CONSISTENCY, false);
 
-	//sbmlDocument.checkConsistency();
-	sbmlDocument.checkConsistencyOffline();
+	sbmlDocument.checkConsistency();
+	//sbmlDocument.checkConsistencyOffline();
 	long internalErrCount = sbmlDocument.getNumErrors();
 	if(internalErrCount>0)
 	{
