@@ -1196,7 +1196,7 @@ protected void addEvents() {
 			Trigger trigger = sbmlEvent.createTrigger();
 			try {
 				Expression triggerExpr = vcEvent.generateTriggerExpression();
-				ASTNode math = getFormulaFromExpression(triggerExpr);
+				ASTNode math = getFormulaFromExpression(triggerExpr,MathType.BOOLEAN);
 				trigger.setMath(math);
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
@@ -1327,6 +1327,9 @@ private boolean getBoundaryCondition(SpeciesContext speciesContext) {
 }
 
 
+public static ASTNode getFormulaFromExpression(Expression expression) { 
+	return getFormulaFromExpression(expression, MathType.REAL);
+}
 /**
  * 	getFormulaFromExpression : 
  *  Expression infix strings are not handled gracefully by libSBML, esp when ligical or inequality operators are used.
@@ -1336,12 +1339,12 @@ private boolean getBoundaryCondition(SpeciesContext speciesContext) {
  *		returns the new formula string.
  *  
  */
-public static ASTNode getFormulaFromExpression(Expression expression) { 
+public static ASTNode getFormulaFromExpression(Expression expression, MathType desiredType) { 
 	// Convert expression into MathML string
 	String expMathMLStr = null;
 
 	try {
-		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false);
+		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false, desiredType);
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
