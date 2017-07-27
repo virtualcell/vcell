@@ -738,7 +738,7 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 			if (sr != null) {
 				sr.setStoichiometry(Double.parseDouble(Integer.toString(rxnParticpant.getStoichiometry())));
 				String modelUniqueName = vcReactionStep.getName() + '_'  + rxnParticpant.getName();
-				sr.setId(modelUniqueName);
+				sr.setId(TokenMangler.mangleToSName(modelUniqueName));
 				sr.setConstant(true); //SBML-REVIEW
 				//int rcode = sr.appendNotes("<
 				try {
