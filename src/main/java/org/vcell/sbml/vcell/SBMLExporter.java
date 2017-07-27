@@ -433,8 +433,9 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 
 /**
  * At present, the Virtual cell doesn't support global parameters
+ * @throws SbmlException 
  */
-protected void addParameters() throws ExpressionException {
+protected void addParameters() throws ExpressionException, SbmlException {
 	Model vcModel = getSelectedSimContext().getModel();
 	// add VCell global parameters to the SBML listofParameters
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();  
@@ -465,7 +466,7 @@ protected void addParameters() throws ExpressionException {
 		sbmlParam.setConstant(bParamIsNumeric);
 		VCUnitDefinition vcParamUnit = vcParam.getUnitDefinition();
 		if (!vcParamUnit.isTBD()) {
-			sbmlParam.setUnits(TokenMangler.mangleToSName(vcParamUnit.getSymbol()));
+			sbmlParam.setUnits(getOrCreateSBMLUnit(vcParamUnit));
 		}
 	}
 	}
@@ -690,7 +691,7 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 					org.sbml.jsbml.Parameter sbmlKinParam = sbmlModel.createParameter();
 					sbmlKinParam.setId(paramName);
 					if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-						sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+						sbmlKinParam.setUnits(getOrCreateSBMLUnit(vcKineticsParams[j].getUnitDefinition()));
 					}
 					// Since the parameter is being specified by a Rule, its 'constant' field shoud be set to 'false' (default - true).
 					sbmlKinParam.setConstant(false);
