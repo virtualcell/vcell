@@ -2834,7 +2834,7 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, Model model) 
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-MathDescription getMathDescription(Element param) throws XmlParseException {
+MathDescription getMathDescription(Element param, Geometry geometry) throws XmlParseException {
 	MathDescription mathdes = null;
 	Element tempelement;
 
@@ -2851,6 +2851,12 @@ MathDescription getMathDescription(Element param) throws XmlParseException {
 		mathdes = new MathDescription( name );		
 	}
 
+	try {
+		mathdes.setGeometry(geometry);	//this step is needed!
+	} catch (java.beans.PropertyVetoException e) {
+		e.printStackTrace();
+		throw new XmlParseException("a PropertyVetoException was fired when setting the Geometry to the Mathdescription in the simContext "+ name, e);
+	}
 	//set attributes 
 	try {
 		mathdes.setName( name );
@@ -3759,10 +3765,16 @@ public MathModel getMathModel(Element param) throws XmlParseException{
 		e.printStackTrace();
 		throw new XmlParseException("An error occurred while trying to set the name " + param.getAttributeValue(XMLTags.NameAttrTag) + "to a MathModel!", e);
 	}
+	
+	//set Geometry (if any)
+	Element tempElem = param.getChild(XMLTags.GeometryTag, vcNamespace);
+	Geometry tempGeometry = getGeometry(tempElem);
+	
+		
 
 	//set MathDescription
-	Element tempElem = param.getChild(XMLTags.MathDescriptionTag, vcNamespace);
-	MathDescription mathDesc = getMathDescription(tempElem);
+	tempElem = param.getChild(XMLTags.MathDescriptionTag, vcNamespace);
+	MathDescription mathDesc = getMathDescription(tempElem, tempGeometry);
 	
 	if ( tempElem != null) {
 		mathmodel.setMathDescription( mathDesc );
@@ -3770,19 +3782,6 @@ public MathModel getMathModel(Element param) throws XmlParseException{
 		throw new XmlParseException("MathDescription missing in this MathModel!");
 	}
 
-	//set Geometry (if any)
-	tempElem = param.getChild(XMLTags.GeometryTag, vcNamespace);
-	if ( tempElem != null) {
-		try {
-			mathDesc.setGeometry( getGeometry(tempElem) );
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
-			throw new XmlParseException(e);
-		}
-	} else {
-		throw new XmlParseException("It needs to be a Geometry within a MathModel!");
-	}
-		
 	// set output functions (outputfunctionContext)
 	Element outputFunctionsElement = param.getChild(XMLTags.OutputFunctionsTag, vcNamespace);
 	if (outputFunctionsElement != null) {
@@ -6017,15 +6016,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	MathDescription newmathdesc = null;
 	Element xmlMathDescription = param.getChild(XMLTags.MathDescriptionTag, vcNamespace);
 	if (xmlMathDescription!=null) {
-		newmathdesc = getMathDescription( xmlMathDescription );
-		
-		/////// postprocess //////////
-		try {
-			newmathdesc.setGeometry(newgeometry);	//this step is needed!
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
-			throw new XmlParseException("a PropertyVetoException was fired when setting the Geometry to the Mathdescription in the simContext "+ name, e);
-		}
+		newmathdesc = getMathDescription( xmlMathDescription, newgeometry );
 	}
 	
 	//Retrieve Version (Metada)

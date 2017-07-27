@@ -1033,13 +1033,13 @@ public static Simulation XMLToSim(String xmlString) throws XmlParseException {
 		Element mdElement = root.getChild(XMLTags.MathDescriptionTag, ns);
 		Element geomElement = root.getChild(XMLTags.GeometryTag, ns);
 		XmlReader reader = new XmlReader(true, ns);
-		MathDescription md = reader.getMathDescription(mdElement);
+		Geometry geom = null;
 		if (geomElement != null) {
-			Geometry geom = reader.getGeometry(geomElement);
-			md.setGeometry(geom);
+			geom = reader.getGeometry(geomElement);
 		}
+		MathDescription md = reader.getMathDescription(mdElement, geom);
 		sim = reader.getSimulation(simElement, md);
-	} catch (PropertyVetoException pve) {
+	} catch (Exception pve) {
 		pve.printStackTrace();
 		throw new XmlParseException("Unable to parse simulation string.", pve);
 	}
@@ -1143,11 +1143,11 @@ public static SimulationTask XMLToSimTask(String xmlString) throws XmlParseExcep
 		Element mdElement = root.getChild(XMLTags.MathDescriptionTag, ns);
 		Element geomElement = root.getChild(XMLTags.GeometryTag, ns);
 		XmlReader reader = new XmlReader(true, ns);
-		MathDescription md = reader.getMathDescription(mdElement);
+		Geometry geom = null;
 		if (geomElement != null) {
-			Geometry geom = reader.getGeometry(geomElement);
-			md.setGeometry(geom);
+			geom = reader.getGeometry(geomElement);
 		}
+		MathDescription md = reader.getMathDescription(mdElement, geom);
 		Simulation sim = reader.getSimulation(simElement, md);
 		sim.refreshDependencies();
 		
@@ -1155,7 +1155,7 @@ public static SimulationTask XMLToSimTask(String xmlString) throws XmlParseExcep
 		SimulationTask simTask = new SimulationTask(simJob,taskId,computeResource);
 		return simTask;
 		
-	} catch (PropertyVetoException pve) {
+	} catch (Exception pve) {
 		pve.printStackTrace();
 		throw new XmlParseException("Unable to parse simulation string.", pve);
 	}
