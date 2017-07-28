@@ -185,7 +185,6 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private JMenuItem groupMenuItem, ungroupMenuItem, expandMenuItem, collapseMenuItem;
 	private JMenuItem groupMenuItem1, ungroupMenuItem1, expandMenuItem1, collapseMenuItem1;
 	private JMenuItem deleteMenuItem, selectAllMenuItem;
-	private BioPaxRelationshipPanel bioPaxRelationshipPanel;
 	private ConversionPanel conversionPanel;
 	
 	private class EventHandler implements ListSelectionListener, AnnotationEventListener, 
@@ -1179,10 +1178,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private void editPhysiologyLinks() {
 		BioPaxObject selectedBioPaxObject = getSelectedBioPaxObject();
 		if (selectedBioPaxObject != null) {
-			if (bioPaxRelationshipPanel == null) {
-				bioPaxRelationshipPanel = new BioPaxRelationshipPanel();
-				bioPaxRelationshipPanel.setBioModel(bioModel);
-			}
+			BioPaxRelationshipPanel bioPaxRelationshipPanel = new BioPaxRelationshipPanel();
+			bioPaxRelationshipPanel.setBioModel(bioModel);
 			bioPaxRelationshipPanel.setBioPaxObject(selectedBioPaxObject);
 			DialogUtils.showComponentCloseDialog(this, bioPaxRelationshipPanel, "Edit Physiology Links");
 		}
