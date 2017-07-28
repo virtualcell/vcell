@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JFileChooser;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
@@ -136,13 +138,21 @@ public class MainController {
         });
 
         view.addExportListener(event -> {
-            Dataset dataset = view.getSelectedDataset().duplicate();
+            Dataset dataset = view.getSelectedDataset();
+            if (dataset == null) {
+            	JOptionPane.showMessageDialog(
+            			view, 
+            			"Please select a dataset to export.", 
+            			"No dataset selected", 
+            			JOptionPane.PLAIN_MESSAGE);            	
+            	return;
+            }
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setSelectedFile(new File(dataset.getName()));
             int returnVal = fileChooser.showSaveDialog(view);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 try {
-                    datasetIOService.save(dataset, fileChooser.getSelectedFile().getPath());
+                    datasetIOService.save(dataset.duplicate(), fileChooser.getSelectedFile().getPath());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -151,6 +161,14 @@ public class MainController {
         
         view.addChangeAxesListener(event -> {
         	Dataset dataset = view.getSelectedDataset();
+            if (dataset == null) {
+            	JOptionPane.showMessageDialog(
+            			view, 
+            			"Please select a dataset to edit.", 
+            			"No dataset selected", 
+            			JOptionPane.PLAIN_MESSAGE);
+            	return;
+            }
         	ChangeAxesPanel panel = new ChangeAxesPanel(dataset);
         	int returnVal = JOptionPane.showConfirmDialog(
         			view, 
@@ -166,6 +184,14 @@ public class MainController {
 
         view.addDeleteListener(event -> {
             Dataset dataset = view.getSelectedDataset();
+            if (dataset == null) {
+            	JOptionPane.showMessageDialog(
+            			view, 
+            			"Please select a dataset to delete.", 
+            			"No dataset selected", 
+            			JOptionPane.PLAIN_MESSAGE);            	
+            	return;
+            }
             int result = JOptionPane.showConfirmDialog(
             		view,
                     "Are you sure you want to delete \"" + dataset.getName() + "\"?",
@@ -178,7 +204,7 @@ public class MainController {
         
         view.addCompareDatasetsListener(event -> {
         	
-        	ArrayList<Dataset> datasetList = model.getProject().getData();
+        	List<Dataset> datasetList = model.getProject().getData();
         	datasetList.addAll(model.getProject().getGeometry());
         	datasetList.addAll(model.getProject().getResults());
         	Dataset[] datasetArray = datasetList.toArray(new Dataset[datasetList.size()]);
@@ -221,7 +247,7 @@ public class MainController {
 
         view.addConstructTIRFGeometryListener(event -> {
 
-            ArrayList<Dataset> dataList = model.getProject().getData();
+            List<Dataset> dataList = model.getProject().getData();
             Dataset[] dataArray = dataList.toArray(new Dataset[dataList.size()]);
 
             ConstructTIRFGeometryInputPanel panel = new ConstructTIRFGeometryInputPanel(dataArray);
@@ -248,8 +274,8 @@ public class MainController {
         });
 
         view.addConstructTIRFImageListener(event -> {
-            ArrayList<Dataset> geometry = model.getProject().getGeometry();
-            ArrayList<Dataset> results = model.getProject().getResults();
+            List<Dataset> geometry = model.getProject().getGeometry();
+            List<Dataset> results = model.getProject().getResults();
             Dataset[] geometryArray = geometry.toArray(new Dataset[geometry.size()]);
             Dataset[] resultsArray = results.toArray(new Dataset[results.size()]);
             ConstructTIRFImageInputPanel panel = new ConstructTIRFImageInputPanel(geometryArray, resultsArray);
@@ -283,13 +309,34 @@ public class MainController {
         });
 
         view.addNewModelListener(event -> {
-    		VCellModelDialog dialog = new VCellModelDialog(view, vCellModelService);
+    		VCellModelSelectionDialog dialog = new VCellModelSelectionDialog(view, vCellModelService);
     		int resultVal = dialog.display();
-    		System.out.println(resultVal);
+    		dialog.cancelFuture(); // Dialog is no longer visible, stop trying to get models
+    		if (resultVal == JOptionPane.OK_OPTION) {
+    			VCellModel selectedModel = dialog.getSelectedModel();
+    			if (selectedModel != null) {
+    				model.addModel(selectedModel);
+    			}
+    		}
         });
         
-        view.addDisplayListener(event -> {
-        	view.displaySelectedDataset();
+        view.addSimulateModelListener(event -> {
+        	System.out.println("sim model");
+        });
+        
+        view.addTabbedPaneChangeListener(event -> {
+        	view.clearListSelection();
+        });
+        
+        view.addListSelectionListener(event -> {
+        	if (!event.getValueIsAdjusting()) {
+        		Object selected = ((JList<?>) event.getSource()).getSelectedValue();
+        		if (Dataset.class.isInstance(selected)) {
+        			view.displayDataset((Dataset) selected);
+        		} else if (VCellModel.class.isInstance(selected)) {
+        			view.displayModel((VCellModel) selected);
+        		}
+        	}
         });
     }
 

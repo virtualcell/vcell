@@ -13,6 +13,7 @@ import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -34,6 +35,9 @@ public class CompareMap<T extends RealType<T>> extends AbstractOp {
 	@Parameter
 	private int comparisonType;
 	
+	@Parameter(required = false)
+	private RandomAccessibleInterval<BitType> mask;
+	
 	@Parameter
 	private OpService ops;
 	
@@ -53,10 +57,22 @@ public class CompareMap<T extends RealType<T>> extends AbstractOp {
 		RandomAccess<IntType> data1RA = data1Converted.randomAccess();
 		RandomAccess<IntType> resultRA = resultConverted.randomAccess();
 		
+		RandomAccess<BitType> maskRA = null;
+		if (mask != null) {
+			maskRA = mask.randomAccess();
+		}
+		
 		while(data0Cursor.hasNext()) {
+			
 			data0Cursor.fwd();
 			data1RA.setPosition(data0Cursor);
 			resultRA.setPosition(data0Cursor);
+			
+			if (maskRA != null) {
+				maskRA.setPosition(data0Cursor);
+				if (!maskRA.get().get()) continue;
+			}
+			
 			
 			int val0 = data0Cursor.get().get();
 			int val1 = data1RA.get().get();
@@ -66,6 +82,7 @@ public class CompareMap<T extends RealType<T>> extends AbstractOp {
 				resultRA.get().set(val0 - val1);
 				break;
 			case RATIO:
+				resultRA.get().set(val0 / val1);
 				break;
 			case PERCENT_DIFFERENCE:
 				resultRA.get().set((val0 - val1) * 100 / val0);

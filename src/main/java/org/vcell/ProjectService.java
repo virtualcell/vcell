@@ -7,8 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import javax.swing.SwingWorker;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -17,7 +15,6 @@ import net.imagej.Dataset;
 import net.imagej.ImgPlus;
 import net.imagej.ops.OpService;
 import net.imglib2.FinalInterval;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
@@ -105,7 +102,8 @@ public class ProjectService<T extends RealType<T>> {
 		                	
 		                	// Loading 1-dimensional tif images adds a dimension 
 		                	// so must crop out empty dimensions
-		                	ImgPlus<T> imgPlus = (ImgPlus<T>) results.getImgPlus();
+		                	@SuppressWarnings("unchecked")
+							ImgPlus<T> imgPlus = (ImgPlus<T>) results.getImgPlus();
 		                	int numDimensions = imgPlus.numDimensions();
 		                	long[] dimensions = new long[2 * imgPlus.numDimensions()];
 		                	for (int i = 0; i < numDimensions; i++) {
@@ -119,7 +117,6 @@ public class ProjectService<T extends RealType<T>> {
 		                    project.getResults().add(results);
 		                    numLoaded++;
 		                    setProgress(numLoaded * 100 / numFiles); 
-		                    printAxes(results);
 		                } catch (IOException e) {
 		                    e.printStackTrace();
 		                }
@@ -175,7 +172,6 @@ public class ProjectService<T extends RealType<T>> {
 		            Files.createDirectories(resultsPath);
 		            FileUtils.cleanDirectory(resultsPath.toFile());
 		            for (Dataset dataset : project.getResults()) {
-		            	printAxes(dataset);
 		            	setSubtask(dataset.getName());
 		                saveDataset(dataset, resultsPath);
 		                numSaved++;
@@ -223,14 +219,13 @@ public class ProjectService<T extends RealType<T>> {
 
         Path filePath = Paths.get(path.toString(), name);
         datasetIOService.save(datasetToSave, filePath.toString());
-        
-//        printAxes(datasetToSave);
     }
     
-    private void printAxes(Dataset dataset) {
-    	System.out.println(dataset.getName() + " axes:");
-    	for (int i = 0; i < dataset.numDimensions(); i++) {
-    		System.out.println(i + ": " + dataset.axis(i).type());
-    	}
-    }
+    // Helper method for debugging
+//    private void printAxes(Dataset dataset) {
+//    	System.out.println(dataset.getName() + " axes:");
+//    	for (int i = 0; i < dataset.numDimensions(); i++) {
+//    		System.out.println(i + ": " + dataset.axis(i).type());
+//    	}
+//    }
 }

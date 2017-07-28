@@ -1,19 +1,23 @@
 package org.vcell;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionListener;
 
 import org.scijava.Context;
 import org.scijava.ui.swing.viewer.SwingDisplayWindow;
@@ -60,14 +64,13 @@ public class MainView extends SwingDisplayWindow {
 
     // Menu items under "Modeling"
     private JMenuItem mniNewModel;
+    private JMenuItem mniSimulateModel;
 
     // Panels of datasets
-    private DatasetListPanel pnlData;
-    private DatasetListPanel pnlGeometry;
-    private DatasetListPanel pnlResults;
-
-    // Display button
-    private JButton btnDisplay;
+    private ListPanel<Dataset> pnlData;
+    private ListPanel<Dataset> pnlGeometry;
+    private ListPanel<VCellModel> pnlModels;
+    private ListPanel<Dataset> pnlResults;
 
     public MainView(MainModel model, Context context) {
     	
@@ -88,14 +91,36 @@ public class MainView extends SwingDisplayWindow {
     }
     
     public Dataset getSelectedDataset() {
-        DatasetListPanel selectedPanel = (DatasetListPanel) tabbedPane.getSelectedComponent();
-        return selectedPanel.getSelectedDataset();
+    	ListPanel<?> listPanel = (ListPanel<?>) tabbedPane.getSelectedComponent();
+    	Object item = listPanel.getSelectedItem();
+    	if (Dataset.class.isInstance(item)) {
+    		return (Dataset) item;
+    	}
+    	return null;
     }
     
     public void displaySelectedDataset() {
     	Dataset dataset = getSelectedDataset();
     	if (dataset == null) return;
+    	displayDataset(dataset);
+    }
+    
+    public void displayDataset(Dataset dataset) {
     	inFrameDisplayService.displayDataset(dataset, this);
+    }
+    
+    public void displayModel(VCellModel model) {
+    	rightPanel.removeAll();
+    	rightPanel.add(new ModelSummaryPanel(model));
+    	revalidate();
+    	repaint();
+    }
+    
+    public void clearListSelection() {
+    	pnlData.getList().clearSelection();
+    	pnlGeometry.getList().clearSelection();
+    	pnlModels.getList().clearSelection();
+    	pnlResults.getList().clearSelection();
     }
 
     private void initializeContentPane(MainModel model) {
@@ -106,37 +131,43 @@ public class MainView extends SwingDisplayWindow {
         contentPane.setLayout(borderLayout);
 
         // Project label initialization
-        lblProjectDescription = new JLabel("", SwingConstants.CENTER);
-        contentPane.add(lblProjectDescription, BorderLayout.PAGE_START);
+        lblProjectDescription = new JLabel(" ", SwingConstants.CENTER);
+        Font font = lblProjectDescription.getFont();
+        lblProjectDescription.setFont(new Font(font.getFontName(), Font.BOLD, 14));
 
         // Tabbed pane initialization
         Project project = model.getProject();
         if (project != null) {
-            pnlData = new DatasetListPanel(project.getData());
-            pnlGeometry = new DatasetListPanel(project.getGeometry());
-            pnlResults = new DatasetListPanel(project.getResults());
+            pnlData = new ListPanel<>(project.getData());
+            pnlGeometry = new ListPanel<>(project.getGeometry());
+            pnlModels = new ListPanel<>(project.getModels());
+            pnlResults = new ListPanel<>(project.getResults());
         } else {
-            pnlData = new DatasetListPanel(new ArrayList<>());
-            pnlGeometry = new DatasetListPanel(new ArrayList<>());
-            pnlResults = new DatasetListPanel(new ArrayList<>());
+            pnlData = new ListPanel<>(new ArrayList<>());
+            pnlGeometry = new ListPanel<>(new ArrayList<>());
+            pnlModels = new ListPanel<>(new ArrayList<>());
+            pnlResults = new ListPanel<>(new ArrayList<>());
         }
 
         tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Data", pnlData);
         tabbedPane.addTab("Geometry", pnlGeometry);
+        tabbedPane.addTab("Models", pnlModels);
         tabbedPane.addTab("Results", pnlResults);
-
-        // Display button initialization
-        btnDisplay = new JButton("Display");
         
         JPanel leftPanel = new JPanel(new BorderLayout());
+        leftPanel.add(lblProjectDescription, BorderLayout.PAGE_START);
         leftPanel.add(tabbedPane, BorderLayout.CENTER);
-        leftPanel.add(btnDisplay, BorderLayout.PAGE_END);
-        contentPane.add(leftPanel, BorderLayout.LINE_START);
+        leftPanel.setPreferredSize(new Dimension(300, 400));
         
         rightPanel = new JPanel(new BorderLayout());
         rightPanel.setPreferredSize(new Dimension(400, 400));
-        contentPane.add(rightPanel, BorderLayout.CENTER);
+        
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
+        splitPane.setBackground(Color.WHITE);
+        splitPane.setBorder(null);
+        
+        contentPane.add(splitPane, BorderLayout.CENTER);
 
         setContentPane(contentPane);
     }
@@ -198,7 +229,9 @@ public class MainView extends SwingDisplayWindow {
         // Modeling menu
         JMenu mnuModeling = new JMenu("Modeling");
         mniNewModel = new JMenuItem("New model...");
+        mniSimulateModel = new JMenuItem("Simulate model...");
         mnuModeling.add(mniNewModel);
+        mnuModeling.add(mniSimulateModel);
         
         menuBar.add(mnuFile);
         menuBar.add(mnuEdit);
@@ -223,6 +256,7 @@ public class MainView extends SwingDisplayWindow {
         mniConstructTIRFGeometry.setEnabled(enabled);
         mniConstructTIRFImage.setEnabled(enabled);
         mniNewModel.setEnabled(enabled);
+        mniSimulateModel.setEnabled(enabled);
     }
     
     private void registerModelChangeListeners(MainModel model) {
@@ -235,6 +269,7 @@ public class MainView extends SwingDisplayWindow {
             lblProjectDescription.setText(project.getTitle());
             pnlData.updateList(project.getData());
             pnlGeometry.updateList(project.getGeometry());
+            pnlModels.updateList(project.getModels());
             pnlResults.updateList(project.getResults());
         });
         
@@ -304,7 +339,18 @@ public class MainView extends SwingDisplayWindow {
         mniNewModel.addActionListener(l);
     }
     
-    public void addDisplayListener(ActionListener l) {
-        btnDisplay.addActionListener(l);
+    public void addSimulateModelListener(ActionListener l) {
+    	mniSimulateModel.addActionListener(l);
+    }
+    
+    public void addTabbedPaneChangeListener(ChangeListener l) {
+    	tabbedPane.addChangeListener(l);
+    }
+    
+    public void addListSelectionListener(ListSelectionListener l) {
+    	pnlData.getList().addListSelectionListener(l);
+    	pnlGeometry.getList().addListSelectionListener(l);
+    	pnlModels.getList().addListSelectionListener(l);
+    	pnlResults.getList().addListSelectionListener(l);
     }
 }

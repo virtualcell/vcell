@@ -3,25 +3,22 @@ package org.vcell;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.util.ArrayList;
+import java.util.concurrent.Future;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
 
-import com.google.common.util.concurrent.FutureCallback;
-
 
 @SuppressWarnings("serial")
-public class VCellModelPanel extends JPanel {
+public class VCellModelSelectionPanel extends JPanel {
 	
 	private JList<VCellModel> list;
 	private DefaultListModel<VCellModel> listModel;
@@ -30,8 +27,10 @@ public class VCellModelPanel extends JPanel {
 	private JScrollPane imageScrollPane;
 	private JProgressBar progressBar;
 	private VCellModelService vCellModelService;
+	private Future<VCellModel[]> vCellModelFuture;
+	private ModelParameterListPanel parameterListPanel;
 	
-	public VCellModelPanel(VCellModelService vCellModelService) {
+	public VCellModelSelectionPanel(VCellModelService vCellModelService) {
 		this.vCellModelService = vCellModelService;
 		initializeComponents();
 		setPreferredSize(new Dimension(600, 400));
@@ -43,6 +42,34 @@ public class VCellModelPanel extends JPanel {
 	
 	public void displayImageOfSelectedModel() {
 		displayScaledImageOfSelectedModel(imageScrollPane.getHeight() - 6);
+	}
+	
+	public void cancelFuture() {
+		if (vCellModelFuture != null) {
+			vCellModelFuture.cancel(true);
+		}
+	}
+	
+	public void getModels() {
+		vCellModelFuture = vCellModelService.getVCellModels(new FutureProgressCallback<VCellModel[]>() {
+			
+			@Override
+			public void onSuccess(VCellModel[] result) {
+				progressBar.setVisible(false);
+				updateList(result, listModel);
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+				System.out.println("Task was canceled");
+			}
+			
+			@Override
+			public void progressOccurred(int current, int max) {
+				progressBar.setMaximum(max);
+				progressBar.setValue(current);
+			}
+		});
 	}
 	
 	private void displayScaledImageOfSelectedModel(int height) {
@@ -82,12 +109,12 @@ public class VCellModelPanel extends JPanel {
 		imageScrollPane = new JScrollPane(imageLabel);
 		imageScrollPane.setMinimumSize(new Dimension(0, 200));
 		
-		ModelParameterInputPanel parameterInputPanel = new ModelParameterInputPanel(new ArrayList<>());
+		parameterListPanel = new ModelParameterListPanel();
 		
 		JSplitPane verticalSplitPane = new JSplitPane(
 				JSplitPane.VERTICAL_SPLIT, 
 				imageScrollPane,
-				new JScrollPane(parameterInputPanel));
+				new JScrollPane(parameterListPanel));
 		JSplitPane splitPane = new JSplitPane(
 				JSplitPane.HORIZONTAL_SPLIT, 
 				leftScrollPane, verticalSplitPane);
@@ -102,29 +129,7 @@ public class VCellModelPanel extends JPanel {
 			if (!e.getValueIsAdjusting()) {
 				selectedModel = list.getSelectedValue();
 				displayImageOfSelectedModel();
-				parameterInputPanel.setParameters(selectedModel.getParameters());
-			}
-		});
-	}
-	
-	public void getModels() {
-		vCellModelService.getVCellModels(new FutureProgressCallback<VCellModel[]>() {
-			
-			@Override
-			public void onSuccess(VCellModel[] result) {
-				progressBar.setVisible(false);
-				updateList(result, listModel);
-			}
-
-			@Override
-			public void onFailure(Throwable t) {
-				t.printStackTrace();
-			}
-			
-			@Override
-			public void progressOccurred(int current, int max) {
-				progressBar.setMaximum(max);
-				progressBar.setValue(current);
+				parameterListPanel.setParameters(selectedModel.getParameters());
 			}
 		});
 	}

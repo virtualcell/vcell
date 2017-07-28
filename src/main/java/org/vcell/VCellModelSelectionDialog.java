@@ -3,21 +3,23 @@ package org.vcell;
 import java.awt.Frame;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 
-public class VCellModelDialog extends JDialog {
+public class VCellModelSelectionDialog extends JDialog {
 	
 	private JOptionPane optionPane;
-	private VCellModelPanel vCellModelPanel;
+	private VCellModelSelectionPanel vCellModelPanel;
 
-	public VCellModelDialog(Frame owner, VCellModelService vCellModelService) {
+	public VCellModelSelectionDialog(Frame owner, VCellModelService vCellModelService) {
 		
 		super(owner, "Select a model", true);
 		
-		vCellModelPanel = new VCellModelPanel(vCellModelService);
+		vCellModelPanel = new VCellModelSelectionPanel(vCellModelService);
 		optionPane = new JOptionPane(vCellModelPanel, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 
 		setContentPane(optionPane);
@@ -31,10 +33,18 @@ public class VCellModelDialog extends JDialog {
 			}
 		});
 		
-		this.addComponentListener(new ComponentAdapter() {
+		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				vCellModelPanel.displayImageOfSelectedModel();
+			}
+		});
+		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				vCellModelPanel.cancelFuture();
+				super.windowClosing(e);
 			}
 		});
 	}
@@ -48,5 +58,13 @@ public class VCellModelDialog extends JDialog {
 			return (int) optionPane.getValue();
 		}
 		return JOptionPane.CANCEL_OPTION; // If something goes wrong, dispose and do nothing
+	}
+	
+	public void cancelFuture() {
+		vCellModelPanel.cancelFuture();
+	}
+	
+	public VCellModel getSelectedModel() {
+		return vCellModelPanel.getSelectedModel();
 	}
 }

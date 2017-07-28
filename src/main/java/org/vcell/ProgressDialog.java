@@ -11,6 +11,8 @@ import javax.swing.SwingWorker;
 
 public class ProgressDialog extends JDialog {
 	
+	private static final long serialVersionUID = -5906334441510649483L;
+	
 	private JProgressBar progressBar;
 	
 	public ProgressDialog(Frame owner, String title, boolean indeterminate) {

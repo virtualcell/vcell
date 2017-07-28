@@ -43,6 +43,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,7 +59,7 @@ public class VCellModelService {
     private final static int PORT = 8080;
     private final static String DEFAULT_CLIENT_ID = "85133f8d-26f7-4247-8356-d175399fc2e6";
     
-    public void getVCellModels(FutureProgressCallback<VCellModel[]> callback) {
+    public Future<VCellModel[]> getVCellModels(FutureProgressCallback<VCellModel[]> callback) {
     	
 		ListeningExecutorService listeningExecutor = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
 		ListenableFuture<VCellModel[]> future = listeningExecutor.submit(new Callable<VCellModel[]>() {
@@ -71,6 +72,8 @@ public class VCellModelService {
 		listeningExecutor.shutdown();
     	Executor executor = Executors.newSingleThreadExecutor();
         Futures.addCallback(future, callback, executor);
+        
+        return future;
     }
     
     private VCellModel[] getModels(FutureProgressCallback<VCellModel[]> callback) {
@@ -99,8 +102,6 @@ public class VCellModelService {
 	    		BiomodelRepresentation biomodelRep = biomodelReps[i];
         		VCellModel vCellModel = new VCellModel(biomodelRep.getName());
         		vCellModels[i] = vCellModel;
-        		vCellModel.getParameters().add(new VCellModelParameter("param1", null, "uM", VCellModelParameter.CONCENTRATION));
-        		vCellModel.getParameters().add(new VCellModelParameter("param2", null, "µm2", VCellModelParameter.DIFFUSION_CONSTANT));
         		
         		remainingFutures++;
         		completionService.submit(Executors.callable(() -> {

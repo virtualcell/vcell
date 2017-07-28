@@ -45,6 +45,11 @@ public class MainModel {
         project.getGeometry().add(geometry);
         notifyChangeListeners(dataChangeListeners);
     }
+    
+    public void addModel(VCellModel model) {
+    	project.getModels().add(model);
+    	notifyChangeListeners(dataChangeListeners);
+    }
 
     public void addResult(Dataset result) {
         project.getResults().add(result);

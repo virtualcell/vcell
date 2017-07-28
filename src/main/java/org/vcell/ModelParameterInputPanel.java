@@ -1,20 +1,11 @@
 package org.vcell;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -23,44 +14,33 @@ import javax.swing.JTextField;
 /**
  * Created by kevingaffney on 7/10/17.
  */
-public class ModelParameterInputPanel extends JPanel {
-
+public class ModelParameterInputPanel extends ModelParameterPanel {
+	
+	private static final long serialVersionUID = -8994187569679105048L;
+	
 	private HashMap<VCellModelParameter, JTextField> parameterTable;
 
-    public ModelParameterInputPanel(ArrayList<VCellModelParameter> parameters) {
-        setLayout(new GridBagLayout());
-        setParameters(parameters);
+    public ModelParameterInputPanel() {
+    	super();
+    	parameterTable = new HashMap<>();
     }
     
-    public void setParameters(ArrayList<VCellModelParameter> parameters) {
-    	
-    	parameterTable = new HashMap<>();
+    @Override
+    public void setParameters(List<VCellModelParameter> parameters) {
+    	super.setParameters(parameters);
+    	parameterTable.clear();
     	removeAll();
-    	
-        List<VCellModelParameter> concentrationParameters = parameters.stream()
-                .filter(p -> p.getParameterType() == VCellModelParameter.CONCENTRATION)
-                .collect(Collectors.toList());
-
-        List<VCellModelParameter> diffusionParameters = parameters.stream()
-                .filter(p -> p.getParameterType() == VCellModelParameter.DIFFUSION_CONSTANT)
-                .collect(Collectors.toList());
         
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridy = 0;
-
-        if (!concentrationParameters.isEmpty()) {
-            addHeaderLabel("Initial concentrations", c);
-            for (VCellModelParameter parameter : concentrationParameters) {
-                addParameterInput(parameter, c);
-            }
-        }
-
-        if (!diffusionParameters.isEmpty()) {
-            addHeaderLabel("Diffusion constants", c);
-            for (VCellModelParameter parameter : diffusionParameters) {
-                addParameterInput(parameter, c);
-            }
+        
+        for (String description : parameterDescriptionMap.keySet()) {
+        	List<VCellModelParameter> filteredParameters = parameterDescriptionMap.get(description);
+        	addHeaderLabel(description, c);
+        	for (VCellModelParameter filteredParameter : filteredParameters) {
+        		addParameterInput(filteredParameter, c);
+        	}
         }
         
         // Add empty panel to occupy any extra space at bottom (pushes components to the top of the panel)
@@ -71,20 +51,6 @@ public class ModelParameterInputPanel extends JPanel {
         revalidate();
     }
     
-    private void addHeaderLabel(String text, GridBagConstraints c) {
-    	
-    	JLabel headerLabel = new JLabel(text);
-        headerLabel.setFont(new Font(headerLabel.getFont().getName(), Font.BOLD, 14));
-        
-        c.gridx = 0;
-        c.gridy++;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.ipady = 20;
-        add(headerLabel, c);
-        c.gridwidth = 1;
-        c.ipady = 0;
-    }
-
     private void addParameterInput(VCellModelParameter parameter, GridBagConstraints c) {
     	
         JLabel idLabel = new JLabel(parameter.getId());
@@ -112,23 +78,4 @@ public class ModelParameterInputPanel extends JPanel {
         add(checkBox, c);
     }
 
-    private String generateHtml(String text) {
-
-        Pattern pattern = Pattern.compile("(\\D-\\d+)|(\\D\\d+)");
-        Matcher matcher = pattern.matcher(text);
-        StringBuilder stringBuilder = new StringBuilder("<html>");
-
-        int startIndex = 0;
-        while (matcher.find()) {
-            stringBuilder.append(text.substring(startIndex, matcher.start() + 1));
-            stringBuilder.append("<sup>");
-            stringBuilder.append(text.substring(matcher.start() + 1, matcher.end()));
-            stringBuilder.append("</sup>");
-            startIndex = matcher.end();
-        }
-
-        stringBuilder.append(text.substring(startIndex));
-        stringBuilder.append("</html>");
-        return stringBuilder.toString();
-    }
 }

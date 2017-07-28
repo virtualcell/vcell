@@ -10,7 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -29,7 +31,9 @@ import net.imagej.ui.swing.viewer.image.SwingImageDisplayPanel;
 public class CompareView extends SwingDisplayWindow {
 	
 	private List<Dataset> datasets;
-	private ArrayList<JPanel> panels;
+	private List<JPanel> panels;
+	private List<JLabel> labels;
+	private JCheckBox scrollMirrorCheckBox;
 	private HashMap<Dataset, ImageDisplay> datasetImagePanelMap;
 	
 	// Menu items under "Plot"
@@ -38,17 +42,23 @@ public class CompareView extends SwingDisplayWindow {
 	private JMenuItem mniPlotMeanROI;
 	
 	// Menu items under "Compare"
-	private JMenuItem mniDeltaMap;
-	private JMenuItem mniRatioMap;
-	private JMenuItem mniPercentDifferenceMap;
+	private JMenuItem mniDeltaEntireFrame;
+	private JMenuItem mniDeltaCellRegion;
+	
+	private JMenuItem mniRatioEntireFrame;
+	private JMenuItem mniRatioCellRegion;
+	
+	private JMenuItem mniPercentDifferenceEntireFrame;
+	private JMenuItem mniPercentDifferenceCellRegion;
 	
 	public CompareView(List<Dataset> datasets) {
 		this.datasets = datasets;
 		panels = new ArrayList<>();
+		labels = new ArrayList<>();
 		datasetImagePanelMap = new HashMap<>();
-		initializeContentPane(datasets.size());
+		initializeContentPane();
 		pack();
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}
 	
 	public List<Dataset> getDatasets() {
@@ -83,14 +93,16 @@ public class CompareView extends SwingDisplayWindow {
 			JPanel panel = panels.get(i);
 			if (panel.getComponentCount() == 0) {
 				SwingImageDisplayPanel imagePanel = (SwingImageDisplayPanel) displayPanel;
-				datasetImagePanelMap.put(datasets.get(i), imagePanel.getDisplay());
+				Dataset dataset = datasets.get(i);
+				datasetImagePanelMap.put(dataset, imagePanel.getDisplay());
 				panel.add(imagePanel, BorderLayout.CENTER);
+				labels.get(i).setText(dataset.getName());
 				break;
 			}
 		}
 	}
 	
-	private void initializeContentPane(int numDatasets) {
+	private void initializeContentPane() {
 		
 		final JPanel contentPane = new JPanel(new BorderLayout());
 		
@@ -100,9 +112,9 @@ public class CompareView extends SwingDisplayWindow {
 		// Plot button
 		final DropDownButton btnPlot = new DropDownButton("Plot");
 		btnPlot.setAlignmentX(LEFT_ALIGNMENT);
-		JMenu mnuPlotMean = new JMenu("Mean vs. Time");
-		mniPlotEntireFrame = new JMenuItem("Entire Frame");
-		mniPlotCellRegion = new JMenuItem("Cell Region");
+		JMenu mnuPlotMean = new JMenu("Mean vs. time");
+		mniPlotEntireFrame = new JMenuItem("Entire frame");
+		mniPlotCellRegion = new JMenuItem("Cell region");
 		mniPlotMeanROI = new JMenuItem("ROI");
 		mnuPlotMean.add(mniPlotEntireFrame);
 		mnuPlotMean.add(mniPlotCellRegion);
@@ -112,20 +124,37 @@ public class CompareView extends SwingDisplayWindow {
 		// Compare button
 		final DropDownButton btnCompare = new DropDownButton("Compare");
 		btnCompare.setAlignmentX(LEFT_ALIGNMENT);
-		mniDeltaMap = new JMenuItem("Delta Map");
-		mniRatioMap = new JMenuItem("Ratio Map");
-		mniPercentDifferenceMap = new JMenuItem("Percent Difference Map");
+		
+		JMenu mnuDeltaMap = new JMenu("Delta map");
+		JMenu mnuRatioMap = new JMenu("Ratio map");
+		JMenu mnuPercentDifferenceMap = new JMenu("Percent difference map");
+		
+		mniDeltaEntireFrame = new JMenuItem("Entire frame");
+		mniDeltaCellRegion = new JMenuItem("Cell region");
+		
+		mniRatioEntireFrame = new JMenuItem("Entire frame");
+		mniRatioCellRegion = new JMenuItem("Cell region");
+		
+		mniPercentDifferenceEntireFrame = new JMenuItem("Entire frame");
+		mniPercentDifferenceCellRegion = new JMenuItem("Cell region");
+		
+		mnuDeltaMap.add(mniDeltaEntireFrame);
+		mnuDeltaMap.add(mniDeltaCellRegion);
+		
+		mnuRatioMap.add(mniRatioEntireFrame);
+		mnuRatioMap.add(mniRatioCellRegion);
+		
+		mnuPercentDifferenceMap.add(mniPercentDifferenceEntireFrame);
+		mnuPercentDifferenceMap.add(mniPercentDifferenceCellRegion);
 		
 		if (datasets.size() != 2) {
-			mniDeltaMap.setEnabled(false);
-			mniRatioMap.setEnabled(false);
-			mniPercentDifferenceMap.setEnabled(false);
+			btnCompare.setEnabled(false);
 		}
 		
 		JPopupMenu mnuCompare = btnCompare.getMenu();
-		mnuCompare.add(mniDeltaMap);
-		mnuCompare.add(mniRatioMap);
-		mnuCompare.add(mniPercentDifferenceMap);
+		mnuCompare.add(mnuDeltaMap);
+		mnuCompare.add(mnuRatioMap);
+		mnuCompare.add(mnuPercentDifferenceMap);
 		
 		topPanel.add(btnPlot);
 		topPanel.add(btnCompare);
@@ -133,15 +162,21 @@ public class CompareView extends SwingDisplayWindow {
 		// Multiple image display initialization
 		final JPanel centerPanel = new JPanel(new GridLayout(0, 2));
 		
-		for (int i = 0; i < numDatasets; i++) {
+		for (int i = 0; i < datasets.size(); i++) {
+			JLabel label = new JLabel("label");
 			JPanel panel = new JPanel(new BorderLayout());
 			panel.setPreferredSize(new Dimension(400, 400));
+//			panel.add(label);
+			labels.add(label);
 			panels.add(panel);
 			centerPanel.add(panel);
 		}
 		
+		scrollMirrorCheckBox = new JCheckBox("Scroll mirror");
+		
 		contentPane.add(topPanel, BorderLayout.PAGE_START);
 		contentPane.add(centerPanel, BorderLayout.CENTER);
+//		contentPane.add(scrollMirrorCheckBox, BorderLayout.PAGE_END);
 		setContentPane(contentPane);
 	}
 	
@@ -157,15 +192,27 @@ public class CompareView extends SwingDisplayWindow {
 		mniPlotMeanROI.addActionListener(l);
 	}
 	
-	public void addDeltaMapListener(ActionListener l) {
-		mniDeltaMap.addActionListener(l);
+	public void addDeltaEntireFrameListener(ActionListener l) {
+		mniDeltaEntireFrame.addActionListener(l);
 	}
 	
-	public void addRatioMapListener(ActionListener l) {
-		mniRatioMap.addActionListener(l);
+	public void addDeltaCellRegionListener(ActionListener l) {
+		mniDeltaCellRegion.addActionListener(l);
 	}
 	
-	public void addPercentDifferenceMapListener(ActionListener l) {
-		mniPercentDifferenceMap.addActionListener(l);
+	public void addRatioEntireFrameListener(ActionListener l) {
+		mniRatioEntireFrame.addActionListener(l);
+	}
+	
+	public void addRatioCellRegionListener(ActionListener l) {
+		mniRatioCellRegion.addActionListener(l);
+	}
+	
+	public void addPercentDifferenceEntireFrameListener(ActionListener l) {
+		mniPercentDifferenceEntireFrame.addActionListener(l);
+	}
+	
+	public void addPercentDifferenceCellRegionListener(ActionListener l) {
+		mniPercentDifferenceCellRegion.addActionListener(l);
 	}
 }

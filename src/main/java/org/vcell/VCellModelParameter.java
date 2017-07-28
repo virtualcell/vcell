@@ -5,17 +5,17 @@ package org.vcell;
  */
 public class VCellModelParameter {
 
-    public static final int CONCENTRATION = 0;
-    public static final int DIFFUSION_CONSTANT = 1;
-    public static final int REACTION_RATE = 2;
+    public static final String CONCENTRATION = "Concentration";
+    public static final String DIFFUSION = "Diffusion";
+    public static final String REACTION = "Reaction";
 
     private String id;
     private String value;
     private String unit;
     private boolean shouldScan;
-    private int parameterType;
+    private String parameterType;
 
-    public VCellModelParameter(String id, String value, String unit, int parameterType) {
+    public VCellModelParameter(String id, String value, String unit, String parameterType) {
         this.id = id;
         this.value = value;
         this.unit = unit;
@@ -30,7 +30,20 @@ public class VCellModelParameter {
         return unit;
     }
 
-    public int getParameterType() {
+    public String getParameterType() {
         return parameterType;
+    }
+    
+    public static String[] getAllParameterTypes() {
+    	return new String[] {
+    			CONCENTRATION,
+    			DIFFUSION,
+    			REACTION
+    	};
+    }
+    
+    @Override
+    public String toString() {
+    	return id + " (" + unit + ")";
     }
 }

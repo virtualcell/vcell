@@ -53,7 +53,6 @@ public class InFrameDisplayService extends AbstractService {
 		threadService.queue(() -> {
 			finalViewer.view(window, display);
 			uiService.addDisplayViewer(finalViewer);
-			window.showDisplay(true);
 			display.update();
 			
 			autoscale(imageDisplayService.getActiveDatasetView());
@@ -88,6 +87,11 @@ public class InFrameDisplayService extends AbstractService {
 		return (SwingImageDisplayViewer) displayViewer;
     }
     
+    /**
+     * Scales the brightness and contrast for better display. 
+     * Does not change the underlying pixel intensities.
+     * @param datasetView
+     */
     private void autoscale(DatasetView datasetView) {
 		DataRange range = autoscaleService.getDefaultIntervalRange(datasetView.getData());
 		datasetView.setChannelRanges(range.getMin(), range.getMax());
