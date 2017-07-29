@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>1. Introduction</title>
+<link rel="stylesheet" type="text/css" href="../content.css">
+</head>
+
+<body>
+<a name="top"></a>
+
+<table width="65%" border="0" cellpadding="0" cellspacing="3">
+  <tr>
+  <td background="topbanner_backgrd.jpg" colspan="2"><img src="vfrap.gif" width="563" height="102"></td>
+  </tr>
+  <tr>
+        
+      <td class="subHeader" width="98%">1. Introduction</td>
+  </tr>
+  
+  <tr>
+    <td class="content" valign="top">
+	<font size="4"><br>Flourescence Photobleaching</font>
+	<p></p>
+	<font size="3"><br>Modern confocal microscopes provide the ability to perform a variety of fluorescence photobleaching and photoactivation experiments that were previously limited to biophysicists with highly specialized equipment.   These experiments allow researchers to explore numerous questions about the localization and dynamic behavior of cellular constituents including</font>
+	
+	<ul>
+        <li> 
+		<p style="margin-bottom: 5px"><font size="3">Diffusive behavior and mobile fraction</font></li>
+        <li> 
+		<p style="margin-bottom: 5px"><font size="3">Flow</font></li>
+        <li> 
+		<p style="margin-bottom: 5px"><font size="3">On rates and off rates for binding interactions</font></li>
+    </ul>
+	<font size="3"><br>Although confocal microscopes have made the experimental method accessible, interpreting and analyzing the data obtained from these experiments remains a difficult undertaking due to the complexity of the cellular milieu and the nature of diffusion itself.  Because the exact geometry of the cell and the bleaching experiment dramatically affects the expected time constant obtained from the experiment, there are rarely analytical expressions that can be easily utilized for fitting experimental data from photobleaching experiments.   Thus, for each experimental protocol new equations must be derived to appropriately fit the experimental data.  Furthermore, in many cases, analytical expressions are only poor approximations of the expected redistributions, and thus are inadequate to obtain accurate quantitative data.</font>
+	<p></p>
+	<font size="3">Spatial simulations provide the means to analyze the redistribution of species within any given geometry, and have been used to analyze photobleaching and photoactivation experiments.  The VirtualFRAP tool was designed to take advantage of the power of the Virtual Cell modeling environment to use spatial modeling and simulation within realistic experimental geometries to extract diffusion coefficients and fractional recoveries from photobleaching experiments. <br></font>
+	<p></p>
+	<font size="3">In a photobleaching experiment, the basic experimental design is to perturb the original distribution of a molecular species, and then to assess three basic parameters: <br></font>
+	<p></p>
+	<ol>
+        <li> <p style="margin-bottom: 10px"><em><font size="3">The extent to which molecules return to the original distribution (mobile fraction, %R)</font></li>
+        </em>
+        <li> <p style="margin-bottom: 10px"> <em><font size="3">The time constant(s) for the return to the original distribution, from which the diffusion coefficient (D) can be obtained.</font></li>
+        </em>
+        <li> <p style="margin-bottom: 10px"><em><font size="3">The extent to which flow, or directional movement, is involved in the redistribution of the molecules.</font></li></em>
+    </ol>
+	
+		
+	<font size="3"> Photobleaching is generally currently accomplished using a laser scanning confocal microscope, or custom widefield fluorescence systems.  A basic assumption (but not necessarily an accurate assumption) is that the fluorescent version of the protein faithfully mirrors the behavior of the unlabeled protein.  The basic experimental protocol is as follows:<br></font>
+	
+	<ol>
+        <li> <p style="margin-bottom: 10px"><em><font size="3">Images of the cells are collected of the initial distribution of the molecule with a highly attenuated laser beam.  This defines the initial distribution of the molecule.  (The Virtual FRAP tool requires you to have at least one prebleach image.)</font></em></li>
+        <li> <p style="margin-bottom: 10px"><em><font size="3">A region of the cell is selected for bleaching, generally by selecting a particular region of interest (ROI) using the software.  This region is subjected to a high intensity laser pulse, which photobleaches a significant fraction of the fluorescent molecules within the region of interest.  True photobleaching is an irreversible process, so once bleached the molecules do not recover the ability to fluoresce.  (Note that some fluorophores can undergo other forms of light induced changes that are reversible; for example light induced transitions of GFP between fluorescent and non-fluorescent states.  Proper controls need to be included in the experiment to determine if this  occurs.)</font></em></li>
+        <li> <p style="margin-bottom: 10px"><em><font size="3">After photobleaching, a time series is collected to determine the mechanism, time constant, and extent of redistribution of the molecules to the original state.  When collecting the data, it is important to collect immediately after the bleach pulse, collect with a high enough time resolution (short enough time step) to ensure that the initial regions of the redistribution curve are sufficiently sampled, and to collect long enough that the new steady-state distribution has been reached.  Because bleaching during monitoring can become a problem, in many cases it may be necessary to change to a longer timestep in the middle of the time series.</font></em></li>
+    </ol>
+	
+	
+	<font size="4"><br>Virtual FRAP</font>
+	<p></p>	
+	<font size="3">Virtual FRAP is designed to analyze FRAP experiments that collect all of the fluorescence associated with the cell, and where the bleach region does not vary through the Z dimension.  In order to achieve this, certain experimental conditions must be met. <br></font>	
+	<ol>
+        <li> <p style="margin-bottom: 10px"><em><font size="3">The fluorescence of the entire depth (z-dimension) of the cell must be collected in the image.  This is accomplished by working at a low enough numerical aperture and, if you are using a confocal microscope, opening the pinhole aperture in the confocal system such that the full width at half maximal intensity (FWHM) of the collection system is larger than the depth of the cell.  If the cell is 10 µm thick at its highest point, then the FWHM must be at least 10 µm.</font></em></li>
+        <li> <p style="margin-bottom: 10px"><em><font size="3">The geometry of the bleach in Z needs to approximate a column throughout the depth of the specimen.  This is controlled solely by the numerical aperture of the objective lens; it is independent of the confocal aperture.</font></em></li>
+        <li> <p style="margin-bottom: 10px"><em><font size="3">In order to correct for bleaching during monitoring, you should collect the fluorescence from the entire cell during monitoring. Regions outside of the bleach area serve as the baseline for changes due to bleaching as long as we assume that changes due to redistribution are negligible.</font></em></li>
+        <li> <p style="margin-bottom: 10px"><em><font size="3">Virtual FRAP requires you to provide at least 1 prebleach image.</font></em></li>
+    </ol>
+	<font size="3">Currently, Virtual FRAP can be used to fit D and %R for either one or two diffusing components of cytosolic (soluble) proteins.  It does not analyze lateral diffusion within the plasma membrane. <br></font>	
+	
+	
+		  <div id="toplink"><a href="#top">Back to top</a></div>
+	</td>
+  </tr>
+</table>
+</body>
+</html>
