@@ -43,7 +43,8 @@ public class SimpleClient {
 
     private static void perform(SimulationService.Client client) throws TException, IOException, XMLStreamException
     {
-    	File sbmlSpatialFile = new File("Solver_Suite_6_2.xml");
+    	File sbmlSpatialFile = new File("optoPlexin_PRG_rule_based.xml");
+//    	File sbmlSpatialFile = new File("Solver_Suite_6_2.xml");
     	SBMLDocument doc = new SBMLReader().readSBML(sbmlSpatialFile);
     	SBMLModel model = new SBMLModel();
     	model.setFilepath(sbmlSpatialFile.getAbsolutePath());
@@ -71,21 +72,25 @@ public class SimpleClient {
         for (Double time : times){
         	System.out.println("t = "+time.toString());
         }
-        List<Double> data = client.getData(simulationInfo, vars.get(0), times.size()/2);
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("[");
-        for (int i=0;i<data.size();i++){
-        	buffer.append(data.get(i)+" ");
-        	if (i%40==39){
-        		buffer.append("\n");
-        	}
-        	if (i>400){
-        		buffer.append("...");
-        		break;
-        	}
-        	
+        final int MAX_SIZE = 400;
+        final int LINE_SIZE = 40;
+        for (VariableInfo var : vars){
+	        List<Double> data = client.getData(simulationInfo, var, times.size()/2);
+	        StringBuffer buffer = new StringBuffer();
+	        buffer.append("var(\""+var.getVariableVtuName()+"\") = [");
+	        for (int i=0;i<data.size();i++){
+	        	buffer.append(data.get(i)+" ");
+	        	if (i%LINE_SIZE==(LINE_SIZE-1)){
+	        		buffer.append("\n");
+	        	}
+	        	if (i>MAX_SIZE){
+	        		buffer.append("...");
+	        		break;
+	        	}
+	        	
+	        }
+	        buffer.append("]");
+	        System.out.println(buffer.toString());
         }
-        buffer.append("]");
-        System.out.println(buffer.toString());
     }
 }

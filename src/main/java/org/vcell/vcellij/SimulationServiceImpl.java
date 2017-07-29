@@ -13,6 +13,7 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.vcellij.api.DomainType;
 import org.vcell.vcellij.api.SBMLModel;
@@ -35,7 +36,10 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.StdoutSessionLog;
+import cbit.vcell.server.DataSetController;
+import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimulationData;
@@ -245,7 +249,7 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 				public void solverFinished(SolverEvent event) {
 					System.out.println(event.getSimulationMessage().getDisplayMessage());
 					try {
-						getSimData(simServiceContext).getDataTimes();
+						getDataSetController(simServiceContext).getDataSetTimes(simServiceContext.vcDataIdentifier);
 						simServiceContext.simState = SimulationState.done;
 					} catch (DataAccessException e) {
 						simServiceContext.simState = SimulationState.failed;
@@ -303,13 +307,16 @@ public class SimulationServiceImpl implements SimulationService.Iface {
     	return solver;
     }
     
-    private static SimulationData getSimData(SimulationServiceContext simServiceContext){
+    private static DataSetControllerImpl getDataSetController(SimulationServiceContext simServiceContext){
 		try {
 			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-			SimulationData simData = new SimulationData(simServiceContext.vcDataIdentifier, simServiceContext.localSimDataDir, null, null);
-			simServiceContext.times = simData.getDataTimes();
-			simServiceContext.dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(outputContext);
-			return simData;
+			
+			SessionLog log = new StdoutSessionLog("data");
+			Cachetable cacheTable = new Cachetable(10000);
+			DataSetControllerImpl datasetController = new DataSetControllerImpl(log,cacheTable,simServiceContext.localSimDataDir.getParentFile(), null);
+			simServiceContext.times = datasetController.getDataSetTimes(simServiceContext.vcDataIdentifier);
+			simServiceContext.dataIdentifiers = datasetController.getDataIdentifiers(outputContext, simServiceContext.vcDataIdentifier);
+			return datasetController;
 		} catch (IOException | DataAccessException e1) {
 			e1.printStackTrace();
 			throw new RuntimeException("failed to read dataset: "+e1.getMessage());
@@ -330,20 +337,20 @@ public class SimulationServiceImpl implements SimulationService.Iface {
         if (simServiceContext==null){
         	throw new RuntimeException("simulation results not found");
         }
-        SimulationData simData = getSimData(simServiceContext);
+        DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
 		try {
-			double[] times = simData.getDataTimes();
+			double[] times = datasetController.getDataSetTimes(simServiceContext.vcDataIdentifier);
 			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-			SimDataBlock simDataBlock = simData.getSimDataBlock(outputContext, varInfo.getVariableVtuName(), times[timeIndex]);
+			SimDataBlock simDataBlock = datasetController.getSimDataBlock(outputContext, simServiceContext.vcDataIdentifier, varInfo.getVariableVtuName(), times[timeIndex]);
 			double[] dataArray = simDataBlock.getData();
 	        ArrayList<Double> dataList = new ArrayList<Double>();
 			for (double d : dataArray){
 				dataList.add(d);
 			}
 			return dataList;
-		} catch (DataAccessException | IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException("failed to retrieve times for simulation: "+e.getMessage(),e);
+			throw new ThriftDataAccessException("failed to retrieve data for variable "+varInfo.getVariableVtuName()+": "+e.getMessage());
 		}
 	}
 
@@ -351,20 +358,20 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 	public List<Double> getTimePoints(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
         SimulationServiceContext simServiceContext = sims.get(simInfo.id);
         if (simServiceContext==null){
-        	throw new RuntimeException("simulation results not found");
+        	throw new ThriftDataAccessException("simulation results not found");
         }
-        SimulationData simData = getSimData(simServiceContext);
-        ArrayList<Double> times = new ArrayList<Double>();
-        double[] timeArray;
-		try {
-			timeArray = simData.getDataTimes();
+        try {
+	        DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
+	        ArrayList<Double> times = new ArrayList<Double>();
+	        double[] timeArray;
+			timeArray = datasetController.getDataSetTimes(simServiceContext.vcDataIdentifier);
 			for (double t : timeArray){
 				times.add(t);
 			}
 			return times;
-		} catch (DataAccessException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException("failed to retrieve times for simulation: "+e.getMessage(),e);
+			throw new ThriftDataAccessException("failed to retrieve times for simulation: "+e.getMessage());
 		}
 	}
 
@@ -372,30 +379,39 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 	public List<VariableInfo> getVariableList(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
         SimulationServiceContext simServiceContext = sims.get(simInfo.id);
         if (simServiceContext==null){
-        	throw new RuntimeException("simulation results not found");
+        	throw new ThriftDataAccessException("simulation results not found");
         }
-        SimulationData simData = getSimData(simServiceContext);
-		OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-        final DataIdentifier[] dataIdentifiers;
-		try {
-			dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(outputContext);
-		} catch (IOException | DataAccessException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to retrieve variable information: "+e.getMessage(),e);
-		}
-        ArrayList<VariableInfo> varInfos = new ArrayList<VariableInfo>();
-        for (DataIdentifier dataIdentifier : dataIdentifiers){
-        	final DomainType domainType;
-        	if (dataIdentifier.getVariableType().equals(VariableType.VOLUME)){
-        		domainType = DomainType.VOLUME;
-        	}else if (dataIdentifier.getVariableType().equals(VariableType.MEMBRANE)){
-        		domainType = DomainType.MEMBRANE;
-        	}else{
-        		continue;
-        	}
-			VariableInfo varInfo = new VariableInfo(dataIdentifier.getName(),dataIdentifier.getDisplayName(),dataIdentifier.getDomain().getName(),domainType);
-			varInfos.add(varInfo);
+        try {
+	        DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
+			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+	        final DataIdentifier[] dataIdentifiers;
+			try {
+				dataIdentifiers = datasetController.getDataIdentifiers(outputContext, simServiceContext.vcDataIdentifier);
+			} catch (IOException | DataAccessException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to retrieve variable information: "+e.getMessage(),e);
+			}
+	        ArrayList<VariableInfo> varInfos = new ArrayList<VariableInfo>();
+	        for (DataIdentifier dataIdentifier : dataIdentifiers){
+	        	final DomainType domainType;
+	        	if (dataIdentifier.getVariableType().equals(VariableType.VOLUME)){
+	        		domainType = DomainType.VOLUME;
+	        	}else if (dataIdentifier.getVariableType().equals(VariableType.MEMBRANE)){
+	        		domainType = DomainType.MEMBRANE;
+	        	}else{
+	        		continue;
+	        	}
+	        	String domainName = "";
+	        	if (dataIdentifier.getDomain()!=null){
+	        		domainName = dataIdentifier.getDomain().getName();
+	        	}
+				VariableInfo varInfo = new VariableInfo(dataIdentifier.getName(),dataIdentifier.getDisplayName(),domainName,domainType);
+				varInfos.add(varInfo);
+	        }
+	        return varInfos;
+        }catch (Exception e){
+        	e.printStackTrace();
+        	throw new ThriftDataAccessException("failed to retrieve variable list: "+e.getMessage());
         }
-        return varInfos;
 	}
 }
