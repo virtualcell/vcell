@@ -2631,8 +2631,23 @@ public boolean isPDERequired(SpeciesContext speciesContext) {
 	//
 	// compartmental models never need diffusion
 	//
-	if (getGeometryContext().getGeometry().getDimension() == 0){
+	int dimension = getGeometryContext().getGeometry().getDimension();
+	if (dimension == 0){
 		return false;
+	}
+	
+	StructureMapping structureMapping = getGeometryContext().getStructureMapping(speciesContext.getStructure());
+	GeometryClass geometryClass = structureMapping.getGeometryClass();
+	if (geometryClass instanceof SubVolume){
+		if (dimension < 1){
+			return false;
+		}
+	}else if (geometryClass instanceof SurfaceClass){
+		if (dimension < 2){
+			return false;
+		}
+	}else{
+		throw new RuntimeException("structure "+speciesContext.getStructure().getName()+" not mapped, or unsupported GeometryClass "+geometryClass);
 	}
 
 	//
