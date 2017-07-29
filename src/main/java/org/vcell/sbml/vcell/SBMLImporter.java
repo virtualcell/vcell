@@ -3909,6 +3909,7 @@ public class SBMLImporter {
 							}
 							case Neumann:{
 								bct = BoundaryConditionType.NEUMANN;
+								break;
 							}
 							case Robin_inwardNormalGradientCoefficient:
 							case Robin_sum:
