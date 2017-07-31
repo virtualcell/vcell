@@ -102,7 +102,6 @@ public class SolverPreprocessor  {
 			}
 		}
 		Logging.init();
-		Logging.changeConsoleLogging(ConsoleDestination.STD_ERR, ConsoleDestination.STD_OUT); 
 		Log4jSessionLog log = new Log4jSessionLog(LOG_NAME);
 		try {
 			

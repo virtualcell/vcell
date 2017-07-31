@@ -1,19 +1,75 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.vcell</groupId>
-  <artifactId>pom-vcell</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
-  <parent>
-  	<groupId>org.scijava</groupId>
-  	<artifactId>pom-scijava</artifactId>
-  	<version>14.0.0</version>
-  </parent>
-  <name>Virtual Cell Project</name>
-  <url>http://vcell.org/</url>
-  <properties>
-  	<enforcer.skip>true</enforcer.skip>
-  </properties>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.vcell</groupId>
+	<artifactId>vcell</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>14.0.0</version>
+	</parent>
+	<name>Virtual Cell Project</name>
+	<url>http://vcell.org/</url>
+	<description>The Virtual Cell client and server</description>
+	<inceptionYear>1997</inceptionYear>
+	<organization>
+		<name>VCell</name>
+		<url>http://vcell.org</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>MIT</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<id>jcschaff</id>
+			<name>Jim Schaff</name>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>John Wagner</name>
+		</contributor>
+	</contributors>
+	<mailingLists>
+		<mailingList>
+			<name>VCell Open Discussion Forum</name>
+			<subscribe>https://groups.google.com/group/vcell-discuss</subscribe>
+			<unsubscribe>https://groups.google.com/group/vcell-discuss</unsubscribe>
+			<post>vcell-discuss@googlegroups.com</post>
+			<archive>https://groups.google.com/group/vcell-discuss</archive>
+		</mailingList>
+	</mailingLists>
+	<scm>
+		<connection>scm:git:git://github.com/scijava/pom-scijava-base</connection>
+		<developerConnection>scm:git:git@github.com:scijava/pom-scijava-base</developerConnection>
+		<tag>pom-scijava-base-3.0.0</tag>
+		<url>https://github.com/scijava/pom-scijava-base/</url>
+	</scm>
+	<issueManagement>
+		<system>Bugzilla</system>
+		<url>http://code3.cam.uchc.edu/bugzilla/</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://jenkins.vcell.org/job/vcell/</url>
+	</ciManagement>
+	<properties>
+		<enforcer.skip>true</enforcer.skip>
+	</properties>
+  
 	<repositories>
 		<!-- needed for org.sbml.jsbml -->
 		<repository>
@@ -139,7 +195,23 @@
 					<groupId>xml-apis</groupId>
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>xom</groupId>
+					<artifactId>xom</artifactId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/jaxen/jaxen -->
+		<dependency>
+		    <groupId>jaxen</groupId>
+		    <artifactId>jaxen</artifactId>
+		    <version>1.1.6</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/xom/xom -->
+		<dependency>
+		    <groupId>xom</groupId>
+		    <artifactId>xom</artifactId>
+		    <version>1.2.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
@@ -164,6 +236,10 @@
 		    	<exclusion>
 		    		<groupId>xml-apis</groupId>
 		    		<artifactId>xml-apis</artifactId>
+		    	</exclusion>
+		    	<exclusion>
+		    		<groupId>edu.ucar</groupId>
+		    		<artifactId>grib</artifactId>
 		    	</exclusion>
 		    </exclusions>
 		</dependency>
@@ -336,12 +412,6 @@
 		    <groupId>org.scijava</groupId>
 		    <artifactId>scijava-common</artifactId>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/log4j/apache-log4j-extras -->
-		<dependency>
-		    <groupId>log4j</groupId>
-		    <artifactId>apache-log4j-extras</artifactId>
-		    <version>1.0</version>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/gov.nist.math/jama -->
 		<dependency>
 		    <groupId>gov.nist.math</groupId>
@@ -378,15 +448,27 @@
 		    <artifactId>org.eclipse.lsp4j</artifactId>
 		    <version>0.2.0</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.python/jython -->
+		<!-- https://mvnrepository.com/artifact/org.scijava/jython-shaded -->
 		<dependency>
-		    <groupId>org.python</groupId>
-		    <artifactId>jython</artifactId>
+		    <groupId>org.scijava</groupId>
+		    <artifactId>jython-shaded</artifactId>
 		    <version>2.7.0</version>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<rules>
+						<banDuplicateClasses>
+							<ignoreClasses>
+								<ignoreClass>org.w3c.dom.UserDataHandler</ignoreClass>
+							</ignoreClasses>
+						</banDuplicateClasses>
+					</rules>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>

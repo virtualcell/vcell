@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.log4j.ConsoleAppender;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -111,23 +111,23 @@ public class Logging {
 		}
 		
 	}
-	/**
-	 * change console logging from stderr to stdout, or vice-versa
-	 * @param from
-	 * @param to
-	 */
-	public static void changeConsoleLogging(ConsoleDestination from, ConsoleDestination to) {
-		Logger rootLogger = Logger.getRootLogger();
-		Enumeration<?> e = rootLogger.getAllAppenders();
-		while (e.hasMoreElements()) {
-			Object a = e.nextElement();
-			if (a instanceof ConsoleAppender) {
-				ConsoleAppender ca = (ConsoleAppender) a;
-				if (ca.getTarget().equals(from.log4jName)) {
-					ca.setTarget(to.log4jName);
-					ca.activateOptions();
-				}
-			}
-		}
-	}
+//	/**
+//	 * change console logging from stderr to stdout, or vice-versa
+//	 * @param from
+//	 * @param to
+//	 */
+//	public static void changeConsoleLogging(ConsoleDestination from, ConsoleDestination to) {
+//		Logger rootLogger = Logger.getRootLogger();
+//		Enumeration<?> e = rootLogger.getAllAppenders();
+//		while (e.hasMoreElements()) {
+//			Object a = e.nextElement();
+//			if (a instanceof ConsoleAppender) {
+//				ConsoleAppender ca = (ConsoleAppender) a;
+//				if (ca.getTarget().equals(from.log4jName)) {
+//					ca.setTarget(to.log4jName);
+//					ca.activateOptions();
+//				}
+//			}
+//		}
+//	}
 }

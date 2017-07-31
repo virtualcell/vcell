@@ -42,10 +42,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
@@ -67,14 +63,6 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 public class ChomboSimpleDataViewer extends JFrame {
-	
-	static
-	{
-	    Logger rootLogger = Logger.getRootLogger();
-	    rootLogger.setLevel(Level.OFF);
-	    rootLogger.removeAllAppenders();
-	    rootLogger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
-	}
 	
 	private static class MeshMetricsTableModel extends AbstractTableModel
 	{
