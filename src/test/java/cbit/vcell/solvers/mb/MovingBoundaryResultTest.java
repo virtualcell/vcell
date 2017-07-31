@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.util.logging.Logging;
 
@@ -14,6 +15,7 @@ import cbit.vcell.solvers.mb.MovingBoundaryTypes.Plane;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.Species;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.TimeInfo;
 
+@Ignore
 public class MovingBoundaryResultTest extends H5Client {
     private static String fname  = FILE;
 	MovingBoundaryReader mbr;

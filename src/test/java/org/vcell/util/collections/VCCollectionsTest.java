@@ -43,9 +43,9 @@ public class VCCollectionsTest {
 		a.add(8);
 		assertFalse(VCCollections.equal(a, b, cmp, null));
 		assertFalse(VCCollections.equal(a, b, cmp, dt));
-		for (Delta<Integer> d : dt) {
-			System.out.println(d);
-		}
+//		for (Delta<Integer> d : dt) {
+//			System.out.println(d);
+//		}
 		
 		
 		

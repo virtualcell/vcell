@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
@@ -18,6 +19,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
+@Ignore
 public class SBMLUnitTranslatorTest {
 
 	public static File[] getBiomodelsCuratedSBMLFiles(){

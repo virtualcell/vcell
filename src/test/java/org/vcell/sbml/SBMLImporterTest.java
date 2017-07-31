@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.logging.Logging;
@@ -13,6 +14,7 @@ import org.vcell.util.logging.Logging;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 
+@Ignore
 public class SBMLImporterTest {
 
 	public static void main(String[] args) {

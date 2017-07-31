@@ -11,9 +11,11 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.vcellij.SimulationServiceImpl;
 
+@Ignore
 public class SimulationServiceImplTest {
 
 	@Before

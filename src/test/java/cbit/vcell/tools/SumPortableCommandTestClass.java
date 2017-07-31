@@ -18,7 +18,8 @@ public class SumPortableCommandTestClass implements PortableCommand {
 
 	@Override
 	public int execute() {
-		System.out.println("sum is " + ( a+ b) );
+		String message = "sum is " + ( a+ b);
+		//System.out.println(message );
 		return 0;
 	}
 

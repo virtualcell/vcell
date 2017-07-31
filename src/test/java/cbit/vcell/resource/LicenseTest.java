@@ -1,19 +1,15 @@
 package cbit.vcell.resource;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class LicenseTest {
 	
 	@Test
 	public void getMit( ) {
 		String mitL = ResourceUtil.resourceToString("/org/vcell/licenses/mit.txt");
 		System.out.println(mitL);
-	}
-	
-	@Test
-	public void getGpl( ) {
-		String lic = ResourceUtil.resourceToString("/org/vcell/licenses/gpl.txt");
-		System.out.println(lic);
 	}
 	
 	@Test

@@ -10,12 +10,14 @@ import java.util.prefs.BackingStoreException;
 
 import javax.swing.JFrame;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VisitSupport;
 
+@Ignore
 public class GraphicExecutableFinderTest {
 	public static String TEST_EXE  = "MovingBoundary";
 	//@Test

@@ -2,20 +2,18 @@ package cbit.vcell.units.parser;
 
 import org.junit.Test;
 
+import org.junit.Assert;
+
 public class UnitSymbolTest {
 
 	public UnitSymbolTest() {
 		// TODO Auto-generated constructor stub
 	}
 	
-	private void dump(UnitSymbol us) {
-		us.dump("D");
-	}
-	
 	@Test
 	public void example( ) {
-		UnitSymbol us = new UnitSymbol("uM.s-1");
-		dump(us);
+		Assert.assertEquals("uM*s^-1", new UnitSymbol("uM.s-1").getUnitSymbolAsInfix());
+		//us.dump("D");
 	}
 
 }

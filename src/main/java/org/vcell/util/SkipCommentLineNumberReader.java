@@ -50,6 +50,9 @@ public class SkipCommentLineNumberReader implements AutoCloseable {
 		}
 		while (internalReader.ready()) {
 			bufferedLine = internalReader.readLine();
+			if (bufferedLine==null){
+				break;
+			}
 			if (bufferedLine.indexOf(COMMENT_CHAR) != 0) {
 				return true;
 			}

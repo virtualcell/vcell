@@ -81,8 +81,10 @@ public class TestMathDescription implements ProblemRequirements {
 		while (tmd.hasMoreStates()) {
 			tmd.nextState();
 			Checker.validate(tmd);
-			System.out.println (tmd.isSpatial() + " " + tmd.isSpatialHybrid() + " " + tmd.hasFastSystems() + " " + tmd.isSpatialStoch() + " " + tmd.hasDirichletAtMembrane()
-					+ " " + tmd.isNonSpatialStoch() + " " + tmd.isMovingMembrane());
+//			System.out.println (tmd.isSpatial() + " " + tmd.isSpatialHybrid() 
+//					+ " " + tmd.hasFastSystems() + " " + tmd.isSpatialStoch() 
+//					+ " " + tmd.hasDirichletAtMembrane()
+//					+ " " + tmd.isNonSpatialStoch() + " " + tmd.isMovingMembrane());
 		}
 	}
 	

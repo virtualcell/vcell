@@ -4,14 +4,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.vcell.util.logging.Logging;
 
-import cbit.vcell.util.NativeLoader;
-
 public class NativeLibTest {
 	@Before
 	public void init( ) {
 		Logging.init( );
+		System.setProperty(PropertyLoader.installationRoot,".");
 		ResourceUtil.init();
-		NativeLoader.setNativeLibraryDirectory("D:/workspace/VCellTrunk/nativelibs/win64");
+		ResourceUtil.setNativeLibraryDirectory();
 	}
 	
 	@Test

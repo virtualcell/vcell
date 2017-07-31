@@ -17,12 +17,14 @@ package cbit.vcell.solvers.mb;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cern.colt.Arrays;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 
+@Ignore
 public class VH5PathTest extends H5Client {
     private static String fname  = FILE;
 	private FileFormat testFile = null;

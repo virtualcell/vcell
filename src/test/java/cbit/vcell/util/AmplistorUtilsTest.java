@@ -17,12 +17,14 @@ import java.util.Hashtable;
 import java.util.Random;
 import java.util.Scanner;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 
+@Ignore
 public class AmplistorUtilsTest {
 	
 	private static final int NUMFILES = 5;

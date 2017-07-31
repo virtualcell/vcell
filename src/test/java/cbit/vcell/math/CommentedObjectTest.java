@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class CommentedObjectTest {
 
@@ -12,16 +12,12 @@ public class CommentedObjectTest {
 	public void equiv( ) {
 		Mock one = new Mock("Virtual", "Cell");
 		Mock two = new Mock("Virtual", "Cell");
-		Assert.assertTrue(one.equals(two));
+		Assert.assertFalse(one.equals(two));
 		Assert.assertTrue(one.compareEqual(two));
-		Assert.assertTrue(Objects.equals(one, two));
 		
 		two.setAfterComment("Reality");
 		Assert.assertFalse(one.equals(two));
 		Assert.assertFalse(one.compareEqual(two));
-		Assert.assertFalse(Objects.equals(one, two));
-		one = null;
-		Assert.assertFalse(Objects.equals(one, two));
 	}
 	
 	@SuppressWarnings("serial")

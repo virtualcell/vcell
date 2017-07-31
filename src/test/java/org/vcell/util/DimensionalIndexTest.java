@@ -3,6 +3,7 @@ package org.vcell.util;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class DimensionalIndexTest {
@@ -51,9 +52,9 @@ public class DimensionalIndexTest {
 	@Test
 	public void badZmsg( ) {
 		try {
-			index.rollup(0,0,mZ); 
+			index.rollup(0,0,mZ);
+			Assert.fail("should have thrown an exception");
 		} catch (RuntimeException re) {
-			re.printStackTrace();
 		}
 	}
 

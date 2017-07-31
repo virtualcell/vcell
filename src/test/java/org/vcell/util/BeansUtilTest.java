@@ -16,6 +16,8 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class BeansUtilTest {
@@ -77,7 +79,7 @@ public class BeansUtilTest {
 	@Test
 	public void lookupTest( ) {
 		java.util.concurrent.TimeUnit tu = BeanUtils.lookupEnum(TimeUnit.class, 3);
-		System.out.println(tu);
+		Assert.assertEquals(tu.toString(),"SECONDS");
 	}
 	
 	@Test
@@ -105,6 +107,7 @@ public class BeansUtilTest {
 		System.out.println(BeanUtils.getStackTrace());
 	}
 	
+	@Ignore
 	@Test
 	public void stackTrace( ) {
 		eenie( );
@@ -117,16 +120,19 @@ public class BeansUtilTest {
 		System.out.println(out);
 	}
 	
-	
-//	@Test
+	@Ignore
+	@Test
 	public void downloadWatch( ) throws MalformedURLException {
 		downloadString(new TaskSupport( ));
 	}
 	
+	@Ignore
 	@Test
 	public void downloadSilent( ) throws MalformedURLException {
 		downloadString(new SilentTaskSupport( ));
 	}
+	
+	@Ignore
 	@Test
 	public void downloadNull( ) throws MalformedURLException {
 		downloadString(null);

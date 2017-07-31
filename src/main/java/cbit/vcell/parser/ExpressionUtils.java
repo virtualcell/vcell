@@ -58,14 +58,14 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 		2.0,	// ADD
 		0.0,	// AND
 		2.0,	// FLOAT
-		1.0,	// FUNCTION
+		0.0,	// FUNCTION
 		1.0,	// ID
 		1.0,	// INVERT
 		1.0,	// MINUS
 		2.0,	// MULT
 		0.0,	// NOT
 		0.0,	// OR
-		1,		// POWER
+		0.0,	// POWER
 		0.0,	// RELATIONAL
 	};
 		

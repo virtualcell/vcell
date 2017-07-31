@@ -27,7 +27,7 @@ public class PortableCommandWrapperTest {
 			SumPortableCommandTestClass c = new SumPortableCommandTestClass(2,3);
 			PortableCommandWrapper shell = new PortableCommandWrapper(c);
 			json = shell.asJson();
-			System.out.println(json);
+			//System.out.println(json);
 			c.execute();
 		}
 		

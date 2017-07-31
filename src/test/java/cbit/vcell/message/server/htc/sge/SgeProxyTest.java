@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cbit.vcell.message.server.htc.HtcProxy;
@@ -12,6 +13,7 @@ import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.solvers.ExecutableCommand.Container;
 
 
+@Ignore 
 public class SgeProxyTest {
 	@Before
 	public void setEnv() {

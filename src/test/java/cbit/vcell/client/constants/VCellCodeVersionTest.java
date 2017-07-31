@@ -17,7 +17,7 @@ public class VCellCodeVersionTest {
 		Assert.assertTrue(VCellCodeVersion.CURRENT.compareTo(minorLess) > 0);
 		Assert.assertTrue(VCellCodeVersion.CURRENT.compareTo(majorLess) > 0);
 		Assert.assertTrue(VCellCodeVersion.CURRENT.compareTo(self) == 0);
-		Assert.assertTrue(VCellCodeVersion.CURRENT.compare(5,4) < 0);
+		Assert.assertTrue(VCellCodeVersion.CURRENT.compare(5,4) > 0);
 	}
 	
 	private VCellCodeVersion gen(int maj, int min) {

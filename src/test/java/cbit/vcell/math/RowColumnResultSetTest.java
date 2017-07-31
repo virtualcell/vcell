@@ -10,6 +10,7 @@
 
 package cbit.vcell.math;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import cbit.vcell.parser.Expression;
@@ -41,39 +42,41 @@ public void test() {
 			r.addRow(new double[] {t[i], x[i], y[i]});
 		}
 		r.addFunctionColumn(new FunctionColumnDescription(new Expression("1e-5*pow(sin(.3*t), 2)"),"newFunc", null, "newFunc", false));
-		long startTime = System.currentTimeMillis();
+		//long startTime = System.currentTimeMillis();
 		r.trimRows(SAMPLING);
-		long endTime = System.currentTimeMillis();
-		long elapsedTime = endTime - startTime;
-		System.out.println("Elapsed Time: " + elapsedTime);
-		double t2[] = r.extractColumn(0);
-		double x2[] = r.extractColumn(1);
-		double y2[] = r.extractColumn(2);
-		double f2[] = r.extractColumn(3);
-	System.out.println("size: rows="+r.getRowCount()+", columns="+r.getColumnDescriptionsCount());
-		
-		try {
-			javax.swing.JFrame frame = new javax.swing.JFrame();
-			cbit.plot.gui.Plot2DPanel aPlot2DPanel;
-			aPlot2DPanel = new cbit.plot.gui.Plot2DPanel();
-			frame.setContentPane(aPlot2DPanel);
-			frame.setSize(aPlot2DPanel.getSize());
-			frame.addWindowListener(new java.awt.event.WindowAdapter() {
-				public void windowClosing(java.awt.event.WindowEvent e) {
-					System.exit(0);
-				};
-			});
-			frame.show();
-			java.awt.Insets insets = frame.getInsets();
-			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-			frame.setVisible(true);
-			aPlot2DPanel.setPlot2D(new cbit.plot.Plot2D(null,null,new String[] {"plot1","plot2","plot3","plot4", "plot5"},new cbit.plot.PlotData[] { new cbit.plot.PlotData(t,x), new cbit.plot.PlotData(t2,x2), new cbit.plot.PlotData(t,y), new cbit.plot.PlotData(t2,y2), new cbit.plot.PlotData(t2,f2) }));
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred in main() of javax.swing.JPanel");
-			exception.printStackTrace(System.out);
-		}
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		Assert.assertTrue(r.getRowCount()<SAMPLING);
+//		long endTime = System.currentTimeMillis();
+//		long elapsedTime = endTime - startTime;
+//		System.out.println("Elapsed Time: " + elapsedTime);
+//		double t2[] = r.extractColumn(0);
+//		double x2[] = r.extractColumn(1);
+//		double y2[] = r.extractColumn(2);
+//		double f2[] = r.extractColumn(3);
+//	System.out.println("size: rows="+r.getRowCount()+", columns="+r.getColumnDescriptionsCount());
+//		
+//		try {
+//			javax.swing.JFrame frame = new javax.swing.JFrame();
+//			cbit.plot.gui.Plot2DPanel aPlot2DPanel;
+//			aPlot2DPanel = new cbit.plot.gui.Plot2DPanel();
+//			frame.setContentPane(aPlot2DPanel);
+//			frame.setSize(aPlot2DPanel.getSize());
+//			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+//				public void windowClosing(java.awt.event.WindowEvent e) {
+//					System.exit(0);
+//				};
+//			});
+//			frame.show();
+//			java.awt.Insets insets = frame.getInsets();
+//			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+//			frame.setVisible(true);
+//			aPlot2DPanel.setPlot2D(new cbit.plot.Plot2D(null,null,new String[] {"plot1","plot2","plot3","plot4", "plot5"},new cbit.plot.PlotData[] { new cbit.plot.PlotData(t,x), new cbit.plot.PlotData(t2,x2), new cbit.plot.PlotData(t,y), new cbit.plot.PlotData(t2,y2), new cbit.plot.PlotData(t2,f2) }));
+//		} catch (Throwable exception) {
+//			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+//			exception.printStackTrace(System.out);
+//		}
+	}catch (Exception e){
+		e.printStackTrace();
+		Assert.fail(e.getMessage());
 	}
 }
 }

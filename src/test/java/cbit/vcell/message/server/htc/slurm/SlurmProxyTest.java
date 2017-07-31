@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cbit.vcell.message.server.htc.HtcProxy;
@@ -11,7 +12,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.solvers.ExecutableCommand.Container;
 
-
+@Ignore
 public class SlurmProxyTest {
 	@Before
 	public void setEnv() {

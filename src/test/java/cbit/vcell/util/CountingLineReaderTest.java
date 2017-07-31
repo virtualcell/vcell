@@ -3,9 +3,11 @@ package cbit.vcell.util;
 import java.io.IOException;
 import java.io.StringReader;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.util.CountingLineReader;
 
+@Ignore
 public class CountingLineReaderTest {
 	
 	private final static String BLB =
