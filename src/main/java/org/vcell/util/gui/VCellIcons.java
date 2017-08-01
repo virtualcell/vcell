@@ -18,6 +18,8 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -30,171 +32,202 @@ import javax.swing.UIManager;
 import org.vcell.util.BeanUtils;
 
 public abstract class VCellIcons {
+	public static HashMap<String,URL> imagePaths = new HashMap<String,URL>();
+	
+	private static URL getResourceUrl(String resourcePath) {
+		URL url = VCellIcons.class.getResource(resourcePath);
+		imagePaths.put(resourcePath,url);
+		return url;
+	}
+	
+	public static Image makeImage(String resourcePath){
+		URL resourceUrl = getResourceUrl(resourcePath);
+		if (resourceUrl==null){
+			return null;
+		}
+		return Toolkit.getDefaultToolkit().getImage(resourceUrl);
+	}
+
+	public static BufferedImage makeBufferedImage(String resourcePath) throws IOException{
+		URL resourceUrl = getResourceUrl(resourcePath);
+		if (resourceUrl==null){
+			return null;
+		}
+		return ImageIO.read(resourceUrl);
+	}
+	
+	public static ImageIcon makeIcon(String resourcePath){
+		URL resourceUrl = getResourceUrl(resourcePath);
+		if (resourceUrl==null){
+			return null;
+		}
+		return new ImageIcon(resourceUrl);
+	}
 	
 	public final static int VCellIconWidth = 16;
 	public final static int VCellIconHeight = 16;
 
-	public final static Image panCursorImage = Toolkit.getDefaultToolkit().getImage(VCellIcons.class.getResource("/pan.gif"));
-	public final static Image zoomCursorImage = Toolkit.getDefaultToolkit().getImage(VCellIcons.class.getResource("/zoom.gif"));
+	public final static Image panCursorImage = makeImage("/pan.gif");
+	public final static Image zoomCursorImage = makeImage("/zoom.gif");
 	
-	public final static Icon dataSetsIcon = new ImageIcon(VCellIcons.class.getResource("/data_sets_20x20.gif"));
-	public final static Icon dataExporterIcon = new ImageIcon(VCellIcons.class.getResource("/data_exporter_20x20.gif"));
+	public final static Icon dataSetsIcon = makeIcon("/data_sets_20x20.gif");
+	public final static Icon dataExporterIcon = makeIcon("/data_exporter_20x20.gif");
 	
 	// Rule Based Modeling
-	public final static Icon rbmIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm.png"));
-//	public final static Icon rbmMolecularTypeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecule.png"));
-	public final static Icon rbmMolecularTypeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecule_type.png"));
-	public final static Icon rbmMolecularTypeSimpleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecule_type2.png"));
-	public final static Icon rbmSpeciesGreenIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_species_green.png"));
-	public final static Icon rbmSpeciesBlueIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_species_blue.png"));
-	public final static Icon rbmReactRuleDirectIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_react_rule_direct.png"));
-	public final static Icon rbmReactRuleReversIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_react_rule_revers.png"));
+	public final static Icon rbmIcon = makeIcon("/icons/rbm.png");
+//	public final static Icon rbmMolecularTypeIcon = makeIcon("/icons/rbm_molecule.png");
+	public final static Icon rbmMolecularTypeIcon = makeIcon("/icons/rbm_molecule_type.png");
+	public final static Icon rbmMolecularTypeSimpleIcon = makeIcon("/icons/rbm_molecule_type2.png");
+	public final static Icon rbmSpeciesGreenIcon = makeIcon("/icons/rbm_species_green.png");
+	public final static Icon rbmSpeciesBlueIcon = makeIcon("/icons/rbm_species_blue.png");
+	public final static Icon rbmReactRuleDirectIcon = makeIcon("/icons/rbm_react_rule_direct.png");
+	public final static Icon rbmReactRuleReversIcon = makeIcon("/icons/rbm_react_rule_revers.png");
 
-//	public final static Icon rbmMolecularComponentIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component.gif"));
-	public final static Icon rbmComponentGreenIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_green.gif"));
-	public final static Icon rbmComponentGreenStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_greenState.gif"));
-	public final static Icon rbmComponentGrayIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_gray.gif"));
-	public final static Icon rbmComponentGrayStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_grayState.gif"));
-	public final static Icon rbmComponentErrorIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_error.gif"));
+//	public final static Icon rbmMolecularComponentIcon = makeIcon("/icons/rbm_molecular_component.gif");
+	public final static Icon rbmComponentGreenIcon = makeIcon("/icons/rbm_component_green.gif");
+	public final static Icon rbmComponentGreenStateIcon = makeIcon("/icons/rbm_component_greenState.gif");
+	public final static Icon rbmComponentGrayIcon = makeIcon("/icons/rbm_component_gray.gif");
+	public final static Icon rbmComponentGrayStateIcon = makeIcon("/icons/rbm_component_grayState.gif");
+	public final static Icon rbmComponentErrorIcon = makeIcon("/icons/rbm_component_error.gif");
 
-	public final static Icon rbmMolecularComponentErrIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component_err.gif"));
-	public final static Icon rbmComponentStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_state.png"));
-	public final static Icon rbmObservableIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_observable.gif"));
-	public final static Icon rbmReactantIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_reactant.png"));
-	public final static Icon rbmProductIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_product.png"));
+	public final static Icon rbmMolecularComponentErrIcon = makeIcon("/icons/rbm_molecular_component_err.gif");
+	public final static Icon rbmComponentStateIcon = makeIcon("/icons/rbm_component_state.png");
+	public final static Icon rbmObservableIcon = makeIcon("/icons/rbm_observable.gif");
+	public final static Icon rbmReactantIcon = makeIcon("/icons/rbm_reactant.png");
+	public final static Icon rbmProductIcon = makeIcon("/icons/rbm_product.png");
 
-	public final static Icon rbmBondIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond.gif"));
-	public final static Icon rbmBondNoneIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_none.png"));
-	public final static Icon rbmBondExistsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_exists.png"));
-	public final static Icon rbmBondPossibleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_possible.png"));
+	public final static Icon rbmBondIcon = makeIcon("/icons/rbm_bond.gif");
+	public final static Icon rbmBondNoneIcon = makeIcon("/icons/rbm_bond_none.png");
+	public final static Icon rbmBondExistsIcon = makeIcon("/icons/rbm_bond_exists.png");
+	public final static Icon rbmBondPossibleIcon = makeIcon("/icons/rbm_bond_possible.png");
 
-	public final static Icon spatialPointIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_point.png"));
-	public final static Icon spatialMembraneIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_membrane2.png"));
-	public final static Icon spatialVolumeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_volume.png"));
-	public final static Icon spatialKinematicsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_kinematic.png"));
-	public final static Icon spatialLocationIcon = new ImageIcon(VCellIcons.class.getResource("/icons/spatial_location2.png"));
+	public final static Icon spatialPointIcon = makeIcon("/icons/spatial_point.png");
+	public final static Icon spatialMembraneIcon = makeIcon("/icons/spatial_membrane2.png");
+	public final static Icon spatialVolumeIcon = makeIcon("/icons/spatial_volume.png");
+	public final static Icon spatialKinematicsIcon = makeIcon("/icons/spatial_kinematic.png");
+	public final static Icon spatialLocationIcon = makeIcon("/icons/spatial_location2.png");
 
-	public final static Icon kineticsPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/kinetics_properties.png"));
-	public final static Icon editorPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/editor_properties.png"));
+	public final static Icon kineticsPropertiesIcon = makeIcon("/icons/kinetics_properties.png");
+	public final static Icon editorPropertiesIcon = makeIcon("/icons/editor_properties.png");
 
-	public final static Icon moveLeftIcon = new ImageIcon(VCellIcons.class.getResource("/icons/move_left.png"));
-	public final static Icon moveRightIcon = new ImageIcon(VCellIcons.class.getResource("/icons/move_right.png"));
+	public final static Icon moveLeftIcon = makeIcon("/icons/move_left.png");
+	public final static Icon moveRightIcon = makeIcon("/icons/move_right.png");
 
 	// Chombo
-	public final static Icon refLevelNewIcon = new ImageIcon(VCellIcons.class.getResource("/icons/reflevel_new.png"));
-	public final static Icon refLevelDeleteIcon = new ImageIcon(VCellIcons.class.getResource("/icons/reflevel_delete.png"));
+	public final static Icon refLevelNewIcon = makeIcon("/icons/reflevel_new.png");
+	public final static Icon refLevelDeleteIcon = makeIcon("/icons/reflevel_delete.png");
 	
 	// CSG
-	public final static Icon csgSphereIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_sphere.png"));
-	public final static Icon csgCubeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_cube.png"));
-	public final static Icon csgCylinderIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_cylinder.png"));
-	public final static Icon csgConeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_cone.png"));
-	public final static Icon csgSetUnionIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_set_union.png"));
-	public final static Icon csgSetIntersectionIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_set_intersection.png"));
-	public final static Icon csgSetDifferenceIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_set_difference.png"));
-	public final static Icon csgRotationIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_rotation.png"));
-	public final static Icon csgTranslationIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_translation.png"));
-	public final static Icon csgScaleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_scale.png"));
+	public final static Icon csgSphereIcon = makeIcon("/icons/csg_sphere.png");
+	public final static Icon csgCubeIcon = makeIcon("/icons/csg_cube.png");
+	public final static Icon csgCylinderIcon = makeIcon("/icons/csg_cylinder.png");
+	public final static Icon csgConeIcon = makeIcon("/icons/csg_cone.png");
+	public final static Icon csgSetUnionIcon = makeIcon("/icons/csg_set_union.png");
+	public final static Icon csgSetIntersectionIcon = makeIcon("/icons/csg_set_intersection.png");
+	public final static Icon csgSetDifferenceIcon = makeIcon("/icons/csg_set_difference.png");
+	public final static Icon csgRotationIcon = makeIcon("/icons/csg_rotation.png");
+	public final static Icon csgTranslationIcon = makeIcon("/icons/csg_translation.png");
+	public final static Icon csgScaleIcon = makeIcon("/icons/csg_scale.png");
 	
 	// table
-	public final static Icon firstPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/first_page.png"));
-	public final static Icon previousPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/previous_page.png"));
-	public final static Icon nextPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/next_page.png"));
-	public final static Icon lastPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/last_page.png"));
+	public final static Icon firstPageIcon = makeIcon("/icons/first_page.png");
+	public final static Icon previousPageIcon = makeIcon("/icons/previous_page.png");
+	public final static Icon nextPageIcon = makeIcon("/icons/next_page.png");
+	public final static Icon lastPageIcon = makeIcon("/icons/last_page.png");
 	
-	public final static Icon issueErrorIcon = new ImageIcon(VCellIcons.class.getResource("/icons/issueError.png"));
-	public final static Icon issueWarningIcon = new ImageIcon(VCellIcons.class.getResource("/icons/issueWarning.png"));
-	public final static Icon issueGoodIcon = new ImageIcon(VCellIcons.class.getResource("/icons/issueGood.png"));
+	public final static Icon issueErrorIcon = makeIcon("/icons/issueError.png");
+	public final static Icon issueWarningIcon = makeIcon("/icons/issueWarning.png");
+	public final static Icon issueGoodIcon = makeIcon("/icons/issueGood.png");
 
 	// pathway
-	public final static Icon pathwaySelectIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/select.gif"));
-	public final static Icon pathwayZoomInIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/zoomin.gif"));
-	public final static Icon pathwayZoomOutIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/zoomout.gif"));
-	public final static Icon pathwayRandomIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/random.gif"));
-	public final static Icon pathwayCircularIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/circular.gif"));
-	public final static Icon pathwayAnnealedIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/annealed.gif"));
-	public final static Icon pathwayLevelledIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/levelled.gif"));
-	public final static Icon pathwayRelaxedIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/relaxed.gif"));
-	public final static Icon pathwayReactionsOnlyIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/level1.gif"));
-	public final static Icon pathwayReactionNetworkIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/level2.gif"));
-	public final static Icon pathwayComponentsIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/level3.gif"));
-	public final static Icon glgLayoutIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/glg3.gif"));
-	public final static Icon shrinkLayoutIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/shrink.gif"));
-	public final static Icon expandLayoutIcon = new ImageIcon(VCellIcons.class.getResource("/images/layout/expand.gif"));
+	public final static Icon pathwaySelectIcon = makeIcon("/images/layout/select.gif");
+	public final static Icon pathwayZoomInIcon = makeIcon("/images/layout/zoomin.gif");
+	public final static Icon pathwayZoomOutIcon = makeIcon("/images/layout/zoomout.gif");
+	public final static Icon pathwayRandomIcon = makeIcon("/images/layout/random.gif");
+	public final static Icon pathwayCircularIcon = makeIcon("/images/layout/circular.gif");
+	public final static Icon pathwayAnnealedIcon = makeIcon("/images/layout/annealed.gif");
+	public final static Icon pathwayLevelledIcon = makeIcon("/images/layout/levelled.gif");
+	public final static Icon pathwayRelaxedIcon = makeIcon("/images/layout/relaxed.gif");
+	public final static Icon pathwayReactionsOnlyIcon = makeIcon("/images/layout/level1.gif");
+	public final static Icon pathwayReactionNetworkIcon = makeIcon("/images/layout/level2.gif");
+	public final static Icon pathwayComponentsIcon = makeIcon("/images/layout/level3.gif");
+	public final static Icon glgLayoutIcon = makeIcon("/images/layout/glg3.gif");
+	public final static Icon shrinkLayoutIcon = makeIcon("/images/layout/shrink.gif");
+	public final static Icon expandLayoutIcon = makeIcon("/images/layout/expand.gif");
 
-	public final static Icon pathwayReactionIcon = new ImageIcon(VCellIcons.class.getResource("/images/step.gif"));
-	public final static Icon pathwayTransportIcon = new ImageIcon(VCellIcons.class.getResource("/images/flux.gif"));
-	public final static Icon pathwayReactionWtIcon = new ImageIcon(VCellIcons.class.getResource("/images/biopax/transportWithBiochemicalReaction.gif"));
-	public final static Icon pathwayEntityIcon = new ImageIcon(VCellIcons.class.getResource("/images/biopax/entity.gif"));
-	public final static Icon pathwaySmallMoleculeIcon = new ImageIcon(VCellIcons.class.getResource("/images/biopax/smallMolecule.gif"));
-	public final static Icon pathwayProteinIcon = new ImageIcon(VCellIcons.class.getResource("/images/biopax/protein.gif"));
-	public final static Icon pathwayComplexIcon = new ImageIcon(VCellIcons.class.getResource("/images/biopax/complex.gif"));
-	public final static Icon pathwayParticipantsIcon = new ImageIcon(VCellIcons.class.getResource("/images/biopax/modification.gif"));
+	public final static Icon pathwayReactionIcon = makeIcon("/images/step.gif");
+	public final static Icon pathwayTransportIcon = makeIcon("/images/flux.gif");
+	public final static Icon pathwayReactionWtIcon = makeIcon("/images/biopax/transportWithBiochemicalReaction.gif");
+	public final static Icon pathwayEntityIcon = makeIcon("/images/biopax/entity.gif");
+	public final static Icon pathwaySmallMoleculeIcon = makeIcon("/images/biopax/smallMolecule.gif");
+	public final static Icon pathwayProteinIcon = makeIcon("/images/biopax/protein.gif");
+	public final static Icon pathwayComplexIcon = makeIcon("/images/biopax/complex.gif");
+	public final static Icon pathwayParticipantsIcon = makeIcon("/images/biopax/modification.gif");
 
-	public final static Icon pathwayLeafIcon = new ImageIcon(VCellIcons.class.getResource("/icons/pathwayLeaf.gif"));
-	public final static Icon kineticLawIcon = new ImageIcon(VCellIcons.class.getResource("/icons/kineticLaw.gif"));
-	public final static Icon kineticLaw2Icon = new ImageIcon(VCellIcons.class.getResource("/icons/kineticLaw2.gif"));
-	public final static Icon sortUpIcon = new ImageIcon(VCellIcons.class.getResource("/images/sortUp.png"));
-	public final static Icon sortDownIcon = new ImageIcon(VCellIcons.class.getResource("/images/sortDown.png"));
+	public final static Icon pathwayLeafIcon = makeIcon("/icons/pathwayLeaf.gif");
+	public final static Icon kineticLawIcon = makeIcon("/icons/kineticLaw.gif");
+	public final static Icon kineticLaw2Icon = makeIcon("/icons/kineticLaw2.gif");
+	public final static Icon sortUpIcon = makeIcon("/images/sortUp.png");
+	public final static Icon sortDownIcon = makeIcon("/images/sortDown.png");
 
-	public final static Icon textNotesIcon = new ImageIcon(VCellIcons.class.getResource("/images/text_16x16.gif"));
-	public final static Icon mathTypeIcon = new ImageIcon(VCellIcons.class.getResource("/images/type.gif"));
+	public final static Icon textNotesIcon = makeIcon("/images/text_16x16.gif");
+	public final static Icon mathTypeIcon = makeIcon("/images/type.gif");
 	
-//	public final static Icon applicationIcon = new ImageIcon(VCellIcons.class.getResource("/images/application3_16x16.gif"));
-	public final static Icon appDetSpatialIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_det_spatial_28x16.png"));
-	public final static Icon appDetNonspIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_det_nonsp_28x16.png"));
-	public final static Icon appStoSpatialIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_sto_spatial_28x16.png"));
-	public final static Icon appStoNonspIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_sto_nonsp_28x16.png"));
-	public final static Icon appRbmNonspIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_rbm_nonsp_28x16.png"));
+//	public final static Icon applicationIcon = makeIcon("/images/application3_16x16.gif");
+	public final static Icon appDetSpatialIcon = makeIcon("/images/app_det_spatial_28x16.png");
+	public final static Icon appDetNonspIcon = makeIcon("/images/app_det_nonsp_28x16.png");
+	public final static Icon appStoSpatialIcon = makeIcon("/images/app_sto_spatial_28x16.png");
+	public final static Icon appStoNonspIcon = makeIcon("/images/app_sto_nonsp_28x16.png");
+	public final static Icon appRbmNonspIcon = makeIcon("/images/app_rbm_nonsp_28x16.png");
 	
-	public final static Icon documentIcon = new ImageIcon(VCellIcons.class.getResource("/icons/document_icon.png"));
-	public final static Icon mathModelIcon = new ImageIcon(VCellIcons.class.getResource("/images/math_16x16.gif"));
+	public final static Icon documentIcon = makeIcon("/icons/document_icon.png");
+	public final static Icon mathModelIcon = makeIcon("/images/math_16x16.gif");
 	
 	// application
-	public final static Icon geometryIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/images/geometry2_16x16.gif")));
-	public final static Icon simulationIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/images/run2_16x16.gif")));
-	public final static Icon settingsIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/app_settings.gif")));
-	public final static Icon protocolsIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/app_protocols.png")));
-	public final static Icon fittingIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/app_fitting.gif")));
+	public final static Icon geometryIcon = getScaledIcon(makeIcon("/images/geometry2_16x16.gif"));
+	public final static Icon simulationIcon = getScaledIcon(makeIcon("/images/run2_16x16.gif"));
+	public final static Icon settingsIcon = getScaledIcon(makeIcon("/icons/app_settings.gif"));
+	public final static Icon protocolsIcon = getScaledIcon(makeIcon("/icons/app_protocols.png"));
+	public final static Icon fittingIcon = getScaledIcon(makeIcon("/icons/app_fitting.gif"));
 	
 	// model
-	public final static Icon tableIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/table_icon.gif")));
-	public final static Icon structureIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/images/bioModel_16x16.gif")));
-	public final static Icon diagramIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/diagram_icon.gif")));
+	public final static Icon tableIcon = getScaledIcon(makeIcon("/icons/table_icon.gif"));
+	public final static Icon structureIcon = getScaledIcon(makeIcon("/images/bioModel_16x16.gif"));
+	public final static Icon diagramIcon = getScaledIcon(makeIcon("/icons/diagram_icon.gif"));
 	
 	private static Icon oldOutputFunctionIcon = null;
 	private static Icon outputFunctionIcon = null;
 	private static BufferedImage jFrameIconImage = null;
 	
 	// simulation
-	public final static Icon newSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_new.gif"));
-	public final static Icon copySimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_copy.gif"));
-	public final static Icon delSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_del.gif"));
-	public final static Icon editSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_edit.gif"));
-	public final static Icon runSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_run.gif"));
-	public final static Icon particleRunSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/particle_run.gif"));
-	public final static Icon stopSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_stop.gif"));
-	public final static Icon resultsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_results.jpg"));
-	public final static Icon statusDetailscon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_status_details.gif"));
-	public final static Icon odeQuickRunIcon = new ImageIcon(VCellIcons.class.getResource("/icons/ode_quick_run.png"));
-	public final static Icon pythonQuickRunIcon = new ImageIcon(VCellIcons.class.getResource("/icons/python_quick_run.png"));
+	public final static Icon newSimIcon = makeIcon("/icons/sim_new.gif");
+	public final static Icon copySimIcon = makeIcon("/icons/sim_copy.gif");
+	public final static Icon delSimIcon = makeIcon("/icons/sim_del.gif");
+	public final static Icon editSimIcon = makeIcon("/icons/sim_edit.gif");
+	public final static Icon runSimIcon = makeIcon("/icons/sim_run.gif");
+	public final static Icon particleRunSimIcon = makeIcon("/icons/particle_run.gif");
+	public final static Icon stopSimIcon = makeIcon("/icons/sim_stop.gif");
+	public final static Icon resultsIcon = makeIcon("/icons/sim_results.jpg");
+	public final static Icon statusDetailscon = makeIcon("/icons/sim_status_details.gif");
+	public final static Icon odeQuickRunIcon = makeIcon("/icons/ode_quick_run.png");
+	public final static Icon pythonQuickRunIcon = makeIcon("/icons/python_quick_run.png");
 	
 	//Window Manager
-	public final static Icon SHOW_WINDOWS = new ImageIcon(VCellIcons.class.getResource("/icons/showWindows.png"));
+	public final static Icon SHOW_WINDOWS = makeIcon("/icons/showWindows.png");
 	
 	
-	public final static Icon addIcon = new ImageIcon(VCellIcons.class.getResource("/images/add.gif"));
-	public final static Icon deleteIcon = new ImageIcon(VCellIcons.class.getResource("/images/delete.gif"));
+	public final static Icon addIcon = makeIcon("/images/add.gif");
+	public final static Icon deleteIcon = makeIcon("/images/delete.gif");
 	
 	public static Icon getOldOutputFunctionIcon() {
 		if (oldOutputFunctionIcon == null) {
-			oldOutputFunctionIcon = new ImageIcon(VCellIcons.class.getResource("/icons/old_function_icon.png"));
+			oldOutputFunctionIcon = makeIcon("/icons/old_function_icon.png");
 		}
 		return oldOutputFunctionIcon;
 	}
 	public static Icon getOutputFunctionIcon() {
 		if (outputFunctionIcon == null) {
-			outputFunctionIcon = new ImageIcon(VCellIcons.class.getResource("/icons/function_icon.png"));
+			outputFunctionIcon = makeIcon("/icons/function_icon.png");
 		}
 		return outputFunctionIcon;
 	}
@@ -202,7 +235,7 @@ public abstract class VCellIcons {
 	public static BufferedImage getJFrameImageIcon() {
 		if (jFrameIconImage == null) {
 			try {
-				jFrameIconImage = ImageIO.read(VCellIcons.class.getResource("/icons/vcell.gif"));
+				jFrameIconImage = makeBufferedImage("/icons/vcell.gif");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
