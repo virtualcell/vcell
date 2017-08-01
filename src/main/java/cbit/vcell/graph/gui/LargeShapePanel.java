@@ -63,7 +63,7 @@ public abstract class LargeShapePanel extends JPanel implements LargeShapeCanvas
 	}
 
 	@Override
-	public void setReactionRule(ReactionRule rr) {
+	public void setSelectedReactionRule(ReactionRule rr) {
 		this.rr = rr;
 	}
 	

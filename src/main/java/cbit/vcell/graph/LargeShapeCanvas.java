@@ -26,75 +26,45 @@ public interface LargeShapeCanvas {
 
 	
 	int getZoomFactor();
-
 	Graphics getGraphics();
-
-	boolean isEditable();
-
-	boolean isHighlighted(ComponentStatePattern csp);
-
-	boolean isShowNonTrivialOnly();
-
-	boolean isHighlighted(ComponentStateDefinition csd);
-
-	boolean isHighlighted(MolecularComponentPattern mcp);
-
-	boolean isHighlighted(MolecularComponent mc);
-
-	void setComponentStatePattern(ComponentStatePattern csp);
-
-	void setComponentStateDefinition(ComponentStateDefinition csd);
-
-	void setMolecularComponentPattern(MolecularComponentPattern mcp);
-
-	void setMolecularComponent(MolecularComponent mc);
-	
 	DisplayMode getDisplayMode();
-
-	boolean isShowDifferencesOnly();
-	
-	RuleAnalysisChanged hasStateChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern);
-
-	RuleAnalysisChanged hasStateChanged(MolecularComponentPattern molecularComponentPattern);
-	
-	RuleAnalysisChanged hasBondChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern);
-	
-	RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern);
-
-	RuleAnalysisChanged hasNoMatch(String reactionRuleName, MolecularTypePattern mtp);
-	
-	RuleAnalysisChanged hasNoMatch(MolecularTypePattern molecularTypePattern);
-
-	boolean isViewSingleRow();
-
-	boolean isShowMoleculeColor();
-
-	void setMolecularTypePattern(MolecularTypePattern mtp);
-
-	void setMolecularType(MolecularType mt);
-
-	boolean isHighlighted(MolecularTypePattern mtp);
-
-	boolean isHighlighted(MolecularType mt);
-
-	void resetSpeciesPattern();
-
-	boolean isHighlighted(SpeciesPattern sp);
-
-	void setSpeciesPattern(SpeciesPattern sp);
-
 	RuleParticipantSignature getSignature();
-
 	GroupingCriteria getCriteria();
-
 	Color getBackground();
 
+	boolean isEditable();
+	boolean isShowNonTrivialOnly();
+	boolean isShowDifferencesOnly();
+	boolean isViewSingleRow();
+	boolean isShowMoleculeColor();
+
+	boolean isHighlighted(ComponentStatePattern csp);
+	boolean isHighlighted(ComponentStateDefinition csd);
+	boolean isHighlighted(MolecularComponentPattern mcp);
+	boolean isHighlighted(MolecularComponent mc);
+	boolean isHighlighted(MolecularTypePattern mtp);
+	boolean isHighlighted(MolecularType mt);
+	boolean isHighlighted(SpeciesPattern sp);
 	boolean isHighlighted(ReactionRule rr);
 
-	WhatIsHighlighted getWhatIsHighlighted();
+	void setSelectedReactionRule(ReactionRule rr);
+	void setComponentStatePattern(ComponentStatePattern csp);
+	void setComponentStateDefinition(ComponentStateDefinition csd);
+	void setMolecularComponentPattern(MolecularComponentPattern mcp);
+	void setMolecularComponent(MolecularComponent mc);
+	void setMolecularTypePattern(MolecularTypePattern mtp);
+	void setMolecularType(MolecularType mt);
+	void setSpeciesPattern(SpeciesPattern sp);
+	void resetSpeciesPattern();
 
+	WhatIsHighlighted getWhatIsHighlighted();
 	void setWhatIsHighlighted(WhatIsHighlighted whatIsHighlighted);
 
-	void setReactionRule(ReactionRule rr);
+	RuleAnalysisChanged hasStateChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern);
+	RuleAnalysisChanged hasStateChanged(MolecularComponentPattern molecularComponentPattern);
+	RuleAnalysisChanged hasBondChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern);
+	RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern);
+	RuleAnalysisChanged hasNoMatch(String reactionRuleName, MolecularTypePattern mtp);
+	RuleAnalysisChanged hasNoMatch(MolecularTypePattern molecularTypePattern);
 
 }

@@ -14,6 +14,7 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.graph.LargeShapeCanvas.DisplayMode;
+import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -327,10 +328,12 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	@Override
 	public void setHighlight(boolean highlight, boolean isReactants) {
 		if(rr == null || highlight == false) {
-			shapePanel.setReactionRule(null);
+			shapePanel.setSelectedReactionRule(null);
+			System.out.println("null");
 			return;
 		}
-		shapePanel.setReactionRule(rr);
+		System.out.println("something");
+		shapePanel.setSelectedReactionRule(rr);
 		shapePanel.setWhatIsHighlighted(isReactants ? LargeShapeCanvas.WhatIsHighlighted.reactant : LargeShapeCanvas.WhatIsHighlighted.product);
 	}
 	@Override
