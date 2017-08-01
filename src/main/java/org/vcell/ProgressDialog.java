@@ -41,13 +41,14 @@ public class ProgressDialog extends JDialog {
         		setProgress((Integer) propertyChangeEvent.getNewValue());
         		
         	} else if (propertyName.equals(Task.SUBTASK)) {
-        		setProgressText(task.getSubtask());
-        		
-        	} else if (propertyName.equals(Task.STATE) && propertyChangeEvent.getNewValue() == SwingWorker.StateValue.DONE) {
-        		setVisible(false);
-        		dispose();
-        	} 
+        		setProgressText(task.getSubtask());	
+        	}
         });
+		
+		task.addDoneListener(propertyChangeEvent -> {
+			setVisible(false);
+    		dispose();
+		});
 	}
 	
 	private void initializeContentPane(boolean indeterminate) {

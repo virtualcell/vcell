@@ -5,6 +5,9 @@ import net.imagej.axis.AxisType;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import org.vcell.vcellij.api.SimulationState;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +76,11 @@ public class MainModel {
 			dataset.axis(i).setType(axisTypes.get(i));
 		}
 		notifyChangeListeners(displayChangeListeners);
+    }
+    
+    public void setSimulationStateForVCellModel(SimulationState state, VCellModel vCellModel) {
+    	vCellModel.setSimulationState(state);
+    	notifyChangeListeners(dataChangeListeners);
     }
 
     public void addDataChangeListener(ChangeListener l) {

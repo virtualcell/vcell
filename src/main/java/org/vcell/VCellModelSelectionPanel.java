@@ -3,6 +3,9 @@ package org.vcell;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import javax.swing.DefaultListCellRenderer;
@@ -20,14 +23,13 @@ import javax.swing.ListSelectionModel;
 @SuppressWarnings("serial")
 public class VCellModelSelectionPanel extends JPanel {
 	
+	private VCellModelService vCellModelService;
+	
 	private JList<VCellModel> list;
 	private DefaultListModel<VCellModel> listModel;
 	private VCellModel selectedModel;
 	private JLabel imageLabel;
 	private JScrollPane imageScrollPane;
-	private JProgressBar progressBar;
-	private VCellModelService vCellModelService;
-	private Future<VCellModel[]> vCellModelFuture;
 	private ModelParameterListPanel parameterListPanel;
 	
 	public VCellModelSelectionPanel(VCellModelService vCellModelService) {
@@ -41,59 +43,50 @@ public class VCellModelSelectionPanel extends JPanel {
 	}
 	
 	public void displayImageOfSelectedModel() {
-		displayScaledImageOfSelectedModel(imageScrollPane.getHeight() - 6);
+		VCellModel vCellModel = list.getSelectedValue();
+		if (vCellModel == null) return;
+		displayImage(vCellModel);
 	}
 	
-	public void cancelFuture() {
-		if (vCellModelFuture != null) {
-			vCellModelFuture.cancel(true);
+	public void displayImage(VCellModel vCellModel) {
+		displayScaledImage(vCellModel, imageScrollPane.getHeight() - 6);
+	}
+	
+	public void setModels(List<VCellModel> models) {
+		listModel.clear();
+		for (VCellModel vCellModel : models) {
+			listModel.addElement(vCellModel);
+			System.out.println(vCellModel.toString());
 		}
 	}
 	
-	public void getModels() {
-		vCellModelFuture = vCellModelService.getVCellModels(new FutureProgressCallback<VCellModel[]>() {
-			
-			@Override
-			public void onSuccess(VCellModel[] result) {
-				progressBar.setVisible(false);
-				updateList(result, listModel);
-			}
-
-			@Override
-			public void onFailure(Throwable t) {
-				System.out.println("Task was canceled");
-			}
-			
-			@Override
-			public void progressOccurred(int current, int max) {
-				progressBar.setMaximum(max);
-				progressBar.setValue(current);
-			}
-		});
-	}
-	
-	private void displayScaledImageOfSelectedModel(int height) {
-		Image image = getImageOfSelectedModel();
-		if (image == null) return;
+	private void displayScaledImage(VCellModel vCellModel, int height) {
+		Image image = vCellModel.getImage();
+		if (image == null) {
+			imageLabel.setIcon(null);
+			imageLabel.setText("Loading image...");
+			Task<BufferedImage, Void> task = vCellModelService.getVCellImageForModel(vCellModel);
+			task.addDoneListener(propertyChangeEvent -> {
+				try {
+					vCellModel.setImage(task.get());
+					displayImageOfSelectedModel();
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+				}
+			});
+			task.execute();
+			return;
+		}
 		
-		image = image.getScaledInstance(-1, height, Image.SCALE_FAST);
+		
+		image = image.getScaledInstance(-1, height, Image.SCALE_DEFAULT);
+		imageLabel.setText(null);
 		imageLabel.setIcon(new ImageIcon(image));
-	}
-	
-	private Image getImageOfSelectedModel() {
-		VCellModel selectedModel = list.getSelectedValue();
-		if (selectedModel == null) return null;
-		return selectedModel.getImage();
+		
 	}
 	
 	private void initializeComponents() {
 		setLayout(new BorderLayout());
-		
-		progressBar = new JProgressBar();
-		progressBar.setStringPainted(true);
-		progressBar.setString("Loading models...");
-		progressBar.setIndeterminate(false);
-		add(progressBar, BorderLayout.PAGE_START);
 		
 		listModel = new DefaultListModel<>();
 		
@@ -110,17 +103,20 @@ public class VCellModelSelectionPanel extends JPanel {
 		imageScrollPane.setMinimumSize(new Dimension(0, 200));
 		
 		parameterListPanel = new ModelParameterListPanel();
+		parameterListPanel.setPreferredSize(new Dimension(-1, 200));
+		JScrollPane parameterScrollPane = new JScrollPane(parameterListPanel);
+		parameterScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		
 		JSplitPane verticalSplitPane = new JSplitPane(
 				JSplitPane.VERTICAL_SPLIT, 
 				imageScrollPane,
-				new JScrollPane(parameterListPanel));
+				parameterScrollPane);
 		JSplitPane splitPane = new JSplitPane(
 				JSplitPane.HORIZONTAL_SPLIT, 
 				leftScrollPane, verticalSplitPane);
 		
 		verticalSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, event -> {
-			displayScaledImageOfSelectedModel((int) event.getNewValue() - 6);
+			displayImageOfSelectedModel();
 		});
 		
 		add(splitPane, BorderLayout.CENTER);
@@ -129,14 +125,9 @@ public class VCellModelSelectionPanel extends JPanel {
 			if (!e.getValueIsAdjusting()) {
 				selectedModel = list.getSelectedValue();
 				displayImageOfSelectedModel();
-				parameterListPanel.setParameters(selectedModel.getParameters());
+				parameterListPanel.setModel(selectedModel);
 			}
 		});
 	}
-	
-	private void updateList(VCellModel[] models, DefaultListModel<VCellModel> listModel) {
-		for (VCellModel vCellModel : models) {
-			listModel.addElement(vCellModel);
-		}
-	}
+
 }

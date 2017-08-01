@@ -33,6 +33,9 @@ public class MainView extends SwingDisplayWindow {
 	
 	private static final long serialVersionUID = 5324502530475640306L;
 	
+	// Data model
+	private MainModel model;
+	
 	// Services
 	private InFrameDisplayService inFrameDisplayService;
 	
@@ -74,9 +77,10 @@ public class MainView extends SwingDisplayWindow {
 
     public MainView(MainModel model, Context context) {
     	
+    	this.model = model;
     	inFrameDisplayService = context.getService(InFrameDisplayService.class);
     	
-        initializeContentPane(model);
+        initializeContentPane();
         initializeMenuBar();
         registerModelChangeListeners(model);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -99,6 +103,15 @@ public class MainView extends SwingDisplayWindow {
     	return null;
     }
     
+    public VCellModel getSelectedModel() {
+    	ListPanel<?> listPanel = (ListPanel<?>) tabbedPane.getSelectedComponent();
+    	Object item = listPanel.getSelectedItem();
+    	if (VCellModel.class.isInstance(item)) {
+    		return (VCellModel) item;
+    	}
+    	return null;
+    }
+    
     public void displaySelectedDataset() {
     	Dataset dataset = getSelectedDataset();
     	if (dataset == null) return;
@@ -109,9 +122,9 @@ public class MainView extends SwingDisplayWindow {
     	inFrameDisplayService.displayDataset(dataset, this);
     }
     
-    public void displayModel(VCellModel model) {
+    public void displayModel(VCellModel vCellModel) {
     	rightPanel.removeAll();
-    	rightPanel.add(new ModelSummaryPanel(model));
+    	rightPanel.add(new ModelSummaryPanel(model, vCellModel));
     	revalidate();
     	repaint();
     }
@@ -123,7 +136,7 @@ public class MainView extends SwingDisplayWindow {
     	pnlResults.getList().clearSelection();
     }
 
-    private void initializeContentPane(MainModel model) {
+    private void initializeContentPane() {
 
         JPanel contentPane = new JPanel();
 

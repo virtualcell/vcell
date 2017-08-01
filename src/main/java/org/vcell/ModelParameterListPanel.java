@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.sbml.jsbml.Parameter;
+
 public class ModelParameterListPanel extends ModelParameterPanel {
 	
 	private static final long serialVersionUID = -2876934820098020420L;
@@ -15,9 +17,7 @@ public class ModelParameterListPanel extends ModelParameterPanel {
 		super();
 	}
 	
-	@Override
-	public void setParameters(List<VCellModelParameter> parameters) {
-		super.setParameters(parameters);
+	public void setModel(VCellModel model) {
 		removeAll();
 		
         GridBagConstraints c = new GridBagConstraints();
@@ -26,11 +26,7 @@ public class ModelParameterListPanel extends ModelParameterPanel {
         
         addHeaderLabel("Parameters", c);
         
-        for (String description : parameterDescriptionMap.keySet()) {
-        	List<VCellModelParameter> filteredParameters = parameterDescriptionMap.get(description);
-        	addHeaderLabel(description, c);
-        	addParameterList(filteredParameters, c);
-        }
+        addParameterList(model.getParameters(), c);
         
         // Add empty panel to occupy any extra space at bottom (pushes components to the top of the panel)
         c.gridy++;
@@ -40,16 +36,27 @@ public class ModelParameterListPanel extends ModelParameterPanel {
         revalidate();
 	}
 	
-	private void addParameterList(List<VCellModelParameter> parameterList, GridBagConstraints c) {
+	private void addParameterList(List<Parameter> parameterList, GridBagConstraints c) {
 		
-		String formattedList = parameterList.stream()
-				.map(p -> generateHtml(p.toString()))
-				.collect(Collectors.joining(", "));
-		JLabel label = new JLabel(formattedList);
+		if (parameterList.isEmpty()) return;
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append(generateParameterString(parameterList.get(0)));
+		
+		for (Parameter parameter : parameterList) {
+			builder.append(", ");
+			builder.append(generateParameterString(parameter));
+		}
+		
+		JLabel label = new JLabel(generateHtml(builder.toString()));
 		
         c.gridx = 0;
         c.gridy++;
         c.weightx = 1.0;
         add(label, c);
+	}
+	
+	private String generateParameterString(Parameter parameter) {
+		return parameter.getId() + " (" + parameter.getUnits() + ")";
 	}
 }

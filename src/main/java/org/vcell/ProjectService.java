@@ -1,5 +1,6 @@
 package org.vcell;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,8 +8,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.vfs2.FileName;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLException;
+import org.sbml.jsbml.SBMLReader;
+import org.sbml.jsbml.SBMLWriter;
 
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
@@ -48,11 +57,13 @@ public class ProjectService<T extends RealType<T>> {
 				
 				Project project = new Project(root.getName());
 
-		        File[] dataFiles = Paths.get(root.getAbsolutePath(), "data").toFile().listFiles();
-		        File[] geometryFiles = Paths.get(root.getAbsolutePath(), "geometry").toFile().listFiles();
-		        File[] resultsFiles = Paths.get(root.getAbsolutePath(), "results").toFile().listFiles();
+				String rootPath = root.getAbsolutePath();
+		        File[] dataFiles = Paths.get(rootPath, "data").toFile().listFiles();
+		        File[] geometryFiles = Paths.get(rootPath, "geometry").toFile().listFiles();
+		        File[] modelDirectories = Paths.get(rootPath, "models").toFile().listFiles();
+		        File[] resultsFiles = Paths.get(rootPath, "results").toFile().listFiles();
 		        
-		        int numFiles = dataFiles.length + geometryFiles.length + resultsFiles.length;
+		        int numFiles = dataFiles.length + geometryFiles.length + modelDirectories.length + resultsFiles.length;
 		        int numLoaded = 0;
 
 		        if (dataFiles != null) {
@@ -92,6 +103,39 @@ public class ProjectService<T extends RealType<T>> {
 		                    e.printStackTrace();
 		                }
 		            }
+		        }
+		        
+		        if (modelDirectories != null) {
+		        	for (File modelDirectory : modelDirectories) {
+		        		setSubtask(modelDirectory.getName());
+		        		
+		        		SBMLDocument sbmlDocument = null;
+		        		BufferedImage image = null;
+		        		File[] modelFiles = modelDirectory.listFiles();
+		        		System.out.println(modelFiles.length);
+		        		if (modelFiles.length > 2) continue; // Invalid model directory
+		        		
+		        		for (File modelFile : modelFiles) {
+		        			System.out.println(modelFile.getName());
+		        			if (FilenameUtils.getExtension(modelFile.getName()).equals("xml")) {
+		        				sbmlDocument = new SBMLReader().readSBML(modelFile);
+		        				System.out.println("Loaded sbml");
+		        			} else if (FilenameUtils.getExtension(modelFile.getName()).equals("png")) {
+		        				image = ImageIO.read(modelFile);
+		        				System.out.println("Loaded image");
+		        			}
+		        		}
+		        		
+		        		if (sbmlDocument != null) {
+		        			VCellModel vCellModel = new VCellModel(modelDirectory.getName(), null, sbmlDocument);
+		        			vCellModel.setImage(image);
+		        			project.getModels().add(vCellModel);
+		        			System.out.println("Added model");
+		        		}
+		        		
+		        		numLoaded++;
+		        		setProgress(numLoaded * 100 / numFiles);
+		        	}
 		        }
 
 		        if (resultsFiles != null) {
@@ -139,12 +183,17 @@ public class ProjectService<T extends RealType<T>> {
 			@Override
 			protected Void doInBackground() throws Exception {
 				
-				int numDatasets = project.getData().size() + project.getGeometry().size() + project.getResults().size();
+				int numToSave = project.getData().size() 
+						+ project.getGeometry().size() 
+						+ project.getModels().size() 
+						+ project.getResults().size();
 		    	int numSaved = 0;
 		    	
-		        Path dataPath = Paths.get(root.getAbsolutePath(), "data");
-		        Path geometryPath = Paths.get(root.getAbsolutePath(), "geometry");
-		        Path resultsPath = Paths.get(root.getAbsolutePath(), "results");
+		    	String rootPath = root.getAbsolutePath();
+		        Path dataPath = Paths.get(rootPath, "data");
+		        Path geometryPath = Paths.get(rootPath, "geometry");
+		        Path modelsPath = Paths.get(rootPath, "models");
+		        Path resultsPath = Paths.get(rootPath, "results");
 
 		        try {
 
@@ -155,7 +204,7 @@ public class ProjectService<T extends RealType<T>> {
 		            	setSubtask(dataset.getName());
 		                saveDataset(dataset, dataPath);
 		                numSaved++;
-		                setProgress(numSaved * 100 / numDatasets);
+		                setProgress(numSaved * 100 / numToSave);
 		            }
 
 		            // Save geometry
@@ -165,7 +214,17 @@ public class ProjectService<T extends RealType<T>> {
 		            	setSubtask(dataset.getName());
 		                saveDataset(dataset, geometryPath);
 		                numSaved++;
-		                setProgress(numSaved * 100 / numDatasets);
+		                setProgress(numSaved * 100 / numToSave);
+		            }
+		            
+		            // Save models
+		            Files.createDirectories(modelsPath);
+		            FileUtils.cleanDirectory(modelsPath.toFile());
+		            for (VCellModel model : project.getModels()) {
+		            	setSubtask(model.getName());
+		            	saveModel(model, modelsPath);
+		            	numSaved++;
+		            	setProgress(numSaved * 100 / numToSave);
 		            }
 
 		            // Save results
@@ -175,7 +234,7 @@ public class ProjectService<T extends RealType<T>> {
 		            	setSubtask(dataset.getName());
 		                saveDataset(dataset, resultsPath);
 		                numSaved++;
-		                setProgress(numSaved * 100 / numDatasets);
+		                setProgress(numSaved * 100 / numToSave);
 		            }
 
 		        } catch (IOException e) {
@@ -219,6 +278,19 @@ public class ProjectService<T extends RealType<T>> {
 
         Path filePath = Paths.get(path.toString(), name);
         datasetIOService.save(datasetToSave, filePath.toString());
+    }
+    
+    private void saveModel(VCellModel model, Path path) throws IOException, SBMLException, XMLStreamException {
+    	
+    	Path modelPath = Paths.get(path.toString(), model.getName());
+    	Files.createDirectories(modelPath);
+        FileUtils.cleanDirectory(modelPath.toFile());
+    	
+    	Path sbmlPath = Paths.get(modelPath.toString(), model.getName() + ".xml");
+    	new SBMLWriter().write(model.getSbmlDocument(), sbmlPath.toFile());
+    	
+    	Path imagePath = Paths.get(modelPath.toString(), model.getName() + ".png");
+    	ImageIO.write(model.getImage(), "png", imagePath.toFile());
     }
     
     // Helper method for debugging

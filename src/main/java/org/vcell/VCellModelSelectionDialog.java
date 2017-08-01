@@ -5,6 +5,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.List;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -40,28 +41,20 @@ public class VCellModelSelectionDialog extends JDialog {
 			}
 		});
 		
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				vCellModelPanel.cancelFuture();
-				super.windowClosing(e);
-			}
-		});
+	}
+	
+	public void setModels(List<VCellModel> models) {
+		vCellModelPanel.setModels(models);
 	}
 	
 	public int display() {
 		pack();
-		vCellModelPanel.getModels();
 		setVisible(true);
 		Object value = optionPane.getValue();
 		if (Integer.class.isInstance(value)) {
 			return (int) optionPane.getValue();
 		}
 		return JOptionPane.CANCEL_OPTION; // If something goes wrong, dispose and do nothing
-	}
-	
-	public void cancelFuture() {
-		vCellModelPanel.cancelFuture();
 	}
 	
 	public VCellModel getSelectedModel() {

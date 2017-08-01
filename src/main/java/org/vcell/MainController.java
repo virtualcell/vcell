@@ -1,9 +1,11 @@
 package org.vcell;
 
+import java.awt.Frame;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -11,9 +13,20 @@ import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.FilenameUtils;
+import org.sbml.jsbml.ASTNode;
+import org.sbml.jsbml.ExplicitRule;
+import org.sbml.jsbml.ListOf;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Parameter;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLReader;
 import org.scijava.Context;
+import org.vcell.vcellij.api.SimulationSpec;
+import org.vcell.vcellij.api.SimulationState;
+import org.vcell.vcellij.api.SimulationStatus;
 
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
@@ -36,6 +49,7 @@ public class MainController {
     private ProjectService<?> projectService;
     private VCellResultService vCellResultService;
     private VCellModelService vCellModelService;
+    private VCellService vCellService;
 
     public MainController(MainModel model, MainView view, Context context) {
         this.model = model;
@@ -48,6 +62,7 @@ public class MainController {
         projectService = new ProjectService<>(datasetIOService, opService);
         vCellResultService = new VCellResultService(opService, datasetService);
     	vCellModelService = new VCellModelService();
+    	vCellService = context.getService(VCellService.class);
         addActionListenersToView();
     }
 
@@ -77,13 +92,21 @@ public class MainController {
             		}
             	});
                 
-            	executeTaskWithProgressDialog(loadTask, "Loading...", false);
+            	try {
+					executeTaskWithProgressDialog(loadTask, view, "Loading...", false);
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+				}
             }
         });
 
         view.addSaveListener(event -> {
             Task<Void, String> saveTask = projectService.save(model.getProject());
-            executeTaskWithProgressDialog(saveTask, "Saving...", false);
+            try {
+				executeTaskWithProgressDialog(saveTask, view, "Saving...", false);
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
         });
 
         view.addSaveAsListener(event -> {
@@ -93,7 +116,11 @@ public class MainController {
                 File file = fileChooser.getSelectedFile();
                 model.setProjectTitle(file.getName());
                 Task<Void, String> saveAsTask = projectService.saveAs(model.getProject(), file);
-                executeTaskWithProgressDialog(saveAsTask, "Saving...", false);
+                try {
+					executeTaskWithProgressDialog(saveAsTask, view, "Saving...", false);
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+				}
             }
         });
 
@@ -309,19 +336,95 @@ public class MainController {
         });
 
         view.addNewModelListener(event -> {
-    		VCellModelSelectionDialog dialog = new VCellModelSelectionDialog(view, vCellModelService);
-    		int resultVal = dialog.display();
-    		dialog.cancelFuture(); // Dialog is no longer visible, stop trying to get models
-    		if (resultVal == JOptionPane.OK_OPTION) {
-    			VCellModel selectedModel = dialog.getSelectedModel();
-    			if (selectedModel != null) {
-    				model.addModel(selectedModel);
-    			}
-    		}
+        	Task<List<VCellModel>, String> loadTask = vCellModelService.getModels(vCellService);
+        	
+        	try {
+				List<VCellModel> models = executeTaskWithProgressDialog(loadTask, view, "Loading models...", false);
+	    		VCellModelSelectionDialog dialog = new VCellModelSelectionDialog(view, vCellModelService);
+	    		dialog.setModels(models);
+	    		int resultVal = dialog.display();
+	    		if (resultVal == JOptionPane.OK_OPTION) {
+	    			VCellModel selectedModel = dialog.getSelectedModel();
+	    			if (selectedModel != null) {
+	    				model.addModel(selectedModel);
+	    			}
+	    		}
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+
         });
         
         view.addSimulateModelListener(event -> {
-        	System.out.println("sim model");
+        	
+        	VCellModel vCellModel = view.getSelectedModel();
+        	if (vCellModel == null) {
+            	JOptionPane.showMessageDialog(
+            			view, 
+            			"Please select a model to simulate.", 
+            			"No model selected", 
+            			JOptionPane.PLAIN_MESSAGE);
+            	return;
+        	} else if (vCellModel.getSimulationState() == SimulationState.running) {
+        		JOptionPane.showMessageDialog(
+        				view, 
+        				"This simulation is currently in progress", 
+        				"Simulation in progress", 
+        				JOptionPane.PLAIN_MESSAGE);
+        		return;
+        	}
+        	
+        	SimulateModelPanel panel = new SimulateModelPanel(vCellModel);
+        	int returnVal = JOptionPane.showConfirmDialog(
+        			view, 
+        			panel, 
+        			"Simulate model", 
+        			JOptionPane.OK_CANCEL_OPTION, 
+        			JOptionPane.PLAIN_MESSAGE);
+        	
+        	if (returnVal == JOptionPane.OK_OPTION) {
+        		
+        		// Update parameters of model from user input
+        		HashMap<Parameter, ASTNode> parameterMathMap = panel.getParameterMathMap();
+        		Model sbmlModel = vCellModel.getSbmlDocument().getModel();
+        		for (Parameter parameter : parameterMathMap.keySet()) {
+        			sbmlModel.getParameter(parameter.getId()).setValue(parameter.getValue());
+        			ASTNode math = parameterMathMap.get(parameter);
+        			if (math != null) {
+        				ExplicitRule rule = sbmlModel.getRuleByVariable(parameter.getId());
+        				if (rule != null) {
+        					rule.setMath(math);
+        				}
+        			}
+        		}
+        		
+        		SimulationSpec simSpec = new SimulationSpec();
+        		simSpec.setOutputTimeStep(panel.getTimeStep());
+        		simSpec.setTotalTime(panel.getTotalTime());
+        		
+        		Task<List<Dataset>, SimulationState> task = vCellService.runSimulation(
+        				vCellModel, simSpec, panel.getSelectedSpecies(), panel.getShouldCreateIndividualDatasets());
+        		
+        		task.addPropertyChangeListener(propertyChangeEvent -> {
+        			if (propertyChangeEvent.getPropertyName().equals(Task.SUBTASK)) {
+        				model.setSimulationStateForVCellModel(task.getSubtask(), vCellModel);
+        			}
+        		});
+        		
+        		task.addDoneListener(propertyChangeEvent -> {
+        			try {
+						List<Dataset> results = task.get();
+						for (Dataset result : results) {
+							model.addResult(result);
+						}
+						System.out.println(results.toString());
+					} catch (InterruptedException | ExecutionException e) {
+						e.printStackTrace();
+					}
+        		});
+        		
+        		task.execute();
+        	}
         });
         
         view.addTabbedPaneChangeListener(event -> {
@@ -357,63 +460,11 @@ public class MainController {
     }
     
 
-    private void executeTaskWithProgressDialog(Task<?, String> task, String dialogTitle, boolean indeterminate) {
-    	ProgressDialog dialog = new ProgressDialog(view, dialogTitle, indeterminate);
+    private <T> T executeTaskWithProgressDialog(Task<T, String> task, Frame owner, String dialogTitle, boolean indeterminate) throws InterruptedException, ExecutionException {
+    	ProgressDialog dialog = new ProgressDialog(owner, dialogTitle, indeterminate);
         dialog.setTask(task);
         task.execute();
         dialog.setVisible(true);
+        return task.get();
     }
-    
-//    private void simulateModel() {
-//    	ModelParameterInputPanel panel = new ModelParameterInputPanel(new ArrayList<>());
-//        int returnVal = JOptionPane.showConfirmDialog(
-//                view,
-//                panel,
-//                "Model TIRF",
-//                JOptionPane.OK_CANCEL_OPTION,
-//                JOptionPane.PLAIN_MESSAGE);
-//        if (returnVal == JOptionPane.OK_OPTION) {
-//        	
-//        	// Generate SBML document and save locally
-//            VCellModelService vCellModelService = new VCellModelService();
-//            vCellModelService.generateSBML(new VCellModel("TIRF_model_test"));
-//            VCellModel vCellModel = new VCellModel("TIRF_model_test");
-//            File filepath = Paths.get(projectService.getCurrentProjectRoot().getAbsolutePath(), vCellModel.getName()).toFile();
-//            
-//            try {
-//				vCellModelService.writeSBMLToFile(new VCellModel("TIRF_model_test"), filepath);
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (XMLStreamException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//            
-//            VCellService vCellService = new VCellService(vCellResultService);
-//            SBMLModel sbmlModel = new SBMLModel();
-//            sbmlModel.setFilepath(filepath.getAbsolutePath());
-//            
-//            
-//            FutureCallback<org.vcell.vcellij.api.Dataset> callback = new FutureCallback<org.vcell.vcellij.api.Dataset>() {
-//            	
-//				@Override
-//				public void onSuccess(org.vcell.vcellij.api.Dataset result) {
-//					try {
-//						Dataset datasetImageJ = datasetIOService.open(result.getFilepath());
-//						model.addResult(datasetImageJ);
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
-//				}
-//				
-//				@Override
-//				public void onFailure(Throwable t) {
-//					t.printStackTrace();
-//				}
-//            };
-//            
-//            vCellService.runSimulation(sbmlModel, callback);
-//        }
-//    }
 }

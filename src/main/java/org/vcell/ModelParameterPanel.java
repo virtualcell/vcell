@@ -12,26 +12,14 @@ import java.util.stream.Collectors;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.sbml.jsbml.Parameter;
+
 public abstract class ModelParameterPanel extends JPanel {
 	
 	private static final long serialVersionUID = -33245111637587112L;
-	protected HashMap<String, List<VCellModelParameter>> parameterDescriptionMap;
 	
 	public ModelParameterPanel() {
-		parameterDescriptionMap = new HashMap<>();
 		setLayout(new GridBagLayout());
-	}
-	
-	public void setParameters(List<VCellModelParameter> parameters) {
-		parameterDescriptionMap.clear();
-		for (String parameterType : VCellModelParameter.getAllParameterTypes()) {
-	        List<VCellModelParameter> filteredParameters = parameters.stream()
-	                .filter(p -> p.getParameterType().equals(parameterType))
-	                .collect(Collectors.toList());
-	        if (!filteredParameters.isEmpty()) {
-	        	parameterDescriptionMap.put(parameterType, filteredParameters);
-	        }
-		}
 	}
 	
     protected void addHeaderLabel(String text, GridBagConstraints c) {
@@ -56,7 +44,11 @@ public abstract class ModelParameterPanel extends JPanel {
 
         int startIndex = 0;
         while (matcher.find()) {
-            stringBuilder.append(text.substring(startIndex, matcher.start() + 1));
+        	int index = matcher.start();
+        	if (text.charAt(index) != '_') {
+        		index++;
+        	}
+            stringBuilder.append(text.substring(startIndex, index));
             stringBuilder.append("<sup>");
             stringBuilder.append(text.substring(matcher.start() + 1, matcher.end()));
             stringBuilder.append("</sup>");

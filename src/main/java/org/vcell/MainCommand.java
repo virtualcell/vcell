@@ -32,5 +32,6 @@ public class MainCommand implements Command {
     private void loadServices() {
         ServiceHelper helper = new ServiceHelper(ij.getContext());
         helper.loadService(InFrameDisplayService.class);
+        helper.loadService(VCellService.class);
     }
 }
