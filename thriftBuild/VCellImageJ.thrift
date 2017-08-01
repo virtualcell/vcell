@@ -15,6 +15,9 @@ typedef double Datum
 typedef string DomainName
 typedef string FilePath
 typedef string SimDataID
+typedef string VCML
+typedef string SBML
+typedef string ApplicationName
 
 typedef list<TimePoint> TimePoints
 typedef list<Datum> Data
@@ -35,6 +38,8 @@ struct VariableInfo{
 }
 
 struct SimulationSpec {
+	1: required double outputTimeStep;
+	2: required double totalTime;
 }
 
 typedef list<VariableInfo> VariableList
@@ -44,6 +49,7 @@ exception ThriftDataAccessException {
 }
 
 enum SimulationState {
+	notRun,
 	running,
 	done,
 	failed
@@ -62,6 +68,11 @@ service SimulationService {
 //    ModelInfo openInVCell(
 //        1: SBMLModel sbmlModel)
 //        throws (1:ThriftDataAccessException dataAccessException);
+
+	SBML getSBML(
+		1: VCML vcml,
+		2: ApplicationName applicationName)
+		throws (1:ThriftDataAccessException dataAccessException)
 
     Data getData(
     	1:SimulationInfo simInfo, 
