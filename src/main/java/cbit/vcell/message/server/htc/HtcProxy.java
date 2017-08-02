@@ -97,6 +97,7 @@ public abstract class HtcProxy {
 	}
 
 	public static class SimTaskInfo {
+		
 		public final KeyValue simId;
 		public final int jobIndex;
 		public final int taskId;
@@ -106,6 +107,22 @@ public abstract class HtcProxy {
 			this.jobIndex = jobIndex;
 			this.taskId = taskId;
 		}
+
+		@Override
+		public int hashCode() {
+			return simId.hashCode() + jobIndex + taskId;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof SimTaskInfo){
+				SimTaskInfo other = (SimTaskInfo)obj;
+				return simId.equals(other.simId) && jobIndex==other.jobIndex && taskId==other.taskId;
+			}
+			return false;
+		}
+		
+		
 	}
 
 	/**
@@ -114,14 +131,14 @@ public abstract class HtcProxy {
 	 */
 	private static String jobNamePrefix( ){
 		String stub = "V_";
-		try {
-			String server = PropertyLoader.getProperty(PropertyLoader.vcellServerIDProperty,"");
-			return stub + server + "_";
-		} catch (Error e) { //set regardless, just log error
-			LG.error(e);
-		}
-		return stub;
+		String server = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+		return stub + server + "_";
 	}
+	
+	public static boolean isMyJob(HtcJobInfo htcJobInfo){
+		return htcJobInfo.getJobName().startsWith(jobNamePrefix());
+	}
+	
 	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = jobNamePrefix();
 	protected final CommandService commandService;
 	protected final String htcUser;
@@ -178,29 +195,35 @@ public abstract class HtcProxy {
 	}
 
 	public static SimTaskInfo getSimTaskInfoFromSimJobName(String simJobName) throws HtcException{
-		if (simJobName.startsWith(HTC_SIMULATION_JOB_NAME_PREFIX)){
-			String restOfName = simJobName.substring(HTC_SIMULATION_JOB_NAME_PREFIX.length());
-			StringTokenizer tokens = new StringTokenizer(restOfName,"_");
-			String simIdString = null;
-			if (tokens.hasMoreTokens()){
-				simIdString = tokens.nextToken();
-			}
-			String jobIndexString = null;
-			if (tokens.hasMoreTokens()){
-				jobIndexString = tokens.nextToken();
-			}
-			String taskIdString = null;
-			if (tokens.hasMoreTokens()){
-				taskIdString = tokens.nextToken();
-			}
-			if (simIdString!=null && jobIndexString!=null && taskIdString!=null){
-				KeyValue simId = new KeyValue(simIdString);
-				int jobIndex = Integer.valueOf(jobIndexString);
-				int taskId = Integer.valueOf(taskIdString);
-				return new SimTaskInfo(simId,jobIndex,taskId);
-			}
+		StringTokenizer tokens = new StringTokenizer(simJobName,"_");
+		String PREFIX = null;
+		if (tokens.hasMoreTokens()){
+			PREFIX = tokens.nextToken();
 		}
-		throw new HtcException("simJobName : "+simJobName+" not in expected format for a simulation job name");
+		String SITE = null;
+		if (tokens.hasMoreTokens()){
+			SITE = tokens.nextToken();
+		}
+		String simIdString = null;
+		if (tokens.hasMoreTokens()){
+			simIdString = tokens.nextToken();
+		}
+		String jobIndexString = null;
+		if (tokens.hasMoreTokens()){
+			jobIndexString = tokens.nextToken();
+		}
+		String taskIdString = null;
+		if (tokens.hasMoreTokens()){
+			taskIdString = tokens.nextToken();
+		}
+		if (PREFIX.equals("V") && SITE!=null && simIdString!=null && jobIndexString!=null && taskIdString!=null){
+			KeyValue simId = new KeyValue(simIdString);
+			int jobIndex = Integer.valueOf(jobIndexString);
+			int taskId = Integer.valueOf(taskIdString);
+			return new SimTaskInfo(simId,jobIndex,taskId);
+		}else{
+			throw new HtcException("simJobName : "+simJobName+" not in expected format for a simulation job name");
+		}
 	}
 
 	public static String createHtcSimJobName(SimTaskInfo simTaskInfo) {

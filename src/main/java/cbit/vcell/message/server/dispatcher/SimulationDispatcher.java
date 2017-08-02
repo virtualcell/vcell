@@ -329,7 +329,7 @@ public class SimulationDispatcher extends ServiceProvider {
 										}
 									}
 								}
-								if (killJob){
+								if (killJob && HtcProxy.isMyJob(jobInfo)){
 									if (lg.isEnabledFor(Level.WARN)) {
 										lg.warn("killing " + jobInfo + ", " + failureMessage);
 									}
