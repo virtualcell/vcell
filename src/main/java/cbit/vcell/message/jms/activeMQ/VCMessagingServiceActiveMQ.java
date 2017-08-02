@@ -36,7 +36,9 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 	@Override
 	public ConnectionFactory createConnectionFactory(){
 		//return new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false&broker.useJmx=false&create=false");
-		return new ActiveMQConnectionFactory(jmsUrl( ));
+		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl( ));
+		activeMQConnectionFactory.setTrustAllPackages(true);
+		return activeMQConnectionFactory;
 	}
 	
 	@Override
