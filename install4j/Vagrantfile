@@ -1,0 +1,24 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "antapos/ubuntu-trusty64-jdk8-maven"
+  config.vm.box_version = "0.1"
+
+  config.vm.synced_folder "../", "/vagrant_maven"
+  config.vm.synced_folder "~/vcellkeys", "/vagrant_keys"
+  config.vm.synced_folder "~/vcelljres", "/vagrant_jres"
+
+  config.vm.provider "virtualbox" do |vb|
+  #   vb.gui = true
+    vb.memory = "2048"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    wget -O install4j_unix_6_0_4.tar.gz \
+    	http://download-keycdn.ej-technologies.com/install4j/install4j_unix_6_0_4.tar.gz
+    gunzip install4j_unix_6_0_4.tar.gz
+    tar xf install4j_unix_6_0_4.tar
+  SHELL
+end

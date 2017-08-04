@@ -1,0 +1,9 @@
+compiler_applicationId="1471-8022-1038-5558"
+compiler_Site="Test4"
+compiler_vcellVersion="6.2"
+compiler_vcellBuild="54"
+compiler_vcellAllJarFileSourcePath="/vagrant_maven/target/vcell-0.0.1-SNAPSHOT.jar"
+compiler_softwareVersionString="Test4_Version_6.2_build_54"
+compiler_rmiHosts="vcell-rmi-alpha.cam.uchc.edu:40109"
+compiler_bioformatsJarFile="bioformats_TEST4_6_2_54.jar"
+compiler_bioformatsJarDownloadURL=http://vcell.org/webstart/Test4/bioformats_TEST4_6_2_54.jar
