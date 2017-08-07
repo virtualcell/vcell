@@ -48,6 +48,25 @@ installedExportDir=$vcell_export_dir
 installedExportUrl=$vcell_export_url
 installedMpichHomedir=$vcell_mpich_homedir
 
+pathto_server_sitedir=$vcell_pathto_sitedir
+pathto_ConfigsDir=$pathto_server_sitedir/configs
+pathto_JarsDir=$pathto_server_sitedir/jars
+pathto_NativelibsDir=$pathto_server_sitedir/nativelibs
+pathto_VisToolDir=$pathto_server_sitedir/visTool
+pathto_SolversDir=$pathto_server_sitedir/solvers
+pathto_TmpDir=$pathto_server_sitedir/tmp
+pathto_LogDir=$pathto_server_sitedir/log
+pathto_JmsBlobFilesDir=$pathto_server_sitedir/blobFiles
+pathto_HtclogsDir=$pathto_server_sitedir/htclogs
+pathto_JavaprefsDir=$pathto_server_sitedir/javaprefs
+pathto_SystemPrefsDir=$pathto_server_sitedir/javaprefs/.systemPrefs
+#pathto_PrimarydataDir=$vcell_primary_datadir
+#pathto_SecondarydataDir=$vcell_secondary_datadir
+#pathto_ParalleldataDir=$vcell_parallel_datadir
+#pathto_ExportDir=$vcell_export_dir
+#pathto_ExportUrl=$vcell_export_url
+#pathto_MpichHomedir=$vcell_mpich_homedir
+
 
 installedVisitExe=/share/apps/vcell2/visit/visit2.9/visit2_9_0.linux-x86_64/bin/visit
 installedPython=/share/apps/vcell2/vtk/usr/bin/vcellvtkpython
@@ -350,7 +369,7 @@ echo "vcell.visToolPath = $installedVisToolDir"								>> $propfile
 echo "##set if needed to pick up python modules"							>> $propfile
 echo "#vcell.vtkPythonModulePath ="											>> $propfile
 
-if [ "$vcell_servicehost" == "localhost" ]
+if [ "$vcell_server_sitedir" == "vcell_pathto_sitedir" ]
 then
 	mkdir -p $installedSolversDir
 	mkdir -p $installedConfigsDir
@@ -371,4 +390,29 @@ then
 	cp -p $stagingJarsDir/*			$installedJarsDir
 	cp -p -R $stagingVisToolDir/*	$installedVisToolDir
 	cp -p $stagingNativelibsDir/*	$installedNativelibsDir
+else
+	#
+	# remote filesystem
+	#   don't bother trying to create primary/secondary/parallel data dirs
+	#   dont create export directory - probably uses common export directory
+	#
+	mkdir -p $pathto_installedSolversDir
+	mkdir -p $pathto_installedConfigsDir
+	mkdir -p $pathto_installedVisToolDir
+	mkdir -p $pathto_installedJarsDir
+	mkdir -p $pathto_installedNativelibsDir
+	mkdir -p $pathto_installedHtclogsDir
+	mkdir -p $pathto_installedJmsBlobFilesDir
+	mkdir -p $pathto_installedLogDir
+	mkdir -p $pathto_installedTmpDir
+	mkdir -p $pathto_installedJavaprefsDir
+	mkdir -p $pathto_installedSystemPrefsDir
+#	mkdir -p $pathto_installedPrimarydataDir
+#	mkdir -p $pathto_installedSecondarydataDir
+#	mkdir -p $pathto_installedParalleldataDir
+#	mkdir -p $pathto_installedExportDir
+	cp -p $stagingConfigsDir/*		$pathto_installedConfigsDir
+	cp -p $stagingJarsDir/*			$pathto_installedJarsDir
+	cp -p -R $stagingVisToolDir/*	$pathto_installedVisToolDir
+	cp -p $stagingNativelibsDir/*	$pathto_installedNativelibsDir
 fi

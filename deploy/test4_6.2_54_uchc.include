@@ -11,16 +11,17 @@ vcell_version="6.2"
 vcell_build="54"
 vcell_softwareVersionString="${vcell_site_camel}_Version_${vcell_version}_build_${vcell_build}"
 vcell_applicationId="1471-8022-1038-5558"
-vcell_server_sitedir="/Users/schaff/Documents/workspace-modular/VCell_6.2_clean/deploy/sandbox/$vcell_site_lower"
+vcell_server_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
 # mount /share/apps/vcell2/deployed as cfs02.cam.uchc.edu/raid resulting in /Volumes/raid/vcell/deployed
-vcell_pathto_sitedir="/Users/schaff/Documents/workspace-modular/VCell_6.2_clean/deploy/sandbox/$vcell_site_lower"
-vcell_servicehost="localhost"
-vcell_rmihost="localhost"
+vcell_pathto_sitedir="/Volumes/raid/vcell/deployed_new/$vcell_site_lower"
+vcell_servicehost="vcell-service.cam.uchc.edu"
+vcell_rmihost="vcell-rmi-alpha.cam.uchc.edu"
 vcell_rmiport_low=-1
 vcell_rmiport_high=40109
-vcell_rmihosts="localhost:40109"
+vcell_rmihosts="vcell-rmi-alpha.cam.uchc.edu:40109"
 vcell_bioformatsJarFile="bioformats_TEST4_6_2_54.jar"
 vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vcell_bioformatsJarFile"
+
 vcell_vcellAllJarFileName="vcell-0.0.1-SNAPSHOT.jar"
 vcell_vcellAllJarFileSourcePath="/vagrant_maven/target/$vcell_vcellAllJarFileName"
 
@@ -65,24 +66,25 @@ vcell_rmiservice_high_jmxport=12313
 vcell_rmiservice_http_jmxport=-1
 vcell_vcellservice_jmxport=12370
 
-vcell_primary_datadir=$vcell_server_sitedir/simdata
-vcell_secondary_datadir=$vcell_server_sitedir/simdata
-vcell_parallel_datadir=$vcell_server_sitedir/simdata
-vcell_export_dir=$vcell_server_sitedir/export
+vcell_primary_datadir=share/apps/vcell3/users/
+vcell_secondary_datadir=share/apps/vcell3/users/
+vcell_parallel_datadir=/state/partition1/vcelltemp/
+vcell_export_dir=/share/apps/vcell2/export/
 vcell_export_url=http://vcell.org/export/
 
 vcell_mpich_homedir="/share/apps/vcell2/mpich/"
 
-vcell_htc_usessh=true
-if [ "$vcell_htc_usessh" = true ]; then
-	#
-	# only define these if using ssh to invoke the htc processes
-	#
-	# DSA Keystore is for password-less authentication to HTC host
-	#
-	vcell_htc_sshhost="vcell-service.cam.uchc.edu"
-	vcell_htc_sshuser="vcell"
-	vcell_htc_sshDsaKeyFile="/Users/schaff/.ssh/schaff_dsa"
-fi
-
+vcell_htc_usessh=false
+#
+#if [ "$vcell_htc_usessh" = true ]; then
+#	#
+#	# only define these if using ssh to invoke the htc processes
+#	#
+#	# DSA Keystore is for password-less authentication to HTC host
+#	#
+#	vcell_htc_sshhost="vcell-service.cam.uchc.edu"
+#	vcell_htc_sshuser="vcell"
+#	vcell_htc_sshDsaKeyFile="/Users/schaff/.ssh/schaff_dsa"
+#fi
+#
 
