@@ -1,5 +1,7 @@
 package cbit.vcell.message.server.htc.test;
 
+import java.io.File;
+
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
@@ -16,14 +18,14 @@ public class HtcTest {
 		CommandServiceSsh cmdssh = null;
 		try {
 			if (args.length != 4){
-				System.out.println("Usage: HtcTest remotehost username password (PBS|SGE|SLURM)");
+				System.out.println("Usage: HtcTest remotehost username keyfile (PBS|SGE|SLURM)");
 				System.exit(1);
 			}
 			String host = args[0];
 			String username = args[1];
-			String password = args[2];
+			File keyFile = new File(args[2]);
 			String htcType = args[3];
-			cmdssh = new CommandServiceSsh(host, username, password);
+			cmdssh = new CommandServiceSsh(host, username, keyFile);
 			HtcProxy htcProxy = null;
 			if (htcType.equalsIgnoreCase("PBS")){
 				htcProxy = new PbsProxy(cmdssh,username);

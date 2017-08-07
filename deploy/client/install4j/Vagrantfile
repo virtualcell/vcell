@@ -5,7 +5,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "antapos/ubuntu-trusty64-jdk8-maven"
   config.vm.box_version = "0.1"
 
-  config.vm.synced_folder "../", "/vagrant_maven"
+  config.vm.synced_folder "../../../", "/vagrant_maven"
   config.vm.synced_folder "~/vcellkeys", "/vagrant_keys"
   config.vm.synced_folder "~/vcelljres", "/vagrant_jres"
 

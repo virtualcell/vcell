@@ -40,11 +40,15 @@ jvmprop="-Xmx${vcellservice_memoryGB}G"
 jvmprop="${jvmprop} -Dvcell.propertyfile=${common_propertyfile}"
 jvmprop="${jvmprop} -Djava.io.tmpdir=${common_siteTmpDir}"
 jvmprop="${jvmprop} -Dlog4jConfigurationFile=${common_siteCfgDir}/log4jvcellservice.properties"
-jvmprop="${jvmprop} -Dvcell.lib=${common_siteLibDir}"
+jvmprop="${jvmprop} -Dvcell.lib=${common_siteNativelibsDir}"
 
 setupJavaPrefs
 
 arguments="123 ${common_logdir} ${common_batchSystemType}"
+
+if [ "$vcellservice_htc_usessh" = true ] ; then
+	arguments="$arguments $vcellservice_htc_ssh_host $vcellservice_htc_ssh_user $vcellservice_htc_ssh_dsaKeyFile"
+fi
 
 #
 # IMPORTANT:  ${procLabel} must be first because we are filtering on it for the kill script in DeployVCell.

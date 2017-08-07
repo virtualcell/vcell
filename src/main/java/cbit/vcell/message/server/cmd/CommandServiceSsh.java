@@ -15,23 +15,28 @@ import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
+import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 
 public class CommandServiceSsh extends CommandService {
 	private SSHClient ssh = null;
 	private String remoteHostName = null;
 	private String username = null;
-	private String password = null;
+	private File keyFile = null;
 	
-	public CommandServiceSsh(String remoteHostName, String username, String password) throws IOException{
+	public CommandServiceSsh(String remoteHostName, String username, File keyFile) throws IOException{
 		super();
 		this.remoteHostName = remoteHostName;
 		this.username = username;
-		this.password = password;
+		this.keyFile = keyFile;
 		
 		ssh = new SSHClient();
 		ssh.addHostKeyVerifier(new PromiscuousVerifier());
 		ssh.connect(remoteHostName);
-		ssh.authPassword(username,password);
+		FileKeyProvider keyProvider = new OpenSSHKeyFile();
+		keyProvider.init(keyFile);
+		ssh.authPublickey(username,keyProvider);
+//		ssh.authPassword(username,password);
 	}
 	
 	@Override
@@ -101,7 +106,7 @@ public class CommandServiceSsh extends CommandService {
 	@Override
 	public CommandService clone() {
 		try {
-			return new CommandServiceSsh(remoteHostName, username, password);
+			return new CommandServiceSsh(remoteHostName, username, keyFile);
 		}catch (Exception e){
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());

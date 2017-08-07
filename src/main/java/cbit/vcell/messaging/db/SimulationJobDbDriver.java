@@ -287,7 +287,7 @@ public SimulationJobStatusPersistent getSimulationJobStatus(Connection con, KeyV
 	} finally {
 		stmt.close();
 	}
-	log.print("retrieved simJobStatus = "+simJobStatus);
+//	log.print("retrieved simJobStatus = "+simJobStatus);
 	return simJobStatus;
 }
 

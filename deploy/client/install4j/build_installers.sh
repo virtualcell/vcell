@@ -24,7 +24,8 @@
 #    macKeystoreFilePath=/vagrant_keys/path/MY_MAC_KEYSTORE.p12
 #
 . /vagrant_keys/install4j.include
-. /vagrant/DeploySettings.include
+
+. /vagrant_maven/target/install4j-working/DeploySettings.include
 
 shopt -s -o nounset
 
@@ -49,5 +50,5 @@ vcellAllJarFileSourcePath=$compiler_vcellAllJarFileSourcePath,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
 bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
-	/vagrant_maven/install4j/VCell.install4j
+	/vagrant/VCell.install4j
 

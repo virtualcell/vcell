@@ -180,10 +180,10 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
 			CommandService commandService = null;
 			if (args.length==6){
-				String pbsHost = args[3];
-				String pbsUser = args[4];
-				String pbsPswd = args[5];
-				commandService = new CommandServiceSsh(pbsHost,pbsUser,pbsPswd);
+				String htc_ssh_host = args[3];
+				String htc_ssh_user = args[4];
+				File htc_ssh_dsaKeyFile = new File(args[5]);
+				commandService = new CommandServiceSsh(htc_ssh_host,htc_ssh_user,htc_ssh_dsaKeyFile);
 				AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
 			}else{
 				commandService = new CommandServiceLocal();
