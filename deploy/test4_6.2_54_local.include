@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+
+shopt -s -o nounset
+
+vcell_typical_application_password=abc123
+
+vcell_site_camel="Test4"
+vcell_site_lower="test4"
+vcell_site_upper="TEST4"
+vcell_version="6.2"
+vcell_build="54"
+vcell_softwareVersionString="${vcell_site_camel}_Version_${vcell_version}_build_${vcell_build}"
+vcell_applicationId="1471-8022-1038-5558"
+vcell_server_sitedir="/Users/schaff/Documents/workspace-modular/VCell_6.2_clean/deploy/sandbox/$vcell_site_lower"
+vcell_servicehost="localhost"
+vcell_rmihost="localhost"
+vcell_rmiport_low=-1
+vcell_rmiport_high=40109
+vcell_rmihosts="localhost:40109"
+vcell_bioformatsJarFile="bioformats_TEST4_6_2_54.jar"
+vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vcell_bioformatsJarFile"
+vcell_vcellAllJarFileName="vcell-0.0.1-SNAPSHOT.jar"
+vcell_vcellAllJarFileSourcePath="/vagrant_maven/target/$vcell_vcellAllJarFileName"
+
+vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
+vcell_jms_user=clientUser
+vcell_jms_pswd=$vcell_typical_application_password
+
+#
+# Oracle on server
+#
+vcell_database_url="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
+vcell_database_driver=oracle.jdbc.driver.OracleDriver
+vcell_database_user=vcell
+vcell_database_pswd=$vcell_typical_application_password
+
+#
+# Postgres on locahost
+#
+#vcell_database_url="jdbc:postgresql://localhost:5432/schaff"
+#vcell_database_driver=org.postgresql.Driver
+#vcell_database_user=schaff
+#vcell_database_pswd=$vcell_typical_application_password
+
+
+vcell_amplistor_url="http://obj1.cam.uchc.edu:8080/namespace/service_vcell/"
+vcell_amplistor_user=vcell
+vcell_amplistor_pswd=$vcell_typical_application_password
+
+vcell_mongodb_host=mongo.cam.uchc.edu
+vcell_mongodb_port=27017
+vcell_mongodb_database=$vcell_site_upper
+vcell_mongodb_collection=logging
+
+vcell_smtp_host=vdsmtp.cam.uchc.edu
+vcell_smtp_port=25
+vcell_smtp_email="VCell_Support@uchc.edu"
+
+vcell_common_jre=java
+vcell_common_jre_rmi=java
+
+vcell_rmiservice_high_jmxport=12313
+vcell_rmiservice_http_jmxport=-1
+vcell_vcellservice_jmxport=12370
+
+vcell_primary_datadir=$vcell_server_sitedir/simdata
+vcell_secondary_datadir=$vcell_server_sitedir/simdata
+vcell_parallel_datadir=$vcell_server_sitedir/simdata
+vcell_export_dir=$vcell_server_sitedir/export
+vcell_export_url=http://vcell.org/export/
+
+vcell_mpich_homedir="/share/apps/vcell2/mpich/"
+
+vcell_htc_usessh=true
+if [ "$vcell_htc_usessh" = true ]; then
+	#
+	# only define these if using ssh to invoke the htc processes
+	#
+	# DSA Keystore is for password-less authentication to HTC host
+	#
+	vcell_htc_sshhost="vcell-service.cam.uchc.edu"
+	vcell_htc_sshuser="vcell"
+	vcell_htc_sshDsaKeyFile="/Users/schaff/.ssh/schaff_dsa"
+fi
+
+

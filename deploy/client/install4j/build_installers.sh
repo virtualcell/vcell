@@ -31,7 +31,7 @@ shopt -s -o nounset
 
 cd /vagrant_maven
 
-mkdir /home/vagrant/.install4j6/jres
+mkdir -p /home/vagrant/.install4j6/jres
 cp /vagrant_jres/* /home/vagrant/.install4j6/jres/
 
 /home/vagrant/install4j6/bin/install4jc -L $licenseKey

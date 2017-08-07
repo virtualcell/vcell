@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+shopt -s -o nounset
+
+vcell_site_camel="Test4"
+vcell_site_lower="test4"
+vcell_site_upper="TEST4"
+vcell_softwareVersionString="Alpha_Version_6.2_build_54"
+vcell_version="6.2"
+vcell_build="54"
+vcell_applicationId="1471-8022-1038-5558"
+vcell_server_sitedir="/share/apps/vcell2/deployed/$vcell_site_lower"
+vcell_servicehost="vcell-service.cam.uchc.edu"
+vcell_rmihost="vcell-rmi-alpha.cam.uchc.edu"
+vcell_rmiport_low=-1
+vcell_rmiport_high=40109
+vcell_rmihosts="vcell-rmi-alpha.cam.uchc.edu:40109"
+vcell_bioformatsJarFile="bioformats_TEST4_6_2_54.jar"
+vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vcell_bioformatsJarFile"
+vcell_vcellAllJarFileName="vcell-0.0.1-SNAPSHOT.jar"
+vcell_vcellAllJarFileSourcePath="/vagrant_maven/target/$vcell_vcellAllJarFileName"
+vcell_jms_password="cbittech"
+vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
+vcell_databaseUrl="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
+vcell_amplistorUrl="http://obj1.cam.uchc.edu:8080/namespace/service_vcell/"
+
+vcell_common_jre="/share/apps/vcell2/java/jdk1.8.0_66/bin/java"
+vcell_common_jre_rmi="/usr/java/jdk1.8.0_66/jre/bin/java"
+vcell_ld_library_path=
+
+vcell.primarySimdatadir = /share/apps/vcell3/users/
+vcell.secondarySimdatadir = /share/apps/vcell3/users/
+vcell.parallelDatadir = /state/partition1/vcelltemp/

@@ -15,10 +15,13 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision "shell", inline: <<-SHELL
+  	echo "updating OS"
     apt-get update
-    wget -O install4j_unix_6_0_4.tar.gz \
+    echo "downloading http://download-keycdn.ej-technologies.com/install4j/install4j_unix_6_0_4.tar.gz"
+    wget --quiet -O install4j_unix_6_0_4.tar.gz \
     	http://download-keycdn.ej-technologies.com/install4j/install4j_unix_6_0_4.tar.gz
     gunzip install4j_unix_6_0_4.tar.gz
     tar xf install4j_unix_6_0_4.tar
+    echo "done provisioning"
   SHELL
 end

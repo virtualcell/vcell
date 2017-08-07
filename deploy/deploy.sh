@@ -52,6 +52,20 @@ installedMpichHomedir=$vcell_mpich_homedir
 installedVisitExe=/share/apps/vcell2/visit/visit2.9/visit2_9_0.linux-x86_64/bin/visit
 installedPython=/share/apps/vcell2/vtk/usr/bin/vcellvtkpython
 
+#--------------------------------------------------------------
+# build maven
+#--------------------------------------------------------------
+cd $projectRootDir
+#mvn verify
+#if [ $? -ne 0 ]; then
+#	echo "maven build failed"
+#	exit -1
+#fi
+mvn dependency:copy-dependencies
+if [ $? -ne 0 ]; then
+	echo "failed to fetch jar files into target/maven-jars"
+	exit -1
+fi
 
 #---------------------------------------------------------------
 # build install4j platform specific installers for VCell client
@@ -76,7 +90,7 @@ echo "compiler_vcellAllJarFileSourcePath=$vcell_vcellAllJarFileSourcePath" >> $i
 echo "compiler_applicationId=$vcell_applicationId"					>> $install4jDeploySettings
 
 cd $deployInstall4jDir
-## ./build.sh
+./build.sh
 if [ $? -eq 0 ]; then
 	echo "client-installers built"
 else
