@@ -4,6 +4,7 @@ shopt -s -o nounset
 
 vcell_typical_application_password=abc123
 
+vcell_server_os="mac64"
 vcell_site_camel="Test4"
 vcell_site_lower="test4"
 vcell_site_upper="TEST4"

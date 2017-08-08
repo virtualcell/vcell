@@ -1,38 +1,30 @@
 package cbit.vcell.solver;
 
-import cbit.vcell.resource.PropertyLoader;
-
 /**
  * enum that maps Solvers to property names to executable file stubs
  * @author gweatherby
  *
  */
 public enum SolverExecutable {
-	VCellChombo(PropertyLoader.VCellChomboExecutable2D,"VCellChombo2D", 
-			PropertyLoader.VCellChomboExecutable3D,"VCellChombo3D"),
-	FiniteVolume(PropertyLoader.finiteVolumeExecutableProperty, "FiniteVolume" ),
-	SundialsOde(PropertyLoader.sundialsSolverExecutableProperty, "SundialsSolverStandalone" ),
-	Gibson(PropertyLoader.stochExecutableProperty, "VCellStoch" ),
-	Hybrid_EM(PropertyLoader.hybridEMExecutableProperty,"Hybrid_EM" ),
-	Hybrid_Mil(PropertyLoader.hybridMilExecutableProperty, "Hybrid_MIL" ),
-	Hybrid_Mil_Adaptive(PropertyLoader.hybridMilAdaptiveExecutableProperty,"Hybrid_MIL_Adaptive" ),
-	Smoldyn(PropertyLoader.smoldynExecutableProperty, "smoldyn" ),
-	NFSIM(PropertyLoader.nfsimExecutableProperty, "NFsim"),
-	MOVING_B(PropertyLoader.MOVING_BOUNDARY_EXE, "MovingBoundary")
+	VCellChombo("VCellChombo2D","VCellChombo3D"),
+	FiniteVolume("FiniteVolume" ),
+	SundialsOde("SundialsSolverStandalone" ),
+	Gibson("VCellStoch" ),
+	Hybrid_EM("Hybrid_EM" ),
+	Hybrid_Mil("Hybrid_MIL" ),
+	Hybrid_Mil_Adaptive("Hybrid_MIL_Adaptive" ),
+	Smoldyn("smoldyn" ),
+	NFSIM("NFsim"),
+	MOVING_B("MovingBoundary")
 	;
 	
 	public static class NameInfo {
-		/**
-		 * property name for executable
-		 */
-		public final String propertyName;
 		/**
 		 * executable name without OS specific extensions
 		 */
 		public final String exeName;
 		
-		private NameInfo(String propertyName, String exeName) {
-			this.propertyName = propertyName;
+		private NameInfo(String exeName) {
 			this.exeName = exeName;
 		}
 		
@@ -44,9 +36,9 @@ public enum SolverExecutable {
 	 * @param prop
 	 * @param exe
 	 */
-	SolverExecutable(String prop, String exe) {
+	SolverExecutable(String exe) {
 		ni = new NameInfo[1];
-		ni[0] = new NameInfo(prop,exe);
+		ni[0] = new NameInfo(exe);
 	}
 	
 	/**
@@ -56,10 +48,10 @@ public enum SolverExecutable {
 	 * @param prop1
 	 * @param exe1
 	 */
-	SolverExecutable(String prop, String exe, String prop1, String exe1) {
+	SolverExecutable(String exe, String exe1) {
 		ni = new NameInfo[2];
-		ni[0] = new NameInfo(prop,exe);
-		ni[1] = new NameInfo(prop1,exe1);
+		ni[0] = new NameInfo(exe);
+		ni[1] = new NameInfo(exe1);
 	}
 	
 	public NameInfo[] getNameInfo() {

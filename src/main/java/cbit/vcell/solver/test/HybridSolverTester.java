@@ -37,7 +37,6 @@ import cbit.rmi.event.MessageEvent;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationStatus;
@@ -120,7 +119,6 @@ public class HybridSolverTester {
 				 * When you want to run the multiple trials on server (without VCell user interface), use the next line of code 
 				 * Corresponding changes should be made in the shell script runhybridtest for the location of executable on server
 				 */
-				System.getProperties().put(PropertyLoader.finiteVolumeExecutableProperty, "/share/apps/vcell/deployed/"+site+"/numerics/cmake-build/bin/FiniteVolume_x64");	
 				FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simDataDir,new StdoutSessionLog(sim.getVersion().getOwner().getName()),false);		
 				fvSolver.startSolver();
 				

@@ -25,11 +25,12 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -161,8 +162,12 @@ public class NFSimSolver extends SimpleCompiledSolver {
 
 	@Override
 	protected String[] getMathExecutableCommand() {
-		String executableName = PropertyLoader
-				.getRequiredProperty(PropertyLoader.nfsimExecutableProperty);
+		String executableName = null;
+		try {
+			executableName = SolverUtilities.getExes(SolverDescription.NFSim)[0].getAbsolutePath();
+		}catch (IOException e){
+			throw new RuntimeException("failed to get executable for solver "+SolverDescription.NFSim.getDisplayLabel()+": "+e.getMessage(),e);
+		}
 		String inputFilename = getInputFilename();
 		String outputFilename = getOutputFilename();
 		String speciesOutputFilename = getSpeciesOutputFilename();

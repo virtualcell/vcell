@@ -10,6 +10,7 @@
 
 package cbit.vcell.solvers;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.vcell.util.BeanUtils;
@@ -19,8 +20,9 @@ import org.vcell.util.SessionLog;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 
@@ -58,8 +60,13 @@ public MovingBoundarySolver (SimulationTask simTask, File dir, SessionLog sessio
 
 @Override
 protected String[] getMathExecutableCommand() {
-	String exeName = PropertyLoader.getRequiredProperty(PropertyLoader.MOVING_BOUNDARY_EXE);
-	return new String[] {exeName,"--config",inputFilename};
+	String executableName = null;
+	try {
+		executableName = SolverUtilities.getExes(SolverDescription.MovingBoundary)[0].getAbsolutePath();
+	}catch (IOException e){
+		throw new RuntimeException("failed to get executable for solver "+SolverDescription.MovingBoundary.getDisplayLabel()+": "+e.getMessage(),e);
+	}
+	return new String[] {executableName,"--config",inputFilename};
 }
 
 

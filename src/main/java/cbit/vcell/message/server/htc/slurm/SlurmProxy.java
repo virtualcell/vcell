@@ -196,7 +196,10 @@ denied: job "6894" does not exist
 
 	@Override
 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException, IOException {
-		String[] cmds = {Slurm_HOME + JOB_CMD_STATUS,"-u","vcell","-P","-o","jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode"};
+		String states = SlurmJobStatus.RUNNING.shortName+","+
+						SlurmJobStatus.CONFIGURING.shortName+","+
+						SlurmJobStatus.RESIZING.shortName;
+		String[] cmds = {Slurm_HOME + JOB_CMD_STATUS,"-u","vcell","-P","-s",states,"-o","jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode"};
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();

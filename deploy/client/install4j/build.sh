@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-jredir="~/vcelljres"
+jredir="$HOME/vcelljres"
 
 if [ ! -d "$jredir" ]; then
 	echo "expecting to find directory $jredir with downloaded JREs compatible with Install4J configuration"

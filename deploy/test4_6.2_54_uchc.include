@@ -4,6 +4,7 @@ shopt -s -o nounset
 
 vcell_typical_application_password=abc123
 
+vcell_server_os="linux64"
 vcell_site_camel="Test4"
 vcell_site_lower="test4"
 vcell_site_upper="TEST4"
@@ -59,15 +60,15 @@ vcell_smtp_host=vdsmtp.cam.uchc.edu
 vcell_smtp_port=25
 vcell_smtp_email="VCell_Support@uchc.edu"
 
-vcell_common_jre=java
-vcell_common_jre_rmi=java
+vcell_common_jre=/share/apps/vcell2/java/jdk1.8.0_66/bin/java
+vcell_common_jre_rmi=/usr/java/jdk1.8.0_66/jre/bin/java
 
 vcell_rmiservice_high_jmxport=12313
 vcell_rmiservice_http_jmxport=-1
 vcell_vcellservice_jmxport=12370
 
-vcell_primary_datadir=share/apps/vcell3/users/
-vcell_secondary_datadir=share/apps/vcell3/users/
+vcell_primary_datadir=/share/apps/vcell3/users/
+vcell_secondary_datadir=/share/apps/vcell3/users/
 vcell_parallel_datadir=/state/partition1/vcelltemp/
 vcell_export_dir=/share/apps/vcell2/export/
 vcell_export_url=http://vcell.org/export/

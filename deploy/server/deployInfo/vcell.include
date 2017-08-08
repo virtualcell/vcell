@@ -1,3 +1,12 @@
+#
+# place before statement about no unbound variables allowed
+#
+common_siteNativelibsDir=GENERATED-NATIVELIBSDIR
+if [[ "$OSTYPE" != "darwin"* ]]; then
+	LD_LIBRARY_PATH=${common_siteNativelibsDir}:$LD_LIBRARY_PATH
+	export LD_LIBRARY_PATH
+fi
+
 shopt -s -o nounset
 
 #
@@ -13,7 +22,6 @@ common_batchSystemType=SLURM
 
 common_siteJarsDir=GENERATED-JARSDIR
 common_logdir=GENERATED-LOGDIR
-common_siteNativelibsDir=GENERATED-NATIVELIBSDIR
 common_siteCfgDir=GENERATED-CONFIGSDIR
 common_propertyfile=${common_siteCfgDir}/vcell64.properties
 
@@ -22,10 +30,6 @@ common_javaPrefsDir=GENERATED-JAVAPREFSDIR
 
 common_jvm_jars=.:GENERATED-JARS
 
-if [[ "$OSTYPE" != "darwin"* ]]; then
-	LD_LIBRARY_PATH=${common_siteNativelibsDir}:$LD_LIBRARY_PATH
-	export LD_LIBRARY_PATH
-fi
 
 common_jre=GENERATED-COMMON-JRE
 

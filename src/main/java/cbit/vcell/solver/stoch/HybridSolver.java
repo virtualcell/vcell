@@ -26,13 +26,13 @@ import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.NonspatialStochHybridOptions;
 import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
@@ -363,7 +363,6 @@ private String getInputFilename(){
 
 @Override
 protected String[] getMathExecutableCommand() {
-	String executableName = "";
 	String randomNumber = "";
 	//if one of the following paras is applied, all the paras in front of it must be set.
 	String epsilon = " 100";
@@ -390,17 +389,20 @@ protected String[] getMathExecutableCommand() {
     if(stochOpts.isUseCustomSeed())
     	randomNumber = " -R "+String.valueOf(stochOpts.getCustomSeed());
 	
-	if(getIntegratorType() == HybridSolver.EMIntegrator)
-	{
-		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.hybridEMExecutableProperty);
+    SolverDescription solverDescription = null;
+	if (getIntegratorType() == HybridSolver.EMIntegrator) {
+		solverDescription = SolverDescription.HybridEuler;
+	} else if (getIntegratorType() == HybridSolver.MilsteinIntegrator) {
+		solverDescription = SolverDescription.HybridMilstein;
+	} else {
+		solverDescription = SolverDescription.HybridMilAdaptive;
 	}
-	else if (getIntegratorType() == HybridSolver.MilsteinIntegrator)
-	{
-		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.hybridMilExecutableProperty);
-	}
-	else 
-	{
-		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.hybridMilAdaptiveExecutableProperty);
+	
+	String executableName;
+	try {
+		executableName = SolverUtilities.getExes(SolverDescription.HybridEuler)[0].getAbsolutePath();
+	} catch (IOException e) {
+		throw new RuntimeException("failed to get executable for solver "+solverDescription.getDisplayLabel()+": "+e.getMessage(),e);
 	}
 	
 	ArrayList<String> commandList = new ArrayList<String>();

@@ -33,13 +33,14 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -184,8 +185,13 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 			// use the cvodeStandalone solver
 			File cvodeOutputFile = new File(outDir,filePrefix+SimDataConstants.IDA_DATA_EXTENSION);
-			String sundialsSolverExecutable = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
-			Executable executable = new Executable(new String[]{sundialsSolverExecutable, cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
+			String executableName = null;
+			try {
+				executableName = SolverUtilities.getExes(SolverDescription.CVODE)[0].getAbsolutePath();
+			}catch (IOException e){
+				throw new RuntimeException("failed to get executable for solver "+SolverDescription.CVODE.getDisplayLabel()+": "+e.getMessage(),e);
+			}
+			Executable executable = new Executable(new String[]{executableName, cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
 			executable.start();
 	
 		// get the result 
@@ -447,8 +453,13 @@ public class VCellSBMLSolver implements SBMLSolver {
 			// use the idastandalone solver
 			File idaOutputFile = new File(outDir,filePrefix+SimDataConstants.IDA_DATA_EXTENSION);
 //			String sundialsSolverExecutable = "C:\\Developer\\Eclipse\\workspace\\VCell 4.8\\SundialsSolverStandalone_NoMessaging.exe";
-			String sundialsSolverExecutable = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
-			Executable executable = new Executable(new String[]{sundialsSolverExecutable, idaInputFile.getAbsolutePath(), idaOutputFile.getAbsolutePath()});
+			String executableName = null;
+			try {
+				executableName = SolverUtilities.getExes(SolverDescription.IDA)[0].getAbsolutePath();
+			}catch (IOException e){
+				throw new RuntimeException("failed to get executable for solver "+SolverDescription.IDA.getDisplayLabel()+": "+e.getMessage(),e);
+			}
+			Executable executable = new Executable(new String[]{executableName, idaInputFile.getAbsolutePath(), idaOutputFile.getAbsolutePath()});
 			executable.start();
 
 /*			// Generate .cvodeInput string

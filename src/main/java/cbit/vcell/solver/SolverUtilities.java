@@ -88,7 +88,6 @@ public class SolverUtilities {
 			for (int i = 0; i < nameInfos.length; ++i) {
 				SolverExecutable.NameInfo ni = nameInfos[i];
 				File exe = ResourceUtil.findSolverExecutable(ni.exeName);
-				System.getProperties().put(ni.propertyName,exe.getAbsolutePath());
 				files[i] = exe; 
 			}
 			return files;

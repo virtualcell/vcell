@@ -13,6 +13,7 @@ import static org.vcell.util.BeanUtils.notNull;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +48,7 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
@@ -368,7 +370,12 @@ private Collection<ExecutableCommand> getFVCommands() {
 	assert (!isChombo);
 	Simulation simulation = getSimulationJob().getSimulation();
 	final boolean isParallel = simulation.getSolverTaskDescription().isParallel();
-	String executableName =  PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);
+	String executableName = null;
+	try {
+		executableName = SolverUtilities.getExes(SolverDescription.FiniteVolumeStandalone)[0].getAbsolutePath();
+	}catch (IOException e){
+		throw new RuntimeException("failed to get executable for solver "+SolverDescription.FiniteVolumeStandalone.getDisplayLabel()+": "+e.getMessage(),e);
+	}
 	if (isParallel) {
 		throw new UnsupportedOperationException(executableName + " does not support parallel");
 	}
@@ -389,10 +396,18 @@ private Collection<ExecutableCommand> getChomboCommands() {
 	int dimension = simulation.getMeshSpecification().getGeometry().getDimension();
 	switch (dimension) {
 	case 2:
-		executableName = PropertyLoader.getRequiredProperty(PropertyLoader.VCellChomboExecutable2D);
+		try {
+			executableName = SolverUtilities.getExes(SolverDescription.Chombo)[0].getAbsolutePath();
+		}catch (IOException e){
+			throw new RuntimeException("failed to get executable for 2D solver "+SolverDescription.Chombo.getDisplayLabel()+": "+e.getMessage(),e);
+		}
 		break;
 	case 3:
-		executableName = PropertyLoader.getRequiredProperty(PropertyLoader.VCellChomboExecutable3D);
+		try {
+			executableName = SolverUtilities.getExes(SolverDescription.Chombo)[1].getAbsolutePath();
+		}catch (IOException e){
+			throw new RuntimeException("failed to get executable for 3D solver "+SolverDescription.Chombo.getDisplayLabel()+": "+e.getMessage(),e);
+		}
 		break;
 	default:
 		throw new IllegalArgumentException("VCell Chombo solver does not support " + dimension + "problems");

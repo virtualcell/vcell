@@ -20,9 +20,10 @@ import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.ApplicationMessage;
@@ -162,7 +163,12 @@ private String getInputFilename(){
 
 @Override
 protected String[] getMathExecutableCommand() {
-	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.smoldynExecutableProperty);
+	String executableName = null;
+	try {
+		executableName = SolverUtilities.getExes(SolverDescription.Smoldyn)[0].getAbsolutePath();
+	}catch (IOException e){
+		throw new RuntimeException("failed to get executable for solver "+SolverDescription.Smoldyn.getDisplayLabel()+": "+e.getMessage(),e);
+	}
 	String inputFilename = getInputFilename();
 	if (SystemUtils.IS_OS_WINDOWS){
 		//

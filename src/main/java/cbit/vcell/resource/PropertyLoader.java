@@ -53,18 +53,18 @@ public class PropertyLoader {
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
 	public static final String MPI_HOME				        = record("vcell.htc.mpi.home",ValueType.DIR);
 
-	public static final String finiteVolumeExecutableProperty = record("vcell.finitevolume.executable",ValueType.EXE);
-
-	//
-	public static final String sundialsSolverExecutableProperty		= record("vcell.sundialsSolver.executable",ValueType.EXE);
-
-	// Smoldyn
-	public static final String smoldynExecutableProperty		= record("vcell.smoldyn.executable",ValueType.EXE);
-
-	// NFSim
-	public static final String nfsimExecutableProperty		= record("vcell.nfsim.executable",ValueType.EXE);
-
-	public static final String MOVING_BOUNDARY_EXE		= record("vcell.mb.executable",ValueType.EXE);
+//	public static final String finiteVolumeExecutableProperty = record("vcell.finitevolume.executable",ValueType.EXE);
+//
+//	//
+//	public static final String sundialsSolverExecutableProperty		= record("vcell.sundialsSolver.executable",ValueType.EXE);
+//
+//	// Smoldyn
+//	public static final String smoldynExecutableProperty		= record("vcell.smoldyn.executable",ValueType.EXE);
+//
+//	// NFSim
+//	public static final String nfsimExecutableProperty		= record("vcell.nfsim.executable",ValueType.EXE);
+//
+//	public static final String MOVING_BOUNDARY_EXE		= record("vcell.mb.executable",ValueType.EXE);
 	
 	//Comsol properties
 	public static final String comsolRootDir				= record("vcell.comsol.rootdir",ValueType.DIR);
@@ -77,10 +77,10 @@ public class PropertyLoader {
 	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
 
 	//Stoch properties
-	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);
-	public static final String hybridEMExecutableProperty	= record("vcell.hybridEM.executable",ValueType.EXE);
-	public static final String hybridMilExecutableProperty	= record("vcell.hybridMil.executable",ValueType.EXE);
-	public static final String hybridMilAdaptiveExecutableProperty = record("vcell.hybridMilAdaptive.executable",ValueType.EXE);
+//	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);
+//	public static final String hybridEMExecutableProperty	= record("vcell.hybridEM.executable",ValueType.EXE);
+//	public static final String hybridMilExecutableProperty	= record("vcell.hybridMil.executable",ValueType.EXE);
+//	public static final String hybridMilAdaptiveExecutableProperty = record("vcell.hybridMilAdaptive.executable",ValueType.EXE);
 
 	public static final String visitSmoldynVisitExecutableProperty	= record("vcell.visit.smoldynvisitexecutable",ValueType.EXE);
 	public static final String visitSmoldynScriptPathProperty		= record("vcell.visit.smoldynscript",ValueType.GEN);
@@ -153,8 +153,8 @@ public class PropertyLoader {
 	public final static String mongodbLoggingCollection			= record("vcell.mongodb.loggingCollection",ValueType.GEN);
 	public final static String mongodbThreadSleepMS				= record("vcell.mongodb.threadSleepMS",ValueType.GEN);
 
-	public static final String VCellChomboExecutable2D = record("vcell.chombo.executable.2d",ValueType.EXE);
-	public static final String VCellChomboExecutable3D = record("vcell.chombo.executable.3d",ValueType.EXE);
+//	public static final String VCellChomboExecutable2D = record("vcell.chombo.executable.2d",ValueType.EXE);
+//	public static final String VCellChomboExecutable3D = record("vcell.chombo.executable.3d",ValueType.EXE);
 
 	public static final String amplistorVCellServiceURL = record("vcell.amplistor.vcellserviceurl",ValueType.GEN);
 	public static final String amplistorVCellServiceUser = record("vcell.amplistor.vcellservice.user",ValueType.GEN);

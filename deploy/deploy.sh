@@ -29,12 +29,23 @@ stagingJarsDir=$stagingRootDir/jars
 stagingVisToolDir=$stagingRootDir/visTool
 stagingNativelibsDir=$stagingRootDir/nativelibs
 
+if [[ "$vcell_server_os" == "mac64" ]]; then
+	localsolversDir=localsolvers/mac64
+elif [[ "$vcell_server_os" == "linux64" ]]; then
+	localsolversDir=localsolvers/linux64
+else
+	echo "vcell server os specied as $vcell_server_os expecting either 'linux64' or 'macos'"
+	exit -1
+fi
+
+projectSolversDir=$projectRootDir/$localsolversDir
+
 installed_server_sitedir=$vcell_server_sitedir
 installedConfigsDir=$installed_server_sitedir/configs
 installedJarsDir=$installed_server_sitedir/jars
 installedNativelibsDir=$installed_server_sitedir/nativelibs
 installedVisToolDir=$installed_server_sitedir/visTool
-installedSolversDir=$installed_server_sitedir/solvers
+installedSolversDir=$installed_server_sitedir/$localsolversDir
 installedTmpDir=$installed_server_sitedir/tmp
 installedLogDir=$installed_server_sitedir/log
 installedJmsBlobFilesDir=$installed_server_sitedir/blobFiles
@@ -53,7 +64,7 @@ pathto_ConfigsDir=$pathto_server_sitedir/configs
 pathto_JarsDir=$pathto_server_sitedir/jars
 pathto_NativelibsDir=$pathto_server_sitedir/nativelibs
 pathto_VisToolDir=$pathto_server_sitedir/visTool
-pathto_SolversDir=$pathto_server_sitedir/solvers
+pathto_SolversDir=$pathto_server_sitedir/$localsolversDir
 pathto_TmpDir=$pathto_server_sitedir/tmp
 pathto_LogDir=$pathto_server_sitedir/log
 pathto_JmsBlobFilesDir=$pathto_server_sitedir/blobFiles
@@ -109,7 +120,7 @@ echo "compiler_vcellAllJarFileSourcePath=$vcell_vcellAllJarFileSourcePath" >> $i
 echo "compiler_applicationId=$vcell_applicationId"					>> $install4jDeploySettings
 
 cd $deployInstall4jDir
-./build.sh
+## ./build.sh
 if [ $? -eq 0 ]; then
 	echo "client-installers built"
 else
@@ -194,6 +205,7 @@ touch $propfile
 
 echo "vcell.server.id = $vcell_site_upper" 									>> $propfile
 echo "vcell.softwareVersion = $vcell_softwareVersionString" 				>> $propfile
+echo "vcell.installDir = $installed_server_sitedir" 						>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#JMS Info"															>> $propfile
@@ -251,54 +263,11 @@ echo "vcell.visit.smoldynscript = $installedConfigsDir/convertSmoldyn.py"	>> $pr
 echo "vcell.visit.smoldynvisitexecutable = $installedVisitExe"				>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
-echo "# Finite Volume Standalone"											>> $propfile
-echo "#"																	>> $propfile
-echo "vcell.finitevolume.executable = $installedSolversDir/FiniteVolume_x64"	>> $propfile
-echo " "																	>> $propfile
-echo "#"																	>> $propfile
-echo "# Chombo Refined Grids PDE Solver"									>> $propfile
-echo "#"																	>> $propfile
-echo "vcell.chombo.executable.2d = $installedSolversDir/VCellChombo2D_x64"		>> $propfile
-echo "vcell.chombo.executable.3d = $installedSolversDir/VCellChombo3D_x64"		>> $propfile
-echo " "																	>> $propfile
-echo "#"																	>> $propfile
-echo "# stiff ODE solver library"											>> $propfile
-echo "#"																	>> $propfile
-echo "vcell.sundialsSolver.executable = $installedSolversDir/SundialsSolverStandalone_x64"	>> $propfile
-echo " "																	>> $propfile
-echo "#"																	>> $propfile
 echo "# java simulation executable"											>> $propfile
 echo "#"																	>> $propfile
 echo "vcell.javaSimulation.executable = $installedConfigsDir/JavaSimExe64"	>> $propfile
 echo "vcell.simulation.preprocessor = $installedConfigsDir/JavaPreprocessor64"	>> $propfile
 echo "vcell.simulation.postprocessor = $installedConfigsDir/JavaPostprocessor64"	>> $propfile
-echo " "																	>> $propfile
-echo "#"																	>> $propfile
-echo "# stochastic solver"													>> $propfile
-echo "#"																	>> $propfile
-echo "vcell.stoch.executable = $installedSolversDir/VCellStoch_x64"		>> $propfile
-echo " "																	>> $propfile
-echo "#"																	>> $propfile
-echo "# hybrid stochastic solvers"											>> $propfile
-echo "#"																	>> $propfile
-echo "vcell.hybridEM.executable = $installedSolversDir/Hybrid_EM_x64"		>> $propfile
-echo "vcell.hybridMil.executable = $installedSolversDir/Hybrid_MIL_x64"	>> $propfile
-echo "vcell.hybridMilAdaptive.executable = $installedSolversDir/Hybrid_MIL_Adaptive_x64"	>> $propfile
-echo " "																	>> $propfile
-echo "#"																	>> $propfile
-echo "# smoldyn spatial stochastic solver"									>> $propfile
-echo "#"																	>> $propfile
-echo "vcell.smoldyn.executable = $installedSolversDir/smoldyn_x64"			>> $propfile
-echo " "																	>> $propfile
-echo "#"																	>> $propfile
-echo "# NFSim"																>> $propfile
-echo "#"																	>> $propfile
-echo "vcell.nfsim.executable = $installedSolversDir/NFsim_x64"				>> $propfile
-echo " "																	>> $propfile
-echo "#"																	>> $propfile
-echo "# MovingBoundary executable"											>> $propfile
-echo "#"																	>> $propfile
-echo "vcell.mb.executable = $installedSolversDir/MovingBoundary_x64"		>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "# Server configuration"												>> $propfile
@@ -369,8 +338,16 @@ echo "vcell.visToolPath = $installedVisToolDir"								>> $propfile
 echo "##set if needed to pick up python modules"							>> $propfile
 echo "#vcell.vtkPythonModulePath ="											>> $propfile
 
+#if [[ "$OSTYPE" == "darwin"* ]]; then
+#	curl "http://localhost:8080/job/NumericsMulti/platform=macos/lastSuccessfulBuild/artifact/*zip*/archive.zip" -o "$targetRootDir/mac64.zip"
+#else
+#	curl "http://localhost:8080/job/NumericsMulti/platform=linux64/lastSuccessfulBuild/artifact/*zip*/archive.zip" -o "$targetRootDir/linux64.zip"
+#fi
+
+
 if [ "$vcell_server_sitedir" == "vcell_pathto_sitedir" ]
 then
+	echo "copying to local installation directory"
 	mkdir -p $installedSolversDir
 	mkdir -p $installedConfigsDir
 	mkdir -p $installedVisToolDir
@@ -390,29 +367,40 @@ then
 	cp -p $stagingJarsDir/*			$installedJarsDir
 	cp -p -R $stagingVisToolDir/*	$installedVisToolDir
 	cp -p $stagingNativelibsDir/*	$installedNativelibsDir
+	cp -p $projectSolversDir/*		$installedSolversDir
 else
 	#
 	# remote filesystem
 	#   don't bother trying to create primary/secondary/parallel data dirs
 	#   dont create export directory - probably uses common export directory
 	#
-	mkdir -p $pathto_installedSolversDir
-	mkdir -p $pathto_installedConfigsDir
-	mkdir -p $pathto_installedVisToolDir
-	mkdir -p $pathto_installedJarsDir
-	mkdir -p $pathto_installedNativelibsDir
-	mkdir -p $pathto_installedHtclogsDir
-	mkdir -p $pathto_installedJmsBlobFilesDir
-	mkdir -p $pathto_installedLogDir
-	mkdir -p $pathto_installedTmpDir
-	mkdir -p $pathto_installedJavaprefsDir
-	mkdir -p $pathto_installedSystemPrefsDir
-#	mkdir -p $pathto_installedPrimarydataDir
-#	mkdir -p $pathto_installedSecondarydataDir
-#	mkdir -p $pathto_installedParalleldataDir
-#	mkdir -p $pathto_installedExportDir
-	cp -p $stagingConfigsDir/*		$pathto_installedConfigsDir
-	cp -p $stagingJarsDir/*			$pathto_installedJarsDir
-	cp -p -R $stagingVisToolDir/*	$pathto_installedVisToolDir
-	cp -p $stagingNativelibsDir/*	$pathto_installedNativelibsDir
+	echo "copying to remote installation via shared file system"
+	echo "creating dirs"
+	mkdir -p $pathto_SolversDir
+	mkdir -p $pathto_ConfigsDir
+	mkdir -p $pathto_VisToolDir
+	mkdir -p $pathto_JarsDir
+	mkdir -p $pathto_NativelibsDir
+	mkdir -p $pathto_HtclogsDir
+	mkdir -p $pathto_JmsBlobFilesDir
+	mkdir -p $pathto_LogDir
+	mkdir -p $pathto_TmpDir
+	mkdir -p $pathto_JavaprefsDir
+	mkdir -p $pathto_SystemPrefsDir
+#	mkdir -p $pathto_PrimarydataDir
+#	mkdir -p $pathto_SecondarydataDir
+#	mkdir -p $pathto_ParalleldataDir
+#	mkdir -p $pathto_ExportDir
+
+	echo "installing scripts to configs (1/4)"
+	cp -p $stagingConfigsDir/*		$pathto_ConfigsDir
+	echo "installing jar files (2/4)"
+	cp -p $stagingJarsDir/vcell-0.0.1-SNAPSHOT.jar $pathto_JarsDir
+	cp -p $stagingJarsDir/*			$pathto_JarsDir
+	echo "installing nativelibs (3/4)"
+	cp -p $stagingNativelibsDir/*	$pathto_NativelibsDir
+	echo "installing visTool python files (4/4)"
+	cp -p -R $stagingVisToolDir/*	$pathto_VisToolDir
+	cp -p $projectSolversDir/*		$pathto_SolversDir
+	echo "done with installation"
 fi

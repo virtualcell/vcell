@@ -26,9 +26,10 @@ import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
@@ -249,7 +250,12 @@ private String getOutputFilename(){
 
 @Override
 protected String[] getMathExecutableCommand() {
-	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.stochExecutableProperty);
+	String executableName = null;
+	try {
+		executableName = SolverUtilities.getExes(SolverDescription.StochGibson)[0].getAbsolutePath();
+	}catch (IOException e){
+		throw new RuntimeException("failed to get executable for solver "+SolverDescription.StochGibson.getDisplayLabel()+": "+e.getMessage(),e);
+	}
 	String inputFilename = getInputFilename();
 	String outputFilename = getOutputFilename();
 	return new String[] { executableName, "gibson", inputFilename, outputFilename };

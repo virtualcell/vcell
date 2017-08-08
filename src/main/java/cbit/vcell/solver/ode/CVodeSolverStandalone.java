@@ -10,13 +10,15 @@
 
 package cbit.vcell.solver.ode;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.MathExecutable;
@@ -79,7 +81,12 @@ private String getOutputFilename(){
 
 @Override
 protected String[] getMathExecutableCommand() {
-	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
+	String executableName = null;
+	try {
+		executableName = SolverUtilities.getExes(SolverDescription.CVODE)[0].getAbsolutePath();
+	}catch (IOException e){
+		throw new RuntimeException("failed to get executable for solver "+SolverDescription.CVODE.getDisplayLabel()+": "+e.getMessage(),e);
+	}
 	String inputFilename = getInputFilename();
 	String outputFilename = getOutputFilename();
 	return new String[] { executableName, inputFilename, outputFilename };
