@@ -120,7 +120,7 @@ echo "compiler_vcellAllJarFileSourcePath=$vcell_vcellAllJarFileSourcePath" >> $i
 echo "compiler_applicationId=$vcell_applicationId"					>> $install4jDeploySettings
 
 cd $deployInstall4jDir
-## ./build.sh
+./build.sh
 if [ $? -eq 0 ]; then
 	echo "client-installers built"
 else
