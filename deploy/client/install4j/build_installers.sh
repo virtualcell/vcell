@@ -35,12 +35,12 @@ fi
 #
 # install Install4J product key (only really needed first time when using Vagrant)
 #
-$vcell_I4J_pathto_install4jc -L $vcell_secrets_I4J_licenseKey
+$i4j_pathto_install4jc -L $vcell_secrets_I4J_licenseKey
 
 #
 # run install4jc to create installers for VCell Client on supported platforms.
 #
-$vcell_I4J_pathto_install4jc \
+$i4j_pathto_install4jc \
 	--win-keystore-password=$vcell_secrets_winKeystorePassword \
 	--mac-keystore-password=$vcell_secrets_macKeystorePassword \
 	-D \
