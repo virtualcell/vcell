@@ -19,6 +19,21 @@ targetRootDir=$projectRootDir/target
 targetMavenJarsDir=$targetRootDir/maven-jars
 targetInstallersDir=$targetRootDir/installers
 
+#
+# building the project
+#
+cd $projectRootDir
+echo "removing old docs"
+rm -r $projectRootDir/src/main/resources/vcellDocs
+echo "build vcell"
+mvn verify
+echo "populate maven-jars"
+mvn dependency:copy-dependencies
+echo "run document compiler"
+java -cp target/maven-jars/*:target/* org.vcell.documentation.DocumentCompiler
+echo "force rebuild to pick up new resources - the help files"
+mvn clean verify
+
 echo "TODO: document compiler"
 
 deployRootDir=$DIR
