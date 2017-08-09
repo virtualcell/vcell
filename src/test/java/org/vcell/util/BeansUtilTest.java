@@ -69,6 +69,7 @@ public class BeansUtilTest {
 	/**
 	 * ensure  {@link BeanUtils#findTypeParentOfComponent(Component, Class)} has expected behavior
 	 */
+	@Ignore
 	@Test
 	public void ancestorTest( ) {
 		BiFunction<Class<?>, Component, Container> buMethod =  
