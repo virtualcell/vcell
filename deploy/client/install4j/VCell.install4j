@@ -12,21 +12,23 @@
       <envVar name="JDK_HOME" />
     </searchSequence>
     <variables>
+      <variable name="vcellIcnsFile" value="NO-ICNS-FILE" description="" category="" />
+      <variable name="mavenRootDir" value="NO-MAVEN-ROOTDIR" description="" category="" />
       <variable name="Site" value="NO-SITE" description="" category="" />
-      <variable name="macKeystore" value="NO-VERSION" description="" category="" />
-      <variable name="winKeystore" value="NO-VERSION" description="" category="" />
-      <variable name="SoftwareVersionString" value="NO-VERSION" description="" category="" />
+      <variable name="macKeystore" value="NO-MAC-KEYSTORE" description="" category="" />
+      <variable name="winKeystore" value="NO-WIN-KEYSTORE" description="" category="" />
+      <variable name="SoftwareVersionString" value="NO-SOFTWARE-VERSION-STRING" description="" category="" />
       <variable name="vcellVersion" value="NO-VERSION" description="" category="" />
       <variable name="vcellBuild" value="NO-BUILD" description="" category="" />
       <variable name="vcellAllJarFileSourcePath" value="NO-VCELL-JAR" description="" category="" />
-      <variable name="vcellNativeLibsDirSourcePath" value="/vagrant_maven/nativelibs" description="" category="" />
-      <variable name="vcellLibSourcePath" value="/vagrant_maven/target/maven-jars" description="" category="" />
-      <variable name="outputDir" value="/vagrant_maven/target/installers" description="" category="" />
-      <variable name="vcell5SplashScreenPngFilePath" value="/vagrant_maven/src/main/resources/vcellSplash.png" description="" category="" />
-      <variable name="vcellLocalSolversDirPath" value="/vagrant_maven/localsolvers" description="" category="" />
-      <variable name="vcellLicenseFilePath" value="/vagrant_maven/src/main/resources/thirdpartylicenses.txt" description="" category="" />
-      <variable name="vcellVisToolPath" value="/vagrant_maven/visTool" description="" category="" />
-      <variable name="vcellbngPerlPath" value="/vagrant_maven/bionetgen" description="" category="" />
+      <variable name="vcellNativeLibsDirSourcePath" value="${compiler:mavenRootDir}/nativelibs" description="" category="" />
+      <variable name="vcellLibSourcePath" value="${compiler:mavenRootDir}/target/maven-jars" description="" category="" />
+      <variable name="outputDir" value="${compiler:mavenRootDir}/target/installers" description="" category="" />
+      <variable name="vcell5SplashScreenPngFilePath" value="${compiler:mavenRootDir}/src/main/resources/vcellSplash.png" description="" category="" />
+      <variable name="vcellLocalSolversDirPath" value="${compiler:mavenRootDir}/localsolvers" description="" category="" />
+      <variable name="vcellLicenseFilePath" value="${compiler:mavenRootDir}/src/main/resources/thirdpartylicenses.txt" description="" category="" />
+      <variable name="vcellVisToolPath" value="${compiler:mavenRootDir}/visTool" description="" category="" />
+      <variable name="vcellbngPerlPath" value="${compiler:mavenRootDir}/bionetgen" description="" category="" />
     </variables>
     <mergedProjects />
     <codeSigning macEnabled="true" macPkcs12File="${compiler:macKeystore}" windowsEnabled="true" windowsKeySource="pkcs12" windowsPvkFile="" windowsSpcFile="" windowsPkcs12File="${compiler:winKeystore}" />
@@ -122,7 +124,7 @@
     <components />
   </files>
   <launchers>
-    <launcher name="VCell-${compiler:Site}-MacOSX" id="102" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="/vagrant/icons/vcell.icns" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
+    <launcher name="VCell-${compiler:Site}-MacOSX" id="102" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="${compiler:vcellIcnsFile}" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
       <executable name="VCell-${compiler:Site}" type="1" iconSet="true" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="true" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
@@ -145,7 +147,7 @@
       <vmOptionsFile mode="content" overwriteMode="1" fileMode="644">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
--Dvcell.softwareVersion="${compiler:softwareVersionString}"
+-Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dvcell.serverHost=${compiler:rmiHosts}
 -Dsun.rmi.transport.proxy.eagerHttpFallback=true
 -Djava.rmi.server.disableHttp=false
@@ -171,7 +173,7 @@
         <file path="icons/vcell_64x64.gif" />
       </iconImageFiles>
     </launcher>
-    <launcher name="VCell-${compiler:Site}-Windows64" id="345" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="/vagrant/icons/vcell.icns" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
+    <launcher name="VCell-${compiler:Site}-Windows64" id="345" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="${compiler:vcellIcnsFile}" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
       <executable name="VCell-${compiler:Site}" type="1" iconSet="true" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="true" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
@@ -215,7 +217,7 @@
         <file path="icons/vcell_64x64.gif" />
       </iconImageFiles>
     </launcher>
-    <launcher name="VCell-${compiler:Site}-Windows32" id="447" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="/vagrant/icons/vcell.icns" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
+    <launcher name="VCell-${compiler:Site}-Windows32" id="447" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="${compiler:vcellIcnsFile}" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
       <executable name="VCell-${compiler:Site}" type="1" iconSet="true" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="true" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
@@ -260,7 +262,7 @@
         <file path="icons/vcell_64x64.gif" />
       </iconImageFiles>
     </launcher>
-    <launcher name="VCell-${compiler:Site}-Linux32" id="534" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
+    <launcher name="VCell-${compiler:Site}-Linux32" id="534" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="${compiler:vcellIcnsFile}" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
       <executable name="VCell-${compiler:Site}" type="1" iconSet="false" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="true" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
@@ -302,7 +304,7 @@
       </infoPlist>
       <iconImageFiles />
     </launcher>
-    <launcher name="VCell-${compiler:Site}-Linux64" id="627" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
+    <launcher name="VCell-${compiler:Site}-Linux64" id="627" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="${compiler:vcellIcnsFile}" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
       <executable name="VCell-${compiler:Site}" type="1" iconSet="false" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="true" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
@@ -344,7 +346,7 @@
       </infoPlist>
       <iconImageFiles />
     </launcher>
-    <launcher name="VCell-${compiler:Site}-Linux64-sbmltovcml" id="1880" customizedId="" external="false" excludeFromMenu="true" unixMode="755" menuName="" icnsFile="/vagrant/icons/vcell.icns" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
+    <launcher name="VCell-${compiler:Site}-Linux64-sbmltovcml" id="1880" customizedId="" external="false" excludeFromMenu="true" unixMode="755" menuName="" icnsFile="" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="">
       <executable name="VCell-${compiler:Site}-sbmltovcml" type="1" iconSet="true" iconFile="" executableDir="" redirectStderr="false" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="2" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="true" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>

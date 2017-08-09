@@ -10,20 +10,22 @@ fi
 includefile=$1
 . $includefile
 
+. $vcell_secretsDir/deploySecrets.include
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 projectRootDir=$DIR/..
 targetRootDir=$projectRootDir/target
 targetMavenJarsDir=$targetRootDir/maven-jars
+targetInstallersDir=$targetRootDir/installers
+
+echo "TODO: document compiler"
 
 deployRootDir=$DIR
 
 deployInstall4jDir=$deployRootDir/client/install4j
 
-install4jWorkingDir=$DIR/../target/install4j-working
-install4jDeploySettings=$install4jWorkingDir/DeploySettings.include
-
-stagingRootDir=$DIR/../target/server-staging
+stagingRootDir=$DIR/../target/server-staging/
 stagingConfigsDir=$stagingRootDir/configs
 stagingJarsDir=$stagingRootDir/jars
 stagingVisToolDir=$stagingRootDir/visTool
@@ -52,6 +54,7 @@ installedJmsBlobFilesDir=$installed_server_sitedir/blobFiles
 installedHtclogsDir=$installed_server_sitedir/htclogs
 installedJavaprefsDir=$installed_server_sitedir/javaprefs
 installedSystemPrefsDir=$installed_server_sitedir/javaprefs/.systemPrefs
+installedInstallersDir=$installed_server_sitedir/installers
 installedPrimarydataDir=$vcell_primary_datadir
 installedSecondarydataDir=$vcell_secondary_datadir
 installedParalleldataDir=$vcell_parallel_datadir
@@ -71,6 +74,7 @@ pathto_JmsBlobFilesDir=$pathto_server_sitedir/blobFiles
 pathto_HtclogsDir=$pathto_server_sitedir/htclogs
 pathto_JavaprefsDir=$pathto_server_sitedir/javaprefs
 pathto_SystemPrefsDir=$pathto_server_sitedir/javaprefs/.systemPrefs
+pathto_InstallersDir=$pathto_server_sitedir/installers
 #pathto_PrimarydataDir=$vcell_primary_datadir
 #pathto_SecondarydataDir=$vcell_secondary_datadir
 #pathto_ParalleldataDir=$vcell_parallel_datadir
@@ -103,30 +107,70 @@ fi
 # cd to install4j directory which contains the Vagrant box 
 # definition and scripts for building install4J installers 
 # for VCell client.
+#
+# installers are installed in project/target/installers directory
 #---------------------------------------------------------------
+install4jWorkingDir=$DIR/../target/install4j-working
+install4jDeploySettings=$install4jWorkingDir/DeploySettings.include
+
+I4J_pathto_Install4jWorkingDir=$vcell_I4J_pathto_mavenRootDir/target/install4j-working
+I4J_pathto_Install4jDeploySettings=$I4J_pathto_Install4jWorkingDir/DeploySettings.include
+I4J_pathto_vcellAllJar="$vcell_I4J_pathto_mavenRootDir/target/$vcell_vcellAllJarFileName"
+
 mkdir -p $install4jWorkingDir
 if [ -e $install4jDeploySettings ]; then
 	rm $install4jDeploySettings
 fi
 touch $install4jDeploySettings
-echo "compiler_softwareVersionString=Test4_Version_6.2_build_54"	>> $install4jDeploySettings
+
+echo "i4j_pathto_install4jc=$vcell_I4J_pathto_install4jc"			>> $install4jDeploySettings
+echo "compiler_vcellIcnsFile=$vcell_I4J_pathto_vcellIcnsFile"		>> $install4jDeploySettings
+echo "compiler_mavenRootDir=$vcell_I4J_pathto_mavenRootDir"			>> $install4jDeploySettings
+echo "compiler_softwareVersionString=$vcell_softwareVersionString"	>> $install4jDeploySettings
 echo "compiler_Site=$vcell_site_camel"								>> $install4jDeploySettings
 echo "compiler_vcellVersion=$vcell_version"							>> $install4jDeploySettings
 echo "compiler_vcellBuild=$vcell_build"								>> $install4jDeploySettings
 echo "compiler_rmiHosts=$vcell_rmihosts"							>> $install4jDeploySettings
 echo "compiler_bioformatsJarFile=$vcell_bioformatsJarFile"			>> $install4jDeploySettings
 echo "compiler_bioformatsJarDownloadURL=$vcell_bioformatsJarDownloadURL" >> $install4jDeploySettings
-echo "compiler_vcellAllJarFileSourcePath=$vcell_vcellAllJarFileSourcePath" >> $install4jDeploySettings
+echo "compiler_vcellAllJarFilePath= >> $I4J_pathto_vcellAllJar"		>> $install4jDeploySettings
 echo "compiler_applicationId=$vcell_applicationId"					>> $install4jDeploySettings
+echo "i4j_pathto_jreDir=$vcell_I4J_pathto_jreDir"					>> $install4jDeploySettings
+echo "i4j_pathto_secretsDir=$vcell_I4J_pathto_secretsDir"			>> $install4jDeploySettings
+echo "install_jres_into_user_home=$vcell_I4J_install_jres_into_user_home"	>> $install4jDeploySettings
+echo "i4j_pathto_install4JFile=$vcell_I4J_pathto_installerFile"		>> $install4jDeploySettings
 
 cd $deployInstall4jDir
-./build.sh
-if [ $? -eq 0 ]; then
+if [ "$vcell_I4J_use_vagrant" = true ]; then
+
+	if [ "$vcell_I4J_install_jres_into_user_home" = true ] && [ ! -d $vcell_I4J_jreDir ]; then
+		echo "expecting to find directory $vcell_I4J_jreDir with downloaded JREs compatible with Install4J configuration"
+		exit -1
+	fi
+	
+	echo "starting Vagrant box to run Install4J to target all platforms"
+	vagrant up
+	
+	echo "invoking script on vagrant box to build installers"
+	vagrant ssh -c "/vagrant/build_installers.sh $I4J_pathto_Install4jDeploySettings"
+	i4j_retcode=$?
+	
+	echo "shutting down vagrant"
+	vagrant halt
+else
+	$DIR/install4j/build_installers.sh $install4jDeploySettings
+	i4j_retcode=$?
+fi
+
+if [ $i4j_retcode -eq 0 ]; then
 	echo "client-installers built"
 else
 	echo "client-installer build failed"
 	exit -1;
 fi
+
+echo "client install4j installers located in $targetInstallersDir"
+
 cd $DIR
 
 #-------------------------------------------------------
@@ -213,7 +257,7 @@ echo "#"																	>> $propfile
 echo "vcell.jms.provider = ActiveMQ"										>> $propfile
 echo "vcell.jms.url = $vcell_jms_url" 										>> $propfile
 echo "vcell.jms.user = $vcell_jms_user"										>> $propfile
-echo "vcell.jms.password = $vcell_jms_pswd"									>> $propfile
+echo "vcell.jms.password = $vcell_secrets_jms_pswd"							>> $propfile
 echo "vcell.jms.queue.simReq = simReq$vcell_site_camel"						>> $propfile
 echo "vcell.jms.queue.dataReq = simDataReq$vcell_site_camel"				>> $propfile
 echo "vcell.jms.queue.dbReq = dbReq$vcell_site_camel"						>> $propfile
@@ -231,14 +275,14 @@ echo "#"																	>> $propfile
 echo "vcell.server.dbConnectURL = $vcell_database_url"						>> $propfile
 echo "vcell.server.dbDriverName = $vcell_database_driver"					>> $propfile
 echo "vcell.server.dbUserid = $vcell_database_user"							>> $propfile
-echo "vcell.server.dbPassword = $vcell_database_pswd"						>> $propfile
+echo "vcell.server.dbPassword = $vcell_secrets_database_pswd"				>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#Amplistor Info"														>> $propfile
 echo "#"																	>> $propfile
 echo "vcell.amplistor.vcellserviceurl = $vcell_amplistor_url"				>> $propfile
 echo "vcell.amplistor.vcellservice.user = $vcell_amplistor_user"			>> $propfile
-echo "vcell.amplistor.vcellservice.password = $vcell_amplistor_pswd"		>> $propfile
+echo "vcell.amplistor.vcellservice.password = $vcell_secrets_amplistor_pswd"	>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#Mongo Info"															>> $propfile
@@ -353,6 +397,7 @@ then
 	mkdir -p $installedVisToolDir
 	mkdir -p $installedJarsDir
 	mkdir -p $installedNativelibsDir
+	mkdir -p $installedInstallersDir
 	mkdir -p $installedHtclogsDir
 	mkdir -p $installedJmsBlobFilesDir
 	mkdir -p $installedLogDir
@@ -368,6 +413,7 @@ then
 	cp -p -R $stagingVisToolDir/*	$installedVisToolDir
 	cp -p $stagingNativelibsDir/*	$installedNativelibsDir
 	cp -p $projectSolversDir/*		$installedSolversDir
+	cp -p $projectInstallersDir/*	$installedInstallersDir
 else
 	#
 	# remote filesystem
@@ -381,26 +427,30 @@ else
 	mkdir -p $pathto_VisToolDir
 	mkdir -p $pathto_JarsDir
 	mkdir -p $pathto_NativelibsDir
+	mkdir -p $pathto_InstallersDir
 	mkdir -p $pathto_HtclogsDir
 	mkdir -p $pathto_JmsBlobFilesDir
 	mkdir -p $pathto_LogDir
 	mkdir -p $pathto_TmpDir
 	mkdir -p $pathto_JavaprefsDir
 	mkdir -p $pathto_SystemPrefsDir
-#	mkdir -p $pathto_PrimarydataDir
-#	mkdir -p $pathto_SecondarydataDir
-#	mkdir -p $pathto_ParalleldataDir
-#	mkdir -p $pathto_ExportDir
+	#mkdir -p $pathto_PrimarydataDir
+	#mkdir -p $pathto_SecondarydataDir
+	#mkdir -p $pathto_ParalleldataDir
+	#mkdir -p $pathto_ExportDir
 
-	echo "installing scripts to configs (1/4)"
+	echo "installing scripts to configs (1/6)"
 	cp -p $stagingConfigsDir/*		$pathto_ConfigsDir
-	echo "installing jar files (2/4)"
+	echo "installing jar files (2/6)"
 	cp -p $stagingJarsDir/vcell-0.0.1-SNAPSHOT.jar $pathto_JarsDir
 	cp -p $stagingJarsDir/*			$pathto_JarsDir
-	echo "installing nativelibs (3/4)"
+	echo "installing nativelibs (3/6)"
 	cp -p $stagingNativelibsDir/*	$pathto_NativelibsDir
-	echo "installing visTool python files (4/4)"
+	echo "installing visTool python files (4/6)"
 	cp -p -R $stagingVisToolDir/*	$pathto_VisToolDir
-	cp -p $projectSolversDir/*		$pathto_SolversDir
+#	echo "installing server-side solvers (5/6)"
+#	cp -p $projectSolversDir/*		$pathto_SolversDir
+	echo "installing client installers to server (6/6)"
+	cp -p $targetInstallersDir/*	$pathto_InstallersDir
 	echo "done with installation"
 fi
