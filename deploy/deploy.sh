@@ -158,7 +158,7 @@ if [ "$vcell_I4J_use_vagrant" = true ]; then
 	echo "shutting down vagrant"
 	vagrant halt
 else
-	$DIR/install4j/build_installers.sh $install4jDeploySettings
+	$DIR/client/install4j/build_installers.sh $install4jDeploySettings
 	i4j_retcode=$?
 fi
 
