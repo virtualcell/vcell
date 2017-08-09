@@ -8,12 +8,14 @@ import java.awt.Component;
 import java.awt.Label;
 import java.util.Hashtable;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 
+@Ignore
 public class ClientTaskDispatcherTest {
 	private Hashtable<String,Object> ht  = new Hashtable<>(); 
 	private  Component cmpt = new Label() ;
