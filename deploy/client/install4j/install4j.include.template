@@ -1,6 +1,0 @@
-compiler_winKeystore=/vagrant_keys/MICROSOFT_AUTHENTICODE.pfx
-compiler_macKeystore=/vagrant_keys/APPLE_DEVELOPER.p12
-winKeystorePassword="<password>"
-macKeystorePassword="<password>"
-licenseKey="<Install4J License Key>"
- 
