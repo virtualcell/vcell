@@ -31,6 +31,12 @@ stagingJarsDir=$stagingRootDir/jars
 stagingVisToolDir=$stagingRootDir/visTool
 stagingNativelibsDir=$stagingRootDir/nativelibs
 
+isMac=false
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	isMac=true
+fi
+
+
 if [[ "$vcell_server_os" == "mac64" ]]; then
 	localsolversDir=localsolvers/mac64
 elif [[ "$vcell_server_os" == "linux64" ]]; then
@@ -195,40 +201,42 @@ cp -p -R $projectRootDir/visTool/* $stagingVisToolDir
 #
 cp server/deployInfo/* $stagingConfigsDir
 
+function sed_in_place() { if [ "$isMac" = true ]; then sed -i "" "$@"; else sed -i "$@"; fi }
+
 #
 # substitute values within vcell.include template from 
 # 
 stagingVCellInclude=$stagingConfigsDir/vcell.include
-sed -i "" "s/GENERATED-SITE/$vcell_site_lower/g"						$stagingVCellInclude
-sed -i "" "s/GENERATED-RMIHOST/$vcell_rmihost/g"						$stagingVCellInclude
-sed -i "" "s/GENERATED-RMIPORT-LOW/$vcell_rmiport_low/g"				$stagingVCellInclude
-sed -i "" "s/GENERATED-RMIPORT-HIGH/$vcell_rmiport_high/g"				$stagingVCellInclude
-sed -i "" "s/GENERATED-VCELLSERVICE-JMXPORT/$vcell_vcellservice_jmxport/g"	$stagingVCellInclude
-sed -i "" "s/GENERATED-RMISERVICEHIGH-JMXPORT/$vcell_rmiservice_high_jmxport/g"	$stagingVCellInclude
-sed -i "" "s/GENERATED-RMISERVICEHTTP-JMXPORT/$vcell_rmiservice_http_jmxport/g"	$stagingVCellInclude
-sed -i "" "s/GENERATED-SERVICEHOST/$vcell_servicehost/g"				$stagingVCellInclude
-sed -i "" "s/GENERATED-NAGIOSPW/nagcmd/g" 								$stagingVCellInclude
-sed -i "" "s/GENERATED-MONITOR-PORT/33336/g"							$stagingVCellInclude
-sed -i "" "s/GENERATED-JVMDEF/test.monitor.port/g"						$stagingVCellInclude
-sed -i "" "s+GENERATED-COMMON-JRE+$vcell_common_jre+g"					$stagingVCellInclude
-sed -i "" "s+GENERATED-RMISERVICE-JRE+$vcell_common_jre_rmi+g"			$stagingVCellInclude
-sed -i "" "s+GENERATED-NATIVELIBSDIR+$installedNativelibsDir+g"			$stagingVCellInclude
-sed -i "" "s+GENERATED-JARSDIR+$installedJarsDir+g"						$stagingVCellInclude
-sed -i "" "s+GENERATED-LOGDIR+$installedLogDir+g"						$stagingVCellInclude
-sed -i "" "s+GENERATED-CONFIGSDIR+$installedConfigsDir+g"				$stagingVCellInclude
-sed -i "" "s+GENERATED-TMPDIR+$installedTmpDir+g"						$stagingVCellInclude
-sed -i "" "s+GENERATED-JAVAPREFSDIR+$installedJavaprefsDir+g"			$stagingVCellInclude
-sed -i "" "s+GENERATED-JARS+$installedJarsDir/*+g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-SITE/$vcell_site_lower/g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-RMIHOST/$vcell_rmihost/g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-RMIPORT-LOW/$vcell_rmiport_low/g"				$stagingVCellInclude
+sed_in_place "s/GENERATED-RMIPORT-HIGH/$vcell_rmiport_high/g"				$stagingVCellInclude
+sed_in_place "s/GENERATED-VCELLSERVICE-JMXPORT/$vcell_vcellservice_jmxport/g"	$stagingVCellInclude
+sed_in_place "s/GENERATED-RMISERVICEHIGH-JMXPORT/$vcell_rmiservice_high_jmxport/g"	$stagingVCellInclude
+sed_in_place "s/GENERATED-RMISERVICEHTTP-JMXPORT/$vcell_rmiservice_http_jmxport/g"	$stagingVCellInclude
+sed_in_place "s/GENERATED-SERVICEHOST/$vcell_servicehost/g"				$stagingVCellInclude
+sed_in_place "s/GENERATED-NAGIOSPW/nagcmd/g" 								$stagingVCellInclude
+sed_in_place "s/GENERATED-MONITOR-PORT/33336/g"							$stagingVCellInclude
+sed_in_place "s/GENERATED-JVMDEF/test.monitor.port/g"						$stagingVCellInclude
+sed_in_place "s+GENERATED-COMMON-JRE+$vcell_common_jre+g"					$stagingVCellInclude
+sed_in_place "s+GENERATED-RMISERVICE-JRE+$vcell_common_jre_rmi+g"			$stagingVCellInclude
+sed_in_place "s+GENERATED-NATIVELIBSDIR+$installedNativelibsDir+g"			$stagingVCellInclude
+sed_in_place "s+GENERATED-JARSDIR+$installedJarsDir+g"						$stagingVCellInclude
+sed_in_place "s+GENERATED-LOGDIR+$installedLogDir+g"						$stagingVCellInclude
+sed_in_place "s+GENERATED-CONFIGSDIR+$installedConfigsDir+g"				$stagingVCellInclude
+sed_in_place "s+GENERATED-TMPDIR+$installedTmpDir+g"						$stagingVCellInclude
+sed_in_place "s+GENERATED-JAVAPREFSDIR+$installedJavaprefsDir+g"			$stagingVCellInclude
+sed_in_place "s+GENERATED-JARS+$installedJarsDir/*+g"						$stagingVCellInclude
 
-sed -i "" "s/GENERATED-HTC-USESSH/$vcell_htc_usessh/g"					$stagingVCellInclude
+sed_in_place "s/GENERATED-HTC-USESSH/$vcell_htc_usessh/g"					$stagingVCellInclude
 if [ "$vcell_htc_usessh" = true ]; then
-	sed -i "" "s/GENERATED-HTC-SSH-HOST/$vcell_htc_sshhost/g"			$stagingVCellInclude
-	sed -i "" "s/GENERATED-HTC-SSH-USER/$vcell_htc_sshuser/g"			$stagingVCellInclude
-	sed -i "" "s+GENERATED-HTC-SSH-DSAKEYFILE+$vcell_htc_sshDsaKeyFile+g"	$stagingVCellInclude
+	sed_in_place "s/GENERATED-HTC-SSH-HOST/$vcell_htc_sshhost/g"			$stagingVCellInclude
+	sed_in_place "s/GENERATED-HTC-SSH-USER/$vcell_htc_sshuser/g"			$stagingVCellInclude
+	sed_in_place "s+GENERATED-HTC-SSH-DSAKEYFILE+$vcell_htc_sshDsaKeyFile+g"	$stagingVCellInclude
 else
-	sed -i "" "s/GENERATED-HTC-SSH-HOST/NOT-DEFINED/g"					$stagingVCellInclude
-	sed -i "" "s/GENERATED-HTC-SSH-USER/NOT-DEFINED/g"					$stagingVCellInclude
-	sed -i "" "s/GENERATED-HTC-SSH-DSAKEYFILE/NOT-DEFINED/g"			$stagingVCellInclude
+	sed_in_place "s/GENERATED-HTC-SSH-HOST/NOT-DEFINED/g"					$stagingVCellInclude
+	sed_in_place "s/GENERATED-HTC-SSH-USER/NOT-DEFINED/g"					$stagingVCellInclude
+	sed_in_place "s/GENERATED-HTC-SSH-DSAKEYFILE/NOT-DEFINED/g"			$stagingVCellInclude
 fi
 
 if grep -Fq "GENERATED" $stagingVCellInclude
@@ -382,7 +390,7 @@ echo "vcell.visToolPath = $installedVisToolDir"								>> $propfile
 echo "##set if needed to pick up python modules"							>> $propfile
 echo "#vcell.vtkPythonModulePath ="											>> $propfile
 
-#if [[ "$OSTYPE" == "darwin"* ]]; then
+#if [ "$isMac" = true ]; then
 #	curl "http://localhost:8080/job/NumericsMulti/platform=macos/lastSuccessfulBuild/artifact/*zip*/archive.zip" -o "$targetRootDir/mac64.zip"
 #else
 #	curl "http://localhost:8080/job/NumericsMulti/platform=linux64/lastSuccessfulBuild/artifact/*zip*/archive.zip" -o "$targetRootDir/linux64.zip"
