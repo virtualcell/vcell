@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+
+DIR=${0%/*}
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. $DIR/vcell.include
+
+shopt -s -o nounset
+
+
+
+#
+# vcellservice_pid=`jps -m | grep test4-master | grep -i VCellServices | cut -d ' ' -f1`
+#
+command="ps x | grep $vcellservice_processLabel | grep $vcellservice_mainclass | cut -d ' ' -f1"
+echo $command
+vcellservice_pid=$("$command")
+##"ps x | grep $vcellservice_processLabel | grep $vcellservice_mainclass | cut -d ' ' -f1"`
+echo "trying to kill $vcellservice_processLabel: kill $vcellservice_pid"
+
+#
+# vcellapi_pid=`jps -m | grep VCellApiMain | grep -i alpha | cut -d " " -f1`
+#
+vcellapi_pid=`"jps -m | grep VCellApiMain | grep -i alpha | cut -d " " -f1"`
+echo "trying to kill procoess id $vcellapi_pid"
+
+#
+# bootstrap_high_pid=`ps x | grep test4-rmi-high | grep LocalVCellBootstrap | cut -d " " -f1`
+#
+bootstrap_high_pid=`"ps x | grep $bootstrap_high_processLabel | grep $bootstrap_mainclass | cut -d " " -f1"`
+echo "trying to kill bootstrap high: kill $bootstrap_high_pid"
+
+#
+# bootstrap_http_pid=`ps x | grep test4-rmi-http | grep LocalVCellBootstrap | cut -d " " -f1`
+#
+bootstrap_http_pid=`"ps x | grep $bootstrap_http_processLabel | grep $bootstrap_mainclass | cut -d " " -f1"`
+echo "trying to kill bootstrap http: kill $bootstrap_http_pid"
+
+
