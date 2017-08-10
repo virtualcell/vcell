@@ -7,33 +7,27 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 
 shopt -s -o nounset
 
-
+function killProcess() {
+	processLabel=$1
+	serviceName=$2
+	pid_cmd="ps x | grep $processLabel | grep java | cut -d ' ' -f1"
+	echo $pid_cmd
+	pid=`eval $pid_cmd`
+	if [ ! -z $pid ]; then
+		kill_cmd="kill -9 $pid"
+		`eval $kill_cmd`
+		echo "killed $serviceName (pid=$pid)"
+	else
+		echo "$serviceName with label $processLabel not found in process list"
+	fi
+}
 
 #
 # vcellservice_pid=`jps -m | grep test4-master | grep -i VCellServices | cut -d ' ' -f1`
 #
-command="ps x | grep $vcellservice_processLabel | grep $vcellservice_mainclass | cut -d ' ' -f1"
-echo $command
-vcellservice_pid=$("$command")
-##"ps x | grep $vcellservice_processLabel | grep $vcellservice_mainclass | cut -d ' ' -f1"`
-echo "trying to kill $vcellservice_processLabel: kill $vcellservice_pid"
-
-#
-# vcellapi_pid=`jps -m | grep VCellApiMain | grep -i alpha | cut -d " " -f1`
-#
-vcellapi_pid=`"jps -m | grep VCellApiMain | grep -i alpha | cut -d " " -f1"`
-echo "trying to kill procoess id $vcellapi_pid"
-
-#
-# bootstrap_high_pid=`ps x | grep test4-rmi-high | grep LocalVCellBootstrap | cut -d " " -f1`
-#
-bootstrap_high_pid=`"ps x | grep $bootstrap_high_processLabel | grep $bootstrap_mainclass | cut -d " " -f1"`
-echo "trying to kill bootstrap high: kill $bootstrap_high_pid"
-
-#
-# bootstrap_http_pid=`ps x | grep test4-rmi-http | grep LocalVCellBootstrap | cut -d " " -f1`
-#
-bootstrap_http_pid=`"ps x | grep $bootstrap_http_processLabel | grep $bootstrap_mainclass | cut -d " " -f1"`
-echo "trying to kill bootstrap http: kill $bootstrap_http_pid"
-
-
+killProcess $vcellservice_processLabel "vcellservice"
+killProcess $bootstrap_high_processLabel "vcellbootstrap_high"
+if [ $bootstrap_http_rmiport -ne -1 ]; then
+	killProcess $bootstrap_http_processLabel "vcellbootstrap_http"
+fi
+#killProcess "alpha-vcellapi" "vcellapi"

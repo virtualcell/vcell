@@ -19,22 +19,25 @@ targetRootDir=$projectRootDir/target
 targetMavenJarsDir=$targetRootDir/maven-jars
 targetInstallersDir=$targetRootDir/installers
 
+skip_install4j=false
+skip_build=false
+
 #
 # building the project
 #
-cd $projectRootDir
-echo "removing old docs"
-rm -r $projectRootDir/src/main/resources/vcellDocs
-echo "build vcell"
-mvn verify
-echo "populate maven-jars"
-mvn dependency:copy-dependencies
-echo "run document compiler"
-java -cp target/maven-jars/*:target/* org.vcell.documentation.DocumentCompiler
-echo "force rebuild to pick up new resources - the help files"
-mvn clean verify
-
-echo "TODO: document compiler"
+if [ "$skip_build" = false ]; then
+	cd $projectRootDir
+	echo "removing old docs"
+	rm -r $projectRootDir/src/main/resources/vcellDocs
+	echo "build vcell"
+	mvn verify
+	echo "populate maven-jars"
+	mvn dependency:copy-dependencies
+	echo "run document compiler"
+	java -cp target/maven-jars/*:target/* org.vcell.documentation.DocumentCompiler
+	echo "force rebuild to pick up new resources - the help files"
+	mvn clean verify
+fi
 
 deployRootDir=$DIR
 
@@ -45,6 +48,7 @@ stagingConfigsDir=$stagingRootDir/configs
 stagingJarsDir=$stagingRootDir/jars
 stagingVisToolDir=$stagingRootDir/visTool
 stagingNativelibsDir=$stagingRootDir/nativelibs
+stagingInstallersDir=$projectRootDir/target/installers
 
 isMac=false
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -161,36 +165,38 @@ echo "i4j_pathto_secretsDir=$vcell_I4J_pathto_secretsDir"			>> $install4jDeployS
 echo "install_jres_into_user_home=$vcell_I4J_install_jres_into_user_home"	>> $install4jDeploySettings
 echo "i4j_pathto_install4JFile=$vcell_I4J_pathto_installerFile"		>> $install4jDeploySettings
 
-cd $deployInstall4jDir
-if [ "$vcell_I4J_use_vagrant" = true ]; then
-
-	if [ "$vcell_I4J_install_jres_into_user_home" = true ] && [ ! -d $vcell_I4J_jreDir ]; then
-		echo "expecting to find directory $vcell_I4J_jreDir with downloaded JREs compatible with Install4J configuration"
-		exit -1
+if [ "$skip_install4j" = false ]; then
+	cd $deployInstall4jDir
+	if [ "$vcell_I4J_use_vagrant" = true ]; then
+	
+		if [ "$vcell_I4J_install_jres_into_user_home" = true ] && [ ! -d $vcell_I4J_jreDir ]; then
+			echo "expecting to find directory $vcell_I4J_jreDir with downloaded JREs compatible with Install4J configuration"
+			exit -1
+		fi
+		
+		echo "starting Vagrant box to run Install4J to target all platforms"
+		vagrant up
+		
+		echo "invoking script on vagrant box to build installers"
+		vagrant ssh -c "/vagrant/build_installers.sh $I4J_pathto_Install4jDeploySettings"
+		i4j_retcode=$?
+		
+		echo "shutting down vagrant"
+		vagrant halt
+	else
+		$DIR/client/install4j/build_installers.sh $install4jDeploySettings
+		i4j_retcode=$?
 	fi
 	
-	echo "starting Vagrant box to run Install4J to target all platforms"
-	vagrant up
+	if [ $i4j_retcode -eq 0 ]; then
+		echo "client-installers built"
+	else
+		echo "client-installer build failed"
+		exit -1;
+	fi
 	
-	echo "invoking script on vagrant box to build installers"
-	vagrant ssh -c "/vagrant/build_installers.sh $I4J_pathto_Install4jDeploySettings"
-	i4j_retcode=$?
-	
-	echo "shutting down vagrant"
-	vagrant halt
-else
-	$DIR/client/install4j/build_installers.sh $install4jDeploySettings
-	i4j_retcode=$?
+	echo "client install4j installers located in $targetInstallersDir"
 fi
-
-if [ $i4j_retcode -eq 0 ]; then
-	echo "client-installers built"
-else
-	echo "client-installer build failed"
-	exit -1;
-fi
-
-echo "client install4j installers located in $targetInstallersDir"
 
 cd $DIR
 
@@ -214,7 +220,9 @@ cp -p -R $projectRootDir/visTool/* $stagingVisToolDir
 #
 # build stagingDir/configs
 #
-cp server/deployInfo/* $stagingConfigsDir
+cp -p $includefile $stagingConfigsDir
+cp -p server/deployInfo/* $stagingConfigsDir
+
 
 function sed_in_place() { if [ "$isMac" = true ]; then sed -i "" "$@"; else sed -i "$@"; fi }
 
@@ -411,8 +419,10 @@ echo "#vcell.vtkPythonModulePath ="											>> $propfile
 #	curl "http://localhost:8080/job/NumericsMulti/platform=linux64/lastSuccessfulBuild/artifact/*zip*/archive.zip" -o "$targetRootDir/linux64.zip"
 #fi
 
+echo "vcell_server_sitedir is $vcell_server_sitedir"
+echo "vcell_pathto_sitedir is $vcell_pathto_sitedir"
 
-if [ "$vcell_server_sitedir" == "vcell_pathto_sitedir" ]
+if [ "$vcell_server_sitedir" == "$vcell_pathto_sitedir" ]
 then
 	echo "copying to local installation directory"
 	mkdir -p $installedSolversDir
@@ -436,7 +446,7 @@ then
 	cp -p -R $stagingVisToolDir/*	$installedVisToolDir
 	cp -p $stagingNativelibsDir/*	$installedNativelibsDir
 	cp -p $projectSolversDir/*		$installedSolversDir
-	cp -p $projectInstallersDir/*	$installedInstallersDir
+	cp -p $stagingInstallersDir/*	$installedInstallersDir
 else
 	#
 	# remote filesystem
