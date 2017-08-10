@@ -14,7 +14,7 @@ includefile=$1
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-projectRootDir=$DIR/..
+projectRootDir=`dirname $DIR`
 targetRootDir=$projectRootDir/target
 targetMavenJarsDir=$targetRootDir/maven-jars
 targetInstallersDir=$targetRootDir/installers
@@ -40,7 +40,7 @@ deployRootDir=$DIR
 
 deployInstall4jDir=$deployRootDir/client/install4j
 
-stagingRootDir=$DIR/../target/server-staging/
+stagingRootDir=$projectRootDir/target/server-staging/
 stagingConfigsDir=$stagingRootDir/configs
 stagingJarsDir=$stagingRootDir/jars
 stagingVisToolDir=$stagingRootDir/visTool
@@ -131,7 +131,7 @@ fi
 #
 # installers are installed in project/target/installers directory
 #---------------------------------------------------------------
-install4jWorkingDir=$DIR/../target/install4j-working
+install4jWorkingDir=$projectRootDir/target/install4j-working
 install4jDeploySettings=$install4jWorkingDir/DeploySettings.include
 
 I4J_pathto_Install4jWorkingDir=$vcell_I4J_pathto_mavenRootDir/target/install4j-working

@@ -2,14 +2,21 @@
 
 shopt -s -o nounset
 
+_site="test4"
+_version="6.2"
+_build="54"
 vcell_server_os="mac64"
-vcell_site_camel="Test4"
-vcell_site_lower="test4"
-vcell_site_upper="TEST4"
-vcell_version="6.2"
-vcell_build="54"
+
+vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
+vcell_site_upper=`echo $_site | tr '[:lower:]' '[:upper:]'`
+vcell_site_camel="${vcell_site_upper:0:1}${vcell_site_lower:1:100}"
+vcell_version=$_version
+vcell_build=%_build
 vcell_softwareVersionString="${vcell_site_camel}_Version_${vcell_version}_build_${vcell_build}"
-echo "softwareVersionString is %softwareVersionString ... should not have quotes"
+unset _site
+unset _version
+unset _build
+
 vcell_applicationId="1471-8022-1038-5558"
 vcell_server_sitedir="/Users/schaff/Documents/workspace-modular/VCell_6.2_clean/deploy/sandbox/$vcell_site_lower"
 # mount /share/apps/vcell2/deployed as cfs02.cam.uchc.edu/raid resulting in /Volumes/raid/vcell/deployed
@@ -23,7 +30,6 @@ vcell_bioformatsJarFile="bioformats_TEST4_6_2_54.jar"
 vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vcell_bioformatsJarFile"
 
 vcell_vcellAllJarFileName="vcell-0.0.1-SNAPSHOT.jar"
-vcell_vcellAllJarFileSourcePath="/vagrant_maven/target/$vcell_vcellAllJarFileName"
 
 vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
 vcell_jms_user=clientUser
