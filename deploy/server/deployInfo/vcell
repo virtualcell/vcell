@@ -1,0 +1,50 @@
+#!/bin/bash  
+export COLUMNS=1
+DIR="$(dirname "$(readlink -f "$0")")"
+. $DIR/processFunctions
+
+#setsite test4
+#checksite 
+#starthigh
+
+if [ $# -ne 1 ]; then
+	echo "Usage: $0 [command]"
+fi
+
+cmd=$1
+
+echo "Performing $cmd"
+case "$cmd" in
+	status)
+		cd $LOGDIR
+		checkRunning servicepid v 
+		checkRunning highpid v 
+
+		if runsLow ; then
+			 checkRunning httppid v 
+		fi
+#		echo "verifying connection and database access"
+
+#		if ! verifyAlive 1 10 ; then
+#			echo "connect failed"
+#			exit 8
+#		fi
+#		if ! verifyAlive 2 10 ; then
+#			echo "database access failed"
+#			exit 8
+#		fi
+		echo "tested satisfactory"
+	;;
+	start)
+		startSite
+	;;
+	stop)
+		stopSite
+	;;
+	restart)
+		stopSite
+		startSite
+	;;
+
+esac
+
