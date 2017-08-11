@@ -1,0 +1,196 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.vcell</groupId>
+	<artifactId>vcell</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>14.0.0</version>
+	</parent>
+	<name>Virtual Cell Project</name>
+	<url>http://vcell.org/</url>
+	<description>The Virtual Cell client and server</description>
+	<inceptionYear>1997</inceptionYear>
+	<organization>
+		<name>VCell</name>
+		<url>http://vcell.org</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>MIT</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<id>jcschaff</id>
+			<name>Jim Schaff</name>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>John Wagner</name>
+		</contributor>
+	</contributors>
+	<mailingLists>
+		<mailingList>
+			<name>VCell Open Discussion Forum</name>
+			<subscribe>https://groups.google.com/group/vcell-discuss</subscribe>
+			<unsubscribe>https://groups.google.com/group/vcell-discuss</unsubscribe>
+			<post>vcell-discuss@googlegroups.com</post>
+			<archive>https://groups.google.com/group/vcell-discuss</archive>
+		</mailingList>
+	</mailingLists>
+	<scm>
+		<connection>scm:git:git://github.com/scijava/pom-scijava-base</connection>
+		<developerConnection>scm:git:git@github.com:scijava/pom-scijava-base</developerConnection>
+		<tag>pom-scijava-base-3.0.0</tag>
+		<url>https://github.com/scijava/pom-scijava-base/</url>
+	</scm>
+	<issueManagement>
+		<system>Bugzilla</system>
+		<url>http://code3.cam.uchc.edu/bugzilla/</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://jenkins.vcell.org/job/vcell/</url>
+	</ciManagement>
+	<properties>
+		<enforcer.skip>true</enforcer.skip>
+	</properties>
+	  
+	<repositories>
+		<!-- suggested for org.restlet -->
+		<repository>
+			<id>maven-restlet</id>
+			<name>Public online Restlet repository</name>
+			<url>http://maven.restlet.com</url>
+		</repository>
+		<!-- needed for org.sbml.jsbml -->
+		<repository>
+		  <id>JSBML-SNAPSHOT</id>
+		  <name>The JSBML Snapshot repository</name>
+		  <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
+		<!-- needed for javax.media.jai -->
+		<repository>
+			<id>com.springsource.repository.bundles.external</id>
+			<name>SpringSource Enterprise Bundle Repository - External Bundle Releases</name>
+			<url>http://repository.springsource.com/maven/bundles/external</url>
+		</repository>
+
+		<!-- needed for com.mxgraph.jgraphx -->
+		<repository>
+			<id>com.alfresco.repository.public</id>
+			<name>Alfresco Public Repository</name>
+			<url>https://artifacts.alfresco.com/nexus/content/repositories/public/</url>
+		</repository>
+
+		<!-- needed for imagej dependencies -->
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+		
+		<!-- needed for biomodels.net web services -->
+		<repository>
+    		<id>ebi-repo</id>
+    		<name>The EBI internal repository</name>
+    		<url>http://www.ebi.ac.uk/~maven/m2repo</url>
+    		<releases>
+      			<enabled>true</enabled>
+    		</releases>
+    		<snapshots>
+      			<enabled>false</enabled>
+    		</snapshots>
+  		</repository>
+		
+	</repositories>
+	<dependencies>
+		<!-- local VCell repository for now -->
+		<dependency>
+		    <groupId>org.vcell</groupId>
+		    <artifactId>vcell</artifactId>
+		    <version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.restlet.jee/org.restlet -->
+		<dependency>
+		    <groupId>org.restlet.jee</groupId>
+		    <artifactId>org.restlet</artifactId>
+		    <version>2.2.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.restlet.jee/org.restlet.ext.freemarker -->
+		<dependency>
+		    <groupId>org.restlet.jee</groupId>
+		    <artifactId>org.restlet.ext.freemarker</artifactId>
+		    <version>2.2.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.restlet.jee/org.restlet.ext.crypto -->
+		<dependency>
+		    <groupId>org.restlet.jee</groupId>
+		    <artifactId>org.restlet.ext.crypto</artifactId>
+		    <version>2.2.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.restlet.jse/org.restlet.ext.wadl -->
+		<dependency>
+		    <groupId>org.restlet.jse</groupId>
+		    <artifactId>org.restlet.ext.wadl</artifactId>
+		    <version>2.2.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.restlet.jse/org.restlet.ext.json -->
+		<dependency>
+		    <groupId>org.restlet.jse</groupId>
+		    <artifactId>org.restlet.ext.json</artifactId>
+		    <version>2.2.1</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<rules>
+						<banDuplicateClasses>
+							<ignoreClasses>
+								<ignoreClass>org.w3c.dom.UserDataHandler</ignoreClass>
+							</ignoreClasses>
+						</banDuplicateClasses>
+					</rules>
+				</configuration>
+			</plugin>
+			<plugin>
+				<!-- mvn dependency:copy-dependencies -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+		        <executions>
+		          <execution>
+		            <id>analyze</id>
+		            <goals>
+		              <goal>analyze-only</goal>
+		            </goals>
+		            <configuration>
+		              <failOnWarning>true</failOnWarning>
+		            </configuration>
+		          </execution>
+		        </executions>
+				
+				<configuration>
+					<outputDirectory>
+						${project.build.directory}/maven-jars
+					</outputDirectory>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

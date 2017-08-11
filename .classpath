@@ -1,110 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/serializer.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/xalan.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/xercesImpl.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/xml-apis.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.ajp.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.continuation.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.http.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.io.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.server.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.util.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/javax.servlet.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.freemarker.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/scribe-1.3.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.json.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jackson-all-1.9.11.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.joda.time.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.google.gson.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.e4.core.contexts.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.e4.core.di.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.osgi.compendium.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.osgi.core.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.jsslutils.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.fasterxml.jackson.annotations.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.fasterxml.jackson.core.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.fasterxml.jackson.csv.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.fasterxml.jackson.databind.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.fasterxml.jackson.jaxb.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.fasterxml.jackson.smile.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.fasterxml.jackson.xml.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.fasterxml.jackson.yaml.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.commons.codec.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.thoughtworks.xstream.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.codehaus.jettison.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.commons.dbcp.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/net.oauth.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.commons.pool.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.google.gwt.dev.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.google.gwt.user.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/net.jcip.annotations.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.db4o.instrumentation.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.db4o.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.db4o.nativequery.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.db4o.optional.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.db4o.ta.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.db4o.tools.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.google.collections.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.google.gdata.client.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.google.gdata.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.sun.jaxb.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.sun.rowset.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/edu.purdue.cs.bloat.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/javax.mail.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/javax.ws.rs.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/net.sf.cglib.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/net.sourceforge.nekohtml.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.commons.cli.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.commons.fileupload.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.commons.io.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.commons.lang.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.commons.logging.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.httpclient.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.httpcore.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.httpmime.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.james.mime4j.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.log4j.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.lucene.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.solr.common.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.solr.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.tika.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.tika.parsers.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.apache.velocity.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.emf.common.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.emf.ecore.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.emf.ecore.xmi.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.hamcrest.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.jdom.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.jibx.runtime.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.junit.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.mongodb.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.openid4java.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.simpleframework.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.slf4j.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.testng.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.yaml.snakeyaml.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.codehaus.woodstox.core.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.codehaus.woodstox.stax2api.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.jar" sourcepath="/RestletFramework/modules/org.restlet/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.wadl.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.wadl/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.freemarker.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.freemarker/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.e4.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.e4/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.gson.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.gson/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.html.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.html/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.jackson.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.jackson/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.jetty.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.jetty/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.json.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.json/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.net.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.net/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.oauth.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.oauth/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.ssl.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.ssl/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.xml.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.xml/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.xstream.jar" sourcepath="/RestletFramework/modules/org.restlet.ext.xstream/src"/>
-	<classpathentry kind="lib" path="lib/org.vcell.rest.auth.jar" sourcepath="/RestletFramework/modules/org.vcell.rest.auth/src"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.cyrpto.jar"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="resources"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/VCell_6.2"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/test-classes" path="src/test/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
