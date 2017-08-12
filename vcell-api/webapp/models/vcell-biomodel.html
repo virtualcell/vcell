@@ -1,0 +1,27 @@
+<div ng-controller="ModelController">
+
+<h4 class="pull-left"><a href ng-click="back()">&lt;Back</a></h4>
+
+<div class="list-group" ng-show="!currBiomodel.name && !currSimulation.name">
+	<h3 class="text-center">Biomodels</h3>
+	<div class="list-group-item" ng-repeat="biomodel in biomodels | limitTo : 10">
+		<h3><a href ng-click="clickBiomodelRow(biomodel)">&quot;{{biomodel.name | limitTo : 20}}&quot; [{{biomodel.ownerName}}] A({{biomodel.applications.length}}) S({{biomodel.simulations.length}})</a></h3>
+	</div>
+</div>
+<div class="list-group" ng-show="currBiomodel.name && !currSimulation.name">
+	<h3 class="text-center">Biomodel Detail</h3>
+	<h3 class="text-center">&quot;{{currBiomodel.name}}&quot;</h3>
+	<div class="list-group-item" ng-repeat="simulation in currBiomodel.simulations | limitTo : 10">
+		<h3><a href ng-click="clickSimulationRow(simulation)">&quot;{{simulation.name | limitTo : 20}}&quot; [app={{simulation.bioModelLink.simContextName}}]</a></h3>
+	</div>
+</div>
+<div class="list-group" ng-show="currBiomodel.name && currSimulation.name">
+	<h3 class="text-center">Simulation Detail</h3>
+	<table align="center">
+	<tr><td>name</td><td>{{currSimulation.name | limitTo : 20}}</td></tr>
+	<tr><td>onwer</td><td>{{currSimulation.ownerName | limitTo : 20}}</td></tr>
+	<tr><td>solver</td><td>{{currSimulation.solverName | limitTo : 20}}</td></tr>
+	<tr><td>num jobs</td><td>{{currSimulation.scanCount | limitTo : 20}}</td></tr>
+	</table>
+</div>
+</div>

@@ -1,0 +1,48 @@
+#!/bin/bash
+
+#
+# include common variable definitions
+#
+DIR=${0%/*}
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. $DIR/vcell.include
+. $DIR/vcellapi.include
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+#
+# Process label for identifying service from ps -ef output
+#
+procLabel="-DprocessLabel=${common_site}-vcellapi"
+
+#
+# Java Management Extensions
+#
+jmxargs="-Dcom.sun.management.jmxremote"
+jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.authenticate=false"
+jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.port=${vcellservice_jmxport}"
+jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.ssl=false"
+jmxargs="${jmxargs} -Djava.rmi.server.hostname=${vcellservice_jmxhost}"
+jmxargs=
+
+
+jvmprop="-Xmx${vcellapi_memoryGB}G -Dvcell.propertyfile=${common_propertyfile}"
+
+arguments="${vcellapi_keystorepath} ${vcellapi_keystorepswd} ${vcellapi_javascriptdir} ${common_logdir}"
+
+vcellapi_cp="${vcellapi_jars}:${vcellapi_root}/bin:${vcellapi_root}/resources"
+
+vcellapi_mainclass="org.vcell.rest.VCellApiMain"
+
+classpath="${vcellapi_cp}:${common_jvm_jars}"
+#
+# IMPORTANT:  ${procLabel} must be first because we are filtering on it for the kill script in DeployVCell.
+#
+#echo ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} 
+nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} &
+
+exit 0
+

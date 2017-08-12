@@ -1,0 +1,12 @@
+<div ng-controller="SimsController">
+<div class="list-group" ng-show="!currSimStatus">
+	<h3 class="text-center">Simulation Statuses</h3>
+	<div class="list-group-item" ng-repeat="simstatus in simStatuses | limitTo : 10">
+		<h3><a href ng-click="clickSimStatusRow(simstatus)">&quot;{{simstatus.simRep.name | limitTo : 20}}&quot; [{{simstatus.statusString}}]</a></h3>
+	</div>
+</div>
+<div class="list-group" ng-show="currSimStatus">
+	<h3 class="text-center">Simulation Status Detail</h3>
+	<h3 class="text-center">&quot;{{currSimStatus.simRep.name}}&quot;</h3>
+</div>
+</div>

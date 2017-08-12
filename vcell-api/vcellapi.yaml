@@ -1,0 +1,653 @@
+---
+swagger: "2.0"
+info:
+  title: vcellapi
+  version: 1.0.0
+  description: vcellapi as of VCell 6.2 build 23
+schemes:
+  - https
+host: vcellapi.cam.uchc.edu:8080
+basePath: /.
+paths:
+  /publication:
+    get:
+      produces:
+        - application/json
+      responses:
+        200:
+          description: list of publications
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Publication'
+      parameters:
+        - name: pubId
+          in: query
+          required: false
+          type: string
+          description: refines list of one publication matching the id or empty list
+        - name: orderBy
+          in: query
+          required: false
+          type: string
+          enum:
+            - year_asc
+            - year_desc
+          description: sort by year (...doesnt work ...)
+      description: list of modeling publications featuring VCell models
+  /publication/{publicationid}:
+    get:
+      produces:
+        - application/json
+      responses:
+        200:
+          description: publication matching id
+          schema:
+            $ref: '#/definitions/Publication'
+        404:
+          description: publication not found
+      parameters:
+        - name: publicationid
+          in: path
+          required: true
+          type: string
+          description: publication id
+  /biomodel:
+    get:
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Biomodel'
+      parameters:
+        - name: bmName
+          in: query
+          required: false
+          type: string
+          description: biomodel name
+        - name: bmId
+          in: query
+          required: false
+          type: string
+          description: biomodel key
+        - name: category
+          in: query
+          required: false
+          type: string
+          enum:
+            - all
+            - public
+            - shared
+            - mine
+            - tutorials
+            - educational
+          default: all
+          description: category of models to include in search
+        - name: owner
+          in: query
+          required: false
+          type: string
+          description: vcell userid of owner (Owner also excepts all public, shared, education and tutorial ... for now)
+        - name: savedLow
+          in: query
+          required: false
+          type: integer
+          description: minimum save date (unix timestamp)
+        - name: savedHigh
+          in: query
+          required: false
+          type: integer
+          description: maximum save date (unix timestamp)
+        - name: startRow
+          in: query
+          required: false
+          type: integer
+          default: 1
+          description: result set  page starting row
+        - name: maxRows
+          in: query
+          required: false
+          type: integer
+          default: 10
+          description: result set page size
+        - name: orderBy
+          in: query
+          required: false
+          type: string
+          enum:
+            - date_desc
+            - date_asc
+            - name_asc
+            - name_desc
+          default: date_desc
+          description: sort order by date or name
+      description: biomodel metadata
+  /biomodel/{biomodelid}:
+    get:
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Biomodel'
+        404:
+          description: biomodel not found
+      parameters:
+        - name: biomodelid
+          in: path
+          required: true
+          type: string
+      description: metadata for a particular biomodel
+  /biomodel/{biomodelid}/diagram:
+    get:
+      produces:
+        - image/png
+      responses:
+        200:
+          description: normal
+        404:
+          description: biomodel not found
+      parameters:
+        - name: biomodelid
+          in: path
+          required: true
+          type: string
+  /biomodel/{biomodelid}/biomodel.vcml:
+    get:
+      produces:
+        - application/xml
+      responses:
+        200:
+          description: normal
+          schema:
+            type: string
+        404:
+          description: biomodel not found
+      parameters:
+        - name: biomodelid
+          in: path
+          required: true
+          type: string
+  /biomodel/{biomodelid}/simulation/{simulationid}:
+    get:
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Simulation'
+        404:
+          description: simulation not found
+      parameters:
+        - name: biomodelid
+          in: path
+          required: true
+          type: string
+        - name: simulationid
+          in: path
+          required: true
+          type: string
+  /simtask:
+    get:
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Simtask'
+  /simstatus:
+    get:
+      responses:
+        200:
+          description: Success
+  /simdata/{simulationid}:
+    get:
+      responses:
+        200:
+          description: Success
+      parameters:
+        - name: simulationid
+          in: path
+          required: true
+          type: string
+  /simdata/{simulationid}/jobindex/{jobindexid}:
+    get:
+      responses:
+        200:
+          description: Success
+      parameters:
+        - name: simulationid
+          in: path
+          required: true
+          type: string
+        - name: jobindexid
+          in: path
+          required: true
+          type: string
+  /logout:
+    get:
+      responses:
+        200:
+          description: Success
+  /loginform:
+    get:
+      responses:
+        200:
+          description: Success
+  /login:
+    post:
+      responses:
+        200:
+          description: Success
+      parameters:
+        - name: Payload
+          description: Request Body
+          required: false
+          in: body
+          schema:
+            type: object
+            properties:
+              payload:
+                type: string
+  /biomodel/{biomodelid}/simulation/{simulationid}/startSimulation:
+    post:
+      responses:
+        200:
+          description: Success
+      parameters:
+        - name: biomodelid
+          in: path
+          required: true
+          type: string
+        - name: simulationid
+          in: path
+          required: true
+          type: string
+        - name: Payload
+          description: Request Body
+          required: false
+          in: body
+          schema:
+            type: object
+            properties:
+              payload:
+                type: string
+  /biomodel/{biomodelid}/simulation/{simulationid}/save:
+    post:
+      responses:
+        200:
+          description: Success
+        302:
+          description: Redirect to new biomodelid,simulationid /biomodel/newbiomodelid/simulation/newsimulationid
+      parameters:
+        - name: biomodelid
+          in: path
+          required: true
+          type: string
+          description: biomodel id
+        - name: simulationid
+          in: path
+          required: true
+          type: string
+          description: simulation id
+        - name: overrides
+          description: send new parameter overrides for cloned simulation
+          required: true
+          in: body
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ParameterOverride'
+      description: redirect is RESTful, but not sure if must standard for an API. 
+  /biomodel/{biomodelid}/simulation/{simulationid}/stopSimulation:
+    post:
+      responses:
+        200:
+          description: Success
+      parameters:
+        - name: biomodelid
+          in: path
+          required: true
+          type: string
+        - name: simulationid
+          in: path
+          required: true
+          type: string
+        - name: Payload
+          description: Request Body
+          required: false
+          in: body
+          schema:
+            type: object
+            properties:
+              payload:
+                type: string
+definitions:
+  Biomodel:
+    type: object
+    required:
+      - bmKey
+    properties:
+      bmKey:
+        type: string
+        description: biomodel key
+      name:
+        type: string
+        description: biomodel name
+      ownerName:
+        type: string
+        description: vcell userid of owner
+      ownerKey:
+        type: string
+        description: vcell key of owner
+      privacy:
+        type: integer
+        description: 0 is public, 1 is private, n > 1 is group id
+      groupUsers:
+        type: array
+        items:
+          type: string
+          description: vcell userid
+      savedDate:
+        type: integer
+        description: unix timestamp when saved
+      annot:
+        type: string
+        description: free text annotation
+      branchID:
+        type: integer
+        description: branch id shared by all versions of same biomodel
+      modelKey:
+        type: string
+        description: model (physiology) key for biomodel
+      simulations:
+        type: array
+        items:
+          $ref: '#/definitions/Simulation'
+      applications:
+        type: array
+        items:
+          $ref: '#/definitions/Application'
+  Application:
+    type: object
+    properties:
+      key:
+        type: string
+        description: application key
+      branchId:
+        type: integer
+        description: branch id shared by all versions of this application
+      name:
+        type: string
+        description: name of application
+      ownerName:
+        type: string
+        description: vcell userid of application owner (same as biomodel/simulations)
+      ownerKey:
+        type: string
+        description: vcell user key of application owner
+      mathKey:
+        type: string
+        description: key of math description (same as mathKey for matching simulations)
+  Simulation:
+    type: object
+    properties:
+      key:
+        type: string
+        description: simulation key
+      branchId:
+        type: integer
+        description: branch id shared by all versions of this simulation
+      name:
+        type: string
+        description: name of simulation
+      ownerName:
+        type: string
+        description: vcell userid of simulation owner
+      ownerKey:
+        type: string
+        description: vcell user key of simulation owner
+      mathKey:
+        type: string
+        description: key of math description (same as simulation owner; either application or math model)
+      solverName:
+        type: string
+        description: solver name
+      scanCount:
+        type: integer
+        description: number of individual runs in parameter scan (see overrides)
+      bioModelLink:
+        $ref: '#/definitions/SimBioModelLink'
+      overrides:
+        type: array
+        items:
+          $ref: '#/definitions/ParameterOverride'
+      parameters:
+        type: array
+        items:
+          $ref: '#/definitions/Parameter'
+  SimBioModelLink:
+    type: object
+    properties:
+      bioModelKey:
+        type: string
+        description: biomodel key
+      bioModelBranchId:
+        type: integer
+        description: branch id shared by all version of this biomodel
+      bioModelName:
+        type: string
+        description: biomodel name
+      simContextKey:
+        type: string
+        description: application key
+      simContextBranchId:
+        type: integer
+        description: branch id shared by all versions of this applicaiton
+      simContextName:
+        type: string
+        description: application name
+  ParameterOverride:
+    type: object
+    required:
+      - name
+      - otype
+      - values
+      - cardinality
+    properties:
+      name:
+        type: string
+        description: parameter name
+      otype:
+        enum:
+          - none
+          - single
+          - list
+          - linearInterval
+          - logInterval
+          - variable
+        description: type of override
+      values:
+        type: array
+        items:
+          type: number
+        description: list of new values (for type single or list) or min,max iinterval limits (for type linearInterval or logInterval)
+      cardinality:
+        type: integer
+        default: 1
+        description: number of parameter samples
+      expression:
+        type: string
+        description: infix expression for parameter value (in terms of other parameter names)
+  Parameter:
+    type: object
+    properties:
+      name:
+        type: string
+        description: parameter name (in math namescope)
+      defaultValue:
+        type: number
+        description: nominal parameter value (if not overridden)
+      modelSymbolContext:
+        type: string
+        description: path to context within biomodel where biological symbol is defined
+      modelSymbolType:
+        type: string
+        description: type of biological symbol
+      modelSymbolName:
+        type: string
+        description: local name of biological symbol (unique within namescope)
+      modelSymbolDesc:
+        type: string
+        description: description of biological symbol
+      modelSymbolUnit:
+        type: string
+        description: SI unit symbol for biological symbol
+  Publication:
+    type: object
+    required:
+      - pubKey
+      - title
+      - authors
+      - year
+      - citation
+    properties:
+      pubKey:
+        type: string
+        description: publication key
+      title:
+        type: string
+        description: publication title
+      authors:
+        type: array
+        items:
+          type: string
+        description: publication author list in order of citation
+      year:
+        type: integer
+      citation:
+        type: string
+      pubmedid:
+        type: integer
+      doi:
+        type: string
+      endnoteid:
+        type: string
+      url:
+        type: string
+      wittid:
+        type: string
+      biomodelReferences:
+        type: array
+        items:
+          $ref: '#/definitions/BiomodelReference'
+      mathmodelReferences:
+        type: array
+        items:
+          $ref: '#/definitions/MathomodelReference'
+  BiomodelReference:
+    type: object
+    properties:
+      bmKey:
+        type: string
+      name:
+        type: string
+      ownerName:
+        type: string
+      ownerKey:
+        type: string
+  MathomodelReference:
+    type: object
+    properties:
+      mmKey:
+        type: string
+      name:
+        type: string
+      ownerName:
+        type: string
+      ownerKey:
+        type: string
+  Simtask:
+    type: object
+    properties:
+      simKey:
+        type: string
+        description: simulation key
+      simName:
+        type: string
+        description: name of simulation
+      userName:
+        type: string
+        description: vcell userid of simulation owner
+      userKey:
+        type: string
+        description: vcell user key of simulation owner
+      status:
+        type: string
+        enum:
+          - waiting
+          - queued
+          - dispatched
+          - running
+          - completed
+          - failed
+          - stopped
+        description: simulation job status
+      submitdate:
+        type: integer
+        description: unix timestamp of submission time
+      startdate:
+        type: integer
+        description: unix timestamp of start time
+      enddate:
+        type: integer
+        description: unix timestamp of end time
+      jobIndex:
+        type: integer
+        description: job index into simulation scan count (0 to scanCount-1)
+      taskId:
+        type: integer
+        description: ordinal to specify a transaction number (currently counts by 16 to allow for automatic restarts stored in last 3 bits)
+      message:
+        type: string
+        description: user consumable status message
+      site:
+        type: string
+        description: vcell site job was executed on (REL,BETA,ALPHA if a production job)
+      computeHost:
+        type: string
+        description: host where simulation was executed
+      schedulerStatus:
+        type: string
+        enum:
+          - waiting
+          - queued
+          - dispatched
+          - running
+          - completed
+          - stopped
+          - failed
+        description: status of internal queue
+      hasData:
+        type: boolean
+        description: stored data is available for this simulation
+      scanCount:
+        type: integer
+        description: scan count of the simulation (see jobIndex)
+      progress:
+        type: number
+        description: progress (from 0.0 to 1.0)
+      myQueueOrdinal:
+        type: integer
+        description: this jobs position in the user's queue
+      globalQueueOrdinal:
+        type: integer
+        description: this jobs position in the global queue
+      bioModelLink:
+        $ref: '#/definitions/SimBioModelLink'
+  

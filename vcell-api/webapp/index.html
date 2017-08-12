@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html ng-app="app">
+	<head>
+		<title>VCell Webapp</title>
+		<link rel="stylesheet" type="text/css" href="/webapp/bootstrap.min.css" />
+		<script type="text/javascript" src="/webapp/angular.min.js"></script>
+		<script type="text/javascript" src="/webapp/models/models-module.js"></script>
+		<script type="text/javascript" src="/webapp/models/models-directives.js"></script>
+		<script type="text/javascript" src="/webapp/models/models-controllers.js"></script>
+		<script type="text/javascript" src="/webapp/sims/sims-module.js"></script>
+		<script type="text/javascript" src="/webapp/sims/sims-directives.js"></script>
+		<script type="text/javascript" src="/webapp/sims/sims-controllers.js"></script>
+		<script type="text/javascript" src="/webapp/auth/auth-module.js"></script>
+		<script type="text/javascript" src="/webapp/auth/auth-directives.js"></script>
+		<script type="text/javascript" src="/webapp/app.js"></script>
+	</head>
+	<body ng-controller="VcellController">
+		<header>
+<!--
+			<h4 class="pull-left"><a href ng-click="back()">&lt;Back</a></h4>
+-->
+			<vcell-loginbar class="pull-right"></vcell-loginbar>
+		</header>
+		
+		<section>
+  			<!--  Biomodel Tab Content  -->
+  			<vcell-biomodel ng-show="isSet(1)"></vcell-biomodel>
+
+  			<!--  Simulation Status Tab Content  -->
+  			<vcell-jobs ng-show="isSet(2)"></vcell-jobs> 
+ 
+ 			<ul class="nav nav-pills">
+    			<li ng-class="{ active:isSet(1) }">
+      				<a href ng-click="setTab(1)"><img src="/webapp/diagram_icon.gif" height="26" width="26"/>Biomodels</a>
+    			</li>
+    			<li ng-class="{ active:isSet(2) }">
+      				<a href ng-click="setTab(2)"><img src="/webapp/run2_16x16.gif" height="26" width="26"/>Simulation Jobs</a>
+    			</li>
+ 			 </ul>
+
+ 
+  		</section>
+		
+	</body>
+</html>
