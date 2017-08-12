@@ -28,8 +28,9 @@ import org.jlibsedml.modelsupport.URLResourceRetriever;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 
+import cbit.util.xml.TranslationLogger;
+import cbit.util.xml.TranslationLogger.Message;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;

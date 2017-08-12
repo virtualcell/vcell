@@ -9,8 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.vcell.util.logging.Logging;
 
-import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.simdata.PortableCommand;
+import cbit.vcell.simdata.PortableCommandWrapper;
 
 /**
  * test {@link PortableCommandWrapper}
@@ -51,7 +51,7 @@ public class PortableCommandWrapperTest {
 	@Before
 	public void init( ) {
 		Logging.init();
-		Logger lg = Logger.getLogger(HtcProxy.class);
+		Logger lg = Logger.getLogger(PortableCommand.class);
 		lg.setLevel(Level.ALL);
 	}
 

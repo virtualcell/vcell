@@ -1,9 +1,10 @@
-package org.vcell.util;
+package org.vcell.core;
 
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.logging.Logging;
 
 @SuppressWarnings("unused")

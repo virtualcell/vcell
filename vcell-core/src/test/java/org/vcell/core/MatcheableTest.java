@@ -1,10 +1,11 @@
-package org.vcell.util;
+package org.vcell.core;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.vcell.pathway.SequenceLocation;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.solver.TimeStep;
 

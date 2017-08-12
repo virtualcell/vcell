@@ -1,4 +1,4 @@
-package org.vcell.util;
+package org.vcell.util.logging;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.logging.WatchLogging;
