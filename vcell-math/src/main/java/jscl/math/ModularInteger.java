@@ -1,6 +1,7 @@
 package jscl.math;
 
 import java.math.BigInteger;
+
 import jscl.mathml.MathML;
 
 public class ModularInteger extends Generic implements Field {

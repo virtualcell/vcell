@@ -1,7 +1,5 @@
 package ucar.units_vcell;
 
-import java.util.Iterator;
-
 /**
  * Provides support for a database of standard units.
  *

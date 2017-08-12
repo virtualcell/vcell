@@ -6,11 +6,6 @@
  */
 package cbit.vcell.client.pyvcellproxy;
 
-
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum DomainType implements org.apache.thrift.TEnum {
   VOLUME(0),
   MEMBRANE(1);

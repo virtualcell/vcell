@@ -1,6 +1,7 @@
 package jscl.math.polynomial;
 
 import java.util.Iterator;
+
 import jscl.math.Literal;
 import jscl.math.NotDivisibleException;
 import jscl.math.Variable;

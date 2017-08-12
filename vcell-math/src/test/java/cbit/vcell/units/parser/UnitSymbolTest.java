@@ -1,8 +1,7 @@
 package cbit.vcell.units.parser;
 
-import org.junit.Test;
-
 import org.junit.Assert;
+import org.junit.Test;
 
 public class UnitSymbolTest {
 

@@ -9,9 +9,7 @@
  */
 
 package cbit.vcell.modeldb;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import org.vcell.db.DatabaseSyntax;
@@ -20,7 +18,6 @@ import org.vcell.util.document.User;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.resource.PropertyLoader;
-import java.util.Arrays;
 /**
  * This type was created in VisualAge.
  */

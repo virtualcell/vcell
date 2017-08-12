@@ -15,8 +15,8 @@ import java.util.Vector;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
-import cbit.sql.Table;
 import cbit.sql.Field.SQLDataType;
+import cbit.sql.Table;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.EnzymeInfo;

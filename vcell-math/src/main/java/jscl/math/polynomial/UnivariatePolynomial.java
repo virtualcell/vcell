@@ -3,6 +3,7 @@ package jscl.math.polynomial;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import jscl.math.Expression;
 import jscl.math.Generic;
 import jscl.math.JSCLInteger;

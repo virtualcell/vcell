@@ -2,13 +2,10 @@ package cbit.vcell.resource;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.vcell.util.UnzipUtility;
 
 public class CondaSupport {
 	

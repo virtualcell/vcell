@@ -1,7 +1,8 @@
 package edu.rpi.graphdrawing;
 
-import java.util.*;
-import java.applet.*;
+import java.util.Hashtable;
+import java.util.Stack;
+import java.util.Vector;
 
 
 public

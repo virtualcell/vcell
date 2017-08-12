@@ -3,6 +3,7 @@ package jscl.text;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+
 import jscl.math.Generic;
 import jscl.math.GenericVariable;
 import jscl.math.JSCLInteger;

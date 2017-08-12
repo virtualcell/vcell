@@ -24,7 +24,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.logging.Log4jSessionLog;
 import org.vcell.util.logging.Logging;
-import org.vcell.util.logging.Logging.ConsoleDestination;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;

@@ -1,17 +1,22 @@
 package cbit.vcell.biomodel;
 
+import java.util.Random;
+
 /*�
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 �*/
-import cbit.vcell.geometry.*;
-import cbit.vcell.solver.*;
-import java.util.Random;
-import cbit.vcell.mapping.*;
-import cbit.vcell.model.Feature;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryTest;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (11/14/00 5:56:27 PM)

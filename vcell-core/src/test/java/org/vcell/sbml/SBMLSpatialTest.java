@@ -2,10 +2,8 @@ package org.vcell.sbml;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
 //import org.junit.Assert;
 import org.sbml.jsbml.Unit;
 import org.sbml.jsbml.UnitDefinition;
@@ -13,17 +11,12 @@ import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter.VCellSBMLDoc;
 import org.vcell.sbml.vcell.SBMLImporter;
 
-import cbit.image.VCImage;
-import cbit.image.VCPixelClass;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.MathCompareResults;
-import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;

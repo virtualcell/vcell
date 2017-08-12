@@ -1,8 +1,8 @@
 package edu.northwestern.at.utils.math.rootfinders;
 
 /*	Please see the license information at the end of this file. */
-
-import edu.northwestern.at.utils.math.*;
+import edu.northwestern.at.utils.math.Constants;
+import edu.northwestern.at.utils.math.MonadicFunction;
 
 /**	Find a root of a function using Brent's method which combines quadratic
  *	interpolation with the method of bisection.

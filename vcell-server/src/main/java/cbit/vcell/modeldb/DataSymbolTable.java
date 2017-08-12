@@ -25,8 +25,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.Field;
-import cbit.sql.Table;
 import cbit.sql.Field.SQLDataType;
+import cbit.sql.Table;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;

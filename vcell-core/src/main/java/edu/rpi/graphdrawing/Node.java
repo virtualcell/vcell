@@ -1,7 +1,10 @@
 package edu.rpi.graphdrawing;
 
-import java.util.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.util.Enumeration;
+import java.util.Vector;
 
 public 
 class Node {

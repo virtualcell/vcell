@@ -25,7 +25,6 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
-import org.vcell.db.oracle.OracleKeyFactory;
 import org.vcell.util.SessionLog;
 
 import cbit.sql.Field;

@@ -13,8 +13,8 @@ package cbit.vcell.dictionary.db;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
-import cbit.sql.Table;
 import cbit.sql.Field.SQLDataType;
+import cbit.sql.Table;
 
 /**
  * Represents a table for storing enzyme names and aliases in a db table

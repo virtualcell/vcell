@@ -1,11 +1,5 @@
 package ucar.units_vcell;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Vector;
-
-
 /**
  * Provides support for a concrete implementation of derived units.
  * @author Steven R. Emmerson

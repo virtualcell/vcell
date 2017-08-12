@@ -10,8 +10,6 @@
 
 package cbit.sql;
 
-import java.sql.JDBCType;
-
 import org.vcell.db.DatabaseSyntax;
 
 /**

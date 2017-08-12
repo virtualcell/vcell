@@ -6,12 +6,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -28,13 +24,9 @@ import javax.swing.border.TitledBorder;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
-import cbit.vcell.resource.CondaSupport;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;
-
-import org.apache.commons.io.FileUtils;
 
 // http://commons.apache.org/proper/commons-io/javadocs/api-2.4/org/apache/commons/io
 

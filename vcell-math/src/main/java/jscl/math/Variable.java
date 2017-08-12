@@ -3,6 +3,7 @@ package jscl.math;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+
 import jscl.math.function.Algebraic;
 import jscl.math.function.Constant;
 import jscl.math.function.Frac;

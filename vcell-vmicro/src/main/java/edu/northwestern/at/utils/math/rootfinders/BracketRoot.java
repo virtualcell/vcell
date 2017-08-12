@@ -1,8 +1,7 @@
 package edu.northwestern.at.utils.math.rootfinders;
 
 /*	Please see the license information at the end of this file. */
-
-import edu.northwestern.at.utils.math.*;
+import edu.northwestern.at.utils.math.MonadicFunction;
 
 /** Find interval bracketing a root.
  */

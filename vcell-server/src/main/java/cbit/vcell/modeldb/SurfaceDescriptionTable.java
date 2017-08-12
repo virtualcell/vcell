@@ -18,8 +18,8 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
-import cbit.sql.Table;
 import cbit.sql.Field.SQLDataType;
+import cbit.sql.Table;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 /**
  * This type was created in VisualAge.

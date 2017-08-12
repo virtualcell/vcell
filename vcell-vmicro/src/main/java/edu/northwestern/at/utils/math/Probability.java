@@ -4,9 +4,6 @@ package edu.northwestern.at.utils.math;
 
 import java.io.Serializable;
 
-//import edu.northwestern.at.utils.XCloneable;
-import edu.northwestern.at.utils.math.ArithUtils;
-
 /** Probability: stores and operates on log probabilties.
  *
  *	<p>

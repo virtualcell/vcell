@@ -13,7 +13,6 @@ package cbit.sql;
 import org.vcell.db.DatabaseSyntax;
 
 import cbit.sql.Field.SQLDataType;
-import cbit.vcell.modeldb.DbDriver;
 
 /**
  * This type was created in VisualAge.

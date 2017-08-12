@@ -11,10 +11,8 @@
 package org.vcell.sbml.vcell;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -72,7 +70,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.Pair;
-import org.vcell.util.ProgrammingException;
 import org.vcell.util.TokenMangler;
 
 import cbit.image.ImageException;

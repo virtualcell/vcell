@@ -1,10 +1,8 @@
 package org.vcell.util.logging;
 
 import java.io.File;
-import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 

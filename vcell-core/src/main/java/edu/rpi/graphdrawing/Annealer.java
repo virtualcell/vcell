@@ -1,6 +1,6 @@
 package edu.rpi.graphdrawing;
 
-import java.util.*;
+import java.util.Vector;
 
 public
 class Annealer implements Embedder {

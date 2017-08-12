@@ -1,10 +1,7 @@
 package cbit.vcell.math;
 
-import java.util.Objects;
-
-import org.junit.Test;
-
 import org.junit.Assert;
+import org.junit.Test;
 
 public class CommentedObjectTest {
 

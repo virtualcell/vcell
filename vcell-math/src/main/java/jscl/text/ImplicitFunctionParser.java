@@ -2,6 +2,7 @@ package jscl.text;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import jscl.math.Generic;
 import jscl.math.function.ImplicitFunction;
 import jscl.util.ArrayUtils;

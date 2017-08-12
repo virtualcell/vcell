@@ -1,6 +1,4 @@
 package ucar.units_vcell;
-import java.util.Arrays;
-
 
 /**
  * Provides support for the concept of "dimension": pairs of base entities 

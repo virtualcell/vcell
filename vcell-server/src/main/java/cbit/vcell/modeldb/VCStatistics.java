@@ -24,7 +24,6 @@ import java.util.Vector;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 
 public class VCStatistics {

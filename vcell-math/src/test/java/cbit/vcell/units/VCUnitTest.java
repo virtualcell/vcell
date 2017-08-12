@@ -5,8 +5,6 @@ import java.util.Iterator;
 import org.junit.Assert;
 import org.junit.Test;
 
-import ucar.units_vcell.Unit;
-
 public class VCUnitTest {
 
 	public VCUnitTest() {

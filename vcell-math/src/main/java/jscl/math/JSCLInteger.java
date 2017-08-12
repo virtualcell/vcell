@@ -1,6 +1,7 @@
 package jscl.math;
 
 import java.math.BigInteger;
+
 import jscl.mathml.MathML;
 
 public final class JSCLInteger extends Generic {

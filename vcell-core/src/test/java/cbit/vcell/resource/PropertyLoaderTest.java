@@ -7,8 +7,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import cbit.vcell.resource.PropertyLoader;
-
 public class PropertyLoaderTest {
 
 

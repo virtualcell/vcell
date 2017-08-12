@@ -2,6 +2,7 @@ package jscl.math.polynomial.groebner;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import jscl.math.Generic;
 import jscl.math.polynomial.Basis;
 import jscl.math.polynomial.Polynomial;

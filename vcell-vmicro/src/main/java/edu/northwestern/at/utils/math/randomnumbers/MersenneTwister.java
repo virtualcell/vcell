@@ -1,9 +1,10 @@
 package edu.northwestern.at.utils.math.randomnumbers;
 
 /*	Please see the license information in the header below. */
-
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 /**	MersenneTwister and MersenneTwisterFast.
  *

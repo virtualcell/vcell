@@ -6,11 +6,6 @@
  */
 package org.vcell.vcellij.api;
 
-
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum SimulationState implements org.apache.thrift.TEnum {
   running(0),
   done(1),

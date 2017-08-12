@@ -3,6 +3,7 @@ package jscl.math;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+
 import jscl.math.function.Frac;
 import jscl.math.function.Pow;
 import jscl.math.polynomial.Monomial;

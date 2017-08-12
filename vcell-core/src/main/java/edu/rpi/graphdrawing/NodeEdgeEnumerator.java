@@ -1,7 +1,8 @@
 package edu.rpi.graphdrawing;
 
-import java.util.*;
-import java.awt.*;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+import java.util.Vector;
 
 final
 class NodeEdgeEnumerator implements Enumeration {

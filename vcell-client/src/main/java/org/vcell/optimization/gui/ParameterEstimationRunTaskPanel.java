@@ -87,7 +87,6 @@ import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 

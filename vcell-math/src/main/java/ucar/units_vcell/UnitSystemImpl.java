@@ -3,8 +3,6 @@ package ucar.units_vcell;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Steven R. Emmerson

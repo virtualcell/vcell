@@ -2,6 +2,7 @@ package jscl.math.polynomial;
 
 import java.util.Collection;
 import java.util.Iterator;
+
 import jscl.math.Arithmetic;
 import jscl.math.Expression;
 import jscl.math.Field;

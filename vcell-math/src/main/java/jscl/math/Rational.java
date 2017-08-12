@@ -1,6 +1,7 @@
 package jscl.math;
 
 import java.math.BigInteger;
+
 import jscl.math.function.Frac;
 import jscl.math.function.Inv;
 import jscl.mathml.MathML;

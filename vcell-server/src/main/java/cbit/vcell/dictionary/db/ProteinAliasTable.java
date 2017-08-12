@@ -14,8 +14,8 @@ import org.vcell.util.document.KeyValue;
 
 //import cbit.vcell.server.DataAccessException;
 import cbit.sql.Field;
-import cbit.sql.Table;
 import cbit.sql.Field.SQLDataType;
+import cbit.sql.Table;
 
 /**
  * Represents a table for storing Protein names and aliases in a db table

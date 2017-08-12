@@ -11,15 +11,12 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.mutable.MutableDouble;
 import org.apache.log4j.Logger;
-import org.vcell.solver.smoldyn.SmoldynSurfaceTessellator;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
-import org.vcell.util.ThreadPrioritySetter;
 
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.surface.Triangle;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MembraneSubDomain;

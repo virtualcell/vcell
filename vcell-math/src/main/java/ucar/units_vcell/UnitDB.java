@@ -1,6 +1,5 @@
 package ucar.units_vcell;
 
-import java.io.Serializable;
 import java.util.Iterator;
 
 /**

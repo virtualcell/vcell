@@ -30,8 +30,6 @@ import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.NativeLib;
-import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;

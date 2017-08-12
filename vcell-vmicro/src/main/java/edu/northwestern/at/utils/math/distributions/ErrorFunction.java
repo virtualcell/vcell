@@ -1,9 +1,8 @@
 package edu.northwestern.at.utils.math.distributions;
 
 /*	Please see the license information at the end of this file. */
-
-import edu.northwestern.at.utils.math.*;
-import edu.northwestern.at.utils.math.rootfinders.*;
+import edu.northwestern.at.utils.math.Constants;
+import edu.northwestern.at.utils.math.Polynomial;
 
 /**	Gaussian error function distribution functions.
  */

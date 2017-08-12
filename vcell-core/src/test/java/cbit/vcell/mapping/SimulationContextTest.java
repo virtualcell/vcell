@@ -1,10 +1,10 @@
 package cbit.vcell.mapping;
 
-import cbit.vcell.model.*;
-/*©
+import cbit.vcell.model.Feature;
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
