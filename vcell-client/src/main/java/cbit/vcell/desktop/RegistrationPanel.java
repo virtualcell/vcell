@@ -36,7 +36,7 @@ public class RegistrationPanel extends JPanel {
 	//http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm
 	public static final String[] COUNTRY_LIST = new String[] {
 		"UNITED STATES",
-		"AFGHANISTAN", "ÅLAND ISLANDS", "ALBANIA","ALGERIA","AMERICAN SAMOA",
+		"AFGHANISTAN", "ALBANIA","ALGERIA","AMERICAN SAMOA",
 		"ANDORRA","ANGOLA","ANGUILLA","ANTARCTICA","ANTIGUA AND BARBUDA",
 		"ARGENTINA","ARMENIA","ARUBA","AUSTRALIA","AUSTRIA",
 		"AZERBAIJAN","BAHAMAS","BAHRAIN","BANGLADESH","BARBADOS",

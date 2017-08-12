@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import javax.help.UnsupportedOperationException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.Description;

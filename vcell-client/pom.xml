@@ -14,11 +14,75 @@
 	<name>vcell-client</name>
 	<url>http://maven.apache.org</url>
 
+
+	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
+	<description>The Virtual Cell client and server</description>
+	<inceptionYear>1997</inceptionYear>
+	<organization>
+		<name>VCell</name>
+		<url>http://vcell.org</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>MIT</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<id>jcschaff</id>
+			<name>Jim Schaff</name>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>John Wagner</name>
+		</contributor>
+	</contributors>
+	<mailingLists>
+		<mailingList>
+			<name>VCell Open Discussion Forum</name>
+			<subscribe>https://groups.google.com/group/vcell-discuss</subscribe>
+			<unsubscribe>https://groups.google.com/group/vcell-discuss</unsubscribe>
+			<post>vcell-discuss@googlegroups.com</post>
+			<archive>https://groups.google.com/group/vcell-discuss</archive>
+		</mailingList>
+	</mailingLists>
+	<scm>
+		<connection>scm:git:git://github.com/scijava/pom-scijava-base</connection>
+		<developerConnection>scm:git:git@github.com:scijava/pom-scijava-base</developerConnection>
+		<tag>pom-scijava-base-3.0.0</tag>
+		<url>https://github.com/scijava/pom-scijava-base/</url>
+	</scm>
+	<issueManagement>
+		<system>Bugzilla</system>
+		<url>http://code3.cam.uchc.edu/bugzilla/</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://jenkins.vcell.org/job/vcell/</url>
+	</ciManagement>
+	<properties>
+		<license.licenseName>MIT</license.licenseName>
+		<license.copyrightOwners>UConn Health</license.copyrightOwners>
+	</properties>
+
+
+
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		
@@ -28,6 +92,17 @@
 			<artifactId>vcell-core</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-math</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-util</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/javax.media/jmf -->
 		<dependency>
 			<groupId>javax.media</groupId>

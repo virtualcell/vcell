@@ -4,12 +4,12 @@
 	<artifactId>vcell-pom</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
-<!-- 	<parent>
+ 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
 		<version>14.0.0</version>
 	</parent>
- -->	<name>Virtual Cell Project</name>
+	<name>Virtual Cell Project</name>
 	<url>http://vcell.org/</url>
 	<description>The Virtual Cell client and server</description>
 	<inceptionYear>1997</inceptionYear>
@@ -67,10 +67,11 @@
 		<url>http://jenkins.vcell.org/job/vcell/</url>
 	</ciManagement>
 	<properties>
-		<enforcer.skip>true</enforcer.skip>
-		<vcell.version>0.0.1-SNAPSHOT</vcell.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-	    <maven.compiler.target>1.8</maven.compiler.target>
+		<enforcer.skip>false</enforcer.skip>
+
+		<license.licenseName>MIT</license.licenseName>
+		<license.copyrightOwners>UConn Health</license.copyrightOwners>
+
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- JUnit - http://junit.org/ -->
 		<junit.version>4.12</junit.version>

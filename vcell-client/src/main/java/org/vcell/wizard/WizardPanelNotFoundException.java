@@ -1,7 +1,7 @@
 package org.vcell.wizard;
 
 /**
- * Copyright © 2008, 2010 Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
+ * Copyright 2008, 2010 Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
 
