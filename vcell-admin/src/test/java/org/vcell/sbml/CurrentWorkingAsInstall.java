@@ -1,6 +1,8 @@
-package cbit.vcell.resource;
+package org.vcell.sbml;
 
 import org.vcell.util.logging.Logging;
+
+import cbit.vcell.resource.ResourceUtil;
 
 /**
  * base class to set current working directory as vcell.installDir, if not already set

@@ -129,7 +129,7 @@ public static final SBOTerm x_0000028 =
 			"SBO:0000150,SBO:0000326");
 public static final SBOTerm x_0000029 = 
 		SBOUtil.createTerm("SBO:0000029", "?", "Henri-Michaelis-Menten rate law", 
-			"First general rate equation for reactions involving enzymes, it was presented in Victor Henri. Lois Générales de l'Action des Diastases. Paris, Hermann, 1903.. The reaction is assumed to be made of a reversible of the binding of the substrate to the enzyme, followed by the breakdown of the complex generating the product. Ten years after Henri, Michaelis and Menten presented a variant of his equation, based on the hypothesis that the dissociation rate of the substrate was much larger than the rate of the product generation. Leonor Michaelis, Maud Menten (1913). Die Kinetik der Invertinwirkung, Biochem. Z. 49:333-369.", 
+			"First general rate equation for reactions involving enzymes, it was presented in Victor Henri. Lois G?n?rales de l'Action des Diastases. Paris, Hermann, 1903.. The reaction is assumed to be made of a reversible of the binding of the substrate to the enzyme, followed by the breakdown of the complex generating the product. Ten years after Henri, Michaelis and Menten presented a variant of his equation, based on the hypothesis that the dissociation rate of the substrate was much larger than the rate of the product generation. Leonor Michaelis, Maud Menten (1913). Die Kinetik der Invertinwirkung, Biochem. Z. 49:333-369.", 
 			"SBO:0000028");
 public static final SBOTerm x_0000030 = 
 		SBOUtil.createTerm("SBO:0000030", "?", "Van Slyke-Cullen rate law", 
@@ -853,7 +853,7 @@ public static final SBOTerm x_0000207 =
 			"SBO:0000020");
 public static final SBOTerm x_0000208 = 
 		SBOUtil.createTerm("SBO:0000208", "?", "acid-base reaction", 
-			"Chemical reaction where a proton is given by a compound, the acid, to another one, the base (Brønsted-Lowry definition). An alternative, more general, definition is a reaction where a compound, the base, gives a pair of electrons to another, the acid (Lewis definition).", 
+			"Chemical reaction where a proton is given by a compound, the acid, to another one, the base (Bronsted-Lowry definition). An alternative, more general, definition is a reaction where a compound, the base, gives a pair of electrons to another, the acid (Lewis definition).", 
 			"SBO:0000176");
 public static final SBOTerm x_0000209 = 
 		SBOUtil.createTerm("SBO:0000209", "?", "ionisation", 
@@ -1229,7 +1229,7 @@ public static final SBOTerm x_0000303 =
 			"SBO:0000308");
 public static final SBOTerm x_0000304 = 
 		SBOUtil.createTerm("SBO:0000304", "potential of hydrogen", "pH", 
-			"Negative logarithm (base 10) of the activity of hydrogen in a solution. Ina diluted solution, this activity is equal to the concentration of protons (in fact of ions H3O+). The pH is proportional to the chemical potential of hydrogen, by the relation: pH = -µH ÷ 2.3RT. (with µH=-RTln[H+]).", 
+			"Negative logarithm (base 10) of the activity of hydrogen in a solution. Ina diluted solution, this activity is equal to the concentration of protons (in fact of ions H3O+). The pH is proportional to the chemical potential of hydrogen, by the relation: pH = -?H ? 2.3RT. (with ?H=-RTln[H+]).", 
 			"SBO:0000303");
 public static final SBOTerm x_0000305 = 
 		SBOUtil.createTerm("SBO:0000305", "?", "pOH", 
@@ -1973,7 +1973,7 @@ public static final SBOTerm x_0000490 =
 			"SBO:0000188");
 public static final SBOTerm x_0000491 = 
 		SBOUtil.createTerm("SBO:0000491", "diffusivity", "diffusion coefficient", 
-			"A proportionality constant representing the amount of substance diffusing across a unit area through a unit concentration gradient in unit time. The higher the diffusion coefficient (of one substance with respect to another), the faster they diffuse into each other. This coefficient has an SI unit of m²/s (length²/time).", 
+			"A proportionality constant representing the amount of substance diffusing across a unit area through a unit concentration gradient in unit time. The higher the diffusion coefficient (of one substance with respect to another), the faster they diffuse into each other. This coefficient has an SI unit of m2/s (length2/time).", 
 			"SBO:0000009");
 public static final SBOTerm x_0000492 = 
 		SBOUtil.createTerm("SBO:0000492", "?", "amplitude", 

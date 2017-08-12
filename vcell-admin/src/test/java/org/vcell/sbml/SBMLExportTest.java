@@ -21,7 +21,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.message.server.console.LoginChecker;
 import cbit.vcell.message.server.console.LoginChecker.SiteInfo;
-import cbit.vcell.resource.CurrentWorkingAsInstall;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;

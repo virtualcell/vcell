@@ -30,7 +30,6 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.BioModelVisitor;
-import cbit.vcell.model.VCMultiBioVisitor;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;

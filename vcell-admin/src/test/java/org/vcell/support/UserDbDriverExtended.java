@@ -1,4 +1,4 @@
-package cbit.vcell.modeldb;
+package org.vcell.support;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -10,6 +10,9 @@ import java.util.List;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+
+import cbit.vcell.modeldb.UserDbDriver;
+import cbit.vcell.modeldb.UserTable;
 
 public class UserDbDriverExtended extends UserDbDriver {
 

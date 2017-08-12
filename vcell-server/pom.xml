@@ -95,9 +95,15 @@
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
+			<artifactId>vcell-math</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
 			<artifactId>vcell-util</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		
 		
 		<dependency>
 			<groupId>org.apache.activemq</groupId>

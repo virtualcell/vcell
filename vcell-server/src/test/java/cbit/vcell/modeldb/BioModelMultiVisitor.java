@@ -1,4 +1,4 @@
-package cbit.vcell.model;
+package cbit.vcell.modeldb;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -15,11 +15,9 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.modeldb.VCDatabaseScanner;
-import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.resource.PropertyLoader;
 
-public class BioModelTestReader implements VCDatabaseVisitor {
+public class BioModelMultiVisitor implements VCDatabaseVisitor {
 	/**
 	 * user key to use for tests
 	 */
@@ -75,7 +73,7 @@ public class BioModelTestReader implements VCDatabaseVisitor {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		BioModelTestReader visitor = new BioModelTestReader();
+		BioModelMultiVisitor visitor = new BioModelMultiVisitor();
 		boolean bAbortOnDataAccessException = false;
 		try{
 			VCDatabaseScanner.scanBioModels(args, visitor, bAbortOnDataAccessException);
@@ -91,7 +89,7 @@ public class BioModelTestReader implements VCDatabaseVisitor {
 	public void tryit( ) throws IOException {
 		PropertyLoader.loadProperties();
 		String args[] = {USER_KEY,OUTPUT};
-		BioModelTestReader visitor = new BioModelTestReader();
+		BioModelMultiVisitor visitor = new BioModelMultiVisitor();
 		boolean bAbortOnDataAccessException = false;
 		try{
 			VCDatabaseScanner.scanBioModels(args, visitor, bAbortOnDataAccessException);

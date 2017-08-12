@@ -1,4 +1,4 @@
-package cbit.vcell.model;
+package cbit.vcell.modeldb;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,7 +12,6 @@ import org.vcell.util.document.User;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.solver.Simulation;
 
 public class HybridBioModelVisitor extends VisitorAdapter implements VCMultiBioVisitor { 

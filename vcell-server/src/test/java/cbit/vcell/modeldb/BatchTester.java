@@ -26,7 +26,6 @@ import org.vcell.util.document.User;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.VCMultiBioVisitor;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlParseException;

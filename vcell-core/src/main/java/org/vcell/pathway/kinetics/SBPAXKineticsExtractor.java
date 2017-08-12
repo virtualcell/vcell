@@ -528,7 +528,7 @@ public enum MappedKinetics {
 	public static final SBOParam x_0000484 = 
 		createEntry("SBO:0000484", "reverse geometric mean rate constant", Kinetics.ROLE_KReverse);
 	public static final SBOParam x_0000491 = 
-		createEntry("SBO:0000491", "diffusion coefficient", Kinetics.ROLE_Concentration_Reactant1);	// the amount of substance diffusing across a unit area through a unit concentration gradient in unit time. The higher the diffusion coefficient (of one substance with respect to another), the faster they diffuse into each other. This coefficient has an SI unit of m²/s (length²/time) 
+		createEntry("SBO:0000491", "diffusion coefficient", Kinetics.ROLE_Concentration_Reactant1);	// the amount of substance diffusing across a unit area through a unit concentration gradient in unit time. The higher the diffusion coefficient (of one substance with respect to another), the faster they diffuse into each other. This coefficient has an SI unit of m2/s (length2/time) 
 	public static final SBOParam x_0000538 = 
 		createEntry("SBO:0000538", "ionic permeability", Kinetics.ROLE_Permeability);			// the permeability of an ion channel with respect to a particular ion 
 

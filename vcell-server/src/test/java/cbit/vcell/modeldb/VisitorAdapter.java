@@ -1,4 +1,4 @@
-package cbit.vcell.model;
+package cbit.vcell.modeldb;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.Logging;
 
-import cbit.vcell.modeldb.VCDatabaseScanner;
+import cbit.vcell.model.BioModelVisitor;
 import cbit.vcell.resource.PropertyLoader;
 
 /**

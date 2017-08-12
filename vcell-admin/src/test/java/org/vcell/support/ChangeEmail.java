@@ -24,7 +24,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
-import cbit.vcell.modeldb.UserDbDriverExtended;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import net.miginfocom.swing.MigLayout;

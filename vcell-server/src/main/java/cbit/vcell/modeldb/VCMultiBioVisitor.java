@@ -1,4 +1,4 @@
-package cbit.vcell.model;
+package cbit.vcell.modeldb;
 
 import java.io.PrintWriter;
 

@@ -1,4 +1,4 @@
-package cbit.vcell.util;
+package org.vcell.sbml.test;
 
 import java.io.IOException;
 import java.io.Writer;
