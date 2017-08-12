@@ -81,6 +81,12 @@
 		    <artifactId>mongo-java-driver</artifactId>
 		    <version>3.4.2</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/commons-discovery/commons-discovery -->
+		<dependency>
+		    <groupId>commons-discovery</groupId>
+		    <artifactId>commons-discovery</artifactId>
+		    <version>0.5</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
@@ -201,6 +207,12 @@
 			<groupId>org.apache.axis</groupId>
 			<artifactId>axis</artifactId>
 			<version>1.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/axis/axis-wsdl4j -->
+		<dependency>
+		    <groupId>axis</groupId>
+		    <artifactId>axis-wsdl4j</artifactId>
+		    <version>1.2</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/colt/colt -->
 		<dependency>

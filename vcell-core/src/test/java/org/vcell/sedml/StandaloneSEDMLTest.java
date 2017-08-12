@@ -1,6 +1,5 @@
 package org.vcell.sedml;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -28,8 +27,7 @@ import org.jlibsedml.modelsupport.URLResourceRetriever;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 
-import cbit.util.xml.TranslationLogger;
-import cbit.util.xml.TranslationLogger.Message;
+import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
@@ -71,19 +69,22 @@ public class StandaloneSEDMLTest {
 	};
 
 	
-    static TranslationLogger transLogger = new TranslationLogger((Component)null){
-    	@Override
-    	public void sendAllMessages(){
-    		if (!messages.isEmpty()) {
-    			StringBuilder messageBuf = new StringBuilder("The translation process has encountered the following problem(s):\n ");
-    			//"which can affect the quality of the translation:\n");
-    			int i = 0;
-    			for (Message m : messages) {
-    				messageBuf.append(++i +") " + m.message + "\n");
-    			}
-    			System.err.println(messageBuf.toString());
-    		}
-    	}
+    static VCLogger transLogger = new VCLogger() {
+    	
+        @Override
+		public void sendMessage(Priority p, ErrorType et, String message) {
+            System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
+            if (p == VCLogger.Priority.HighPriority) {
+            	throw new RuntimeException("Import failed : " + message);
+            }
+        }
+        @Override
+        public void sendAllMessages() {
+        }
+        @Override
+        public boolean hasMessages() {
+            return false;
+        }
     };
     	
 
