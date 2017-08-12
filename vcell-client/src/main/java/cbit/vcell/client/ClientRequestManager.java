@@ -134,6 +134,7 @@ import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportEvent.AnnotatedExportEvent;
+import cbit.util.xml.TranslationLogger;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;

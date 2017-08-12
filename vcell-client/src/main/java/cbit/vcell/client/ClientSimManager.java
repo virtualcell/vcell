@@ -30,11 +30,8 @@ import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
-import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.vis.io.VtuVarInfo;
 
@@ -74,12 +71,12 @@ import cbit.vcell.simdata.VtkManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
+import cbit.vcell.solver.TempSimulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -624,30 +621,6 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 	tasks.add(pv);
 	ClientTaskDispatcher.dispatchColl(documentWindowManager.getComponent(), new Hashtable<String, Object>(), tasks, false, true, null);
 }
-
-@SuppressWarnings("serial") 
-public static class TempSimulation extends Simulation {
-	final private SimulationVersion tempSimVersion = SimulationVersion.createTempSimulationVersion();
-	public TempSimulation(Simulation simulation, boolean bCloneMath) {
-		super(simulation, bCloneMath);
-	}
-
-	@Override
-	public Version getVersion() {
-		return tempSimVersion;
-	}
-
-	@Override
-	public String getSimulationID() {
-		return createSimulationID(tempSimVersion.getVersionKey());
-	}
-
-	@Override
-	public SimulationInfo getSimulationInfo() {
-		return new SimulationInfo(null, tempSimVersion, VCellSoftwareVersion.fromSystemProperty());
-	}
-}
-
 
 public void runQuickSimulation(final Simulation originalSimulation, ViewerType viewerType) {
 	Collection<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();

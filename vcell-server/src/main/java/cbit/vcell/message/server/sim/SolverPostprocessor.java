@@ -40,9 +40,9 @@ import cbit.vcell.resource.OperatingSystemInfo.OsType;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.PortableCommand;
+import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
-import cbit.vcell.tools.PortableCommandWrapper;
 import cbit.vcell.util.NativeLoader;
 /**
  * Insert the type's description here.

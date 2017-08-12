@@ -1,4 +1,4 @@
-package cbit.vcell.tools;
+package cbit.vcell.simdata;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,8 +13,6 @@ import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import cbit.vcell.simdata.PortableCommand;
 
 /**
  * class to package arbitrary {@link PortableCommand} into JSON

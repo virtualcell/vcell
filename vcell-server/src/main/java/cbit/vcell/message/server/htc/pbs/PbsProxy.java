@@ -26,8 +26,8 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.simdata.PortableCommand;
+import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.solvers.ExecutableCommand;
-import cbit.vcell.tools.PortableCommandWrapper;
 
 public final class PbsProxy extends HtcProxy {
 	private static final int QDEL_JOB_NOT_FOUND_RETURN_CODE = 153;

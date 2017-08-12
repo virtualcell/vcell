@@ -53,10 +53,10 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.ConsoleCapture;
 import org.vcell.util.logging.Logging;
 
+import cbit.util.xml.TranslationLogger;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.data.VCellClientDataServiceImpl;
 import cbit.vcell.client.desktop.DocumentWindow;

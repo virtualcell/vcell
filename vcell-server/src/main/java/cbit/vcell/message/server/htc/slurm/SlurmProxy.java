@@ -23,8 +23,8 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.simdata.PortableCommand;
+import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.solvers.ExecutableCommand;
-import cbit.vcell.tools.PortableCommandWrapper;
 import edu.uchc.connjur.wb.LineStringBuilder;
 
 public class SlurmProxy extends HtcProxy {

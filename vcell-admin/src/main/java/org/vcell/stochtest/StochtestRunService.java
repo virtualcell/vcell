@@ -42,6 +42,7 @@ import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.TempSimulation;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.server.Solver;
@@ -294,7 +295,7 @@ public class StochtestRunService {
 //				progress++;
 //			}
 			try{
-				versSimulation = new ClientSimManager.TempSimulation(newSimulation, false);
+				versSimulation = new TempSimulation(newSimulation, false);
 //				printout(ruleBasedTestDir.getAbsolutePath());
 				destDir = new File(baseDirectory,timeSeriesMultitrialData.datasetName);
 				SimulationTask simTask = new SimulationTask(new SimulationJob(versSimulation, 0, null),0);
