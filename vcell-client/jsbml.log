@@ -1,0 +1,3 @@
+2017-08-12 02:55:35,138 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-08-12 02:55:35,147 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-08-12 02:55:37,886 ERROR o.v.c.l.LWNamespace [AWT-EventQueue-0] top level object DocumentWindow does not implement ChildWindowManager$ManagedChild

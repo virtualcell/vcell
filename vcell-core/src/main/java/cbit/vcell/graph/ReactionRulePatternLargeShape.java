@@ -14,7 +14,6 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.graph.LargeShapeCanvas.DisplayMode;
-import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;

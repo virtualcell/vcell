@@ -160,7 +160,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		OperatingSystemInfo.getInstance();
 
 		if (args.length != 3 && args.length != 6) {
-			System.out.println("Missing arguments: " + VCellServices.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE|SLURM) [pbshost userid pswd] ");
+			System.out.println("Missing arguments: " + VCellServices.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE|SLURM) [pbshost userid ssh_dsaKeyFile] ");
 			System.exit(1);
 		}
 
