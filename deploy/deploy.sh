@@ -531,7 +531,6 @@ else
 	echo "installing scripts to configs (1/8)"
 	cp -p $stagingConfigsDir/*		$pathto_ConfigsDir
 	echo "installing jar files (2/8)"
-	cp -p $stagingJarsDir/vcell-0.0.1-SNAPSHOT.jar $pathto_JarsDir
 	cp -p $stagingJarsDir/*			$pathto_JarsDir
 	echo "installing nativelibs (3/8)"
 	cp -p $stagingNativelibsDir/*	$pathto_NativelibsDir

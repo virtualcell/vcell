@@ -99,11 +99,11 @@
   
 	<repositories>
 		<!-- needed for org.sbml.jsbml -->
-		<repository>
+		<!-- <repository>
 		  <id>JSBML-SNAPSHOT</id>
 		  <name>The JSBML Snapshot repository</name>
 		  <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-		</repository>
+		</repository> -->
 		<!-- needed for javax.media.jai -->
 		<repository>
 			<id>com.springsource.repository.bundles.external</id>
