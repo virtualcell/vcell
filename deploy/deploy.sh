@@ -200,6 +200,7 @@ echo "i4j_pathto_jreDir=$vcell_I4J_pathto_jreDir"					>> $install4jDeploySetting
 echo "i4j_pathto_secretsDir=$vcell_I4J_pathto_secretsDir"			>> $install4jDeploySettings
 echo "install_jres_into_user_home=$vcell_I4J_install_jres_into_user_home"	>> $install4jDeploySettings
 echo "i4j_pathto_install4JFile=$vcell_I4J_pathto_installerFile"		>> $install4jDeploySettings
+echo "i4j_pathto_mavenRootDir=$vcell_I4J_pathto_mavenRootDir"		>> $install4jDeploySettings
 
 if [ "$skip_install4j" = false ]; then
 	cd $deployInstall4jDir

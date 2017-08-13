@@ -25,7 +25,7 @@ fi
 . $secretsFile
 
 
-cd /vagrant_maven
+cd $i4j_pathto_mavenRootDir
 
 if [ "$install_jres_into_user_home" = true ]; then
 	mkdir -p $HOME/.install4j6/jres
