@@ -29,9 +29,8 @@ adminJarsDir=$adminTargetDir/maven-jars
 clientTargetDir=$projectRootDir/vcell-client/target
 clientJarsDir=$clientTargetDir/maven-jars
 
-skip_install4j=true
-skip_build=true
-skip_genKey=false
+skip_install4j=false
+skip_build=false
 
 #
 # building the project
