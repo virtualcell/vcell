@@ -10,8 +10,8 @@ vcell_server_os="linux64"
 vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
 vcell_site_upper=`echo $_site | tr '[:lower:]' '[:upper:]'`
 vcell_site_camel="${vcell_site_upper:0:1}${vcell_site_lower:1:100}"
-vcell_version=$_version
-vcell_build=%_build
+vcell_version=${_version}
+vcell_build=${_build}
 vcell_softwareVersionString="${vcell_site_camel}_Version_${vcell_version}_build_${vcell_build}"
 unset _site
 unset _version
@@ -87,6 +87,7 @@ vcell_I4J_pathto_secretsDir=/vagrant_keys
 
 vcell_I4J_use_vagrant=true
 vcell_I4J_install_jres_into_user_home=true
+vcell_I4J_updateSiteBaseUrl=http://vcell.org/webstart/$vcell_site_camel
 vcell_I4J_pathto_installerFile="/vagrant/VCell.install4j"
 vcell_I4J_pathto_mavenRootDir="/vagrant_maven"
 vcell_I4J_pathto_vcellIcnsFile="/vagrant/icons/vcell.icns"

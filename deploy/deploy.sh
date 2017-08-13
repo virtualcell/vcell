@@ -32,21 +32,41 @@ clientJarsDir=$clientTargetDir/maven-jars
 skip_install4j=false
 skip_build=false
 
-#
-# building the project
-#
+#--------------------------------------------------------------------------
+# build project, generate user help files, gather jar files
+# 1) maven build (maven clean verify)
+# 2) gather jar files needed by DocumentCompiler (maven dependency plugin)
+# 3) generate user help files (run DocumentCompiler)
+# 4) maven build (mvn clean verify ... puts help files into jar resources)
+#---------------------------------------------------------------------------
 if [ "$skip_build" = false ]; then
 	cd $projectRootDir
 	echo "removing old docs"
 	rm -r $projectRootDir/vcell-client/src/main/resources/vcellDocs
 	echo "build vcell"
-	mvn verify
-	echo "populate maven-jars"
+	mvn clean verify
+	if [ $? -ne 0 ]; then
+		echo "failed first maven build: mvn clean verify"
+		exit -1
+	fi
+	echo "populate maven-jars (first time, needed by DocumentCompiler)"
 	mvn dependency:copy-dependencies
+	if [ $? -ne 0 ]; then
+		echo "failed: mvn dependency:copy-dependencies"
+		exit -1
+	fi
 	echo "run document compiler"
 	java -cp $clientTargetDir/maven-jars/*:$clientTargetDir/* org.vcell.documentation.DocumentCompiler
+	if [ $? -ne 0 ]; then
+		echo "failed to build user help: DocumentCompiler"
+		exit -1
+	fi
 	echo "force rebuild to pick up new resources - the help files"
 	mvn clean verify
+	if [ $? -ne 0 ]; then
+		echo "failed second maven build: mvn clean verify"
+		exit -1
+	fi
 fi
 
 deployRootDir=$DIR
@@ -131,20 +151,16 @@ installedVisitExe=/share/apps/vcell2/visit/visit2.9/visit2_9_0.linux-x86_64/bin/
 installedPython=/share/apps/vcell2/vtk/usr/bin/vcellvtkpython
 
 #--------------------------------------------------------------
-# build maven
+# gather jar files using maven dependency plugin
 #--------------------------------------------------------------
 cd $projectRootDir
-#mvn verify
-#if [ $? -ne 0 ]; then
-#	echo "maven build failed"
-#	exit -1
-#fi
+echo "populate maven-jars"
 mvn dependency:copy-dependencies
 if [ $? -ne 0 ]; then
-	echo "failed to fetch jar files into target/maven-jars"
+	echo "failed: mvn dependency:copy-dependencies"
 	exit -1
 fi
-
+	
 #---------------------------------------------------------------
 # build install4j platform specific installers for VCell client
 # 
@@ -168,6 +184,7 @@ fi
 touch $install4jDeploySettings
 
 echo "i4j_pathto_install4jc=$vcell_I4J_pathto_install4jc"			>> $install4jDeploySettings
+echo "compiler_updateSiteBaseUrl=$vcell_I4J_updateSiteBaseUrl"		>> $install4jDeploySettings
 echo "compiler_vcellIcnsFile=$vcell_I4J_pathto_vcellIcnsFile"		>> $install4jDeploySettings
 echo "compiler_mavenRootDir=$vcell_I4J_pathto_mavenRootDir"			>> $install4jDeploySettings
 echo "compiler_softwareVersionString=$vcell_softwareVersionString"	>> $install4jDeploySettings
@@ -177,7 +194,7 @@ echo "compiler_vcellBuild=$vcell_build"								>> $install4jDeploySettings
 echo "compiler_rmiHosts=$vcell_rmihosts"							>> $install4jDeploySettings
 echo "compiler_bioformatsJarFile=$vcell_bioformatsJarFile"			>> $install4jDeploySettings
 echo "compiler_bioformatsJarDownloadURL=$vcell_bioformatsJarDownloadURL" >> $install4jDeploySettings
-echo "compiler_vcellClientJarFilePath= >> $I4J_pathto_vcellClientJar"		>> $install4jDeploySettings
+echo "compiler_vcellClientJarFilePath=$I4J_pathto_vcellClientJar"	>> $install4jDeploySettings
 echo "compiler_applicationId=$vcell_applicationId"					>> $install4jDeploySettings
 echo "i4j_pathto_jreDir=$vcell_I4J_pathto_jreDir"					>> $install4jDeploySettings
 echo "i4j_pathto_secretsDir=$vcell_I4J_pathto_secretsDir"			>> $install4jDeploySettings

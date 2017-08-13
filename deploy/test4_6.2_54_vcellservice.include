@@ -10,8 +10,8 @@ vcell_server_os="linux64"
 vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
 vcell_site_upper=`echo $_site | tr '[:lower:]' '[:upper:]'`
 vcell_site_camel="${vcell_site_upper:0:1}${vcell_site_lower:1:100}"
-vcell_version=$_version
-vcell_build=%_build
+vcell_version=${_version}
+vcell_build=${_build}
 vcell_softwareVersionString="${vcell_site_camel}_Version_${vcell_version}_build_${vcell_build}"
 unset _site
 unset _version
@@ -86,6 +86,7 @@ vcell_I4J_pathto_secretsDir=/usr/local/deploy
 
 vcell_I4J_use_vagrant=false
 vcell_I4J_install_jres_into_user_home=false
+vcell_I4J_updateSiteBaseUrl=http://vcell.org/webstart/$vcell_site_camel
 vcell_I4J_pathto_installerFile=$HOME/build/VCell/deploy/client/install4j/VCell.install4j
 vcell_I4J_pathto_mavenRootDir=$HOME/build/VCell
 vcell_I4J_pathto_vcellIcnsFile=$HOME/build/VCell/deploy/client/install4j/icons/vcell.icns

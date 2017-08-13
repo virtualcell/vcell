@@ -12,6 +12,7 @@
       <envVar name="JDK_HOME" />
     </searchSequence>
     <variables>
+      <variable name="updateSiteBaseUrl" value="NO-UPDATE-SITE" description="" category="" />
       <variable name="vcellIcnsFile" value="NO-ICNS-FILE" description="" category="" />
       <variable name="mavenRootDir" value="NO-MAVEN-ROOTDIR" description="" category="" />
       <variable name="Site" value="NO-SITE" description="" category="" />
@@ -391,7 +392,7 @@
       </iconImageFiles>
     </launcher>
   </launchers>
-  <installerGui installerType="1" addOnAppId="" suggestPreviousLocations="true" autoUpdateDescriptorUrl="http://vcell.org/webstart/${compiler:Site}/updates.xml" useAutoUpdateBaseUrl="true" autoUpdateBaseUrl="http://vcell.org/webstart/${compiler:Site}/">
+  <installerGui installerType="1" addOnAppId="" suggestPreviousLocations="true" autoUpdateDescriptorUrl="${compiler:updateSiteBaseUrl}/updates.xml" useAutoUpdateBaseUrl="true" autoUpdateBaseUrl="${compiler:updateSiteBaseUrl}/">
     <staticMembers script="" />
     <customCode />
     <autoUpdate useMinUpdatableVersion="false" minUpdatableVersion="" useMaxUpdatableVersion="false" maxUpdatableVersion="">

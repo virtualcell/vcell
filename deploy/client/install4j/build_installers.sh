@@ -53,6 +53,7 @@ SoftwareVersionString=$compiler_softwareVersionString,\
 Site=$compiler_Site,\
 vcellVersion=$compiler_vcellVersion,\
 vcellBuild=$compiler_vcellBuild,\
+updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
 vcellClientJarFileSourcePath=$compiler_vcellClientJarFilePath,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
