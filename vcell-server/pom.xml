@@ -6,9 +6,12 @@
   		<groupId>org.vcell</groupId>
   		<artifactId>vcell-pom</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
+  		<relativePath>../pom.xml</relativePath>
   	</parent>
 
+	<groupId>org.vcell</groupId>
 	<artifactId>vcell-server</artifactId>
+  	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>vcell-server</name>
