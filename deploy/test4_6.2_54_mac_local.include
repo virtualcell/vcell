@@ -22,13 +22,15 @@ vcell_server_sitedir="/Users/schaff/Documents/workspace-modular/VCell_6.2_mod/de
 # mount /share/apps/vcell2/deployed as cfs02.cam.uchc.edu/raid resulting in /Volumes/raid/vcell/deployed
 vcell_pathto_sitedir="/Users/schaff/Documents/workspace-modular/VCell_6.2_mod/deploy/sandbox/$vcell_site_lower"
 
-vcell_servicehost="localhost"
-vcell_apihost="localhost"
+vcell_user="schaff"
+_localhost="jamess-macbook-pro-2.local"
+vcell_servicehost=$_localhost
+vcell_apihost=$_localhost
 
-vcell_rmihost="localhost"
+vcell_rmihost=$_localhost
 vcell_rmiport_low=-1
 vcell_rmiport_high=40109
-vcell_rmihosts="localhost:40109"
+vcell_rmihosts="$_localhost:40109"
 vcell_bioformatsJarFile="bioformats_TEST4_6_2_54.jar"
 vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vcell_bioformatsJarFile"
 

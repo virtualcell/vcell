@@ -20,7 +20,11 @@ unset _build
 vcell_applicationId="1471-8022-1038-5558"
 vcell_server_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
 vcell_pathto_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
+
+vcell_user="vcell"
 vcell_servicehost="vcell-service.cam.uchc.edu"
+vcell_apihost="vcellapi.cam.uchc.edu"
+
 vcell_rmihost="vcell-rmi-alpha.cam.uchc.edu"
 vcell_rmiport_low=-1
 vcell_rmiport_high=40109
@@ -28,7 +32,9 @@ vcell_rmihosts="vcell-rmi-alpha.cam.uchc.edu:40109"
 vcell_bioformatsJarFile="bioformats_TEST4_6_2_54.jar"
 vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vcell_bioformatsJarFile"
 
-vcell_vcellAllJarFileName="vcell-0.0.1-SNAPSHOT.jar"
+vcell_vcellClientJarFileName="vcell-client-0.0.1-SNAPSHOT.jar"
+vcell_vcellServerJarFileName="vcell-server-0.0.1-SNAPSHOT.jar"
+vcell_vcellApiJarFileName="vcell-api-0.0.1-SNAPSHOT.jar"
 
 vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
 vcell_jms_user=clientUser

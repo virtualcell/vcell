@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+
+DIR=${0%/*}
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. $DIR/vcell.include
+
+shopt -s -o nounset
+
+SSH_OPT='-o ConnectTimeout=10'
+
+absDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+local_vcellstop="$absDir/vcellstop_local"
+local_vcellservice="$absDir/vcellservice"
+local_vcellbootstrap_high="$absDir/vcellbootstrap_high"
+echo ""
+echo "===== INSTRUCTIONS TO START VCELL ================"
+echo ""
+echo "1) FIRST ... STOP vcell services on all hosts"
+echo ""
+echo "ssh $SSH_OPT $vcellservice_host '${absDir}/vcellstop_local'"
+echo "ssh $SSH_OPT $bootstrap_host '${absDir}/vcellstop_local'"
+echo "ssh $SSH_OPT $vcellapi_host '${absDir}/vcellstop_local'"
+echo ""
+echo "2) THEN ... START each vcell service on the appropriate host"
+echo ""
+echo "ssh $SSH_OPT $vcellservice_host '${absDir}/vcellservice'"
+echo "ssh $SSH_OPT $bootstrap_host '${absDir}/vcellboostrap_high'"
+
+if [ "$bootstrap_http_rmiport" -ne -1 ]; then
+echo "ssh $SSH_OPT $bootstrap_host '${absDir}/vcellboostrap_http'"
+fi
+
+echo "ssh $SSH_OPT $vcellapi_host '${absDir}/vcellapi'"
+echo ""

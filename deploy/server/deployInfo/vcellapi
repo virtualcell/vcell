@@ -15,7 +15,7 @@ shopt -s -o nounset
 #
 # Process label for identifying service from ps -ef output
 #
-procLabel="-DprocessLabel=${common_site}-vcellapi"
+procLabel="-DprocessLabel=$vcellapi_processLabel"
 
 #
 # Java Management Extensions

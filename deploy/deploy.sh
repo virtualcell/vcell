@@ -274,6 +274,8 @@ sed_in_place "s+GENERATED-JARS+$installedJarsDir/*+g"						$stagingVCellInclude
 sed_in_place "s+GENERATED-API-ROOTDIR+$installed_server_sitedir+g"			$stagingVCellInclude
 sed_in_place "s+GENERATED-APIKEYSTORE-PATH+$vcell_secrets_tlsKeystore_path+g"	$stagingVCellInclude
 sed_in_place "s/GENERATED-APIKEYSTORE-PSWD/$vcell_secrets_tlsKeystore_pswd/g"	$stagingVCellInclude
+sed_in_place "s/GENERATED-APIHOST/$vcell_apihost/g"							$stagingVCellInclude
+sed_in_place "s/GENERATED-VCELLUSER/$vcell_user/g"							$stagingVCellInclude
 
 sed_in_place "s/GENERATED-HTC-USESSH/$vcell_htc_usessh/g"					$stagingVCellInclude
 if [ "$vcell_htc_usessh" = true ]; then
@@ -475,6 +477,10 @@ then
 	cp -p $stagingInstallersDir/*	$installedInstallersDir
 	cp -p -R $apiDocrootDir/*		$installedDocrootDir
 	cp -p -R $apiWebappDir/*		$installedWebappDir
+	# set execute permissions on scripts
+	pushd $installedConfigsDir
+	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
+	popd
 else
 	#
 	# remote filesystem
@@ -519,5 +525,9 @@ else
 	cp -p -R $apiDocrootDir/*		$pathto_DocrootDir
 	echo "installing vcellapi webapp dir to server (8/8)"
 	cp -p -R $apiWebappDir/*		$pathto_WebappDir
+	# set execute permissions on scripts
+	pushd $pathto_ConfigsDir
+	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
+	popd
 	echo "done with installation"
 fi

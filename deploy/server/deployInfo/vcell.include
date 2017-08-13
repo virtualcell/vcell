@@ -35,7 +35,7 @@ common_jre=GENERATED-COMMON-JRE
 
 # explicit path needed for setcap for rmi services to use port 80.
 common_jre_rmi=GENERATED-RMISERVICE-JRE
-
+common_vcell_user=GENERATED-VCELLUSER
 
 #--------------------------------------
 # common vcellapi definitions
@@ -43,7 +43,9 @@ common_jre_rmi=GENERATED-RMISERVICE-JRE
 vcellapi_root=GENERATED-API-ROOTDIR
 vcellapi_keystorepath=GENERATED-APIKEYSTORE-PATH
 vcellapi_keystorepswd=GENERATED-APIKEYSTORE-PSWD
+vcellapi_host=GENERATED-APIHOST
 vcellapi_javascriptdir="${vcellapi_root}/docroot"
+vcellapi_processLabel=${common_site}-api
 vcellapi_memoryGB=2
 
 #--------------------------------------
@@ -52,6 +54,7 @@ vcellapi_memoryGB=2
 #--------------------------------------
 bootstrap_mainclass=cbit.vcell.message.server.bootstrap.LocalVCellBootstrap
 bootstrap_policyfile=${common_siteCfgDir}/java.policy
+bootstrap_host=GENERATED-RMIHOST
 bootstrap_rmihost=GENERATED-RMIHOST
 bootstrap_jmxhost=${bootstrap_rmihost}
 bootstrap_memoryGB=1
@@ -74,6 +77,7 @@ bootstrap_high_processLabel=${common_site}-rmi-high
 # vcell service "vcellservice"
 #--------------------------------------
 vcellservice_mainclass=cbit.vcell.message.server.combined.VCellServices
+vcellservice_host=GENERATED-SERVICEHOST
 vcellservice_jmxhost=GENERATED-SERVICEHOST
 vcellservice_jmxport=GENERATED-VCELLSERVICE-JMXPORT
 vcellservice_processLabel=${common_site}-master

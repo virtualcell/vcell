@@ -7,27 +7,19 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 
 shopt -s -o nounset
 
-function killProcess() {
-	processLabel=$1
-	serviceName=$2
-	pid_cmd="ps x | grep $processLabel | grep java | cut -d ' ' -f1"
-	echo $pid_cmd
-	pid=`eval $pid_cmd`
-	if [ ! -z $pid ]; then
-		kill_cmd="kill -9 $pid"
-		`eval $kill_cmd`
-		echo "killed $serviceName (pid=$pid)"
-	else
-		echo "$serviceName with label $processLabel not found in process list"
-	fi
-}
+SSH_OPT='-o ConnectTimeout=10'
 
-#
-# vcellservice_pid=`jps -m | grep test4-master | grep -i VCellServices | cut -d ' ' -f1`
-#
-killProcess $vcellservice_processLabel "vcellservice"
-killProcess $bootstrap_high_processLabel "vcellbootstrap_high"
-if [ $bootstrap_http_rmiport -ne -1 ]; then
-	killProcess $bootstrap_http_processLabel "vcellbootstrap_http"
-fi
-#killProcess "alpha-vcellapi" "vcellapi"
+localscript="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/vcellstop_local"
+
+echo ""
+echo "===== INSTRUCTIONS TO STOP VCELL ================"
+echo ""
+
+echo "ssh $SSH_OPT $vcellservice_host '${localscript}'"
+#ssh $SSH_OPT $vcellservice_host '${localscript}'
+
+echo "ssh $SSH_OPT $bootstrap_host '${localscript}'"
+#ssh $SSH_OPT $bootstrap_host '${localscript}'
+
+echo "ssh $SSH_OPT $vcellapi_host '${localscript}'"
+#ssh $SSH_OPT $vcellapi_host '${localscript}'
