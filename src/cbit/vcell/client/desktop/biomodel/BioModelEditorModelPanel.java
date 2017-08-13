@@ -200,28 +200,28 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private ReactionCartoonEditorPanel reactionCartoonEditorPanel = null;
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
-	private ChangeListener changeListener = new ChangeListener() {
-		@Override
-		public void stateChanged(ChangeEvent e) {
-			final String prologue = "<html><b>";
-			final String epilogue = "</html></b>";
-			JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();		// sourceTabbedPane == this.tabbedPane
-			int numTabs = sourceTabbedPane.getTabCount();
-			for(int i = 0; i < numTabs; i++) {
-				String curTitle = sourceTabbedPane.getTitleAt(i);
-				if(curTitle.startsWith(prologue)) {
-					curTitle = curTitle.substring(prologue.length());
-					curTitle = curTitle.substring(0, curTitle.indexOf(epilogue));
-					tabbedPane.setTitleAt(i, curTitle);
-				}
-			}
-			int index = sourceTabbedPane.getSelectedIndex();
-			System.out.println("Tab changed to: " + sourceTabbedPane.getTitleAt(index));
-			String selectedTitle = sourceTabbedPane.getTitleAt(index);	// we know it's clean of prologue or epilogue
-			selectedTitle = prologue + selectedTitle + epilogue;
-			tabbedPane.setTitleAt(index, selectedTitle);
-		}
-	};
+//	private ChangeListener changeListener = new ChangeListener() {
+//		@Override
+//		public void stateChanged(ChangeEvent e) {
+//			final String prologue = "<html><b>";
+//			final String epilogue = "</html></b>";
+//			JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();		// sourceTabbedPane == this.tabbedPane
+//			int numTabs = sourceTabbedPane.getTabCount();
+//			for(int i = 0; i < numTabs; i++) {
+//				String curTitle = sourceTabbedPane.getTitleAt(i);
+//				if(curTitle.startsWith(prologue)) {
+//					curTitle = curTitle.substring(prologue.length());
+//					curTitle = curTitle.substring(0, curTitle.indexOf(epilogue));
+//					tabbedPane.setTitleAt(i, curTitle);
+//				}
+//			}
+//			int index = sourceTabbedPane.getSelectedIndex();
+//			System.out.println("Tab changed to: " + sourceTabbedPane.getTitleAt(index));
+//			String selectedTitle = sourceTabbedPane.getTitleAt(index);	// we know it's clean of prologue or epilogue
+//			selectedTitle = prologue + selectedTitle + epilogue;
+//			tabbedPane.setTitleAt(index, selectedTitle);
+//		}
+//	};
 
 	private JPanel buttonPanel;
 	private PhysiologyRelationshipPanel relationshipPanel;
@@ -675,7 +675,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			tab.getComponent().setBorder(GuiConstants.TAB_PANEL_BORDER);
 			tabbedPane.addTab(tab.getName(), tab.getIcon(), tab.getComponent());
 		}
-		tabbedPane.addChangeListener(changeListener);
+//		tabbedPane.addChangeListener(changeListener);
 		
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);
