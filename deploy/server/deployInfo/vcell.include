@@ -36,6 +36,16 @@ common_jre=GENERATED-COMMON-JRE
 # explicit path needed for setcap for rmi services to use port 80.
 common_jre_rmi=GENERATED-RMISERVICE-JRE
 
+
+#--------------------------------------
+# common vcellapi definitions
+#--------------------------------------
+vcellapi_root=GENERATED-API-ROOTDIR
+vcellapi_keystorepath=GENERATED-APIKEYSTORE-PATH
+vcellapi_keystorepswd=GENERATED-APIKEYSTORE-PSWD
+vcellapi_javascriptdir="${vcellapi_root}/docroot"
+vcellapi_memoryGB=2
+
 #--------------------------------------
 # rmi bootstrap services (http port, high port)
 #    common definitions

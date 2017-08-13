@@ -20,13 +20,13 @@
       <variable name="SoftwareVersionString" value="NO-SOFTWARE-VERSION-STRING" description="" category="" />
       <variable name="vcellVersion" value="NO-VERSION" description="" category="" />
       <variable name="vcellBuild" value="NO-BUILD" description="" category="" />
-      <variable name="vcellAllJarFileSourcePath" value="NO-VCELL-JAR" description="" category="" />
+      <variable name="vcellClientJarFileSourcePath" value="NO-VCELL-JAR" description="" category="" />
       <variable name="vcellNativeLibsDirSourcePath" value="${compiler:mavenRootDir}/nativelibs" description="" category="" />
-      <variable name="vcellLibSourcePath" value="${compiler:mavenRootDir}/target/maven-jars" description="" category="" />
+      <variable name="vcellLibSourcePath" value="${compiler:mavenRootDir}/vcell-client/target/maven-jars" description="" category="" />
       <variable name="outputDir" value="${compiler:mavenRootDir}/target/installers" description="" category="" />
-      <variable name="vcell5SplashScreenPngFilePath" value="${compiler:mavenRootDir}/src/main/resources/vcellSplash.png" description="" category="" />
+      <variable name="vcell5SplashScreenPngFilePath" value="${compiler:mavenRootDir}/vcell-client/src/main/resources/vcellSplash.png" description="" category="" />
       <variable name="vcellLocalSolversDirPath" value="${compiler:mavenRootDir}/localsolvers" description="" category="" />
-      <variable name="vcellLicenseFilePath" value="${compiler:mavenRootDir}/src/main/resources/thirdpartylicenses.txt" description="" category="" />
+      <variable name="vcellLicenseFilePath" value="${compiler:mavenRootDir}/vcell-client/src/main/resources/thirdpartylicenses.txt" description="" category="" />
       <variable name="vcellVisToolPath" value="${compiler:mavenRootDir}/visTool" description="" category="" />
       <variable name="vcellbngPerlPath" value="${compiler:mavenRootDir}/bionetgen" description="" category="" />
     </variables>
@@ -76,7 +76,7 @@
       <mountPoint id="1381" root="1122" location="localsolvers/linux64" mode="755" />
     </mountPoints>
     <entries>
-      <fileEntry mountPoint="719" file="${compiler:vcellAllJarFileSourcePath}" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" />
+      <fileEntry mountPoint="719" file="${compiler:vcellClientJarFileSourcePath}" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" />
       <dirEntry mountPoint="719" file="${compiler:vcellLibSourcePath}" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="maven-jars" excludeSuffixes=".svn" dirMode="755" overrideDirMode="false">
         <exclude>
           <entry location="ojdbc6-11.2.0.4.jar" fileType="regular" />

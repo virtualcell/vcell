@@ -15,12 +15,22 @@ includefile=$1
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 projectRootDir=`dirname $DIR`
-targetRootDir=$projectRootDir/target
-targetMavenJarsDir=$targetRootDir/maven-jars
-targetInstallersDir=$targetRootDir/installers
+projectTargetDir=$projectRootDir/target
 
-skip_install4j=false
-skip_build=false
+serverTargetDir=$projectRootDir/vcell-server/target
+serverJarsDir=$serverTargetDir/maven-jars
+
+apiTargetDir=$projectRootDir/vcell-api/target
+apiJarsDir=$apiTargetDir/maven-jars
+apiDocrootDir=$projectRootDir/vcell-api/docroot
+apiWebappDir=$projectRootDir/vcell-api/webapp
+
+clientTargetDir=$projectRootDir/vcell-client/target
+clientJarsDir=$clientTargetDir/maven-jars
+
+skip_install4j=true
+skip_build=true
+skip_genKey=false
 
 #
 # building the project
@@ -28,13 +38,13 @@ skip_build=false
 if [ "$skip_build" = false ]; then
 	cd $projectRootDir
 	echo "removing old docs"
-	rm -r $projectRootDir/src/main/resources/vcellDocs
+	rm -r $projectRootDir/vcell-client/src/main/resources/vcellDocs
 	echo "build vcell"
 	mvn verify
 	echo "populate maven-jars"
 	mvn dependency:copy-dependencies
 	echo "run document compiler"
-	java -cp target/maven-jars/*:target/* org.vcell.documentation.DocumentCompiler
+	java -cp $clientTargetDir/maven-jars/*:$clientTargetDir/* org.vcell.documentation.DocumentCompiler
 	echo "force rebuild to pick up new resources - the help files"
 	mvn clean verify
 fi
@@ -43,34 +53,39 @@ deployRootDir=$DIR
 
 deployInstall4jDir=$deployRootDir/client/install4j
 
-stagingRootDir=$projectRootDir/target/server-staging/
-stagingConfigsDir=$stagingRootDir/configs
-stagingJarsDir=$stagingRootDir/jars
-stagingVisToolDir=$stagingRootDir/visTool
-stagingNativelibsDir=$stagingRootDir/nativelibs
-stagingInstallersDir=$projectRootDir/target/installers
-
 isMac=false
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	isMac=true
 fi
 
 
-if [[ "$vcell_server_os" == "mac64" ]]; then
+if [[ "$vcell_server_os" = "mac64" ]]; then
 	localsolversDir=localsolvers/mac64
-elif [[ "$vcell_server_os" == "linux64" ]]; then
+	nativelibsDir=nativelibs/mac64
+elif [[ "$vcell_server_os" = "linux64" ]]; then
 	localsolversDir=localsolvers/linux64
+	nativelibsDir=nativelibs/linux64
 else
 	echo "vcell server os specied as $vcell_server_os expecting either 'linux64' or 'macos'"
 	exit -1
 fi
+
+#
+# 
+#
+stagingRootDir=$projectTargetDir/server-staging/
+stagingConfigsDir=$stagingRootDir/configs
+stagingJarsDir=$stagingRootDir/jars
+stagingVisToolDir=$stagingRootDir/visTool
+stagingNativelibsDir=$stagingRootDir/$nativelibsDir
+stagingInstallersDir=$projectRootDir/target/installers
 
 projectSolversDir=$projectRootDir/$localsolversDir
 
 installed_server_sitedir=$vcell_server_sitedir
 installedConfigsDir=$installed_server_sitedir/configs
 installedJarsDir=$installed_server_sitedir/jars
-installedNativelibsDir=$installed_server_sitedir/nativelibs
+installedNativelibsDir=$installed_server_sitedir/$nativelibsDir
 installedVisToolDir=$installed_server_sitedir/visTool
 installedSolversDir=$installed_server_sitedir/$localsolversDir
 installedTmpDir=$installed_server_sitedir/tmp
@@ -86,11 +101,13 @@ installedParalleldataDir=$vcell_parallel_datadir
 installedExportDir=$vcell_export_dir
 installedExportUrl=$vcell_export_url
 installedMpichHomedir=$vcell_mpich_homedir
+installedDocrootDir=$installed_server_sitedir/docroot
+installedWebappDir=$installed_server_sitedir/webapp
 
 pathto_server_sitedir=$vcell_pathto_sitedir
 pathto_ConfigsDir=$pathto_server_sitedir/configs
 pathto_JarsDir=$pathto_server_sitedir/jars
-pathto_NativelibsDir=$pathto_server_sitedir/nativelibs
+pathto_NativelibsDir=$pathto_server_sitedir/$nativelibsDir
 pathto_VisToolDir=$pathto_server_sitedir/visTool
 pathto_SolversDir=$pathto_server_sitedir/$localsolversDir
 pathto_TmpDir=$pathto_server_sitedir/tmp
@@ -100,6 +117,8 @@ pathto_HtclogsDir=$pathto_server_sitedir/htclogs
 pathto_JavaprefsDir=$pathto_server_sitedir/javaprefs
 pathto_SystemPrefsDir=$pathto_server_sitedir/javaprefs/.systemPrefs
 pathto_InstallersDir=$pathto_server_sitedir/installers
+pathto_DocrootDir=$pathto_server_sitedir/docroot
+pathto_WebappDir=$pathto_server_sitedir/webapp
 #pathto_PrimarydataDir=$vcell_primary_datadir
 #pathto_SecondarydataDir=$vcell_secondary_datadir
 #pathto_ParalleldataDir=$vcell_parallel_datadir
@@ -140,7 +159,7 @@ install4jDeploySettings=$install4jWorkingDir/DeploySettings.include
 
 I4J_pathto_Install4jWorkingDir=$vcell_I4J_pathto_mavenRootDir/target/install4j-working
 I4J_pathto_Install4jDeploySettings=$I4J_pathto_Install4jWorkingDir/DeploySettings.include
-I4J_pathto_vcellAllJar="$vcell_I4J_pathto_mavenRootDir/target/$vcell_vcellAllJarFileName"
+I4J_pathto_vcellClientJar="$vcell_I4J_pathto_mavenRootDir/vcell-client/target/$vcell_vcellClientJarFileName"
 
 mkdir -p $install4jWorkingDir
 if [ -e $install4jDeploySettings ]; then
@@ -158,7 +177,7 @@ echo "compiler_vcellBuild=$vcell_build"								>> $install4jDeploySettings
 echo "compiler_rmiHosts=$vcell_rmihosts"							>> $install4jDeploySettings
 echo "compiler_bioformatsJarFile=$vcell_bioformatsJarFile"			>> $install4jDeploySettings
 echo "compiler_bioformatsJarDownloadURL=$vcell_bioformatsJarDownloadURL" >> $install4jDeploySettings
-echo "compiler_vcellAllJarFilePath= >> $I4J_pathto_vcellAllJar"		>> $install4jDeploySettings
+echo "compiler_vcellClientJarFilePath= >> $I4J_pathto_vcellClientJar"		>> $install4jDeploySettings
 echo "compiler_applicationId=$vcell_applicationId"					>> $install4jDeploySettings
 echo "i4j_pathto_jreDir=$vcell_I4J_pathto_jreDir"					>> $install4jDeploySettings
 echo "i4j_pathto_secretsDir=$vcell_I4J_pathto_secretsDir"			>> $install4jDeploySettings
@@ -195,7 +214,7 @@ if [ "$skip_install4j" = false ]; then
 		exit -1;
 	fi
 	
-	echo "client install4j installers located in $targetInstallersDir"
+	echo "client install4j installers located in $stagingInstallersDir"
 fi
 
 cd $DIR
@@ -212,9 +231,11 @@ mkdir -p $stagingJarsDir
 mkdir -p $stagingVisToolDir
 mkdir -p $stagingNativelibsDir
 
-cp -p $targetMavenJarsDir/*.jar $stagingJarsDir
-cp -p $targetRootDir/$vcell_vcellAllJarFileName $stagingJarsDir
-cp -p $projectRootDir/nativelibs/linux64/* $stagingNativelibsDir
+cp -p $apiTargetDir/maven-jars/*.jar $stagingJarsDir
+cp -p $apiTargetDir/$vcell_vcellApiJarFileName $stagingJarsDir
+cp -p $serverTargetDir/maven-jars/*.jar $stagingJarsDir
+cp -p $serverTargetDir/$vcell_vcellServerJarFileName $stagingJarsDir
+cp -p $projectRootDir/$nativelibsDir/* $stagingNativelibsDir
 cp -p -R $projectRootDir/visTool/* $stagingVisToolDir
 
 #
@@ -250,6 +271,9 @@ sed_in_place "s+GENERATED-CONFIGSDIR+$installedConfigsDir+g"				$stagingVCellInc
 sed_in_place "s+GENERATED-TMPDIR+$installedTmpDir+g"						$stagingVCellInclude
 sed_in_place "s+GENERATED-JAVAPREFSDIR+$installedJavaprefsDir+g"			$stagingVCellInclude
 sed_in_place "s+GENERATED-JARS+$installedJarsDir/*+g"						$stagingVCellInclude
+sed_in_place "s+GENERATED-API-ROOTDIR+$installed_server_sitedir+g"			$stagingVCellInclude
+sed_in_place "s+GENERATED-APIKEYSTORE-PATH+$vcell_secrets_tlsKeystore_path+g"	$stagingVCellInclude
+sed_in_place "s/GENERATED-APIKEYSTORE-PSWD/$vcell_secrets_tlsKeystore_pswd/g"	$stagingVCellInclude
 
 sed_in_place "s/GENERATED-HTC-USESSH/$vcell_htc_usessh/g"					$stagingVCellInclude
 if [ "$vcell_htc_usessh" = true ]; then
@@ -441,12 +465,16 @@ then
 	mkdir -p $installedSecondarydataDir
 	mkdir -p $installedParalleldataDir
 	mkdir -p $installedExportDir
+	mkdir -p $installedDocrootDir
+	mkdir -p $installedWebappDir
 	cp -p $stagingConfigsDir/*		$installedConfigsDir
 	cp -p $stagingJarsDir/*			$installedJarsDir
 	cp -p -R $stagingVisToolDir/*	$installedVisToolDir
 	cp -p $stagingNativelibsDir/*	$installedNativelibsDir
 	cp -p $projectSolversDir/*		$installedSolversDir
 	cp -p $stagingInstallersDir/*	$installedInstallersDir
+	cp -p -R $apiDocrootDir/*		$installedDocrootDir
+	cp -p -R $apiWebappDir/*		$installedWebappDir
 else
 	#
 	# remote filesystem
@@ -467,23 +495,29 @@ else
 	mkdir -p $pathto_TmpDir
 	mkdir -p $pathto_JavaprefsDir
 	mkdir -p $pathto_SystemPrefsDir
+	mkdir -p $pathto_DocrootDir
+	mkdir -p $pathto_WebappDir
 	#mkdir -p $pathto_PrimarydataDir
 	#mkdir -p $pathto_SecondarydataDir
 	#mkdir -p $pathto_ParalleldataDir
 	#mkdir -p $pathto_ExportDir
 
-	echo "installing scripts to configs (1/6)"
+	echo "installing scripts to configs (1/8)"
 	cp -p $stagingConfigsDir/*		$pathto_ConfigsDir
-	echo "installing jar files (2/6)"
+	echo "installing jar files (2/8)"
 	cp -p $stagingJarsDir/vcell-0.0.1-SNAPSHOT.jar $pathto_JarsDir
 	cp -p $stagingJarsDir/*			$pathto_JarsDir
-	echo "installing nativelibs (3/6)"
+	echo "installing nativelibs (3/8)"
 	cp -p $stagingNativelibsDir/*	$pathto_NativelibsDir
-	echo "installing visTool python files (4/6)"
+	echo "installing visTool python files (4/8)"
 	cp -p -R $stagingVisToolDir/*	$pathto_VisToolDir
-#	echo "installing server-side solvers (5/6)"
+#	echo "installing server-side solvers (5/8)"
 #	cp -p $projectSolversDir/*		$pathto_SolversDir
-	echo "installing client installers to server (6/6)"
-	cp -p $targetInstallersDir/*	$pathto_InstallersDir
+	echo "installing client installers to server (6/8)"
+	cp -p $stagingInstallersDir/*	$pathto_InstallersDir
+	echo "installing vcellapi docroot dir to server (7/8)"
+	cp -p -R $apiDocrootDir/*		$pathto_DocrootDir
+	echo "installing vcellapi webapp dir to server (8/8)"
+	cp -p -R $apiWebappDir/*		$pathto_WebappDir
 	echo "done with installation"
 fi
