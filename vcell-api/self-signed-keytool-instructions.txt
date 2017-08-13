@@ -1,0 +1,35 @@
+#
+# determine hostname (e.g. Jamess-MacBook-Pro-2.local)
+#
+hostname
+echo $HOSTNAME
+
+#
+# to generate a selfsigned key 
+#
+keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore_macbook.jks -storepass password -validity 3600 -keysize 2048\
+ -dname "CN=Jamess-MacBook-Pro-2.local, OU=development, O=UConn Health, L=Farmington, ST=Connecticut, C=US"
+
+#
+# install keystore
+#
+cp keystore_macbook.jks ~/vcellkeys
+
+#
+# configure secrets
+#
+add following two lines to ~/vcellkeys/deploySecrets.include
+
+vcell_secrets_tlsKeystore_path=/Users/schaff/vcellkeys/keystore_macbook.jks
+vcell_secrets_tlsKeystore_pswd=password
+
+#
+# when debugging, invoke VCellApiMain with the following arguments
+# keystore keystorepassword docroot - port
+#
+java -cp ... org.vcell.rest.VCellApiMain /Users/schaff/vcellkeys/keystore_macbook.jks password docroot - 8081
+
+#
+# to view 
+#
+https://jamess-macbook-pro-2.local:8081/biomodel

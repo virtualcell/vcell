@@ -58,8 +58,8 @@ public class VCellApiMain {
 			WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
 			//don't use static field -- want to initialize logging first
 			Logger lg = Logger.getLogger(VCellApiMain.class);
-			if (args.length!=4){
-				System.out.println("usage: VCellApiMain keystorePath keystorePassword javascriptDir (-|logDir)");
+			if (args.length!=5){
+				System.out.println("usage: VCellApiMain keystorePath keystorePassword javascriptDir (-|logDir) port");
 				System.exit(1);
 			}
 			File keystorePath = new File(args[0]);
@@ -85,6 +85,15 @@ public class VCellApiMain {
 				lg.trace("log redirection to " + logdir);
 			}
 			ServiceProvider.initLog(serviceInstanceStatus, logdir);
+			
+			String portString = args[4];
+			Integer port=null; // was hard-coded at 8080
+			try {
+				port = Integer.parseInt(portString);
+			}catch (NumberFormatException e){
+				e.printStackTrace();
+				throw new RuntimeException("failed to parse port argument '"+portString+"'",e);
+			}
 			
 		    System.out.println("connecting to database");
 
@@ -147,7 +156,7 @@ public class VCellApiMain {
 
 			lg.trace("mongo (next)");
 			VCMongoMessage.enabled=true;
-			VCMongoMessage.serviceStartup(ServiceName.unknown, new Integer(8080), args);
+			VCMongoMessage.serviceStartup(ServiceName.unknown, port, args);
 
 			System.out.println("setting up server configuration");
 
@@ -168,12 +177,17 @@ public class VCellApiMain {
 			Client clapClient = component.getClients().add(Protocol.CLAP);
 			
 			lg.trace("adding CLAP https");
-	        SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithMD5AndDES"); 
-	        SecretKey key = kf.generateSecret(new PBEKeySpec(PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword).toCharArray())); 
-	        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES"); 
-	        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(new byte[] {32,11,55,121,01,42,89,11}, 20)); 
-	        keystorePassword = new String(pbeCipher.doFinal(DatatypeConverter.parseBase64Binary(keystorePassword))); 
-			Server httpsServer = component.getServers().add(Protocol.HTTPS,8080);
+			try {
+		        SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithMD5AndDES"); 
+		        SecretKey key = kf.generateSecret(new PBEKeySpec(PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword).toCharArray())); 
+		        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES"); 
+		        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(new byte[] {32,11,55,121,01,42,89,11}, 20)); 
+		        keystorePassword = new String(pbeCipher.doFinal(DatatypeConverter.parseBase64Binary(keystorePassword))); 
+			}catch (Exception e){
+				System.out.println("password unhashing didn't work - trying clear text password");
+				e.printStackTrace();
+			}
+			Server httpsServer = component.getServers().add(Protocol.HTTPS,port);
 			Series<Parameter> parameters = httpsServer.getContext().getParameters();
 			parameters.add("keystorePath", keystorePath.toString());
 			parameters.add("keystorePassword", keystorePassword);

@@ -18,12 +18,13 @@ projectRootDir=`dirname $DIR`
 projectTargetDir=$projectRootDir/target
 
 serverTargetDir=$projectRootDir/vcell-server/target
-serverJarsDir=$serverTargetDir/maven-jars
 
 apiTargetDir=$projectRootDir/vcell-api/target
-apiJarsDir=$apiTargetDir/maven-jars
 apiDocrootDir=$projectRootDir/vcell-api/docroot
 apiWebappDir=$projectRootDir/vcell-api/webapp
+
+adminTargetDir=$projectRootDir/vcell-admin/target
+adminJarsDir=$adminTargetDir/maven-jars
 
 clientTargetDir=$projectRootDir/vcell-client/target
 clientJarsDir=$clientTargetDir/maven-jars
@@ -231,6 +232,8 @@ mkdir -p $stagingJarsDir
 mkdir -p $stagingVisToolDir
 mkdir -p $stagingNativelibsDir
 
+cp -p $adminTargetDir/maven-jars/*.jar $stagingJarsDir
+cp -p $adminTargetDir/$vcell_vcellAdminJarFileName $stagingJarsDir
 cp -p $apiTargetDir/maven-jars/*.jar $stagingJarsDir
 cp -p $apiTargetDir/$vcell_vcellApiJarFileName $stagingJarsDir
 cp -p $serverTargetDir/maven-jars/*.jar $stagingJarsDir
@@ -275,6 +278,7 @@ sed_in_place "s+GENERATED-API-ROOTDIR+$installed_server_sitedir+g"			$stagingVCe
 sed_in_place "s+GENERATED-APIKEYSTORE-PATH+$vcell_secrets_tlsKeystore_path+g"	$stagingVCellInclude
 sed_in_place "s/GENERATED-APIKEYSTORE-PSWD/$vcell_secrets_tlsKeystore_pswd/g"	$stagingVCellInclude
 sed_in_place "s/GENERATED-APIHOST/$vcell_apihost/g"							$stagingVCellInclude
+sed_in_place "s/GENERATED-APIPORT/$vcell_apiport/g"							$stagingVCellInclude
 sed_in_place "s/GENERATED-VCELLUSER/$vcell_user/g"							$stagingVCellInclude
 
 sed_in_place "s/GENERATED-HTC-USESSH/$vcell_htc_usessh/g"					$stagingVCellInclude

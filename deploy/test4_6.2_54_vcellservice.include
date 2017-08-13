@@ -24,6 +24,7 @@ vcell_pathto_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
 vcell_user="vcell"
 vcell_servicehost="vcell-service.cam.uchc.edu"
 vcell_apihost="vcellapi.cam.uchc.edu"
+vcell_apiport=8080
 
 vcell_rmihost="vcell-rmi-alpha.cam.uchc.edu"
 vcell_rmiport_low=-1

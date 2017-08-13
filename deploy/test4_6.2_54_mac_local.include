@@ -26,6 +26,7 @@ vcell_user="schaff"
 _localhost="jamess-macbook-pro-2.local"
 vcell_servicehost=$_localhost
 vcell_apihost=$_localhost
+vcell_apiport=8081
 
 vcell_rmihost=$_localhost
 vcell_rmiport_low=-1
@@ -37,6 +38,7 @@ vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vce
 vcell_vcellClientJarFileName="vcell-client-0.0.1-SNAPSHOT.jar"
 vcell_vcellServerJarFileName="vcell-server-0.0.1-SNAPSHOT.jar"
 vcell_vcellApiJarFileName="vcell-api-0.0.1-SNAPSHOT.jar"
+vcell_vcellAdminJarFileName="vcell-admin-0.0.1-SNAPSHOT.jar"
 
 vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
 vcell_jms_user=clientUser

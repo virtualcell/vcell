@@ -44,6 +44,7 @@ vcellapi_root=GENERATED-API-ROOTDIR
 vcellapi_keystorepath=GENERATED-APIKEYSTORE-PATH
 vcellapi_keystorepswd=GENERATED-APIKEYSTORE-PSWD
 vcellapi_host=GENERATED-APIHOST
+vcellapi_port=GENERATED-APIPORT
 vcellapi_javascriptdir="${vcellapi_root}/docroot"
 vcellapi_processLabel=${common_site}-api
 vcellapi_memoryGB=2
