@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
+import org.vcell.util.exe.Executable2;
+import org.vcell.util.exe.ExecutableException;
 
 public class CondaSupport {
 	
@@ -45,8 +47,11 @@ public class CondaSupport {
 						 * Linux, OS X
 						 * 			look here:  https://conda.io/docs/help/silent.html
 						 */
-						if(true) {		// some verification here if we have a good installation?
-							
+						
+						String python = homeDir + "\\Miniconda\\python.exe";
+						String[] cmd = new String[] {python, "--version"};
+						boolean ret = isPythonPresent(cmd);		// if python is not present or not desired version, install it
+						if(!ret) {
 							String arguments = "/InstallationType=JustMe /RegisterPython=0 /S /D=";
 							p = Runtime.getRuntime().exec(minicondaArchive + " " + arguments + homeDir + "\\Miniconda");
 							BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -57,15 +62,16 @@ public class CondaSupport {
 						/*
 						 * Check packages now that we have conda installed properly
 						 */
-						String python = homeDir + "\\Miniconda\\python.exe";
-						String location = ResourceUtil.getVCellInstall().getAbsolutePath() + "\\visTool\\inspectEnv.py";
-						p = Runtime.getRuntime().exec(python + " " + location);
-						BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-						System.out.println("1 "+in.readLine());		// null means uninstalled
-						System.out.println("2 "+in.readLine());
-						System.out.println("3 "+in.readLine());
-						System.out.println("4 "+in.readLine());
+//						python = homeDir + "\\Miniconda\\python.exe";
+//						String location = ResourceUtil.getVCellInstall().getAbsolutePath() + "\\visTool\\inspectEnv.py";
+//						p = Runtime.getRuntime().exec(python + " " + location);
 						
+						
+						python = homeDir + "\\Miniconda\\python.exe";
+						String location = ResourceUtil.getVCellInstall().getAbsolutePath() + "\\visTool\\inspectEnv.py";
+						cmd = new String[] {python, location};
+						inspectPackages(cmd);
+
 					}  catch(Exception e) {
 						System.err.println("Exception occurred while trying to configure python support");
 						e.printStackTrace(System.out);
@@ -81,6 +87,38 @@ public class CondaSupport {
 				
 				
 				
+		}
+	}
+	
+	private static boolean isPythonPresent(String[] cmd) {
+		Executable2 exe = new Executable2(cmd);
+		try {
+			exe.start( new int[] { 0 });
+			if (exe.getExitValue() != 0){
+				throw new RuntimeException("Python test failed with return code "+exe.getExitValue()+": "+exe.getStderrString());
+			}
+			if(!exe.getStderrString().contains("Continuum Analytics, Inc")) {
+				throw new RuntimeException("Wrong python version present :" + exe.getStderrString());
+			} else {
+				return true;
+			}
+		} catch (ExecutableException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Python test invocation failed: " + e.getMessage(), e);
+		}
+	}
+	
+	private static void inspectPackages(String[] cmd) {
+		Executable2 exe = new Executable2(cmd);
+		try {
+			exe.start( new int[] { 0 });
+			System.out.println("Exit value: " + exe.getExitValue());
+			System.out.println(exe.getStdoutString());
+			System.out.println(exe.getStderrString());
+
+		} catch (ExecutableException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Python inspect environment invocation failed: " + e.getMessage(), e);
 		}
 	}
 

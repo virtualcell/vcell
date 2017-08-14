@@ -1,8 +1,3 @@
-import vcellopt.ttypes as VCELLOPT
-
-from thrift.TSerialization import TBinaryProtocol
-from thrift.TSerialization import deserialize
-
 import argparse
 import sys
 import subprocess
@@ -13,40 +8,42 @@ def main():
     try:
         import COPASI
         print "COPASI imported"
-        #return 0
+        sys.stderr.write("1")
     except:
         print "COPASI didn't import"
-        #return -1
+        sys.stderr.write("0")
 
 
     try:
         import vtk
 
         print "vtk imported"
-        #return 0
+        sys.stderr.write("1")
     except:
         print "vtk didn't import"
-        #return -1
+        sys.stderr.write("0")
 
 
     try:
         import thrift
 
         print "thrift imported"
-        # return 0
+        sys.stderr.write("1")
     except:
         print "thrift didn't import"
-        # return -1
+        sys.stderr.write("0")
 
 
     try:
         import libsbml          # to install use: conda install -c SBMLTeam python-libs
 
         print "SBML imported"
-        return 0
+        sys.stderr.write("1")
     except:
         print "SBML didn't import"
-        return -1
+        sys.stderr.write("0")
+
+    return 0
 
 
 def main1():
@@ -69,11 +66,12 @@ def _user_has_conda():
     #cmd = 'conda --help'
     #cmd = 'conda info'
     #cmd = 'conda list'     # paste this to find what is installed
-    cmd = 'python --version'
+    #cmd = 'python --version'
+    cmd = 'C:/Users/vasilescu/.vcell/Miniconda/Scripts/conda list'
     #p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
-    if len(err) > 0 and len(out) == 0:
+    if len(err) == 0 and len(out) > 0:
         return True
     else:
         return False
