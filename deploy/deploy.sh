@@ -560,7 +560,7 @@ else
 	echo ""
 	echo "REMEMBER ... move installers to apache if applicable"
 	echo ""
-	echo "scp $pathto_InstallersDir/* vcell@apache.cam.uchc.edu:/apache_webroot/htdocs/$vcell_site_camel"
+	echo "scp $pathto_InstallersDir/* vcell@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/$vcell_site_camel"
 	echo ""
 	echo " then, don't forget to update symbolic links to <latest> installers"
 	echo ""
