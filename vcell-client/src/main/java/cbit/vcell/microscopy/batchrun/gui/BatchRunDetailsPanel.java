@@ -72,7 +72,7 @@ import cbit.vcell.opt.Parameter;
 public class BatchRunDetailsPanel extends JPanel implements ActionListener, PropertyChangeListener
 {
 	public URL[] iconFiles = {getClass().getResource("/images/add.gif"),
-							  getClass().getResource("/images/delete.gif"),
+							  getClass().getResource("/images/delete_red.gif"),
 							  getClass().getResource("/images/deleteAll.gif")};
 	public String[] buttonLabels = {"Add a file to batch run", "Delete a file from batch run", "Delete all"};
 	private ImageIcon[] icons = new ImageIcon[iconFiles.length];

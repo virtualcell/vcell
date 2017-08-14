@@ -502,6 +502,9 @@ then
 	pushd $installedConfigsDir
 	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
 	popd
+	pushd $installedSolversDir
+	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
+	popd
 else
 	#
 	# remote filesystem
@@ -549,5 +552,16 @@ else
 	pushd $pathto_ConfigsDir
 	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
 	popd
+	pushd $pathto_SolversDir
+	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
+	popd
 	echo "done with installation"
+	
+	echo ""
+	echo "REMEMBER ... move installers to apache if applicable"
+	echo ""
+	echo "scp $pathto_InstallersDir/* vcell@apache.cam.uchc.edu:/apache_webroot/htdocs/$vcell_site_camel
+	echo ""
+	echo " then, don't forget to update symbolic links to <latest> installers"
+	echo ""
 fi
