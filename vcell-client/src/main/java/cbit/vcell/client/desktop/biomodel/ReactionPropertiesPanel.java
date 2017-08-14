@@ -779,6 +779,10 @@ protected void updateInterface() {
 
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	if(getScrollPaneTable() != null && getScrollPaneTable().getCellEditor() != null && getScrollPaneTable().isEditing()){
+		getScrollPaneTable().getCellEditor().stopCellEditing();		
+	}
+
 	if (selectedObjects == null || selectedObjects.length != 1) {
 		return;
 	}
