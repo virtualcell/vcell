@@ -50,27 +50,21 @@ public class CondaSupport {
 						
 						String python = homeDir + "\\Miniconda\\python.exe";
 						String[] cmd = new String[] {python, "--version"};
-						boolean ret = isPythonPresent(cmd);		// if python is not present or not desired version, install it
+						boolean ret = isPythonPresent(cmd);
 						if(!ret) {
+							// if python is not present or not desired version, install it
 							String arguments = "/InstallationType=JustMe /RegisterPython=0 /S /D=";
 							p = Runtime.getRuntime().exec(minicondaArchive + " " + arguments + homeDir + "\\Miniconda");
 							BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 							System.out.println("a "+in.readLine());		// returns null
 							VCellConfiguration.setFileProperty(PropertyLoader.pythonExe, new File(homeDir + "\\Miniconda\\python.exe"));
+
+							// install the packages we want
+							python = homeDir + "\\Miniconda\\python.exe";
+							String location = ResourceUtil.getVCellInstall().getAbsolutePath() + "\\visTool\\inspectEnv.py";
+							cmd = new String[] {python, location};
+							installPackages(cmd);
 						}
-															
-						/*
-						 * Check packages now that we have conda installed properly
-						 */
-//						python = homeDir + "\\Miniconda\\python.exe";
-//						String location = ResourceUtil.getVCellInstall().getAbsolutePath() + "\\visTool\\inspectEnv.py";
-//						p = Runtime.getRuntime().exec(python + " " + location);
-						
-						
-						python = homeDir + "\\Miniconda\\python.exe";
-						String location = ResourceUtil.getVCellInstall().getAbsolutePath() + "\\visTool\\inspectEnv.py";
-						cmd = new String[] {python, location};
-						inspectPackages(cmd);
 
 					}  catch(Exception e) {
 						System.err.println("Exception occurred while trying to configure python support");
@@ -108,7 +102,7 @@ public class CondaSupport {
 		}
 	}
 	
-	private static void inspectPackages(String[] cmd) {
+	private static void installPackages(String[] cmd) {
 		Executable2 exe = new Executable2(cmd);
 		try {
 			exe.start( new int[] { 0 });
