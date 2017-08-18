@@ -370,44 +370,45 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 				handleException(ivjExc);
 			}
 		};
-		public void updateMetadata(){
-			if (updatingMetaData){
-				return;
-			}else{
-				try {
-					updatingMetaData = true;
-					AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							try {
-								if(getSimulationModelInfo() != null){
-									SimulationModelInfo simulationWorkspaceModelInfo = (SimulationModelInfo)PDEDataViewer.this.getSimulationModelInfo();
-									simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
-								}
-							}catch (Exception e){
-								e.printStackTrace();
-							}
-						}
-					};
-					AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
-							getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
-							if(getSimulationModelInfo() != null && getSimulationModelInfo().getDataSymbolMetadataResolver().getUniqueFilterCategories() != null){
-								getPDEPlotControlPanel1().setDataIdentifierFilter(new DefaultDataIdentifierFilter(getSimulationModelInfo().getDataSymbolMetadataResolver()));
-							}
-						}
-					};
-					ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
-							new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
-							false, false, false, null, true);
-				} finally {
-					updatingMetaData = false;
-				}
-			}
-
-		}
+//		public void updateMetadata(){
+//			if (updatingMetaData){
+//				return;
+//			}else{
+//				try {
+//					updatingMetaData = true;
+//					AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//						@Override
+//						public void run(Hashtable<String, Object> hashTable) throws Exception {
+////							try {
+//							if(getSimulationModelInfo() != null){
+//								SimulationModelInfo simulationWorkspaceModelInfo = PDEDataViewer.this.getSimulationModelInfo();
+//								simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+//							}
+////							}catch (Exception e){
+////								e.printStackTrace();
+////							}
+//						}
+//					};
+//					AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//						@Override
+//						public void run(Hashtable<String, Object> hashTable) throws Exception {
+//							SimulationModelInfo simulationModelInfo = PDEDataViewer.this.getSimulationModelInfo();
+//							getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),simulationModelInfo));
+//							getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
+//							if(getSimulationModelInfo() != null && getSimulationModelInfo().getDataSymbolMetadataResolver().getUniqueFilterCategories() != null){
+//								getPDEPlotControlPanel1().setDataIdentifierFilter(new DefaultDataIdentifierFilter(getSimulationModelInfo().getDataSymbolMetadataResolver()));
+//							}
+//						}
+//					};
+//					ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+//							new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
+//							false, false, false, null, true);
+//				} finally {
+//					updatingMetaData = false;
+//				}
+//			}
+//
+//		}
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 //			System.out.println("----------"+evt.getPropertyName()+" "+evt.getSource().getClass().getName());
 			try {
@@ -512,6 +513,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 							localSimLogFilePathTextField.setText(localSimLogFilePath);
 						}
 					}
+					updateMetadata();
 				}
 				if (evt.getSource() == PDEDataViewer.this &&
 						(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) {
@@ -575,6 +577,53 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 			}
 		};
 	};
+	
+	BlockingTimer pdeDataViewersetupTimer = null;
+	public void updateMetadata(){
+		if (getPdeDataContext() == null){
+			return;
+		}
+		//check if clienttaskdispatcher is busy, if so schedule this method to run later (workaround spurious threading problem)
+		if((pdeDataViewersetupTimer = ClientTaskDispatcher.getBlockingTimer(PDEDataViewer.this, null, null, pdeDataViewersetupTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){updateMetadata();}},"PDEDataViewer Setup...")) != null){
+			return;
+		}
+		try {
+			updatingMetaData = true;
+			AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+//						try {
+					if(getSimulationModelInfo() != null){
+						SimulationModelInfo simulationWorkspaceModelInfo = PDEDataViewer.this.getSimulationModelInfo();
+						simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+					}
+//						}catch (Exception e){
+//							e.printStackTrace();
+//						}
+				}
+			};
+			AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					SimulationModelInfo simulationModelInfo = PDEDataViewer.this.getSimulationModelInfo();
+					PDEDataViewer.DataInfoProvider dataInfoProvider = new PDEDataViewer.DataInfoProvider(getPdeDataContext(),simulationModelInfo);
+					getPDEPlotControlPanel1().setDataInfoProvider(dataInfoProvider);
+					getPDEDataContextPanel1().setDataInfoProvider(dataInfoProvider);
+					getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
+					if(getSimulationModelInfo() != null && getSimulationModelInfo().getDataSymbolMetadataResolver().getUniqueFilterCategories() != null){
+						getPDEPlotControlPanel1().setDataIdentifierFilter(new DefaultDataIdentifierFilter(getSimulationModelInfo().getDataSymbolMetadataResolver()));
+					}
+				}
+			};
+			ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+					new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
+					false, false, false, null, true);
+		} finally {
+			updatingMetaData = false;
+		}
+
+	}
+
 	
 	private static ArrayList<VarStatistics> calcVarStat(PDEDataContext pdeDataContext,String[] stateVarNames) throws Exception{
 		ArrayList<VarStatistics> varStatsArr = new ArrayList<>();
@@ -1939,7 +1988,8 @@ private void initConnections() throws java.lang.Exception {
 	getPDEExportPanel1().setDataViewerManager(this.getDataViewerManager());
 	
 	getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
-
+	
+	updateMetadata();
 }
 
 /**
@@ -2370,7 +2420,7 @@ private void showTimePlot() {
 				try{
 					PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(multiTimePlotHelper,singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
-					String prefix = "Time Plot ("+getPDEPlotControlPanel1().getJList1().getSelectedValue().getVariableType().getTypeName()+") ";
+					String prefix = "Time Plot ("+getPDEPlotControlPanel1().getPlotVariableJList().getSelectedValue().getVariableType().getTypeName()+") ";
 					ChildWindow childWindow = childWindowManager.addChildWindow(pdeTimePlotPanel, pdeTimePlotPanel, createContextTitle(PDEDataViewer.this.isPostProcess(),prefix,getPdeDataContext(),getSimulationModelInfo(),getSimulation()));
 					childWindow.getParent().addWindowListener(new WindowAdapter() {
 						@Override
