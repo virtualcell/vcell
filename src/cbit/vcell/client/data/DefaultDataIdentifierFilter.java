@@ -59,8 +59,15 @@ public class  DefaultDataIdentifierFilter implements DataIdentifierFilter{
 				for (DataIdentifier dataID : filterTheseDataIdentifiers){
 					DataSymbolMetadata metadata = dataSymbolMetadataResolver.getDataSymbolMetadata(dataID.getName());
 					if (metadata!=null && metadata.filterCategory.getName().equals(filterSetName)){
+						String varName = dataID.getName();
+						if (varName.startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
+							continue;			
+						}
+						if (varName.startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
+							continue;			
+						}
 						acceptedDataIdentifiers.add(dataID);
-	}
+					}
 				}					
 				return acceptedDataIdentifiers;
 			}

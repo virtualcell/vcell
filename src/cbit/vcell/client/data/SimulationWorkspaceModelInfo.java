@@ -448,7 +448,7 @@ for (SymbolTableEntry bioSymbol : sortedBioSymbols){
 VCUnitDefinition unitDefinition = bioSymbol.getUnitDefinition();
 String unitSymbol = (unitDefinition!=null)?(unitDefinition.getSymbol()):("<null unit>");
 String bioInfo = bioSymbol.getClass().getSimpleName()+"("+bioSymbol.getName()+",["+unitSymbol+"])  category="+filterCategory+", unit=["+unitSymbol+"]";
-tooltipString += " ==> "+bioInfo + "<br/>";
+//tooltipString += " ==> "+bioInfo + "<br/>";
 mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
 }
 tooltipString+="</html>";
@@ -458,7 +458,7 @@ tooltipString+="</html>";
 String bioInfo = "Biological Symbol Not Found";
 tooltipString = "<html>"+mathInfo+"<br/> ==> "+bioInfo+"</html>";
 mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
-						System.out.println("couldn't find biological symbol for var "+var.getName());
+//						System.out.println("couldn't find biological symbol for var "+var.getName());
 					}
 				}
 				if(isSymbolsNotFound) {
