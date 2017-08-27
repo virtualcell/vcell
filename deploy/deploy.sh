@@ -280,7 +280,7 @@ sed_in_place "s/GENERATED-RMISERVICEHIGH-JMXPORT/$vcell_rmiservice_high_jmxport/
 sed_in_place "s/GENERATED-RMISERVICEHTTP-JMXPORT/$vcell_rmiservice_http_jmxport/g"	$stagingVCellInclude
 sed_in_place "s/GENERATED-SERVICEHOST/$vcell_servicehost/g"				$stagingVCellInclude
 sed_in_place "s/GENERATED-NAGIOSPW/nagcmd/g" 								$stagingVCellInclude
-sed_in_place "s/GENERATED-MONITOR-PORT/33336/g"							$stagingVCellInclude
+sed_in_place "s/GENERATED-MONITOR-PORT/${vcell_monitor_queryport}/g"		$stagingVCellInclude
 sed_in_place "s/GENERATED-JVMDEF/test.monitor.port/g"						$stagingVCellInclude
 sed_in_place "s+GENERATED-COMMON-JRE+$vcell_common_jre+g"					$stagingVCellInclude
 sed_in_place "s+GENERATED-RMISERVICE-JRE+$vcell_common_jre_rmi+g"			$stagingVCellInclude

@@ -28,6 +28,12 @@ vcell_servicehost=$_localhost
 vcell_apihost=$_localhost
 vcell_apiport=8081
 
+#
+# Nagios monitor port  
+# (rel=33330, beta=33331, alpha=33332, test=-33333, test2=-33334, test3=-33335, test4=-33336)
+#
+vcell_monitor_queryport=-33336
+
 vcell_rmihost=$_localhost
 vcell_rmiport_low=-1
 vcell_rmiport_high=40109

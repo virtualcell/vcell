@@ -26,6 +26,12 @@ vcell_servicehost="vcell-service.cam.uchc.edu"
 vcell_apihost="vcellapi.cam.uchc.edu"
 vcell_apiport=8080
 
+#
+# Nagios monitor port  
+# (rel=33330, beta=33331, alpha=33332, test=-33333, test2=-33334, test3=-33335, test4=-33336)
+#
+vcell_monitor_queryport=33332
+
 vcell_rmihost="vcell-rmi-alpha.cam.uchc.edu"
 vcell_rmiport_low=-1
 vcell_rmiport_high=40106
