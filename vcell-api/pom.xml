@@ -166,5 +166,11 @@
 		    <artifactId>org.restlet.ext.json</artifactId>
 		    <version>2.2.1</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.restlet.jse/org.restlet.ext.gson -->
+		<dependency>
+		    <groupId>org.restlet.jse</groupId>
+		    <artifactId>org.restlet.ext.gson</artifactId>
+		    <version>2.2.1</version>
+		</dependency>
   </dependencies>
 </project>
