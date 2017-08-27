@@ -12,8 +12,11 @@ package org.vcell.optimization;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileAttribute;
 import java.util.Random;
 
+import org.apache.commons.io.FileUtils;
 import org.jdom.Element;
 import org.vcell.optimization.thrift.OptProblem;
 
@@ -30,7 +33,6 @@ import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
@@ -39,8 +41,9 @@ public class CopasiOptimizationSolver {
 	
 	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask, CopasiOptSolverCallbacks optSolverCallbacks, MathMappingCallback mathMappingCallback) 
 							throws IOException, ExpressionException, OptimizationException {
+		
+		File dir = Files.createTempDirectory("parest",new FileAttribute<?>[] {}).toFile();
 		try {
-			File dir = new File(ResourceUtil.getVCellInstall(),"visTool");
 			String prefix = "testing_"+Math.abs(new Random().nextInt(10000));
 			
 			File sbmlFile = new File(dir,prefix+".sbml.xml");
@@ -76,6 +79,10 @@ public class CopasiOptimizationSolver {
 		} catch (Throwable e){
 			e.printStackTrace(System.out);
 			throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+		} finally {
+			if (dir!=null && dir.exists()){
+				FileUtils.deleteDirectory(dir);
+			}
 		}
 	}
 		

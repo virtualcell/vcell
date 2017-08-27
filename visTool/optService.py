@@ -72,7 +72,7 @@ def main():
 
         mathContainer = model.getMathContainer()
         assert(isinstance(mathContainer,COPASI.CMathContainer))
-        dataModel.saveModel("optModel.cps", True)
+        # dataModel.saveModel("optModel.cps", True)
 
 
         #---------------------------------------------------------------------------
@@ -321,7 +321,7 @@ def main():
 
             if result == False:
                 sys.stderr.write("An error occured while running the Parameter estimation.\n")
-                dataModel.saveModel('test_failed.cps', True)
+                # dataModel.saveModel('test_failed.cps', True)
                 sys.stderr.write("fitTask warning: '" + str(fitTask.getProcessWarning()) + "'")
                 sys.stderr.write("fitTask error: '" + str(fitTask.getProcessError()) + "'")
                 # check if there are additional error messages
@@ -347,8 +347,8 @@ def main():
                     print "param " + paramName + " --> " + str(paramValue)
                 assert isinstance(currentFuncValue, float)
                 leastError = currentFuncValue
-        result = dataModel.saveModel('test_succeeded.cps', True)
-        assert(result==True)
+        #result = dataModel.saveModel('test_succeeded.cps', True)
+        #assert(result==True)
 
         writeOptSolverResultSet(resultFile, leastError, numObjFuncEvals, paramNames, paramValues)
 
