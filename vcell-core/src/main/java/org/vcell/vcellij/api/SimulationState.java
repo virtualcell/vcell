@@ -6,10 +6,16 @@
  */
 package org.vcell.vcellij.api;
 
+
+import java.util.Map;
+import java.util.HashMap;
+import org.apache.thrift.TEnum;
+
 public enum SimulationState implements org.apache.thrift.TEnum {
-  running(0),
-  done(1),
-  failed(2);
+  notRun(0),
+  running(1),
+  done(2),
+  failed(3);
 
   private final int value;
 
@@ -31,10 +37,12 @@ public enum SimulationState implements org.apache.thrift.TEnum {
   public static SimulationState findByValue(int value) { 
     switch (value) {
       case 0:
-        return running;
+        return notRun;
       case 1:
-        return done;
+        return running;
       case 2:
+        return done;
+      case 3:
         return failed;
       default:
         return null;

@@ -16,6 +16,14 @@ from thrift.transport import TTransport
 
 
 class Iface(object):
+    def getSBML(self, vcml, applicationName):
+        """
+        Parameters:
+         - vcml
+         - applicationName
+        """
+        pass
+
     def getData(self, simInfo, varInfo, timeIndex):
         """
         Parameters:
@@ -61,6 +69,41 @@ class Client(Iface):
         if oprot is not None:
             self._oprot = oprot
         self._seqid = 0
+
+    def getSBML(self, vcml, applicationName):
+        """
+        Parameters:
+         - vcml
+         - applicationName
+        """
+        self.send_getSBML(vcml, applicationName)
+        return self.recv_getSBML()
+
+    def send_getSBML(self, vcml, applicationName):
+        self._oprot.writeMessageBegin('getSBML', TMessageType.CALL, self._seqid)
+        args = getSBML_args()
+        args.vcml = vcml
+        args.applicationName = applicationName
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_getSBML(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = getSBML_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.dataAccessException is not None:
+            raise result.dataAccessException
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "getSBML failed: unknown result")
 
     def getData(self, simInfo, varInfo, timeIndex):
         """
@@ -238,6 +281,7 @@ class Processor(Iface, TProcessor):
     def __init__(self, handler):
         self._handler = handler
         self._processMap = {}
+        self._processMap["getSBML"] = Processor.process_getSBML
         self._processMap["getData"] = Processor.process_getData
         self._processMap["getTimePoints"] = Processor.process_getTimePoints
         self._processMap["getVariableList"] = Processor.process_getVariableList
@@ -258,6 +302,28 @@ class Processor(Iface, TProcessor):
         else:
             self._processMap[name](self, seqid, iprot, oprot)
         return True
+
+    def process_getSBML(self, seqid, iprot, oprot):
+        args = getSBML_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = getSBML_result()
+        try:
+            result.success = self._handler.getSBML(args.vcml, args.applicationName)
+            msg_type = TMessageType.REPLY
+        except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+            raise
+        except ThriftDataAccessException as dataAccessException:
+            msg_type = TMessageType.REPLY
+            result.dataAccessException = dataAccessException
+        except Exception as ex:
+            msg_type = TMessageType.EXCEPTION
+            logging.exception(ex)
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("getSBML", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
     def process_getData(self, seqid, iprot, oprot):
         args = getData_args()
@@ -370,6 +436,150 @@ class Processor(Iface, TProcessor):
         oprot.trans.flush()
 
 # HELPER FUNCTIONS AND STRUCTURES
+
+
+class getSBML_args(object):
+    """
+    Attributes:
+     - vcml
+     - applicationName
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, 'vcml', 'UTF8', None, ),  # 1
+        (2, TType.STRING, 'applicationName', 'UTF8', None, ),  # 2
+    )
+
+    def __init__(self, vcml=None, applicationName=None,):
+        self.vcml = vcml
+        self.applicationName = applicationName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.vcml = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.applicationName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('getSBML_args')
+        if self.vcml is not None:
+            oprot.writeFieldBegin('vcml', TType.STRING, 1)
+            oprot.writeString(self.vcml.encode('utf-8') if sys.version_info[0] == 2 else self.vcml)
+            oprot.writeFieldEnd()
+        if self.applicationName is not None:
+            oprot.writeFieldBegin('applicationName', TType.STRING, 2)
+            oprot.writeString(self.applicationName.encode('utf-8') if sys.version_info[0] == 2 else self.applicationName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class getSBML_result(object):
+    """
+    Attributes:
+     - success
+     - dataAccessException
+    """
+
+    thrift_spec = (
+        (0, TType.STRING, 'success', 'UTF8', None, ),  # 0
+        (1, TType.STRUCT, 'dataAccessException', (ThriftDataAccessException, ThriftDataAccessException.thrift_spec), None, ),  # 1
+    )
+
+    def __init__(self, success=None, dataAccessException=None,):
+        self.success = success
+        self.dataAccessException = dataAccessException
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRING:
+                    self.success = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.dataAccessException = ThriftDataAccessException()
+                    self.dataAccessException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('getSBML_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRING, 0)
+            oprot.writeString(self.success.encode('utf-8') if sys.version_info[0] == 2 else self.success)
+            oprot.writeFieldEnd()
+        if self.dataAccessException is not None:
+            oprot.writeFieldBegin('dataAccessException', TType.STRUCT, 1)
+            self.dataAccessException.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
 
 
 class getData_args(object):

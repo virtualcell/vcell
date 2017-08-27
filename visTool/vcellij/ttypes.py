@@ -29,20 +29,23 @@ class DomainType(object):
 
 
 class SimulationState(object):
-    running = 0
-    done = 1
-    failed = 2
+    notRun = 0
+    running = 1
+    done = 2
+    failed = 3
 
     _VALUES_TO_NAMES = {
-        0: "running",
-        1: "done",
-        2: "failed",
+        0: "notRun",
+        1: "running",
+        2: "done",
+        3: "failed",
     }
 
     _NAMES_TO_VALUES = {
-        "running": 0,
-        "done": 1,
-        "failed": 2,
+        "notRun": 0,
+        "running": 1,
+        "done": 2,
+        "failed": 3,
     }
 
 
@@ -275,9 +278,21 @@ class VariableInfo(object):
 
 
 class SimulationSpec(object):
+    """
+    Attributes:
+     - outputTimeStep
+     - totalTime
+    """
 
     thrift_spec = (
+        None,  # 0
+        (1, TType.DOUBLE, 'outputTimeStep', None, None, ),  # 1
+        (2, TType.DOUBLE, 'totalTime', None, None, ),  # 2
     )
+
+    def __init__(self, outputTimeStep=None, totalTime=None,):
+        self.outputTimeStep = outputTimeStep
+        self.totalTime = totalTime
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -288,6 +303,16 @@ class SimulationSpec(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
+            if fid == 1:
+                if ftype == TType.DOUBLE:
+                    self.outputTimeStep = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.DOUBLE:
+                    self.totalTime = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -298,10 +323,22 @@ class SimulationSpec(object):
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
         oprot.writeStructBegin('SimulationSpec')
+        if self.outputTimeStep is not None:
+            oprot.writeFieldBegin('outputTimeStep', TType.DOUBLE, 1)
+            oprot.writeDouble(self.outputTimeStep)
+            oprot.writeFieldEnd()
+        if self.totalTime is not None:
+            oprot.writeFieldBegin('totalTime', TType.DOUBLE, 2)
+            oprot.writeDouble(self.totalTime)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
+        if self.outputTimeStep is None:
+            raise TProtocolException(message='Required field outputTimeStep is unset!')
+        if self.totalTime is None:
+            raise TProtocolException(message='Required field totalTime is unset!')
         return
 
     def __repr__(self):

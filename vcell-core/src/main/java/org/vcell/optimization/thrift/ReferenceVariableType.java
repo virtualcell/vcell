@@ -6,6 +6,11 @@
  */
 package org.vcell.optimization.thrift;
 
+
+import java.util.Map;
+import java.util.HashMap;
+import org.apache.thrift.TEnum;
+
 public enum ReferenceVariableType implements org.apache.thrift.TEnum {
   independent(0),
   dependent(1);

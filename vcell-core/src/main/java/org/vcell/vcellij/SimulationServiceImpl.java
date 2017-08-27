@@ -8,7 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.thrift.TException;
+import org.sbml.jsbml.SBMLException;
+import org.vcell.sbml.SbmlException;
+import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.sbml.vcell.SBMLExporter.VCellSBMLDoc;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
@@ -53,6 +59,9 @@ import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solver.server.SolverListener;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 
 
 /**
@@ -411,5 +420,18 @@ public class SimulationServiceImpl implements SimulationService.Iface {
         	e.printStackTrace();
         	throw new ThriftDataAccessException("failed to retrieve variable list: "+e.getMessage());
         }
+	}
+	@Override
+	public String getSBML(String vcml, String applicationName) throws ThriftDataAccessException, TException {
+		try {
+			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml));
+			SimulationContext simContext = bioModel.getSimulationContext(applicationName);
+			SBMLExporter exporter = new SBMLExporter(simContext,3,1,true);
+			VCellSBMLDoc sbmlDoc = exporter.convertToSBML();
+			return sbmlDoc.xmlString;
+		} catch (SBMLException | XmlParseException | SbmlException | XMLStreamException e) {
+			e.printStackTrace();
+			throw new ThriftDataAccessException("failed to generate SBML document: "+e.getMessage());
+		}
 	}
 }

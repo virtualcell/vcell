@@ -6,6 +6,11 @@
  */
 package org.vcell.optimization.thrift;
 
+
+import java.util.Map;
+import java.util.HashMap;
+import org.apache.thrift.TEnum;
+
 public enum OptimizationParameterType implements org.apache.thrift.TEnum {
   Number_of_Generations(0),
   Number_of_Iterations(1),
