@@ -9,37 +9,12 @@ import org.vcell.util.exe.ExecutableException;
 import org.vcell.util.exe.IExecutable;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 
+import cbit.vcell.resource.CondaSupport;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.VCellConfiguration;
 
 public class VtkServicePython extends VtkService {
-	private static final String PYTHON_MODULE_PATH;
-	/**
-	 * path to python exe or wrapper
-	 */
-	private static final String PYTHON_EXE_PATH;
-	/**
-	 * path to python script
-	 */
-	private static final String VIS_TOOL;
-	//These aren't going to change, so just read once
-	static {
-		String pm = null;
-		String pe = "python";
-		String pv = "visTool";
-		try {
-			pm = PropertyLoader.getProperty(PropertyLoader.VTK_PYTHON_MODULE_PATH, null);
-			pe = PropertyLoader.getProperty(PropertyLoader.VTK_PYTHON_EXE_PATH, pe);
-			pv = PropertyLoader.getProperty(PropertyLoader.VIS_TOOL, pv);
-		}
-		catch (Exception e){ //make fail safe
-			lg.warn("error setting PYTHON_PATH",e);
-		}
-		finally {
-			PYTHON_MODULE_PATH = pm;
-			PYTHON_EXE_PATH = pe;
-			VIS_TOOL=pv;
-		}
-	}
 
 	@Override
 	public void writeChomboMembraneVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException {
@@ -70,11 +45,13 @@ public class VtkServicePython extends VtkService {
 		if (lg.isDebugEnabled()) {
 			lg.debug("writeVtkGridAndIndexData (python) for domain "+domainName);
 		}
+		File PYTHON = CondaSupport.getPythonExe();
 		String baseFilename = vtkFile.getName().replace(".vtu",".visMesh");
 		File visMeshFile = new File(vtkFile.getParentFile(), baseFilename);
 		VisMeshUtils.writeVisMesh(visMeshFile, visMesh);
+		File vtkServiceFile = new File(ResourceUtil.getVisToolDir(),"vtkService.py");
 		//It's 2015 -- forward slash works for all operating systems
-		String[] cmd = new String[] { PYTHON_EXE_PATH,VIS_TOOL+"/vtkService.py",visMeshType,domainName,visMeshFile.getAbsolutePath(),vtkFile.getAbsolutePath(),indexFile.getAbsolutePath() };
+		String[] cmd = new String[] { PYTHON.getAbsolutePath(), vtkServiceFile.getAbsolutePath(),visMeshType,domainName,visMeshFile.getAbsolutePath(),vtkFile.getAbsolutePath(),indexFile.getAbsolutePath() };
 		IExecutable exe = prepareExecutable(cmd);
 		try {
 			exe.start( new int[] { 0 });
@@ -93,9 +70,6 @@ public class VtkServicePython extends VtkService {
 		}
 		System.out.println("python command string:" + StringUtils.join(cmd," "));
 		Executable2 exe = new Executable2(cmd);
-		if (PYTHON_MODULE_PATH != null) {
-			exe.addEnvironmentVariable("PYTHONPATH", PYTHON_MODULE_PATH);
-		}
 		return exe;
 	}
 

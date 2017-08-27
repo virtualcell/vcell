@@ -38,42 +38,15 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.CondaSupport;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;
 
 public class CopasiServicePython {
 	
 	public static CopasiServicePython copasiService = null;
 	protected static final Logger lg = Logger.getLogger(VtkService.class);
-
-	private static final String PYTHON_MODULE_PATH;
-	/**
-	 * path to python exe or wrapper
-	 */
-	private static final String PYTHON_EXE_PATH;
-	/**
-	 * path to python script
-	 */
-	private static final String VIS_TOOL;
-	//These aren't going to change, so just read once
-	static {
-		String pm = null;
-		String pe = "python";
-		String pv = "visTool";
-		try {
-			pm = PropertyLoader.getProperty(PropertyLoader.VTK_PYTHON_MODULE_PATH, null);
-			pe = PropertyLoader.getProperty(PropertyLoader.VTK_PYTHON_EXE_PATH, pe);
-			pv = PropertyLoader.getProperty(PropertyLoader.VIS_TOOL, pv);
-		}
-		catch (Exception e){ //make fail safe
-			lg.warn("error setting PYTHON_PATH",e);
-		}
-		finally {
-			PYTHON_MODULE_PATH = pm;
-			PYTHON_EXE_PATH = pe;
-			VIS_TOOL=pv;
-		}
-	}
 
 	public static void writeOptProblem(File optProblemFile,  OptProblem optProblem) throws IOException {
 		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
@@ -226,11 +199,13 @@ public class CopasiServicePython {
 
 	public static void runCopasiPython(File copasiOptProblemFile, File copasiResultsFile) throws IOException {
 		//It's 2015 -- forward slash works for all operating systems
-		File PYTHON = VCellConfiguration.getFileProperty(PropertyLoader.pythonExe);
+		File PYTHON = CondaSupport.getPythonExe();
+		File visToolDir = ResourceUtil.getVisToolDir();
+		File optServicePythonFile = new File(visToolDir,"optService.py");
 		if (PYTHON==null || !PYTHON.exists()){
 			throw new RuntimeException("python executable not specified, set python location in VCell menu File->Preferences...->Python Properties");
 		}
-		String[] cmd = new String[] { PYTHON.getAbsolutePath(),VIS_TOOL+"/optService.py",copasiOptProblemFile.getAbsolutePath(), copasiResultsFile.getAbsolutePath()};
+		String[] cmd = new String[] { PYTHON.getAbsolutePath(),optServicePythonFile.getAbsolutePath(),copasiOptProblemFile.getAbsolutePath(), copasiResultsFile.getAbsolutePath()};
 		IExecutable exe = prepareExecutable(cmd);
 		try {
 			exe.start( new int[] { 0 });
@@ -249,9 +224,6 @@ public class CopasiServicePython {
 		}
 		System.out.println("python command string:" + StringUtils.join(cmd," "));
 		Executable2 exe = new Executable2(cmd);
-		if (PYTHON_MODULE_PATH != null) {
-			exe.addEnvironmentVariable("PYTHONPATH", PYTHON_MODULE_PATH);
-		}
 		return exe;
 	}
 

@@ -14,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -24,8 +25,10 @@ import javax.swing.border.TitledBorder;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
+import cbit.vcell.resource.CondaSupport;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;
 
 // http://commons.apache.org/proper/commons-io/javadocs/api-2.4/org/apache/commons/io
@@ -61,7 +64,7 @@ public class PythonConfigurationPanel extends JPanel {
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		gbc.gridheight=1;
 		
-		//CondaSupport.doWork();
+		//CondaSupport.installInBackground();  // or not in background ... ?????
 		
 		//=============================================================================
 		//
@@ -69,24 +72,42 @@ public class PythonConfigurationPanel extends JPanel {
 		//
 		//=============================================================================
 		int gridy = 0;
-		JLabel pythonExeLabel = new JLabel("<html>Anaconda Python executable (anacond python is supported, see <a href='https://www.continuum.io/downloads'>Download Anaconda Python</a>)</html>");
+		String managedMiniconda = new File(ResourceUtil.getVcellHome(),"Miniconda").getAbsolutePath();
+		String vcellPythonText = "Python is required for parameter estimation and other analysis\n\n"
+				+ "VCell manages a dedicated Miniconda python installation \n"
+				+ "at "+managedMiniconda+".  \n"
+				+ "For more information about Miniconda, \n"
+				+ "see https://www.continuum.io\n\n";
+		JTextArea vcellPythonTextArea = new JTextArea(vcellPythonText);
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.gridwidth = 2;
 		gbc.weightx = 0.5;
+		gbc.weighty = 1;
 		gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
-		jpanel.add(pythonExeLabel, gbc);
-
+		jpanel.add(vcellPythonTextArea, gbc);
 		gridy++;
+		
+		String providedPythonText = "Alternate Anaconda/Miniconda installation directory.";
+		JLabel providedPythonLabel = new JLabel(providedPythonText);
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.weightx = 0.5;
+		gbc.insets = new Insets(4,4,1,4);			// top, left bottom, right
+		jpanel.add(providedPythonLabel, gbc);
+		gridy++;
+		
 		pythonExeTextField = new JTextField();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.gridwidth = 1;
 		gbc.weightx = 0.5;
+		gbc.weighty = 0.0;
 		gbc.ipady = 1;
-		gbc.insets = new Insets(4,4,2,2);
+		gbc.insets = new Insets(0,4,2,2);
 		jpanel.add(pythonExeTextField, gbc);
-		pythonExeTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.pythonExe, new File(pythonExeTextField.getText())); });
+		pythonExeTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.anacondaInstallDir, new File(pythonExeTextField.getText())); });
 		
 		JButton findPythonButton = new JButton("Browse...");
 		findPythonButton.addActionListener((ActionEvent e) -> browsePythonExe() );
@@ -104,12 +125,12 @@ public class PythonConfigurationPanel extends JPanel {
 //		gbc.gridwidth=2;
 //		jpanel.add(new JSeparator(), gbc);
 				
-		pythonExeTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.pythonExe, new File(pythonExeTextField.getText())); });
+		pythonExeTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.anacondaInstallDir, new File(pythonExeTextField.getText())); });
 		initPythonValues();
 	}
 	
 	private void initPythonValues(){
-		File pythonExe = VCellConfiguration.getFileProperty(PropertyLoader.pythonExe);
+		File pythonExe = VCellConfiguration.getFileProperty(PropertyLoader.anacondaInstallDir);
 		if (pythonExe!=null){
 			pythonExeTextField.setText(pythonExe.getAbsolutePath());
 		}		
@@ -124,7 +145,7 @@ public class PythonConfigurationPanel extends JPanel {
 		}
 		
 		if (pythonExe.exists()){
-			VCellConfiguration.setFileProperty(PropertyLoader.pythonExe, pythonExe);
+			VCellConfiguration.setFileProperty(PropertyLoader.anacondaInstallDir, pythonExe);
 			initPythonValues();
 		}
 	}

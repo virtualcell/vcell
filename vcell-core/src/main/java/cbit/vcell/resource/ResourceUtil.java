@@ -34,6 +34,7 @@ import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
 	private static final String LOCALSOLVERS_DIR = "localsolvers";
+	private static final String VISTOOL_DIR = "visTool";
 	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
 	private static final String STRAWBERRYPERL_HOME_REL_PATH = "bngperl\\perl\\bin\\perl.exe";  // e.g. c:\Users\me\.vcell\strawberryperl\perl\perl.exe
 
@@ -440,6 +441,10 @@ public class ResourceUtil {
 	 */
 	public static String forceUnixPath(String filePath){
 		return filePath.replace("C:","").replace("D:","").replace("\\","/");
+	}
+
+	public static File getVisToolDir() {
+		return new File(getVCellInstall(),VISTOOL_DIR);
 	}
 
 }
