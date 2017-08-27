@@ -1,9 +1,7 @@
-listserv/
-vfrapPaper/
+/listserv/
+/vfrapPaper/
 /log4j.properties
-/.pydevproject
-/.project
-/.classpath
-
-listserv/
-listserv/
+.settings/
+.pydevproject
+.project
+.classpath
