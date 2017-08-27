@@ -15,6 +15,9 @@ local_vcellstop="$absDir/vcellstop_local"
 local_vcellservice="$absDir/vcellservice"
 local_vcellbootstrap_high="$absDir/vcellbootstrap_high"
 echo ""
+echo "===== don't forget to move installers to apache ====="
+echo "ssh $SSH_OPT ${absDir}/../installers/* vcell@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/${vcell_site_camel}
+echo ""
 echo "===== INSTRUCTIONS TO START VCELL ================"
 echo ""
 echo "1) FIRST ... STOP vcell services on all hosts"
@@ -26,11 +29,13 @@ echo ""
 echo "2) THEN ... START each vcell service on the appropriate host"
 echo ""
 echo "ssh $SSH_OPT $vcellservice_host '${absDir}/vcellservice'"
-echo "ssh $SSH_OPT $bootstrap_host '${absDir}/vcellboostrap_high'"
+echo "ssh $SSH_OPT $bootstrap_host '${absDir}/vcellbootstrap_high'"
 
 if [ "$bootstrap_http_rmiport" -ne -1 ]; then
-echo "ssh $SSH_OPT $bootstrap_host '${absDir}/vcellboostrap_http'"
+echo "ssh $SSH_OPT $bootstrap_host '${absDir}/vcellbootstrap_http'"
 fi
 
 echo "ssh $SSH_OPT $vcellapi_host '${absDir}/vcellapi'"
+echo ""
+echo " >>>> MOVE SOLVER EXECUTABLES FROM ??? <<<
 echo ""
