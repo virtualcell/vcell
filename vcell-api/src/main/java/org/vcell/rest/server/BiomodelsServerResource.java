@@ -49,6 +49,8 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 	public static final String PARAM_ORDERBY = "orderBy";
 	public static final String PARAM_ORDERBY_DATE_ASC = "date_asc";
 	public static final String PARAM_ORDERBY_DATE_DESC = "date_desc";
+	public static final String PARAM_ORDERBY_YEAR_ASC = "year_asc";
+	public static final String PARAM_ORDERBY_YEAR_DESC = "year_desc";
 	public static final String PARAM_ORDERBY_NAME_ASC = "name_asc";
 	public static final String PARAM_ORDERBY_NAME_DESC = "name_desc";
 	public static final String PARAM_CATEGORY = "category";

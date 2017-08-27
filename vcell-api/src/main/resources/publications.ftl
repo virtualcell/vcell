@@ -13,7 +13,7 @@
 	<tr><td>Publication ID</td><td><input type='text' name='pubId' value='${pubId!""}'/></td></tr>
 	<tr><td>Order By</td><td>
 						<input type='radio' name='orderBy' value='year_desc' <#if (!orderBy??) || (orderBy == "year_desc")>checked=on</#if>>Year (newest)</input>
-						<input type='radio' name='orderBy' value='year_asc' <#if orderBy?? && orderBy == "date_asc">checked=on</#if>>Year (oldest)</input>
+						<input type='radio' name='orderBy' value='year_asc' <#if orderBy?? && orderBy == "year_asc">checked=on</#if>>Year (oldest)</input>
 						</td></tr>
 	</tbody></table>
 	<input type='submit' value='Search' style='font-size:large'>

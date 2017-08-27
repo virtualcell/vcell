@@ -794,12 +794,12 @@ public class RestDatabaseService {
 			}
 			conditionsBuffer.append(condition);
 		}
-		OrderBy orderBy = OrderBy.date_desc; // default
+		OrderBy orderBy = OrderBy.year_desc; // default
 		if (orderByParam!=null){
-			if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_DATE_ASC)){
-				orderBy = OrderBy.date_asc;
-			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_DATE_DESC)){
-				orderBy = OrderBy.date_desc;
+			if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_YEAR_ASC)){
+				orderBy = OrderBy.year_asc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_YEAR_DESC)){
+				orderBy = OrderBy.year_desc;
 			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_ASC)){
 				orderBy = OrderBy.name_asc;
 			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_DESC)){
