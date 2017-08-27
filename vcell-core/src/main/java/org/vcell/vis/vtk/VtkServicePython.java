@@ -13,6 +13,8 @@ import cbit.vcell.resource.CondaSupport;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;
+import cbit.vcell.resource.CondaSupport.InstallStatus;
+import cbit.vcell.resource.CondaSupport.PythonPackage;
 
 public class VtkServicePython extends VtkService {
 
@@ -46,6 +48,14 @@ public class VtkServicePython extends VtkService {
 			lg.debug("writeVtkGridAndIndexData (python) for domain "+domainName);
 		}
 		File PYTHON = CondaSupport.getPythonExe();
+		InstallStatus copasiInstallStatus = CondaSupport.getPythonPackageStatus(PythonPackage.VTK);
+		if (copasiInstallStatus==InstallStatus.FAILED){
+			throw new RuntimeException("failed to install VTK python package, consider re-installing VCell-managed python\n ...see Preferences->Python->Re-install");
+		}
+		if (copasiInstallStatus==InstallStatus.INITIALIZING){
+			throw new RuntimeException("VCell is currently installing or verifying the VTK python package ... please try again in a minute");
+		}
+		
 		String baseFilename = vtkFile.getName().replace(".vtu",".visMesh");
 		File visMeshFile = new File(vtkFile.getParentFile(), baseFilename);
 		VisMeshUtils.writeVisMesh(visMeshFile, visMesh);

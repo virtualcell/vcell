@@ -158,10 +158,9 @@ public class CondaSupport {
 	public static synchronized void verifyInstall(boolean bForceDownload, boolean bForceInstallPython, boolean bForceInstallPackages) throws IOException {
 		isInstallingOrVerifying = true;
 
-		getPackageStatusMap().put(PythonPackage.LIBSBML, InstallStatus.INITIALIZING);
-		getPackageStatusMap().put(PythonPackage.COPASI, InstallStatus.INITIALIZING);
-		getPackageStatusMap().put(PythonPackage.THRIFT, InstallStatus.INITIALIZING);
-		getPackageStatusMap().put(PythonPackage.VTK, InstallStatus.INITIALIZING);
+		for (PythonPackage pkg : PythonPackage.values()){
+			getPackageStatusMap().put(pkg, InstallStatus.INITIALIZING);
+		}
 
 		try {
 			//
@@ -272,68 +271,35 @@ public class CondaSupport {
 				}
 			}
 			
+			verifiedPythonExe = pythonInstallation.pythonExe;
+
 			//
 			// check packages early and set status so that dont have to wait until all install/verify before use.
 			//
-			boolean bFoundThrift = checkPackage(pythonInstallation.pythonExe,PythonPackage.THRIFT);
-			if (bFoundThrift) getPackageStatusMap().put(PythonPackage.THRIFT, InstallStatus.INSTALLED);
-
-			boolean bFoundCOPASI = checkPackage(pythonInstallation.pythonExe,PythonPackage.COPASI);
-			if (bFoundCOPASI) getPackageStatusMap().put(PythonPackage.COPASI, InstallStatus.INSTALLED);
-
-			boolean bFoundVTK = checkPackage(pythonInstallation.pythonExe,PythonPackage.VTK);
-			if (bFoundVTK) getPackageStatusMap().put(PythonPackage.VTK, InstallStatus.INSTALLED);
-
-			boolean bFoundLibSBML = checkPackage(pythonInstallation.pythonExe,PythonPackage.LIBSBML);
-			if (bFoundLibSBML) getPackageStatusMap().put(PythonPackage.LIBSBML, InstallStatus.INSTALLED);
-
-
-			//
-			// check/install Thrift
-			//
-			if (!bFoundThrift || bForceInstallPackages){
-				getPackageStatusMap().put(PythonPackage.THRIFT, InstallStatus.INITIALIZING);
-				removePackage(pythonInstallation.condaExe,PythonPackage.THRIFT);
-				installPackage(pythonInstallation.condaExe,PythonPackage.THRIFT);
-				bFoundThrift = checkPackage(pythonInstallation.pythonExe,PythonPackage.THRIFT);
+			for (PythonPackage pkg : PythonPackage.values()){
+				boolean bFound = checkPackage(pythonInstallation.pythonExe,pkg);
+				if (bFound){
+					getPackageStatusMap().put(pkg, InstallStatus.INSTALLED);
+				}
 			}
-			getPackageStatusMap().put(PythonPackage.THRIFT, (bFoundThrift) ? InstallStatus.INSTALLED : InstallStatus.FAILED);
-
-			//
-			// check/install COPASI
-			//
-			if (!bFoundCOPASI || bForceInstallPackages){
-				getPackageStatusMap().put(PythonPackage.COPASI, InstallStatus.INITIALIZING);
-				removePackage(pythonInstallation.condaExe,PythonPackage.COPASI);
-				installPackage(pythonInstallation.condaExe,PythonPackage.COPASI);
-				bFoundCOPASI = checkPackage(pythonInstallation.pythonExe,PythonPackage.COPASI);
-			}
-			getPackageStatusMap().put(PythonPackage.COPASI, (bFoundCOPASI) ? InstallStatus.INSTALLED : InstallStatus.FAILED);
 			
 			//
-			// check/install libSBML
+			// check/install packages
 			//
-			if (!bFoundLibSBML || bForceInstallPackages){
-				getPackageStatusMap().put(PythonPackage.LIBSBML, InstallStatus.INITIALIZING);
-				removePackage(pythonInstallation.condaExe,PythonPackage.LIBSBML);
-				installPackage(pythonInstallation.condaExe,PythonPackage.LIBSBML);
-				bFoundLibSBML = checkPackage(pythonInstallation.pythonExe,PythonPackage.LIBSBML);
-			}
-			getPackageStatusMap().put(PythonPackage.LIBSBML, (bFoundLibSBML) ? InstallStatus.INSTALLED : InstallStatus.FAILED);
-			
-			//
-			// check/install VTK
-			//
-			if (!bFoundVTK || bForceInstallPackages){
-				getPackageStatusMap().put(PythonPackage.VTK, InstallStatus.INITIALIZING);
-				removePackage(pythonInstallation.condaExe,PythonPackage.VTK);
-				installPackage(pythonInstallation.condaExe,PythonPackage.VTK);
-				bFoundVTK = checkPackage(pythonInstallation.pythonExe,PythonPackage.VTK);
-			}
-			getPackageStatusMap().put(PythonPackage.VTK, (bFoundVTK) ? InstallStatus.INSTALLED : InstallStatus.FAILED);
-			
-			verifiedPythonExe = pythonInstallation.pythonExe;
-			
+			for (PythonPackage pkg : PythonPackage.values()){
+				InstallStatus status = getPackageStatusMap().get(pkg);
+				if (status != InstallStatus.INSTALLED || bForceInstallPackages){
+					getPackageStatusMap().put(pkg, InstallStatus.INITIALIZING);
+					removePackage(pythonInstallation.condaExe,pkg);
+					installPackage(pythonInstallation.condaExe,pkg);
+					boolean bFound = checkPackage(pythonInstallation.pythonExe,pkg);
+					if (bFound){
+						getPackageStatusMap().put(pkg, InstallStatus.INSTALLED);
+					}else{
+						getPackageStatusMap().put(pkg, InstallStatus.FAILED);
+					}
+				}
+			}						
 		} finally {
 			isInstallingOrVerifying = false;
 		}
