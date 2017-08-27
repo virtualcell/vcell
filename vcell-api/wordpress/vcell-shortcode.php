@@ -208,9 +208,9 @@ function &vcell_get_publications_object() {
 function vcell_get_publication_post_title($publication) {
 	$authorText = '';
 	if (sizeof($publication->authors)>1){
-		$authorText = explode(',', end($publication->authors))[0] . ' et al., ';
+		$authorText = explode(',', reset($publication->authors))[0] . ' et al., ';
 	}else{
-		$authorText = end($publication->authors) . ', ';
+		$authorText = reset($publication->authors) . ', ';
 	}
 	$authorText .= $publication->year;
 	return $authorText;
@@ -234,7 +234,7 @@ function vcell_get_publication_post_content($publication) {
 
 	vcell_log_me('getting publication post content for pubKey ' . $publication->pubKey);
 	if (sizeof($publication->biomodelReferences)>0){
-		$modellinktext .= '<br/><strong>VCell BioModels referenced in publication:</strong><br/>';
+		$modellinktext .= '&nbsp;&nbsp;&nbsp;VCell BioModels referenced in publication:<br/>';
 		foreach ($publication->biomodelReferences as $biomodelref){
 			$bmKey = $biomodelref->bmKey;
 			$bmName = $biomodelref->name;
@@ -248,23 +248,23 @@ function vcell_get_publication_post_content($publication) {
 				$bmurl = get_permalink($bmPost->ID);
 				vcell_log_me('    using real link for publication ' . $publication->pubKey . ' biomodel ' . $bmKey);
 			}
-			$modellinktext .= 'user: <strong>' . $ownerName . '</strong>, &nbsp;&nbsp;model name: <a href="' . $bmurl . '">' . $bmName . '</a><br/>';
+			$modellinktext .= '&nbsp;&nbsp;&nbsp;user: ' . $ownerName . ', &nbsp;&nbsp;model name: <a href="' . $bmurl . '">' . $bmName . '</a><br/>';
 		}
 	} 
 
 	if (sizeof($publication->mathmodelReferences)>0){
-		$modellinktext .= '<br/><strong>VCell MathModels referenced in publication:</strong><br/>';
+		$modellinktext .= '&nbsp;&nbsp;&nbsp;VCell MathModels referenced in publication:<br/>';
 		foreach ($publication->mathmodelReferences as $mathmodelref){
 			$mmKey = $mathmodelref->mmKey;
 			$mmName = $mathmodelref->name;
 			$ownerKey = $mathmodelref->ownerKey;
 			$ownerName = $mathmodelref->ownerName;
 			$mmurl = '/mathmodel-' . $mmKey;   # this won't work
-			$modellinktext .= 'user: <strong>' . $ownerName . '</strong>, &nbsp;&nbsp;model name: <a href="' . $mmurl . '">' . $mmName . '</a><br/>';
+			$modellinktext .= '&nbsp;&nbsp;&nbsp;user: ' . $ownerName . ', &nbsp;&nbsp;model name: <a href="' . $mmurl . '">' . $mmName . '</a><br/>';
 		}
 	} 
 
-	$text = '<strong>' . $publication->title . '</strong><br/>';
+	$text = '<strong><big>' . $publication->title . '</big></strong><br/>';
 	$text .= $authorText . '<br/>';
 	$text .= $publication->citation . '<br/>';
 	$publinktext = '';
