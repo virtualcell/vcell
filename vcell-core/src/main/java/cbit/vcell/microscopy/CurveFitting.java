@@ -11,6 +11,7 @@
 package cbit.vcell.microscopy;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.vcell.optimization.DefaultOptSolverCallbacks;
 import org.vcell.optimization.OptSolverCallbacks;
@@ -33,6 +34,7 @@ import cbit.vcell.opt.Weights;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.solver.Simulation;
 /**
  * Fitting utilities 
@@ -73,6 +75,13 @@ public class CurveFitting {
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess())};
+		
+		ArrayList<String> symbols = new ArrayList<String>();
+		symbols.add("t");
+		for (Parameter p : parameters){
+			symbols.add(p.getName());
+		}
+		modelExp.bindExpression(new SimpleSymbolTable(symbols.toArray(new String[0])));
 
 		// estimate blech while monitoring rate by minimizing the error between funtion values and reference data
 		if(weights == null)
@@ -163,6 +172,7 @@ public class CurveFitting {
 			double bleachWhileMonitoringRate = inputparam[0];
 			modelExp = modelExp.getSubstitutedExpression(new Expression(FRAPDataAnalysis.symbol_bwmRate), new Expression(bleachWhileMonitoringRate));
 			Parameter parameters[] = new Parameter[] {FRAPDataAnalysis.para_If, FRAPDataAnalysis.para_Io, FRAPDataAnalysis.para_tau};
+			modelExp.bindExpression(new SimpleSymbolTable(new String[] { "t", FRAPDataAnalysis.para_If.getName(), FRAPDataAnalysis.para_Io.getName(), FRAPDataAnalysis.para_tau.getName() }));
 			//estimate parameters by minimizing the errors between function values and reference data
 			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
 			
