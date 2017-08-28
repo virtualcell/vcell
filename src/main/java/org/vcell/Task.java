@@ -1,6 +1,5 @@
 package org.vcell;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.SwingWorker;

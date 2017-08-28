@@ -3,13 +3,10 @@ package org.vcell;
 import java.awt.Frame;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.List;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
 
 public class VCellModelSelectionDialog extends JDialog {
 	

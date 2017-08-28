@@ -17,7 +17,6 @@ import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.view.Views;
 
 @Plugin(type = Op.class, name = "compareMap")
 public class CompareMap<T extends RealType<T>> extends AbstractOp {

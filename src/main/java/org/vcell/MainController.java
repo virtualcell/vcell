@@ -13,20 +13,15 @@ import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.ExplicitRule;
-import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Parameter;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLReader;
 import org.scijava.Context;
 import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
-import org.vcell.vcellij.api.SimulationStatus;
 
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;

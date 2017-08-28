@@ -1,7 +1,6 @@
 package org.vcell;
 
 import org.scijava.ItemIO;
-import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 

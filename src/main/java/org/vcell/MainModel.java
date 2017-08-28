@@ -1,15 +1,15 @@
 package org.vcell;
 
-import net.imagej.Dataset;
-import net.imagej.axis.AxisType;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.vcell.vcellij.api.SimulationState;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.imagej.Dataset;
+import net.imagej.axis.AxisType;
 
 /**
  * Created by kevingaffney on 6/26/17.

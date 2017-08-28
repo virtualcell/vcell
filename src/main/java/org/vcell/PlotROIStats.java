@@ -1,6 +1,5 @@
 package org.vcell;
 
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.List;
 
@@ -16,10 +15,7 @@ import net.imagej.overlay.Overlay;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
-import net.imglib2.util.ValuePair;
-import net.imglib2.view.Views;
 
 @Plugin(type = Op.class, name = "plotROIStats")
 public class PlotROIStats<T extends RealType<T>> extends AbstractOp {

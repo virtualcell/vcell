@@ -8,16 +8,11 @@
 
 package org.vcell;
 
-import net.imagej.Dataset;
-import net.imagej.ImageJ;
-import net.imagej.ops.OpService;
-import net.imglib2.Cursor;
-import net.imglib2.algorithm.neighborhood.HyperSphereShape;
-import net.imglib2.img.array.ArrayImg;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.basictypeaccess.array.IntArray;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedIntType;
+import java.io.File;
+import java.io.IOException;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.ext.spatial.Geometry;
@@ -28,9 +23,12 @@ import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.IOException;
+import net.imagej.ops.OpService;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.basictypeaccess.array.IntArray;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedIntType;
 
 /**
  *

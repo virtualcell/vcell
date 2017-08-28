@@ -16,7 +16,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import org.sbml.jsbml.ASTNode;
-import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.Species;
 

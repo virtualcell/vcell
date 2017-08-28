@@ -1,18 +1,13 @@
 package org.vcell;
 
 import java.awt.GridBagConstraints;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.sbml.jsbml.ASTNode;
-import org.sbml.jsbml.ExplicitRule;
-import org.sbml.jsbml.ListOf;
-import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Parameter;
 
 /**

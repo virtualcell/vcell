@@ -1,8 +1,8 @@
 package org.vcell;
 
-import net.imagej.ImageJ;
-
 import java.io.IOException;
+
+import net.imagej.ImageJ;
 
 /**
  * Created by kevingaffney on 6/23/17.

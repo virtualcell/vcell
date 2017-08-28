@@ -1,9 +1,9 @@
 package org.vcell;
 
-import net.imagej.Dataset;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import net.imagej.Dataset;
 
 /**
  * Created by kevingaffney on 6/27/17.

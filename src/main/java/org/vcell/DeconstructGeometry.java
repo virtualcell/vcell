@@ -1,39 +1,25 @@
 package org.vcell;
 
-import net.imagej.Dataset;
-import net.imagej.DatasetService;
-import net.imagej.ImageJ;
-import net.imagej.axis.Axes;
-import net.imagej.axis.AxisType;
-import net.imagej.ops.OpService;
-import net.imagej.ops.Ops;
-import net.imglib2.Cursor;
-import net.imglib2.FinalInterval;
-import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImg;
-import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
-import net.imglib2.outofbounds.OutOfBounds;
-import net.imglib2.outofbounds.OutOfBoundsConstantValueFactory;
-import net.imglib2.outofbounds.OutOfBoundsFactory;
-import net.imglib2.type.Type;
-import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.GenericIntType;
-import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.Intervals;
-import net.imglib2.view.IntervalView;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import java.io.File;
-import java.io.IOException;
+import net.imagej.Dataset;
+import net.imagej.DatasetService;
+import net.imagej.axis.Axes;
+import net.imagej.ops.OpService;
+import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.util.Intervals;
+import net.imglib2.view.IntervalView;
 
 /**
  * Created by kevingaffney on 6/20/17.

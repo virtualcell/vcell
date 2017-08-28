@@ -5,7 +5,10 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
-import org.vcell.vcellij.api.*;
+import org.vcell.vcellij.api.SBMLModel;
+import org.vcell.vcellij.api.SimulationInfo;
+import org.vcell.vcellij.api.SimulationService;
+import org.vcell.vcellij.api.SimulationSpec;
 
 public class SimpleClient {
 

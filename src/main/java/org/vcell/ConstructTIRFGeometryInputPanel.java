@@ -1,8 +1,11 @@
 package org.vcell;
 
-import net.imagej.Dataset;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 
-import javax.swing.*;
+import net.imagej.Dataset;
 
 /**
  * Created by kevingaffney on 7/6/17.

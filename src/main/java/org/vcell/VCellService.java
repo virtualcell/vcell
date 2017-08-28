@@ -33,17 +33,11 @@ import org.vcell.vcellij.api.VariableInfo;
 
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
-import net.imagej.ImgPlus;
 import net.imagej.ops.OpService;
-import net.imglib2.Cursor;
-import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.view.Views;
-import scala.concurrent.ops;
 
 /**
  * Created by kevingaffney on 7/10/17.

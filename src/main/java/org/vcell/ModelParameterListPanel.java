@@ -2,7 +2,6 @@ package org.vcell;
 
 import java.awt.GridBagConstraints;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;

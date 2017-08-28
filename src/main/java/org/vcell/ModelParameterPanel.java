@@ -3,16 +3,11 @@ package org.vcell;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.HashMap;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import org.sbml.jsbml.Parameter;
 
 public abstract class ModelParameterPanel extends JPanel {
 	
