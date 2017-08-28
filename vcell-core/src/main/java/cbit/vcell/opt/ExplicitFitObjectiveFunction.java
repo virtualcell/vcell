@@ -14,7 +14,11 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 
+import cbit.function.DefaultScalarFunction;
+import cbit.function.ScalarFunction;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import scala.collection.mutable.HashSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 12:09:38 PM)
@@ -27,6 +31,52 @@ public class ExplicitFitObjectiveFunction extends ObjectiveFunction {
 	private ExpressionDataPair[] funcDataPairs = null;
 	private SimpleReferenceData simpleReferenceData = null;
 
+public class ExplicitFitScalarFunction extends DefaultScalarFunction {
+
+	@Override
+	public double f(double[] x) {
+		int timeIndex = simpleReferenceData.findColumn("t");
+		if (timeIndex < 0){
+			throw new RuntimeException("did not find independent variable named 't' in ExplicitFitScalarFunction");
+		}
+		double[] timeData = simpleReferenceData.getDataByColumn(timeIndex);
+		double[] symbolValues = new double[1 + x.length];
+		for (int i=0;i<x.length;i++){
+			symbolValues[i+1] = x[i];
+		}
+		
+		double weightedSquaredErrors = 0;
+		for (ExpressionDataPair pair : funcDataPairs){
+			double[] refData = simpleReferenceData.getDataByColumn(pair.referenceDataIndex);
+			double weight = simpleReferenceData.getColumnWeights()[pair.referenceDataIndex-1];
+			for (int i=0;i<timeData.length;i++){
+				symbolValues[0] = timeData[i];
+				try {
+					double functionVal = pair.fitFunction.evaluateVector(symbolValues);
+					double dataVal = refData[i];
+					double weightedError = (dataVal - functionVal)*weight;
+					weightedSquaredErrors += (weightedError*weightedError);
+				} catch (ExpressionException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return Math.sqrt(weightedSquaredErrors);
+	}
+
+	@Override
+	public int getNumArgs() {
+		HashSet<String> symbolHash = new HashSet<String>();
+		for (ExpressionDataPair pair : funcDataPairs){
+			String[] symbols = pair.fitFunction.getSymbols();
+			for (String symbol : symbols){
+				symbolHash.add(symbol);
+			}
+		}
+		return symbolHash.size();
+	}
+	
+}
 
 public static class ExpressionDataPair 
 {
@@ -166,5 +216,10 @@ public Expression getFunctionExpression(int indexInArray) {
 
 public int getReferenceDataColumnIndex(int indexInArray){
 	return funcDataPairs[indexInArray].getReferenceDataIndex();
+}
+
+
+public ScalarFunction getScalarFunction() {
+	return new ExplicitFitScalarFunction();
 }
 }

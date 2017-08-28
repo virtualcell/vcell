@@ -19,6 +19,7 @@ import cbit.function.DynamicVectorFunction;
 import cbit.function.ScalarFunction;
 import cbit.vcell.opt.Constraint;
 import cbit.vcell.opt.ConstraintType;
+import cbit.vcell.opt.ExplicitFitObjectiveFunction;
 import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.ImplicitObjectiveFunction;
 import cbit.vcell.opt.OptimizationSpec;
@@ -293,7 +294,10 @@ public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(Optimizat
 		// build objective function
 		//
 		objFunction = implicitObjectiveFunction.getObjectiveFunction();
-	} else{
+	} else if (optSpec.getObjectiveFunction() instanceof ExplicitFitObjectiveFunction){
+		ExplicitFitObjectiveFunction explicitFitObjectiveFunction = (ExplicitFitObjectiveFunction)optSpec.getObjectiveFunction();
+		objFunction = explicitFitObjectiveFunction.getScalarFunction();
+	}else{
 		throw new RuntimeException("unsupported objective function type : "+optSpec.getObjectiveFunction().getClass().getName());
 	}
 	//
