@@ -25,7 +25,7 @@ your convenience, but are separately available in the vcell-solvers project (htt
 ### Building VCell Client as a standalone tool
 Requirements:  Git, Maven, and Java JDK 1.8 or later
 
-git clone https://github.com/jcschaff/vcell
+git clone https://github.com/virtualcell/vcell
 cd vcell
 mvn clean verify
 
