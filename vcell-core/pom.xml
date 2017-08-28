@@ -102,6 +102,11 @@
 			<artifactId>vcell-util</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-services</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>javax.media.jai</groupId>
@@ -133,11 +138,11 @@
 			<version>1.0.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.thrift/libthrift -->
-		<dependency>
+<!-- 		<dependency>
 		    <groupId>org.apache.thrift</groupId>
 		    <artifactId>libthrift</artifactId>
 		    <version>0.10.0</version>
-		</dependency>
+		</dependency> -->
 		<!-- https://mvnrepository.com/artifact/gov.nist.math/jama -->
 		<dependency>
 		    <groupId>gov.nist.math</groupId>

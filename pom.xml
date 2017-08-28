@@ -95,6 +95,7 @@
 		<module>vcell-core</module>
 		<module>vcell-api</module>
 		<module>vcell-apiclient</module>
+		<module>vcell-services</module>
 	</modules>
   
 	<repositories>
