@@ -104,7 +104,7 @@ public class CondaSupport {
 					boolean bForceInstallPackages = false;
 					
 					verifyInstall(bForceDownload, bForceInstallPython, bForceInstallPackages);
-				}catch (IOException e){
+				}catch (Throwable e){
 					e.printStackTrace();
 				}
 			}
