@@ -49,7 +49,7 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				||
 				(evt.getSource() == ODEDataViewer.this && evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO)))
 			{
-				connPtoP1SetTarget();
+				updateMetadata();
 				if(getOdeSolverResultSet()!=null)
 				{
 					iniHistogramDisplay();
@@ -86,13 +86,13 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
  * connPtoP1SetTarget:  (ODEDataViewer.odeSolverResultSet <--> ODESolverPlotSpecificationPanel1.odeSolverResultSet)
  */
 BlockingTimer odeDataViewersetupTimer = null;
-private void connPtoP1SetTarget() {
+private void updateMetadata() {
 	/* Set the target from the source */
 	if(getOdeSolverResultSet() == null){
 		return;
 	}
 	//check if clienttaskdispatcher is busy, if so schedule this method to run later (workaround spurious threading problem)
-	if((odeDataViewersetupTimer = ClientTaskDispatcher.getBlockingTimer(ODEDataViewer.this, null, null, odeDataViewersetupTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){connPtoP1SetTarget();}},"ODEDataViewer Setup...")) != null){
+	if((odeDataViewersetupTimer = ClientTaskDispatcher.getBlockingTimer(ODEDataViewer.this, null, null, odeDataViewersetupTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){updateMetadata();}},"ODEDataViewer Setup...")) != null){
 		return;
 	}
 
@@ -134,36 +134,6 @@ private void connPtoP1SetTarget() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-}
-/**
- * {@link AsynchClientTask} method
- * @param ht
- */
-private void calculateFilterTask(Hashtable<String,Object> ht) {
-	try {
-		//
-		// this method is synchronized because it can be called from ClientTaskDispatcher thread
-		// from multiple invocations, this will force them to execute serially.
-		//
-		if(ODEDataViewer.this.getSimulationModelInfo() != null){
-			SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
-			simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
-		}
-	} catch (Exception e) {
-		e.printStackTrace();
-	}
-}
-
-/**
- * {@link AsynchClientTask} method
- * @param ht
- */
-private void firePropertyChangeTask(Hashtable<String,Object> ht) {
-	SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
-	ODEDataInterfaceImpl oDEDataInterfaceImpl = new ODEDataInterfaceImpl(getOdeSolverResultSet(),simulationModelInfo);
-	getODESolverPlotSpecificationPanel1().setMyDataInterface(oDEDataInterfaceImpl);
-
-	
 }
 
 /**
@@ -280,7 +250,7 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getODESolverPlotSpecificationPanel1().addPropertyChangeListener(ivjEventHandler);
-	connPtoP1SetTarget();
+	updateMetadata();
 }
 
 /**

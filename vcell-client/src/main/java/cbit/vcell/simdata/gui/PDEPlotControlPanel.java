@@ -56,11 +56,15 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.DataSymbolMetadata;
+import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 /**
  * Insert the type's description here.
  * Creation date: (1/21/2001 10:29:53 PM)
@@ -73,7 +77,7 @@ public class PDEPlotControlPanel extends JPanel {
 	private JLabel ivjJLabel1 = null;
 	private JTextField ivjJTextField1 = null;
 	private DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
-	private JList<DataIdentifier> ivjJList1 = null;
+	private JList<DataIdentifier> plotVariableJList = null;
 	private JPanel ivjJPanel1 = null;
 	private JPanel ivjJPanel2 = null;
 	private JScrollPane ivjJScrollPane1 = null;
@@ -87,7 +91,8 @@ public class PDEPlotControlPanel extends JPanel {
 	private DataIdentifier[] myDataIdentifiers;
 	private AnnotatedFunction[] myAnnotFunctions;	
 	private DataIdentifierFilter dataIdentifierFilter;// = new DefaultDataIdentifierFilter();
-	
+	private DataInfoProvider dataInfoProvider;
+
 	private BlockingTimer filterSelectTimer;
 	private ActionListener filterChangeActionListener =
 		new ActionListener(){
@@ -129,7 +134,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				setTimeFromSlider();
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-			if (e.getSource() == PDEPlotControlPanel.this.getJList1() && !PDEPlotControlPanel.this.getJList1().getValueIsAdjusting()) 
+			if (e.getSource() == PDEPlotControlPanel.this.getPlotVariableJList() && !PDEPlotControlPanel.this.getPlotVariableJList().getValueIsAdjusting()) 
 				PDEPlotControlPanel.this.variableChanged();
 		};
 	};
@@ -144,7 +149,7 @@ public PDEPlotControlPanel() {
 }
 
 public void viewFunction() {
-	Object selectedValue = getJList1().getSelectedValue();
+	Object selectedValue = getPlotVariableJList().getSelectedValue();
 	if (selectedValue == null) {
 		return;
 	}
@@ -288,23 +293,6 @@ private void connEtoC6(java.awt.event.FocusEvent arg1) {
 }
 
 /**
- * connEtoM3:  (pdeDataContext1.this --> DefaultListModelCivilized1.contents)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(PDEDataContext value) {
-	try {
-		filterVariableNames();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
  * connEtoM4:  (DefaultListModelCivilized1.listData.intervalAdded(javax.swing.event.ListDataEvent) --> JList1.selectedIndex)
  * @param arg1 javax.swing.event.ListDataEvent
  */
@@ -313,26 +301,7 @@ private void connEtoM4(javax.swing.event.ListDataEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getJList1().setSelectedIndex(0);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM7:  (pdeDataContext1.this --> JSliderTime.value)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(PDEDataContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJSliderTime().setValue(0);
+		getPlotVariableJList().setSelectedIndex(0);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -343,7 +312,7 @@ private void connEtoM7(PDEDataContext value) {
 }
 
 private AsynchClientTask[] getFilterVarNamesTasks(){
-	final Object oldselection = getJList1().getSelectedValue();	
+	final Object oldselection = getPlotVariableJList().getSelectedValue();	
 	final ArrayList<DataIdentifier> displayDataIdentifiers = new ArrayList<DataIdentifier>(); 
 	AsynchClientTask task2 = new AsynchClientTask("filter variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
@@ -386,22 +355,22 @@ private AsynchClientTask[] getFilterVarNamesTasks(){
 			}
 			getDefaultListModelCivilized1().removeListDataListener(ivjEventHandler);
 			getDefaultListModelCivilized1().setContents(displayDataIdentifiers.size() == 0?null:displayDataIdentifiers.toArray(new DataIdentifier[0]));
-			getJList1().clearSelection();
+			getPlotVariableJList().clearSelection();
 			getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
-			if(getJList1().getModel().getSize() > 0){
+			if(getPlotVariableJList().getModel().getSize() > 0){
 				if(oldselection == null){
-					getJList1().setSelectedIndex(0);
+					getPlotVariableJList().setSelectedIndex(0);
 				}else{
 					boolean bFound = false;
-					for (int i = 0; i < getJList1().getModel().getSize(); i++) {
-						if(oldselection.equals(getJList1().getModel().getElementAt(i))){
-							getJList1().setSelectedIndex(i);
+					for (int i = 0; i < getPlotVariableJList().getModel().getSize(); i++) {
+						if(oldselection.equals(getPlotVariableJList().getModel().getElementAt(i))){
+							getPlotVariableJList().setSelectedIndex(i);
 							bFound = true;
 							break;
 						}
 					}
 					if(!bFound){
-						getJList1().setSelectedIndex(0);
+						getPlotVariableJList().setSelectedIndex(0);
 					}
 				}
 				
@@ -456,15 +425,19 @@ private void setFunctions(AnnotatedFunction[] newFunctions) {
 	}
 }
 
+public void setDataInfoProvider(DataInfoProvider dataInfoProvider){
+	this.dataInfoProvider = dataInfoProvider;
+}
+
 public void setup(AnnotatedFunction[] newFunctions,DataIdentifier[] newDataIdentifiers,double[] newTimePoints,String selectedVar,int selectedTimeIndex) throws Exception{
 	setTimePoints(newTimePoints);
 //	setDataIdentifierFilter(newDataIdentifierFilter);
 	setFunctions(newFunctions);
 	setDataIdentifiers(newDataIdentifiers);
 	filterVariableNames();
-	for (int i = 0; i < getJList1().getModel().getSize(); i++) {
-		if(getJList1().getModel().getElementAt(i).getName().equals(selectedVar)){
-			getJList1().setSelectedIndex(i);
+	for (int i = 0; i < getPlotVariableJList().getModel().getSize(); i++) {
+		if(getPlotVariableJList().getModel().getElementAt(i).getName().equals(selectedVar)){
+			getPlotVariableJList().setSelectedIndex(i);
 			break;
 		}
 	}
@@ -548,13 +521,13 @@ private javax.swing.JLabel getJLabelMin() {
  * @return javax.swing.JList
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public JList<DataIdentifier> getJList1() {
-	if (ivjJList1 == null) {
+public JList<DataIdentifier> getPlotVariableJList() {
+	if (plotVariableJList == null) {
 		try {
-			ivjJList1 = new JList<DataIdentifier>();
-			ivjJList1.setName("JList1");
-			ivjJList1.setBounds(0, 0, 131, 238);
-			ivjJList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+			plotVariableJList = new JList<DataIdentifier>();
+			plotVariableJList.setName("JList1");
+			plotVariableJList.setBounds(0, 0, 131, 238);
+			plotVariableJList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -563,7 +536,7 @@ public JList<DataIdentifier> getJList1() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJList1;
+	return plotVariableJList;
 }
 
 /**
@@ -684,7 +657,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
 			ivjJScrollPane1.setName("JScrollPane1");
 			ivjJScrollPane1.setPreferredSize(new java.awt.Dimension(240, 100));
 			ivjJScrollPane1.setMaximumSize(new java.awt.Dimension(259, 100));
-			getJScrollPane1().setViewportView(getJList1());
+			getJScrollPane1().setViewportView(getPlotVariableJList());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -910,9 +883,47 @@ private void initConnections() throws java.lang.Exception {
 	getJTextField1().addFocusListener(ivjEventHandler);
 	getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
 	getViewFunctionButton().addActionListener(ivjEventHandler);
-	getJList1().setModel(getDefaultListModelCivilized1());
+	getPlotVariableJList().setModel(getDefaultListModelCivilized1());
 	getJSliderTime().getModel().addChangeListener(ivjEventHandler);
-	getJList1().addListSelectionListener(ivjEventHandler);
+	getPlotVariableJList().addListSelectionListener(ivjEventHandler);
+	
+	
+	getPlotVariableJList().setCellRenderer(new DefaultListCellRenderer() {
+		
+		public Component getListCellRendererComponent(JList list, Object value,
+				int index, boolean isSelected, boolean cellHasFocus) {
+			
+			JLabel c = (JLabel)super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+			if (dataInfoProvider==null){
+				if(value instanceof DataIdentifier) {
+					DataIdentifier var = (DataIdentifier)value;
+					if(var.getVariableType() == VariableType.POSTPROCESSING) {
+						setToolTipText(getText());
+						setText(var.getName());
+					}
+				}
+				return this;
+			}
+			//System.out.println("rendering object "+value+" of type "+value.getClass());
+			DataIdentifier var = (DataIdentifier)value;
+			c.setText(var.getName());
+			c.setToolTipText("dataInfoProvier not found");
+			
+			DataSymbolMetadataResolver dataSymbolMetadataResolver = dataInfoProvider.getSimulationModelInfo().getDataSymbolMetadataResolver();
+			if(dataSymbolMetadataResolver != null && dataSymbolMetadataResolver.getDataSymbolMetadata(var.getName()) != null) {
+				DataSymbolMetadata dsm = dataSymbolMetadataResolver.getDataSymbolMetadata(var.getName());
+				String tooltipString = "dataInfoProvider found, but identifier "+var.getName()+" not found";
+				if(dsm == null) {
+					tooltipString = "did not find info on variable "+var.getDisplayName();
+				}else{
+					c.setText(var.getName()+" ["+dsm.unit+"]");
+					tooltipString = dsm.tooltipString;
+				}
+				c.setToolTipText(tooltipString);
+			}
+			return this;
+		}
+	});
 }
 
 private BlockingTimer varChangeTimer;
@@ -950,7 +961,7 @@ private void initialize() {
 	// user code end
 }
 private void setIdentifierListRenderer() {
-	getJList1().setCellRenderer(new IdentifierListCellRenderer(new FunctionListProvider() {
+	getPlotVariableJList().setCellRenderer(new IdentifierListCellRenderer(new FunctionListProvider() {
 		@Override
 		public List<AnnotatedFunction> getAnnotatedFunctions() {
 			return Arrays.asList(myAnnotFunctions);
@@ -1077,7 +1088,7 @@ private void variableChanged() {
 //	if((varChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,varChangeTimer,false,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {variableChanged();}}))!=null){
 //		return;
 //	}
-	firePropertyChange(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER, null, getJList1().getSelectedValue());
+	firePropertyChange(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER, null, getPlotVariableJList().getSelectedValue());
 }
 
 private void updateTimeTextField(double newTime){
@@ -1099,6 +1110,6 @@ private static AnnotatedFunction findFunction(DataIdentifier identifier,List<Ann
 }
 
 public ListCellRenderer getVariableListCellRenderer() {
-	return getJList1().getCellRenderer();
+	return getPlotVariableJList().getCellRenderer();
 }
 }

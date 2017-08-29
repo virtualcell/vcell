@@ -60,8 +60,15 @@ public class  DefaultDataIdentifierFilter implements DataIdentifierFilter{
 				for (DataIdentifier dataID : filterTheseDataIdentifiers){
 					DataSymbolMetadata metadata = dataSymbolMetadataResolver.getDataSymbolMetadata(dataID.getName());
 					if (metadata!=null && metadata.filterCategory.getName().equals(filterSetName)){
+						String varName = dataID.getName();
+						if (varName.startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
+							continue;			
+						}
+						if (varName.startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
+							continue;			
+						}
 						acceptedDataIdentifiers.add(dataID);
-	}
+					}
 				}					
 				return acceptedDataIdentifiers;
 			}
@@ -79,9 +86,13 @@ public class  DefaultDataIdentifierFilter implements DataIdentifierFilter{
 				continue;
 			}
 			String varName = filterTheseDataIdentifiers[i].getName();
-			boolean bSizeVar = varName.startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName()) 
-					|| varName.startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
-							|| varName.startsWith(DiffEquMathMapping.PARAMETER_SIZE_FUNCTION_PREFIX);
+			if (varName.startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
+				continue;			
+			}
+			if (varName.startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
+				continue;			
+			}
+			boolean bSizeVar = varName.startsWith(DiffEquMathMapping.PARAMETER_SIZE_FUNCTION_PREFIX);
 			
 			if (filterSetName.equals(REGION_SIZE_FILTER_SET) && bSizeVar) {
 				acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);

@@ -450,7 +450,7 @@ for (SymbolTableEntry bioSymbol : sortedBioSymbols){
 VCUnitDefinition unitDefinition = bioSymbol.getUnitDefinition();
 String unitSymbol = (unitDefinition!=null)?(unitDefinition.getSymbol()):("<null unit>");
 String bioInfo = bioSymbol.getClass().getSimpleName()+"("+bioSymbol.getName()+",["+unitSymbol+"])  category="+filterCategory+", unit=["+unitSymbol+"]";
-tooltipString += " ==> "+bioInfo + "<br/>";
+//tooltipString += " ==> "+bioInfo + "<br/>";		// TODO: uncomment this for more info on tooltip string
 mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
 }
 tooltipString+="</html>";
@@ -464,7 +464,7 @@ mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString
 					}
 				}
 				if(isSymbolsNotFound) {
-					System.out.println("couldn't find biological symbol(s) for one or more variables.");
+//					System.out.println("couldn't find biological symbol(s) for one or more variables.");
 				}
 				//
 				// add reserved symbols for x,y,z,t
@@ -485,7 +485,7 @@ buffer.append("SimulationWorkspaceModelInfo.populateDataSymbolMetadata(): \n");
 for (String line : mappings){
 buffer.append(line+"\n");
 }
-System.out.println(buffer.toString());
+//System.out.println(buffer.toString());
 		}else if (simulationOwner instanceof MathModel){
 			savedMetadataMap = metadataMap;
 		}else{
