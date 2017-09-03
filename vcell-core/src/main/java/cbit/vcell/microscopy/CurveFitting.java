@@ -33,6 +33,7 @@ import cbit.vcell.opt.VariableWeights;
 import cbit.vcell.opt.Weights;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.solver.Simulation;
@@ -76,12 +77,7 @@ public class CurveFitting {
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess())};
 		
-		ArrayList<String> symbols = new ArrayList<String>();
-		symbols.add("t");
-		for (Parameter p : parameters){
-			symbols.add(p.getName());
-		}
-		modelExp.bindExpression(new SimpleSymbolTable(symbols.toArray(new String[0])));
+		bindExpressionToParametersAndTime(modelExp, parameters);
 
 		// estimate blech while monitoring rate by minimizing the error between funtion values and reference data
 		if(weights == null)
@@ -130,6 +126,16 @@ public class CurveFitting {
 		return fit;
 	}
 
+	private static void bindExpressionToParametersAndTime(Expression modelExp, Parameter[] parameters)
+			throws ExpressionBindingException {
+		ArrayList<String> symbols = new ArrayList<String>();
+		symbols.add("t");
+		for (Parameter p : parameters){
+			symbols.add(p.getName());
+		}
+		modelExp.bindExpression(new SimpleSymbolTable(symbols.toArray(new String[0])));
+	}
+
 	/*
 	 * @para: time, time points since the first post bleach.
 	 * @para: flour, average intensities under bleached region according to time points since the first post bleach.
@@ -172,7 +178,7 @@ public class CurveFitting {
 			double bleachWhileMonitoringRate = inputparam[0];
 			modelExp = modelExp.getSubstitutedExpression(new Expression(FRAPDataAnalysis.symbol_bwmRate), new Expression(bleachWhileMonitoringRate));
 			Parameter parameters[] = new Parameter[] {FRAPDataAnalysis.para_If, FRAPDataAnalysis.para_Io, FRAPDataAnalysis.para_tau};
-			modelExp.bindExpression(new SimpleSymbolTable(new String[] { "t", FRAPDataAnalysis.para_If.getName(), FRAPDataAnalysis.para_Io.getName(), FRAPDataAnalysis.para_tau.getName() }));
+			bindExpressionToParametersAndTime(modelExp, parameters);
 			//estimate parameters by minimizing the errors between function values and reference data
 			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
 			
@@ -262,14 +268,16 @@ public class CurveFitting {
 		
 		if(fixedParameter == null)
 		{
-			//get expression pairs
-			bwmRateExp = bwmRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(inputparam[0]));
-			ExplicitFitObjectiveFunction.ExpressionDataPair bwmRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(bwmRateExp, 1);
-			koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(inputparam[1]));
-			ExplicitFitObjectiveFunction.ExpressionDataPair koffRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(koffRateExp, 2);
-			ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = new ExplicitFitObjectiveFunction.ExpressionDataPair[]{bwmRateExpDataPair, koffRateExpDataPair};
 			//get fitting parameter array
 			Parameter[] parameters = new Parameter[]{bwmParam, fittingParamA, koffParam};
+			//get expression pairs
+			bwmRateExp = bwmRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(inputparam[0]));
+			bindExpressionToParametersAndTime(bwmRateExp, parameters);
+			ExplicitFitObjectiveFunction.ExpressionDataPair bwmRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(bwmRateExp, 1);
+			koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(inputparam[1]));
+			bindExpressionToParametersAndTime(koffRateExp, parameters);
+			ExplicitFitObjectiveFunction.ExpressionDataPair koffRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(koffRateExp, 2);
+			ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = new ExplicitFitObjectiveFunction.ExpressionDataPair[]{bwmRateExpDataPair, koffRateExpDataPair};
 			//solve
 			optResultSet = solve(expDataPairs, parameters, normalized_time, normalized_data, columnNames, weights);
 			
@@ -278,30 +286,34 @@ public class CurveFitting {
 		{
 			if(fixedParameter != null && fixedParameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
 			{
+				//get fitting parameter array
+				Parameter[] parameters = new Parameter[]{fittingParamA, koffParam};
 				//get expression pairs
 				bwmRateExp = bwmRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(inputparam[0]));
 				bwmRateExp = bwmRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(fixedParameter.getInitialGuess()));
+				bindExpressionToParametersAndTime(bwmRateExp, parameters);
 				ExplicitFitObjectiveFunction.ExpressionDataPair bwmRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(bwmRateExp, 1);
 				koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(inputparam[1]));
 				koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(fixedParameter.getInitialGuess()));
+				bindExpressionToParametersAndTime(koffRateExp, parameters);
 				ExplicitFitObjectiveFunction.ExpressionDataPair koffRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(koffRateExp, 2);
 				ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = new ExplicitFitObjectiveFunction.ExpressionDataPair[]{bwmRateExpDataPair, koffRateExpDataPair};
-				//get fitting parameter array
-				Parameter[] parameters = new Parameter[]{fittingParamA, koffParam};
 				//solve
 				optResultSet = solve(expDataPairs, parameters, normalized_time, normalized_data, columnNames, weights);
 			}
 			else if(fixedParameter != null && fixedParameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
 			{
+				//get fitting parameter array
+				Parameter[] parameters = new Parameter[]{bwmParam, fittingParamA};
 				//get expression pairs
 				bwmRateExp = bwmRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(inputparam[0]));
+				bindExpressionToParametersAndTime(bwmRateExp, parameters);
 				ExplicitFitObjectiveFunction.ExpressionDataPair bwmRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(bwmRateExp, 1);
 				koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(inputparam[1]));
 				koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(fixedParameter.getInitialGuess()));
+				bindExpressionToParametersAndTime(koffRateExp, parameters);
 				ExplicitFitObjectiveFunction.ExpressionDataPair koffRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(koffRateExp, 2);
 				ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = new ExplicitFitObjectiveFunction.ExpressionDataPair[]{bwmRateExpDataPair, koffRateExpDataPair};
-				//get fitting parameter array
-				Parameter[] parameters = new Parameter[]{bwmParam, fittingParamA};
 				//solve
 				optResultSet = solve(expDataPairs, parameters, normalized_time, normalized_data, columnNames, weights);
 			}
