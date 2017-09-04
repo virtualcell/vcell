@@ -21,6 +21,7 @@ import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
@@ -311,8 +312,11 @@ denied: job "6894" does not exist
 			lsb.newline();
 
 			lsb.append("#$ -v LD_LIBRARY_PATH=");
-			lsb.append(MPI_HOME);
-			lsb.write("/lib");
+			lsb.append(MPI_HOME+"/lib");
+			lsb.write(":"+ResourceUtil.getLocalSolversDirectory().getAbsolutePath());
+		}else{
+			lsb.append("#$ -v LD_LIBRARY_PATH=");
+			lsb.write(ResourceUtil.getLocalSolversDirectory().getAbsolutePath());
 		}
 		lsb.newline();
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
