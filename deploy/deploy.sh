@@ -13,8 +13,10 @@ includefile=$1
 . $vcell_secretsDir/deploySecrets.include
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "deploy directory is ${DIR}"
 
 projectRootDir=`dirname $DIR`
+echo "project root directory is ${projectRootDir}"
 projectTargetDir=$projectRootDir/target
 
 serverTargetDir=$projectRootDir/vcell-server/target
@@ -34,8 +36,8 @@ skip_build=false
 skip_download_solvers=false
 
 if [ "$skip_download_solvers" = false ]; then
-	installSolversScript="../localsolvers/installSolvers.sh"
-	. $installSolvers
+	installSolversScript="${projectRootDir}/localsolvers/installSolvers.sh"
+	$installSolversScript
 fi
 
 #--------------------------------------------------------------------------

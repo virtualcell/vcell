@@ -4,7 +4,7 @@ shopt -s -o nounset
 
 _site="alpha"
 _version="6.2"
-_build="58"
+_build="59"
 vcell_server_os="linux64"
 
 vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
