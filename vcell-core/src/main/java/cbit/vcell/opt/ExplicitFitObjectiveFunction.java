@@ -48,16 +48,46 @@ public class ExplicitFitScalarFunction extends DefaultScalarFunction {
 		double weightedSquaredErrors = 0;
 		for (ExpressionDataPair pair : funcDataPairs){
 			double[] refData = simpleReferenceData.getDataByColumn(pair.referenceDataIndex);
-			double weight = simpleReferenceData.getColumnWeights()[pair.referenceDataIndex-1];
-			for (int i=0;i<timeData.length;i++){
-				symbolValues[0] = timeData[i];
-				try {
-					double functionVal = pair.fitFunction.evaluateVector(symbolValues);
-					double dataVal = refData[i];
-					double weightedError = (dataVal - functionVal)*weight;
-					weightedSquaredErrors += (weightedError*weightedError);
-				} catch (ExpressionException e) {
-					e.printStackTrace();
+			Weights weights = simpleReferenceData.getWeights();
+			if (weights instanceof ElementWeights){
+				ElementWeights elementWeights = (ElementWeights)weights;
+				for (int i=0;i<timeData.length;i++){
+					symbolValues[0] = timeData[i];
+					try {
+						double functionVal = pair.fitFunction.evaluateVector(symbolValues);
+						double dataVal = refData[i];
+						double weightedError = (dataVal - functionVal)*elementWeights.getWeight(i, pair.referenceDataIndex-1);
+						weightedSquaredErrors += (weightedError*weightedError);
+					} catch (ExpressionException e) {
+						e.printStackTrace();
+					}
+				}
+			}else if (weights instanceof VariableWeights){
+				VariableWeights variableWeights = (VariableWeights)weights;
+				double weight = variableWeights.getWeightByVarIdx(pair.referenceDataIndex-1);
+				for (int i=0;i<timeData.length;i++){
+					symbolValues[0] = timeData[i];
+					try {
+						double functionVal = pair.fitFunction.evaluateVector(symbolValues);
+						double dataVal = refData[i];
+						double weightedError = (dataVal - functionVal)*weight;
+						weightedSquaredErrors += (weightedError*weightedError);
+					} catch (ExpressionException e) {
+						e.printStackTrace();
+					}
+				}
+			}else if (weights instanceof TimeWeights){
+				TimeWeights timeWeights = (TimeWeights)weights;
+				for (int i=0;i<timeData.length;i++){
+					symbolValues[0] = timeData[i];
+					try {
+						double functionVal = pair.fitFunction.evaluateVector(symbolValues);
+						double dataVal = refData[i];
+						double weightedError = (dataVal - functionVal)*timeWeights.getWeightByTimeIdx(i);
+						weightedSquaredErrors += (weightedError*weightedError);
+					} catch (ExpressionException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}

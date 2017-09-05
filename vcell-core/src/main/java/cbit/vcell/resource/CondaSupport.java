@@ -223,9 +223,8 @@ public class CondaSupport {
 				AnacondaInstallation managedMiniconda = getAnacondaInstallation(managedMinicondaInstallDir);
 				boolean bPythonExists = false;
 				if (managedMiniconda.pythonExe.exists()){
-					String[] cmd = new String[] {managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
 					try {
-						boolean ret = checkPython(cmd);
+						boolean ret = checkPython(managedMiniconda);
 						if (ret){
 							bPythonExists = true;
 						}
@@ -268,9 +267,8 @@ public class CondaSupport {
 			// verify python installation (either provided or managed)
 			//
 			if (pythonInstallation.pythonExe.exists()){
-				String[] cmd = new String[] {pythonInstallation.pythonExe.getAbsolutePath(), "--version"};
 				try {
-					if (!checkPython(cmd)){
+					if (!checkPython(pythonInstallation)){
 						throw new RuntimeException("python installation "+pythonInstallation.pythonExe.getAbsolutePath()+" could not be verified");
 					}
 				}catch (Exception e){
@@ -313,7 +311,13 @@ public class CondaSupport {
 		}
 	}
 	
-	private static boolean checkPython(String[] cmd) {
+	private static boolean checkPython(AnacondaInstallation managedMiniconda) {
+		String[] cmd;
+		if (OperatingSystemInfo.getInstance().isWindows()){
+			cmd = new String[] {"cmd", "/C", managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
+		}else{
+			cmd = new String[] {"bash", "-c", managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
+		}
 		IExecutable exe = new Executable(cmd);
 		try {
 			exe.start( new int[] { 0 });
@@ -337,7 +341,7 @@ public class CondaSupport {
 	private static boolean checkPackage(File condaExe, PythonPackage pythonPackage) {
 		String[] cmd;
 		if (OperatingSystemInfo.getInstance().isWindows()){
-			cmd = new String[] { condaExe.getAbsolutePath(), "-c", "'import "+pythonPackage.pythonModuleName+"'"};
+			cmd = new String[] { "cmd", "/C", condaExe.getAbsolutePath(), "-c", "'import "+pythonPackage.pythonModuleName+"'"};
 		}else{
 			cmd = new String[] { "bash", "-c", condaExe.getAbsolutePath()+" -c  'import "+pythonPackage.pythonModuleName+"'"};
 		}

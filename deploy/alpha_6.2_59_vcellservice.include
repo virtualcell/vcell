@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+shopt -s -o nounset
+
+_site="alpha"
+_version="6.2"
+_build="59"
+vcell_server_os="linux64"
+
+vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
+vcell_site_upper=`echo $_site | tr '[:lower:]' '[:upper:]'`
+vcell_site_camel="${vcell_site_upper:0:1}${vcell_site_lower:1:100}"
+vcell_version=${_version}
+vcell_build=${_build}
+vcell_softwareVersionString="${vcell_site_camel}_Version_${vcell_version}_build_${vcell_build}"
+unset _site
+unset _version
+unset _build
+
+vcell_applicationId="1471-8022-1038-5554"
+vcell_server_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
+vcell_pathto_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
+
+vcell_user="vcell"
+vcell_servicehost="vcell-service.cam.uchc.edu"
+vcell_apihost="vcellapi.cam.uchc.edu"
+vcell_apiport=8080
+
+#
+# Nagios monitor port  
+# (rel=33330, beta=33331, alpha=33332, test=-33333, test2=-33334, test3=-33335, test4=-33336)
+#
+vcell_monitor_queryport=33332
+
+vcell_rmihost="vcell-rmi-alpha.cam.uchc.edu"
+vcell_rmiport_low=-1
+vcell_rmiport_high=40106
+vcell_rmihosts="vcell-rmi-alpha.cam.uchc.edu:40106"
+# still using bioformats_ALPHA_6_2_54.jar for later versions ... need to replace with ImageJ support.
+vcell_bioformatsJarFile="bioformats_ALPHA_6_2_54.jar"
+vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vcell_bioformatsJarFile"
+
+vcell_vcellClientJarFileName="vcell-client-0.0.1-SNAPSHOT.jar"
+vcell_vcellServerJarFileName="vcell-server-0.0.1-SNAPSHOT.jar"
+vcell_vcellApiJarFileName="vcell-api-0.0.1-SNAPSHOT.jar"
+vcell_vcellAdminJarFileName="vcell-admin-0.0.1-SNAPSHOT.jar"
+
+vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
+vcell_jms_user=clientUser
+
+#
+# Oracle on server
+#
+vcell_database_url="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
+vcell_database_driver=oracle.jdbc.driver.OracleDriver
+vcell_database_user=vcell
+
+#
+# Postgres on locahost
+#
+#vcell_database_url="jdbc:postgresql://localhost:5432/schaff"
+#vcell_database_driver=org.postgresql.Driver
+#vcell_database_user=schaff
+
+vcell_amplistor_url="http://obj1.cam.uchc.edu:8080/namespace/service_vcell/"
+vcell_amplistor_user=vcell
+
+vcell_mongodb_host=mongo.cam.uchc.edu
+vcell_mongodb_port=27017
+vcell_mongodb_database=$vcell_site_upper
+vcell_mongodb_collection=logging
+
+vcell_smtp_host=vdsmtp.cam.uchc.edu
+vcell_smtp_port=25
+vcell_smtp_email="VCell_Support@uchc.edu"
+
+vcell_common_jre=/share/apps/vcell2/java/jdk1.8.0_66/bin/java
+vcell_common_jre_rmi=/usr/java/jdk1.8.0_66/jre/bin/java
+
+vcell_rmiservice_high_jmxport=12305
+vcell_rmiservice_http_jmxport=12304
+vcell_vcellservice_jmxport=12360
+
+vcell_primary_datadir=/share/apps/vcell3/users/
+vcell_secondary_datadir=/share/apps/vcell3/users/
+vcell_parallel_datadir=/state/partition1/vcelltemp/
+vcell_export_dir=/share/apps/vcell2/export/
+vcell_export_url=http://vcell.org/export/
+
+vcell_mpich_homedir="/share/apps/vcell2/mpich/"
+
+vcell_secretsDir=/usr/local/deploy
+vcell_I4J_pathto_secretsDir=/usr/local/deploy
+
+vcell_I4J_use_vagrant=false
+vcell_I4J_install_jres_into_user_home=false
+vcell_I4J_updateSiteBaseUrl=http://vcell.org/webstart/$vcell_site_camel
+vcell_I4J_pathto_mavenRootDir=/opt/build/vcell
+vcell_I4J_pathto_installerFile=${vcell_I4J_pathto_mavenRootDir}/deploy/client/install4j/VCell.install4j
+vcell_I4J_pathto_vcellIcnsFile=${vcell_I4J_pathto_mavenRootDir}/deploy/client/install4j/icons/vcell.icns
+vcell_I4J_pathto_jreDir=$HOME/.install4j6/jres
+vcell_I4J_jreDir=$HOME/.install4j6/jres
+vcell_I4J_pathto_install4jc=/opt/install4j6/bin/install4jc
+
+vcell_htc_usessh=false
+#
+#if [ "$vcell_htc_usessh" = true ]; then
+#	#
+#	# only define these if using ssh to invoke the htc processes
+#	#
+#	# DSA Keystore is for password-less authentication to HTC host
+#	#
+#	vcell_htc_sshhost="vcell-service.cam.uchc.edu"
+#	vcell_htc_sshuser="vcell"
+#	vcell_htc_sshDsaKeyFile="/Users/schaff/.ssh/schaff_dsa"
+#fi
+#
+
