@@ -200,10 +200,23 @@ public class PythonConfigurationPanel2 extends JPanel {
 
 		// --------------------------------------------------
 		gridy++;
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1;
+		gbc.gridwidth = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		upper.add(new JLabel(""), gbc);
+
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		//gbc.fill = GridBagConstraints.HORIZONTAL;
+		//gbc.weightx = 1;
+		gbc.gridwidth = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.EAST;
 		gbc.insets = new Insets(4, 4, 4, 10);		//  top, left, bottom, right 
 		upper.add(getTestConfigurationButton(), gbc);
@@ -212,7 +225,9 @@ public class PythonConfigurationPanel2 extends JPanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		// gbc.fill = GridBagConstraints.HORIZONTAL;
+		//gbc.weightx = 1;
+		gbc.gridwidth = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.EAST;
 		gbc.insets = new Insets(4, 4, 4, 10);
 		upper.add(getInstallPythonButton(), gbc);
@@ -255,14 +270,14 @@ public class PythonConfigurationPanel2 extends JPanel {
 	
 	private JButton getTestConfigurationButton() {
 		if (testConfigurationButton == null) {
-			testConfigurationButton = new javax.swing.JButton(" Test Configuration ");
+			testConfigurationButton = new javax.swing.JButton("Test Configuration");
 			testConfigurationButton.setName("TestConfigurationButton");
 		}
 		return testConfigurationButton;
 	}
 	private JButton getInstallPythonButton() {
 		if (installPythonButton == null) {
-			installPythonButton = new javax.swing.JButton(" Python Installation");
+			installPythonButton = new javax.swing.JButton("Install Python");
 			installPythonButton.setName("InstallPythonButton");
 		}
 		return installPythonButton;
@@ -272,7 +287,7 @@ public class PythonConfigurationPanel2 extends JPanel {
 		getTestConfigurationButton().setEnabled(false);
 		getInstallPythonButton().setEnabled(false);
 		try {
-			CondaSupport.verifyInstall(false, false, false);
+			CondaSupport.verifyInstallation();
 		} catch (Exception e) {
 			String ret = e.getMessage();
 			testConfigurationResults.setText("<html><font color=#8C001A>" + ret + "</font></html>");
@@ -293,7 +308,7 @@ public class PythonConfigurationPanel2 extends JPanel {
 			public void run() {
 				try {
 					//Thread.sleep(5000);	// use this for faster testing of the UI
-					CondaSupport.verifyInstall(true, true, true);
+					CondaSupport.installAsNeeded(true, true, true);
 				} catch (Exception e) {
 					String ret = e.getMessage();
 					if(ret.length() > 250) {
