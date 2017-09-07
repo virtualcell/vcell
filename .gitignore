@@ -6,3 +6,4 @@
 /.project
 /.classpath
 /vcell_debug_server.properties
+/vcell_localClient.properties
