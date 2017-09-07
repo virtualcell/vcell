@@ -211,9 +211,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			newValue.addPropertyChangeListener(this);
 			newValue.getKinetics().addPropertyChangeListener(this);
 			for (int i = 0; i < newValue.getKinetics().getKineticsParameters().length; i++){
+				newValue.getKinetics().getKineticsParameters()[i].removePropertyChangeListener(this);
 				newValue.getKinetics().getKineticsParameters()[i].addPropertyChangeListener(this);
 			}
 			for (int i = 0; i < newValue.getKinetics().getProxyParameters().length; i++){
+				newValue.getKinetics().getProxyParameters()[i].removePropertyChangeListener(this);
 				newValue.getKinetics().getProxyParameters()[i].addPropertyChangeListener(this);
 			}
 			autoCompleteSymbolFilter = reactionStep.getAutoCompleteSymbolFilter();
@@ -235,9 +237,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		if (newValue != null){
 			newValue.addPropertyChangeListener(this);
 			for (int i = 0; i < newValue.getKineticsParameters().length; i++){
+				newValue.getKineticsParameters()[i].removePropertyChangeListener(this);
 				newValue.getKineticsParameters()[i].addPropertyChangeListener(this);
 			}
 			for (int i = 0; i < newValue.getProxyParameters().length; i++){
+				newValue.getProxyParameters()[i].removePropertyChangeListener(this);
 				newValue.getProxyParameters()[i].addPropertyChangeListener(this);
 			}
 		}
@@ -251,6 +255,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			oldParams[i].removePropertyChangeListener(this);
 		}
 		for (int i = 0; newParams!=null && i < newParams.length; i++){
+			newParams[i].removePropertyChangeListener(this);
 			newParams[i].addPropertyChangeListener(this);
 		}
 		refreshData();
