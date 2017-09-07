@@ -202,6 +202,42 @@ public class CondaSupport {
 				//	We are just verifying. Since it's missing, we produce a good message and exit
 				throw new RuntimeException("The vCell python component is missing. To get access to full vCell features we recommend installing it");
 			}
+			
+			// check packages early and set status so that dont have to wait until all install/verify before use.
+			boolean packageInstallFailed = false;
+			int count = 0;
+			String failedPackageName = "";
+			final AnacondaInstallation pythonInstallation = getAnacondaInstallation(managedMinicondaInstallDir);
+			for (PythonPackage pkg : PythonPackage.values()) {
+				try {
+					boolean bFound = checkPackage(pythonInstallation.pythonExe,pkg);
+					if (bFound) {
+						getPackageStatusMap().put(pkg, InstallStatus.INSTALLED);
+					} else {
+						getPackageStatusMap().put(pkg, InstallStatus.FAILED);
+						packageInstallFailed = true;
+						if(count > 0) {
+							failedPackageName += ",";
+						}
+						failedPackageName += " " + pkg.condaName;
+						count++;
+					}
+				} catch(Exception e) {
+					packageInstallFailed = true;
+					if(count > 0) {
+						failedPackageName += ",";
+					}
+					failedPackageName += " " + pkg.condaName;
+					count++;
+				}
+			}
+			if(packageInstallFailed) {
+				throw new RuntimeException("The following package(s) are missing:" + failedPackageName + ".");
+			}
+		} else {
+			final AnacondaInstallation pythonInstallation = getAnacondaInstallation(providedAnacondaDir);
+			// ...
+			throw new RuntimeException("External Anaconda provided, vCell will try to use it.");
 		}
 	}
 	
@@ -334,20 +370,41 @@ public class CondaSupport {
 			//
 			// check/install packages
 			//
+			boolean packageInstallFailed = false;
+			int count = 0;
+			String failedPackageName = "";
 			for (PythonPackage pkg : PythonPackage.values()){
 				InstallStatus status = getPackageStatusMap().get(pkg);
 				if (status != InstallStatus.INSTALLED || bForceInstallPackages){
-					getPackageStatusMap().put(pkg, InstallStatus.INITIALIZING);
-					removePackage(pythonInstallation.condaExe,pkg);
-					installPackage(pythonInstallation.condaExe,pkg);
-					boolean bFound = checkPackage(pythonInstallation.pythonExe,pkg);
-					if (bFound){
-						getPackageStatusMap().put(pkg, InstallStatus.INSTALLED);
-					}else{
-						getPackageStatusMap().put(pkg, InstallStatus.FAILED);
+					try {
+						getPackageStatusMap().put(pkg, InstallStatus.INITIALIZING);
+						//removePackage(pythonInstallation.condaExe,pkg);
+						installPackage(pythonInstallation.condaExe,pkg);
+						boolean bFound = checkPackage(pythonInstallation.pythonExe,pkg);
+						if (bFound){
+							getPackageStatusMap().put(pkg, InstallStatus.INSTALLED);
+						}else{
+							getPackageStatusMap().put(pkg, InstallStatus.FAILED);
+							packageInstallFailed = true;
+							if(count > 0) {
+								failedPackageName += ",";
+							}
+							failedPackageName += " " + pkg.condaName;
+							count++;
+						}
+					} catch(Exception e) {
+						packageInstallFailed = true;
+						if(count > 0) {
+							failedPackageName += ",";
+						}
+						failedPackageName += " " + pkg.condaName;
+						count++;
 					}
 				}
-			}						
+			}
+			if(packageInstallFailed) {
+				throw new RuntimeException("Failed to install the following package(s):" + failedPackageName + ".");
+			}
 		} finally {
 			isInstallingOrVerifying = false;
 		}
@@ -356,7 +413,8 @@ public class CondaSupport {
 	private static boolean checkPython(AnacondaInstallation managedMiniconda) {
 		String[] cmd;
 		if (OperatingSystemInfo.getInstance().isWindows()){
-			cmd = new String[] {"cmd", "/C", managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
+			//cmd = new String[] {"cmd", "/C", managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
+			cmd = new String[] {managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
 		}else{
 			cmd = new String[] {"bash", "-c", managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
 		}
@@ -383,7 +441,8 @@ public class CondaSupport {
 	private static boolean checkPackage(File condaExe, PythonPackage pythonPackage) {
 		String[] cmd;
 		if (OperatingSystemInfo.getInstance().isWindows()){
-			cmd = new String[] { "cmd", "/C", condaExe.getAbsolutePath(), "-c", "'import "+pythonPackage.pythonModuleName+"'"};
+			//cmd = new String[] { "cmd", "/C", condaExe.getAbsolutePath(), "-c", "'import "+pythonPackage.pythonModuleName+"'"};
+			cmd = new String[] { condaExe.getAbsolutePath(), "-c", "\"import "+pythonPackage.pythonModuleName+"\""};
 		}else{
 			cmd = new String[] { "bash", "-c", condaExe.getAbsolutePath()+" -c  'import "+pythonPackage.pythonModuleName+"'"};
 		}
@@ -392,12 +451,15 @@ public class CondaSupport {
 		try {
 			System.out.println("checking package "+pythonPackage.condaName);
 			exe.start( new int[] { 0 });
-//			System.out.println("Exit value: " + exe.getExitValue());
-//			System.out.println(exe.getStdoutString());
-//			System.out.println(exe.getStderrString());
+			System.out.println("Exit value: " + exe.getExitValue());
+			System.out.println(exe.getStdoutString());
+			System.out.println(exe.getStderrString());
 			return true;
 		} catch (ExecutableException e) {
 //			e.printStackTrace();
+			System.out.println("Exit value: " + exe.getExitValue());
+			System.out.println(exe.getStdoutString());
+			System.out.println(exe.getStderrString());
 			return false;
 		}
 	}
