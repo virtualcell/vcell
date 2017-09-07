@@ -337,6 +337,7 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 	while (enum_fi.hasMoreElements()) {
 		FastInvariant fi = enum_fi.nextElement();
 		Domain domain = new Domain(fastSystem.getSubDomain());
+		fi.getFunction().bindExpression(this);
 		PseudoConstant pc = new PseudoConstant(getAvailablePseudoConstantName(),fi.getFunction(),domain);
 		pseudoConstantList.addElement(pc);
 		//System.out.println("FastSystem.refreshSubstitutedRateExps() __C"+i+" = "+fi.getFunction());

@@ -576,10 +576,8 @@ protected void integrate() throws SolverException, UserStopException, IOExceptio
 			int keepEvery = ((DefaultOutputTimeSpec)taskDescription.getOutputTimeSpec()).getKeepEvery();
 			if ((iteration % keepEvery) != 0) updateResultSet();
 		}
-	} catch (ExpressionException expressionException) {
-		throw new SolverException(expressionException.getMessage());
-	} catch (MathException mathException) {
-		throw new SolverException(mathException.getMessage());
+	} catch (ExpressionException | MathException e) {
+		throw new SolverException("Solver failed: "+e.getMessage(),e);
 	}
 }
 

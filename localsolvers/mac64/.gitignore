@@ -1,0 +1,17 @@
+/FiniteVolume_x64
+/MovingBoundary_x64
+/NFsim_x64
+/SundialsSolverStandalone_x64
+/VCellStoch_x64
+/libgcc_s.1.dylib
+/libgfortran.4.dylib
+/libhdf5.10.dylib
+/libhdf5_cpp.14.dylib
+/libquadmath.0.dylib
+/libsz.2.dylib
+/libzip.3.0.dylib
+/libzip.3.dylib
+/libzip.dylib
+/smoldyn_x64
+/testzip
+/ziptool
