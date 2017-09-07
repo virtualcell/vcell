@@ -90,8 +90,10 @@ public class CondaSupport {
 	
 	private static String minicondaWeb = "https://repo.continuum.io/miniconda/";
 	private static String win64py27 = "Miniconda2-latest-Windows-x86_64.exe";
+	private static String win32py27 = "Miniconda2-latest-Windows-x86.exe";
 	private static String osx64py27 = "Miniconda2-latest-MacOSX-x86_64.sh";
 	private static String lin64py27 = "Miniconda2-latest-Linux-x86_64.sh";
+	private static String lin32py27 = "Miniconda2-latest-Linux-x86.sh";
 
 	
 	public static void installInBackground() {
@@ -103,7 +105,7 @@ public class CondaSupport {
 					boolean bForceInstallPython = false;
 					boolean bForceInstallPackages = false;
 					
-					verifyInstall(bForceDownload, bForceInstallPython, bForceInstallPackages);
+					installAsNeeded(bForceDownload, bForceInstallPython, bForceInstallPackages);
 				}catch (Throwable e){
 					e.printStackTrace();
 				}
@@ -155,7 +157,55 @@ public class CondaSupport {
 		return new AnacondaInstallation(anacondaInstallDir, pythonExeFile, condaExeFile);
 	}
 	
-	public static synchronized void verifyInstall(boolean bForceDownload, boolean bForceInstallPython, boolean bForceInstallPackages) throws IOException {
+	public static synchronized void verifyInstallation() throws IOException {
+
+		for (PythonPackage pkg : PythonPackage.values()){
+			getPackageStatusMap().put(pkg, InstallStatus.INITIALIZING);
+		}
+		// if anaconda directory not specified using vcell.anaconda.installdir property, then use a managed Miniconda installation
+		File providedAnacondaDir = VCellConfiguration.getFileProperty(PropertyLoader.anacondaInstallDir);
+		File managedMinicondaInstallDir = new File(ResourceUtil.getVcellHome(),"Miniconda");
+		if (providedAnacondaDir == null) {
+			final File downloadDir = new File(ResourceUtil.getVcellHome(),"download");
+			final File archive;
+				
+			OperatingSystemInfo operatingSystemInfo = OperatingSystemInfo.getInstance();
+			if (operatingSystemInfo.isWindows()) {
+				if (operatingSystemInfo.is64bit()) {
+					archive = new File(downloadDir,win64py27);
+				}else{
+					archive = new File(downloadDir,win32py27);
+				}
+			}else if (operatingSystemInfo.isLinux()) {
+				if (operatingSystemInfo.is64bit()){
+					archive = new File(downloadDir,lin64py27);
+				}else{
+					archive = new File(downloadDir,lin32py27);
+				}
+			}else if (operatingSystemInfo.isMac()) {
+				archive = new File(downloadDir,osx64py27);
+			}else{
+				throw new RuntimeException("python installation now supported on this platform");
+			}
+	
+			// check if miniconda python installation already exists
+			AnacondaInstallation managedMiniconda = getAnacondaInstallation(managedMinicondaInstallDir);
+			boolean bPythonExists = false;
+			if (managedMiniconda.pythonExe.exists()) {
+				boolean ret = checkPython(managedMiniconda);
+				if (ret) {
+					bPythonExists = true;
+				}
+			}
+				
+			if(!bPythonExists || !archive.exists()) {
+				//	We are just verifying. Since it's missing, we produce a good message and exit
+				throw new RuntimeException("The vCell python component is missing. To get access to full vCell features we recommend installing it");
+			}
+		}
+	}
+	
+	public static synchronized void installAsNeeded(boolean bForceDownload, boolean bForceInstallPython, boolean bForceInstallPackages) throws IOException {
 		isInstallingOrVerifying = true;
 
 		for (PythonPackage pkg : PythonPackage.values()){
@@ -169,7 +219,7 @@ public class CondaSupport {
 			final AnacondaInstallation pythonInstallation;
 			File providedAnacondaDir = VCellConfiguration.getFileProperty(PropertyLoader.anacondaInstallDir);
 			File managedMinicondaInstallDir = new File(ResourceUtil.getVcellHome(),"Miniconda");
-			if (providedAnacondaDir == null){
+			if (providedAnacondaDir == null) {
 				/*
 				 *	download from here:  https://conda.io/miniconda.html
 				 */
@@ -192,17 +242,17 @@ public class CondaSupport {
 				if (operatingSystemInfo.isWindows()){
 					if (operatingSystemInfo.is64bit()){
 						archive = new File(downloadDir,win64py27);
-						installMinicondaCommand = new String[] { archive.getAbsolutePath(), "/InstallationType=JustMe", "/AddToPath=0", "/RegisterPython=0", "/S", "/D="+managedMinicondaInstallDir.getAbsolutePath() };
 					}else{
-						throw new RuntimeException("python installation not yet supported on 32 bit Windows");
+						archive = new File(downloadDir,win32py27);
 					}
+					installMinicondaCommand = new String[] { archive.getAbsolutePath(), "/InstallationType=JustMe", "/AddToPath=0", "/RegisterPython=0", "/S", "/D="+managedMinicondaInstallDir.getAbsolutePath() };
 				}else if (operatingSystemInfo.isLinux()){
 					if (operatingSystemInfo.is64bit()){
 						archive = new File(downloadDir,lin64py27);
-						installMinicondaCommand = new String[] { "bash", archive.getAbsolutePath(), "-b", "-f", "-p", managedMinicondaInstallDir.getAbsolutePath() };
 					}else{
-						throw new RuntimeException("python installation not yet supported on 32 bit Linux");
+						archive = new File(downloadDir,lin32py27);
 					}
+					installMinicondaCommand = new String[] { "bash", archive.getAbsolutePath(), "-b", "-f", "-p", managedMinicondaInstallDir.getAbsolutePath() };
 				}else if (operatingSystemInfo.isMac()){
 					archive = new File(downloadDir,osx64py27);
 					installMinicondaCommand = new String[] { "bash", archive.getAbsolutePath(), "-b", "-f", "-p", managedMinicondaInstallDir.getAbsolutePath() };
@@ -411,7 +461,7 @@ public class CondaSupport {
 			boolean bForceInstallPython = false;
 			boolean bForceInstallPackages = false;
 			
-			verifyInstall(bForceDownload, bForceInstallPython, bForceInstallPackages);
+			installAsNeeded(bForceDownload, bForceInstallPython, bForceInstallPackages);
 			
 			System.out.println("verified Python = " + getPythonExe());
 		
