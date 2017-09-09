@@ -20,10 +20,10 @@ public class CondaSupport {
 		VTK		("Visualization Toolkit",	"vtk",				"conda-forge",		"vtk"),
 		LIBSBML	("libSBML for python",		"python-libsbml",	"sbmlteam",			"libsbml");
 		
-		final String description;
-		final String condaName;
-		final String condaRepo;
-		final String pythonModuleName;
+		public final String description;
+		public final String condaName;
+		public final String condaRepo;
+		public final String pythonModuleName;
 		
 		private PythonPackage(String description, String condaName, String condaRepo, String pythonModuleName){
 			this.description = description;
@@ -158,63 +158,54 @@ public class CondaSupport {
 	}
 	
 	public static synchronized void verifyInstallation() throws IOException {
+		isInstallingOrVerifying = true;
 
-		for (PythonPackage pkg : PythonPackage.values()){
-			getPackageStatusMap().put(pkg, InstallStatus.INITIALIZING);
-		}
-		// if anaconda directory not specified using vcell.anaconda.installdir property, then use a managed Miniconda installation
-		File providedAnacondaDir = VCellConfiguration.getFileProperty(PropertyLoader.anacondaInstallDir);
-		File managedMinicondaInstallDir = new File(ResourceUtil.getVcellHome(),"Miniconda");
-		if (providedAnacondaDir == null) {
-			final File downloadDir = new File(ResourceUtil.getVcellHome(),"download");
-			final File archive;
-				
-			OperatingSystemInfo operatingSystemInfo = OperatingSystemInfo.getInstance();
-			if (operatingSystemInfo.isWindows()) {
-				if (operatingSystemInfo.is64bit()) {
-					archive = new File(downloadDir,win64py27);
-				}else{
-					archive = new File(downloadDir,win32py27);
-				}
-			}else if (operatingSystemInfo.isLinux()) {
-				if (operatingSystemInfo.is64bit()){
-					archive = new File(downloadDir,lin64py27);
-				}else{
-					archive = new File(downloadDir,lin32py27);
-				}
-			}else if (operatingSystemInfo.isMac()) {
-				archive = new File(downloadDir,osx64py27);
-			}else{
-				throw new RuntimeException("python installation now supported on this platform");
+		try {
+			for (PythonPackage pkg : PythonPackage.values()){
+				getPackageStatusMap().put(pkg, InstallStatus.INITIALIZING);
 			}
+			// if anaconda directory not specified using vcell.anaconda.installdir property, then use a managed Miniconda installation
+			File anacondaDir = PropertyLoader.getOptionalDirectory(PropertyLoader.anacondaInstallDir);
+			if (anacondaDir==null){
+				// check VCellConfiguration
+				anacondaDir = VCellConfiguration.getFileProperty(PropertyLoader.anacondaInstallDir);
+			}
+			if (anacondaDir != null) {
+				// check if miniconda python installation already exists
+				AnacondaInstallation anacondaInstallation = getAnacondaInstallation(anacondaDir);
+				boolean bPythonExists = false;
+				if (anacondaInstallation.pythonExe.exists()) {
+					boolean ret = checkPython(anacondaInstallation);
+					if (ret) {
+						bPythonExists = true;
+					}
+				}
+					
+				if(!bPythonExists) {
+					//	We are just verifying. Since it's missing, we produce a good message and exit
+					throw new RuntimeException("The vCell python component is missing. To get access to full vCell features we recommend installing it");
+				}
+				verifiedPythonExe = anacondaInstallation.pythonExe;
 	
-			// check if miniconda python installation already exists
-			AnacondaInstallation managedMiniconda = getAnacondaInstallation(managedMinicondaInstallDir);
-			boolean bPythonExists = false;
-			if (managedMiniconda.pythonExe.exists()) {
-				boolean ret = checkPython(managedMiniconda);
-				if (ret) {
-					bPythonExists = true;
-				}
-			}
-				
-			if(!bPythonExists || !archive.exists()) {
-				//	We are just verifying. Since it's missing, we produce a good message and exit
-				throw new RuntimeException("The vCell python component is missing. To get access to full vCell features we recommend installing it");
-			}
-			
-			// check packages early and set status so that dont have to wait until all install/verify before use.
-			boolean packageInstallFailed = false;
-			int count = 0;
-			String failedPackageName = "";
-			final AnacondaInstallation pythonInstallation = getAnacondaInstallation(managedMinicondaInstallDir);
-			for (PythonPackage pkg : PythonPackage.values()) {
-				try {
-					boolean bFound = checkPackage(pythonInstallation.pythonExe,pkg);
-					if (bFound) {
-						getPackageStatusMap().put(pkg, InstallStatus.INSTALLED);
-					} else {
-						getPackageStatusMap().put(pkg, InstallStatus.FAILED);
+				// check packages early and set status so that dont have to wait until all install/verify before use.
+				boolean packageInstallFailed = false;
+				int count = 0;
+				String failedPackageName = "";
+				for (PythonPackage pkg : PythonPackage.values()) {
+					try {
+						boolean bFound = checkPackage(anacondaInstallation.pythonExe,pkg);
+						if (bFound) {
+							getPackageStatusMap().put(pkg, InstallStatus.INSTALLED);
+						} else {
+							getPackageStatusMap().put(pkg, InstallStatus.FAILED);
+							packageInstallFailed = true;
+							if(count > 0) {
+								failedPackageName += ",";
+							}
+							failedPackageName += " " + pkg.condaName;
+							count++;
+						}
+					} catch(Exception e) {
 						packageInstallFailed = true;
 						if(count > 0) {
 							failedPackageName += ",";
@@ -222,26 +213,19 @@ public class CondaSupport {
 						failedPackageName += " " + pkg.condaName;
 						count++;
 					}
-				} catch(Exception e) {
-					packageInstallFailed = true;
-					if(count > 0) {
-						failedPackageName += ",";
-					}
-					failedPackageName += " " + pkg.condaName;
-					count++;
 				}
+				if(packageInstallFailed) {
+					throw new RuntimeException("The following package(s) are missing:" + failedPackageName + ".");
+				}
+			} else {
+				throw new RuntimeException("No Anaconda python provided, please install anaconda and set directory in File->preferences");
 			}
-			if(packageInstallFailed) {
-				throw new RuntimeException("The following package(s) are missing:" + failedPackageName + ".");
-			}
-		} else {
-			final AnacondaInstallation pythonInstallation = getAnacondaInstallation(providedAnacondaDir);
-			// ...
-			throw new RuntimeException("External Anaconda provided, vCell will try to use it.");
+		}finally{
+			isInstallingOrVerifying = false;
 		}
 	}
 	
-	public static synchronized void installAsNeeded(boolean bForceDownload, boolean bForceInstallPython, boolean bForceInstallPackages) throws IOException {
+	private static synchronized void installAsNeeded(boolean bForceDownload, boolean bForceInstallPython, boolean bForceInstallPackages) throws IOException {
 		isInstallingOrVerifying = true;
 
 		for (PythonPackage pkg : PythonPackage.values()){
@@ -416,7 +400,7 @@ public class CondaSupport {
 			//cmd = new String[] {"cmd", "/C", managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
 			cmd = new String[] {managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
 		}else{
-			cmd = new String[] {"bash", "-c", managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
+			cmd = new String[] {managedMiniconda.pythonExe.getAbsolutePath(), "--version"};
 		}
 		IExecutable exe = new Executable(cmd);
 		try {
@@ -427,7 +411,7 @@ public class CondaSupport {
 			if (exe.getExitValue() != 0){
 				throw new RuntimeException("Python test failed with return code "+exe.getExitValue()+": "+exe.getStderrString());
 			}
-			if(!exe.getStderrString().contains("Continuum Analytics, Inc")) {
+			if(!exe.getStderrString().contains("Continuum Analytics, Inc") && !exe.getStderrString().contains("Anaconda")) {
 				throw new RuntimeException("Wrong python version present :" + exe.getStderrString());
 			} else {
 				return true;
@@ -511,7 +495,7 @@ public class CondaSupport {
 	public static void main(String[] args){
 		try {
 			PropertyLoader.loadProperties();
-			
+			verifyInstallation();
 			try {
 				getPythonExe();
 			}catch (Exception e){
@@ -519,11 +503,11 @@ public class CondaSupport {
 				e.printStackTrace(System.out);
 			}
 			
-			boolean bForceDownload = false;
-			boolean bForceInstallPython = false;
-			boolean bForceInstallPackages = false;
+			//boolean bForceDownload = false;
+			//boolean bForceInstallPython = false;
+			//boolean bForceInstallPackages = false;
 			
-			installAsNeeded(bForceDownload, bForceInstallPython, bForceInstallPackages);
+			//installAsNeeded(bForceDownload, bForceInstallPython, bForceInstallPackages);
 			
 			System.out.println("verified Python = " + getPythonExe());
 		
