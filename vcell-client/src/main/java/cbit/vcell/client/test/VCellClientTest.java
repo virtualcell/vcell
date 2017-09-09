@@ -352,7 +352,8 @@ public static void main(java.lang.String[] args) {
 			}).start();
 		}
 		
-		CondaSupport.installInBackground();
+		CondaSupport.verifyInstallation();
+		//CondaSupport.installInBackground();
 
 
 	} catch (Throwable exception) {
