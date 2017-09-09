@@ -511,33 +511,174 @@ class CopasiOptimizationMethod(object):
         return not (self == other)
 
 
+class DataRow(object):
+    """
+    Attributes:
+     - data
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.LIST, 'data', (TType.DOUBLE, None, False), None, ),  # 1
+    )
+
+    def __init__(self, data=None,):
+        self.data = data
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.data = []
+                    (_etype10, _size7) = iprot.readListBegin()
+                    for _i11 in range(_size7):
+                        _elem12 = iprot.readDouble()
+                        self.data.append(_elem12)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('DataRow')
+        if self.data is not None:
+            oprot.writeFieldBegin('data', TType.LIST, 1)
+            oprot.writeListBegin(TType.DOUBLE, len(self.data))
+            for iter13 in self.data:
+                oprot.writeDouble(iter13)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.data is None:
+            raise TProtocolException(message='Required field data is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class DataSet(object):
+    """
+    Attributes:
+     - rows
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.LIST, 'rows', (TType.STRUCT, (DataRow, DataRow.thrift_spec), False), None, ),  # 1
+    )
+
+    def __init__(self, rows=None,):
+        self.rows = rows
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.rows = []
+                    (_etype17, _size14) = iprot.readListBegin()
+                    for _i18 in range(_size14):
+                        _elem19 = DataRow()
+                        _elem19.read(iprot)
+                        self.rows.append(_elem19)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('DataSet')
+        if self.rows is not None:
+            oprot.writeFieldBegin('rows', TType.LIST, 1)
+            oprot.writeListBegin(TType.STRUCT, len(self.rows))
+            for iter20 in self.rows:
+                iter20.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.rows is None:
+            raise TProtocolException(message='Required field rows is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class OptProblem(object):
     """
     Attributes:
-     - mathModelSbmlFile
+     - mathModelSbmlContents
      - numberOfOptimizationRuns
      - parameterDescriptionList
      - referenceVariableList
-     - experimentalDataFile
+     - experimentalDataSet
      - optimizationMethod
     """
 
     thrift_spec = (
         None,  # 0
-        (1, TType.STRING, 'mathModelSbmlFile', 'UTF8', None, ),  # 1
+        (1, TType.STRING, 'mathModelSbmlContents', 'UTF8', None, ),  # 1
         (2, TType.I32, 'numberOfOptimizationRuns', None, None, ),  # 2
         (3, TType.LIST, 'parameterDescriptionList', (TType.STRUCT, (ParameterDescription, ParameterDescription.thrift_spec), False), None, ),  # 3
         (4, TType.LIST, 'referenceVariableList', (TType.STRUCT, (ReferenceVariable, ReferenceVariable.thrift_spec), False), None, ),  # 4
-        (5, TType.STRING, 'experimentalDataFile', 'UTF8', None, ),  # 5
+        (5, TType.STRUCT, 'experimentalDataSet', (DataSet, DataSet.thrift_spec), None, ),  # 5
         (6, TType.STRUCT, 'optimizationMethod', (CopasiOptimizationMethod, CopasiOptimizationMethod.thrift_spec), None, ),  # 6
     )
 
-    def __init__(self, mathModelSbmlFile=None, numberOfOptimizationRuns=None, parameterDescriptionList=None, referenceVariableList=None, experimentalDataFile=None, optimizationMethod=None,):
-        self.mathModelSbmlFile = mathModelSbmlFile
+    def __init__(self, mathModelSbmlContents=None, numberOfOptimizationRuns=None, parameterDescriptionList=None, referenceVariableList=None, experimentalDataSet=None, optimizationMethod=None,):
+        self.mathModelSbmlContents = mathModelSbmlContents
         self.numberOfOptimizationRuns = numberOfOptimizationRuns
         self.parameterDescriptionList = parameterDescriptionList
         self.referenceVariableList = referenceVariableList
-        self.experimentalDataFile = experimentalDataFile
+        self.experimentalDataSet = experimentalDataSet
         self.optimizationMethod = optimizationMethod
 
     def read(self, iprot):
@@ -551,7 +692,7 @@ class OptProblem(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.mathModelSbmlFile = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                    self.mathModelSbmlContents = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
@@ -562,28 +703,29 @@ class OptProblem(object):
             elif fid == 3:
                 if ftype == TType.LIST:
                     self.parameterDescriptionList = []
-                    (_etype10, _size7) = iprot.readListBegin()
-                    for _i11 in range(_size7):
-                        _elem12 = ParameterDescription()
-                        _elem12.read(iprot)
-                        self.parameterDescriptionList.append(_elem12)
+                    (_etype24, _size21) = iprot.readListBegin()
+                    for _i25 in range(_size21):
+                        _elem26 = ParameterDescription()
+                        _elem26.read(iprot)
+                        self.parameterDescriptionList.append(_elem26)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
                 if ftype == TType.LIST:
                     self.referenceVariableList = []
-                    (_etype16, _size13) = iprot.readListBegin()
-                    for _i17 in range(_size13):
-                        _elem18 = ReferenceVariable()
-                        _elem18.read(iprot)
-                        self.referenceVariableList.append(_elem18)
+                    (_etype30, _size27) = iprot.readListBegin()
+                    for _i31 in range(_size27):
+                        _elem32 = ReferenceVariable()
+                        _elem32.read(iprot)
+                        self.referenceVariableList.append(_elem32)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 5:
-                if ftype == TType.STRING:
-                    self.experimentalDataFile = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                if ftype == TType.STRUCT:
+                    self.experimentalDataSet = DataSet()
+                    self.experimentalDataSet.read(iprot)
                 else:
                     iprot.skip(ftype)
             elif fid == 6:
@@ -602,9 +744,9 @@ class OptProblem(object):
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
         oprot.writeStructBegin('OptProblem')
-        if self.mathModelSbmlFile is not None:
-            oprot.writeFieldBegin('mathModelSbmlFile', TType.STRING, 1)
-            oprot.writeString(self.mathModelSbmlFile.encode('utf-8') if sys.version_info[0] == 2 else self.mathModelSbmlFile)
+        if self.mathModelSbmlContents is not None:
+            oprot.writeFieldBegin('mathModelSbmlContents', TType.STRING, 1)
+            oprot.writeString(self.mathModelSbmlContents.encode('utf-8') if sys.version_info[0] == 2 else self.mathModelSbmlContents)
             oprot.writeFieldEnd()
         if self.numberOfOptimizationRuns is not None:
             oprot.writeFieldBegin('numberOfOptimizationRuns', TType.I32, 2)
@@ -613,20 +755,20 @@ class OptProblem(object):
         if self.parameterDescriptionList is not None:
             oprot.writeFieldBegin('parameterDescriptionList', TType.LIST, 3)
             oprot.writeListBegin(TType.STRUCT, len(self.parameterDescriptionList))
-            for iter19 in self.parameterDescriptionList:
-                iter19.write(oprot)
+            for iter33 in self.parameterDescriptionList:
+                iter33.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.referenceVariableList is not None:
             oprot.writeFieldBegin('referenceVariableList', TType.LIST, 4)
             oprot.writeListBegin(TType.STRUCT, len(self.referenceVariableList))
-            for iter20 in self.referenceVariableList:
-                iter20.write(oprot)
+            for iter34 in self.referenceVariableList:
+                iter34.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
-        if self.experimentalDataFile is not None:
-            oprot.writeFieldBegin('experimentalDataFile', TType.STRING, 5)
-            oprot.writeString(self.experimentalDataFile.encode('utf-8') if sys.version_info[0] == 2 else self.experimentalDataFile)
+        if self.experimentalDataSet is not None:
+            oprot.writeFieldBegin('experimentalDataSet', TType.STRUCT, 5)
+            self.experimentalDataSet.write(oprot)
             oprot.writeFieldEnd()
         if self.optimizationMethod is not None:
             oprot.writeFieldBegin('optimizationMethod', TType.STRUCT, 6)
@@ -636,16 +778,16 @@ class OptProblem(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.mathModelSbmlFile is None:
-            raise TProtocolException(message='Required field mathModelSbmlFile is unset!')
+        if self.mathModelSbmlContents is None:
+            raise TProtocolException(message='Required field mathModelSbmlContents is unset!')
         if self.numberOfOptimizationRuns is None:
             raise TProtocolException(message='Required field numberOfOptimizationRuns is unset!')
         if self.parameterDescriptionList is None:
             raise TProtocolException(message='Required field parameterDescriptionList is unset!')
         if self.referenceVariableList is None:
             raise TProtocolException(message='Required field referenceVariableList is unset!')
-        if self.experimentalDataFile is None:
-            raise TProtocolException(message='Required field experimentalDataFile is unset!')
+        if self.experimentalDataSet is None:
+            raise TProtocolException(message='Required field experimentalDataSet is unset!')
         if self.optimizationMethod is None:
             raise TProtocolException(message='Required field optimizationMethod is unset!')
         return

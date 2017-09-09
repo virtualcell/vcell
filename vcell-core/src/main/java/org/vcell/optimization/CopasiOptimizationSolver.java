@@ -46,15 +46,13 @@ public class CopasiOptimizationSolver {
 		try {
 			String prefix = "testing_"+Math.abs(new Random().nextInt(10000));
 			
-			File sbmlFile = new File(dir,prefix+".sbml.xml");
-			File dataFile = new File(dir,prefix+".csv");
 			File optProblemThriftFile = new File(dir,prefix+".optprob.bin");
 			File optResultFile = new File(dir,prefix+".optresult.xml");
 			
 			//
 			// Setup Python COPASI opt problem and write to disk
 			//
-			OptProblem optProblem = CopasiServicePython.makeOptProblem(parameterEstimationTask, sbmlFile, dataFile);
+			OptProblem optProblem = CopasiServicePython.makeOptProblem(parameterEstimationTask);
 			CopasiServicePython.writeOptProblem(optProblemThriftFile, optProblem);
 
 			//

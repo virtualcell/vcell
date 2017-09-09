@@ -5,6 +5,8 @@ from __builtin__ import isinstance
 
 import COPASI
 import vcellopt.ttypes as VCELLOPT
+import tempfile
+import os
 
 from thrift.TSerialization import TBinaryProtocol
 from thrift.TSerialization import deserialize
@@ -30,11 +32,11 @@ def main():
 
         '''
         struct OptProblem {
-	        1: required FilePath mathModelSbmlFile;
+	        1: required string mathModelSbmlFile;
 	        2: required int numberOfOptimizationRuns;
 	        3: required ParameterDescriptionList parameterDescriptionList;
 	        4: required ReferenceVariableList referenceVariableList;
-	        5: required FilePath experimentalDataFile;
+	        5: required string experimentalDataCSV;
 	        6: required CopasiOptimizationMethod optimizationMethod;
         }
         '''
@@ -54,8 +56,8 @@ def main():
 
         try:
             #sbmlFile = "C:\\COPASI-4.19.140-Source\\copasi\\bindings\\python\\examples\\exampleDeni.xml"
-            sbmlFile = vcellOptProblem.mathModelSbmlFile
-            dataModel.importSBML(str(sbmlFile))
+            sbmlString = vcellOptProblem.mathModelSbmlContents
+            dataModel.importSBMLFromString(str(sbmlString))
             print("data model loaded")
         except:
             e_info = sys.exc_info()
@@ -210,10 +212,20 @@ def main():
         experiment = COPASI.CExperiment(dataModel)
         assert(isinstance(experiment,COPASI.CExperiment))
         experiment.setIsRowOriented(True)
-        experiment.setFileName(str(vcellOptProblem.experimentalDataFile))
+
+        # Use the TemporaryFile context manager for easy clean-up
+        tmpExportCSVFile = tempfile.NamedTemporaryFile(delete=False)
+        varNameList = list(v.varName for v in vcellOptProblem.referenceVariableList)
+        csvString = ", ".join(map(str, varNameList)) + "\n"
+        for row in vcellOptProblem.experimentalDataSet.rows:
+            csvString += ", ".join(map(str, row.data)) + "\n"
+        num_lines = len(vcellOptProblem.experimentalDataSet.rows) + 1
+        tmpExportCSVFile.write(csvString)
+        tmpExportCSVFile.close()
+
+        experiment.setFileName(str(tmpExportCSVFile.name))
         experiment.setFirstRow(1)
         experiment.setKeyValue("Experiment_1")
-        num_lines = sum(1 for line in open(vcellOptProblem.experimentalDataFile))
         experiment.setLastRow(num_lines)
         experiment.setHeaderRow(1)
         experiment.setSeparator(",")
@@ -360,6 +372,8 @@ def main():
         return -1
     else:
         return 0
+    finally:
+        os.unlink(tmpExportCSVFile.name)
 
 
 def writeOptSolverResultSet(resultFile, leastError, numObjFuncEvals, paramNames, paramValues):

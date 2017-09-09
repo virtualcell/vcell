@@ -3,7 +3,6 @@ namespace py vcellopt
 
 typedef i32 int
 typedef i64 long
-typedef string FilePath
 
 struct ParameterDescription {
 	1: required string name;
@@ -79,13 +78,21 @@ struct CopasiOptimizationMethod {
 	2: required CopasiOptimizationParameterList optimizationParameterList;
 }
 
+struct DataRow {
+	1: required list<double> data
+}
+
+struct DataSet {
+	1: required list<DataRow> rows
+}
+
 // -------------------------------------------------------
 
 struct OptProblem {
-	1: required FilePath mathModelSbmlFile;
+	1: required string mathModelSbmlContents;
 	2: required int numberOfOptimizationRuns;
 	3: required ParameterDescriptionList parameterDescriptionList;
 	4: required ReferenceVariableList referenceVariableList;
-	5: required FilePath experimentalDataFile;
+	5: required DataSet experimentalDataSet;
 	6: required CopasiOptimizationMethod optimizationMethod;
 }

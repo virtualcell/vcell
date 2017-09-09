@@ -13,6 +13,8 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.optimization.thrift.CopasiOptimizationMethod;
+import org.vcell.optimization.thrift.DataRow;
+import org.vcell.optimization.thrift.DataSet;
 import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.optimization.thrift.OptimizationMethodType;
 import org.vcell.optimization.thrift.OptimizationParameterDataType;
@@ -26,7 +28,6 @@ import org.vcell.util.exe.ExecutableException;
 import org.vcell.util.exe.IExecutable;
 import org.vcell.vis.vtk.VtkService;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -39,11 +40,9 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.CondaSupport;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.VCellConfiguration;
 import cbit.vcell.resource.CondaSupport.InstallStatus;
 import cbit.vcell.resource.CondaSupport.PythonPackage;
+import cbit.vcell.resource.ResourceUtil;
 
 public class CopasiServicePython {
 	
@@ -60,9 +59,8 @@ public class CopasiServicePython {
 			throw new IOException("error writing optProblem to file "+optProblemFile.getPath()+": "+e.getMessage(),e);
 		}
 	}
-	
-	
-	public static OptProblem makeOptProblem(ParameterEstimationTask parameterEstimationTask, File outputModelSbmlFile, File outputDataFile) throws IOException, ExpressionException, SBMLException, XMLStreamException{
+		
+	public static OptProblem makeOptProblem(ParameterEstimationTask parameterEstimationTask) throws IOException, ExpressionException, SBMLException, XMLStreamException{
 		OptimizationSpec optimizationSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();			
 
 		SimulationContext simulationContext = parameterEstimationTask.getSimulationContext();
@@ -90,12 +88,8 @@ public class CopasiServicePython {
         //get math model string
         String sbmlString = MathModel_SBMLExporter.getSBMLString(vcellMathModel, 2, 4);
 
-//		String modelSbml = XmlHelper.exportSBML(simulationContext.getBioModel(), 3, 1, 0, false, simulationContext, null);
-        
-        XmlUtil.writeXMLStringToFile(sbmlString, outputModelSbmlFile.getAbsolutePath(), true);
-        
 		OptProblem optProblem = new OptProblem();
-		optProblem.setMathModelSbmlFile(outputModelSbmlFile.getAbsolutePath());
+		optProblem.setMathModelSbmlContents(sbmlString);
         optProblem.setNumberOfOptimizationRuns(parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
         
         for (Parameter p : optimizationSpec.getParameters()){
@@ -109,8 +103,16 @@ public class CopasiServicePython {
 		if (timeIndex != 0) {
 			throw new RuntimeException("t must be the first column");
 		}
-        FileUtils.write(outputDataFile, refData.getCSV());
-        optProblem.setExperimentalDataFile(outputDataFile.getAbsolutePath());
+		DataSet dataset = new DataSet();
+		for (int rowIndex=0; rowIndex<refData.getNumDataRows(); rowIndex++){
+			DataRow dataRow = new DataRow();
+			double[] array = refData.getDataByRow(rowIndex);
+			for (double d : array){
+				dataRow.addToData(d);
+			}
+			dataset.addToRows(dataRow);
+		}
+        optProblem.setExperimentalDataSet(dataset);
         
         
         optProblem.addToReferenceVariableList(new ReferenceVariable(ReservedVariable.TIME.getName(), ReferenceVariableType.independent));
@@ -235,14 +237,4 @@ public class CopasiServicePython {
 		Executable2 exe = new Executable2(cmd);
 		return exe;
 	}
-
-	public static void main(String[] args) {
-		try {
-			
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 }
