@@ -8,8 +8,10 @@ import vcellopt.ttypes as VCELLOPT
 import tempfile
 import os
 
+from thrift.TSerialization import TTransport
 from thrift.TSerialization import TBinaryProtocol
 from thrift.TSerialization import deserialize
+from thrift.TSerialization import serialize
 
 
 def main():
@@ -362,7 +364,29 @@ def main():
         #result = dataModel.saveModel('test_succeeded.cps', True)
         #assert(result==True)
 
-        writeOptSolverResultSet(resultFile, leastError, numObjFuncEvals, paramNames, paramValues)
+        optRun = VCELLOPT.OptRun()
+        optRun.optProblem = vcellOptProblem
+        optRun.statusMessage = "complete"
+        optResultSet = VCELLOPT.OptResultSet()
+        optResultSet.numFunctionEvaluations = numObjFuncEvals
+        optResultSet.objectiveFunction = leastError
+        optResultSet.optParameterValues = []
+        paramValueDict = dict(zip(paramNames,paramValues))
+        for paramName in paramNames:
+            optParameterValue = VCELLOPT.OptParameterValue(paramName,paramValueDict[paramName])
+            optResultSet.optParameterValues.append(optParameterValue)
+        optRun.optResultSet = optResultSet
+
+        protocol_factory = TBinaryProtocol.TBinaryProtocolFactory
+        optRunBlob = serialize(vcellOptProblem, protocol_factory = protocol_factory())
+        transportOut = TTransport.TMemoryBuffer()
+        protocolOut = TBinaryProtocol.TBinaryProtocol(transportOut)
+        optRun.write(protocolOut)
+        with open(resultFile, 'wb') as foutput:
+            foutput.write(transportOut.getvalue())
+            foutput.close()
+
+        # writeOptSolverResultSet(resultFile, leastError, numObjFuncEvals, paramNames, paramValues)
 
     except:
         e_info = sys.exc_info()

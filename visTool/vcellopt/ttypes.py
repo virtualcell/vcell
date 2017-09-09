@@ -802,3 +802,271 @@ class OptProblem(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
+class OptParameterValue(object):
+    """
+    Attributes:
+     - parameterName
+     - bestValue
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, 'parameterName', 'UTF8', None, ),  # 1
+        (2, TType.DOUBLE, 'bestValue', None, None, ),  # 2
+    )
+
+    def __init__(self, parameterName=None, bestValue=None,):
+        self.parameterName = parameterName
+        self.bestValue = bestValue
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.parameterName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.DOUBLE:
+                    self.bestValue = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('OptParameterValue')
+        if self.parameterName is not None:
+            oprot.writeFieldBegin('parameterName', TType.STRING, 1)
+            oprot.writeString(self.parameterName.encode('utf-8') if sys.version_info[0] == 2 else self.parameterName)
+            oprot.writeFieldEnd()
+        if self.bestValue is not None:
+            oprot.writeFieldBegin('bestValue', TType.DOUBLE, 2)
+            oprot.writeDouble(self.bestValue)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.parameterName is None:
+            raise TProtocolException(message='Required field parameterName is unset!')
+        if self.bestValue is None:
+            raise TProtocolException(message='Required field bestValue is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class OptResultSet(object):
+    """
+    Attributes:
+     - objectiveFunction
+     - numFunctionEvaluations
+     - optParameterValues
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.DOUBLE, 'objectiveFunction', None, None, ),  # 1
+        (2, TType.I64, 'numFunctionEvaluations', None, None, ),  # 2
+        None,  # 3
+        (4, TType.LIST, 'optParameterValues', (TType.STRUCT, (OptParameterValue, OptParameterValue.thrift_spec), False), None, ),  # 4
+    )
+
+    def __init__(self, objectiveFunction=None, numFunctionEvaluations=None, optParameterValues=None,):
+        self.objectiveFunction = objectiveFunction
+        self.numFunctionEvaluations = numFunctionEvaluations
+        self.optParameterValues = optParameterValues
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.DOUBLE:
+                    self.objectiveFunction = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.numFunctionEvaluations = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.LIST:
+                    self.optParameterValues = []
+                    (_etype38, _size35) = iprot.readListBegin()
+                    for _i39 in range(_size35):
+                        _elem40 = OptParameterValue()
+                        _elem40.read(iprot)
+                        self.optParameterValues.append(_elem40)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('OptResultSet')
+        if self.objectiveFunction is not None:
+            oprot.writeFieldBegin('objectiveFunction', TType.DOUBLE, 1)
+            oprot.writeDouble(self.objectiveFunction)
+            oprot.writeFieldEnd()
+        if self.numFunctionEvaluations is not None:
+            oprot.writeFieldBegin('numFunctionEvaluations', TType.I64, 2)
+            oprot.writeI64(self.numFunctionEvaluations)
+            oprot.writeFieldEnd()
+        if self.optParameterValues is not None:
+            oprot.writeFieldBegin('optParameterValues', TType.LIST, 4)
+            oprot.writeListBegin(TType.STRUCT, len(self.optParameterValues))
+            for iter41 in self.optParameterValues:
+                iter41.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.objectiveFunction is None:
+            raise TProtocolException(message='Required field objectiveFunction is unset!')
+        if self.numFunctionEvaluations is None:
+            raise TProtocolException(message='Required field numFunctionEvaluations is unset!')
+        if self.optParameterValues is None:
+            raise TProtocolException(message='Required field optParameterValues is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class OptRun(object):
+    """
+    Attributes:
+     - optProblem
+     - optResultSet
+     - statusMessage
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRUCT, 'optProblem', (OptProblem, OptProblem.thrift_spec), None, ),  # 1
+        (2, TType.STRUCT, 'optResultSet', (OptResultSet, OptResultSet.thrift_spec), None, ),  # 2
+        (3, TType.STRING, 'statusMessage', 'UTF8', None, ),  # 3
+    )
+
+    def __init__(self, optProblem=None, optResultSet=None, statusMessage=None,):
+        self.optProblem = optProblem
+        self.optResultSet = optResultSet
+        self.statusMessage = statusMessage
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.optProblem = OptProblem()
+                    self.optProblem.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.optResultSet = OptResultSet()
+                    self.optResultSet.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.statusMessage = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('OptRun')
+        if self.optProblem is not None:
+            oprot.writeFieldBegin('optProblem', TType.STRUCT, 1)
+            self.optProblem.write(oprot)
+            oprot.writeFieldEnd()
+        if self.optResultSet is not None:
+            oprot.writeFieldBegin('optResultSet', TType.STRUCT, 2)
+            self.optResultSet.write(oprot)
+            oprot.writeFieldEnd()
+        if self.statusMessage is not None:
+            oprot.writeFieldBegin('statusMessage', TType.STRING, 3)
+            oprot.writeString(self.statusMessage.encode('utf-8') if sys.version_info[0] == 2 else self.statusMessage)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.optProblem is None:
+            raise TProtocolException(message='Required field optProblem is unset!')
+        if self.optResultSet is None:
+            raise TProtocolException(message='Required field optResultSet is unset!')
+        if self.statusMessage is None:
+            raise TProtocolException(message='Required field statusMessage is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)

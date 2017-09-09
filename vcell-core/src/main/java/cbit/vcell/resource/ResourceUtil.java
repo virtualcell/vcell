@@ -62,6 +62,7 @@ public class ResourceUtil {
 	private static File localVisDataDir = null;
 	private static File localRootDir = null;
 	private static File logDir = null;
+	private static File optimizationRootDir = null;
 
 	/**
 	 * normally set once; protected to allow test fixtures to access
@@ -445,6 +446,19 @@ public class ResourceUtil {
 
 	public static File getVisToolDir() {
 		return new File(getVCellInstall(),VISTOOL_DIR);
+	}
+
+	public static File getOptimizationRootDir()
+	{
+		if(optimizationRootDir == null)
+		{
+			optimizationRootDir = new File(getVcellHome(), "optimization");
+			if (!optimizationRootDir.exists()) {
+				optimizationRootDir.mkdirs();
+			}
+		}
+
+		return optimizationRootDir;
 	}
 
 }

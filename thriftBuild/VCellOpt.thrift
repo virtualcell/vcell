@@ -96,3 +96,20 @@ struct OptProblem {
 	5: required DataSet experimentalDataSet;
 	6: required CopasiOptimizationMethod optimizationMethod;
 }
+
+struct OptParameterValue {
+	1: required string parameterName;
+	2: required double bestValue;
+}
+
+struct OptResultSet {
+	1: required double objectiveFunction;
+	2: required long numFunctionEvaluations;
+	4: required list<OptParameterValue> optParameterValues;
+}
+
+struct OptRun {
+	1: required OptProblem optProblem
+	2: required OptResultSet optResultSet
+	3: required string statusMessage
+}

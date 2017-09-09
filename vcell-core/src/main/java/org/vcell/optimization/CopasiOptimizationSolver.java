@@ -17,10 +17,11 @@ import java.nio.file.attribute.FileAttribute;
 import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
-import org.jdom.Element;
+import org.vcell.optimization.thrift.OptParameterValue;
 import org.vcell.optimization.thrift.OptProblem;
+import org.vcell.optimization.thrift.OptResultSet;
+import org.vcell.optimization.thrift.OptRun;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
@@ -29,8 +30,10 @@ import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptSolverResultSet;
+import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
+import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.SimulationSymbolTable;
@@ -47,7 +50,7 @@ public class CopasiOptimizationSolver {
 			String prefix = "testing_"+Math.abs(new Random().nextInt(10000));
 			
 			File optProblemThriftFile = new File(dir,prefix+".optprob.bin");
-			File optResultFile = new File(dir,prefix+".optresult.xml");
+			File optRunFile = new File(dir,prefix+".optrun.bin");
 			
 			//
 			// Setup Python COPASI opt problem and write to disk
@@ -58,19 +61,28 @@ public class CopasiOptimizationSolver {
 			//
 			// run Python COPASI opt problem
 			//
-			CopasiServicePython.runCopasiPython(optProblemThriftFile, optResultFile);
-			if (!optResultFile.exists()){
-				throw new RuntimeException("COPASI optimization output file not found:\n"+optResultFile.getAbsolutePath());
+			CopasiServicePython.runCopasiPython(optProblemThriftFile, optRunFile);
+			if (!optRunFile.exists()){
+				throw new RuntimeException("COPASI optimization output file not found:\n"+optRunFile.getAbsolutePath());
 			}
-			Element copasiOptResultsXML = XmlUtil.readXML(optResultFile).getRootElement();
-			String copasiOptResultsString = XmlUtil.beautify(XmlUtil.xmlToString(copasiOptResultsXML));
-			OptSolverResultSet copasiOptSolverResultSet = OptXmlReader.getOptimizationResultSet(copasiOptResultsString);
-			String[] copasiParameterNames = copasiOptSolverResultSet.getParameterNames();
-			double[] copasiParameterVals = copasiOptSolverResultSet.getBestEstimates();
-			RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, copasiParameterNames, copasiParameterVals);
+			OptRun optRun = CopasiServicePython.readOptRun(optRunFile);
+			OptResultSet optResultSet = optRun.getOptResultSet();
+			int numFittedParameters = optResultSet.getOptParameterValues().size();
+			String[] paramNames = new String[numFittedParameters];
+			double[] paramValues = new double[numFittedParameters];
+			for (int pIndex=0; pIndex<numFittedParameters; pIndex++){
+				OptParameterValue optParamValue = optResultSet.getOptParameterValues().get(pIndex);
+				paramNames[pIndex] = optParamValue.parameterName;
+				paramValues[pIndex] = optParamValue.bestValue;
+			}
+			
+			OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, optRun.statusMessage);
+			OptRunResultSet optRunResultSet = new OptRunResultSet(paramValues,optResultSet.objectiveFunction,optResultSet.numFunctionEvaluations,status);
+			OptSolverResultSet copasiOptSolverResultSet = new OptSolverResultSet(paramNames, optRunResultSet);
+			RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, paramNames, paramValues);
 			OptimizationResultSet copasiOptimizationResultSet = new OptimizationResultSet(copasiOptSolverResultSet, copasiRcResultSet);
 
-			System.out.println("-----------SOLUTION FROM PYTHON---------------\n"+XmlUtil.beautify(copasiOptResultsString));
+			System.out.println("-----------SOLUTION FROM PYTHON---------------\n"+optResultSet.toString());
 			
 			
 			return copasiOptimizationResultSet;

@@ -8,6 +8,7 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -16,6 +17,7 @@ import org.vcell.optimization.thrift.CopasiOptimizationMethod;
 import org.vcell.optimization.thrift.DataRow;
 import org.vcell.optimization.thrift.DataSet;
 import org.vcell.optimization.thrift.OptProblem;
+import org.vcell.optimization.thrift.OptRun;
 import org.vcell.optimization.thrift.OptimizationMethodType;
 import org.vcell.optimization.thrift.OptimizationParameterDataType;
 import org.vcell.optimization.thrift.OptimizationParameterType;
@@ -57,6 +59,19 @@ public class CopasiServicePython {
 		} catch (TException e) {
 			e.printStackTrace();
 			throw new IOException("error writing optProblem to file "+optProblemFile.getPath()+": "+e.getMessage(),e);
+		}
+	}
+		
+	public static OptRun readOptRun(File optRunFile) throws IOException {
+		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+		try {
+			OptRun optJob = new OptRun();
+			byte[] bytes = FileUtils.readFileToByteArray(optRunFile);
+			deserializer.deserialize(optJob, bytes);
+			return optJob;
+		} catch (TException e) {
+			e.printStackTrace();
+			throw new IOException("error reading optRun from file "+optRunFile.getPath()+": "+e.getMessage(),e);
 		}
 	}
 		
