@@ -63,7 +63,7 @@ public class OptimizationService {
 		}
 		parameterEstimationTask.refreshMappings();
 
-		OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,copasiOptCallbacks,callback);
+		OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveLocalPython(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,copasiOptCallbacks,callback);
 		return optResultSet;
 
 	}

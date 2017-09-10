@@ -142,6 +142,27 @@ class OptimizationMethodType(object):
     }
 
 
+class OptRunStatus(object):
+    Queued = 0
+    Running = 1
+    Complete = 2
+    Failed = 3
+
+    _VALUES_TO_NAMES = {
+        0: "Queued",
+        1: "Running",
+        2: "Complete",
+        3: "Failed",
+    }
+
+    _NAMES_TO_VALUES = {
+        "Queued": 0,
+        "Running": 1,
+        "Complete": 2,
+        "Failed": 3,
+    }
+
+
 class ParameterDescription(object):
     """
     Attributes:
@@ -986,6 +1007,7 @@ class OptRun(object):
      - optProblem
      - optResultSet
      - statusMessage
+     - status
     """
 
     thrift_spec = (
@@ -993,12 +1015,14 @@ class OptRun(object):
         (1, TType.STRUCT, 'optProblem', (OptProblem, OptProblem.thrift_spec), None, ),  # 1
         (2, TType.STRUCT, 'optResultSet', (OptResultSet, OptResultSet.thrift_spec), None, ),  # 2
         (3, TType.STRING, 'statusMessage', 'UTF8', None, ),  # 3
+        (4, TType.I32, 'status', None, None, ),  # 4
     )
 
-    def __init__(self, optProblem=None, optResultSet=None, statusMessage=None,):
+    def __init__(self, optProblem=None, optResultSet=None, statusMessage=None, status=None,):
         self.optProblem = optProblem
         self.optResultSet = optResultSet
         self.statusMessage = statusMessage
+        self.status = status
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -1026,6 +1050,11 @@ class OptRun(object):
                     self.statusMessage = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I32:
+                    self.status = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -1048,16 +1077,20 @@ class OptRun(object):
             oprot.writeFieldBegin('statusMessage', TType.STRING, 3)
             oprot.writeString(self.statusMessage.encode('utf-8') if sys.version_info[0] == 2 else self.statusMessage)
             oprot.writeFieldEnd()
+        if self.status is not None:
+            oprot.writeFieldBegin('status', TType.I32, 4)
+            oprot.writeI32(self.status)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
         if self.optProblem is None:
             raise TProtocolException(message='Required field optProblem is unset!')
-        if self.optResultSet is None:
-            raise TProtocolException(message='Required field optResultSet is unset!')
         if self.statusMessage is None:
             raise TProtocolException(message='Required field statusMessage is unset!')
+        if self.status is None:
+            raise TProtocolException(message='Required field status is unset!')
         return
 
     def __repr__(self):

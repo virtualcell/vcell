@@ -17,10 +17,15 @@ import java.nio.file.attribute.FileAttribute;
 import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.thrift.TDeserializer;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TJSONProtocol;
+import org.vcell.api.client.VCellApiClient;
 import org.vcell.optimization.thrift.OptParameterValue;
 import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.optimization.thrift.OptResultSet;
 import org.vcell.optimization.thrift.OptRun;
+import org.vcell.optimization.thrift.OptRunStatus;
 
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.math.Function;
@@ -36,13 +41,14 @@ import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
 
 public class CopasiOptimizationSolver {	
 	
-	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask, CopasiOptSolverCallbacks optSolverCallbacks, MathMappingCallback mathMappingCallback) 
+	public static OptimizationResultSet solveLocalPython(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask, CopasiOptSolverCallbacks optSolverCallbacks, MathMappingCallback mathMappingCallback) 
 							throws IOException, ExpressionException, OptimizationException {
 		
 		File dir = Files.createTempDirectory("parest",new FileAttribute<?>[] {}).toFile();
@@ -93,6 +99,78 @@ public class CopasiOptimizationSolver {
 			if (dir!=null && dir.exists()){
 				FileUtils.deleteDirectory(dir);
 			}
+		}
+	}
+
+	public static OptimizationResultSet solveRemoteApi(
+			ParameterEstimationTaskSimulatorIDA parestSimulator,
+			ParameterEstimationTask parameterEstimationTask, 
+			CopasiOptSolverCallbacks optSolverCallbacks,
+			MathMappingCallback mathMappingCallback) 
+					throws IOException, ExpressionException, OptimizationException {
+
+		try {
+			OptProblem optProblem = CopasiServicePython.makeOptProblem(parameterEstimationTask);
+			
+			boolean bIgnoreCertProblems = true;
+			boolean bIgnoreHostMismatch = true;
+			int port = PropertyLoader.getIntProperty(PropertyLoader.vcellapiPort, 8080);
+			String host = PropertyLoader.getProperty(PropertyLoader.vcellapiHost, "vcellapi.cam.uchc.edu");
+			VCellApiClient apiClient = new VCellApiClient(host, port, "123456", bIgnoreCertProblems, bIgnoreHostMismatch);
+
+			TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+			String optProblemJson = serializer.toString(optProblem);
+
+			String optimizationId = apiClient.submitOptimization(optProblemJson);
+			
+			final long TIMEOUT_MS = 1000*20; // 20 second minute timeout
+			long startTime = System.currentTimeMillis();
+			OptRun optRun = null;
+			while ((System.currentTimeMillis()-startTime)<TIMEOUT_MS){
+				if (optSolverCallbacks.getStopRequested()){
+					throw new RuntimeException("stop requested");
+				}
+				String optRunJson = apiClient.getOptRunJson(optimizationId);
+				TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
+				optRun = new OptRun();
+				deserializer.deserialize(optRun, optRunJson.getBytes());
+				OptRunStatus status = optRun.status;
+				if (status==OptRunStatus.Complete){
+					System.out.println("job "+optimizationId+": status "+status+" "+optRun.getOptResultSet().toString());
+					break;
+				}
+				if (status==OptRunStatus.Failed){
+					throw new RuntimeException("optimization failed, message="+optRun.statusMessage);
+				}
+				
+				System.out.println("job "+optimizationId+": status "+status);
+				try {
+					Thread.sleep(1000);
+				}catch (InterruptedException e){}
+			}
+			System.out.println("done with optimization");
+			OptResultSet optResultSet = optRun.getOptResultSet();
+			int numFittedParameters = optResultSet.getOptParameterValues().size();
+			String[] paramNames = new String[numFittedParameters];
+			double[] paramValues = new double[numFittedParameters];
+			for (int pIndex = 0; pIndex < numFittedParameters; pIndex++) {
+				OptParameterValue optParamValue = optResultSet.getOptParameterValues().get(pIndex);
+				paramNames[pIndex] = optParamValue.parameterName;
+				paramValues[pIndex] = optParamValue.bestValue;
+			}
+
+			OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION,optRun.statusMessage);
+			OptRunResultSet optRunResultSet = new OptRunResultSet(paramValues, optResultSet.objectiveFunction,optResultSet.numFunctionEvaluations, status);
+			OptSolverResultSet copasiOptSolverResultSet = new OptSolverResultSet(paramNames, optRunResultSet);
+			RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, paramNames, paramValues);
+			OptimizationResultSet copasiOptimizationResultSet = new OptimizationResultSet(copasiOptSolverResultSet,copasiRcResultSet);
+
+			System.out.println("-----------SOLUTION FROM VCellAPI---------------\n" + optResultSet.toString());
+
+			return copasiOptimizationResultSet;
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
 		}
 	}
 		

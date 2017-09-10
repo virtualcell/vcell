@@ -108,8 +108,16 @@ struct OptResultSet {
 	4: required list<OptParameterValue> optParameterValues;
 }
 
+enum OptRunStatus {
+	Queued,
+	Running,
+	Complete,
+	Failed
+}
+
 struct OptRun {
-	1: required OptProblem optProblem
-	2: required OptResultSet optResultSet
-	3: required string statusMessage
+	1: required OptProblem optProblem;
+	2: optional OptResultSet optResultSet;
+	3: required string statusMessage;
+	4: required OptRunStatus status;
 }

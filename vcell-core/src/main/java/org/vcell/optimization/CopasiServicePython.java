@@ -12,6 +12,7 @@ import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TJSONProtocol;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.optimization.thrift.CopasiOptimizationMethod;
 import org.vcell.optimization.thrift.DataRow;
@@ -62,6 +63,7 @@ public class CopasiServicePython {
 		}
 	}
 		
+		
 	public static OptRun readOptRun(File optRunFile) throws IOException {
 		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
 		try {
@@ -72,6 +74,41 @@ public class CopasiServicePython {
 		} catch (TException e) {
 			e.printStackTrace();
 			throw new IOException("error reading optRun from file "+optRunFile.getPath()+": "+e.getMessage(),e);
+		}
+	}
+		
+	public static void writeOptProblemJson(File optProblemFile,  OptProblem optProblem) throws IOException {
+		TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+		try {
+			byte[] blob = serializer.serialize(optProblem);
+			FileUtils.writeByteArrayToFile(optProblemFile, blob);
+		} catch (TException e) {
+			e.printStackTrace();
+			throw new IOException("error writing optProblem to file "+optProblemFile.getPath()+": "+e.getMessage(),e);
+		}
+	}
+
+	public static OptProblem readOptProblem(File optProblemFile) throws IOException {
+		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+		try {
+			OptProblem optProblem = new OptProblem();
+			byte[] bytes = FileUtils.readFileToByteArray(optProblemFile);
+			deserializer.deserialize(optProblem, bytes);
+			return optProblem;
+		} catch (TException e) {
+			e.printStackTrace();
+			throw new IOException("error reading optProblem from file "+optProblemFile.getPath()+": "+e.getMessage(),e);
+		}
+	}
+		
+	public static void writeOptRunJson(File optRunFile,  OptRun optRun) throws IOException {
+		TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+		try {
+			byte[] blob = serializer.serialize(optRun);
+			FileUtils.writeByteArrayToFile(optRunFile, blob);
+		} catch (TException e) {
+			e.printStackTrace();
+			throw new IOException("error writing optProblem to file "+optRunFile.getPath()+": "+e.getMessage(),e);
 		}
 	}
 		
@@ -215,7 +252,7 @@ public class CopasiServicePython {
 
 		return optProblem;
 	}
-
+	
 	public static void runCopasiPython(File copasiOptProblemFile, File copasiResultsFile) throws IOException {
 		//It's 2015 -- forward slash works for all operating systems
 		File PYTHON = CondaSupport.getPythonExe();

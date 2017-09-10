@@ -367,6 +367,7 @@ def main():
         optRun = VCELLOPT.OptRun()
         optRun.optProblem = vcellOptProblem
         optRun.statusMessage = "complete"
+        optRun.status = VCELLOPT.OptRunStatus.Complete
         optResultSet = VCELLOPT.OptResultSet()
         optResultSet.numFunctionEvaluations = numObjFuncEvals
         optResultSet.objectiveFunction = leastError

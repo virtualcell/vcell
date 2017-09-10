@@ -75,6 +75,8 @@ public class PropertyLoader {
 
 	//Python properties
 	public static final String anacondaInstallDir			= record("vcell.anaconda.installdir",ValueType.DIR);
+	public static final String vcellapiHost					= record("vcellapi.host",ValueType.GEN);
+	public static final String vcellapiPort					= record("vcellapi.port",ValueType.INT);
 
 	//Stoch properties
 //	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);

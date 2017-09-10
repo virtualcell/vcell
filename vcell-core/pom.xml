@@ -102,6 +102,11 @@
 			<artifactId>vcell-util</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-apiclient</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>javax.media.jai</groupId>

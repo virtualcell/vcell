@@ -14,19 +14,30 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
   private static final org.apache.thrift.protocol.TField OPT_PROBLEM_FIELD_DESC = new org.apache.thrift.protocol.TField("optProblem", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField OPT_RESULT_SET_FIELD_DESC = new org.apache.thrift.protocol.TField("optResultSet", org.apache.thrift.protocol.TType.STRUCT, (short)2);
   private static final org.apache.thrift.protocol.TField STATUS_MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("statusMessage", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("status", org.apache.thrift.protocol.TType.I32, (short)4);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new OptRunStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new OptRunTupleSchemeFactory();
 
   public OptProblem optProblem; // required
-  public OptResultSet optResultSet; // required
+  public OptResultSet optResultSet; // optional
   public java.lang.String statusMessage; // required
+  /**
+   * 
+   * @see OptRunStatus
+   */
+  public OptRunStatus status; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     OPT_PROBLEM((short)1, "optProblem"),
     OPT_RESULT_SET((short)2, "optResultSet"),
-    STATUS_MESSAGE((short)3, "statusMessage");
+    STATUS_MESSAGE((short)3, "statusMessage"),
+    /**
+     * 
+     * @see OptRunStatus
+     */
+    STATUS((short)4, "status");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -47,6 +58,8 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
           return OPT_RESULT_SET;
         case 3: // STATUS_MESSAGE
           return STATUS_MESSAGE;
+        case 4: // STATUS
+          return STATUS;
         default:
           return null;
       }
@@ -87,15 +100,18 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.OPT_RESULT_SET};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.OPT_PROBLEM, new org.apache.thrift.meta_data.FieldMetaData("optProblem", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, OptProblem.class)));
-    tmpMap.put(_Fields.OPT_RESULT_SET, new org.apache.thrift.meta_data.FieldMetaData("optResultSet", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.OPT_RESULT_SET, new org.apache.thrift.meta_data.FieldMetaData("optResultSet", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, OptResultSet.class)));
     tmpMap.put(_Fields.STATUS_MESSAGE, new org.apache.thrift.meta_data.FieldMetaData("statusMessage", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.STATUS, new org.apache.thrift.meta_data.FieldMetaData("status", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, OptRunStatus.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(OptRun.class, metaDataMap);
   }
@@ -105,13 +121,13 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
 
   public OptRun(
     OptProblem optProblem,
-    OptResultSet optResultSet,
-    java.lang.String statusMessage)
+    java.lang.String statusMessage,
+    OptRunStatus status)
   {
     this();
     this.optProblem = optProblem;
-    this.optResultSet = optResultSet;
     this.statusMessage = statusMessage;
+    this.status = status;
   }
 
   /**
@@ -127,6 +143,9 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
     if (other.isSetStatusMessage()) {
       this.statusMessage = other.statusMessage;
     }
+    if (other.isSetStatus()) {
+      this.status = other.status;
+    }
   }
 
   public OptRun deepCopy() {
@@ -138,6 +157,7 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
     this.optProblem = null;
     this.optResultSet = null;
     this.statusMessage = null;
+    this.status = null;
   }
 
   public OptProblem getOptProblem() {
@@ -212,6 +232,38 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
     }
   }
 
+  /**
+   * 
+   * @see OptRunStatus
+   */
+  public OptRunStatus getStatus() {
+    return this.status;
+  }
+
+  /**
+   * 
+   * @see OptRunStatus
+   */
+  public OptRun setStatus(OptRunStatus status) {
+    this.status = status;
+    return this;
+  }
+
+  public void unsetStatus() {
+    this.status = null;
+  }
+
+  /** Returns true if field status is set (has been assigned a value) and false otherwise */
+  public boolean isSetStatus() {
+    return this.status != null;
+  }
+
+  public void setStatusIsSet(boolean value) {
+    if (!value) {
+      this.status = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, java.lang.Object value) {
     switch (field) {
     case OPT_PROBLEM:
@@ -238,6 +290,14 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
       }
       break;
 
+    case STATUS:
+      if (value == null) {
+        unsetStatus();
+      } else {
+        setStatus((OptRunStatus)value);
+      }
+      break;
+
     }
   }
 
@@ -251,6 +311,9 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
 
     case STATUS_MESSAGE:
       return getStatusMessage();
+
+    case STATUS:
+      return getStatus();
 
     }
     throw new java.lang.IllegalStateException();
@@ -269,6 +332,8 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
       return isSetOptResultSet();
     case STATUS_MESSAGE:
       return isSetStatusMessage();
+    case STATUS:
+      return isSetStatus();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -315,6 +380,15 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
         return false;
     }
 
+    boolean this_present_status = true && this.isSetStatus();
+    boolean that_present_status = true && that.isSetStatus();
+    if (this_present_status || that_present_status) {
+      if (!(this_present_status && that_present_status))
+        return false;
+      if (!this.status.equals(that.status))
+        return false;
+    }
+
     return true;
   }
 
@@ -333,6 +407,10 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
     hashCode = hashCode * 8191 + ((isSetStatusMessage()) ? 131071 : 524287);
     if (isSetStatusMessage())
       hashCode = hashCode * 8191 + statusMessage.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetStatus()) ? 131071 : 524287);
+    if (isSetStatus())
+      hashCode = hashCode * 8191 + status.getValue();
 
     return hashCode;
   }
@@ -375,6 +453,16 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetStatus()).compareTo(other.isSetStatus());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStatus()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.status, other.status);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -402,20 +490,30 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
       sb.append(this.optProblem);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("optResultSet:");
-    if (this.optResultSet == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.optResultSet);
+    if (isSetOptResultSet()) {
+      if (!first) sb.append(", ");
+      sb.append("optResultSet:");
+      if (this.optResultSet == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.optResultSet);
+      }
+      first = false;
     }
-    first = false;
     if (!first) sb.append(", ");
     sb.append("statusMessage:");
     if (this.statusMessage == null) {
       sb.append("null");
     } else {
       sb.append(this.statusMessage);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("status:");
+    if (this.status == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.status);
     }
     first = false;
     sb.append(")");
@@ -427,11 +525,11 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
     if (optProblem == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'optProblem' was not present! Struct: " + toString());
     }
-    if (optResultSet == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'optResultSet' was not present! Struct: " + toString());
-    }
     if (statusMessage == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'statusMessage' was not present! Struct: " + toString());
+    }
+    if (status == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'status' was not present! Struct: " + toString());
     }
     // check for sub-struct validity
     if (optProblem != null) {
@@ -502,6 +600,14 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // STATUS
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.status = org.vcell.optimization.thrift.OptRunStatus.findByValue(iprot.readI32());
+              struct.setStatusIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -523,13 +629,20 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
         oprot.writeFieldEnd();
       }
       if (struct.optResultSet != null) {
-        oprot.writeFieldBegin(OPT_RESULT_SET_FIELD_DESC);
-        struct.optResultSet.write(oprot);
-        oprot.writeFieldEnd();
+        if (struct.isSetOptResultSet()) {
+          oprot.writeFieldBegin(OPT_RESULT_SET_FIELD_DESC);
+          struct.optResultSet.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.statusMessage != null) {
         oprot.writeFieldBegin(STATUS_MESSAGE_FIELD_DESC);
         oprot.writeString(struct.statusMessage);
+        oprot.writeFieldEnd();
+      }
+      if (struct.status != null) {
+        oprot.writeFieldBegin(STATUS_FIELD_DESC);
+        oprot.writeI32(struct.status.getValue());
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -550,8 +663,16 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
     public void write(org.apache.thrift.protocol.TProtocol prot, OptRun struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.optProblem.write(oprot);
-      struct.optResultSet.write(oprot);
       oprot.writeString(struct.statusMessage);
+      oprot.writeI32(struct.status.getValue());
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetOptResultSet()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetOptResultSet()) {
+        struct.optResultSet.write(oprot);
+      }
     }
 
     @Override
@@ -560,11 +681,16 @@ public class OptRun implements org.apache.thrift.TBase<OptRun, OptRun._Fields>, 
       struct.optProblem = new OptProblem();
       struct.optProblem.read(iprot);
       struct.setOptProblemIsSet(true);
-      struct.optResultSet = new OptResultSet();
-      struct.optResultSet.read(iprot);
-      struct.setOptResultSetIsSet(true);
       struct.statusMessage = iprot.readString();
       struct.setStatusMessageIsSet(true);
+      struct.status = org.vcell.optimization.thrift.OptRunStatus.findByValue(iprot.readI32());
+      struct.setStatusIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.optResultSet = new OptResultSet();
+        struct.optResultSet.read(iprot);
+        struct.setOptResultSetIsSet(true);
+      }
     }
   }
 
