@@ -70,7 +70,6 @@ import cbit.vcell.desktop.VCellBasicCellRenderer;
 import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.resource.CondaSupport;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.NetworkProxyUtils;
@@ -352,7 +351,7 @@ public static void main(java.lang.String[] args) {
 			}).start();
 		}
 		
-		CondaSupport.verifyInstallation();
+		//CondaSupport.verifyInstallation();
 		//CondaSupport.installInBackground();
 
 

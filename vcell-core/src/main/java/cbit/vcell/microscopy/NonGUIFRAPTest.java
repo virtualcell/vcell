@@ -27,10 +27,11 @@ import javax.media.jai.operator.FileStoreDescriptor;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
+import org.vcell.vcellij.ImageDatasetReader;
+import org.vcell.vcellij.ImageDatasetReaderService;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
@@ -100,7 +101,7 @@ public class NonGUIFRAPTest {
 			String cellROIPathName,String bleachROIPathName,
 			String backgroundROIPathName) throws Exception{
 		ExternalDataFileContents extDataFilecontents = new ExternalDataFileContents();
-			ImageDatasetReader imageDatasetReader = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class);
+			ImageDatasetReader imageDatasetReader = ImageDatasetReaderService.getInstance().getImageDatasetReader();
 			extDataFilecontents.imageData =
 					imageDatasetReader.readImageDataset(imageDataPathName, null);
 			extDataFilecontents.cellROIData =

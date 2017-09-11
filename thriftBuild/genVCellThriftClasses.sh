@@ -15,6 +15,9 @@ thrift --out ../visTool --gen py VisMesh.thrift
 thrift --out ../vcell-core/src/main/java --gen java:generated_annotations=undated VCellOpt.thrift
 thrift --out ../visTool --gen py VCellOpt.thrift
 
-# ImageJ
+# Image Simulation service
 thrift --out ../vcell-core/src/main/java --gen java:generated_annotations=undated VCellImageJ.thrift
 thrift --out ../visTool --gen py VCellImageJ.thrift
+
+# ImageDataset Service
+thrift --out ../vcell-core/src/main/java --gen java:generated_annotations=undated ImageDataset.thrift

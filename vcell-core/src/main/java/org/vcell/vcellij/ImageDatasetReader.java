@@ -1,14 +1,15 @@
-package cbit.vcell.VirtualMicroscopy;
+package org.vcell.vcellij;
 
 import java.io.File;
 
-import org.scijava.service.Service;
+import org.scijava.plugin.SciJavaPlugin;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ISize;
 
 import cbit.image.ImageSizeInfo;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
 
-public interface ImageDatasetReader extends Service {
+public interface ImageDatasetReader extends SciJavaPlugin {
 
 	public abstract ImageSizeInfo getImageSizeInfo(
 			String fileName, Integer forceZSize) throws Exception;

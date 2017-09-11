@@ -90,7 +90,6 @@ public class PropertyLoader {
 	//BioFormats plugin properties
 
 	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",ValueType.GEN);
-	public static final String bioformatsClasspath			= record("vcell.bioformatsClasspath",ValueType.GEN);
 	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",ValueType.URL);
 
 	//
