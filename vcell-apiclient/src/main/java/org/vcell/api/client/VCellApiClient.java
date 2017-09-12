@@ -1,5 +1,7 @@
 package org.vcell.api.client;
 
+import java.io.BufferedReader;
+
 /*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -28,13 +30,20 @@ package org.vcell.api.client;
  */
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
@@ -44,17 +53,21 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.http.util.TextUtils;
 import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.api.common.AccessTokenRepresentation;
@@ -117,7 +130,8 @@ public class VCellApiClient {
 			sslsf = new SSLConnectionSocketFactory(builder.build());
 		}
 
-		httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+		httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new DefaultRedirectStrategy()).build();
+		httpClientContext = HttpClientContext.create();
 	}
 	
 	public void close() throws IOException {
@@ -188,7 +202,82 @@ public class VCellApiClient {
 		return simulationRepresentation;
 	}
 	
-	public SimulationTaskRepresentation[] startSimulation(String bmId, String simKey) throws IOException {
+	public String getOptRunJson(String optimizationId) throws IOException {
+		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization/"+optimizationId);
+		
+		System.out.println("Executing request to retrieve optimization run " + httpget.getRequestLine());
+
+		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		System.out.println("returned: "+responseBody);
+		return responseBody;
+	}
+
+	public String submitOptimization(String optProblemJson) throws IOException, URISyntaxException {
+		  
+		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization");
+		StringEntity input = new StringEntity(optProblemJson);
+		input.setContentType("application/json");
+		httppost.setEntity(input);
+		
+		System.out.println("Executing request to submit optProblem " + httppost.getRequestLine());
+
+		ResponseHandler<String> handler = new ResponseHandler<String>() {
+
+			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
+				int status = response.getStatusLine().getStatusCode();
+				if (status == 202) {
+					HttpEntity entity = response.getEntity();
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						System.out.println("optimizationId = "+reader.readLine());
+					}
+			        final Header locationHeader = response.getFirstHeader("location");
+			        if (locationHeader == null) {
+			            // got a redirect response, but no location header
+			            throw new ClientProtocolException(
+			                    "Received redirect response " + response.getStatusLine()
+			                    + " but no location header");
+			        }
+			        final String location = locationHeader.getValue();
+			        URI uri = createLocationURI(location);
+					return uri.toString();
+				} else {
+					throw new ClientProtocolException("Unexpected response status: " + status);
+				}
+			}
+
+		};
+		String responseUri = httpclient.execute(httppost,handler,httpClientContext);
+		System.out.println("returned: "+responseUri);
+
+		String optimizationId = responseUri.substring(responseUri.lastIndexOf('/') + 1);
+		return optimizationId;
+	}
+	
+	/**
+	 * from org.apache.http.impl.client.DefaultRedirectStrategy
+	 * 
+	 * @param location
+	 * @return
+	 * @throws ProtocolException
+	 */
+    private URI createLocationURI(final String location) throws ClientProtocolException {
+        try {
+            final URIBuilder b = new URIBuilder(new URI(location).normalize());
+            final String host = b.getHost();
+            if (host != null) {
+                b.setHost(host.toLowerCase(Locale.US));
+            }
+            final String path = b.getPath();
+            if (TextUtils.isEmpty(path)) {
+                b.setPath("/");
+            }
+            return b.build();
+        } catch (final URISyntaxException ex) {
+            throw new ClientProtocolException("Invalid redirect URI: " + location, ex);
+        }
+    }
+
+    public SimulationTaskRepresentation[] startSimulation(String bmId, String simKey) throws IOException {
 		  
 		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey+"/startSimulation");
 		

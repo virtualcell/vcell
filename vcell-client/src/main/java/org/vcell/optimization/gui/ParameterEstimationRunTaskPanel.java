@@ -1089,7 +1089,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
-				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback);
+				//OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveLocalPython(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback);
+				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveRemoteApi(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback);
 				hashTable.put(ORS_KEY, optResultSet);
 			}
 

@@ -52,15 +52,9 @@ if [ "$skip_build" = false ]; then
 	echo "removing old docs"
 	rm -r $projectRootDir/vcell-client/src/main/resources/vcellDocs
 	echo "build vcell"
-	mvn clean verify
+	mvn clean install dependency:copy-dependencies
 	if [ $? -ne 0 ]; then
-		echo "failed first maven build: mvn clean verify"
-		exit -1
-	fi
-	echo "populate maven-jars (first time, needed by DocumentCompiler)"
-	mvn dependency:copy-dependencies
-	if [ $? -ne 0 ]; then
-		echo "failed: mvn dependency:copy-dependencies"
+		echo "failed first maven build: mvn clean install dependency:copy-dependencies"
 		exit -1
 	fi
 	echo "run document compiler"
@@ -70,9 +64,9 @@ if [ "$skip_build" = false ]; then
 		exit -1
 	fi
 	echo "force rebuild to pick up new resources - the help files"
-	mvn clean verify
+	mvn clean install dependency:copy-dependencies
 	if [ $? -ne 0 ]; then
-		echo "failed second maven build: mvn clean verify"
+		echo "failed second maven build: mvn clean install"
 		exit -1
 	fi
 fi
@@ -336,6 +330,7 @@ touch $propfile
 echo "vcell.server.id = $vcell_site_upper" 									>> $propfile
 echo "vcell.softwareVersion = $vcell_softwareVersionString" 				>> $propfile
 echo "vcell.installDir = $installed_server_sitedir" 						>> $propfile
+echo "vcell.anaconda.installdir = $vcell_anaconda_installdir"				>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#JMS Info"															>> $propfile
