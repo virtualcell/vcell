@@ -419,8 +419,12 @@ public class ResourceUtil {
 		return localSolversOSDir;
 	}
 
+	private static File getBNGRoot(){
+		return new File(getVCellInstall(),"bionetgen");
+	}
+	
 	public static String getBNG2_perl_file(){
-		File bng2_file = new File(new File(getVCellInstall(),"bionetgen"),"BNG2.pl");
+		File bng2_file = new File(getBNGRoot(),"BNG2.pl");
 		String bng2_path = bng2_file.getAbsolutePath();
 //		if (bng2_path.contains(":")){
 //			bng2_path = "/" + bng2_path.replace(":","").replace('\\','/');
@@ -428,6 +432,10 @@ public class ResourceUtil {
 		return bng2_path;
 	}
 
+	public static String getBNG2StandaloneWin64(){
+		return new File(getBNGRoot(),"win64Standalone/BNG2.exe").getAbsolutePath();
+	}
+	
 	public static File getVCellInstall()
 	{
 		return PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);	}
