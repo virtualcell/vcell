@@ -23,6 +23,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solvers.BioNetGenExecutable;
 
@@ -112,13 +113,19 @@ public BNGOutput executeBNG() throws BNGException {
 		inputFile.close();
 
 //		System.out.println("BNGExecutorService.executeBNG(): input = \n"+bngInput.getInputString());
-		System.out.println("BNGExecutorService.executeBNG()\n");
 
-		File perlExe = ResourceUtil.getPerlExe();
-		String bngPerlFilePath = ResourceUtil.getBNG2_perl_file();
+		String[] cmd = null;
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
+		if(osi.isWindows() && osi.is64bit()){
+			System.out.println("BNGExecutorService.executeBNG() as standalone executable\n");
+			cmd = new String[] {ResourceUtil.getBNG2StandaloneWin64(), bngInputFile.getAbsolutePath()};
+			
+		}else{// Execute as perl script
+			System.out.println("BNGExecutorService.executeBNG() as perl script\n");
+			String bngPerlFilePath = ResourceUtil.getBNG2_perl_file();
+			cmd = new String[] {ResourceUtil.getPerlExe().getAbsolutePath(), bngPerlFilePath, bngInputFile.getAbsolutePath()};
+		}
 		// run BNG
-		String[] cmd = new String[] {perlExe.getAbsolutePath(), bngPerlFilePath, bngInputFile.getAbsolutePath()};
-		//		executable = new org.vcell.util.Executable(cmd);
 		long timeoutMS = 0;
 		if (timeoutDurationMS != null){
 			timeoutMS = timeoutDurationMS.longValue();
