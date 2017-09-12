@@ -17,6 +17,9 @@ unset _site
 unset _version
 unset _build
 
+vcell_anaconda_installdir=/opt/vcell/anaconda2
+
+
 vcell_applicationId="1471-8022-1038-5558"
 vcell_server_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
 # mount /share/apps/vcell2/deployed as cfs02.cam.uchc.edu/raid resulting in /Volumes/raid/vcell/deployed_new

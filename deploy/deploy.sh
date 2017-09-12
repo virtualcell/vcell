@@ -330,6 +330,7 @@ touch $propfile
 echo "vcell.server.id = $vcell_site_upper" 									>> $propfile
 echo "vcell.softwareVersion = $vcell_softwareVersionString" 				>> $propfile
 echo "vcell.installDir = $installed_server_sitedir" 						>> $propfile
+echo "vcell.anaconda.installdir = $vcell_anaconda_installdir"				>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#JMS Info"															>> $propfile

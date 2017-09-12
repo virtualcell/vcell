@@ -4,7 +4,7 @@ shopt -s -o nounset
 
 _site="alpha"
 _version="6.2"
-_build="59"
+_build="62"
 vcell_server_os="linux64"
 
 vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
@@ -16,6 +16,8 @@ vcell_softwareVersionString="${vcell_site_camel}_Version_${vcell_version}_build_
 unset _site
 unset _version
 unset _build
+
+vcell_anaconda_installdir=/opt/vcell/anaconda2
 
 vcell_applicationId="1471-8022-1038-5554"
 vcell_server_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
