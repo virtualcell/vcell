@@ -323,34 +323,7 @@ public static void main(java.lang.String[] args) {
 		
 		//starting loading libraries
 		new LibraryLoaderThread(true).start( );
-		
-		//download/unzip bngperl executable environment in background thread to vcell home
-		if(OperatingSystemInfo.getInstance( ).isWindows()){
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					File bngPerlHome = new File(ResourceUtil.getVcellHome(),"bngperl");
-					String bngPerlRemoteSource = "http://vcell.org/webstart/strawberry-perl-5.24.1.1-32bit-portable.zip";
-					if(!bngPerlHome.exists()){
-						InputStream instream = null;
-						try {
-							long startTime = System.currentTimeMillis();
-							instream = new URL(bngPerlRemoteSource).openStream();
-							new UnzipUtility().unzip(instream/*bngPerlZip[0].getAbsolutePath()*/, bngPerlHome.getAbsolutePath());
-							System.out.println("Finished bngperl download->extract '"+bngPerlRemoteSource+"' executable environment to dir '"+bngPerlHome.getAbsolutePath()+"' in "+((System.currentTimeMillis()-startTime)/1000)+" seconds");
-						} catch (Exception e) {
-							System.out.println("Failed downloading/extracting '"+bngPerlRemoteSource+"' executable environment to dir '"+bngPerlHome.getAbsolutePath()+"'");
-							e.printStackTrace();
-						}finally{
-							if(instream != null){
-								IOUtils.closeQuietly(instream);
-							}
-						}
-					}		
-				}
-			}).start();
-		}
-		
+				
 		//CondaSupport.verifyInstallation();
 		//CondaSupport.installInBackground();
 

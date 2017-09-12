@@ -37,7 +37,6 @@ public class ResourceUtil {
 	private static final String LOCALSOLVERS_DIR = "localsolvers";
 	private static final String VISTOOL_DIR = "visTool";
 	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
-	private static final String STRAWBERRYPERL_HOME_REL_PATH = "bngperl\\perl\\bin\\perl.exe";  // e.g. c:\Users\me\.vcell\strawberryperl\perl\perl.exe
 
 	public static enum JavaVersion  {
 		SEVEN("1.7"),
@@ -104,14 +103,6 @@ public class ResourceUtil {
 		try {
 			File perlExe = null;
 			
-			OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
-			if (osi.isWindows()){
-				// if windows, check strawberryPerl first
-				File strawberryPerl = new File(ResourceUtil.getVcellHome(),STRAWBERRYPERL_HOME_REL_PATH);
-				if (strawberryPerl.exists()){
-					return strawberryPerl;
-				}
-			}
 			perlExe = ResourceUtil.getExecutable("perl", false);
 			if (perlExe == null || !perlExe.exists()){
 				throw new RuntimeException("failed to find installed perl - please install perl (see https://www.perl.org/)");
