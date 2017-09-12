@@ -25,9 +25,11 @@ your convenience, but are separately available in the vcell-solvers project (htt
 ### Building VCell Client as a standalone tool
 Requirements:  Git, Maven, and Java JDK 1.8 or later
 
+```bash
 git clone https://github.com/virtualcell/vcell
 cd vcell
 mvn clean verify
+```
 
 #### scripts to run the standalone client will be available soon. ####
 
@@ -43,10 +45,12 @@ Requirements:
   ** Install Vagrant for your platform (using the VirtualBox provider.
   ** Obtain an Install4J license if creating client installers
 
-* $ git clone https://github.com/jcschaff/vcell
-* $ cd vcell
-* $ cd deploy
-* $ ./deploy.sh server-config.include
+```bash
+$ git clone https://github.com/jcschaff/vcell
+$ cd vcell
+$ cd deploy
+$ ./deploy.sh server-config.include
+```
 
 server-config.include file must be customized for your configuration (see examples in /deploy directory).  
 
