@@ -11,30 +11,30 @@ package org.vcell.optimization.thrift;
 public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProblem._Fields>, java.io.Serializable, Cloneable, Comparable<OptProblem> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("OptProblem");
 
-  private static final org.apache.thrift.protocol.TField MATH_MODEL_SBML_FILE_FIELD_DESC = new org.apache.thrift.protocol.TField("mathModelSbmlFile", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField MATH_MODEL_SBML_CONTENTS_FIELD_DESC = new org.apache.thrift.protocol.TField("mathModelSbmlContents", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField NUMBER_OF_OPTIMIZATION_RUNS_FIELD_DESC = new org.apache.thrift.protocol.TField("numberOfOptimizationRuns", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField PARAMETER_DESCRIPTION_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("parameterDescriptionList", org.apache.thrift.protocol.TType.LIST, (short)3);
   private static final org.apache.thrift.protocol.TField REFERENCE_VARIABLE_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("referenceVariableList", org.apache.thrift.protocol.TType.LIST, (short)4);
-  private static final org.apache.thrift.protocol.TField EXPERIMENTAL_DATA_FILE_FIELD_DESC = new org.apache.thrift.protocol.TField("experimentalDataFile", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField EXPERIMENTAL_DATA_SET_FIELD_DESC = new org.apache.thrift.protocol.TField("experimentalDataSet", org.apache.thrift.protocol.TType.STRUCT, (short)5);
   private static final org.apache.thrift.protocol.TField OPTIMIZATION_METHOD_FIELD_DESC = new org.apache.thrift.protocol.TField("optimizationMethod", org.apache.thrift.protocol.TType.STRUCT, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new OptProblemStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new OptProblemTupleSchemeFactory();
 
-  public java.lang.String mathModelSbmlFile; // required
+  public java.lang.String mathModelSbmlContents; // required
   public int numberOfOptimizationRuns; // required
   public java.util.List<ParameterDescription> parameterDescriptionList; // required
   public java.util.List<ReferenceVariable> referenceVariableList; // required
-  public java.lang.String experimentalDataFile; // required
+  public DataSet experimentalDataSet; // required
   public CopasiOptimizationMethod optimizationMethod; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    MATH_MODEL_SBML_FILE((short)1, "mathModelSbmlFile"),
+    MATH_MODEL_SBML_CONTENTS((short)1, "mathModelSbmlContents"),
     NUMBER_OF_OPTIMIZATION_RUNS((short)2, "numberOfOptimizationRuns"),
     PARAMETER_DESCRIPTION_LIST((short)3, "parameterDescriptionList"),
     REFERENCE_VARIABLE_LIST((short)4, "referenceVariableList"),
-    EXPERIMENTAL_DATA_FILE((short)5, "experimentalDataFile"),
+    EXPERIMENTAL_DATA_SET((short)5, "experimentalDataSet"),
     OPTIMIZATION_METHOD((short)6, "optimizationMethod");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -50,16 +50,16 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // MATH_MODEL_SBML_FILE
-          return MATH_MODEL_SBML_FILE;
+        case 1: // MATH_MODEL_SBML_CONTENTS
+          return MATH_MODEL_SBML_CONTENTS;
         case 2: // NUMBER_OF_OPTIMIZATION_RUNS
           return NUMBER_OF_OPTIMIZATION_RUNS;
         case 3: // PARAMETER_DESCRIPTION_LIST
           return PARAMETER_DESCRIPTION_LIST;
         case 4: // REFERENCE_VARIABLE_LIST
           return REFERENCE_VARIABLE_LIST;
-        case 5: // EXPERIMENTAL_DATA_FILE
-          return EXPERIMENTAL_DATA_FILE;
+        case 5: // EXPERIMENTAL_DATA_SET
+          return EXPERIMENTAL_DATA_SET;
         case 6: // OPTIMIZATION_METHOD
           return OPTIMIZATION_METHOD;
         default:
@@ -107,16 +107,16 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.MATH_MODEL_SBML_FILE, new org.apache.thrift.meta_data.FieldMetaData("mathModelSbmlFile", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , "FilePath")));
+    tmpMap.put(_Fields.MATH_MODEL_SBML_CONTENTS, new org.apache.thrift.meta_data.FieldMetaData("mathModelSbmlContents", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.NUMBER_OF_OPTIMIZATION_RUNS, new org.apache.thrift.meta_data.FieldMetaData("numberOfOptimizationRuns", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32        , "int")));
     tmpMap.put(_Fields.PARAMETER_DESCRIPTION_LIST, new org.apache.thrift.meta_data.FieldMetaData("parameterDescriptionList", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "ParameterDescriptionList")));
     tmpMap.put(_Fields.REFERENCE_VARIABLE_LIST, new org.apache.thrift.meta_data.FieldMetaData("referenceVariableList", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "ReferenceVariableList")));
-    tmpMap.put(_Fields.EXPERIMENTAL_DATA_FILE, new org.apache.thrift.meta_data.FieldMetaData("experimentalDataFile", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , "FilePath")));
+    tmpMap.put(_Fields.EXPERIMENTAL_DATA_SET, new org.apache.thrift.meta_data.FieldMetaData("experimentalDataSet", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DataSet.class)));
     tmpMap.put(_Fields.OPTIMIZATION_METHOD, new org.apache.thrift.meta_data.FieldMetaData("optimizationMethod", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CopasiOptimizationMethod.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
@@ -127,20 +127,20 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
   }
 
   public OptProblem(
-    java.lang.String mathModelSbmlFile,
+    java.lang.String mathModelSbmlContents,
     int numberOfOptimizationRuns,
     java.util.List<ParameterDescription> parameterDescriptionList,
     java.util.List<ReferenceVariable> referenceVariableList,
-    java.lang.String experimentalDataFile,
+    DataSet experimentalDataSet,
     CopasiOptimizationMethod optimizationMethod)
   {
     this();
-    this.mathModelSbmlFile = mathModelSbmlFile;
+    this.mathModelSbmlContents = mathModelSbmlContents;
     this.numberOfOptimizationRuns = numberOfOptimizationRuns;
     setNumberOfOptimizationRunsIsSet(true);
     this.parameterDescriptionList = parameterDescriptionList;
     this.referenceVariableList = referenceVariableList;
-    this.experimentalDataFile = experimentalDataFile;
+    this.experimentalDataSet = experimentalDataSet;
     this.optimizationMethod = optimizationMethod;
   }
 
@@ -149,8 +149,8 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
    */
   public OptProblem(OptProblem other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetMathModelSbmlFile()) {
-      this.mathModelSbmlFile = other.mathModelSbmlFile;
+    if (other.isSetMathModelSbmlContents()) {
+      this.mathModelSbmlContents = other.mathModelSbmlContents;
     }
     this.numberOfOptimizationRuns = other.numberOfOptimizationRuns;
     if (other.isSetParameterDescriptionList()) {
@@ -167,8 +167,8 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
       }
       this.referenceVariableList = __this__referenceVariableList;
     }
-    if (other.isSetExperimentalDataFile()) {
-      this.experimentalDataFile = other.experimentalDataFile;
+    if (other.isSetExperimentalDataSet()) {
+      this.experimentalDataSet = new DataSet(other.experimentalDataSet);
     }
     if (other.isSetOptimizationMethod()) {
       this.optimizationMethod = new CopasiOptimizationMethod(other.optimizationMethod);
@@ -181,36 +181,36 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
 
   @Override
   public void clear() {
-    this.mathModelSbmlFile = null;
+    this.mathModelSbmlContents = null;
     setNumberOfOptimizationRunsIsSet(false);
     this.numberOfOptimizationRuns = 0;
     this.parameterDescriptionList = null;
     this.referenceVariableList = null;
-    this.experimentalDataFile = null;
+    this.experimentalDataSet = null;
     this.optimizationMethod = null;
   }
 
-  public java.lang.String getMathModelSbmlFile() {
-    return this.mathModelSbmlFile;
+  public java.lang.String getMathModelSbmlContents() {
+    return this.mathModelSbmlContents;
   }
 
-  public OptProblem setMathModelSbmlFile(java.lang.String mathModelSbmlFile) {
-    this.mathModelSbmlFile = mathModelSbmlFile;
+  public OptProblem setMathModelSbmlContents(java.lang.String mathModelSbmlContents) {
+    this.mathModelSbmlContents = mathModelSbmlContents;
     return this;
   }
 
-  public void unsetMathModelSbmlFile() {
-    this.mathModelSbmlFile = null;
+  public void unsetMathModelSbmlContents() {
+    this.mathModelSbmlContents = null;
   }
 
-  /** Returns true if field mathModelSbmlFile is set (has been assigned a value) and false otherwise */
-  public boolean isSetMathModelSbmlFile() {
-    return this.mathModelSbmlFile != null;
+  /** Returns true if field mathModelSbmlContents is set (has been assigned a value) and false otherwise */
+  public boolean isSetMathModelSbmlContents() {
+    return this.mathModelSbmlContents != null;
   }
 
-  public void setMathModelSbmlFileIsSet(boolean value) {
+  public void setMathModelSbmlContentsIsSet(boolean value) {
     if (!value) {
-      this.mathModelSbmlFile = null;
+      this.mathModelSbmlContents = null;
     }
   }
 
@@ -315,27 +315,27 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
     }
   }
 
-  public java.lang.String getExperimentalDataFile() {
-    return this.experimentalDataFile;
+  public DataSet getExperimentalDataSet() {
+    return this.experimentalDataSet;
   }
 
-  public OptProblem setExperimentalDataFile(java.lang.String experimentalDataFile) {
-    this.experimentalDataFile = experimentalDataFile;
+  public OptProblem setExperimentalDataSet(DataSet experimentalDataSet) {
+    this.experimentalDataSet = experimentalDataSet;
     return this;
   }
 
-  public void unsetExperimentalDataFile() {
-    this.experimentalDataFile = null;
+  public void unsetExperimentalDataSet() {
+    this.experimentalDataSet = null;
   }
 
-  /** Returns true if field experimentalDataFile is set (has been assigned a value) and false otherwise */
-  public boolean isSetExperimentalDataFile() {
-    return this.experimentalDataFile != null;
+  /** Returns true if field experimentalDataSet is set (has been assigned a value) and false otherwise */
+  public boolean isSetExperimentalDataSet() {
+    return this.experimentalDataSet != null;
   }
 
-  public void setExperimentalDataFileIsSet(boolean value) {
+  public void setExperimentalDataSetIsSet(boolean value) {
     if (!value) {
-      this.experimentalDataFile = null;
+      this.experimentalDataSet = null;
     }
   }
 
@@ -365,11 +365,11 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
 
   public void setFieldValue(_Fields field, java.lang.Object value) {
     switch (field) {
-    case MATH_MODEL_SBML_FILE:
+    case MATH_MODEL_SBML_CONTENTS:
       if (value == null) {
-        unsetMathModelSbmlFile();
+        unsetMathModelSbmlContents();
       } else {
-        setMathModelSbmlFile((java.lang.String)value);
+        setMathModelSbmlContents((java.lang.String)value);
       }
       break;
 
@@ -397,11 +397,11 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
       }
       break;
 
-    case EXPERIMENTAL_DATA_FILE:
+    case EXPERIMENTAL_DATA_SET:
       if (value == null) {
-        unsetExperimentalDataFile();
+        unsetExperimentalDataSet();
       } else {
-        setExperimentalDataFile((java.lang.String)value);
+        setExperimentalDataSet((DataSet)value);
       }
       break;
 
@@ -418,8 +418,8 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
 
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case MATH_MODEL_SBML_FILE:
-      return getMathModelSbmlFile();
+    case MATH_MODEL_SBML_CONTENTS:
+      return getMathModelSbmlContents();
 
     case NUMBER_OF_OPTIMIZATION_RUNS:
       return getNumberOfOptimizationRuns();
@@ -430,8 +430,8 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
     case REFERENCE_VARIABLE_LIST:
       return getReferenceVariableList();
 
-    case EXPERIMENTAL_DATA_FILE:
-      return getExperimentalDataFile();
+    case EXPERIMENTAL_DATA_SET:
+      return getExperimentalDataSet();
 
     case OPTIMIZATION_METHOD:
       return getOptimizationMethod();
@@ -447,16 +447,16 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
     }
 
     switch (field) {
-    case MATH_MODEL_SBML_FILE:
-      return isSetMathModelSbmlFile();
+    case MATH_MODEL_SBML_CONTENTS:
+      return isSetMathModelSbmlContents();
     case NUMBER_OF_OPTIMIZATION_RUNS:
       return isSetNumberOfOptimizationRuns();
     case PARAMETER_DESCRIPTION_LIST:
       return isSetParameterDescriptionList();
     case REFERENCE_VARIABLE_LIST:
       return isSetReferenceVariableList();
-    case EXPERIMENTAL_DATA_FILE:
-      return isSetExperimentalDataFile();
+    case EXPERIMENTAL_DATA_SET:
+      return isSetExperimentalDataSet();
     case OPTIMIZATION_METHOD:
       return isSetOptimizationMethod();
     }
@@ -478,12 +478,12 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
     if (this == that)
       return true;
 
-    boolean this_present_mathModelSbmlFile = true && this.isSetMathModelSbmlFile();
-    boolean that_present_mathModelSbmlFile = true && that.isSetMathModelSbmlFile();
-    if (this_present_mathModelSbmlFile || that_present_mathModelSbmlFile) {
-      if (!(this_present_mathModelSbmlFile && that_present_mathModelSbmlFile))
+    boolean this_present_mathModelSbmlContents = true && this.isSetMathModelSbmlContents();
+    boolean that_present_mathModelSbmlContents = true && that.isSetMathModelSbmlContents();
+    if (this_present_mathModelSbmlContents || that_present_mathModelSbmlContents) {
+      if (!(this_present_mathModelSbmlContents && that_present_mathModelSbmlContents))
         return false;
-      if (!this.mathModelSbmlFile.equals(that.mathModelSbmlFile))
+      if (!this.mathModelSbmlContents.equals(that.mathModelSbmlContents))
         return false;
     }
 
@@ -514,12 +514,12 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
         return false;
     }
 
-    boolean this_present_experimentalDataFile = true && this.isSetExperimentalDataFile();
-    boolean that_present_experimentalDataFile = true && that.isSetExperimentalDataFile();
-    if (this_present_experimentalDataFile || that_present_experimentalDataFile) {
-      if (!(this_present_experimentalDataFile && that_present_experimentalDataFile))
+    boolean this_present_experimentalDataSet = true && this.isSetExperimentalDataSet();
+    boolean that_present_experimentalDataSet = true && that.isSetExperimentalDataSet();
+    if (this_present_experimentalDataSet || that_present_experimentalDataSet) {
+      if (!(this_present_experimentalDataSet && that_present_experimentalDataSet))
         return false;
-      if (!this.experimentalDataFile.equals(that.experimentalDataFile))
+      if (!this.experimentalDataSet.equals(that.experimentalDataSet))
         return false;
     }
 
@@ -539,9 +539,9 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((isSetMathModelSbmlFile()) ? 131071 : 524287);
-    if (isSetMathModelSbmlFile())
-      hashCode = hashCode * 8191 + mathModelSbmlFile.hashCode();
+    hashCode = hashCode * 8191 + ((isSetMathModelSbmlContents()) ? 131071 : 524287);
+    if (isSetMathModelSbmlContents())
+      hashCode = hashCode * 8191 + mathModelSbmlContents.hashCode();
 
     hashCode = hashCode * 8191 + numberOfOptimizationRuns;
 
@@ -553,9 +553,9 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
     if (isSetReferenceVariableList())
       hashCode = hashCode * 8191 + referenceVariableList.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetExperimentalDataFile()) ? 131071 : 524287);
-    if (isSetExperimentalDataFile())
-      hashCode = hashCode * 8191 + experimentalDataFile.hashCode();
+    hashCode = hashCode * 8191 + ((isSetExperimentalDataSet()) ? 131071 : 524287);
+    if (isSetExperimentalDataSet())
+      hashCode = hashCode * 8191 + experimentalDataSet.hashCode();
 
     hashCode = hashCode * 8191 + ((isSetOptimizationMethod()) ? 131071 : 524287);
     if (isSetOptimizationMethod())
@@ -572,12 +572,12 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.valueOf(isSetMathModelSbmlFile()).compareTo(other.isSetMathModelSbmlFile());
+    lastComparison = java.lang.Boolean.valueOf(isSetMathModelSbmlContents()).compareTo(other.isSetMathModelSbmlContents());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetMathModelSbmlFile()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.mathModelSbmlFile, other.mathModelSbmlFile);
+    if (isSetMathModelSbmlContents()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.mathModelSbmlContents, other.mathModelSbmlContents);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -612,12 +612,12 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.valueOf(isSetExperimentalDataFile()).compareTo(other.isSetExperimentalDataFile());
+    lastComparison = java.lang.Boolean.valueOf(isSetExperimentalDataSet()).compareTo(other.isSetExperimentalDataSet());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetExperimentalDataFile()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.experimentalDataFile, other.experimentalDataFile);
+    if (isSetExperimentalDataSet()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.experimentalDataSet, other.experimentalDataSet);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -652,11 +652,11 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
     java.lang.StringBuilder sb = new java.lang.StringBuilder("OptProblem(");
     boolean first = true;
 
-    sb.append("mathModelSbmlFile:");
-    if (this.mathModelSbmlFile == null) {
+    sb.append("mathModelSbmlContents:");
+    if (this.mathModelSbmlContents == null) {
       sb.append("null");
     } else {
-      sb.append(this.mathModelSbmlFile);
+      sb.append(this.mathModelSbmlContents);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -680,11 +680,11 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("experimentalDataFile:");
-    if (this.experimentalDataFile == null) {
+    sb.append("experimentalDataSet:");
+    if (this.experimentalDataSet == null) {
       sb.append("null");
     } else {
-      sb.append(this.experimentalDataFile);
+      sb.append(this.experimentalDataSet);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -701,8 +701,8 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (mathModelSbmlFile == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'mathModelSbmlFile' was not present! Struct: " + toString());
+    if (mathModelSbmlContents == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'mathModelSbmlContents' was not present! Struct: " + toString());
     }
     // alas, we cannot check 'numberOfOptimizationRuns' because it's a primitive and you chose the non-beans generator.
     if (parameterDescriptionList == null) {
@@ -711,13 +711,16 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
     if (referenceVariableList == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'referenceVariableList' was not present! Struct: " + toString());
     }
-    if (experimentalDataFile == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'experimentalDataFile' was not present! Struct: " + toString());
+    if (experimentalDataSet == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'experimentalDataSet' was not present! Struct: " + toString());
     }
     if (optimizationMethod == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'optimizationMethod' was not present! Struct: " + toString());
     }
     // check for sub-struct validity
+    if (experimentalDataSet != null) {
+      experimentalDataSet.validate();
+    }
     if (optimizationMethod != null) {
       optimizationMethod.validate();
     }
@@ -759,10 +762,10 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
           break;
         }
         switch (schemeField.id) {
-          case 1: // MATH_MODEL_SBML_FILE
+          case 1: // MATH_MODEL_SBML_CONTENTS
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.mathModelSbmlFile = iprot.readString();
-              struct.setMathModelSbmlFileIsSet(true);
+              struct.mathModelSbmlContents = iprot.readString();
+              struct.setMathModelSbmlContentsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -778,14 +781,14 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
           case 3: // PARAMETER_DESCRIPTION_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list8 = iprot.readListBegin();
-                struct.parameterDescriptionList = new java.util.ArrayList<ParameterDescription>(_list8.size);
-                ParameterDescription _elem9;
-                for (int _i10 = 0; _i10 < _list8.size; ++_i10)
+                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
+                struct.parameterDescriptionList = new java.util.ArrayList<ParameterDescription>(_list24.size);
+                ParameterDescription _elem25;
+                for (int _i26 = 0; _i26 < _list24.size; ++_i26)
                 {
-                  _elem9 = new ParameterDescription();
-                  _elem9.read(iprot);
-                  struct.parameterDescriptionList.add(_elem9);
+                  _elem25 = new ParameterDescription();
+                  _elem25.read(iprot);
+                  struct.parameterDescriptionList.add(_elem25);
                 }
                 iprot.readListEnd();
               }
@@ -797,14 +800,14 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
           case 4: // REFERENCE_VARIABLE_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list11 = iprot.readListBegin();
-                struct.referenceVariableList = new java.util.ArrayList<ReferenceVariable>(_list11.size);
-                ReferenceVariable _elem12;
-                for (int _i13 = 0; _i13 < _list11.size; ++_i13)
+                org.apache.thrift.protocol.TList _list27 = iprot.readListBegin();
+                struct.referenceVariableList = new java.util.ArrayList<ReferenceVariable>(_list27.size);
+                ReferenceVariable _elem28;
+                for (int _i29 = 0; _i29 < _list27.size; ++_i29)
                 {
-                  _elem12 = new ReferenceVariable();
-                  _elem12.read(iprot);
-                  struct.referenceVariableList.add(_elem12);
+                  _elem28 = new ReferenceVariable();
+                  _elem28.read(iprot);
+                  struct.referenceVariableList.add(_elem28);
                 }
                 iprot.readListEnd();
               }
@@ -813,10 +816,11 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // EXPERIMENTAL_DATA_FILE
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.experimentalDataFile = iprot.readString();
-              struct.setExperimentalDataFileIsSet(true);
+          case 5: // EXPERIMENTAL_DATA_SET
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.experimentalDataSet = new DataSet();
+              struct.experimentalDataSet.read(iprot);
+              struct.setExperimentalDataSetIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -848,9 +852,9 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.mathModelSbmlFile != null) {
-        oprot.writeFieldBegin(MATH_MODEL_SBML_FILE_FIELD_DESC);
-        oprot.writeString(struct.mathModelSbmlFile);
+      if (struct.mathModelSbmlContents != null) {
+        oprot.writeFieldBegin(MATH_MODEL_SBML_CONTENTS_FIELD_DESC);
+        oprot.writeString(struct.mathModelSbmlContents);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldBegin(NUMBER_OF_OPTIMIZATION_RUNS_FIELD_DESC);
@@ -860,9 +864,9 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
         oprot.writeFieldBegin(PARAMETER_DESCRIPTION_LIST_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.parameterDescriptionList.size()));
-          for (ParameterDescription _iter14 : struct.parameterDescriptionList)
+          for (ParameterDescription _iter30 : struct.parameterDescriptionList)
           {
-            _iter14.write(oprot);
+            _iter30.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -872,17 +876,17 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
         oprot.writeFieldBegin(REFERENCE_VARIABLE_LIST_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.referenceVariableList.size()));
-          for (ReferenceVariable _iter15 : struct.referenceVariableList)
+          for (ReferenceVariable _iter31 : struct.referenceVariableList)
           {
-            _iter15.write(oprot);
+            _iter31.write(oprot);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
       }
-      if (struct.experimentalDataFile != null) {
-        oprot.writeFieldBegin(EXPERIMENTAL_DATA_FILE_FIELD_DESC);
-        oprot.writeString(struct.experimentalDataFile);
+      if (struct.experimentalDataSet != null) {
+        oprot.writeFieldBegin(EXPERIMENTAL_DATA_SET_FIELD_DESC);
+        struct.experimentalDataSet.write(oprot);
         oprot.writeFieldEnd();
       }
       if (struct.optimizationMethod != null) {
@@ -907,59 +911,60 @@ public class OptProblem implements org.apache.thrift.TBase<OptProblem, OptProble
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, OptProblem struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeString(struct.mathModelSbmlFile);
+      oprot.writeString(struct.mathModelSbmlContents);
       oprot.writeI32(struct.numberOfOptimizationRuns);
       {
         oprot.writeI32(struct.parameterDescriptionList.size());
-        for (ParameterDescription _iter16 : struct.parameterDescriptionList)
+        for (ParameterDescription _iter32 : struct.parameterDescriptionList)
         {
-          _iter16.write(oprot);
+          _iter32.write(oprot);
         }
       }
       {
         oprot.writeI32(struct.referenceVariableList.size());
-        for (ReferenceVariable _iter17 : struct.referenceVariableList)
+        for (ReferenceVariable _iter33 : struct.referenceVariableList)
         {
-          _iter17.write(oprot);
+          _iter33.write(oprot);
         }
       }
-      oprot.writeString(struct.experimentalDataFile);
+      struct.experimentalDataSet.write(oprot);
       struct.optimizationMethod.write(oprot);
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, OptProblem struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.mathModelSbmlFile = iprot.readString();
-      struct.setMathModelSbmlFileIsSet(true);
+      struct.mathModelSbmlContents = iprot.readString();
+      struct.setMathModelSbmlContentsIsSet(true);
       struct.numberOfOptimizationRuns = iprot.readI32();
       struct.setNumberOfOptimizationRunsIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list18 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.parameterDescriptionList = new java.util.ArrayList<ParameterDescription>(_list18.size);
-        ParameterDescription _elem19;
-        for (int _i20 = 0; _i20 < _list18.size; ++_i20)
+        org.apache.thrift.protocol.TList _list34 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.parameterDescriptionList = new java.util.ArrayList<ParameterDescription>(_list34.size);
+        ParameterDescription _elem35;
+        for (int _i36 = 0; _i36 < _list34.size; ++_i36)
         {
-          _elem19 = new ParameterDescription();
-          _elem19.read(iprot);
-          struct.parameterDescriptionList.add(_elem19);
+          _elem35 = new ParameterDescription();
+          _elem35.read(iprot);
+          struct.parameterDescriptionList.add(_elem35);
         }
       }
       struct.setParameterDescriptionListIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list21 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.referenceVariableList = new java.util.ArrayList<ReferenceVariable>(_list21.size);
-        ReferenceVariable _elem22;
-        for (int _i23 = 0; _i23 < _list21.size; ++_i23)
+        org.apache.thrift.protocol.TList _list37 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.referenceVariableList = new java.util.ArrayList<ReferenceVariable>(_list37.size);
+        ReferenceVariable _elem38;
+        for (int _i39 = 0; _i39 < _list37.size; ++_i39)
         {
-          _elem22 = new ReferenceVariable();
-          _elem22.read(iprot);
-          struct.referenceVariableList.add(_elem22);
+          _elem38 = new ReferenceVariable();
+          _elem38.read(iprot);
+          struct.referenceVariableList.add(_elem38);
         }
       }
       struct.setReferenceVariableListIsSet(true);
-      struct.experimentalDataFile = iprot.readString();
-      struct.setExperimentalDataFileIsSet(true);
+      struct.experimentalDataSet = new DataSet();
+      struct.experimentalDataSet.read(iprot);
+      struct.setExperimentalDataSetIsSet(true);
       struct.optimizationMethod = new CopasiOptimizationMethod();
       struct.optimizationMethod.read(iprot);
       struct.setOptimizationMethodIsSet(true);

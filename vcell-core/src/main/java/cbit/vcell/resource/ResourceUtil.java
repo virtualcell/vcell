@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,9 +35,11 @@ import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
 	private static final String LOCALSOLVERS_DIR = "localsolvers";
-	private static final String VISTOOL_DIR = "visTool";
+	private static final String PYTHONSCRIPTS_DIR = "pythonScripts";
+	private static final String VCELL_OPT_DIR = "VCell_Opt";
+	private static final String VCELL_VISIT_DIR = "VCell_VisIt";
+	private static final String VCELL_VTK_DIR = "VCell_VTK";
 	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
-	private static final String STRAWBERRYPERL_HOME_REL_PATH = "bngperl\\perl\\bin\\perl.exe";  // e.g. c:\Users\me\.vcell\strawberryperl\perl\perl.exe
 
 	public static enum JavaVersion  {
 		SEVEN("1.7"),
@@ -62,6 +65,7 @@ public class ResourceUtil {
 	private static File localVisDataDir = null;
 	private static File localRootDir = null;
 	private static File logDir = null;
+	private static File optimizationRootDir = null;
 
 	/**
 	 * normally set once; protected to allow test fixtures to access
@@ -102,14 +106,6 @@ public class ResourceUtil {
 		try {
 			File perlExe = null;
 			
-			OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
-			if (osi.isWindows()){
-				// if windows, check strawberryPerl first
-				File strawberryPerl = new File(ResourceUtil.getVcellHome(),STRAWBERRYPERL_HOME_REL_PATH);
-				if (strawberryPerl.exists()){
-					return strawberryPerl;
-				}
-			}
 			perlExe = ResourceUtil.getExecutable("perl", false);
 			if (perlExe == null || !perlExe.exists()){
 				throw new RuntimeException("failed to find installed perl - please install perl (see https://www.perl.org/)");
@@ -417,8 +413,12 @@ public class ResourceUtil {
 		return localSolversOSDir;
 	}
 
+	private static File getBNGRoot(){
+		return new File(getVCellInstall(),"bionetgen");
+	}
+	
 	public static String getBNG2_perl_file(){
-		File bng2_file = new File(new File(getVCellInstall(),"bionetgen"),"BNG2.pl");
+		File bng2_file = new File(getBNGRoot(),"BNG2.pl");
 		String bng2_path = bng2_file.getAbsolutePath();
 //		if (bng2_path.contains(":")){
 //			bng2_path = "/" + bng2_path.replace(":","").replace('\\','/');
@@ -426,6 +426,10 @@ public class ResourceUtil {
 		return bng2_path;
 	}
 
+	public static String getBNG2StandaloneWin64(){
+		return new File(getBNGRoot(),"win64Standalone/BNG2.exe").getAbsolutePath();
+	}
+	
 	public static File getVCellInstall()
 	{
 		return PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);	}
@@ -443,8 +447,69 @@ public class ResourceUtil {
 		return filePath.replace("C:","").replace("D:","").replace("\\","/");
 	}
 
-	public static File getVisToolDir() {
-		return new File(getVCellInstall(),VISTOOL_DIR);
+	private static File getPythonScriptsDir() {
+		return new File(getVCellInstall(),PYTHONSCRIPTS_DIR);
 	}
+
+	public static File getVCellOptPythonDir() {
+		return new File(getPythonScriptsDir(),VCELL_OPT_DIR);
+	}
+
+	public static File getVCellVTKPythonDir() {
+		return new File(getPythonScriptsDir(),VCELL_VTK_DIR);
+	}
+
+	public static File getVCellVisItPythonDir() {
+		return new File(getPythonScriptsDir(),VCELL_VISIT_DIR);
+	}
+
+	public static File getOptimizationRootDir()
+	{
+		if(optimizationRootDir == null)
+		{
+			optimizationRootDir = new File(getVcellHome(), "optimization");
+			if (!optimizationRootDir.exists()) {
+				optimizationRootDir.mkdirs();
+			}
+		}
+
+		return optimizationRootDir;
+	}
+	
+	private static String getBioformatsJarDownloadURLString(){
+		return PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarDownloadURL);
+	}
+	
+	private static File getPluginFolder(){
+		return new File(ResourceUtil.getVcellHome(),"plugins");
+	}
+		
+	public static void downloadBioformatsJar() throws MalformedURLException, IOException{
+		boolean bPluginFolderExists = false;
+		
+		if (!(bPluginFolderExists = getPluginFolder().exists())) {
+			bPluginFolderExists = getPluginFolder().mkdirs();
+			if (bPluginFolderExists) {
+//				getPluginFolder().setWritable(true);
+			}
+			else {
+				throw new RuntimeException("not able to create plugin directory: "+getPluginFolder().getAbsolutePath());
+			}
+		}
+		File jarFile = new File(getPluginFolder(),PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarFileName));
+		FileUtils.saveUrlToFile(jarFile.getAbsolutePath(), getBioformatsJarDownloadURLString());
+	}
+	
+	public static File getBioFormatsExecutableJarFile() throws Exception{
+		String bioformatsJarFileName = PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarFileName);
+		File pluginDir = getPluginFolder();
+		File bioformatsPluginFile = new File(pluginDir,bioformatsJarFileName);
+		if (bioformatsPluginFile.exists()){
+			return bioformatsPluginFile;
+		}else{
+			return null;
+		}
+	}
+
 
 }

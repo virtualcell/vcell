@@ -16,10 +16,11 @@ import java.util.ArrayList;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.document.KeyValue;
+import org.vcell.vcellij.ImageDatasetReader;
+import org.vcell.vcellij.ImageDatasetReaderService;
 
 import cbit.image.SourceDataInfo;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.simdata.SimDataConstants;
 
@@ -30,7 +31,7 @@ public abstract class FRAPWorkspace
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
-		ImageDataset imageDataset = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class).readImageDataset(inputFile.getAbsolutePath(), clientTaskStatusSupport);
+		ImageDataset imageDataset = ImageDatasetReaderService.getInstance().getImageDatasetReader().readImageDataset(inputFile.getAbsolutePath(), clientTaskStatusSupport);
 		newFrapData = FrapDataUtils.importFRAPDataFromImageDataSet(imageDataset);
 		newFrapStudy.setFrapData(newFrapData);
 		
@@ -82,7 +83,7 @@ public abstract class FRAPWorkspace
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
 		ImageDataset imageDataset;
-		imageDataset = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class).readImageDatasetFromMultiFiles(inputFiles, clientTaskStatusSupport, isTimeSeries, timeInterval);
+		imageDataset = ImageDatasetReaderService.getInstance().getImageDatasetReader().readImageDatasetFromMultiFiles(inputFiles, clientTaskStatusSupport, isTimeSeries, timeInterval);
 		newFrapData = new FRAPData(imageDataset, new String[] { FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
 		newFrapStudy.setFrapData(newFrapData);
 		

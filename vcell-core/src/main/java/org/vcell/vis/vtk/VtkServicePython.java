@@ -9,12 +9,12 @@ import org.vcell.util.exe.ExecutableException;
 import org.vcell.util.exe.IExecutable;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 
-import cbit.vcell.resource.CondaSupport;
+import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;
-import cbit.vcell.resource.CondaSupport.InstallStatus;
-import cbit.vcell.resource.CondaSupport.PythonPackage;
+import cbit.vcell.resource.PythonSupport.InstallStatus;
+import cbit.vcell.resource.PythonSupport.PythonPackage;
 
 public class VtkServicePython extends VtkService {
 
@@ -47,8 +47,8 @@ public class VtkServicePython extends VtkService {
 		if (lg.isDebugEnabled()) {
 			lg.debug("writeVtkGridAndIndexData (python) for domain "+domainName);
 		}
-		File PYTHON = CondaSupport.getPythonExe();
-		InstallStatus copasiInstallStatus = CondaSupport.getPythonPackageStatus(PythonPackage.VTK);
+		File PYTHON = PythonSupport.getPythonExe();
+		InstallStatus copasiInstallStatus = PythonSupport.getPythonPackageStatus(PythonPackage.VTK);
 		if (copasiInstallStatus==InstallStatus.FAILED){
 			throw new RuntimeException("failed to install VTK python package, consider re-installing VCell-managed python\n ...see Preferences->Python->Re-install");
 		}
@@ -59,7 +59,7 @@ public class VtkServicePython extends VtkService {
 		String baseFilename = vtkFile.getName().replace(".vtu",".visMesh");
 		File visMeshFile = new File(vtkFile.getParentFile(), baseFilename);
 		VisMeshUtils.writeVisMesh(visMeshFile, visMesh);
-		File vtkServiceFile = new File(ResourceUtil.getVisToolDir(),"vtkService.py");
+		File vtkServiceFile = new File(ResourceUtil.getVCellVTKPythonDir(),"vtkService.py");
 		//It's 2015 -- forward slash works for all operating systems
 		String[] cmd = new String[] { PYTHON.getAbsolutePath(), vtkServiceFile.getAbsolutePath(),visMeshType,domainName,visMeshFile.getAbsolutePath(),vtkFile.getAbsolutePath(),indexFile.getAbsolutePath() };
 		IExecutable exe = prepareExecutable(cmd);

@@ -52,17 +52,16 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.vcellij.ImageDatasetReaderService;
 
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.UserMessage;
@@ -1504,7 +1503,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 							throw UserCancelException.CANCEL_GENERIC;
 						}
 						if(!customROIImport.importROI(inputFile)){
-							ImageDataset importImageDataset = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class).readImageDataset(inputFile.getAbsolutePath(), null);
+							ImageDataset importImageDataset = ImageDatasetReaderService.getInstance().getImageDatasetReader().readImageDataset(inputFile.getAbsolutePath(), null);
 							if(importImageDataset.getISize().getX() * importImageDataset.getISize().getY() != 
 								getImagePane().getHighlightImage().getWidth()*getImagePane().getHighlightImage().getHeight()){
 								throw new Exception(

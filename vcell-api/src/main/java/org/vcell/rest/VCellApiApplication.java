@@ -19,6 +19,7 @@ import org.restlet.representation.Variant;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Router;
+import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.server.AccessTokenServerResource;
@@ -30,6 +31,8 @@ import org.vcell.rest.server.BiomodelSimulationStartServerResource;
 import org.vcell.rest.server.BiomodelSimulationStopServerResource;
 import org.vcell.rest.server.BiomodelVCMLServerResource;
 import org.vcell.rest.server.BiomodelsServerResource;
+import org.vcell.rest.server.OptimizationRunServerResource;
+import org.vcell.rest.server.OptimizationServerResource;
 import org.vcell.rest.server.PublicationServerResource;
 import org.vcell.rest.server.PublicationsServerResource;
 import org.vcell.rest.server.RestDatabaseService;
@@ -96,6 +99,10 @@ public class VCellApiApplication extends WadlApplication {
 
 	public static final String WEBAPP = "webapp";
 	
+	public static final String OPTIMIZATION = "optimization";
+	public static final String RUNOPTIMIZATION = "run";
+	public static final String OPTIMIZATIONID = "optimizationid";
+	
 	public static final String PUBLICATION = "publication";
 	public static final String PUBLICATIONID = "publicationid";
 	
@@ -143,10 +150,15 @@ public class VCellApiApplication extends WadlApplication {
 	private UserVerifier userVerifier = null;
 	private Configuration templateConfiguration = null;
 	private File javascriptDir = null;
+	private OptServerImpl optServerImpl = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
 		return new Variant(MediaType.APPLICATION_WADL);
+	}
+	
+	public OptServerImpl getOptServerImpl() {
+		return optServerImpl;
 	}
 
 	@Override
@@ -155,7 +167,7 @@ public class VCellApiApplication extends WadlApplication {
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
-	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, Configuration templateConfiguration, File javascriptDir) {
+	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, OptServerImpl optServerImpl, Configuration templateConfiguration, File javascriptDir) {
         setName("RESTful VCell API application");
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
@@ -164,6 +176,7 @@ public class VCellApiApplication extends WadlApplication {
 		this.javascriptDir = javascriptDir;
 		this.restDatabaseService = restDatabaseService;
 		this.userVerifier = userVerifier;
+		this.optServerImpl = optServerImpl;
 		this.templateConfiguration = templateConfiguration;
 		getLogger().setLevel(Level.FINE);
 	}
@@ -240,6 +253,8 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
 	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, AccessTokenServerResource.class);
 	    rootRouter.attach("/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
+	    rootRouter.attach("/"+OPTIMIZATION, OptimizationRunServerResource.class);
+	    rootRouter.attach("/"+OPTIMIZATION+"/{"+OPTIMIZATIONID+"}", OptimizationServerResource.class);
 	    rootRouter.attach("/"+PUBLICATION, PublicationsServerResource.class);
 	    rootRouter.attach("/"+PUBLICATION+"/{"+PUBLICATIONID+"}", PublicationServerResource.class);
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  

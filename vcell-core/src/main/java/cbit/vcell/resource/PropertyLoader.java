@@ -74,7 +74,9 @@ public class PropertyLoader {
 	public static final String visitExe						= record("vcell.visit.executable",ValueType.EXE);
 
 	//Python properties
-	public static final String anacondaInstallDir			= record("vcell.anaconda.installdir",ValueType.DIR);
+	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
+	public static final String vcellapiHost					= record("vcellapi.host",ValueType.GEN);
+	public static final String vcellapiPort					= record("vcellapi.port",ValueType.INT);
 
 	//Stoch properties
 //	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);
@@ -88,7 +90,6 @@ public class PropertyLoader {
 	//BioFormats plugin properties
 
 	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",ValueType.GEN);
-	public static final String bioformatsClasspath			= record("vcell.bioformatsClasspath",ValueType.GEN);
 	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",ValueType.URL);
 
 	//
@@ -383,7 +384,23 @@ public class PropertyLoader {
 		if (!cwd.isDirectory()) {
 			throw new ConfigurationException("PropertyLoader::getRequiredDirectory failed to read directory from current working directory " + cwd);
 		}
-		return cwd;	}
+		return cwd;
+	}
+	
+	public final static File getOptionalDirectory(String propertyName) throws ConfigurationException {
+		String directoryString = getProperty(propertyName,null);
+		if (directoryString==null){
+			return null;
+		}
+		if (!directoryString.toLowerCase().equals(USE_CURRENT_WORKING_DIRECTORY) ) {
+			return new File(directoryString);
+		}
+		File cwd = Paths.get("").toAbsolutePath().toFile();
+		if (!cwd.isDirectory()) {
+			throw new ConfigurationException("PropertyLoader::getOptionalDirectory failed to read directory from current working directory " + cwd);
+		}
+		return cwd;
+	}
 	/**
 	 * This method was created in VisualAge.
 	 * @return java.lang.String

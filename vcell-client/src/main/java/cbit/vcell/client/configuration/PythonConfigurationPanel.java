@@ -25,7 +25,7 @@ import javax.swing.border.TitledBorder;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
-import cbit.vcell.resource.CondaSupport;
+import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
@@ -107,7 +107,7 @@ public class PythonConfigurationPanel extends JPanel {
 		gbc.ipady = 1;
 		gbc.insets = new Insets(0,4,2,2);
 		jpanel.add(pythonExeTextField, gbc);
-		pythonExeTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.anacondaInstallDir, new File(pythonExeTextField.getText())); });
+		pythonExeTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.pythonExe, new File(pythonExeTextField.getText())); });
 		
 		JButton findPythonButton = new JButton("Browse...");
 		findPythonButton.addActionListener((ActionEvent e) -> browsePythonExe() );
@@ -125,12 +125,12 @@ public class PythonConfigurationPanel extends JPanel {
 //		gbc.gridwidth=2;
 //		jpanel.add(new JSeparator(), gbc);
 				
-		pythonExeTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.anacondaInstallDir, new File(pythonExeTextField.getText())); });
+		pythonExeTextField.addActionListener((ActionEvent e) -> { VCellConfiguration.setFileProperty(PropertyLoader.pythonExe, new File(pythonExeTextField.getText())); });
 		initPythonValues();
 	}
 	
 	private void initPythonValues(){
-		File pythonExe = VCellConfiguration.getFileProperty(PropertyLoader.anacondaInstallDir);
+		File pythonExe = VCellConfiguration.getFileProperty(PropertyLoader.pythonExe);
 		if (pythonExe!=null){
 			pythonExeTextField.setText(pythonExe.getAbsolutePath());
 		}		
@@ -145,7 +145,7 @@ public class PythonConfigurationPanel extends JPanel {
 		}
 		
 		if (pythonExe.exists()){
-			VCellConfiguration.setFileProperty(PropertyLoader.anacondaInstallDir, pythonExe);
+			VCellConfiguration.setFileProperty(PropertyLoader.pythonExe, pythonExe);
 			initPythonValues();
 		}
 	}

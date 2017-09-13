@@ -240,3 +240,10 @@
 2017-08-31 20:45:40,543 INFO o.v.u.CommentStringTokenizer [ClientTaskDispatcher 16 retrieving data] Token('2', line=13, col=10) comments AFTER: domainType_cytosol
 2017-08-31 20:45:40,544 INFO o.v.u.CommentStringTokenizer [ClientTaskDispatcher 16 retrieving data] Token('3', line=14, col=10) comments AFTER: domainType_cytosol
 2017-08-31 20:45:40,544 INFO o.v.u.CommentStringTokenizer [ClientTaskDispatcher 16 retrieving data] Token('4', line=15, col=10) comments AFTER: domainType_Nucleus
+2017-09-12 11:46:30,142 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-09-12 11:46:30,155 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-09-12 11:46:34,069 ERROR o.v.c.l.LWNamespace [AWT-EventQueue-0] top level object DocumentWindow does not implement ChildWindowManager$ManagedChild
+2017-09-12 11:47:38,955 ERROR o.v.c.l.LWNamespace [AWT-EventQueue-0] top level object DocumentWindow does not implement ChildWindowManager$ManagedChild
+2017-09-12 11:47:46,113 WARN o.v.c.l.LWDialog [AWT-EventQueue-0] IndefiniteProgressDialog WORKING... invalid modeless dialog
+2017-09-12 11:47:46,113 WARN o.v.c.l.LWDialog [AWT-EventQueue-0] IndefiniteProgressDialog WORKING... invalid modeless dialog
+2017-09-12 11:47:46,865 WARN c.v.r.PropertyLoader [ClientTaskDispatcher 2 Connecting as schaff] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory

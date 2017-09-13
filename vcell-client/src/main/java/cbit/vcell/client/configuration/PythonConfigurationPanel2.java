@@ -1,9 +1,8 @@
 package cbit.vcell.client.configuration;
 
+import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -16,7 +15,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,31 +23,16 @@ import java.util.TimerTask;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.MouseInputListener;
 
-import org.vcell.util.gui.VCFileChooser;
-import org.vcell.util.gui.exporter.FileFilters;
-
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.resource.CondaSupport;
-import cbit.vcell.resource.OperatingSystemInfo;
-import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.VCellConfiguration;
 
 // http://commons.apache.org/proper/commons-io/javadocs/api-2.4/org/apache/commons/io
 
@@ -287,7 +270,7 @@ public class PythonConfigurationPanel2 extends JPanel {
 		getTestConfigurationButton().setEnabled(false);
 		getInstallPythonButton().setEnabled(false);
 		try {
-			CondaSupport.verifyInstallation();
+			PythonSupport.verifyInstallation();
 		} catch (Exception e) {
 			String ret = e.getMessage();
 			testConfigurationResults.setText("<html><font color=#8C001A>" + ret + "</font></html>");
@@ -308,7 +291,12 @@ public class PythonConfigurationPanel2 extends JPanel {
 			public void run() {
 				try {
 					//Thread.sleep(5000);	// use this for faster testing of the UI
-					CondaSupport.installAsNeeded(true, true, true);
+					StringBuffer packages = new StringBuffer();
+					for (PythonSupport.PythonPackage pkg : PythonSupport.PythonPackage.values()){
+						packages.append(pkg.condaName+"  conda install -p "+pkg.condaRepo+" "+pkg.condaName+"\n");
+					}
+					throw new RuntimeException("mananged Python not available, please install Miniconda (or Anaconda) and the following packages: "+packages.toString());
+					//CondaSupport.installAsNeeded(true, true, true);
 				} catch (Exception e) {
 					String ret = e.getMessage();
 					if(ret.length() > 250) {
@@ -318,9 +306,9 @@ public class PythonConfigurationPanel2 extends JPanel {
 					delayedDisplay(10000);
 					return;
 				}
-				String ret = "Python installation was successful.";
-				testConfigurationResults.setText("<html>" + ret + "</html>");
-				delayedDisplay(5000);
+//				String ret = "Python installation was successful.";
+//				testConfigurationResults.setText("<html>" + ret + "</html>");
+//				delayedDisplay(5000);
 			}
 		};
 		Thread pythonInstallThread = new Thread(runnable,"Python Install Thread");

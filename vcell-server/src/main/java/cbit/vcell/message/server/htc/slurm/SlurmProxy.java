@@ -315,8 +315,9 @@ denied: job "6894" does not exist
 			lsb.append(MPI_HOME+"/lib");
 			lsb.write(":"+ResourceUtil.getLocalSolversDirectory().getAbsolutePath());
 		}else{
-			lsb.append("#$ -v LD_LIBRARY_PATH=");
-			lsb.write(ResourceUtil.getLocalSolversDirectory().getAbsolutePath());
+			lsb.append("export LD_LIBRARY_PATH=");
+			lsb.append(ResourceUtil.getLocalSolversDirectory().getAbsolutePath());
+			lsb.write(":$LD_LIBRARY_PATH");
 		}
 		lsb.newline();
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();

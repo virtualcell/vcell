@@ -88,7 +88,6 @@ import org.vcell.model.bngl.gui.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.sedml.gui.SEDMLChooserPanel;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -124,6 +123,8 @@ import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.ExtensionFilter;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
+import org.vcell.vcellij.ImageDatasetReader;
+import org.vcell.vcellij.ImageDatasetReaderService;
 
 import cbit.gui.ImageResizePanel;
 import cbit.image.ImageException;
@@ -138,7 +139,6 @@ import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
@@ -1542,7 +1542,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 								throw new Exception("No valid files in selected directory");
 							}
 							hashTable.put(IMPORT_SOURCE_NAME,"Directory: "+imageFile.getAbsolutePath());
-							origImageSizeInfo = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class).getImageSizeInfo(dirFiles[0].getAbsolutePath(),dirFiles.length);
+							origImageSizeInfo = ImageDatasetReaderService.getInstance().getImageDatasetReader().getImageSizeInfo(dirFiles[0].getAbsolutePath(),dirFiles.length);
 							if(dirFiles.length > 1){
 								final String importZ = "Import Z-Sections";
 								final String cancelOption = "Cancel";
@@ -1555,7 +1555,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							}
 							hashTable.put(DIR_FILES, dirFiles);
 						}else{
-							origImageSizeInfo = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class).getImageSizeInfo(imageFile.getAbsolutePath(),null);
+							origImageSizeInfo = ImageDatasetReaderService.getInstance().getImageDatasetReader().getImageSizeInfo(imageFile.getAbsolutePath(),null);
 							hashTable.put(IMPORT_SOURCE_NAME,"File: "+imageFile.getAbsolutePath());
 						}
 						hashTable.put(ORIG_IMAGE_SIZE_INFO, origImageSizeInfo);
@@ -1702,7 +1702,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					int sizeXY = 0;
 					ISize firstImageISize = null;
 					for (int i = 0; i < dirFiles.length; i++) {
-						ImageDataset[] imageDatasets = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class).readImageDatasetChannels(dirFiles[i].getAbsolutePath(), null,bMergeChannels,null,resize);
+						ImageDataset[] imageDatasets = ImageDatasetReaderService.getInstance().getImageDatasetReader().readImageDatasetChannels(dirFiles[i].getAbsolutePath(), null,bMergeChannels,null,resize);
 						for (int c = 0; c < imageDatasets.length; c++) {
 							if(imageDatasets[c].getSizeZ() != 1 || imageDatasets[c].getSizeT() != 1){
 								throwImportWholeDirectoryException(imageFile,
@@ -1737,7 +1737,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					}
 					getClientTaskStatusSupport().setMessage("Reading file...");
 					ImageDataset[] imageDatasets =
-							VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class).readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels,userPreferredTimeIndex,resize);
+							ImageDatasetReaderService.getInstance().getImageDatasetReader().readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels,userPreferredTimeIndex,resize);
 					fdfos = ClientRequestManager.createFDOSWithChannels(imageDatasets,null);
 				}
 				hashTable.put(FDFOS, fdfos);
@@ -4186,7 +4186,7 @@ public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff d
 
 public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile, boolean bCropOutBlack, Integer saveOnlyThisTimePointIndex) throws DataFormatException,ImageException{
 	try{
-		ImageDatasetReader imageDatasetReader = VCellServiceHelper.getInstance().loadService(ImageDatasetReader.class);
+		ImageDatasetReader imageDatasetReader = ImageDatasetReaderService.getInstance().getImageDatasetReader();
 		ImageDataset[] imagedataSets = imageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(),null,false,saveOnlyThisTimePointIndex,null);
 		if (imagedataSets!=null && bCropOutBlack){
 			for (int i = 0; i < imagedataSets.length; i++) {

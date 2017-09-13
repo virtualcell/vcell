@@ -23,6 +23,7 @@ import org.restlet.util.Series;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
+import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.SessionLog;
@@ -44,6 +45,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import freemarker.template.Configuration;
@@ -210,7 +212,11 @@ public class VCellApiMain {
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 			
 			lg.trace("create app");
-			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier,templateConfiguration,javascriptDir);
+			
+			PythonSupport.verifyInstallation();
+			OptServerImpl optServerImpl = new OptServerImpl();
+			optServerImpl.start();
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, templateConfiguration,javascriptDir);
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  
 

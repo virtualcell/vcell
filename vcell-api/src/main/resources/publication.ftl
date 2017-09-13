@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Biomodel</title>
+<title>Publication</title>
 </head>
 <body>
 <#assign simstatuslink="/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
@@ -23,5 +23,5 @@
 ${jsonResponse}
 <br/>
 </#if>
-
+</body>
 </html>
