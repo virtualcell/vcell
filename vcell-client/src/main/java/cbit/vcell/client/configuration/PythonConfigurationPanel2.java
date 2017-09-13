@@ -31,7 +31,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import cbit.vcell.resource.CondaSupport;
+import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.ResourceUtil;
 
 // http://commons.apache.org/proper/commons-io/javadocs/api-2.4/org/apache/commons/io
@@ -270,7 +270,7 @@ public class PythonConfigurationPanel2 extends JPanel {
 		getTestConfigurationButton().setEnabled(false);
 		getInstallPythonButton().setEnabled(false);
 		try {
-			CondaSupport.verifyInstallation();
+			PythonSupport.verifyInstallation();
 		} catch (Exception e) {
 			String ret = e.getMessage();
 			testConfigurationResults.setText("<html><font color=#8C001A>" + ret + "</font></html>");
@@ -292,7 +292,7 @@ public class PythonConfigurationPanel2 extends JPanel {
 				try {
 					//Thread.sleep(5000);	// use this for faster testing of the UI
 					StringBuffer packages = new StringBuffer();
-					for (CondaSupport.PythonPackage pkg : CondaSupport.PythonPackage.values()){
+					for (PythonSupport.PythonPackage pkg : PythonSupport.PythonPackage.values()){
 						packages.append(pkg.condaName+"  conda install -p "+pkg.condaRepo+" "+pkg.condaName+"\n");
 					}
 					throw new RuntimeException("mananged Python not available, please install Miniconda (or Anaconda) and the following packages: "+packages.toString());

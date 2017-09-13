@@ -74,7 +74,7 @@ public class PropertyLoader {
 	public static final String visitExe						= record("vcell.visit.executable",ValueType.EXE);
 
 	//Python properties
-	public static final String anacondaInstallDir			= record("vcell.anaconda.installdir",ValueType.DIR);
+	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
 	public static final String vcellapiHost					= record("vcellapi.host",ValueType.GEN);
 	public static final String vcellapiPort					= record("vcellapi.port",ValueType.INT);
 

@@ -25,7 +25,7 @@ public class OptimizationApiTest {
 			boolean bIgnoreHostMismatch = true;
 			VCellApiClient apiClient = new VCellApiClient(host, port, "123456", bIgnoreCertProblems, bIgnoreHostMismatch);
 
-			File optProbFile = new File("../visTool/optprob.bin");
+			File optProbFile = new File("../pythonScripts/VCell_Opt/optprob.bin");
 			System.out.println("using optProblem: "+optProbFile.getAbsolutePath());
 			OptProblem optProblem = readOptProblem(optProbFile);
 			TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());

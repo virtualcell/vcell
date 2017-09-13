@@ -45,7 +45,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.resource.CondaSupport;
+import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import freemarker.template.Configuration;
@@ -213,7 +213,7 @@ public class VCellApiMain {
 			
 			lg.trace("create app");
 			
-			CondaSupport.verifyInstallation();
+			PythonSupport.verifyInstallation();
 			OptServerImpl optServerImpl = new OptServerImpl();
 			optServerImpl.start();
 			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, templateConfiguration,javascriptDir);

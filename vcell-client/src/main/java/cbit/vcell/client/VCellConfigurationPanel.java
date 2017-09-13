@@ -24,14 +24,15 @@ import cbit.vcell.client.configuration.ConfigurationModelNode;
 import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel;
 import cbit.vcell.client.configuration.ConfigurationOptionsTreeModel.ConfigurationOptionsTreeFolderNode;
 import cbit.vcell.client.configuration.GeneralConfigurationPanel;
-import cbit.vcell.client.configuration.PythonConfigurationPanel;
-import cbit.vcell.client.configuration.PythonConfigurationPanel2;
+//import cbit.vcell.client.configuration.PythonConfigurationPanel;
+//import cbit.vcell.client.configuration.PythonConfigurationPanel2;
+import cbit.vcell.client.configuration.PythonConfigurationPanel3;
 import cbit.vcell.client.configuration.VisItConfigurationPanel;
 
 public class VCellConfigurationPanel extends JPanel {
 	
 	private GeneralConfigurationPanel generalConfigurationPanel = null;
-	private PythonConfigurationPanel2 pythonConfigurationPanel = null;
+	private PythonConfigurationPanel3 pythonConfigurationPanel = null;
 	private VisItConfigurationPanel visItConfigurationPanel = null;
 	private ComsolConfigurationPanel comsolConfigurationPanel = null;
 	private BioNetGenConfigurationPanel bioNetGenConfigurationPanel = null;
@@ -62,7 +63,7 @@ public class VCellConfigurationPanel extends JPanel {
 
 		generalConfigurationPanel = new GeneralConfigurationPanel();
 		generalConfigurationPanel.setName("generalConfigurationPanel");
-		pythonConfigurationPanel = new PythonConfigurationPanel2();
+		pythonConfigurationPanel = new PythonConfigurationPanel3();
 		pythonConfigurationPanel.setName("pythonConfigurationPanel");
 		visItConfigurationPanel = new VisItConfigurationPanel();
 		visItConfigurationPanel.setName("visItConfigurationPanel");

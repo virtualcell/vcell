@@ -50,7 +50,7 @@ public class VisitSupport {
 
 	public static File getVisToolPythonScript()
 	{
-		File visToolScriptDir = new File(ResourceUtil.getVCellInstall(),"visTool");
+		File visToolScriptDir = ResourceUtil.getVCellVisItPythonDir();
 		File visToolScript = new File(visToolScriptDir, "visMainCLI.py");
 		return visToolScript;
 	}

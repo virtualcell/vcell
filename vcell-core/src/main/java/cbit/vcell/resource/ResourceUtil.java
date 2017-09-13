@@ -35,7 +35,10 @@ import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
 	private static final String LOCALSOLVERS_DIR = "localsolvers";
-	private static final String VISTOOL_DIR = "visTool";
+	private static final String PYTHONSCRIPTS_DIR = "pythonScripts";
+	private static final String VCELL_OPT_DIR = "VCell_Opt";
+	private static final String VCELL_VISIT_DIR = "VCell_VisIt";
+	private static final String VCELL_VTK_DIR = "VCell_VTK";
 	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
 
 	public static enum JavaVersion  {
@@ -444,8 +447,20 @@ public class ResourceUtil {
 		return filePath.replace("C:","").replace("D:","").replace("\\","/");
 	}
 
-	public static File getVisToolDir() {
-		return new File(getVCellInstall(),VISTOOL_DIR);
+	private static File getPythonScriptsDir() {
+		return new File(getVCellInstall(),PYTHONSCRIPTS_DIR);
+	}
+
+	public static File getVCellOptPythonDir() {
+		return new File(getPythonScriptsDir(),VCELL_OPT_DIR);
+	}
+
+	public static File getVCellVTKPythonDir() {
+		return new File(getPythonScriptsDir(),VCELL_VTK_DIR);
+	}
+
+	public static File getVCellVisItPythonDir() {
+		return new File(getPythonScriptsDir(),VCELL_VISIT_DIR);
 	}
 
 	public static File getOptimizationRootDir()

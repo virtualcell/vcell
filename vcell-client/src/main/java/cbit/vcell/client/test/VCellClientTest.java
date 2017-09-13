@@ -17,9 +17,7 @@ import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.InputStream;
 import java.lang.management.ManagementFactory;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,11 +39,9 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jdom.Document;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.UnzipUtility;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
@@ -73,8 +69,8 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.NetworkProxyUtils;
-import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XmlHelper;
 /**
@@ -324,7 +320,11 @@ public static void main(java.lang.String[] args) {
 		//starting loading libraries
 		new LibraryLoaderThread(true).start( );
 				
-		//CondaSupport.verifyInstallation();
+		try {
+			PythonSupport.verifyInstallation();
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
 		//CondaSupport.installInBackground();
 
 

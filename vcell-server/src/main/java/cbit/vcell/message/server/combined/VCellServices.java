@@ -63,7 +63,7 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.resource.CondaSupport;
+import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
@@ -172,7 +172,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			ResourceUtil.setNativeLibraryDirectory(libDir);
 			new LibraryLoaderThread(false).start( );
 
-			CondaSupport.verifyInstallation();
+			PythonSupport.verifyInstallation();
 
 			int serviceOrdinal = Integer.parseInt(args[0]);
 			String logdir = null;

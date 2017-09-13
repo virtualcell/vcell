@@ -98,7 +98,7 @@ fi
 stagingRootDir=$projectTargetDir/server-staging/
 stagingConfigsDir=$stagingRootDir/configs
 stagingJarsDir=$stagingRootDir/jars
-stagingVisToolDir=$stagingRootDir/visTool
+stagingPythonScriptsDir=$stagingRootDir/pythonScripts
 stagingNativelibsDir=$stagingRootDir/$nativelibsDir
 stagingInstallersDir=$projectRootDir/target/installers
 
@@ -108,7 +108,7 @@ installed_server_sitedir=$vcell_server_sitedir
 installedConfigsDir=$installed_server_sitedir/configs
 installedJarsDir=$installed_server_sitedir/jars
 installedNativelibsDir=$installed_server_sitedir/$nativelibsDir
-installedVisToolDir=$installed_server_sitedir/visTool
+installedPythonScriptsDir=$installed_server_sitedir/pythonScripts
 installedSolversDir=$installed_server_sitedir/$localsolversDir
 installedTmpDir=$installed_server_sitedir/tmp
 installedLogDir=$installed_server_sitedir/log
@@ -130,7 +130,7 @@ pathto_server_sitedir=$vcell_pathto_sitedir
 pathto_ConfigsDir=$pathto_server_sitedir/configs
 pathto_JarsDir=$pathto_server_sitedir/jars
 pathto_NativelibsDir=$pathto_server_sitedir/$nativelibsDir
-pathto_VisToolDir=$pathto_server_sitedir/visTool
+pathto_PythonScriptsDir=$pathto_server_sitedir/pythonScripts
 pathto_SolversDir=$pathto_server_sitedir/$localsolversDir
 pathto_TmpDir=$pathto_server_sitedir/tmp
 pathto_LogDir=$pathto_server_sitedir/log
@@ -248,7 +248,7 @@ cd $DIR
 mkdir -p $stagingRootDir
 mkdir -p $stagingConfigsDir
 mkdir -p $stagingJarsDir
-mkdir -p $stagingVisToolDir
+mkdir -p $stagingPythonScriptsDir
 mkdir -p $stagingNativelibsDir
 
 cp -p $adminTargetDir/maven-jars/*.jar $stagingJarsDir
@@ -258,7 +258,7 @@ cp -p $apiTargetDir/$vcell_vcellApiJarFileName $stagingJarsDir
 cp -p $serverTargetDir/maven-jars/*.jar $stagingJarsDir
 cp -p $serverTargetDir/$vcell_vcellServerJarFileName $stagingJarsDir
 cp -p $projectRootDir/$nativelibsDir/* $stagingNativelibsDir
-cp -p -R $projectRootDir/visTool/* $stagingVisToolDir
+cp -p -R $projectRootDir/pythonScripts/* $stagingPythonScriptsDir
 
 #
 # build stagingDir/configs
@@ -459,7 +459,7 @@ echo "#"																	>> $propfile
 echo "# vtk python"															>> $propfile
 echo "#"																	>> $propfile
 echo "vcell.vtkPythonExecutablePath = $installedPython"						>> $propfile
-echo "vcell.visToolPath = $installedVisToolDir"								>> $propfile
+echo "vcell.pythonScriptsPath = $installedPythonScriptsDir"					>> $propfile
 echo "##set if needed to pick up python modules"							>> $propfile
 echo "#vcell.vtkPythonModulePath ="											>> $propfile
 
@@ -477,7 +477,7 @@ then
 	echo "copying to local installation directory"
 	mkdir -p $installedSolversDir
 	mkdir -p $installedConfigsDir
-	mkdir -p $installedVisToolDir
+	mkdir -p $installedPythonScriptsDir
 	mkdir -p $installedJarsDir
 	mkdir -p $installedNativelibsDir
 	mkdir -p $installedInstallersDir
@@ -495,7 +495,7 @@ then
 	mkdir -p $installedWebappDir
 	cp -p $stagingConfigsDir/*		$installedConfigsDir
 	cp -p $stagingJarsDir/*			$installedJarsDir
-	cp -p -R $stagingVisToolDir/*	$installedVisToolDir
+	cp -p -R $stagingPythonScriptsDir/*	$installedPythonScriptsDir
 	cp -p $stagingNativelibsDir/*	$installedNativelibsDir
 	cp -p $projectSolversDir/*		$installedSolversDir
 	cp -p $stagingInstallersDir/*	$installedInstallersDir
@@ -518,7 +518,7 @@ else
 	echo "creating dirs"
 	mkdir -p $pathto_SolversDir
 	mkdir -p $pathto_ConfigsDir
-	mkdir -p $pathto_VisToolDir
+	mkdir -p $pathto_PythonScriptsDir
 	mkdir -p $pathto_JarsDir
 	mkdir -p $pathto_NativelibsDir
 	mkdir -p $pathto_InstallersDir
@@ -541,8 +541,8 @@ else
 	cp -p $stagingJarsDir/*			$pathto_JarsDir
 	echo "installing nativelibs (3/8)"
 	cp -p $stagingNativelibsDir/*	$pathto_NativelibsDir
-	echo "installing visTool python files (4/8)"
-	cp -p -R $stagingVisToolDir/*	$pathto_VisToolDir
+	echo "installing python scripts (4/8)"
+	cp -p -R $stagingPythonScriptsDir/*	$pathto_PythonScriptsDir
 #	echo "installing server-side solvers (5/8)"
 #	cp -p $projectSolversDir/*		$pathto_SolversDir
 	echo "installing client installers to server (6/8)"

@@ -42,9 +42,9 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.CondaSupport;
-import cbit.vcell.resource.CondaSupport.InstallStatus;
-import cbit.vcell.resource.CondaSupport.PythonPackage;
+import cbit.vcell.resource.PythonSupport;
+import cbit.vcell.resource.PythonSupport.InstallStatus;
+import cbit.vcell.resource.PythonSupport.PythonPackage;
 import cbit.vcell.resource.ResourceUtil;
 
 public class CopasiServicePython {
@@ -255,16 +255,16 @@ public class CopasiServicePython {
 	
 	public static void runCopasiPython(File copasiOptProblemFile, File copasiResultsFile) throws IOException {
 		//It's 2015 -- forward slash works for all operating systems
-		File PYTHON = CondaSupport.getPythonExe();
-		InstallStatus copasiInstallStatus = CondaSupport.getPythonPackageStatus(PythonPackage.COPASI);
+		File PYTHON = PythonSupport.getPythonExe();
+		InstallStatus copasiInstallStatus = PythonSupport.getPythonPackageStatus(PythonPackage.COPASI);
 		if (copasiInstallStatus==InstallStatus.FAILED){
 			throw new RuntimeException("failed to install COPASI python package, consider re-installing VCell-managed python\n ...see Preferences->Python->Re-install");
 		}
 		if (copasiInstallStatus==InstallStatus.INITIALIZING){
 			throw new RuntimeException("VCell is currently installing or verifying the COPASI python package ... please try again in a minute");
 		}
-		File visToolDir = ResourceUtil.getVisToolDir();
-		File optServicePythonFile = new File(visToolDir,"optService.py");
+		File vcellOptDir = ResourceUtil.getVCellOptPythonDir();
+		File optServicePythonFile = new File(vcellOptDir,"optService.py");
 		if (PYTHON==null || !PYTHON.exists()){
 			throw new RuntimeException("python executable not specified, set python location in VCell menu File->Preferences...->Python Properties");
 		}
