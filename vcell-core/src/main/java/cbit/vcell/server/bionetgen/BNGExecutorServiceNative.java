@@ -116,9 +116,9 @@ public BNGOutput executeBNG() throws BNGException {
 
 		String[] cmd = null;
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
-		if(osi.isWindows() && osi.is64bit()){
-			System.out.println("BNGExecutorService.executeBNG() as standalone executable\n");
-			cmd = new String[] {ResourceUtil.getBNG2StandaloneWin64(), bngInputFile.getAbsolutePath()};
+		if(osi.isWindows()){
+			System.out.println("BNGExecutorService.executeBNG() "+(osi.is64bit()?"64bit":"32bit")+" as standalone executable\n");
+			cmd = new String[] {ResourceUtil.getBNG2StandaloneWin(osi.is64bit()), bngInputFile.getAbsolutePath()};
 			
 		}else{// Execute as perl script
 			System.out.println("BNGExecutorService.executeBNG() as perl script\n");

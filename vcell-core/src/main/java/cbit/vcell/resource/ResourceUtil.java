@@ -426,8 +426,11 @@ public class ResourceUtil {
 		return bng2_path;
 	}
 
-	public static String getBNG2StandaloneWin64(){
-		return new File(getBNGRoot(),"win64Standalone/BNG2.exe").getAbsolutePath();
+	public static String getBNG2StandaloneWin(boolean b64bit){
+		if(b64bit){
+			return new File(getBNGRoot(),"win64Standalone/BNG2.exe").getAbsolutePath();
+		}
+		return new File(getBNGRoot(),"win32Standalone/BNG2_32bit.exe").getAbsolutePath();
 	}
 	
 	public static File getVCellInstall()

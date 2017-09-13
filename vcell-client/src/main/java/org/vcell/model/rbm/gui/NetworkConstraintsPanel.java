@@ -38,6 +38,8 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;
+import cbit.vcell.bionetgen.BNGSpecies;
+import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -83,13 +85,16 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	
 	private JDialog viewSpeciesDialog = null;
 	private JDialog viewReactionsDialog = null;
+	private JDialog viewObservablesMapDialog = null;
 	
 	private JLabel seedSpeciesLabel;
 	private JLabel reactionRulesLabel;
 	private JLabel generatedSpeciesLabel;
 	private JLabel generatedReactionsLabel;
+	private JLabel observablesMapLabel;
 	private JButton viewGeneratedSpeciesButton;
 	private JButton viewGeneratedReactionsButton;
+	private JButton viewObservablesMapButton;
 	private JLabel somethingInsufficientLabel;
 
 	private EditorScrollTable networkConstraintsTable = null;
@@ -104,6 +109,8 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 				viewGeneratedSpecies();
 			} else if(e.getSource() == getViewGeneratedReactionsButton()) {
 				viewGeneratedReactions();
+			} else if(e.getSource() == getViewObservablesMapButton()) {
+				viewObservablesMap();
 			} else if(e.getSource() == getRefreshMathButton()) {
 				runBioNetGen();
 			} else if(e.getSource() == getCreateModelButton()) {
@@ -156,6 +163,13 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		}
 		return viewGeneratedReactionsButton;
 	}
+	private JButton getViewObservablesMapButton() {
+		if (viewObservablesMapButton == null) {
+			viewObservablesMapButton = new javax.swing.JButton("View");
+			viewObservablesMapButton.setName("ViewObservablesMapButton");
+		}
+		return viewObservablesMapButton;
+	}
 	private JButton getRefreshMathButton() {
 		if (refreshMathButton == null) {
 			refreshMathButton = new javax.swing.JButton(" Edit / Test Constraints ");
@@ -176,6 +190,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		reactionRulesLabel = new JLabel();
 		generatedSpeciesLabel = new JLabel();
 		generatedReactionsLabel = new JLabel();
+		observablesMapLabel = new JLabel("Observables Map");
 		somethingInsufficientLabel = new JLabel();
 		
 		networkConstraintsTable = new EditorScrollTable();
@@ -184,6 +199,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		
 		getViewGeneratedSpeciesButton().addActionListener(eventHandler);
 		getViewGeneratedReactionsButton().addActionListener(eventHandler);
+		getViewObservablesMapButton().addActionListener(eventHandler);
 		getRefreshMathButton().addActionListener(eventHandler);
 		getCreateModelButton().addActionListener(eventHandler);
 		
@@ -300,6 +316,22 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.insets = new Insets(4, 4, 4, 10);
 		bottom.add(getCreateModelButton(), gbc);
 
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		bottom.add(observablesMapLabel, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		bottom.add(getViewObservablesMapButton(), gbc);
+		
 		gridy++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -466,6 +498,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		if(fieldSimulationContext.getModel().getRbmModelContainer().isEmpty()) {
 			viewGeneratedSpeciesButton.setEnabled(false);
 			viewGeneratedReactionsButton.setEnabled(false);
+			viewObservablesMapButton.setEnabled(false);
 			refreshMathButton.setEnabled(false);
 			createModelButton.setEnabled(false);
 			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
@@ -480,6 +513,11 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 				viewGeneratedReactionsButton.setEnabled(true);
 			} else {
 				viewGeneratedReactionsButton.setEnabled(false);
+			}
+			if(fieldSimulationContext.getMostRecentlyCreatedOutputSpec()!= null && fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getObservableGroups().length > 0) {
+				viewObservablesMapButton.setEnabled(true);
+			} else {
+				viewObservablesMapButton.setEnabled(false);
 			}
 			if(fieldSimulationContext.getMostRecentlyCreatedOutputSpec()!= null) {
 				createModelButton.setEnabled(true);
@@ -641,6 +679,25 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		viewReactionsDialog.setResizable(true);
 		viewReactionsDialog.setVisible(true);
 	}
+	private void viewObservablesMap() {
+		System.out.println("viewGeneratedSpecies button pressed");
+		ViewObservablesMapPanel panel = new ViewObservablesMapPanel(this);
+		BNGSpecies[] bngSpecies = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGSpecies();
+		ObservableGroup[] observables = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getObservableGroups();
+		panel.setData(bngSpecies, observables);
+		panel.setPreferredSize(new Dimension(800,550));
+
+//		if(viewSpeciesDialog != null) {		// uncomment these 3 lines to allow only one instance of the dialog
+//			viewSpeciesDialog.dispose();
+//		}
+		JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
+		viewObservablesMapDialog = pane.createDialog(this, "View Observables Map");
+		viewObservablesMapDialog.setModal(false);
+		viewObservablesMapDialog.setResizable(true);
+		viewObservablesMapDialog.setVisible(true);
+	}
+
+	
 	private void createModel() {
 		if(!checkBnglRequirements()) {
 			return;

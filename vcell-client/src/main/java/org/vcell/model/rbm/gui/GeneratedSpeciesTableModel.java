@@ -14,7 +14,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
@@ -23,6 +26,7 @@ import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.bionetgen.BNGSpecies;
+import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
@@ -40,23 +44,25 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	public static final int iColOriginalName = 1;
 	public static final int iColStructure = 2;
 	public static final int iColDepiction = 3;
-	public static final int iColExpression = 4;
+	public static final int iColDefinition = 4;
 	
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
 	protected String searchText = null;
-
+	protected ObservablesGroupTableRow observableFilter = null;
+	
 	private BNGSpecies[] speciess;
 	private Model model;
 	
 	private ArrayList<GeneratedSpeciesTableRow> allGeneratedSpeciesList;
+	private Map<Integer, String> networkFileIndexToNameMap;		// needed by the observable table model
 
 	private final NetworkConstraintsPanel owner;
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
 	public GeneratedSpeciesTableModel(EditorScrollTable table, NetworkConstraintsPanel owner) {
-		super(table, new String[] {"Index", "Name", "Structure", "Depiction", "Expression"});
+		super(table, new String[] {"Index", "Name", "Structure", "Depiction", "BioNetGen Definition"});
 		this.owner = owner;
 		setMaxRowsPerPage(1000);
 	}
@@ -71,7 +77,7 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 				return String.class;
 			}case iColDepiction:{
 				return Object.class;
-			}case iColExpression:{
+			}case iColDefinition:{
 				return String.class;
 			}
 		}
@@ -105,7 +111,7 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 				}
 			}
 			case iColDepiction:
-			case iColExpression:
+			case iColDefinition:
 				return speciesTableRow.getExpression();
 			default:
 				return null;
@@ -114,7 +120,7 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	
 	public boolean isCellEditable(int iRow, int iCol) {
 		switch(iCol) {
-		case iColExpression:
+		case iColDefinition:
 			return true;
 		default:
 			return false;
@@ -168,10 +174,18 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 		refreshData();
 	}
 	
+	public void setObservableFilter(ObservablesGroupTableRow observableFilter) {
+		if (this.observableFilter == observableFilter) {
+			return;
+		}
+		this.observableFilter = observableFilter;
+		refreshData();
+	}
+	
 	private void refreshData() {
-		allGeneratedSpeciesList = new ArrayList<GeneratedSpeciesTableRow>();
-		
-		LinkedHashMap<String, String> scMap = new LinkedHashMap<String, String>();
+		allGeneratedSpeciesList = new ArrayList<>();
+		networkFileIndexToNameMap = new HashMap<>();
+		LinkedHashMap<String, String> scMap = new LinkedHashMap<>();
 		for(int i = 0; i<speciess.length; i++) {
 			BNGSpecies species = speciess[i];
 			String key = species.getConcentration().infix();
@@ -183,6 +197,8 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 				scMap.put(originalName, originalName);
 				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, originalName, species.toStringShort());
 				allGeneratedSpeciesList.add(newRow);
+				networkFileIndexToNameMap.put(species.getNetworkFileIndex(), originalName);
+
 			}
 		}
 				
@@ -190,7 +206,7 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 			BNGSpecies species = speciess[i];
 			String key = species.getConcentration().infix();
 			FakeSeedSpeciesInitialConditionsParameter fakeParam = FakeSeedSpeciesInitialConditionsParameter.fromString(key);
-			if (fakeParam != null){
+			if (fakeParam != null) {
 				continue;					// we already dealt with these
 			} else {
 				int count = 0;				// generate unique name for the species
@@ -206,15 +222,16 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 				scMap.put(speciesName, speciesName);
 				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, speciesName, species.toStringShort());
 				allGeneratedSpeciesList.add(newRow);
+				networkFileIndexToNameMap.put(species.getNetworkFileIndex(), speciesName);
 			}
 		}
 		// apply text search function for particular columns
-		ArrayList<GeneratedSpeciesTableRow> speciesObjectList = new ArrayList<GeneratedSpeciesTableRow>();
+		List<GeneratedSpeciesTableRow> speciesObjectList = new ArrayList<>();
 		if (searchText == null || searchText.length() == 0) {
 			speciesObjectList.addAll(allGeneratedSpeciesList);
 		} else {
 			String lowerCaseSearchText = searchText.toLowerCase();
-			for (GeneratedSpeciesTableRow rs : allGeneratedSpeciesList){
+			for (GeneratedSpeciesTableRow rs : allGeneratedSpeciesList) {
 				boolean added = false;
 				if (rs.getExpression().toLowerCase().contains(lowerCaseSearchText) ) {
 					speciesObjectList.add(rs);
@@ -226,7 +243,23 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 				}
 			}
 		}
-		setData(speciesObjectList);
+		
+		if(observableFilter == null) {
+			setData(speciesObjectList);
+		} else {
+			List<GeneratedSpeciesTableRow> speciesObjectList2 = new ArrayList<>();
+			ObservableGroup og = observableFilter.getObservableGroupObject();
+			List<Integer> indexesList = og.getIndexesAsIntegersList();
+			for (GeneratedSpeciesTableRow rs : speciesObjectList) {
+				int ourIndex = rs.getSpeciesObject().getNetworkFileIndex();
+				if(indexesList.contains(ourIndex)) {
+					speciesObjectList2.add(rs);
+				}
+			}
+			setData(speciesObjectList2);
+		}
+		
+		
 		GuiUtils.flexResizeTableColumns(ownerTable);
 	}
 	
@@ -257,6 +290,11 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 		this.speciess = speciess;
 		refreshData();
 	}
+	
+	public Map<Integer, String> getNetworkFileIndexToNameMap() {
+		return networkFileIndexToNameMap;
+	}
+	
 	public ArrayList<GeneratedSpeciesTableRow> getTableRows() {
 		return null;
 	}
