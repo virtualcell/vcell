@@ -11,6 +11,8 @@
 package cbit.vcell.bionetgen;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Insert the type's description here.
@@ -85,7 +87,12 @@ public String toString() {
 }
 public String toBnglString() {
 	String obsGp = getObservableGroupName() + " ";
-	for (int i = 0; i < listofSpecies.length; i++){
+	obsGp += getIndexesList();
+	return obsGp;
+}
+public String getIndexesList() {
+	String obsGp = "";
+	for (int i = 0; i < listofSpecies.length; i++) {
 		if (i == listofSpecies.length-1) {
 			if (speciesMultiplicity[i] == 1) {
 				obsGp = obsGp + listofSpecies[i].getNetworkFileIndex();
@@ -101,6 +108,13 @@ public String toBnglString() {
 		}
 	}
 	return obsGp;
+}
+public List<Integer> getIndexesAsIntegersList() {
+	List<Integer> list = new ArrayList<>();
+	for (BNGSpecies s: listofSpecies) {
+		list.add(s.getNetworkFileIndex());
+	}
+	return list;
 }
 
 }
