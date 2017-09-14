@@ -2,9 +2,9 @@
 
 shopt -s -o nounset
 
-_site="test4"
+_site="alpha"
 _version="6.2"
-_build="54"
+_build="66"
 vcell_server_os="linux64"
 
 vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
@@ -19,11 +19,9 @@ unset _build
 
 vcell_python_executable=/opt/vcell/anaconda2/bin/python
 
-
-vcell_applicationId="1471-8022-1038-5558"
+vcell_applicationId="1471-8022-1038-5554"
 vcell_server_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
-# mount /share/apps/vcell2/deployed as cfs02.cam.uchc.edu/raid resulting in /Volumes/raid/vcell/deployed_new
-vcell_pathto_sitedir="/Volumes/raid/vcell/deployed_new/$vcell_site_lower"
+vcell_pathto_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
 
 vcell_user="vcell"
 vcell_servicehost="vcell-service.cam.uchc.edu"
@@ -34,14 +32,15 @@ vcell_apiport=8080
 # Nagios monitor port  
 # (rel=33330, beta=33331, alpha=33332, test=-33333, test2=-33334, test3=-33335, test4=-33336)
 #
-vcell_monitor_queryport=-33336
+vcell_monitor_queryport=33332
 
 vcell_rmihost="vcell-rmi-alpha.cam.uchc.edu"
 vcell_rmiport_low=-1
-vcell_rmiport_high=40109
-vcell_rmihosts="vcell-rmi-alpha.cam.uchc.edu:40109"
-vcell_bioformatsJarFile="bioformats_TEST4_6_2_54.jar"
-vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vcell_bioformatsJarFile"
+vcell_rmiport_high=40106
+vcell_rmihosts="vcell-rmi-alpha.cam.uchc.edu:40106"
+# still using bioformats_ALPHA_6_2_54.jar for later versions ... need to replace with ImageJ support.
+vcell_bioformatsJarFile="vcell-bioformats-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
+vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_bioformatsJarFile"
 
 vcell_vcellClientJarFileName="vcell-client-0.0.1-SNAPSHOT.jar"
 vcell_vcellServerJarFileName="vcell-server-0.0.1-SNAPSHOT.jar"
@@ -80,9 +79,9 @@ vcell_smtp_email="VCell_Support@uchc.edu"
 vcell_common_jre=/share/apps/vcell2/java/jdk1.8.0_66/bin/java
 vcell_common_jre_rmi=/usr/java/jdk1.8.0_66/jre/bin/java
 
-vcell_rmiservice_high_jmxport=12313
-vcell_rmiservice_http_jmxport=-1
-vcell_vcellservice_jmxport=12370
+vcell_rmiservice_high_jmxport=12305
+vcell_rmiservice_http_jmxport=12304
+vcell_vcellservice_jmxport=12360
 
 vcell_primary_datadir=/share/apps/vcell3/users/
 vcell_secondary_datadir=/share/apps/vcell3/users/
@@ -92,18 +91,18 @@ vcell_export_url=http://vcell.org/export/
 
 vcell_mpich_homedir="/share/apps/vcell2/mpich/"
 
-vcell_secretsDir=$HOME/vcellkeys
-vcell_I4J_pathto_secretsDir=/vagrant_keys
+vcell_secretsDir=/usr/local/deploy
+vcell_I4J_pathto_secretsDir=/usr/local/deploy
 
-vcell_I4J_use_vagrant=true
-vcell_I4J_install_jres_into_user_home=true
+vcell_I4J_use_vagrant=false
+vcell_I4J_install_jres_into_user_home=false
 vcell_I4J_updateSiteBaseUrl=http://vcell.org/webstart/$vcell_site_camel
-vcell_I4J_pathto_installerFile="/vagrant/VCell.install4j"
-vcell_I4J_pathto_mavenRootDir="/vagrant_maven"
-vcell_I4J_pathto_vcellIcnsFile="/vagrant/icons/vcell.icns"
-vcell_I4J_pathto_jreDir=/vagrant_jres
-vcell_I4J_jreDir=$HOME/vcelljres
-vcell_I4J_pathto_install4jc=/home/vagrant/install4j6/bin/install4jc
+vcell_I4J_pathto_mavenRootDir=/opt/build/vcell
+vcell_I4J_pathto_installerFile=${vcell_I4J_pathto_mavenRootDir}/deploy/client/install4j/VCell.install4j
+vcell_I4J_pathto_vcellIcnsFile=${vcell_I4J_pathto_mavenRootDir}/deploy/client/install4j/icons/vcell.icns
+vcell_I4J_pathto_jreDir=$HOME/.install4j6/jres
+vcell_I4J_jreDir=$HOME/.install4j6/jres
+vcell_I4J_pathto_install4jc=/opt/install4j6/bin/install4jc
 
 vcell_htc_usessh=false
 #

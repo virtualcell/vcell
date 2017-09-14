@@ -161,11 +161,12 @@ public class PythonSupport {
 			if (exe.getExitValue() != 0){
 				throw new RuntimeException("Python test failed with return code "+exe.getExitValue()+": "+exe.getStderrString());
 			}
-			if(!exe.getStderrString().contains("Continuum Analytics, Inc") && !exe.getStderrString().contains("Anaconda")) {
-				throw new RuntimeException("Wrong python version present :" + exe.getStderrString());
-			} else {
-				return true;
-			}
+//			if(!exe.getStderrString().contains("Continuum Analytics, Inc") && !exe.getStderrString().contains("Anaconda")) {
+//				throw new RuntimeException("Wrong python version present :" + exe.getStderrString());
+//			} else {
+//				return true;
+//			}
+			return true;
 		} catch (ExecutableException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Python test invocation failed: " + e.getMessage(), e);
