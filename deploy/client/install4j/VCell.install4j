@@ -28,7 +28,7 @@
       <variable name="vcell5SplashScreenPngFilePath" value="${compiler:mavenRootDir}/vcell-client/src/main/resources/vcellSplash.png" description="" category="" />
       <variable name="vcellLocalSolversDirPath" value="${compiler:mavenRootDir}/localsolvers" description="" category="" />
       <variable name="vcellLicenseFilePath" value="${compiler:mavenRootDir}/vcell-client/src/main/resources/thirdpartylicenses.txt" description="" category="" />
-      <variable name="vcellPythonPath" value="${compiler:mavenRootDir}/python" description="" category="" />
+      <variable name="vcellPythonPath" value="${compiler:mavenRootDir}/pythonScripts" description="" category="" />
       <variable name="vcellbngPerlPath" value="${compiler:mavenRootDir}/bionetgen" description="" category="" />
     </variables>
     <mergedProjects />
@@ -53,7 +53,7 @@
       <mountPoint id="719" root="" location="lib" mode="755" />
       <mountPoint id="1473" root="" location="resources" mode="755" />
       <mountPoint id="1474" root="" location="localsolvers" mode="755" />
-      <mountPoint id="1748" root="" location="python" mode="755" />
+      <mountPoint id="1748" root="" location="pythonScripts" mode="755" />
       <mountPoint id="1750" root="" location="bionetgen" mode="755" />
       <mountPoint id="1348" root="1114" location="nativelibs" mode="755" />
       <mountPoint id="1349" root="1114" location="nativelibs/mac64" mode="755" />
