@@ -26,6 +26,7 @@ import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.optimization.thrift.OptResultSet;
 import org.vcell.optimization.thrift.OptRun;
 import org.vcell.optimization.thrift.OptRunStatus;
+import org.vcell.util.UserCancelException;
 
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.math.Function;
@@ -102,6 +103,7 @@ public class CopasiOptimizationSolver {
 		}
 	}
 
+	private static final String STOP_REQUESTED = "stop requested";
 	public static OptimizationResultSet solveRemoteApi(
 			ParameterEstimationTaskSimulatorIDA parestSimulator,
 			ParameterEstimationTask parameterEstimationTask, 
@@ -128,7 +130,7 @@ public class CopasiOptimizationSolver {
 			OptRun optRun = null;
 			while ((System.currentTimeMillis()-startTime)<TIMEOUT_MS){
 				if (optSolverCallbacks.getStopRequested()){
-					throw new RuntimeException("stop requested");
+					throw new RuntimeException(STOP_REQUESTED);
 				}
 				String optRunJson = apiClient.getOptRunJson(optimizationId);
 				TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
@@ -170,6 +172,9 @@ public class CopasiOptimizationSolver {
 			return copasiOptimizationResultSet;
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
+			if(e.getMessage() != null && e.getMessage().equals(STOP_REQUESTED)){
+				throw UserCancelException.CANCEL_GENERIC;
+			}
 			throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
 		}
 	}
