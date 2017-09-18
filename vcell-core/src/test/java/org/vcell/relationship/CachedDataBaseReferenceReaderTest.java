@@ -70,6 +70,7 @@ public class CachedDataBaseReferenceReaderTest {
 	 * test molecular id is fast after first retrieval
 	 * @throws Exception
 	 */
+	@Ignore
 	@Test
 	public void molIdTest( ) throws Exception {
 		final String key = "p00533";
