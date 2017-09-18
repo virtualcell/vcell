@@ -33,12 +33,11 @@ import cbit.vcell.parser.SymbolTable;
 public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedReactionTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 5;
-	public static final int iColIndex = 0;
-	public static final int iColRule = 1;
-	public static final int iColStructure = 2;
-	public static final int iColDepiction = 3;
-	public static final int iColExpression = 4;
+	public static final int colCount = 4;
+	public static final int iColRule = 0;
+	public static final int iColStructure = 1;
+	public static final int iColDepiction = 2;
+	public static final int iColDefinition = 3;
 	
 	static final String reverse = "_reverse_";
 
@@ -56,26 +55,23 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
 	public GeneratedReactionTableModel(EditorScrollTable table, NetworkConstraintsPanel owner) {
-		super(table, new String[] {"Index", "Rule", "Structure", "Depiction", "Expression"});
+		super(table, new String[] {"Rule", "Structure", "Depiction", "BioNetGen Definition"});
 		this.owner = owner;
 		setMaxRowsPerPage(1000);
 	}
 	
 	public Class<?> getColumnClass(int iCol) {
-		switch (iCol){		
-			case iColIndex:{
+		switch (iCol) {
+			case iColRule:
 				return String.class;
-			}case iColRule:{
+			case iColStructure:
 				return String.class;
-			}case iColStructure:{
-				return String.class;
-			}case iColDepiction:{
+			case iColDepiction:
 				return Object.class;
-			}case iColExpression:{
+			case iColDefinition:
 				return String.class;
-			}
 		}
-	return Object.class;
+		return Object.class;
 	}
 	
 	public Object getValueAt(int iRow, int iCol) {
@@ -83,8 +79,6 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 		BNGReaction reactionObject = reactionTableRow.getReactionObject();
 		String name = reactionObject.getRuleName();
 		switch(iCol) {
-			case iColIndex:
-				return reactionTableRow.getIndex();
 			case iColRule:
 				if(name.endsWith(ReactionRule.DirectHalf)) {
 					name = name.substring(0, name.indexOf(ReactionRule.DirectHalf));
@@ -109,7 +103,7 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 					return "?";
 				}
 			case iColDepiction:
-			case iColExpression:
+			case iColDefinition:
 				return reactionTableRow.getExpression();
 			default:
 				return null;

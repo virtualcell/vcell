@@ -58,11 +58,11 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 	private ArrayList<ObservablesGroupTableRow> allObservablesList;
 
 	private final NetworkConstraintsPanel owner;
-	private final GeneratedSpeciesTableModel sibling;
+	private final GeneratedSpeciesTableModel2 sibling;
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
-	public ObservablesGroupTableModel(EditorScrollTable table, NetworkConstraintsPanel owner, GeneratedSpeciesTableModel sibling) {
+	public ObservablesGroupTableModel(EditorScrollTable table, NetworkConstraintsPanel owner, GeneratedSpeciesTableModel2 sibling) {
 		super(table, new String[] {"Name", "Structure", "Depiction", "BioNetGen Definition", "Expression"});
 		this.owner = owner;
 		this.sibling = sibling;
@@ -145,9 +145,9 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 				}
 			} else {
 				if (speciesMultiplicity[i] == 1) {
-					ret = ret + name + ", ";
+					ret = ret + name + " + ";
 				} else {
-					ret = ret + speciesMultiplicity[i] + "*" + name + ", ";
+					ret = ret + speciesMultiplicity[i] + "*" + name + " + ";
 				}
 			}
 		}
@@ -155,7 +155,12 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 	}
 	
 	public boolean isCellEditable(int iRow, int iCol) {
-		return false;
+		switch(iCol) {
+		case iColDefinition:
+//			return true;
+		default:
+			return false;
+		}
 	}
 	
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
@@ -210,6 +215,12 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 	private void refreshData() {
 		allObservablesList = new ArrayList<ObservablesGroupTableRow>();
 		
+		for(int i = 0; i<observabless.length; i++) {
+			ObservableGroup og = observabless[i];
+			ObservablesGroupTableRow newRow = createTableRow(og, i+1);
+			allObservablesList.add(newRow);
+		}
+		
 		// if bng fails to produce even one species for an observable, no observable group will be created
 		// we'll produce ourselves an "empty" observable group for each such observable
 		List<String> rbmObsList = new ArrayList<>();
@@ -227,12 +238,32 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 			allObservablesList.add(newRow);
 		}
 		
-		for(int i = 0; i<observabless.length; i++) {
-			ObservableGroup og = observabless[i];
-			ObservablesGroupTableRow newRow = createTableRow(og, i+1);
-			allObservablesList.add(newRow);
+		// apply text search function for particular columns
+		List<ObservablesGroupTableRow> observablesObjectList = new ArrayList<>();
+		if (searchText == null || searchText.length() == 0) {
+			observablesObjectList.addAll(allObservablesList);
+		} else {
+			String lowerCaseSearchText = searchText.toLowerCase();
+			for (ObservablesGroupTableRow ogtr : allObservablesList) {
+				String obsName = ogtr.getObservableGroupObject().getObservableGroupName();
+				RbmObservable obs = ogtr.getObservable(obsName);
+				String obsDefinition = ObservablesGroupTableRow.toBnglString(obs);
+				if (obsName.toLowerCase().contains(lowerCaseSearchText) ) {			// name match
+					observablesObjectList.add(ogtr);
+					continue;	// if found no need to keep looking for this row
+				}
+				if (obsDefinition.toLowerCase().contains(lowerCaseSearchText) ) {	// definition match
+					observablesObjectList.add(ogtr);
+					continue;
+				}
+				String obsExpression = getExpressionAsString(ogtr.getObservableGroupObject());
+				if (obsExpression.toLowerCase().contains(lowerCaseSearchText) ) {	// expression match
+					observablesObjectList.add(ogtr);
+					continue;
+				}
+			}
 		}
-		setData(allObservablesList);
+		setData(observablesObjectList);
 		GuiUtils.flexResizeTableColumns(ownerTable);
 	}
 	

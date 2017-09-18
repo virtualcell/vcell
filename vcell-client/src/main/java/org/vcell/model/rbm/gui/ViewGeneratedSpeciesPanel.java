@@ -76,6 +76,7 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 	private GeneratedSpeciesTableModel tableModel = null; 
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
+	private JLabel totalSpeciesLabel = new JLabel("");
 	
 	private JButton zoomLargerButton = null;
 	private JButton zoomSmallerButton = null;
@@ -133,6 +134,7 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 					}
 				});
 			}
+			totalSpeciesLabel.setText("Species: " + table.getModel().getRowCount());
 		}
 	}
 	
@@ -278,8 +280,6 @@ private void initialize() {
 		
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
-		table.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColIndex).setCellRenderer(rightRenderer);	// right align
-		table.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColIndex).setMaxWidth(60);		// left column wide enough for 6-7 digits
 		
 		int gridy = 0;
 		gbc = new java.awt.GridBagConstraints();		
@@ -329,6 +329,13 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 0, 4, 4);
 		add(textFieldSearch, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		add(totalSpeciesLabel, gbc);
 
 		gridy ++;	
 		gbc = new GridBagConstraints();
@@ -384,7 +391,7 @@ private void initialize() {
 		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setPreferredWidth(400);
 		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setMinWidth(400);
 		
-		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColExpression).setPreferredWidth(30);
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDefinition).setPreferredWidth(30);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

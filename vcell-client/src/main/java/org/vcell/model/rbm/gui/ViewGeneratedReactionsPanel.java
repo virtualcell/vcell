@@ -75,6 +75,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 	private GeneratedReactionTableModel tableModel = null; 
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
+	private JLabel totalReactionsLabel = new JLabel("");
 
 	private JButton zoomLargerButton = null;
 	private JButton zoomSmallerButton = null;
@@ -140,8 +141,8 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					}
 				});
 			}
+			totalReactionsLabel.setText("Species: " + table.getModel().getRowCount());
 		}
-		
 	}
 	
 public ViewGeneratedReactionsPanel(NetworkConstraintsPanel owner) {
@@ -442,8 +443,8 @@ private void initialize() {
 		
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
-		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColIndex).setCellRenderer(rightRenderer);	// right align first table column
-		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColIndex).setMaxWidth(60);				// left column wide enough for 6-7 digits
+//		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColIndex).setCellRenderer(rightRenderer);	// right align first table column
+//		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColIndex).setMaxWidth(60);				// left column wide enough for 6-7 digits
 		
 		int gridy = 0;
 		gbc = new GridBagConstraints();		
@@ -456,10 +457,6 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 //		table.setPreferredScrollableViewportSize(new Dimension(400,200));
 		add(table.getEnclosingScrollPane(), gbc);
-		
-//		gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 9;
-//		gbc.gridy = gridy;
 		
 		// add toolTipText for each table cell
 		table.addMouseMotionListener(new MouseMotionAdapter() { 
@@ -494,6 +491,13 @@ private void initialize() {
 		gbc.insets = new Insets(4, 0, 4, 4);
 		add(textFieldSearch, gbc);
 		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		add(totalReactionsLabel, gbc);
+
 		gridy ++;	
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -583,7 +587,7 @@ private void initialize() {
 		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setPreferredWidth(400);
 		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setMinWidth(400);
 		
-		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColExpression).setPreferredWidth(30);
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDefinition).setPreferredWidth(30);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

@@ -685,7 +685,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		BNGSpecies[] bngSpecies = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGSpecies();
 		ObservableGroup[] observables = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getObservableGroups();
 		panel.setData(bngSpecies, observables);
-		panel.setPreferredSize(new Dimension(800,550));
+		panel.setPreferredSize(new Dimension(800,600));
 
 //		if(viewSpeciesDialog != null) {		// uncomment these 3 lines to allow only one instance of the dialog
 //			viewSpeciesDialog.dispose();

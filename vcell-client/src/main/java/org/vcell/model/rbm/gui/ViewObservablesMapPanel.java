@@ -34,7 +34,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -60,6 +59,7 @@ import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.gui.LargeShapePanel;
@@ -79,48 +79,84 @@ public class ViewObservablesMapPanel extends DocumentEditorSubPanel  {
 	private ObservableGroup[] observabless = null;
 	private EventHandler eventHandlerO = new EventHandler();
 	private EventHandler eventHandlerS = new EventHandler();
-	private GeneratedSpeciesTableModel speciesTableModel = null; 
+	private GeneratedSpeciesTableModel2 speciesTableModel = null; 
 	private ObservablesGroupTableModel observablesTableModel = null; 
 	private EditorScrollTable speciesTable = null;
 	private EditorScrollTable observablesTable = null;
-	private JTextField textFieldSearch = null;
+	private JTextField textFieldSearchSpecies = null;
+	private JTextField textFieldSearchObservables = null;
+	private JLabel totalSpeciesLabel = new JLabel("");
+	private JLabel totalObservablesLabel = new JLabel("");
 	
-	private JButton zoomLargerButton = null;
-	private JButton zoomSmallerButton = null;
+	private JButton zoomLargerButtonSpecies = null;
+	private JButton zoomSmallerButtonSpecies = null;
+	private JButton zoomLargerButtonObservable = null;
+	private JButton zoomSmallerButtonObservable = null;
 
 	private final NetworkConstraintsPanel owner;
-	LargeShapePanel shapePanel = null;
-	private SpeciesPatternLargeShape spls;
+	LargeShapePanel shapePanelSpecies = null;
+	LargeShapePanel shapePanelObservable = null;
+	private SpeciesPatternLargeShape spls;				// for the generated species shapes
+	List<SpeciesPatternLargeShape> spsList = new ArrayList<SpeciesPatternLargeShape>();		// for the observable shapes
 
 	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener {
 		
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == getZoomLargerButton()) {
-				boolean ret = shapePanel.zoomLarger();
-				getZoomLargerButton().setEnabled(ret);
-				getZoomSmallerButton().setEnabled(true);
+			if (e.getSource() == getZoomLargerButtonSpecies()) {
+				boolean ret = shapePanelSpecies.zoomLarger();
+				getZoomLargerButtonSpecies().setEnabled(ret);
+				getZoomSmallerButtonSpecies().setEnabled(true);
 				int[] selectedRows = speciesTable.getSelectedRows();
 				if(selectedRows.length == 1) {
-					updateShape(selectedRows[0]);
+					updateShapeSpecies(selectedRows[0]);
 				}
-			} else if (e.getSource() == getZoomSmallerButton()) {
-				boolean ret = shapePanel.zoomSmaller();
-				getZoomLargerButton().setEnabled(true);
-				getZoomSmallerButton().setEnabled(ret);
+			} else if (e.getSource() == getZoomSmallerButtonSpecies()) {
+				boolean ret = shapePanelSpecies.zoomSmaller();
+				getZoomLargerButtonSpecies().setEnabled(true);
+				getZoomSmallerButtonSpecies().setEnabled(ret);
 				int[] selectedRows = speciesTable.getSelectedRows();
 				if(selectedRows.length == 1) {
-					updateShape(selectedRows[0]);
+					updateShapeSpecies(selectedRows[0]);
+				}
+			} else if (e.getSource() == getZoomLargerButtonObservable()) {
+				boolean ret = shapePanelObservable.zoomLarger();
+				getZoomLargerButtonObservable().setEnabled(ret);
+				getZoomSmallerButtonObservable().setEnabled(true);
+				int[] selectedRows = observablesTable.getSelectedRows();
+				if(selectedRows.length == 1) {
+					updateShapeObservable(selectedRows[0]);
+				}
+			} else if (e.getSource() == getZoomSmallerButtonObservable()) {
+				boolean ret = shapePanelObservable.zoomSmaller();
+				getZoomLargerButtonObservable().setEnabled(true);
+				getZoomSmallerButtonObservable().setEnabled(ret);
+				int[] selectedRows = observablesTable.getSelectedRows();
+				if(selectedRows.length == 1) {
+					updateShapeObservable(selectedRows[0]);
 				}
 			}
+
 		}
 		public void insertUpdate(DocumentEvent e) {
-			searchTable();
+			if(this == eventHandlerO) {
+				searchTableObservables();
+			} else {
+				searchTableSpecies();
+			}
 		}
 		public void removeUpdate(DocumentEvent e) {
-			searchTable();
+			if(this == eventHandlerO) {
+				searchTableObservables();
+			} else {
+				searchTableSpecies();
+			}
 		}
 		public void changedUpdate(DocumentEvent e) {
-			searchTable();
+			if(this == eventHandlerO) {
+				searchTableObservables();
+			} else {
+				searchTableSpecies();
+			}
 		}
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
@@ -129,15 +165,17 @@ public class ViewObservablesMapPanel extends DocumentEditorSubPanel  {
 				if(selectedRows.length == 1 && !e.getValueIsAdjusting()) {
 					System.out.println("Observable, row " + selectedRows[0]);
 					speciesTableModel.setObservableFilter(observablesTableModel.getValueAt(selectedRows[0]));
+					updateShapeObservable(selectedRows[0]);
 				} else if(selectedRows.length != 1 && !e.getValueIsAdjusting()) {
 					System.out.println("Observable, unselected or multiple");
 					speciesTableModel.setObservableFilter(null);
+					updateShapeObservable(-1);		// no observable
 				}
 			} else if(this == eventHandlerS) {
 				int[] selectedRows = speciesTable.getSelectedRows();
 				if(selectedRows.length == 1 && !e.getValueIsAdjusting()) {
 					System.out.println("Species, row " + selectedRows[0]);
-					updateShape(selectedRows[0]);
+					updateShapeSpecies(selectedRows[0]);
 				}
 			} else {
 				System.out.println("Neither table");
@@ -155,11 +193,12 @@ public class ViewObservablesMapPanel extends DocumentEditorSubPanel  {
 						}
 					});
 				}
+				totalObservablesLabel.setText("Observables: " + observablesTable.getModel().getRowCount());
 			} else if(this == eventHandlerS) {
 				if(speciesTable.getModel().getRowCount() == 0) {
 					System.out.println("table is empty");
 					spls = null;
-					shapePanel.repaint();
+					shapePanelSpecies.repaint();
 				} else {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {				
@@ -167,6 +206,7 @@ public class ViewObservablesMapPanel extends DocumentEditorSubPanel  {
 						}
 					});
 				}
+				totalSpeciesLabel.setText("Species: " + speciesTable.getModel().getRowCount());
 			}
 		}
 	}
@@ -198,15 +238,16 @@ private void initialize() {
 		bottomPanel.setLayout(new GridBagLayout());
 		
 		JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		splitPaneHorizontal.setDividerSize(10);
 		splitPaneHorizontal.setOneTouchExpandable(true);
-		splitPaneHorizontal.setDividerLocation(120);
+		splitPaneHorizontal.setDividerLocation(260);
 		splitPaneHorizontal.setResizeWeight(0.5);
 		splitPaneHorizontal.setTopComponent(topPanel);
 		splitPaneHorizontal.setBottomComponent(bottomPanel);
 		add(splitPaneHorizontal, BorderLayout.CENTER);
 
 		// ---------------------------------------- species shape panel
-		shapePanel = new LargeShapePanel() {
+		shapePanelSpecies = new LargeShapePanel() {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
@@ -255,37 +296,39 @@ private void initialize() {
 				return true;
 			}
 		};
-		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
-		shapePanel.setLayout(new GridBagLayout());
-		shapePanel.setBackground(Color.white);
-		shapePanel.setEditable(true);		// not really editable but we don't want the brown contours here
-		shapePanel.setShowMoleculeColor(true);
-		shapePanel.setShowNonTrivialOnly(true);
-		
-		JScrollPane scrollPane = new JScrollPane(shapePanel);
-		scrollPane.setBorder(loweredBevelBorder);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+		shapePanelSpecies.setLayout(new GridBagLayout());
+		shapePanelSpecies.setBackground(Color.white);
+		shapePanelSpecies.setEditable(true);		// not really editable but we don't want the brown contours here
+		shapePanelSpecies.setShowMoleculeColor(true);
+		shapePanelSpecies.setShowNonTrivialOnly(true);
 
-		JPanel optionsPanel = new JPanel();
-		optionsPanel.setLayout(new GridBagLayout());
+		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
+		JScrollPane scrollPaneSpecies = new JScrollPane(shapePanelSpecies);
+		scrollPaneSpecies.setBorder(loweredBevelBorder);
+		scrollPaneSpecies.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scrollPaneSpecies.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+		JPanel optionsPanelSpecies = new JPanel();
+		optionsPanelSpecies.setLayout(new GridBagLayout());
 		
-		getZoomSmallerButton().setEnabled(true);
-		getZoomLargerButton().setEnabled(false);
+		getZoomSmallerButtonSpecies().setEnabled(true);
+		getZoomLargerButtonSpecies().setEnabled(true);
+		shapePanelSpecies.zoomSmaller();
+		shapePanelSpecies.zoomSmaller();
 		
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.insets = new Insets(0,0,0,10);
 		gbc.anchor = GridBagConstraints.WEST;
-		optionsPanel.add(getZoomLargerButton(), gbc);
+		optionsPanelSpecies.add(getZoomLargerButtonSpecies(), gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 1;
 		gbc.insets = new Insets(2,0,4,10);
 		gbc.anchor = GridBagConstraints.WEST;
-		optionsPanel.add(getZoomSmallerButton(), gbc);
+		optionsPanelSpecies.add(getZoomSmallerButtonSpecies(), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -294,21 +337,126 @@ private void initialize() {
 		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.insets = new Insets(4, 4, 4, 10);
-		optionsPanel.add(new JLabel(""), gbc);
+		optionsPanelSpecies.add(new JLabel(""), gbc);
 
-		JPanel containerOfScrollPanel = new JPanel();
-		containerOfScrollPanel.setLayout(new BorderLayout());
-		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
-		containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
+		JPanel containerOfScrollPanelSpecies = new JPanel();
+		containerOfScrollPanelSpecies.setLayout(new BorderLayout());
+		containerOfScrollPanelSpecies.add(optionsPanelSpecies, BorderLayout.WEST);
+		containerOfScrollPanelSpecies.add(scrollPaneSpecies, BorderLayout.CENTER);
 		
-		Dimension dim = new Dimension(500, 135);
-		containerOfScrollPanel.setPreferredSize(dim);	// dimension of shape panel
-		containerOfScrollPanel.setMinimumSize(dim);
-		containerOfScrollPanel.setMaximumSize(dim);
+		Dimension dimS = new Dimension(500, 125);
+		containerOfScrollPanelSpecies.setPreferredSize(dimS);	// dimension of shape panel
+		containerOfScrollPanelSpecies.setMinimumSize(dimS);
+		containerOfScrollPanelSpecies.setMaximumSize(dimS);
+
+		shapePanelObservable = new LargeShapePanel() {
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				for(SpeciesPatternLargeShape sps : spsList) {
+					if(sps == null) {
+						continue;
+					}
+					sps.paintSelf(g);
+				}
+			}
+			@Override
+			public DisplayMode getDisplayMode() {
+				return DisplayMode.other;
+			}
+			@Override
+			public RuleAnalysisChanged hasStateChanged(String reactionRuleName,	MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+			@Override
+			public RuleAnalysisChanged hasStateChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+			@Override
+			public RuleAnalysisChanged hasBondChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+			@Override
+			public RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+			@Override
+			public RuleAnalysisChanged hasNoMatch(String reactionRuleName, MolecularTypePattern mtp) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+			@Override
+			public RuleAnalysisChanged hasNoMatch(MolecularTypePattern molecularTypePattern) {
+				return RuleAnalysisChanged.UNCHANGED;
+			}
+			@Override
+			public RuleParticipantSignature getSignature() {
+				return null;
+			}
+			@Override
+			public GroupingCriteria getCriteria() {
+				return null;
+			}
+			@Override
+			public boolean isViewSingleRow() {
+				return true;
+			}
+		};
+
+		//shapePanelObservable.setLayout(null);
+		shapePanelObservable.setLayout(new GridBagLayout());
+		shapePanelObservable.setBackground(Color.white);
+		shapePanelObservable.setEditable(true);
+		shapePanelObservable.setShowMoleculeColor(true);
+		shapePanelObservable.setShowNonTrivialOnly(true);
+		
+		JScrollPane scrollPaneObservable = new JScrollPane(shapePanelObservable);
+		scrollPaneObservable.setBorder(loweredBevelBorder);
+		scrollPaneObservable.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scrollPaneObservable.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+		JPanel optionsPanelObservable = new JPanel();
+		optionsPanelObservable.setLayout(new GridBagLayout());
+		
+		getZoomSmallerButtonObservable().setEnabled(true);
+		getZoomLargerButtonObservable().setEnabled(true);
+		shapePanelObservable.zoomSmaller();
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0,0,0,10);
+		gbc.anchor = GridBagConstraints.WEST;
+		optionsPanelObservable.add(getZoomLargerButtonObservable(), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.insets = new Insets(2,0,4,10);
+		gbc.anchor = GridBagConstraints.WEST;
+		optionsPanelObservable.add(getZoomSmallerButtonObservable(), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.weightx = 1;
+		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		optionsPanelObservable.add(new JLabel(""), gbc);
+
+		JPanel containerOfScrollPanelObservable = new JPanel();
+		containerOfScrollPanelObservable.setLayout(new BorderLayout());
+		containerOfScrollPanelObservable.add(optionsPanelObservable, BorderLayout.WEST);
+		containerOfScrollPanelObservable.add(scrollPaneObservable, BorderLayout.CENTER);
+		
+		Dimension dimO = new Dimension(500, 100);
+		containerOfScrollPanelObservable.setPreferredSize(dimO);	// dimension of shape panel
+		containerOfScrollPanelObservable.setMinimumSize(dimO);
+		containerOfScrollPanelObservable.setMaximumSize(dimO);
 
 		// -------------- connection between tables, table models, selection models, renderers, event handlers
 		speciesTable = new EditorScrollTable();
-		speciesTableModel = new GeneratedSpeciesTableModel(speciesTable, owner);
+		speciesTableModel = new GeneratedSpeciesTableModel2(speciesTable, owner);
 		speciesTable.setModel(speciesTableModel);
 		speciesTable.getSelectionModel().addListSelectionListener(eventHandlerS);
 		speciesTable.getModel().addTableModelListener(eventHandlerS);
@@ -321,8 +469,8 @@ private void initialize() {
 		
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
-		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColIndex).setCellRenderer(rightRenderer);	// right align
-		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColIndex).setMaxWidth(60);		// left column wide enough for 6-7 digits
+//		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel2.iColMultiplier).setCellRenderer(rightRenderer);	// right align
+		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel2.iColMultiplier).setMaxWidth(70);	// left column wide enough for title
 		
 		speciesTable.addMouseMotionListener(new MouseMotionAdapter() {		// add toolTipText for each table cell
 		    public void mouseMoved(MouseEvent e) { 	
@@ -346,6 +494,47 @@ private void initialize() {
 		observablesTable.setPreferredScrollableViewportSize(new Dimension(400,200));
 		topPanel.add(observablesTable.getEnclosingScrollPane(), gbc);
 
+		gridy ++;	
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4,4,4,4);
+		topPanel.add(new JLabel("Search "), gbc);
+
+		textFieldSearchObservables = new JTextField(70);
+		textFieldSearchObservables.addActionListener(eventHandlerO);
+		textFieldSearchObservables.getDocument().addDocumentListener(eventHandlerO);
+		textFieldSearchObservables.putClientProperty("JTextField.variant", "search");
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.weightx = 1.0;
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = 3;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 0, 4, 4);
+		topPanel.add(textFieldSearchObservables, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		topPanel.add(totalObservablesLabel, gbc);
+
+		gridy ++;	
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+//		gbc.weightx = 1.0;
+		gbc.gridwidth = 8;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		topPanel.add(containerOfScrollPanelObservable, gbc);
+
 		// -------------------------------------------- bottom panel
 		gridy = 0;
 		gbc = new java.awt.GridBagConstraints();		
@@ -367,10 +556,10 @@ private void initialize() {
 		gbc.insets = new Insets(4,4,4,4);
 		bottomPanel.add(new JLabel("Search "), gbc);
 
-		textFieldSearch = new JTextField(70);
-		textFieldSearch.addActionListener(eventHandlerS);
-		textFieldSearch.getDocument().addDocumentListener(eventHandlerS);
-		textFieldSearch.putClientProperty("JTextField.variant", "search");
+		textFieldSearchSpecies = new JTextField(70);
+		textFieldSearchSpecies.addActionListener(eventHandlerS);
+		textFieldSearchSpecies.getDocument().addDocumentListener(eventHandlerS);
+		textFieldSearchSpecies.putClientProperty("JTextField.variant", "search");
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
@@ -380,7 +569,14 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 0, 4, 4);
-		bottomPanel.add(textFieldSearch, gbc);
+		bottomPanel.add(textFieldSearchSpecies, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		bottomPanel.add(totalSpeciesLabel, gbc);
 
 		gridy ++;	
 		gbc = new GridBagConstraints();
@@ -391,7 +587,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4,4,4,4);
-		bottomPanel.add(containerOfScrollPanel, gbc);
+		bottomPanel.add(containerOfScrollPanelSpecies, gbc);
 		
 		// rendering the small shapes of the flattened species in the Depiction column of this viewer table)
 		// TODO: this renderer is almost identical with the one in BioModelEditorModelPanel (which paints the small shapes 
@@ -431,10 +627,10 @@ private void initialize() {
 				}
 			}
 		};
-		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColDepiction).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
-		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColDepiction).setPreferredWidth(400);
-		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColDepiction).setMinWidth(400);
-		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColDefinition).setPreferredWidth(30);
+		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel2.iColDepiction).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
+		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel2.iColDepiction).setPreferredWidth(400);
+		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel2.iColDepiction).setMinWidth(400);
+		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel2.iColDefinition).setPreferredWidth(30);
 		speciesTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		
 		DefaultScrollTableCellRenderer rbmObservableShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
@@ -494,7 +690,7 @@ private void initialize() {
 	}
 }
 
-public void updateShape(int selectedRow) {
+public void updateShapeSpecies(int selectedRow) {
 	GeneratedSpeciesTableRow speciesTableRow = speciesTableModel.getValueAt(selectedRow);
 	String inputString = speciesTableRow.getExpression();
 //	System.out.println(selectedRows[0] + ": " + inputString);
@@ -546,41 +742,89 @@ public void updateShape(int selectedRow) {
 	SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, tempModel);
 	sp.resolveBonds();
 	SpeciesContext sc = new SpeciesContext(new Species("a",""), structure, sp);
-	spls = new SpeciesPatternLargeShape(20, 20, -1, sp, shapePanel, sc, issueManager);
+	spls = new SpeciesPatternLargeShape(20, 20, -1, sp, shapePanelSpecies, sc, issueManager);
 	
 	} catch (ParseException | PropertyVetoException | ModelException e1) {
 		e1.printStackTrace();
-		spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true, issueManager);	// error (red circle)
-		shapePanel.repaint();
+		spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanelSpecies, true, issueManager);	// error (red circle)
+		shapePanelSpecies.repaint();
 	}
 	
 	int xOffset = spls.getRightEnd() + 45;
 	Dimension preferredSize = new Dimension(xOffset+90, 50);
-	shapePanel.setPreferredSize(preferredSize);
+	shapePanelSpecies.setPreferredSize(preferredSize);
+	shapePanelSpecies.repaint();
+}
+
+public static final int xOffsetInitial = 25;
+public static final int ReservedSpaceForNameOnYAxis = GraphConstants.ObservableDisplay_ReservedSpaceForNameOnYAxis;	// just a little empty spacing above the shape
+private void updateShapeObservable(int selectedRow) {
+	spsList.clear();
+	if(selectedRow == -1) {
+		shapePanelObservable.repaint();
+		return;
+	}
+	ObservablesGroupTableRow observablesTableRow = observablesTableModel.getValueAt(selectedRow);
+	String obsName = observablesTableRow.getObservableGroupObject().getObservableGroupName();
+	RbmObservable observable = observablesTableRow.getObservable(obsName);
 	
-	shapePanel.repaint();
+	int maxXOffset = xOffsetInitial;
+	int maxYOffset = 8;
+	if(observable != null && observable.getSpeciesPatternList() != null && observable.getSpeciesPatternList().size() > 0) {
+		// if more than one sp per observable, since non-editable we show them all on a single row
+		for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
+			SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
+			SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(maxXOffset, maxYOffset, 80, sp, shapePanelObservable, observable, issueManager);
+			spsList.add(sps);
+			int xOffset = sps.getRightEnd();
+			maxXOffset = xOffset + 40;
+		}
+	}
+	Dimension preferredSize = new Dimension(maxXOffset+200, maxYOffset);
+	shapePanelObservable.setPreferredSize(preferredSize);
+	shapePanelObservable.repaint();
 }
 
-private JButton getZoomLargerButton() {
-	if (zoomLargerButton == null) {
-		zoomLargerButton = new JButton();		// "+"
-		ZoomShapeIcon.setZoomMod(zoomLargerButton, ZoomShapeIcon.Sign.plus);
-		zoomLargerButton.addActionListener(eventHandlerS);
+private JButton getZoomLargerButtonSpecies() {
+	if (zoomLargerButtonSpecies == null) {
+		zoomLargerButtonSpecies = new JButton();		// "+"
+		ZoomShapeIcon.setZoomMod(zoomLargerButtonSpecies, ZoomShapeIcon.Sign.plus);
+		zoomLargerButtonSpecies.addActionListener(eventHandlerS);
 	}
-	return zoomLargerButton;
+	return zoomLargerButtonSpecies;
 }
-private JButton getZoomSmallerButton() {
-	if (zoomSmallerButton == null) {
-		zoomSmallerButton = new JButton();		// -
-		ZoomShapeIcon.setZoomMod(zoomSmallerButton, ZoomShapeIcon.Sign.minus);
-		zoomSmallerButton.addActionListener(eventHandlerS);
+private JButton getZoomSmallerButtonSpecies() {
+	if (zoomSmallerButtonSpecies == null) {
+		zoomSmallerButtonSpecies = new JButton();		// -
+		ZoomShapeIcon.setZoomMod(zoomSmallerButtonSpecies, ZoomShapeIcon.Sign.minus);
+		zoomSmallerButtonSpecies.addActionListener(eventHandlerS);
 	}
-	return zoomSmallerButton;
+	return zoomSmallerButtonSpecies;
+}
+private JButton getZoomLargerButtonObservable() {
+	if (zoomLargerButtonObservable == null) {
+		zoomLargerButtonObservable = new JButton();		// "+"
+		ZoomShapeIcon.setZoomMod(zoomLargerButtonObservable, ZoomShapeIcon.Sign.plus);
+		zoomLargerButtonObservable.addActionListener(eventHandlerO);
+	}
+	return zoomLargerButtonObservable;
+}
+private JButton getZoomSmallerButtonObservable() {
+	if (zoomSmallerButtonObservable == null) {
+		zoomSmallerButtonObservable = new JButton();		// -
+		ZoomShapeIcon.setZoomMod(zoomSmallerButtonObservable, ZoomShapeIcon.Sign.minus);
+		zoomSmallerButtonObservable.addActionListener(eventHandlerO);
+	}
+	return zoomSmallerButtonObservable;
 }
 
-private void searchTable() {
-	String searchText = textFieldSearch.getText();
+private void searchTableSpecies() {
+	String searchText = textFieldSearchSpecies.getText();
 	speciesTableModel.setSearchText(searchText);
+}
+private void searchTableObservables() {
+	String searchText = textFieldSearchObservables.getText();
+	observablesTableModel.setSearchText(searchText);
 }
 
 public void setData(BNGSpecies[] speciess, ObservableGroup[] observabless) {
@@ -598,7 +842,7 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 
 }
 
-public GeneratedSpeciesTableModel getGeneratedSpeciesTableModel(){
+public GeneratedSpeciesTableModel2 getGeneratedSpeciesTableModel(){
 	return speciesTableModel;
 }
 public ObservablesGroupTableModel getObservablesGroupTableModel(){

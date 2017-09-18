@@ -18,6 +18,7 @@ import cbit.vcell.model.Structure;
 
 public class GeneratedSpeciesTableRow {
 
+	private String multiplier = "";		// used only in relation to an observable
 	private String originalName;
 	private BNGSpecies speciesObject;
 	private String index;
@@ -48,6 +49,13 @@ public class GeneratedSpeciesTableRow {
 	public void setIndex(String index) {
 		this.index = index;
 	}
+	public String getMultiplier() {
+		return multiplier;
+	}
+	public void setMultiplier(String multiplier) {
+		this.multiplier = multiplier;
+	}
+	
 	public String getExpression() {
 		return expression;
 	}

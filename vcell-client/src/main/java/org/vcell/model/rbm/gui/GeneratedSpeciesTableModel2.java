@@ -36,19 +36,20 @@ import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
-public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpeciesTableRow> 
+public class GeneratedSpeciesTableModel2 extends VCellSortTableModel<GeneratedSpeciesTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 4;
-//	public static final int iColIndex = 0;
-	public static final int iColOriginalName = 0;
-	public static final int iColStructure = 1;
-	public static final int iColDepiction = 2;
-	public static final int iColDefinition = 3;
+	public static final int colCount = 5;
+	public static final int iColMultiplier = 0;
+	public static final int iColOriginalName = 1;
+	public static final int iColStructure = 2;
+	public static final int iColDepiction = 3;
+	public static final int iColDefinition = 4;
 	
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
 	protected String searchText = null;
+	protected ObservablesGroupTableRow observableFilter = null;
 	
 	private BNGSpecies[] speciess;
 	private Model model;
@@ -60,14 +61,16 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
-	public GeneratedSpeciesTableModel(EditorScrollTable table, NetworkConstraintsPanel owner) {
-		super(table, new String[] {"Name", "Structure", "Depiction", "BioNetGen Definition"});
+	public GeneratedSpeciesTableModel2(EditorScrollTable table, NetworkConstraintsPanel owner) {
+		super(table, new String[] {"Multiplier", "Name", "Structure", "Depiction", "BioNetGen Definition"});
 		this.owner = owner;
 		setMaxRowsPerPage(1000);
 	}
 	
 	public Class<?> getColumnClass(int iCol) {
 		switch (iCol) {		
+			case iColMultiplier:
+				return String.class;
 			case iColOriginalName:
 				return String.class;
 			case iColStructure:
@@ -83,6 +86,8 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	public Object getValueAt(int iRow, int iCol) {
 		GeneratedSpeciesTableRow speciesTableRow = getValueAt(iRow);
 		switch(iCol) {
+			case iColMultiplier:
+				return speciesTableRow.getMultiplier();
 			case iColOriginalName:
 				return speciesTableRow.getOriginalName();
 			case iColStructure:{
@@ -168,20 +173,36 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 		refreshData();
 	}
 	
+	public void setObservableFilter(ObservablesGroupTableRow observableFilter) {
+		if (this.observableFilter == observableFilter) {
+			return;
+		}
+		this.observableFilter = observableFilter;
+		refreshData();
+	}
+	
 	private void refreshData() {
 		allGeneratedSpeciesList = new ArrayList<>();
 		networkFileIndexToNameMap = new HashMap<>();
 		LinkedHashMap<String, String> scMap = new LinkedHashMap<>();
+		String multiplier = "";
+
 		for(int i = 0; i<speciess.length; i++) {
 			BNGSpecies species = speciess[i];
 			String key = species.getConcentration().infix();
 			String originalName = "";
 			FakeSeedSpeciesInitialConditionsParameter fakeParam = FakeSeedSpeciesInitialConditionsParameter.fromString(key);
-			if (fakeParam != null){
+			if(observableFilter != null) {
+				int index = 0;
+				ObservableGroup og = observableFilter.getObservableGroupObject();
+				
+				multiplier = og.getSpeciesMultiplicity()[index] + "";
+			}
+			if (fakeParam != null) {
 				originalName = fakeParam.speciesContextName;
 				System.out.println(originalName);
 				scMap.put(originalName, originalName);
-				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, originalName, species.toStringShort());
+				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, multiplier, originalName, species.toStringShort());
 				allGeneratedSpeciesList.add(newRow);
 				networkFileIndexToNameMap.put(species.getNetworkFileIndex(), originalName);
 
@@ -206,7 +227,7 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 					count++;
 				}
 				scMap.put(speciesName, speciesName);
-				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, speciesName, species.toStringShort());
+				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, multiplier, speciesName, species.toStringShort());
 				allGeneratedSpeciesList.add(newRow);
 				networkFileIndexToNameMap.put(species.getNetworkFileIndex(), speciesName);
 			}
@@ -229,13 +250,46 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 				}
 			}
 		}
-		setData(speciesObjectList);
+		
+		List<GeneratedSpeciesTableRow> speciesObjectList2;
+		if(observableFilter == null) {
+			speciesObjectList2 = speciesObjectList;
+		} else {
+			// extra filtering by observable, if needed
+			speciesObjectList2 = new ArrayList<>();
+			ObservableGroup og = observableFilter.getObservableGroupObject();
+			List<Integer> indexesList = og.getIndexesAsIntegersList();
+			for (GeneratedSpeciesTableRow rs : speciesObjectList) {
+				int ourIndex = rs.getSpeciesObject().getNetworkFileIndex();
+				if(indexesList.contains(ourIndex)) {
+					speciesObjectList2.add(rs);
+				}
+			}
+		}
+		
+		if(observableFilter != null) {		// go through each and set the correct multiplier
+			Map<Integer, Integer> ogIndexMap = new HashMap<>();	// key is networkFileIndex, value is multiplicity
+			ObservableGroup og = observableFilter.getObservableGroupObject();
+			for(int i = 0; i < og.getListofSpecies().length; i++) {
+				int networkFileIndex = og.getListofSpecies()[i].getNetworkFileIndex();
+				int multiplicity = og.getSpeciesMultiplicity()[i];
+				ogIndexMap.put(networkFileIndex, multiplicity);
+			}
+			for(GeneratedSpeciesTableRow gstr : speciesObjectList2) {
+			
+				int networkFileIndex = gstr.getSpeciesObject().getNetworkFileIndex();
+				int multiplicity = ogIndexMap.get(networkFileIndex);
+				gstr.setMultiplier(multiplicity+"");
+			}
+		}
+		
+		setData(speciesObjectList2);
 		GuiUtils.flexResizeTableColumns(ownerTable);
 	}
 	
-	private GeneratedSpeciesTableRow createTableRow(BNGSpecies species, int index, String originalName, String interactionLabel) {
+	private GeneratedSpeciesTableRow createTableRow(BNGSpecies species, int index, String multiplier, String originalName, String interactionLabel) {
 		GeneratedSpeciesTableRow row = new GeneratedSpeciesTableRow(originalName, species, owner);
-		
+		row.setMultiplier(multiplier+" ");
 		row.setIndex(index+" ");
 		row.setExpression(interactionLabel, getModel());
 		return row;
