@@ -1,1 +1,1 @@
-https://github.com/virtualcell/vcell-solvers/releases/download/binaries_20170901/linux64.tgz
+https://github.com/virtualcell/vcell-solvers/releases/download/binaries_20170913/linux64.tgz

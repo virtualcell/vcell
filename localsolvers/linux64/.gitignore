@@ -15,3 +15,7 @@
 /smoldyn_x64
 /testzip
 /ziptool
+/libdl.so.2
+/libhdf5_hl.so.8
+/libhdf5_hl_cpp.so.8
+/libz.so.1

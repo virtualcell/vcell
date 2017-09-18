@@ -7,6 +7,7 @@ import java.util.Collection;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.SolverException;
 
 /**
@@ -27,7 +28,8 @@ public abstract class SimpleCompiledSolver extends AbstractCompiledSolver {
 	 */
 	@Override
 	public Collection<ExecutableCommand> getCommands( ) {
-		return Arrays.asList(new ExecutableCommand(getMathExecutableCommand()));
+		return Arrays.asList(new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), 
+							getMathExecutableCommand()));
 	}
 
 	protected abstract String[] getMathExecutableCommand();

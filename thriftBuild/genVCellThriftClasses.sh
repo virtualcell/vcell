@@ -8,6 +8,7 @@ THRIFT_0_9_2=
 
 # Calling thrift executable separately for Java and Python code generation.  Comment out either if suppression of one is desired.
 $THRIFT_0_10_0 --out ../vcell-core/src/main/java --gen java:generated_annotations=undated pyVCell.thrift
+$THRIFT_0_10_0 --out ../pythonScripts/VCell_VTK --gen py pyVCell.thrift
 if [ ! -z "$THRIFT_0_9_2" ]; then
 	$THRIFT_0_9_2 --out ../pythonScripts/VCell_VisIt --gen py pyVCell.thrift
 else

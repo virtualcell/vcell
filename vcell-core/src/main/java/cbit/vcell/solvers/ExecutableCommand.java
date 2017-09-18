@@ -12,6 +12,14 @@ import java.util.stream.Collectors;
  */
 public class ExecutableCommand {
 	
+	public static class LibraryPath {
+		public final String path;
+		public LibraryPath(String path){
+			this.path = path;
+		}
+	}
+	
+	private final LibraryPath ld_library_path;
 	private final boolean messaging; 
 	private final boolean parallel; 
 	private List<String> cmds;
@@ -33,8 +41,9 @@ public class ExecutableCommand {
 	 * @param parallel
 	 * @param input variable list of Strings to pass
 	 */
-	public ExecutableCommand(boolean messaging, boolean parallel, String ... input) {
+	public ExecutableCommand(LibraryPath ld_library_path, boolean messaging, boolean parallel, String ... input) {
 		super();
+		this.ld_library_path = ld_library_path;
 		this.messaging = messaging;
 		this.parallel = parallel;
 		this.cmds = new ArrayList<>(); 
@@ -52,8 +61,9 @@ public class ExecutableCommand {
 	 * @param parallel
 	 * @param input variable list of Strings to pass
 	 */
-	public ExecutableCommand(boolean messaging, boolean parallel, List<String> input) {
+	public ExecutableCommand(LibraryPath ld_library_path, boolean messaging, boolean parallel, List<String> input) {
 		super();
+		this.ld_library_path = ld_library_path;
 		this.messaging = messaging;
 		this.parallel = parallel;
 		this.exitCodeToken = null;
@@ -67,8 +77,8 @@ public class ExecutableCommand {
 	 * default to messaging, not parallel
 	 * @param input
 	 */
-	public ExecutableCommand(String ... input) {
-		this(true,false,input);
+	public ExecutableCommand(LibraryPath ld_library_path, String ... input) {
+		this(ld_library_path,true,false,input);
 	}
 	
 	public List<String> getCommands( ) {
@@ -130,6 +140,10 @@ public class ExecutableCommand {
 		return joined; 
 	}
 	
+
+	public LibraryPath getLdLibraryPath() {
+		return ld_library_path;
+	}
 
 	/**
 	 * add argument to existing args

@@ -17,7 +17,7 @@ unset _site
 unset _version
 unset _build
 
-vcell_anaconda_installdir=/opt/vcell/anaconda2
+vcell_python_executable=/opt/vcell/anaconda2/bin/python
 
 
 vcell_applicationId="1471-8022-1038-5558"

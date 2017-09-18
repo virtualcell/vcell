@@ -380,7 +380,7 @@ private Collection<ExecutableCommand> getFVCommands() {
 		throw new UnsupportedOperationException(executableName + " does not support parallel");
 	}
 	String inputFilename = getInputFilename();
-	primaryCommand = new ExecutableCommand(true, false, executableName, inputFilename );
+	primaryCommand = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), true, false, executableName, inputFilename );
 	return Arrays.asList(primaryCommand);
 }
 
@@ -415,17 +415,20 @@ private Collection<ExecutableCommand> getChomboCommands() {
 	
 	if (isParallel) {
 		String parallelName = executableName + "parallel";
-		ExecutableCommand solve = new ExecutableCommand(true, true, parallelName, inputFilename );
+		ExecutableCommand solve = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), 
+														true, true, parallelName, inputFilename );
 		commands.add(solve);
 		ChomboSolverSpec css = sTaskDesc.getChomboSolverSpec();
 		Objects.requireNonNull(css);
 		if (css.isSaveVCellOutput()) {
-			ExecutableCommand convertChomboData = new ExecutableCommand(true, false,executableName, "-ccd", inputFilename );
+			ExecutableCommand convertChomboData = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), 
+																		true, false,executableName, "-ccd", inputFilename );
 			commands.add(convertChomboData);
 		}
 	}
 	else {
-		ExecutableCommand ec = new ExecutableCommand(true, false, executableName, inputFilename );
+		ExecutableCommand ec = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()),
+													true, false, executableName, inputFilename );
 		commands.add(ec);
 		primaryCommand = ec;
 	}

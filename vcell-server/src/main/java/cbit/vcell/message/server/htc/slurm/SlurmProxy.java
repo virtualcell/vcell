@@ -314,10 +314,6 @@ denied: job "6894" does not exist
 			lsb.append("#$ -v LD_LIBRARY_PATH=");
 			lsb.append(MPI_HOME+"/lib");
 			lsb.write(":"+ResourceUtil.getLocalSolversDirectory().getAbsolutePath());
-		}else{
-			lsb.append("export LD_LIBRARY_PATH=");
-			lsb.append(ResourceUtil.getLocalSolversDirectory().getAbsolutePath());
-			lsb.write(":$LD_LIBRARY_PATH");
 		}
 		lsb.newline();
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
@@ -346,7 +342,12 @@ denied: job "6894" does not exist
 			lsb.append("echo command = ");
 			lsb.write(cmd);
 
-			lsb.write(cmd);
+			lsb.write("(");
+			if (ec.getLdLibraryPath()!=null){
+				lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
+			}
+			lsb.write("    "+cmd);
+			lsb.write(")");
 			lsb.write("stat=$?");
 
 			lsb.append("echo ");
