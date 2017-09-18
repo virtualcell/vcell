@@ -33,7 +33,7 @@ public class SgeProxyTest {
 	
 	private void addExit(Container ctn) {
 		final String eToken = "yada-yada";
-		ExecutableCommand exitC = new ExecutableCommand("echo",eToken);
+		ExecutableCommand exitC = new ExecutableCommand(null,"echo",eToken);
 		exitC.setExitCodeToken(eToken);
 		ctn.add(exitC);
 		
@@ -42,10 +42,10 @@ public class SgeProxyTest {
 	@Test
 	public void tryIt( ) {
 		Container ctn = new ExecutableCommand.Container();
-		ExecutableCommand listdog = new ExecutableCommand("ls");
+		ExecutableCommand listdog = new ExecutableCommand(null,"ls");
 		listdog.addArgument("dog");
 		ctn.add(listdog);
-		ctn.add(new ExecutableCommand("wc","dog"));
+		ctn.add(new ExecutableCommand(null,"wc","dog"));
 		SgeProxy spProxy = new SgeProxy(null, "gerard");
 		String text = spProxy.generateScript("Q_3", ctn, 1, 10.0, null);
 		write("out.sh",text);
@@ -54,8 +54,8 @@ public class SgeProxyTest {
 	@Test
 	public void tryItWithExit( ) {
 		Container ctn = new ExecutableCommand.Container();
-		ctn.add(new ExecutableCommand("ls","dog"));
-		ctn.add(new ExecutableCommand("wc","dog"));
+		ctn.add(new ExecutableCommand(null,"ls","dog"));
+		ctn.add(new ExecutableCommand(null,"wc","dog"));
 		addExit(ctn);
 		
 		SgeProxy spProxy = new SgeProxy(null, "gerard");
@@ -66,7 +66,7 @@ public class SgeProxyTest {
 	@Test(expected=UnsupportedOperationException.class)
 	public void tryParallelBad( ) {
 		Container ctn = new ExecutableCommand.Container();
-		ctn.add(new ExecutableCommand(true,true,"wc","dog"));
+		ctn.add(new ExecutableCommand(null,true,true,"wc","dog"));
 		SgeProxy spProxy = new SgeProxy(null, "gerard");
 		spProxy.generateScript("Q_3", ctn, 1, 10.0, null);
 	}
@@ -74,8 +74,8 @@ public class SgeProxyTest {
 	@Test
 	public void tryParallel( ) {
 		Container ctn = new ExecutableCommand.Container();
-		ctn.add(new ExecutableCommand("ls","dog"));
-		ctn.add(new ExecutableCommand(true,true,"wc","dog"));
+		ctn.add(new ExecutableCommand(null,"ls","dog"));
+		ctn.add(new ExecutableCommand(null,true,true,"wc","dog"));
 		SgeProxy spProxy = new SgeProxy(null, "gerard");
 		String text = spProxy.generateScript("Q_3", ctn, 4, 10.0, null);
 		write("par.sh",text);
@@ -84,8 +84,8 @@ public class SgeProxyTest {
 	public void tryParallelExit( ) {
 		Container ctn = new ExecutableCommand.Container();
 		addExit(ctn);
-		ctn.add(new ExecutableCommand("ls","dog"));
-		ctn.add(new ExecutableCommand(true,true,"wc","dog"));
+		ctn.add(new ExecutableCommand(null,"ls","dog"));
+		ctn.add(new ExecutableCommand(null,true,true,"wc","dog"));
 		SgeProxy spProxy = new SgeProxy(null, "gerard");
 		String text = spProxy.generateScript("Q_3", ctn, 4, 10.0, null);
 		write("parexit.sh",text);

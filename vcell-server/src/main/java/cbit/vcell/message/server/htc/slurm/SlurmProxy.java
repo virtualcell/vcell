@@ -343,7 +343,9 @@ denied: job "6894" does not exist
 			lsb.write(cmd);
 
 			lsb.write("(");
-			lsb.write("    export LD_LIBRARY_PATH="+ResourceUtil.getLocalSolversDirectory().getAbsolutePath()+":$LD_LIBRARY_PATH");
+			if (ec.getLdLibraryPath()!=null){
+				lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
+			}
 			lsb.write("    "+cmd);
 			lsb.write(")");
 			lsb.write("stat=$?");

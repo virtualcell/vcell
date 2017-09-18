@@ -12,7 +12,7 @@ public class ExecutableCommandTest {
 	@Before
 	public void setup( ) {
 		ctn = new ExecutableCommand.Container();
-		ctn.add(new ExecutableCommand("hickory","dickory","dock"));
+		ctn.add(new ExecutableCommand(null,"hickory","dickory","dock"));
 		
 	}
 	@Test
@@ -28,14 +28,14 @@ public class ExecutableCommandTest {
 	@Test(expected=UnsupportedOperationException.class)
 	public void ecFunc( ) {
 		final String sToken = "jabberwockey";
-		ExecutableCommand ec = new ExecutableCommand("eenie","meenie", sToken);
+		ExecutableCommand ec = new ExecutableCommand(null,"eenie","meenie", sToken);
 		ec.setExitCodeToken(sToken);
 		String j = ec.getJoinedCommands("minie").trim( );
 		String expected = "eenie meenie minie";
 		assertTrue(expected.equals(j));
 		ctn.add(ec);
 		
-		ExecutableCommand nap = new ExecutableCommand("nap");
+		ExecutableCommand nap = new ExecutableCommand(null,"nap");
 		nap.setExitCodeToken("oops");
 		ctn.add(nap);
 		assertTrue(false);//should not get here

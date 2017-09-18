@@ -259,7 +259,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 
 	ExecutableCommand.Container commandContainer = new ExecutableCommand.Container( );
 	//the post processor command itself is neither messaging nor parallel; it's independent of the previous solver call
-	ExecutableCommand postprocessorCmd = new ExecutableCommand(false, false,
+	ExecutableCommand postprocessorCmd = new ExecutableCommand(null,false, false,
 			PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor),
 			simKey.toString(),
 			simOwner.getName(),
@@ -286,7 +286,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		}
 		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
 		//the pre-processor command itself is neither messaging nor parallel; it's independent of the subsequent solver call
-		ExecutableCommand preprocessorCmd = new ExecutableCommand(false, false,args);
+		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
 		commandContainer.add(preprocessorCmd);
 		
 		for (ExecutableCommand ec  : compiledSolver.getCommands()) {
@@ -308,7 +308,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		}
 
 	} else {
-		ExecutableCommand ec = new ExecutableCommand(false,false,
+		ExecutableCommand ec = new ExecutableCommand(null, false,false,
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable),
 				simTaskFilePath,
 				ResourceUtil.forceUnixPath(parallelDir.getAbsolutePath())
