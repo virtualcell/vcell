@@ -266,14 +266,14 @@ public String getVCML()
 	// the jump process will be written inside compartment brackets, therefore a "\t" is needed
 	buffer.append("\t"+VCML.ParticleJumpProcess+"\t"+getName()+" "+VCML.BeginBlock+"\n");
 	for (ParticleVariable particleVar : particles){
-		buffer.append("\t\t"+VCML.SelectedParticle+"\t"+particleVar.getName()+"\n");
+		buffer.append("\t\t"+VCML.SelectedParticle+"\t\t"+particleVar.getName()+"\n");
 	}
 	buffer.append("\t\t"+getParticleRateDefinition().getVCML()+";\n");
 	for(Action action : actions){
 		buffer.append(action.getVCML());
 	}
 	if (processSymmetryFactor!=null){
-		buffer.append("\t\t"+VCML.ProcessSymmetryFactor+"\n"+this.processSymmetryFactor.getFactor()+"\n");
+		buffer.append("\t\t"+VCML.ProcessSymmetryFactor+"\t\t"+this.processSymmetryFactor.getFactor()+"\n");
 	}
 	buffer.append("\t"+" "+VCML.EndBlock+"\n");
 //	if (this.processParticleMappings != null){

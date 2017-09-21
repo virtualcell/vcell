@@ -387,6 +387,7 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.ParticleSequence);
 		autoCompletionWords.add(VCML.SpeciesPatternLocation);
 		autoCompletionWords.add(VCML.ParticleMolecularTypePatternMatchLabel);
+		autoCompletionWords.add(VCML.ProcessSymmetryFactor);
 	
 		autoCompletionWords.add(VCML.VolumeParticleVariable);	
 		autoCompletionWords.add(VCML.MembraneParticleVariable);
@@ -405,6 +406,9 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.ParticleLocationX);
 		autoCompletionWords.add(VCML.ParticleLocationY);
 		autoCompletionWords.add(VCML.ParticleLocationZ);
+		autoCompletionWords.add(VCML.ParticleDriftX);
+		autoCompletionWords.add(VCML.ParticleDriftY);
+		autoCompletionWords.add(VCML.ParticleDriftZ);
 		
 		autoCompletionWords.add(VCML.PostProcessingBlock);
 		autoCompletionWords.add(VCML.ExplicitDataGenerator);
@@ -684,6 +688,7 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.ParticleSequence);
 		keywords.add(VCML.SpeciesPatternLocation);
 		keywords.add(VCML.ParticleMolecularTypePatternMatchLabel);
+		keywords.add(VCML.ProcessSymmetryFactor);
 
 		keywords.add(VCML.VolumeParticleVariable);
 		keywords.add(VCML.MembraneParticleVariable);
@@ -701,6 +706,9 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.ParticleLocationY);
 		keywords.add(VCML.ParticleLocationZ);
 		keywords.add(VCML.ParticleDiffusion);
+		keywords.add(VCML.ParticleDriftX);
+		keywords.add(VCML.ParticleDriftY);
+		keywords.add(VCML.ParticleDriftZ);
 		
 		keywords.add(VCML.PostProcessingBlock);
 		keywords.add(VCML.ExplicitDataGenerator);
