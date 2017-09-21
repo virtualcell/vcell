@@ -426,7 +426,7 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 		try {
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml));
 			SimulationContext simContext = bioModel.getSimulationContext(applicationName);
-			SBMLExporter exporter = new SBMLExporter(simContext,3,1,true);
+			SBMLExporter exporter = new SBMLExporter(simContext,3,1,simContext.getGeometry().getDimension()>0);
 			VCellSBMLDoc sbmlDoc = exporter.convertToSBML();
 			return sbmlDoc.xmlString;
 		} catch (SBMLException | XmlParseException | SbmlException | XMLStreamException e) {
