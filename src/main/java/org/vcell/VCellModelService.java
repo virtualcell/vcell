@@ -3,6 +3,9 @@ package org.vcell;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,11 +60,15 @@ public class VCellModelService {
 			    		ApplicationRepresentation[] applicationReps = biomodelRep.getApplications();
 			    		if (applicationReps.length > 0) {
 			    			String vcml = getVCML(biomodelRep);
-			    			SBMLDocument sbml = vCellService.getSBML(vcml, applicationReps[0].getName());
-			    			VCellModel vCellModel = new VCellModel(biomodelRep.getName(), biomodelRep.getBmKey(), sbml);
-			    			vCellModels.add(vCellModel);
-			    			modelsLoaded++;
-			    			setProgress(modelsLoaded * 100 / modelsToLoad);
+			    			if (vcml!=null){
+				    			SBMLDocument sbml = vCellService.getSBML(vcml, applicationReps[0].getName());
+				    			VCellModel vCellModel = new VCellModel(biomodelRep.getName(), biomodelRep.getBmKey(), sbml);
+				    			vCellModels.add(vCellModel);
+				    			modelsLoaded++;
+				    			setProgress(modelsLoaded * 100 / modelsToLoad);
+			    			}else{
+			    				System.err.println("failed to return VCML for "+biomodelRep.bmKey);
+			    			}
 			    		}
 			    	}
 			    	
@@ -98,19 +105,32 @@ public class VCellModelService {
     	return task;
     }
     
-    private String getVCML(BiomodelRepresentation biomodelRep) throws ClientProtocolException, IOException {
-    	CloseableHttpClient httpClient = HttpClients.createDefault();
-    	HttpGet httpGet = new HttpGet("https://" + HOST + ":" + PORT + "/biomodel/" + biomodelRep.getBmKey() + "/biomodel.vcml");
-    	System.out.println("About to execute");
-    	CloseableHttpResponse response = httpClient.execute(httpGet);
-    	System.out.println("Execution completed");
+    private String getVCML(BiomodelRepresentation biomodelRep) {
     	try {
-    		HttpEntity entity = response.getEntity();
-//        	entity.writeTo(System.out);
-        	EntityUtils.consume(entity);
-    	} finally {
-    		response.close();
-    	}
-    	return null;
+			VCellApiClient client = new VCellApiClient(HOST,PORT,"12345",true,true);
+			try {
+				String vcml = client.getBioModelVCML(biomodelRep.getBmKey());
+				return vcml;
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to retrieve VCML for biomodel key "+biomodelRep.getBmKey(),e);
+			}
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			e.printStackTrace();
+			throw new RuntimeException("failed to connect to vcellAPI",e);
+		}
+//    	VCellApiClient.CloseableHttpClient httpClient = HttpClients.createDefault();
+//    	HttpGet httpGet = new HttpGet("https://" + HOST + ":" + PORT + "/biomodel/" + biomodelRep.getBmKey() + "/biomodel.vcml");
+//    	System.out.println("About to execute");
+//    	CloseableHttpResponse response = httpClient.execute(httpGet);
+//    	System.out.println("Execution completed");
+//    	try {
+//    		HttpEntity entity = response.getEntity();
+////        	entity.writeTo(System.out);
+//        	EntityUtils.consume(entity);
+//    	} finally {
+//    		response.close();
+//    	}
+//    	return null;
     }
 }
