@@ -48,6 +48,9 @@ import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.ConsoleCapture;
 import org.vcell.util.logging.Logging;
+import org.vcell.vcellij.SimulationServiceImpl;
+import org.vcell.vcellij.VCellIJServer;
+import org.vcell.vcellij.api.SimulationService;
 
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
@@ -325,8 +328,9 @@ public static void main(java.lang.String[] args) {
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}
-		//CondaSupport.installInBackground();
-
+		
+		SimulationService.Iface simService = new SimulationServiceImpl();
+		VCellIJServer.startVCellVisitDataServerThread(simService, false);
 
 	} catch (Throwable exception) {
 		ErrorUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(),csInfo.toString()+"\nvcell startup failed\n\n" + exception.getMessage());

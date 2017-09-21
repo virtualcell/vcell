@@ -187,6 +187,18 @@ public class VCellApiClient {
 		return biomodelRep;
 	}
 	
+	public String getBioModelVCML(String bmId) throws IOException {
+		  
+		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/biomodel.vcml");
+		
+		System.out.println("Executing request to retrieve biomodel " + httpget.getRequestLine());
+
+		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String vcml = responseBody;
+
+		return vcml;
+	}
+	
 	public SimulationRepresentation getSimulation(String bmId, String simKey) throws IOException {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey);

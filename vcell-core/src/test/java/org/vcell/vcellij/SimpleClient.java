@@ -43,7 +43,7 @@ public class SimpleClient {
 
     private static void perform(SimulationService.Client client) throws TException, IOException, XMLStreamException
     {
-    	File sbmlSpatialFile = new File("optoPlexin_PRG_rule_based.xml");
+    	File sbmlSpatialFile = new File("../exampleModels/optoPlexin_PRG_rule_based.xml");
 //    	File sbmlSpatialFile = new File("Solver_Suite_6_2.xml");
     	SBMLDocument doc = new SBMLReader().readSBML(sbmlSpatialFile);
     	SBMLModel model = new SBMLModel();
