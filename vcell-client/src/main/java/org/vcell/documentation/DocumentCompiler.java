@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -727,27 +728,7 @@ public class DocumentCompiler {
 	}
 	
 	public static String getHelpRelativePath(File sourceDir, File targetFile) throws IOException {
-		int counter = 0;
-		while (sourceDir!=null && !targetFile.getPath().startsWith(sourceDir.getPath())){
-			sourceDir = sourceDir.getParentFile();
-			counter++;
-		}
-		if (sourceDir==null){
-				throw new IOException("sourceDir can not be null"); 
-		}
-		String sourcePath = sourceDir.getPath();
-		String targetPath = targetFile.getPath().replace(sourcePath,"");
-		String prefix = "";
-		for (int i=0;i<counter;i++){
-			prefix = prefix + ".." + File.separator;
-		}
-		targetPath = prefix+(targetPath.charAt(0) == '\\' ? targetPath.substring(1) : targetPath);
-		targetPath = targetPath.replace("\\", "/");
-		if(targetPath.startsWith("/"))
-		{
-			targetPath = targetPath.substring(1);
-		}
-		return targetPath;
+		return Paths.get(sourceDir.getPath()).relativize(Paths.get(targetFile.getPath())).toString();
 	}
 
 	
