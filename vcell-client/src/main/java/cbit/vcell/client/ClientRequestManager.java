@@ -90,6 +90,7 @@ import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.sedml.gui.SEDMLChooserPanel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -1540,6 +1541,24 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 								}});
 							if(dirFiles.length == 0){
 								throw new Exception("No valid files in selected directory");
+							}
+							String fileExt0 = null;
+							for (int i = 0; i < dirFiles.length; i++) {
+								int lastDot = dirFiles[i].getName().lastIndexOf('.');
+								String fileExt = (lastDot != -1?dirFiles[i].getName().substring(lastDot):null);
+								if(dirFiles[i].isDirectory()){
+									fileExt = "dir";
+								}
+								if(i == 0){
+									fileExt0 = fileExt;
+								}else if(!Compare.isEqualOrNull(fileExt, fileExt0)){
+									String result = DialogUtils.showWarningDialog(requester.getComponent(),"Files in '"+imageFile.getAbsolutePath()+"' have different name extensions, continue?",new String[] {"OK","Cancel"},"Cancel");
+									if(!"OK".equals(result)){
+										throw UserCancelException.CANCEL_FILE_SELECTION;
+									}
+									break;
+								}
+								
 							}
 							hashTable.put(IMPORT_SOURCE_NAME,"Directory: "+imageFile.getAbsolutePath());
 							origImageSizeInfo = ImageDatasetReaderService.getInstance().getImageDatasetReader().getImageSizeInfo(dirFiles[0].getAbsolutePath(),dirFiles.length);

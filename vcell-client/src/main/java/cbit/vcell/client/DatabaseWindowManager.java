@@ -1042,7 +1042,7 @@ public static File showFileChooserDialog(TopLevelWindowManager requester, final 
         File selectedFile = fileChooser.getSelectedFile();
         //reset the user preference for the default path, if needed.
         File newPath = selectedFile.getParentFile();
-        if (!newPath.equals(defaultPath)) {
+        if (newPath != null && !newPath.equals(defaultPath)) {
 			if(currentUserPreferences != null){
 				currentUserPreferences.setCurrentDialogPath(newPath);
 			}
