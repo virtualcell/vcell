@@ -16,9 +16,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.Enumeration;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
+import javax.help.Map.ID;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -84,6 +86,20 @@ public class VcellHelpViewer extends JPanel
 			// create helpset
 			hs = new HelpSet(cl, resourceURL);
 			JHelp jhelp = new JHelp(hs);
+			
+			if(hs.getLocalMap() != null){//Try so set generaloverview as the currently selected
+				Enumeration<ID> jhIDs = hs.getLocalMap().getAllIDs();
+				while(jhIDs != null && jhIDs.hasMoreElements()){
+					ID id = jhIDs.nextElement();
+//					System.out.println(id.getIDString());
+					if(id.getIDString().equals("GeneralOverview")){//TOC item
+						jhelp.setCurrentID(id);
+//						hs.setHomeID(id.getIDString());
+						break;
+					}
+				}				
+			}
+			
 			setLayout(new BorderLayout());
 			add(jhelp);
 			BeanUtils.addCloseWindowKeyboardAction(this);
