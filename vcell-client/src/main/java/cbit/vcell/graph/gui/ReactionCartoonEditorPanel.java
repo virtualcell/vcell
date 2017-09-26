@@ -57,6 +57,8 @@ import cbit.vcell.model.Model;
 @SuppressWarnings("serial")
 public class ReactionCartoonEditorPanel extends JPanel implements ActionListener {
 	public static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(10,0);
+	public static final Dimension NARROW_SEPARATOR_SIZE = new Dimension(2,0);
+	public static final Dimension WIDE_SEPARATOR_SIZE = new Dimension(15,0);
 	public static final String PROPERTY_NAME_FLOATING = "Floating";
 	public static final Dimension TOOL_BAR_BUTTON_SIZE = new Dimension(28, 28);
 	private GraphPane graphPane = null;
@@ -70,6 +72,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	protected List<JToolBarToggleButton> viewButtons = null;
 	private ButtonGroup modeButtonGroup = new ButtonGroup();
 	private ButtonGroup viewButtonGroup = new ButtonGroup();
+	
+	protected List<JToolBarToggleButton> sizeOptionsButtons = null;
+	private ButtonGroup sizeOptionsButtonGroup = new ButtonGroup();
+	
 	private JScrollPane scrollPane = null;
 	protected ViewPortStabilizer viewPortStabilizer = null;
 	private JButton annealLayoutButton = null;
@@ -115,11 +121,17 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	public void actionPerformed(ActionEvent event) {
 		try {
 			Object source = event.getSource();
-			if (getModeButtons().contains(source))
+			if (getModeButtons().contains(source)) {
 				getReactionCartoonTool().setModeString(event.getActionCommand());
-			else if (getViewButtons().contains(source)) {
+			} else if (getViewButtons().contains(source)) {
 				String command = event.getActionCommand();
 				setViewMode(command);
+			} else if (getSizeOptionsButtons().contains(source)) {
+				String command = event.getActionCommand();
+				setSizeMode(command);
+			} else if(source == getHighlightCatalystsButton()) {
+				currentReactionCartoon.setHighlightCatalystMode(getHighlightCatalystsButton().isSelected() ? true : false);
+				currentReactionCartoon.refreshAll();
 			}
 			else if (source == getRandomLayoutButton())
 				getReactionCartoonTool().layout(RandomLayouter.LAYOUT_NAME);
@@ -336,6 +348,14 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getUngroupButton(), getUngroupButton().getName());
 				toolBar.add(getGroupMoleculeButton(), getGroupMoleculeButton().getName());
 //				toolBar.add(getGroupRuleButton(), getGroupRuleButton().getName());
+				
+				toolBar.addSeparator(WIDE_SEPARATOR_SIZE);
+				toolBar.add(getHighlightCatalystsButton(), getHighlightCatalystsButton().getName());
+				toolBar.addSeparator(NARROW_SEPARATOR_SIZE);
+				toolBar.add(getEqualSizeButton(), getEqualSizeButton().getName());
+				toolBar.add(getSizeByWeightButton(), getSizeByWeightButton().getName());
+				toolBar.add(getSizeByLengthButton(), getSizeByLengthButton().getName());
+
 				toolBar.add(Box.createHorizontalGlue());
 				toolBar.add(getFloatRequestButton());
 			} catch (Throwable throwable) {
@@ -506,6 +526,15 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		}
 		return viewButtons;
 	}
+	protected List<JToolBarToggleButton> getSizeOptionsButtons() {
+		if(sizeOptionsButtons == null) {
+			sizeOptionsButtons = new ArrayList<JToolBarToggleButton>();
+			sizeOptionsButtons.add(getEqualSizeButton());
+			sizeOptionsButtons.add(getSizeByWeightButton());
+			sizeOptionsButtons.add(getSizeByLengthButton());
+		}
+		return sizeOptionsButtons;
+	}
 	
 	private JToolBarToggleButton createModeButton(String name, String toolTip, Mode mode, Icon icon) {
 		JToolBarToggleButton button = new JToolBarToggleButton();
@@ -608,6 +637,65 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		}
 		return floatRequestButton;
 	}
+// ------------------------------------------------------------------------------------
+
+	private JToolBarToggleButton highlightCatalystsButton = null;
+	private JToolBarToggleButton getHighlightCatalystsButton() {
+		if (highlightCatalystsButton == null) {
+			try {
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				HighlightCatalystShapeIcon.setStructureToolMod(button);
+				button.setActionCommand(Mode.HIGHLIGHTCATALYST.getActionCommand());
+				highlightCatalystsButton = button;
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return highlightCatalystsButton;
+	}
+	private JToolBarToggleButton equalSizeButton = null;
+	private JToolBarToggleButton getEqualSizeButton() {
+		if (equalSizeButton == null) {
+			try {
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				SpeciesSizeShapeIcon.setStructureToolMod(button);
+				button.setActionCommand(Mode.EQUALSIZE.getActionCommand());
+				equalSizeButton = button;
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return equalSizeButton;
+	}
+	private JToolBarToggleButton sizeByWeightButton = null;
+	private JToolBarToggleButton getSizeByWeightButton() {
+		if (sizeByWeightButton == null) {
+			try {
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				SpeciesSizeShapeIcon.setStructureToolMod(button);
+				button.setActionCommand(Mode.SIZEBYWEIGHT.getActionCommand());
+				sizeByWeightButton = button;
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return sizeByWeightButton;
+	}
+	private JToolBarToggleButton sizeByLengthButton = null;
+	private JToolBarToggleButton getSizeByLengthButton() {
+		if (sizeByLengthButton == null) {
+			try {
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				SpeciesSizeShapeIcon.setStructureToolMod(button);
+				button.setActionCommand(Mode.SIZEBYLENGTH.getActionCommand());
+				sizeByLengthButton = button;
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return sizeByLengthButton;
+	}
+
 
 	// TODO centralize exception handling
 	private void handleException(Throwable exception) {
@@ -639,6 +727,12 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		getShrinkCanvasButton().addActionListener(this);
 		getExpandCanvasButton().addActionListener(this);
 		getFloatRequestButton().addActionListener(this);
+		
+		getHighlightCatalystsButton().addActionListener(this);
+		for(JToolBarToggleButton sizeButton : getSizeOptionsButtons()) {
+			sizeButton.addActionListener(this);
+		}
+
 	}
 
 	private void initialize() {
@@ -664,6 +758,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			modeButtonGroup.add(getStructureButton());
 			viewButtonGroup.add(getUngroupButton());
 			viewButtonGroup.add(getGroupMoleculeButton());
+			sizeOptionsButtonGroup.add(getEqualSizeButton());
+			sizeOptionsButtonGroup.add(getSizeByWeightButton());
+			sizeOptionsButtonGroup.add(getSizeByLengthButton());
+			
 //			viewButtonGroup.add(getGroupRuleButton());
 			getReactionCartoonTool().setReactionCartoon(currentReactionCartoon);
 			getReactionCartoonTool().setGraphPane(getGraphPane());
@@ -674,6 +772,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 //			getGraphPane().setGraphModel(reactionCartoonRule);
 			getGraphPane().setGraphModel(currentReactionCartoon);
 			refreshButtons();
+			ButtonModel m = getEqualSizeButton().getModel();
+			sizeOptionsButtonGroup.setSelected(m, true);
 //			setViewMode(Mode.GROUP.getActionCommand());
 		} catch (Throwable throwable) {
 			handleException(throwable);
@@ -749,6 +849,18 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			currentReactionCartoon.refreshAll();
 			currentReactionCartoon.setSelectedObjects(new Object[] {});
 		}
+	}
+	
+	private void setSizeMode(String command) {
+		System.out.println("ReactionCartoonEditorPanel, setSizeMode");
+		if(command.equalsIgnoreCase(Mode.EQUALSIZE.getActionCommand())) {
+			currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.normal);
+		} else if(command.equalsIgnoreCase(Mode.SIZEBYWEIGHT.getActionCommand())) {
+			currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.weight);
+		} else if(command.equalsIgnoreCase(Mode.SIZEBYLENGTH.getActionCommand())) {
+			currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.length);
+		}
+		currentReactionCartoon.refreshAll();
 	}
 
 	public static void main(String[] args) {

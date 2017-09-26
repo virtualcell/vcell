@@ -2,8 +2,10 @@ package cbit.vcell.graph;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import cbit.gui.graph.GraphEvent;
@@ -188,7 +190,8 @@ public class ReactionCartoonMolecule extends ReactionCartoon {
 		diagram.setNodeReferences(mode, nodeList);
 	}
 
-	protected void refreshAll(boolean transitioning) {
+	@Override
+	protected void refreshAll(boolean reallocateShapes) {
 		try {
 			if (getModel() == null || getStructureSuite() == null) {
 				return;
@@ -202,6 +205,30 @@ public class ReactionCartoonMolecule extends ReactionCartoon {
 					rebindAll(diagram);
 				}				
 			}
+			// calculate species context weight (number of reactions for which it's a participant)
+			Map<SpeciesContext, Integer> scWeightMap = new HashMap<>();
+			Set<SpeciesContext> scCatalystSet = new HashSet<>();			// all the species contexts that are catalysts
+			// calculate species context length (number of species patterns it contains, 1 if has no species patterns)
+			for(ReactionStep rs : getModel().getReactionSteps()) {
+				ReactionParticipant[] rpList = rs.getReactionParticipants();
+				for(int i=0; i<rpList.length; i++) {
+					ReactionParticipant rp = rpList[i];
+					SpeciesContext sc = rp.getSpeciesContext();
+//					int increment = rp.getStoichiometry();
+					int increment = 1;
+					if(rp instanceof Catalyst) {
+						scCatalystSet.add(sc);
+					}
+					if(scWeightMap.containsKey(sc)) {
+						int weight = scWeightMap.get(sc);
+						weight += increment;
+						scWeightMap.put(sc, weight);
+					} else {
+						scWeightMap.put(sc, increment);
+					}
+				}
+			}
+
 			Set<Shape> unwantedShapes = new HashSet<Shape>();
 			Set<RuleParticipantSignature> unwantedSignatures = new HashSet<RuleParticipantSignature>();
 			unwantedShapes.addAll(getShapes());
@@ -269,6 +296,20 @@ public class ReactionCartoonMolecule extends ReactionCartoon {
 						reactionContainerShape.addChildShape(ss);
 						addShape(ss);
 						ss.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
+					}
+					if(speciesSizeOption == SpeciesSizeOptions.weight) {
+						Integer weight = scWeightMap.get(structSpeciesContext);		// this number sets the diameter of the shape
+						weight = Math.min(weight, 16);		// we cap the diameter of the shape to something reasonable
+						ss.setFilters(highlightCatalystOption ? scCatalystSet.contains(structSpeciesContext) : false, weight);
+					} else if(speciesSizeOption == SpeciesSizeOptions.length) {
+						Integer length = null;
+						if(structSpeciesContext.getSpeciesPattern() != null && !structSpeciesContext.getSpeciesPattern().getMolecularTypePatterns().isEmpty()) {
+							length = structSpeciesContext.getSpeciesPattern().getMolecularTypePatterns().size() * 2;
+							length = Math.min(length, 16);
+						}
+						ss.setFilters(highlightCatalystOption ? scCatalystSet.contains(structSpeciesContext) : false, length);
+					} else {
+						ss.setFilters(highlightCatalystOption ? scCatalystSet.contains(structSpeciesContext) : false, null);
 					}
 					structSpeciesContext.removePropertyChangeListener(this);
 					structSpeciesContext.addPropertyChangeListener(this);

@@ -190,7 +190,8 @@ public class ReactionCartoonRule extends ReactionCartoon {
 		diagram.setNodeReferences(mode, nodeList);	// add all to nodeRuleList
 	}
 	
-	protected void refreshAll(boolean transitioning) {
+	@Override
+	protected void refreshAll(boolean reallocateShapes) {
 		try {
 			if (getModel() == null || getStructureSuite() == null) {
 				return;

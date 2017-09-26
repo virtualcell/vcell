@@ -44,9 +44,12 @@ public class SpeciesContextShape extends ElipseShape {
 
 	private static final int SCS_LABEL_WIDTHPARM = 3;
 	private static final String SCS_LABEL_TRUCATED = "...";
+	
 	private String smallLabel = null;
 	protected Dimension smallLabelSize = new Dimension();
 	protected Point smallLabelPos = new Point(0,0);
+	private int circleDiameter = 14;		// 14 is the default value
+	private boolean isCatalyst = false;
 
 	private boolean bTruncateLabelName = true;
 	
@@ -68,6 +71,18 @@ public class SpeciesContextShape extends ElipseShape {
 	@Override
 	public VisualState createVisualState() { 
 		return new MutableVisualState(this, VisualState.PaintLayer.NODE); 
+	}
+	public void setFilters(boolean isCatalyst, Integer weight) {
+		if(isCatalyst == true) {
+			this.isCatalyst = true;
+		} else {
+			this.isCatalyst = false;
+		}
+		if(weight != null) {
+			circleDiameter = 14+weight;
+		} else {
+			circleDiameter = 14;
+		}
 	}
 
 	@Override
@@ -131,17 +146,16 @@ public class SpeciesContextShape extends ElipseShape {
 			isBound = true;
 		}
 		
-		int circleDiameter = 14;		// 14
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
 		int offsetX = (shapeWidth-circleDiameter) / 2;
 		int offsetY = (shapeHeight-circleDiameter) / 2;
 		Graphics2D g2D = g;
-		if (icon == null) {
+//		if (icon == null) {
 			icon = new Area();
 			icon.add(new Area(new Ellipse2D.Double(offsetX, offsetY,circleDiameter,circleDiameter)));
 			//icon.add(new Area(new RoundRectangle2D.Double(offsetX, offsetY,circleDiameter,circleDiameter,circleDiameter/2,circleDiameter/2)));
-		}
+//		}
 		Area movedIcon = icon.createTransformedArea(
 			AffineTransform.getTranslateInstance(absPosX, absPosY));
 
@@ -149,6 +163,9 @@ public class SpeciesContextShape extends ElipseShape {
 			defaultBG = java.awt.Color.green;
 		} else {
 			defaultBG = java.awt.Color.blue;
+		}
+		if(isCatalyst == true) {
+			defaultBG = java.awt.Color.magenta;
 		}
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();

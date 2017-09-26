@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.graph;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -171,6 +172,14 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 
 	@Override
 	public void paintSelf(Graphics2D g2D, int parentOffsetX, int parentOffsetY) {
+		if(startShape.isSelected()) {
+			forgroundColor = Color.red.darker();
+		} else {
+			forgroundColor = Color.black;
+		}
+		if(isSelected()) {
+			forgroundColor = Color.red;
+		}
 		// draw cubic spline with horizontal reactant-end (p' = 0) at reaction
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		CubicCurve2D.Double cubicCurve = getCurve();

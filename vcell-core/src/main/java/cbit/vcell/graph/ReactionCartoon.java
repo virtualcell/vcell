@@ -35,8 +35,14 @@ public abstract class ReactionCartoon extends ModelCartoon {
 		ANALYSISFAILED
 	}
 	
+	public enum SpeciesSizeOptions {
+		normal, weight, length
+	}
+	
 	protected StructureSuite structureSuite = null;
 	protected Set<RuleParticipantSignature> ruleParticipantSignatures = new HashSet<>();
+	protected SpeciesSizeOptions speciesSizeOption = SpeciesSizeOptions.normal;
+	protected boolean highlightCatalystOption = false;
 	
 	public ReactionCartoon() {
 		containerLayout = new GraphContainerLayoutReactions();
@@ -44,6 +50,13 @@ public abstract class ReactionCartoon extends ModelCartoon {
 
 	public StructureSuite getStructureSuite() {
 		return structureSuite;
+	}
+	
+	public void setSizeMode(SpeciesSizeOptions speciesSizeOption) {
+		this.speciesSizeOption = speciesSizeOption;
+	}
+	public void setHighlightCatalystMode(boolean highlightCatalystOption) {
+		this.highlightCatalystOption = highlightCatalystOption;
 	}
 	
 	protected abstract GroupingCriteria getRuleParticipantGroupingCriteria();

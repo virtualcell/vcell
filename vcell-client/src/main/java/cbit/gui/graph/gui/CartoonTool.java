@@ -75,7 +75,9 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		LINEDIRECTED("lineDirected"), LINECATALYST("lineCatalyst"), STEP("step"), FLUX("flux"), 
 		SPLINE("spline"), ADDCP("addCP"), COMPLEX("complex"), BINDINGSITE("bindingSite"), 
 		INTERACTION("interaction"),STRUCTURE("structure"),
-		GROUPMOLECULE("groupmolecule"),GROUPRULE("grouprule"),UNGROUP("ungroup");
+		GROUPMOLECULE("groupmolecule"), GROUPRULE("grouprule"), UNGROUP("ungroup"),
+		HIGHLIGHTCATALYST("highlightCatalyst"),
+		EQUALSIZE("equalSize"), SIZEBYWEIGHT("sizeByWeight"), SIZEBYLENGTH("sizeByLength");
 	protected final String actionCommand;
 	private Mode(String actionCommand) { this.actionCommand = actionCommand; }
 	public String getActionCommand() { return actionCommand; }
