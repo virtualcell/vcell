@@ -32,6 +32,7 @@ import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.VolumeRegionObject;
+import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
@@ -578,12 +579,17 @@ private VCUnitDefinition getLengthPerTimeUnit() {
 public void initializeForSpatial() {
 	if(getDiffusionParameter() != null && getDiffusionParameter().getExpression() != null && getDiffusionParameter().getExpression().isZero()) {
 		Expression e = null;
+		ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
+		VCUnitDefinition micronsqpersecond = modelUnitSystem.getInstance("um2.s-1");
 		if(speciesContext.getStructure() instanceof Feature) {
-			e = new Expression(10.0);
+			RationalNumber rn = RationalNumber.getApproximateFraction(micronsqpersecond.convertTo(10, getDiffusionParameter().getUnitDefinition()));
+			e = new Expression(rn.doubleValue());
 		} else if(speciesContext.getStructure() instanceof Membrane) {
-			e = new Expression(0.1);
+			RationalNumber rn = RationalNumber.getApproximateFraction(micronsqpersecond.convertTo(0.1, getDiffusionParameter().getUnitDefinition()));
+			e = new Expression(rn.doubleValue());
 		} else {
-			e = new Expression(1.0);
+			RationalNumber rn = RationalNumber.getApproximateFraction(micronsqpersecond.convertTo(1.0, getDiffusionParameter().getUnitDefinition()));
+			e = new Expression(rn.doubleValue());
 		}
 		try {
 			getDiffusionParameter().setExpression(e);
