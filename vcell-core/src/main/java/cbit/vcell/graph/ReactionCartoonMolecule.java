@@ -214,7 +214,6 @@ public class ReactionCartoonMolecule extends ReactionCartoon {
 				for(int i=0; i<rpList.length; i++) {
 					ReactionParticipant rp = rpList[i];
 					SpeciesContext sc = rp.getSpeciesContext();
-//					int increment = rp.getStoichiometry();
 					int increment = 1;
 					if(rp instanceof Catalyst) {
 						scCatalystSet.add(sc);
@@ -299,7 +298,9 @@ public class ReactionCartoonMolecule extends ReactionCartoon {
 					}
 					if(speciesSizeOption == SpeciesSizeOptions.weight) {
 						Integer weight = scWeightMap.get(structSpeciesContext);		// this number sets the diameter of the shape
-						weight = Math.min(weight, 16);		// we cap the diameter of the shape to something reasonable
+						if(weight != null) {
+							weight = Math.min(weight, 16);		// we cap the diameter of the shape to something reasonable
+						}
 						ss.setFilters(highlightCatalystOption ? scCatalystSet.contains(structSpeciesContext) : false, weight);
 					} else if(speciesSizeOption == SpeciesSizeOptions.length) {
 						Integer length = null;

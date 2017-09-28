@@ -9,7 +9,11 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.Icon;
 
@@ -20,77 +24,84 @@ import cbit.vcell.graph.SpeciesPatternLargeShape;
 public class SpeciesSizeShapeIcon implements Icon {
 
 	private enum State { normal, selected };
+	public enum Kind { equal, weight, length };
 
 	private final State state;
-	private final int diameter;
+	private final Kind kind;
+	private final int diameter;	// keep for historic reasons, we have no circle in this implementation
 
-	public SpeciesSizeShapeIcon(State state) {
+	public SpeciesSizeShapeIcon(State state, Kind kind) {
 		super();
 		this.state = state;
+		this.kind = kind;
 		this.diameter = 20;		// recommended value
 	}
-	// at diameters different from 20, the smaller circle won't be centered inside the larger circle
-	// value for smaller icons should be at least 16
-	public SpeciesSizeShapeIcon(int diameter) {
-		super();
-		this.state = State.normal;
-		this.diameter = diameter;
+	
+	public class DoubleArrow extends Path2D.Double {
+		public DoubleArrow(int x, int y, double h) {
+			moveTo(x, y);
+			lineTo(x, y+h);
+			moveTo(x, y);
+			lineTo(x-3, y+4);
+			moveTo(x, y);
+			lineTo(x+3, y+4);
+			moveTo(x, y+h);
+			lineTo(x-3, y+h-4);
+			moveTo(x, y+h);
+			lineTo(x+3, y+h-4);
+		}
 	}
 	
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
-
 		if(c == null) {
 			return;
 		}
-		
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
 		Stroke strokeOld = g2.getStroke();
 
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		Color c1, c2, c3;
-		int xx, yy;
-		
-		g2.setStroke(new BasicStroke(1.8f));
+		int offset;
 		if(state == State.normal) {
-			c1 = SpeciesPatternLargeShape.componentBad.darker();
-			c2 = Color.black;
-			xx = x+1;
-			yy = y+1;
-		} else {		// button pressed
-			c1 = SpeciesPatternLargeShape.componentBad;
-			c2 = Color.red.darker().darker().darker();
-//			c2 = SpeciesPatternLargeShape.componentBad.darker().darker().darker();
-			xx = x+2;
-			yy = y+2;
+			offset = 0;
+		} else {
+			offset = 1;
 		}
-		double w = diameter-4;		// external red circle
-		double h = diameter-4;
-		Ellipse2D e1 = new Ellipse2D.Double(xx, yy, w, h);
-		GradientPaint gp1 = new GradientPaint(25, 25, c1, 35, 32, c2, true);
-		g2.setPaint(gp1);
-		g2.draw(e1);
+		int xx = x+1+offset;
+		int yy = y+1+offset;
+		double h = diameter-5;
 
 		g2.setStroke(new BasicStroke(1.6f));
-		if(state == State.normal) {
-			c1 = Color.black;
-			c2 = SpeciesPatternLargeShape.componentGreen.darker();
-			xx = x+5;
-			yy = y+5;
-		} else {		// button pressed
-			c1 = Color.green.darker().darker().darker();
-			c2 = SpeciesPatternLargeShape.componentGreen.darker();
-			xx = x+6;
-			yy = y+6;
+		g2.setPaint(Color.darkGray);
+		DoubleArrow arrow = new DoubleArrow(xx+13, yy, h);
+		g2.draw(arrow);
+
+		if(kind == Kind.equal) {
+			g2.setStroke(new BasicStroke(2.4f));
+			g2.setPaint(Color.magenta.darker().darker());
+			Line2D upper = new Line2D.Double(xx, yy+9, xx+7, yy+9);
+			g2.draw(upper);
+			Line2D lower = new Line2D.Double(xx, yy+13, xx+7, yy+13);
+			g2.draw(lower);
+		} else if(kind == Kind.weight) {
+			g2.setStroke(new BasicStroke(1.2f));
+			RoundRectangle2D rr = new RoundRectangle2D.Double(xx, yy+9, 7, 7, 2, 2);
+			g2.setPaint(Color.yellow);
+			g2.fill(rr);
+			g2.setPaint(Color.gray);
+			g2.draw(rr);
+		} else if(kind == Kind.length) {
+			g2.setStroke(new BasicStroke(1.5f));
+			g2.setPaint(Color.blue.darker());
+			Line2D upper = new Line2D.Double(xx-2, yy+9, xx+1, yy+9);
+			g2.draw(upper);
+			Line2D mid = new Line2D.Double(xx-2, yy+12, xx+4, yy+12);
+			g2.draw(mid);
+			Line2D lower = new Line2D.Double(xx-2, yy+15, xx+7, yy+15);
+			g2.draw(lower);
 		}
-		w = w/2;			// inner green circle
-		h = h/2;
-		Ellipse2D e2 = new Ellipse2D.Double(xx, yy, w, h);
-		GradientPaint gp2 = new GradientPaint(25, 25, c1, 28, 28, c2, true);
-		g2.setPaint(gp2);
-		g2.draw(e2);
 	
 		g2.setStroke(strokeOld);
 		g2.setColor(colorOld);
@@ -106,15 +117,27 @@ public class SpeciesSizeShapeIcon implements Icon {
 		return diameter;
 	}
 	
-	public static void setStructureToolMod(JToolBarToggleButton button) {
+	public static void setSpeciesSizeShapeMod(JToolBarToggleButton button, Kind kind) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new SpeciesSizeShapeIcon(State.normal);
-		Icon iconSelected = new SpeciesSizeShapeIcon(State.selected);
-		button.setName("StructureButton");
+		Icon iconNormal = new SpeciesSizeShapeIcon(State.normal, kind);
+		Icon iconSelected = new SpeciesSizeShapeIcon(State.selected, kind);
+		button.setName("SpeciesSizeButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);
 		button.setFocusPainted(false);
 		button.setFocusable(false);
-		button.setToolTipText("Structure Tool");
+		switch(kind) {
+		case equal:
+			button.setToolTipText("Equal size for all Species");
+			break;
+		case weight:
+			button.setToolTipText("Size based on number of reactions where Species is present");
+			break;
+		case length:
+			button.setToolTipText("Size based on number of molecules inside the Species");
+			break;
+		default:
+			break;
+		}
 	}
 }

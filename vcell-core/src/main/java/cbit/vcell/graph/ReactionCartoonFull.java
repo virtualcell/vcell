@@ -303,7 +303,9 @@ public class ReactionCartoonFull extends ReactionCartoon {
 					}
 					if(speciesSizeOption == SpeciesSizeOptions.weight) {
 						Integer weight = scWeightMap.get(structSpeciesContext);		// this number sets the diameter of the shape
-						weight = Math.min(weight, 16);		// we cap the diameter of the shape to something reasonable
+						if(weight != null) {
+							weight = Math.min(weight, 16);		// we cap the diameter of the shape to something reasonable
+						}
 						ss.setFilters(highlightCatalystOption ? scCatalystSet.contains(structSpeciesContext) : false, weight);
 					} else if(speciesSizeOption == SpeciesSizeOptions.length) {
 						Integer length = null;

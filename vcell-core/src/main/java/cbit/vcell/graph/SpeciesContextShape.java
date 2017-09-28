@@ -175,9 +175,9 @@ public class SpeciesContextShape extends ElipseShape {
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		Color exterior = !isBound && !isSelected()?darkerBackground:backgroundColor;
 //		Color interior = exterior.brighter().brighter();
-		Point2D center = new Point2D.Float(absPosX+circleDiameter/2, absPosY+circleDiameter/2);
+		Point2D center = new Point2D.Float(absPosX+circleDiameter*0.5f, absPosY+circleDiameter*0.5f);
 		float radius = circleDiameter*0.5f;
-		Point2D focus = new Point2D.Float(absPosX+circleDiameter/2-1, absPosY+circleDiameter/2-1);
+		Point2D focus = new Point2D.Float(absPosX+circleDiameter*0.4f, absPosY+circleDiameter*0.4f);
 		float[] dist = {0.1f, 1.0f};
 		Color[] colors = {Color.white, exterior};
 //		Color[] colors = {interior, exterior};

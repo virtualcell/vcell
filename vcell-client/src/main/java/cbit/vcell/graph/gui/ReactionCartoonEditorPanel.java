@@ -147,7 +147,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				viewPortStabilizer.saveViewPortPosition();
 				reactionCartoonFull.getResizeManager().zoomIn();	// we zoom all cartoons simultaneously
 				reactionCartoonMolecule.getResizeManager().zoomIn();
-				reactionCartoonRule.getResizeManager().zoomIn();
+//				reactionCartoonRule.getResizeManager().zoomIn();
 //				reactionCartoon.getResizeManager().zoomIn();		// we zoom only the current cartoon
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -159,7 +159,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				viewPortStabilizer.saveViewPortPosition();
 				reactionCartoonFull.getResizeManager().zoomOut();				
 				reactionCartoonMolecule.getResizeManager().zoomOut();				
-				reactionCartoonRule.getResizeManager().zoomOut();				
+//				reactionCartoonRule.getResizeManager().zoomOut();				
 //				reactionCartoon.getResizeManager().zoomOut();				
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -658,7 +658,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (equalSizeButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				SpeciesSizeShapeIcon.setStructureToolMod(button);
+				SpeciesSizeShapeIcon.setSpeciesSizeShapeMod(button, SpeciesSizeShapeIcon.Kind.equal);
 				button.setActionCommand(Mode.EQUALSIZE.getActionCommand());
 				equalSizeButton = button;
 			} catch (Throwable throwable) {
@@ -672,7 +672,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (sizeByWeightButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				SpeciesSizeShapeIcon.setStructureToolMod(button);
+				SpeciesSizeShapeIcon.setSpeciesSizeShapeMod(button, SpeciesSizeShapeIcon.Kind.weight);
 				button.setActionCommand(Mode.SIZEBYWEIGHT.getActionCommand());
 				sizeByWeightButton = button;
 			} catch (Throwable throwable) {
@@ -686,7 +686,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (sizeByLengthButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				SpeciesSizeShapeIcon.setStructureToolMod(button);
+				SpeciesSizeShapeIcon.setSpeciesSizeShapeMod(button, SpeciesSizeShapeIcon.Kind.length);
 				button.setActionCommand(Mode.SIZEBYLENGTH.getActionCommand());
 				sizeByLengthButton = button;
 			} catch (Throwable throwable) {
