@@ -1,6 +1,9 @@
 package org.vcell.vcellij;
 
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -40,7 +43,8 @@ public class VCellIJServer {
 
 		private static void startSimulationServer(SimulationService.Processor<SimulationServiceImpl> processor) {
 			try {
-				TServerTransport serverTransport = new TServerSocket(9091);
+				InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 9091);
+				TServerTransport serverTransport = new TServerSocket(inetSocketAddress);
 				TServer vcellProxyServer = new TSimpleServer(new TServer.Args(serverTransport).processor(processor));
 
 				System.out.println("Starting the VCell-ImageJ Data Server thread...");

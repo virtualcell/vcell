@@ -1,6 +1,9 @@
 package cbit.vcell.client.pyvcellproxy;
 
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -36,7 +39,8 @@ private static class VCellProxyThread extends Thread {
 
 private static void startSimpleVCellProxyServer(VCellProxy.Processor<VCellProxyHandler> processor) {
 	try {
-		TServerTransport serverTransport = new TServerSocket(9090);
+		InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 9090);
+		TServerTransport serverTransport = new TServerSocket(inetSocketAddress);
 		TServer vcellProxyServer = new TSimpleServer(new org.apache.thrift.server.TServer.Args(serverTransport).processor(processor));
 		
 		System.out.println("Starting the VCell-VisIt Data Server thread...");
