@@ -104,13 +104,13 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				processList.addAll(Arrays.asList(modelProcesses));
 			} else {
 				String lowerCaseSearchText = searchText.toLowerCase();	
-				for (ModelProcess process : modelProcesses){
+				for (ModelProcess process : modelProcesses) {
 					boolean bMatchRelationshipObj = false;
-					if (process instanceof ReactionStep){
+					if (process instanceof ReactionStep) {
 						ReactionStep reactionStep = (ReactionStep)process;
 						HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(reactionStep);
 						for(RelationshipObject relObj:relObjsHash){
-							if(relObj.getBioPaxObject() instanceof Entity){
+							if(relObj.getBioPaxObject() instanceof Entity) {
 								if(((Entity)relObj.getBioPaxObject()).getName().get(0).toLowerCase().contains(lowerCaseSearchText)){
 									bMatchRelationshipObj = true;
 									break;
@@ -118,8 +118,18 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 							}
 						}
 					}
-					if (bMatchRelationshipObj || process.containsSearchText(lowerCaseSearchText)){
-						processList.add(process);
+					if (bMatchRelationshipObj || process.containsSearchText(lowerCaseSearchText)) {
+						if(!processList.contains(process)) {
+							processList.add(process);
+						}
+					}
+					if (process instanceof ReactionStep) {
+						ModelProcessEquation mpe = new ModelProcessEquation(process, bioModel.getModel());
+						if(mpe.toString().toLowerCase().contains(lowerCaseSearchText)) {
+							if(!processList.contains(process)) {
+								processList.add(process);
+							}
+						}
 					}
 				}
 			}

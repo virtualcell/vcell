@@ -1203,7 +1203,6 @@ public boolean hasElectrical() {
 public boolean containsSearchText(String searchText){
 	String lowerCaseSearchText = searchText.toLowerCase();
 	if (getName().toLowerCase().contains(lowerCaseSearchText)
-//			|| new ReactionEquation(rs, bioModel.getModel()).toString().toLowerCase().contains(lowerCaseSearchText)
 			|| getStructure().getName().toLowerCase().contains(lowerCaseSearchText)
 			|| getKinetics().getKineticsDescription().getDescription().toLowerCase().contains(lowerCaseSearchText)) {
 			return true;
