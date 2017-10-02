@@ -1,5 +1,8 @@
 package org.vcell.vcellij;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
 import org.apache.thrift.server.TSimpleServer;
@@ -11,12 +14,12 @@ public class SimpleServer {
 
     public static SimulationServiceImpl handler;
 
-    public static SimulationService.Processor processor;
+    public static SimulationService.Processor<SimulationServiceImpl> processor;
 
     public static void main(String [] args) {
         try {
             handler = new SimulationServiceImpl();
-            processor = new SimulationService.Processor(handler);
+            processor = new SimulationService.Processor<SimulationServiceImpl>(handler);
 
             Runnable simple = new Runnable() {
                 public void run() {
@@ -30,9 +33,10 @@ public class SimpleServer {
         }
     }
 
-    public static void simple(SimulationService.Processor processor) {
+    public static void simple(SimulationService.Processor<SimulationServiceImpl> processor) {
         try {
-            TServerTransport serverTransport = new TServerSocket(9091);
+    		InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 9091);
+    		TServerTransport serverTransport = new TServerSocket(inetSocketAddress);
             TServer server = new TSimpleServer(new Args(serverTransport).processor(processor));
 
             System.out.println("Starting the simple server...");
