@@ -54,7 +54,10 @@ exception ThriftImageException {
 }
 
 service ImageDatasetService {
-	ImageSizeInfo getImageSizeInfo(1:string fileName, 2:int forceZSize) 
+	ImageSizeInfo getImageSizeInfo(1:string fileName) 
+				throws (1: ThriftImageException imageException);
+
+	ImageSizeInfo getImageSizeInfoForceZ(1:string fileName, 2:int forceZSize) 
 				throws (1: ThriftImageException imageException);
 
 	ImageDataset readImageDataset(1:string imageID) 
