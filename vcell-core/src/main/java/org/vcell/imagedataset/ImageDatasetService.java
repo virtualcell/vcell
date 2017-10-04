@@ -12,7 +12,9 @@ public class ImageDatasetService {
 
   public interface Iface {
 
-    public ImageSizeInfo getImageSizeInfo(java.lang.String fileName, int forceZSize) throws ThriftImageException, org.apache.thrift.TException;
+    public ImageSizeInfo getImageSizeInfo(java.lang.String fileName) throws ThriftImageException, org.apache.thrift.TException;
+
+    public ImageSizeInfo getImageSizeInfoForceZ(java.lang.String fileName, int forceZSize) throws ThriftImageException, org.apache.thrift.TException;
 
     public ImageDataset readImageDataset(java.lang.String imageID) throws ThriftImageException, org.apache.thrift.TException;
 
@@ -24,7 +26,9 @@ public class ImageDatasetService {
 
   public interface AsyncIface {
 
-    public void getImageSizeInfo(java.lang.String fileName, int forceZSize, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler) throws org.apache.thrift.TException;
+    public void getImageSizeInfo(java.lang.String fileName, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler) throws org.apache.thrift.TException;
+
+    public void getImageSizeInfoForceZ(java.lang.String fileName, int forceZSize, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler) throws org.apache.thrift.TException;
 
     public void readImageDataset(java.lang.String imageID, org.apache.thrift.async.AsyncMethodCallback<ImageDataset> resultHandler) throws org.apache.thrift.TException;
 
@@ -54,17 +58,16 @@ public class ImageDatasetService {
       super(iprot, oprot);
     }
 
-    public ImageSizeInfo getImageSizeInfo(java.lang.String fileName, int forceZSize) throws ThriftImageException, org.apache.thrift.TException
+    public ImageSizeInfo getImageSizeInfo(java.lang.String fileName) throws ThriftImageException, org.apache.thrift.TException
     {
-      send_getImageSizeInfo(fileName, forceZSize);
+      send_getImageSizeInfo(fileName);
       return recv_getImageSizeInfo();
     }
 
-    public void send_getImageSizeInfo(java.lang.String fileName, int forceZSize) throws org.apache.thrift.TException
+    public void send_getImageSizeInfo(java.lang.String fileName) throws org.apache.thrift.TException
     {
       getImageSizeInfo_args args = new getImageSizeInfo_args();
       args.setFileName(fileName);
-      args.setForceZSize(forceZSize);
       sendBase("getImageSizeInfo", args);
     }
 
@@ -79,6 +82,33 @@ public class ImageDatasetService {
         throw result.imageException;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getImageSizeInfo failed: unknown result");
+    }
+
+    public ImageSizeInfo getImageSizeInfoForceZ(java.lang.String fileName, int forceZSize) throws ThriftImageException, org.apache.thrift.TException
+    {
+      send_getImageSizeInfoForceZ(fileName, forceZSize);
+      return recv_getImageSizeInfoForceZ();
+    }
+
+    public void send_getImageSizeInfoForceZ(java.lang.String fileName, int forceZSize) throws org.apache.thrift.TException
+    {
+      getImageSizeInfoForceZ_args args = new getImageSizeInfoForceZ_args();
+      args.setFileName(fileName);
+      args.setForceZSize(forceZSize);
+      sendBase("getImageSizeInfoForceZ", args);
+    }
+
+    public ImageSizeInfo recv_getImageSizeInfoForceZ() throws ThriftImageException, org.apache.thrift.TException
+    {
+      getImageSizeInfoForceZ_result result = new getImageSizeInfoForceZ_result();
+      receiveBase(result, "getImageSizeInfoForceZ");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.imageException != null) {
+        throw result.imageException;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getImageSizeInfoForceZ failed: unknown result");
     }
 
     public ImageDataset readImageDataset(java.lang.String imageID) throws ThriftImageException, org.apache.thrift.TException
@@ -182,25 +212,57 @@ public class ImageDatasetService {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void getImageSizeInfo(java.lang.String fileName, int forceZSize, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler) throws org.apache.thrift.TException {
+    public void getImageSizeInfo(java.lang.String fileName, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getImageSizeInfo_call method_call = new getImageSizeInfo_call(fileName, forceZSize, resultHandler, this, ___protocolFactory, ___transport);
+      getImageSizeInfo_call method_call = new getImageSizeInfo_call(fileName, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class getImageSizeInfo_call extends org.apache.thrift.async.TAsyncMethodCall<ImageSizeInfo> {
       private java.lang.String fileName;
+      public getImageSizeInfo_call(java.lang.String fileName, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.fileName = fileName;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getImageSizeInfo", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getImageSizeInfo_args args = new getImageSizeInfo_args();
+        args.setFileName(fileName);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public ImageSizeInfo getResult() throws ThriftImageException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new java.lang.IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_getImageSizeInfo();
+      }
+    }
+
+    public void getImageSizeInfoForceZ(java.lang.String fileName, int forceZSize, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      getImageSizeInfoForceZ_call method_call = new getImageSizeInfoForceZ_call(fileName, forceZSize, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class getImageSizeInfoForceZ_call extends org.apache.thrift.async.TAsyncMethodCall<ImageSizeInfo> {
+      private java.lang.String fileName;
       private int forceZSize;
-      public getImageSizeInfo_call(java.lang.String fileName, int forceZSize, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public getImageSizeInfoForceZ_call(java.lang.String fileName, int forceZSize, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.fileName = fileName;
         this.forceZSize = forceZSize;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getImageSizeInfo", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        getImageSizeInfo_args args = new getImageSizeInfo_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getImageSizeInfoForceZ", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getImageSizeInfoForceZ_args args = new getImageSizeInfoForceZ_args();
         args.setFileName(fileName);
         args.setForceZSize(forceZSize);
         args.write(prot);
@@ -213,7 +275,7 @@ public class ImageDatasetService {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_getImageSizeInfo();
+        return (new Client(prot)).recv_getImageSizeInfoForceZ();
       }
     }
 
@@ -342,6 +404,7 @@ public class ImageDatasetService {
 
     private static <I extends Iface> java.util.Map<java.lang.String,  org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> getProcessMap(java.util.Map<java.lang.String, org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> processMap) {
       processMap.put("getImageSizeInfo", new getImageSizeInfo());
+      processMap.put("getImageSizeInfoForceZ", new getImageSizeInfoForceZ());
       processMap.put("readImageDataset", new readImageDataset());
       processMap.put("readImageDatasetChannels", new readImageDatasetChannels());
       processMap.put("readImageDatasetFromMultiFiles", new readImageDatasetFromMultiFiles());
@@ -364,7 +427,31 @@ public class ImageDatasetService {
       public getImageSizeInfo_result getResult(I iface, getImageSizeInfo_args args) throws org.apache.thrift.TException {
         getImageSizeInfo_result result = new getImageSizeInfo_result();
         try {
-          result.success = iface.getImageSizeInfo(args.fileName, args.forceZSize);
+          result.success = iface.getImageSizeInfo(args.fileName);
+        } catch (ThriftImageException imageException) {
+          result.imageException = imageException;
+        }
+        return result;
+      }
+    }
+
+    public static class getImageSizeInfoForceZ<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getImageSizeInfoForceZ_args> {
+      public getImageSizeInfoForceZ() {
+        super("getImageSizeInfoForceZ");
+      }
+
+      public getImageSizeInfoForceZ_args getEmptyArgsInstance() {
+        return new getImageSizeInfoForceZ_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public getImageSizeInfoForceZ_result getResult(I iface, getImageSizeInfoForceZ_args args) throws org.apache.thrift.TException {
+        getImageSizeInfoForceZ_result result = new getImageSizeInfoForceZ_result();
+        try {
+          result.success = iface.getImageSizeInfoForceZ(args.fileName, args.forceZSize);
         } catch (ThriftImageException imageException) {
           result.imageException = imageException;
         }
@@ -458,6 +545,7 @@ public class ImageDatasetService {
 
     private static <I extends AsyncIface> java.util.Map<java.lang.String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase,?>> getProcessMap(java.util.Map<java.lang.String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase, ?>> processMap) {
       processMap.put("getImageSizeInfo", new getImageSizeInfo());
+      processMap.put("getImageSizeInfoForceZ", new getImageSizeInfoForceZ());
       processMap.put("readImageDataset", new readImageDataset());
       processMap.put("readImageDatasetChannels", new readImageDatasetChannels());
       processMap.put("readImageDatasetFromMultiFiles", new readImageDatasetFromMultiFiles());
@@ -525,7 +613,72 @@ public class ImageDatasetService {
       }
 
       public void start(I iface, getImageSizeInfo_args args, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler) throws org.apache.thrift.TException {
-        iface.getImageSizeInfo(args.fileName, args.forceZSize,resultHandler);
+        iface.getImageSizeInfo(args.fileName,resultHandler);
+      }
+    }
+
+    public static class getImageSizeInfoForceZ<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, getImageSizeInfoForceZ_args, ImageSizeInfo> {
+      public getImageSizeInfoForceZ() {
+        super("getImageSizeInfoForceZ");
+      }
+
+      public getImageSizeInfoForceZ_args getEmptyArgsInstance() {
+        return new getImageSizeInfoForceZ_args();
+      }
+
+      public org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
+        final org.apache.thrift.AsyncProcessFunction fcall = this;
+        return new org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo>() { 
+          public void onComplete(ImageSizeInfo o) {
+            getImageSizeInfoForceZ_result result = new getImageSizeInfoForceZ_result();
+            result.success = o;
+            try {
+              fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
+            } catch (org.apache.thrift.transport.TTransportException e) {
+              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              fb.close();
+            } catch (java.lang.Exception e) {
+              _LOGGER.error("Exception writing to internal frame buffer", e);
+              onError(e);
+            }
+          }
+          public void onError(java.lang.Exception e) {
+            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
+            org.apache.thrift.TSerializable msg;
+            getImageSizeInfoForceZ_result result = new getImageSizeInfoForceZ_result();
+            if (e instanceof ThriftImageException) {
+              result.imageException = (ThriftImageException) e;
+              result.setImageExceptionIsSet(true);
+              msg = result;
+            } else if (e instanceof org.apache.thrift.transport.TTransportException) {
+              _LOGGER.error("TTransportException inside handler", e);
+              fb.close();
+              return;
+            } else if (e instanceof org.apache.thrift.TApplicationException) {
+              _LOGGER.error("TApplicationException inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = (org.apache.thrift.TApplicationException)e;
+            } else {
+              _LOGGER.error("Exception inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+            } catch (java.lang.Exception ex) {
+              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              fb.close();
+            }
+          }
+        };
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public void start(I iface, getImageSizeInfoForceZ_args args, org.apache.thrift.async.AsyncMethodCallback<ImageSizeInfo> resultHandler) throws org.apache.thrift.TException {
+        iface.getImageSizeInfoForceZ(args.fileName, args.forceZSize,resultHandler);
       }
     }
 
@@ -730,18 +883,15 @@ public class ImageDatasetService {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getImageSizeInfo_args");
 
     private static final org.apache.thrift.protocol.TField FILE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("fileName", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField FORCE_ZSIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("forceZSize", org.apache.thrift.protocol.TType.I32, (short)2);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new getImageSizeInfo_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new getImageSizeInfo_argsTupleSchemeFactory();
 
     public java.lang.String fileName; // required
-    public int forceZSize; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      FILE_NAME((short)1, "fileName"),
-      FORCE_ZSIZE((short)2, "forceZSize");
+      FILE_NAME((short)1, "fileName");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -758,8 +908,6 @@ public class ImageDatasetService {
         switch(fieldId) {
           case 1: // FILE_NAME
             return FILE_NAME;
-          case 2: // FORCE_ZSIZE
-            return FORCE_ZSIZE;
           default:
             return null;
         }
@@ -800,15 +948,11 @@ public class ImageDatasetService {
     }
 
     // isset id assignments
-    private static final int __FORCEZSIZE_ISSET_ID = 0;
-    private byte __isset_bitfield = 0;
     public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.FILE_NAME, new org.apache.thrift.meta_data.FieldMetaData("fileName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.FORCE_ZSIZE, new org.apache.thrift.meta_data.FieldMetaData("forceZSize", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32          , "int")));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getImageSizeInfo_args.class, metaDataMap);
     }
@@ -817,24 +961,19 @@ public class ImageDatasetService {
     }
 
     public getImageSizeInfo_args(
-      java.lang.String fileName,
-      int forceZSize)
+      java.lang.String fileName)
     {
       this();
       this.fileName = fileName;
-      this.forceZSize = forceZSize;
-      setForceZSizeIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public getImageSizeInfo_args(getImageSizeInfo_args other) {
-      __isset_bitfield = other.__isset_bitfield;
       if (other.isSetFileName()) {
         this.fileName = other.fileName;
       }
-      this.forceZSize = other.forceZSize;
     }
 
     public getImageSizeInfo_args deepCopy() {
@@ -844,8 +983,6 @@ public class ImageDatasetService {
     @Override
     public void clear() {
       this.fileName = null;
-      setForceZSizeIsSet(false);
-      this.forceZSize = 0;
     }
 
     public java.lang.String getFileName() {
@@ -872,29 +1009,6 @@ public class ImageDatasetService {
       }
     }
 
-    public int getForceZSize() {
-      return this.forceZSize;
-    }
-
-    public getImageSizeInfo_args setForceZSize(int forceZSize) {
-      this.forceZSize = forceZSize;
-      setForceZSizeIsSet(true);
-      return this;
-    }
-
-    public void unsetForceZSize() {
-      __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __FORCEZSIZE_ISSET_ID);
-    }
-
-    /** Returns true if field forceZSize is set (has been assigned a value) and false otherwise */
-    public boolean isSetForceZSize() {
-      return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __FORCEZSIZE_ISSET_ID);
-    }
-
-    public void setForceZSizeIsSet(boolean value) {
-      __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __FORCEZSIZE_ISSET_ID, value);
-    }
-
     public void setFieldValue(_Fields field, java.lang.Object value) {
       switch (field) {
       case FILE_NAME:
@@ -905,14 +1019,6 @@ public class ImageDatasetService {
         }
         break;
 
-      case FORCE_ZSIZE:
-        if (value == null) {
-          unsetForceZSize();
-        } else {
-          setForceZSize((java.lang.Integer)value);
-        }
-        break;
-
       }
     }
 
@@ -920,9 +1026,6 @@ public class ImageDatasetService {
       switch (field) {
       case FILE_NAME:
         return getFileName();
-
-      case FORCE_ZSIZE:
-        return getForceZSize();
 
       }
       throw new java.lang.IllegalStateException();
@@ -937,8 +1040,6 @@ public class ImageDatasetService {
       switch (field) {
       case FILE_NAME:
         return isSetFileName();
-      case FORCE_ZSIZE:
-        return isSetForceZSize();
       }
       throw new java.lang.IllegalStateException();
     }
@@ -967,15 +1068,6 @@ public class ImageDatasetService {
           return false;
       }
 
-      boolean this_present_forceZSize = true;
-      boolean that_present_forceZSize = true;
-      if (this_present_forceZSize || that_present_forceZSize) {
-        if (!(this_present_forceZSize && that_present_forceZSize))
-          return false;
-        if (this.forceZSize != that.forceZSize)
-          return false;
-      }
-
       return true;
     }
 
@@ -986,8 +1078,6 @@ public class ImageDatasetService {
       hashCode = hashCode * 8191 + ((isSetFileName()) ? 131071 : 524287);
       if (isSetFileName())
         hashCode = hashCode * 8191 + fileName.hashCode();
-
-      hashCode = hashCode * 8191 + forceZSize;
 
       return hashCode;
     }
@@ -1006,16 +1096,6 @@ public class ImageDatasetService {
       }
       if (isSetFileName()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fileName, other.fileName);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = java.lang.Boolean.valueOf(isSetForceZSize()).compareTo(other.isSetForceZSize());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetForceZSize()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.forceZSize, other.forceZSize);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -1047,10 +1127,6 @@ public class ImageDatasetService {
         sb.append(this.fileName);
       }
       first = false;
-      if (!first) sb.append(", ");
-      sb.append("forceZSize:");
-      sb.append(this.forceZSize);
-      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -1070,8 +1146,6 @@ public class ImageDatasetService {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bitfield = 0;
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -1104,14 +1178,6 @@ public class ImageDatasetService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // FORCE_ZSIZE
-              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.forceZSize = iprot.readI32();
-                struct.setForceZSizeIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -1132,9 +1198,6 @@ public class ImageDatasetService {
           oprot.writeString(struct.fileName);
           oprot.writeFieldEnd();
         }
-        oprot.writeFieldBegin(FORCE_ZSIZE_FIELD_DESC);
-        oprot.writeI32(struct.forceZSize);
-        oprot.writeFieldEnd();
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -1156,29 +1219,19 @@ public class ImageDatasetService {
         if (struct.isSetFileName()) {
           optionals.set(0);
         }
-        if (struct.isSetForceZSize()) {
-          optionals.set(1);
-        }
-        oprot.writeBitSet(optionals, 2);
+        oprot.writeBitSet(optionals, 1);
         if (struct.isSetFileName()) {
           oprot.writeString(struct.fileName);
-        }
-        if (struct.isSetForceZSize()) {
-          oprot.writeI32(struct.forceZSize);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getImageSizeInfo_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-        java.util.BitSet incoming = iprot.readBitSet(2);
+        java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           struct.fileName = iprot.readString();
           struct.setFileNameIsSet(true);
-        }
-        if (incoming.get(1)) {
-          struct.forceZSize = iprot.readI32();
-          struct.setForceZSizeIsSet(true);
         }
       }
     }
@@ -1641,6 +1694,941 @@ public class ImageDatasetService {
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getImageSizeInfo_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.success = new ImageSizeInfo();
+          struct.success.read(iprot);
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.imageException = new ThriftImageException();
+          struct.imageException.read(iprot);
+          struct.setImageExceptionIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  public static class getImageSizeInfoForceZ_args implements org.apache.thrift.TBase<getImageSizeInfoForceZ_args, getImageSizeInfoForceZ_args._Fields>, java.io.Serializable, Cloneable, Comparable<getImageSizeInfoForceZ_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getImageSizeInfoForceZ_args");
+
+    private static final org.apache.thrift.protocol.TField FILE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("fileName", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField FORCE_ZSIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("forceZSize", org.apache.thrift.protocol.TType.I32, (short)2);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new getImageSizeInfoForceZ_argsStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new getImageSizeInfoForceZ_argsTupleSchemeFactory();
+
+    public java.lang.String fileName; // required
+    public int forceZSize; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      FILE_NAME((short)1, "fileName"),
+      FORCE_ZSIZE((short)2, "forceZSize");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // FILE_NAME
+            return FILE_NAME;
+          case 2: // FORCE_ZSIZE
+            return FORCE_ZSIZE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __FORCEZSIZE_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.FILE_NAME, new org.apache.thrift.meta_data.FieldMetaData("fileName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.FORCE_ZSIZE, new org.apache.thrift.meta_data.FieldMetaData("forceZSize", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32          , "int")));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getImageSizeInfoForceZ_args.class, metaDataMap);
+    }
+
+    public getImageSizeInfoForceZ_args() {
+    }
+
+    public getImageSizeInfoForceZ_args(
+      java.lang.String fileName,
+      int forceZSize)
+    {
+      this();
+      this.fileName = fileName;
+      this.forceZSize = forceZSize;
+      setForceZSizeIsSet(true);
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getImageSizeInfoForceZ_args(getImageSizeInfoForceZ_args other) {
+      __isset_bitfield = other.__isset_bitfield;
+      if (other.isSetFileName()) {
+        this.fileName = other.fileName;
+      }
+      this.forceZSize = other.forceZSize;
+    }
+
+    public getImageSizeInfoForceZ_args deepCopy() {
+      return new getImageSizeInfoForceZ_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.fileName = null;
+      setForceZSizeIsSet(false);
+      this.forceZSize = 0;
+    }
+
+    public java.lang.String getFileName() {
+      return this.fileName;
+    }
+
+    public getImageSizeInfoForceZ_args setFileName(java.lang.String fileName) {
+      this.fileName = fileName;
+      return this;
+    }
+
+    public void unsetFileName() {
+      this.fileName = null;
+    }
+
+    /** Returns true if field fileName is set (has been assigned a value) and false otherwise */
+    public boolean isSetFileName() {
+      return this.fileName != null;
+    }
+
+    public void setFileNameIsSet(boolean value) {
+      if (!value) {
+        this.fileName = null;
+      }
+    }
+
+    public int getForceZSize() {
+      return this.forceZSize;
+    }
+
+    public getImageSizeInfoForceZ_args setForceZSize(int forceZSize) {
+      this.forceZSize = forceZSize;
+      setForceZSizeIsSet(true);
+      return this;
+    }
+
+    public void unsetForceZSize() {
+      __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __FORCEZSIZE_ISSET_ID);
+    }
+
+    /** Returns true if field forceZSize is set (has been assigned a value) and false otherwise */
+    public boolean isSetForceZSize() {
+      return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __FORCEZSIZE_ISSET_ID);
+    }
+
+    public void setForceZSizeIsSet(boolean value) {
+      __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __FORCEZSIZE_ISSET_ID, value);
+    }
+
+    public void setFieldValue(_Fields field, java.lang.Object value) {
+      switch (field) {
+      case FILE_NAME:
+        if (value == null) {
+          unsetFileName();
+        } else {
+          setFileName((java.lang.String)value);
+        }
+        break;
+
+      case FORCE_ZSIZE:
+        if (value == null) {
+          unsetForceZSize();
+        } else {
+          setForceZSize((java.lang.Integer)value);
+        }
+        break;
+
+      }
+    }
+
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case FILE_NAME:
+        return getFileName();
+
+      case FORCE_ZSIZE:
+        return getForceZSize();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case FILE_NAME:
+        return isSetFileName();
+      case FORCE_ZSIZE:
+        return isSetForceZSize();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getImageSizeInfoForceZ_args)
+        return this.equals((getImageSizeInfoForceZ_args)that);
+      return false;
+    }
+
+    public boolean equals(getImageSizeInfoForceZ_args that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_fileName = true && this.isSetFileName();
+      boolean that_present_fileName = true && that.isSetFileName();
+      if (this_present_fileName || that_present_fileName) {
+        if (!(this_present_fileName && that_present_fileName))
+          return false;
+        if (!this.fileName.equals(that.fileName))
+          return false;
+      }
+
+      boolean this_present_forceZSize = true;
+      boolean that_present_forceZSize = true;
+      if (this_present_forceZSize || that_present_forceZSize) {
+        if (!(this_present_forceZSize && that_present_forceZSize))
+          return false;
+        if (this.forceZSize != that.forceZSize)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetFileName()) ? 131071 : 524287);
+      if (isSetFileName())
+        hashCode = hashCode * 8191 + fileName.hashCode();
+
+      hashCode = hashCode * 8191 + forceZSize;
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(getImageSizeInfoForceZ_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.valueOf(isSetFileName()).compareTo(other.isSetFileName());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetFileName()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fileName, other.fileName);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = java.lang.Boolean.valueOf(isSetForceZSize()).compareTo(other.isSetForceZSize());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetForceZSize()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.forceZSize, other.forceZSize);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+    }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("getImageSizeInfoForceZ_args(");
+      boolean first = true;
+
+      sb.append("fileName:");
+      if (this.fileName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.fileName);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("forceZSize:");
+      sb.append(this.forceZSize);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getImageSizeInfoForceZ_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public getImageSizeInfoForceZ_argsStandardScheme getScheme() {
+        return new getImageSizeInfoForceZ_argsStandardScheme();
+      }
+    }
+
+    private static class getImageSizeInfoForceZ_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<getImageSizeInfoForceZ_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getImageSizeInfoForceZ_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // FILE_NAME
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.fileName = iprot.readString();
+                struct.setFileNameIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // FORCE_ZSIZE
+              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+                struct.forceZSize = iprot.readI32();
+                struct.setForceZSizeIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getImageSizeInfoForceZ_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.fileName != null) {
+          oprot.writeFieldBegin(FILE_NAME_FIELD_DESC);
+          oprot.writeString(struct.fileName);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldBegin(FORCE_ZSIZE_FIELD_DESC);
+        oprot.writeI32(struct.forceZSize);
+        oprot.writeFieldEnd();
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getImageSizeInfoForceZ_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public getImageSizeInfoForceZ_argsTupleScheme getScheme() {
+        return new getImageSizeInfoForceZ_argsTupleScheme();
+      }
+    }
+
+    private static class getImageSizeInfoForceZ_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<getImageSizeInfoForceZ_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, getImageSizeInfoForceZ_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetFileName()) {
+          optionals.set(0);
+        }
+        if (struct.isSetForceZSize()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetFileName()) {
+          oprot.writeString(struct.fileName);
+        }
+        if (struct.isSetForceZSize()) {
+          oprot.writeI32(struct.forceZSize);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, getImageSizeInfoForceZ_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.fileName = iprot.readString();
+          struct.setFileNameIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.forceZSize = iprot.readI32();
+          struct.setForceZSizeIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  public static class getImageSizeInfoForceZ_result implements org.apache.thrift.TBase<getImageSizeInfoForceZ_result, getImageSizeInfoForceZ_result._Fields>, java.io.Serializable, Cloneable, Comparable<getImageSizeInfoForceZ_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getImageSizeInfoForceZ_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
+    private static final org.apache.thrift.protocol.TField IMAGE_EXCEPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("imageException", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new getImageSizeInfoForceZ_resultStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new getImageSizeInfoForceZ_resultTupleSchemeFactory();
+
+    public ImageSizeInfo success; // required
+    public ThriftImageException imageException; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      IMAGE_EXCEPTION((short)1, "imageException");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // IMAGE_EXCEPTION
+            return IMAGE_EXCEPTION;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ImageSizeInfo.class)));
+      tmpMap.put(_Fields.IMAGE_EXCEPTION, new org.apache.thrift.meta_data.FieldMetaData("imageException", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ThriftImageException.class)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getImageSizeInfoForceZ_result.class, metaDataMap);
+    }
+
+    public getImageSizeInfoForceZ_result() {
+    }
+
+    public getImageSizeInfoForceZ_result(
+      ImageSizeInfo success,
+      ThriftImageException imageException)
+    {
+      this();
+      this.success = success;
+      this.imageException = imageException;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getImageSizeInfoForceZ_result(getImageSizeInfoForceZ_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new ImageSizeInfo(other.success);
+      }
+      if (other.isSetImageException()) {
+        this.imageException = new ThriftImageException(other.imageException);
+      }
+    }
+
+    public getImageSizeInfoForceZ_result deepCopy() {
+      return new getImageSizeInfoForceZ_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.imageException = null;
+    }
+
+    public ImageSizeInfo getSuccess() {
+      return this.success;
+    }
+
+    public getImageSizeInfoForceZ_result setSuccess(ImageSizeInfo success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public ThriftImageException getImageException() {
+      return this.imageException;
+    }
+
+    public getImageSizeInfoForceZ_result setImageException(ThriftImageException imageException) {
+      this.imageException = imageException;
+      return this;
+    }
+
+    public void unsetImageException() {
+      this.imageException = null;
+    }
+
+    /** Returns true if field imageException is set (has been assigned a value) and false otherwise */
+    public boolean isSetImageException() {
+      return this.imageException != null;
+    }
+
+    public void setImageExceptionIsSet(boolean value) {
+      if (!value) {
+        this.imageException = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, java.lang.Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((ImageSizeInfo)value);
+        }
+        break;
+
+      case IMAGE_EXCEPTION:
+        if (value == null) {
+          unsetImageException();
+        } else {
+          setImageException((ThriftImageException)value);
+        }
+        break;
+
+      }
+    }
+
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case IMAGE_EXCEPTION:
+        return getImageException();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case IMAGE_EXCEPTION:
+        return isSetImageException();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getImageSizeInfoForceZ_result)
+        return this.equals((getImageSizeInfoForceZ_result)that);
+      return false;
+    }
+
+    public boolean equals(getImageSizeInfoForceZ_result that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_imageException = true && this.isSetImageException();
+      boolean that_present_imageException = true && that.isSetImageException();
+      if (this_present_imageException || that_present_imageException) {
+        if (!(this_present_imageException && that_present_imageException))
+          return false;
+        if (!this.imageException.equals(that.imageException))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetSuccess()) ? 131071 : 524287);
+      if (isSetSuccess())
+        hashCode = hashCode * 8191 + success.hashCode();
+
+      hashCode = hashCode * 8191 + ((isSetImageException()) ? 131071 : 524287);
+      if (isSetImageException())
+        hashCode = hashCode * 8191 + imageException.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(getImageSizeInfoForceZ_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = java.lang.Boolean.valueOf(isSetImageException()).compareTo(other.isSetImageException());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetImageException()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.imageException, other.imageException);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+      }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("getImageSizeInfoForceZ_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("imageException:");
+      if (this.imageException == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.imageException);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+      if (success != null) {
+        success.validate();
+      }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getImageSizeInfoForceZ_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public getImageSizeInfoForceZ_resultStandardScheme getScheme() {
+        return new getImageSizeInfoForceZ_resultStandardScheme();
+      }
+    }
+
+    private static class getImageSizeInfoForceZ_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<getImageSizeInfoForceZ_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getImageSizeInfoForceZ_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.success = new ImageSizeInfo();
+                struct.success.read(iprot);
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // IMAGE_EXCEPTION
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.imageException = new ThriftImageException();
+                struct.imageException.read(iprot);
+                struct.setImageExceptionIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getImageSizeInfoForceZ_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          struct.success.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.imageException != null) {
+          oprot.writeFieldBegin(IMAGE_EXCEPTION_FIELD_DESC);
+          struct.imageException.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getImageSizeInfoForceZ_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public getImageSizeInfoForceZ_resultTupleScheme getScheme() {
+        return new getImageSizeInfoForceZ_resultTupleScheme();
+      }
+    }
+
+    private static class getImageSizeInfoForceZ_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<getImageSizeInfoForceZ_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, getImageSizeInfoForceZ_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetImageException()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          struct.success.write(oprot);
+        }
+        if (struct.isSetImageException()) {
+          struct.imageException.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, getImageSizeInfoForceZ_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {

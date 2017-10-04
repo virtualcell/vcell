@@ -30,6 +30,7 @@ import cbit.image.ImageException;
 import cbit.image.ImageSizeInfo;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 
 @Plugin(type = ImageDatasetReader.class)
@@ -38,16 +39,22 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 	private static File bioformatsExecutableJarFile = null;
 	private static Thread serverThread = null;
 	private static int port = 9094;
+	private static final String PROPERTY_VCELL_BIOFORMATS_EXTERNAL = "vcell.bioformats.external";
 	
 	public BioformatsImageDatasetReader() throws Exception{
-		if (bioformatsExecutableJarFile != null){
+		boolean bUseExternalBioformatsService = PropertyLoader.getBooleanProperty(PROPERTY_VCELL_BIOFORMATS_EXTERNAL, false);
+		if (bUseExternalBioformatsService){
+			System.out.println("BioformatsImageDatasetReader.bUseExternalBioformatsService is true, assuming BioFormatsService already running on localhost at port "+port);
+			return; // nothing to do, using an external BioformatsService for debugging
+		}
+		if (BioformatsImageDatasetReader.bioformatsExecutableJarFile != null){
 			return;
 		}
 		VCellThreadChecker.checkRemoteInvocation();
 		try {
 			File bioformatsJarFile = ResourceUtil.getBioFormatsExecutableJarFile();
 			if (bioformatsJarFile!=null && bioformatsJarFile.exists()){
-				this.bioformatsExecutableJarFile = bioformatsJarFile;
+				BioformatsImageDatasetReader.bioformatsExecutableJarFile = bioformatsJarFile;
 				if (serverThread==null){
 					launchServer(port);
 					try {
@@ -71,7 +78,7 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 						ResourceUtil.downloadBioformatsJar();
 						bioformatsJarFile = ResourceUtil.getBioFormatsExecutableJarFile();
 						if (bioformatsJarFile!=null && bioformatsJarFile.exists()){
-							this.bioformatsExecutableJarFile = bioformatsJarFile;
+							BioformatsImageDatasetReader.bioformatsExecutableJarFile = bioformatsJarFile;
 							if (serverThread==null){
 								launchServer(port);
 							}
@@ -144,13 +151,39 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 	}
 	
 	@Override
-	public ImageSizeInfo getImageSizeInfo(String fileName, Integer forceZSize) throws Exception {
+	public ImageSizeInfo getImageSizeInfo(String fileName) throws Exception {
         try (TTransport transport = new TSocket("localhost", port);){
             transport.open();
             TProtocol protocol = new  TBinaryProtocol(transport);
-            ImageDatasetService.Client client = new ImageDatasetService.Client(protocol);
             
-            org.vcell.imagedataset.ImageSizeInfo t_imageSizeInfo = client.getImageSizeInfo(fileName, forceZSize);
+            ImageDatasetService.Client client = new ImageDatasetService.Client(protocol);
+
+            org.vcell.imagedataset.ImageSizeInfo t_imageSizeInfo = client.getImageSizeInfo(fileName);
+            
+            org.vcell.imagedataset.ISize t_size = t_imageSizeInfo.getISize();
+            double[] timePoints = new double[t_imageSizeInfo.getTimePoints().size()];
+            for (int i=0;i<t_imageSizeInfo.getTimePointsSize();i++){
+            	timePoints[i] = t_imageSizeInfo.getTimePoints().get(i);
+            }
+            ImageSizeInfo imageSizeInfo = new ImageSizeInfo(
+            		t_imageSizeInfo.imagePath,
+            		new ISize(t_size.getX(), t_size.getY(), t_size.getZ()),
+            		t_imageSizeInfo.numChannels,
+            		timePoints,
+            		t_imageSizeInfo.selectedTimeIndex);
+            return imageSizeInfo;
+        }
+	}
+
+	@Override
+	public ImageSizeInfo getImageSizeInfoForceZ(String fileName, int forceZSize) throws Exception {
+        try (TTransport transport = new TSocket("localhost", port);){
+            transport.open();
+            TProtocol protocol = new  TBinaryProtocol(transport);
+            
+            ImageDatasetService.Client client = new ImageDatasetService.Client(protocol);
+
+            org.vcell.imagedataset.ImageSizeInfo t_imageSizeInfo = client.getImageSizeInfoForceZ(fileName, forceZSize);
             
             org.vcell.imagedataset.ISize t_size = t_imageSizeInfo.getISize();
             double[] timePoints = new double[t_imageSizeInfo.getTimePoints().size()];
