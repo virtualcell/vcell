@@ -713,7 +713,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					if(rp instanceof Reactant)
 					{
 						reactantParticles.add(particle);
-						if (!scs.isConstant()) {
+						if (!scs.isConstant() && !scs.isForceContinuous()) {
 							for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
 								if (radiusExp!=null) {
 									forwardActions.add(Action.createDestroyAction(particle));
@@ -725,7 +725,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					else if(rp instanceof Product)
 					{
 						productParticles.add(particle);
-						if (!scs.isConstant()) {
+						if (!scs.isConstant() && !scs.isForceContinuous()) {
 							for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
 								if (radiusExp!=null) {
 									forwardActions.add(Action.createCreateAction(particle));
@@ -743,9 +743,10 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			// get jump process name
 			String jpName = TokenMangler.mangleToSName(reactionStep.getName());
 			ProcessSymmetryFactor processSymmetryFactor = null; // only for NFSim/Rules for now.
-			ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, bindingRadius, forwardActions, processSymmetryFactor);
-			subdomain.addParticleJumpProcess(forwardProcess);
-			
+			if (forwardActions.size() > 0){
+				ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, bindingRadius, forwardActions, processSymmetryFactor);
+				subdomain.addParticleJumpProcess(forwardProcess);
+			}			
 		}
 		else //other type of reactions
 		{
@@ -809,7 +810,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					if (var instanceof ParticleVariable){
 						ParticleVariable particle = (ParticleVariable)var;
 						reactantParticles.add(particle);
-						if (!scs.isConstant()) {
+						if (!scs.isConstant() && !scs.isForceContinuous()) {
 							for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
 								if (forwardRate!=null) {
 									forwardActions.add(Action.createDestroyAction(particle));
@@ -832,7 +833,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					if (var instanceof ParticleVariable){
 						ParticleVariable particle = (ParticleVariable)var;
 						productParticles.add(particle);
-						if (!scs.isConstant()) {
+						if (!scs.isConstant() && !scs.isForceContinuous()) {
 							for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
 								if (forwardRate!=null) {
 									forwardActions.add(Action.createCreateAction(particle));
@@ -906,8 +907,10 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					// create particle jump process
 					String jpName = TokenMangler.mangleToSName(reactionStep.getName());
 					ProcessSymmetryFactor processSymmetryFactor = null; // only for NFSim/Rules for now.
-					ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, partRateDef, forwardActions, processSymmetryFactor);
-					subdomain.addParticleJumpProcess(forwardProcess);
+					if (forwardActions.size() > 0){
+						ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, partRateDef, forwardActions, processSymmetryFactor);
+						subdomain.addParticleJumpProcess(forwardProcess);
+					}
 				} // end of forward rate not null
 				if (reverseRate!=null)
 				{
@@ -946,8 +949,10 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					// get jump process name
 					String jpName = TokenMangler.mangleToSName(reactionStep.getName()+"_reverse");
 					ProcessSymmetryFactor processSymmetryFactor = null; // only for NFSim/Rules for now.
-					ParticleJumpProcess reverseProcess = new ParticleJumpProcess(jpName, productParticles, partProbRate, reverseActions, processSymmetryFactor);
-					subdomain.addParticleJumpProcess(reverseProcess);
+					if (reverseActions.size() > 0){
+						ParticleJumpProcess reverseProcess = new ParticleJumpProcess(jpName, productParticles, partProbRate, reverseActions, processSymmetryFactor);
+						subdomain.addParticleJumpProcess(reverseProcess);
+					}
 				} //end of reverse rate not null
 			} //end of maFunc not null
 		} // end of reaction step for loop
