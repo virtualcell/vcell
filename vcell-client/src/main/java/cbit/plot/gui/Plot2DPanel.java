@@ -1373,7 +1373,7 @@ private void drawLinePlot(PlotData plotData, int index, Graphics2D g, int render
 			Ellipse2D.Double circle = new Ellipse2D.Double();
 			int diameter = 2;
 			if (renderHints == Plot2D.RENDERHINT_DRAWPOINT) { // only draw points, make them larger
-				diameter = 4;
+				diameter = 3;	// 4 is too large when we may draw a mix of points and lines, like in param estimation (expected vs estimated)
 			}
 			for (int i=0;i<plotData.getSize();i++) {
 				circle.setFrameFromCenter(nodes[index].getPoints()[i].getX(), nodes[index].getPoints()[i].getY(), nodes[index].getPoints()[i].getX() + diameter, nodes[index].getPoints()[i].getY() + diameter);

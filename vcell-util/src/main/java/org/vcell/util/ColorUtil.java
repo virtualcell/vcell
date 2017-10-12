@@ -48,6 +48,9 @@ public class ColorUtil {
 				int newred = random.nextInt(256);
 				int newgrn = random.nextInt(256);
 				int newblu = random.nextInt(256);
+				if(newred == 240 && newgrn == 223) {
+					System.out.println("newred == 240");
+				}
 				boolean bAllContrastOK = (backgroundColor == null?true:
 					isContrastOK(contrastThreshold,brightThreshold,
 						backgroundColor.getRed(), newred, backgroundColor.getGreen(), newgrn, backgroundColor.getBlue(), newblu));
@@ -109,6 +112,9 @@ public class ColorUtil {
 		int bright1 = calcBrightness(red,grn,blu);
 		int bright2 = calcBrightness(newred, newgrn, newblu);
 		if((contrDiff > contrastThreshold || Math.abs(bright1-bright2)>brightThreshold)){
+			if(newred > 210 && newgrn > 200 && newblu < 40) {
+				return false;	// arbitrarily eliminate some (yellowish) hues that just look bad
+			}
 			return true;
 		}
 		return false;
