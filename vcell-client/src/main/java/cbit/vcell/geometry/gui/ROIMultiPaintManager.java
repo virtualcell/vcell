@@ -30,12 +30,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -50,12 +53,14 @@ import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import org.apache.commons.io.FilenameUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
@@ -85,6 +90,9 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
+import cbit.vcell.geometry.surface.BoundingBox;
+import cbit.vcell.geometry.surface.Node;
+import cbit.vcell.geometry.surface.OrigSurface;
 import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
@@ -828,14 +836,21 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		JButton importJButton = new JButton("Import stl...");
 		importJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				StatsHelper statsHelper = new StatsHelper();
-				statsHelper.xmin = 0;
-				statsHelper.xmax = 1;
-				statsHelper.ymin = 0;
-				statsHelper.ymax = 1;
-				statsHelper.zmin = 0;
-				statsHelper.zmax = 1;
-				importSTL(null/*statsHelper*/,new Vect3d(128, 128, 128),new Vect3d(0,0,0));
+				JFileChooser importJFC = new JFileChooser(ClientRequestManager.getPreferredPath(UserPreferences.getLastUserPreferences()));
+				importJFC.setDialogTitle("Choose .stl file(s) to import");
+				importJFC.setMultiSelectionEnabled(true);
+				int result = importJFC.showOpenDialog(overlayEditorPanelJAI);
+				if(result == JFileChooser.APPROVE_OPTION){
+					File[] selectedFiles = importJFC.getSelectedFiles();
+					if(selectedFiles != null && selectedFiles.length > 0){
+						ClientRequestManager.setPreferredPath(UserPreferences.getLastUserPreferences(), selectedFiles[0]);
+						Vect3d sampleSize = new Vect3d(getImageDataset()[0].getISize().getX(), getImageDataset()[0].getISize().getY(), getImageDataset()[0].getISize().getZ());
+						ArrayList<AsynchClientTask> stlImportTasks = getImportSTLtasks(selectedFiles,sampleSize,new Vect3d(0,0,0));
+						ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<>(), stlImportTasks.toArray(new AsynchClientTask[0]));
+					}else{
+						DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Select at least 1 .stl file for import.");
+					}
+				}
 			}
 		});
 
@@ -857,108 +872,661 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		return finalGeometryHolder[0];
 	}
 
-	private File lastImportDir;
-	private void importSTL(StatsHelper statsHelper,Vect3d primarySampleSizes,Vect3d subSampleOffset){
-		try {
-			JFileChooser importJFC = new JFileChooser(lastImportDir);
-			importJFC.setDialogTitle("Choose .stl file to import");
-			importJFC.setMultiSelectionEnabled(true);
-			int result = importJFC.showOpenDialog(overlayEditorPanelJAI);
-			if(result == JFileChooser.APPROVE_OPTION){
-				ComboboxROIName[] comboboxROINames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-				if(comboboxROINames == null || comboboxROINames.length == 0){
-					DialogUtils.showWarningDialog(overlayEditorPanelJAI, "At least 1 ROI must be defined before importing STL.");
-					return;
+//	private File lastImportDir;
+	private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3d primarySampleSizes,Vect3d subSampleOffset){
+//		try {
+		final RegionImage currRegionImage = regionImage;
+		final TreeMap<Integer,String> newROIindexes = new TreeMap<>();
+		final TreeMap<BoundingBox,Object[]> regionBounds = new TreeMap<>(new Comparator<BoundingBox>() {
+			@Override
+			public int compare(BoundingBox arg0, BoundingBox arg1) {
+				if(arg1 == arg0){
+					return 0;
 				}
-				String[][] rowData = new String[comboboxROINames.length][2];
-				for (int i = 0; i < rowData.length; i++) {
-					rowData[i][0] = comboboxROINames[i].getROIName();
-					rowData[i][1] = comboboxROINames[i].getContrastColorIndex()+"";
+				if(arg0.getLoX() == arg1.getLoX() &&
+						arg0.getLoY() == arg1.getLoY() &&
+						arg0.getLoZ() == arg1.getLoZ() &&
+						arg0.getHiX() == arg1.getHiX() &&
+						arg0.getHiY() == arg1.getHiY() &&
+						arg0.getHiZ() == arg1.getHiZ()){
+					return 0;
 				}
-				int[] selection = null;
-				byte value = -1;
-				try{
-					selection = DialogUtils.showComponentOKCancelTableList(overlayEditorPanelJAI, "Choose ROI to import into", new String[] {"ROI Name","ROI value"}, rowData, ListSelectionModel.SINGLE_SELECTION);
-					if(selection != null && selection.length==1){
-						value = (byte)comboboxROINames[selection[0]].getContrastColorIndex();
-					}else{
-						DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Select ROI to import STL");
-						return;
+				return (arg0.getLoX() >= arg1.getLoX() &&
+						arg0.getLoY() >= arg1.getLoY() &&
+						arg0.getLoZ() >= arg1.getLoZ() &&
+						arg0.getHiX() <= arg1.getHiX() &&
+						arg0.getHiY() <= arg1.getHiY() &&
+						arg0.getHiZ() <= arg1.getHiZ()?-1:+1);
+			}
+		});
+		
+		
+		AsynchClientTask sampleSTLtask = new AsynchClientTask("importSTLtask",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+					StatsHelper statsHelper = calcMinMax(selectedFiles);
+					
+					Vect3d worldOrigin = new Vect3d(statsHelper.xmin, statsHelper.ymin, statsHelper.zmin);
+					Vect3d worldCollapsedBoundingBox = new Vect3d(statsHelper.xmax-statsHelper.xmin, statsHelper.ymax-statsHelper.ymin, statsHelper.zmax-statsHelper.zmin);
+					Vect3d scale = new Vect3d(worldCollapsedBoundingBox.getX()/(2.0*primarySampleSizes.getX()), worldCollapsedBoundingBox.getY()/(2.0*primarySampleSizes.getY()), worldCollapsedBoundingBox.getZ()/(2.0*primarySampleSizes.getZ()));
+//					if(scale.getX() !=0 && scale.getX() >= (scale.getY()==0?scale.getX():scale.getY()) && scale.getX() >= (scale.getZ()==0?scale.getX():scale.getZ())){
+//						scale = new Vect3d(scale.getX(), scale.getX(), scale.getX());
+//					}else if(scale.getY() !=0 && scale.getY() >= (scale.getX()==0?scale.getY():scale.getX()) && scale.getY() >= (scale.getZ()==0?scale.getY():scale.getZ())){
+//						scale = new Vect3d(scale.getY(), scale.getY(), scale.getY());
+//					}else if(scale.getZ() !=0 && scale.getZ() >= (scale.getY()==0?scale.getZ():scale.getY()) && scale.getZ() >= (scale.getX()==0?scale.getZ():scale.getX())){
+//						scale = new Vect3d(scale.getZ(), scale.getZ(), scale.getZ());
+//					}
+					if(scale.getX() !=0 && scale.getX() <= (scale.getY()==0?scale.getX():scale.getY()) && scale.getX() <= (scale.getZ()==0?scale.getX():scale.getZ())){
+						scale = new Vect3d(scale.getX(), scale.getX(), scale.getX());
+					}else if(scale.getY() !=0 && scale.getY() <= (scale.getX()==0?scale.getY():scale.getX()) && scale.getY() <= (scale.getZ()==0?scale.getY():scale.getZ())){
+						scale = new Vect3d(scale.getY(), scale.getY(), scale.getY());
+					}else if(scale.getZ() !=0 && scale.getZ() <= (scale.getY()==0?scale.getZ():scale.getY()) && scale.getZ() <= (scale.getX()==0?scale.getZ():scale.getX())){
+						scale = new Vect3d(scale.getZ(), scale.getZ(), scale.getZ());
 					}
-				}catch(UserCancelException e){
-					return;
-				}
-				File[] selectedFiles = importJFC.getSelectedFiles();
-				if(statsHelper == null){
-					statsHelper = calcMinMax(selectedFiles);
-				}
-				Vect3d worldOrigin = new Vect3d(statsHelper.xmin, statsHelper.ymin, statsHelper.zmin);
-				Vect3d worldCollapsedBoundingBox = new Vect3d(statsHelper.xmax-statsHelper.xmin, statsHelper.ymax-statsHelper.ymin, statsHelper.zmax-statsHelper.zmin);
-				Vect3d scale = new Vect3d(worldCollapsedBoundingBox.getX()/(10.0*primarySampleSizes.getX()), worldCollapsedBoundingBox.getY()/(10.0*primarySampleSizes.getY()), worldCollapsedBoundingBox.getZ()/(10.0*primarySampleSizes.getZ()));
-				for (int j = 0; j < selectedFiles.length; j++) {
-					File selectedFile = selectedFiles[j];
-					if(j==0){
-						if(selectedFile.isDirectory()){
-							lastImportDir = selectedFile;
-						}else{
-							lastImportDir = selectedFile.getParentFile();
-						}
-					}
-					SurfaceCollection surfaceCollection = ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedFile);
-					for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++) {
-						Surface surface = surfaceCollection.getSurfaces(i);
-						System.out.println("surface "+i);
-						for (int k = 0; k < surface.getPolygonCount(); k++){
-							Polygon polygon = surface.getPolygons(k);
-							if(k%10000 == 0){
-								System.out.println("progress= file "+(j+1)+" of "+selectedFiles.length+" "+((k*100)/surface.getPolygonCount())+"%");
-							}
-//							System.out.println("  polygon "+j+" "+polygon.getNodes(0)+" "+polygon.getNodes(1)+" "+polygon.getNodes(2));
-							Vect3d line1 = new Vect3d(polygon.getNodes(0));
-							Vect3d end1 = new Vect3d(polygon.getNodes(2));
-							Vect3d incr1 = Vect3d.sub(end1,line1);
-							incr1.unit();
-							incr1.set(incr1.getX()*scale.getX(), incr1.getY()*scale.getY(), incr1.getZ()*scale.getZ());
-//							Vect3d line2 = new Vect3d(polygon.getNodes(0));
-//							Vect3d incr2 = Vect3d.sub(new Vect3d(polygon.getNodes(2)),new Vect3d(polygon.getNodes(0)));
-//							incr2.unit();
-//							incr2.scale(SCALE);
-							while(true){
-//								System.out.println("    new line");
-								Vect3d line3 = new Vect3d(line1);
-								Vect3d end3 = new Vect3d(polygon.getNodes(1));
-								Vect3d incr3 = Vect3d.sub(end3,line3);
-								incr3.unit();
-								incr3.set(incr3.getX()*scale.getX(), incr3.getY()*scale.getY(), incr3.getZ()*scale.getZ());
+					for (int j = 0; j < selectedFiles.length; j++) {
+						SurfaceCollection surfaceCollection = statsHelper.recalSurfs.get(j);//ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedFile);
+						for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++) {
+							Surface surface = surfaceCollection.getSurfaces(i);
+//							System.out.println("surface "+i);
+//							Vect3d xyzLow = new Vect3d(surface.getPolygons(0).getNodes(0).getX(),surface.getPolygons(0).getNodes(1).getX(),surface.getPolygons(0).getNodes(2).getX());
+//							Vect3d xyzHigh = new Vect3d(xyzLow);
+							ComboboxROIName[] existingRoiNames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+							int newIndex = getUnusedROIColorIndex(existingRoiNames,newROIindexes.keySet());
+							newROIindexes.put(newIndex, selectedFiles[j].getName());
+							byte value = (byte)newIndex;
+//							String roiName = FilenameUtils.getBaseName(selectedFiles[j].getName());
+//							roiName = TokenMangler.fixTokenStrict(roiName, 6);
+//							roiName+= "_"+i;
+//							overlayEditorPanelJAI.addROIName(roiName, true, roiName, true, value);
+							for (int k = 0; k < surface.getPolygonCount(); k++){
+								Polygon polygon = surface.getPolygons(k);
+//								for (Node pnode:polygon.getNodes()) {
+//									xyzLow.set(Math.min(xyzLow.getX(), pnode.getX()),Math.min(xyzLow.getY(), pnode.getY()),Math.min(xyzLow.getZ(), pnode.getZ()));
+//									xyzHigh.set(Math.max(xyzHigh.getX(), pnode.getX()),Math.max(xyzHigh.getY(), pnode.getY()),Math.max(xyzHigh.getZ(), pnode.getZ()));
+//								}
+//								if(k%10000 == 0){
+//									System.out.println("progress= file "+(j+1)+" of "+selectedFiles.length+" "+((k*100)/surface.getPolygonCount())+"%");
+//								}
+//								System.out.println("  polygon "+j+" "+polygon.getNodes(0)+" "+polygon.getNodes(1)+" "+polygon.getNodes(2));
+								Vect3d line1 = new Vect3d(polygon.getNodes(0));
+								Vect3d end1 = new Vect3d(polygon.getNodes(2));
+								Vect3d incr1 = Vect3d.sub(end1,line1);
+								incr1.unit();
+								incr1.set(incr1.getX()*scale.getX(), incr1.getY()*scale.getY(), incr1.getZ()*scale.getZ());
+								Vect3d line2 = new Vect3d(line1);
+								Vect3d end2 = new Vect3d(polygon.getNodes(1));
+								Vect3d incr2 = Vect3d.sub(end2,line2);
+								incr2.unit();
+								incr2.set(incr2.getX()*scale.getX(), incr2.getY()*scale.getY(), incr2.getZ()*scale.getZ());
 								while(true){
-									calcXYZ(line3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
-//									double x = (((line3.getX()-xmin)/wd.getX())*(meshd.getX()-1));
-//									double y = (((line3.getY()-ymin)/wd.getY())*(meshd.getY()-1));
-//									double z = (((line3.getZ()-zmin)/wd.getZ())*(meshd.getZ()-1));
-//									System.out.println("    "+x+" "+y+" "+z);
-									line3.add(incr3);
-									Vect3d check =  Vect3d.sub(end3, line3);
-									if(Math.signum(check.getX()) != Math.signum(incr3.getX()) || Math.signum(check.getY()) != Math.signum(incr3.getY()) || Math.signum(check.getZ()) != Math.signum(incr3.getZ())){
-										calcXYZ(end3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
+									Vect3d line3 = new Vect3d(line1);
+									Vect3d end3 = new Vect3d(line2);
+									Vect3d incr3 = Vect3d.sub(end3,line3);
+									if(incr3.length() != 0){
+										incr3.unit();
+										incr3.set(incr3.getX()*scale.getX(), incr3.getY()*scale.getY(), incr3.getZ()*scale.getZ());
+									}
+									while(true){
+										calcXYZ(line3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
+										line3.add(incr3);
+										Vect3d check =  Vect3d.sub(end3, line3);
+										if((check.length()==0) || Math.signum(check.getX()) != Math.signum(incr3.getX()) || Math.signum(check.getY()) != Math.signum(incr3.getY()) || Math.signum(check.getZ()) != Math.signum(incr3.getZ())){
+											calcXYZ(end3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
+											break;
+										}
+									}
+									if(line1.equals(end1) && line2.equals(end2)){
 										break;
 									}
+									
+									line1.add(incr1);
+									Vect3d check =  Vect3d.sub(end1, line1);
+									if(check.length()==0 || Math.signum(check.getX()) != Math.signum(incr1.getX()) || Math.signum(check.getY()) != Math.signum(incr1.getY()) || Math.signum(check.getZ()) != Math.signum(incr1.getZ())){
+										line1 = new Vect3d(end1);
+									}
+									line2.add(incr2);
+									check =  Vect3d.sub(end2, line2);
+									if(check.length()==0 || Math.signum(check.getX()) != Math.signum(incr2.getX()) || Math.signum(check.getY()) != Math.signum(incr2.getY()) || Math.signum(check.getZ()) != Math.signum(incr2.getZ())){
+										line2 = new Vect3d(end2);
+									}
 								}
-								line1.add(incr1);
-								Vect3d check =  Vect3d.sub(end1, line1);
-								if(Math.signum(check.getX()) != Math.signum(incr1.getX()) || Math.signum(check.getY()) != Math.signum(incr1.getY()) || Math.signum(check.getZ()) != Math.signum(incr1.getZ())){
-									break;
+							}
+//							regionBounds.put(new BoundingBox(xyzLow.getX(), xyzHigh.getX(),xyzLow.getY(), xyzHigh.getY(),xyzLow.getZ(), xyzHigh.getZ()),new Object[] {new int[] {j,i},roiName});
+						}
+					}
+//					for(BoundingBox bb:regionBounds.keySet()){
+//						System.out.println(((int[])regionBounds.get(bb)[0])[0]+","+((int[])regionBounds.get(bb)[0])[1]+" name="+((String)regionBounds.get(bb)[1])+" bound="+bb.getLoX()+","+bb.getHiX()+" "+bb.getLoY()+","+bb.getHiY()+" "+bb.getLoZ()+","+bb.getHiZ());
+//					}
+					updateAuxiliaryInfo(originalISize, getClientTaskStatusSupport());
+//				}
+			}
+		};
+		final int[] checkHolder = new int[1];
+		final String[] cleanupHolder= new String[1];
+		final String YES = "Yes";
+		final ComboboxROIName[] cbxHolder = new ComboboxROIName[1];
+		final String CHECK= "check";
+		AsynchClientTask addROInamesTask = new AsynchClientTask("Add new ROI names...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				int i = 0;
+				for(Integer newIndex:newROIindexes.keySet()){
+					String roiName = FilenameUtils.getBaseName(newROIindexes.get(newIndex));
+					roiName = TokenMangler.fixTokenStrict(roiName, 6);
+					roiName+= "_" + i++;
+					overlayEditorPanelJAI.addROIName(roiName, true, roiName, true, newIndex);
+				}
+				cleanupHolder[0] = DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Cleanup imported geometry?", new String[] {YES,"No"}, YES);
+				if(!YES.equals(cleanupHolder[0])){
+					return;
+				}
+				checkHolder[0] = getUnusedROIColorIndex(overlayEditorPanelJAI.getAllCompositeROINamesAndColors(), null);
+				overlayEditorPanelJAI.addROIName(CHECK, true,CHECK, true, checkHolder[0]);
+				ComboboxROIName[] temp = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+				for(ComboboxROIName cbx:temp){
+					if(cbx.getROIName().equals(CHECK)){
+						cbxHolder[0] = cbx;
+						break;
+					}
+				}
+			}
+		};
+//		AsynchClientTask removeCheckROI = new AsynchClientTask("Remove check...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//			
+//			@Override
+//			public void run(Hashtable<String, Object> hashTable) throws Exception {
+//				ComboboxROIName[] regNames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+//				for(ComboboxROIName cbx:regNames){
+//					if(cbx.get)
+//				}
+//			}
+//		};
+		final AsynchClientTask mergeBackgroundRegions = new AsynchClientTask("Merge background regions...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(!YES.equals(cleanupHolder[0])){
+					return;
+				}
+
+//				long start = System.currentTimeMillis();
+//				while(currRegionImage == regionImage){
+//					int dur = (int)((System.currentTimeMillis()-start)/1000);
+//					if(dur > 10){
+//						return;
+//					}
+//					System.out.println("trying..."+dur);
+//					Thread.sleep(1000);
+//				}
+				final TreeMap<RegionInfo, Vect3d[]> regTobb = new TreeMap<>(new Comparator<RegionInfo>() {
+					@Override
+					public int compare(RegionInfo arg0, RegionInfo arg1) {
+						return arg0.getRegionIndex()-arg1.getRegionIndex();
+					}
+				});
+				
+				Hashtable<String, Object> newRegionImgHolder = new Hashtable<>();
+				createRegionImageTask.run(newRegionImgHolder);
+				RegionImage newRegionImage = (RegionImage)newRegionImgHolder.get(LOCAL_REGION_IMAGE);
+				
+//				ArrayList<RegionInfo> remainingRegionInfos = new ArrayList<>(Arrays.asList(newRegionImage.getRegionInfos()));
+//				BoundingBox bb = new BoundingBox(0, newRegionImage.getNumX()-1, 0, newRegionImage.getNumY()-1, 0, newRegionImage.getNumZ()-1);
+//				int currIndex = 0;
+//				for (int z = 0; z <= bb.getHiZ(); z++) {
+//					for (int y = 0; y <= bb.getHiY(); y++) {
+//						for (int x = 0; x <= bb.getHiX(); x++) {
+//							ArrayList<RegionInfo> tempRegionInfos = (ArrayList<RegionInfo>)remainingRegionInfos.clone();
+//							if(x==0 || x == bb.getHiX() || y==0 || y == bb.getHiY() || z==0 || z == bb.getHiZ()){
+//								for(RegionInfo reg:tempRegionInfos){
+//									if(reg.getPixelValue() == 0 && reg.isIndexInRegion(currIndex)){
+//										remainingRegionInfos.remove(reg);
+//										break;
+//									}
+//								}
+//							}else{
+//								for(RegionInfo reg:tempRegionInfos){
+//									if(reg.getPixelValue() == 0 && reg.isIndexInRegion(currIndex)){
+//										remainingRegionInfos.remove(reg);
+//										break;
+//									}
+//								}								
+//							}
+//							currIndex++;
+//						}
+//					}
+//				}
+				
+				//Remove unfilled regions (background) that touch the whole region border
+				int allPixCnt = 0;
+				ArrayList<RegionInfo> excluded = new ArrayList<>();
+				for (int z = 0; z < newRegionImage.getNumZ(); z++) {
+					for (int y = 0; y < newRegionImage.getNumY(); y++) {
+						for (int x = 0; x < newRegionImage.getNumX(); x++) {
+							RegionInfo regInfo = newRegionImage.getRegionInfoFromOffset(allPixCnt);
+							allPixCnt+=1;
+							if(excluded.contains(regInfo)){
+								continue;
+							}
+							if(regInfo.getPixelValue() == 0 && (x==0 || x == newRegionImage.getNumX()-1 || y==0 || y == newRegionImage.getNumY()-1 || z==0 || z == newRegionImage.getNumZ()-1)){
+								excluded.add(regInfo);
+								if(regTobb.containsKey(regInfo)){
+									regTobb.remove(regInfo);
 								}
+								continue;
+							}
+							Vect3d[] bounds = regTobb.get(regInfo);
+							if(bounds == null){
+								bounds = new Vect3d[] {new Vect3d(Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY),new Vect3d(Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY)};
+								regTobb.put(regInfo, bounds);
+							}
+							bounds[0].set(Math.min(bounds[0].getX(), x),Math.min(bounds[0].getY(), y),Math.min(bounds[0].getZ(), z));
+							bounds[1].set(Math.max(bounds[1].getX(), x),Math.max(bounds[1].getY(), y),Math.max(bounds[1].getZ(), z));
+
+						}
+					}
+				}
+				
+				//Sort filled/unfilled regions by boundingbox
+				ArrayList<RegionInfo> sortedRegionInfos = new ArrayList<>(Arrays.asList(regTobb.keySet().toArray(new RegionInfo[0])/*newRegionImage.getRegionInfos()*/));
+				Collections.sort(sortedRegionInfos,new Comparator<RegionInfo>() {
+					@Override
+					public int compare(RegionInfo o1, RegionInfo o2) {
+						
+						Vect3d[] o1v = (Vect3d[])regTobb.get(o1);
+						Vect3d[] o2v = (Vect3d[])regTobb.get(o2);
+//						if(o1.getRegionIndex() == 3/*(o1.getRegionIndex() == 3 || o2.getRegionIndex() == 5) && (o1.getRegionIndex() == 5 || o2.getRegionIndex() == 3)*/){
+//							System.out.println("here");
+//						}
+						if(o1v[0].getX() == o2v[0].getX() && o1v[1].getX() == o2v[1].getX() &&
+								o1v[0].getY() == o2v[0].getY() && o1v[1].getY() == o2v[1].getY() &&
+								o1v[0].getZ() >= o2v[0].getZ() && o1v[1].getZ() == o2v[1].getZ()){
+							System.out.println(o1.getRegionIndex()+" == "+o2.getRegionIndex());
+								return 0;
+						}else if(	o1v[0].getX() >= o2v[0].getX() && o1v[0].getX() <= o2v[1].getX() &&
+//									o1v[1].getX() >= o2v[0].getX() && o1v[1].getX() <= o2v[1].getX() &&
+									o1v[0].getY() >= o2v[0].getY() && o1v[0].getY() <= o2v[1].getY() &&
+//									o1v[1].getY() >= o2v[0].getY() && o1v[1].getY() <= o2v[1].getY() &&
+									o1v[0].getZ() >= o2v[0].getZ() && o1v[0].getZ() <= o2v[1].getZ() 
+//									&& o1v[1].getZ() >= o2v[0].getZ() && o1v[1].getZ() <= o2v[1].getZ()
+									){
+							System.out.println(o1.getRegionIndex()+" > "+o2.getRegionIndex());
+							return 1;
+						}else if(	o1v[0].getX() <= o2v[0].getX() && o1v[1].getX() >= o2v[1].getX() &&
+									o1v[0].getY() <= o2v[0].getY() && o1v[1].getY() >= o2v[1].getY() &&
+									o1v[0].getZ() <= o2v[0].getZ() && o1v[1].getZ() >= o2v[1].getZ()
+//								(o1v[0].getX() < o2v[0].getX() && o1v[1].getX() < o2v[0].getX()) ||
+//									(o1v[0].getX() > o2v[1].getX() && o1v[1].getX() > o2v[1].getX()) ||
+//									
+//									(o1v[0].getY() < o2v[0].getY() && o1v[1].getY() < o2v[0].getY()) ||
+//									(o1v[0].getY() > o2v[1].getY() && o1v[1].getY() > o2v[1].getY()) ||
+//									
+//									(o1v[0].getZ() < o2v[0].getZ() && o1v[1].getZ() < o2v[0].getZ()) ||
+//									(o1v[0].getZ() > o2v[1].getZ() && o1v[1].getZ() > o2v[1].getZ())
+//									
+//								/*	(o1v[0].getX() < o2v[0].getX() && o1v[0].getX() > o2v[1].getX() &&
+//									o1v[1].getX() < o2v[0].getX() && o1v[1].getX() > o2v[1].getX()) ||
+//									(o1v[0].getY() < o2v[0].getY() && o1v[0].getY() > o2v[1].getY() &&
+//									o1v[1].getY() < o2v[0].getY() && o1v[1].getY() > o2v[1].getY()) ||
+//									(o1v[0].getZ() < o2v[0].getZ() && o1v[0].getZ() > o2v[1].getZ() && 
+//									o1v[1].getZ() < o2v[0].getZ() && o1v[1].getZ() > o2v[1].getZ())*/
+							){
+							System.out.println(o1.getRegionIndex()+" <a "+o2.getRegionIndex());
+						return -1;
+					}else if ((o1v[0].getX() < o2v[0].getX() && o1v[1].getX() < o2v[0].getX()) ||
+							(o1v[0].getX() > o2v[1].getX() && o1v[1].getX() > o2v[1].getX()) ||
+							
+							(o1v[0].getY() < o2v[0].getY() && o1v[1].getY() < o2v[0].getY()) ||
+							(o1v[0].getY() > o2v[1].getY() && o1v[1].getY() > o2v[1].getY()) ||
+							
+							(o1v[0].getZ() < o2v[0].getZ() && o1v[1].getZ() < o2v[0].getZ()) ||
+							(o1v[0].getZ() > o2v[1].getZ() && o1v[1].getZ() > o2v[1].getZ())){
+						System.out.println(o1.getRegionIndex()+" <b "+o2.getRegionIndex());
+						return -1;
+						
+					}
+						System.out.println("inconclusive "+o1.getRegionIndex()+" == "+o2.getRegionIndex());
+						return 0;
+//						System.out.println("inconclusive "+o1.getRegionIndex()+" "+(o1.getNumPixels() - o2.getNumPixels()<0?"<":(o1.getNumPixels() - o2.getNumPixels()>0?">":"=="))+" "+o2.getRegionIndex());
+//						return o1.getNumPixels() - o2.getNumPixels();
+//						System.out.println("inconclusive "+o1.getRegionIndex()+" "+(o1.getRegionIndex()-o2.getRegionIndex()<0?"<":(o1.getRegionIndex()-o2.getRegionIndex()>0?">":"=="))+" "+o2.getRegionIndex());
+//						return o1.getRegionIndex()-o2.getRegionIndex();
+//						if(o1v[0].getZ() != o2v[0].getZ()){
+//							return (int)(o1v[0].getZ() - o2v[0].getZ());
+//						}else if(o1v[0].getY() != o2v[0].getY()){
+//							return (int)(o1v[0].getY() - o2v[0].getY());
+//						}else if(o1v[0].getX() != o2v[0].getX()){
+//							return (int)(o1v[0].getX() - o2v[0].getX());
+//						}else
+//						return 0;
+					}
+				});
+				
+				//Convert unfilled regions into parent regions
+				int currColorIndex = -1;
+//				for (int i = sortedRegionInfos.size()-1; i >= 0; i--) {
+				for (int i = 0; i< sortedRegionInfos.size(); i++) {
+					RegionInfo regInfo = sortedRegionInfos.get(i);
+					Vect3d[] o1v = (Vect3d[])regTobb.get(regInfo);
+					ComboboxROIName cbxroiName = overlayEditorPanelJAI.getComboboxROIName(regInfo);
+//					System.out.println(cbxroiName+" colorIndex="+regInfo.getPixelValue()+" regIndex="+regInfo.getRegionIndex()+" pixels="+regInfo.getNumPixels()+" "+o1v[0]+" "+o1v[1]);
+					if(cbxroiName != null){
+						currColorIndex = cbxroiName.getContrastColorIndex();
+						continue;
+					}
+					allPixCnt = 0;
+					for (int z = 0; z < newRegionImage.getNumZ(); z++) {
+						for (int y = 0; y < newRegionImage.getNumY(); y++) {
+							for (int x = 0; x < newRegionImage.getNumX(); x++) {
+								if(regInfo.isIndexInRegion(allPixCnt)){
+									BufferedImage plane = roiComposite[z];
+									byte[] data = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
+									data[x + (plane.getWidth()*y)] = (byte)currColorIndex;
+								}
+								allPixCnt++;
+							}
+						}
+					}
+					
+				}
+				
+//				for(RegionInfo regInfo:regTobb.keySet()){
+//					Vect3d[] varr = regTobb.get(regInfo);
+//					ComboboxROIName cbxroiName = overlayEditorPanelJAI.getComboboxROIName(regInfo);
+//					regionBounds.put(new BoundingBox(varr[0].getX(), varr[1].getX(),varr[0].getY(), varr[1].getY(),varr[0].getZ(), varr[1].getZ()),new Object[] {cbxroiName});
+//				}
+//				for(BoundingBox bb:regionBounds.keySet()){
+//					ComboboxROIName cbxroiName = ((ComboboxROIName)regionBounds.get(bb)[0]);
+//					System.out.println(cbxroiName+" bound="+bb.getLoX()+","+bb.getHiX()+" "+bb.getLoY()+","+bb.getHiY()+" "+bb.getLoZ()+","+bb.getHiZ());
+//
+//				}
+				
+				//Make sure every pixel has only 1 kind of neighbor
+				
+//				createRegionImageTask.run(newRegionImgHolder);
+//				newRegionImage = (RegionImage)newRegionImgHolder.get(LOCAL_REGION_IMAGE);
+				boolean bHasCheck = false;
+				VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, roiComposite);
+				newRegionImage =
+					new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
+							checkImage.getExtent(),ROIMultiPaintManager.DEFAULT_ORIGIN, RegionImage.NO_SMOOTHING,
+							null);
+
+				TreeSet<Integer> diffNeighbors = new TreeSet<>();
+				int[][] offsets = new int[][] {{-1,0,0},{1,0,0},{0,-1,0},{0,1,0},{0,0,-1},{0,0,1}};
+				for (int z = 0; z < newRegionImage.getNumZ(); z++) {
+					BufferedImage plane = roiComposite[z];
+					byte[] data = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
+					allPixCnt = 0;
+					for (int y = 0; y < newRegionImage.getNumY(); y++) {
+						for (int x = 0; x < newRegionImage.getNumX(); x++) {
+							diffNeighbors.clear();
+							RegionInfo regInfo = newRegionImage.getRegionInfoFromOffset(allPixCnt);
+							if(regInfo.getPixelValue() == 0){
+								allPixCnt++;
+								continue;
+							}
+							if(x==19 && y==15){
+								System.out.println("here");
+							}
+							
+							for (int i = 0; i < offsets.length; i++) {
+								int tmpx = offsets[i][0]+x;
+								if(tmpx < 0 || tmpx >= newRegionImage.getNumX()){
+									continue;
+								}
+								int tmpy = offsets[i][1]+y;
+								if(tmpy < 0 || tmpy >= newRegionImage.getNumY()){
+									continue;
+								}
+								int tmpz = offsets[i][2]+z;
+								if(tmpz < 0 || tmpz >= newRegionImage.getNumZ()){
+									continue;
+								}
+								BufferedImage plane0 = roiComposite[tmpz];
+								byte[] data0 = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
+								byte shiftb = data0[tmpx+(tmpy*newRegionImage.getNumX())];
+								if(shiftb != regInfo.getPixelValue()){
+									diffNeighbors.add(0x000000FF&shiftb);
+								}
+
+							}
+							
+							
+//							for (int z0 = -1; z0 <= 1; z0+=2) {
+//								int tmpz = z+z0;
+//								if(tmpz < 0 || tmpz >= newRegionImage.getNumZ()){
+//									continue;
+//								}
+////								tmpz = allPixCnt+(z0*newRegionImage.getNumXY());
+//								BufferedImage plane0 = roiComposite[z+z0];
+//								byte[] data0 = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
+//								for (int y0 = -1; y0 <= 1; y0+=2) {
+//									int tmpy = y+y0;
+//									if(tmpy < 0 || tmpy >= newRegionImage.getNumY()){
+//										continue;
+//									}
+////									tmpy = tmpz+(y0*newRegionImage.getNumX());
+//									for (int x0 = -1; x0 <= 1; x0+=2) {
+//										int tmpx = x+x0;
+//										if(tmpx < 0 || tmpx >= newRegionImage.getNumX()){
+//											continue;
+//										}
+////										tmpx = tmpy+(x0);
+//										byte shiftb = data0[tmpx+(tmpy*newRegionImage.getNumX())];
+//										if(shiftb != regInfo.getPixelValue()){
+//											diffNeighbors.add(0x000000FF&shiftb);
+//										}
+//									}
+//								}
+//							}
+							allPixCnt++;
+							if(diffNeighbors.size() > 1){
+								bHasCheck = true;
+								data[x+y*newRegionImage.getNumX()] = (byte)checkHolder[0];
 							}
 						}
 					}
 				}
-				updateAuxiliaryInfo(originalISize, null);
-				getUpdateDisplayAfterCropTask().run(null);
+				if(!bHasCheck && cbxHolder[0] != null){
+					SwingUtilities.invokeAndWait(new Runnable() {
+						@Override
+						public void run() {
+							overlayEditorPanelJAI.deleteROIName(cbxHolder[0]);
+						}
+					});
+				}
 			}
-		}catch (Exception e) {
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(overlayEditorPanelJAI, e.getMessage());
-		}
+		};
+//		new Thread(new Runnable() {
+//			
+//			@Override
+//			public void run() {
+//				try {
+//					mergeBackgroundRegions.run(new Hashtable<>());
+//				} catch (Exception e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//		}).start();
+		return new ArrayList<>(Arrays.asList(new AsynchClientTask[] {sampleSTLtask,addROInamesTask,mergeBackgroundRegions,getUpdateDisplayAfterCropTask()}));
+		
+//			JFileChooser importJFC = new JFileChooser(ClientRequestManager.getPreferredPath(UserPreferences.getLastUserPreferences()));
+//			importJFC.setDialogTitle("Choose .stl file to import");
+//			importJFC.setMultiSelectionEnabled(true);
+//			int result = importJFC.showOpenDialog(overlayEditorPanelJAI);
+//			if(result == JFileChooser.APPROVE_OPTION){
+//				File[] selectedFiles = importJFC.getSelectedFiles();
+//				if(statsHelper == null){
+//					statsHelper = calcMinMax(selectedFiles);
+//				}
+//				ClientRequestManager.setPreferredPath(UserPreferences.getLastUserPreferences(), selectedFiles[0]);
+//				
+//				Vect3d worldOrigin = new Vect3d(statsHelper.xmin, statsHelper.ymin, statsHelper.zmin);
+//				Vect3d worldCollapsedBoundingBox = new Vect3d(statsHelper.xmax-statsHelper.xmin, statsHelper.ymax-statsHelper.ymin, statsHelper.zmax-statsHelper.zmin);
+//				Vect3d scale = new Vect3d(worldCollapsedBoundingBox.getX()/(2.0*primarySampleSizes.getX()), worldCollapsedBoundingBox.getY()/(2.0*primarySampleSizes.getY()), worldCollapsedBoundingBox.getZ()/(2.0*primarySampleSizes.getZ()));
+////				if(scale.getX() !=0 && scale.getX() >= (scale.getY()==0?scale.getX():scale.getY()) && scale.getX() >= (scale.getZ()==0?scale.getX():scale.getZ())){
+////					scale = new Vect3d(scale.getX(), scale.getX(), scale.getX());
+////				}else if(scale.getY() !=0 && scale.getY() >= (scale.getX()==0?scale.getY():scale.getX()) && scale.getY() >= (scale.getZ()==0?scale.getY():scale.getZ())){
+////					scale = new Vect3d(scale.getY(), scale.getY(), scale.getY());
+////				}else if(scale.getZ() !=0 && scale.getZ() >= (scale.getY()==0?scale.getZ():scale.getY()) && scale.getZ() >= (scale.getX()==0?scale.getZ():scale.getX())){
+////					scale = new Vect3d(scale.getZ(), scale.getZ(), scale.getZ());
+////				}
+//				if(scale.getX() !=0 && scale.getX() <= (scale.getY()==0?scale.getX():scale.getY()) && scale.getX() <= (scale.getZ()==0?scale.getX():scale.getZ())){
+//					scale = new Vect3d(scale.getX(), scale.getX(), scale.getX());
+//				}else if(scale.getY() !=0 && scale.getY() <= (scale.getX()==0?scale.getY():scale.getX()) && scale.getY() <= (scale.getZ()==0?scale.getY():scale.getZ())){
+//					scale = new Vect3d(scale.getY(), scale.getY(), scale.getY());
+//				}else if(scale.getZ() !=0 && scale.getZ() <= (scale.getY()==0?scale.getZ():scale.getY()) && scale.getZ() <= (scale.getX()==0?scale.getZ():scale.getX())){
+//					scale = new Vect3d(scale.getZ(), scale.getZ(), scale.getZ());
+//				}
+//				TreeMap<BoundingBox,Object[]> regionBounds = new TreeMap<>(new Comparator<BoundingBox>() {
+//					@Override
+//					public int compare(BoundingBox arg0, BoundingBox arg1) {
+//						if(arg1 == arg0){
+//							return 0;
+//						}
+//						if(arg0.getLoX() == arg1.getLoX() &&
+//								arg0.getLoY() == arg1.getLoY() &&
+//								arg0.getLoZ() == arg1.getLoZ() &&
+//								arg0.getHiX() == arg1.getHiX() &&
+//								arg0.getHiY() == arg1.getHiY() &&
+//								arg0.getHiZ() == arg1.getHiZ()){
+//							return 0;
+//						}
+//						return (arg0.getLoX() >= arg1.getLoX() &&
+//								arg0.getLoY() >= arg1.getLoY() &&
+//								arg0.getLoZ() >= arg1.getLoZ() &&
+//								arg0.getHiX() <= arg1.getHiX() &&
+//								arg0.getHiY() <= arg1.getHiY() &&
+//								arg0.getHiZ() <= arg1.getHiZ()?-1:+1);
+//					}
+//				});
+//				for (int j = 0; j < selectedFiles.length; j++) {
+//					SurfaceCollection surfaceCollection = statsHelper.recalSurfs.get(j);//ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedFile);
+//					for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++) {
+//						Surface surface = surfaceCollection.getSurfaces(i);
+//						System.out.println("surface "+i);
+//						Vect3d xyzLow = new Vect3d(surface.getPolygons(0).getNodes(0).getX(),surface.getPolygons(0).getNodes(1).getX(),surface.getPolygons(0).getNodes(2).getX());
+//						Vect3d xyzHigh = new Vect3d(xyzLow);
+//						ComboboxROIName[] existingRoiNames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+//						byte value = (byte)getUnusedROIColorIndex(existingRoiNames);
+//						String roiName = FilenameUtils.getBaseName(selectedFiles[j].getName());
+//						roiName = TokenMangler.fixTokenStrict(roiName, 6);
+//						roiName+= "_"+i;
+//						overlayEditorPanelJAI.addROIName(roiName, true, roiName, true, value);
+//						for (int k = 0; k < surface.getPolygonCount(); k++){
+//							Polygon polygon = surface.getPolygons(k);
+////							for (Node pnode:polygon.getNodes()) {
+////								xyzLow.set(Math.min(xyzLow.getX(), pnode.getX()),Math.min(xyzLow.getY(), pnode.getY()),Math.min(xyzLow.getZ(), pnode.getZ()));
+////								xyzHigh.set(Math.max(xyzHigh.getX(), pnode.getX()),Math.max(xyzHigh.getY(), pnode.getY()),Math.max(xyzHigh.getZ(), pnode.getZ()));
+////							}
+//							if(k%10000 == 0){
+//								System.out.println("progress= file "+(j+1)+" of "+selectedFiles.length+" "+((k*100)/surface.getPolygonCount())+"%");
+//							}
+////							System.out.println("  polygon "+j+" "+polygon.getNodes(0)+" "+polygon.getNodes(1)+" "+polygon.getNodes(2));
+//							Vect3d line1 = new Vect3d(polygon.getNodes(0));
+//							Vect3d end1 = new Vect3d(polygon.getNodes(2));
+//							Vect3d incr1 = Vect3d.sub(end1,line1);
+//							incr1.unit();
+//							incr1.set(incr1.getX()*scale.getX(), incr1.getY()*scale.getY(), incr1.getZ()*scale.getZ());
+//							Vect3d line2 = new Vect3d(line1);
+//							Vect3d end2 = new Vect3d(polygon.getNodes(1));
+//							Vect3d incr2 = Vect3d.sub(end2,line2);
+//							incr2.unit();
+//							incr2.set(incr2.getX()*scale.getX(), incr2.getY()*scale.getY(), incr2.getZ()*scale.getZ());
+//							while(true){
+//								Vect3d line3 = new Vect3d(line1);
+//								Vect3d end3 = new Vect3d(line2);
+//								Vect3d incr3 = Vect3d.sub(end3,line3);
+//								if(incr3.length() != 0){
+//									incr3.unit();
+//									incr3.set(incr3.getX()*scale.getX(), incr3.getY()*scale.getY(), incr3.getZ()*scale.getZ());
+//								}
+//								while(true){
+//									calcXYZ(line3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
+//									line3.add(incr3);
+//									Vect3d check =  Vect3d.sub(end3, line3);
+//									if((check.length()==0) || Math.signum(check.getX()) != Math.signum(incr3.getX()) || Math.signum(check.getY()) != Math.signum(incr3.getY()) || Math.signum(check.getZ()) != Math.signum(incr3.getZ())){
+//										calcXYZ(end3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
+//										break;
+//									}
+//								}
+//								if(line1.equals(end1) && line2.equals(end2)){
+//									break;
+//								}
+//								
+//								line1.add(incr1);
+//								Vect3d check =  Vect3d.sub(end1, line1);
+//								if(check.length()==0 || Math.signum(check.getX()) != Math.signum(incr1.getX()) || Math.signum(check.getY()) != Math.signum(incr1.getY()) || Math.signum(check.getZ()) != Math.signum(incr1.getZ())){
+//									line1 = new Vect3d(end1);
+//								}
+//								line2.add(incr2);
+//								check =  Vect3d.sub(end2, line2);
+//								if(check.length()==0 || Math.signum(check.getX()) != Math.signum(incr2.getX()) || Math.signum(check.getY()) != Math.signum(incr2.getY()) || Math.signum(check.getZ()) != Math.signum(incr2.getZ())){
+//									line2 = new Vect3d(end2);
+//								}
+//							}
+//						}
+////						regionBounds.put(new BoundingBox(xyzLow.getX(), xyzHigh.getX(),xyzLow.getY(), xyzHigh.getY(),xyzLow.getZ(), xyzHigh.getZ()),new Object[] {new int[] {j,i},roiName});
+//					}
+//				}
+////				for(BoundingBox bb:regionBounds.keySet()){
+////					System.out.println(((int[])regionBounds.get(bb)[0])[0]+","+((int[])regionBounds.get(bb)[0])[1]+" name="+((String)regionBounds.get(bb)[1])+" bound="+bb.getLoX()+","+bb.getHiX()+" "+bb.getLoY()+","+bb.getHiY()+" "+bb.getLoZ()+","+bb.getHiZ());
+////				}
+//				updateAuxiliaryInfo(originalISize, null);
+//				getUpdateDisplayAfterCropTask().run(null);
+//
+//				new Thread(new Runnable() {
+//					@Override
+//					public void run() {
+//						while(ClientTaskDispatcher.isBusy()){
+//							try {
+//								Thread.sleep(1000);
+//							} catch (InterruptedException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//						}
+//						TreeMap<RegionInfo, Vect3d[]> regTobb = new TreeMap<>(new Comparator<RegionInfo>() {
+//							@Override
+//							public int compare(RegionInfo arg0, RegionInfo arg1) {
+//								return arg0.getRegionIndex()-arg1.getRegionIndex();
+//							}
+//						});
+//						int allPixCnt = regionImage.getNumX()*regionImage.getNumY()*regionImage.getNumZ();
+//						for (int z = 0; z < regionImage.getNumZ(); z++) {
+//							for (int y = 0; y < regionImage.getNumY(); y++) {
+//								for (int x = 0; x < regionImage.getNumX(); x++) {
+//									allPixCnt-=1;
+//									RegionInfo regInfo = regionImage.getRegionInfoFromOffset(allPixCnt);
+//									Vect3d[] bounds = regTobb.get(regInfo);
+//									if(bounds == null){
+//										bounds = new Vect3d[] {new Vect3d(),new Vect3d()};
+//										regTobb.put(regInfo, bounds);
+//									}
+//									bounds[0].set(Math.min(bounds[0].getX(), x),Math.min(bounds[0].getY(), y),Math.min(bounds[0].getZ(), z));
+//									bounds[1].set(Math.max(bounds[1].getX(), x),Math.max(bounds[1].getY(), y),Math.max(bounds[1].getZ(), z));
+//
+//								}
+//							}
+//						}
+//						for(RegionInfo regInfo:regTobb.keySet()){
+//							Vect3d[] varr = regTobb.get(regInfo);
+//							ComboboxROIName cbxroiName = overlayEditorPanelJAI.getComboboxROIName(regInfo);
+//							regionBounds.put(new BoundingBox(varr[0].getX(), varr[1].getX(),varr[0].getY(), varr[1].getY(),varr[0].getZ(), varr[1].getZ()),new Object[] {cbxroiName});
+//						}
+//						for(BoundingBox bb:regionBounds.keySet()){
+//							ComboboxROIName cbxroiName = ((ComboboxROIName)regionBounds.get(bb)[0]);
+//							System.out.println(cbxroiName+" bound="+bb.getLoX()+","+bb.getHiX()+" "+bb.getLoY()+","+bb.getHiY()+" "+bb.getLoZ()+","+bb.getHiZ());
+//
+//						}
+//					}
+//				}).start();
+//			}
+//		}catch (Exception e) {
+//			e.printStackTrace();
+//			DialogUtils.showErrorDialog(overlayEditorPanelJAI, e.getMessage());
+//		}
 	}
 	
 	private void calcXYZ(Vect3d line3,Vect3d worldOrigin,Vect3d worldCollapsedBoundingBox,Vect3d primarySampleSizes,Vect3d subSampleOffset,byte value)throws Exception{
@@ -968,6 +1536,15 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		int subX = (int)(x-subSampleOffset.getX());
 		int subY = (int)(y-subSampleOffset.getY());
 		int subZ = (int)(z-subSampleOffset.getZ());
+//		if(subZ==23 && subX>=32 && subX<=34 && subY==60/*>=59 && subY<=61*/ && (line3.getX() == -39.12749559761843 || line3.getX() == -39.98640441894531)){
+//			System.out.println("z,y,x"+subZ+" "+subY+" "+subX+" "+line3);
+////			subX = 33;
+//		}
+//		if(subZ==21 && subX>=30 && subX<=32 && subY>=59 && subY<=61/* && line3.getX() == -40.045438479618916*/ /* && (line3.getX() == -39.12749559761843 || line3.getX() == -39.98640441894531)*/){
+//			System.out.println("z,y,x"+subZ+" "+subY+" "+subX+" "+line3);
+////			subX = 33;
+//		}
+
 		if(subX >= 0 && subX < roiComposite[0].getWidth() &&
 			subY >= 0 && subY < roiComposite[0].getHeight() &&
 			subZ >= 0 && subZ < roiComposite.length){
@@ -977,6 +1554,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			data[subX + (plane.getWidth()*subY)] = value;
 
 		}
+//		else{
+//			System.out.println(subX+","+subY+","+subZ);
+//			System.out.println("?");
+//		}
 		
 	}
 	
@@ -987,13 +1568,101 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		public double xmax;
 		public double ymax;
 		public double zmax;
+		public ArrayList<SurfaceCollection> recalSurfs;
 	}
 
 	private static StatsHelper calcMinMax(File[] selectedFiles) throws Exception{
-		StatsHelper statsHelper = new StatsHelper();
+		
+		ArrayList<SurfaceCollection> allSurfCollections = new ArrayList<>();
+		TreeMap<String, TreeMap<Integer, ArrayList<TreeMap<Integer, TreeSet<Integer>>>>> fileMapSurfMapSubsurf = new TreeMap<>();
 		for (int j = 0; j < selectedFiles.length; j++) {
 			File selectedfiFile = selectedFiles[j];
 			SurfaceCollection surfaceCollection = ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedfiFile);
+			TreeMap<Integer, ArrayList<TreeMap<Integer, TreeSet<Integer>>>> fileSurf = new TreeMap<>();
+			fileMapSurfMapSubsurf.put(selectedfiFile.getAbsolutePath(), fileSurf);
+//			nodeMapFace.add(treeMap);
+			TreeSet<Integer> allNodes = new TreeSet<>();
+			for (int k = 0; k < surfaceCollection.getNodeCount(); k++) {
+				allNodes.add(k);
+			}
+			TreeMap<Integer,ArrayList<TreeSet<Integer>>> allSubSurf = new TreeMap<>();
+			int surfOutCount = 0;
+			for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++) {
+				ArrayList<TreeMap<Integer, TreeSet<Integer>>> surfMap = new ArrayList<>();
+				fileSurf.put(i, surfMap);
+				TreeMap<Integer, TreeSet<Integer>> treeMap = new TreeMap<>();
+				surfMap.add(treeMap);
+				Surface surface = surfaceCollection.getSurfaces(i);
+				for (int k = 0; k < surface.getPolygonCount(); k++) {
+					Polygon polygon = surface.getPolygons(k);
+					for(Node node:polygon.getNodes()){
+						TreeSet<Integer> PolygonIndexes = treeMap.get(node.getGlobalIndex());
+						if(PolygonIndexes == null){
+							PolygonIndexes = new TreeSet<Integer>();
+							treeMap.put(node.getGlobalIndex(), PolygonIndexes);
+						}
+						PolygonIndexes.add(k);
+					}
+				}
+				allSubSurf.put(i, new ArrayList<>());
+				while(allNodes.size() > 0){
+					surfOutCount+= 1;
+					TreeSet<Integer> searchNodes = new TreeSet<>(Arrays.asList(new Integer[] {allNodes.iterator().next()}));
+					TreeSet<Integer> alreadySearched = new TreeSet<>();
+					TreeSet<Integer> subSurf = new TreeSet<>();
+					allSubSurf.get(i).add(subSurf);
+					while(searchNodes.size() > 0){
+						Integer currentNode = searchNodes.iterator().next();
+						searchNodes.remove(currentNode);
+						alreadySearched.add(currentNode);
+						allNodes.remove(currentNode);
+						TreeSet<Integer> facesForNode = treeMap.get(surfaceCollection.getNodes(currentNode).getGlobalIndex());
+						Iterator<Integer> facesIter = facesForNode.iterator();
+						while(facesIter.hasNext()){
+							Integer faceIndex = facesIter.next();
+							subSurf.add(faceIndex);
+							Polygon poly = surfaceCollection.getSurfaces(i).getPolygons(faceIndex);
+							for (int k = 0; k < poly.getNodes().length; k++) {
+								if(poly.getNodes()[k].getGlobalIndex() != currentNode && !alreadySearched.contains(poly.getNodes()[k].getGlobalIndex())){
+									searchNodes.add(poly.getNodes()[k].getGlobalIndex());
+								}
+							}
+						}
+					}
+				}
+			}
+			if(surfOutCount > surfaceCollection.getSurfaceCount()){
+				SurfaceCollection newSurfCollection = new SurfaceCollection();
+				newSurfCollection.setNodes(surfaceCollection.getNodes());
+				for(Integer origSurfIndex:allSubSurf.keySet()){
+					ArrayList<TreeSet<Integer>> newSubSurfaces = allSubSurf.get(origSurfIndex);
+					for(TreeSet<Integer> subSurf:newSubSurfaces){
+						OrigSurface os = new OrigSurface(0, 1);
+						Iterator<Integer> polyIter = subSurf.iterator();
+						while(polyIter.hasNext()){
+							Polygon poly = surfaceCollection.getSurfaces(origSurfIndex).getPolygons(polyIter.next());
+							os.addPolygon(poly);
+						}						
+						newSurfCollection.addSurface(os);
+					}
+				}
+				allSurfCollections.add(newSurfCollection);
+			}else{
+				allSurfCollections.add(surfaceCollection);
+			}
+//			fileMapSurfMapSubsurf.get(selectedfiFile.getAbsolutePath()).get(i).add(treeMap);
+
+		}
+		
+		
+		
+		
+		StatsHelper statsHelper = new StatsHelper();
+		statsHelper.recalSurfs = allSurfCollections;
+		for (int j = 0; j < statsHelper.recalSurfs.size(); j++) {
+//			File selectedfiFile = selectedFiles[j];
+//			SurfaceCollection surfaceCollection = ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedfiFile);
+			SurfaceCollection surfaceCollection = statsHelper.recalSurfs.get(j);
 			for (int i = 0; i < surfaceCollection.getNodes().length; i++) {
 				if(j == 0 && i==0){
 					statsHelper.xmin = surfaceCollection.getNodes()[i].getX();
@@ -1559,6 +2228,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			int y = selectImgInfo.getRectangle().y+height;//(int)(selectImgInfo.getMouseEvent().getPoint().getY()/selectImgInfo.getZoom());				
 			for (int width = 0; width <= selectImgInfo.getRectangle().width; width++) {
 				int x = selectImgInfo.getRectangle().x+width;//(int)(selectImgInfo.getMouseEvent().getPoint().getX()/selectImgInfo.getZoom());
+				if(x<0 || x >= roiComposite[0].getWidth() || y<0 || y>=roiComposite[0].getHeight()){
+					return;
+				}
 				int currentIndex = (z*roiComposite[0].getWidth()*roiComposite[0].getHeight()) + (roiComposite[0].getWidth()*y) + x;
 				RegionInfo foundRegion = regionImage.getRegionInfoFromOffset(currentIndex);
 				int foundsortIndex = Arrays.binarySearch(sortedSelectedRegionInfos, foundRegion, regionInfoComparator);
@@ -1750,6 +2422,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		if(findRegionInfo == null){
 			return;
 		}
+		System.out.println("regIndex="+findRegionInfo.getRegionIndex()+" pixVal="+findRegionInfo.getPixelValue()+" numPix="+findRegionInfo.getNumPixels());
 		final String COORDINDEX = "COORDINDEX";
 		final String START_THREAD = "START_THREAD";
 		AsynchClientTask findCoordTask = new AsynchClientTask("Find coordinate...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -2005,6 +2678,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 				initImageDataSetChannels[c] = new ImageDataset(zImageSet, new double[] { 0.0 },newISize.getZ());
 			}
+		}else{
+			initImageDataSet(null, newISize);
 		}
 		
 		roiComposite = resizeInfo.roiComposite;
@@ -2768,7 +3443,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 	private void addNewROI(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr,String specialMessage) throws Exception{
 		try{
-			int unUsedColorIndex = getUnusedROIColorIndex(comboboxROINameArr);
+			int unUsedColorIndex = getUnusedROIColorIndex(comboboxROINameArr,null);
 			String newROIName = null;
 			boolean bNameOK;
 			int count = 0;
@@ -2850,11 +3525,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return false;
 	}
-	private int getUnusedROIColorIndex(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr) throws Exception{
+	private int getUnusedROIColorIndex(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr,Set<Integer> exclude) throws Exception{
 	//		JColorChooser jColorChooser = new JColorChooser();
 	//		DialogUtils.showComponentOKCancelDialog(overlayEditorPanelJAI, jColorChooser, "Select ROI Color");
 		for (int i = 1; i < getContrastIndexColorModel().getMapSize(); i++) {
 			boolean bColorUsed = false;
+			if(exclude != null && exclude.contains(i)){
+				continue;
+			}
 			for (int j = 0; j < comboboxROINameArr.length; j++) {
 				if(comboboxROINameArr[j].getContrastColorIndex() == i){
 					bColorUsed = true;
@@ -3044,7 +3722,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //						usedROIIndexes.set((int)(sliceBytes[j]&0x000000FF));
 //					}
 //				}
-				int unusedROIPixelValue = getUnusedROIColorIndex(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
+				int unusedROIPixelValue = getUnusedROIColorIndex(overlayEditorPanelJAI.getAllCompositeROINamesAndColors(),null);
 //				if(usedROIIndexes.get(unusedROIPixelValue)){
 //					throw new Exception("Error: Found unused color index but that ROI pixel value exists");
 //				}

@@ -462,6 +462,15 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		parameterContext.addPropertyChangeListener(this);
 		
 		parameterContext.refreshDependencies();
+		
+		for (EventAssignment eventAssignment : eventAssignmentList){
+			try {
+				eventAssignment.rebind();
+			} catch (ExpressionBindingException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to bind expression for assignment in event "+getName()+": "+e.getMessage(),e);
+			}
+		}
 	}
 
 	
