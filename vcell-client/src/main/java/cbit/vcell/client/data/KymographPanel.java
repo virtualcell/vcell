@@ -222,7 +222,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.K
 				connPtoP1SetTarget();
 			}
 			if(evt.getSource() == multiTimePlotHelper && evt.getPropertyName().equals(SimDataConstants.PROPERTY_NAME_DATAIDENTIFIERS)){
-				updateTheVariable(/*false*/);
+				updateTheVariable(null/*false*/);
 			}
 
 		};
@@ -246,9 +246,9 @@ public KymographPanel(PDEDataViewer pdeDataViewer, String title,/*AsynchClientTa
 
 }
 
-private void updateTheVariable(){
+private void updateTheVariable(DataIdentifier override){
 	try{
-		DataIdentifier selected = (DataIdentifier)ivjVarNamesJComboBox.getSelectedItem();
+		DataIdentifier selected = (override != null?override:(DataIdentifier)ivjVarNamesJComboBox.getSelectedItem());//(DataIdentifier)ivjVarNamesJComboBox.getSelectedItem();
 		ivjVarNamesJComboBox.removeActionListener(ivjEventHandler);
 		DataIdentifier[] newData = multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers();
 		((DefaultComboBoxModel<DataIdentifier>)ivjVarNamesJComboBox.getModel()).removeAllElements();  //setListData(newData);
@@ -1922,7 +1922,7 @@ private void initConnections() throws java.lang.Exception {
  * @param distances double[]
  */
 public void initDataManager(
-	double initTime,int step,double endTime,
+	DataIdentifier initVar,double initTime,int step,double endTime,
 	int[] indices,int[] argCrossingMembraneIndices,
 	double[] accumDistances,
 	boolean waitOnInitialLoad,
@@ -1971,7 +1971,7 @@ public void initDataManager(
 //	AsynchClientTask[] taskArray = new AsynchClientTask[]{/*task1,*/ task2};
 //	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 	
-	updateTheVariable(/*true*/);
+	updateTheVariable(initVar/*true*/);
 }
 
 

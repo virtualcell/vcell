@@ -2357,7 +2357,7 @@ private void showKymograph() {
 			childWindow.show();
 			
 			
-			kymographPanel.initDataManager(getPdeDataContext().getTimePoints()[0], 1,
+			kymographPanel.initDataManager(getPdeDataContext().getDataIdentifier(),getPdeDataContext().getTimePoints()[0], 1,
 				getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
 				(int[])hashTable.get(INDICES_KEY),(int[])hashTable.get(CROSSING_KEY),(double[])hashTable.get(ACCUM_KEY),true,getPdeDataContext().getTimePoint(),
 				symbolTable);
