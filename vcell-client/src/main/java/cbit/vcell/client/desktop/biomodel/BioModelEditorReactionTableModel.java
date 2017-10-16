@@ -124,6 +124,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 						}
 					}
 					if (process instanceof ReactionStep) {
+						// we also search in reaction step expression, for strings like "s1 + s2" or s1 -> s2
 						ModelProcessEquation mpe = new ModelProcessEquation(process, bioModel.getModel());
 						if(mpe.toString().toLowerCase().contains(lowerCaseSearchText)) {
 							if(!processList.contains(process)) {

@@ -22,6 +22,7 @@ import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
 import cbit.vcell.model.ReactionRuleShortSignature;
 
+@Deprecated
 public class ReactionRuleShortDiagramShape extends ElipseShape {
 	ReactionRuleShortSignature reactionRuleShortSignature = null;
 //	Area icon = null;
