@@ -291,6 +291,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		super.setIssueManager(issueManager);
 		applicationGeometryPanel.setIssueManager(issueManager);
 		applicationSpecificationsPanel.setIssueManager(issueManager);
+		applicationProtocolsPanel.setIssueManager(issueManager);
 		applicationSimulationsPanel.setIssueManager(issueManager);
 		parameterEstimationPanel.setIssueManager(issueManager);
 	}

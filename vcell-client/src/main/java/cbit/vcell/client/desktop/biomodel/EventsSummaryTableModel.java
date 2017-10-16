@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import org.vcell.util.Issue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -201,7 +202,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 		}
 		return null;
 	}
-
+	
 	public SymbolTable getSymbolTable(int row, int column) {
 		return null;
 	}

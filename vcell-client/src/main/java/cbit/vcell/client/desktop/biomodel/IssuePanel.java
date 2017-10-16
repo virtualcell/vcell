@@ -46,6 +46,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
@@ -234,6 +235,10 @@ public class IssuePanel extends DocumentEditorSubPanel {
 			} else if (object instanceof MicroscopeMeasurement) {
 				SimulationContext simulationContext = ((MicroscopeMeasurement) object).getSimulationContext();
 				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.microscope_measuremments),new Object[] {object});
+			} else if (object instanceof BioEvent) {
+				BioEvent be = (BioEvent)object;
+				SimulationContext simulationContext = be.getSimulationContext();
+				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.events),new Object[] {object});
 			} else if (object instanceof OutputFunctionIssueSource) {
 				SimulationOwner simulationOwner = ((OutputFunctionIssueSource)object).getOutputFunctionContext().getSimulationOwner();
 				if (simulationOwner instanceof SimulationContext) {

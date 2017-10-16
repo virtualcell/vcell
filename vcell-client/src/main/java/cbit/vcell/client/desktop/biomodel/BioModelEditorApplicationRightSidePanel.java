@@ -110,6 +110,11 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 		table.getSelectionModel().addListSelectionListener(eventHandler);
 	}
 	
+	@Override
+	public void setIssueManager(IssueManager issueManager) {
+		tableModel.setIssueManager(issueManager);
+	}
+	
 	public void setSimulationContext(SimulationContext newValue) {
 		SimulationContext oldValue = simulationContext;
 		simulationContext = newValue;		

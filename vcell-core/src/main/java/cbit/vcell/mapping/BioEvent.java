@@ -22,15 +22,18 @@ import java.util.List;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.ParameterContext.GlobalParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
+import cbit.vcell.math.Event;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Model;
@@ -394,8 +397,67 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		parameterContext.getLocalParameterFromRole(parameterType).setExpression(expression);
 	}
 	
-	public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
-		// look for negative times ... etc.
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+//		System.out.println("Event: " + name);
+		// check all event assignment symbols
+		if(eventAssignmentList != null) {
+			for (EventAssignment ea : eventAssignmentList) {	// the target of the event assignment
+				SymbolTableEntry ste = simulationContext.getEntry(ea.getTarget().getName());
+				// TODO: bulletproof would be to look in parameterContext and for all proxyParameters look in the simulationContext
+				// but we don't have local parameters here so it would be an useless complication for now (unless we introduce them at some point in the future)
+				//SymbolTableEntry ste = parameterContext.getEntry(ea.getTarget().getName());
+				if(ste == null) {
+					String msg = "Missing Parameter '" + ea.getTarget().getName() + "' used in BioEvent '" + name + "'.";
+					String tip = "Remove the Action containing the missing parameter from the BioEvent '" + name + "'.";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+					break;	// found one issue on this event assignment, we show it and go to next
+				}
+			
+				Expression exp = ea.assignmentExpression;		// the expression of the event assignment
+				String[] symbols = exp.getSymbols();
+				if(symbols != null) {
+					boolean found = false;
+					for(String symbol : symbols) {
+						ste = simulationContext.getEntry(symbol);
+						if(ste == null) {
+							String msg = "Missing Symbol '" + symbol + "' in Assignment Expression for BioEvent '" + name + "'.";
+							String tip = "Remove the Action containing the missing Symbol from the Assignment Expression of the BioEvent '" + name + "'.";
+							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+							found = true;
+							break;
+						}
+					}
+					if(found == true) {
+						break;	// found one issue on this event assignment, we show it and go to next
+					}
+				}
+			}
+		} else {
+			String msg = "No Action assigned to BioEvent '" + name + "'.";
+			String tip = "Please assign an Action to the BioEvent '" + name + "'.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+		}
+		
+		// check all trigger condition symbols
+		for(LocalParameter lp : getEventParameters()) {
+			if(lp.getExpression() != null && lp.getExpression().getSymbols() != null) {
+				String[] symbols = lp.getExpression().getSymbols();
+				boolean found = false;
+				for(String symbol : symbols) {
+					SymbolTableEntry ste = simulationContext.getEntry(symbol);
+					if(ste == null) {
+						String msg = "Missing Symbol '" + symbol + "' in the Trigger Condition for BioEvent '" + name + "'.";
+						String tip = "Remove the Action containing the missing Symbol from the Trigger Condition of the BioEvent '" + name + "'.";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+						found = true;
+						break;
+					}
+				}
+				if(found == true) {
+					break;	// found one issue with a parameter on this trigger condition, we show it and stop
+				}
+			}
+		}
 	}
 	
 	@Override

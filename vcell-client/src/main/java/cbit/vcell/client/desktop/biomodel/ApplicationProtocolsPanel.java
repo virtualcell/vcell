@@ -81,6 +81,12 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	}	
 	
 	@Override
+	public void setIssueManager(IssueManager issueManager) {
+		super.setIssueManager(issueManager);
+		eventsDisplayPanel.setIssueManager(issueManager);
+	}
+
+	@Override
 	public void setSimulationContext(SimulationContext newValue) {
 		super.setSimulationContext(newValue);
 //		electricalMembraneMappingPanel.setSimulationContext(simulationContext);

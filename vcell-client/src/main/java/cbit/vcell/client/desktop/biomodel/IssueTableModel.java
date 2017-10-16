@@ -35,6 +35,7 @@ import cbit.vcell.client.desktop.DecoratedIssueSource;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
@@ -309,6 +310,8 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				}
 			} else if (source instanceof Model) {
 				description = "Model";
+			} else if (source instanceof BioEvent){
+				return "Protocols / Events";
 			} else {
 				System.err.println("unknown source type in IssueTableModel.getSourceObjectPathDescription(): " + source.getClass());
 			}
@@ -409,6 +412,8 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (object instanceof Model) {
 				Model m = (Model)object;
 				description = m.getName();
+			} else if (object instanceof BioEvent) {
+				return ((BioEvent)object).getName()+"";
 			} else {
 				System.err.println("unknown object type in IssueTableModel.getSourceObjectDescription(): " + object.getClass());
 			}

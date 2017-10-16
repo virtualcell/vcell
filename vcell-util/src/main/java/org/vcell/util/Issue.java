@@ -22,6 +22,20 @@ import org.apache.commons.lang3.StringUtils;
  * Creation date: (4/1/2004 10:12:47 AM)
  * @author: Jim Schaff
  */
+
+//
+// TODO: HOW TO USE
+// implement gatherIssues() for the object that has issues (ex: BioEvent)
+// populate the 'Source' and 'Defined In' columns in the IssueTableModel
+// implement the followHyperlink in the IssuePanel to allow navigation to where the problem can be fixed
+// modify the renderer to show the error / warning icon
+// show the error / warning icon next to the wrong object (ex event table in Protocols / Events panel)
+//    should invoke issueRenderer() in DefaultScrollTableCellRenderer - debug here as follows:
+//    check if it's being called, if not check class hierarchy
+//    if getIssues() not working check if issueManager is being transmitted all the way down to the 
+//       model (ex EventsSummaryTableModel), with setIssueManager()
+//
+
 @SuppressWarnings("serial")
 public class Issue implements java.io.Serializable, Matchable {
 
