@@ -1,17 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.vcell</groupId>
-	<artifactId>vcell-pom</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
+
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
 		<version>14.0.0</version>
 	</parent>
+
+	<groupId>org.vcell</groupId>
+	<artifactId>vcell-pom</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
 	<name>Virtual Cell Project</name>
-	<url>http://vcell.org/</url>
 	<description>The Virtual Cell client and server</description>
+	<url>http://vcell.org/</url>
 	<inceptionYear>1997</inceptionYear>
 	<organization>
 		<name>VCell</name>
@@ -23,6 +27,7 @@
 			<url>https://opensource.org/licenses/MIT</url>
 		</license>
 	</licenses>
+
 	<developers>
 		<developer>
 			<id>jcschaff</id>
@@ -43,6 +48,7 @@
 			<name>John Wagner</name>
 		</contributor>
 	</contributors>
+
 	<mailingLists>
 		<mailingList>
 			<name>VCell Open Discussion Forum</name>
@@ -52,6 +58,19 @@
 			<archive>https://groups.google.com/group/vcell-discuss</archive>
 		</mailingList>
 	</mailingLists>
+
+	<modules>
+		<module>vcell-util</module>
+		<module>vcell-math</module>
+		<module>vcell-admin</module>
+		<module>vcell-vmicro</module>
+		<module>vcell-server</module>
+		<module>vcell-client</module>
+		<module>vcell-core</module>
+		<module>vcell-api</module>
+		<module>vcell-apiclient</module>
+	</modules>
+
 	<scm>
 		<connection>scm:git:git://github.com/scijava/pom-scijava-base</connection>
 		<developerConnection>scm:git:git@github.com:scijava/pom-scijava-base</developerConnection>
@@ -66,6 +85,7 @@
 		<system>Jenkins</system>
 		<url>http://jenkins.vcell.org/job/vcell/</url>
 	</ciManagement>
+
 	<properties>
 		<enforcer.skip>false</enforcer.skip>
 
@@ -84,18 +104,6 @@
 		<!-- Gson - https://code.google.com/p/google-gson/ -->
 		<gson.version>2.7</gson.version>
 	</properties>
-
-	<modules>
-		<module>vcell-util</module>
-		<module>vcell-math</module>
-		<module>vcell-admin</module>
-		<module>vcell-vmicro</module>
-		<module>vcell-server</module>
-		<module>vcell-client</module>
-		<module>vcell-core</module>
-		<module>vcell-api</module>
-		<module>vcell-apiclient</module>
-	</modules>
 
 	<repositories>
 		<!-- needed for org.sbml.jsbml -->
@@ -138,8 +146,10 @@
 		</repository>
 
 	</repositories>
+
 	<dependencies>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -154,8 +164,7 @@
 					</rules>
 				</configuration>
 			</plugin>
-			<plugin>
-				<!-- mvn dependency:copy-dependencies -->
+			<plugin><!-- mvn dependency:copy-dependencies -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
