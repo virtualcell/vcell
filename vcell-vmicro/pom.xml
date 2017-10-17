@@ -3,21 +3,21 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-  		<groupId>org.vcell</groupId>
-  		<artifactId>vcell-pom</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
-  		<relativePath>../pom.xml</relativePath>
-  	</parent>
+		<groupId>org.vcell</groupId>
+		<artifactId>vcell-pom</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
 	<groupId>org.vcell</groupId>
 	<artifactId>vcell-vmicro</artifactId>
-  	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>vcell-vmicro</name>
 	<url>http://maven.apache.org</url>
 
-  	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
+	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
 	<description>The Virtual Cell client and server</description>
 	<inceptionYear>1997</inceptionYear>
 	<organization>
@@ -85,8 +85,8 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
-		
+
+
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-core</artifactId>

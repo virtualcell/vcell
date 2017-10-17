@@ -4,7 +4,7 @@
 	<artifactId>vcell-pom</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
- 	<parent>
+	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
 		<version>14.0.0</version>
@@ -72,7 +72,7 @@
 		<license.licenseName>MIT</license.licenseName>
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 
-	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- JUnit - http://junit.org/ -->
 		<junit.version>4.12</junit.version>
 		<!-- JAMA - http://math.nist.gov/javanumerics/jama/ -->
@@ -84,7 +84,7 @@
 		<!-- Gson - https://code.google.com/p/google-gson/ -->
 		<gson.version>2.7</gson.version>
 	</properties>
-	
+
 	<modules>
 		<module>vcell-util</module>
 		<module>vcell-math</module>
@@ -96,13 +96,13 @@
 		<module>vcell-api</module>
 		<module>vcell-apiclient</module>
 	</modules>
-  
+
 	<repositories>
 		<!-- needed for org.sbml.jsbml -->
 		<!-- <repository>
-		  <id>JSBML-SNAPSHOT</id>
-		  <name>The JSBML Snapshot repository</name>
-		  <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<id>JSBML-SNAPSHOT</id>
+			<name>The JSBML Snapshot repository</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository> -->
 		<!-- needed for javax.media.jai -->
 		<repository>
@@ -123,20 +123,20 @@
 			<id>imagej.public</id>
 			<url>http://maven.imagej.net/content/groups/public</url>
 		</repository>
-		
+
 		<!-- needed for biomodels.net web services -->
 		<repository>
-    		<id>ebi-repo</id>
-    		<name>The EBI internal repository</name>
-    		<url>http://www.ebi.ac.uk/~maven/m2repo</url>
-    		<releases>
-      			<enabled>true</enabled>
-    		</releases>
-    		<snapshots>
-      			<enabled>false</enabled>
-    		</snapshots>
-  		</repository>
-		
+			<id>ebi-repo</id>
+			<name>The EBI internal repository</name>
+			<url>http://www.ebi.ac.uk/~maven/m2repo</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
 	</repositories>
 	<dependencies>
 	</dependencies>
@@ -158,18 +158,18 @@
 				<!-- mvn dependency:copy-dependencies -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-		        <executions>
-		          <execution>
-		            <id>analyze</id>
-		            <goals>
-		              <goal>analyze-only</goal>
-		            </goals>
-		            <configuration>
-		              <failOnWarning>true</failOnWarning>
-		            </configuration>
-		          </execution>
-		        </executions>
-				
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<goals>
+							<goal>analyze-only</goal>
+						</goals>
+						<configuration>
+							<failOnWarning>true</failOnWarning>
+						</configuration>
+					</execution>
+				</executions>
+
 				<configuration>
 					<outputDirectory>
 						${project.build.directory}/maven-jars

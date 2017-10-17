@@ -1,24 +1,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.vcell</groupId>
 		<artifactId>vcell-pom</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-  		<relativePath>../pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>org.vcell</groupId>
 	<artifactId>vcell-api</artifactId>
-  	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>vcell-api</name>
 	<url>http://maven.apache.org</url>
 
 
-  	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
+	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
 	<description>The Virtual Cell client and server</description>
 	<inceptionYear>1997</inceptionYear>
 	<organization>
@@ -89,7 +89,7 @@
 			<url>http://maven.restlet.com</url>
 		</repository>
 	</repositories>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -114,63 +114,63 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.vcell</groupId>
-		    <artifactId>vcell-util</artifactId>
-		    <version>0.0.1-SNAPSHOT</version>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-util</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/com.oracle/ojdbc5 -->
 		<dependency>
-		    <groupId>com.oracle</groupId>
-		    <artifactId>ojdbc6</artifactId>
-		    <version>11.2.0.4</version>
-		    <scope>provided</scope>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>11.2.0.4</version>
+			<scope>provided</scope>
 		</dependency>
 		<!-- The UCP jar can be found at http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html -->
 		<dependency>
-		    <groupId>com.oracle</groupId>
-		    <artifactId>ucp</artifactId>
-		    <version>11.2.0.4</version>
-		    <scope>provided</scope>
+			<groupId>com.oracle</groupId>
+			<artifactId>ucp</artifactId>
+			<version>11.2.0.4</version>
+			<scope>provided</scope>
 		</dependency>
-		
+
 
 
 		<!-- https://mvnrepository.com/artifact/org.restlet.jee/org.restlet -->
 		<dependency>
-		    <groupId>org.restlet.jse</groupId>
-		    <artifactId>org.restlet</artifactId>
-		    <version>2.2.1</version>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet</artifactId>
+			<version>2.2.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.restlet.jee/org.restlet.ext.freemarker -->
 		<dependency>
-		    <groupId>org.restlet.jse</groupId>
-		    <artifactId>org.restlet.ext.freemarker</artifactId>
-		    <version>2.2.1</version>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.freemarker</artifactId>
+			<version>2.2.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.restlet.jee/org.restlet.ext.crypto -->
 		<dependency>
-		    <groupId>org.restlet.jse</groupId>
-		    <artifactId>org.restlet.ext.crypto</artifactId>
-		    <version>2.2.1</version>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.crypto</artifactId>
+			<version>2.2.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.restlet.jse/org.restlet.ext.wadl -->
 		<dependency>
-		    <groupId>org.restlet.jse</groupId>
-		    <artifactId>org.restlet.ext.wadl</artifactId>
-		    <version>2.2.1</version>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.wadl</artifactId>
+			<version>2.2.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.restlet.jse/org.restlet.ext.json -->
 		<dependency>
-		    <groupId>org.restlet.jse</groupId>
-		    <artifactId>org.restlet.ext.json</artifactId>
-		    <version>2.2.1</version>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.json</artifactId>
+			<version>2.2.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.restlet.jse/org.restlet.ext.gson -->
 		<dependency>
-		    <groupId>org.restlet.jse</groupId>
-		    <artifactId>org.restlet.ext.gson</artifactId>
-		    <version>2.2.1</version>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.gson</artifactId>
+			<version>2.2.1</version>
 		</dependency>
-  </dependencies>
+	</dependencies>
 </project>

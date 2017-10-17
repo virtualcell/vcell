@@ -3,15 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-  		<groupId>org.vcell</groupId>
-  		<artifactId>vcell-pom</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
-  		<relativePath>../pom.xml</relativePath>
-  	</parent>
+		<groupId>org.vcell</groupId>
+		<artifactId>vcell-pom</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
 	<groupId>org.vcell</groupId>
 	<artifactId>vcell-admin</artifactId>
-  	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>vcell-admin</name>
@@ -20,7 +20,7 @@
 
 
 
-  	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
+	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
 	<description>The Virtual Cell client and server</description>
 	<inceptionYear>1997</inceptionYear>
 	<organization>
@@ -93,9 +93,9 @@
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.miglayout/miglayout -->
 		<dependency>
-		    <groupId>com.miglayout</groupId>
-		    <artifactId>miglayout</artifactId>
-		    <version>3.5.5</version>
+			<groupId>com.miglayout</groupId>
+			<artifactId>miglayout</artifactId>
+			<version>3.5.5</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -119,23 +119,23 @@
 			<artifactId>vcell-vmicro</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		
-		
+
+
 		<!-- https://mvnrepository.com/artifact/com.oracle/ojdbc5 -->
 		<dependency>
-		    <groupId>com.oracle</groupId>
-		    <artifactId>ojdbc6</artifactId>
-		    <version>11.2.0.4</version>
-		    <scope>provided</scope>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>11.2.0.4</version>
+			<scope>provided</scope>
 		</dependency>
 		<!-- The UCP jar can be found at http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html -->
 		<dependency>
-		    <groupId>com.oracle</groupId>
-		    <artifactId>ucp</artifactId>
-		    <version>11.2.0.4</version>
-		    <scope>provided</scope>
+			<groupId>com.oracle</groupId>
+			<artifactId>ucp</artifactId>
+			<version>11.2.0.4</version>
+			<scope>provided</scope>
 		</dependency>
-		
-		
+
+
 	</dependencies>
 </project>
