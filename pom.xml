@@ -15,11 +15,11 @@
 
 	<name>vcell-imagej</name>
 	<description>The Virtual Cell plugin for ImageJ</description>
-	<url>http://mycompany.com/imagej/gauss-filtering/</url>
+	<url>http://vcell.org/</url>
 	<inceptionYear>2017</inceptionYear>
 	<organization>
-		<name>My Company</name>
-		<url>http://mycompany.com/</url>
+		<name>VCell</name>
+		<url>http://vcell.org</url>
 	</organization>
 	<licenses>
 		<license>
@@ -31,9 +31,8 @@
 	<developers>
 		<!-- See https://imagej.net/Team -->
 		<developer>
-			<id>ctrueden</id>
-			<name>Curtis Rueden</name>
-			<url>http://imagej.net/User:Rueden</url>
+			<id>jcschaff</id>
+			<name>Jim Schaff</name>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -47,29 +46,31 @@
 	</developers>
 	<contributors>
 		<contributor>
-			<name>Yili Zhao</name>
-			<url>http://imagej.net/User:Panovr</url>
+			<name>Kevin Gaffney</name>
 			<roles><role>founder</role></roles>
-			<properties><id>panovr</id></properties>
+			<properties><id>gaffneyk</id></properties>
 		</contributor>
 	</contributors>
 
 	<mailingLists>
 		<mailingList>
-			<name>ImageJ Forum</name>
-			<archive>http://forum.imagej.net/</archive>
+			<name>VCell Open Discussion Forum</name>
+			<subscribe>https://groups.google.com/group/vcell-discuss</subscribe>
+			<unsubscribe>https://groups.google.com/group/vcell-discuss</unsubscribe>
+			<post>vcell-discuss@googlegroups.com</post>
+			<archive>https://groups.google.com/group/vcell-discuss</archive>
 		</mailingList>
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/imagej/example-imagej-command</connection>
-		<developerConnection>scm:git:git@github.com:imagej/example-imagej-command</developerConnection>
+		<connection>scm:git:git://github.com/virtualcell/vcell-imagej</connection>
+		<developerConnection>scm:git:git@github.com:virtualcell/vcell-imagej</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/imagej/example-imagej-command</url>
+		<url>https://github.com/virtualcell/vcell-imagej</url>
 	</scm>
 	<issueManagement>
-		<system>GitHub Issues</system>
-		<url>https://github.com/imagej/example-imagej-command/issues</url>
+		<system>Bugzilla</system>
+		<url>http://code3.cam.uchc.edu/bugzilla/</url>
 	</issueManagement>
 	<ciManagement>
 		<system>None</system>
@@ -80,7 +81,7 @@
 		<package-name>org.vcell</package-name>
 		<main-class>org.vcell.Driver</main-class>
 		<license.licenseName>bsd_2</license.licenseName>
-		<license.copyrightOwners>My Company, Inc.</license.copyrightOwners>
+		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 	</properties>
 
 	<repositories>
