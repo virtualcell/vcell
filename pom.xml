@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -121,7 +121,7 @@
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-ui-swing</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-ui-swing</artifactId>
@@ -138,20 +138,20 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
 		<dependency>
-		    <groupId>com.google.guava</groupId>
-		    <artifactId>guava</artifactId>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 		</dependency>
-		
 
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.0.0-M4</version>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.0.0-M4</version>
 			<scope>test</scope>
-        </dependency>
+		</dependency>
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -173,19 +173,19 @@
 			<version>1.0.0-M4</version>
 			<scope>test</scope>
 		</dependency>
-		
-		
- 		<dependency>
+
+
+		<dependency>
 			<groupId>org.vcell</groupId>
-		 	<artifactId>vcell-core</artifactId>
-		 	<version>0.0.1-SNAPSHOT</version>
+			<artifactId>vcell-core</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.vcell</groupId>
-		 	<artifactId>vcell-apiclient</artifactId>
-		 	<version>0.0.1-SNAPSHOT</version>
+			<artifactId>vcell-apiclient</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
-    </dependencies>
+	</dependencies>
 </project>
