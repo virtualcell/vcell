@@ -1,13 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
- 	<parent>
-  		<groupId>org.vcell</groupId>
-  		<artifactId>vcell-pom</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
-  		<relativePath>../pom.xml</relativePath>
-  	</parent>
+	<parent>
+		<groupId>org.vcell</groupId>
+		<artifactId>vcell-pom</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
 
 	<groupId>org.vcell</groupId>
 	<artifactId>vcell-util</artifactId>
@@ -15,13 +14,9 @@
 	<packaging>jar</packaging>
 
 	<name>vcell-util</name>
-	<url>http://vcell.org/</url>
-	
-	
-	
-	
 	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
 	<description>The Virtual Cell client and server</description>
+	<url>http://vcell.org/</url>
 	<inceptionYear>1997</inceptionYear>
 	<organization>
 		<name>VCell</name>
@@ -33,6 +28,7 @@
 			<url>https://opensource.org/licenses/MIT</url>
 		</license>
 	</licenses>
+
 	<developers>
 		<developer>
 			<id>jcschaff</id>
@@ -53,6 +49,7 @@
 			<name>John Wagner</name>
 		</contributor>
 	</contributors>
+
 	<mailingLists>
 		<mailingList>
 			<name>VCell Open Discussion Forum</name>
@@ -62,20 +59,21 @@
 			<archive>https://groups.google.com/group/vcell-discuss</archive>
 		</mailingList>
 	</mailingLists>
+
 	<scm>
-		<connection>scm:git:git://github.com/scijava/pom-scijava-base</connection>
-		<developerConnection>scm:git:git@github.com:scijava/pom-scijava-base</developerConnection>
-		<tag>pom-scijava-base-3.0.0</tag>
-		<url>https://github.com/scijava/pom-scijava-base/</url>
+		<connection>scm:git:git://github.com/virtualcell/vcell</connection>
+		<developerConnection>scm:git:git@github.com:virtualcell/vcell</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/virtualcell/vcell</url>
 	</scm>
 	<issueManagement>
 		<system>Bugzilla</system>
 		<url>http://code3.cam.uchc.edu/bugzilla/</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://jenkins.vcell.org/job/vcell/</url>
+		<system>None</system>
 	</ciManagement>
+
 	<properties>
 		<license.licenseName>MIT</license.licenseName>
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
@@ -88,14 +86,14 @@
 			<!-- <version>4.12</version> -->
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/org.jboss.netty/netty -->
 		<dependency>
 			<groupId>org.jboss.netty</groupId>
 			<artifactId>netty</artifactId>
 			<version>3.2.10.Final</version>
 		</dependency>
- 		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
@@ -115,15 +113,15 @@
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
 		<dependency>
-		    <groupId>org.apache.logging.log4j</groupId>
-		    <artifactId>log4j-core</artifactId>
-		    <version>2.3</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.3</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-1.2-api -->
 		<dependency>
-		    <groupId>org.apache.logging.log4j</groupId>
-		    <artifactId>log4j-1.2-api</artifactId>
-		    <version>2.3</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-1.2-api</artifactId>
+			<version>2.3</version>
 		</dependency>
 
 	</dependencies>
