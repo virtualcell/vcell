@@ -93,29 +93,29 @@
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-client</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-server</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-vmicro</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- NB: For testing via main methods in IDEs. -->
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-oracle</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>

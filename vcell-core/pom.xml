@@ -87,17 +87,17 @@
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-math</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-util</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-apiclient</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>

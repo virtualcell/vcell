@@ -87,12 +87,12 @@
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-client</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->

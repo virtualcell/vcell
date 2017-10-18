@@ -96,22 +96,22 @@
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-server</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-math</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-util</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.restlet.jee/org.restlet -->
@@ -155,7 +155,7 @@
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-oracle</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
