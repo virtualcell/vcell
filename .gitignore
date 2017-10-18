@@ -1,9 +1,11 @@
-/listserv/
-/vfrapPaper/
-/log4j.properties
-/.settings/
+.classpath
+.project
+.settings/
 /.pydevproject
-/.project
-/.classpath
+/listserv/
+/log4j.properties
 /vcell_debug_server.properties
 /vcell_localClient.properties
+/vfrapPaper/
+jsbml.log
+target/
