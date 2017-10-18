@@ -73,10 +73,10 @@
 	</modules>
 
 	<scm>
-		<connection>scm:git:git://github.com/scijava/pom-scijava-base</connection>
-		<developerConnection>scm:git:git@github.com:scijava/pom-scijava-base</developerConnection>
-		<tag>pom-scijava-base-3.0.0</tag>
-		<url>https://github.com/scijava/pom-scijava-base/</url>
+		<connection>scm:git:git://github.com/virtualcell/vcell</connection>
+		<developerConnection>scm:git:git@github.com:virtualcell/vcell</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/virtualcell/vcell</url>
 	</scm>
 	<issueManagement>
 		<system>Bugzilla</system>
