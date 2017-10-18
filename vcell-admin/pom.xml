@@ -110,5 +110,14 @@
 			<artifactId>vcell-vmicro</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+
+		<!-- NB: For testing via main methods in IDEs. -->
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-oracle</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 </project>
