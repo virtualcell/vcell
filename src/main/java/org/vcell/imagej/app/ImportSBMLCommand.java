@@ -33,7 +33,7 @@ import net.imglib2.type.numeric.integer.UnsignedIntType;
 /**
  *
  */
-@Plugin(type = Command.class, menuPath = "Plugins>SBML>Import SBML")
+@Plugin(type = Command.class, menuPath = "Plugins>VCell>Import SBML")
 public class ImportSBMLCommand<T extends RealType<T>> implements Command {
     //
     // Feel free to add more parameters here...

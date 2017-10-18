@@ -14,7 +14,7 @@ import net.imagej.ImageJ;
 /**
  * Created by kevingaffney on 6/26/17.
  */
-@Plugin(type = Command.class, menuPath = "Plugins>Modeling")
+@Plugin(type = Command.class, menuPath = "Plugins>VCell>Modeling")
 public class MainCommand implements Command {
 
     @Parameter
