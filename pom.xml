@@ -171,6 +171,8 @@
 		<profile>
 			<id>oracle</id>
 			<modules>
+				<module>ojdbc6</module>
+				<module>ucp</module>
 				<module>vcell-oracle</module>
 			</modules>
 		</profile>
