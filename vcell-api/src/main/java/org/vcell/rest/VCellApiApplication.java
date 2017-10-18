@@ -19,7 +19,7 @@ import org.restlet.representation.Variant;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Router;
-import org.vcell.optimization.OptServerImpl;
+import org.vcell.optimization.OptService;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.server.AccessTokenServerResource;
@@ -150,15 +150,15 @@ public class VCellApiApplication extends WadlApplication {
 	private UserVerifier userVerifier = null;
 	private Configuration templateConfiguration = null;
 	private File javascriptDir = null;
-	private OptServerImpl optServerImpl = null;
+	private OptService optServerLocalImpl = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
 		return new Variant(MediaType.APPLICATION_WADL);
 	}
 	
-	public OptServerImpl getOptServerImpl() {
-		return optServerImpl;
+	public OptService getOptServerImpl() {
+		return optServerLocalImpl;
 	}
 
 	@Override
@@ -167,7 +167,7 @@ public class VCellApiApplication extends WadlApplication {
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
-	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, OptServerImpl optServerImpl, Configuration templateConfiguration, File javascriptDir) {
+	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, OptService optServerLocalImpl, Configuration templateConfiguration, File javascriptDir) {
         setName("RESTful VCell API application");
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
@@ -176,7 +176,7 @@ public class VCellApiApplication extends WadlApplication {
 		this.javascriptDir = javascriptDir;
 		this.restDatabaseService = restDatabaseService;
 		this.userVerifier = userVerifier;
-		this.optServerImpl = optServerImpl;
+		this.optServerLocalImpl = optServerLocalImpl;
 		this.templateConfiguration = templateConfiguration;
 		getLogger().setLevel(Level.FINE);
 	}

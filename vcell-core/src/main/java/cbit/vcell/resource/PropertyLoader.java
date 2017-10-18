@@ -121,6 +121,7 @@ public class PropertyLoader {
 	public static final String jmsDbRequestQueue		= record("vcell.jms.queue.dbReq",ValueType.GEN);
 	public static final String jmsSimJobQueue			= record("vcell.jms.queue.simJob",ValueType.GEN);
 	public static final String jmsWorkerEventQueue		= record("vcell.jms.queue.workerEvent",ValueType.GEN);
+	public static final String jmsOptRequestQueue		= record("vcell.jms.queue.optReq",ValueType.GEN);
 	public static final String jmsServiceControlTopic	= record("vcell.jms.topic.serviceControl",ValueType.GEN);
 	public static final String jmsDaemonControlTopic	= record("vcell.jms.topic.daemonControl",ValueType.GEN);
 	public static final String jmsClientStatusTopic		= record("vcell.jms.topic.clientStatus",ValueType.GEN);

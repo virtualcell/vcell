@@ -1,0 +1,347 @@
+2017-10-12 19:40:22,453 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-10-12 19:40:24,226 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-12 19:40:24,274 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-12 19:41:00,947 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-12 19:41:56,379 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-12 19:46:57,686 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-12 19:48:50,929 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-12 19:48:51,846 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-10-12 19:48:53,573 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-12 19:48:53,616 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-12 19:49:13,611 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59dfff65a75e5b0a632d24bf', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketOpenException: Exception opening socket
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:63) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:113) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.SocketTimeoutException: connect timed out
+	at java.net.PlainSocketImpl.socketConnect(Native Method) ~[?:1.8.0_45]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:345) ~[?:1.8.0_45]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206) ~[?:1.8.0_45]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188) ~[?:1.8.0_45]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392) ~[?:1.8.0_45]
+	at java.net.Socket.connect(Socket.java:589) ~[?:1.8.0_45]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	... 3 more
+2017-10-12 19:49:23,620 WARN c.v.m.VCMongoDbDriver [VCellExecutorService-thread-1] VCMongoMessage failedToSend : Timed out after 30000 ms while waiting for a server that matches WritableServerSelector. Client view of cluster state is {type=UNKNOWN, servers=[{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING, exception={com.mongodb.MongoSocketOpenException: Exception opening socket}, caused by {java.net.SocketTimeoutException: connect timed out}}]
+2017-10-12 19:51:44,393 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59dfff65a75e5b0a632d24bf', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:7, serverValue:375347}] to mongo.cam.uchc.edu:27017
+2017-10-12 19:51:44,436 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59dfff65a75e5b0a632d24bf', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=41240365}
+2017-10-12 19:51:45,714 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-3] Opened connection [connectionId{localValue:8, serverValue:375348}] to mongo.cam.uchc.edu:27017
+2017-10-12 19:54:20,190 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-12 19:54:21,159 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-10-12 19:54:22,891 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-12 19:54:22,936 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-12 19:54:23,111 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e000aed0fc7d0abf941066', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:375365}] to mongo.cam.uchc.edu:27017
+2017-10-12 19:54:23,153 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e000aed0fc7d0abf941066', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=40536513}
+2017-10-12 19:54:23,327 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:375366}] to mongo.cam.uchc.edu:27017
+2017-10-12 19:55:42,081 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-12 19:55:42,882 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-10-12 19:55:44,648 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-12 19:55:44,692 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-12 19:55:44,961 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e00100d0fc7d0ac9aaa0a6', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:375368}] to mongo.cam.uchc.edu:27017
+2017-10-12 19:55:45,029 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e00100d0fc7d0ac9aaa0a6', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=65890139}
+2017-10-12 19:55:45,306 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:375369}] to mongo.cam.uchc.edu:27017
+2017-10-14 15:19:48,581 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-14 15:19:49,846 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-10-14 15:19:51,584 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-14 15:19:51,639 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-14 15:19:51,884 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e26357d0fc7d22fc36327b', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:385042}] to mongo.cam.uchc.edu:27017
+2017-10-14 15:19:51,929 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e26357d0fc7d22fc36327b', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=43770852}
+2017-10-14 15:19:52,125 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:385043}] to mongo.cam.uchc.edu:27017
+2017-10-14 15:26:10,292 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-14 15:26:13,205 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-14 15:26:13,247 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-14 15:26:13,430 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e264d5d0fc7d230fb0b3c1', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:385062}] to mongo.cam.uchc.edu:27017
+2017-10-14 15:26:13,474 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e264d5d0fc7d230fb0b3c1', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=42123051}
+2017-10-14 15:26:13,648 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:385063}] to mongo.cam.uchc.edu:27017
+2017-10-14 15:27:08,749 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-14 15:27:09,725 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-10-14 15:27:11,593 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-14 15:27:11,675 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-14 15:27:11,823 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e2650fd0fc7d2312c5da3b', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:385064}] to mongo.cam.uchc.edu:27017
+2017-10-14 15:27:11,866 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e2650fd0fc7d2312c5da3b', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=41855426}
+2017-10-14 15:27:12,038 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:385065}] to mongo.cam.uchc.edu:27017
+2017-10-14 15:27:51,261 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-14 15:27:51,997 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-10-14 15:27:53,866 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-14 15:27:53,907 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-14 15:27:54,086 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e26539d0fc7d23187b9dd1', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:385067}] to mongo.cam.uchc.edu:27017
+2017-10-14 15:27:54,129 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e26539d0fc7d23187b9dd1', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=41609944}
+2017-10-14 15:27:54,300 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:385068}] to mongo.cam.uchc.edu:27017
+2017-10-14 16:48:55,692 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-14 16:48:56,811 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-10-14 16:48:58,630 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-14 16:48:58,723 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-14 16:48:58,917 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e2783ad0fc7d244e48bd51', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:385302}] to mongo.cam.uchc.edu:27017
+2017-10-14 16:48:58,960 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e2783ad0fc7d244e48bd51', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=41812149}
+2017-10-14 16:48:59,133 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:385303}] to mongo.cam.uchc.edu:27017
+2017-10-14 16:49:30,607 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-14 16:49:33,238 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-14 16:49:33,279 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-14 16:49:33,467 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e2785dd0fc7d245593a67f', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:385305}] to mongo.cam.uchc.edu:27017
+2017-10-14 16:49:33,511 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e2785dd0fc7d245593a67f', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=43192272}
+2017-10-14 16:49:33,684 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:385306}] to mongo.cam.uchc.edu:27017
+2017-10-14 16:49:53,181 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-14 16:49:55,850 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-14 16:49:55,890 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-14 16:49:56,068 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e27873d0fc7d245ce06167', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:385308}] to mongo.cam.uchc.edu:27017
+2017-10-14 16:49:56,112 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e27873d0fc7d245ce06167', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=42777182}
+2017-10-14 16:49:56,285 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:385309}] to mongo.cam.uchc.edu:27017
+2017-10-14 17:38:59,543 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-14 17:39:02,112 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-14 17:39:02,153 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-14 17:39:02,342 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e283f6d0fc7d25623030dc', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:385445}] to mongo.cam.uchc.edu:27017
+2017-10-14 17:39:02,385 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e283f6d0fc7d25623030dc', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=41736184}
+2017-10-14 17:39:02,569 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:385446}] to mongo.cam.uchc.edu:27017
+2017-10-14 17:48:35,938 WARN c.v.u.NativeLoader [main] DYLD_FALLBACK_LIBRARY_PATH not set
+2017-10-14 17:52:47,914 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:52:48,489 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:52:48,914 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:52:49,328 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:57:17,585 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:57:18,118 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:57:18,591 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:57:19,111 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:58:24,230 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:58:24,708 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:58:25,122 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 17:58:25,530 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:00:20,710 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:00:21,168 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:00:21,616 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:00:22,082 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:00:38,969 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:00:39,465 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:00:39,880 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:00:40,326 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:04:15,184 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:04:15,844 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:04:16,265 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:04:16,714 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:05:10,177 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:06:34,092 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:07:01,090 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:07:27,980 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:15:07,479 WARN c.v.r.PropertyLoader [main] Can't read propertyFile /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/vcell.properties specified by java home directory
+2017-10-14 18:15:10,156 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Cluster created with settings {hosts=[mongo.cam.uchc.edu:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2017-10-14 18:15:10,199 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] No server chosen by WritableServerSelector from cluster description ClusterDescription{type=UNKNOWN, connectionMode=SINGLE, serverDescriptions=[ServerDescription{address=mongo.cam.uchc.edu:27017, type=UNKNOWN, state=CONNECTING}]}. Waiting for 30000 ms before timing out
+2017-10-14 18:15:10,430 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:1, serverValue:385545}] to mongo.cam.uchc.edu:27017
+2017-10-14 18:15:10,491 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=58912755}
+2017-10-14 18:15:10,664 INFO c.m.d.l.SLF4JLogger [VCellExecutorService-thread-1] Opened connection [connectionId{localValue:2, serverValue:385546}] to mongo.cam.uchc.edu:27017
+2017-10-14 18:16:02,639 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:16:24,157 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:16:24,572 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:16:24,988 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-14 18:18:49,324 INFO o.a.a.t.f.FailoverTransport [ActiveMQ Task-1] Successfully connected to tcp://code2.cam.uchc.edu:61616
+2017-10-15 00:43:57,801 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:3, serverValue:386603}] to mongo.cam.uchc.edu:27017
+2017-10-15 04:25:23,378 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketException: mongo.cam.uchc.edu: unknown error
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:188) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:127) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.UnknownHostException: mongo.cam.uchc.edu: unknown error
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method) ~[?:1.8.0_45]
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:907) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1302) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1255) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1171) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1105) ~[?:1.8.0_45]
+	at java.net.InetAddress.getByName(InetAddress.java:1055) ~[?:1.8.0_45]
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:186) ~[mongo-java-driver-3.4.2.jar:?]
+	... 5 more
+2017-10-15 04:26:02,854 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:5, serverValue:387212}] to mongo.cam.uchc.edu:27017
+2017-10-15 04:26:02,897 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=42663336}
+2017-10-15 17:26:06,528 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketException: mongo.cam.uchc.edu: unknown error
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:188) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:127) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.UnknownHostException: mongo.cam.uchc.edu: unknown error
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method) ~[?:1.8.0_45]
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:907) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1302) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1255) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1171) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1105) ~[?:1.8.0_45]
+	at java.net.InetAddress.getByName(InetAddress.java:1055) ~[?:1.8.0_45]
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:186) ~[mongo-java-driver-3.4.2.jar:?]
+	... 5 more
+2017-10-15 17:27:00,830 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:8, serverValue:389535}] to mongo.cam.uchc.edu:27017
+2017-10-15 17:27:00,876 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=44547350}
+2017-10-16 11:07:21,226 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketException: mongo.cam.uchc.edu: unknown error
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:188) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:127) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.UnknownHostException: mongo.cam.uchc.edu: unknown error
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method) ~[?:1.8.0_45]
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:907) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1302) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1255) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1171) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1105) ~[?:1.8.0_45]
+	at java.net.InetAddress.getByName(InetAddress.java:1055) ~[?:1.8.0_45]
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:186) ~[mongo-java-driver-3.4.2.jar:?]
+	... 5 more
+2017-10-16 11:07:42,581 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:11, serverValue:393315}] to mongo.cam.uchc.edu:27017
+2017-10-16 11:07:42,587 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=3519022}
+2017-10-16 19:23:46,250 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketException: mongo.cam.uchc.edu: unknown error
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:188) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:127) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.UnknownHostException: mongo.cam.uchc.edu: unknown error
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method) ~[?:1.8.0_45]
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:907) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1302) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1255) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1171) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1105) ~[?:1.8.0_45]
+	at java.net.InetAddress.getByName(InetAddress.java:1055) ~[?:1.8.0_45]
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:186) ~[mongo-java-driver-3.4.2.jar:?]
+	... 5 more
+2017-10-16 19:23:56,290 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:13, serverValue:395639}] to mongo.cam.uchc.edu:27017
+2017-10-16 19:23:56,292 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=1813959}
+2017-10-16 22:59:44,243 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketException: mongo.cam.uchc.edu: unknown error
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:188) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:127) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.UnknownHostException: mongo.cam.uchc.edu: unknown error
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method) ~[?:1.8.0_45]
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:907) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1302) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1255) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1171) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1105) ~[?:1.8.0_45]
+	at java.net.InetAddress.getByName(InetAddress.java:1055) ~[?:1.8.0_45]
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:186) ~[mongo-java-driver-3.4.2.jar:?]
+	... 5 more
+2017-10-17 04:39:04,130 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketException: mongo.cam.uchc.edu
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:188) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:113) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.UnknownHostException: mongo.cam.uchc.edu
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1259) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1171) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1105) ~[?:1.8.0_45]
+	at java.net.InetAddress.getByName(InetAddress.java:1055) ~[?:1.8.0_45]
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:186) ~[mongo-java-driver-3.4.2.jar:?]
+	... 5 more
+2017-10-17 04:39:14,313 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:18, serverValue:397106}] to mongo.cam.uchc.edu:27017
+2017-10-17 04:39:14,357 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=41433743}
+2017-10-17 12:17:09,334 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketException: mongo.cam.uchc.edu: unknown error
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:188) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:127) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.UnknownHostException: mongo.cam.uchc.edu: unknown error
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method) ~[?:1.8.0_45]
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:907) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1302) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1255) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1171) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1105) ~[?:1.8.0_45]
+	at java.net.InetAddress.getByName(InetAddress.java:1055) ~[?:1.8.0_45]
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:186) ~[mongo-java-driver-3.4.2.jar:?]
+	... 5 more
+2017-10-17 12:17:20,379 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:20, serverValue:399024}] to mongo.cam.uchc.edu:27017
+2017-10-17 12:17:20,381 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=1928596}
+2017-10-17 20:49:36,293 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketException: mongo.cam.uchc.edu: unknown error
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:188) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:127) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.UnknownHostException: mongo.cam.uchc.edu: unknown error
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method) ~[?:1.8.0_45]
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:907) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1302) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1255) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1171) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1105) ~[?:1.8.0_45]
+	at java.net.InetAddress.getByName(InetAddress.java:1055) ~[?:1.8.0_45]
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:186) ~[mongo-java-driver-3.4.2.jar:?]
+	... 5 more
+2017-10-17 20:50:06,501 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketOpenException: Exception opening socket
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:63) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:113) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.SocketTimeoutException: connect timed out
+	at java.net.PlainSocketImpl.socketConnect(Native Method) ~[?:1.8.0_45]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:345) ~[?:1.8.0_45]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206) ~[?:1.8.0_45]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188) ~[?:1.8.0_45]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392) ~[?:1.8.0_45]
+	at java.net.Socket.connect(Socket.java:589) ~[?:1.8.0_45]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	... 3 more
+2017-10-17 20:50:16,699 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:23, serverValue:401169}] to mongo.cam.uchc.edu:27017
+2017-10-17 20:50:16,743 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=44082113}
+2017-10-17 20:54:06,158 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketOpenException: Exception opening socket
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:63) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:127) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.SocketTimeoutException: connect timed out
+	at java.net.PlainSocketImpl.socketConnect(Native Method) ~[?:1.8.0_45]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:345) ~[?:1.8.0_45]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206) ~[?:1.8.0_45]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188) ~[?:1.8.0_45]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392) ~[?:1.8.0_45]
+	at java.net.Socket.connect(Socket.java:589) ~[?:1.8.0_45]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	... 3 more
+2017-10-17 21:21:16,987 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:79, serverValue:401369}] to mongo.cam.uchc.edu:27017
+2017-10-17 21:21:17,034 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=45869339}
+2017-10-18 08:37:55,386 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Exception in monitor thread while connecting to server mongo.cam.uchc.edu:27017
+com.mongodb.MongoSocketException: mongo.cam.uchc.edu: unknown error
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:188) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:57) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.SocketStream.open(SocketStream.java:58) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.InternalStreamConnection.open(InternalStreamConnection.java:115) ~[mongo-java-driver-3.4.2.jar:?]
+	at com.mongodb.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:127) [mongo-java-driver-3.4.2.jar:?]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_45]
+Caused by: java.net.UnknownHostException: mongo.cam.uchc.edu: unknown error
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method) ~[?:1.8.0_45]
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:907) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1302) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1255) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1171) ~[?:1.8.0_45]
+	at java.net.InetAddress.getAllByName(InetAddress.java:1105) ~[?:1.8.0_45]
+	at java.net.InetAddress.getByName(InetAddress.java:1055) ~[?:1.8.0_45]
+	at com.mongodb.ServerAddress.getSocketAddress(ServerAddress.java:186) ~[mongo-java-driver-3.4.2.jar:?]
+	... 5 more
+2017-10-18 08:38:06,374 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:81, serverValue:404351}] to mongo.cam.uchc.edu:27017
+2017-10-18 08:38:06,379 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Monitor thread successfully connected to server with description ServerDescription{address=mongo.cam.uchc.edu:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[2, 2, 0]}, minWireVersion=0, maxWireVersion=0, maxDocumentSize=16777216, roundTripTimeNanos=4246318}
+2017-10-18 09:19:58,909 INFO c.m.d.l.SLF4JLogger [cluster-ClusterId{value='59e28c6ed0fc7d261d0fc4b4', description='null'}-mongo.cam.uchc.edu:27017] Opened connection [connectionId{localValue:82, serverValue:404753}] to mongo.cam.uchc.edu:27017

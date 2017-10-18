@@ -342,6 +342,7 @@ echo "vcell.jms.password = $vcell_secrets_jms_pswd"							>> $propfile
 echo "vcell.jms.queue.simReq = simReq$vcell_site_camel"						>> $propfile
 echo "vcell.jms.queue.dataReq = simDataReq$vcell_site_camel"				>> $propfile
 echo "vcell.jms.queue.dbReq = dbReq$vcell_site_camel"						>> $propfile
+echo "vcell.jms.queue.optReq = optReq$vcell_site_camel"						>> $propfile
 echo "vcell.jms.queue.simJob = simJob$vcell_site_camel"						>> $propfile
 echo "vcell.jms.queue.workerEvent = workerEvent$vcell_site_camel"			>> $propfile
 echo "vcell.jms.topic.serviceControl = serviceControl$vcell_site_camel"		>> $propfile

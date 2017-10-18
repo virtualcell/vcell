@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../pythonScripts/VCell_Opt/.idea/VCell_Opt.iml" filepath="$PROJECT_DIR$/../pythonScripts/VCell_Opt/.idea/VCell_Opt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/visTool.iml" filepath="$PROJECT_DIR$/.idea/visTool.iml" />
+    </modules>
+  </component>
+</project>

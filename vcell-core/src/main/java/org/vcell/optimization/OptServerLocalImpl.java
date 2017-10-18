@@ -9,72 +9,24 @@ import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.optimization.thrift.OptRun;
 import org.vcell.optimization.thrift.OptRunStatus;
 
+import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.ResourceUtil;
 
-public class OptServerImpl {
+public class OptServerLocalImpl implements OptService {
 	
 	private Random random = new Random();
 	private final Vector<OptRunContext> optRunContexts = new Vector<OptRunContext>();
 	private Thread thread = null;
 	
-	public class OptRunContext {
-		final String optimizationId;
-		final File optProblemDirectory;
-		private OptRunStatus optRunStatus;
-		
-		public OptRunStatus getStatus(){
-			return this.optRunStatus;
-		}
-		
-		public File getOptRunBinaryFile() throws IOException{
-			return new File(optProblemDirectory,"optRun.bin");
-		}
-		
-		public OptRun readOptRunBinaryFile() throws IOException{
-			File optRunFile = getOptRunBinaryFile();
-			if (optRunFile.exists()){
-				return CopasiServicePython.readOptRun(optRunFile);
-			}else{
-				throw new RuntimeException("optRunFile "+optRunFile.getAbsolutePath()+" not found");
-			}
-		}
-		
-		public File getOptProblemBinaryFile() throws IOException{
-			return new File(optProblemDirectory,"optProblem.bin");
-		}
-		
-		public OptProblem readOptProblem() throws IOException{
-			File optProblemFile = getOptProblemBinaryFile();
-			if (optProblemFile.exists()){
-				return CopasiServicePython.readOptProblem(optProblemFile);
-			}else{
-				throw new RuntimeException("optRunFile "+optProblemFile.getAbsolutePath()+" not found");
-			}
-		}
-		
-		private OptRunContext(String optimizationId, File optProblemDir, OptRunStatus optRunStatus){
-			this.optimizationId = optimizationId;
-			this.optProblemDirectory = optProblemDir;
-			this.optRunStatus = optRunStatus;
-		}
-
-		@Override
-		public int hashCode() {
-			return optimizationId.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof OptRunContext){
-				OptRunContext other = (OptRunContext)obj;
-				return optimizationId.equals(other.optimizationId);
-			}
-			return false;
-		}
-		
+	public OptServerLocalImpl() {
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.vcell.optimization.OptService#submit(org.vcell.optimization.thrift.OptProblem)
+	 */
+	@Override
 	public String submit(OptProblem optProblem) throws IOException{
+		start();
 		synchronized (optRunContexts){
 			String optimizationId = Integer.toString(random.nextInt(1000000));
 			File optDir = new File(ResourceUtil.getOptimizationRootDir(),optimizationId);
@@ -85,6 +37,10 @@ public class OptServerImpl {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.vcell.optimization.OptService#getOptRunContextByOptimizationId(java.lang.String)
+	 */
+	@Override
 	public OptRunContext getOptRunContextByOptimizationId(String optimizationId){
 		for (OptRunContext context : optRunContexts){
 			if (context.optimizationId.equals(optimizationId)){
@@ -94,8 +50,9 @@ public class OptServerImpl {
 		return null;
 	}
 	
-	public void start(){
+	private void start() throws IOException {
 		if (thread==null){
+			PythonSupport.verifyInstallation();
 			Runnable runnable = new Runnable(){
 				public void run() {
 					while (true){
@@ -114,7 +71,7 @@ public class OptServerImpl {
 		}
 	}
 	
-	public void runNextWaitingOptProblem(){
+	private void runNextWaitingOptProblem(){
 		OptRunContext optRunContext = null;
 		synchronized (optRunContexts) {
 			for (int i=0;i<optRunContexts.size();i++){

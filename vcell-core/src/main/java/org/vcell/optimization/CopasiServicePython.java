@@ -264,7 +264,7 @@ public class CopasiServicePython {
 			throw new RuntimeException("VCell is currently installing or verifying the COPASI python package ... please try again in a minute");
 		}
 		File vcellOptDir = ResourceUtil.getVCellOptPythonDir();
-		File optServicePythonFile = new File(vcellOptDir,"optService.py");
+		File optServicePythonFile = new File(vcellOptDir,"optServiceCLI.py");
 		if (PYTHON==null || !PYTHON.exists()){
 			throw new RuntimeException("python executable not specified, set python location in VCell menu File->Preferences...->Python Properties");
 		}
@@ -273,11 +273,11 @@ public class CopasiServicePython {
 		try {
 			exe.start( new int[] { 0 });
 			if (exe.getExitValue() != 0){
-				throw new RuntimeException("copasi python solver (optService.py) failed with return code "+exe.getExitValue()+": "+exe.getStderrString());
+				throw new RuntimeException("copasi python solver (optServiceCLI.py) failed with return code "+exe.getExitValue()+": "+exe.getStderrString());
 			}
 		} catch (ExecutableException e) {
 			e.printStackTrace();
-			throw new RuntimeException("optService.py invocation failed: "+e.getMessage(),e);
+			throw new RuntimeException("optServiceCLI.py invocation failed: "+e.getMessage(),e);
 		}
 	}
 

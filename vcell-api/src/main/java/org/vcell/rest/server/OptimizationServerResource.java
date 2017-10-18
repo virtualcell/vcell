@@ -25,7 +25,7 @@ import org.restlet.representation.Variant;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.optimization.CopasiServicePython;
-import org.vcell.optimization.OptServerImpl.OptRunContext;
+import org.vcell.optimization.OptRunContext;
 import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.optimization.thrift.OptRun;
 import org.vcell.rest.VCellApiApplication;

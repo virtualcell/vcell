@@ -8,6 +8,7 @@ public class VCellQueue implements VCDestination {
 	public final static VCellQueue SimJobQueue = new VCellQueue(PropertyLoader.jmsSimJobQueue,null);
 	public final static VCellQueue SimReqQueue = new VCellQueue(PropertyLoader.jmsSimReqQueue,null);
 	public final static VCellQueue WorkerEventQueue = new VCellQueue(PropertyLoader.jmsWorkerEventQueue,null);
+	public static final VCellQueue OptReqQueue = new VCellQueue(PropertyLoader.jmsOptRequestQueue,null);;
 
 	private String vcellPropertyName;
 	private String queueName;
