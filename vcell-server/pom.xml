@@ -71,8 +71,7 @@
 		<url>http://code3.cam.uchc.edu/bugzilla/</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://jenkins.vcell.org/job/vcell/</url>
+		<system>None</system>
 	</ciManagement>
 
 	<properties>
