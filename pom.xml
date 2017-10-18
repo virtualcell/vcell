@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -18,11 +15,11 @@
 
 	<name>vcell-imagej</name>
 	<description>The Virtual Cell plugin for ImageJ</description>
-	<url>http://mycompany.com/imagej/gauss-filtering/</url>
+	<url>http://vcell.org/</url>
 	<inceptionYear>2017</inceptionYear>
 	<organization>
-		<name>My Company</name>
-		<url>http://mycompany.com/</url>
+		<name>VCell</name>
+		<url>http://vcell.org</url>
 	</organization>
 	<licenses>
 		<license>
@@ -34,9 +31,8 @@
 	<developers>
 		<!-- See https://imagej.net/Team -->
 		<developer>
-			<id>ctrueden</id>
-			<name>Curtis Rueden</name>
-			<url>http://imagej.net/User:Rueden</url>
+			<id>jcschaff</id>
+			<name>Jim Schaff</name>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -50,29 +46,31 @@
 	</developers>
 	<contributors>
 		<contributor>
-			<name>Yili Zhao</name>
-			<url>http://imagej.net/User:Panovr</url>
+			<name>Kevin Gaffney</name>
 			<roles><role>founder</role></roles>
-			<properties><id>panovr</id></properties>
+			<properties><id>gaffneyk</id></properties>
 		</contributor>
 	</contributors>
 
 	<mailingLists>
 		<mailingList>
-			<name>ImageJ Forum</name>
-			<archive>http://forum.imagej.net/</archive>
+			<name>VCell Open Discussion Forum</name>
+			<subscribe>https://groups.google.com/group/vcell-discuss</subscribe>
+			<unsubscribe>https://groups.google.com/group/vcell-discuss</unsubscribe>
+			<post>vcell-discuss@googlegroups.com</post>
+			<archive>https://groups.google.com/group/vcell-discuss</archive>
 		</mailingList>
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/imagej/example-imagej-command</connection>
-		<developerConnection>scm:git:git@github.com:imagej/example-imagej-command</developerConnection>
+		<connection>scm:git:git://github.com/virtualcell/vcell-imagej</connection>
+		<developerConnection>scm:git:git@github.com:virtualcell/vcell-imagej</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/imagej/example-imagej-command</url>
+		<url>https://github.com/virtualcell/vcell-imagej</url>
 	</scm>
 	<issueManagement>
-		<system>GitHub Issues</system>
-		<url>https://github.com/imagej/example-imagej-command/issues</url>
+		<system>Bugzilla</system>
+		<url>http://code3.cam.uchc.edu/bugzilla/</url>
 	</issueManagement>
 	<ciManagement>
 		<system>None</system>
@@ -83,7 +81,7 @@
 		<package-name>org.vcell</package-name>
 		<main-class>org.vcell.Driver</main-class>
 		<license.licenseName>bsd_2</license.licenseName>
-		<license.copyrightOwners>My Company, Inc.</license.copyrightOwners>
+		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 	</properties>
 
 	<repositories>
@@ -94,7 +92,6 @@
 	</repositories>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
@@ -121,7 +118,7 @@
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-ui-swing</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-ui-swing</artifactId>
@@ -138,20 +135,19 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
 		<dependency>
-		    <groupId>com.google.guava</groupId>
-		    <artifactId>guava</artifactId>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 		</dependency>
-		
 
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.0.0-M4</version>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.0.0-M4</version>
 			<scope>test</scope>
-        </dependency>
+		</dependency>
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -173,19 +169,17 @@
 			<version>1.0.0-M4</version>
 			<scope>test</scope>
 		</dependency>
-		
-		
- 		<dependency>
+
+		<dependency>
 			<groupId>org.vcell</groupId>
-		 	<artifactId>vcell-core</artifactId>
-		 	<version>0.0.1-SNAPSHOT</version>
+			<artifactId>vcell-core</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.vcell</groupId>
-		 	<artifactId>vcell-apiclient</artifactId>
-		 	<version>0.0.1-SNAPSHOT</version>
+			<artifactId>vcell-apiclient</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
-    </dependencies>
+	</dependencies>
 </project>
