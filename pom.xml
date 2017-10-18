@@ -167,4 +167,13 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>oracle</id>
+			<modules>
+				<module>vcell-oracle</module>
+			</modules>
+		</profile>
+	</profiles>
 </project>

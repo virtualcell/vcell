@@ -115,21 +115,6 @@
 			<version>5.14.4</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.oracle/ojdbc5 -->
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>11.2.0.4</version>
-			<scope>provided</scope>
-		</dependency>
-		<!-- The UCP jar can be found at http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html -->
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ucp</artifactId>
-			<version>11.2.0.4</version>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
 		<dependency>
 			<groupId>org.postgresql</groupId>

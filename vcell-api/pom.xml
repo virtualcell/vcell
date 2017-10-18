@@ -117,23 +117,6 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.oracle/ojdbc5 -->
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>11.2.0.4</version>
-			<scope>provided</scope>
-		</dependency>
-		<!-- The UCP jar can be found at http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html -->
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ucp</artifactId>
-			<version>11.2.0.4</version>
-			<scope>provided</scope>
-		</dependency>
-
-
-
 		<!-- https://mvnrepository.com/artifact/org.restlet.jee/org.restlet -->
 		<dependency>
 			<groupId>org.restlet.jse</groupId>

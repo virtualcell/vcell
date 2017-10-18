@@ -9,14 +9,13 @@
 	</parent>
 
 	<groupId>org.vcell</groupId>
-	<artifactId>vcell-admin</artifactId>
+	<artifactId>vcell-oracle</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
 
-	<name>vcell-admin</name>
+	<name>vcell-oracle</name>
 	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
-	<description>The Virtual Cell client and server</description>
-	<url>http://maven.apache.org</url>
+	<description>Virtual Cell plugin for Oracle database</description>
+	<url>http://vcell.org/</url>
 	<inceptionYear>1997</inceptionYear>
 	<organization>
 		<name>VCell</name>
@@ -85,19 +84,8 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.miglayout/miglayout -->
-		<dependency>
-			<groupId>com.miglayout</groupId>
-			<artifactId>miglayout</artifactId>
-			<version>3.5.5</version>
-			<scope>test</scope>
-		</dependency>
 
-		<dependency>
-			<groupId>org.vcell</groupId>
-			<artifactId>vcell-client</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-core</artifactId>
@@ -105,13 +93,51 @@
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
-			<artifactId>vcell-server</artifactId>
+			<artifactId>vcell-math</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
-			<artifactId>vcell-vmicro</artifactId>
+			<artifactId>vcell-util</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-server</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+			<version>5.14.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+			<version>5.14.4</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>11.2.0.4</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- The UCP jar can be found at http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html -->
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ucp</artifactId>
+			<version>11.2.0.4</version>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
 </project>
