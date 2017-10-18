@@ -8,9 +8,7 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.vcell</groupId>
 	<artifactId>vcell-oracle</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 
 	<name>vcell-oracle</name>
 	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->

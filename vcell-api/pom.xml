@@ -8,10 +8,7 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.vcell</groupId>
 	<artifactId>vcell-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
 
 	<name>vcell-api</name>
 	<!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
