@@ -144,11 +144,7 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-
 	</repositories>
-
-	<dependencies>
-	</dependencies>
 
 	<build>
 		<plugins>
@@ -180,9 +176,7 @@
 				</executions>
 
 				<configuration>
-					<outputDirectory>
-						${project.build.directory}/maven-jars
-					</outputDirectory>
+					<outputDirectory>${project.build.directory}/maven-jars</outputDirectory>
 				</configuration>
 			</plugin>
 		</plugins>
