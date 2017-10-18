@@ -87,8 +87,6 @@
 	</ciManagement>
 
 	<properties>
-		<enforcer.skip>false</enforcer.skip>
-
 		<license.licenseName>MIT</license.licenseName>
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 
@@ -148,18 +146,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<configuration>
-					<rules>
-						<banDuplicateClasses>
-							<ignoreClasses>
-								<ignoreClass>org.w3c.dom.UserDataHandler</ignoreClass>
-							</ignoreClasses>
-						</banDuplicateClasses>
-					</rules>
-				</configuration>
-			</plugin>
 			<plugin><!-- mvn dependency:copy-dependencies -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
