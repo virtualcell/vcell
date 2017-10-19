@@ -9,3 +9,4 @@
 /vfrapPaper/
 jsbml.log
 target/
+*.pyc
