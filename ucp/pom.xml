@@ -13,6 +13,10 @@
 	<version>11.2.0.4</version>
 	<packaging>non-maven-jar</packaging>
 
+	<properties>
+		<enforcer.skip>true</enforcer.skip>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -23,8 +27,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<properties>
-		<enforcer.skip>true</enforcer.skip>
-	</properties>
 </project>
