@@ -1,0 +1,11 @@
+language: java
+jdk: oraclejdk8
+branches:
+  only:
+  - master
+  - "/.*-[0-9]+\\..*/"
+install: true
+script: ".travis/build.sh"
+env:
+  global:
+    secure: t8iSkGV9uCGxc/FxRnyLGUOXmgu/IMiJWVHQBzlZNAkdJ3/g2JJBW1le54W6yvqRwpMk5hs7y3UkmO9ALl28f2Mi9u3TQhCK7zsTbtML8vNFrDX8qRfBRvm7MWlnCXICa/ilCoJMNrG7N7MfM7g050enA7e8yjwwNx0ZcPp+9dK2r1Ugvghm0JfniRkrleOxjqwlEegBX77jyh/t8/sZ1/iqhmSZ9rQs5mdGQZ8qpvMihOvTo4NMIUOS+CyhjqiJuHDA/uSx6kkrljSGDn9tPHU80s74W+Otz9IgiFxOmk985XrTrRfpVuOGh+Jkc1BpFSK1ptagMua6bitBiDmKnh4tGMawrmKrMYszKOontTz9F+O4MDFEc7DEuvkjR12pMGCdY3tPaL6bO9GZ7Q6wUBPPbjP1KFy5evtXmJnqCGxoMsyu6jQNw1Ff36pr+mrLBSUHWidioJjKHr0lqEFMNV5kILWL/EPyzHhXNu9yLdXwSFaRd0uVPuaKfW1U1qK53oidBDv+jlFPLPXGeUByRk3A0DHaeQgJDLFTacB1lck7V0vi1JrQn0SM/Zsgw/IfrJ4YfLZ/8z4+QMAcn/fDUw8p7T5yQgwGxFJbZTpQzfoV5Xbe9pcBJKNWL0djV33RhsRSITOBxKGalyfPb6Bw9ouTKC4UFgY/nOHcoIBwXvU=

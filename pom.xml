@@ -73,7 +73,8 @@
 		<url>http://code3.cam.uchc.edu/bugzilla/</url>
 	</issueManagement>
 	<ciManagement>
-		<system>None</system>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/virtualcell/vcell-imagej</url>
 	</ciManagement>
 
 	<properties>
