@@ -15,6 +15,7 @@
 
 	<properties>
 		<enforcer.skip>true</enforcer.skip>
+		<deploy.skip>true</deploy.skip>
 	</properties>
 
 	<build>
