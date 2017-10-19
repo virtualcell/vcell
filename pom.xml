@@ -60,15 +60,18 @@
 	</mailingLists>
 
 	<modules>
-		<module>vcell-util</module>
-		<module>vcell-math</module>
+		<module>ojdbc6</module>
+		<module>ucp</module>
 		<module>vcell-admin</module>
-		<module>vcell-vmicro</module>
-		<module>vcell-server</module>
-		<module>vcell-client</module>
-		<module>vcell-core</module>
 		<module>vcell-api</module>
 		<module>vcell-apiclient</module>
+		<module>vcell-client</module>
+		<module>vcell-core</module>
+		<module>vcell-math</module>
+		<module>vcell-oracle</module>
+		<module>vcell-server</module>
+		<module>vcell-util</module>
+		<module>vcell-vmicro</module>
 	</modules>
 
 	<scm>
@@ -166,15 +169,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>oracle</id>
-			<modules>
-				<module>ojdbc6</module>
-				<module>ucp</module>
-				<module>vcell-oracle</module>
-			</modules>
-		</profile>
-	</profiles>
 </project>
