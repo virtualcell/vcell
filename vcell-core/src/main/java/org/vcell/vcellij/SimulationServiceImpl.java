@@ -25,7 +25,6 @@ import org.vcell.util.document.User;
 import org.vcell.vcellij.api.DomainType;
 import org.vcell.vcellij.api.SBMLModel;
 import org.vcell.vcellij.api.SimulationInfo;
-import org.vcell.vcellij.api.SimulationService;
 import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
 import org.vcell.vcellij.api.SimulationStatus;
@@ -69,7 +68,7 @@ import cbit.vcell.xml.XmlParseException;
 /**
  * Created by kevingaffney on 7/12/17.
  */
-public class SimulationServiceImpl implements SimulationService.Iface {
+public class SimulationServiceImpl {
 	private static class SimulationServiceContext {
 		SimulationInfo simInfo = null;
 		Solver solver = null;
@@ -194,7 +193,6 @@ public class SimulationServiceImpl implements SimulationService.Iface {
         }
     }
 
-    @Override
     public SimulationInfo computeModel(SBMLModel model, SimulationSpec simSpec) throws ThriftDataAccessException, TException {
         try {
             SBMLImporter importer = new SBMLImporter(model.getFilepath(),vcLogger(),true);
@@ -361,13 +359,11 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 
     }
 
-	@Override
 	public SimulationStatus getStatus(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
 		SimulationServiceContext simServiceContext = sims.get(simInfo.id);
 		return new SimulationStatus(simServiceContext.simState);
 	}
 
-	@Override
 	public List<Double> getData(SimulationInfo simInfo, VariableInfo varInfo, int timeIndex)
 			throws ThriftDataAccessException, TException {
         SimulationServiceContext simServiceContext = sims.get(simInfo.id);
@@ -391,7 +387,6 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 		}
 	}
 
-	@Override
 	public List<Double> getTimePoints(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
         SimulationServiceContext simServiceContext = sims.get(simInfo.id);
         if (simServiceContext==null){
@@ -412,7 +407,6 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 		}
 	}
 
-	@Override
 	public List<VariableInfo> getVariableList(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
         SimulationServiceContext simServiceContext = sims.get(simInfo.id);
         if (simServiceContext==null){
@@ -451,7 +445,6 @@ public class SimulationServiceImpl implements SimulationService.Iface {
         	throw new ThriftDataAccessException("failed to retrieve variable list: "+e.getMessage());
         }
 	}
-	@Override
 	public String getSBML(String vcml, String applicationName) throws ThriftDataAccessException, TException {
 		try {
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml));
