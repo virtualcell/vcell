@@ -19,6 +19,7 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.NullSessionLog;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.vcellij.api.DomainType;
@@ -345,7 +346,7 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 		try {
 			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 			
-			SessionLog log = new StdoutSessionLog("data");
+			SessionLog log = new NullSessionLog();
 			Cachetable cacheTable = new Cachetable(10000);
 			DataSetControllerImpl datasetController = new DataSetControllerImpl(log,cacheTable,simServiceContext.localSimDataDir.getParentFile(), null);
 			simServiceContext.times = datasetController.getDataSetTimes(simServiceContext.vcDataIdentifier);
