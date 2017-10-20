@@ -60,16 +60,16 @@ private Cachetable(long expireTime, long maxMemSize) {
 		try {
 			String cacheSize = System.getProperty(PropertyLoader.simdataCacheSizeProperty);
 			maxMemSize = Long.parseLong(cacheSize);
-			System.out.print("SimData cache size="+maxMemSize+" (given by property file)");
+//			System.out.print("SimData cache size="+maxMemSize+" (given by property file)");
 		}catch (Exception e){
 			maxMemSize = Runtime.getRuntime().totalMemory()/4;
-			System.out.println("SimData cache size="+maxMemSize+" (given by 1/4 of Runtime.getRuntime().totalMemory())");
+//			System.out.println("SimData cache size="+maxMemSize+" (given by 1/4 of Runtime.getRuntime().totalMemory())");
 		}
 	}else{
-		System.out.println("SimData cache size="+maxMemSize+" (forced by application)");
+//		System.out.println("SimData cache size="+maxMemSize+" (forced by application)");
 	}
 	
-	System.out.println(" SimData object expiration="+(expireTime/1000.0)+" seconds");
+//	System.out.println(" SimData object expiration="+(expireTime/1000.0)+" seconds");
 	
 	this.expireTime = expireTime;
 	cleaner = new Ping(this, ((long) (expireTime * 0.75)),"SimResultsCacheReaper");

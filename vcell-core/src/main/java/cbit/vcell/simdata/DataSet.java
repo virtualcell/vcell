@@ -296,7 +296,7 @@ void read(File file, File zipFile, SolverDataType solverDataType) throws IOExcep
 			long length  = 0;
 			
 			if (zipFile != null) {
-				System.out.println("DataSet.read() open " + zipFile + " for " + file.getName());
+//				System.out.println("DataSet.read() open " + zipFile + " for " + file.getName());
 				zipZipFile = openZipFile(zipFile);
 				java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(file.getName());
 				is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
