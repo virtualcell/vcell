@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.swing.SwingWorker;
 import javax.xml.stream.XMLStreamException;
 
 import net.imagej.Dataset;
@@ -19,11 +18,6 @@ import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.DoubleType;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLWriter;
 import org.sbml.jsbml.Species;
@@ -34,9 +28,9 @@ import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
 import org.vcell.imagej.app.Datasets;
 import org.vcell.imagej.common.gui.Task;
+import org.vcell.vcellij.SimulationServiceImpl;
 import org.vcell.vcellij.api.SBMLModel;
 import org.vcell.vcellij.api.SimulationInfo;
-import org.vcell.vcellij.api.SimulationService;
 import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
 import org.vcell.vcellij.api.ThriftDataAccessException;
@@ -61,18 +55,10 @@ public class VCellService extends AbstractService {
 	{
 
 		try {
-			final TTransport transport = setupTransport();
-			final SimulationService.Client client = setupClient(transport);
+			final SimulationServiceImpl client = new SimulationServiceImpl();
 			final Task<List<Dataset>, SimulationState> task = runSimulation(client,
 				model, simSpec, outputSpecies, shouldCreateIndividualDatasets,
 				opService, datasetService);
-			task.addPropertyChangeListener(propertyChangeEvent -> {
-				if (propertyChangeEvent.getPropertyName() == Task.STATE &&
-					propertyChangeEvent.getNewValue() == SwingWorker.StateValue.DONE)
-				{
-					transport.close();
-				}
-			});
 			return task;
 		}
 		catch (final Throwable e) {
@@ -83,10 +69,8 @@ public class VCellService extends AbstractService {
 
 	public SBMLDocument getSBML(final String vcml, final String applicationName) {
 		try {
-			final TTransport transport = setupTransport();
-			final SimulationService.Client client = setupClient(transport);
+			final SimulationServiceImpl client = setupClient();
 			final SBMLDocument document = getSBML(client, vcml, applicationName);
-			transport.close();
 			return document;
 		}
 		catch (final Throwable e) {
@@ -95,36 +79,32 @@ public class VCellService extends AbstractService {
 		return null;
 	}
 
-	private TTransport setupTransport() throws TTransportException {
-		TTransport transport;
-		transport = new TSocket("localhost", 9091);
-		transport.open();
-		return transport;
-	}
-
-	private SimulationService.Client setupClient(final TTransport transport) {
-		final TProtocol protocol = new TBinaryProtocol(transport);
-		final SimulationService.Client client = new SimulationService.Client(
-			protocol);
+	private SimulationServiceImpl setupClient() {
+		final SimulationServiceImpl client = new SimulationServiceImpl();
 		return client;
 	}
 
-	private static SBMLDocument getSBML(final SimulationService.Client client,
+	private static SBMLDocument getSBML(final SimulationServiceImpl client,
 		final String vcml, final String applicationName)
-		throws ThriftDataAccessException, TException, XMLStreamException,
-		IOException
+		throws ThriftDataAccessException, XMLStreamException, IOException
 	{
-		final String sbml = client.getSBML(vcml, applicationName);
+		final String sbml;
+		try {
+			sbml = client.getSBML(vcml, applicationName);
+		}
+		catch (final TException e) {
+			throw new IOException(e);
+		}
 		final SBMLReader reader = new SBMLReader();
 		final SBMLDocument document = reader.readSBMLFromString(sbml);
 		return document;
 	}
 
 	private static Task<List<Dataset>, SimulationState> runSimulation(
-		final SimulationService.Client client, final VCellModel vCellModel,
+		final SimulationServiceImpl client, final VCellModel vCellModel,
 		final SimulationSpec simSpec, final List<Species> outputSpecies,
 		final boolean shouldCreateIndividualDatasets, final OpService opService,
-		final DatasetService datasetService) throws TException, IOException,
+		final DatasetService datasetService) throws IOException,
 		XMLStreamException
 	{
 

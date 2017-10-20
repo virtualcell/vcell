@@ -173,11 +173,5 @@
 			<artifactId>vcell-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.vcell</groupId>
-			<artifactId>vcell-apiclient</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 </project>
