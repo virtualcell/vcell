@@ -11,6 +11,7 @@ import java.util.Random;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.thrift.TException;
+import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.SBMLExporter;
@@ -18,7 +19,6 @@ import org.vcell.sbml.vcell.SBMLExporter.VCellSBMLDoc;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
@@ -196,46 +196,48 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 
     @Override
     public SimulationInfo computeModel(SBMLModel model, SimulationSpec simSpec) throws ThriftDataAccessException, TException {
+        try {
+            SBMLImporter importer = new SBMLImporter(model.getFilepath(),vcLogger(),true);
+            BioModel bioModel = importer.getBioModel();
+            return computeModel(bioModel, simSpec, null);
+        }
+        catch (Exception exc) {
+            exc.printStackTrace(System.out);
+            return null;
+        }
+    }
+
+    public SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) {
+        try {
+            SBMLImporter importer = new SBMLImporter(sbmlModel,vcLogger(),true);
+            return computeModel(importer.getBioModel(), simSpec, null);
+        }
+        catch (Exception exc) {
+            exc.printStackTrace(System.out);
+            return null;
+        }
+    }
+
+    private cbit.util.xml.VCLogger vcLogger() {
+        return new cbit.util.xml.VCLogger() {
+            @Override
+            public void sendMessage(Priority p, ErrorType et, String message) {
+                System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
+                if (p == VCLogger.Priority.HighPriority) {
+                    throw new RuntimeException("Import failed : " + message);
+                }
+            }
+            public void sendAllMessages() {
+            }
+            public boolean hasMessages() {
+                return false;
+            }
+        };
+    }
+
+    private SimulationInfo computeModel(BioModel bioModel, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) {
     	try {
-	        cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
-	            @Override
-				public void sendMessage(Priority p, ErrorType et, String message) {
-	                System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
-	                if (p == VCLogger.Priority.HighPriority) {
-	                	throw new RuntimeException("Import failed : " + message);
-	                }
-	            }
-	            public void sendAllMessages() {
-	            }
-	            public boolean hasMessages() {
-	                return false;
-	            }
-	        };
-	    	SBMLImporter importer = new SBMLImporter(model.getFilepath(),logger,true);
-	    	BioModel bioModel = importer.getBioModel();
 	    	SimulationContext simContext = bioModel.getSimulationContext(0);
-	    	ClientTaskStatusSupport statusCallback = new ClientTaskStatusSupport() {
-				
-				@Override
-				public void setProgress(int progress) {
-					System.out.println("math mapping: "+progress);
-				}
-				
-				@Override
-				public void setMessage(String message) {
-					System.out.println("math mapping: "+message);
-				}
-				
-				@Override
-				public boolean isInterrupted() { return false; }
-				
-				@Override
-				public int getProgress() { return 0; }
-				
-				@Override
-				public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {}
-				
-			};
 			MathMappingCallback callback = new MathMappingCallbackTaskAdapter(statusCallback);
 			Simulation newsim = simContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
 	    	SimulationInfo simulationInfo = new SimulationInfo();
