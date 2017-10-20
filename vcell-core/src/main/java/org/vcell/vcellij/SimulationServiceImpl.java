@@ -59,6 +59,7 @@ import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solver.server.SolverListener;
+import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -168,6 +169,29 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 //			}
 //		}
 //	}
+
+    public int sizeX(SimulationInfo simInfo) {
+        return mesh(simInfo).getSizeX();
+    }
+
+    public int sizeY(SimulationInfo simInfo) {
+        return mesh(simInfo).getSizeY();
+    }
+
+    public int sizeZ(SimulationInfo simInfo) {
+        return mesh(simInfo).getSizeZ();
+    }
+
+    private CartesianMesh mesh(SimulationInfo simInfo) {
+        SimulationServiceContext simServiceContext = sims.get(simInfo.id);
+        try {
+            DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
+            CartesianMesh mesh = datasetController.getMesh(simServiceContext.vcDataIdentifier);
+            return mesh;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public SimulationInfo computeModel(SBMLModel model, SimulationSpec simSpec) throws ThriftDataAccessException, TException {
