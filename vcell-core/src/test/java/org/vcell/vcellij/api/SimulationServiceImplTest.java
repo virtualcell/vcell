@@ -32,10 +32,13 @@ public class SimulationServiceImplTest {
 	@Test
 	public void test() throws URISyntaxException, ThriftDataAccessException, TException {
 		SimulationServiceImpl simService = new SimulationServiceImpl();
+		// TODO - Eliminate code duplication.
 		URL sbmlFileUrl = SimulationServiceImplTest.class.getResource("../../sbml/optoPlexin_PRG_rule_based.xml");
 		File file = new File(sbmlFileUrl.toURI());
 		VCMongoMessage.enabled = false;
 
+		// TODO - Encapsulate this common setup stuff into VCellService initialization.
+		// Then all VCell-based scripts can focus on the customization below.
 		System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
 		ResourceUtil.setNativeLibraryDirectory();
 		NativeLib.HDF5.load();
@@ -62,6 +65,7 @@ public class SimulationServiceImplTest {
 		
 		List<VariableInfo> vars = simService.getVariableList(simInfo);
 		Assert.assertNotNull(vars);
+		// TODO - Assert more things.
 
 		final List<Double> timePoints = simService.getTimePoints(simInfo);
 		vars.stream().forEach(var -> {
