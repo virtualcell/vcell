@@ -238,23 +238,20 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 			simServiceContext.solver.addSolverListener(new SolverListener() {
 				public void solverStopped(SolverEvent event) {
 					simServiceContext.simState = SimulationState.failed;
-					System.out.println(event.getSimulationMessage().getDisplayMessage());
+					System.err.println("Simulation stopped");
 				}
 				public void solverStarting(SolverEvent event) {
 					simServiceContext.simState = SimulationState.running;
-					String displayMessage = event.getSimulationMessage().getDisplayMessage();
-					System.out.println(displayMessage);
+					updateStatus(event);
 				}
 				public void solverProgress(SolverEvent event) {
 					simServiceContext.simState = SimulationState.running;
-					System.out.println("Running..."+((int)(event.getProgress() * 100)));
+					updateStatus(event);
 				}
 				public void solverPrinted(SolverEvent event) {
 					simServiceContext.simState = SimulationState.running;
-					System.out.println("Running...");
 				}
 				public void solverFinished(SolverEvent event) {
-					System.out.println(event.getSimulationMessage().getDisplayMessage());
 					try {
 						getDataSetController(simServiceContext).getDataSetTimes(simServiceContext.vcDataIdentifier);
 						simServiceContext.simState = SimulationState.done;
@@ -262,10 +259,16 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 						simServiceContext.simState = SimulationState.failed;
 						e.printStackTrace();
 					}
+					updateStatus(event);
 				}
 				public void solverAborted(SolverEvent event) {
 					simServiceContext.simState = SimulationState.failed;
 					System.err.println(event.getSimulationMessage().getDisplayMessage());
+				}
+				private void updateStatus(SolverEvent event) {
+					if (statusCallback == null) return;
+					statusCallback.setMessage(event.getSimulationMessage().getDisplayMessage());
+					statusCallback.setProgress((int) (event.getProgress() * 100));
 				}
 			});
 			simServiceContext.solver.startSolver();
