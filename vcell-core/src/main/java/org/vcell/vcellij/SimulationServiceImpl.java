@@ -11,6 +11,7 @@ import java.util.Random;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.thrift.TException;
+import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.SBMLExporter;
@@ -18,13 +19,12 @@ import org.vcell.sbml.vcell.SBMLExporter.VCellSBMLDoc;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.NullSessionLog;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.vcellij.api.DomainType;
 import org.vcell.vcellij.api.SBMLModel;
 import org.vcell.vcellij.api.SimulationInfo;
-import org.vcell.vcellij.api.SimulationService;
 import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
 import org.vcell.vcellij.api.SimulationStatus;
@@ -59,6 +59,7 @@ import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solver.server.SolverListener;
+import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -67,7 +68,7 @@ import cbit.vcell.xml.XmlParseException;
 /**
  * Created by kevingaffney on 7/12/17.
  */
-public class SimulationServiceImpl implements SimulationService.Iface {
+public class SimulationServiceImpl {
 	private static class SimulationServiceContext {
 		SimulationInfo simInfo = null;
 		Solver solver = null;
@@ -169,48 +170,72 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 //		}
 //	}
 
-    @Override
+    public int sizeX(SimulationInfo simInfo) {
+        return mesh(simInfo).getSizeX();
+    }
+
+    public int sizeY(SimulationInfo simInfo) {
+        return mesh(simInfo).getSizeY();
+    }
+
+    public int sizeZ(SimulationInfo simInfo) {
+        return mesh(simInfo).getSizeZ();
+    }
+
+    private CartesianMesh mesh(SimulationInfo simInfo) {
+        SimulationServiceContext simServiceContext = sims.get(simInfo.id);
+        try {
+            DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
+            CartesianMesh mesh = datasetController.getMesh(simServiceContext.vcDataIdentifier);
+            return mesh;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public SimulationInfo computeModel(SBMLModel model, SimulationSpec simSpec) throws ThriftDataAccessException, TException {
+        try {
+            SBMLImporter importer = new SBMLImporter(model.getFilepath(),vcLogger(),true);
+            BioModel bioModel = importer.getBioModel();
+            return computeModel(bioModel, simSpec, null);
+        }
+        catch (Exception exc) {
+            exc.printStackTrace(System.out);
+            return null;
+        }
+    }
+
+    public SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) {
+        try {
+            SBMLImporter importer = new SBMLImporter(sbmlModel,vcLogger(),true);
+            return computeModel(importer.getBioModel(), simSpec, null);
+        }
+        catch (Exception exc) {
+            exc.printStackTrace(System.out);
+            return null;
+        }
+    }
+
+    private cbit.util.xml.VCLogger vcLogger() {
+        return new cbit.util.xml.VCLogger() {
+            @Override
+            public void sendMessage(Priority p, ErrorType et, String message) {
+                System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
+                if (p == VCLogger.Priority.HighPriority) {
+                    throw new RuntimeException("Import failed : " + message);
+                }
+            }
+            public void sendAllMessages() {
+            }
+            public boolean hasMessages() {
+                return false;
+            }
+        };
+    }
+
+    private SimulationInfo computeModel(BioModel bioModel, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) {
     	try {
-	        cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
-	            @Override
-				public void sendMessage(Priority p, ErrorType et, String message) {
-	                System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
-	                if (p == VCLogger.Priority.HighPriority) {
-	                	throw new RuntimeException("Import failed : " + message);
-	                }
-	            }
-	            public void sendAllMessages() {
-	            }
-	            public boolean hasMessages() {
-	                return false;
-	            }
-	        };
-	    	SBMLImporter importer = new SBMLImporter(model.getFilepath(),logger,true);
-	    	BioModel bioModel = importer.getBioModel();
 	    	SimulationContext simContext = bioModel.getSimulationContext(0);
-	    	ClientTaskStatusSupport statusCallback = new ClientTaskStatusSupport() {
-				
-				@Override
-				public void setProgress(int progress) {
-					System.out.println("math mapping: "+progress);
-				}
-				
-				@Override
-				public void setMessage(String message) {
-					System.out.println("math mapping: "+message);
-				}
-				
-				@Override
-				public boolean isInterrupted() { return false; }
-				
-				@Override
-				public int getProgress() { return 0; }
-				
-				@Override
-				public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {}
-				
-			};
 			MathMappingCallback callback = new MathMappingCallbackTaskAdapter(statusCallback);
 			Simulation newsim = simContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
 	    	SimulationInfo simulationInfo = new SimulationInfo();
@@ -238,23 +263,20 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 			simServiceContext.solver.addSolverListener(new SolverListener() {
 				public void solverStopped(SolverEvent event) {
 					simServiceContext.simState = SimulationState.failed;
-					System.out.println(event.getSimulationMessage().getDisplayMessage());
+					System.err.println("Simulation stopped");
 				}
 				public void solverStarting(SolverEvent event) {
 					simServiceContext.simState = SimulationState.running;
-					String displayMessage = event.getSimulationMessage().getDisplayMessage();
-					System.out.println(displayMessage);
+					updateStatus(event);
 				}
 				public void solverProgress(SolverEvent event) {
 					simServiceContext.simState = SimulationState.running;
-					System.out.println("Running..."+((int)(event.getProgress() * 100)));
+					updateStatus(event);
 				}
 				public void solverPrinted(SolverEvent event) {
 					simServiceContext.simState = SimulationState.running;
-					System.out.println("Running...");
 				}
 				public void solverFinished(SolverEvent event) {
-					System.out.println(event.getSimulationMessage().getDisplayMessage());
 					try {
 						getDataSetController(simServiceContext).getDataSetTimes(simServiceContext.vcDataIdentifier);
 						simServiceContext.simState = SimulationState.done;
@@ -262,10 +284,16 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 						simServiceContext.simState = SimulationState.failed;
 						e.printStackTrace();
 					}
+					updateStatus(event);
 				}
 				public void solverAborted(SolverEvent event) {
 					simServiceContext.simState = SimulationState.failed;
 					System.err.println(event.getSimulationMessage().getDisplayMessage());
+				}
+				private void updateStatus(SolverEvent event) {
+					if (statusCallback == null) return;
+					statusCallback.setMessage(event.getSimulationMessage().getDisplayMessage());
+					statusCallback.setProgress((int) (event.getProgress() * 100));
 				}
 			});
 			simServiceContext.solver.startSolver();
@@ -318,7 +346,7 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 		try {
 			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 			
-			SessionLog log = new StdoutSessionLog("data");
+			SessionLog log = new NullSessionLog();
 			Cachetable cacheTable = new Cachetable(10000);
 			DataSetControllerImpl datasetController = new DataSetControllerImpl(log,cacheTable,simServiceContext.localSimDataDir.getParentFile(), null);
 			simServiceContext.times = datasetController.getDataSetTimes(simServiceContext.vcDataIdentifier);
@@ -331,13 +359,11 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 
     }
 
-	@Override
 	public SimulationStatus getStatus(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
 		SimulationServiceContext simServiceContext = sims.get(simInfo.id);
 		return new SimulationStatus(simServiceContext.simState);
 	}
 
-	@Override
 	public List<Double> getData(SimulationInfo simInfo, VariableInfo varInfo, int timeIndex)
 			throws ThriftDataAccessException, TException {
         SimulationServiceContext simServiceContext = sims.get(simInfo.id);
@@ -361,7 +387,6 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 		}
 	}
 
-	@Override
 	public List<Double> getTimePoints(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
         SimulationServiceContext simServiceContext = sims.get(simInfo.id);
         if (simServiceContext==null){
@@ -382,7 +407,6 @@ public class SimulationServiceImpl implements SimulationService.Iface {
 		}
 	}
 
-	@Override
 	public List<VariableInfo> getVariableList(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
         SimulationServiceContext simServiceContext = sims.get(simInfo.id);
         if (simServiceContext==null){
@@ -421,7 +445,6 @@ public class SimulationServiceImpl implements SimulationService.Iface {
         	throw new ThriftDataAccessException("failed to retrieve variable list: "+e.getMessage());
         }
 	}
-	@Override
 	public String getSBML(String vcml, String applicationName) throws ThriftDataAccessException, TException {
 		try {
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml));

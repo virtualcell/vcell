@@ -283,6 +283,11 @@ public class SBMLImporter {
 
 	private static Logger lg = Logger.getLogger(SBMLImporter.class);
 
+	public SBMLImporter(org.sbml.jsbml.Model sbmlModel, VCLogger argVCLogger, boolean isSpatial) {
+		this((String) null, argVCLogger, isSpatial);
+		if (sbmlModel == null) throw new NullPointerException("Model must not be null");
+		this.sbmlModel = sbmlModel;
+	}
 	public SBMLImporter(String argSbmlFileName, VCLogger argVCLogger,
 			boolean isSpatial) {
 		super();
@@ -1884,28 +1889,36 @@ public class SBMLImporter {
 	 * @throws XMLStreamException 
 	 */
 	public BioModel getBioModel() throws XMLStreamException, IOException {
-		// Read SBML model into libSBML SBMLDocument and create an SBML model
-		SBMLReader reader = new SBMLReader();
-		SBMLDocument document = reader.readSBML(sbmlFileName);
-//		document.checkConsistencyOffline();
+		SBMLDocument document;
 		String output = "didn't check";
-//		long numProblems = document.getNumErrors();
-//
-//		System.out.println("\n\nSBML Import Error Report");
-//		ByteArrayOutputStream os = new ByteArrayOutputStream();
-//		PrintStream ps = new PrintStream(os);
-//		document.printErrors(ps);
-//		String output = os.toString();
-//		if (numProblems > 0 && lg.isEnabledFor(Level.WARN)) {
-//			lg.warn("Num problems in original SBML document : " + numProblems);
-//			lg.warn(output);
-//		}
-
 		try {
-			sbmlModel = document.getModel();
+			if (sbmlFileName != null) {
+				// Read SBML model into libSBML SBMLDocument and create an SBML model
+				SBMLReader reader = new SBMLReader();
+				document = reader.readSBML(sbmlFileName);
+	//		document.checkConsistencyOffline();
+	//		long numProblems = document.getNumErrors();
+	//
+	//		System.out.println("\n\nSBML Import Error Report");
+	//		ByteArrayOutputStream os = new ByteArrayOutputStream();
+	//		PrintStream ps = new PrintStream(os);
+	//		document.printErrors(ps);
+	//		String output = os.toString();
+	//		if (numProblems > 0 && lg.isEnabledFor(Level.WARN)) {
+	//			lg.warn("Num problems in original SBML document : " + numProblems);
+	//			lg.warn(output);
+	//		}
 
-			if (sbmlModel == null) {
-				throw new SBMLImportException("Unable to read SBML file : \n" + output);
+				sbmlModel = document.getModel();
+				if (sbmlModel == null) {
+					throw new SBMLImportException("Unable to read SBML file : \n" + output);
+				}
+			}
+			else {
+				if (sbmlModel == null) {
+					throw new IllegalStateException("Expected non-null SBML model");
+				}
+				document = sbmlModel.getSBMLDocument();
 			}
 
 			// Convert SBML Model to VCell model
