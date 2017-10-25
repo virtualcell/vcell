@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: edu.mines:mines-jtk:20151125">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/edu/mines/mines-jtk/20151125/mines-jtk-20151125.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/edu/mines/mines-jtk/20151125/mines-jtk-20151125-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/edu/mines/mines-jtk/20151125/mines-jtk-20151125-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" level="3" spatial:required="true" version="1" xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1">
+  <model id="optoPlexin_PRG_rule_based_1_Dimensional" name="optoPlexin-PRG rule-based_1-Dimensional">
+    <annotation>
+      <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+        <vcell:VCMLSpecific>
+          <vcell:BioModel Name="optoPlexin_PRG_rule_based" KeyValue="115460581"/>
+          <vcell:SimulationSpec Name="_one__Dimensional" KeyValue="115460562"/>
+        </vcell:VCMLSpecific>
+      </vcell:VCellInfo>
+    </annotation>
+      <spatial:geometry xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" id="vcell" spatial:coordinateSystem="cartesian" spatial:id="vcell">
+      <spatial:listOfAdjacentDomains>
+        <spatial:adjacentDomains id="membrane_EC0_Cyt1_Cyt1" spatial:domain1="membrane_EC0_Cyt1" spatial:domain2="Cyt1" spatial:id="membrane_EC0_Cyt1_Cyt1"/>
+        <spatial:adjacentDomains id="membrane_EC0_Cyt1_EC0" spatial:domain1="membrane_EC0_Cyt1" spatial:domain2="EC0" spatial:id="membrane_EC0_Cyt1_EC0"/>
+      </spatial:listOfAdjacentDomains>
+      <spatial:listOfCoordinateComponents>
+        <spatial:coordinateComponent id="x" spatial:id="x" spatial:type="cartesianX" spatial:unit="length">
+          <spatial:boundaryMin id="Xmin" spatial:id="Xmin" spatial:value="0.0"/>
+          <spatial:boundaryMax id="Xmax" spatial:id="Xmax" spatial:value="1.0"/>
+        </spatial:coordinateComponent>
+      </spatial:listOfCoordinateComponents>
+      <spatial:listOfDomains>
+        <spatial:domain id="EC0" spatial:domainType="EC" spatial:id="EC0">
+          <spatial:listOfInteriorPoints>
+            <spatial:interiorPoint spatial:coord1="0.0" spatial:coord2="5.0" spatial:coord3="5.0"/>
+          </spatial:listOfInteriorPoints>
+        </spatial:domain>
+        <spatial:domain id="Cyt1" spatial:domainType="Cyt" spatial:id="Cyt1">
+          <spatial:listOfInteriorPoints>
+            <spatial:interiorPoint spatial:coord1="0.0204081632653061" spatial:coord2="5.0" spatial:coord3="5.0"/>
+          </spatial:listOfInteriorPoints>
+        </spatial:domain>
+        <spatial:domain id="membrane_EC0_Cyt1" spatial:domainType="Cyt_EC_membrane" spatial:id="membrane_EC0_Cyt1"/>
+      </spatial:listOfDomains>
+      <spatial:listOfDomainTypes>
+        <spatial:domainType id="EC" spatial:id="EC" spatial:spatialDimensions="3"/>
+        <spatial:domainType id="Cyt" spatial:id="Cyt" spatial:spatialDimensions="3"/>
+        <spatial:domainType id="Cyt_EC_membrane" spatial:id="Cyt_EC_membrane" spatial:spatialDimensions="2"/>
+      </spatial:listOfDomainTypes>
+      <spatial:listOfGeometryDefinitions>
+        <spatial:analyticGeometry id="Analytic_Geometry10" spatial:id="Analytic_Geometry10" spatial:isActive="true">
+          <spatial:listOfAnalyticVolumes>
+            <spatial:analyticVolume spatial:domainType="EC" spatial:functionType="layered" spatial:ordinal="1">
+              <math xmlns="http://www.w3.org/1998/Math/MathML">              
+                <piecewise>
+                  <piece>
+                    <cn> 1 </cn>
+                    <apply>
+                      <lt/>
+                      <ci> x </ci>
+                      <cn> 0.01 </cn>
+                    </apply>
+                  </piece>
+                  <otherwise>
+                    <cn> 0 </cn>
+                  </otherwise>
+                </piecewise>
+              </math>
+                        </spatial:analyticVolume>
+            <spatial:analyticVolume spatial:domainType="Cyt" spatial:functionType="layered" spatial:ordinal="0">
+              <math xmlns="http://www.w3.org/1998/Math/MathML">              
+                <cn> 1 </cn>
+              </math>
+                        </spatial:analyticVolume>
+          </spatial:listOfAnalyticVolumes>
+        </spatial:analyticGeometry>
+      </spatial:listOfGeometryDefinitions>
+    </spatial:geometry>
+    <listOfUnitDefinitions>
+      <unitDefinition id="substance">
+        <listOfUnits>
+          <unit exponent="1" kind="item" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="volume">
+        <listOfUnits>
+          <unit exponent="3" kind="metre" multiplier="1" scale="-18"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="area">
+        <listOfUnits>
+          <unit exponent="2" kind="metre" multiplier="1" scale="-12"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="length">
+        <listOfUnits>
+          <unit exponent="1" kind="metre" multiplier="1" scale="-6"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="time">
+        <listOfUnits>
+          <unit exponent="1" kind="second" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="molecules">
+        <listOfUnits>
+          <unit exponent="1" kind="item" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="s_1">
+        <listOfUnits>
+          <unit exponent="-1" kind="second" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="molecules_um_2">
+        <listOfUnits>
+          <unit exponent="1" kind="dimensionless" multiplier="1" scale="12"/>
+          <unit exponent="1" kind="item" multiplier="1" scale="0"/>
+          <unit exponent="-2" kind="metre" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="uM">
+        <listOfUnits>
+          <unit exponent="1" kind="dimensionless" multiplier="1" scale="-3"/>
+          <unit exponent="1" kind="mole" multiplier="1" scale="0"/>
+          <unit exponent="3" kind="metre" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment constant="true" id="Cyt" name="Cyt" size="50000" spatialDimensions="3" units="um3">
+        <spatial:compartmentMapping xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" id="CytCyt" spatial:domainType="Cyt" spatial:id="CytCyt" spatial:unitSize="1.0"/>
+      </compartment>
+      <compartment constant="true" id="EC" name="EC" size="50000" spatialDimensions="3" units="um3">
+        <spatial:compartmentMapping xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" id="ECEC" spatial:domainType="EC" spatial:id="ECEC" spatial:unitSize="1.0"/>
+      </compartment>
+      <compartment constant="true" id="PM" name="PM" size="6563" spatialDimensions="2">
+        <spatial:compartmentMapping xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" id="Cyt_EC_membranePM" spatial:domainType="Cyt_EC_membrane" spatial:id="Cyt_EC_membranePM" spatial:unitSize="1.0"/>
+      </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species boundaryCondition="false" compartment="Cyt" constant="false" hasOnlySubstanceUnits="false" id="opN" initialConcentration="0.585" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s0"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+      <species boundaryCondition="false" compartment="Cyt" constant="false" hasOnlySubstanceUnits="false" id="PRG" initialConcentration="0.756" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s1"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+      <species boundaryCondition="false" compartment="PM" constant="false" hasOnlySubstanceUnits="false" id="CIB1" initialConcentration="564" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s2"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+      <species boundaryCondition="false" compartment="Cyt" constant="false" hasOnlySubstanceUnits="false" id="opN_PRG" initialConcentration="0.221" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s3"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+      <species boundaryCondition="false" compartment="PM" constant="false" hasOnlySubstanceUnits="false" id="opN_CIB1" initialConcentration="82" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s4"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+      <species boundaryCondition="false" compartment="Cyt" constant="false" hasOnlySubstanceUnits="false" id="opA" initialConcentration="0" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s5"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+      <species boundaryCondition="false" compartment="Cyt" constant="false" hasOnlySubstanceUnits="false" id="opA_PRG" initialConcentration="0" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s6"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+      <species boundaryCondition="false" compartment="PM" constant="false" hasOnlySubstanceUnits="false" id="opA_CIB1" initialConcentration="0" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s7"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+      <species boundaryCondition="false" compartment="PM" constant="false" hasOnlySubstanceUnits="false" id="opN_PRG_CIB1" initialConcentration="31.2" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s8"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+      <species boundaryCondition="false" compartment="PM" constant="false" hasOnlySubstanceUnits="false" id="opA_PRG_CIB1" initialConcentration="0" substanceUnits="molecules">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s9"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+            </species>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter constant="true" id="x" value="0">
+        <spatial:spatialSymbolReference xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:spatialRef="x"/>
+      </parameter>
+      <parameter constant="true" id="opN_diff" value="5">
+        <spatial:diffusionCoefficient xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:type="isotropic" spatial:variable="opN"/>
+      </parameter>
+      <parameter constant="true" id="opN_BC_Xm" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmin" spatial:type="Neumann" spatial:variable="opN"/>
+      </parameter>
+      <parameter constant="true" id="opN_BC_Xp" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmax" spatial:type="Neumann" spatial:variable="opN"/>
+      </parameter>
+      <parameter constant="true" id="PRG_diff" value="5">
+        <spatial:diffusionCoefficient xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:type="isotropic" spatial:variable="PRG"/>
+      </parameter>
+      <parameter constant="true" id="PRG_BC_Xm" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmin" spatial:type="Neumann" spatial:variable="PRG"/>
+      </parameter>
+      <parameter constant="true" id="PRG_BC_Xp" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmax" spatial:type="Neumann" spatial:variable="PRG"/>
+      </parameter>
+      <parameter constant="true" id="opN_PRG_diff" value="3">
+        <spatial:diffusionCoefficient xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:type="isotropic" spatial:variable="opN_PRG"/>
+      </parameter>
+      <parameter constant="true" id="opN_PRG_BC_Xm" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmin" spatial:type="Neumann" spatial:variable="opN_PRG"/>
+      </parameter>
+      <parameter constant="true" id="opN_PRG_BC_Xp" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmax" spatial:type="Neumann" spatial:variable="opN_PRG"/>
+      </parameter>
+      <parameter constant="true" id="opA_diff" value="5">
+        <spatial:diffusionCoefficient xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:type="isotropic" spatial:variable="opA"/>
+      </parameter>
+      <parameter constant="true" id="opA_BC_Xm" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmin" spatial:type="Neumann" spatial:variable="opA"/>
+      </parameter>
+      <parameter constant="true" id="opA_BC_Xp" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmax" spatial:type="Neumann" spatial:variable="opA"/>
+      </parameter>
+      <parameter constant="true" id="opA_PRG_diff" value="3">
+        <spatial:diffusionCoefficient xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:type="isotropic" spatial:variable="opA_PRG"/>
+      </parameter>
+      <parameter constant="true" id="opA_PRG_BC_Xm" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmin" spatial:type="Neumann" spatial:variable="opA_PRG"/>
+      </parameter>
+      <parameter constant="true" id="opA_PRG_BC_Xp" value="0">
+        <spatial:boundaryCondition xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" spatial:coordinateBoundary="Xmax" spatial:type="Neumann" spatial:variable="opA_PRG"/>
+      </parameter>
+      <parameter constant="false" id="Laser" units="s_1"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="Laser">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <piecewise>
+            <piece>
+              <cn> 0.14 </cn>
+              <apply>
+                <gt/>
+                <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> t </csymbol>
+                <cn> 96 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn> 0 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+            </assignmentRule>
+    </listOfRules>
+  </model>
+</sbml>

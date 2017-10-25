@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.netlib:netlib-java:0.9.3-renjin-patched-2">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/netlib/netlib-java/0.9.3-renjin-patched-2/netlib-java-0.9.3-renjin-patched-2.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/netlib/netlib-java/0.9.3-renjin-patched-2/netlib-java-0.9.3-renjin-patched-2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/netlib/netlib-java/0.9.3-renjin-patched-2/netlib-java-0.9.3-renjin-patched-2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
