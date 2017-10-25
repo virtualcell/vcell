@@ -3,15 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.scijava</groupId>
-		<artifactId>pom-scijava</artifactId>
-		<version>17.1.1</version>
-		<relativePath />
+		<groupId>org.vcell</groupId>
+		<artifactId>vcell-pom</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.vcell</groupId>
 	<artifactId>vcell-imagej</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
 
 	<name>vcell-imagej</name>
 	<description>The Virtual Cell plugin for ImageJ</description>
@@ -174,7 +171,7 @@
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
