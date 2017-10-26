@@ -538,6 +538,4 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 			}
 		}
 	}
-
-
 }

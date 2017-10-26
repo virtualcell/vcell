@@ -387,9 +387,9 @@ private void initialize() {
 			}
 		};
 
-		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
-		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setPreferredWidth(400);
-		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setMinWidth(400);
+		table.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColDepiction).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
+		table.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColDepiction).setPreferredWidth(400);
+		table.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColDepiction).setMinWidth(400);
 		
 		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDefinition).setPreferredWidth(30);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);

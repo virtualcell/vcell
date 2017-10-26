@@ -115,7 +115,7 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	public boolean isCellEditable(int iRow, int iCol) {
 		switch(iCol) {
 		case iColDefinition:
-//			return true;	// being editable means that you can select a row and copy its contents to the clipboard
+			return true;	// being editable means that you can select a row and copy its contents to the clipboard
 		default:
 			return false;
 		}
