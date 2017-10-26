@@ -17,6 +17,7 @@ import java.util.List;
 import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.ExpandCanvasLayouter;
+import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.GraphLayouter.Client;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.ShrinkCanvasLayouter;
@@ -88,6 +89,8 @@ public class GraphLayoutManager {
 			layouter = new ShrinkCanvasLayouter();
 		} else if(ExpandCanvasLayouter.LAYOUT_NAME.equals(layoutName)) {
 			layouter = new ExpandCanvasLayouter();
+		} else if(GenericLogicGraphLayouter.LAYOUT_NAME.equals(layoutName)) {
+			layouter = new GenericLogicGraphLayouter();
 		}
 		if(layouter != null) {
 			layouter.layout(client);

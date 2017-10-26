@@ -36,6 +36,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.graphlayout.ExpandCanvasLayouter;
+import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.ShrinkCanvasLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
@@ -168,8 +169,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				});
 			}
 			else if (source == getGlgLayoutJButton())
-				System.out.println("GLG Layout has been removed");
-	//			getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
+//				System.out.println("GLG Layout has been removed");
+				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
 			else if (source == getShrinkCanvasButton())
 				getReactionCartoonTool().layout(ShrinkCanvasLayouter.LAYOUT_NAME);
 			else if (source == getExpandCanvasButton())
@@ -249,7 +250,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				glgLayoutJButton.setName("GlgLayoutJButton");
 				glgLayoutJButton.setToolTipText("Layout GLG");
 				glgLayoutJButton.setIcon(glgLayoutIcon);
-				glgLayoutJButton.setEnabled(false);
+				glgLayoutJButton.setEnabled(true);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}

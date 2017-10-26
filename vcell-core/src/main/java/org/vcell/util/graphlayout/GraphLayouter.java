@@ -53,7 +53,8 @@ public interface GraphLayouter {
 		public static final List<String> NAMES = 
 			Arrays.asList(RandomLayouter.LAYOUT_NAME, EdgeTugLayouter.LAYOUT_NAME, 
 					ShootAndCutLayouter.LAYOUT_NAME, SimpleElipticalLayouter.LAYOUT_NAME,
-					EnergyMinimizingLayouter.LAYOUT_NAME, WerewolfLayouter.LAYOUT_NAME, ShrinkCanvasLayouter.LAYOUT_NAME,
+					// EnergyMinimizingLayouter.LAYOUT_NAME, 
+					GenericLogicGraphLayouter.LAYOUT_NAME, WerewolfLayouter.LAYOUT_NAME, ShrinkCanvasLayouter.LAYOUT_NAME,
 					ExpandCanvasLayouter.LAYOUT_NAME);		
 	}
 	
