@@ -87,10 +87,10 @@ public void init() throws Exception {
 	int numThreads;
 	if (serviceType == ServiceType.DATAEXPORT){
 		selector = vcMessagingService.createSelector(dataRequestFilter+" AND "+exportOnlyFilter);
-		numThreads = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.exportdataThreadsProperty));
+		numThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.exportdataThreadsProperty, "3"));
 	}else if (serviceType == ServiceType.DATA){
 		selector = vcMessagingService.createSelector(dataRequestFilter+" AND "+dataOnlyFilter);
-		numThreads = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.simdataThreadsProperty));
+		numThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.simdataThreadsProperty, "5"));
 	}else{
 		throw new RuntimeException("expecting either Service type of "+ServiceType.DATA+" or "+ServiceType.DATAEXPORT);
 	}

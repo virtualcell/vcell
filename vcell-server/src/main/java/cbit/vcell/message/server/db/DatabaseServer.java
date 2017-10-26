@@ -69,7 +69,7 @@ public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServe
 }
 
 public void init() throws Exception {
-	int numDatabaseThreads = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.databaseThreadsProperty));
+	int numDatabaseThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.databaseThreadsProperty, "5"));
 	this.sharedProducerSession = vcMessagingService.createProducerSession();
 	rpcMessageHandler = new VCRpcMessageHandler(databaseServerImpl, VCellQueue.DbRequestQueue, log);
 	this.pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, log, numDatabaseThreads, sharedProducerSession);

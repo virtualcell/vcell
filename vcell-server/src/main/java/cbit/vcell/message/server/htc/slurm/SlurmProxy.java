@@ -23,6 +23,7 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.solvers.ExecutableCommand;
@@ -44,8 +45,8 @@ public class SlurmProxy extends HtcProxy {
 	
 	//private static String Slurm_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSlurmHome);
 	private static String Slurm_HOME = ""; // slurm commands should be in the path (empty prefix)
-	private static String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
-	private static String MPI_HOME= PropertyLoader.getRequiredProperty(PropertyLoader.MPI_HOME);
+	private static String htcLogDirString = ResourceUtil.getHtcLogDir().getAbsolutePath();
+	private static String MPI_HOME= PropertyLoader.getProperty(PropertyLoader.MPI_HOME,"");
 	static {
 //		if (!Slurm_HOME.endsWith("/")){
 //			Slurm_HOME += "/";
@@ -228,7 +229,7 @@ denied: job "6894" does not exist
 			if (jobName.equals("batch")){
 				continue;
 			}
-			HtcJobID htcJobID = new SlurmJobID(jobID);
+			HtcJobID htcJobID = new HtcJobID(jobID,BatchSystemType.SLURM);
 			String errorPath = null;
 			String outputPath = null;
 			HtcJobInfo htcJobInfo = new HtcJobInfo(htcJobID, true, jobName, errorPath, outputPath);
@@ -374,7 +375,7 @@ denied: job "6894" does not exist
 	}
 
 	@Override
-	public SlurmJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
 			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands);
 
@@ -411,7 +412,7 @@ denied: job "6894" does not exist
 		}else{
 			throw new ExecutableException("unexpected response from '"+JOB_CMD_SUBMIT+"' while submitting simulation: '"+jobid+"'");
 		}
-		return new SlurmJobID(jobid);
+		return new HtcJobID(jobid,BatchSystemType.SLURM);
 	}
 
 	/**

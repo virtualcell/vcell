@@ -6,8 +6,9 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.HtcProxy.SimTaskInfo;
-import cbit.vcell.message.server.htc.slurm.SlurmJobID;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.HtcJobID.BatchSystemType;
 
 public class HtcProxyTest {
 
@@ -45,11 +46,11 @@ public class HtcProxyTest {
 	@Test
 	public void test_isMyJob(){
 		System.setProperty(PropertyLoader.vcellServerIDProperty,"ALPHA");
-		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new SlurmJobID("1200725"),true,"V_ALPHA_115785823_0_0",null,null)));
-		Assert.assertFalse(HtcProxy.isMyJob(new HtcJobInfo(new SlurmJobID("1200725"),true,"V_BETA_115785823_0_0",null,null)));
+		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),true,"V_ALPHA_115785823_0_0",null,null)));
+		Assert.assertFalse(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),true,"V_BETA_115785823_0_0",null,null)));
 		
 		System.setProperty(PropertyLoader.vcellServerIDProperty,"BETA");
-		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new SlurmJobID("1200725"),true,"V_BETA_115785823_0_0",null,null)));
+		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),true,"V_BETA_115785823_0_0",null,null)));
 	}
 
 }

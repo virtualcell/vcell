@@ -24,13 +24,9 @@ private String hostName = null;
 private CacheStatus cacheStatus = null;
 private User[] connectedUsers = null;
 
-public ServerInfo(String argHostName,CacheStatus argCacheStatus, User[] argConnectedUsers){
+public ServerInfo(String argHostName,User[] argConnectedUsers){
 	hostName = argHostName;
-	cacheStatus = argCacheStatus;
 	connectedUsers = argConnectedUsers;
-}
-public CacheStatus getCacheStatus() {
-	return cacheStatus;
 }
 public User[] getConnectedUsers() {
 	return connectedUsers;

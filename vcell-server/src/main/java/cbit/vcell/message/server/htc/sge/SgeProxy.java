@@ -23,6 +23,7 @@ import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.solvers.ExecutableCommand;
@@ -217,7 +218,7 @@ denied: job "6894" does not exist
 		Element stateCodeE = ji.getChild(PSYM_STATE);
 		String stateCode = stateCodeE.getValue();
 
-		SgeJobID id = new SgeJobID(jn);
+		HtcJobID id = new HtcJobID(jn,BatchSystemType.SGE);
 		HtcJobInfo hji = new HtcJobInfo(id,true,jname,null,null);
 		SGEJobStatus stat = SGEJobStatus.parseStatus(state,stateCode);
 		if (LG.isDebugEnabled()) {
@@ -344,7 +345,7 @@ denied: job "6894" does not exist
 	}
 
 	@Override
-	public SgeJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
 			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands);
 
@@ -370,7 +371,7 @@ denied: job "6894" does not exist
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
 
-		return new SgeJobID(jobid);
+		return new HtcJobID(jobid,BatchSystemType.SGE);
 	}
 
 	/**

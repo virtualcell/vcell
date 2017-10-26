@@ -19,14 +19,12 @@ import org.vcell.util.document.VCellServerID;
 import cbit.sql.Field;
 import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
-import cbit.vcell.message.server.htc.pbs.PbsJobID;
-import cbit.vcell.message.server.htc.sge.SgeJobID;
-import cbit.vcell.message.server.htc.slurm.SlurmJobID;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.modeldb.VersionTable;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.server.SimulationExecutionStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
@@ -403,13 +401,13 @@ public static HtcJobID fromDatabase(String databaseString){
 	String SGE_Prefix = HtcJobID.BatchSystemType.SGE.name()+":";
 	String SLURM_Prefix = HtcJobID.BatchSystemType.SLURM.name()+":";
 	if (databaseString.startsWith(PBS_Prefix)){
-		return new PbsJobID(databaseString.substring(PBS_Prefix.length()));
+		return new HtcJobID(databaseString.substring(PBS_Prefix.length()), BatchSystemType.PBS);
 	}else if (databaseString.startsWith(SLURM_Prefix)){
-		return new SlurmJobID(databaseString.substring(SLURM_Prefix.length()));
+		return new HtcJobID(databaseString.substring(SLURM_Prefix.length()), BatchSystemType.SLURM);
 	}else if (databaseString.startsWith(SGE_Prefix)){
-		return new SgeJobID(databaseString.substring(SGE_Prefix.length()));
+		return new HtcJobID(databaseString.substring(SGE_Prefix.length()), BatchSystemType.SGE);
 	}else {
-		return new PbsJobID(databaseString);
+		return new HtcJobID(databaseString, BatchSystemType.PBS);
 	}
 }
 }

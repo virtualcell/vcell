@@ -168,8 +168,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
 			CommandService.bQuiet = true;
-			String libDir = PropertyLoader.getRequiredProperty(PropertyLoader.NATIVE_LIB_DIR);
-			ResourceUtil.setNativeLibraryDirectory(libDir);
+			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
 			PythonSupport.verifyInstallation();
@@ -247,7 +246,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
 			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable,
 					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)),
-					new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
+					new File(PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty))));
 
 			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(log);
 
@@ -301,9 +300,22 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.primarySimDataDirProperty,
-		PropertyLoader.secondarySimDataDirProperty,
+		PropertyLoader.vcellServerIDProperty,
+		PropertyLoader.installationRoot,
+		PropertyLoader.dbConnectURL,
+		PropertyLoader.dbDriverName,
+		PropertyLoader.dbUserid,
+		PropertyLoader.dbPassword,
+		PropertyLoader.mongodbHost,
+		PropertyLoader.mongodbPort,
+		PropertyLoader.mongodbDatabase,
+		PropertyLoader.jmsURL,
+		PropertyLoader.jmsUser,
+		PropertyLoader.jmsPassword,
 		PropertyLoader.htcUser,
-		PropertyLoader.NATIVE_LIB_DIR
+		PropertyLoader.pythonExe,
+		PropertyLoader.jmsBlobMessageTempDir,
+		PropertyLoader.maxJobsPerScan
 	};
 
 

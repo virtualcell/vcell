@@ -53,7 +53,6 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private String hostName = null;
 	private AdminDatabaseServer adminDbServer = null;
 	private SessionLog sessionLog = null;
-	private Cachetable dataCachetable = null;
 	private DataSetControllerImpl dscImpl = null;
 	private VCMessagingService vcMessagingService = null;
 	private ExportServiceImpl exportServiceImpl = null;
@@ -69,7 +68,7 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalVCellServer(String argHostName, VCMessagingService vcMessagingService, AdminDatabaseServer dbServer, SimulationDatabase simulationDatabase, int argRmiPort) throws RemoteException, FileNotFoundException {
+public LocalVCellServer(String argHostName, VCMessagingService vcMessagingService, AdminDatabaseServer dbServer, SimulationDatabase simulationDatabase, DataSetControllerImpl datasetControllerImpl, int argRmiPort) throws RemoteException, FileNotFoundException {
 	super(argRmiPort);
 	this.rmiPort = argRmiPort;
 	this.hostName = argHostName;
@@ -80,10 +79,7 @@ public LocalVCellServer(String argHostName, VCMessagingService vcMessagingServic
 		clientTopicMessageCollector.init();
 	}
 	adminDbServer = dbServer;
-	this.dataCachetable = new Cachetable(10*Cachetable.minute);
-	this.dscImpl = new DataSetControllerImpl(sessionLog,dataCachetable, 
-			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
-			new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
+	this.dscImpl = datasetControllerImpl;
 	this.simulationDatabase = simulationDatabase;
 //	this.simControllerImpl = new SimulationControllerImpl(sessionLog, this.simulationDatabase, this);
 	this.exportServiceImpl = new ExportServiceImpl(sessionLog);
@@ -174,21 +170,6 @@ private AdminDatabaseServer getAdminDatabaseServer() {
 	}
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.CacheStatus
- */
-public CacheStatus getCacheStatus() {
-	try {
-		return dataCachetable.getCacheStatus();
-	}catch (Throwable e){
-		sessionLog.exception(e);
-		throw new RuntimeException(e.getMessage());
-	}
-}
-
-
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.ConnectionPoolStatus
@@ -232,7 +213,7 @@ public ExportServiceImpl getExportServiceImpl() {
  * @return cbit.vcell.server.ServerInfo
  */
 public ServerInfo getServerInfo() {
-	return new ServerInfo(hostName,getCacheStatus(),getConnectedUsers());
+	return new ServerInfo(hostName,getConnectedUsers());
 }
 
 ///**

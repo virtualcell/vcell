@@ -47,7 +47,7 @@ public class VCMongoDbDriver {
 	
 	private VCMongoDbDriver() {
     	mongoDbDatabaseName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
-    	mongoDbLoggingCollectionName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbLoggingCollection);
+    	mongoDbLoggingCollectionName = PropertyLoader.getProperty(PropertyLoader.mongodbLoggingCollection, "logging");
 	}
 
 	public void setSessionLog(SessionLog log){

@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.vcell.util.Matchable;
 
 @SuppressWarnings("serial")
-public abstract class HtcJobID implements Serializable, Matchable {
+public final class HtcJobID implements Serializable, Matchable {
 
 	public enum BatchSystemType {
 		PBS,
@@ -20,8 +20,10 @@ public abstract class HtcJobID implements Serializable, Matchable {
 	//
 	private long jobNumber;  // required (e.g. 1200725)
 	private String server;     // optional (e.g. "master.cm.cluster")
+	private final BatchSystemType batchSystemType;
 
-	protected HtcJobID(String jobID){
+	public HtcJobID(String jobID, BatchSystemType batchSystemType){
+		this.batchSystemType = batchSystemType;
 		if (jobID.contains(".")){
 			int indexOfFirstPeriod = jobID.indexOf(".");
 			this.jobNumber = Long.parseLong(jobID.substring(0,indexOfFirstPeriod));
@@ -57,7 +59,9 @@ public abstract class HtcJobID implements Serializable, Matchable {
 		return this.server;
 	}
 
-	public abstract BatchSystemType getBatchSystemType( );
+	public BatchSystemType getBatchSystemType(){
+		return this.batchSystemType;
+	}
 
 	/**
 	 * compares {@link #jobNumber}, {@link #batchSystemType} and, if both not null, {@link #server}

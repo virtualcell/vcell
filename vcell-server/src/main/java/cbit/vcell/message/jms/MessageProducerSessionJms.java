@@ -251,7 +251,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					serializedBytes = BeanUtils.toSerialized(object);
 				}
 
-				long blobMessageSizeThreshold = Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageMinSize));
+				long blobMessageSizeThreshold = Long.parseLong(PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageMinSize, "100000"));
 
 				if (serializedBytes!=null && serializedBytes.length > blobMessageSizeThreshold){
 					//

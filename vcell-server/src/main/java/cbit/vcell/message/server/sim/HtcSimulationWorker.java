@@ -212,7 +212,7 @@ private void initQueueConsumer() {
 		}
 	};
 
-	int numHtcworkerThreads = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcworkerThreadsProperty));
+	int numHtcworkerThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.htcworkerThreadsProperty, "10"));
 	this.pooledQueueConsumer = new VCPooledQueueConsumer(queueListener, log, numHtcworkerThreads, sharedMessageProducer);
 	this.pooledQueueConsumer.initThreadPool();
 	VCellQueue queue = VCellQueue.SimJobQueue;
@@ -225,7 +225,7 @@ private void initQueueConsumer() {
 private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, SessionLog log, PostProcessingChores chores) throws XmlParseException, IOException, SolverException, ExecutableException {
 
 	HtcJobID jobid = null;
-	String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
+	String htcLogDirString = ResourceUtil.getHtcLogDir().getAbsolutePath();
     if (!htcLogDirString.endsWith("/")){
     	htcLogDirString = htcLogDirString+"/";
     }

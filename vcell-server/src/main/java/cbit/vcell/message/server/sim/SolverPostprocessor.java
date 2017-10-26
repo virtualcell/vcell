@@ -66,8 +66,7 @@ public class SolverPostprocessor  {
 		try {
 
 			PropertyLoader.loadProperties(POST_PROCESSOR_PROPERTIES);
-			String libDir = PropertyLoader.getRequiredProperty(PropertyLoader.NATIVE_LIB_DIR);
-			ResourceUtil.setNativeLibraryDirectory(libDir);
+			ResourceUtil.setNativeLibraryDirectory();
 			NativeLoader.setOsType(OsType.LINUX);
 
 			KeyValue simKey = new KeyValue(args[0]);
@@ -163,8 +162,7 @@ public class SolverPostprocessor  {
 	}
 	private static final String POST_PROCESSOR_PROPERTIES[] = {
 			PropertyLoader.primarySimDataDirProperty,
-			PropertyLoader.secondarySimDataDirProperty,
-			PropertyLoader.NATIVE_LIB_DIR
+			PropertyLoader.secondarySimDataDirProperty
 		};
 
 }

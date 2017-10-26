@@ -10,6 +10,8 @@
 
 package cbit.vcell.message.server.bootstrap;
 
+import java.io.File;
+
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.AuthenticationException;
@@ -30,6 +32,8 @@ import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellServer;
 import cbit.vcell.server.VCellServerFactory;
+import cbit.vcell.simdata.Cachetable;
+import cbit.vcell.simdata.DataSetControllerImpl;
 /**
  * This type was created in VisualAge.
  */
@@ -53,8 +57,13 @@ public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword dig
 		}
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, sessionLog);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, sessionLog);
-		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, false, sessionLog);
-		vcServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase, 0);
+		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, false, sessionLog);	
+		Cachetable dataCachetable = new Cachetable(10*Cachetable.minute);
+		DataSetControllerImpl datasetControllerImpl = new DataSetControllerImpl(sessionLog,dataCachetable, 
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
+
+		vcServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase, datasetControllerImpl, 0);
 	} catch (java.rmi.RemoteException e){
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage(),e);

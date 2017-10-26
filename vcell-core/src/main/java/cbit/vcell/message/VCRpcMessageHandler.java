@@ -46,7 +46,7 @@ public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 		}
 
 		// reply to "reply-to" queue with the return value or exception.
-		long clientTimeoutMS = Long.parseLong(cbit.vcell.resource.PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.vcellClientTimeoutMS)); 
+		long clientTimeoutMS = Long.parseLong(cbit.vcell.resource.PropertyLoader.getProperty(cbit.vcell.resource.PropertyLoader.vcellClientTimeoutMS, "1200000")); 
 		VCellQueue replyTo = (VCellQueue)rpcVCMessage.getReplyTo();
 		
 		//

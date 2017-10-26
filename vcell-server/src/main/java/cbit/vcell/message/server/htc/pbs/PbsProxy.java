@@ -25,6 +25,7 @@ import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.solvers.ExecutableCommand;
@@ -48,10 +49,10 @@ public final class PbsProxy extends HtcProxy {
 
 	@Override
 	public HtcJobStatus getJobStatus(HtcJobID htcJobId) throws HtcException, ExecutableException {
-		if (!(htcJobId instanceof PbsJobID)){
+		if (htcJobId==null || htcJobId.getBatchSystemType()!=BatchSystemType.PBS){
 			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
 		}
-		PbsJobID pbsJobID = (PbsJobID)htcJobId;
+		HtcJobID pbsJobID = htcJobId;
 
 		HtcJobStatus iStatus = null;
 
@@ -107,10 +108,10 @@ public final class PbsProxy extends HtcProxy {
 
 	@Override
 	public void killJob(HtcJobID htcJobId) throws ExecutableException, HtcException {
-		if (!(htcJobId instanceof PbsJobID)){
+		if (htcJobId==null || htcJobId.getBatchSystemType()!=BatchSystemType.PBS){
 			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
 		}
-		PbsJobID pbsJobID = (PbsJobID)htcJobId;
+		HtcJobID pbsJobID = htcJobId;
 
 		String PBS_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcPbsHome);
 		if (!PBS_HOME.endsWith("/")){
@@ -140,7 +141,7 @@ public final class PbsProxy extends HtcProxy {
 		}
 	}
 
-	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize,
+	protected HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize,
 			String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag,
 			Collection<PortableCommand> postProcessingCommands) throws ExecutableException{
 		if (LG.isInfoEnabled()) {
@@ -273,7 +274,7 @@ public final class PbsProxy extends HtcProxy {
 		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, completeCommand));
 		String jobid = commandOutput.getStandardOutput().trim();
 
-		return new PbsJobID(jobid);
+		return new HtcJobID(jobid,BatchSystemType.PBS);
 	}
 
 	@Override
@@ -313,7 +314,7 @@ public final class PbsProxy extends HtcProxy {
 				Matcher m = statPattern.matcher(line);
 				if (m.matches()) {
 					String idStr = m.group(1);
-					pbsJobIDs.add(new PbsJobID(idStr));
+					pbsJobIDs.add(new HtcJobID(idStr, BatchSystemType.PBS));
 				}
 			}
 			return pbsJobIDs;
@@ -349,14 +350,14 @@ public final class PbsProxy extends HtcProxy {
 
 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
 			String line = null;
-			PbsJobID latestpbsJobID = null;
+			HtcJobID latestpbsJobID = null;
 			String latestJobName = null;
 			String latestErrorPath = null;
 			while((line = br.readLine()) != null){
 				StringTokenizer st = new StringTokenizer(line," \t");
 				if(line.startsWith("Job Id:")){
 					st.nextToken();st.nextToken();
-					latestpbsJobID = new PbsJobID(st.nextToken());
+					latestpbsJobID = new HtcJobID(st.nextToken(),BatchSystemType.PBS);
 				}else if(latestpbsJobID != null){
 					if(line.trim().startsWith("Job_Name =")){
 						st.nextToken();st.nextToken();
@@ -393,7 +394,7 @@ public final class PbsProxy extends HtcProxy {
 		return ar.toArray(new String[0]);
 	}
 
-	public PbsJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet,
+	public HtcJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet,
 			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		throw new UnsupportedOperationException("not implemented yet");
 	}

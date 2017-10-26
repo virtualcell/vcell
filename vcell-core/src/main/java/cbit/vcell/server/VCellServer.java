@@ -19,12 +19,6 @@ import org.vcell.util.document.User;
  */
 public interface VCellServer extends java.rmi.Remote {
 
-/**
- * This method was created in VisualAge.
- * @return CacheStatus
- */
-CacheStatus getCacheStatus() throws RemoteException;
-
 
 /**
  * This method was created in VisualAge.
