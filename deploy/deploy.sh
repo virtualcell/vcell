@@ -21,6 +21,11 @@ projectTargetDir=$projectRootDir/target
 
 serverTargetDir=$projectRootDir/vcell-server/target
 
+// oracle dependencies
+oracleTargetDir=$projectRootDir/vcell-oracle/target
+ucpJarFilePath=$projectRootDir/ucp/src/ucp.jar
+ojdbc6JarFilePath=$projectRootDir/ojdbc6/src/ojdbc6.jar
+
 apiTargetDir=$projectRootDir/vcell-api/target
 apiDocrootDir=$projectRootDir/vcell-api/docroot
 apiWebappDir=$projectRootDir/vcell-api/webapp
@@ -255,6 +260,12 @@ cp -p $adminTargetDir/maven-jars/*.jar $stagingJarsDir
 cp -p $adminTargetDir/$vcell_vcellAdminJarFileName $stagingJarsDir
 cp -p $apiTargetDir/maven-jars/*.jar $stagingJarsDir
 cp -p $apiTargetDir/$vcell_vcellApiJarFileName $stagingJarsDir
+
+cp -p $oracleTargetDir/maven-jars/*.jar $stagingJarsDir
+cp -p $oracleTargetDir/$vcell_vcellOracleJarFileName $stagingJarsDir
+cp -p $ucpJarFilePath $stagingJarsDir
+cp -p $ojdbc6JarFilePath $stagingJarsDir
+
 cp -p $serverTargetDir/maven-jars/*.jar $stagingJarsDir
 cp -p $serverTargetDir/$vcell_vcellServerJarFileName $stagingJarsDir
 cp -p $projectRootDir/$nativelibsDir/* $stagingNativelibsDir
