@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.bootstrap;
 import java.rmi.RemoteException;
 
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -268,6 +269,14 @@ public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier
 @Override
 public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
 	return (double[])rpc("getVtuTimes", new Object[]{userLoginInfo.getUser(), vcdataID});
+}
+
+
+
+@Override
+public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID)
+		throws RemoteException, DataAccessException {
+	return (NFSimMolecularConfigurations)rpc("getNFSimMolecularConfigurations", new Object[]{userLoginInfo.getUser(), vcdataID});
 }
 
 }

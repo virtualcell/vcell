@@ -34,6 +34,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.vcell.service.VCellServiceHelper;
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.CacheException;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -4757,6 +4758,49 @@ if (name.toUpperCase().contains("SIZE")){
 			log.exception(e);
 			throw new DataAccessException("failed to retrieve VTK variable list: "+e.getMessage(),e);
 		}
+	}
+	public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdID) throws DataAccessException {
+		
+		log.print("DataSetControllerImpl.getODEDataBlock()");
+
+//		try {
+//			//
+//			// check if already cached
+//			//
+//			VCData simData = getVCData(vcdID);
+//			ODEDataInfo odeDataInfo = new ODEDataInfo(vcdID.getOwner(), vcdID.getID(), simData.getDataBlockTimeStamp(ODE_DATA, 0));
+//			ODEDataBlock odeDataBlock = (cacheTable0 != null?cacheTable0.get(odeDataInfo):null);
+//			if (odeDataBlock != null){
+//				return odeDataBlock;
+//			}else{
+//				odeDataBlock = simData.getODEDataBlock();
+//				if (odeDataBlock != null){
+////						cacheTable.put(odeDataInfo, odeDataBlock);
+//					if(cacheTable0 != null){
+//						try {
+//							cacheTable0.put(odeDataInfo, odeDataBlock);
+//						} catch (CacheException e) {
+//							// if can't cache the results, it is ok
+//							e.printStackTrace();
+//						}
+//					}
+		
+					return null;
+		
+//					NFSimMolecularConfigurations mc = new NFSimMolecularConfigurations();
+//					Map<String, Integer> timePointMap = NFSimMolecularConfigurations.getSampleTimepoint();
+//					mc.setMolecularConfigurations(timePointMap);
+//					return mc;
+//				}else{
+//					String msg = "failure reading ODE data for " + vcdID.getOwner().getName() + "'s " + vcdID.getID();
+//					log.alert("DataSetControllerImpl.getODEDataBlock(): "+msg);
+//					throw new DataAccessException(msg);
+//				}
+//			}
+//		}catch (IOException e){
+//			log.exception(e);
+//			throw new DataAccessException(e.getMessage());
+//		}
 	}
 
 

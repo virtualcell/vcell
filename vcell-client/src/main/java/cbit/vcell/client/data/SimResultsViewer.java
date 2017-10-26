@@ -88,6 +88,7 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 	odeDataViewer = new ODEDataViewer();
 	odeDataViewer.setSimulation(getSimulation());
 	odeDataViewer.setOdeSolverResultSet(((ODEDataManager)dataManager).getODESolverResultSet());
+	odeDataViewer.setNFSimMolecularConfigurations(((ODEDataManager)dataManager).getNFSimMolecularConfigurations());
 	odeDataViewer.setVcDataIdentifier(dataManager.getVCDataIdentifier());
 	return odeDataViewer;
 }

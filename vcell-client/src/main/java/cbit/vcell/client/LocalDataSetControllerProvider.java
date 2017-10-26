@@ -12,6 +12,7 @@ package cbit.vcell.client;
 
 import java.rmi.RemoteException;
 
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.TimeSeriesJobResults;
@@ -139,6 +140,12 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 		public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
 			return dataServerImpl.getVtuTimes(user, vcdataID);
 		}
+		
+		@Override
+		public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+			return dataServerImpl.getNFSimMolecularConfigurations(user, vcdataID);
+		}
+
 	}
 	
 	private SessionLog log = null;

@@ -13,6 +13,7 @@ package cbit.vcell.server;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
@@ -81,7 +82,7 @@ public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int time
 
 public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws RemoteException, DataAccessException;
 
-
+public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
 
 CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
 /**

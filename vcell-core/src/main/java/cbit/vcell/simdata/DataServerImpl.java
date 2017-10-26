@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.simdata;
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
@@ -486,6 +487,17 @@ public VtuVarInfo[] getVtuVarInfos(User user, OutputContext outputContext, VCDat
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage(),e);
+	}
+}
+
+public NFSimMolecularConfigurations getNFSimMolecularConfigurations(User user, VCDataIdentifier vcdID) throws DataAccessException {
+	log.print("DataServerImpl.getNFSimMolecularConfigurations()");
+	checkReadAccess(user, vcdID);
+	try {
+		return dataSetControllerImpl.getNFSimMolecularConfigurations(vcdID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
 	}
 }
 

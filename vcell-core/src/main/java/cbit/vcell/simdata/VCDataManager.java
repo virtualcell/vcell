@@ -12,6 +12,7 @@ package cbit.vcell.simdata;
 
 import java.rmi.RemoteException;
 
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.TimeSeriesJobResults;
@@ -253,6 +254,21 @@ public synchronized ODESimData getODEData(VCDataIdentifier vcdID) throws DataAcc
 		handleRemoteException(e);
 		try {
 			return getDataSetController().getODEData(vcdID);
+		}catch (RemoteException e2){
+			handleRemoteException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
+
+public synchronized NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdID) throws DataAccessException {
+	try {
+		return getDataSetController().getNFSimMolecularConfigurations(vcdID);
+	}catch (RemoteException e){
+		handleRemoteException(e);
+		try {
+			return getDataSetController().getNFSimMolecularConfigurations(vcdID);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());

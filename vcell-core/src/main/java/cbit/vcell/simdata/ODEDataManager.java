@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.simdata;
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -29,6 +30,7 @@ public class ODEDataManager implements DataManager {
 	private VCDataManager vcDataManager = null;
 	private VCDataIdentifier vcDataIdentifier = null;
 	private ODESolverResultSet odeSolverResultSet = null;
+	private NFSimMolecularConfigurations nFSimMolecularConfigurations = null;
 	private OutputContext outputContext = null;
 
 public OutputContext getOutputContext() {
@@ -94,7 +96,6 @@ public DataIdentifier[] getDataIdentifiers() throws DataAccessException {
 	return getVCDataManager().getDataIdentifiers(getOutputContext(),getVCDataIdentifier());
 }
 
-
 /**
  * gets all times at which simulation result data is availlable for this Simulation.
  * 
@@ -130,6 +131,9 @@ public AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessExcept
  */
 public ODESolverResultSet getODESolverResultSet() throws DataAccessException {	
 	return odeSolverResultSet;
+}
+public NFSimMolecularConfigurations getNFSimMolecularConfigurations() throws DataAccessException {	
+	return nFSimMolecularConfigurations;
 }
 
 /**
@@ -173,6 +177,7 @@ private void setVcDataManager(VCDataManager newVcDataManager) {
 private void connect() throws DataAccessException {
 	// clone, so we can operate safely on it (adding/removing user-defined functions) - real remote data is being cached...
 	odeSolverResultSet = new ODESimData(getVCDataIdentifier(),getVCDataManager().getODEData(getVCDataIdentifier()));
+	nFSimMolecularConfigurations = getVCDataManager().getNFSimMolecularConfigurations(getVCDataIdentifier());
 }
 
 private void addOutputFunction(AnnotatedFunction function, ODESolverResultSet odeRS) {

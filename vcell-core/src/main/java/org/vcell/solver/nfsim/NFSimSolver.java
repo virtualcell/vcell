@@ -156,7 +156,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 	private String getOutputFilename() {
 		return getBaseName() + NFSIM_OUTPUT_FILE_EXTENSION;
 	}
-	private String getSpeciesOutputFilename() {
+	public String getSpeciesOutputFilename() {
 		return getBaseName() + ".species";
 	}
 

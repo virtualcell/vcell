@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 
 import javax.swing.JFrame;
 
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -220,6 +221,13 @@ public class DisplayTimeSeries extends Task {
 			public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,
 					VCDataIdentifier vcDataIdentifier)
 					throws DataAccessException, RemoteException {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID)
+					throws RemoteException, DataAccessException {
 				// TODO Auto-generated method stub
 				return null;
 			}

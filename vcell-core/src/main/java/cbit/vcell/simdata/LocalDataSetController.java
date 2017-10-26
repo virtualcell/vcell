@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.simdata;
+import java.rmi.RemoteException;
+
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -225,6 +228,11 @@ public double[] getVtuTimes(VCDataIdentifier vcdataID) throws DataAccessExceptio
 @Override
 public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
 	return dataServerImpl.getVtuVarInfos(user, outputContext, vcdataID);
+}
+
+@Override
+public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID) throws DataAccessException {
+	return dataServerImpl.getNFSimMolecularConfigurations(user, vcdataID);
 }
 
 }

@@ -11,6 +11,7 @@ import java.util.Hashtable;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -235,6 +236,13 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 
 					@Override
 					public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+						// TODO Auto-generated method stub
+						return null;
+					}
+
+					@Override
+					public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID)
+							throws RemoteException, DataAccessException {
 						// TODO Auto-generated method stub
 						return null;
 					}

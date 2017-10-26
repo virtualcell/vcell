@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -334,6 +335,13 @@ public class DisplayTimeSeriesOp {
 			public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,
 					VCDataIdentifier vcDataIdentifier)
 					throws DataAccessException, RemoteException {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID)
+					throws RemoteException, DataAccessException {
 				// TODO Auto-generated method stub
 				return null;
 			}

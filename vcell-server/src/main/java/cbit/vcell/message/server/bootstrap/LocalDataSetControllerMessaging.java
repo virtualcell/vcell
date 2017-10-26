@@ -13,6 +13,7 @@ import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -430,6 +431,21 @@ public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, D
 	checkClosed();
 	try {
 		return dataServerProxy.getVtuTimes(vcdataID);
+	} catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
+	} catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+@Override
+public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+	sessionLog.print("LocalDataSetControllerMessaging.getNFSimMolecularConfigurations(vcdataID=" + vcdataID + ")");
+	checkClosed();
+	try {
+		return dataServerProxy.getNFSimMolecularConfigurations(vcdataID);
 	} catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw e;

@@ -13,6 +13,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
 
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.RenderDataViewerDoubleWithTooltip;
@@ -25,11 +30,14 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataManager;
+import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
+import cbit.vcell.solver.ode.gui.OutputSpeciesResultsPanel;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:01:46 AM)
@@ -39,9 +47,14 @@ public class ODEDataViewer extends DataViewer {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ODESolverPlotSpecificationPanel ivjODESolverPlotSpecificationPanel1 = null;
 	private PlotPane ivjPlotPane1 = null;
+	private JTabbedPane ivjJTabbedPane = null;
 	private ODESolverResultSet fieldOdeSolverResultSet = null;
+	private NFSimMolecularConfigurations nFSimMolecularConfigurations = null;
 	private javax.swing.JPanel ivjViewData = null;
+	private OutputSpeciesResultsPanel outputSpeciesResultsPanel = null;
 	private VCDataIdentifier fieldVcDataIdentifier = null;
+
+	private static final String OUTPUT_SPECIES_TABNAME = "Output Species";
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -170,6 +183,9 @@ private ODESolverPlotSpecificationPanel getODESolverPlotSpecificationPanel1() {
 public ODESolverResultSet getOdeSolverResultSet() {
 	return fieldOdeSolverResultSet;
 }
+public NFSimMolecularConfigurations getNFSimMolecularConfigurations() {
+	return nFSimMolecularConfigurations;
+}
 
 
 /**
@@ -210,7 +226,33 @@ public VCDataIdentifier getVcDataIdentifier() {
 	return fieldVcDataIdentifier;
 }
 
+private final ChangeListener mainTabChangeListener = 
+new ChangeListener(){
+	public void stateChanged(ChangeEvent e) {
+		if(ivjJTabbedPane.getSelectedIndex() == ivjJTabbedPane.indexOfTab(OUTPUT_SPECIES_TABNAME)){
+			// TODO: here
+		}else {
 
+		}
+	}
+};
+
+private javax.swing.JTabbedPane getJTabbedPane() {
+	if (ivjJTabbedPane == null) {
+		try {
+			ivjJTabbedPane = new javax.swing.JTabbedPane();
+			ivjJTabbedPane.setName("JTabbedPane1");
+			ivjJTabbedPane.insertTab("View Data", null, getViewData(), null, 0);
+			outputSpeciesResultsPanel = new OutputSpeciesResultsPanel(this);
+			outputSpeciesResultsPanel.addPropertyChangeListener(ivjEventHandler);
+			ivjJTabbedPane.addTab(OUTPUT_SPECIES_TABNAME, outputSpeciesResultsPanel);
+			ivjJTabbedPane.addChangeListener(mainTabChangeListener);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJTabbedPane;
+}
 /**
  * Return the ViewData property value.
  * @return javax.swing.JPanel
@@ -256,12 +298,23 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
+//private void initialize() {
+//	try {
+//		setName("ODEDataViewer");
+//		setLayout(new java.awt.BorderLayout());
+//		setSize(720, 548);
+//		add(getViewData(), "Center");
+//		initConnections();
+//	} catch (java.lang.Throwable ivjExc) {
+//		handleException(ivjExc);
+//	}
+//}
 private void initialize() {
 	try {
 		setName("ODEDataViewer");
 		setLayout(new java.awt.BorderLayout());
 		setSize(720, 548);
-		add(getViewData(), "Center");
+		add(getJTabbedPane(), "Center");
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -303,7 +356,11 @@ public void setOdeSolverResultSet(ODESolverResultSet odeSolverResultSet) {
 	fieldOdeSolverResultSet = odeSolverResultSet;
 	firePropertyChange("odeSolverResultSet", oldValue, odeSolverResultSet);
 }
-
+public void setNFSimMolecularConfigurations(NFSimMolecularConfigurations nFSimMolecularConfigurations) {
+	NFSimMolecularConfigurations oldValue = nFSimMolecularConfigurations;
+	this.nFSimMolecularConfigurations = nFSimMolecularConfigurations;
+	firePropertyChange("nfSimMolecularConfigurations", oldValue, nFSimMolecularConfigurations);
+}
 
 /**
  * Sets the simulation property (cbit.vcell.solver.Simulation) value.
@@ -328,7 +385,17 @@ public void setSimulation(Simulation simulation) {
 public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 	VCDataIdentifier oldValue = fieldVcDataIdentifier;
 	fieldVcDataIdentifier = vcDataIdentifier;
+	setOdeDataContext();
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
+	outputSpeciesResultsPanel.refreshData();
+}
+
+public void setOdeDataContext() {
+	if(getSimulation() != null && getNFSimMolecularConfigurations() != null) {
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), true);
+	} else {
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), false);
+	}
 }
 
 public void iniHistogramDisplay()
@@ -371,4 +438,6 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 	childWindow.setSize(600,600);
 	childWindow.show();
 }
+
+
 }
