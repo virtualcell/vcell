@@ -91,4 +91,15 @@ public final class HtcJobID implements Serializable, Matchable {
 		return toDatabaseShort().hashCode();
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof HtcJobID){
+			HtcJobID other = (HtcJobID)obj;
+			return other.toDatabaseShort().equals(toDatabaseShort());
+		}
+		return false;
+	}
+	
+	
+
 }
