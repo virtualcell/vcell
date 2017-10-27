@@ -223,9 +223,18 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 					case iColCount:
 						return scale * o1.count.compareTo(o2.count);
 					case iColStructure:
+						return scale * o1.structure.compareToIgnoreCase(o2.structure);
+					case iColDefinition:
 						return scale * o1.expression.compareToIgnoreCase(o2.expression);
+					case iColDepiction:
+						if(o1.species != null && o1.species.hasSpeciesPattern() && o2.species != null && o2.species.hasSpeciesPattern()) {
+							Integer i1 = o1.species.getSpeciesPattern().getMolecularTypePatterns().size();
+							Integer i2 = o2.species.getSpeciesPattern().getMolecularTypePatterns().size();
+							return scale * i1.compareTo(i2);
+						}
+						return 0;
 					default:
-			    	return 0;
+						return 0;
 					}
 			    }
 			};
@@ -271,6 +280,29 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 				return;
 			}
 			System.out.println("Simulation: " + sim.getName());
+			
+			// apply text search function for particular columns
+			List<GeneratedSpeciesTableRow> speciesObjectList = new ArrayList<>();
+			if (searchText == null || searchText.length() == 0) {
+				speciesObjectList.addAll(allGeneratedSpeciesList);
+			} else {
+				String lowerCaseSearchText = searchText.toLowerCase();
+				for (GeneratedSpeciesTableRow rs : allGeneratedSpeciesList) {
+					boolean added = false;
+					if (rs.expression.toLowerCase().contains(lowerCaseSearchText) ) {
+						speciesObjectList.add(rs);
+						added = true;
+					}
+					if(!added && rs.structure.toLowerCase().contains(lowerCaseSearchText)) {
+						speciesObjectList.add(rs);
+						added = true;
+					}
+				}
+			}
+
+			
+			
+			
 			setData(allGeneratedSpeciesList);
 			GuiUtils.flexResizeTableColumns(ownerTable);
 		}
