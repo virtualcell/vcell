@@ -1190,7 +1190,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 				MolecularTypePattern mtpProduct = getMatchingProductMolecule(mtpReactant);
 				// mtpProduct may be null (perhaps we don't have yet any explicit or implicit match for this reactant)
 				if(mtpProduct == null) {
-					break;
+					continue;
 				}
 				for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
 					MolecularComponentPattern mcpProduct = ReactionRule.getMatchingComponent(mtpProduct, mcpReactant);	// search for a match of the component in this product molecule
