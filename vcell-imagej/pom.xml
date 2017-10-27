@@ -76,8 +76,8 @@
 
 	<properties>
 		<enforcer.skip>true</enforcer.skip>
-		<package-name>org.vcell</package-name>
-		<main-class>org.vcell.Driver</main-class>
+		<package-name>org.vcell.imagej</package-name>
+		<main-class>org.vcell.imagej.app.VCellPlugin</main-class>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 	</properties>
