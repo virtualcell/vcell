@@ -195,8 +195,9 @@ public class GeneratedSpeciesTableModel2 extends VCellSortTableModel<GeneratedSp
 			if(observableFilter != null) {
 				int index = 0;
 				ObservableGroup og = observableFilter.getObservableGroupObject();
-				
-				multiplier = og.getSpeciesMultiplicity()[index] + "";
+				if(og.getSpeciesMultiplicity().length > 0) {
+					multiplier = og.getSpeciesMultiplicity()[index] + "";
+				}
 			}
 			if (fakeParam != null) {
 				originalName = fakeParam.speciesContextName;
