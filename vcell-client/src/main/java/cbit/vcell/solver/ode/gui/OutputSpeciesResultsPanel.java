@@ -32,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -56,12 +57,15 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.vcell.model.bngl.ASTSpeciesPattern;
+import org.vcell.model.bngl.BNGLParser;
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.model.rbm.gui.GeneratedSpeciesTableRow;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.solver.nfsim.NFSimSolver;
@@ -244,8 +248,6 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 
 		public void refreshData() {
 			allGeneratedSpeciesList = new ArrayList<>();
-			SimulationModelInfo smi = owner.getSimulationModelInfo();		// null
-			DataViewerManager dvm = owner.getDataViewerManager();			// null
 			ODESolverResultSet srs = owner.getOdeSolverResultSet();
 			VCDataIdentifier vcdi = owner.getVcDataIdentifier();
 			Simulation sim = owner.getSimulation();
@@ -279,6 +281,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 		private Integer count = 0;		// used only in relation to an observable
 		private String expression = "?";
 		private String structure = "?";
+		private SpeciesContext species = null;
 		
 		// never call this directly, the object is not fully constructed
 		// always call createTableRow() instead
@@ -313,7 +316,25 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 			if(newExpression.endsWith(".")) {
 				expression = newExpression.substring(0, newExpression.length()-1);
 			}
+			
+			Model tempModel = null;
+			try {
+			tempModel = new Model("MyTempModel");
+			tempModel.addFeature(structure);
+
+			Structure structure = tempModel.getStructure(0);
+			BNGLParser parser = new BNGLParser(new StringReader(expression));
+			ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
+			BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
+			SpeciesPattern sp = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
+			sp.resolveBonds();
+			species = new SpeciesContext(new Species("a",""), structure, sp);
+			} catch (ParseException | ModelException | PropertyVetoException e1) {
+				e1.printStackTrace();
+				species = null;
+			}
 		}
+
 	}		// end GeneratedSpeciesTableRow class
 	// ======================================================================================
 	
@@ -581,8 +602,6 @@ private void initialize() {
 		add(containerOfScrollPanel, gbc);
 		
 		// rendering the small shapes of the flattened species in the Depiction column of this viewer table)
-		// TODO: this renderer is almost identical with the one in BioModelEditorModelPanel (which paints the small shapes 
-		// of a species context in the Depiction column of the species table)
 		DefaultScrollTableCellRenderer rbmSpeciesShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
 			SpeciesPatternSmallShape spss = null;
 			
@@ -597,11 +616,14 @@ private void initialize() {
 					}
 					if (selectedObject != null) {
 						if(selectedObject instanceof GeneratedSpeciesTableRow) {
-							
-//							SpeciesContext sc = ((GeneratedSpeciesTableRow)selectedObject).getSpecies();
-//							SpeciesPattern sp = sc.getSpeciesPattern();		// sp cannot be null
-//							Graphics panelContext = table.getGraphics();
-//							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected, issueManager);
+							SpeciesContext sc = ((GeneratedSpeciesTableRow)selectedObject).species;
+							if(sc == null || sc.getSpeciesPattern() == null) {
+								spss = null;
+							} else {
+								SpeciesPattern sp = sc.getSpeciesPattern();
+								Graphics panelContext = table.getGraphics();
+								spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected, issueManager);
+							}
 						}
 					} else {
 						spss = null;
@@ -631,58 +653,18 @@ private void initialize() {
 }
 
 public void updateShape(int selectedRow) {
-//	GeneratedSpeciesTableRow speciesTableRow = tableModel.getValueAt(selectedRow);
-//	String inputString = speciesTableRow.getExpression();
-////	System.out.println(selectedRows[0] + ": " + inputString);
-//	
-//	Model tempModel = null;
-//	try {
-//		tempModel = new Model("MyTempModel");
-//		tempModel.addFeature("c0");
-//	} catch (ModelException | PropertyVetoException e1) {
-//		e1.printStackTrace();
-//	}
-//	if(owner != null && owner.getSimulationContext() != null) {
-//		List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
-//		try {
-//			tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
-//		} catch (PropertyVetoException e1) {
-//			e1.printStackTrace();
-//			throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
-//		}
-//	} else {
-//		System.out.println("something is wrong, we just do nothing rather than crash");
-//		return;
-//	}
-//	try {
-//		
-//	String strStructure = null;
-//	if(inputString.contains(RbmUtils.SiteStruct)) {
-//		// we are in the mode where we emulate compartments by adding the compartment name as a fake site
-//		Pair<List<String>, String> p = RbmUtils.extractCompartment(inputString);
-//		strStructure = p.one.get(0);	// we'll just assume there's only one, may want to throw exception if more
-//		inputString = p.two;
-//	} else {
-//		// should be the normal @comp:expression format - if it's not it will return null
-//		strStructure = RbmUtils.parseCompartment(inputString, tempModel);
-//	}
-//	Structure structure;
-//	SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, tempModel);
-//	sp.resolveBonds();
-//	SpeciesContext sc = new SpeciesContext(new Species("a",""), structure, sp);
-//	spls = new SpeciesPatternLargeShape(20, 20, -1, sp, shapePanel, sc, issueManager);
-//	
-//	} catch (ParseException | PropertyVetoException | ModelException e1) {
-//		e1.printStackTrace();
-//		spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true, issueManager);	// error (red circle)
-//		shapePanel.repaint();
-//	}
-//	
-//	int xOffset = spls.getRightEnd() + 45;
-//	Dimension preferredSize = new Dimension(xOffset+90, 50);
-//	shapePanel.setPreferredSize(preferredSize);
-//	
-//	shapePanel.repaint();
+	
+	GeneratedSpeciesTableRow speciesTableRow = tableModel.getValueAt(selectedRow);
+	SpeciesContext sc = speciesTableRow.species;
+	if(sc == null || sc.getSpeciesPattern() == null) {
+		spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true, issueManager);	// error (red circle)
+	} else {
+		spls = new SpeciesPatternLargeShape(20, 20, -1, sc.getSpeciesPattern(), shapePanel, sc, issueManager);
+	}
+	int xOffset = spls.getRightEnd() + 45;
+	Dimension preferredSize = new Dimension(xOffset+90, 50);
+	shapePanel.setPreferredSize(preferredSize);
+	shapePanel.repaint();
 }
 
 private JButton getZoomLargerButton() {
