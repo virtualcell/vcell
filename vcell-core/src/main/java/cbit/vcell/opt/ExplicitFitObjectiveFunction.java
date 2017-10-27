@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.opt;
+import java.util.HashSet;
+
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
@@ -18,7 +20,6 @@ import cbit.function.DefaultScalarFunction;
 import cbit.function.ScalarFunction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import scala.collection.mutable.HashSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 12:09:38 PM)
