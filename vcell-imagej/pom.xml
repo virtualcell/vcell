@@ -75,9 +75,8 @@
 	</ciManagement>
 
 	<properties>
-		<enforcer.skip>true</enforcer.skip>
-		<package-name>org.vcell</package-name>
-		<main-class>org.vcell.Driver</main-class>
+		<package-name>org.vcell.imagej</package-name>
+		<main-class>org.vcell.imagej.app.VCellPlugin</main-class>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 	</properties>
@@ -120,6 +119,17 @@
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-ui-swing</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-common</artifactId>
+			<exclusions>
+				<!-- NB: Brought in by edu.ucar:netcdf:4.2.20 via vcell-core. -->
+				<exclusion>
+					<groupId>edu.ucar</groupId>
+					<artifactId>udunits</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Currently only for debugging purposes -->

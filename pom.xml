@@ -100,18 +100,6 @@
 		http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
 		-->
 		<additionalparam>-Xdoclint:none</additionalparam>
-
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- JUnit - http://junit.org/ -->
-		<junit.version>4.12</junit.version>
-		<!-- JAMA - http://math.nist.gov/javanumerics/jama/ -->
-		<jama.version>1.0.3</jama.version>
-		<!-- SciJava Common - https://github.com/scijava/scijava-common -->
-		<scijava-common.version>2.62.1</scijava-common.version>
-		<!-- Commons Math - https://commons.apache.org/proper/commons-math/ -->
-		<commons-math3.version>3.6.1</commons-math3.version>
-		<!-- Gson - https://code.google.com/p/google-gson/ -->
-		<gson.version>2.7</gson.version>
 	</properties>
 
 	<repositories>
