@@ -304,7 +304,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
 				public void mouseMoved(MouseEvent e) {
 					if(getViewSingleRowButton().isSelected()) {
-						shapePanel.setToolTipText(null);
+						shapePanel.setToolTipText("Single Row is view-only. To edit, unselect the 'Single Row Viewer' check box.");
 						return;
 					}
 					Point overWhat = e.getPoint();
