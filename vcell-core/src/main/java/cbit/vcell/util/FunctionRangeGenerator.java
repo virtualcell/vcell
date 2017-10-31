@@ -86,8 +86,11 @@ public class FunctionRangeGenerator {
 			Arrays.fill(maxValues, constantValue);
 			return new FunctionStatistics(minValues,maxValues);
 		}
-		ArrayList<VarStatistics> varStatList = new ArrayList<VarStatistics>();
-		varStatList.addAll(Arrays.asList(varStatistics));
+		if(varStatistics[0].minValuesOverTime.length != times.length){//happens if viewing data of running sim
+			double[] temp = new double[varStatistics[0].minValuesOverTime.length];
+			System.arraycopy(times, 0, temp, 0, temp.length);
+			times = temp;
+		}
 //		int numVars = varStatistics.length;
 		long numSamples = (inDomainIndexesInit.size()<10000?inDomainIndexesInit.size():10000);//Math.min(1000, b)
 //		long numSamples = numVars*numSamplesPerDim;
