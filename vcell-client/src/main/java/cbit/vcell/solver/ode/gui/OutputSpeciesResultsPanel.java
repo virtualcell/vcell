@@ -14,6 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -47,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -56,6 +58,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.text.JTextComponent;
 
 import org.vcell.model.bngl.ASTSpeciesPattern;
 import org.vcell.model.bngl.BNGLParser;
@@ -79,6 +82,7 @@ import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.DataViewerManager;
+import cbit.vcell.client.ClientSimManager.LocalVCSimulationDataIdentifier;
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
@@ -113,6 +117,9 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
 	private JLabel totalSpeciesLabel = new JLabel("");
+
+	private JPanel speciesFileLocationPanel = null;
+	private JTextField speciesFileLocationTextField = null;
 	
 	private JButton zoomLargerButton = null;
 	private JButton zoomSmallerButton = null;
@@ -299,12 +306,16 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 					}
 				}
 			}
-
-			
-			
-			
 			setData(allGeneratedSpeciesList);
 			GuiUtils.flexResizeTableColumns(ownerTable);
+			
+			if (vcdi instanceof LocalVCSimulationDataIdentifier) {	// for local sim, get location of sim file
+				LocalVCSimulationDataIdentifier localVCSimId = (LocalVCSimulationDataIdentifier)vcdi;
+				String localSimLogFilePath = localVCSimId.getLocalDirectory().getAbsolutePath() + File.separator + localVCSimId.getVcSimID().getID() + "_" + localVCSimId.getJobIndex() + "_.species";
+				speciesFileLocationTextField.setText(localSimLogFilePath);
+			} else {
+				speciesFileLocationTextField.setText("available only for Quick Run simulations.");
+			}
 		}
 	}		// end OutputSpeciesResultsTableModel class
 	
@@ -633,6 +644,32 @@ private void initialize() {
 		gbc.insets = new Insets(4,4,4,4);
 		add(containerOfScrollPanel, gbc);
 		
+		gridy ++;	
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,4,4,4);
+		add(getSpeciesFileLocationPanel(), gbc);
+		
+		JButton buttonCopy = new JButton("Copy");
+		buttonCopy.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent le) {
+				speciesFileLocationTextField.setSelectionStart(0);
+				speciesFileLocationTextField.setSelectionEnd(speciesFileLocationTextField.getText().length());
+				speciesFileLocationTextField.copy();
+			}
+		});
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,4,4,4);
+		add(buttonCopy, gbc);
+		
 		// rendering the small shapes of the flattened species in the Depiction column of this viewer table)
 		DefaultScrollTableCellRenderer rbmSpeciesShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
 			SpeciesPatternSmallShape spss = null;
@@ -714,6 +751,32 @@ private JButton getZoomSmallerButton() {
 		zoomSmallerButton.addActionListener(eventHandler);
 	}
 	return zoomSmallerButton;
+}
+
+//Panel to display log file location of local simulation
+private javax.swing.JPanel getSpeciesFileLocationPanel() {
+	if (speciesFileLocationPanel == null) {
+		try {
+			speciesFileLocationPanel = new javax.swing.JPanel();
+			speciesFileLocationPanel.setName("SpeciesFileLocationPanel");
+			speciesFileLocationPanel.setLayout(new BorderLayout());
+			
+			JLabel locationLabel = new JLabel("Species file location: ");
+			locationLabel.setHorizontalAlignment(SwingConstants.LEFT);
+			speciesFileLocationPanel.add(locationLabel, BorderLayout.WEST);
+			
+			speciesFileLocationTextField = new JTextField();
+			speciesFileLocationTextField.setEditable(false);
+			speciesFileLocationTextField.setEnabled(true);
+			speciesFileLocationTextField.setHorizontalAlignment(SwingConstants.LEFT);
+			speciesFileLocationTextField.setBorder(null);
+			speciesFileLocationTextField.setFont(locationLabel.getFont().deriveFont(Font.BOLD));
+			speciesFileLocationPanel.add(speciesFileLocationTextField, BorderLayout.CENTER);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return speciesFileLocationPanel;
 }
 
 private void searchTable() {
