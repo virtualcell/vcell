@@ -189,7 +189,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 				return speciesTableRow.structure;
 			case iColDepiction:
 			case iColDefinition:
-				return speciesTableRow.expression;
+				return "@" + speciesTableRow.structure + ":" + speciesTableRow.expression;
 			default:
 				return null;
 			}
@@ -231,13 +231,26 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 						return scale * o1.count.compareTo(o2.count);
 					case iColStructure:
 						return scale * o1.structure.compareToIgnoreCase(o2.structure);
-					case iColDefinition:
+					case iColDefinition:	// sort just by the expression, without the structure (which can be done above)
 						return scale * o1.expression.compareToIgnoreCase(o2.expression);
 					case iColDepiction:
 						if(o1.species != null && o1.species.hasSpeciesPattern() && o2.species != null && o2.species.hasSpeciesPattern()) {
 							Integer i1 = o1.species.getSpeciesPattern().getMolecularTypePatterns().size();
 							Integer i2 = o2.species.getSpeciesPattern().getMolecularTypePatterns().size();
-							return scale * i1.compareTo(i2);
+							if(scale * i1.compareTo(i2) == 0) {
+								// if same number of molecule we try to sort by number of sites of the mt
+								i1 = 0;
+								i2 = 0;
+								for(MolecularTypePattern mtp : o1.species.getSpeciesPattern().getMolecularTypePatterns()) {
+									i1 += mtp.getMolecularType().getComponentList().size();
+								}
+								for(MolecularTypePattern mtp : o2.species.getSpeciesPattern().getMolecularTypePatterns()) {
+									i2 += mtp.getMolecularType().getComponentList().size();
+								}
+								return scale * i1.compareTo(i2);
+							} else {
+								return scale * i1.compareTo(i2);
+							}
 						}
 						return 0;
 					default:
@@ -295,18 +308,29 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 			} else {
 				String lowerCaseSearchText = searchText.toLowerCase();
 				for (GeneratedSpeciesTableRow rs : allGeneratedSpeciesList) {
-					boolean added = false;
 					if (rs.expression.toLowerCase().contains(lowerCaseSearchText) ) {
-						speciesObjectList.add(rs);
-						added = true;
+						speciesObjectList.add(rs);	// search for pure expression
+						continue;	// found already, no point to keep searching for another match for this row
 					}
-					if(!added && rs.structure.toLowerCase().contains(lowerCaseSearchText)) {
-						speciesObjectList.add(rs);
-						added = true;
+					if(rs.structure.toLowerCase().contains(lowerCaseSearchText)) {
+						speciesObjectList.add(rs);	// search for pure structure
+						continue;
+					}
+					String longExpression = "@" + rs.structure + ":" + rs.expression;
+					if(longExpression.toLowerCase().contains(lowerCaseSearchText)) {
+						speciesObjectList.add(rs);	// search for pure structure
+						continue;
+					}
+					if(isInteger(lowerCaseSearchText, 10)) {	// search count, make sure search string is numeric before anything else
+						String countStr = Integer.toString(rs.count);
+						if(countStr != null && countStr.contains(lowerCaseSearchText)) {
+							speciesObjectList.add(rs);
+							continue;
+						}
 					}
 				}
 			}
-			setData(allGeneratedSpeciesList);
+			setData(speciesObjectList);
 			GuiUtils.flexResizeTableColumns(ownerTable);
 			
 			if (vcdi instanceof LocalVCSimulationDataIdentifier) {	// for local sim, get location of sim file
@@ -377,7 +401,6 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 				species = null;
 			}
 		}
-
 	}		// end GeneratedSpeciesTableRow class
 	// ======================================================================================
 	
@@ -589,10 +612,6 @@ private void initialize() {
 		table.setPreferredScrollableViewportSize(new Dimension(400,200));
 		add(table.getEnclosingScrollPane(), gbc);
 		
-//		gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 9;
-//		gbc.gridy = gridy;
-		
 		// add toolTipText for each table cell
 		table.addMouseMotionListener(new MouseMotionAdapter() { 
 		    public void mouseMoved(MouseEvent e) { 	
@@ -784,17 +803,8 @@ private void searchTable() {
 	tableModel.setSearchText(searchText);
 }
 
-//public void setSpecies(BNGSpecies[] newValue) {
-//	if (speciess == newValue) {
-//		return;
-//	}
-//	speciess = newValue;
-//	tableModel.setData(owner.getSimulationContext().getModel(), newValue);
-//}
-
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
-
 }
 
 public OutputSpeciesResultsTableModel getTableModel(){
@@ -803,6 +813,18 @@ public OutputSpeciesResultsTableModel getTableModel(){
 
 public void refreshData() {
 	tableModel.refreshData();
+}
+
+public static boolean isInteger(String s, int base) {
+	if(s.isEmpty()) {
+		return false;
+	}
+	for(int i = 0; i < s.length(); i++) {
+		if(Character.digit(s.charAt(i), base) < 0) {
+			return false;
+		}
+	}
+	return true;
 }
 
 }
