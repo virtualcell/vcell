@@ -309,6 +309,57 @@
 			<artifactId>jung-graph-impl</artifactId>
 			<version>2.1.1</version>
 		</dependency>
-
 	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.googlecode.maven-download-plugin</groupId>
+				<artifactId>download-maven-plugin</artifactId>
+				<version>1.3.0</version>
+				<executions>
+					<execution>
+						<id>install-solvers-win64</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.2/win64.zip</url>
+							<unpack>true</unpack>
+							<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+							<md5>498d7362f420cfdae94f4f3b0dc32e91</md5>
+						</configuration>
+					</execution>
+					<execution>
+						<id>install-solvers-mac64</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.2/mac64.tgz</url>
+							<unpack>true</unpack>
+							<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+							<md5>9efa907cf79258ce27790993f3e31725</md5>
+						</configuration>
+					</execution>
+					<execution>
+						<id>install-solvers-linux64</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.2/linux64.tgz</url>
+							<unpack>true</unpack>
+							<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
+							<md5>99267594212f661ae55cfca0a3390b39</md5>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	
 </project>
