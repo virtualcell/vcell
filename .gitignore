@@ -10,3 +10,11 @@
 jsbml.log
 target/
 *.pyc
+*.so
+*.so.*
+*.dll
+*.dylib
+*.exe
+*_x64
+testzip
+ziptool
