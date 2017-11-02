@@ -44,7 +44,9 @@ import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -58,6 +60,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 
 import org.vcell.model.bngl.ASTSpeciesPattern;
@@ -674,20 +677,27 @@ private void initialize() {
 		gbc.insets = new Insets(4,4,4,4);
 		add(getSpeciesFileLocationPanel(), gbc);
 		
-		JButton buttonCopy = new JButton("Copy");
-		buttonCopy.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent le) {
-				speciesFileLocationTextField.setSelectionStart(0);
-				speciesFileLocationTextField.setSelectionEnd(speciesFileLocationTextField.getText().length());
-				speciesFileLocationTextField.copy();
-			}
-		});
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.gridy = gridy;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		add(buttonCopy, gbc);
+//		// button to copy to clipboard the content of the JTextField.
+//		// TODO: do not delete! this is how it's done
+//		JButton buttonCopy = new JButton("Copy");
+//		buttonCopy.setToolTipText("Copy to clipboard the species file path");
+//		buttonCopy.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent le) {
+//				if(speciesFileLocationTextField.getSelectionStart() == speciesFileLocationTextField.getSelectionEnd()) {
+//					speciesFileLocationTextField.setSelectionStart(0);
+//					speciesFileLocationTextField.setSelectionEnd(speciesFileLocationTextField.getText().length());
+//				}
+//				speciesFileLocationTextField.copy();
+//				speciesFileLocationTextField.setSelectionStart(0);
+//				speciesFileLocationTextField.setSelectionEnd(0);
+//			}
+//		});
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 4;
+//		gbc.gridy = gridy;
+//		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//		gbc.insets = new Insets(4,4,4,4);
+//		add(buttonCopy, gbc);
 		
 		// rendering the small shapes of the flattened species in the Depiction column of this viewer table)
 		DefaultScrollTableCellRenderer rbmSpeciesShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
@@ -785,11 +795,31 @@ private javax.swing.JPanel getSpeciesFileLocationPanel() {
 			speciesFileLocationPanel.add(locationLabel, BorderLayout.WEST);
 			
 			speciesFileLocationTextField = new JTextField();
+			speciesFileLocationTextField.setToolTipText("Copy to clipboard by selecting and using Ctrl/C or the Copy popup manu");
 			speciesFileLocationTextField.setEditable(false);
 			speciesFileLocationTextField.setEnabled(true);
 			speciesFileLocationTextField.setHorizontalAlignment(SwingConstants.LEFT);
 			speciesFileLocationTextField.setBorder(null);
 			speciesFileLocationTextField.setFont(locationLabel.getFont().deriveFont(Font.BOLD));
+			
+			JPopupMenu popup = new JPopupMenu();	// adding the Copy popup menu to the JTextField
+			JMenuItem item = new JMenuItem(new DefaultEditorKit.CopyAction());
+			item.setText("Copy");
+			item.setToolTipText("Copy to clipboard the species file path");
+			item.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent le) {
+					if(speciesFileLocationTextField.getSelectionStart() == speciesFileLocationTextField.getSelectionEnd()) {
+						speciesFileLocationTextField.setSelectionStart(0);
+						speciesFileLocationTextField.setSelectionEnd(speciesFileLocationTextField.getText().length());
+					}
+					speciesFileLocationTextField.copy();
+					speciesFileLocationTextField.setSelectionStart(0);		// clear selection
+					speciesFileLocationTextField.setSelectionEnd(0);
+				}
+			});
+			popup.add(item);
+			speciesFileLocationTextField.setComponentPopupMenu(popup);
+			
 			speciesFileLocationPanel.add(speciesFileLocationTextField, BorderLayout.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
