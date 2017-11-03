@@ -36,6 +36,7 @@ public interface SimDataConstants {
 		
 	public static final String FUNCTIONFILE_EXTENSION = ".functions";
 	public static final String MESHFILE_EXTENSION = ".mesh";
+	public static final String NFSIM_OUT_FILE_EXTENSION = ".species";
 	public static final String MESHMETRICSFILE_EXTENSION = ".meshmetrics";
 	public static final String LOGFILE_EXTENSION = ".log";
 	public static final String PDE_DATA_EXTENSION = ".sim";

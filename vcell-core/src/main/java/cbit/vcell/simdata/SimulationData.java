@@ -265,6 +265,11 @@ public class SimulationData extends VCData {
 		public File getSubdomainFile(){
 			return getFile(SimulationData.createCanonicalSubdomainFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
 		}
+		// TODO: here
+		public File getNFSimOutputFile() {
+			String simOutputFile = createCanonicalNFSimOutputFileName(((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getSimulationKey(), ((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getJobIndex());
+			return getFile(simOutputFile);
+		}
 		public File getMeshFile(boolean bHDF5){
 			String meshFileName = SimulationData.createCanonicalMeshFileName(getsimulationKey(),getJobIndex(), isOldStyle())+(bHDF5?".hdf5":"");
 			if (solverDataType == SolverDataType.MBSData)
@@ -360,7 +365,7 @@ public class SimulationData extends VCData {
 
 	private boolean particleDataExists = false;
 	private boolean isODEData = false;
-	private boolean isRulesData = false;
+	boolean isRulesData = false;
 
 	private boolean bZipFormat2 = false;
 	private boolean bZipFormat1 = false;
@@ -2085,6 +2090,11 @@ public static String createCanonicalPostProcessFileName(VCDataIdentifier vcdID){
 	return vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5;
 }
 
+public static String createCanonicalNFSimOutputFileName(KeyValue fieldDataKey,int jobIndex){
+	return
+	createSimIDWithJobIndex(fieldDataKey,jobIndex,false)+
+	SimDataConstants.NFSIM_OUT_FILE_EXTENSION;
+}
 public static String createCanonicalMeshFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
 	return
 	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
