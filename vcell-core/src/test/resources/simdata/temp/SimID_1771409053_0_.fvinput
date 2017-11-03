@@ -1,0 +1,163 @@
+# Simulation Parameters
+SIMULATION_PARAM_BEGIN
+SOLVER SUNDIALS_PDE_SOLVER 1.0E-7 1.0E-9 0.1
+BASE_FILE_NAME /Users/schaff/.vcell/simdata/temp/SimID_1771409053_0_
+ENDING_TIME 1.0
+TIME_STEP 0.5
+KEEP_EVERY 1
+SIMULATION_PARAM_END
+
+# Model description: FEATURE name handle boundary_conditions
+MODEL_BEGIN
+FEATURE subdomain1 1 flux flux flux flux 
+FEATURE subdomain0 0 flux flux flux flux 
+MEMBRANE subdomain0_subdomain1_membrane subdomain1 subdomain0 flux flux flux flux 
+MODEL_END
+
+# Mesh file
+MESH_BEGIN
+VCG_FILE /Users/schaff/.vcell/simdata/temp/SimID_1771409053_0_.vcg
+MESH_END
+
+# Variables : type name domain time_dependent_flag advection_flag grad_flag solve_whole_mesh_flag solve_regions
+VARIABLE_BEGIN
+VOLUME_PDE C_cyt subdomain1 false false false false subdomain1
+VOLUME_PDE Ran_cyt subdomain1 false false false false subdomain1
+VOLUME_PDE RanC_cyt subdomain1 false false false false subdomain1
+VOLUME_PDE RanC_nuc subdomain1 false false false false subdomain1
+MEMBRANE_ODE s2 subdomain0_subdomain1_membrane
+VARIABLE_END
+
+POST_PROCESSING_BLOCK_BEGIN
+POST_PROCESSING_BLOCK_END
+
+COMPARTMENT_BEGIN subdomain1
+
+EQUATION_BEGIN RanC_cyt
+INITIAL (1.0 + x);
+RATE ( - (RanC_cyt - (1000.0 * C_cyt * Ran_cyt)) - (2.0 * (RanC_cyt - RanC_nuc)));
+DIFFUSION 10.0;
+VELOCITY_X 0.0;
+VELOCITY_Y 0.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+EQUATION_END
+
+EQUATION_BEGIN Ran_cyt
+INITIAL 0.0;
+RATE (RanC_cyt - (1000.0 * C_cyt * Ran_cyt));
+DIFFUSION 10.0;
+VELOCITY_X 0.0;
+VELOCITY_Y 0.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+EQUATION_END
+
+EQUATION_BEGIN C_cyt
+INITIAL 0.0;
+RATE (RanC_cyt - (1000.0 * C_cyt * Ran_cyt));
+DIFFUSION 10.0;
+VELOCITY_X 0.0;
+VELOCITY_Y 0.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+EQUATION_END
+
+EQUATION_BEGIN RanC_nuc
+INITIAL 4.5E-4;
+RATE (2.0 * (RanC_cyt - RanC_nuc));
+DIFFUSION 10.0;
+VELOCITY_X 0.0;
+VELOCITY_Y 0.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+EQUATION_END
+
+COMPARTMENT_END
+
+COMPARTMENT_BEGIN subdomain0
+
+EQUATION_BEGIN C_cyt
+INITIAL 0.0;
+RATE 0.0;
+DIFFUSION 0.0;
+VELOCITY_X 0.0;
+VELOCITY_Y 0.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+EQUATION_END
+
+EQUATION_BEGIN Ran_cyt
+INITIAL 0.0;
+RATE 0.0;
+DIFFUSION 0.0;
+VELOCITY_X 0.0;
+VELOCITY_Y 0.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+EQUATION_END
+
+EQUATION_BEGIN RanC_cyt
+INITIAL 0.0;
+RATE 0.0;
+DIFFUSION 0.0;
+VELOCITY_X 0.0;
+VELOCITY_Y 0.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+EQUATION_END
+
+EQUATION_BEGIN RanC_nuc
+INITIAL 0.0;
+RATE 0.0;
+DIFFUSION 0.0;
+VELOCITY_X 0.0;
+VELOCITY_Y 0.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+EQUATION_END
+
+COMPARTMENT_END
+
+
+MEMBRANE_BEGIN subdomain0_subdomain1_membrane subdomain1 subdomain0
+
+EQUATION_BEGIN s2
+INITIAL 0.0;
+RATE 0.0;
+EQUATION_END
+
+JUMP_CONDITION_BEGIN RanC_cyt
+FLUX subdomain1 0.0;
+JUMP_CONDITION_END
+
+JUMP_CONDITION_BEGIN Ran_cyt
+FLUX subdomain1 0.0;
+JUMP_CONDITION_END
+
+JUMP_CONDITION_BEGIN C_cyt
+FLUX subdomain1 0.0;
+JUMP_CONDITION_END
+
+JUMP_CONDITION_BEGIN RanC_nuc
+FLUX subdomain1 0.0;
+JUMP_CONDITION_END
+
+MEMBRANE_END
+

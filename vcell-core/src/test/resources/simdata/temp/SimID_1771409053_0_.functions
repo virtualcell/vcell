@@ -1,0 +1,18 @@
+##---------------------------------------------
+##  /Users/schaff/.vcell/simdata/temp/SimID_1771409053_0_.functions
+##---------------------------------------------
+
+subdomain1::J_flux0; (2.0 * (RanC_cyt - RanC_nuc)); ; Volume_VariableType; false
+subdomain1::J_r0; (RanC_cyt - (1000.0 * C_cyt * Ran_cyt)); ; Volume_VariableType; false
+subdomain1::KFlux_nm_cyt; 1.0; ; Volume_Region_VariableType; false
+subdomain1::KFlux_nm_nuc; 1.0; ; Volume_Region_VariableType; false
+subdomain1::RanC_cyt_init_uM; (1.0 + x); ; Volume_VariableType; false
+subdomain1::Size_cyt; vcRegionVolume('subdomain1'); ; Volume_Region_VariableType; false
+subdomain0::Size_EC; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+subdomain1::Size_nm; vcRegionVolume('subdomain1'); ; Volume_Region_VariableType; false
+subdomain1::Size_nuc; vcRegionVolume('subdomain1'); ; Volume_Region_VariableType; false
+subdomain0_subdomain1_membrane::Size_pm; vcRegionArea('subdomain0_subdomain1_membrane'); ; Membrane_Region_VariableType; false
+subdomain0_subdomain1_membrane::sobj_subdomain11_subdomain00_size; vcRegionArea('subdomain0_subdomain1_membrane'); ; Membrane_Region_VariableType; false
+subdomain0::vobj_subdomain00_size; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+subdomain1::vobj_subdomain11_size; vcRegionVolume('subdomain1'); ; Volume_Region_VariableType; false
+
