@@ -216,10 +216,11 @@
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-common</artifactId>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.scala-saddle/jhdf5_2.10 -->
 		<dependency>
-			<groupId>org.hdfgroup</groupId>
-			<artifactId>hdf-java</artifactId>
-			<version>2.6.1</version>
+			<groupId>org.scala-saddle</groupId>
+			<artifactId>jhdf5_2.10</artifactId>
+			<version>2.9</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<dependency>
@@ -357,8 +358,162 @@
 							<md5>99267594212f661ae55cfca0a3390b39</md5>
 						</configuration>
 					</execution>
+<!-- 
+					<execution>
+						<id>download-libjhdf-linux64</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>https://support.hdfgroup.org/ftp/HDF5/releases/HDF-JAVA/HDF-JAVA-2.6/bin/linux64/hdf-java-2.6.1-bin.tar</url>
+							<unpack>true</unpack>
+							<outputDirectory>${project.build.directory}/nativelibs/linux64</outputDirectory>
+							<md5>36825d4b750139d8aa6fbca3a4bf305c</md5>
+						</configuration>
+					</execution>
+					<execution>
+						<id>download-libjhdf-linux32</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>https://support.hdfgroup.org/ftp/HDF5/releases/HDF-JAVA/HDF-JAVA-2.6/bin/linux32/hdf-java-2.6.1-bin.tar</url>
+							<unpack>true</unpack>
+							<outputDirectory>${project.build.directory}/nativelibs/linux32</outputDirectory>
+							<md5>c014b7accb90ca643e54cb73c3122429</md5>
+						</configuration>
+					</execution>
+					<execution>
+						<id>download-libjhdf-win64</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>https://support.hdfgroup.org/ftp/HDF5/releases/HDF-JAVA/HDF-JAVA-2.6/bin/win64/hdf-java-2.6.1-bin.tar</url>
+							<unpack>true</unpack>
+							<outputDirectory>${project.build.directory}/nativelibs/win64</outputDirectory>
+							<md5>8e6acce71b4a6cffff1d3cb4a2c964b7</md5>
+						</configuration>
+					</execution>
+					<execution>
+						<id>download-libjhdf-win32</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>https://support.hdfgroup.org/ftp/HDF5/releases/HDF-JAVA/HDF-JAVA-2.6/bin/win32/hdf-java-2.6.1-bin.tar</url>
+							<unpack>true</unpack>
+							<outputDirectory>${project.build.directory}/nativelibs/win32</outputDirectory>
+							<md5>ac688931f97bd6d69993b941feb4eea0</md5>
+						</configuration>
+					</execution>
+					<execution>
+						<id>download-libjhdf-mac64</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>https://support.hdfgroup.org/ftp/HDF5/releases/HDF-JAVA/HDF-JAVA-2.6/bin/macintel64/hdf-java-2.6.1-bin.tar</url>
+							<unpack>true</unpack>
+							<outputDirectory>${project.build.directory}/nativelibs/mac64</outputDirectory>
+							<md5>0886b7f72ebc96874cd2c94f3d25e633</md5>
+						</configuration>
+					</execution>
+-->
 				</executions>
 			</plugin>
+<!--
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-libhdf5-win32</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/../../nativelibs/win32</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/nativelibs/win32/hdf-java/lib/win/</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-libhdf5-win64</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/../../nativelibs/win64</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/nativelibs/win64/hdf-java/lib/win/</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-libhdf5-linux64</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/../../nativelibs/linux64</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/nativelibs/linux64/hdf-java/lib/linux/</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-libhdf5-linux32</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/../../nativelibs/linux32</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/nativelibs/linux64/hdf-java/lib/linux/</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-libhdf5-mac64</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/../../nativelibs/mac64</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/nativelibs/mac64/hdf-java/lib/macosx/</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+-->
 		</plugins>
 	</build>
 	
