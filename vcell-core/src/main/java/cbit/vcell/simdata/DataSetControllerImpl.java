@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
@@ -109,7 +110,9 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputTimeSeriesOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -4761,46 +4764,27 @@ if (name.toUpperCase().contains("SIZE")){
 	}
 	public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdID) throws DataAccessException {
 		
-		log.print("DataSetControllerImpl.getODEDataBlock()");
-
-//		try {
-//			//
-//			// check if already cached
-//			//
-//			VCData simData = getVCData(vcdID);
-//			ODEDataInfo odeDataInfo = new ODEDataInfo(vcdID.getOwner(), vcdID.getID(), simData.getDataBlockTimeStamp(ODE_DATA, 0));
-//			ODEDataBlock odeDataBlock = (cacheTable0 != null?cacheTable0.get(odeDataInfo):null);
-//			if (odeDataBlock != null){
-//				return odeDataBlock;
-//			}else{
-//				odeDataBlock = simData.getODEDataBlock();
-//				if (odeDataBlock != null){
-////						cacheTable.put(odeDataInfo, odeDataBlock);
-//					if(cacheTable0 != null){
-//						try {
-//							cacheTable0.put(odeDataInfo, odeDataBlock);
-//						} catch (CacheException e) {
-//							// if can't cache the results, it is ok
-//							e.printStackTrace();
-//						}
-//					}
-		
+		log.print("DataSetControllerImpl.getNFSimMolecularConfigurations()");
+		try {
+			VCData vcData = getVCData(vcdID);
+			if(vcData instanceof SimulationData) {
+				SimulationData simData = (SimulationData)vcData;
+				File file = simData.amplistorHelper.getNFSimOutputFile();
+				if(!file.exists()) {
 					return null;
-		
-//					NFSimMolecularConfigurations mc = new NFSimMolecularConfigurations();
-//					Map<String, Integer> timePointMap = NFSimMolecularConfigurations.getSampleTimepoint();
-//					mc.setMolecularConfigurations(timePointMap);
-//					return mc;
-//				}else{
-//					String msg = "failure reading ODE data for " + vcdID.getOwner().getName() + "'s " + vcdID.getID();
-//					log.alert("DataSetControllerImpl.getODEDataBlock(): "+msg);
-//					throw new DataAccessException(msg);
-//				}
-//			}
-//		}catch (IOException e){
-//			log.exception(e);
-//			throw new DataAccessException(e.getMessage());
-//		}
+				}
+				NFSimMolecularConfigurations mc = new NFSimMolecularConfigurations();
+				// Map<String, Integer> timePointMap = NFSimMolecularConfigurations.getSampleTimepoint();
+				Map<String, Integer> timePointMap = NFSimMolecularConfigurations.getTimePointMap(file);
+				mc.setMolecularConfigurations(timePointMap);
+				return mc;
+			} else {
+				return null;		// file exists only for NFSim
+			}
+		}catch (IOException e){
+			log.exception(e);
+			throw new DataAccessException(e.getMessage());
+		}
 	}
 
 

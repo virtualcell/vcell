@@ -10,31 +10,22 @@
 
 package org.vcell.solver.nfsim;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.vcell.util.Pair;
 
 public class NFSimMolecularConfigurations implements Serializable
 {
-	
-	public class MolecularConfigurationEntry
-	{
-		protected String expression;
-		protected Integer count;
-		
-		public MolecularConfigurationEntry(String expression, Integer count) {
-			this.expression = expression;
-			this.count = count;
-		}
-		
-	}
-	
-	// --------------------------------------------------------------------------
 
 	// database representation:
 	// Double timepoint, String simId, String expression, Integer count
@@ -60,33 +51,39 @@ public class NFSimMolecularConfigurations implements Serializable
 	public void setMolecularConfigurations(Map<String, Integer> molecularConfigurations) {
 		this.molecularConfigurations = molecularConfigurations;
 	}
-	
-	public Pair<Integer, Map<String, Integer>> getTimepoint(Double timePoint, String simId) {
-		Map<String, Integer> timePointMap = new LinkedHashMap<>();
-		
-		
-		// TODO: do stuff
-		
-		Integer numberOfSimulations = 1;
-		Pair<Integer, Map<String, Integer>> pair = new Pair<>(numberOfSimulations, timePointMap);
-		return pair;
-	}
-	
-	
-	public void addTimepoint(Double timePoint, File timePointFile) {
-		// extract simId from file name
-		// transform file into string
-		String simId = "";
-		String timePointString = "";
-		addTimepoint(timePoint, simId, timePointString);
-	}
-	private void addTimepoint(Double timePoint, String simId, String timePointString) {
-		// TODO: parse here and write to database
-	}
-
 	public Map<String, Integer> getMolecularConfigurations() {
 		return molecularConfigurations;
 	}
-
+	
+	public static Map<String, Integer> getTimePointMap(File file) {
+		Map<String, Integer> timePointMap = new LinkedHashMap<>();
+		String line = null;
+		String ls = System.getProperty("line.separator");
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader (file));
+			while((line = reader.readLine()) != null) {
+				if(line.startsWith("#")) {
+					continue;
+				}
+				StringTokenizer lineTokenizer = new StringTokenizer(line," \t");
+				while(lineTokenizer.hasMoreTokens()) {
+					String expression = lineTokenizer.nextToken();
+					Integer count = Integer.parseInt(lineTokenizer.nextToken());
+					MolecularConfigurationEntry mce = new MolecularConfigurationEntry(expression, count);
+					timePointMap.put(mce.expression, mce.count);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return timePointMap;
+	}
 
 }
