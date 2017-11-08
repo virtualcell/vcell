@@ -111,8 +111,18 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 				}
 			}
 			case iColDepiction:
-			case iColDefinition:
 				return obsDefinition;
+			case iColDefinition:
+				switch(obs.getSequence()) {
+				case Multimolecular:
+					return obsDefinition;
+				case PolymerLengthEqual:
+					return obsDefinition + "=" + obs.getSequenceLength();
+				case PolymerLengthGreater:
+					return obsDefinition + ">" + obs.getSequenceLength();
+				default:
+					return obsDefinition;
+				}
 			case iColExpression:
 				String exp;
 				BNGSpecies[] speciesList = observablesTableRow.getObservableGroupObject().getListofSpecies();
@@ -247,11 +257,11 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 			for (ObservablesGroupTableRow ogtr : allObservablesList) {
 				String obsName = ogtr.getObservableGroupObject().getObservableGroupName();
 				RbmObservable obs = ogtr.getObservable(obsName);
-				String obsDefinition = ObservablesGroupTableRow.toBnglString(obs);
 				if (obsName.toLowerCase().contains(lowerCaseSearchText) ) {			// name match
 					observablesObjectList.add(ogtr);
 					continue;	// if found no need to keep looking for this row
 				}
+				String obsDefinition = ObservablesGroupTableRow.toBnglStringEx(obs);
 				if (obsDefinition.toLowerCase().contains(lowerCaseSearchText) ) {	// definition match
 					observablesObjectList.add(ogtr);
 					continue;

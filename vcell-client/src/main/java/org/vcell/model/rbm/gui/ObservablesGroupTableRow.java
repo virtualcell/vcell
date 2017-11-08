@@ -58,5 +58,18 @@ public class ObservablesGroupTableRow {
 		}
 		return s;
 	}
+	public static String toBnglStringEx(RbmObservable observable) {
+		String s = toBnglString(observable);
+		switch(observable.getSequence()) {
+		case Multimolecular:
+			return s;
+		case PolymerLengthEqual:
+			return s + "=" + observable.getSequenceLength();
+		case PolymerLengthGreater:
+			return s + ">" + observable.getSequenceLength();
+		default:
+			return s;
+		}
+	}
 	
 }
