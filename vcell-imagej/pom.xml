@@ -75,7 +75,6 @@
 	</ciManagement>
 
 	<properties>
-		<enforcer.skip>true</enforcer.skip>
 		<package-name>org.vcell.imagej</package-name>
 		<main-class>org.vcell.imagej.app.VCellPlugin</main-class>
 		<license.licenseName>bsd_2</license.licenseName>
@@ -97,6 +96,15 @@
 				<exclusion>
 					<groupId>log4j</groupId>
 					<artifactId>log4j</artifactId>
+				</exclusion>
+				<!--
+				NB: The JHDF5 library VCell uses, org.scala-saddle:jhdf5_2.10:2.9,
+				needs an older version of Scala than SciJava's Scala script language.
+				Fortunately, VCell does not need SciJava's Scala scripting language.
+				-->
+				<exclusion>
+					<groupId>org.scijava</groupId>
+					<artifactId>scripting-scala</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
