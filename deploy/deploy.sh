@@ -38,12 +38,6 @@ clientJarsDir=$clientTargetDir/maven-jars
 
 skip_install4j=false
 skip_build=false
-skip_download_solvers=false
-
-if [ "$skip_download_solvers" = false ]; then
-	installSolversScript="${projectRootDir}/localsolvers/installSolvers.sh"
-	$installSolversScript
-fi
 
 #--------------------------------------------------------------------------
 # build project, generate user help files, gather jar files

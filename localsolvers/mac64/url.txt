@@ -1,1 +1,0 @@
-https://github.com/virtualcell/vcell-solvers/releases/download/binaries_20170913/macos.tgz

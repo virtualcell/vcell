@@ -20,13 +20,7 @@ import cbit.vcell.resource.ResourceUtil;
 
 /**
  * Exercises the {@link SimulationServiceImpl}.
- * <p>
- * Requires {@code localsolvers/installSolvers.sh} to have been run beforehand
- * so that native solver executables are available. As such, it is ignored by
- * default; remove the {@code @Ignore} annotation to try it.
- * </p>
  */
-@Ignore
 public class SimulationServiceImplTest {
 
 	@Test

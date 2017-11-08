@@ -321,7 +321,7 @@
 				<executions>
 					<execution>
 						<id>install-solvers-win64</id>
-						<phase>pre-integration-test</phase>
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>wget</goal>
 						</goals>
@@ -334,7 +334,7 @@
 					</execution>
 					<execution>
 						<id>install-solvers-mac64</id>
-						<phase>pre-integration-test</phase>
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>wget</goal>
 						</goals>
@@ -347,7 +347,7 @@
 					</execution>
 					<execution>
 						<id>install-solvers-linux64</id>
-						<phase>pre-integration-test</phase>
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>wget</goal>
 						</goals>
