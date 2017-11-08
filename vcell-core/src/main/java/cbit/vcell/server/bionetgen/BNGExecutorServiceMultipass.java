@@ -241,7 +241,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	}
 	
 	private String extractPolymerObservablesAsString(String prefix, String sBngInputString) {
-		if(polymerEqualObservables.isEmpty() && polymerEqualObservables.isEmpty()) {
+		if(polymerEqualObservables.isEmpty() && polymerGreaterObservables.isEmpty()) {
 			return prefix;
 		}
 		String observablesString = "";
