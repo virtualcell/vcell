@@ -154,6 +154,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		throw new RuntimeException("toplLevelWindowManager required");
 	}
 	File defaultPath = userPreferences.getCurrentDialogPath();
+//	JFileChooser fileChooser = new JFileChooser(defaultPath);
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
@@ -198,7 +199,11 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		}
 		*/
 
+		fileChooser.addChoosableFileFilter(defaultFileFilter);
 		for (FileFilter f : filters) {
+			if(f == defaultFileFilter) {
+				continue;
+			}
 			fileChooser.addChoosableFileFilter(f);
 		}
 
