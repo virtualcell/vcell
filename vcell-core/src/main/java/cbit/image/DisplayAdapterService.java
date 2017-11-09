@@ -117,6 +117,7 @@ public DisplayAdapterService(DisplayAdapterService argDAS) {
 	java.lang.String fieldCurrentStateID = argDAS.fieldCurrentStateID;
 	fieldCustomScaleRange = argDAS.fieldCustomScaleRange;
 	fieldAutoScale = argDAS.fieldAutoScale;
+	fieldAllTimes = argDAS.fieldAllTimes;
 }
 
 
