@@ -53,6 +53,7 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements java.a
 		public float getArea(int surfaceIndex,int polygonIndex);
 		public cbit.vcell.render.Vect3d getNormal(int surfaceIndex,int polygonIndex);
 		public int getMembraneIndex(int surfaceIndex,int polygonIndex);
+		public boolean isMembrIndexInVarDomain(int membrIndex);
 		public void plotTimeSeriesData(int[][] indices,boolean bAllTimes,boolean bTimeStats,boolean bSpaceStats) throws DataAccessException;
 		public org.vcell.util.Coordinate getCentroid(int surfaceIndex,int polygonIndex);
 		public java.awt.Color getROIHighlightColor();
@@ -1002,18 +1003,19 @@ private void initialize() {
 		constraintsSurfaceCanvas1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsSurfaceCanvas1.weightx = 1.0;
 		constraintsSurfaceCanvas1.weighty = 1.0;
+		constraintsSurfaceCanvas1.gridwidth = 2;
 		constraintsSurfaceCanvas1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSurfaceCanvas1(), constraintsSurfaceCanvas1);
 		
-		displayAdapterServicePanel = new DisplayAdapterServicePanel();
-		
-		java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
-		constraintsJPanel3.gridx = 1; constraintsJPanel3.gridy = 0;
-		constraintsJPanel3.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel3.anchor = java.awt.GridBagConstraints.NORTH;
-		constraintsJPanel3.weighty = 1.0;
-		constraintsJPanel3.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(displayAdapterServicePanel, constraintsJPanel3);
+//		displayAdapterServicePanel = new DisplayAdapterServicePanel();
+//		
+//		java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
+//		constraintsJPanel3.gridx = 1; constraintsJPanel3.gridy = 0;
+//		constraintsJPanel3.fill = java.awt.GridBagConstraints.BOTH;
+//		constraintsJPanel3.anchor = java.awt.GridBagConstraints.NORTH;
+//		constraintsJPanel3.weighty = 1.0;
+//		constraintsJPanel3.insets = new java.awt.Insets(4, 4, 4, 4);
+//		add(displayAdapterServicePanel, constraintsJPanel3);
 
 		
 		java.awt.GridBagConstraints constraintsJLabelInfo = new java.awt.GridBagConstraints();
@@ -1591,9 +1593,17 @@ private void updatePickInfoDisplay() {
 			org.vcell.util.Coordinate centroid = ((Quadrilateral)getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaces(currentPick.surfaceIndex).getPolygons(currentPick.polygonIndex)).calculateCentroid();
 			df.setMaximumFractionDigits(5);
 			double area = getSurfaceCollectionDataInfoProvider().getArea(currentPick.surfaceIndex,currentPick.polygonIndex);
+			int membrIndex = getSurfaceCollectionDataInfoProvider().getMembraneIndex(currentPick.surfaceIndex,currentPick.polygonIndex);
+			String valText = "unknown";
+			try{
+				valText = ""+(getSurfaceCollectionDataInfoProvider().isMembrIndexInVarDomain(membrIndex)?(float)getSurfaceCollectionDataInfoProvider().getValue(currentPick.surfaceIndex,currentPick.polygonIndex):"undefined");
+			}catch(Exception e){
+				e.printStackTrace();
+				valText = "Err: "+e.getClass().getSimpleName();
+			}
 			getJLabelInfo().setText(
-				" index="+getSurfaceCollectionDataInfoProvider().getMembraneIndex(currentPick.surfaceIndex,currentPick.polygonIndex) +
-				" val="+ (float)getSurfaceCollectionDataInfoProvider().getValue(currentPick.surfaceIndex,currentPick.polygonIndex) +
+				" index="+membrIndex +
+				" val="+ valText +
 				" area="+ (area != MembraneElement.AREA_UNDEFINED?df.format(area)+"":"No Calc")+
 				" centroid=("+df.format(centroid.getX())+","+df.format(centroid.getY())+","+df.format(centroid.getZ())+")");
 			return;
@@ -1689,13 +1699,13 @@ private void updatePickInfoDisplay() {
 		return canvasDimensionsLabel;
 	}
 	private DisplayAdapterService displayAdapterService;
-	private DisplayAdapterServicePanel displayAdapterServicePanel;
+//	private DisplayAdapterServicePanel displayAdapterServicePanel;
 	public void setDisplayAdapterService(DisplayAdapterService newValue) {
 		if (displayAdapterService == newValue) {
 			return;
 		}
 		displayAdapterService = newValue;
-		displayAdapterServicePanel.setDisplayAdapterService(displayAdapterService);
+//		displayAdapterServicePanel.setDisplayAdapterService(displayAdapterService);
 	}
 }
 

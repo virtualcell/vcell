@@ -290,15 +290,17 @@ private void connEtoM5(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
-private static class RecodeDataForDomainInfo{
+public static class RecodeDataForDomainInfo{
 	private double[] recodedDataForDomain;
 	private Range recodedDataRange;
-	boolean isRecoded;
-	public RecodeDataForDomainInfo(boolean isRecoded,double[] recodedDataForDomain,Range recodedDataRange) {
+	private boolean isRecoded;
+	private Double notInDomainValue;
+	public RecodeDataForDomainInfo(boolean isRecoded,double[] recodedDataForDomain,Range recodedDataRange,Double notInDomainValue) {
 		super();
 		this.isRecoded = isRecoded;
 		this.recodedDataForDomain = recodedDataForDomain;
 		this.recodedDataRange = recodedDataRange;
+		this.notInDomainValue = notInDomainValue;
 	}
 	public double[] getRecodedDataForDomain() {
 		return recodedDataForDomain;
@@ -309,6 +311,12 @@ private static class RecodeDataForDomainInfo{
 	public boolean isRecoded() {
 		return isRecoded;
 	}
+	public boolean isIndexInDomain(int dataIndex){
+		return (notInDomainValue==null?true:recodedDataForDomain[dataIndex] != notInDomainValue);
+	}
+}
+public RecodeDataForDomainInfo getRecodeDataForDomainInfo(){
+	return recodeDataForDomainInfo;
 }
 private double[] originalData = null;
 private RecodeDataForDomainInfo recodeDataForDomainInfo = null;
@@ -341,7 +349,7 @@ private void recodeDataForDomain0() {
 	Range dataRange = null;
 	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
 	boolean bRecoding = getDataInfoProvider() != null && varDomain != null;	
-	
+	Double notInDomainValue = null;
 	if (getPdeDataContext().getDataValues() != originalData ||
 		recodeDataForDomainInfo == null ||
 		((getDataInfoProvider() == null) != bDataInfoProviderNull) ||
@@ -362,7 +370,8 @@ private void recodeDataForDomain0() {
 			}
 		}
 		illegalNumber-=1;//
-		
+		notInDomainValue = new Double(illegalNumber);
+
 		final CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
 		double minCurrTime = Double.POSITIVE_INFINITY;
 		double maxCurrTime = Double.NEGATIVE_INFINITY;
@@ -389,9 +398,9 @@ private void recodeDataForDomain0() {
 		tempRecodedData = recodeDataForDomainInfo.getRecodedDataForDomain();
 	}
 	if (bRecoding) {
-		recodeDataForDomainInfo = new RecodeDataForDomainInfo(true, tempRecodedData, dataRange);
+		recodeDataForDomainInfo = new RecodeDataForDomainInfo(true, tempRecodedData, dataRange,notInDomainValue);
 	}else{
-		recodeDataForDomainInfo = new RecodeDataForDomainInfo(false, tempRecodedData, dataRange);		
+		recodeDataForDomainInfo = new RecodeDataForDomainInfo(false, tempRecodedData, dataRange,notInDomainValue);		
 	}
 }
 

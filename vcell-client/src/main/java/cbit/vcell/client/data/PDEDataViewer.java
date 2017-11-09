@@ -31,11 +31,14 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +49,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -65,6 +69,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -148,12 +153,16 @@ import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFormatException;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -172,6 +181,7 @@ import cbit.vcell.simdata.SpatialSelection.SSHelper;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.simdata.gui.PDEDataContextPanel;
+import cbit.vcell.simdata.gui.PDEDataContextPanel.RecodeDataForDomainInfo;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper;
@@ -2815,6 +2825,8 @@ private void updateDataValueSurfaceViewer0() {
 	final int[][] surfaceColors = new int[surfaceCollection.getSurfaceCount()][];
 	final double[][] surfaceDataValues = new double[surfaceCollection.getSurfaceCount()][];
 	boolean bMembraneVariable = getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE);
+	RecodeDataForDomainInfo recodeDataForDomainInfo = getPDEDataContextPanel1().getRecodeDataForDomainInfo();
+	double[] membraneValues = (recodeDataForDomainInfo.isRecoded()?recodeDataForDomainInfo.getRecodedDataForDomain():getPdeDataContext().getDataValues());
 	for(int i=0;i<surfaceCollection.getSurfaceCount();i+= 1){
 		Surface surface = surfaceCollection.getSurfaces(i);
 		surfaceColors[i] = new int[surface.getPolygonCount()];
@@ -2822,10 +2834,10 @@ private void updateDataValueSurfaceViewer0() {
 		for(int j=0;j<surface.getPolygonCount();j+= 1){
 			int membraneIndexForPolygon = meshRegionSurfaces.getMembraneIndexForPolygon(i,j);
 			if (bMembraneVariable) {
-				surfaceDataValues[i][j] = getPdeDataContext().getDataValues()[membraneIndexForPolygon];
+				surfaceDataValues[i][j] = membraneValues[membraneIndexForPolygon];
 			} else {
 				// get membrane region index from membrane index
-				surfaceDataValues[i][j] = getPdeDataContext().getDataValues()[getPdeDataContext().getCartesianMesh().getMembraneRegionIndex(membraneIndexForPolygon)];
+				surfaceDataValues[i][j] = membraneValues[getPdeDataContext().getCartesianMesh().getMembraneRegionIndex(membraneIndexForPolygon)];
 			}
 			surfaceColors[i][j] = das.getColorFromValue(surfaceDataValues[i][j]);
 		}
@@ -2864,6 +2876,10 @@ private void updateDataValueSurfaceViewer0() {
 		}
 		public Color getROIHighlightColor(){
 			return new Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.image.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
+		}
+		@Override
+		public boolean isMembrIndexInVarDomain(int membrIndex) {
+			return (getPDEDataContextPanel1().getRecodeDataForDomainInfo()!=null?getPDEDataContextPanel1().getRecodeDataForDomainInfo().isIndexInDomain(membrIndex):true);
 		}
 //		public void showComponentInFrame(Component comp,String title){
 //			PDEDataViewer.this.showComponentInFrame(comp,title);
