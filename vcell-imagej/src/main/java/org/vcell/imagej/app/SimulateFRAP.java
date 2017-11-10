@@ -343,9 +343,7 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 
 	private void initializeVCell() {
 		VCMongoMessage.enabled = false;
-		System.setProperty(PropertyLoader.installationRoot, //
-			"/Users/curtis/code/vcell/vcell");
-//			appService.getApp().getBaseDirectory().getAbsolutePath());
+		System.setProperty(PropertyLoader.installationRoot, appService.getApp().getBaseDirectory().getAbsolutePath());
 		ResourceUtil.setNativeLibraryDirectory();
 //		NativeLoader.setNativeLibraryDirectory("/Users/curtis/code/vcell/vcell/nativelibs/mac64");
 		NativeLib.HDF5.load();
