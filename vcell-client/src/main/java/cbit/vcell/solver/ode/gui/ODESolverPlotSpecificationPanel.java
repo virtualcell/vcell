@@ -1326,7 +1326,7 @@ private void setPlot2D(Plot2D plot2D) {
  * To get a hash table with keys as possible results for a specific variable after certain time period
  * and the values as the frequency. It is sorted ascendantly.
  */
-private Point2D[] generateHistogram(double[] rawData)
+public static Point2D[] generateHistogram(double[] rawData)
 {
 	Hashtable<Integer,Integer> temp = new Hashtable<Integer,Integer>();
 	//sum the results for a specific variable after multiple trials.

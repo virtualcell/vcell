@@ -11,6 +11,7 @@
 package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -43,6 +44,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/2005 11:22:58 PM)
@@ -196,18 +198,41 @@ private void updateScanParamChoices(){
 				final VCDataIdentifier vcdid = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
 				ODEDataManager odeDatamanager = ((ODEDataManager)dataManager).createNewODEDataManager(vcdid);
 				ODESolverResultSet odeSolverResultSet = odeDatamanager.getODESolverResultSet();
-				int tcol = odeSolverResultSet.findColumn(ReservedVariable.TIME.getName());
-				double[] tdata = odeSolverResultSet.extractColumn(tcol);
-				if (dataValues[0] == null) {
-					dataValues[0] = tdata;
+				if(ji == 0){
+					plotPane.setStepViewVisible(simulation.getSolverTaskDescription().getSolverDescription().isNonSpatialStochasticSolver(), odeSolverResultSet.isMultiTrialData());
+					hashTable.put("bMultiTrial", new Boolean(odeSolverResultSet.isMultiTrialData()));
+				}
+				double[] tdata = null;
+				if(!odeSolverResultSet.isMultiTrialData()){
+					int tcol = odeSolverResultSet.findColumn(ReservedVariable.TIME.getName());
+					tdata = odeSolverResultSet.extractColumn(tcol);
+					if (dataValues[0] == null) {
+						dataValues[0] = tdata;
+					}
 				}
 				for (int v = 0; v < variableNames.length; v ++) {
 					String varname = variableNames[v];
 					int varcol = odeSolverResultSet.findColumn(varname);
 					double[] vdata = odeSolverResultSet.extractColumn(varcol);
-					dataValues[plotIndex+1] = vdata;
+					if(!odeSolverResultSet.isMultiTrialData()){
+						dataValues[plotIndex+1] = vdata;
+//						plotNames[plotIndex] = varname + " -- " + JOB_PLOT_NAME + " " + jobIndex;
+						plotDatas[plotIndex] = new PlotData(tdata, vdata);
+//						symbolTableEntries[plotIndex] = simulation.getMathDescription().getVariable(varname);
+					}else{
+						Point2D[] histogram = ODESolverPlotSpecificationPanel.generateHistogram(vdata);
+						double[] x = new double[histogram.length];
+						double[] y = new double[histogram.length];
+						for (int j=0; j<histogram.length; j++)
+						{
+							x[j]= histogram[j].getX();
+					        y[j]= histogram[j].getY();
+					    }
+						plotDatas[plotIndex] =  new PlotData(x,y);
+
+
+					}
 					plotNames[plotIndex] = varname + " -- " + JOB_PLOT_NAME + " " + jobIndex;
-					plotDatas[plotIndex] = new PlotData(tdata, vdata);
 					symbolTableEntries[plotIndex] = simulation.getMathDescription().getVariable(varname);
 					plotIndex ++;
 				}
@@ -230,7 +255,10 @@ private void updateScanParamChoices(){
 				return;
 			}
 			Plot2D plot2D = null;
-			if(simulation.getSolverTaskDescription().getOutputTimeSpec() instanceof DefaultOutputTimeSpec)
+			
+			if(hashTable.get("bMultiTrial") instanceof Boolean && (Boolean)hashTable.get("bMultiTrial")){
+				plot2D = new Plot2D(symbolTableEntries, null, plotNames, plotDatas, new String[] {"Probability Distribution of Species", "Number of Particles", ""});
+			}else if(simulation.getSolverTaskDescription().getOutputTimeSpec() instanceof DefaultOutputTimeSpec)
 			{
 				plot2D = new Plot2D(symbolTableEntries, null, plotNames, plotDatas, 
 						new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});
@@ -239,7 +267,6 @@ private void updateScanParamChoices(){
 			{
 				plot2D = new SingleXPlot2D(symbolTableEntries, null, ReservedVariable.TIME.getName(), plotNames, dataValues);
 			}
-							
 			plotPane.setPlot2D(plot2D);
 		}
 	};
