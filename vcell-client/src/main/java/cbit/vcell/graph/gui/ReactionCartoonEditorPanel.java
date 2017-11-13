@@ -927,7 +927,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	public void specialLayout(){
 		//if(getModel() != null && getModel().getDiagrams() != null && getModel().getDiagrams().length == 1 && getModel().getDiagrams()[0].getNodeList().size() == 0){
 			try{
-				getReactionCartoonTool().layout(EnergyMinimizingLayouter.LAYOUT_NAME,false);
+				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME, false);
 			}catch(Exception e){
 				System.out.println("Error:  "+this.getClass().getName()+" setStructureSuite(...)->reactioncartoontool.layout(...)");
 				e.printStackTrace();
