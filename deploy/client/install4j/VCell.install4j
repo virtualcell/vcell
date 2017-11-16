@@ -34,7 +34,7 @@
     <mergedProjects />
     <codeSigning macEnabled="true" macPkcs12File="${compiler:macKeystore}" windowsEnabled="true" windowsKeySource="pkcs12" windowsPvkFile="" windowsSpcFile="" windowsPkcs12File="${compiler:winKeystore}" />
   </application>
-  <files keepModificationTimes="true" missingFilesStrategy="warn" globalExcludeSuffixes=".svn,.DS_Store" defaultOverwriteMode="4" defaultUninstallMode="0" launcherOverwriteMode="3" defaultFileMode="644" defaultDirMode="755">
+  <files keepModificationTimes="true" missingFilesStrategy="warn" globalExcludeSuffixes=".svn,.DS_Store" defaultOverwriteMode="1" defaultUninstallMode="2" launcherOverwriteMode="3" defaultFileMode="644" defaultDirMode="755">
     <filesets>
       <fileset name="MacOSX" id="1113" customizedId="" />
       <fileset name="Windows64" id="1115" customizedId="" />
