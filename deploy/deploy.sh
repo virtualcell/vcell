@@ -498,6 +498,14 @@ then
 	mkdir -p $installedExportDir
 	mkdir -p $installedDocrootDir
 	mkdir -p $installedWebappDir
+	
+	rm $installedJarsDir/*
+	rm $installedNativelibsDir/*
+	rm $installedSolversDir/*
+	# install externally build solvers on server (temporary solution prior to complete build automation).
+	if [ -e "${installedSolversDir}/../extra-solvers.tgz" ]; then tar xzf "${installedSolversDir}/../extra-solvers.tgz" --directory="${installedSolversDir}"; fi
+	rm $installedInstallersDir/*
+	
 	cp -p $stagingConfigsDir/*		$installedConfigsDir
 	cp -p $stagingJarsDir/*			$installedJarsDir
 	cp -p -R $stagingPythonScriptsDir/*	$installedPythonScriptsDir
@@ -539,6 +547,11 @@ else
 	#mkdir -p $pathto_SecondarydataDir
 	#mkdir -p $pathto_ParalleldataDir
 	#mkdir -p $pathto_ExportDir
+	
+	rm $pathto_JarsDir/*
+	rm $pathto_NativelibsDir/*
+#	rm $pathto_SolversDir/*
+	rm $pathto_InstallersDir/*
 
 	echo "installing scripts to configs (1/8)"
 	cp -p $stagingConfigsDir/*		$pathto_ConfigsDir
