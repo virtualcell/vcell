@@ -564,6 +564,14 @@
             <preActivation />
             <postActivation />
             <actions>
+              <action name="" id="2318" customizedId="" beanClass="com.install4j.runtime.beans.actions.UninstallPreviousAction" enabled="true" commentSet="false" comment="" actionElevationType="elevated" rollbackBarrier="false" multiExec="false" failureStrategy="3" errorMessage="">
+                <serializedBean>
+                  <java class="java.beans.XMLDecoder">
+                    <object class="com.install4j.runtime.beans.actions.UninstallPreviousAction" />
+                  </java>
+                </serializedBean>
+                <condition />
+              </action>
               <action name="" id="9" customizedId="" beanClass="com.install4j.runtime.beans.actions.InstallFilesAction" enabled="true" commentSet="false" comment="" actionElevationType="elevated" rollbackBarrier="false" multiExec="false" failureStrategy="4" errorMessage="${i18n:FileCorrupted}">
                 <serializedBean>
                   <java class="java.beans.XMLDecoder">
