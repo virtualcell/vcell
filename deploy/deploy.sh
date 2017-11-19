@@ -513,7 +513,7 @@ then
 	cp -p $projectSolversDir/*		$installedSolversDir
 	cp -p $stagingInstallersDir/*	$installedInstallersDir
 	cp -p -R $apiDocrootDir/*		$installedDocrootDir
-	cp -p -R $apiWebappDir/*		$installedWebappDir
+	cp -p -R $apiWebappDir/*			$installedWebappDir
 	# set execute permissions on scripts
 	pushd $installedConfigsDir
 	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
@@ -521,6 +521,9 @@ then
 	pushd $installedSolversDir
 	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
 	popd
+
+	scp ${installedInstallersDir}/* ${vcell_installer_scp_destination}
+
 else
 	#
 	# remote filesystem
@@ -577,11 +580,11 @@ else
 	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
 	popd
 	echo "done with installation"
-	
+
 	echo ""
 	echo "REMEMBER ... move installers to apache if applicable"
 	echo ""
-	echo "scp $pathto_InstallersDir/* vcell@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/$vcell_site_camel"
+	echo "scp $pathto_InstallersDir/* ${vcell_installer_scp_destination}"
 	echo ""
 	echo " then, don't forget to update symbolic links to <latest> installers"
 	echo ""
