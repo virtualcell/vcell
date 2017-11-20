@@ -7,6 +7,7 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 # make sure no variables are left unset
 shopt -s -o nounset
 
+export common_vcell_user
 export common_siteCfgDir
 export vcellapi_host
 export vcellservice_host

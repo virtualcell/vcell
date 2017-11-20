@@ -2,9 +2,9 @@
 
 shopt -s -o nounset
 
-_site="test4"
+_site="alpha"
 _version="6.2"
-_build="54"
+_build="78"
 vcell_server_os="mac64"
 
 vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
@@ -19,8 +19,7 @@ unset _build
 
 vcell_python_executable=/Users/schaff/anaconda/bin/python
 
-#vcell_applicationId="1471-8022-1038-5558"
-vcell_applicationId="4945-1614-0064-5008"
+vcell_applicationId="1471-8022-1038-5554"
 vcell_server_sitedir="/Users/schaff/Documents/workspace-modular/vcell/deploy/sandbox/$vcell_site_lower"
 # mount /share/apps/vcell2/deployed as cfs02.cam.uchc.edu/raid resulting in /Volumes/raid/vcell/deployed
 vcell_pathto_sitedir="/Users/schaff/Documents/workspace-modular/vcell/deploy/sandbox/$vcell_site_lower"
@@ -29,7 +28,7 @@ vcell_user="schaff"
 _localhost="jamess-macbook-pro-2.local"
 vcell_servicehost=$_localhost
 vcell_apihost=$_localhost
-vcell_apiport=8081
+vcell_apiport=8088
 # intentionally left blank (for local, don't scp installers to a web location)
 vcell_installer_scp_destination=
 
@@ -37,14 +36,14 @@ vcell_installer_scp_destination=
 # Nagios monitor port  
 # (rel=33330, beta=33331, alpha=33332, test=-33333, test2=-33334, test3=-33335, test4=-33336)
 #
-vcell_monitor_queryport=-33336
+vcell_monitor_queryport=-33332
 
 vcell_rmihost=$_localhost
-vcell_rmiport_low=-1
-vcell_rmiport_high=40109
-vcell_rmihosts="$_localhost:40109"
-vcell_bioformatsJarFile="bioformats_TEST4_6_2_54.jar"
-vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_site_camel/$vcell_bioformatsJarFile"
+vcell_rmiport_low=8089
+vcell_rmiport_high=40106
+vcell_rmihosts="$_localhost:40106;$_localhost:8089"
+vcell_bioformatsJarFile="vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar"
+vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_bioformatsJarFile"
 
 vcell_vcellClientJarFileName="vcell-client-0.0.1-SNAPSHOT.jar"
 vcell_vcellServerJarFileName="vcell-server-0.0.1-SNAPSHOT.jar"
@@ -84,9 +83,9 @@ vcell_smtp_email="VCell_Support@uchc.edu"
 vcell_common_jre=java
 vcell_common_jre_rmi=java
 
-vcell_rmiservice_high_jmxport=12313
-vcell_rmiservice_http_jmxport=-1
-vcell_vcellservice_jmxport=12370
+vcell_rmiservice_high_jmxport=12305
+vcell_rmiservice_http_jmxport=12304
+vcell_vcellservice_jmxport=12360
 
 vcell_primary_datadir=$vcell_server_sitedir/simdata
 vcell_secondary_datadir=$vcell_server_sitedir/simdata
@@ -100,7 +99,7 @@ vcell_secretsDir=$HOME/vcellkeys
 vcell_I4J_pathto_secretsDir=/vagrant_keys
 
 vcell_I4J_use_vagrant=true
-vcell_I4J_install_jres_into_user_home=true
+vcell_I4J_install_jres_into_user_home=false
 vcell_I4J_updateSiteBaseUrl=file://${vcell_server_sitedir}/installers
 vcell_I4J_pathto_installerFile="/vagrant/VCell.install4j"
 vcell_I4J_pathto_mavenRootDir="/vagrant_maven"

@@ -132,7 +132,7 @@ def main():
         #
         # gather server configuration from environment
         #
-        user = "vcell"
+        user = getenv("common_vcell_user")
         config_dir = getenv("common_siteCfgDir")
 
         master_name = "master"

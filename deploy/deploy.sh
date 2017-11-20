@@ -21,7 +21,7 @@ projectTargetDir=$projectRootDir/target
 
 serverTargetDir=$projectRootDir/vcell-server/target
 
-// oracle dependencies
+# oracle dependencies
 oracleTargetDir=$projectRootDir/vcell-oracle/target
 ucpJarFilePath=$projectRootDir/ucp/src/ucp.jar
 ojdbc6JarFilePath=$projectRootDir/ojdbc6/src/ojdbc6.jar
@@ -522,7 +522,9 @@ then
 	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
 	popd
 
-	scp ${installedInstallersDir}/* ${vcell_installer_scp_destination}
+	if [ ! -z "$vcell_installer_scp_destination" ]; then
+		scp ${installedInstallersDir}/* ${vcell_installer_scp_destination}
+	fi
 
 else
 	#
