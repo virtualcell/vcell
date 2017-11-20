@@ -1,50 +1,21 @@
-#!/bin/bash  
-export COLUMNS=1
-DIR="$(dirname "$(readlink -f "$0")")"
-. $DIR/processFunctions
+#!/bin/bash
 
-#setsite test4
-#checksite 
-#starthigh
+DIR=${0%/*}
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. $DIR/vcell.include
 
-if [ $# -ne 1 ]; then
-	echo "Usage: $0 [command]"
-fi
+# make sure no variables are left unset
+shopt -s -o nounset
 
-cmd=$1
+export common_vcell_user
+export common_siteCfgDir
+export vcellapi_host
+export vcellservice_host
+export bootstrap_rmihost
+export vcellservice_processLabel
+export bootstrap_http_processLabel
+export bootstrap_high_processLabel
+export vcellapi_processLabel
 
-echo "Performing $cmd"
-case "$cmd" in
-	status)
-		cd $LOGDIR
-		checkRunning servicepid v 
-		checkRunning highpid v 
-
-		if runsLow ; then
-			 checkRunning httppid v 
-		fi
-#		echo "verifying connection and database access"
-
-#		if ! verifyAlive 1 10 ; then
-#			echo "connect failed"
-#			exit 8
-#		fi
-#		if ! verifyAlive 2 10 ; then
-#			echo "database access failed"
-#			exit 8
-#		fi
-		echo "tested satisfactory"
-	;;
-	start)
-		startSite
-	;;
-	stop)
-		stopSite
-	;;
-	restart)
-		stopSite
-		startSite
-	;;
-
-esac
+python $DIR/vcell.py $@
 

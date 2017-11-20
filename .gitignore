@@ -18,3 +18,5 @@ target/
 *_x64
 testzip
 ziptool
+.idea
+.vagrant

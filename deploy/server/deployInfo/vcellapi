@@ -41,6 +41,8 @@ classpath="${common_jvm_jars}"
 #
 # IMPORTANT:  ${procLabel} must be first because we are filtering on it for the kill script in DeployVCell.
 #
+# jdebug="-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n"
+#
 echo ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} 
 nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} &
 

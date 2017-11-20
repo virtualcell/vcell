@@ -21,7 +21,7 @@ projectTargetDir=$projectRootDir/target
 
 serverTargetDir=$projectRootDir/vcell-server/target
 
-// oracle dependencies
+# oracle dependencies
 oracleTargetDir=$projectRootDir/vcell-oracle/target
 ucpJarFilePath=$projectRootDir/ucp/src/ucp.jar
 ojdbc6JarFilePath=$projectRootDir/ojdbc6/src/ojdbc6.jar
@@ -498,6 +498,14 @@ then
 	mkdir -p $installedExportDir
 	mkdir -p $installedDocrootDir
 	mkdir -p $installedWebappDir
+	
+	rm $installedJarsDir/*
+	rm $installedNativelibsDir/*
+	rm $installedSolversDir/*
+	# install externally build solvers on server (temporary solution prior to complete build automation).
+	if [ -e "${installedSolversDir}/../extra-solvers.tgz" ]; then tar xzf "${installedSolversDir}/../extra-solvers.tgz" --directory="${installedSolversDir}"; fi
+	rm $installedInstallersDir/*
+	
 	cp -p $stagingConfigsDir/*		$installedConfigsDir
 	cp -p $stagingJarsDir/*			$installedJarsDir
 	cp -p -R $stagingPythonScriptsDir/*	$installedPythonScriptsDir
@@ -505,7 +513,7 @@ then
 	cp -p $projectSolversDir/*		$installedSolversDir
 	cp -p $stagingInstallersDir/*	$installedInstallersDir
 	cp -p -R $apiDocrootDir/*		$installedDocrootDir
-	cp -p -R $apiWebappDir/*		$installedWebappDir
+	cp -p -R $apiWebappDir/*			$installedWebappDir
 	# set execute permissions on scripts
 	pushd $installedConfigsDir
 	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
@@ -513,6 +521,11 @@ then
 	pushd $installedSolversDir
 	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
 	popd
+
+	if [ ! -z "$vcell_installer_scp_destination" ]; then
+		scp ${installedInstallersDir}/* ${vcell_installer_scp_destination}
+	fi
+
 else
 	#
 	# remote filesystem
@@ -539,6 +552,11 @@ else
 	#mkdir -p $pathto_SecondarydataDir
 	#mkdir -p $pathto_ParalleldataDir
 	#mkdir -p $pathto_ExportDir
+	
+	rm $pathto_JarsDir/*
+	rm $pathto_NativelibsDir/*
+#	rm $pathto_SolversDir/*
+	rm $pathto_InstallersDir/*
 
 	echo "installing scripts to configs (1/8)"
 	cp -p $stagingConfigsDir/*		$pathto_ConfigsDir
@@ -564,11 +582,11 @@ else
 	for f in *; do if [ -z "${f//[^.]/}" ]; then chmod +x "$f"; fi done
 	popd
 	echo "done with installation"
-	
+
 	echo ""
 	echo "REMEMBER ... move installers to apache if applicable"
 	echo ""
-	echo "scp $pathto_InstallersDir/* vcell@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/$vcell_site_camel"
+	echo "scp $pathto_InstallersDir/* ${vcell_installer_scp_destination}"
 	echo ""
 	echo " then, don't forget to update symbolic links to <latest> installers"
 	echo ""
