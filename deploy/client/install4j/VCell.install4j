@@ -29,6 +29,7 @@
       <variable name="vcellLicenseFilePath" value="${compiler:mavenRootDir}/vcell-client/src/main/resources/thirdpartylicenses.txt" description="" category="" />
       <variable name="vcellPythonPath" value="${compiler:mavenRootDir}/pythonScripts" description="" category="" />
       <variable name="vcellbngPerlPath" value="${compiler:mavenRootDir}/bionetgen" description="" category="" />
+      <variable name="vcellClasspathColonSep" value="NO-CLASSPATH" description="colon separated classpath (parsed by Instal4J for all platforms)" category="" />
     </variables>
     <mergedProjects />
     <codeSigning macEnabled="true" macPkcs12File="${compiler:macKeystore}" windowsEnabled="true" windowsKeySource="pkcs12" windowsPvkFile="" windowsSpcFile="" windowsPkcs12File="${compiler:winKeystore}" />
@@ -132,7 +133,7 @@
       </splashScreen>
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true">
         <classPath>
-          <scanDirectory location="lib" failOnError="false" />
+          <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
         <nativeLibraryDirectories>
           <directory name="nativelibs/mac64" />
@@ -182,7 +183,7 @@
       </splashScreen>
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true">
         <classPath>
-          <scanDirectory location="lib" failOnError="false" />
+          <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
         <nativeLibraryDirectories>
           <directory name="nativelibs/win64" />
@@ -227,7 +228,7 @@
       </splashScreen>
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true">
         <classPath>
-          <scanDirectory location="lib" failOnError="false" />
+          <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
         <nativeLibraryDirectories>
           <directory name="nativelibs/win32" />
@@ -273,7 +274,7 @@
       </splashScreen>
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true">
         <classPath>
-          <scanDirectory location="lib" failOnError="false" />
+          <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
         <nativeLibraryDirectories>
           <directory name="nativelibs/linux32" />
@@ -316,7 +317,7 @@
       </splashScreen>
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true">
         <classPath>
-          <scanDirectory location="lib" failOnError="false" />
+          <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
         <nativeLibraryDirectories>
           <directory name="nativelibs/linux64" />
@@ -359,7 +360,7 @@
       </splashScreen>
       <java mainClass="org.vcell.sbml.SbmlVcmlConverter" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true">
         <classPath>
-          <scanDirectory location="lib" failOnError="false" />
+          <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
         <nativeLibraryDirectories>
           <directory name="nativelibs/linux64" />

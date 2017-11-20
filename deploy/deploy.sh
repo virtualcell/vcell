@@ -161,7 +161,12 @@ if [ $? -ne 0 ]; then
 	echo "failed: mvn dependency:copy-dependencies"
 	exit -1
 fi
-	
+
+# bring in vcell-client.jar
+cp $clientTargetDir/*.jar ${clientJarsDir}
+# gather classpath (filenames only), Install4J will add the correct separator
+vcellClasspathColonSep=`ls -m ${clientJarsDir} | tr -d '[:space:]' | tr ',' ':'`
+
 #---------------------------------------------------------------
 # build install4j platform specific installers for VCell client
 # 
@@ -176,7 +181,6 @@ install4jDeploySettings=$install4jWorkingDir/DeploySettings.include
 
 I4J_pathto_Install4jWorkingDir=$vcell_I4J_pathto_mavenRootDir/target/install4j-working
 I4J_pathto_Install4jDeploySettings=$I4J_pathto_Install4jWorkingDir/DeploySettings.include
-I4J_pathto_vcellClientJar="$vcell_I4J_pathto_mavenRootDir/vcell-client/target/$vcell_vcellClientJarFileName"
 
 mkdir -p $install4jWorkingDir
 if [ -e $install4jDeploySettings ]; then
@@ -195,13 +199,13 @@ echo "compiler_vcellBuild=$vcell_build"								>> $install4jDeploySettings
 echo "compiler_rmiHosts=$vcell_rmihosts"							>> $install4jDeploySettings
 echo "compiler_bioformatsJarFile=$vcell_bioformatsJarFile"			>> $install4jDeploySettings
 echo "compiler_bioformatsJarDownloadURL=$vcell_bioformatsJarDownloadURL" >> $install4jDeploySettings
-echo "compiler_vcellClientJarFilePath=$I4J_pathto_vcellClientJar"	>> $install4jDeploySettings
 echo "compiler_applicationId=$vcell_applicationId"					>> $install4jDeploySettings
 echo "i4j_pathto_jreDir=$vcell_I4J_pathto_jreDir"					>> $install4jDeploySettings
 echo "i4j_pathto_secretsDir=$vcell_I4J_pathto_secretsDir"			>> $install4jDeploySettings
 echo "install_jres_into_user_home=$vcell_I4J_install_jres_into_user_home"	>> $install4jDeploySettings
 echo "i4j_pathto_install4JFile=$vcell_I4J_pathto_installerFile"		>> $install4jDeploySettings
 echo "i4j_pathto_mavenRootDir=$vcell_I4J_pathto_mavenRootDir"		>> $install4jDeploySettings
+echo "compiler_vcellClasspathColonSep=$vcellClasspathColonSep"	>> $install4jDeploySettings
 
 if [ "$skip_install4j" = false ]; then
 	cd $deployInstall4jDir
