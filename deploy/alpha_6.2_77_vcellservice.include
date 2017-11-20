@@ -27,7 +27,7 @@ vcell_user="vcell"
 vcell_servicehost="vcell-service.cam.uchc.edu"
 vcell_apihost="vcellapi.cam.uchc.edu"
 vcell_apiport=8080
-vcell_installer_scp_destination="${vcell_user}@apache.cam.uchc.edu:/apache_webstart/htdocs/webstart/${vcell_site_camel}"
+vcell_installer_scp_destination="${vcell_user}@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/${vcell_site_camel}"
 
 #
 # Nagios monitor port  
