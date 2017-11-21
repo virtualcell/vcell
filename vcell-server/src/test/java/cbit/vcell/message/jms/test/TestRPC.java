@@ -106,7 +106,7 @@ public class TestRPC {
 	        Thread.sleep(2000);
 	    	System.out.println("main program calling closeAll()");
 	    	pooledQueueConsumer.shutdownAndAwaitTermination();
-	    	messagingService.closeAll();
+	    	messagingService.close();
 	    	System.out.println("main program exiting");
 		}catch (Exception e){
 			e.printStackTrace(System.out);

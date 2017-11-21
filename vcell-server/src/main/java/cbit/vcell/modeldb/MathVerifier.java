@@ -284,7 +284,7 @@ private User[] createUsersFromUserids(String[] scanUserids) throws Exception{
 }
 private void closeAllConnections(){
 	if(this.conFactory != null){
-		try{this.conFactory.closeAll();}catch(Exception e){e.printStackTrace();}
+		try{this.conFactory.close();}catch(Exception e){e.printStackTrace();}
 	}
 
 }

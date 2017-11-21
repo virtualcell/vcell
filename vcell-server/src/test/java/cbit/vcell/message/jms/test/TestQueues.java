@@ -84,7 +84,7 @@ public class TestQueues {
 	    	System.out.println("calculator sum = "+calculator.getSum());
 	    	
 	    	System.out.println("main program calling closeAll()");
-	    	messagingService.closeAll();
+	    	messagingService.close();
 	    	System.out.println("main program exiting");
 		}catch (Exception e){
 			e.printStackTrace(System.out);

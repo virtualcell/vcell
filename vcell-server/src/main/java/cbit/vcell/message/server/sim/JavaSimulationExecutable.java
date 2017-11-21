@@ -239,7 +239,7 @@ public static void main(String[] args) {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 				}
-				vcMessagingService.closeAll();
+				vcMessagingService.close();
 			}
 		} catch (VCMessagingException ex) {
 			ex.printStackTrace(System.out);

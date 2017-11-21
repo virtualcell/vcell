@@ -110,6 +110,14 @@
 			<artifactId>vcell-vmicro</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
+		<dependency>
+			<groupId>commons-cli</groupId>
+			<artifactId>commons-cli</artifactId>
+			<version>1.4</version>
+		</dependency>
+		
 
 		<!-- NB: For testing via main methods in IDEs. -->
 		<dependency>

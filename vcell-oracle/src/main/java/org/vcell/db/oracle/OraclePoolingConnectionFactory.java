@@ -65,7 +65,7 @@ OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName, Stri
 }
 
 @Override
-public synchronized void closeAll() throws java.sql.SQLException {
+public synchronized void close() throws java.sql.SQLException {
 }
 
 public void failed(Connection con, Object lock) throws SQLException {

@@ -67,7 +67,7 @@ public class SolverPreprocessor  {
 		try {
 			WorkerEventMessage.sendFailed(session, htcSolver, simTask, hostName, simMessage);
 			sleep(500);
-			service.closeAll();
+			service.close();
 			sleep(500);
 		} catch (VCMessagingException e1) {
 			e1.printStackTrace();

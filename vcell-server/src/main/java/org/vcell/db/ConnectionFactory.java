@@ -16,9 +16,9 @@ import java.sql.SQLException;
 /**
  * Service interface for implementations of the database connection service
  */
-public interface ConnectionFactory {
+public interface ConnectionFactory extends AutoCloseable {
 
-	void closeAll() throws java.sql.SQLException;
+	void close() throws java.sql.SQLException;
 	
 	void failed(Connection con, Object lock) throws SQLException;
 	

@@ -110,7 +110,7 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 	public abstract ConnectionFactory createConnectionFactory() throws JMSException, VCMessagingException;
 		
 	@Override
-	public void closeAll() throws VCMessagingException {
+	public void close() throws VCMessagingException {
 		System.out.println(toString()+" closeAll() started");
 		for (ConsumerContextJms consumerContext : consumerContexts){
 			consumerContext.stop();

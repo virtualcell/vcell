@@ -2807,7 +2807,7 @@ public void serverManageConsole_WindowClosed(java.awt.event.WindowEvent windowEv
 	try {
 		dispose();
 		if (vcMessagingService != null) {
-			vcMessagingService.closeAll();
+			vcMessagingService.close();
 		}
 	} catch (VCMessagingException ex) {
 		log.exception(ex);

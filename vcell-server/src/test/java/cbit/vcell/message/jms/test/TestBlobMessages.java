@@ -80,7 +80,7 @@ public class TestBlobMessages {
 	        Thread.sleep(1000*300);
 	        	    	
 	    	System.out.println("main program calling closeAll()");
-	    	messagingService.closeAll();
+	    	messagingService.close();
 	    	System.out.println("main program exiting");
 		}catch (Exception e){
 			e.printStackTrace(System.out);

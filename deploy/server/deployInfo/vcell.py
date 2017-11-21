@@ -56,7 +56,68 @@ class ssh:
                 print("======== Closing connection to "+self.address+" ========")
                 print("")
 
-class service:
+class vcellservice:
+    host = None
+    label = None
+    name = None
+    user = None
+    script = None
+    def __init__(self, user, name, host, label, script):
+        assert isinstance(user, str)
+        assert isinstance(name, str)
+        assert isinstance(host, str)
+        assert isinstance(label, str)
+        assert isinstance(script, str)
+        self.user = user
+        self.name = name
+        self.host = host
+        self.label = label
+        self.script = script
+
+    def start(self):
+        connection = None
+        try:
+            connection = ssh(self.host, self.user)
+            retcode, stdout = connection.sendCommand("bash -c '"+self.script+"'")
+            if (retcode != 0):
+                raise RuntimeError("start failed: "+service.name+": ret="+str(retcode)+", stdout='"+str(stdout)+"'")
+            print ("started "+self.name+" ("+self.script+") on "+self.host)
+        finally:
+            if connection is not None: connection.close()
+
+    def stop(self):
+        connection = None
+        try:
+            connection = ssh(self.host, self.user)
+            retcode, stdout = connection.sendCommand("ps -ef | grep java")
+            if (retcode != 0):
+                raise RuntimeError("ps failed: "+self.name+": ret="+str(retcode)+", stdout='"+str(stdout)+"'")
+            for line in str(stdout).splitlines():
+                if (self.label in line):
+                    processId = int(line.split()[1])
+                    retcode, stdout = connection.sendCommand("kill "+str(processId))
+                    if (retcode != 0):
+                        raise RuntimeError("kill failed "+service.name+", pid="+str(processId)+", "
+                                            "ret="+str(retcode)+", stdout='"+str(stdout)+"'")
+                    print ("killed "+self.name+" pid="+str(processId)+" label="+self.label+" on "+self.host)
+        finally:
+            if connection is not None: connection.close()
+
+    def status(self):
+        connection = None
+        try:
+            connection = ssh(self.host, self.user)
+            retcode, stdout = connection.sendCommand("ps -ef | grep java")
+            if (retcode != 0):
+                raise RuntimeError("status failed: "+self.name+": ret="+str(retcode)+", stdout='"+str(stdout)+"'")
+            for line in str(stdout).splitlines():
+                if (self.label in line):
+                    processId = int(line.split()[1])
+                    print ("found "+self.name+" ('"+self.label+"') with process id "+str(processId)+" on "+self.host)
+        finally:
+            if connection is not None: connection.close()
+
+class otherservice:
     host = None
     label = None
     name = None
@@ -155,11 +216,16 @@ def main():
         api_processLabel = getenv("vcellapi_processLabel")
         api_script = os.path.join(config_dir,"vcellapi")
 
+        activemq_host = "code2.cam.uchc.edu"
+        activemq_bindir = "/usr/local/apache-activemq-5.11.1/bin"
+        activemq_startcmd = "./activemq start"
+        activemq_stopcmd = "./activemq start"
+
         services = [
-            service(user,master_name,master_host,master_processLabel,master_script),
-            service(user,rmihttp_name,rmihttp_host,rmihttp_processLabel,rmihttp_script),
-            service(user,rmihigh_name,rmihigh_host,rmihigh_processLabel,rmihigh_script),
-            service(user,api_name,api_host,api_processLabel,api_script),
+            vcellservice(user,master_name,master_host,master_processLabel,master_script),
+            vcellservice(user,rmihttp_name,rmihttp_host,rmihttp_processLabel,rmihttp_script),
+            vcellservice(user,rmihigh_name,rmihigh_host,rmihigh_processLabel,rmihigh_script),
+            vcellservice(user,api_name,api_host,api_processLabel,api_script),
             ]
     except EnvironmentError as enverr:
         print "config error: ", enverr
