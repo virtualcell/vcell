@@ -33,7 +33,8 @@ public class PathwayXMLHelper {
             put("REF_SEQ", "http://www.ncbi.nlm.nih.gov/protein/%");
             put("GENE_SYMBOL", "http://www.ncbi.nlm.nih.gov/gene?term=%");
             put("ENTREZ_GENE", "http://www.ncbi.nlm.nih.gov/gene/%");
-            put("REACTOME_STID", "http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=%"); // only works for ST_IDs look like "REACT_12870" in REACTOME 
+//            put("REACTOME_STID", "http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=%"); // only works for ST_IDs look like "REACT_12870" in REACTOME 
+            put("REACTOME_STID", "http://www.reactome.org/content/detail/%"); // only works for ST_IDs look like "REACT_12870" in REACTOME 
             put("REACTOME_ID", "http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&ID=%"); // only works for IDs look like "180523" in REACTOME
             put("ChEBI", "http://www.ebi.ac.uk/chebi/searchId.do?chebiId=%");
             put("GENE_ONTOLOGY", "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=GO:%");
