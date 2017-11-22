@@ -7,4 +7,9 @@ public class WaitingStateInfo extends StateInfo {
 		this.myQueueOrdinal = myQueueOrdinal;
 		this.globalQueueOrdinal = globalQueueOrdinal;
 	}
+	@Override
+	public String getShortDesc() {
+		return "waiting: myOrdinal="+myQueueOrdinal+",globalOrdinal="+globalQueueOrdinal;
+	}
+	
 }

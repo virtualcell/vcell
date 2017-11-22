@@ -7,4 +7,9 @@ public class RunningStateInfo extends StateInfo {
 		this.progress = progress;
 		this.timepoint = timepoint;
 	}
+	@Override
+	public String getShortDesc() {
+		return "running: progress="+progress;
+	}
+	
 }

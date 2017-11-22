@@ -48,7 +48,7 @@ PostgresConnectionFactory(SessionLog sessionLog, String argDriverName, String ar
 }
 
 public synchronized void close() throws java.sql.SQLException {
-	poolDataSource.pool
+	// TODO: how to deallocate resources
 }
 
 public void failed(Connection con, Object lock) throws SQLException {

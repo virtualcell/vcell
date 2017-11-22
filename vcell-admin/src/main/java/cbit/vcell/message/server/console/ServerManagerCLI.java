@@ -10,6 +10,7 @@
 
 package cbit.vcell.message.server.console;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ import java.util.Vector;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -36,6 +38,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
+import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -275,59 +278,73 @@ public static void main(java.lang.String[] args) {
 
 	// create the Options
 	Options options = new Options();
-	options.addOption( "a", "all", false, "do not hide entries starting with ." );
-	options.addOption( "A", "almost-all", false, "do not list implied . and .." );
-	options.addOption( "b", "escape", false, "print octal escapes for nongraphic "
-	                                         + "characters" );
-	options.addOption( Option.builder().longOpt( "block-size" )
-	                                .desc( "use SIZE-byte blocks" )
-	                                .hasArg()
-	                                .argName("SIZE").build());
-	options.addOption( "B", "ignore-backups", false, "do not list implied entried "
-	                                                 + "ending with ~");
-	options.addOption( "c", false, "with -lt: sort by, and show, ctime (time of last " 
-	                               + "modification of file status information) with "
-	                               + "-l:show ctime and sort by name otherwise: sort "
-	                               + "by ctime" );
-	options.addOption( "C", false, "list entries by columns" );
+	options.addOption( "q", "query", true, "JSON encoded query spec" );
+	options.addOption( "a", "age" , true, "Age in hours");
+	options.addOption( "h", "help", false, "display this help message" );
 
 	try {
 	    // parse the command line arguments
 	    CommandLine line = parser.parse( options, args );
-	    String[] positionalArgs = line.getArgs();
-	    
+	    if (line.hasOption("help")) {
+	    		HelpFormatter formatter = new HelpFormatter();
+	    		formatter.printHelp("serverManagerCLI", options);
+	    		System.exit(0);
+	    }
+	    if (line.getArgList().size()!=0) {
+	    		HelpFormatter formatter = new HelpFormatter();
+	    		formatter.printHelp("serverManagerCLI", options);
+	    		System.exit(-1);
+	    }
+	    //String[] positionalArgs = line.getArgs();
+	    //String command = positionalArgs[0];
 	    // validate that block-size has been set
-	    if( line.hasOption( "block-size" ) ) {
-	        // print the value of block-size
-	        System.out.println( line.getOptionValue( "block-size" ) );
+	    if (line.hasOption("query")) {
+	    		String queryString = line.getOptionValue("query");
+	    		System.out.println("query string = '"+queryString+"'");
+	    		Gson gson = new Gson();
+	    		SimpleJobStatusQuerySpec querySpec = gson.fromJson(queryString, SimpleJobStatusQuerySpec.class);
+	    		String age = line.getOptionValue("age", "24");
+	    		long ageInHours = Long.parseLong(age);
+	    		querySpec.submitLowMS=System.currentTimeMillis()-(1000L*3600L*ageInHours);
+	    		System.out.println("parsedQuerySpec="+gson.toJson(querySpec));
+	    		try {
+	    			PropertyLoader.loadProperties();
+	    		} catch (IOException e) {
+	    			e.printStackTrace();
+	    			System.exit(-1);
+	    		}
+	    		try (VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class))
+	    		{		
+	    			vcMessagingService.setDelegate(new ServerMessagingDelegate());
+
+	    			SessionLog log = new StdoutSessionLog("Console");
+
+	    			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+	    			KeyFactory keyFactory = conFactory.getKeyFactory();
+	    			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
+	    			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
+
+	    			ServerManagerCLI manager = new ServerManagerCLI(vcMessagingService, adminDbTopLevel, databaseServerImpl, log);
+	    			SimpleJobStatus[] simpleJobStatus = manager.query(querySpec);
+	    			for (SimpleJobStatus s : simpleJobStatus) {
+	    				System.out.println(Arrays.toString(new Object[] { (s.stateInfo!=null)?s.stateInfo.getShortDesc():null, s.jobStatus.getSchedulerStatus(), s.jobStatus.getSimulationExecutionStatus() }));
+	    			}
+	    			//manager.getQueryResultTable(userid, simID);
+	    			conFactory.close();
+	    		} catch (Throwable exception) {
+	    			exception.printStackTrace(System.out);
+	    		}
+	    		System.exit(0);
+	    }else {
+	    		System.out.println("unknown command");
+	    		HelpFormatter formatter = new HelpFormatter();
+	    		formatter.printHelp("serverManagerCLI", options);
+	    		System.exit(-1);
 	    }
 	}
-	catch( ParseException exp ) {
+	catch( Exception exp ) {
 	    System.out.println( "Unexpected exception:" + exp.getMessage() );
-	}
-	try {
-		PropertyLoader.loadProperties();
-	} catch (IOException e) {
-		e.printStackTrace();
-		System.exit(-1);
-	}
-	try (VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class))
-	{		
-		vcMessagingService.setDelegate(new ServerMessagingDelegate());
-
-		SessionLog log = new StdoutSessionLog("Console");
-
-		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
-		KeyFactory keyFactory = conFactory.getKeyFactory();
-		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
-		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
-
-		ServerManagerCLI manager = new ServerManagerCLI(vcMessagingService, adminDbTopLevel, databaseServerImpl, log);
-		
-		//manager.getQueryResultTable(userid, simID);
-		conFactory.closeAll();
-	} catch (Throwable exception) {
-		exception.printStackTrace(System.out);
+	    System.exit(-1);
 	}
 }
 

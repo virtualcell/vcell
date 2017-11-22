@@ -403,7 +403,7 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 	final String MMLINK = "mmlink";
 
 	String subquery = "SELECT " +
-		"current_timemstamp as " + DatabaseConstants.SYSDATE_COLUMN_NAME
+		"current_timestamp as " + DatabaseConstants.SYSDATE_COLUMN_NAME
 		+ "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() + "," + userTable.id.getQualifiedColName()+" as ownerkey"
 		+ "," + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName()
 		+ "," + "vc_sim_1." + simTable.name.getUnqualifiedColName()
