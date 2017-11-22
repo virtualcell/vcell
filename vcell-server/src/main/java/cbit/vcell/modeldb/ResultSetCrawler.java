@@ -160,7 +160,7 @@ public class ResultSetCrawler {
 		} finally {
 			try {
 				if (conFactory != null) {
-					conFactory.closeAll();
+					conFactory.close();
 				}
 			} catch (Throwable ex) {
 				ex.printStackTrace();

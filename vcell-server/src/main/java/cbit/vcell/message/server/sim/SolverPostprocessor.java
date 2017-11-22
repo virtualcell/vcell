@@ -128,7 +128,7 @@ public class SolverPostprocessor  {
 		} finally {
 			if (vcMessagingService!=null){
 				try {
-					vcMessagingService.closeAll();
+					vcMessagingService.close();
 				} catch (VCMessagingException e) {
 					e.printStackTrace();
 				}

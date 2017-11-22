@@ -151,7 +151,7 @@ public static void main(String[] args) {
 	} finally {
 		try {
 			if (conFactory != null) {
-				conFactory.closeAll();
+				conFactory.close();
 			}
 		} catch (Throwable ex) {
 			ex.printStackTrace();

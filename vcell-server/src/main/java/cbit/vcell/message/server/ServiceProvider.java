@@ -147,7 +147,7 @@ public void stopService() {
 		Thread t = new Thread() {
 			public void run() {
 				try {
-					vcMessagingService.closeAll();
+					vcMessagingService.close();
 				} catch (VCMessagingException e) {
 					e.printStackTrace();
 				}

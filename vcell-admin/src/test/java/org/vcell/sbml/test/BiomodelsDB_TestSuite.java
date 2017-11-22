@@ -26,14 +26,14 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.Parser;
 import org.apache.commons.io.output.NullWriter;
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -151,7 +151,7 @@ public class BiomodelsDB_TestSuite {
 
 				CommandLine cmdLine = null;
 				try {
-					Parser parser = new BasicParser( );
+					CommandLineParser parser = new DefaultParser( );
 					cmdLine = parser.parse(commandOptions, args);
 				} catch (ParseException e1) {
 					e1.printStackTrace();
@@ -169,11 +169,11 @@ public class BiomodelsDB_TestSuite {
 
 				LOption primaryOpt =new LOption("",false,"",true); //placeholder, avoid messing with nulls
 				@SuppressWarnings("unchecked")
-				Collection<LOption> priOpts = primary.getOptions();
+				Collection<? extends Option> priOpts = primary.getOptions();
 				priOpts.retainAll(optionSet);
 				if (!priOpts.isEmpty()) {
 					assert(priOpts.size( ) == 1);
-					primaryOpt = priOpts.iterator().next( );
+					primaryOpt = (LOption)priOpts.iterator().next( );
 				}
 
 

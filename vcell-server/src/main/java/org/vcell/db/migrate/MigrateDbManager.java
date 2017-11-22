@@ -74,10 +74,10 @@ public class MigrateDbManager {
 			System.exit(-1);
 		}finally{
 			if (conFactory_Oracle!=null){
-				conFactory_Oracle.closeAll();
+				conFactory_Oracle.close();
 			}
 			if (conFactory_Postgres!=null){
-				conFactory_Postgres.closeAll();
+				conFactory_Postgres.close();
 			}
 		}
 	}

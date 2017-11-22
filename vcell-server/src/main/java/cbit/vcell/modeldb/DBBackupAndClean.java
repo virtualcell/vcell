@@ -43,8 +43,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import javax.sql.PooledConnection;
-
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.util.NumberUtils;
@@ -348,7 +346,7 @@ public class DBBackupAndClean {
 				try{con.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
 			if(connectionFactory != null){
-				try{connectionFactory.closeAll();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+				try{connectionFactory.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
 		}
 		
@@ -1266,7 +1264,7 @@ public class DBBackupAndClean {
 				try{conHolder[0].close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
 			if(connectionFactory != null){
-				try{connectionFactory.closeAll();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+				try{connectionFactory.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
 		}		
 	}
@@ -1323,7 +1321,7 @@ public class DBBackupAndClean {
 				try{con.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
 			if(connectionFactory != null){
-				try{connectionFactory.closeAll();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+				try{connectionFactory.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
 			}
 		}
 		

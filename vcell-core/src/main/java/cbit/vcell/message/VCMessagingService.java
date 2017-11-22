@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.vcell.service.VCellService;
 
-public interface VCMessagingService extends VCellService {
+public interface VCMessagingService extends VCellService, AutoCloseable {
 	
 	VCMessageSession createProducerSession();
 	
@@ -14,7 +14,7 @@ public interface VCMessagingService extends VCellService {
 	
 	List<VCMessagingConsumer> getMessageConsumers();
 		
-	void closeAll() throws VCMessagingException;
+	void close() throws VCMessagingException;
 
 	VCMessageSelector createSelector(String clientMessageFilter);
 	

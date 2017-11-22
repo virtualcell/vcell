@@ -47,7 +47,8 @@ PostgresConnectionFactory(SessionLog sessionLog, String argDriverName, String ar
 	
 }
 
-public synchronized void closeAll() throws java.sql.SQLException {
+public synchronized void close() throws java.sql.SQLException {
+	// TODO: how to deallocate resources
 }
 
 public void failed(Connection con, Object lock) throws SQLException {
