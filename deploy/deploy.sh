@@ -36,8 +36,8 @@ adminJarsDir=$adminTargetDir/maven-jars
 clientTargetDir=$projectRootDir/vcell-client/target
 clientJarsDir=$clientTargetDir/maven-jars
 
-skip_install4j=false
-skip_build=false
+skip_install4j=true
+skip_build=true
 
 #--------------------------------------------------------------------------
 # build project, generate user help files, gather jar files
@@ -117,6 +117,10 @@ jms_container_name="activemq${vcell_site_camel}"
 jms_host="${vcell_jms_host}"
 jms_port="${vcell_jms_port}"
 jms_user="${vcell_jms_user}"
+
+mongodb_containername="mongo${vcell_site_camel}"
+mongodb_host="${vcell_mongodb_host}"
+mongodb_port="${vcell_mongodb_port}"
 
 installed_server_sitedir=$vcell_server_sitedir
 installedConfigsDir=$installed_server_sitedir/configs
@@ -343,6 +347,9 @@ sed_in_place "s/GENERATED-JMSPORT/${vcell_jms_port}/g"						$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSCONTAINERNAME/${jms_container_name}/g"			$stagingVCellInclude
 sed_in_place "s+GENERATED-JMSDATADIR+${jms_datadir}+g"						$stagingVCellInclude
 sed_in_place "s+GENERATED-JMSLOGDIR+${jms_logdir}+g"							$stagingVCellInclude
+sed_in_place "s/GENERATED-MONGODB-HOST/${mongodb_host}/g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-MONGODB-PORT/${mongodb_port}/g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-MONGODB-CONTAINERNAME/${mongodb_containername}/g"	$stagingVCellInclude
 
 sed_in_place "s/GENERATED-HTC-USESSH/$vcell_htc_usessh/g"					$stagingVCellInclude
 if [ "$vcell_htc_usessh" = true ]; then

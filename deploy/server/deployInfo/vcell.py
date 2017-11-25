@@ -311,13 +311,23 @@ def main():
         jms_env["ACTIVEMQ_MIN_MEMORY"] = '1024'
         jms_env["ACTIVEMQ_MAX_MEMORY"] = '4096'
         jms_env["ACTIVEMQ_ENABLED_SCHEDULER"] = 'true'
-        volume_mappings = dict()
-        volume_mappings[jms_datadir] = '/data/activemq'
-        volume_mappings[jms_logdir] = '/var/log/activemq'
-        port_mappings = dict()
-        port_mappings['8161'] = '8161'
-        port_mappings[jms_port] = '61616'
-        port_mappings['61613'] = '61613'
+        jms_volume_mappings = dict()
+        jms_volume_mappings[jms_datadir] = '/data/activemq'
+        jms_volume_mappings[jms_logdir] = '/var/log/activemq'
+        jms_port_mappings = dict()
+        jms_port_mappings['8161'] = '8161'
+        jms_port_mappings[jms_port] = '61616'
+        jms_port_mappings['61613'] = '61613'
+
+        mongo_name = "mongodb"
+        mongo_imagename = "mongo:3.4.10"
+        mongo_containername = getenv("vcell_mongodb_containername")
+        mongo_host = getenv("vcell_mongodb_host")
+        mongo_port = getenv("vcell_mongodb_port")
+        mongo_env = dict()
+        mongo_volume_mappings = dict()
+        mongo_port_mappings = dict()
+        mongo_port_mappings[mongo_port] = '27017'
 
         services = [
             Javaservice(user, master_name, master_host, master_processLabel, master_script),
@@ -325,7 +335,9 @@ def main():
             Javaservice(user, rmihigh_name, rmihigh_host, rmihigh_processLabel, rmihigh_script),
             Javaservice(user, api_name, api_host, api_processLabel, api_script),
             Dockerservice(user=user, name=jms_name, container_name=jms_containername, env=jms_env, host=jms_host,
-                          ports=port_mappings, volumes=volume_mappings, image_name=jms_imagename)
+                          ports=jms_port_mappings, volumes=jms_volume_mappings, image_name=jms_imagename),
+            Dockerservice(user=user, name=mongo_name, container_name=mongo_containername, env=mongo_env, host=mongo_host,
+                          ports=mongo_port_mappings, volumes=mongo_volume_mappings, image_name=mongo_imagename),
         ]
     except EnvironmentError as enverr:
         print "config error: ", enverr
@@ -334,7 +346,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("cmd", help="command", choices=["status", "stop", "start", "create", "destroy"])
     parser.add_argument("service", help="service",
-                        choices=[master_name, rmihttp_name, rmihigh_name, api_name, jms_name, "all"])
+                        choices=[master_name, rmihttp_name, rmihigh_name, api_name, jms_name, mongo_name, "all"])
     parser.add_argument("--debug", help="debug commands", action="store_true")
     parser.set_defaults(debug=False)
     args = parser.parse_args()

@@ -58,6 +58,13 @@ vcell_jms_topic_daemoncontrol=GENERATED-JMSTOPIC-DAEMONCONTROL
 vcell_jms_topic_clientstatus=GENERATED-JMSTOPIC-CLIENTSTATUS
 
 #--------------------------------------
+# common mongodb definitions
+#--------------------------------------
+vcell_mongodb_containername=GENERATED-MONGODB-CONTAINERNAME
+vcell_mongodb_host=GENERATED-MONGODB-HOST
+vcell_mongodb_port=GENERATED-MONGODB-PORT
+
+#--------------------------------------
 # common vcellapi definitions
 #--------------------------------------
 vcellapi_root=GENERATED-API-ROOTDIR

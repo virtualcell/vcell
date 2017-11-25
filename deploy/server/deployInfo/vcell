@@ -35,6 +35,11 @@ export vcell_jms_user
 export vcell_jms_host
 export vcell_jms_port
 
+export vcell_mongodb_containername
+export vcell_mongodb_host
+export vcell_mongodb_port
+
+
 
 python $DIR/vcell.py $@
 

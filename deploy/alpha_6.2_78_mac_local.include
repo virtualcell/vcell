@@ -74,10 +74,12 @@ vcell_database_user=vcell
 vcell_amplistor_url="http://obj1.cam.uchc.edu:8080/namespace/service_vcell/"
 vcell_amplistor_user=vcell
 
-vcell_mongodb_host=mongo.cam.uchc.edu
+# for mongodb database schema see vcell/deploy/server/docker/mongo/scripts/logging-create.js
+# creates a capped collection 'log' in database 'test'
+vcell_mongodb_host=$_localhost
 vcell_mongodb_port=27017
-vcell_mongodb_database=$vcell_site_upper
-vcell_mongodb_collection=logging
+vcell_mongodb_database=test
+vcell_mongodb_collection=log
 
 vcell_smtp_host=vdsmtp.cam.uchc.edu
 vcell_smtp_port=25
