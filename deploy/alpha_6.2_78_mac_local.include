@@ -40,7 +40,7 @@ vcell_monitor_queryport=-33332
 
 vcell_rmihost=$_localhost
 vcell_rmiport_low=8089
-vcell_rmiport_high=40106
+vcell_rmiport_high=40000
 vcell_rmihosts="$_localhost:40106;$_localhost:8089"
 vcell_bioformatsJarFile="vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar"
 vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_bioformatsJarFile"
@@ -51,8 +51,11 @@ vcell_vcellApiJarFileName="vcell-api-0.0.1-SNAPSHOT.jar"
 vcell_vcellAdminJarFileName="vcell-admin-0.0.1-SNAPSHOT.jar"
 vcell_vcellOracleJarFileName="vcell-oracle-0.0.1-SNAPSHOT.jar"
 
-vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
 vcell_jms_user=clientUser
+vcell_jms_host=$_localhost
+vcell_jms_port=61616
+vcell_jms_url="failover:(tcp://${vcell_jms_host}:${vcell_jms_port})?timeout=120000"
+
 
 #
 # Oracle on server

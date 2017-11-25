@@ -38,6 +38,26 @@ common_jre_rmi=GENERATED-RMISERVICE-JRE
 common_vcell_user=GENERATED-VCELLUSER
 
 #--------------------------------------
+# common activemq definitions
+#--------------------------------------
+vcell_jms_containername=GENERATED-JMSCONTAINERNAME
+vcell_jms_url="GENERATED-JMSURL"
+vcell_jms_user=GENERATED-JMSUSER
+vcell_jms_password=GENERATED-JMSPSWD
+vcell_jms_host=GENERATED-JMSHOST
+vcell_jms_port=GENERATED-JMSPORT
+vcell_jms_datadir=GENERATED-JMSDATADIR
+vcell_jms_logdir=GENERATED-JMSLOGDIR
+vcell_jms_queue_simReq=GENERATED-JMSQUEUE-SIMREQ
+vcell_jms_queue_dataReq=GENERATED-JMSQUEUE-DATAREQ
+vcell_jms_queue_dbreq=GENERATED-JMSQUEUE-DBREQ
+vcell_jms_queue_simjob=GENERATED-JMSQUEUE-SIMJOB
+vcell_jms_queue_workervent=GENERATED-JMSQUEUE-WORKEREVENT
+vcell_jms_topic_servicecontrol=GENERATED-JMSTOPIC-SERVICECONTROL
+vcell_jms_topic_daemoncontrol=GENERATED-JMSTOPIC-DAEMONCONTROL
+vcell_jms_topic_clientstatus=GENERATED-JMSTOPIC-CLIENTSTATUS
+
+#--------------------------------------
 # common vcellapi definitions
 #--------------------------------------
 vcellapi_root=GENERATED-API-ROOTDIR

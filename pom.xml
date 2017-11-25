@@ -68,7 +68,7 @@
 		<module>vcell-apiclient</module>
 		<module>vcell-client</module>
 		<module>vcell-core</module>
-		<module>vcell-imagej</module>
+	<!-- 	<module>vcell-imagej</module>  -->
 		<module>vcell-math</module>
 		<module>vcell-oracle</module>
 		<module>vcell-server</module>

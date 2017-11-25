@@ -103,6 +103,21 @@ stagingInstallersDir=$projectRootDir/target/installers
 
 projectSolversDir=$projectRootDir/$localsolversDir
 
+jms_queue_simReq="simReq${vcell_site_camel}"
+jms_queue_dataReq="simDataReq${vcell_site_camel}"
+jms_queue_dbReq="dbReq${vcell_site_camel}"
+jms_queue_simJob="simJob${vcell_site_camel}"
+jms_queue_workerEvent="workerEvent${vcell_site_camel}"
+jms_topic_serviceControl="serviceControl${vcell_site_camel}"
+jms_topic_daemonControl="daemonControl${vcell_site_camel}"
+jms_topic_clientStatus="clientStatus${vcell_site_camel}"
+jms_datadir="${vcell_server_sitedir}/activemq/data"
+jms_logdir="${vcell_server_sitedir}/activemq/log"
+jms_container_name="activemq${vcell_site_camel}"
+jms_host="${vcell_jms_host}"
+jms_port="${vcell_jms_port}"
+jms_user="${vcell_jms_user}"
+
 installed_server_sitedir=$vcell_server_sitedir
 installedConfigsDir=$installed_server_sitedir/configs
 installedJarsDir=$installed_server_sitedir/jars
@@ -124,6 +139,8 @@ installedExportUrl=$vcell_export_url
 installedMpichHomedir=$vcell_mpich_homedir
 installedDocrootDir=$installed_server_sitedir/docroot
 installedWebappDir=$installed_server_sitedir/webapp
+installedJmsDataDir=$installed_server_sitedir/jmsdata
+installedJmsLogDir=$installed_server_sitedir/jmslog
 
 pathto_server_sitedir=$vcell_pathto_sitedir
 pathto_ConfigsDir=$pathto_server_sitedir/configs
@@ -140,6 +157,8 @@ pathto_SystemPrefsDir=$pathto_server_sitedir/javaprefs/.systemPrefs
 pathto_InstallersDir=$pathto_server_sitedir/installers
 pathto_DocrootDir=$pathto_server_sitedir/docroot
 pathto_WebappDir=$pathto_server_sitedir/webapp
+pathto_JmsDataDir=$pathto_server_sitedir/jmsdata
+pathto_JmsLogDir=$pathto_server_sitedir/jmslog
 #pathto_PrimarydataDir=$vcell_primary_datadir
 #pathto_SecondarydataDir=$vcell_secondary_datadir
 #pathto_ParalleldataDir=$vcell_parallel_datadir
@@ -308,6 +327,22 @@ sed_in_place "s/GENERATED-APIKEYSTORE-PSWD/$vcell_secrets_tlsKeystore_pswd/g"	$s
 sed_in_place "s/GENERATED-APIHOST/$vcell_apihost/g"							$stagingVCellInclude
 sed_in_place "s/GENERATED-APIPORT/$vcell_apiport/g"							$stagingVCellInclude
 sed_in_place "s/GENERATED-VCELLUSER/$vcell_user/g"							$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSQUEUE-SIMREQ/${jms_queue_simReq}/g"				$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSQUEUE-DATAREQ/${jms_queue_dataReq}/g"			$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSQUEUE-DBREQ/${jms_queue_dbReq}/g"				$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSQUEUE-SIMJOB/${jms_queue_simJob}/g"				$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSQUEUE-WORKEREVENT/${jms_queue_workerEvent}/g"		$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSTOPIC-SERVICECONTROL/${jms_topic_serviceControl}/g"	$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSTOPIC-DAEMONCONTROL/${jms_topic_daemonControl}/g"	$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSTOPIC-CLIENTSTATUS/${jms_topic_clientStatus}/g"	$stagingVCellInclude
+sed_in_place "s+GENERATED-JMSURL+${vcell_jms_url}+g"							$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSUSER/${vcell_jms_user}/g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSPSWD/${vcell_secrets_jms_pswd}/g"				$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSHOST/${vcell_jms_host}/g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSPORT/${vcell_jms_port}/g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSCONTAINERNAME/${jms_container_name}/g"			$stagingVCellInclude
+sed_in_place "s+GENERATED-JMSDATADIR+${jms_datadir}+g"						$stagingVCellInclude
+sed_in_place "s+GENERATED-JMSLOGDIR+${jms_logdir}+g"							$stagingVCellInclude
 
 sed_in_place "s/GENERATED-HTC-USESSH/$vcell_htc_usessh/g"					$stagingVCellInclude
 if [ "$vcell_htc_usessh" = true ]; then
@@ -348,14 +383,14 @@ echo "vcell.jms.provider = ActiveMQ"										>> $propfile
 echo "vcell.jms.url = $vcell_jms_url" 										>> $propfile
 echo "vcell.jms.user = $vcell_jms_user"										>> $propfile
 echo "vcell.jms.password = $vcell_secrets_jms_pswd"							>> $propfile
-echo "vcell.jms.queue.simReq = simReq$vcell_site_camel"						>> $propfile
-echo "vcell.jms.queue.dataReq = simDataReq$vcell_site_camel"				>> $propfile
-echo "vcell.jms.queue.dbReq = dbReq$vcell_site_camel"						>> $propfile
-echo "vcell.jms.queue.simJob = simJob$vcell_site_camel"						>> $propfile
-echo "vcell.jms.queue.workerEvent = workerEvent$vcell_site_camel"			>> $propfile
-echo "vcell.jms.topic.serviceControl = serviceControl$vcell_site_camel"		>> $propfile
-echo "vcell.jms.topic.daemonControl = daemonControl$vcell_site_camel"		>> $propfile
-echo "vcell.jms.topic.clientStatus = clientStatus$vcell_site_camel"			>> $propfile
+echo "vcell.jms.queue.simReq = $jms_queue_simReq"						>> $propfile
+echo "vcell.jms.queue.dataReq = $jms_queue_dataReq"				>> $propfile
+echo "vcell.jms.queue.dbReq = $jms_queue_dbReq"						>> $propfile
+echo "vcell.jms.queue.simJob = $jms_queue_simJob"						>> $propfile
+echo "vcell.jms.queue.workerEvent = $jms_queue_workerEvent"			>> $propfile
+echo "vcell.jms.topic.serviceControl = $jms_topic_serviceControl"		>> $propfile
+echo "vcell.jms.topic.daemonControl = $jms_topic_daemonControl"		>> $propfile
+echo "vcell.jms.topic.clientStatus = $jms_topic_clientStatus"			>> $propfile
 echo "vcell.jms.blobMessageMinSize = 100000"								>> $propfile
 echo "vcell.jms.blobMessageTempDir = $installedJmsBlobFilesDir"				>> $propfile
 echo " "																	>> $propfile
@@ -502,6 +537,8 @@ then
 	mkdir -p $installedExportDir
 	mkdir -p $installedDocrootDir
 	mkdir -p $installedWebappDir
+	mkdir -p $installedJmsDataDir
+	mkdir -p $installedJmsLogDir
 	
 	rm $installedJarsDir/*
 	rm $installedNativelibsDir/*
@@ -552,6 +589,8 @@ else
 	mkdir -p $pathto_SystemPrefsDir
 	mkdir -p $pathto_DocrootDir
 	mkdir -p $pathto_WebappDir
+	mkdir -p $pathto_JmsDataDir
+	mkdir -p $pathto_JmsLogDir
 	#mkdir -p $pathto_PrimarydataDir
 	#mkdir -p $pathto_SecondarydataDir
 	#mkdir -p $pathto_ParalleldataDir

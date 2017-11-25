@@ -49,8 +49,10 @@ vcell_vcellApiJarFileName="vcell-api-0.0.1-SNAPSHOT.jar"
 vcell_vcellAdminJarFileName="vcell-admin-0.0.1-SNAPSHOT.jar"
 vcell_vcellOracleJarFileName="vcell-oracle-0.0.1-SNAPSHOT.jar"
 
-vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
 vcell_jms_user=clientUser
+vcell_jms_host=code2.cam.uchc.edu
+vcell_jms_port=61617
+vcell_jms_url="failover:(tcp://${vcell_jms_host}:${vcell_jms_port})?timeout=120000"
 
 #
 # Oracle on server

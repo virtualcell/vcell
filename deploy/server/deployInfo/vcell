@@ -17,5 +17,24 @@ export bootstrap_http_processLabel
 export bootstrap_high_processLabel
 export vcellapi_processLabel
 
+export vcell_jms_queue_simReq
+export vcell_jms_queue_dataReq
+export vcell_jms_queue_dbreq
+export vcell_jms_queue_simjob
+export vcell_jms_queue_workervent
+export vcell_jms_topic_servicecontrol
+export vcell_jms_topic_daemoncontrol
+export vcell_jms_topic_clientstatus
+export vcell_jms_containername
+export vcell_jms_logdir
+export vcell_jms_datadir
+export vcell_jms_username
+export vcell_jms_password
+export vcell_jms_url
+export vcell_jms_user
+export vcell_jms_host
+export vcell_jms_port
+
+
 python $DIR/vcell.py $@
 
