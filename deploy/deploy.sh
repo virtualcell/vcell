@@ -2,13 +2,71 @@
 
 shopt -s -o nounset
 
-if [ "$#" -ne 1 ]; then
-    echo "usage:  deploy.sh includefile"
-    exit -1
+#----------------------------------------
+# command-line options
+#----------------------------------------
+skip_install4j=false
+skip_build=false
+skip_extra_solvers=false
+restart=false
+
+show_help() {
+	echo "usage: deploy.sh [OPTIONS] config_file build_number"
+	echo "  ARGUMENTS"
+	echo "    config_file           config file for deployment (with bash syntax)"
+	echo "    build_number          vcell build number (e.g. build 55 gives VCell_6.2_Alpha_55)"
+	echo "  [OPTIONS]"
+	echo "    -h | --help           show this message"
+	echo "    --restart             restart vcell after deploy"
+	echo "    --skip-build          (debugging) skip full maven clean build"
+	echo "    --skip-install4j      (debugging) skip installer generation"
+	echo "    --skip-extra-solvers  (TEMPORARY) skip installing 'extra' server-side solvers from"
+	echo "                          <install-dir>/localsolvers/extra-solvers.tgz (e.g. Chombo, PETSc)"
+	exit 1
+}
+
+if [ "$#" -lt 2 ]; then
+    show_help
+fi
+
+while :; do
+	case $1 in
+		-h|--help)
+			show_help
+			exit
+			;;
+		--restart)
+			restart=true
+			;;
+		--skip-build)
+			skip_build=true
+			;;
+		--skip-extra-solvers)
+			skip_build=true
+			;;
+		--skip-install4j)
+			skip_install4j=true
+			;;
+		-?*)
+			printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+			;;
+		*)               # Default case: No more options, so break out of the loop.
+			break
+	esac
+	shift
+done
+
+if [ "$#" -ne 2 ]; then
+    show_help
 fi
 
 includefile=$1
-. $includefile
+. $includefile $2
+rc=$?
+if [ "$rc" -ne 0 ]; then
+	echo "failed to run configuration file $includefile"
+	exit 1
+fi
 
 . $vcell_secretsDir/deploySecrets.include
 
@@ -35,9 +93,6 @@ adminJarsDir=$adminTargetDir/maven-jars
 
 clientTargetDir=$projectRootDir/vcell-client/target
 clientJarsDir=$clientTargetDir/maven-jars
-
-skip_install4j=true
-skip_build=true
 
 #--------------------------------------------------------------------------
 # build project, generate user help files, gather jar files
@@ -551,7 +606,9 @@ then
 	rm $installedNativelibsDir/*
 	rm $installedSolversDir/*
 	# install externally build solvers on server (temporary solution prior to complete build automation).
-	if [ -e "${installedSolversDir}/../extra-solvers.tgz" ]; then tar xzf "${installedSolversDir}/../extra-solvers.tgz" --directory="${installedSolversDir}"; fi
+	if [ "${skip_extra_solvers}" = false ] && [ -e "${installedSolversDir}/../extra-solvers.tgz" ]; then 
+		tar xzf "${installedSolversDir}/../extra-solvers.tgz" --directory="${installedSolversDir}"
+	fi
 	rm $installedInstallersDir/*
 	
 	cp -p $stagingConfigsDir/*		$installedConfigsDir
@@ -573,6 +630,25 @@ then
 	if [ ! -z "$vcell_installer_scp_destination" ]; then
 		scp ${installedInstallersDir}/* ${vcell_installer_scp_destination}
 	fi
+	
+	if [ "$restart" = true ]; then
+		echo "RESTARTING VCELL"
+		pushd $installedConfigsDir
+		./vcell --debug stop all
+		rc=$?
+		if [ "$rc" -ne 0 ]; then
+			echo "failed to stop vcell"
+			exit 1
+		fi
+		./vcell --debug start all
+		rc=$?
+		if [ "$rc" -ne 0 ]; then
+			echo "failed to start vcell"
+			exit 1
+		fi
+		popd
+	fi
+	
 
 else
 	#
@@ -641,3 +717,5 @@ else
 	echo " then, don't forget to update symbolic links to <latest> installers"
 	echo ""
 fi
+
+

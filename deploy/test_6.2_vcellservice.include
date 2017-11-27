@@ -2,9 +2,16 @@
 
 shopt -s -o nounset
 
-_site="alpha"
+if [ "$#" -ne 1 ]; then
+    echo "This script is to be called from deploy.sh"
+    echo "expecting a single argument (vcell build number)"
+    exit -1
+fi
+
+_build=$1
+
+_site="test"
 _version="6.2"
-_build="66"
 vcell_server_os="linux64"
 
 vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
@@ -19,36 +26,39 @@ unset _build
 
 vcell_python_executable=/opt/vcell/anaconda2/bin/python
 
-vcell_applicationId="1471-8022-1038-5554"
+vcell_applicationId="1471-8022-1038-5555"
 vcell_server_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
 vcell_pathto_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
 
 vcell_user="vcell"
 vcell_servicehost="vcell-service.cam.uchc.edu"
 vcell_apihost="vcellapi.cam.uchc.edu"
-vcell_apiport=8080
+vcell_apiport=8081
+vcell_installer_scp_destination="${vcell_user}@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/${vcell_site_camel}"
 
 #
 # Nagios monitor port  
 # (rel=33330, beta=33331, alpha=33332, test=-33333, test2=-33334, test3=-33335, test4=-33336)
 #
-vcell_monitor_queryport=33332
+vcell_monitor_queryport=-33336
 
 vcell_rmihost="vcell-rmi-alpha.cam.uchc.edu"
 vcell_rmiport_low=-1
-vcell_rmiport_high=40106
-vcell_rmihosts="vcell-rmi-alpha.cam.uchc.edu:40106"
-# still using bioformats_ALPHA_6_2_54.jar for later versions ... need to replace with ImageJ support.
-vcell_bioformatsJarFile="vcell-bioformats-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
+vcell_rmiport_high=40109
+vcell_rmihosts="$vcell_rmihost:$vcell_rmiport_high"
+vcell_bioformatsJarFile="vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar"
 vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_bioformatsJarFile"
 
 vcell_vcellClientJarFileName="vcell-client-0.0.1-SNAPSHOT.jar"
 vcell_vcellServerJarFileName="vcell-server-0.0.1-SNAPSHOT.jar"
 vcell_vcellApiJarFileName="vcell-api-0.0.1-SNAPSHOT.jar"
 vcell_vcellAdminJarFileName="vcell-admin-0.0.1-SNAPSHOT.jar"
+vcell_vcellOracleJarFileName="vcell-oracle-0.0.1-SNAPSHOT.jar"
 
-vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
 vcell_jms_user=clientUser
+vcell_jms_host=code2.cam.uchc.edu
+vcell_jms_port=61618
+vcell_jms_url="failover:(tcp://${vcell_jms_host}:${vcell_jms_port})?timeout=120000"
 
 #
 # Oracle on server
@@ -69,8 +79,8 @@ vcell_amplistor_user=vcell
 
 vcell_mongodb_host=mongo.cam.uchc.edu
 vcell_mongodb_port=27017
-vcell_mongodb_database=$vcell_site_upper
-vcell_mongodb_collection=logging
+vcell_mongodb_database=test
+vcell_mongodb_collection=log
 
 vcell_smtp_host=vdsmtp.cam.uchc.edu
 vcell_smtp_port=25
@@ -79,9 +89,9 @@ vcell_smtp_email="VCell_Support@uchc.edu"
 vcell_common_jre=/share/apps/vcell2/java/jdk1.8.0_66/bin/java
 vcell_common_jre_rmi=/usr/java/jdk1.8.0_66/jre/bin/java
 
-vcell_rmiservice_high_jmxport=12305
-vcell_rmiservice_http_jmxport=12304
-vcell_vcellservice_jmxport=12360
+vcell_rmiservice_high_jmxport=12313
+vcell_rmiservice_http_jmxport=-1
+vcell_vcellservice_jmxport=12370
 
 vcell_primary_datadir=/share/apps/vcell3/users/
 vcell_secondary_datadir=/share/apps/vcell3/users/

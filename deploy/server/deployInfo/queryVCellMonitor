@@ -8,7 +8,7 @@ if [ "$#" != "3" ] ; then
 	exit $UNKNOWN
 fi
 
-
+function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
 
 port=/dev/tcp/${1}/${2}
 testrequest=${3}

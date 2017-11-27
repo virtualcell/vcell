@@ -191,7 +191,7 @@ class Dockerservice:
 
     def status(self):
         cmd = 'bash -l -c "docker container inspect ' \
-              '--format=\'status: {{.State.Status}}, startedAt: {{.State.StartedAt}}, logPath: {{.LogPath}}\' ' \
+              '--format=\'status: {{.State.Status}}, startedAt: {{.State.StartedAt}}\' ' \
               + self.container_name + '"'
         connection = None
         try:

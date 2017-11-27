@@ -2,9 +2,16 @@
 
 shopt -s -o nounset
 
+if [ "$#" -ne 1 ]; then
+    echo "This script is to be called from deploy.sh"
+    echo "expecting a single argument (vcell build number)"
+    exit -1
+fi
+
+_build=$1
+
 _site="alpha"
 _version="6.2"
-_build="77"
 vcell_server_os="mac64"
 
 vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
@@ -40,8 +47,8 @@ vcell_monitor_queryport=-33332
 
 vcell_rmihost=$_localhost
 vcell_rmiport_low=8089
-vcell_rmiport_high=40106
-vcell_rmihosts="$_localhost:40106;$_localhost:8089"
+vcell_rmiport_high=40000
+vcell_rmihosts="$vcell_rmihost:$vcell_rmiport_high;$vcell_rmihost:$vcell_rmiport_low"
 vcell_bioformatsJarFile="vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar"
 vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_bioformatsJarFile"
 
@@ -51,30 +58,32 @@ vcell_vcellApiJarFileName="vcell-api-0.0.1-SNAPSHOT.jar"
 vcell_vcellAdminJarFileName="vcell-admin-0.0.1-SNAPSHOT.jar"
 vcell_vcellOracleJarFileName="vcell-oracle-0.0.1-SNAPSHOT.jar"
 
-vcell_jms_url="failover:(tcp://code2.cam.uchc.edu:61617)?timeout=120000"
 vcell_jms_user=clientUser
+vcell_jms_host=$_localhost
+vcell_jms_port=61616
+vcell_jms_url="failover:(tcp://${vcell_jms_host}:${vcell_jms_port})?timeout=120000"
 
 #
 # Oracle on server
 #
-vcell_database_url="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
-vcell_database_driver=oracle.jdbc.driver.OracleDriver
-vcell_database_user=vcell
+#vcell_database_url="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
+#vcell_database_driver=oracle.jdbc.driver.OracleDriver
+#vcell_database_user=vcell
 
 #
 # Postgres on locahost
 #
-#vcell_database_url="jdbc:postgresql://localhost:5432/schaff"
-#vcell_database_driver=org.postgresql.Driver
-#vcell_database_user=schaff
+vcell_database_url="jdbc:postgresql://localhost:5432/schaff"
+vcell_database_driver=org.postgresql.Driver
+vcell_database_user=schaff
 
 vcell_amplistor_url="http://obj1.cam.uchc.edu:8080/namespace/service_vcell/"
 vcell_amplistor_user=vcell
 
-vcell_mongodb_host=mongo.cam.uchc.edu
+vcell_mongodb_host=$_localhost
 vcell_mongodb_port=27017
-vcell_mongodb_database=$vcell_site_upper
-vcell_mongodb_collection=logging
+vcell_mongodb_database=test
+vcell_mongodb_collection=log
 
 vcell_smtp_host=vdsmtp.cam.uchc.edu
 vcell_smtp_port=25
@@ -108,7 +117,7 @@ vcell_I4J_pathto_jreDir=/vagrant_jres
 vcell_I4J_jreDir=$HOME/vcelljres
 vcell_I4J_pathto_install4jc=/home/vagrant/install4j7.0.3/bin/install4jc
 
-vcell_htc_usessh=true
+vcell_htc_usessh=false
 if [ "$vcell_htc_usessh" = true ]; then
 	#
 	# only define these if using ssh to invoke the htc processes
