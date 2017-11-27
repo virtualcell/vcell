@@ -1126,6 +1126,29 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					}
 				}
 				
+//				ArrayList<Object[]> tree = new ArrayList<>();//arraylist<object[]>,regionInfo
+//				ArrayList<RegionInfo> bucket = new ArrayList<>(regTobb.keySet());
+//				tree.add(new Object[] {null,regTobb.firstKey()});
+////				ArrayList<Object[]> stack = new ArrayList<>();
+////				stack.add(tree.get(0));
+//				while(bucket.size() > 0){
+////					Object[] next = stack.remove(0);
+//					RegionInfo next = bucket.remove(0);
+//					Vect3d[] o2v = (Vect3d[])regTobb.get(regTobb.get(next));
+//					for(Object[] objArr:tree){
+////						if(((RegionInfo)next[1]).getRegionIndex() != reg.getRegionIndex()){
+////								for(RegionInfo bucketReg:bucket){
+//									Vect3d[] o1v = (Vect3d[])regTobb.get(objArr[1]);
+//									if(	o1v[0].getX() >= o2v[0].getX() && o1v[0].getX() <= o2v[1].getX() &&
+//											o1v[0].getY() >= o2v[0].getY() && o1v[0].getY() <= o2v[1].getY() &&
+//											o1v[0].getZ() >= o2v[0].getZ() && o1v[0].getZ() <= o2v[1].getZ() 
+//											){
+//										
+//									}
+////								}
+////						}
+//					}
+//				}
 				//Sort filled/unfilled regions by boundingbox
 				ArrayList<RegionInfo> sortedRegionInfos = new ArrayList<>(Arrays.asList(regTobb.keySet().toArray(new RegionInfo[0])/*newRegionImage.getRegionInfos()*/));
 				Collections.sort(sortedRegionInfos,new Comparator<RegionInfo>() {
@@ -1578,6 +1601,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		for (int j = 0; j < selectedFiles.length; j++) {
 			File selectedfiFile = selectedFiles[j];
 			SurfaceCollection surfaceCollection = ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedfiFile);
+			if(surfaceCollection == null){
+				throw new Exception("Expecting .stl or .mesh(salk) from file '"+selectedfiFile+"'");
+			}
 			TreeMap<Integer, ArrayList<TreeMap<Integer, TreeSet<Integer>>>> fileSurf = new TreeMap<>();
 			fileMapSurfMapSubsurf.put(selectedfiFile.getAbsolutePath(), fileSurf);
 //			nodeMapFace.add(treeMap);
