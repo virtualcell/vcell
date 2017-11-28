@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, os, paramiko, argparse, traceback
+import sys, os, paramiko, argparse, traceback, logging
 
 
 #
@@ -9,23 +9,28 @@ import sys, os, paramiko, argparse, traceback
 
 class ssh:
     client = None
-    debug = False
     address = None
+    logger = None
 
     def __init__(self, address, username):
         assert isinstance(address, str)
         assert isinstance(username, str)
         self.address = address
-        if (ssh.debug):
-            print("======== Connecting to " + address + " as user " + username + " ========")
+        self.logger = logging.getLogger("paramiko")
+        self.logger.info("======== Connecting to " + address + " as user " + username + " ========")
 
         self.client = paramiko.client.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
 
-        # look for an alternative DSA key file before trying default ~/.ssh/id_rsa
-        schaff_key_path = os.path.join(os.path.expanduser("~"), ".ssh", "schaff_dsa")
-        if os.path.isfile(schaff_key_path):
-            k = paramiko.DSSKey.from_private_key_file(schaff_key_path)
+        key_path_dsa = os.path.join(os.path.expanduser("~"), ".ssh", "schaff_dsa")
+        key_path_rsa = os.path.join(os.path.expanduser("~"), ".ssh", "schaff2_rsa")
+        if os.path.isfile(key_path_dsa):
+            # look for an alternative DSA key file before trying default ~/.ssh/id_rsa
+            k = paramiko.DSSKey.from_private_key_file(key_path_dsa)
+            self.client.connect(address, username=username, pkey=k)
+        elif os.path.isfile(key_path_rsa):
+            # look for an alternative RSA key file before trying default ~/.ssh/id_rsa
+            k = paramiko.RSAKey.from_private_key_file(key_path_rsa)
             self.client.connect(address, username=username, pkey=k)
         else:
             # try ~/.ssh/id_rsa
@@ -33,8 +38,7 @@ class ssh:
 
     def sendCommand(self, command):
         if (self.client != None):
-            if (ssh.debug):
-                print("=== command: " + command)
+            self.logger.info("=== command: " + command)
             stdin, stdout, stderr = self.client.exec_command(command)
             alldata = ''
             while not stdout.channel.exit_status_ready():
@@ -43,9 +47,8 @@ class ssh:
                     alldata += stdout.channel.recv(1024)
 
             exitStatus = stdout.channel.recv_exit_status()
-            if (ssh.debug):
-                print("=== retcode: " + str(exitStatus))
-                print("=== stdout: " + str(alldata))
+            self.logger.info("=== retcode: " + str(exitStatus))
+            self.logger.info("=== stdout: " + str(alldata))
             return exitStatus, str(alldata)
         else:
             raise RuntimeError("Connection not opened")
@@ -53,9 +56,7 @@ class ssh:
     def close(self):
         if (self.client != None):
             self.client.close()
-            if (ssh.debug):
-                print("======== Closing connection to " + self.address + " ========")
-                print("")
+            self.logger.info("======== Closing connection to " + self.address + " ========")
 
 
 class Javaservice:
@@ -160,7 +161,7 @@ class Dockerservice:
         self.image_name = image_name
 
     def start(self):
-        cmd = 'bash -l -c "docker container start ' + self.container_name + '"'
+        cmd = 'bash -l -c "sudo docker container start ' + self.container_name + '"'
         connection = None
         try:
             connection = ssh(self.host, self.user)
@@ -175,7 +176,7 @@ class Dockerservice:
                 connection.close()
 
     def stop(self):
-        cmd = 'bash -l -c "docker container stop ' + self.container_name + '"'
+        cmd = 'bash -l -c "sudo docker container stop ' + self.container_name + '"'
         connection = None
         try:
             connection = ssh(self.host, self.user)
@@ -190,7 +191,7 @@ class Dockerservice:
                 connection.close()
 
     def status(self):
-        cmd = 'bash -l -c "docker container inspect ' \
+        cmd = 'bash -l -c "sudo docker container inspect ' \
               '--format=\'status: {{.State.Status}}, startedAt: {{.State.StartedAt}}\' ' \
               + self.container_name + '"'
         connection = None
@@ -207,7 +208,7 @@ class Dockerservice:
                 connection.close()
 
     def create(self):
-        cmd = 'bash -l -c "docker create --name=' + self.container_name
+        cmd = 'bash -l -c "sudo docker create --name=' + self.container_name
         for varname, value in self.env.items():
             cmd += " -e " + varname + '=' + value
         for hostdir, containerdir in self.volumes.items():
@@ -252,6 +253,20 @@ def getenv(varname):
         raise EnvironmentError("undefined environment var '" + varname + "', hint: invoke using ./vcell script")
     assert isinstance(value, str)
     return value
+
+def setdebug(debug):
+    assert isinstance(debug,bool)
+    logger = logging.getLogger("paramiko")
+    console_handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    if debug:
+        logger.setLevel(logging.DEBUG)
+        console_handler.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARN)
+        console_handler.setLevel(logging.WARN)
 
 
 def main():
@@ -352,7 +367,8 @@ def main():
     args = parser.parse_args()
 
     try:
-        ssh.debug = args.debug
+        setdebug(args.debug)
+
         if (args.cmd == "status"):
             for s in services:
                 if (args.service == "all") or (args.service == s.name):
@@ -388,6 +404,17 @@ def main():
     else:
         sys.exit(0)
 
+def test_connection():
+    #
+    # TESTING ONLY
+    #
+    setdebug(True)
+
+    c = ssh("vcell-service.cam.uchc.edu","vcell")
+    print ("done")
+
+
 
 if __name__ == "__main__":
+    #test_connection()
     main()
