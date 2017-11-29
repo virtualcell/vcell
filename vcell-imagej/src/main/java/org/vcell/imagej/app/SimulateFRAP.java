@@ -304,8 +304,8 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 			});
 		task.run(() -> {
 			try {
-				while (simService.getStatus(
-					simInfo).simState == SimulationState.running)
+				while ((simService.getStatus(simInfo).simState != SimulationState.done) && 
+						(simService.getStatus(simInfo).simState != SimulationState.failed))
 				{
 					if (task.isCanceled()) break;
 					Thread.sleep(50);
