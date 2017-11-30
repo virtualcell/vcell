@@ -16,7 +16,7 @@ public class PythonSupport {
 	public static enum PythonPackage {
 		COPASI	("COPASI python binding",	"python-copasi",		"fbergmann",			"COPASI"),
 		THRIFT	("apache thrift",			"thrift",			"conda-forge",		"thrift"),
-		VTK		("Visualization Toolkit",	"vtk1",				"conda-forge1",		"vtk1"),
+		VTK		("Visualization Toolkit",	"vtk",				"conda-forge",		"vtk"),
 		LIBSBML	("libSBML for python",		"python-libsbml",	"sbmlteam",			"libsbml");
 		
 		public final String description;
