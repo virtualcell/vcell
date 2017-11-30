@@ -10,6 +10,7 @@ import org.vcell.optimization.thrift.OptRunStatus;
 
 import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.PythonSupport.PythonPackage;
 import cbit.vcell.resource.PropertyLoader;
 
 public class OptServerImplTest {
@@ -17,7 +18,7 @@ public class OptServerImplTest {
 		try {
 			System.setProperty(PropertyLoader.installationRoot,"/Users/schaff/Documents/workspace-modular/vcell");
 			System.setProperty(PropertyLoader.pythonExe,"/Users/schaff/anaconda/bin/python");
-			PythonSupport.verifyInstallation();
+			PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.COPASI, PythonPackage.LIBSBML, PythonPackage.THRIFT });
 			try { Thread.sleep(2000); } catch (InterruptedException e) {}
 			File optProbFile = new File(ResourceUtil.getVCellOptPythonDir(),"optprob.bin");
 			System.out.println("using optProblem: "+optProbFile.getAbsolutePath());

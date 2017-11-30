@@ -71,6 +71,7 @@ import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.NetworkProxyUtils;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.PythonSupport;
+import cbit.vcell.resource.PythonSupport.PythonPackage;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XmlHelper;
 /**
@@ -321,7 +322,7 @@ public static void main(java.lang.String[] args) {
 		new LibraryLoaderThread(true).start( );
 				
 		try {
-			PythonSupport.verifyInstallation();
+			PythonSupport.verifyInstallation(PythonPackage.values());
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}

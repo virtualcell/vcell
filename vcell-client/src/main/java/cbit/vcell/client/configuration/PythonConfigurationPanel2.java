@@ -33,6 +33,7 @@ import javax.swing.border.TitledBorder;
 
 import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.PythonSupport.PythonPackage;
 
 // http://commons.apache.org/proper/commons-io/javadocs/api-2.4/org/apache/commons/io
 
@@ -270,7 +271,7 @@ public class PythonConfigurationPanel2 extends JPanel {
 		getTestConfigurationButton().setEnabled(false);
 		getInstallPythonButton().setEnabled(false);
 		try {
-			PythonSupport.verifyInstallation();
+			PythonSupport.verifyInstallation(PythonPackage.values());
 		} catch (Exception e) {
 			String ret = e.getMessage();
 			testConfigurationResults.setText("<html><font color=#8C001A>" + ret + "</font></html>");

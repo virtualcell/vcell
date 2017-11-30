@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.vcell.util.exe.Executable;
@@ -13,9 +14,9 @@ import org.vcell.util.exe.IExecutable;
 public class PythonSupport {
 		
 	public static enum PythonPackage {
-		COPASI	("COPASI python binding",	"python-copasi",	"fbergmann",		"COPASI"),
+		COPASI	("COPASI python binding",	"python-copasi",		"fbergmann",			"COPASI"),
 		THRIFT	("apache thrift",			"thrift",			"conda-forge",		"thrift"),
-		VTK		("Visualization Toolkit",	"vtk",				"conda-forge",		"vtk"),
+		VTK		("Visualization Toolkit",	"vtk1",				"conda-forge1",		"vtk1"),
 		LIBSBML	("libSBML for python",		"python-libsbml",	"sbmlteam",			"libsbml");
 		
 		public final String description;
@@ -74,11 +75,11 @@ public class PythonSupport {
 	}
 	
 	
-	public static synchronized void verifyInstallation() throws IOException {
+	public static synchronized void verifyInstallation(PythonPackage[] requiredPackages) throws IOException {
 		isInstallingOrVerifying = true;
 
 		try {
-			for (PythonPackage pkg : PythonPackage.values()){
+			for (PythonPackage pkg : requiredPackages){
 				getPackageStatusMap().put(pkg, InstallStatus.INITIALIZING);
 			}
 			File pythonExe = null;
@@ -109,7 +110,7 @@ public class PythonSupport {
 				boolean packageInstallFailed = false;
 				int count = 0;
 				String failedPackageName = "";
-				for (PythonPackage pkg : PythonPackage.values()) {
+				for (PythonPackage pkg : requiredPackages) {
 					try {
 						boolean bFound = checkPackage(pythonExe,pkg);
 						if (bFound) {
@@ -203,7 +204,7 @@ public class PythonSupport {
 	public static void main(String[] args){
 		try {
 			PropertyLoader.loadProperties();
-			verifyInstallation();
+			verifyInstallation(PythonPackage.values());
 			try {
 				getPythonExe();
 			}catch (Exception e){

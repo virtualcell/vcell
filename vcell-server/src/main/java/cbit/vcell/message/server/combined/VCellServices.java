@@ -63,10 +63,11 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.PythonSupport;
+import cbit.vcell.resource.PythonSupport.PythonPackage;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.resource.StdoutSessionLogConcurrent;
@@ -171,7 +172,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
-			PythonSupport.verifyInstallation();
+			PythonSupport.verifyInstallation(PythonPackage.values());
 
 			int serviceOrdinal = Integer.parseInt(args[0]);
 			String logdir = null;
