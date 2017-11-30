@@ -202,18 +202,31 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		return mtFromListStrict;
 	}
 	
+//	private static void pasteMolecules(Set<MolecularType> mtFromListStrict, Model modelTo, Map<Structure, String> structuresMap) {
+//		for(MolecularType mtFrom : mtFromListStrict) {
+//			try {
+//				MolecularType mtTo = new MolecularType(mtFrom, modelTo, structuresMap);
+//				modelTo.getRbmModelContainer().addMolecularType(mtTo, false);
+//			} catch (ModelException | PropertyVetoException e) {
+//				e.printStackTrace();
+//				throw new RuntimeException(e.getMessage());
+//			}
+//		}
+//	}
 	private static void pasteMolecules(Set<MolecularType> mtFromListStrict, Model modelTo, Map<Structure, String> structuresMap) {
-		
-		for(MolecularType mtFrom : mtFromListStrict) {
-			try {
+		List<MolecularType> listOfMoleculesToAdd = new ArrayList<>();
+		try {
+			for(MolecularType mtFrom : mtFromListStrict) {
 				MolecularType mtTo = new MolecularType(mtFrom, modelTo, structuresMap);
-				modelTo.getRbmModelContainer().addMolecularType(mtTo, false);
-			} catch (ModelException | PropertyVetoException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
+				listOfMoleculesToAdd.add(mtTo);
 			}
+			modelTo.getRbmModelContainer().addMolecularTypes(listOfMoleculesToAdd);
+		} catch (ModelException | PropertyVetoException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
 		}
 	}
+
 	
 	// map the structures to be pasted to existing structures in the cloned model
 	// we may need to generate some name iteratively until we solve all naming conflicts
@@ -312,7 +325,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		
 		PasteHelper[] pasteHelper = new PasteHelper[1];
 		
-		AsynchClientTask issueTask = new AsynchClientTask("Checking Issues...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		AsynchClientTask issueTask = new AsynchClientTask("Checking Issues...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
@@ -342,9 +355,10 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				pasteMolecules(mtFromListStrict, clonedModel, structuresMap);
 				
 				List<ReactionRule> rulesTo = pasteRules(rsCopy, clonedModel, structTo, issues, issueContext, structuresMap);
-				for(ReactionRule rr : rulesTo) {
-					clonedModel.getRbmModelContainer().addReactionRule(rr);
-				}
+//				for(ReactionRule rr : rulesTo) {
+//					clonedModel.getRbmModelContainer().addReactionRule(rr);
+//				}
+				clonedModel.getRbmModelContainer().addReactionRules(rulesTo);
 				
 				// TODO: make any final verifications in the cloned model here
 				// if anything is wrong exit here with some helpful message
@@ -357,10 +371,11 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				
 				// we repeat all the steps to paste the rules in the real model instead of the clone
 				rulesTo = pasteRules(rsCopy, pasteModel, structTo, issues, issueContext, structuresMap);
-				for(ReactionRule rr : rulesTo) {
-					pasteModel.getRbmModelContainer().addReactionRule(rr);
-				}
-				
+//				for(ReactionRule rr : rulesTo) {
+//					pasteModel.getRbmModelContainer().addReactionRule(rr);
+//				}
+				pasteModel.getRbmModelContainer().addReactionRules(rulesTo);
+				System.out.println("done");
 			}
 		};
 		

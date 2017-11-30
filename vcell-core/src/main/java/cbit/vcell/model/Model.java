@@ -1222,6 +1222,11 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				addObservable(o);
 			}
 		}
+		public void addMolecularTypes(List<MolecularType> molecularTypes) throws ModelException, PropertyVetoException {
+			ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
+			newValue.addAll(molecularTypes);
+			setMolecularTypeList(newValue);
+		}
 		
 		public boolean removeMolecularType(MolecularType molecularType) throws PropertyVetoException {
 			if (!molecularTypeList.contains(molecularType)) {
@@ -1558,6 +1563,11 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		public void addReactionRule(ReactionRule reactionRule) throws PropertyVetoException {		
 			List<ReactionRule> newValue = new ArrayList<ReactionRule>(reactionRuleList);
 			newValue.add(reactionRule);
+			setReactionRules(newValue);
+		}
+		public void addReactionRules(List<ReactionRule> reactionRules) throws PropertyVetoException {		
+			List<ReactionRule> newValue = new ArrayList<ReactionRule>(reactionRuleList);
+			newValue.addAll(reactionRules);
 			setReactionRules(newValue);
 		}
 

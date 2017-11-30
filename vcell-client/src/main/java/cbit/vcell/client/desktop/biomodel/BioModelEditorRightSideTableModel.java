@@ -80,7 +80,7 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 		if (evt.getSource() == this) {
 			if (evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
 				bioModelChange(evt);
-				refreshData();
+				//refreshData();
 			} else if (evt.getPropertyName().equals(PROPERTY_NAME_SEARCH_TEXT)) {
 				refreshData();
 			}
@@ -88,13 +88,13 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 	}
 
 	protected void bioModelChange(java.beans.PropertyChangeEvent evt) {
-		refreshData();
 		BioModel oldValue = (BioModel)evt.getOldValue();
 		if (oldValue != null) {
 			oldValue.removePropertyChangeListener(this);
 			oldValue.getModel().removePropertyChangeListener(this);
 		}
 		BioModel newValue = (BioModel)evt.getNewValue();
+		refreshData();
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(this);
 			newValue.getModel().addPropertyChangeListener(this);
