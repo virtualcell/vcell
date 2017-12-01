@@ -9,56 +9,23 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
-import net.imagej.Dataset;
-import net.imagej.ImageJ;
-import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
-import net.imagej.axis.AxisType;
-import net.imagej.table.DefaultGenericTable;
-import net.imagej.table.DoubleColumn;
-import net.imagej.table.GenericColumn;
-import net.imagej.table.GenericTable;
-import net.imglib2.Cursor;
-import net.imglib2.FinalInterval;
-import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.converter.Converter;
-import net.imglib2.converter.Converters;
-import net.imglib2.img.Img;
-import net.imglib2.img.ImgView;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.type.BooleanType;
-import net.imglib2.type.logic.BitType;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.util.IntervalIndexer;
-import net.imglib2.util.Intervals;
-import net.imglib2.view.IntervalView;
-import net.imglib2.view.Views;
-
-import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.ext.spatial.CompressionKind;
 import org.sbml.jsbml.ext.spatial.DataKind;
-import org.sbml.jsbml.ext.spatial.Geometry;
-import org.sbml.jsbml.ext.spatial.GeometryDefinition;
 import org.sbml.jsbml.ext.spatial.InterpolationKind;
 import org.sbml.jsbml.ext.spatial.SampledField;
-import org.sbml.jsbml.ext.spatial.SampledFieldGeometry;
-import org.sbml.jsbml.ext.spatial.SampledVolume;
-import org.sbml.jsbml.ext.spatial.SpatialModelPlugin;
 import org.scijava.ItemIO;
 import org.scijava.app.AppService;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
+import org.scijava.command.CommandModule;
 import org.scijava.event.EventHandler;
 import org.scijava.io.ByteArrayByteBank;
 import org.scijava.log.LogService;
@@ -68,7 +35,6 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.scijava.task.event.TaskEvent;
 import org.scijava.util.FileUtils;
-import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.vcellij.SimulationServiceImpl;
@@ -82,6 +48,26 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
+import net.imagej.ImageJ;
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
+import net.imagej.table.DefaultGenericTable;
+import net.imagej.table.DoubleColumn;
+import net.imagej.table.GenericColumn;
+import net.imagej.table.GenericTable;
+import net.imglib2.FinalInterval;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.img.ImgView;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.type.BooleanType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.util.IntervalIndexer;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 @Plugin(type = Command.class, menuPath = "Plugins>VCell>Simulate FRAP")
 public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> implements Command {
@@ -101,14 +87,14 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 //	@Parameter
 //	private VCellService vcellService;
 
-	@Parameter
-	private RandomAccessibleInterval<T> image;
-
-	// TODO - for the case where we have more than two classes, we probably
-	// want to use a LabelingMapping<String> which identifies the regions
-	// corresponding to each domain/class in the geometry.
-	@Parameter
-	private RandomAccessibleInterval<B> mask;
+//	@Parameter
+//	private RandomAccessibleInterval<T> image;
+//
+//	// TODO - for the case where we have more than two classes, we probably
+//	// want to use a LabelingMapping<String> which identifies the regions
+//	// corresponding to each domain/class in the geometry.
+//	@Parameter
+//	private RandomAccessibleInterval<B> mask;
 
 	// FIXME: Grab these from the current selection of the image.
 	// To do that, we need to use ImagePlus instead of RAI<T> for the image.
@@ -128,6 +114,9 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 	@Parameter(type = ItemIO.OUTPUT)
 	private Object result;
 
+	public Object getResult(){
+		return result;
+	}
 	@Override
 	public void run() {
 		try {
@@ -143,78 +132,110 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 		final ImageJ ij = new ImageJ();
 		ij.launch(args);
 
-		final String datasetPath = "http://imagej.net/images/bridge.gif";
-		final Dataset dataset = ij.scifio().datasetIO().open(datasetPath);
-		ij.ui().show("bridge", dataset);
+//		final String datasetPath = "http://imagej.net/images/bridge.gif";
+//		final Dataset dataset = ij.scifio().datasetIO().open(datasetPath);
+//		ij.ui().show("bridge", dataset);
+//
+//		// Make up an arbitrary mask with some constraints.
+//		final Img<BitType> bitMask = ArrayImgs.bits(dataset.dimension(0), dataset.dimension(1), dataset.dimension(2));
+//		Cursor<BitType> c = bitMask.localizingCursor();
+//		while (c.hasNext()) {
+//			final BitType bit = c.next();
+//			long x = c.getLongPosition(0);
+//			long y = c.getLongPosition(1);
+//			bit.set(x > 100 & x < 200 & y > 80 & y < 350);
+//		}
+//		ij.ui().show("mask", bitMask);
 
-		// Make up an arbitrary mask with some constraints.
-		final Img<BitType> bitMask = ArrayImgs.bits(dataset.dimension(0), dataset.dimension(1), dataset.dimension(2));
-		Cursor<BitType> c = bitMask.localizingCursor();
-		while (c.hasNext()) {
-			final BitType bit = c.next();
-			long x = c.getLongPosition(0);
-			long y = c.getLongPosition(1);
-			bit.set(x > 100 & x < 200 & y > 80 & y < 350);
-		}
-		ij.ui().show("mask", bitMask);
-
-		ij.command().run(SimulateFRAP.class, true, "mask", bitMask);
+		Future<CommandModule> future = ij.command().run(SimulateFRAP.class, true/*, "mask", bitMask*/);
+//		try {
+//			CommandModule commandModule = future.get();// wait for command to finish
+//			Map<String, Object> outputs = commandModule.getOutputs();
+//			Object moduleResult = outputs.get("result");
+//			if(moduleResult instanceof ImgPlus<?>){
+//				ImgPlus<?> simImg = (ImgPlus<?>)moduleResult;
+//				Iterator<?> iter =  simImg.getImg().iterator();
+//				int cnt = 0;
+//				while(iter.hasNext()){
+//					DoubleType val = (DoubleType)iter.next();
+//					if(val.get() !=0 && val.get() != 1){
+//						System.out.println(iter.next());
+//					}
+//					cnt++;
+//				}
+//				int numdims = ((ImgPlus<?>)moduleResult).numDimensions();
+//				long[] dims = new long[numdims];
+//				((ImgPlus<?>)moduleResult).dimensions(dims);
+//				for(long dimval:dims){
+//					System.out.println("dim "+dimval);
+//				}
+//				System.out.println("total num vals ="+cnt);
+//				ij.ui().show(simImg);
+//			}
+//			System.out.println(moduleResult);
+//		} catch (CancellationException e) {
+//			// ignore
+//			e.printStackTrace();
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 	private Object simulate() throws Exception {
 		initializeVCell();
 
-		if (!Intervals.equalDimensions(image, mask)) {
-			throw new IllegalArgumentException("Mask dimensions do not match image");
-		}
-
-		final RandomAccessibleInterval<T> goodImage;
-		final RandomAccessibleInterval<B> goodMask;
-		if (image.numDimensions() < 2 || image.numDimensions() > 3) {
-			throw new IllegalArgumentException("Image must be 2 or 3 dimensional");
-		}
-		if (image.numDimensions() == 2) {
-			log.warn("Projected image into the third dimension");
-			goodImage = Views.addDimension(image, 0, 2); // TODO: double check this; should be dim length 3
-			goodMask = Views.addDimension(mask, 0, 2); // TODO: double check this; should be dim length 3
-		}
-		else {
-			goodImage = image;
-			goodMask = mask;
-		}
+//		if (!Intervals.equalDimensions(image, mask)) {
+//			throw new IllegalArgumentException("Mask dimensions do not match image");
+//		}
+//
+//		final RandomAccessibleInterval<T> goodImage;
+//		final RandomAccessibleInterval<B> goodMask;
+//		if (image.numDimensions() < 2 || image.numDimensions() > 3) {
+//			throw new IllegalArgumentException("Image must be 2 or 3 dimensional");
+//		}
+//		if (image.numDimensions() == 2) {
+//			log.warn("Projected image into the third dimension");
+//			goodImage = Views.addDimension(image, 0, 2); // TODO: double check this; should be dim length 3
+//			goodMask = Views.addDimension(mask, 0, 2); // TODO: double check this; should be dim length 3
+//		}
+//		else {
+//			goodImage = image;
+//			goodMask = mask;
+//		}
 
 		// Configure the model based on the inputs.
 		final Model sbmlModel = readModel("ImageJ_FRAP.xml");//"frap.xml");
-		// NB: This model is 3D. We can feed in a 2D plane if we fake Z with the same data three times.
-		final SpatialModelPlugin smPlugin = (SpatialModelPlugin) sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-		final Geometry geo = smPlugin.getGeometry();
-
-		// TODO: When we have an ImgLabeling, we want to match the domain type ids with the labelings themselves.
-		// So e.g. "cell" maps to domainType "domainType_cell", etc.
-		// In this way, we can accept ImgLabeling that offer mapping of N classes and there is a 1-to-1 mapping.
-		ListOf<org.sbml.jsbml.ext.spatial.DomainType> domainTypes = geo.getListOfDomainTypes();
-
-		final Optional<GeometryDefinition> sfgDef = geo.getListOfGeometryDefinitions().stream().filter(geoDef -> geoDef instanceof SampledFieldGeometry).findFirst();
-		if (!sfgDef.isPresent()) throw new IllegalStateException("No sampled field geometry definition found");
-		SampledFieldGeometry sfg = (SampledFieldGeometry) sfgDef.get();
-		// E.g.: ["cell": 1.0, "ec": 2.0]
-		final Map<String, Double> labelValues = sfg.getListOfSampledVolumes().stream().collect(Collectors.toMap(SampledVolume::getId, SampledVolume::getSampledValue));
-		// TODO: use these label values; they should line up with an input LabelMapping<String>.
-
-		// Feed the image mask into the geometry's domain labeling.
-		ListOf<SampledField> sampledFields = geo.getListOfSampledFields();
-		if (sampledFields == null || sampledFields.isEmpty()) {
-			throw new IllegalStateException("Expected model with one sampled field");
-		}
-		final SampledField domainLabeling = sampledFields.get(0);
-		// FIXME: stop using a prior knowledge of cell and ec labels. Instead, we'll have a LabelingMapping which already knows what's what.
-		final Converter<B, UnsignedByteType> converter = (input, output) -> output.set(input.get() ? labelValues.get("cell").shortValue() : labelValues.get("ec").shortValue());
-		final RandomAccessibleInterval<UnsignedByteType> maskAsLabeling = Converters.convert(goodMask, converter, new UnsignedByteType());
-		populateField(domainLabeling, maskAsLabeling);
-
-		// Feed the image sample values into the geometry as a sampled field.
-//		final SampledField sampledField = geo.createSampledField("fieldData");
-//		populateField(sampledField, goodImage);
+//		// NB: This model is 3D. We can feed in a 2D plane if we fake Z with the same data three times.
+//		final SpatialModelPlugin smPlugin = (SpatialModelPlugin) sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+//		final Geometry geo = smPlugin.getGeometry();
+//
+//		// TODO: When we have an ImgLabeling, we want to match the domain type ids with the labelings themselves.
+//		// So e.g. "cell" maps to domainType "domainType_cell", etc.
+//		// In this way, we can accept ImgLabeling that offer mapping of N classes and there is a 1-to-1 mapping.
+//		ListOf<org.sbml.jsbml.ext.spatial.DomainType> domainTypes = geo.getListOfDomainTypes();
+//
+//		final Optional<GeometryDefinition> sfgDef = geo.getListOfGeometryDefinitions().stream().filter(geoDef -> geoDef instanceof SampledFieldGeometry).findFirst();
+//		if (!sfgDef.isPresent()) throw new IllegalStateException("No sampled field geometry definition found");
+//		SampledFieldGeometry sfg = (SampledFieldGeometry) sfgDef.get();
+//		// E.g.: ["cell": 1.0, "ec": 2.0]
+//		final Map<String, Double> labelValues = sfg.getListOfSampledVolumes().stream().collect(Collectors.toMap(SampledVolume::getId, SampledVolume::getSampledValue));
+//		// TODO: use these label values; they should line up with an input LabelMapping<String>.
+//
+//		// Feed the image mask into the geometry's domain labeling.
+//		ListOf<SampledField> sampledFields = geo.getListOfSampledFields();
+//		if (sampledFields == null || sampledFields.isEmpty()) {
+//			throw new IllegalStateException("Expected model with one sampled field");
+//		}
+//		final SampledField domainLabeling = sampledFields.get(0);
+//		// FIXME: stop using a prior knowledge of cell and ec labels. Instead, we'll have a LabelingMapping which already knows what's what.
+//		final Converter<B, UnsignedByteType> converter = (input, output) -> output.set(input.get() ? labelValues.get("cell").shortValue() : labelValues.get("ec").shortValue());
+//		final RandomAccessibleInterval<UnsignedByteType> maskAsLabeling = Converters.convert(goodMask, converter, new UnsignedByteType());
+//		populateField(domainLabeling, maskAsLabeling);
+//
+//		// Feed the image sample values into the geometry as a sampled field.
+////		final SampledField sampledField = geo.createSampledField("fieldData");
+////		populateField(sampledField, goodImage);
 
 		// Start the simulation.
 		final Sim sim = createSimulation(sbmlModel);
@@ -269,6 +290,8 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 		// TODO: make SimulationServiceImpl a singleton of VCellService.
 		final SimulationServiceImpl simService = new SimulationServiceImpl();
 		final SimulationSpec simSpec = new SimulationSpec();
+		simSpec.setOutputTimeStep(.1);
+		simSpec.setTotalTime(5.0);
 		final Task task = taskService.createTask("Simulate FRAP");
 		task.setProgressMaximum(100); // TODO: Double check this.
 		final SimulationInfo simInfo = simService.computeModel(sbmlModel, simSpec,
@@ -304,15 +327,15 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 			});
 		task.run(() -> {
 			try {
-				while ((simService.getStatus(simInfo).simState != SimulationState.done) && 
-						(simService.getStatus(simInfo).simState != SimulationState.failed))
+				while ((simService.getStatus(simInfo).getSimState() != SimulationState.done) && 
+						(simService.getStatus(simInfo).getSimState() != SimulationState.failed))
 				{
 					if (task.isCanceled()) break;
 					Thread.sleep(50);
 				}
 			}
 			catch (final Exception exc) {
-				// FIXME
+				exc.printStackTrace();
 			}
 		});
 

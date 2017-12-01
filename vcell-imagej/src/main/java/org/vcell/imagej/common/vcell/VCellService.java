@@ -33,7 +33,6 @@ import org.vcell.vcellij.api.SBMLModel;
 import org.vcell.vcellij.api.SimulationInfo;
 import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
-import org.vcell.vcellij.api.ThriftDataAccessException;
 import org.vcell.vcellij.api.VariableInfo;
 
 /**
@@ -86,7 +85,7 @@ public class VCellService extends AbstractService {
 
 	private static SBMLDocument getSBML(final SimulationServiceImpl client,
 		final String vcml, final String applicationName)
-		throws ThriftDataAccessException, XMLStreamException, IOException
+		throws Exception, XMLStreamException, IOException
 	{
 		final String sbml;
 		try {
@@ -120,8 +119,7 @@ public class VCellService extends AbstractService {
 					final File sbmlSpatialFile = new File(vCellModel.getName() + ".xml");
 					new SBMLWriter().write(vCellModel.getSbmlDocument(), sbmlSpatialFile);
 
-					final SBMLModel model = new SBMLModel();
-					model.setFilepath(sbmlSpatialFile.getAbsolutePath());
+					final SBMLModel model = new SBMLModel(sbmlSpatialFile);
 					final SimulationInfo simulationInfo = client.computeModel(model,
 						simSpec);
 					try {

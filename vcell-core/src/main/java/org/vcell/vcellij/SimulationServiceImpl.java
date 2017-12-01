@@ -10,7 +10,6 @@ import java.util.Random;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.thrift.TException;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.sbml.SbmlException;
@@ -28,10 +27,10 @@ import org.vcell.vcellij.api.SimulationInfo;
 import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
 import org.vcell.vcellij.api.SimulationStatus;
-import org.vcell.vcellij.api.ThriftDataAccessException;
 import org.vcell.vcellij.api.VariableInfo;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
@@ -54,6 +53,8 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TempSimulation;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverEvent;
@@ -183,7 +184,7 @@ public class SimulationServiceImpl {
     }
 
     private CartesianMesh mesh(SimulationInfo simInfo) {
-        SimulationServiceContext simServiceContext = sims.get(simInfo.id);
+        SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
         try {
             DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
             CartesianMesh mesh = datasetController.getMesh(simServiceContext.vcDataIdentifier);
@@ -193,9 +194,9 @@ public class SimulationServiceImpl {
         }
     }
 
-    public SimulationInfo computeModel(SBMLModel model, SimulationSpec simSpec) throws ThriftDataAccessException, TException {
+    public SimulationInfo computeModel(SBMLModel model, SimulationSpec simSpec) {
         try {
-            SBMLImporter importer = new SBMLImporter(model.getFilepath(),vcLogger(),true);
+            SBMLImporter importer = new SBMLImporter(model.getFilepath().getAbsolutePath(),vcLogger(),true);
             BioModel bioModel = importer.getBioModel();
             return computeModel(bioModel, simSpec, null);
         }
@@ -208,7 +209,9 @@ public class SimulationServiceImpl {
     public SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) {
         try {
             SBMLImporter importer = new SBMLImporter(sbmlModel,vcLogger(),true);
-            return computeModel(importer.getBioModel(), simSpec, null);
+            BioModel bioModel = importer.getBioModel();
+//            XmlUtil.writeXMLStringToFile(XmlHelper.bioModelToXML(bioModel), "C:\\Users\\frm\\vcGititImageJWorkspace\\vcell\\imagej_true.xml", true);
+			return computeModel(bioModel, simSpec, null);
         }
         catch (Exception exc) {
             exc.printStackTrace(System.out);
@@ -233,11 +236,13 @@ public class SimulationServiceImpl {
         };
     }
 
-    private SimulationInfo computeModel(BioModel bioModel, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) {
-    	try {
+    private SimulationInfo computeModel(BioModel bioModel, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) throws Exception{
+//    	try {
 	    	SimulationContext simContext = bioModel.getSimulationContext(0);
 			MathMappingCallback callback = new MathMappingCallbackTaskAdapter(statusCallback);
 			Simulation newsim = simContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
+			newsim.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, simSpec.getTotalTime()));
+			newsim.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(simSpec.getOutputTimeStep()));
 	    	SimulationInfo simulationInfo = new SimulationInfo();
 	        simulationInfo.setId(Math.abs(new Random().nextInt(1000000)));
 	        
@@ -257,7 +262,7 @@ public class SimulationServiceImpl {
 	        if (simServiceContext.solver == null) {
 	        	throw new RuntimeException("null solver");
 	        }
-	        sims.put(simulationInfo.id,simServiceContext);
+	        sims.put(simulationInfo.getId(),simServiceContext);
 	                	
 			
 			simServiceContext.solver.addSolverListener(new SolverListener() {
@@ -296,6 +301,9 @@ public class SimulationServiceImpl {
 					statusCallback.setProgress((int) (event.getProgress() * 100));
 				}
 			});
+
+            XmlUtil.writeXMLStringToFile(XmlHelper.bioModelToXML(bioModel), "C:\\Users\\frm\\vcGititImageJWorkspace\\vcell\\imagej_true.xml", true);
+
 			simServiceContext.solver.startSolver();
 
 //			while (true){
@@ -318,11 +326,11 @@ public class SimulationServiceImpl {
 //			}
 			
 	        return simServiceContext.simInfo;
-    	} catch (Exception e){
-    		e.printStackTrace(System.out);
-    		// remember the exceptiopn ... fail the status ... save the error message
-    		return new SimulationInfo().setId(1);
-    	}
+//    	} catch (Exception e){
+//    		e.printStackTrace(System.out);
+//    		// remember the exceptiopn ... fail the status ... save the error message
+//    		return new SimulationInfo();
+//    	}
     }
     private static Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory, SimulationTask simTask) throws SolverException, IOException {
     	SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
@@ -359,14 +367,13 @@ public class SimulationServiceImpl {
 
     }
 
-	public SimulationStatus getStatus(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
-		SimulationServiceContext simServiceContext = sims.get(simInfo.id);
+	public SimulationStatus getStatus(SimulationInfo simInfo) {
+		SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
 		return new SimulationStatus(simServiceContext.simState);
 	}
 
-	public List<Double> getData(SimulationInfo simInfo, VariableInfo varInfo, int timeIndex)
-			throws ThriftDataAccessException, TException {
-        SimulationServiceContext simServiceContext = sims.get(simInfo.id);
+	public List<Double> getData(SimulationInfo simInfo, VariableInfo varInfo, int timeIndex)  throws Exception {
+        SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
         if (simServiceContext==null){
         	throw new RuntimeException("simulation results not found");
         }
@@ -383,14 +390,14 @@ public class SimulationServiceImpl {
 			return dataList;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new ThriftDataAccessException("failed to retrieve data for variable "+varInfo.getVariableVtuName()+": "+e.getMessage());
+			throw new Exception("failed to retrieve data for variable "+varInfo.getVariableVtuName()+": "+e.getMessage());
 		}
 	}
 
-	public List<Double> getTimePoints(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
-        SimulationServiceContext simServiceContext = sims.get(simInfo.id);
+	public List<Double> getTimePoints(SimulationInfo simInfo) throws Exception {
+        SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
         if (simServiceContext==null){
-        	throw new ThriftDataAccessException("simulation results not found");
+        	throw new Exception("simulation results not found");
         }
         try {
 	        DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
@@ -403,14 +410,14 @@ public class SimulationServiceImpl {
 			return times;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new ThriftDataAccessException("failed to retrieve times for simulation: "+e.getMessage());
+			throw new Exception("failed to retrieve times for simulation: "+e.getMessage());
 		}
 	}
 
-	public List<VariableInfo> getVariableList(SimulationInfo simInfo) throws ThriftDataAccessException, TException {
-        SimulationServiceContext simServiceContext = sims.get(simInfo.id);
+	public List<VariableInfo> getVariableList(SimulationInfo simInfo) throws Exception {
+        SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
         if (simServiceContext==null){
-        	throw new ThriftDataAccessException("simulation results not found");
+        	throw new Exception("simulation results not found");
         }
         try {
 	        DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
@@ -442,10 +449,10 @@ public class SimulationServiceImpl {
 	        return varInfos;
         }catch (Exception e){
         	e.printStackTrace();
-        	throw new ThriftDataAccessException("failed to retrieve variable list: "+e.getMessage());
+        	throw new Exception("failed to retrieve variable list: "+e.getMessage());
         }
 	}
-	public String getSBML(String vcml, String applicationName) throws ThriftDataAccessException, TException {
+	public String getSBML(String vcml, String applicationName) throws Exception {
 		try {
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml));
 			SimulationContext simContext = bioModel.getSimulationContext(applicationName);
@@ -454,7 +461,7 @@ public class SimulationServiceImpl {
 			return sbmlDoc.xmlString;
 		} catch (SBMLException | XmlParseException | SbmlException | XMLStreamException e) {
 			e.printStackTrace();
-			throw new ThriftDataAccessException("failed to generate SBML document: "+e.getMessage());
+			throw new Exception("failed to generate SBML document: "+e.getMessage());
 		}
 	}
 }

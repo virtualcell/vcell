@@ -25,7 +25,7 @@ import cbit.vcell.resource.ResourceUtil;
 public class SimulationServiceImplTest {
 
 	@Test
-	public void test() throws URISyntaxException, ThriftDataAccessException, TException {
+	public void test() throws URISyntaxException, Exception {
 		SimulationServiceImpl simService = new SimulationServiceImpl();
 		// TODO - Eliminate code duplication.
 		URL sbmlFileUrl = SimulationServiceImplTest.class.getResource("../../sbml/optoPlexin_PRG_rule_based.xml");
@@ -41,13 +41,13 @@ public class SimulationServiceImplTest {
 		file = new File("src/test/resources/org/vcell/sbml/optoPlexin_PRG_rule_based.xml");
 		Assert.assertTrue(file.exists());
 		
-		SBMLModel sbmlModel = new SBMLModel(file.getAbsolutePath());
+		SBMLModel sbmlModel = new SBMLModel(file);
 		
 		SimulationSpec simSpec = new SimulationSpec();
 		SimulationInfo simInfo = simService.computeModel(sbmlModel, simSpec);
 		
 		long timeMS = System.currentTimeMillis();
-		while (simService.getStatus(simInfo).simState==SimulationState.running){
+		while (simService.getStatus(simInfo).getSimState()!=SimulationState.done && simService.getStatus(simInfo).getSimState()!=SimulationState.failed){
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
