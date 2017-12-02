@@ -40,6 +40,7 @@ import org.vcell.util.ProgressDialogListener;
 import org.vcell.vcellij.SimulationServiceImpl;
 import org.vcell.vcellij.api.DomainType;
 import org.vcell.vcellij.api.SimulationInfo;
+import org.vcell.vcellij.api.SimulationService;
 import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
 import org.vcell.vcellij.api.VariableInfo;
@@ -84,6 +85,9 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 	@Parameter
 	private AppService appService;
 
+	@Parameter
+	private SimulationServiceImpl simServiceImpl;
+	
 //	@Parameter
 //	private VCellService vcellService;
 
@@ -288,13 +292,12 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 
 	private Sim createSimulation(final Model sbmlModel) throws Exception {
 		// TODO: make SimulationServiceImpl a singleton of VCellService.
-		final SimulationServiceImpl simService = new SimulationServiceImpl();
 		final SimulationSpec simSpec = new SimulationSpec();
 		simSpec.setOutputTimeStep(.1);
 		simSpec.setTotalTime(5.0);
 		final Task task = taskService.createTask("Simulate FRAP");
 		task.setProgressMaximum(100); // TODO: Double check this.
-		final SimulationInfo simInfo = simService.computeModel(sbmlModel, simSpec,
+		final SimulationInfo simInfo = simServiceImpl.computeModel(sbmlModel, simSpec,
 			new ClientTaskStatusSupport()
 		{
 
@@ -327,8 +330,8 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 			});
 		task.run(() -> {
 			try {
-				while ((simService.getStatus(simInfo).getSimState() != SimulationState.done) && 
-						(simService.getStatus(simInfo).getSimState() != SimulationState.failed))
+				while ((simServiceImpl.getStatus(simInfo).getSimState() != SimulationState.done) && 
+						(simServiceImpl.getStatus(simInfo).getSimState() != SimulationState.failed))
 				{
 					if (task.isCanceled()) break;
 					Thread.sleep(50);
@@ -342,8 +345,8 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 		return new Sim() {
 
 			@Override
-			public SimulationServiceImpl simService() {
-				return simService;
+			public SimulationService simService() {
+				return simServiceImpl;
 			}
 
 			@Override
@@ -405,7 +408,7 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 
 	public interface Sim {
 
-		SimulationServiceImpl simService();
+		SimulationService simService();
 
 		SimulationSpec simSpec();
 

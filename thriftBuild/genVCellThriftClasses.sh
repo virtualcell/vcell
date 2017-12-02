@@ -23,9 +23,5 @@ $THRIFT_0_10_0 --out ../pythonScripts/VCell_VTK --gen py VisMesh.thrift
 $THRIFT_0_10_0 --out ../vcell-core/src/main/java --gen java:generated_annotations=undated VCellOpt.thrift
 $THRIFT_0_10_0 --out ../pythonScripts/VCell_Opt --gen py VCellOpt.thrift
 
-# Image Simulation service
-$THRIFT_0_10_0 --out ../vcell-core/src/main/java --gen java:generated_annotations=undated VCellImageJ.thrift
-$THRIFT_0_10_0 --out ../pythonScripts/VCell_ImageJ --gen py VCellImageJ.thrift
-
 # ImageDataset Service
 $THRIFT_0_10_0 --out ../vcell-core/src/main/java --gen java:generated_annotations=undated ImageDataset.thrift

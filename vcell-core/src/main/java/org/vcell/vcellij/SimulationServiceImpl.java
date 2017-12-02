@@ -12,6 +12,9 @@ import javax.xml.stream.XMLStreamException;
 
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLException;
+import org.scijava.plugin.Plugin;
+import org.scijava.service.AbstractService;
+import org.scijava.service.Service;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter.VCellSBMLDoc;
@@ -24,6 +27,7 @@ import org.vcell.util.document.User;
 import org.vcell.vcellij.api.DomainType;
 import org.vcell.vcellij.api.SBMLModel;
 import org.vcell.vcellij.api.SimulationInfo;
+import org.vcell.vcellij.api.SimulationService;
 import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
 import org.vcell.vcellij.api.SimulationStatus;
@@ -65,11 +69,11 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
-
 /**
  * Created by kevingaffney on 7/12/17.
  */
-public class SimulationServiceImpl {
+@Plugin(type=Service.class)
+public class SimulationServiceImpl extends AbstractService implements SimulationService{
 	private static class SimulationServiceContext {
 		SimulationInfo simInfo = null;
 		Solver solver = null;

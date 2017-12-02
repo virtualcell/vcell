@@ -13,9 +13,5 @@ REM Copasi stuff
 thrift --out ..\vcell-core\src\main\java --gen java:generated_annotations=undated VCellOpt.thrift
 thrift --out ..\pythonScripts/VCell_Opt --gen py VCellOpt.thrift
 
-# ImageJ
-thrift --out ..\vcell-core\src\main\java --gen java:generated_annotations=undated VCellImageJ.thrift
-thrift --out ..\pythonScripts/VCell_ImageJ --gen py VCellIma
-
 # ImageDataset
 thrift --out ..\vcell-core\src\main\java --gen java:generated_annotations=undated ImageDataset.thrift
