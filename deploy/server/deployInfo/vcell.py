@@ -232,7 +232,7 @@ class Dockerservice:
                 connection.close()
 
     def destroy(self):
-        cmd = 'bash -l -c "docker container rm ' + self.container_name + '"'
+        cmd = 'bash -l -c "sudo docker container rm ' + self.container_name + '"'
         connection = None
         try:
             connection = ssh(self.host, self.user)
@@ -310,6 +310,8 @@ def main():
         jms_url = getenv("vcell_jms_url")
         jms_host = getenv("vcell_jms_host")
         jms_port = getenv("vcell_jms_port")
+        jms_webport = getenv("vcell_jms_webport")
+        # jms_stomp_port = getenv("vcell_stompport")
         jms_env = dict()
         jms_env["ACTIVEMQ_ADMIN_PASSWORD"] = "'"+getenv("vcell_jms_password")+"'"
         jms_env["ACTIVEMQ_WRITE_PASSWORD"] = "'"+getenv("vcell_jms_password")+"'"
@@ -330,9 +332,9 @@ def main():
         jms_volume_mappings[jms_datadir] = '/data/activemq'
         jms_volume_mappings[jms_logdir] = '/var/log/activemq'
         jms_port_mappings = dict()
-        jms_port_mappings['8161'] = '8161'
+        jms_port_mappings[jms_webport] = '8161'
         jms_port_mappings[jms_port] = '61616'
-        jms_port_mappings['61613'] = '61613'
+        # jms_port_mappings[jms_stompport] = '61613'
 
         mongo_name = "mongodb"
         mongo_imagename = "mongo:3.4.10"

@@ -179,6 +179,7 @@ jms_logdir="${vcell_server_sitedir}/activemq/log"
 jms_container_name="activemq${vcell_site_camel}"
 jms_host="${vcell_jms_host}"
 jms_port="${vcell_jms_port}"
+jms_webport="${vcell_jms_webport}"
 jms_user="${vcell_jms_user}"
 
 mongodb_containername="mongo${vcell_site_camel}"
@@ -407,6 +408,7 @@ sed_in_place "s/GENERATED-JMSUSER/${vcell_jms_user}/g"						$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSPSWD/${vcell_secrets_jms_pswd}/g"				$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSHOST/${vcell_jms_host}/g"						$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSPORT/${vcell_jms_port}/g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSWEBPORT/${vcell_jms_webport}/g"					$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSCONTAINERNAME/${jms_container_name}/g"			$stagingVCellInclude
 sed_in_place "s+GENERATED-JMSDATADIR+${jms_datadir}+g"						$stagingVCellInclude
 sed_in_place "s+GENERATED-JMSLOGDIR+${jms_logdir}+g"							$stagingVCellInclude
