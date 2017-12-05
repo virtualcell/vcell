@@ -9,6 +9,7 @@ skip_install4j=false
 skip_build=false
 skip_extra_solvers=false
 restart=false
+mvn_repo=$HOME/.m2
 
 show_help() {
 	echo "usage: deploy.sh [OPTIONS] config_file build_number"
@@ -18,6 +19,7 @@ show_help() {
 	echo "  [OPTIONS]"
 	echo "    -h | --help           show this message"
 	echo "    --restart             restart vcell after deploy"
+	echo "    --mvn-repo REPO_DIR   override local maven repository (defaults to $HOME/.m2)"
 	echo "    --skip-build          (debugging) skip full maven clean build"
 	echo "    --skip-install4j      (debugging) skip installer generation"
 	echo "    --skip-extra-solvers  (TEMPORARY) skip installing 'extra' server-side solvers from"
@@ -38,6 +40,10 @@ while :; do
 		--restart)
 			restart=true
 			;;
+		--mvn-repo)
+			shift
+			mvn_repo=$1
+			;;
 		--skip-build)
 			skip_build=true
 			;;
@@ -48,13 +54,18 @@ while :; do
 			skip_install4j=true
 			;;
 		-?*)
-			printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+			printf 'ERROR: Unknown option: %s\n' "$1" >&2
+			echo ""
+			show_help
 			;;
 		*)               # Default case: No more options, so break out of the loop.
 			break
 	esac
 	shift
 done
+
+echo "mvn repo is $mvn_repo"
+exit 0
 
 if [ "$#" -ne 2 ]; then
     show_help
@@ -99,16 +110,16 @@ clientJarsDir=$clientTargetDir/maven-jars
 # 1) maven build (maven clean verify)
 # 2) gather jar files needed by DocumentCompiler (maven dependency plugin)
 # 3) generate user help files (run DocumentCompiler)
-# 4) maven build (mvn clean verify ... puts help files into jar resources)
+# 4) maven build (mvn -Dmaven.repo.local=$mvn_repo clean verify ... puts help files into jar resources)
 #---------------------------------------------------------------------------
 if [ "$skip_build" = false ]; then
 	cd $projectRootDir
 	echo "removing old docs"
 	rm -r $projectRootDir/vcell-client/src/main/resources/vcellDocs
 	echo "build vcell"
-	mvn clean install dependency:copy-dependencies
+	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies
 	if [ $? -ne 0 ]; then
-		echo "failed first maven build: mvn clean install dependency:copy-dependencies"
+		echo "failed first maven build: mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies"
 		exit -1
 	fi
 	echo "run document compiler"
@@ -118,9 +129,9 @@ if [ "$skip_build" = false ]; then
 		exit -1
 	fi
 	echo "force rebuild to pick up new resources - the help files"
-	mvn clean install dependency:copy-dependencies
+	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies
 	if [ $? -ne 0 ]; then
-		echo "failed second maven build: mvn clean install"
+		echo "failed second maven build: mvn -Dmaven.repo.local=$mvn_repo clean install"
 		exit -1
 	fi
 fi
@@ -234,9 +245,9 @@ installedPython=/share/apps/vcell2/vtk/usr/bin/vcellvtkpython
 #--------------------------------------------------------------
 cd $projectRootDir
 echo "populate maven-jars"
-mvn dependency:copy-dependencies
+mvn -Dmaven.repo.local=$mvn_repo dependency:copy-dependencies
 if [ $? -ne 0 ]; then
-	echo "failed: mvn dependency:copy-dependencies"
+	echo "failed: mvn -Dmaven.repo.local=$mvn_repo dependency:copy-dependencies"
 	exit -1
 fi
 
