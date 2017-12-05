@@ -78,7 +78,7 @@ vcell_amplistor_url="http://obj1.cam.uchc.edu:8080/namespace/service_vcell/"
 vcell_amplistor_user=vcell
 
 vcell_mongodb_host=vcell-docker.cam.uchc.edu
-vcell_mongodb_port=27017
+vcell_mongodb_port=27018
 vcell_mongodb_database=test
 vcell_mongodb_collection=log
 
