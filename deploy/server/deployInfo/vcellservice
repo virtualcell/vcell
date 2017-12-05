@@ -30,7 +30,9 @@ procLabel="-DprocessLabel=${vcellservice_processLabel}"
 #
 jmxargs="-Dcom.sun.management.jmxremote"
 jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.authenticate=false"
-jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.port=${vcellservice_jmxport}"
+if [ ${vcellservice_jmxport} -gt 0 ]; then
+	jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.port=${vcellservice_jmxport}"
+fi
 jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.ssl=false"
 jmxargs="${jmxargs} -Djava.rmi.server.hostname=${vcellservice_jmxhost}"
 jmxargs="${jmxargs} -XX:+UseG1GC -XX:MaxGCPauseMillis=500" 
