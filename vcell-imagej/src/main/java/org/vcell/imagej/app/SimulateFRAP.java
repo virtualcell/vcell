@@ -2,16 +2,26 @@
 
 package org.vcell.imagej.app;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import javax.swing.JLabel;
+import javax.swing.JScrollBar;
+import javax.swing.SwingUtilities;
 import javax.xml.stream.XMLStreamException;
 
 import org.sbml.jsbml.Model;
@@ -25,8 +35,10 @@ import org.scijava.ItemIO;
 import org.scijava.app.AppService;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
+import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandModule;
 import org.scijava.event.EventHandler;
+import org.scijava.event.SciJavaEvent;
 import org.scijava.io.ByteArrayByteBank;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
@@ -34,6 +46,8 @@ import org.scijava.plugin.Plugin;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.scijava.task.event.TaskEvent;
+import org.scijava.ui.viewer.DisplayViewer;
+import org.scijava.ui.viewer.DisplayWindow;
 import org.scijava.util.FileUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
@@ -49,17 +63,33 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
+import ij.IJ;
+import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
+import net.imagej.display.ImageDisplay;
+import net.imagej.display.OverlayService;
+import net.imagej.ops.Op;
+import net.imagej.ops.Ops.Geometric.BoundingBox;
+import net.imagej.ops.geom.geom2d.DefaultBoundingBox;
+import net.imagej.overlay.TextOverlay;
+import net.imagej.plugins.commands.display.AutoContrast;
+import net.imagej.plugins.commands.display.interactive.BrightnessContrast;
+import net.imagej.plugins.commands.zoom.ZoomIn;
+import net.imagej.plugins.commands.zoom.ZoomSet;
 import net.imagej.table.DefaultGenericTable;
 import net.imagej.table.DoubleColumn;
 import net.imagej.table.GenericColumn;
 import net.imagej.table.GenericTable;
+import net.imagej.ui.swing.viewer.image.SwingImageDisplayPanel;
 import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.display.ColorTable8;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgView;
 import net.imglib2.img.array.ArrayImgs;
@@ -69,6 +99,7 @@ import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+import net.miginfocom.swing.MigLayout;
 
 @Plugin(type = Command.class, menuPath = "Plugins>VCell>Simulate FRAP")
 public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> implements Command {
@@ -86,7 +117,7 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 	private AppService appService;
 
 	@Parameter
-	private SimulationServiceImpl simServiceImpl;
+	private SimulationService simService;
 	
 //	@Parameter
 //	private VCellService vcellService;
@@ -118,9 +149,9 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 	@Parameter(type = ItemIO.OUTPUT)
 	private Object result;
 
-	public Object getResult(){
-		return result;
-	}
+	@Parameter(type = ItemIO.OUTPUT)
+	private SimulationInfo simInfo;
+	
 	@Override
 	public void run() {
 		try {
@@ -132,14 +163,29 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 		System.out.println("============= COMPLETE ===============");
 	}
 
+	
+	private static int FIXED_X = 150;
+	
 	public static void main(final String... args) throws IOException {
 		final ImageJ ij = new ImageJ();
 		ij.launch(args);
+		List<CommandInfo> commandList =  ij.scifio().command().getCommands();
+		for(CommandInfo ci:commandList){
+			if(ci.getMenuPath().size() >= 2 && ci.getMenuPath().get(0).getName().equalsIgnoreCase("image") && (ci.getMenuPath().get(1).getName().equalsIgnoreCase("zoom") || ci.getMenuPath().get(1).getName().equalsIgnoreCase("adjust"))){
+				System.out.println(ci.getDelegateClassName()+" --- "+ci.getMenuPath());
+			}
+			if((""+ci.getMenuPath().toString()).toLowerCase().contains("lut")){
+				System.out.println(ci.getDelegateClassName()+" ------ "+ci.getMenuPath());
+			}
+			
+		}
 
+		
 //		final String datasetPath = "http://imagej.net/images/bridge.gif";
 //		final Dataset dataset = ij.scifio().datasetIO().open(datasetPath);
 //		ij.ui().show("bridge", dataset);
-//
+		
+		
 //		// Make up an arbitrary mask with some constraints.
 //		final Img<BitType> bitMask = ArrayImgs.bits(dataset.dimension(0), dataset.dimension(1), dataset.dimension(2));
 //		Cursor<BitType> c = bitMask.localizingCursor();
@@ -152,6 +198,183 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 //		ij.ui().show("mask", bitMask);
 
 		Future<CommandModule> future = ij.command().run(SimulateFRAP.class, true/*, "mask", bitMask*/);
+		try{
+			CommandModule commandModule = future.get();// wait for command to finish
+			Map<String, Object> outputs = commandModule.getOutputs();
+			ImgPlus<RealType> result = (ImgPlus<RealType>)outputs.get("result");
+			SimulationInfo simInfo = (SimulationInfo)outputs.get("simInfo");
+			
+//			SimulateFRAP<DoubleType,?> simulateFRAP = (SimulateFRAP<DoubleType,?>)commandModule.getDelegateObject();
+//			System.out.println(simulateFRAP);
+			SimulationServiceImpl simServiceImpl = ij.getContext().getService(SimulationServiceImpl.class);
+			List<Double> t = simServiceImpl.getTimePoints(simInfo);
+			List<VariableInfo> c = simServiceImpl.getVariableList(simInfo);
+			int z = simServiceImpl.sizeZ(simInfo);
+			int y = simServiceImpl.sizeY(simInfo);
+			int x = simServiceImpl.sizeX(simInfo);
+//			long[] dims = new long[result.numDimensions()];
+//			result.dimensions(dims);
+			System.out.println(t.size()+" "+c.size()+" "+z+" "+y+" "+x);
+			
+			//Calculate min/max for each variable over all times
+			double[] minVars = new double[c.size()];
+			double[] maxVars = new double[c.size()];
+			for(int channelIndex=0;channelIndex<c.size();channelIndex++){
+				//Define interval for current channel to include all pixels and all times
+				IntervalView<RealType> interval = Views.interval(result, new long[] {0,0,0,channelIndex,0}, new long[] {x-1,y-1,z-1,channelIndex,t.size()-1});//x,y,z,c,t
+				IterableInterval<RealType> dataII = Views.iterable(interval);
+				minVars[channelIndex] = ij.op().stats().min(dataII).getRealDouble();
+				maxVars[channelIndex] = ij.op().stats().max(dataII).getRealDouble();
+				System.out.println("var="+c.get(channelIndex).getVariableDisplayName()+" min="+minVars[channelIndex]+" max="+maxVars[channelIndex]);
+			}
+
+//			List<Display<?>> displays = ij.display().getDisplays();
+//			for(Display disp:displays){
+//				System.out.println(disp);
+//				if(disp instanceof DefaultImageDisplay){
+//					for(DataView dataview:((DefaultImageDisplay)disp)){
+//						DefaultDataset data = (DefaultDataset)dataview.getData();
+//						System.out.println(data.getImgPlus().getName()+" ----- disp == result? ="+(data.getImgPlus() == result));
+//					}
+//				}
+//			}
+			
+//			IJ.debugMode = true;
+			
+			//Helpers to match labels with sliders
+			HashMap<String, JLabel> labelComponents = new HashMap<>();
+			HashMap<String, JScrollBar> scrollbarComponents = new HashMap<>();
+
+			//Update label text when sliders are moved
+			AdjustmentListener adjustmentListener = new AdjustmentListener() {
+				@Override
+				public void adjustmentValueChanged(AdjustmentEvent ae) {
+					try{
+						JScrollBar scrollBar = (JScrollBar)ae.getSource();
+						for(String label:scrollbarComponents.keySet()){
+							if(scrollbarComponents.get(label) == ae.getSource()){
+								final JLabel jlabel = labelComponents.get(label);
+								int value = ((JScrollBar)ae.getSource()).getValue();
+								String newText = null;
+								if(label.equalsIgnoreCase("z")){
+									newText = label+"("+value+")";
+								}else if(label.equalsIgnoreCase("variable")){
+									newText = label+"("+simServiceImpl.getVariableList(simInfo).get(value).getVariableDisplayName()+")";//simServiceImpl.getVariableList(simInfo).get(value);
+								}else if(label.equalsIgnoreCase("time")){
+									newText = label+"("+simServiceImpl.getTimePoints(simInfo).get(value)+")";//simServiceImpl.getTimePoints(simInfo).get(value);
+								}
+								if(newText != null){
+									jlabel.setText(newText);
+								}
+								break;
+							}
+						}
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+				}
+			};
+
+
+			ImageDisplay myDisplay = (ImageDisplay)ij.display().getDisplay(Sim.SIMULATED_FRAP);
+			DisplayViewer<?> myDisplayViewer = ij.ui().getDisplayViewer(myDisplay);
+			DisplayWindow displayWindow = myDisplayViewer.getWindow();
+			SwingImageDisplayPanel myDisplayPanel =  (SwingImageDisplayPanel)myDisplayViewer.getPanel();
+			ArrayList<Component> winChildren = new ArrayList<>(Arrays.asList(myDisplayPanel.getComponents()));
+			String lastLabelStr = null;
+			final MigLayout[] migLayoutHolder = new MigLayout[] {null};
+			while(winChildren.size() > 0){
+				Component child = winChildren.remove(0);
+				System.out.println(child.getClass().getName());
+				if(child instanceof Container){
+					winChildren.addAll(Arrays.asList(((Container)child).getComponents()));
+				}
+				if (child instanceof JLabel){
+					String text = ((JLabel)child).getText();
+					if(text.equalsIgnoreCase("Z") || text.equalsIgnoreCase("variable") || text.equalsIgnoreCase("time")){
+						lastLabelStr = text;
+						labelComponents.put(((JLabel)child).getText(), (JLabel)child);
+						//Store the layoutmanager of the panel that contains the labels and sliders
+						migLayoutHolder[0] = (MigLayout)((Container)child.getParent()).getLayout();
+						//Set size of 'variable' label so long text doesn't spillover onto slider
+						if(text.equalsIgnoreCase("variable")){
+							Dimension d = ((JLabel)child).getMinimumSize();
+							d.setSize(FIXED_X, d.height);
+							((JLabel)child).setMinimumSize(d);
+							d = ((JLabel)child).getMaximumSize();
+							d.setSize(FIXED_X, d.height);
+							((JLabel)child).setMaximumSize(d);
+							d = ((JLabel)child).getPreferredSize();
+							d.setSize(FIXED_X, d.height);
+							((JLabel)child).setPreferredSize(d);
+						}
+					}
+					System.out.println("---label='"+text+"' prnt="+child.getParent().getClass().getName());
+					System.out.println("   "+child.getParent().hashCode()+" "+((Container)child.getParent()).getLayout().getClass().getName());
+					
+				} else if (child instanceof JScrollBar){
+					System.out.println("---jscrollbar='"+((JScrollBar)child).getName()+"' prnt="+child.getParent().getClass().getName()+" "+child.getParent().hashCode());
+					System.out.println("   "+child.getParent().hashCode());
+					if(lastLabelStr != null){
+						scrollbarComponents.put(lastLabelStr, (JScrollBar)child);
+						((JScrollBar) child).addAdjustmentListener(adjustmentListener);
+					}
+					lastLabelStr = null;
+				}else {
+					lastLabelStr = null;
+				}
+			}
+			//Set 'label' column to be fixed so width doesn't change when using 'variable' slider
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					migLayoutHolder[0].setColumnConstraints("[right,"+FIXED_X+":"+FIXED_X+":"+FIXED_X+"]5[fill,grow]");//http://www.miglayout.com/
+				}
+			});
+			//Set labels to initial values of sliders
+			for(String label:labelComponents.keySet()){
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						AdjustmentEvent ae = new AdjustmentEvent(scrollbarComponents.get(label), AdjustmentEvent.RESERVED_ID_MAX+1, AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED, scrollbarComponents.get(label).getValue());
+						adjustmentListener.adjustmentValueChanged(ae);
+					}
+				});
+			}
+			
+			//Set initial zoom so data x or y are up to 512
+			int biggestDim = Math.max(x, y);
+			int numZooms = Math.max(0, (512/biggestDim)-1);
+			for(int i=0;i<numZooms;i++){
+				ij.command().run(ZoomIn.class, true);
+			}
+//			CommandInfo cmdInfo = ij.scifio().command().getCommand(ZoomSet.class);
+//			Future<?> future2 = ij.scifio().command().run(cmdInfo, true,"zoomPercent",500,"centerU",38.5,"centerV",38.5);
+//			Object obj = future2.get();// wait for command to finish
+//			System.out.println(obj);
+			
+			//Set brightnessContrast
+			ij.command().run(AutoContrast.class, true);
+			
+			ColorTable8 ct = new ColorTable8(vcellLutData());
+			ij.lut().applyLUT(ct, myDisplay);
+
+			
+//			myDisplay.getActiveView().getContext().inject(new EventTester());
+			
+//			SwingDisplayWindow myDisplayWindow = (SwingDisplayWindow)myDisplayViewer.getWindow();
+//			BeanUtils.printComponentInfo(myDisplayWindow);
+//			System.out.println(myDisplay+" -- "+myDisplayViewer+" -- "+ myDisplayWindow);
+
+//			Overlay overlay = new Overlay();
+//			String[] imageTitles = WindowManager.getImageTitles();
+//			ImagePlus imagePlus = WindowManager.getImage(Sim.SIMULATED_FRAP);
+			
+//			createAnnotation(myDisplay, t, c, z,ij.overlay());
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 //		try {
 //			CommandModule commandModule = future.get();// wait for command to finish
 //			Map<String, Object> outputs = commandModule.getOutputs();
@@ -186,6 +409,302 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 //		}
 	}
 
+	private static byte[][] vcellLutData(){
+		int[] lutvals = new int[] {
+				0,0,128,
+				0,0,132,
+				0,0,137,
+				0,0,141,
+				0,0,146,
+				0,0,151,
+				0,0,155,
+				0,0,160,
+				0,0,165,
+				0,0,169,
+				0,0,174,
+				0,0,179,
+				0,0,183,
+				0,0,188,
+				0,0,193,
+				0,0,197,
+				0,0,202,
+				0,0,206,
+				0,0,211,
+				0,0,216,
+				0,0,220,
+				0,0,225,
+				0,0,230,
+				0,0,234,
+				0,0,239,
+				0,0,244,
+				0,0,248,
+				0,0,253,
+				0,3,255,
+				0,7,255,
+				0,12,255,
+				0,16,255,
+				0,21,255,
+				0,26,255,
+				0,30,255,
+				0,35,255,
+				0,40,255,
+				0,44,255,
+				0,49,255,
+				0,54,255,
+				0,58,255,
+				0,63,255,
+				0,68,255,
+				0,72,255,
+				0,77,255,
+				0,81,255,
+				0,86,255,
+				0,91,255,
+				0,95,255,
+				0,100,255,
+				0,105,255,
+				0,109,255,
+				0,114,255,
+				0,119,255,
+				0,123,255,
+				0,128,255,
+				0,133,255,
+				0,137,255,
+				0,142,255,
+				0,146,255,
+				0,151,255,
+				0,156,255,
+				0,160,255,
+				0,165,255,
+				0,170,255,
+				0,174,255,
+				0,179,255,
+				0,184,255,
+				0,188,255,
+				0,193,255,
+				0,198,255,
+				0,202,255,
+				0,207,255,
+				0,211,255,
+				0,216,255,
+				0,221,255,
+				0,225,255,
+				0,230,255,
+				0,235,255,
+				0,239,255,
+				0,244,255,
+				0,249,255,
+				0,253,255,
+				0,255,252,
+				0,255,247,
+				0,255,243,
+				0,255,238,
+				0,255,233,
+				0,255,229,
+				0,255,224,
+				0,255,220,
+				0,255,215,
+				0,255,210,
+				0,255,206,
+				0,255,201,
+				0,255,196,
+				0,255,192,
+				0,255,187,
+				0,255,182,
+				0,255,178,
+				0,255,173,
+				0,255,168,
+				0,255,164,
+				0,255,159,
+				0,255,155,
+				0,255,150,
+				0,255,145,
+				0,255,141,
+				0,255,136,
+				0,255,131,
+				0,255,127,
+				0,255,122,
+				0,255,117,
+				0,255,113,
+				0,255,108,
+				0,255,103,
+				0,255,99,
+				0,255,94,
+				0,255,90,
+				0,255,85,
+				0,255,80,
+				0,255,76,
+				0,255,71,
+				0,255,66,
+				0,255,62,
+				0,255,57,
+				0,255,52,
+				0,255,48,
+				0,255,43,
+				0,255,38,
+				0,255,34,
+				0,255,29,
+				0,255,25,
+				0,255,20,
+				0,255,15,
+				0,255,11,
+				0,255,6,
+				0,255,1,
+				3,255,0,
+				8,255,0,
+				13,255,0,
+				17,255,0,
+				22,255,0,
+				27,255,0,
+				31,255,0,
+				36,255,0,
+				40,255,0,
+				45,255,0,
+				50,255,0,
+				54,255,0,
+				59,255,0,
+				64,255,0,
+				68,255,0,
+				73,255,0,
+				78,255,0,
+				82,255,0,
+				87,255,0,
+				92,255,0,
+				96,255,0,
+				101,255,0,
+				105,255,0,
+				110,255,0,
+				115,255,0,
+				119,255,0,
+				124,255,0,
+				129,255,0,
+				133,255,0,
+				138,255,0,
+				143,255,0,
+				147,255,0,
+				152,255,0,
+				157,255,0,
+				161,255,0,
+				166,255,0,
+				171,255,0,
+				175,255,0,
+				180,255,0,
+				184,255,0,
+				189,255,0,
+				194,255,0,
+				198,255,0,
+				203,255,0,
+				208,255,0,
+				212,255,0,
+				217,255,0,
+				222,255,0,
+				226,255,0,
+				231,255,0,
+				236,255,0,
+				240,255,0,
+				245,255,0,
+				249,255,0,
+				254,255,0,
+				255,251,0,
+				255,247,0,
+				255,242,0,
+				255,237,0,
+				255,233,0,
+				255,228,0,
+				255,223,0,
+				255,219,0,
+				255,214,0,
+				255,209,0,
+				255,205,0,
+				255,200,0,
+				255,196,0,
+				255,191,0,
+				255,186,0,
+				255,182,0,
+				255,177,0,
+				255,172,0,
+				255,168,0,
+				255,163,0,
+				255,158,0,
+				255,154,0,
+				255,149,0,
+				255,144,0,
+				255,140,0,
+				255,135,0,
+				255,131,0,
+				255,126,0,
+				255,121,0,
+				255,117,0,
+				255,112,0,
+				255,107,0,
+				255,103,0,
+				255,98,0,
+				255,93,0,
+				255,89,0,
+				255,84,0,
+				255,79,0,
+				255,75,0,
+				255,70,0,
+				255,66,0,
+				255,61,0,
+				255,56,0,
+				255,52,0,
+				255,47,0,
+				255,42,0,
+				255,38,0,
+				255,33,0,
+				255,28,0,
+				255,24,0,
+				255,19,0,
+				255,14,0,
+				255,10,0,
+				255,5,0,
+				255,0,0,
+				255,0,0,
+				255,0,0,
+				255,0,0,
+				255,0,0,
+				255,0,0,
+				255,0,0,
+				255,0,0,
+				255,0,0
+		};
+		byte[][] vcByteLut = new byte[3][256];
+		for (int chanIndex = 0; chanIndex < vcByteLut.length; chanIndex++) {
+			for (int colorIndex = 0; colorIndex < vcByteLut[chanIndex].length; colorIndex++) {
+				vcByteLut[chanIndex][colorIndex] = (byte)(0xFF & lutvals[colorIndex*3+chanIndex]);
+			}
+			
+			
+		}
+		return vcByteLut;
+	}
+	
+	private static void createAnnotation(ImageDisplay imageDisplay, List<Double> t, List<VariableInfo> c, int z, OverlayService overlayService){
+		String[][] annots = new String[(t==null?1:t.size())][(c==null?1:c.size())];
+		ArrayList<TextOverlay> overlayList = new ArrayList<>();
+		for (int i = 0; i < annots.length; i++) {
+			for (int j = 0; j < annots[i].length; j++) {
+				String str = (t != null?t.get(i)+"":"");
+				str+=(c !=null?(str.length()==0?"":":")+"("+c.get(j).getVariableDisplayName()+")":"");
+				if(str.length() > 0){
+					for (int k = 0; k < z; k++) {
+						TextOverlay textOverlay = new TextOverlay(overlayService.getContext(),0,0,str);//(0,0, str);
+//						text.setNonScalable(true);
+//						if(/*imagePlus.isHyperStack()*/imageDisplay.numDimensions() > 2){
+//							text.setPosition(j+1,k+1,i+1);
+//						}else{
+//							text.setPosition(i+j+k+1);// assumes 2 components (ij or jk or ik) are always 0
+//						}
+						overlayList.add(textOverlay);						
+					}
+				}
+			}
+		}
+		if(overlayList.size() > 0){
+			overlayService.addOverlays(imageDisplay, overlayList);
+		}
+	}
+	
 	private Object simulate() throws Exception {
 		initializeVCell();
 
@@ -252,7 +771,7 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 
 		return sim.image();
 	}
-
+	
 	private <Z extends RealType<Z>> void populateField(final SampledField sampledField, RandomAccessibleInterval<Z> rai) {
 		// TODO: ensure dimensional lengths are not bigger than Integer.MAX_VALUE.
 		if (rai.numDimensions() != 3) throw new IllegalStateException("How did you get a non 3D image in here?");
@@ -294,10 +813,10 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 		// TODO: make SimulationServiceImpl a singleton of VCellService.
 		final SimulationSpec simSpec = new SimulationSpec();
 		simSpec.setOutputTimeStep(.1);
-		simSpec.setTotalTime(5.0);
+		simSpec.setTotalTime(2.0);
 		final Task task = taskService.createTask("Simulate FRAP");
 		task.setProgressMaximum(100); // TODO: Double check this.
-		final SimulationInfo simInfo = simServiceImpl.computeModel(sbmlModel, simSpec,
+		simInfo = simService.computeModel(sbmlModel, simSpec,
 			new ClientTaskStatusSupport()
 		{
 
@@ -330,8 +849,8 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 			});
 		task.run(() -> {
 			try {
-				while ((simServiceImpl.getStatus(simInfo).getSimState() != SimulationState.done) && 
-						(simServiceImpl.getStatus(simInfo).getSimState() != SimulationState.failed))
+				while ((simService.getStatus(simInfo).getSimState() != SimulationState.done) && 
+						(simService.getStatus(simInfo).getSimState() != SimulationState.failed))
 				{
 					if (task.isCanceled()) break;
 					Thread.sleep(50);
@@ -346,7 +865,7 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 
 			@Override
 			public SimulationService simService() {
-				return simServiceImpl;
+				return simService;
 			}
 
 			@Override
@@ -408,6 +927,8 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 
 	public interface Sim {
 
+		public static final String SIMULATED_FRAP = "Simulated FRAP";
+
 		SimulationService simService();
 
 		SimulationSpec simSpec();
@@ -450,9 +971,9 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 						}
 					}
 				}
-				IntervalView<DoubleType> view = Views.interval(Views.extendBorder(bigImage), new FinalInterval(xCount, 100, zCount, vCount, tCount));
+				IntervalView<DoubleType> view = Views.interval(Views.extendBorder(bigImage), new FinalInterval(xCount, yCount, zCount, vCount, tCount));
 				Img<DoubleType> img = ImgView.wrap(view, bigImage.factory());
-				return new ImgPlus<>(img, "Simulated FRAP", new AxisType[] {Axes.X, Axes.Y, Axes.Z, Axes.get("variable"), Axes.TIME});
+				return new ImgPlus<>(img, SIMULATED_FRAP, new AxisType[] {Axes.X, Axes.Y, Axes.Z, Axes.get("variable"), Axes.TIME});
 			}
 			catch (Exception exc) {
 				// FIXME
@@ -540,4 +1061,10 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 		}
 	}
 
+	private static class EventTester {
+		@EventHandler
+		private void onEvent(final SciJavaEvent evt) {
+			System.out.println(evt.toString());
+		}
+	}
 }
