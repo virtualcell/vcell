@@ -329,8 +329,8 @@ def main():
         jms_env["ACTIVEMQ_MAX_MEMORY"] = '4096'
         jms_env["ACTIVEMQ_ENABLED_SCHEDULER"] = 'true'
         jms_volume_mappings = dict()
-        jms_volume_mappings[jms_datadir] = '/data/activemq'
-        jms_volume_mappings[jms_logdir] = '/var/log/activemq'
+        # jms_volume_mappings[jms_datadir] = '/data/activemq'
+        # jms_volume_mappings[jms_logdir] = '/var/log/activemq'
         jms_port_mappings = dict()
         jms_port_mappings[jms_webport] = '8161'
         jms_port_mappings[jms_port] = '61616'
