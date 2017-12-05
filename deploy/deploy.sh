@@ -64,9 +64,6 @@ while :; do
 	shift
 done
 
-echo "mvn repo is $mvn_repo"
-exit 0
-
 if [ "$#" -ne 2 ]; then
     show_help
 fi
