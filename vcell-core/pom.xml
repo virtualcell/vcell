@@ -313,6 +313,13 @@
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-common</artifactId>
+			<exclusions>
+				<!-- NB: Brought in by edu.ucar:netcdf:4.2.20 via vcell-core. -->
+				<exclusion>
+					<groupId>edu.ucar</groupId>
+					<artifactId>udunits</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 	
@@ -349,7 +356,7 @@
 							<md5>b536a5c3d84e6bafa3087f7ae311fe61</md5>
 						</configuration>
 					</execution>
-
+<!--
 					<execution>
 						<id>install-solvers-linux64</id>
 						<phase>generate-test-resources</phase>
@@ -363,7 +370,7 @@
 							<md5>99267594212f661ae55cfca0a3390b39</md5>
 						</configuration>
 					</execution>
-
+-->
 <!-- 
 					<execution>
 						<id>download-libjhdf-linux64</id>
