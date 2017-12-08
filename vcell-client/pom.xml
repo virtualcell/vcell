@@ -115,25 +115,40 @@
 		</dependency>
 
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>build-user-help</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>java</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass>org.vcell.documentation.DocumentCompiler</mainClass>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+	<profiles>
+		<profile>
+			<id>build-documentation</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+				<file>
+					<missing>target/classes/vcellDoc</missing>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>build-user-help</id>
+								<phase>process-classes</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<mainClass>org.vcell.documentation.DocumentCompiler</mainClass>
+							<arguments>
+								<argument>${project.basedir}/UserDocumentation/originalXML</argument>
+								<argument>${project.basedir}/target/classes/vcellDoc</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

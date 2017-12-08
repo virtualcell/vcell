@@ -72,8 +72,12 @@ public class DocumentCompiler {
 	//test have two html pages and they point to each other, in addition, xmlFile1 has an image.
 	public static void main(String[] args) {
 		try {
-			docSourceDir = new File("UserDocumentation/originalXML");
-			docTargetDir = new File("src/main/resources/vcellDoc");
+			if (args.length!=2) {
+				System.out.println("Usage: java "+DocumentCompiler.class.getTypeName()+" input-xml-dir  output-javahelp-dir");
+				System.exit(-1);
+			}
+			docSourceDir = new File(args[0]); // vcell-client/UserDocumentation/originalXML
+			docTargetDir = new File(args[1]); // vcell-client/src/main/resources/vcellDoc
 
 			if (!docSourceDir.exists() || !docSourceDir.isDirectory()){
 				throw new RuntimeException("document source directory "+docSourceDir.getPath()+" doesn't exist or isn't a directory");
