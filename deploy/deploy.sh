@@ -104,31 +104,17 @@ clientJarsDir=$clientTargetDir/maven-jars
 
 #--------------------------------------------------------------------------
 # build project, generate user help files, gather jar files
-# 1) maven build (maven clean verify)
-# 2) gather jar files needed by DocumentCompiler (maven dependency plugin)
-# 3) generate user help files (run DocumentCompiler)
-# 4) maven build (mvn -Dmaven.repo.local=$mvn_repo clean verify ... puts help files into jar resources)
+# 1) remove previously generated vcellDocs
+# 2) maven build and copy dependent jars from maven repo (maven clean install dependency:copy-dependencies)
 #---------------------------------------------------------------------------
 if [ "$skip_build" = false ]; then
 	cd $projectRootDir
-	echo "removing old docs"
+	echo "removing old docs from resources, will be rebuilt by exec plugin (DocumentCompiler)"
 	rm -r $projectRootDir/vcell-client/src/main/resources/vcellDocs
 	echo "build vcell"
 	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies
 	if [ $? -ne 0 ]; then
-		echo "failed first maven build: mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies"
-		exit -1
-	fi
-	echo "run document compiler"
-	java -cp $clientTargetDir/maven-jars/*:$clientTargetDir/* org.vcell.documentation.DocumentCompiler
-	if [ $? -ne 0 ]; then
-		echo "failed to build user help: DocumentCompiler"
-		exit -1
-	fi
-	echo "force rebuild to pick up new resources - the help files"
-	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies
-	if [ $? -ne 0 ]; then
-		echo "failed second maven build: mvn -Dmaven.repo.local=$mvn_repo clean install"
+		echo "failed maven build: mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies"
 		exit -1
 	fi
 fi
