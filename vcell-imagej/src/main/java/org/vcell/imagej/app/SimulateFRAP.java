@@ -30,20 +30,25 @@ import org.sbml.jsbml.ext.spatial.CompressionKind;
 import org.sbml.jsbml.ext.spatial.DataKind;
 import org.sbml.jsbml.ext.spatial.InterpolationKind;
 import org.sbml.jsbml.ext.spatial.SampledField;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.app.AppService;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandModule;
+import org.scijava.command.CommandService;
+import org.scijava.display.DisplayService;
 import org.scijava.io.ByteArrayByteBank;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.task.TaskService;
+import org.scijava.ui.UIService;
 import org.scijava.ui.viewer.DisplayViewer;
 import org.scijava.ui.viewer.DisplayWindow;
 import org.scijava.util.FileUtils;
+import org.vcell.imagej.app.RunVCellSimFromSBML.Sim;
 import org.vcell.vcellij.SimulationServiceImpl;
 import org.vcell.vcellij.api.SimulationInfo;
 import org.vcell.vcellij.api.SimulationService;
@@ -53,12 +58,15 @@ import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.display.ImageDisplay;
 import net.imagej.display.OverlayService;
+import net.imagej.lut.LUTService;
+import net.imagej.ops.OpService;
 import net.imagej.overlay.TextOverlay;
 import net.imagej.plugins.commands.display.AutoContrast;
 import net.imagej.plugins.commands.zoom.ZoomIn;
 import net.imagej.ui.swing.viewer.image.SwingImageDisplayPanel;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.display.ColorTable8;
 import net.imglib2.type.BooleanType;
@@ -116,9 +124,9 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 
 	@Parameter(type = ItemIO.OUTPUT)
 	private RunVCellSimFromSBML.Sim simResult;
-
-	@Parameter(type = ItemIO.OUTPUT)
-	private Object result;
+//
+//	@Parameter(type = ItemIO.OUTPUT)
+//	private Object result;
 	
 //	@Parameter(type = ItemIO.OUTPUT)
 //	private SimulationInfo simInfo;
@@ -127,8 +135,12 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 	public void run() {
 		try {
 			URL modelFileURL = SimulateFRAP.class.getResource("ImageJ_FRAP.xml");
-			simResult = RunVCellSimFromSBML.simulate(new File(modelFileURL.getFile()), 2, .1, appService, taskService, simService, statusService);
-			result = simResult.image();
+	        // Read SBML document
+			File sbmlModelFile = new File(modelFileURL.getFile());
+	        SBMLDocument sbmlDocument = null;
+	        sbmlDocument = SBMLReader.read(sbmlModelFile);
+			simResult = RunVCellSimFromSBML.simulate(sbmlDocument.getModel(), 2, .1, appService, taskService, simService, statusService);
+//			result = simResult.image();
 		}
 		catch (final Exception e) {
 			log.error(e);
@@ -142,7 +154,7 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 	public static void main(final String... args) throws IOException {
 		final ImageJ ij = new ImageJ();
 		ij.launch(args);
-		if(true){return;}
+		
 		List<CommandInfo> commandList =  ij.scifio().command().getCommands();
 		for(CommandInfo ci:commandList){
 			if(ci.getMenuPath().size() >= 2 && ci.getMenuPath().get(0).getName().equalsIgnoreCase("image") && (ci.getMenuPath().get(1).getName().equalsIgnoreCase("zoom") || ci.getMenuPath().get(1).getName().equalsIgnoreCase("adjust"))){
@@ -174,180 +186,190 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 		Future<CommandModule> future = ij.command().run(SimulateFRAP.class, true/*, "mask", bitMask*/);
 		try{
 			CommandModule commandModule = future.get();// wait for command to finish
+			Context context = commandModule.getContext();
+			SimulationService simService = context.getService(SimulationService.class);
+			DisplayService displayService = context.getService(DisplayService.class);
+			UIService uiService = context.getService(UIService.class);
+			CommandService cmdService = context.getService(CommandService.class);
+			LUTService lutService = context.getService(LUTService.class);
+			OpService opService = context.getService(OpService.class);
+			
 			Map<String, Object> outputs = commandModule.getOutputs();
 			RunVCellSimFromSBML.Sim sim = (RunVCellSimFromSBML.Sim)outputs.get("simResult");
-			ImgPlus<RealType> result = (ImgPlus<RealType>) outputs.get("result");
+//			ImgPlus<RealType> result = (ImgPlus<RealType>) outputs.get("result");
 			SimulationInfo simInfo = sim.simInfo();
 			
-//			SimulateFRAP<DoubleType,?> simulateFRAP = (SimulateFRAP<DoubleType,?>)commandModule.getDelegateObject();
-//			System.out.println(simulateFRAP);
-			SimulationService simService = ij.getContext().getService(SimulationService.class);
-			List<Double> t = simService.getTimePoints(simInfo);
-			List<VariableInfo> c = simService.getVariableList(simInfo);
-			int z = simService.sizeZ(simInfo);
-			int y = simService.sizeY(simInfo);
-			int x = simService.sizeX(simInfo);
-//			long[] dims = new long[result.numDimensions()];
-//			result.dimensions(dims);
-			System.out.println(t.size()+" "+c.size()+" "+z+" "+y+" "+x);
-			
+			RunVCellSimFromSBML.initDisplay( (RandomAccessible<RealType>) sim.image(), Sim.SIMULATED_FRAP, simInfo, simService, displayService, uiService, cmdService, lutService, opService);
 
-//			List<Display<?>> displays = ij.display().getDisplays();
-//			for(Display disp:displays){
-//				System.out.println(disp);
-//				if(disp instanceof DefaultImageDisplay){
-//					for(DataView dataview:((DefaultImageDisplay)disp)){
-//						DefaultDataset data = (DefaultDataset)dataview.getData();
-//						System.out.println(data.getImgPlus().getName()+" ----- disp == result? ="+(data.getImgPlus() == result));
+////			SimulateFRAP<DoubleType,?> simulateFRAP = (SimulateFRAP<DoubleType,?>)commandModule.getDelegateObject();
+////			System.out.println(simulateFRAP);
+//			SimulationService simService = ij.getContext().getService(SimulationService.class);
+//			List<Double> t = simService.getTimePoints(simInfo);
+//			List<VariableInfo> c = simService.getVariableList(simInfo);
+//			int z = simService.sizeZ(simInfo);
+//			int y = simService.sizeY(simInfo);
+//			int x = simService.sizeX(simInfo);
+////			long[] dims = new long[result.numDimensions()];
+////			result.dimensions(dims);
+//			System.out.println(t.size()+" "+c.size()+" "+z+" "+y+" "+x);
+//			
+//
+////			List<Display<?>> displays = ij.display().getDisplays();
+////			for(Display disp:displays){
+////				System.out.println(disp);
+////				if(disp instanceof DefaultImageDisplay){
+////					for(DataView dataview:((DefaultImageDisplay)disp)){
+////						DefaultDataset data = (DefaultDataset)dataview.getData();
+////						System.out.println(data.getImgPlus().getName()+" ----- disp == result? ="+(data.getImgPlus() == result));
+////					}
+////				}
+////			}
+//			
+////			IJ.debugMode = true;
+//			
+//			//Helpers to match labels with sliders
+//			HashMap<String, JLabel> labelComponents = new HashMap<>();
+//			HashMap<String, JScrollBar> scrollbarComponents = new HashMap<>();
+//
+//			//Update label text when sliders are moved
+//			AdjustmentListener adjustmentListener = new AdjustmentListener() {
+//				@Override
+//				public void adjustmentValueChanged(AdjustmentEvent ae) {
+//					try{
+//						JScrollBar scrollBar = (JScrollBar)ae.getSource();
+//						for(String label:scrollbarComponents.keySet()){
+//							if(scrollbarComponents.get(label) == ae.getSource()){
+//								final JLabel jlabel = labelComponents.get(label);
+//								int value = ((JScrollBar)ae.getSource()).getValue();
+//								String newText = null;
+//								if(label.equalsIgnoreCase("z")){
+//									newText = label+"("+value+")";
+//								}else if(label.equalsIgnoreCase("variable")){
+//									newText = label+"("+simService.getVariableList(simInfo).get(value).getVariableDisplayName()+")";//simServiceImpl.getVariableList(simInfo).get(value);
+//								}else if(label.equalsIgnoreCase("time")){
+//									newText = label+"("+simService.getTimePoints(simInfo).get(value)+")";//simServiceImpl.getTimePoints(simInfo).get(value);
+//								}
+//								if(newText != null){
+//									jlabel.setText(newText);
+//								}
+//								break;
+//							}
+//						}
+//					}catch(Exception e){
+//						e.printStackTrace();
 //					}
 //				}
+//			};
+//
+//
+//			ImageDisplay myDisplay = (ImageDisplay)ij.display().getDisplay(RunVCellSimFromSBML.Sim.SIMULATED_FRAP);
+//			DisplayViewer<?> myDisplayViewer = ij.ui().getDisplayViewer(myDisplay);
+//			DisplayWindow displayWindow = myDisplayViewer.getWindow();
+//			SwingImageDisplayPanel myDisplayPanel =  (SwingImageDisplayPanel)myDisplayViewer.getPanel();
+//			ArrayList<Component> winChildren = new ArrayList<>(Arrays.asList(myDisplayPanel.getComponents()));
+//			String lastLabelStr = null;
+//			final MigLayout[] migLayoutHolder = new MigLayout[] {null};
+//			while(winChildren.size() > 0){
+//				Component child = winChildren.remove(0);
+//				System.out.println(child.getClass().getName());
+//				if(child instanceof Container){
+//					winChildren.addAll(Arrays.asList(((Container)child).getComponents()));
+//				}
+//				if (child instanceof JLabel){
+//					String text = ((JLabel)child).getText();
+//					if(text.equalsIgnoreCase("Z") || text.equalsIgnoreCase("variable") || text.equalsIgnoreCase("time")){
+//						lastLabelStr = text;
+//						labelComponents.put(((JLabel)child).getText(), (JLabel)child);
+//						//Store the layoutmanager of the panel that contains the labels and sliders
+//						migLayoutHolder[0] = (MigLayout)((Container)child.getParent()).getLayout();
+//						//Set size of 'variable' label so long text doesn't spillover onto slider
+//						if(text.equalsIgnoreCase("variable")){
+//							Dimension d = ((JLabel)child).getMinimumSize();
+//							d.setSize(FIXED_X, d.height);
+//							((JLabel)child).setMinimumSize(d);
+//							d = ((JLabel)child).getMaximumSize();
+//							d.setSize(FIXED_X, d.height);
+//							((JLabel)child).setMaximumSize(d);
+//							d = ((JLabel)child).getPreferredSize();
+//							d.setSize(FIXED_X, d.height);
+//							((JLabel)child).setPreferredSize(d);
+//						}
+//					}
+//					System.out.println("---label='"+text+"' prnt="+child.getParent().getClass().getName());
+//					System.out.println("   "+child.getParent().hashCode()+" "+((Container)child.getParent()).getLayout().getClass().getName());
+//					
+//				} else if (child instanceof JScrollBar){
+//					System.out.println("---jscrollbar='"+((JScrollBar)child).getName()+"' prnt="+child.getParent().getClass().getName()+" "+child.getParent().hashCode());
+//					System.out.println("   "+child.getParent().hashCode());
+//					if(lastLabelStr != null){
+//						scrollbarComponents.put(lastLabelStr, (JScrollBar)child);
+//						((JScrollBar) child).addAdjustmentListener(adjustmentListener);
+//					}
+//					lastLabelStr = null;
+//				}else {
+//					lastLabelStr = null;
+//				}
 //			}
-			
-//			IJ.debugMode = true;
-			
-			//Helpers to match labels with sliders
-			HashMap<String, JLabel> labelComponents = new HashMap<>();
-			HashMap<String, JScrollBar> scrollbarComponents = new HashMap<>();
-
-			//Update label text when sliders are moved
-			AdjustmentListener adjustmentListener = new AdjustmentListener() {
-				@Override
-				public void adjustmentValueChanged(AdjustmentEvent ae) {
-					try{
-						JScrollBar scrollBar = (JScrollBar)ae.getSource();
-						for(String label:scrollbarComponents.keySet()){
-							if(scrollbarComponents.get(label) == ae.getSource()){
-								final JLabel jlabel = labelComponents.get(label);
-								int value = ((JScrollBar)ae.getSource()).getValue();
-								String newText = null;
-								if(label.equalsIgnoreCase("z")){
-									newText = label+"("+value+")";
-								}else if(label.equalsIgnoreCase("variable")){
-									newText = label+"("+simService.getVariableList(simInfo).get(value).getVariableDisplayName()+")";//simServiceImpl.getVariableList(simInfo).get(value);
-								}else if(label.equalsIgnoreCase("time")){
-									newText = label+"("+simService.getTimePoints(simInfo).get(value)+")";//simServiceImpl.getTimePoints(simInfo).get(value);
-								}
-								if(newText != null){
-									jlabel.setText(newText);
-								}
-								break;
-							}
-						}
-					}catch(Exception e){
-						e.printStackTrace();
-					}
-				}
-			};
-
-
-			ImageDisplay myDisplay = (ImageDisplay)ij.display().getDisplay(RunVCellSimFromSBML.Sim.SIMULATED_FRAP);
-			DisplayViewer<?> myDisplayViewer = ij.ui().getDisplayViewer(myDisplay);
-			DisplayWindow displayWindow = myDisplayViewer.getWindow();
-			SwingImageDisplayPanel myDisplayPanel =  (SwingImageDisplayPanel)myDisplayViewer.getPanel();
-			ArrayList<Component> winChildren = new ArrayList<>(Arrays.asList(myDisplayPanel.getComponents()));
-			String lastLabelStr = null;
-			final MigLayout[] migLayoutHolder = new MigLayout[] {null};
-			while(winChildren.size() > 0){
-				Component child = winChildren.remove(0);
-				System.out.println(child.getClass().getName());
-				if(child instanceof Container){
-					winChildren.addAll(Arrays.asList(((Container)child).getComponents()));
-				}
-				if (child instanceof JLabel){
-					String text = ((JLabel)child).getText();
-					if(text.equalsIgnoreCase("Z") || text.equalsIgnoreCase("variable") || text.equalsIgnoreCase("time")){
-						lastLabelStr = text;
-						labelComponents.put(((JLabel)child).getText(), (JLabel)child);
-						//Store the layoutmanager of the panel that contains the labels and sliders
-						migLayoutHolder[0] = (MigLayout)((Container)child.getParent()).getLayout();
-						//Set size of 'variable' label so long text doesn't spillover onto slider
-						if(text.equalsIgnoreCase("variable")){
-							Dimension d = ((JLabel)child).getMinimumSize();
-							d.setSize(FIXED_X, d.height);
-							((JLabel)child).setMinimumSize(d);
-							d = ((JLabel)child).getMaximumSize();
-							d.setSize(FIXED_X, d.height);
-							((JLabel)child).setMaximumSize(d);
-							d = ((JLabel)child).getPreferredSize();
-							d.setSize(FIXED_X, d.height);
-							((JLabel)child).setPreferredSize(d);
-						}
-					}
-					System.out.println("---label='"+text+"' prnt="+child.getParent().getClass().getName());
-					System.out.println("   "+child.getParent().hashCode()+" "+((Container)child.getParent()).getLayout().getClass().getName());
-					
-				} else if (child instanceof JScrollBar){
-					System.out.println("---jscrollbar='"+((JScrollBar)child).getName()+"' prnt="+child.getParent().getClass().getName()+" "+child.getParent().hashCode());
-					System.out.println("   "+child.getParent().hashCode());
-					if(lastLabelStr != null){
-						scrollbarComponents.put(lastLabelStr, (JScrollBar)child);
-						((JScrollBar) child).addAdjustmentListener(adjustmentListener);
-					}
-					lastLabelStr = null;
-				}else {
-					lastLabelStr = null;
-				}
-			}
-			//Set 'label' column to be fixed so width doesn't change when using 'variable' slider
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					migLayoutHolder[0].setColumnConstraints("[right,"+FIXED_X+":"+FIXED_X+":"+FIXED_X+"]5[fill,grow]");//http://www.miglayout.com/
-				}
-			});
-			//Set labels to initial values of sliders
-			for(String label:labelComponents.keySet()){
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						AdjustmentEvent ae = new AdjustmentEvent(scrollbarComponents.get(label), AdjustmentEvent.RESERVED_ID_MAX+1, AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED, scrollbarComponents.get(label).getValue());
-						adjustmentListener.adjustmentValueChanged(ae);
-					}
-				});
-			}
-			
-			//Set initial zoom so data x or y are up to 512
-			int biggestDim = Math.max(x, y);
-			int numZooms = Math.max(0, (512/biggestDim)-1);
-			for(int i=0;i<numZooms;i++){
-				ij.command().run(ZoomIn.class, true);
-			}
-//			CommandInfo cmdInfo = ij.scifio().command().getCommand(ZoomSet.class);
-//			Future<?> future2 = ij.scifio().command().run(cmdInfo, true,"zoomPercent",500,"centerU",38.5,"centerV",38.5);
-//			Object obj = future2.get();// wait for command to finish
-//			System.out.println(obj);
-			
-			//Set brightnessContrast
-			ij.command().run(AutoContrast.class, true);
-			
-			ColorTable8 ct = new ColorTable8(RunVCellSimFromSBML.vcellLutData());
-			ij.lut().applyLUT(ct, myDisplay);
-
-			//Calculate min/max for each variable over all times
-			double[] minVars = new double[c.size()];
-			double[] maxVars = new double[c.size()];
-			for(int channelIndex=0;channelIndex<c.size();channelIndex++){
-				//Define interval for current channel to include all pixels and all times
-				IntervalView<RealType> interval = Views.interval(result, new long[] {0,0,0,channelIndex,0}, new long[] {x-1,y-1,z-1,channelIndex,t.size()-1});//x,y,z,c,t
-				IterableInterval<RealType> channelData = Views.iterable(interval);
-				Pair<RealType<?>, RealType<?>> minMax = ij.op().stats().minMax(channelData);
-				minVars[channelIndex] = minMax.getA().getRealDouble();//ij.op().stats().min(dataII).getRealDouble();
-				maxVars[channelIndex] = minMax.getB().getRealDouble();//ij.op().stats().max(dataII).getRealDouble();
-				System.out.println("var="+c.get(channelIndex).getVariableDisplayName()+" min="+minVars[channelIndex]+" max="+maxVars[channelIndex]);
-			}
-
-			
-//			myDisplay.getActiveView().getContext().inject(new EventTester());
-			
-//			SwingDisplayWindow myDisplayWindow = (SwingDisplayWindow)myDisplayViewer.getWindow();
-//			BeanUtils.printComponentInfo(myDisplayWindow);
-//			System.out.println(myDisplay+" -- "+myDisplayViewer+" -- "+ myDisplayWindow);
-
-//			Overlay overlay = new Overlay();
-//			String[] imageTitles = WindowManager.getImageTitles();
-//			ImagePlus imagePlus = WindowManager.getImage(Sim.SIMULATED_FRAP);
-			
-//			createAnnotation(myDisplay, t, c, z,ij.overlay());
+//			//Set 'label' column to be fixed so width doesn't change when using 'variable' slider
+//			SwingUtilities.invokeLater(new Runnable() {
+//				@Override
+//				public void run() {
+//					migLayoutHolder[0].setColumnConstraints("[right,"+FIXED_X+":"+FIXED_X+":"+FIXED_X+"]5[fill,grow]");//http://www.miglayout.com/
+//				}
+//			});
+//			//Set labels to initial values of sliders
+//			for(String label:labelComponents.keySet()){
+//				SwingUtilities.invokeLater(new Runnable() {
+//					@Override
+//					public void run() {
+//						AdjustmentEvent ae = new AdjustmentEvent(scrollbarComponents.get(label), AdjustmentEvent.RESERVED_ID_MAX+1, AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED, scrollbarComponents.get(label).getValue());
+//						adjustmentListener.adjustmentValueChanged(ae);
+//					}
+//				});
+//			}
+//			
+//			//Set initial zoom so data x or y are up to 512
+//			int biggestDim = Math.max(x, y);
+//			int numZooms = Math.max(0, (512/biggestDim)-1);
+//			for(int i=0;i<numZooms;i++){
+//				ij.command().run(ZoomIn.class, true);
+//			}
+////			CommandInfo cmdInfo = ij.scifio().command().getCommand(ZoomSet.class);
+////			Future<?> future2 = ij.scifio().command().run(cmdInfo, true,"zoomPercent",500,"centerU",38.5,"centerV",38.5);
+////			Object obj = future2.get();// wait for command to finish
+////			System.out.println(obj);
+//			
+//			//Set brightnessContrast
+//			ij.command().run(AutoContrast.class, true);
+//			
+//			ColorTable8 ct = new ColorTable8(RunVCellSimFromSBML.vcellLutData());
+//			ij.lut().applyLUT(ct, myDisplay);
+//
+//			//Calculate min/max for each variable over all times
+//			double[] minVars = new double[c.size()];
+//			double[] maxVars = new double[c.size()];
+//			for(int channelIndex=0;channelIndex<c.size();channelIndex++){
+//				//Define interval for current channel to include all pixels and all times
+//				IntervalView<RealType> interval = Views.interval(result, new long[] {0,0,0,channelIndex,0}, new long[] {x-1,y-1,z-1,channelIndex,t.size()-1});//x,y,z,c,t
+//				IterableInterval<RealType> channelData = Views.iterable(interval);
+//				Pair<RealType<?>, RealType<?>> minMax = ij.op().stats().minMax(channelData);
+//				minVars[channelIndex] = minMax.getA().getRealDouble();//ij.op().stats().min(dataII).getRealDouble();
+//				maxVars[channelIndex] = minMax.getB().getRealDouble();//ij.op().stats().max(dataII).getRealDouble();
+//				System.out.println("var="+c.get(channelIndex).getVariableDisplayName()+" min="+minVars[channelIndex]+" max="+maxVars[channelIndex]);
+//			}
+//
+//			
+////			myDisplay.getActiveView().getContext().inject(new EventTester());
+//			
+////			SwingDisplayWindow myDisplayWindow = (SwingDisplayWindow)myDisplayViewer.getWindow();
+////			BeanUtils.printComponentInfo(myDisplayWindow);
+////			System.out.println(myDisplay+" -- "+myDisplayViewer+" -- "+ myDisplayWindow);
+//
+////			Overlay overlay = new Overlay();
+////			String[] imageTitles = WindowManager.getImageTitles();
+////			ImagePlus imagePlus = WindowManager.getImage(Sim.SIMULATED_FRAP);
+//			
+////			createAnnotation(myDisplay, t, c, z,ij.overlay());
 		}catch (Exception e) {
 			e.printStackTrace();
 		}

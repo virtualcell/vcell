@@ -21,37 +21,39 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import javax.swing.JLabel;
 import javax.swing.JScrollBar;
 import javax.swing.SwingUtilities;
+import javax.xml.stream.XMLStreamException;
 
+import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
-import org.scijava.ItemIO;
 import org.scijava.app.AppService;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
-import org.scijava.command.CommandInfo;
-import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
-import org.scijava.display.Display;
+import org.scijava.convert.DefaultConverter;
 import org.scijava.display.DisplayService;
 import org.scijava.event.EventHandler;
+import org.scijava.module.DefaultMutableModule;
+import org.scijava.module.DefaultMutableModuleInfo;
+import org.scijava.module.DefaultMutableModuleItem;
+import org.scijava.module.MutableModuleInfo;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.scijava.task.event.TaskEvent;
 import org.scijava.ui.UIService;
+import org.scijava.ui.swing.widget.SwingInputHarvester;
 import org.scijava.ui.viewer.DisplayViewer;
-import org.scijava.ui.viewer.DisplayWindow;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.TokenMangler;
 import org.vcell.vcellij.api.DomainType;
 import org.vcell.vcellij.api.SimulationInfo;
 import org.vcell.vcellij.api.SimulationService;
@@ -63,7 +65,6 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
-import net.imagej.Data;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
@@ -103,8 +104,8 @@ public class RunVCellSimFromSBML implements Command {
     // Feel free to add more parameters here...
     //
 
-    @Parameter(/*value=ResourceUtil.VCELL_HOME_DIR_NAME*/)
-    private File sbmlModelFile;
+	@Parameter()
+	private File sbmlModelFile;
 
     @Parameter()
     private double simDuration;
@@ -114,7 +115,7 @@ public class RunVCellSimFromSBML implements Command {
 
     @Parameter()
     private String displayName;
-   
+
     @Parameter
     private OpService opService;
 
@@ -145,19 +146,59 @@ public class RunVCellSimFromSBML implements Command {
 //	@Parameter(type = ItemIO.OUTPUT)
 //	private Object result;
 
+	public static void main(final String... args) throws IOException {
+		final ImageJ ij = new ImageJ();
+		ij.launch(args);
+	}
+	
 	private void initParameters() {
 		sbmlModelFile = new File(RunVCellSimFromSBML.class.getResource("ImageJ_FRAP.xml").getFile());
-//		sbmlModelFile = ResourceUtil.getVcellHome();
-		simDuration = 2;
-		simTimeStep = .1;
-		displayName = Sim.SIMULATED_FRAP;
+//		File sbmlModelFile = ResourceUtil.getVcellHome();
+
+        try {
+//    		MutableModuleInfo mmi = new DefaultMutableModuleInfo();
+//    		SBMLDocument sbmlDocument = null;
+//			sbmlDocument = SBMLReader.read(sbmlModelFile);
+//			List<org.sbml.jsbml.Parameter> paramList = sbmlDocument.getModel().getListOfParameters();
+//			for (org.sbml.jsbml.Parameter param:paramList) {
+//				if(param.isConstant()){
+//					System.out.println(param.getId()+" "+param.getName()+" "+param.getValue());
+//		    		DefaultMutableModuleItem<Double> dmi = new DefaultMutableModuleItem<>(mmi, param.getId()+" "+param.getName(), Double.class);
+//		    		dmi.setDefaultValue((Double.isFinite(param.getValue())?param.getValue():0));
+//		    		mmi.addInput(dmi);
+//				}
+//			}
+//			List<Reaction> reactList = sbmlDocument.getModel().getListOfReactions();
+//			for (Reaction react:reactList) {
+//				List<LocalParameter> locParamList = react.getKineticLaw().getListOfLocalParameters();
+//				for(LocalParameter locParam:locParamList){
+//					System.out.println(locParam.getId()+" "+locParam.getName()+" "+locParam.getValue());
+//		    		DefaultMutableModuleItem<Double> dmi = new DefaultMutableModuleItem<>(mmi, locParam.getId()+" "+locParam.getName(), Double.class);
+//		    		dmi.setDefaultValue((Double.isFinite(locParam.getValue())?locParam.getValue():0));
+//		    		mmi.addInput(dmi);
+//				}
+//			}
+//    		DefaultMutableModule dmm = new DefaultMutableModule(mmi);
+//    		SwingInputHarvester sih = new SwingInputHarvester();
+//    		sih.setContext(appService.getContext());
+//    		sih.harvest(dmm);
+
+			simDuration = 2;
+			simTimeStep = .1;
+			displayName = Sim.SIMULATED_FRAP;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
     @Override
     public void run() {
 
     	try{
-    		RunVCellSimFromSBML.Sim simResult = simulate(sbmlModelFile, simDuration, simTimeStep, appService, taskService, simService, statusService);
+    		SBMLDocument sbmlDocument = null;
+			sbmlDocument = SBMLReader.read(sbmlModelFile);
+    		RunVCellSimFromSBML.Sim simResult = simulate(sbmlDocument.getModel(), simDuration, simTimeStep, appService, taskService, simService, statusService);
 //    		ImgPlus<RealType> result = (ImgPlus<RealType>)simResult.image();
     		initDisplay((ImgPlus<RealType>)simResult.image(),displayName, simResult.simInfo(), simService, displayService, uiService, cmdService, lutService, opService);
     	}catch(Exception e){
@@ -184,12 +225,9 @@ public class RunVCellSimFromSBML implements Command {
 //        displayService.createDisplay(img);
     }
     
-	public static  Sim simulate(File sbmlModelFile,double simDuration,double simTimeStep,AppService appService,TaskService taskService,SimulationService simService,StatusService statusService) throws Exception {
+	public static  Sim simulate(Model sbmlModel,double simDuration,double simTimeStep,AppService appService,TaskService taskService,SimulationService simService,StatusService statusService) throws Exception {
     	initializeVCell(appService);
-        // Read SBML document
-        SBMLDocument sbmlDocument = null;
-        sbmlDocument = SBMLReader.read(sbmlModelFile);
-		final RunVCellSimFromSBML.Sim sim = createSimulation(sbmlDocument.getModel(),taskService,simService,simDuration,simTimeStep);
+		final RunVCellSimFromSBML.Sim sim = createSimulation(sbmlModel,taskService,simService,simDuration,simTimeStep);
 
 		// Wait for the simulation to complete.
 		final StatusUpdater statusUpdater = new StatusUpdater(sim.task(),statusService);
@@ -593,6 +631,8 @@ public class RunVCellSimFromSBML implements Command {
 			lutService.applyLUT(ct, myDisplay);
 
 			//Calculate min/max for each variable over all times
+DatasetView dsv = ((DatasetView)myDisplay.getActiveView());
+System.out.println("chancnt="+dsv.getChannelCount());
 			double[] minVars = new double[c.size()];
 			double[] maxVars = new double[c.size()];
 			for(int channelIndex=0;channelIndex<c.size();channelIndex++){
