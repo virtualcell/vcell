@@ -12,7 +12,6 @@ package org.vcell.util.graphlayout;
 
 import java.awt.Dimension;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.vcell.util.graphlayout.ContainedGraph.Container;
 import org.vcell.util.graphlayout.ContainedGraph.Edge;
@@ -33,16 +32,17 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 
 		public final DirectedSparseMultigraph<GlgGraphNode, GlgGraphEdge> jungGraph;
 		public final SpringLayout<GlgGraphNode, GlgGraphEdge> layout;
-		public GlgCube dimensions;
-//		public List<GlgGraphNode> node_array;
 		
 		SpringLayout<GlgGraphNode, GlgGraphEdge> getLayout() {
 			return layout;
 		}
 		
-		public GlgGraphLayout(){
-			this.jungGraph = new DirectedSparseMultigraph<>();
-			this.layout = new SpringLayout<GlgGraphNode, GlgGraphEdge>(this.jungGraph);
+		public GlgGraphLayout(int width, int height) {
+			jungGraph = new DirectedSparseMultigraph<>();
+			layout = new SpringLayout<GlgGraphNode, GlgGraphEdge>(this.jungGraph);
+//			layout.initialize();
+//			layout.reset();
+			layout.setSize(new Dimension(width, height));
 		}
 
 		public GlgGraphNode AddNode(LAYOUT_TYPE layoutType, Node node) {
@@ -61,39 +61,24 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 			return jungGraph.findEdge(glgNode1, glgNode2) != null;
 		}
 
-		public GlgGraphEdge AddEdge(GlgGraphNode glgNode1, GlgGraphNode glgNode2,
-				LAYOUT_TYPE typeExternal, Edge edge) {
-			// TODO: have to decompile to find out what LAYOUT_TYPE is used for in this method
+		public GlgGraphEdge AddEdge(GlgGraphNode glgNode1, GlgGraphNode glgNode2, Edge edge) {
 			GlgGraphEdge glgGraphEdge = new GlgGraphEdge(edge);
 			boolean retcode = jungGraph.addEdge(glgGraphEdge, glgNode1, glgNode2); // ignore retcode?
 			return glgGraphEdge;
 		}
 
-		public GlgPoint GetNodePosition(GlgGraphNode glgNode) {
-			GlgPoint glgPoint = new GlgPoint(layout.getX(glgNode),layout.getY(glgNode));
-			return glgPoint;
-		}
-
 		public void Update() {
 			// TODO:  ... maybe we want to loop here many times
-			
 		}
 		
-		public void setSize(int width, int height){
-//			layout.initialize();
-//			layout.reset();
-			layout.setSize(new Dimension(width,height));
-		}
-
 		public boolean SpringIterate() {
 			layout.step();
 			return layout.done();
 		}
-		
 	}
 	
 	private static class GlgGraphNode {
-		GlgPoint position = new GlgPoint(0,0);
+		//GlgPoint position = new GlgPoint(0,0);
 		boolean external = false;
 		Node data;  // vcell node
 	}
@@ -102,21 +87,6 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 		Edge edge;
 		private GlgGraphEdge(Edge edge){
 			this.edge = edge;
-		}
-	}
-	
-	private static class GlgCube {
-		GlgPoint p1;
-		GlgPoint p2;
-	}
-	
-	private static class GlgPoint {
-		double x;
-		double y;
-
-		GlgPoint(double x, double y) {
-			this.x = x;
-			this.y = y;
 		}
 	}
 	
@@ -129,12 +99,8 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 		protected final Map<Edge, GlgGraphEdge> edgeMap = new HashMap<Edge, GlgGraphEdge>();
 
 		public ContainerContext(Container container) {
-			glgGraph = new GlgGraphLayout();
+			glgGraph = new GlgGraphLayout((int)container.width, (int)container.height);
 			this.container = container;
-			GlgCube glgDims = new GlgCube();
-			glgDims.p1 = new GlgPoint(container.x, container.y);
-			glgDims.p2 = new GlgPoint(container.x + container.width, container.y + container.height);
-			glgGraph.dimensions = glgDims;
 		}
 		
 		public Container getContainer() { return container; }
@@ -153,18 +119,24 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 			glgNode = context.getGlgGraph().AddNode(LAYOUT_TYPE.TYPE_DEFAULT, node);
 			context.getIntNodeMap().put(node, glgNode);
 		}
-		context.getGlgGraph().SetNodePosition(glgNode, node.getCenterX(), node.getCenterY());
+		double x = node.getCenterX() - context.getContainer().x;	// jung layout is 0 aligned (x=0, y=0), vCell containers have an x/y offset
+		double y = node.getCenterY() - context.getContainer().y;
+		context.getGlgGraph().SetNodePosition(glgNode, x, y);
 		return glgNode;
 	}
 
+	// node2 - internal, already dealt with
+	// node - our external candidate
 	protected static GlgGraphNode getOrAddExternalNode(ContainerContext context, Node node, Node node2) {
 		GlgGraphNode glgNode = context.getExtNodeMap().get(node);
 		if(glgNode == null) {
 			glgNode = context.getGlgGraph().AddNode(LAYOUT_TYPE.TYPE_EXTERNAL, node);
+			context.getGlgGraph().getLayout().lock(glgNode, true);
 			context.getExtNodeMap().put(node, glgNode);
 		}
-		glgNode.position.x = node.getCenterX() - node2.getCenterX();
-		glgNode.position.y = node.getCenterY() - node2.getCenterY();
+		double x = node.getCenterX() - node2.getCenterX();	// external nodes will be outside the layout rectangle
+		double y = node.getCenterY() - node2.getCenterY();
+		context.getGlgGraph().SetNodePosition(glgNode, x, y);
 		return glgNode;
 	}
 
@@ -178,7 +150,7 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 				GlgGraphNode glgNode1 = getOrAddInternalNode(context, node1);
 				GlgGraphNode glgNode2 = getOrAddInternalNode(context, node2);
 				if(!context.getGlgGraph().NodesConnected(glgNode1, glgNode2)) {
-					glgEdge = context.getGlgGraph().AddEdge(glgNode1, glgNode2, LAYOUT_TYPE.TYPE_DEFAULT, edge);
+					glgEdge = context.getGlgGraph().AddEdge(glgNode1, glgNode2, edge);
 					context.getEdgeMap().put(edge, glgEdge);					
 				}
 			}			
@@ -188,8 +160,7 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 				GlgGraphNode glgNode1 = getOrAddInternalNode(context, node1);
 				GlgGraphNode glgNodeExternal2 = getOrAddExternalNode(context, node2, node1);
 				if(!context.getGlgGraph().NodesConnected(glgNode1, glgNodeExternal2)) {	
-					glgEdge = context.getGlgGraph().AddEdge(glgNode1, glgNodeExternal2, 
-							LAYOUT_TYPE.TYPE_EXTERNAL, edge);
+					glgEdge = context.getGlgGraph().AddEdge(glgNode1, glgNodeExternal2, edge);
 					context.getEdgeMap().put(edge, glgEdge);
 				}
 			}
@@ -199,8 +170,7 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 				GlgGraphNode glgNodeExternal1 = getOrAddExternalNode(context, node1, node2);
 				GlgGraphNode glgNode2 = getOrAddInternalNode(context, node2);
 				if(!context.getGlgGraph().NodesConnected(glgNodeExternal1, glgNode2)) {					
-					glgEdge = context.getGlgGraph().AddEdge(glgNode2, glgNodeExternal1, 
-							LAYOUT_TYPE.TYPE_EXTERNAL, edge);
+					glgEdge = context.getGlgGraph().AddEdge(glgNode2, glgNodeExternal1, edge);
 					context.getEdgeMap().put(edge, glgEdge);
 				}
 			}						
@@ -209,18 +179,23 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 
 	@Override
 	public void layout(ContainedGraph graph) {
-		for(int i = 0; i < 9; ++i) {
+		long TIMEOUT = 5000;	// stop algorithm if it takes too long
+		long startTime = System.currentTimeMillis();
+		for(int i = 0; i < 400; ++i) {
+			long currentTime = System.currentTimeMillis();
+			if(currentTime - startTime > TIMEOUT) {
+				break;		// exit if it takes too long
+			}
 			for(Container container : graph.getContainers()) {
-				ContainerContext containerContext = new ContainerContext(container);
+				ContainerContext containerContext = new ContainerContext(container);	// size is set here
 				for(Node node : graph.getContainerNodes(container)) {
 					getOrAddInternalNode(containerContext, node);
 					for(Edge edge : graph.getNodeEdges(node)) {
 						getOrAddEdge(containerContext, edge);
 					}
 				}
-				containerContext.getGlgGraph().setSize((int)container.width,(int)container.height);
 				int count = 0;
-				while (!containerContext.getGlgGraph().SpringIterate() && count < 500) {
+				while (!containerContext.getGlgGraph().SpringIterate() && count < 10) {
 					count++;
 					;
 				}
@@ -238,18 +213,15 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 //					}
 //				}
 				
-//				for(GlgGraphNode glgNode : containerContext.getGlgGraph().getLayout().) {
-				
 				for(Node node : graph.getContainerNodes(container)) {
 					Container nodeContainer = node.getContainer();
 					if(nodeContainer.equals(container)) {
 						GlgGraphNode glgNode = containerContext.getIntNodeMap().get(node);
-						double x = containerContext.getGlgGraph().getLayout().getX(glgNode);
-						double y = containerContext.getGlgGraph().getLayout().getY(glgNode);
+						double x = containerContext.getGlgGraph().getLayout().getX(glgNode) + container.x;
+						double y = containerContext.getGlgGraph().getLayout().getY(glgNode) + container.y;
 						node.setCenter(x, y);
 					}
 				}
-				
 				stretchLayouter.layout(graph, container);
 			}
 		}
