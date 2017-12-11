@@ -9,6 +9,7 @@ skip_install4j=false
 skip_build=false
 skip_extra_solvers=false
 restart=false
+mvn_repo=$HOME/.m2
 
 show_help() {
 	echo "usage: deploy.sh [OPTIONS] config_file build_number"
@@ -18,6 +19,7 @@ show_help() {
 	echo "  [OPTIONS]"
 	echo "    -h | --help           show this message"
 	echo "    --restart             restart vcell after deploy"
+	echo "    --mvn-repo REPO_DIR   override local maven repository (defaults to $HOME/.m2)"
 	echo "    --skip-build          (debugging) skip full maven clean build"
 	echo "    --skip-install4j      (debugging) skip installer generation"
 	echo "    --skip-extra-solvers  (TEMPORARY) skip installing 'extra' server-side solvers from"
@@ -38,6 +40,10 @@ while :; do
 		--restart)
 			restart=true
 			;;
+		--mvn-repo)
+			shift
+			mvn_repo=$1
+			;;
 		--skip-build)
 			skip_build=true
 			;;
@@ -48,7 +54,9 @@ while :; do
 			skip_install4j=true
 			;;
 		-?*)
-			printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+			printf 'ERROR: Unknown option: %s\n' "$1" >&2
+			echo ""
+			show_help
 			;;
 		*)               # Default case: No more options, so break out of the loop.
 			break
@@ -96,31 +104,17 @@ clientJarsDir=$clientTargetDir/maven-jars
 
 #--------------------------------------------------------------------------
 # build project, generate user help files, gather jar files
-# 1) maven build (maven clean verify)
-# 2) gather jar files needed by DocumentCompiler (maven dependency plugin)
-# 3) generate user help files (run DocumentCompiler)
-# 4) maven build (mvn clean verify ... puts help files into jar resources)
+# 1) remove previously generated vcellDocs
+# 2) maven build and copy dependent jars from maven repo (maven clean install dependency:copy-dependencies)
 #---------------------------------------------------------------------------
 if [ "$skip_build" = false ]; then
 	cd $projectRootDir
-	echo "removing old docs"
+	echo "removing old docs from resources, will be rebuilt by exec plugin (DocumentCompiler)"
 	rm -r $projectRootDir/vcell-client/src/main/resources/vcellDocs
 	echo "build vcell"
-	mvn clean install dependency:copy-dependencies
+	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies
 	if [ $? -ne 0 ]; then
-		echo "failed first maven build: mvn clean install dependency:copy-dependencies"
-		exit -1
-	fi
-	echo "run document compiler"
-	java -cp $clientTargetDir/maven-jars/*:$clientTargetDir/* org.vcell.documentation.DocumentCompiler
-	if [ $? -ne 0 ]; then
-		echo "failed to build user help: DocumentCompiler"
-		exit -1
-	fi
-	echo "force rebuild to pick up new resources - the help files"
-	mvn clean install dependency:copy-dependencies
-	if [ $? -ne 0 ]; then
-		echo "failed second maven build: mvn clean install"
+		echo "failed maven build: mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies"
 		exit -1
 	fi
 fi
@@ -171,6 +165,7 @@ jms_logdir="${vcell_server_sitedir}/activemq/log"
 jms_container_name="activemq${vcell_site_camel}"
 jms_host="${vcell_jms_host}"
 jms_port="${vcell_jms_port}"
+jms_webport="${vcell_jms_webport}"
 jms_user="${vcell_jms_user}"
 
 mongodb_containername="mongo${vcell_site_camel}"
@@ -234,9 +229,9 @@ installedPython=/share/apps/vcell2/vtk/usr/bin/vcellvtkpython
 #--------------------------------------------------------------
 cd $projectRootDir
 echo "populate maven-jars"
-mvn dependency:copy-dependencies
+mvn -Dmaven.repo.local=$mvn_repo dependency:copy-dependencies
 if [ $? -ne 0 ]; then
-	echo "failed: mvn dependency:copy-dependencies"
+	echo "failed: mvn -Dmaven.repo.local=$mvn_repo dependency:copy-dependencies"
 	exit -1
 fi
 
@@ -399,6 +394,7 @@ sed_in_place "s/GENERATED-JMSUSER/${vcell_jms_user}/g"						$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSPSWD/${vcell_secrets_jms_pswd}/g"				$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSHOST/${vcell_jms_host}/g"						$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSPORT/${vcell_jms_port}/g"						$stagingVCellInclude
+sed_in_place "s/GENERATED-JMSWEBPORT/${vcell_jms_webport}/g"					$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSCONTAINERNAME/${jms_container_name}/g"			$stagingVCellInclude
 sed_in_place "s+GENERATED-JMSDATADIR+${jms_datadir}+g"						$stagingVCellInclude
 sed_in_place "s+GENERATED-JMSLOGDIR+${jms_logdir}+g"							$stagingVCellInclude

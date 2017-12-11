@@ -34,6 +34,8 @@ export vcell_jms_url
 export vcell_jms_user
 export vcell_jms_host
 export vcell_jms_port
+export vcell_jms_webport
+# export vcell_jms_stompport
 
 export vcell_mongodb_containername
 export vcell_mongodb_host

@@ -10,8 +10,27 @@ fi
 
 _build=$1
 
+#
+# _site_port_offset is (by default) applied to all site specific ports,
+# this variable is used to introduce nice default ports, but is only used
+# as a convenience.  Individual ports can be overridden without using
+# _site_port_offset
+#
+# REL:  _site_port_offset=0
+# BETA: _site_port_offset=1
+# ALPHA:_site_port_offset=2
+# TEST: _site_port_offset=3
+# TEST2: _site_port_offset=4
+# TEST3: _site_port_offset=5
+# TEST4: _site_port_offset=6
+#
 _site="test"
+_site_port_offset=3
 _version="6.2"
+_rmi_use_port_80=false
+_monitor_nagios=false
+_use_jmx=false
+
 vcell_server_os="linux64"
 
 vcell_site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
@@ -33,19 +52,30 @@ vcell_pathto_sitedir="/share/apps/vcell2/deployed_new/$vcell_site_lower"
 vcell_user="vcell"
 vcell_servicehost="vcell-service.cam.uchc.edu"
 vcell_apihost="vcellapi.cam.uchc.edu"
-vcell_apiport=8081
+vcell_apiport="$((8080 + $_site_port_offset))"
 vcell_installer_scp_destination="${vcell_user}@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/${vcell_site_camel}"
 
 #
 # Nagios monitor port  
 # (rel=33330, beta=33331, alpha=33332, test=-33333, test2=-33334, test3=-33335, test4=-33336)
 #
-vcell_monitor_queryport=-33336
+if [ "$_monitor_nagios" = true ]; then
+	vcell_monitor_queryport="$((33330 + $_site_port_offset))"
+else
+	vcell_monitor_queryport=-1
+fi
 
 vcell_rmihost="vcell-rmi-alpha.cam.uchc.edu"
-vcell_rmiport_low=-1
-vcell_rmiport_high=40109
-vcell_rmihosts="$vcell_rmihost:$vcell_rmiport_high"
+if [ "$_rmi_use_port_80" = false ]; then
+	vcell_rmiport_low=-1
+	vcell_rmiport_high="$((40105 + $_site_port_offset))"
+	vcell_rmihosts="$vcell_rmihost:$vcell_rmiport_high"
+else
+	vcell_rmiport_low=80
+	vcell_rmiport_high="$((40105 + $_site_port_offset))"
+	vcell_rmihosts="$vcell_rmihost:$vcell_rmiport_high;$vcell_rmihost:$vcell_rmiport_low"
+fi
+
 vcell_bioformatsJarFile="vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar"
 vcell_bioformatsJarDownloadURL="http://vcell.org/webstart/$vcell_bioformatsJarFile"
 
@@ -57,7 +87,8 @@ vcell_vcellOracleJarFileName="vcell-oracle-0.0.1-SNAPSHOT.jar"
 
 vcell_jms_user=clientUser
 vcell_jms_host=vcell-docker.cam.uchc.edu
-vcell_jms_port=61618
+vcell_jms_port="$((61616 + $_site_port_offset))"
+vcell_jms_webport="$((8161 + $_site_port_offset))"
 vcell_jms_url="failover:(tcp://${vcell_jms_host}:${vcell_jms_port})?timeout=120000"
 
 #
@@ -78,7 +109,7 @@ vcell_amplistor_url="http://obj1.cam.uchc.edu:8080/namespace/service_vcell/"
 vcell_amplistor_user=vcell
 
 vcell_mongodb_host=vcell-docker.cam.uchc.edu
-vcell_mongodb_port=27017
+vcell_mongodb_port="$((27017 + $_site_port_offset))"
 vcell_mongodb_database=test
 vcell_mongodb_collection=log
 
@@ -89,9 +120,15 @@ vcell_smtp_email="VCell_Support@uchc.edu"
 vcell_common_jre=/share/apps/vcell2/java/jdk1.8.0_66/bin/java
 vcell_common_jre_rmi=/usr/java/jdk1.8.0_66/jre/bin/java
 
-vcell_rmiservice_high_jmxport=12313
-vcell_rmiservice_http_jmxport=-1
-vcell_vcellservice_jmxport=12370
+if [ "$_use_jmx" = true ]; then
+	vcell_rmiservice_high_jmxport="$((12310 + $_site_port_offset))"
+	vcell_rmiservice_http_jmxport="$((12320 + $_site_port_offset))"
+	vcell_vcellservice_jmxport="$((12330 + $_site_port_offset))"
+else
+	vcell_rmiservice_high_jmxport=-1
+	vcell_rmiservice_http_jmxport=-1
+	vcell_vcellservice_jmxport=-1
+fi
 
 vcell_primary_datadir=/share/apps/vcell3/users/
 vcell_secondary_datadir=/share/apps/vcell3/users/
