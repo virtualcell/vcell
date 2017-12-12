@@ -59,6 +59,7 @@ import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.RbmObservable;
@@ -277,6 +278,9 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species), new Object[] {object});
 			} else if (object instanceof RbmObservable) {
 				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.OBSERVABLES_NODE, ActiveViewID.observables), new Object[] {object});
+			} else if (object instanceof MathDescription) {
+//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE, ActiveViewID.generated_math), new Object[] {object});
+				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping), new Object[] {object});
 			} else if (object instanceof SpeciesPattern) {
 				//			if (issue.getIssueContext().hasContextType(ContextType.SpeciesContext)){
 				//				SpeciesContext thing = (SpeciesContext)issue.getIssueContext().getContextObject(ContextType.SpeciesContext);
@@ -314,6 +318,8 @@ public class IssuePanel extends DocumentEditorSubPanel {
 					followHyperlink(new ActiveView(simContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition), new Object[] {object});
 				}else if (issueContext.hasContextType(ContextType.MathModel)){
 					followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE, ActiveViewID.math_geometry), new Object[] {object});
+				}else if (issueContext.hasContextType(ContextType.MathDescription)){
+					followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition), new Object[] {object});
 				}
 			} else {
 				System.err.println("unknown object type in IssuePanel.invokeHyperlink(): " + object.getClass() + ", context type: " + issueContext.getContextType());

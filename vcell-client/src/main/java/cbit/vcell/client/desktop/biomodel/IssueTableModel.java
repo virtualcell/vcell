@@ -310,8 +310,10 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				}
 			} else if (source instanceof Model) {
 				description = "Model";
-			} else if (source instanceof BioEvent){
+			} else if (source instanceof BioEvent) {
 				return "Protocols / Events";
+			} else if (source instanceof MathDescription) {
+				return "Math Description";
 			} else {
 				System.err.println("unknown source type in IssueTableModel.getSourceObjectPathDescription(): " + source.getClass());
 			}
@@ -414,6 +416,8 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				description = m.getName();
 			} else if (object instanceof BioEvent) {
 				return ((BioEvent)object).getName()+"";
+			} else if (object instanceof MathDescription) {
+				return ((MathDescription)object).getName()+"";
 			} else {
 				System.err.println("unknown object type in IssueTableModel.getSourceObjectDescription(): " + object.getClass());
 			}
