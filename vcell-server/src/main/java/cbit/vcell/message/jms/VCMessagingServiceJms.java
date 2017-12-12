@@ -42,23 +42,26 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 	private TimerTask blobGarbageCollectorTask = new TimerTask() {
 		@Override
 		public void run() {
-			try {
-				File blobDir = PropertyLoader.getRequiredDirectory(PropertyLoader.jmsBlobMessageTempDir);
-				FileFilter gcFileVisitor = new FileFilter() {
-					@Override
-					public boolean accept(File pathname) {
-						long ageMS = System.currentTimeMillis() - pathname.lastModified();
-						if (pathname.getName().startsWith("BlobMessage") && pathname.getName().endsWith(".data") && ageMS > BlobGarbageCollector_AgeLimitMS){
-							pathname.delete();
+			String blobDirPath = PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageTempDir,null);
+			if (blobDirPath!=null && new File(blobDirPath).isDirectory()) {
+				try {
+					File blobDir = new File(blobDirPath);
+					FileFilter gcFileVisitor = new FileFilter() {
+						@Override
+						public boolean accept(File pathname) {
+							long ageMS = System.currentTimeMillis() - pathname.lastModified();
+							if (pathname.getName().startsWith("BlobMessage") && pathname.getName().endsWith(".data") && ageMS > BlobGarbageCollector_AgeLimitMS){
+								pathname.delete();
+							}
+							return false; // always return false (empty list)
 						}
-						return false; // always return false (empty list)
+					};
+					blobDir.listFiles(gcFileVisitor);
+				}catch (Exception e){
+					e.printStackTrace();
+					if (getDelegate()!=null){
+						getDelegate().onException(e);
 					}
-				};
-				blobDir.listFiles(gcFileVisitor);
-			}catch (Exception e){
-				e.printStackTrace();
-				if (getDelegate()!=null){
-					getDelegate().onException(e);
 				}
 			}
 		}

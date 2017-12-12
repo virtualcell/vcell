@@ -15,12 +15,16 @@ import javax.jms.Queue;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+import org.bson.types.ObjectId;
+import org.fusesource.hawtbuf.ByteArrayInputStream;
+
 import cbit.vcell.message.MessagePropertyNotFoundException;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessagingDelegate;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.mongodb.VCMongoDbDriver;
 import cbit.vcell.resource.PropertyLoader;
 
 public class VCMessageJms implements VCMessage {
@@ -29,9 +33,14 @@ public class VCMessageJms implements VCMessage {
 	public static final String BLOB_MESSAGE_PRODUCER_TEMPDIR = "blobProducerTempDir";
 	public static final String BLOB_MESSAGE_OBJECT_TYPE = "blobObjectType";
 	public static final String BLOB_MESSAGE_OBJECT_SIZE = "blobObjectSize";
+	public static final String BLOB_MESSAGE_PERSISTENCE_TYPE = "blobPersistenceType";
+	public static final String BLOB_MESSAGE_PERSISTENCE_TYPE_FILE = "file";
+	public static final String BLOB_MESSAGE_PERSISTENCE_TYPE_MONGODB = "mongodb";
+	public static final String BLOB_MESSAGE_MONGODB_OBJECTID = "mongoObjectId";
 	
 	private transient Serializable blobObject = null;
 	private transient File blobFile = null;
+	private transient ObjectId blobObjectId = null;
 	private VCMessagingDelegate delegate = null;
 	
 	private Message jmsMessage = null;
@@ -70,7 +79,10 @@ public class VCMessageJms implements VCMessage {
 		if (blobObject!=null){
 			return;
 		}
-		if (jmsMessage instanceof ObjectMessage && propertyExists(BLOB_MESSAGE_FILE_NAME)){
+		if (jmsMessage instanceof ObjectMessage
+				&& propertyExists(BLOB_MESSAGE_PERSISTENCE_TYPE) 
+				&& getStringProperty(BLOB_MESSAGE_PERSISTENCE_TYPE).equals(BLOB_MESSAGE_PERSISTENCE_TYPE_FILE)){
+
 			try {				
 				long t1 = System.currentTimeMillis();
 				//
@@ -103,6 +115,30 @@ public class VCMessageJms implements VCMessage {
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}
+		if (jmsMessage instanceof ObjectMessage 
+				&& propertyExists(BLOB_MESSAGE_PERSISTENCE_TYPE) 
+				&& getStringProperty(BLOB_MESSAGE_PERSISTENCE_TYPE).equals(BLOB_MESSAGE_PERSISTENCE_TYPE_MONGODB)){
+			try {				
+				long t1 = System.currentTimeMillis();
+				//
+				// read serialized object from inputStream (from Broker's data file)
+				//
+				String mongo_objectid_hex = jmsMessage.getStringProperty(BLOB_MESSAGE_MONGODB_OBJECTID);
+				blobObjectId = new ObjectId(mongo_objectid_hex);
+				
+				byte[] blob = VCMongoDbDriver.getInstance().getBLOB(blobObjectId);
+
+				ByteArrayInputStream bis = new ByteArrayInputStream(blob);
+				ObjectInputStream ois = new ObjectInputStream(bis);
+				blobObject = (Serializable) ois.readObject();
+				ois.close();
+				bis.close();
+				delegate.onTraceEvent("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getStringProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(),e);
+			}
+		}
 	}
 	
 	public void removeBlobFile(){
@@ -113,6 +149,14 @@ public class VCMessageJms implements VCMessage {
 			try {
 				blobFile.delete();
 			}catch (Exception e){
+				delegate.onException(e);
+				e.printStackTrace(System.out);
+			}
+		}
+		if (blobObjectId != null) {
+			try {
+				VCMongoDbDriver.getInstance().removeBLOB(blobObjectId);
+			}catch (Exception e) {
 				delegate.onException(e);
 				e.printStackTrace(System.out);
 			}

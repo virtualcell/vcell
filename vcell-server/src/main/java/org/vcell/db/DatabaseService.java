@@ -44,7 +44,7 @@ public class DatabaseService {
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL),
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid),
-						PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword));
+						PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue,PropertyLoader.dbPasswordFile));
 	}
 	
 	public ConnectionFactory createConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {

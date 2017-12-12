@@ -77,7 +77,8 @@ protected void writeJMSParamters() {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println(SolverInputFileKeyword.JMS_PARAM_BEGIN);
 		printWriter.println(SolverInputFileKeyword.JMS_BROKER + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL));
-	    printWriter.println(SolverInputFileKeyword.JMS_USER + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword));
+	    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
+	    printWriter.println(SolverInputFileKeyword.JMS_USER + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + jmsPassword);
 	    printWriter.println(SolverInputFileKeyword.JMS_QUEUE + " " + VCellQueue.WorkerEventQueue.getName());  
 		printWriter.println(SolverInputFileKeyword.JMS_TOPIC + " " + VCellTopic.ServiceControlTopic.getName());
 		printWriter.println(SolverInputFileKeyword.VCELL_USER + " " + simTask.getSimulation().getVersion().getOwner().getName());
@@ -121,7 +122,8 @@ protected Element xmlJMSParameters () {
 	Element jms = create(SolverInputFileKeyword.JMS_PARAM_BEGIN,null);
 	Element broker = create(SolverInputFileKeyword.JMS_BROKER, PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL)) ;
 	Element jmsUser = create(SolverInputFileKeyword.JMS_USER, PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
-	Element pw = create(SolverInputFileKeyword.JMS_PW, PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword));
+    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
+	Element pw = create(SolverInputFileKeyword.JMS_PW, jmsPassword);
 	Element queue = create(SolverInputFileKeyword.JMS_QUEUE, VCellQueue.WorkerEventQueue.getName());  
 	Element topic = create(SolverInputFileKeyword.JMS_TOPIC, VCellTopic.ServiceControlTopic.getName());
 	Element vcellUser = create(SolverInputFileKeyword.VCELL_USER, simTask.getSimulation().getVersion().getOwner().getName());

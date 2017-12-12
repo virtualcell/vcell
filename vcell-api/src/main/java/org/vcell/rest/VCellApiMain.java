@@ -1,6 +1,7 @@
 package org.vcell.rest;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -11,6 +12,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.restlet.Client;
 import org.restlet.Server;
@@ -61,18 +63,13 @@ public class VCellApiMain {
 			WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
 			//don't use static field -- want to initialize logging first
 			Logger lg = Logger.getLogger(VCellApiMain.class);
-			if (args.length!=5){
-				System.out.println("usage: VCellApiMain keystorePath keystorePassword javascriptDir (-|logDir) port");
+			if (args.length!=3){
+				System.out.println("usage: VCellApiMain javascriptDir (-|logDir) port");
 				System.exit(1);
 			}
-			File keystorePath = new File(args[0]);
-			if (!keystorePath.isFile()){
-				throw new RuntimeException("keystorePath '"+args[0]+"' file not found");
-			}
-			String keystorePassword = args[1];
-			File javascriptDir = new File(args[2]);
+			File javascriptDir = new File(args[0]);
 			if (!javascriptDir.isDirectory()){
-				throw new RuntimeException("javascriptDir '"+args[2]+"' is not a directory");
+				throw new RuntimeException("javascriptDir '"+args[0]+"' is not a directory");
 			}
 
 			PropertyLoader.loadProperties( ); //don't validate
@@ -82,14 +79,14 @@ public class VCellApiMain {
 			//
 			// Redirect output to the logfile (append if exists)
 			//
-			String logdir = args[3];
+			String logdir = args[1];
 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.API, 1, ManageUtils.getHostName(), new Date(), true);
 			if (lg.isTraceEnabled()) {
 				lg.trace("log redirection to " + logdir);
 			}
 			ServiceProvider.initLog(serviceInstanceStatus, logdir);
 			
-			String portString = args[4];
+			String portString = args[2];
 			Integer port=null; // was hard-coded at 8080
 			try {
 				port = Integer.parseInt(portString);
@@ -180,9 +177,15 @@ public class VCellApiMain {
 			Client clapClient = component.getClients().add(Protocol.CLAP);
 			
 			lg.trace("adding CLAP https");
+			File keystorePath = new File(PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiKeystoreFile));
+			String keystorePassword = PropertyLoader.getSecretValue(PropertyLoader.vcellapiKeystorePswd, PropertyLoader.vcellapiKeystorePswdFile);
 			try {
-		        SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithMD5AndDES"); 
-		        SecretKey key = kf.generateSecret(new PBEKeySpec(PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword).toCharArray())); 
+	        		//
+	        		// keystorePassword may be encrypted with dbPassword, if it is decypt it.
+				//
+		        String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
+		        SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
+		        SecretKey key = kf.generateSecret(new PBEKeySpec(dbPassword.toCharArray())); 
 		        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES"); 
 		        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(new byte[] {32,11,55,121,01,42,89,11}, 20)); 
 		        keystorePassword = new String(pbeCipher.doFinal(DatatypeConverter.parseBase64Binary(keystorePassword))); 
