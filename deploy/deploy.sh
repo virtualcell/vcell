@@ -377,7 +377,7 @@ sed_in_place "s+GENERATED-JAVAPREFSDIR+$installedJavaprefsDir+g"			$stagingVCell
 sed_in_place "s+GENERATED-JARS+$installedJarsDir/*+g"						$stagingVCellInclude
 sed_in_place "s+GENERATED-API-ROOTDIR+$installed_server_sitedir+g"			$stagingVCellInclude
 sed_in_place "s+GENERATED-APIKEYSTORE-PATH+$vcell_secrets_tlsKeystore_path+g"	$stagingVCellInclude
-sed_in_place "s/GENERATED-APIKEYSTORE-PSWD/$vcell_secrets_tlsKeystore_pswd/g"	$stagingVCellInclude
+sed_in_place "s+GENERATED-APIKEYSTORE-PSWDFILE+$vcell_secrets_tlsKeystore_pswdfile+g"	$stagingVCellInclude
 sed_in_place "s/GENERATED-APIHOST/$vcell_apihost/g"							$stagingVCellInclude
 sed_in_place "s/GENERATED-APIPORT/$vcell_apiport/g"							$stagingVCellInclude
 sed_in_place "s/GENERATED-VCELLUSER/$vcell_user/g"							$stagingVCellInclude
@@ -391,7 +391,7 @@ sed_in_place "s/GENERATED-JMSTOPIC-DAEMONCONTROL/${jms_topic_daemonControl}/g"	$
 sed_in_place "s/GENERATED-JMSTOPIC-CLIENTSTATUS/${jms_topic_clientStatus}/g"	$stagingVCellInclude
 sed_in_place "s+GENERATED-JMSURL+${vcell_jms_url}+g"							$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSUSER/${vcell_jms_user}/g"						$stagingVCellInclude
-sed_in_place "s/GENERATED-JMSPSWD/${vcell_secrets_jms_pswd}/g"				$stagingVCellInclude
+sed_in_place "s+GENERATED-JMSPSWDFILE+${vcell_secrets_jms_pswdfile}+g"		$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSHOST/${vcell_jms_host}/g"						$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSPORT/${vcell_jms_port}/g"						$stagingVCellInclude
 sed_in_place "s/GENERATED-JMSWEBPORT/${vcell_jms_webport}/g"					$stagingVCellInclude
@@ -406,11 +406,11 @@ sed_in_place "s/GENERATED-HTC-USESSH/$vcell_htc_usessh/g"					$stagingVCellInclu
 if [ "$vcell_htc_usessh" = true ]; then
 	sed_in_place "s/GENERATED-HTC-SSH-HOST/$vcell_htc_sshhost/g"			$stagingVCellInclude
 	sed_in_place "s/GENERATED-HTC-SSH-USER/$vcell_htc_sshuser/g"			$stagingVCellInclude
-	sed_in_place "s+GENERATED-HTC-SSH-DSAKEYFILE+$vcell_htc_sshDsaKeyFile+g"	$stagingVCellInclude
+	sed_in_place "s+GENERATED-HTC-SSH-KEYFILE+$vcell_htc_sshKeyFile+g"	$stagingVCellInclude
 else
 	sed_in_place "s/GENERATED-HTC-SSH-HOST/NOT-DEFINED/g"					$stagingVCellInclude
 	sed_in_place "s/GENERATED-HTC-SSH-USER/NOT-DEFINED/g"					$stagingVCellInclude
-	sed_in_place "s/GENERATED-HTC-SSH-DSAKEYFILE/NOT-DEFINED/g"			$stagingVCellInclude
+	sed_in_place "s/GENERATED-HTC-SSH-KEYFILE/NOT-DEFINED/g"				$stagingVCellInclude
 fi
 
 if grep -Fq "GENERATED" $stagingVCellInclude
@@ -440,7 +440,7 @@ echo "#"																	>> $propfile
 echo "vcell.jms.provider = ActiveMQ"										>> $propfile
 echo "vcell.jms.url = $vcell_jms_url" 										>> $propfile
 echo "vcell.jms.user = $vcell_jms_user"										>> $propfile
-echo "vcell.jms.password = $vcell_secrets_jms_pswd"							>> $propfile
+echo "vcell.jms.pswdfile = $vcell_secrets_jms_pswdfile"				>> $propfile
 echo "vcell.jms.queue.simReq = $jms_queue_simReq"						>> $propfile
 echo "vcell.jms.queue.dataReq = $jms_queue_dataReq"				>> $propfile
 echo "vcell.jms.queue.dbReq = $jms_queue_dbReq"						>> $propfile
@@ -451,6 +451,7 @@ echo "vcell.jms.topic.daemonControl = $jms_topic_daemonControl"		>> $propfile
 echo "vcell.jms.topic.clientStatus = $jms_topic_clientStatus"			>> $propfile
 echo "vcell.jms.blobMessageMinSize = 100000"								>> $propfile
 echo "vcell.jms.blobMessageTempDir = $installedJmsBlobFilesDir"				>> $propfile
+echo "vcell.jms.blobMessageUseMongo = true"								>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#Oracle Database Info"												>> $propfile
@@ -458,14 +459,14 @@ echo "#"																	>> $propfile
 echo "vcell.server.dbConnectURL = $vcell_database_url"						>> $propfile
 echo "vcell.server.dbDriverName = $vcell_database_driver"					>> $propfile
 echo "vcell.server.dbUserid = $vcell_database_user"							>> $propfile
-echo "vcell.server.dbPassword = $vcell_secrets_database_pswd"				>> $propfile
+echo "vcell.db.pswdfile = $vcell_secrets_database_pswdfile"				>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#Amplistor Info"														>> $propfile
 echo "#"																	>> $propfile
 echo "vcell.amplistor.vcellserviceurl = $vcell_amplistor_url"				>> $propfile
 echo "vcell.amplistor.vcellservice.user = $vcell_amplistor_user"			>> $propfile
-echo "vcell.amplistor.vcellservice.password = $vcell_secrets_amplistor_pswd"	>> $propfile
+echo "vcell.amplistor.vcellservice.pswdfile = $vcell_secrets_amplistor_pswdfile"	>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#Mongo Info"															>> $propfile

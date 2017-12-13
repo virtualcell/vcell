@@ -30,7 +30,7 @@ jmxargs=
 
 jvmprop="-Xmx${vcellapi_memoryGB}G -Dvcell.propertyfile=${common_propertyfile}"
 
-arguments="${vcellapi_keystorepath} ${vcellapi_keystorepswd} ${vcellapi_javascriptdir} ${common_logdir} ${vcellapi_port}"
+arguments="${vcellapi_keystorepath} ${vcellapi_keystorepswdfile} ${vcellapi_javascriptdir} ${common_logdir} ${vcellapi_port}"
 
 #vcellapi_cp="${vcellapi_jars}:${vcellapi_root}/bin:${vcellapi_root}/resources"
 

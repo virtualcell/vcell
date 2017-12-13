@@ -14,12 +14,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
@@ -46,6 +48,8 @@ import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.message.server.jmx.BootstrapMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -61,6 +65,7 @@ import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellServer;
+import cbit.vcell.server.WatchdogMonitor;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
 /**
@@ -238,10 +243,24 @@ public static void main(java.lang.String[] args) {
 			int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
 			new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
 		}
-		System.out.println("Connecting to database");
+		
 		ConnectionFactory conFactory = null;
-		conFactory = DatabaseService.getInstance().createConnectionFactory(log);
-		System.out.println("getting key factory");
+		int tryCount = 0;
+		Exception conFactoryException = null;
+		do{
+			try{
+				conFactoryException = null;
+				conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+			}catch(Exception e){
+				e.printStackTrace();
+				conFactoryException = e;
+			}
+			Thread.sleep(5000);
+		}while(tryCount++ < 10);
+		if(conFactory == null){
+			throw new Exception("Couldn't create OraclePoolingConnectionFactory after "+tryCount+" tries.",conFactoryException);
+		}
+		
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		DatabasePolicySQL.bSilent=true;
 		//
@@ -255,11 +274,24 @@ public static void main(java.lang.String[] args) {
 		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, false, log);
 		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase, rmiPort);
 
-		System.out.println("creating RMI registry on port "+rmiPort);
-		Registry registry = LocateRegistry.createRegistry(rmiPort);
-		System.out.println("registering VCellBootstrapServer in registry");
-		registry.rebind("VCellBootstrapServer", localVCellBootstrap);
-		System.out.println("rmi registry listening on port "+rmiPort+" and VCellBootstrapServer registered");
+		//
+		// JMX registration
+		//
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+        mbs.registerMBean(localVCellBootstrap.bootstrapMXBean, new ObjectName(BootstrapMXBean.jmxObjectName));
+        
+		//
+		// spawn the WatchdogMonitor (which spawns the RMI registry, and binds the localVCellBootstrap)
+		//
+		long minuteMS = 60000;
+		long monitorSleepTime = 20*minuteMS;
+		monitorSleepTime = Long.MAX_VALUE; //TEST: only run once
+		String rmiUrl = "//" + host + ":" + rmiPort + "/VCellBootstrapServer";
+		Thread watchdogMonitorThread = new Thread(new WatchdogMonitor(monitorSleepTime,rmiPort,rmiUrl,localVCellBootstrap,serverConfig),"WatchdogMonitor");
+		watchdogMonitorThread.setDaemon(true);
+		watchdogMonitorThread.setName("WatchdogMonitor");
+		watchdogMonitorThread.start();
 	} catch (Throwable e) {
 		System.out.println("LocalVCellBootstrap err: " + e.getMessage());
 		e.printStackTrace();

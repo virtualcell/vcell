@@ -51,10 +51,17 @@ $ cd vcell
 $ cd deploy
 $ ./deploy.sh server-config.include
 ```
-
 server-config.include file must be customized for your configuration (see examples in /deploy directory).  
 
 **a Vagrant box virtual machine will act as a reference implementation for a VCell Server**
+
+### Building VCell Server with docker-compose
+```bash
+mvn clean install dependency:copy-dependencies
+docker-compose -f docker-compose.yml build
+docker-compose -f docker-compose.yml up
+docker-compose down
+```
 
 ## License
 Virtual Cell software is licensed under the MIT open source license.
