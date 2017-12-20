@@ -125,6 +125,12 @@
 			<artifactId>sesame-rio-rdfxml</artifactId>
 			<version>2.6.10</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openrdf.sesame/sesame-rio-n3 -->
+		<dependency>
+		    <groupId>org.openrdf.sesame</groupId>
+		    <artifactId>sesame-rio-n3</artifactId>
+		    <version>2.6.10</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.jgrapht/jgrapht-core -->
 		<dependency>
 			<groupId>org.jgrapht</groupId>
@@ -310,6 +316,12 @@
 			<artifactId>jung-graph-impl</artifactId>
 			<version>2.1.1</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.sf.jung/jung-samples -->
+		<dependency>
+    		<groupId>net.sf.jung</groupId>
+    		<artifactId>jung-samples</artifactId>
+    		<version>2.1.1</version>
+		</dependency>
 	</dependencies>
 	
 	<build>
@@ -332,6 +344,7 @@
 							<md5>7d0e5a77fd8673f018ad706ec9a1a9f0</md5>
 						</configuration>
 					</execution>
+<!-- 
 					<execution>
 						<id>install-solvers-mac64</id>
 						<phase>generate-test-resources</phase>
@@ -358,6 +371,7 @@
 							<md5>576bf50c80b9ab8801f14928afa1b1df</md5>
 						</configuration>
 					</execution>
+-->
 <!-- 
 					<execution>
 						<id>download-libjhdf-linux64</id>
