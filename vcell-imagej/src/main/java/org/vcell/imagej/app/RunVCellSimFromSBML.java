@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JScrollBar;
 import javax.swing.SwingUtilities;
@@ -33,12 +34,15 @@ import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
+import org.scijava.ItemIO;
 import org.scijava.app.AppService;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.convert.DefaultConverter;
+import org.scijava.display.Display;
 import org.scijava.display.DisplayService;
+import org.scijava.display.TextDisplay;
 import org.scijava.event.EventHandler;
 import org.scijava.module.DefaultMutableModule;
 import org.scijava.module.DefaultMutableModuleInfo;
@@ -50,8 +54,12 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.scijava.task.event.TaskEvent;
 import org.scijava.ui.UIService;
+import org.scijava.ui.UserInterface;
 import org.scijava.ui.swing.widget.SwingInputHarvester;
+import org.scijava.ui.swing.widget.SwingInputPanel;
 import org.scijava.ui.viewer.DisplayViewer;
+import org.vcell.imagej.app.RunVCellSimFromSBML.Sim;
+import org.vcell.imagej.app.VCellOpenSBML.MyTest;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.vcellij.api.DomainType;
@@ -65,6 +73,7 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
+import io.scif.gui.GUIService;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
@@ -100,21 +109,31 @@ import net.miginfocom.swing.MigLayout;
  */
 @Plugin(type = Command.class, menuPath = "Plugins>VCell>Run SBML Simulation",initializer = "initParameters")
 public class RunVCellSimFromSBML implements Command {
-    //
+	private static final String SIM_RESULTS_TITLE = "SimResultsTitle";
+    private static final String SIM_STEP_TIME = "SimStepTime";
+	private static final String SIM_DURATION_TIME = "SimDurationTime";
+
+	//
     // Feel free to add more parameters here...
     //
 
-	@Parameter()
-	private File sbmlModelFile;
+//	@Parameter()
+//	private File sbmlModelFile;
 
-    @Parameter()
+//	@Parameter(type = ItemIO.INPUT)
+//	private Display<String> disp;
+//
+	@Parameter(type = ItemIO.INPUT,label=SIM_DURATION_TIME)
     private double simDuration;
 
-    @Parameter()
+    @Parameter(type = ItemIO.INPUT,label=SIM_STEP_TIME)
     private double simTimeStep;
 
-    @Parameter()
+    @Parameter(type = ItemIO.INPUT,label=SIM_RESULTS_TITLE)
     private String displayName;
+
+    @Parameter
+    private DisplayService dispService;
 
     @Parameter
     private OpService opService;
@@ -142,7 +161,8 @@ public class RunVCellSimFromSBML implements Command {
 
 	@Parameter
 	private TaskService taskService;
-	
+
+
 //	@Parameter(type = ItemIO.OUTPUT)
 //	private Object result;
 
@@ -152,7 +172,9 @@ public class RunVCellSimFromSBML implements Command {
 	}
 	
 	private void initParameters() {
-		sbmlModelFile = new File(RunVCellSimFromSBML.class.getResource("ImageJ_FRAP.xml").getFile());
+//		sbmlModelFile = new File(RunVCellSimFromSBML.class.getResource("ImageJ_FRAP.xml").getFile());
+
+		
 //		File sbmlModelFile = ResourceUtil.getVcellHome();
 
         try {
@@ -186,6 +208,8 @@ public class RunVCellSimFromSBML implements Command {
 			simDuration = 2;
 			simTimeStep = .1;
 			displayName = Sim.SIMULATED_FRAP;
+			
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -196,11 +220,80 @@ public class RunVCellSimFromSBML implements Command {
     public void run() {
 
     	try{
-    		SBMLDocument sbmlDocument = null;
-			sbmlDocument = SBMLReader.read(sbmlModelFile);
-    		RunVCellSimFromSBML.Sim simResult = simulate(sbmlDocument.getModel(), simDuration, simTimeStep, appService, taskService, simService, statusService);
-//    		ImgPlus<RealType> result = (ImgPlus<RealType>)simResult.image();
-    		initDisplay((ImgPlus<RealType>)simResult.image(),displayName, simResult.simInfo(), simService, displayService, uiService, cmdService, lutService, opService);
+//    		//Show default default sim parameters panel
+//    		MutableModuleInfo mmi = new DefaultMutableModuleInfo(){
+//				@Override
+//				public boolean isInteractive() {
+//					return true;
+//				}
+//    		};
+//			DefaultMutableModuleItem<String> dmiStr = new DefaultMutableModuleItem<>(mmi, SIM_RESULTS_TITLE, String.class);
+//    		dmiStr.setDefaultValue(Sim.SIMULATED_FRAP);
+//    		mmi.addInput(dmiStr);
+//    		
+//    		DefaultMutableModuleItem<Double> dmi = new DefaultMutableModuleItem<>(mmi,SIM_DURATION_TIME, Double.class);
+//    		dmi.setDefaultValue(.2);
+//    		mmi.addInput(dmi);
+//    		
+//    		dmi = new DefaultMutableModuleItem<>(mmi, SIM_STEP_TIME, Double.class);
+//    		dmi.setDefaultValue(.1);
+//    		mmi.addInput(dmi);
+//
+//    		DefaultMutableModule dmm = new DefaultMutableModule(mmi);
+//    		SwingInputHarvester sih = new SwingInputHarvester();
+//    		sih.setContext(appService.getContext());
+//    		SwingInputPanel paramPanel = sih.createInputPanel();
+//    		sih.buildPanel(paramPanel, dmm);
+////    		Display<?> disp = dispService.createDisplay(paramPanel);
+//    		sih.harvest(dmm);
+
+//    		//Show sbml text
+//    		UserInterface defaultUI = uiService.getDefaultUI();
+//    		List<Display<?>> displays = dispService.getDisplays();
+//    		for(Display<?> disp:displays){
+//    			System.out.println(disp);
+//    		}
+//    		if(true){return;}
+//    		
+//    		TextDisplay disp = (TextDisplay)displayService.getDisplay("hello");
+////    		System.out.println(disp.iterator().next());
+//    		SBMLDocument sbmlDocument = null;
+////			sbmlDocument = SBMLReader.read(sbmlModelFile);
+//    		sbmlDocument = SBMLReader.read(disp.iterator().next());
+//    		RunVCellSimFromSBML.Sim simResult = simulate(sbmlDocument.getModel(), simDuration, simTimeStep, appService, taskService, simService, statusService);
+////    		ImgPlus<RealType> result = (ImgPlus<RealType>)simResult.image();
+//    		initDisplay((ImgPlus<RealType>)simResult.image(),displayName, simResult.simInfo(), simService, displayService, uiService, cmdService, lutService, opService);
+    		
+    		if(displayService.getActiveDisplay() == null || !(displayService.getActiveDisplay() instanceof MyTest)){
+    			throw new Exception("Expecting active display of type "+MyTest.class.getName());
+    		}
+			// Read SBML document
+	        MyTest activeDisplay = (MyTest)displayService.getActiveDisplay();
+	        activeDisplay.getSwingInputHarvester().processResults(activeDisplay.getSwingInputPanel(), activeDisplay.getDefaultMutableModule());
+            SBMLDocument sbmlDocument = SBMLReader.read(activeDisplay.getSbmlFile());
+            Model model = sbmlDocument.getModel();
+			List<org.sbml.jsbml.Parameter> paramList = model.getListOfParameters();
+			for (org.sbml.jsbml.Parameter param:paramList) {
+				if(param.isConstant()){
+					String paramIdName = param.getId()+" "+param.getName();
+		    		System.out.println("Model Param '"+paramIdName+"' = "+activeDisplay.getDefaultMutableModule().getInput(paramIdName));
+		    		param.setValue((Double)activeDisplay.getDefaultMutableModule().getInput(paramIdName));
+				}
+			}
+			List<Reaction> reactList = model.getListOfReactions();
+			for (Reaction react:reactList) {
+				List<LocalParameter> locParamList = react.getKineticLaw().getListOfLocalParameters();
+				for(LocalParameter locParam:locParamList){
+					String paramIdName = locParam.getId()+" "+locParam.getName();
+					System.out.println("Rx Param '"+paramIdName+"' = "+activeDisplay.getDefaultMutableModule().getInput(paramIdName));
+					locParam.setValue((Double)activeDisplay.getDefaultMutableModule().getInput(paramIdName));
+				}
+			}
+//if(true){return;}
+
+
+            RunVCellSimFromSBML.Sim simResult = simulate(model, simDuration, simTimeStep, appService, taskService, simService, statusService);
+            initDisplay((ImgPlus<RealType>)simResult.image(),displayName, simResult.simInfo(), simService, displayService, uiService, cmdService, lutService, opService);
     	}catch(Exception e){
     		e.printStackTrace();
     	}
