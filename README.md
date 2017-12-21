@@ -1,5 +1,7 @@
 # vcell - a modeling and simulation framework for computational cell biology
 
+[![Join the chat at https://gitter.im/virtualcell/vcell](https://badges.gitter.im/virtualcell/vcell.svg)](https://gitter.im/virtualcell/vcell?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The VCell is a comprehensive framework for modeling and simulation of cell biology from biological pathways down to 
 cell biophysics. VCell supports biochemical network and rule-based modeling and electrophysiology in compartmental 
 modeing and within cellular geometry.  
