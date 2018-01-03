@@ -716,7 +716,7 @@ private void writeReactions() throws ExpressionException, MathException {
 					{
 						writeRateTransitionCommand(reactants, products, subdomain, rateDefinitionStr);
 						String speciesName = reactants.get(0).getName();
-						String killMolCmd = "cmd " + SmoldynVCellMapper.SmoldynKeyword.E + " " + SmoldynVCellMapper.SmoldynKeyword.killmol + " " + speciesName + "(up)";
+						String killMolCmd = "cmd " + SmoldynVCellMapper.SmoldynKeyword.E + " " + SmoldynVCellMapper.SmoldynKeyword.killmol + " " + speciesName + "(" + SmoldynKeyword.up + ")";
 						killMolCommands.add(killMolCmd);
 					}
 				}
@@ -915,7 +915,7 @@ private String getVariableName(Variable var, SubDomain subdomain) throws MathExc
 	String name = var.getName( );
 	if (subdomain instanceof MembraneSubDomain){
 		MembraneSubDomain membrane = (MembraneSubDomain)subdomain;
-		if (var.getDomain().getName().equals(membrane.getName())){
+		if (var.getDomain().getName().equals(membrane.getName())) {
 			return SmoldynVCellMapper.vcellToSmoldyn(name, SmoldynVCellMapper.MAP_PARTICLE_TO_MEMBRANE);
 		}else if (membrane.getInsideCompartment().getName().equals(var.getDomain().getName())){
 			return SmoldynVCellMapper.vcellToSmoldyn(name, SmoldynKeyword.bsoln);

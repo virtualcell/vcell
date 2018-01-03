@@ -126,8 +126,9 @@ public class SmoldynVCellMapper {
 	/**
 	 * the keyword we're going to use to map particles to membrane -- logical candidates are {@link SmoldynKeyword#front}
 	 * and {@link SmoldynKeyword#back} based on how C code handles these cases
+	 * Dan: after testing, it seems that the correct choice is {@link SmoldynKeyword#up}
 	 */
-	public static final SmoldynKeyword MAP_PARTICLE_TO_MEMBRANE = SmoldynKeyword.front;
+	public static final SmoldynKeyword MAP_PARTICLE_TO_MEMBRANE = SmoldynKeyword.up;
 
 	/**
 	 * symbol used to prefix keyword, based on Smoldyn C program conventions
