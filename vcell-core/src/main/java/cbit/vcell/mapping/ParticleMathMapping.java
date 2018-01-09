@@ -660,8 +660,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			subDomain.addParticleProperties(particleProperties);
 		}
 	}
-	// Using the MassActionFunction to write out the math description 
-	MassActionSolver.MassActionFunction maFunc = null;
 	
 	for (ReactionStep reactionStep : reactionSteps){
 		
@@ -758,6 +756,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			Expression forwardRate = null;
 			Expression reverseRate = null;
 			
+			// Using the MassActionFunction to write out the math description 
+			MassActionSolver.MassActionFunction maFunc = null;
+
 			if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
 			   kinetics.getKineticsDescription().equals(KineticsDescription.General) || 
 			   kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
