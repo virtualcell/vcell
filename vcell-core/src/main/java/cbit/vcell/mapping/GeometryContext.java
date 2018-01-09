@@ -530,11 +530,18 @@ public void propertyChange(PropertyChangeEvent event) {
 				&& event.getPropertyName() != GeometrySpec.PROPERTY_NAME_THUMBNAIL_IMAGE){
 		try {
 			refreshStructureMappings();
-			getSimulationContext().refreshSpatialObjects();
+			//getSimulationContext().refreshSpatialObjects();
 		}catch (MappingException e){
 			e.printStackTrace(System.out);
 		}catch (PropertyVetoException e){
 			e.printStackTrace(System.out);
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
+	}
+	if (event.getSource() == getGeometry().getGeometrySurfaceDescription()){
+		try {
+			getSimulationContext().refreshSpatialObjects();
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}
@@ -567,6 +574,10 @@ public void refreshDependencies() {
 	fieldGeometry.getGeometrySpec().removePropertyChangeListener(this);
 	fieldGeometry.getGeometrySpec().addPropertyChangeListener(this);
 	fieldGeometry.getGeometrySpec().refreshDependencies();
+	if (fieldGeometry.getGeometrySurfaceDescription()!=null){
+		fieldGeometry.getGeometrySurfaceDescription().removePropertyChangeListener(this);
+		fieldGeometry.getGeometrySurfaceDescription().addPropertyChangeListener(this);
+	}
 	for (int i = 0; i < fieldStructureMappings.length; i++){
 		fieldStructureMappings[i].removePropertyChangeListener(this);
 		fieldStructureMappings[i].addPropertyChangeListener(this);
