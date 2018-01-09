@@ -21,3 +21,5 @@ ziptool
 sandbox
 .idea
 .vagrant
+/update/
+/.checksums
