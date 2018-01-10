@@ -23,7 +23,7 @@ class ssh:
         self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
 
         key_path_dsa = os.path.join(os.path.expanduser("~"), ".ssh", "schaff_dsa")
-        key_path_rsa = os.path.join(os.path.expanduser("~"), ".ssh", "schaff2_rsa")
+        key_path_rsa = os.path.join(os.path.expanduser("~"), ".ssh", "schaff_rsa")
         if os.path.isfile(key_path_dsa):
             # look for an alternative DSA key file before trying default ~/.ssh/id_rsa
             k = paramiko.DSSKey.from_private_key_file(key_path_dsa)
@@ -313,10 +313,12 @@ def main():
         jms_webport = getenv("vcell_jms_webport")
         # jms_stomp_port = getenv("vcell_stompport")
         jms_env = dict()
-        jms_env["ACTIVEMQ_ADMIN_PASSWORD"] = "'"+getenv("vcell_jms_password")+"'"
-        jms_env["ACTIVEMQ_WRITE_PASSWORD"] = "'"+getenv("vcell_jms_password")+"'"
-        jms_env["ACTIVEMQ_READ_PASSWORD"] = "'"+getenv("vcell_jms_password")+"'"
-        jms_env["ACTIVEMQ_JMX_PASSWORD"] = "'"+getenv("vcell_jms_password")+"'"
+        with open (getenv("vcell_jms_pswdfile"), "r") as jms_pswdfile:
+           jms_pswd=jms_pswdfile.readline().rstrip()
+        jms_env["ACTIVEMQ_ADMIN_PASSWORD"] = "'"+jms_pswd+"'"
+        jms_env["ACTIVEMQ_WRITE_PASSWORD"] = "'"+jms_pswd+"'"
+        jms_env["ACTIVEMQ_READ_PASSWORD"] = "'"+jms_pswd+"'"
+        jms_env["ACTIVEMQ_JMX_PASSWORD"] = "'"+jms_pswd+"'"
         jms_env["ACTIVEMQ_NAME"] = 'amqp-srv1'
         jms_env["ACTIVEMQ_REMOVE_DEFAULT_ACCOUNT"] = 'true'
         jms_env["ACTIVEMQ_ADMIN_LOGIN"] = 'admin'

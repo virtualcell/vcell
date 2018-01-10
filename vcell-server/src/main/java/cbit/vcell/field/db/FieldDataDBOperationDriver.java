@@ -89,7 +89,7 @@ public class FieldDataDBOperationDriver{
 		String dbDriverName = PropertyLoader.getProperty(PropertyLoader.dbDriverName, null);
 		String dbConnectURL = PropertyLoader.getProperty(PropertyLoader.dbConnectURL, null);
 		String dbSchemaUser = PropertyLoader.getProperty(PropertyLoader.dbUserid, null);
-		String dbPassword = PropertyLoader.getProperty(PropertyLoader.dbPassword, null);
+		String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
 		try{
 			Class.forName(dbDriverName);
 			liveConnection = java.sql.DriverManager.getConnection(dbConnectURL,dbSchemaUser,dbPassword);

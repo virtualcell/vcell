@@ -96,7 +96,7 @@ public class StochtestRunService {
 	    String driverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
 	    String connectURL = PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL);
 	    String dbSchemaUser = PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid);
-	    String dbPassword = PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword);
+	    String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
 	    //
 	    // get appropriate database factory objects
 	    //

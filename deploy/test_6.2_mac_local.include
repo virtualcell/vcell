@@ -97,16 +97,16 @@ vcell_jms_url="failover:(tcp://${vcell_jms_host}:${vcell_jms_port})?timeout=1200
 #
 # Oracle on server
 #
-#vcell_database_url="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
-#vcell_database_driver=oracle.jdbc.driver.OracleDriver
-#vcell_database_user=vcell
+vcell_database_url="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
+vcell_database_driver=oracle.jdbc.driver.OracleDriver
+vcell_database_user=vcell
 
 #
 # Postgres on locahost
 #
-vcell_database_url="jdbc:postgresql://localhost:5432/schaff"
-vcell_database_driver=org.postgresql.Driver
-vcell_database_user=schaff
+#vcell_database_url="jdbc:postgresql://localhost:5432/schaff"
+#vcell_database_driver=org.postgresql.Driver
+#vcell_database_user=schaff
 
 vcell_amplistor_url="http://obj1.cam.uchc.edu:8080/namespace/service_vcell/"
 vcell_amplistor_user=vcell
@@ -154,16 +154,15 @@ vcell_I4J_pathto_jreDir=/vagrant_jres
 vcell_I4J_jreDir=$HOME/vcelljres
 vcell_I4J_pathto_install4jc=/home/vagrant/install4j7.0.3/bin/install4jc
 
-vcell_htc_usessh=false
+vcell_htc_usessh=true
 if [ "$vcell_htc_usessh" = true ]; then
 	#
 	# only define these if using ssh to invoke the htc processes
 	#
-	# DSA Keystore is for password-less authentication to HTC host
+	# SSH Keystore is for password-less authentication to HTC host (see $vcell_secretsDir)
 	#
 	vcell_htc_sshhost="vcell-service.cam.uchc.edu"
 	vcell_htc_sshuser="vcell"
-	vcell_htc_sshDsaKeyFile="/Users/schaff/.ssh/schaff_dsa"
 fi
 
 

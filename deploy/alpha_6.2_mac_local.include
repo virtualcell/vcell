@@ -154,16 +154,15 @@ vcell_I4J_pathto_jreDir=/vagrant_jres
 vcell_I4J_jreDir=$HOME/vcelljres
 vcell_I4J_pathto_install4jc=/home/vagrant/install4j7.0.3/bin/install4jc
 
-vcell_htc_usessh=false
+vcell_htc_usessh=true
 if [ "$vcell_htc_usessh" = true ]; then
 	#
 	# only define these if using ssh to invoke the htc processes
 	#
-	# DSA Keystore is for password-less authentication to HTC host
+	# SSH Keystore is for password-less authentication to HTC host (see $vcell_secretsDir)
 	#
 	vcell_htc_sshhost="vcell-service.cam.uchc.edu"
 	vcell_htc_sshuser="vcell"
-	vcell_htc_sshDsaKeyFile="/Users/schaff/.ssh/schaff_dsa"
 fi
 
 

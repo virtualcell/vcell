@@ -1,16 +1,20 @@
 package cbit.vcell.mongodb;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.vcell.util.SessionLog;
 import org.vcell.util.logging.Log4jSessionLog;
 
@@ -19,6 +23,9 @@ import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.InsertManyOptions;
 
@@ -68,8 +75,8 @@ public class VCMongoDbDriver {
 	   			final int limit = messageOutbox.size( ) + 16; //padded in case more messages arrive while processing queue
 	   			List<Document> dbObjectsToSend = new ArrayList<Document>(limit);
 	   			for ( VCMongoMessage message = messageOutbox.poll(); message != null && dbObjectsToSend.size() < limit; message = messageOutbox.poll()) {
-	    			dbObjectsToSend.add(message.getDbObject());
-	    		}
+	   				dbObjectsToSend.add(message.getDbObject());
+	   			}
 	
 	    		// send to MongoDB
 	        	if (m==null){
@@ -195,7 +202,97 @@ public class VCMongoDbDriver {
 		sendMessages( );
 	}
      
+	public ObjectId storeBLOB(String blobName, String blobType, byte[] blob) {
+		try {
+			// send to MongoDB
+			if (m == null) {
+				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
+				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+				m = new MongoClient(mongoDbHost, mongoDbPort);
+			}
 
+			MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
+			GridFSBucket gridFSBucket = GridFSBuckets.create(db);
+
+			Document metadata = new Document();
+			metadata.put("type", blobType);
+			long msgTime = System.currentTimeMillis();
+			metadata.put("inserttime",msgTime);
+			metadata.put("inserttime_nice", new Date(msgTime).toString());
+		
+			GridFSUploadOptions options = new GridFSUploadOptions()
+			                                    .chunkSizeBytes(1024)
+			                                    .metadata(metadata);
+			ByteArrayInputStream in = new ByteArrayInputStream(blob);
+			ObjectId fileId = gridFSBucket.uploadFromStream(blobName, in, options);
+			return fileId;
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			try {
+				if (m != null) {
+					m.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace(System.out);
+			} finally {
+				m = null;
+			}
+			throw new RuntimeException("failed to store BLOB named "+blobName+": "+e.getMessage(),e);
+		}
+	}
+	
+	public byte[] getBLOB(ObjectId objectId) {
+		try {
+			if (m == null) {
+				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
+				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+				m = new MongoClient(mongoDbHost, mongoDbPort);
+			}
+			ByteArrayOutputStream streamToDownloadTo = new ByteArrayOutputStream();
+			MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
+			GridFSBucket gridFSBucket = GridFSBuckets.create(db);
+			gridFSBucket.downloadToStream(objectId, streamToDownloadTo);
+			byte[] blob = streamToDownloadTo.toByteArray();
+			return blob;
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			try {
+				if (m != null) {
+					m.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace(System.out);
+			} finally {
+				m = null;
+			}
+			throw new RuntimeException("failed to retrieve BLOB with ObjectId "+objectId.toHexString()+": "+e.getMessage(),e);
+		}
+	}
+    
+	public void removeBLOB(ObjectId objectId) {
+		try {
+			if (m == null) {
+				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
+				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+				m = new MongoClient(mongoDbHost, mongoDbPort);
+			}
+			MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
+			GridFSBucket gridFSBucket = GridFSBuckets.create(db);
+			gridFSBucket.delete(objectId);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			try {
+				if (m != null) {
+					m.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace(System.out);
+			} finally {
+				m = null;
+			}
+			throw new RuntimeException("failed to retrieve BLOB with ObjectId "+objectId.toHexString()+": "+e.getMessage(),e);
+		}
+	}
     
 	/**
 	 * @param args

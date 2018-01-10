@@ -29,7 +29,7 @@ export vcell_jms_containername
 export vcell_jms_logdir
 export vcell_jms_datadir
 export vcell_jms_username
-export vcell_jms_password
+export vcell_jms_pswdfile
 export vcell_jms_url
 export vcell_jms_user
 export vcell_jms_host

@@ -1,0 +1,15 @@
+.settings
+.travis
+bionetgen
+deploy
+exampleModels
+lib
+localsolvers
+thriftbuild
+vcell-apiclient
+vcell-client
+vcell-core
+vcell-imagej
+vcell-math
+vcell-util
+vcell-vmicro

@@ -162,7 +162,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		OperatingSystemInfo.getInstance();
 
 		if (args.length != 3 && args.length != 6) {
-			System.out.println("Missing arguments: " + VCellServices.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE|SLURM) [pbshost userid ssh_dsaKeyFile] ");
+			System.out.println("Missing arguments: " + VCellServices.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE|SLURM) [sshHost sshUser sshKeyFile] ");
 			System.exit(1);
 		}
 
@@ -172,7 +172,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
-			PythonSupport.verifyInstallation(PythonPackage.values());
+			PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.VTK, PythonPackage.THRIFT});
 
 			int serviceOrdinal = Integer.parseInt(args[0]);
 			String logdir = null;
@@ -183,10 +183,15 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
 			CommandService commandService = null;
 			if (args.length==6){
-				String htc_ssh_host = args[3];
-				String htc_ssh_user = args[4];
-				File htc_ssh_dsaKeyFile = new File(args[5]);
-				commandService = new CommandServiceSsh(htc_ssh_host,htc_ssh_user,htc_ssh_dsaKeyFile);
+				String sshHost = args[3];
+				String sshUser = args[4];
+				File sshKeyFile = new File(args[5]);
+				try {
+					commandService = new CommandServiceSsh(sshHost,sshUser,sshKeyFile);
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
+				}
 				AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
 			}else{
 				commandService = new CommandServiceLocal();
@@ -306,16 +311,16 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		PropertyLoader.dbConnectURL,
 		PropertyLoader.dbDriverName,
 		PropertyLoader.dbUserid,
-		PropertyLoader.dbPassword,
+		PropertyLoader.dbPasswordFile,
 		PropertyLoader.mongodbHost,
 		PropertyLoader.mongodbPort,
 		PropertyLoader.mongodbDatabase,
 		PropertyLoader.jmsURL,
 		PropertyLoader.jmsUser,
-		PropertyLoader.jmsPassword,
+		PropertyLoader.jmsPasswordFile,
 		PropertyLoader.htcUser,
 		PropertyLoader.pythonExe,
-		PropertyLoader.jmsBlobMessageTempDir,
+		PropertyLoader.jmsBlobMessageUseMongo,
 		PropertyLoader.maxJobsPerScan
 	};
 

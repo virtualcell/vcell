@@ -19,7 +19,7 @@ public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 		session.getDelegate().onMessageReceived(rpcVCMessage,queue);
 		Serializable object = (Serializable)rpcVCMessage.getObjectContent();
 		if (!(object instanceof VCRpcRequest)){
-			throw new RuntimeException("expecting RpcRequest in message");
+			throw new RuntimeException("expecting RpcRequest in message, found object content: "+object);
 		}
 		VCRpcRequest vcRpcRequest = null;
 		if (object instanceof VCRpcRequest){

@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -77,6 +78,9 @@ public class PropertyLoader {
 	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
 	public static final String vcellapiHost					= record("vcellapi.host",ValueType.GEN);
 	public static final String vcellapiPort					= record("vcellapi.port",ValueType.INT);
+	public static final String vcellapiKeystoreFile			= record("vcellapi.keystore.file",ValueType.GEN);
+	public static final String vcellapiKeystorePswd			= record("vcellapi.keystore.pswd",ValueType.GEN);
+	public static final String vcellapiKeystorePswdFile		= record("vcellapi.keystore.pswdfile",ValueType.GEN);
 
 	//Stoch properties
 //	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);
@@ -108,13 +112,15 @@ public class PropertyLoader {
 	public static final String dbDriverName					= record("vcell.server.dbDriverName",ValueType.GEN);
 	public static final String dbConnectURL					= record("vcell.server.dbConnectURL",ValueType.GEN);
 	public static final String dbUserid						= record("vcell.server.dbUserid",ValueType.GEN);
-	public static final String dbPassword					= record("vcell.server.dbPassword",ValueType.GEN);
+	public static final String dbPasswordValue				= record("vcell.server.dbPassword",ValueType.GEN);
+	public static final String dbPasswordFile				= record("vcell.db.pswdfile",ValueType.GEN);
 
 	public static final String jmsProvider				= record("vcell.jms.provider",ValueType.GEN);
 	public static final String jmsProviderValueActiveMQ		= record("ActiveMQ",ValueType.GEN);
 	public static final String jmsURL					= record("vcell.jms.url",ValueType.GEN);
 	public static final String jmsUser					= record("vcell.jms.user",ValueType.GEN);
-	public static final String jmsPassword				= record("vcell.jms.password",ValueType.GEN);
+	public static final String jmsPasswordValue				= record("vcell.jms.password",ValueType.GEN);
+	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.GEN);
 
 	public static final String jmsSimReqQueue			= record("vcell.jms.queue.simReq",ValueType.GEN);
 	public static final String jmsDataRequestQueue		= record("vcell.jms.queue.dataReq",ValueType.GEN);
@@ -127,6 +133,7 @@ public class PropertyLoader {
 
 	public static final String jmsBlobMessageMinSize	= record("vcell.jms.blobMessageMinSize",ValueType.GEN);
 	public static final String jmsBlobMessageTempDir	= record("vcell.jms.blobMessageTempDir",ValueType.GEN);
+	public static final String jmsBlobMessageUseMongo	= record("vcell.jms.blobMessageUseMongo",ValueType.GEN);
 	public static final String vcellClientTimeoutMS 	= record("vcell.client.timeoutMS",ValueType.GEN);
 
 	public static final String maxOdeJobsPerUser	= record("vcell.server.maxOdeJobsPerUser",ValueType.GEN);
@@ -605,6 +612,24 @@ public class PropertyLoader {
 			return " set from property file";
 		}
 		return "";
+	}
+	
+	public static String getSecretValue(String secretValueProperty, String secretFileProperty) {
+        String secretValue = PropertyLoader.getProperty(secretValueProperty, null);
+        String secretFile = PropertyLoader.getProperty(secretFileProperty, null);
+        final String secret;
+        if (secretValue!=null) {
+        		secret = secretValue;
+        }else if (secretFile!=null && new File(secretFile).exists()) {
+        		try {
+				secret = FileUtils.readFileToString(new File(secretFile)).trim();
+			} catch (IOException e) {
+				throw new IllegalArgumentException("failed to parse "+secretFileProperty+" in "+new File(secretFile).getAbsolutePath());
+			}
+        }else {
+        		throw new IllegalArgumentException("expecting either "+secretValueProperty+" or "+secretFileProperty+" properties set");
+        }
+        return secret;
 	}
 
 	/**

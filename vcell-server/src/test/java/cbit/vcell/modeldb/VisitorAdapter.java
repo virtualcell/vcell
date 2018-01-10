@@ -138,7 +138,7 @@ public abstract class VisitorAdapter {
 
 	private static final String[] REQUIRED_PROPERTIES = {
 			PropertyLoader.dbDriverName,
-			PropertyLoader.dbPassword,
+			PropertyLoader.dbPasswordValue,
 			PropertyLoader.dbUserid,
 			PropertyLoader.dbConnectURL
 	};
