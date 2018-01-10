@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Random;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -284,7 +285,8 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 						vcMessagingServiceJms.getDelegate().onTraceEvent("MessageProducerSessionJms.createObjectMessage: (BLOB) size="+serializedBytes.length+", type="+object.getClass().getName()+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 						return new VCMessageJms(objectMessage,object, vcMessagingServiceJms.getDelegate());
 					} else {
-						ObjectId objectId = VCMongoDbDriver.getInstance().storeBLOB("jmsblob_not_unique", "jmsblob", serializedBytes);
+						String hexString = Long.toHexString(Math.abs(new Random().nextLong()));
+						ObjectId objectId = VCMongoDbDriver.getInstance().storeBLOB("jmsblob_name_"+hexString, "jmsblob", serializedBytes);
 						ObjectMessage objectMessage = session.createObjectMessage("emptyObject");
 						objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE, VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE_MONGODB);
 						objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_MONGODB_OBJECTID, objectId.toHexString());

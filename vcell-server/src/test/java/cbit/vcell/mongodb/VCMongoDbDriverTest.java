@@ -30,12 +30,12 @@ public class VCMongoDbDriverTest {
 	public void test() {
 		byte[] data1 = new byte[] { 11,22,33,44,55 };
 		ObjectId id1 = mongoDriver.storeBLOB("testblob1", "jmsblob", data1);
-		byte[] d1 = mongoDriver.getBLOB(id1);
+		byte[] d1 = mongoDriver.getBLOB(new ObjectId(id1.toHexString()));
 		assertArrayEquals(data1, d1);
 
 		byte[] data2 = new byte[] { 99,88,77,66,55,44,33,22 };
 		ObjectId id2 = mongoDriver.storeBLOB("testblob2", "jmsblob", data2);
-		byte[] d2 = mongoDriver.getBLOB(id2);
+		byte[] d2 = mongoDriver.getBLOB(new ObjectId(id2.toHexString()));
 		assertArrayEquals(data2, d2);
 	}
 

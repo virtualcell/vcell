@@ -167,7 +167,7 @@ public class VCMessageJms implements VCMessage {
 
 	public Object getObjectContent(){
 		if (jmsMessage instanceof ObjectMessage){
-			if (propertyExists(BLOB_MESSAGE_FILE_NAME)){
+			if (propertyExists(BLOB_MESSAGE_FILE_NAME) || propertyExists(BLOB_MESSAGE_MONGODB_OBJECTID)){
 				return blobObject;
 			}else{
 				try {
