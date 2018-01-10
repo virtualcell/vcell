@@ -1,5 +1,5 @@
 FROM maven:3.5-jdk-8-alpine as build
-ADD . /app
+COPY . /app/
 WORKDIR /app
 RUN mvn clean install dependency:copy-dependencies
 
@@ -28,21 +28,21 @@ RUN conda install --yes -q -c sbmlteam python-libsbml \
 RUN mkdir -p /usr/local/app/lib
 WORKDIR /usr/local/app
 
-COPY --from=build
-     ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
-     ./vcell-server/target/maven-jars/*.jar \
-     ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
-     ./vcell-oracle/target/maven-jars/*.jar \
-     ./ojdbc6/src/ojdbc6.jar \
-     ./ucp/src/ucp.jar \
-     ./vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar \
-     ./vcell-api/target/maven-jars/*.jar \
+COPY --from=build \
+     /app/vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
+     /app/vcell-server/target/maven-jars/*.jar \
+     /app/vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
+     /app/vcell-oracle/target/maven-jars/*.jar \
+     /app/ojdbc6/src/ojdbc6.jar \
+     /app/ucp/src/ucp.jar \
+     /app/vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar \
+     /app/vcell-api/target/maven-jars/*.jar \
      ./lib/
 
-COPY --from=build ./pythonScripts ./pythonScripts
-COPY --from=build ./vcell-api/docroot ./docroot
-COPY --from=build ./vcell-api/webapp ./webapp
-COPY --from=build ./vcell-api/keystore_macbook.jks .
+COPY --from=build /app/pythonScripts ./pythonScripts
+COPY --from=build /app/vcell-api/docroot ./docroot
+COPY --from=build /app/vcell-api/webapp ./webapp
+COPY --from=build /app/vcell-api/keystore_macbook.jks .
 
 ENV softwareVersion=JimMac_Version_6.2_build_99 \
 	serverid=TEST2 \

@@ -1,5 +1,5 @@
 FROM maven:3.5-jdk-8-alpine as build
-ADD . /app
+COPY . /app/
 WORKDIR /app
 RUN mvn clean install dependency:copy-dependencies
 
@@ -10,12 +10,12 @@ RUN mkdir -p /usr/local/app/lib
 WORKDIR /usr/local/app
 
 COPY --from=build \
-     ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
-     ./vcell-server/target/maven-jars/* \
-     ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
-     ./vcell-oracle/target/maven-jars/* \
-     ./ojdbc6/src/ojdbc6.jar \
-     ./ucp/src/ucp.jar \
+     /app/vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
+     /app/vcell-server/target/maven-jars/* \
+     /app/vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
+     /app/vcell-oracle/target/maven-jars/* \
+     /app/ojdbc6/src/ojdbc6.jar \
+     /app/ucp/src/ucp.jar \
      ./lib/
 
 ENV softwareVersion=JimMac_Version_6.2_build_99 \
