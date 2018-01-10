@@ -3,6 +3,8 @@ services:
   rmi:
     ports:
       - "8088:8080"
+    environment:
+      - rmihost=vcell-rmi-alpha.cam.uchc.edu
     deploy:
       mode: replicated
       replicas: 1

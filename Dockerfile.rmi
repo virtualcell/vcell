@@ -23,12 +23,11 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     rmihost=localhost \
     jmsblob_minsize=100000
 
-VOLUME /blobMessageTempDir
-
 EXPOSE 8088
 
 ENTRYPOINT java \
 		-Dvcell.softwareVersion="${softwareVersion}" \
+		-Djava.rmi.server.hostname="${rmihost}" \
 		-Dvcell.server.id="${serverid}" \
 		-Dvcell.installDir=/usr/local/app \
 		-Dvcell.server.dbConnectURL="${dburl}" \

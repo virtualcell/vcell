@@ -50,8 +50,6 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     keystorepswdfile=/run/secrets/keystorepswd \
     jmsblob_minsize=100000
 
-VOLUME /blobMessageTempDir
-
 EXPOSE 8080
 
 ENTRYPOINT java \

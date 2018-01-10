@@ -16,6 +16,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
@@ -65,7 +67,6 @@ import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellServer;
-import cbit.vcell.server.WatchdogMonitor;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
 /**
@@ -78,7 +79,8 @@ public class LocalVCellBootstrap extends UnicastRemoteObject implements VCellBoo
 	private AdminDatabaseServer adminDbServer = null;
 	private SessionLog sessionLog = new StdoutSessionLog(PropertyLoader.ADMINISTRATOR_ACCOUNT);
 	private BootstrapMXBean bootstrapMXBean = new BootstrapMXBeanImpl();
-	
+	private static Registry registry = null;
+
 	public class BootstrapMXBeanImpl implements BootstrapMXBean {
 		public BootstrapMXBeanImpl(){
 		}
@@ -188,8 +190,10 @@ public static void main(java.lang.String[] args) {
 		//
 		// Create and install a security manager
 		//
-		//System.setSecurityManager(new RMISecurityManager());
-
+//		if (System.getSecurityManager()==null) {
+//			System.setSecurityManager(new SecurityManager());
+//		}
+		
 		Thread.currentThread().setName("Application");
 		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
 
@@ -207,7 +211,9 @@ public static void main(java.lang.String[] args) {
 		int rmiPort = Integer.parseInt(args[1]);
 		
 		Integer serviceOrdinal = new Integer(rmiPort);
+		System.out.println("connecting to mongodb");
 		VCMongoMessage.serviceStartup(ServiceName.bootstrap, serviceOrdinal, args);
+		System.out.println("connected to mongodb");
 		
 		//
 		// Redirect output to the logfile (append if exists)
@@ -226,8 +232,10 @@ public static void main(java.lang.String[] args) {
 		if (!serverConfig.equals(MESSAGING)){
 			throw new Exception("expecting '" + MESSAGING + "' as third argument");
 		}
+		System.out.println("connecting to messaging server");
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 		vcMessagingService.setDelegate(new ServerMessagingDelegate());
+		System.out.println("connected to messaging server");
 		
 		SessionLog log;
 		if (logOutputStream != null) {
@@ -243,7 +251,7 @@ public static void main(java.lang.String[] args) {
 			int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
 			new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
 		}
-		
+		System.out.println("connecting to database");
 		ConnectionFactory conFactory = null;
 		int tryCount = 0;
 		Exception conFactoryException = null;
@@ -260,6 +268,7 @@ public static void main(java.lang.String[] args) {
 		if(conFactory == null){
 			throw new Exception("Couldn't create OraclePoolingConnectionFactory after "+tryCount+" tries.",conFactoryException);
 		}
+		System.out.println("connected to database");
 		
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		DatabasePolicySQL.bSilent=true;
@@ -272,26 +281,28 @@ public static void main(java.lang.String[] args) {
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, false, log);
+		System.out.println("instantiating localVCellBootstrap ... connects to messaging");
 		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase, rmiPort);
+		System.out.println("instantiated localVCellBootstrap ... connects to messaging");
 
 		//
 		// JMX registration
 		//
+		System.out.println("connecting to JMX MBean server");
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
         mbs.registerMBean(localVCellBootstrap.bootstrapMXBean, new ObjectName(BootstrapMXBean.jmxObjectName));
+		System.out.println("connected to JMX MBean server");
         
 		//
 		// spawn the WatchdogMonitor (which spawns the RMI registry, and binds the localVCellBootstrap)
 		//
-		long minuteMS = 60000;
-		long monitorSleepTime = 20*minuteMS;
-		monitorSleepTime = Long.MAX_VALUE; //TEST: only run once
-		String rmiUrl = "//" + host + ":" + rmiPort + "/VCellBootstrapServer";
-		Thread watchdogMonitorThread = new Thread(new WatchdogMonitor(monitorSleepTime,rmiPort,rmiUrl,localVCellBootstrap,serverConfig),"WatchdogMonitor");
-		watchdogMonitorThread.setDaemon(true);
-		watchdogMonitorThread.setName("WatchdogMonitor");
-		watchdogMonitorThread.start();
+		System.out.println("registering remote object with registry");
+		System.out.println("VCellBootstrapServer");
+		registry = LocateRegistry.createRegistry(rmiPort);
+		registry.rebind("VCellBootstrapServer", localVCellBootstrap);
+		System.out.println("registered remote object with registry");
+
 	} catch (Throwable e) {
 		System.out.println("LocalVCellBootstrap err: " + e.getMessage());
 		e.printStackTrace();
