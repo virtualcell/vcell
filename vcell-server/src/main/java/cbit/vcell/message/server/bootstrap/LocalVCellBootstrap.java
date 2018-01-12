@@ -285,14 +285,14 @@ public static void main(java.lang.String[] args) {
 		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase, rmiPort);
 		System.out.println("instantiated localVCellBootstrap ... connects to messaging");
 
-		//
-		// JMX registration
-		//
-		System.out.println("connecting to JMX MBean server");
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
-        mbs.registerMBean(localVCellBootstrap.bootstrapMXBean, new ObjectName(BootstrapMXBean.jmxObjectName));
-		System.out.println("connected to JMX MBean server");
+//		//
+//		// JMX registration
+//		//
+//		System.out.println("connecting to JMX MBean server");
+//        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+//        mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+//        mbs.registerMBean(localVCellBootstrap.bootstrapMXBean, new ObjectName(BootstrapMXBean.jmxObjectName));
+//		System.out.println("connected to JMX MBean server");
         
 		//
 		// spawn the WatchdogMonitor (which spawns the RMI registry, and binds the localVCellBootstrap)

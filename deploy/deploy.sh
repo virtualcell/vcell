@@ -439,8 +439,11 @@ echo "#JMS Info"															>> $propfile
 echo "#"																	>> $propfile
 echo "vcell.jms.provider = ActiveMQ"										>> $propfile
 echo "vcell.jms.url = $vcell_jms_url" 										>> $propfile
-echo "vcell.jms.user = $vcell_jms_user"										>> $propfile
-echo "vcell.jms.pswdfile = $vcell_secrets_jms_pswdfile"				>> $propfile
+echo "vcell.jms.user = $vcell_jms_user"
+echo "### jms password is deprecated and will be in clear text"			>> $propfile
+echo "#vcell.jms.pswdfile = $vcell_secrets_jms_pswdfile"				>> $propfile
+vcell_secrets_jms_password=`cat $vcell_secrets_jms_pswdfile`
+echo "vcell.jms.password = $vcell_secrets_jms_password"				>> $propfile
 echo "vcell.jms.queue.simReq = $jms_queue_simReq"						>> $propfile
 echo "vcell.jms.queue.dataReq = $jms_queue_dataReq"				>> $propfile
 echo "vcell.jms.queue.dbReq = $jms_queue_dbReq"						>> $propfile
