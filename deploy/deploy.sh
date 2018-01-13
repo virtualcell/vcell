@@ -440,21 +440,21 @@ echo "#"																	>> $propfile
 echo "vcell.jms.provider = ActiveMQ"										>> $propfile
 echo "vcell.jms.url = $vcell_jms_url" 										>> $propfile
 echo "vcell.jms.user = $vcell_jms_user" 									>> $propfile
-echo "### jms password is deprecated and will be in clear text"			>> $propfile
-echo "#vcell.jms.pswdfile = $vcell_secrets_jms_pswdfile"				>> $propfile
+echo "### jms password is deprecated and will be in clear text"				>> $propfile
+echo "vcell.jms.pswdfile = $vcell_secrets_jms_pswdfile"						>> $propfile
 vcell_secrets_jms_password=`cat $vcell_secrets_jms_pswdfile`
-echo "vcell.jms.password = $vcell_secrets_jms_password"				>> $propfile
-echo "vcell.jms.queue.simReq = $jms_queue_simReq"						>> $propfile
-echo "vcell.jms.queue.dataReq = $jms_queue_dataReq"				>> $propfile
-echo "vcell.jms.queue.dbReq = $jms_queue_dbReq"						>> $propfile
-echo "vcell.jms.queue.simJob = $jms_queue_simJob"						>> $propfile
-echo "vcell.jms.queue.workerEvent = $jms_queue_workerEvent"			>> $propfile
-echo "vcell.jms.topic.serviceControl = $jms_topic_serviceControl"		>> $propfile
-echo "vcell.jms.topic.daemonControl = $jms_topic_daemonControl"		>> $propfile
-echo "vcell.jms.topic.clientStatus = $jms_topic_clientStatus"			>> $propfile
+echo "vcell.jms.password = $vcell_secrets_jms_password"						>> $propfile
+echo "vcell.jms.queue.simReq = $jms_queue_simReq"							>> $propfile
+echo "vcell.jms.queue.dataReq = $jms_queue_dataReq"							>> $propfile
+echo "vcell.jms.queue.dbReq = $jms_queue_dbReq"								>> $propfile
+echo "vcell.jms.queue.simJob = $jms_queue_simJob"							>> $propfile
+echo "vcell.jms.queue.workerEvent = $jms_queue_workerEvent"					>> $propfile
+echo "vcell.jms.topic.serviceControl = $jms_topic_serviceControl"			>> $propfile
+echo "vcell.jms.topic.daemonControl = $jms_topic_daemonControl"				>> $propfile
+echo "vcell.jms.topic.clientStatus = $jms_topic_clientStatus"				>> $propfile
 echo "vcell.jms.blobMessageMinSize = 100000"								>> $propfile
 echo "vcell.jms.blobMessageTempDir = $installedJmsBlobFilesDir"				>> $propfile
-echo "vcell.jms.blobMessageUseMongo = true"								>> $propfile
+echo "vcell.jms.blobMessageUseMongo = true"									>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#Oracle Database Info"												>> $propfile
@@ -462,7 +462,7 @@ echo "#"																	>> $propfile
 echo "vcell.server.dbConnectURL = $vcell_database_url"						>> $propfile
 echo "vcell.server.dbDriverName = $vcell_database_driver"					>> $propfile
 echo "vcell.server.dbUserid = $vcell_database_user"							>> $propfile
-echo "vcell.db.pswdfile = $vcell_secrets_database_pswdfile"				>> $propfile
+echo "vcell.db.pswdfile = $vcell_secrets_database_pswdfile"					>> $propfile
 echo " "																	>> $propfile
 echo "#"																	>> $propfile
 echo "#Amplistor Info"														>> $propfile
