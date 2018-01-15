@@ -12,8 +12,8 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 
@@ -79,7 +79,7 @@ public class TestBlobRpcMessages {
 			        	User user = new User("schaff",new KeyValue("17"));
 			        	byte[] array1 = new byte[20000000];
 			        	byte[] array2 = new byte[20000000];
-			        	VCRpcRequest rpcRequest = new VCRpcRequest(user, ServiceType.TESTING_SERVICE, "concat", new Object[] { array1, array2 });
+			        	VCRpcRequest rpcRequest = new VCRpcRequest(user, RpcServiceType.TESTING_SERVICE, "concat", new Object[] { array1, array2 });
 			        	
 			        	//
 			        	// send request and block for response (or timeout).

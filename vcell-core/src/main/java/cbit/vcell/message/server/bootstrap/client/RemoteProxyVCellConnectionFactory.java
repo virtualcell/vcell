@@ -10,25 +10,60 @@
 
 package cbit.vcell.message.server.bootstrap.client;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+
+import org.apache.http.client.ClientProtocolException;
+import org.vcell.api.client.VCellApiClient;
+import org.vcell.api.client.VCellApiRpcRequest;
+import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.util.AuthenticationException;
-import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.rmi.event.MessageEvent;
-import cbit.rmi.event.PerformanceMonitorEvent;
+import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.ConnectionException;
-import cbit.vcell.server.DataSetController;
-import cbit.vcell.server.SimulationController;
-import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
 
 public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory {
 
-	UserLoginInfo userLoginInfo;
-	private String apihost = null;
-	private Integer apiport = null;
+	private UserLoginInfo userLoginInfo;
+	private final String apihost;
+	private final Integer apiport;
+	private final SessionLog sessionLog;
+	private final VCellApiClient vcellApiClient;
 	
+	private RpcSender rpcSender = new RemoteProxyRpcSender();
+	
+	public class RemoteProxyRpcSender implements RpcSender {
+		@Override
+		public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, int timeoutMS,
+				String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) {
+			final RpcDestination rpcDestination;
+			if (queue.equals(VCellQueue.DataRequestQueue)) {
+				rpcDestination = RpcDestination.DataRequestQueue;
+			}else if (queue.equals(VCellQueue.DbRequestQueue)) {
+				rpcDestination = RpcDestination.DbRequestQueue;
+			}else if (queue.equals(VCellQueue.SimReqQueue)) {
+				rpcDestination = RpcDestination.SimReqQueue;
+			}else {
+				throw new RuntimeException("RpcDestination "+queue.getName()+" not implemented for VCellApi RPC");
+			}
+
+			VCellApiRpcRequest apiRpcRequest = new VCellApiRpcRequest(
+					vcRpcRequest.getUser().getName(), vcRpcRequest.getUser().getID().toString(), 
+					rpcDestination, vcRpcRequest.getMethodName(), vcRpcRequest.getArguments());
+			return vcellApiClient.sendRpcMessage(rpcDestination,apiRpcRequest,returnRequired,timeoutMS,specialProperties,specialValues);
+		}
+	}
+	
+	@SuppressWarnings("serial")
 	public static class RemoteProxyException extends Exception {
 
 		public RemoteProxyException(String message, Exception e) {
@@ -37,82 +72,30 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 		
 	}
 
-	public class RemoteProxyVCellConnection implements VCellConnection {
-		
-		private RemoteProxyVCellConnection() {
-			
-		}
-
-		@Override
-		public DataSetController getDataSetController() throws DataAccessException, RemoteProxyException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public SimulationController getSimulationController() throws RemoteProxyException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public UserLoginInfo getUserLoginInfo() throws RemoteProxyException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public UserMetaDbServer getUserMetaDbServer() throws RemoteProxyException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void sendErrorReport(Throwable exception) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sendErrorReport(Throwable exception, ExtraContext extra) throws RemoteProxyException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public MessageEvent[] getMessageEvents() throws RemoteProxyException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent)
-				throws RemoteProxyException {
-			// TODO Auto-generated method stub
-			
-		}
-		
-	}
-/**
- * RMIVCellConnectionFactory constructor comment.
- */
-public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLoginInfo userLoginInfo) {
+public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLoginInfo userLoginInfo) throws ClientProtocolException, IOException {
 	this.apihost = apihost;
 	this.apiport = apiport;
-	this.userLoginInfo = userLoginInfo;	
+	this.userLoginInfo = userLoginInfo;
+	this.sessionLog = new StdoutSessionLog("remoteProxy");
+	boolean bIgnoreCertProblems = false;
+	boolean bIgnoreHostMismatch = false;
+	try {
+		String clientId = PropertyLoader.getSecretValue(PropertyLoader.vcellapiClientid, PropertyLoader.vcellapiClientidFile);
+		this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, clientId, bIgnoreCertProblems, bIgnoreHostMismatch);
+	} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+		e.printStackTrace();
+		throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
+	}
+	
+	this.vcellApiClient.authenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString());
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2001 12:03:11 PM)
- * @param userID java.lang.String
- * @param password java.lang.String
- */
+
 public void changeUser(UserLoginInfo userLoginInfo) {
-	this.userLoginInfo = userLoginInfo;	
+	this.userLoginInfo = userLoginInfo;
 }
 
 public VCellConnection createVCellConnection() throws AuthenticationException, ConnectionException {
-	return new RemoteProxyVCellConnection();
+	return new LocalVCellConnectionMessaging(userLoginInfo,sessionLog,rpcSender);
 }
 
 public static String getVCellSoftwareVersion(String apihost, Integer apiport) {

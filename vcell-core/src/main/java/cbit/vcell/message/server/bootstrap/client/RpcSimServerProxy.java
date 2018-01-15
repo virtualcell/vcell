@@ -8,18 +8,18 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.message.server.bootstrap.client;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationService;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -35,8 +35,8 @@ public class RpcSimServerProxy extends AbstractRpcServerProxy implements Simulat
 /**
  * DataServerProxy constructor comment.
  */
-public RpcSimServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog log) {
-	super(userLoginInfo, vcMessageSession, VCellQueue.SimReqQueue, log);
+public RpcSimServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender, SessionLog log) {
+	super(userLoginInfo, rpcSender, VCellQueue.SimReqQueue, log);
 }
 
 
@@ -50,7 +50,7 @@ public RpcSimServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessage
  */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(ServiceType.DISPATCH, methodName, args, true);
+		return rpc(RpcServiceType.DISPATCH, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

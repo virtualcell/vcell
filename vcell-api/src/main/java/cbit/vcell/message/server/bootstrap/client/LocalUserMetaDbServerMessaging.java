@@ -8,7 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.message.server.bootstrap.client;
+
+import java.rmi.RemoteException;
 
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;

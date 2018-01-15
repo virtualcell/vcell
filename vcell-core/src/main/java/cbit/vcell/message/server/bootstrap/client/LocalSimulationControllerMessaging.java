@@ -8,13 +8,12 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.message.server.bootstrap.client;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationController;
@@ -34,9 +33,9 @@ public class LocalSimulationControllerMessaging implements SimulationController 
  * MessagingSimulationController constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog log) {
+public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, RpcSender rpcSender, SessionLog log) {
 	this.fieldSessionLog = log;
-	simServerProxy = new RpcSimServerProxy(userLoginInfo, vcMessageSession, fieldSessionLog);
+	simServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSender, fieldSessionLog);
 }
 
 

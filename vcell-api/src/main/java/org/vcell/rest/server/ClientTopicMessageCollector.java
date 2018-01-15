@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package org.vcell.rest.server;
 import javax.swing.event.EventListenerList;
 
 import org.vcell.util.BigString;

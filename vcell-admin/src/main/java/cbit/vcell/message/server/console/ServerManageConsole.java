@@ -90,11 +90,10 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceSpec;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
-import cbit.vcell.message.server.bootstrap.RpcDbServerProxy;
-import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
+import cbit.vcell.message.server.bootstrap.ServiceType;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
@@ -105,6 +104,7 @@ import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.VCellBootstrap;
+import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XmlHelper;
 
@@ -2743,8 +2743,11 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
 		User user = adminDbTop.getUser(userid, true);
 		UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
 		userLoginInfo.setUser(user);
-		RpcDbServerProxy dbProxy = new RpcDbServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		BigString simxml = dbProxy.getSimulationXML(simKey);
+		String apihost = "vcellapi.cam.uchc.edu";
+		Integer apiport = 8080;
+		RemoteProxyVCellConnectionFactory remoteProxyVCellConnectionFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, userLoginInfo);
+		VCellConnection vcConn = remoteProxyVCellConnectionFactory.createVCellConnection();
+		BigString simxml = vcConn.getUserMetaDbServer().getSimulationXML(simKey);
 		if (simxml == null) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
@@ -2754,8 +2757,7 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo, vcMessaging_rpcProducerSession, log);
-		simProxy.startSimulation(user,sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());		
+		vcConn.getSimulationController().startSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}
@@ -2996,8 +2998,11 @@ public void stopSimulation(String userid, KeyValue simKey) {
 		User user = adminDbTop.getUser(userid, true);
 		UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
 		userLoginInfo.setUser(user);
-		RpcDbServerProxy dbProxy = new RpcDbServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		BigString simxml = dbProxy.getSimulationXML(simKey);
+		String apihost = "vcellapi.cam.uchc.edu";
+		Integer apiport = 8080;
+		RemoteProxyVCellConnectionFactory remoteProxyVCellConnectionFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, userLoginInfo);
+		VCellConnection vcConn = remoteProxyVCellConnectionFactory.createVCellConnection();
+		BigString simxml = vcConn.getUserMetaDbServer().getSimulationXML(simKey);
 		if (simxml == null) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
@@ -3007,8 +3012,7 @@ public void stopSimulation(String userid, KeyValue simKey) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		simProxy.stopSimulation(user,sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
+		vcConn.getSimulationController().stopSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}

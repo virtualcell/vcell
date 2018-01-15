@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.message.server.bootstrap.client;
 
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
@@ -20,9 +20,8 @@ import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
@@ -42,8 +41,8 @@ public class RpcDataServerProxy extends AbstractRpcServerProxy implements cbit.v
 /**
  * DataServerProxy constructor comment.
  */
-public RpcDataServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog log) {
-	super(userLoginInfo, vcMessageSession, VCellQueue.DataRequestQueue, log);
+public RpcDataServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender, SessionLog log) {
+	super(userLoginInfo, rpcSender, VCellQueue.DataRequestQueue, log);
 }
 
 
@@ -103,7 +102,7 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 		if(!timeSeriesJobSpec.getVcDataJobID().isBackgroundTask()){
 			return (org.vcell.util.document.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{outputContext,userLoginInfo.getUser(), vcdID,timeSeriesJobSpec});
 		}else{
-			rpc(ServiceType.DATA, "getTimeSeriesValues", new Object[]{outputContext,userLoginInfo.getUser(), vcdID,timeSeriesJobSpec}, false);
+			rpc(RpcServiceType.DATA, "getTimeSeriesValues", new Object[]{outputContext,userLoginInfo.getUser(), vcdID,timeSeriesJobSpec}, false);
 		}
 	} catch (DataAccessException ex) {
 		log.exception(ex);
@@ -121,7 +120,7 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 
 public cbit.rmi.event.ExportEvent makeRemoteFile(OutputContext outputContext,cbit.vcell.export.server.ExportSpecs exportSpecs) throws DataAccessException {
 	try {
-		rpc(ServiceType.DATA, "makeRemoteFile", new Object[]{outputContext,userLoginInfo.getUser(), exportSpecs}, false, new String[]{ServiceType.DATAEXPORT.getName()}, new Object[]{new Boolean(true)});
+		rpc(RpcServiceType.DATA, "makeRemoteFile", new Object[]{outputContext,userLoginInfo.getUser(), exportSpecs}, false, new String[]{RpcServiceType.DATAEXPORT.getName()}, new Object[]{new Boolean(true)});
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;
@@ -149,7 +148,7 @@ public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[
 
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(ServiceType.DATA, methodName, args, true);
+		return rpc(RpcServiceType.DATA, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

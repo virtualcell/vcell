@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.message.server.bootstrap.client;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 

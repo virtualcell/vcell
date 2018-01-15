@@ -449,5 +449,15 @@ public class VCellApiClient {
 		String message = httpclient.execute(httppost,handler,httpClientContext);
 		System.out.println("requested lost password for user "+userid+", server returned "+message);
 	}
+	
+	public enum RpcDestination {
+		DataRequestQueue, DbRequestQueue, SimReqQueue;
+	}
+
+	public Object sendRpcMessage(RpcDestination rpcDestination, VCellApiRpcRequest vcRpcRequest, boolean returnRequired, int timeoutMS,
+			String[] specialProperties, Object[] specialValues) {
+		//xxxxxxx
+		return null;
+	}
 
 }

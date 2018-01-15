@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.message.server.bootstrap.client;
 
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
@@ -23,7 +23,6 @@ import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.DataIdentifier;
@@ -48,9 +47,9 @@ public class LocalDataSetControllerMessaging implements DataSetController {
 /**
  * This method was created by a SmartGuide.
  */
-public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog sLog) {
+public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, RpcSender rpcSender, SessionLog sLog) {
 	this.sessionLog = sLog;
-	this.dataServerProxy = new RpcDataServerProxy(userLoginInfo, vcMessageSession, sessionLog);
+	this.dataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSender, sessionLog);
 }
 
 

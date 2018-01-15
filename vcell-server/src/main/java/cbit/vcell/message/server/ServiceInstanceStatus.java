@@ -17,7 +17,7 @@ import org.vcell.util.ComparableObject;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.bootstrap.ServiceType;
 
 
 

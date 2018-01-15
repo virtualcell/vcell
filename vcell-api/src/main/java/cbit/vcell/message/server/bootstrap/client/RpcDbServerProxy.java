@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap;
+package cbit.vcell.message.server.bootstrap.client;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -22,8 +22,8 @@ import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserRegistrationOP;
@@ -224,7 +224,7 @@ public void replacePreferences(org.vcell.util.Preference[] preferences) throws D
 
 private Object rpc(String methodName, Object[] args) throws ObjectNotFoundException, DataAccessException {
 	try {
-		return rpc(ServiceType.DB, methodName, args, true);
+		return rpc(RpcServiceType.DB, methodName, args, true);
 	} catch (ObjectNotFoundException ex) {
 		log.exception(ex);
 		throw ex;
