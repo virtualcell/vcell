@@ -1,5 +1,6 @@
 package org.vcell.api.client;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 
 /*
@@ -30,14 +31,19 @@ import java.io.BufferedReader;
  */
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -59,6 +65,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
@@ -325,9 +332,9 @@ public class VCellApiClient {
 		return simulationTaskRepresentations;
 	}
 	
-	public void authenticate(String userid, String password) throws ClientProtocolException, IOException {
+	public void authenticate(String userid, String password, boolean alreadyDigested) throws ClientProtocolException, IOException {
 		// hash the password
-		String digestedPassword = createdDigestPassword(password);
+		String digestedPassword = (alreadyDigested)?(password):createdDigestPassword(password);
 		
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/access_token?user_id="+userid+"&user_password="+digestedPassword+"&client_id="+clientID);
 
@@ -453,11 +460,119 @@ public class VCellApiClient {
 	public enum RpcDestination {
 		DataRequestQueue, DbRequestQueue, SimReqQueue;
 	}
+	
+	public static class VCellApiRpcBody implements Serializable {
+		public final RpcDestination rpcDestination;
+		public final VCellApiRpcRequest rpcRequest;
+		public final boolean returnedRequired;
+		public final int timeoutMS;
+		public final String[] specialProperties;
+		public final Object[] specialValues;
 
-	public Object sendRpcMessage(RpcDestination rpcDestination, VCellApiRpcRequest vcRpcRequest, boolean returnRequired, int timeoutMS,
-			String[] specialProperties, Object[] specialValues) {
-		//xxxxxxx
-		return null;
+		public VCellApiRpcBody(RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest,
+				boolean returnedRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) {
+			this.rpcDestination = rpcDestination;
+			this.rpcRequest = rpcRequest;
+			this.returnedRequired = returnedRequired;
+			this.timeoutMS = timeoutMS;
+			this.specialProperties = specialProperties;
+			this.specialValues = specialValues;
+		}
 	}
 
+	public Serializable sendRpcMessage(RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest, boolean returnRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) throws ClientProtocolException, IOException {
+		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/rpc");
+		VCellApiRpcBody vcellapiRpcBody = new VCellApiRpcBody(rpcDestination, rpcRequest, returnRequired, timeoutMS, specialProperties, specialValues);
+		byte[] compressedSerializedRpcBody = null;
+		try {
+			compressedSerializedRpcBody = toCompressedSerialized(vcellapiRpcBody);
+		} catch (IOException e2) {
+			e2.printStackTrace();
+			throw new RuntimeException("vcellapi rpc failure serializing request body, method="+rpcRequest.methodName+": "+e2.getMessage(),e2);
+		}
+		ByteArrayEntity input = new ByteArrayEntity(compressedSerializedRpcBody);
+		input.setContentType(ContentType.APPLICATION_OCTET_STREAM.getMimeType());
+		httppost.setEntity(input);
+		httppost.addHeader("username", rpcRequest.username);
+		httppost.addHeader("destination", rpcRequest.rpcDestination.name());
+		httppost.addHeader("method", rpcRequest.methodName);
+		httppost.addHeader("returnRequired", Boolean.toString(returnRequired));
+		httppost.addHeader("timeoutMS", Integer.toString(timeoutMS));
+		httppost.addHeader("compressed", "zip");
+		httppost.addHeader("class",VCellApiRpcBody.class.getCanonicalName());
+		if (specialProperties!=null) {
+			httppost.addHeader("specialProperties", Arrays.asList(specialProperties).toString());
+		}
+	
+		System.out.println("Executing request to submit rpc call " + httppost.getRequestLine());
+
+		ResponseHandler<Serializable> handler = new ResponseHandler<Serializable>() {
+
+			public Serializable handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
+				int status = response.getStatusLine().getStatusCode();
+				if (status == 200) {
+					HttpEntity entity = response.getEntity();
+					try {
+						Serializable returnValue = fromCompressedSerialized(entity.getContent());
+						if (returnRequired) {
+							if (returnValue instanceof Exception){
+								Exception e = (Exception)returnValue;
+								e.printStackTrace();
+								throw new ClientProtocolException("vcellapi rpc failure, method="+rpcRequest.methodName+": "+e.getMessage(),e);
+							} else {
+								return returnValue;
+							}
+						} else {
+							return null;
+						}
+					} catch (ClassNotFoundException | IllegalStateException e1) {
+						e1.printStackTrace();
+						throw new RuntimeException("vcellapi rpc failure deserializing return value, method="+rpcRequest.methodName+": "+e1.getMessage(),e1);
+					}
+					
+				} else {
+					throw new ClientProtocolException("Unexpected response status: " + status);
+				}
+			}
+
+		};
+		Serializable returnedValue = httpclient.execute(httppost,handler,httpClientContext);
+		System.out.println("returned from vcellapi rpc method="+rpcRequest.methodName);
+		return returnedValue;
+	}
+	
+	public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
+		java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
+		java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(dos);
+		oos.writeObject(cacheObj);
+		oos.flush();
+		dos.close();
+		bos.flush();
+		byte[] objData = bos.toByteArray();
+		oos.close();
+		bos.close();
+		return objData;
+	}
+	
+	public static Serializable fromCompressedSerialized(InputStream is) throws ClassNotFoundException, java.io.IOException {
+		BufferedInputStream bis = new BufferedInputStream(is);
+		InflaterInputStream iis = new InflaterInputStream(bis);
+		java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis);
+		Serializable cacheClone = (Serializable) ois.readObject();
+		ois.close();
+		bis.close();
+		return cacheClone;
+	}
+	
+	public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, java.io.IOException {
+		java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData);
+		InflaterInputStream iis = new InflaterInputStream(bis);
+		java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis);
+		Serializable cacheClone = (Serializable) ois.readObject();
+		ois.close();
+		bis.close();
+		return cacheClone;
+	}
+	
 }

@@ -80,5 +80,5 @@ void sendErrorReport(Throwable exception) throws RemoteProxyException;
 void sendErrorReport(Throwable exception, ExtraContext extra) throws RemoteProxyException;
 
 MessageEvent[] getMessageEvents() throws RemoteProxyException;
-void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) throws RemoteProxyException;
+//void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) throws RemoteProxyException;
 }

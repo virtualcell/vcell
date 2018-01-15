@@ -7,5 +7,5 @@ import cbit.vcell.message.VCellQueue;
 
 public interface RpcSender {
 	public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, int timeoutMS,
-			String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo);
+			String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws Exception;
 }

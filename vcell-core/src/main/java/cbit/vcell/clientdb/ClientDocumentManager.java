@@ -1632,7 +1632,6 @@ public synchronized void initAllDatabaseInfos() throws DataAccessException {
 				    }
 		    )
     	);
-		getSessionManager().getAsynchMessageManager().reportPerformanceMonitorEvent(pme);
 
 	}catch (RemoteProxyException e){
 		handleRemoteProxyException(e);

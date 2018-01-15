@@ -37,7 +37,7 @@ public class VCellApiClientTest {
 			boolean bIgnoreHostMismatch = true;
 			vcellApiClient = new VCellApiClient(host,port,clientID,bIgnoreCertProblems, bIgnoreHostMismatch);
 
-			vcellApiClient.authenticate(username,password);
+			vcellApiClient.authenticate(username,password,false);
 			
 			// test /biomodel[? query string]
 			BiomodelRepresentation[] biomodelReps = vcellApiClient.getBioModels(new BioModelsQuerySpec());

@@ -38,7 +38,6 @@ public class VCellApiRpcRequest implements java.io.Serializable {
 	}
 	
 	public final String username;
-	public final String userkey;
 	public final Object[] args;
 	public final RpcDestination rpcDestination;
 	public final String methodName;	
@@ -49,9 +48,8 @@ public class VCellApiRpcRequest implements java.io.Serializable {
  * @param argEstimatedSizeMB double
  * @param argUserid java.lang.String
  */
-public VCellApiRpcRequest(String username, String userkey, RpcDestination rpcDestination, String methodName, Object[] arglist) {
+public VCellApiRpcRequest(String username, RpcDestination rpcDestination, String methodName, Object[] arglist) {
 	this.username = username;
-	this.userkey = userkey;
 	this.rpcDestination = rpcDestination;
 	this.methodName = methodName;
 	this.args = arglist;

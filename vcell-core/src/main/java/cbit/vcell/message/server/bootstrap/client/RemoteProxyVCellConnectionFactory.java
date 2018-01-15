@@ -44,7 +44,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 	public class RemoteProxyRpcSender implements RpcSender {
 		@Override
 		public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, int timeoutMS,
-				String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) {
+				String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws Exception {
 			final RpcDestination rpcDestination;
 			if (queue.equals(VCellQueue.DataRequestQueue)) {
 				rpcDestination = RpcDestination.DataRequestQueue;
@@ -57,7 +57,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 			}
 
 			VCellApiRpcRequest apiRpcRequest = new VCellApiRpcRequest(
-					vcRpcRequest.getUser().getName(), vcRpcRequest.getUser().getID().toString(), 
+					userLoginInfo.getUserName(), 
 					rpcDestination, vcRpcRequest.getMethodName(), vcRpcRequest.getArguments());
 			return vcellApiClient.sendRpcMessage(rpcDestination,apiRpcRequest,returnRequired,timeoutMS,specialProperties,specialValues);
 		}
@@ -77,8 +77,8 @@ public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLo
 	this.apiport = apiport;
 	this.userLoginInfo = userLoginInfo;
 	this.sessionLog = new StdoutSessionLog("remoteProxy");
-	boolean bIgnoreCertProblems = false;
-	boolean bIgnoreHostMismatch = false;
+	boolean bIgnoreCertProblems = true;
+	boolean bIgnoreHostMismatch = true;
 	try {
 		String clientId = PropertyLoader.getSecretValue(PropertyLoader.vcellapiClientid, PropertyLoader.vcellapiClientidFile);
 		this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, clientId, bIgnoreCertProblems, bIgnoreHostMismatch);
@@ -87,7 +87,7 @@ public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLo
 		throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
 	}
 	
-	this.vcellApiClient.authenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString());
+	this.vcellApiClient.authenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString(),true);
 }
 
 public void changeUser(UserLoginInfo userLoginInfo) {

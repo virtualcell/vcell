@@ -219,7 +219,7 @@ public class VCSchedulerPanel extends JPanel {
 	}
 	
 	private void login() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, ClientProtocolException, IOException {
-		vcellApiClient.authenticate(textFieldUser.getText(),passwordField.getText());
+		vcellApiClient.authenticate(textFieldUser.getText(),passwordField.getText(),false);
 		setText("logged in as user "+textFieldUser.getText());
 	}
 	

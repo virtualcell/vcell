@@ -271,14 +271,6 @@ private void changeConnection(InteractiveContext requester, VCellConnection newV
 	}
 }
 
-
-public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws RemoteProxyException {
-	// just pass it to the the messaging service
-	if (isStatusConnected()) {
-		vcellConnection.reportPerformanceMonitorEvent(pme);
-	}
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (5/25/2004 2:03:47 AM)

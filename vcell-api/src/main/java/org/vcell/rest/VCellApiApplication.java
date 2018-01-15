@@ -22,6 +22,7 @@ import org.restlet.routing.Router;
 import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.auth.CustomAuthHelper;
+import org.vcell.rest.rpc.RpcRestlet;
 import org.vcell.rest.server.AccessTokenServerResource;
 import org.vcell.rest.server.BiomodelDiagramServerResource;
 import org.vcell.rest.server.BiomodelServerResource;
@@ -36,6 +37,7 @@ import org.vcell.rest.server.OptimizationServerResource;
 import org.vcell.rest.server.PublicationServerResource;
 import org.vcell.rest.server.PublicationsServerResource;
 import org.vcell.rest.server.RestDatabaseService;
+import org.vcell.rest.server.RpcService;
 import org.vcell.rest.server.SimDataServerResource;
 import org.vcell.rest.server.SimDataValuesServerResource;
 import org.vcell.rest.server.SimulationStatusServerResource;
@@ -44,6 +46,7 @@ import org.vcell.rest.server.SimulationTasksServerResource;
 import org.vcell.rest.users.EmailTokenVerifyRestlet;
 import org.vcell.rest.users.LoginFormRestlet;
 import org.vcell.rest.users.LoginRestlet;
+import org.vcell.rest.users.LostPasswordRestlet;
 import org.vcell.rest.users.NewUserRestlet;
 import org.vcell.rest.users.RegistrationFormRestlet;
 import org.vcell.util.DataAccessException;
@@ -86,7 +89,8 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String REGISTRATIONFORM = "registrationform";
 	public static final String NEWUSER = "newuser";
 	public static final String NEWUSER_VERIFY = "newuserverify";
-	
+	public static final String LOSTPASSWORD = "lostpassword";
+
 	public static final String BROWSER_CLIENTID = "dskeofihdslksoihe";
 	
 	public static final String PARAM_ACCESS_TOKEN = "token";
@@ -98,6 +102,8 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String VCELLAPI = "vcellapi";
 
 	public static final String WEBAPP = "webapp";
+	
+	public static final String RPC = "rpc";
 	
 	public static final String OPTIMIZATION = "optimization";
 	public static final String RUNOPTIMIZATION = "run";
@@ -151,6 +157,7 @@ public class VCellApiApplication extends WadlApplication {
 	private Configuration templateConfiguration = null;
 	private File javascriptDir = null;
 	private OptServerImpl optServerImpl = null;
+	private RpcService rpcService = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
@@ -160,6 +167,10 @@ public class VCellApiApplication extends WadlApplication {
 	public OptServerImpl getOptServerImpl() {
 		return optServerImpl;
 	}
+	
+	public RpcService getRpcService() {
+		return rpcService;
+	}
 
 	@Override
 	protected Representation createHtmlRepresentation(ApplicationInfo applicationInfo) {
@@ -167,7 +178,7 @@ public class VCellApiApplication extends WadlApplication {
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
-	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, OptServerImpl optServerImpl, Configuration templateConfiguration, File javascriptDir) {
+	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, OptServerImpl optServerImpl, RpcService rpcService, Configuration templateConfiguration, File javascriptDir) {
         setName("RESTful VCell API application");
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
@@ -177,6 +188,7 @@ public class VCellApiApplication extends WadlApplication {
 		this.restDatabaseService = restDatabaseService;
 		this.userVerifier = userVerifier;
 		this.optServerImpl = optServerImpl;
+		this.rpcService = rpcService;
 		this.templateConfiguration = templateConfiguration;
 		getLogger().setLevel(Level.FINE);
 	}
@@ -281,7 +293,11 @@ public class VCellApiApplication extends WadlApplication {
 		
 		rootRouter.attach("/"+NEWUSER_VERIFY, new EmailTokenVerifyRestlet(getContext()));
 		
-		rootRouter.attach("/auth/user", new Restlet(getContext()){
+		rootRouter.attach("/"+LOSTPASSWORD, new LostPasswordRestlet(getContext()));
+		
+	    rootRouter.attach("/"+RPC, new RpcRestlet(getContext()));
+
+	    rootRouter.attach("/auth/user", new Restlet(getContext()){
 
 			@Override
 			public void handle(Request request, Response response) {
@@ -378,7 +394,5 @@ public class VCellApiApplication extends WadlApplication {
 		ApiAccessToken accessToken = userVerifier.getApiAccessToken(new String(response.getSecret()));
 		return accessToken;
 	}
-	
-	
-		
+
 }

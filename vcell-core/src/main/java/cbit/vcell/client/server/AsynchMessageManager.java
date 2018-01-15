@@ -34,7 +34,6 @@ import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
 import edu.uchc.connjur.wb.ExecutionTrace;
@@ -151,7 +150,6 @@ private void poll( )  {
 				    new PerformanceDataEntry[] {new PerformanceDataEntry("remote call duration", Double.toString(duration))}
 			    )
 			);
-			reportPerformanceMonitorEvent(performanceMonitorEvent);
 	    }
     } catch (Exception exc) {
 	    System.out.println(">> polling failure << " + exc.getMessage());
@@ -460,9 +458,4 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	fireSimStatusEvent(simStatusEvent);
 }
 
-
-public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws RemoteProxyException {
-	// just pass it to the the messaging service
-	clientServerManager.reportPerformanceMonitorEvent(pme);
-}
 }

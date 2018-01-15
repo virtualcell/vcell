@@ -41,17 +41,11 @@ public class LocalVCellConnectionMessaging implements VCellConnection {
 	
 	private SessionLog fieldSessionLog = null;
 
-	private PerformanceMonitoringFacility performanceMonitoringFacility;
-
 	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, SessionLog sessionLog, RpcSender rpcSender) {
 		
 		this.userLoginInfo = userLoginInfo;
 		this.fieldSessionLog = sessionLog;
 		this.rpcSender = rpcSender;
-		
-		sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
-		
-		performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser()	);	
 	}	
 
 	
@@ -98,11 +92,6 @@ public void sendErrorReport(Throwable exception, ExtraContext extra) {
 	ErrorUtils.sendErrorReport(exception,(extra == null?null:extra.toString()));
 	
 }
-
-public void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) {
-	performanceMonitoringFacility.performanceMonitorEvent(performanceMonitorEvent);
-}
-
 
 @Override
 public MessageEvent[] getMessageEvents() throws RemoteProxyException {
