@@ -1,6 +1,5 @@
 package org.vcell.service.registration.localdb;
 
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import org.scijava.Priority;
@@ -17,6 +16,7 @@ import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;
@@ -49,7 +49,7 @@ public class LocaldbRegistrationService extends AbstractService implements Regis
 		return adminDbServer;
 	}
 	@Override
-	public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteException,DataAccessException,UseridIDExistsException{
+	public UserInfo insertUserInfo(UserInfo newUserInfo,boolean bUpdate) throws RemoteProxyException,DataAccessException,UseridIDExistsException{
 		if(bUpdate){
 			throw new IllegalArgumentException("UPDATE User Info: Must use ClientserverManager NOT LocalAdminDBServer");
 		}else{
@@ -57,11 +57,11 @@ public class LocaldbRegistrationService extends AbstractService implements Regis
 		}
 	}
 	@Override
-	public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteException{
+	public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException,RemoteProxyException{
 		return getAdminDbServer().getUserInfo(userKey);
 	}					
 	@Override
-	public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
+	public void sendLostPassword(String userid) throws DataAccessException,RemoteProxyException{
 		getAdminDbServer().sendLostPassword(userid);
 	}
 }

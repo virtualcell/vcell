@@ -10,9 +10,6 @@
 
 package cbit.vcell.message.server.bootstrap;
 import java.io.FileNotFoundException;
-import java.rmi.ConnectException;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -43,7 +40,7 @@ import cbit.vcell.server.VCellConnection;
  * @author: Jim Schaff.
  */
 @SuppressWarnings("serial")
-public class LocalVCellConnectionMessaging extends UnicastRemoteObject implements VCellConnection, ExportListener ,DataJobListener{
+public class LocalVCellConnectionMessaging implements VCellConnection, ExportListener ,DataJobListener{
 	private long MAX_TIME_WITHOUT_POLLING_MS = PropertyLoader.getLongProperty(PropertyLoader.vcellClientTimeoutMS, 10*MessageConstants.MINUTE_IN_MS);
 	private LocalDataSetControllerMessaging dataSetControllerMessaging = null;
 	private LocalSimulationControllerMessaging simulationControllerMessaging = null;
@@ -61,24 +58,17 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private UserLoginInfo userLoginInfo;
 	
 	private SessionLog fieldSessionLog = null;
-	private LocalVCellServer fieldLocalVCellServer = null;
 
 	private PerformanceMonitoringFacility performanceMonitoringFacility;
-	private int rmiPort;
 
 	private ClientTopicMessageCollector clientMessageCollector = null;
 	
 	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, 
-		SessionLog sessionLog, VCMessagingService vcMessagingService, ClientTopicMessageCollector clientMessageCollector, LocalVCellServer aLocalVCellServer, int argRmiPort) 
-		throws RemoteException, FileNotFoundException {
-		
-		super(argRmiPort);
-		
-		this.rmiPort = argRmiPort;
+		SessionLog sessionLog, VCMessagingService vcMessagingService, ClientTopicMessageCollector clientMessageCollector) 
+		throws FileNotFoundException {
 		
 		this.userLoginInfo = userLoginInfo;
 		this.fieldSessionLog = sessionLog;
-		this.fieldLocalVCellServer = aLocalVCellServer;
 		this.vcMessagingService = vcMessagingService;
 		
 		this.clientMessageCollector = clientMessageCollector;
@@ -86,21 +76,10 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 		this.clientMessageCollector.addMessageListener(messageService);
 		
 		sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
-		fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
-		fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
 		
 		performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser()	);	
 	}	
 
-
-	
-	private void checkClosed() throws RemoteException {
-		if (bClosed){
-			fieldSessionLog.print("LocalVCellConnectionMessaging closed");
-			Thread.dumpStack();
-			throw new ConnectException("LocalVCellConnectionMessaging closed, please reconnect");
-		}
-	}
 	
 /**
  * Insert the method's description here.
@@ -111,8 +90,6 @@ public void close() {
 	bClosed = true;
 	
 	clientMessageCollector.removeMessageListener(messageService);
-	fieldLocalVCellServer.getExportServiceImpl().removeExportListener(this);
-	fieldLocalVCellServer.getDataSetControllerImpl().removeDataJobListener(this);
 
 	if (vcMessageSessionData!=null){
 		vcMessageSessionData.close();
@@ -122,20 +99,6 @@ public void close() {
 	}
 	if (vcMessageSessionSim!=null){
 		vcMessageSessionSim.close();
-	}
-//	try {
-//		UnicastRemoteObject.unexportObject(this, true);
-//	} catch (NoSuchObjectException e) {
-//		e.printStackTrace();
-//	}
-	if (dataSetControllerMessaging!=null){
-		dataSetControllerMessaging.close();
-	}
-	if (simulationControllerMessaging!=null){
-		simulationControllerMessaging.close();
-	}
-	if (userMetaDbServerMessaging!=null){
-		userMetaDbServerMessaging.close();
 	}
 }
 
@@ -148,13 +111,8 @@ public void close() {
 public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 	
 	// if it's from one of our jobs, pass it along so it will reach the client
-	try {
-		if (getUserLoginInfo().getUser().equals(event.getUser())) {
-			messageService.messageEvent(event);
-		}
-	} catch (RemoteException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+	if (getUserLoginInfo().getUser().equals(event.getUser())) {
+		messageService.messageEvent(event);
 	}
 }
 
@@ -166,13 +124,8 @@ public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
  */
 public void exportMessage(ExportEvent event) {
 	// if it's from one of our jobs, pass it along so it will reach the client
-	try {
-		if (getUserLoginInfo().getUser().equals(event.getUser())) {
-			messageService.messageEvent(event);
-		}
-	} catch (RemoteException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+	if (getUserLoginInfo().getUser().equals(event.getUser())) {
+		messageService.messageEvent(event);
 	}
 }
 
@@ -181,12 +134,11 @@ public void exportMessage(ExportEvent event) {
  * @return cbit.vcell.server.DataSetController
  * @exception java.lang.Exception The exception description.
  */
-public DataSetController getDataSetController() throws RemoteException, DataAccessException {
+public DataSetController getDataSetController() throws DataAccessException {
 	fieldSessionLog.print("LocalVCellConnectionMessaging.getDataSetController()");
-	checkClosed();
 	if (dataSetControllerMessaging == null) {
 		vcMessageSessionData = vcMessagingService.createProducerSession();
-		dataSetControllerMessaging = new LocalDataSetControllerMessaging(getUserLoginInfo(), vcMessageSessionData, fieldSessionLog, rmiPort);
+		dataSetControllerMessaging = new LocalDataSetControllerMessaging(getUserLoginInfo(), vcMessageSessionData, fieldSessionLog);
 	}
 	return dataSetControllerMessaging;
 }
@@ -207,11 +159,10 @@ SimpleMessageService getMessageService() {
  * @param mathDesc cbit.vcell.math.MathDescription
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationController getSimulationController() throws RemoteException {
-	checkClosed();
+public SimulationController getSimulationController() {
 	if (simulationControllerMessaging == null){
 		vcMessageSessionSim = vcMessagingService.createProducerSession();
-		simulationControllerMessaging = new LocalSimulationControllerMessaging(getUserLoginInfo(), vcMessageSessionSim, fieldSessionLog, rmiPort);
+		simulationControllerMessaging = new LocalSimulationControllerMessaging(getUserLoginInfo(), vcMessageSessionSim, fieldSessionLog);
 	}
 	return simulationControllerMessaging;
 }
@@ -220,13 +171,9 @@ public SimulationController getSimulationController() throws RemoteException {
 /**
  * This method was created by a SmartGuide.
  * @return java.lang.String
- * @throws RemoteException 
+ * @
  */
-public UserLoginInfo getUserLoginInfo() throws RemoteException {
-
-	 
-		checkClosed();
-
+public UserLoginInfo getUserLoginInfo() {
 	return userLoginInfo;
 }
 
@@ -237,12 +184,11 @@ public UserLoginInfo getUserLoginInfo() throws RemoteException {
  * @param userid java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccessException {
+public UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
 	fieldSessionLog.print("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
-	checkClosed();
 	if (userMetaDbServerMessaging == null) {
 		vcMessageSessionDb = vcMessagingService.createProducerSession();
-		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), vcMessageSessionDb, fieldSessionLog, rmiPort);
+		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), vcMessageSessionDb, fieldSessionLog);
 	}
 	return userMetaDbServerMessaging;
 }
@@ -261,31 +207,27 @@ public boolean isTimeout() throws java.rmi.RemoteException {
  * @inheritDoc
  */
 @Override
-public void sendErrorReport(Throwable exception) throws RemoteException {
+public void sendErrorReport(Throwable exception) {
 	VCMongoMessage.sendClientException(exception, getUserLoginInfo());
 	ErrorUtils.sendErrorReport(exception, null);
 }
 
 @Override
-public void sendErrorReport(Throwable exception, ExtraContext extra)
-		throws RemoteException {
+public void sendErrorReport(Throwable exception, ExtraContext extra) {
 	VCMongoMessage.sendClientException(exception, getUserLoginInfo());
 	ErrorUtils.sendErrorReport(exception,(extra == null?null:extra.toString()));
 	
 }
 
-public MessageEvent[] getMessageEvents() throws RemoteException {
-	checkClosed();
+public MessageEvent[] getMessageEvents() {
 	MessageEvent[] messageEvents = messageService.getMessageEvents();
 	VCMongoMessage.sendClientMessageEventsDelivered(messageEvents, getUserLoginInfo());
 	return messageEvents;
 }
 
 
-public void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) throws RemoteException {
-	checkClosed();
+public void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) {
 	performanceMonitoringFacility.performanceMonitorEvent(performanceMonitorEvent);
-	
 }
 
 }

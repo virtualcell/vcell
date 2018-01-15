@@ -16,7 +16,8 @@ public interface ConnectionStatus {
 	public static final int DISCONNECTED = 2;
 	public static final int INITIALIZING = 3;
 
-		public java.lang.String getServerHost();
+	public String getApihost();
+	public Integer getApiport();
 		/**
 		 * @return {@link #CONNECTED}, {@link #DISCONNECTED}, {@link #INITIALIZING} or {@link #NOT_CONNECTED}
 		 */

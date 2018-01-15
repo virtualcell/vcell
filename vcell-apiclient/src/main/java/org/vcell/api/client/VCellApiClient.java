@@ -33,11 +33,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -59,6 +59,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
@@ -74,6 +75,7 @@ import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.api.common.BiomodelRepresentation;
 import org.vcell.api.common.SimulationRepresentation;
 import org.vcell.api.common.SimulationTaskRepresentation;
+import org.vcell.api.common.UserInfo;
 
 import com.google.gson.Gson;
 
@@ -384,6 +386,68 @@ public class VCellApiClient {
 			sb.append(Integer.toHexString(v));
 		}
 		return sb.toString().toUpperCase();
+	}
+
+	public UserInfo insertUserInfo(UserInfo newUserInfo) throws ClientProtocolException, IOException {
+		  
+		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/users");
+		Gson gson = new Gson();
+		String newUserInfoJSON = gson.toJson(newUserInfo);
+		StringEntity input = new StringEntity(newUserInfoJSON);
+		input.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+		httppost.setEntity(input);
+		
+		System.out.println("Executing request to submit new user " + httppost.getRequestLine());
+
+		ResponseHandler<UserInfo> handler = new ResponseHandler<UserInfo>() {
+
+			public UserInfo handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
+				int status = response.getStatusLine().getStatusCode();
+				if (status == 202) {
+					HttpEntity entity = response.getEntity();
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						String json = reader.lines().collect(Collectors.joining());
+						UserInfo userInfo = gson.fromJson(json, UserInfo.class);
+						return userInfo;
+					}
+				} else {
+					throw new ClientProtocolException("Unexpected response status: " + status);
+				}
+			}
+
+		};
+		UserInfo insertedUserInfo = httpclient.execute(httppost,handler,httpClientContext);
+		System.out.println("returned userinfo: "+insertedUserInfo);
+
+		return insertedUserInfo;
+	}
+
+	public void sendLostPassword(String userid) throws ClientProtocolException, IOException {
+		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/users/lostpassword");
+		StringEntity input = new StringEntity(userid);
+		input.setContentType(ContentType.TEXT_PLAIN.getMimeType());
+		httppost.setEntity(input);
+		
+		System.out.println("Executing request to send lost password " + httppost.getRequestLine());
+
+		ResponseHandler<String> handler = new ResponseHandler<String>() {
+
+			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
+				int status = response.getStatusLine().getStatusCode();
+				if (status == 202) {
+					HttpEntity entity = response.getEntity();
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						String message = reader.lines().collect(Collectors.joining());
+						return message;
+					}
+				} else {
+					throw new ClientProtocolException("Unexpected response status: " + status);
+				}
+			}
+
+		};
+		String message = httpclient.execute(httppost,handler,httpClientContext);
+		System.out.println("requested lost password for user "+userid+", server returned "+message);
 	}
 
 }

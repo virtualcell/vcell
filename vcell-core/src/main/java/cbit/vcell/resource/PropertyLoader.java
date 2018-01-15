@@ -74,10 +74,13 @@ public class PropertyLoader {
 	//VisIt properties
 	public static final String visitExe						= record("vcell.visit.executable",ValueType.EXE);
 
-	//Python properties
-	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
 	public static final String vcellapiHost					= record("vcellapi.host",ValueType.GEN);
 	public static final String vcellapiPort					= record("vcellapi.port",ValueType.INT);
+	public static final String vcellapiClientid				= record("vcellapi.clientid",ValueType.INT);
+	public static final String vcellapiClientidFile			= record("vcellapi.clientidfile",ValueType.INT);
+
+	//Python properties
+	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
 	public static final String vcellapiKeystoreFile			= record("vcellapi.keystore.file",ValueType.GEN);
 	public static final String vcellapiKeystorePswd			= record("vcellapi.keystore.pswd",ValueType.GEN);
 	public static final String vcellapiKeystorePswdFile		= record("vcellapi.keystore.pswdfile",ValueType.GEN);
@@ -144,8 +147,6 @@ public class PropertyLoader {
 
 	public static final String vcellSoftwareVersion = record("vcell.softwareVersion",ValueType.GEN);
 	public static final String vcellThirdPartyLicense = record("vcell.thirdPartyLicense",ValueType.GEN);
-
-	public static final String vcellServerHost = record("vcell.serverHost",ValueType.GEN);
 
 	public static final String vcellSMTPHostName = record("vcell.smtp.hostName",ValueType.GEN);
 	public static final String vcellSMTPPort = record("vcell.smtp.port",ValueType.GEN);

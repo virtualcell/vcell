@@ -15,6 +15,7 @@ import java.util.Vector;
 
 import javax.swing.SwingConstants;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Range;
 
 import cbit.image.SourceDataInfo;
@@ -99,7 +100,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 /**
  * Comment
  */
-public void checkScaleSettingsHistory() throws java.rmi.RemoteException, org.vcell.util.DataAccessException {
+public void checkScaleSettingsHistory() throws DataAccessException {
 	String newDataSet = getImageContainer().getDataID();
 	if (scaleSettingsHistory.capacity() != 0) scaleSettingsHistory.setElementAt(getScalePanel1().getScaleRange(), index);
 	if (dataSetHistory.contains(newDataSet)) {

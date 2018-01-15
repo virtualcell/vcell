@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
-import java.rmi.RemoteException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -34,7 +33,6 @@ public class LocalSimulationController implements SimulationController {
 
 /**
  * LocalSimulationController constructor comment.
- * @exception java.rmi.RemoteException The exception description.
  */
 protected LocalSimulationController(User user, SimulationControllerImpl simulationControllerImpl, SessionLog argSessionLog) {
 	this.sessionLog = argSessionLog;
@@ -45,7 +43,6 @@ protected LocalSimulationController(User user, SimulationControllerImpl simulati
 
 /**
  * This method was created by a SmartGuide.
- * @exception java.rmi.RemoteException The exception description.
  */
 public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) {
 	sessionLog.print("LocalSimulationController.startSimulation(simInfo="+vcSimulationIdentifier+")");
@@ -62,7 +59,6 @@ public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdent
 
 /**
  * This method was created by a SmartGuide.
- * @exception java.rmi.RemoteException The exception description.
  */
 public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) {
 	sessionLog.print("LocalSimulationController.getSolverStatus(simInfo="+vcSimulationIdentifier+")");
@@ -105,7 +101,7 @@ public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataA
 
 
 @Override
-public SimpleJobStatus[] getSimpleJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec) throws DataAccessException, RemoteException {
+public SimpleJobStatus[] getSimpleJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec) throws DataAccessException {
 	sessionLog.print("LocalSimulationController.getSimulationStatus(simStatusQuerySpec="+simStatusQuerySpec+")");
 	try {
 		return simulationControllerImpl.getSimpleJobStatus(simStatusQuerySpec);

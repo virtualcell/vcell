@@ -10,7 +10,6 @@
 
 package cbit.vcell.message.server.bootstrap;
 import java.io.FileNotFoundException;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import org.vcell.db.ConnectionFactory;
@@ -29,6 +28,7 @@ import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimpleMessageCollector;
 import cbit.rmi.event.SimpleMessageService;
 import cbit.vcell.export.server.ExportServiceImpl;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.LocalUserMetaDbServer;
 import cbit.vcell.resource.ErrorUtils;
@@ -64,17 +64,15 @@ public class LocalVCellConnection implements VCellConnection, ExportListener, Da
 
 	
 	private SessionLog fieldSessionLog = null;
-	private String fieldHost = null;
 	private PerformanceMonitoringFacility performanceMonitoringFacility;
 	private LocalDataSetController localDataSetController;
 
 /**
  * This method was created by a SmartGuide.
- * @exception java.rmi.RemoteException The exception description.
+ * @exception RemoteProxyException The exception description.
  */
-public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog sessionLog, SimulationDatabase simulationDatabase, DataSetControllerImpl dataSetControllerImpl, ExportServiceImpl exportServiceImpl) throws SQLException, FileNotFoundException {
+public LocalVCellConnection(UserLoginInfo userLoginInfo, SessionLog sessionLog, SimulationDatabase simulationDatabase, DataSetControllerImpl dataSetControllerImpl, ExportServiceImpl exportServiceImpl) throws SQLException, FileNotFoundException {
 	this.userLoginInfo = userLoginInfo;
-	this.fieldHost = host;
 	this.fieldSessionLog = sessionLog;
 	this.simulationControllerImpl = new SimulationControllerImpl(sessionLog, simulationDatabase, this);
 	sessionLog.print("new LocalVCellConnection(" + userLoginInfo.getUserName() + ")");
@@ -119,17 +117,6 @@ public DataSetController getDataSetController() throws DataAccessException {
 	return localDataSetController;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/29/2003 5:07:46 PM)
- * @return java.lang.String
- */
-public String getHost() {
-	return fieldHost;
-}
-
-
 MessageCollector getMessageCollector() {
 	return messageCollector;
 }
@@ -147,7 +134,7 @@ private SessionLog getSessionLog() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.solvers.MathController
  * @param mathDesc cbit.vcell.math.MathDescription
- * @exception java.rmi.RemoteException The exception description.
+ * @exception RemoteProxyException The exception description.
  */
 @Override
 public SimulationController getSimulationController() {
@@ -172,7 +159,6 @@ public UserLoginInfo getUserLoginInfo() {
  * This method was created by a SmartGuide.
  * @return DBManager
  * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
  */
 @Override
 public UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
@@ -202,8 +188,7 @@ public void dataJobMessage(DataJobEvent event) {
 
 
 @Override
-public void sendErrorReport(Throwable exception, ExtraContext extra)
-		throws RemoteException {
+public void sendErrorReport(Throwable exception, ExtraContext extra) {
 	ErrorUtils.sendErrorReport(exception,extra !=null ? extra.toString():null);
 }
 

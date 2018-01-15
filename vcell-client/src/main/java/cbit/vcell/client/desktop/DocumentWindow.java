@@ -2293,7 +2293,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			break;
 		}
 		case ConnectionStatus.CONNECTED: {
-			status = "Server: " + connStatus.getServerHost() + " User: " + connStatus.getUserName();
+			status = "Server: " + connStatus.getApihost()+":"+connStatus.getApiport() + " User: " + connStatus.getUserName();
 			getJProgressBarConnection().setString("CONNECTED (" + connStatus.getUserName() + ")");
 			getJProgressBarConnection().setValue(100);
 			getChange_UserMenuItem().setEnabled(true);
@@ -2331,7 +2331,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			break;
 		}
 		case ConnectionStatus.INITIALIZING: {
-			status = "Server: " + connStatus.getServerHost() + " User: " + connStatus.getUserName();
+			status = "Server: " + connStatus.getApihost()+":"+connStatus.getApiport() + " User: " + connStatus.getUserName();
 			getJProgressBarConnection().setString("INITIALIZING...");
 			getJProgressBarConnection().setValue(0);
 			getChange_UserMenuItem().setEnabled(false);
@@ -2355,7 +2355,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			break;
 		}
 		case ConnectionStatus.DISCONNECTED: {
-			status = "Server: " + connStatus.getServerHost() + " User: " + connStatus.getUserName();
+			status = "Server: " + connStatus.getApihost()+":"+connStatus.getApiport() + " User: " + connStatus.getUserName();
 			getJProgressBarConnection().setString("DISCONNECTED");
 			getJProgressBarConnection().setValue(0);
 			getChange_UserMenuItem().setEnabled(true);

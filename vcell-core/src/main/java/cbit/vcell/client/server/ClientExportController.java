@@ -9,12 +9,11 @@
  */
 
 package cbit.vcell.client.server;
-import java.rmi.RemoteException;
-
 import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.ExportController;
 import cbit.vcell.simdata.OutputContext;
 /**
@@ -50,7 +49,7 @@ private ClientServerManager getClientServerManager() {
  * Creation date: (6/15/2004 2:15:24 AM)
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  */
-public cbit.vcell.server.ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws RemoteException {
+public cbit.vcell.server.ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws RemoteProxyException {
 	return null;
 }
 
@@ -70,12 +69,13 @@ public void setClientServerManager(ClientServerManager newClientServerManager) {
  * Creation date: (6/15/2004 2:15:24 AM)
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  */
-public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws RemoteException {
+public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws RemoteProxyException {
 	try {
 		ExportEvent event = getClientServerManager().getDataSetController().makeRemoteFile(outputContext,exportSpecs);
 		// ignore; we'll get two downloads otherwise... getClientServerManager().getAsynchMessageManager().fireExportEvent(event);
 	} catch (DataAccessException exc) {
-		throw new RemoteException(exc.getMessage());
+		exc.printStackTrace();
+		throw new RemoteProxyException(exc.getMessage(), exc);
 	}
 }
 }

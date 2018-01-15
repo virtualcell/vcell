@@ -168,7 +168,7 @@ private static class ParticleInfo{
  */
 public ExportOutput[] makeMediaData(
 		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,FileDataContainerManager fileDataContainerManager)
-						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
+						throws IOException, GIFFormatException, DataAccessException, Exception {
 
 	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
 	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){

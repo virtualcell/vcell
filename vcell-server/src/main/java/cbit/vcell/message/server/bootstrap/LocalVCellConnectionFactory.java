@@ -10,16 +10,34 @@
 
 package cbit.vcell.message.server.bootstrap;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.sql.SQLException;
+
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.AuthenticationException;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
+import cbit.vcell.export.server.ExportServiceImpl;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+import cbit.vcell.model.common.VCellErrorMessages;
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.StdoutSessionLog;
+import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
+import cbit.vcell.simdata.Cachetable;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import ncsa.hdf.object.FileFormat;
 /**
  * This type was created in VisualAge.
@@ -56,13 +74,26 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 		}
 		KeyFactory keyFactory = connectionFactory.getKeyFactory();
 		LocalVCellConnection.setDatabaseResources(connectionFactory, keyFactory);
-		LocalVCellServer vcServer = (LocalVCellServer)(new LocalVCellServerFactory(null,null,"<<local>>",null,connectionFactory, keyFactory, sessionLog)).getVCellServer();
-		VCellConnection vcc = vcServer.getVCellConnection(userLoginInfo);
+		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(connectionFactory, sessionLog);
+		boolean bEnableRetry = false;
+		boolean isLocal = true;
+		User user = adminDbTopLevel.getUser(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword(), bEnableRetry, isLocal);
+		if (user!=null) {
+			userLoginInfo.setUser(user);
+		}else {
+			throw new AuthenticationException("failed to authenticate as user "+userLoginInfo.getUserName());
+		}
+		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(connectionFactory,keyFactory,sessionLog);
+		boolean bCache = false;
+		Cachetable cacheTable = null;
+		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog, cacheTable , 
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
+		SimulationDatabaseDirect simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, bCache, sessionLog);
+		ExportServiceImpl exportServiceImpl = new ExportServiceImpl(sessionLog);
+		LocalVCellConnection vcConn = new LocalVCellConnection(userLoginInfo, sessionLog, simulationDatabase, dataSetControllerImpl, exportServiceImpl);
 		linkHDFLib();
-		return vcc; 
-	} catch (AuthenticationException exc) {
-		sessionLog.exception(exc);
-		throw exc;
+		return vcConn; 
 	} catch (Throwable exc) {
 		sessionLog.exception(exc);
 		throw new ConnectionException(exc.getMessage());

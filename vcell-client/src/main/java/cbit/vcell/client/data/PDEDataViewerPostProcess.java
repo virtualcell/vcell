@@ -3,7 +3,6 @@ package cbit.vcell.client.data;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -41,6 +40,7 @@ import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.server.SimulationStatus;
@@ -87,12 +87,12 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 //					DataIdentifier[] dataIdentifiers;
 					
 					@Override
-					public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException,RemoteException {
+					public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException,RemoteProxyException {
 						throw new DataAccessException("Not implemented");
 					}
 					
 					@Override
-					public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID,TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException,DataAccessException {
+					public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID,TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteProxyException,DataAccessException {
 //						return parentPDEDataContext.getDataManager().getTimeSeriesValues(timeSeriesJobSpec);
 						DataOperation.DataProcessingOutputTimeSeriesOP dataProcessingOutputTimeSeriesOP =
 								new DataOperation.DataProcessingOutputTimeSeriesOP(vcdataID, timeSeriesJobSpec,outputContext,getDataSetTimes(vcdataID));
@@ -102,7 +102,7 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 					}
 					
 					@Override
-					public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdataID, String varName, double time) throws RemoteException, DataAccessException {
+					public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdataID, String varName, double time) throws RemoteProxyException, DataAccessException {
 //						return parentPDEDataContext.getDataManager().getSimDataBlock(varName, time);
 						DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputValues = (DataOperationResults.DataProcessingOutputDataValues)
 								parentPDEDataContext.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(vcdataID, varName, TimePointHelper.createSingleTimeTimePointHelper(time),DataIndexHelper.createAllDataIndexesDataIndexHelper(),outputContext,null));
@@ -113,61 +113,61 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 					
 					@Override
 					public boolean getParticleDataExists(VCDataIdentifier vcdataID)
-							throws DataAccessException, RemoteException {
+							throws DataAccessException, RemoteProxyException {
 						// TODO Auto-generated method stub
 						return false;
 					}
 					
 					@Override
 					public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdataID,
-							double time) throws DataAccessException, RemoteException {
+							double time) throws DataAccessException, RemoteProxyException {
 						// TODO Auto-generated method stub
 						return null;
 					}
 					
 					@Override
 					public ODESimData getODEData(VCDataIdentifier vcdataID)
-							throws DataAccessException, RemoteException {
+							throws DataAccessException, RemoteProxyException {
 						// TODO Auto-generated method stub
 						return null;
 					}
 					
 					@Override
-					public CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+					public CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 						return null;//throw new DataAccessException("PostProcessData mesh not available at this level");
 					}
 					
 					@Override
-					public PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdataID, String variable, double time,SpatialSelection spatialSelection) throws RemoteException,DataAccessException {
+					public PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdataID, String variable, double time,SpatialSelection spatialSelection) throws RemoteProxyException,DataAccessException {
 						throw new DataAccessException("Remote getLineScan method should not be called for PostProcess");
 					}
 					
 					@Override
-					public AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdataID) throws DataAccessException,RemoteException {
+					public AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdataID) throws DataAccessException,RemoteProxyException {
 						return outputContext.getOutputFunctions();
 					}
 					
 					@Override
-					public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+					public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 						return dataProcessingOutputInfo.getVariableTimePoints();
 					}
 					
 					@Override
 					public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID,
-							String[] variableNames) throws DataAccessException, RemoteException {
+							String[] variableNames) throws DataAccessException, RemoteProxyException {
 						// TODO Auto-generated method stub
 						return null;
 					}
 					
 					@Override
 					public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID)
-							throws DataAccessException, RemoteException {
+							throws DataAccessException, RemoteProxyException {
 						// TODO Auto-generated method stub
 						return null;
 					}
 					
 					@Override
-					public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdataID) throws RemoteException,DataAccessException {
+					public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdataID) throws RemoteProxyException,DataAccessException {
 //						return parentPDEDataContext.getDataIdentifiers();
 						ArrayList<DataIdentifier> postProcessDataIDs = new ArrayList<DataIdentifier>();
 						if(outputContext != null && outputContext.getOutputFunctions() != null){
@@ -201,14 +201,14 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 					
 					@Override
 					public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec)
-							throws RemoteException, DataAccessException {
+							throws RemoteProxyException, DataAccessException {
 						// TODO Auto-generated method stub
 						return null;
 					}
 					
 					@Override
 					public DataOperationResults doDataOperation(DataOperation dataOperation)
-							throws DataAccessException, RemoteException {
+							throws DataAccessException, RemoteProxyException {
 						// TODO Auto-generated method stub
 						return parentPDEDataContext.doDataOperation(dataOperation);
 					}
@@ -221,7 +221,7 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 
 					@Override
 					public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID,
-							VtuVarInfo var, double time) throws RemoteException,
+							VtuVarInfo var, double time) throws RemoteProxyException,
 							DataAccessException {
 						// TODO Auto-generated method stub
 						return null;
@@ -235,14 +235,14 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 					}
 
 					@Override
-					public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+					public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 						// TODO Auto-generated method stub
 						return null;
 					}
 
 					@Override
 					public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID)
-							throws RemoteException, DataAccessException {
+							throws RemoteProxyException, DataAccessException {
 						// TODO Auto-generated method stub
 						return null;
 					}

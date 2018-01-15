@@ -9,9 +9,6 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
-import java.rmi.ConnectException;
-import java.rmi.RemoteException;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -20,6 +17,7 @@ import org.vcell.util.document.UserLoginInfo;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -28,17 +26,15 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * Creation date: (2/4/2003 11:08:14 PM)
  * @author: Jim Schaff
  */
-public class LocalSimulationControllerMessaging extends java.rmi.server.UnicastRemoteObject implements cbit.vcell.server.SimulationController {
+public class LocalSimulationControllerMessaging implements SimulationController {
 	private org.vcell.util.SessionLog fieldSessionLog = null;
 	private RpcSimServerProxy simServerProxy = null;
-    private boolean bClosed = false;
 
 /**
  * MessagingSimulationController constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog log, int rmiPort) throws java.rmi.RemoteException {
-	super(rmiPort);
+public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog log) {
 	this.fieldSessionLog = log;
 	simServerProxy = new RpcSimServerProxy(userLoginInfo, vcMessageSession, fieldSessionLog);
 }
@@ -48,9 +44,8 @@ public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, VCMessage
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationStatus startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) throws RemoteException {
+public SimulationStatus startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.startSimulation(" + vcSimID + ")");
-	checkClosed();
 	return simServerProxy.startSimulation(simServerProxy.userLoginInfo.getUser(),vcSimID,numSimulationScanJobs);
 }
 
@@ -59,48 +54,29 @@ public SimulationStatus startSimulation(VCSimulationIdentifier vcSimID, int numS
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimID) throws RemoteException {
+public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimID) {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.stopSimulation(" + vcSimID + ")");
-	checkClosed();
 	return simServerProxy.stopSimulation(simServerProxy.userLoginInfo.getUser(),vcSimID);
 }
 
 
 @Override
-public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAccessException, RemoteException {
+public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAccessException {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationStatus(" + simKeys + ")");
-	checkClosed();
 	return simServerProxy.getSimulationStatus(simServerProxy.userLoginInfo.getUser(),simKeys);
 }
 
 
 @Override
-public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException, RemoteException {
+public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationStatus(" + simulationKey + ")");
-	checkClosed();
 	return simServerProxy.getSimulationStatus(simServerProxy.userLoginInfo.getUser(),simulationKey);
 }
 
 @Override
-public SimpleJobStatus[] getSimpleJobStatus(SimpleJobStatusQuerySpec simJobStatusQuerySpec) throws DataAccessException, RemoteException {
+public SimpleJobStatus[] getSimpleJobStatus(SimpleJobStatusQuerySpec simJobStatusQuerySpec) throws DataAccessException {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationJobStatus(" + simJobStatusQuerySpec + ")");
-	checkClosed();
 	return simServerProxy.getSimpleJobStatus(simServerProxy.userLoginInfo.getUser(),simJobStatusQuerySpec);
 }
 
-private void checkClosed() throws RemoteException {
-	if (bClosed){
-		fieldSessionLog.print("LocalSimulationControllerMessaging closed");
-		throw new ConnectException("LocalSimulationControllerMessaging closed, please reconnect");
-	}
-}
-
-public void close() {
-	//try {
-		bClosed = true;
-	//	UnicastRemoteObject.unexportObject(this, true);
-	//} catch (NoSuchObjectException e) {
-	//	e.printStackTrace();
-	//}
-}
 }

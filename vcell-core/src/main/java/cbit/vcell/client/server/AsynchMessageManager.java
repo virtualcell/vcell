@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.client.server;
-import java.rmi.RemoteException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +34,7 @@ import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
 import edu.uchc.connjur.wb.ExecutionTrace;
@@ -461,7 +461,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 }
 
 
-public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws RemoteException {
+public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws RemoteProxyException {
 	// just pass it to the the messaging service
 	clientServerManager.reportPerformanceMonitorEvent(pme);
 }

@@ -19,14 +19,15 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
  * @author: Ion Moraru
  */
 public class ClientServerInfo {
-	public final static int SERVER_REMOTE = 0;
-	public final static int SERVER_LOCAL = 1;
-	public final static int SERVER_FILE = 2;
-	public final static String LOCAL_SERVER = "LOCAL";
+	public enum ServerType {
+		SERVER_REMOTE,
+		SERVER_LOCAL,
+		SERVER_FILE
+	}
 
-	private int serverType = -1;
-	private String[] hosts = null;
-	private String activeHost = null;
+	private ServerType serverType = null;
+	private String apihost = null;
+	private Integer apiport = null;
 	private UserLoginInfo userLoginInfo = null;
 
 /**
@@ -36,8 +37,10 @@ public class ClientServerInfo {
  * @param username java.lang.String
  * @param password java.lang.String
  */
-private ClientServerInfo(String[] hosts,UserLoginInfo userLoginInfo) {
-	this.hosts = hosts;
+private ClientServerInfo(ServerType serverType, String apihost, Integer apiport, UserLoginInfo userLoginInfo) {
+	this.apihost = apihost;
+	this.apiport = apiport;
+	this.serverType = serverType;
 	this.userLoginInfo = userLoginInfo;
 }
 
@@ -48,8 +51,7 @@ private ClientServerInfo(String[] hosts,UserLoginInfo userLoginInfo) {
  * @return cbit.vcell.client.server.ClientServerInfo
  */
 public static ClientServerInfo createFileBasedServerInfo() {
-	ClientServerInfo csi = new ClientServerInfo(null,null);
-	csi.setServerType(SERVER_FILE);
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_FILE,null,null,null);
 	return csi;
 }
 
@@ -63,8 +65,7 @@ public static ClientServerInfo createFileBasedServerInfo() {
  * @param password java.lang.String
  */
 public static ClientServerInfo createLocalServerInfo(String userName, DigestedPassword digestedPassword) {
-	ClientServerInfo csi = new ClientServerInfo(new String[] {LOCAL_SERVER},new UserLoginInfo(userName, digestedPassword));
-	csi.setServerType(SERVER_LOCAL);
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL,null,null,new UserLoginInfo(userName, digestedPassword));
 	return csi;
 }
 
@@ -81,9 +82,8 @@ public UserLoginInfo getUserLoginInfo(){
  * @param username java.lang.String
  * @param password java.lang.String
  */
-public static ClientServerInfo createRemoteServerInfo(String[] host, String userName,DigestedPassword digestedPassword) {
-	ClientServerInfo csi = new ClientServerInfo(host,new UserLoginInfo(userName, digestedPassword));
-	csi.setServerType(SERVER_REMOTE);
+public static ClientServerInfo createRemoteServerInfo(String apihost, Integer apiport, String userName,DigestedPassword digestedPassword) {
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_REMOTE,apihost,apiport,new UserLoginInfo(userName, digestedPassword));
 	return csi;
 }
 
@@ -108,8 +108,12 @@ public boolean equals(Object o) {
  * Creation date: (5/12/2004 4:09:30 PM)
  * @return java.lang.String
  */
-public String[] getHosts() {
-	return hosts;
+public String getApihost() {
+	return apihost;
+}
+
+public Integer getApiport() {
+	return apiport;
 }
 
 /**
@@ -117,7 +121,7 @@ public String[] getHosts() {
  * Creation date: (6/1/2004 11:20:12 PM)
  * @return int
  */
-public int getServerType() {
+public ServerType getServerType() {
 	return serverType;
 }
 
@@ -144,16 +148,6 @@ public int hashCode() {
 
 /**
  * Insert the method's description here.
- * Creation date: (6/1/2004 11:20:12 PM)
- * @param newServerType int
- */
-private void setServerType(int newServerType) {
-	serverType = newServerType;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (6/28/2004 12:40:07 AM)
  * @return java.lang.String
  */
@@ -165,7 +159,7 @@ public String toString() {
 			break;
 		}
 		case SERVER_REMOTE: {
-			details = "SERVER_REMOTE, host:" + activeHost + ", user:" + getUsername();
+			details = "SERVER_REMOTE, host: " + apihost + "port: " + apiport + ", user:" + getUsername();
 			break;
 		}
 		case SERVER_FILE: {
@@ -176,13 +170,4 @@ public String toString() {
 	return "ClientServerInfo: [" + details + "]";
 }
 
-
-public String getActiveHost() {
-	return activeHost;
-}
-
-
-public void setActiveHost(String activeHost) {
-	this.activeHost = activeHost;
-}
 }

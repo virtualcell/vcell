@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.StringTokenizer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.prefs.Preferences;
 
@@ -63,7 +62,7 @@ import cbit.vcell.client.pyvcellproxy.VCellProxyServer;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer;
-import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ErrorUtils;
@@ -204,7 +203,7 @@ public static void main(java.lang.String[] args) {
 	Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener,AWTEvent.MOUSE_EVENT_MASK);
 
 	//check synchronize Proxy prefs, Proxy Properties
-	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
+	Preferences prefs = Preferences.userNodeForPackage(RemoteProxyVCellConnectionFactory.class);
 	Boolean bHttp =
 		(System.getProperty(NetworkProxyUtils.PROXY_HTTP_HOST)==null && System.getProperty(NetworkProxyUtils.PROXY_SOCKS_HOST)==null?null:System.getProperty(NetworkProxyUtils.PROXY_HTTP_HOST) != null);
 	String currentProxyHost =
@@ -240,28 +239,20 @@ public static void main(java.lang.String[] args) {
 			" of the "+(System.getProperty("os.name"))+" operating system");
 	
 	ClientServerInfo csInfo = null;
-	String hoststr = System.getProperty(PropertyLoader.vcellServerHost);
-	String[] hosts = null;
-	if (hoststr != null) {
-		StringTokenizer st = new StringTokenizer(hoststr," ,;");
-		if (st.countTokens() >= 1) {
-			hosts = new String[st.countTokens()];
-			int count = 0;
-			while (st.hasMoreTokens()) {
-				hosts[count ++] = st.nextToken();
-			}
-		}
-	}
-	if (hosts == null) {
-		hosts = new String[1];
+	String apihost = System.getProperty(PropertyLoader.vcellapiHost);
+	String portStr = System.getProperty(PropertyLoader.vcellapiPort);
+	int apiport = -1;
+	if (portStr!=null) {
+		apiport = Integer.parseInt(portStr);
 	}
 	String user = null;
 	String password = null;
 	VCDocument initialDocument = null;
-	if (args.length == 3) {
-		hosts[0] = args[0];
-		user = args[1];
-		password = args[2];
+	if (args.length == 4) {
+		apihost = args[0];
+		apiport = Integer.parseInt(args[1]);
+		user = args[2];
+		password = args[3];
 	}else if (args.length==0){
 		// this is ok
 	}else if (args.length==1){
@@ -272,27 +263,23 @@ public static void main(java.lang.String[] args) {
 			if(openThisVCellFile.exists() && openThisVCellFile.isFile()){
 				initialDocument = startupWithOpen(args[0]);
 			}
-		}catch(Exception e){
+		}catch(RuntimeException e){
 			e.printStackTrace();
-			//continue to hostname check
+			System.out.println("usage: VCellClientTest ( (-local | (host port)) [userid password]) | ([-open] filename) )");
+			System.exit(1);
 		}
-		//If startup file not exist assume arg is a hostname
-		if(initialDocument == null){
-			hosts[0] = args[0];
+	}else if (args.length==2) {
+		if (args[0].equals("-open")){
+			initialDocument = startupWithOpen(args[1]);
+		}else {
+			apihost = args[0];
+			apiport = Integer.parseInt(args[1]);
 		}
-		//If install4j drag-n-drop, hosts[0] stays null and host is assumed to be loaded from a client property
-		
-	}else if (args.length==2 && args[0].equals("-open")){
-//		hosts[0] = "-local";
-		initialDocument = startupWithOpen(args[1]);
-	}else{
-		System.out.println("usage: VCellClientTest ( ((-local|host[:port]) [userid password]) | ([-open] filename) )");
-		System.exit(1);
 	}
-	if (hosts[0]!=null && hosts[0].equalsIgnoreCase("-local")) {
+	if (args.length>0 && args[0].equalsIgnoreCase("-local")) {
 		csInfo = ClientServerInfo.createLocalServerInfo(user, (password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	} else {
-		csInfo = ClientServerInfo.createRemoteServerInfo(hosts, user,(password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
+		csInfo = ClientServerInfo.createRemoteServerInfo(apihost, apiport, user,(password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	}
 	try {
 		String propertyFile = PropertyLoader.getProperty(PropertyLoader.propertyFileProperty, "");

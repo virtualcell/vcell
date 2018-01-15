@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
-import java.rmi.RemoteException;
 
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
@@ -49,16 +48,12 @@ public RpcDataServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessag
 
 
 
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws org.vcell.util.DataAccessException {
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
 	return (FieldDataFileOperationResults)rpc("fieldDataFileOperation",new Object[]{userLoginInfo.getUser(), fieldDataFileOperationSpec});
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException {
+public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdID) throws DataAccessException {
 	return (DataIdentifier[])rpc("getDataIdentifiers",new Object[]{outputContext,userLoginInfo.getUser(), vcdID});
 }
 
@@ -67,103 +62,42 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @exception java.rmi.RemoteException The exception description.
- */
 public double[] getDataSetTimes(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException {
 	return (double[])rpc("getDataSetTimes",new Object[]{userLoginInfo.getUser(), vcdID});
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/26/2004 1:01:25 PM)
- * @param function cbit.vcell.math.Function
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputContext,org.vcell.util.document.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException {
+public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputContext,org.vcell.util.document.VCDataIdentifier vcdataID) throws DataAccessException {
 	return (cbit.vcell.solver.AnnotatedFunction[])rpc("getFunctions",new Object[]{outputContext,userLoginInfo.getUser(), vcdataID});
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.plot.PlotData
- * @param variable java.lang.String
- * @param time double
- * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.plot.PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdID, String variable, double time, SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException {
+public cbit.plot.PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdID, String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
 	return (cbit.plot.PlotData)rpc("getLineScan",new Object[]{outputContext,userLoginInfo.getUser(), vcdID,variable,new Double(time),spatialSelection});
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return CartesianMesh
- */
 public cbit.vcell.solvers.CartesianMesh getMesh(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException {
 	return (cbit.vcell.solvers.CartesianMesh)rpc("getMesh",new Object[]{userLoginInfo.getUser(), vcdID});
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/6/2001 1:51:41 PM)
- * @param odeSimData cbit.vcell.export.data.ODESimData
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException {
 	return (cbit.vcell.solver.ode.ODESimData)rpc("getODEData",new Object[]{userLoginInfo.getUser(), vcdID});
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return ParticleData
- * @param time double
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws org.vcell.util.DataAccessException {
 	return (ParticleDataBlock)rpc("getParticleDataBlock",new Object[]{userLoginInfo.getUser(), vcdID,new Double(time)});
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return boolean
- */
 public boolean getParticleDataExists(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException {
 	Boolean bParticleDataExists = (Boolean)rpc("getParticleDataExists",new Object[]{userLoginInfo.getUser(), vcdID});
 	return bParticleDataExists.booleanValue();
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdID, String varName, double time) throws org.vcell.util.DataAccessException {
 	return (SimDataBlock)rpc("getSimDataBlock",new Object[]{outputContext,userLoginInfo.getUser(), vcdID,varName,new Double(time)});
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return double[]
- * @param varName java.lang.String
- * @param x int
- * @param y int
- * @param z int
- * @exception java.rmi.RemoteException The exception description.
- */
-public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 //	return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 	try {
 		if(!timeSeriesJobSpec.getVcDataJobID().isBackgroundTask()){
@@ -185,15 +119,7 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (12/6/2001 3:56:41 PM)
- * @return cbit.rmi.event.ExportEvent
- * @param exportSpecs cbit.vcell.export.server.ExportSpecs
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.rmi.event.ExportEvent makeRemoteFile(OutputContext outputContext,cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
+public cbit.rmi.event.ExportEvent makeRemoteFile(OutputContext outputContext,cbit.vcell.export.server.ExportSpecs exportSpecs) throws DataAccessException {
 	try {
 		rpc(ServiceType.DATA, "makeRemoteFile", new Object[]{outputContext,userLoginInfo.getUser(), exportSpecs}, false, new String[]{ServiceType.DATAEXPORT.getName()}, new Object[]{new Boolean(true)});
 	} catch (DataAccessException ex) {
@@ -221,14 +147,6 @@ public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (12/5/2001 9:39:03 PM)
- * @return java.lang.Object
- * @param methodName java.lang.String
- * @param args java.lang.Object[]
- * @exception java.lang.Exception The exception description.
- */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
 		return rpc(ServiceType.DATA, methodName, args, true);
@@ -267,7 +185,7 @@ public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier
 
 
 @Override
-public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+public double[] getVtuTimes(VCDataIdentifier vcdataID) throws DataAccessException {
 	return (double[])rpc("getVtuTimes", new Object[]{userLoginInfo.getUser(), vcdataID});
 }
 
@@ -275,7 +193,7 @@ public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, D
 
 @Override
 public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID)
-		throws RemoteException, DataAccessException {
+		throws DataAccessException {
 	return (NFSimMolecularConfigurations)rpc("getNFSimMolecularConfigurations", new Object[]{userLoginInfo.getUser(), vcdataID});
 }
 
