@@ -1,0 +1,120 @@
+version: '3.1'
+services:
+  rmi:
+    image: schaff/vcell-rmi:latest
+    ports:
+      - "40108:8088"
+    environment:
+      - rmihost=vcell-rmi-alpha
+      - jmsurl=failover:(tcp://activemq:61616)
+    secrets:
+      - dbpswd
+      - jmspswd
+    networks:
+      - vcellnet
+    depends_on:
+      - activemq
+      - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == vcell-rmi-alpha
+          - node.labels.zone == DMZ
+  api:
+    image: schaff/vcell-api:latest
+    ports:
+      - "8083:8080"
+    environment:
+      - jmsurl=failover:(tcp://activemq:61616)
+    secrets:
+      - keystorefile
+      - keystorepswd
+      - dbpswd
+      - jmspswd
+    networks:
+      - vcellnet
+    depends_on:
+      - activemq
+      - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == vcellapi
+          - node.labels.zone == DMZ
+  master:
+    image: schaff/vcell-master:latest
+    environment:
+      - jmsurl=failover:(tcp://activemq:61616)
+    volumes:
+      - "/opt/vcelldata:/simdata"
+    secrets:
+      - dbpswd
+      - jmspswd
+      - batchuserkeyfile
+    networks:
+      - vcellnet
+    depends_on:
+      - activemq
+      - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
+  activemq:
+    image: webcenter/activemq:5.14.3
+    ports:
+      - "61619:61616"
+    environment:
+      - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbreq;simjob;workerevent
+      - ACTIVEMQ_STATIC_TOPICS=servicecontrol;daemoncontrol;clientstatus
+      - ACTIVEMQ_MIN_MEMORY=1024
+      - ACTIVEMQ_MAX_MEMORY=2048
+      - ACTIVEMQ_ENABLED_SCHEDULER=true
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+#          - node.hostname != vcell-docker.cam.uchc.edu
+          - node.labels.zone == INTERNAL
+  mongodb:
+    image: schaff/vcell-mongo:latest
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8099:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - vcellnet
+
+networks:
+  vcellnet:
+secrets:
+  dbpswd:
+    file: /usr/local/deploy/dbpswd.txt
+  jmspswd:
+    file: /usr/local/deploy/jmspswd.txt
+  keystorepswd:
+    file: /usr/local/deploy/keystorepswd.txt
+  keystorefile:
+    file: /usr/local/deploy/keystore.jks
+  batchuserkeyfile:
+    file: /usr/local/deploy/schaff_rsa

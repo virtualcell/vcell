@@ -21,9 +21,10 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     jmsuser=clientUser \
     jmspswdfile=/run/secrets/jmspswd \
     rmihost=localhost \
+    rmiport=80 \
     jmsblob_minsize=100000
 
-EXPOSE 8088
+EXPOSE "${rmiport}"
 
 ENTRYPOINT java \
 		-Dvcell.softwareVersion="${softwareVersion}" \
@@ -44,5 +45,12 @@ ENTRYPOINT java \
 		-Dvcell.mongodb.database=test \
 		-Djava.rmi.server.logCalls=true \
 		-Dsun.rmi.server.exceptionTrace=true \
+		-Dsun.rmi.server.logLevel=verbose \
+		-Dsun.rmi.log.debug=true \
+		-Dsun.rmi.server.activation.debugExec=true \
+		-Dsun.rmi.dgc.logLevel=verbose \
+		-Dsun.rmi.loader.logLevel=verbose \
+		-Dsun.rmi.transport.logLevel=verbose \
+		-Dsun.rmi.transport.tcp.logLevel=verbose \
 		-cp "./lib/*" cbit.vcell.message.server.bootstrap.LocalVCellBootstrap \
-		"${rmihost}" 8088 messaging -
+		localhost "${rmiport}" messaging -

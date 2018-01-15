@@ -1,4 +1,4 @@
-version: '3'
+version: '3.1'
 services:
   rmi:
     ports:
@@ -25,6 +25,8 @@ services:
           - node.label == DMZ
           - node.label != INTERNAL
   master:
+    volumes:
+      - "/opt/vcelldata:/simdata"
     deploy:
       mode: replicated
       replicas: 1

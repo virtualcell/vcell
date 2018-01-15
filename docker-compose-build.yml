@@ -1,16 +1,27 @@
 version: '3.1'
 services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - vcellnet
+    depends_on:
+      - rmi
+
   rmi:
     build:
       context: ./
-      dockerfile: Dockerfile.rmi
+      dockerfile: Dockerfile-rmi-dev
     environment:
-      - jmsblob_minsize=100000
+      - rmihost=localhost
+      - jmsurl=failover:(tcp://activemq:61616)
+      - VIRTUAL_HOST=rmi.local
     secrets:
       - dbpswd
       - jmspswd
-    ports:
-      - "8088:8088"
     networks:
       - vcellnet
     depends_on:
@@ -19,16 +30,16 @@ services:
   api:
     build:
       context: ./
-      dockerfile: Dockerfile.api
+      dockerfile: Dockerfile-api-dev
+    ports:
+      - "8083:8080"
     environment:
-      - jmsblob_minsize=100000
+      - jmsurl=failover:(tcp://activemq:61616)
     secrets:
       - keystorefile
       - keystorepswd
       - dbpswd
       - jmspswd
-    ports:
-      - "8081:8080"
     networks:
       - vcellnet
     depends_on:
@@ -37,9 +48,11 @@ services:
   master:
     build:
       context: ./
-      dockerfile: Dockerfile.master
+      dockerfile: Dockerfile-master-dev
     environment:
-      - jmsblob_minsize=100000
+      - jmsurl=failover:(tcp://activemq:61616)
+    volumes:
+      - "./vcelldata:/simdata"
     secrets:
       - dbpswd
       - jmspswd
@@ -51,6 +64,8 @@ services:
       - mongodb
   activemq:
     image: webcenter/activemq:5.14.3
+    ports:
+      - "61619:61616"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbreq;simjob;workerevent
       - ACTIVEMQ_STATIC_TOPICS=servicecontrol;daemoncontrol;clientstatus
@@ -67,6 +82,7 @@ services:
       - "27017:27017"
     networks:
       - vcellnet
+
 networks:
   vcellnet:
 secrets:
