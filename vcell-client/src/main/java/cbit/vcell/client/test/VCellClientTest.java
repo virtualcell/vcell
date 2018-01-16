@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.prefs.Preferences;
 
@@ -239,20 +240,28 @@ public static void main(java.lang.String[] args) {
 			" of the "+(System.getProperty("os.name"))+" operating system");
 	
 	ClientServerInfo csInfo = null;
-	String apihost = System.getProperty(PropertyLoader.vcellapiHost);
-	String portStr = System.getProperty(PropertyLoader.vcellapiPort);
-	int apiport = -1;
-	if (portStr!=null) {
-		apiport = Integer.parseInt(portStr);
+	String hoststr = System.getProperty(PropertyLoader.vcellServerHost);
+	String[] hosts = null;
+	if (hoststr != null) {
+		StringTokenizer st = new StringTokenizer(hoststr," ,;");
+		if (st.countTokens() >= 1) {
+			hosts = new String[st.countTokens()];
+			int count = 0;
+			while (st.hasMoreTokens()) {
+				hosts[count ++] = st.nextToken();
+			}
+		}
+	}
+	if (hosts == null) {
+		hosts = new String[1];
 	}
 	String user = null;
 	String password = null;
 	VCDocument initialDocument = null;
-	if (args.length == 4) {
-		apihost = args[0];
-		apiport = Integer.parseInt(args[1]);
-		user = args[2];
-		password = args[3];
+	if (args.length == 3) {
+		hosts[0] = args[0];
+		user = args[1];
+		password = args[2];
 	}else if (args.length==0){
 		// this is ok
 	}else if (args.length==1){
@@ -263,22 +272,29 @@ public static void main(java.lang.String[] args) {
 			if(openThisVCellFile.exists() && openThisVCellFile.isFile()){
 				initialDocument = startupWithOpen(args[0]);
 			}
-		}catch(RuntimeException e){
+		}catch(Exception e){
 			e.printStackTrace();
-			System.out.println("usage: VCellClientTest ( (-local | (host port)) [userid password]) | ([-open] filename) )");
-			System.exit(1);
+			//continue to hostname check
 		}
-	}else if (args.length==2) {
-		if (args[0].equals("-open")){
-			initialDocument = startupWithOpen(args[1]);
-		}else {
-			apihost = args[0];
-			apiport = Integer.parseInt(args[1]);
+		//If startup file not exist assume arg is a hostname
+		if(initialDocument == null){
+			hosts[0] = args[0];
 		}
+		//If install4j drag-n-drop, hosts[0] stays null and host is assumed to be loaded from a client property
+		
+	}else if (args.length==2 && args[0].equals("-open")){
+//		hosts[0] = "-local";
+		initialDocument = startupWithOpen(args[1]);
+	}else{
+		System.out.println("usage: VCellClientTest ( ((-local|host[:port]) [userid password]) | ([-open] filename) )");
+		System.exit(1);
 	}
-	if (args.length>0 && args[0].equalsIgnoreCase("-local")) {
+	if (hosts[0]!=null && hosts[0].equalsIgnoreCase("-local")) {
 		csInfo = ClientServerInfo.createLocalServerInfo(user, (password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	} else {
+		String[] hostParts = hosts[0].split(":");
+		String apihost = hostParts[0];
+		int apiport = Integer.parseInt(hostParts[1]);
 		csInfo = ClientServerInfo.createRemoteServerInfo(apihost, apiport, user,(password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	}
 	try {

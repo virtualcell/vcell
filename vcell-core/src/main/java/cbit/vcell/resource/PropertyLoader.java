@@ -76,8 +76,7 @@ public class PropertyLoader {
 	//VisIt properties
 	public static final String visitExe						= record("vcell.visit.executable",ValueType.EXE);
 
-	public static final String vcellapiHost					= record("vcellapi.host",ValueType.GEN);
-	public static final String vcellapiPort					= record("vcellapi.port",ValueType.INT);
+	public static final String vcellServerHost				= record("vcell.serverHost",ValueType.GEN);
 	public static final String vcellapiClientid				= record("vcellapi.clientid",ValueType.INT);
 	public static final String vcellapiClientidFile			= record("vcellapi.clientidfile",ValueType.INT);
 

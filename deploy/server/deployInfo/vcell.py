@@ -282,16 +282,6 @@ def main():
         master_processLabel = getenv("vcellservice_processLabel")
         master_script = os.path.join(config_dir, "vcellservice")
 
-        rmihttp_name = "rmi-http"
-        rmihttp_host = getenv("bootstrap_rmihost")
-        rmihttp_processLabel = getenv("bootstrap_http_processLabel")
-        rmihttp_script = os.path.join(config_dir, "vcellbootstrap_http")
-
-        rmihigh_name = "rmi-high"
-        rmihigh_host = getenv("bootstrap_rmihost")
-        rmihigh_processLabel = getenv("bootstrap_high_processLabel")
-        rmihigh_script = os.path.join(config_dir, "vcellbootstrap_high")
-
         api_name = "api"
         api_host = getenv("vcellapi_host")
         api_processLabel = getenv("vcellapi_processLabel")
@@ -350,8 +340,6 @@ def main():
 
         services = [
             Javaservice(user, master_name, master_host, master_processLabel, master_script),
-            Javaservice(user, rmihttp_name, rmihttp_host, rmihttp_processLabel, rmihttp_script),
-            Javaservice(user, rmihigh_name, rmihigh_host, rmihigh_processLabel, rmihigh_script),
             Javaservice(user, api_name, api_host, api_processLabel, api_script),
             Dockerservice(user=user, name=jms_name, container_name=jms_containername, env=jms_env, host=jms_host,
                           ports=jms_port_mappings, volumes=jms_volume_mappings, image_name=jms_imagename),
@@ -365,7 +353,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("cmd", help="command", choices=["status", "stop", "start", "create", "destroy"])
     parser.add_argument("service", help="service",
-                        choices=[master_name, rmihttp_name, rmihigh_name, api_name, jms_name, mongo_name, "all"])
+                        choices=[master_name, api_name, jms_name, mongo_name, "all"])
     parser.add_argument("--debug", help="debug commands", action="store_true")
     parser.set_defaults(debug=False)
     args = parser.parse_args()
