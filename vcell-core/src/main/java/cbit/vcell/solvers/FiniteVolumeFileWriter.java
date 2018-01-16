@@ -1691,7 +1691,7 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 		return;
 	}
 
-	String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);	
+	String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondaryServerSimDataDirProperty, null);	
 	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,workingDirectory.getParentFile(),
 			secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 	

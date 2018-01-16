@@ -217,8 +217,8 @@ private File[] getParticleFiles(ExportSpecs exportSpecs,User user,DataServerImpl
 	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
 	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
 	SimulationData simData = new SimulationData(vcdID,
-			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),vcdID.getOwner().getName()),
-			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirProperty,null),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primaryServerSimDataDirProperty),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getProperty(PropertyLoader.primaryServerSimDataDirProperty,null),vcdID.getOwner().getName()),
 			simDataAmplistorInfo);
 		
 	File logFile = simData.getLogFile();
@@ -268,8 +268,8 @@ private ParticleInfo checkParticles_unused(final ExportSpecs exportSpecs,User us
 	//-----Get all data (from archive if necessary)
 	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
 	SimulationData simData = new SimulationData(vcdID,
-			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),vcdID.getOwner().getName()),
-			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirProperty,null),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primaryServerSimDataDirProperty),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getProperty(PropertyLoader.primaryServerSimDataDirProperty,null),vcdID.getOwner().getName()),
 			simDataAmplistorInfo);
 		
 	File logFile = simData.getLogFile();

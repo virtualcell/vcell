@@ -133,7 +133,7 @@ private LocalSolverController createNewSolverController(SimulationTask simTask, 
 		localVCellConnection,
 		userSessionLog,
 		simTask,
-		getUserSimulationDirectory(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty))
+		getUserSimulationDirectory(PropertyLoader.getRequiredProperty(PropertyLoader.primarySolverSimDataDirProperty))
 		);
 
 	localSolverController.addWorkerEventListener(this);

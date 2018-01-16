@@ -160,7 +160,7 @@ private static class PostProcessingChores {
  */
 private PostProcessingChores choresFor(SimulationTask simTask) {
 	String userDir = "/" + simTask.getUserName();
-	String primary = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty);
+	String primary = PropertyLoader.getRequiredProperty(PropertyLoader.primarySolverSimDataDirProperty);
 	PostProcessingChores chores = null;
 	final SolverTaskDescription slvTaskDesc = simTask.getSimulation( ).getSolverTaskDescription();
 	if (!slvTaskDesc.isParallel()) {

@@ -40,8 +40,10 @@ public class PropertyLoader {
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",ValueType.GEN);
 
-	public static final String primarySimDataDirProperty	= record("vcell.primarySimdatadir",ValueType.DIR);
-	public static final String secondarySimDataDirProperty	= record("vcell.secondarySimdatadir",ValueType.DIR);
+	public static final String primaryServerSimDataDirProperty	= record("vcell.primarySimdatadir",ValueType.DIR);
+	public static final String secondaryServerSimDataDirProperty	= record("vcell.secondarySimdatadir",ValueType.DIR);
+	public static final String primarySolverSimDataDirProperty	= record("vcell.solver.primarySimdatadir",ValueType.DIR);
+	public static final String secondarySolverSimDataDirProperty	= record("vcell.solver.secondarySimdatadir",ValueType.DIR);
 	public static final String PARALLEL_DATA_DIR			= record("vcell.parallelDatadir",ValueType.DIR);
 
 	public static final String jobMemoryOverheadMB			= record("vcell.htc.jobMemoryOverheadMB",ValueType.GEN);

@@ -593,7 +593,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 		}
 		File userDirectory = outputFile.getParentFile();
 
-		String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);
+		String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondaryServerSimDataDirProperty, null);
 		DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 		CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
 		SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());

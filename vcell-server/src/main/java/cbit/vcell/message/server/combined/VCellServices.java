@@ -251,8 +251,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 			Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
 			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable,
-					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)),
-					new File(PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty))));
+					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primaryServerSimDataDirProperty)),
+					new File(PropertyLoader.getProperty(PropertyLoader.secondaryServerSimDataDirProperty, PropertyLoader.getRequiredProperty(PropertyLoader.primaryServerSimDataDirProperty))));
 
 			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(log);
 
@@ -305,7 +305,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	}
 
 	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
-		PropertyLoader.primarySimDataDirProperty,
+		PropertyLoader.primaryServerSimDataDirProperty,
+		PropertyLoader.primarySolverSimDataDirProperty,
 		PropertyLoader.vcellServerIDProperty,
 		PropertyLoader.installationRoot,
 		PropertyLoader.dbConnectURL,

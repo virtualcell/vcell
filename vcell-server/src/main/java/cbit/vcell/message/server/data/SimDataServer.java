@@ -161,8 +161,8 @@ public static void main(java.lang.String[] args) {
 		final SessionLog log = new StdoutSessionLog("DataServer");
 		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable, 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primaryServerSimDataDirProperty)), 
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondaryServerSimDataDirProperty)));
 		
 		ExportServiceImpl exportServiceImpl = new ExportServiceImpl(log);
 		
