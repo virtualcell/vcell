@@ -62,47 +62,48 @@ public final class RpcRestlet extends Restlet {
 				req.bufferEntity();
 				Serializable rpcRequestBodyObject = VCellApiClient.fromCompressedSerialized(req.getEntity().getStream());
 				
-				if (rpcRequestBodyObject instanceof VCellApiRpcBody) {
-					VCellApiRpcBody rpcBody = (VCellApiRpcBody)rpcRequestBodyObject;
-					// <<<< VERIFY USER CREDENTIALS >>>>
-					VCellApiApplication application = ((VCellApiApplication)getApplication());
-					User vcellUser = application.getVCellUser(req.getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
-					RpcServiceType st = null;
-					VCellQueue queue = null;
-					switch (rpcBody.rpcRequest.rpcDestination) {
-					case DataRequestQueue:{
-						st = RpcServiceType.DATA;
-						queue = VCellQueue.DataRequestQueue;
-						break;
-					}
-					case DbRequestQueue:{
-						st = RpcServiceType.DB;
-						queue = VCellQueue.DbRequestQueue;
-						break;
-					}
-					case SimReqQueue:{
-						st = RpcServiceType.DISPATCH;
-						queue = VCellQueue.SimReqQueue;
-						break;
-					}
-					default:{
-						throw new RuntimeException("unsupported RPC Destination: "+rpcBody.rpcDestination);
-					}
-					}
-					VCellApiRpcRequest vcellapiRpcRequest = rpcBody.rpcRequest;
-					Object[] arglist = vcellapiRpcRequest.args;
-					String[] specialProperties = rpcBody.specialProperties;
-					Object[] specialValues = rpcBody.specialValues;
-					VCRpcRequest vcRpcRequest = new VCRpcRequest(vcellUser, st, method, arglist);
-					VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
-					RpcService rpcService = vcellApiApplication.getRpcService();
-					Serializable result = rpcService.sendRpcMessage(
-							queue, vcRpcRequest, new Boolean(returnRequired), specialProperties, specialValues, new UserLoginInfo(username,null));
-					
-					byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(result);
-					response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");
-					response.setEntity(new ByteArrayRepresentation(serializedResultObject));
+				if (!(rpcRequestBodyObject instanceof VCellApiRpcBody)) {
+					throw new RuntimeException("expecting post content of type VCellApiRpcBody");
 				}
+				VCellApiRpcBody rpcBody = (VCellApiRpcBody)rpcRequestBodyObject;
+				// <<<< VERIFY USER CREDENTIALS >>>>
+				VCellApiApplication application = ((VCellApiApplication)getApplication());
+				User vcellUser = application.getVCellUser(req.getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
+				RpcServiceType st = null;
+				VCellQueue queue = null;
+				switch (rpcBody.rpcRequest.rpcDestination) {
+				case DataRequestQueue:{
+					st = RpcServiceType.DATA;
+					queue = VCellQueue.DataRequestQueue;
+					break;
+				}
+				case DbRequestQueue:{
+					st = RpcServiceType.DB;
+					queue = VCellQueue.DbRequestQueue;
+					break;
+				}
+				case SimReqQueue:{
+					st = RpcServiceType.DISPATCH;
+					queue = VCellQueue.SimReqQueue;
+					break;
+				}
+				default:{
+					throw new RuntimeException("unsupported RPC Destination: "+rpcBody.rpcDestination);
+				}
+				}
+				VCellApiRpcRequest vcellapiRpcRequest = rpcBody.rpcRequest;
+				Object[] arglist = vcellapiRpcRequest.args;
+				String[] specialProperties = rpcBody.specialProperties;
+				Object[] specialValues = rpcBody.specialValues;
+				VCRpcRequest vcRpcRequest = new VCRpcRequest(vcellUser, st, method, arglist);
+				VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
+				RpcService rpcService = vcellApiApplication.getRpcService();
+				Serializable result = rpcService.sendRpcMessage(
+						queue, vcRpcRequest, new Boolean(rpcBody.returnedRequired), specialProperties, specialValues, new UserLoginInfo(username,null));
+				
+				byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(result);
+				response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");
+				response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 			} catch (Exception e) {
 				e.printStackTrace();
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);

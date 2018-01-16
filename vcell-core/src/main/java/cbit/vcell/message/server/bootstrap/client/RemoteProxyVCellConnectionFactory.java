@@ -19,8 +19,11 @@ import org.apache.http.client.ClientProtocolException;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.api.client.VCellApiClient.RpcDestination;
+import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCRpcRequest;
@@ -87,7 +90,8 @@ public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLo
 		throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
 	}
 	
-	this.vcellApiClient.authenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString(),true);
+	AccessTokenRepresentation accessTokenRep = this.vcellApiClient.authenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString(),true);
+	userLoginInfo.setUser(new User(accessTokenRep.userId, new KeyValue(accessTokenRep.getUserKey())));
 }
 
 public void changeUser(UserLoginInfo userLoginInfo) {
@@ -99,7 +103,10 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 }
 
 public static String getVCellSoftwareVersion(String apihost, Integer apiport) {
-	// TODO Auto-generated method stub
-	return null;
+	return "dummy_software_version";
+}
+
+public VCellApiClient getVCellApiClient() {
+	return vcellApiClient;
 }
 }

@@ -2,6 +2,7 @@ package org.vcell.api.client;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 
 /*
  * ====================================================================
@@ -332,7 +333,7 @@ public class VCellApiClient {
 		return simulationTaskRepresentations;
 	}
 	
-	public void authenticate(String userid, String password, boolean alreadyDigested) throws ClientProtocolException, IOException {
+	public AccessTokenRepresentation authenticate(String userid, String password, boolean alreadyDigested) throws ClientProtocolException, IOException {
 		// hash the password
 		String digestedPassword = (alreadyDigested)?(password):createdDigestPassword(password);
 		
@@ -362,6 +363,8 @@ public class VCellApiClient {
 		httpClientContext = HttpClientContext.create();
 		httpClientContext.setCredentialsProvider(credsProvider);
 		httpClientContext.setAuthCache(authCache);
+		
+		return accessTokenRep;
 	}
 	
 	public void clearAuthentication() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
@@ -510,19 +513,26 @@ public class VCellApiClient {
 
 			public Serializable handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
 				int status = response.getStatusLine().getStatusCode();
+				System.out.println("in rpc response handler, status="+status);
 				if (status == 200) {
 					HttpEntity entity = response.getEntity();
 					try {
-						Serializable returnValue = fromCompressedSerialized(entity.getContent());
+						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+						entity.writeTo(byteArrayOutputStream);
+						byte[] returnValueBytes = byteArrayOutputStream.toByteArray();
+						Serializable returnValue = fromCompressedSerialized(returnValueBytes);
 						if (returnRequired) {
 							if (returnValue instanceof Exception){
 								Exception e = (Exception)returnValue;
 								e.printStackTrace();
+								System.out.println("throwing exception from rpc response handler");
 								throw new ClientProtocolException("vcellapi rpc failure, method="+rpcRequest.methodName+": "+e.getMessage(),e);
 							} else {
+								System.out.println("returning normally from rpc response handler ("+returnValue+")");
 								return returnValue;
 							}
 						} else {
+							System.out.println("returning null from rpc response handler (returnRequired==false)");
 							return null;
 						}
 					} catch (ClassNotFoundException | IllegalStateException e1) {
