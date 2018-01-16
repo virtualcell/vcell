@@ -28,8 +28,11 @@ public class RemoteRegistrationService extends AbstractService implements Regist
 		
 	@Override
 	public UserInfo insertUserInfo(UserInfo newUserInfo, boolean bUpdate) throws RemoteProxyException, DataAccessException, UseridIDExistsException {
-		String host = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiHost);
-		int port = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPort));
+		// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:8080
+		String serverHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);
+		String[] parts = serverHost.split(":");
+		String host = parts[0];
+		int port = Integer.parseInt(parts[1]);
 		String clientID = PropertyLoader.getSecretValue(PropertyLoader.vcellapiClientid,  PropertyLoader.vcellapiClientidFile);
 		boolean bIgnoreCertProblems = false;
 		boolean bIgnoreHostMismatch = false;
@@ -57,8 +60,11 @@ public class RemoteRegistrationService extends AbstractService implements Regist
 
 	@Override
 	public void sendLostPassword(String userid) throws DataAccessException, RemoteProxyException {
-		String host = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiHost);
-		int port = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPort));
+		// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:8080
+		String serverHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);
+		String[] parts = serverHost.split(":");
+		String host = parts[0];
+		int port = Integer.parseInt(parts[1]);
 		String clientID = PropertyLoader.getSecretValue(PropertyLoader.vcellapiClientid,  PropertyLoader.vcellapiClientidFile);
 		boolean bIgnoreCertProblems = false;
 		boolean bIgnoreHostMismatch = false;

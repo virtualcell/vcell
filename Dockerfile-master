@@ -53,6 +53,7 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     jmsurl=failover:(tcp://activemq:61616) \
     jmsuser=clientUser \
     jmspswdfile=/run/secrets/jmspswd \
+    solverprimarydata=/share/apps/vcell3/users/ \
     batchsystem=SLURM \
     batchhost=vcell-service.cam.uchc.edu \
     batchuser=vcell \
@@ -66,6 +67,7 @@ ENTRYPOINT java \
 		-Dvcell.server.id="${serverid}" \
 		-Dvcell.python.executable=/usr/bin/python \
 		-Dvcell.primarySimdatadir=/simdata \
+        -Dvcell.solver.primarySimdatadir="${solverprimarydata}" \
 		-Dvcell.htc.user="${batchuser}" \
 		-Dvcell.installDir=/usr/local/app \
 		-Dvcell.server.dbConnectURL="${dburl}" \

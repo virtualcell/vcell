@@ -49,6 +49,7 @@ import org.vcell.rest.users.LoginRestlet;
 import org.vcell.rest.users.LostPasswordRestlet;
 import org.vcell.rest.users.NewUserRestlet;
 import org.vcell.rest.users.RegistrationFormRestlet;
+import org.vcell.rest.users.SWVersionRestlet;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -90,6 +91,7 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String NEWUSER = "newuser";
 	public static final String NEWUSER_VERIFY = "newuserverify";
 	public static final String LOSTPASSWORD = "lostpassword";
+	public static final String SWVERSION = "swversion";
 
 	public static final String BROWSER_CLIENTID = "dskeofihdslksoihe";
 	
@@ -295,6 +297,8 @@ public class VCellApiApplication extends WadlApplication {
 		
 		rootRouter.attach("/"+LOSTPASSWORD, new LostPasswordRestlet(getContext()));
 		
+	    rootRouter.attach("/"+SWVERSION, new SWVersionRestlet(getContext()));
+
 	    rootRouter.attach("/"+RPC, new RpcRestlet(getContext()));
 
 	    rootRouter.attach("/auth/user", new Restlet(getContext()){

@@ -584,5 +584,15 @@ public class VCellApiClient {
 		bis.close();
 		return cacheClone;
 	}
+
+	public String getServerSoftwareVersion() throws ClientProtocolException, IOException {
+		  
+		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/swversion");
+
+		System.out.println("Executing request to retrieve server software version " + httpget.getRequestLine());
+
+		String vcellSoftwareVersion = httpclient.execute(httpget, responseHandler, httpClientContext);
+		return vcellSoftwareVersion;
+	}
 	
 }

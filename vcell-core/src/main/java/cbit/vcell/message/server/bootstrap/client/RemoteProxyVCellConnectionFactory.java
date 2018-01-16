@@ -103,7 +103,20 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 }
 
 public static String getVCellSoftwareVersion(String apihost, Integer apiport) {
-	return "dummy_software_version";
+	boolean bIgnoreCertProblems = true;
+	boolean bIgnoreHostMismatch = true;
+	try {
+		String clientId = PropertyLoader.getSecretValue(PropertyLoader.vcellapiClientid, PropertyLoader.vcellapiClientidFile);
+		VCellApiClient tempApiClient = new VCellApiClient(apihost, apiport, clientId, bIgnoreCertProblems, bIgnoreHostMismatch);
+		String serverSoftwareVersion = tempApiClient.getServerSoftwareVersion();
+		return serverSoftwareVersion;
+	} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+		e.printStackTrace();
+		throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
+	} catch (IOException e) {
+		e.printStackTrace();
+		throw new RuntimeException("VCellApiClient communication exception while retrieving server software version: "+e.getMessage(),e);
+	}
 }
 
 public VCellApiClient getVCellApiClient() {
