@@ -40,6 +40,7 @@ services:
   activemq:
     image: webcenter/activemq:5.14.3
     ports:
+      - "8161:8161"
       - "61619:61616"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbreq;simjob;workerevent

@@ -1,0 +1,29 @@
+FROM vcell-solvers:0.0.4-local
+
+RUN apt-get install -y openjdk-8-jre-headless
+
+RUN mkdir -p /usr/local/app
+WORKDIR /usr/local/app
+
+COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
+     ./vcell-server/target/maven-jars/*.jar \
+     ./lib/
+
+COPY ./nativelibs/linux64 ./nativelibs/linux64
+COPY ./solvers.sh ./solvers.sh
+
+ENV softwareVersion=JimMac_Version_6.2_build_99 \
+	serverid=TEST2 \
+    jmsurl=failover:(tcp://vcell-service.cam.uchc.edu:61619) \
+    jmsuser=clientUser \
+    jmspswd=dummy \
+    mongodbhost="vcell-service.cam.uchc.edu" \
+    mongodbport=27020 \
+    solverprimarydata=/simdata/ \
+    jmsblob_minsize=100000
+
+VOLUME /simdata
+VOLUME /htclogs
+
+ENTRYPOINT ["./solvers.sh"]
+CMD []
