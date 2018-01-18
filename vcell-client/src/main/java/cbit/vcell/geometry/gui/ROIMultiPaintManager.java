@@ -53,7 +53,6 @@ import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -62,6 +61,7 @@ import javax.swing.WindowConstants;
 
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -87,6 +87,7 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
@@ -726,6 +727,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		
 		if(overlayEditorPanelJAI == null){
 			overlayEditorPanelJAI = new OverlayEditorPanelJAI();
+			overlayEditorPanelJAI.setCalcCoords(new CalcCoords());
 			overlayEditorPanelJAI.setUserPreferences(userPreferences);
 			overlayEditorPanelJAI.setMinimumSize(new Dimension(700,600));
 			overlayEditorPanelJAI.setPreferredSize(new Dimension(700,600));
@@ -2089,6 +2091,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			smoothUnderlay();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY)){
 			overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY);
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDANALYTIC_PROPERTY)){
+			updateUndo(UNDO_INIT.ALLZ);
+			sampleAnalyticIntoImage((OverlayEditorPanelJAI.ImgSubVolHelper)evt.getNewValue());
+			updateUndoAfter(true);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY)){
 			updateUndo(UNDO_INIT.ONEZ);
 			fillFromPoint((Point)evt.getNewValue());
@@ -2136,6 +2142,68 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 	}
 	
+	private void sampleAnalyticIntoImage(OverlayEditorPanelJAI.ImgSubVolHelper imgSubVolHelper) {
+		try{
+			Extent extent = (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent);
+			Origin orig = (editedGeometryAttributes==null?originalOrigin:editedGeometryAttributes.origin);
+			int numX = roiComposite[0].getWidth();
+			int numY = roiComposite[0].getHeight();
+			int numZ = roiComposite.length;
+			
+			int dim = (roiComposite.length>1?1:0) + (roiComposite[0].getHeight()>1?1:0) + 1;
+			double cX = calcCoord(imgSubVolHelper.getMousePoint().x, numX, orig.getX(), extent.getX());
+			double cY = calcCoord(imgSubVolHelper.getMousePoint().y, numY, orig.getY(), extent.getY());
+			double cZ = calcCoord(imgSubVolHelper.getZCenter(), numZ, orig.getZ(), extent.getZ());
+			Coordinate center = new Coordinate(cX,cY,cZ);
+			AnalyticSubVolume tempSV = GeometrySubVolumePanel.createAnalyticSubVolume(overlayEditorPanelJAI,dim,center,"tempSV");
+			tempSV.rebind();
+			for (int k=0;k<numZ;k++){
+				double coordZ = calcCoord(k, numZ, orig.getZ(), extent.getZ());
+				for (int j=0;j<numY;j++){
+					double coordY = calcCoord(j, numY, orig.getY(), extent.getY());
+					for (int i=0;i<numX;i++){
+						double coordX = calcCoord(i, numX, orig.getX(), extent.getX());
+						if (tempSV.isInside(coordX,coordY,coordZ,null)){
+							((DataBufferByte)roiComposite[k].getRaster().getDataBuffer()).getData()[j*numX+i] = (byte)(imgSubVolHelper.getCurrentSubVolHandle().getContrastColorIndex());
+						}
+					}
+				}
+			}
+		}catch(UserCancelException uce){
+			//ignore
+		}catch(Exception e){
+			DialogUtils.showErrorDialog(overlayEditorPanelJAI, e.getClass().getName()+" "+e.getMessage());
+		}
+	}
+	
+	public class CalcCoords {
+		public CalcCoords(){
+			
+		}
+		public double calcX(int xIndex){
+			return calcCoord(xIndex, roiComposite[0].getWidth(), (editedGeometryAttributes==null?originalOrigin:editedGeometryAttributes.origin).getX(), (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getX());
+		}
+		public double extentX(){
+			return (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getX();
+		}
+		public double calcY(int yIndex){
+			return calcCoord(yIndex, roiComposite[0].getHeight(), (editedGeometryAttributes==null?originalOrigin:editedGeometryAttributes.origin).getY(), (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getY());
+		}
+		public double extentY(){
+			return (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getY();
+		}
+		public double calcZ(int zIndex){
+			return calcCoord(zIndex, roiComposite.length, (editedGeometryAttributes==null?originalOrigin:editedGeometryAttributes.origin).getZ(), (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getZ());
+		}
+		public double extentZ(){
+			return (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getZ();
+		}
+	}
+	private static double calcCoord(int index,int total,double origin,double extent){
+		double unit = (total>1) ? ((double)index)/(total-1):0.5;
+		double coord = (total>1) ? origin + extent * unit : 0;
+		return coord;
+	}
 	private class NeighborLocation{
 		public int zslice;
 		public int xyIndex;
