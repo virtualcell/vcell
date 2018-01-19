@@ -31,4 +31,4 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
 VOLUME /simdata
 VOLUME /htclogs
 
-ENTRYPOINT solvers.sh
+ENTRYPOINT ./solvers.sh
