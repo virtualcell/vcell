@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Random;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -18,6 +19,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
+import org.bson.types.ObjectId;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -30,6 +32,7 @@ import cbit.vcell.message.VCMessagingInvocationTargetException;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.mongodb.VCMongoDbDriver;
 import cbit.vcell.resource.PropertyLoader;
 
 public class MessageProducerSessionJms implements VCMessageSession {
@@ -252,33 +255,46 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 				}
 
 				long blobMessageSizeThreshold = Long.parseLong(PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageMinSize, "100000"));
-
+				boolean USE_MONGO = Boolean.parseBoolean(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageUseMongo));
 				if (serializedBytes!=null && serializedBytes.length > blobMessageSizeThreshold){
-					//
-					// get (or create) directory to store Message BLOBs
-					//
-					File tempdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageTempDir));
-					if (!tempdir.exists()){
-						tempdir.mkdirs();
+					if (!USE_MONGO) {
+						//
+						// get (or create) directory to store Message BLOBs
+						//
+						File tempdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageTempDir));
+						if (!tempdir.exists()){
+							tempdir.mkdirs();
+						}
+	
+						//
+						// write serialized message to "temp" file.
+						//
+						File blobFile = File.createTempFile("BlobMessage",".data",tempdir);
+						FileOutputStream fileOutputStream = new FileOutputStream(blobFile);
+						FileChannel channel = fileOutputStream.getChannel();
+						channel.write(ByteBuffer.wrap(serializedBytes));
+						channel.close();
+						fileOutputStream.close();
+	
+						ObjectMessage objectMessage = session.createObjectMessage("emptyObject");
+						objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE, VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE_FILE);
+						objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_PRODUCER_TEMPDIR, tempdir.getAbsolutePath());
+						objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_FILE_NAME, blobFile.getName());
+						objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_TYPE, object.getClass().getName());
+						objectMessage.setIntProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_SIZE, serializedBytes.length);
+						vcMessagingServiceJms.getDelegate().onTraceEvent("MessageProducerSessionJms.createObjectMessage: (BLOB) size="+serializedBytes.length+", type="+object.getClass().getName()+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
+						return new VCMessageJms(objectMessage,object, vcMessagingServiceJms.getDelegate());
+					} else {
+						String hexString = Long.toHexString(Math.abs(new Random().nextLong()));
+						ObjectId objectId = VCMongoDbDriver.getInstance().storeBLOB("jmsblob_name_"+hexString, "jmsblob", serializedBytes);
+						ObjectMessage objectMessage = session.createObjectMessage("emptyObject");
+						objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE, VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE_MONGODB);
+						objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_MONGODB_OBJECTID, objectId.toHexString());
+						objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_TYPE, object.getClass().getName());
+						objectMessage.setIntProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_SIZE, serializedBytes.length);
+						vcMessagingServiceJms.getDelegate().onTraceEvent("MessageProducerSessionJms.createObjectMessage: (BLOB) size="+serializedBytes.length+", type="+object.getClass().getName()+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
+						return new VCMessageJms(objectMessage,object, vcMessagingServiceJms.getDelegate());
 					}
-
-					//
-					// write serialized message to "temp" file.
-					//
-					File blobFile = File.createTempFile("BlobMessage",".data",tempdir);
-					FileOutputStream fileOutputStream = new FileOutputStream(blobFile);
-					FileChannel channel = fileOutputStream.getChannel();
-					channel.write(ByteBuffer.wrap(serializedBytes));
-					channel.close();
-					fileOutputStream.close();
-
-					ObjectMessage objectMessage = session.createObjectMessage("emptyObject");
-					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_PRODUCER_TEMPDIR, tempdir.getAbsolutePath());
-					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_FILE_NAME, blobFile.getName());
-					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_TYPE, object.getClass().getName());
-					objectMessage.setIntProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_SIZE, serializedBytes.length);
-					vcMessagingServiceJms.getDelegate().onTraceEvent("MessageProducerSessionJms.createObjectMessage: (BLOB) size="+serializedBytes.length+", type="+object.getClass().getName()+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
-					return new VCMessageJms(objectMessage,object, vcMessagingServiceJms.getDelegate());
 				}else{
 					ObjectMessage objectMessage = (ObjectMessage)session.createObjectMessage(object);
 					int size = (serializedBytes!=null)?(serializedBytes.length):(0);

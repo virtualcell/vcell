@@ -20,3 +20,5 @@ testzip
 ziptool
 .idea
 .vagrant
+/update/
+/.checksums

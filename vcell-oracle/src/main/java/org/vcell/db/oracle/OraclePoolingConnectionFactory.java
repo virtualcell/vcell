@@ -40,7 +40,8 @@ OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundExcept
 	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
 			PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL),
 			PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid),
-			PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword));
+		    PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile)
+);
 }
 
 OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, UniversalConnectionPoolException {

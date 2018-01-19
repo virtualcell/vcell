@@ -180,7 +180,8 @@ private Element getXMLJms()
 	jms.addContent(e);
 	
 	e = new Element(SolverInputFileKeyword.JMS_PW.xml);
-	e.setText(PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword));
+    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
+	e.setText(jmsPassword);
 	jms.addContent(e);
 	
 	e = new Element(SolverInputFileKeyword.JMS_QUEUE.xml);

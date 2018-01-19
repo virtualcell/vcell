@@ -86,6 +86,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
+import cbit.vcell.geometry.gui.ROIMultiPaintManager.CalcCoords;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager.ComboboxROIName;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
@@ -382,6 +383,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final String FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY = "FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY";
 	public static final String FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY = "FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY";
 	public static final String FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY = "FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY";
+	public static final String FRAP_DATA_ADDANALYTIC_PROPERTY = "FRAP_DATA_ADDANALYTIC_PROPERTY";
 	public static final String FRAP_DATA_PAINTERASE_FINISH_PROPERTY = "FRAP_DATA_PAINTERASE_FINISH_PROPERTY";
 	public static final String FRAP_DATA_RESOLVEDHIGHLIGHT_PROPERTY = "FRAP_DATA_RESOLVEDHIGHLIGHT_PROPERTY";
 	public static final String FRAP_DATA_RESOLVEDMERGE_PROPERTY = "FRAP_DATA_RESOLVEDMERGE_PROPERTY";
@@ -565,6 +567,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_2.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_2.gridy = 0;
 		gridBagConstraints_2.gridx = 1;
+		gridBagConstraints_2.gridwidth = 2;
 		editROIPanel.add(textLabel, gridBagConstraints_2);
 		textLabel.setText("No FRAP DataSet loaded.");
 
@@ -1211,6 +1214,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public void setContrastToMinMax(){
 		imagePane.setContrastToMinMax();
 	}
+	
+	private CalcCoords calcCoords;
+	public void setCalcCoords(CalcCoords calcCoords){
+		this.calcCoords = calcCoords;
+	}
 	/** Sets the viewer to display the given images. * @param argImageDataset ImageDataset
 	 */
 	public void setImages(ImageDataset argImageDataset,double originalScaleFactor,double originalOffsetFactor,
@@ -1426,6 +1434,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			final int colorIndex = (i==-1?0:roiComboboxROINames[i].getContrastColorIndex());
 			JMenuItem jMenuItem = new JMenuItem(roiName, resolvedColorPatchImageIconArr[colorIndex]);
 			jMenuItem.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					RegionImage.RegionInfo[] regionInfoArr = Arrays.asList(resolvedList.getSelectedValues()).toArray(new RegionImage.RegionInfo[0]);
 					firePropertyChange(FRAP_DATA_CONVERTDOMAIN_PROPERTY, regionInfoArr,colorIndex);
@@ -1433,9 +1442,45 @@ public class OverlayEditorPanelJAI extends JPanel{
 			});
 			convertMenu.add(jMenuItem);
 		}
+		JMenuItem addSubVolMenuItem = new JMenuItem("Add Subvolume...");
+		addSubVolMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				firePropertyChange(FRAP_DATA_ADDANALYTIC_PROPERTY,null,
+						new ImgSubVolHelper((ROIMultiPaintManager.ComboboxROIName)roiComboBox.getSelectedItem(), mouseEvent.getPoint(),getZ(), (Component)mouseEvent.getSource()));
+			}
+		});
+		jPopupMenu.add(addSubVolMenuItem);
 		jPopupMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
 		return SHOWCONVERT.HANDLED;
 	}
+	
+	public static class ImgSubVolHelper {
+		private ComboboxROIName currentSubVolHandle;
+		private Point mousePoint;
+		private int zCenter;
+		private Component source;
+		public ImgSubVolHelper(ComboboxROIName currentSubVolHandle, Point mousePoint,int zCenter, Component source) {
+			super();
+			this.currentSubVolHandle = currentSubVolHandle;
+			this.mousePoint = mousePoint;
+			this.zCenter = zCenter;
+			this.source = source;
+		}
+		public ComboboxROIName getCurrentSubVolHandle() {
+			return currentSubVolHandle;
+		}
+		public Point getMousePoint() {
+			return mousePoint;
+		}
+		public int getZCenter(){
+			return zCenter;
+		}
+		public Component getSource() {
+			return source;
+		}
+	}
+	
 	private void  fireSelectFromImage(MouseEvent mouseEvent,boolean bIgnoreIfSelected){
 		Rectangle selectRectangle = new Rectangle((int)(mouseEvent.getPoint().x/imagePane.getZoom()), (int)(mouseEvent.getPoint().y/imagePane.getZoom()), 0, 0);
 		firePropertyChange(FRAP_DATA_SELECTIMGROI_PROPERTY, null, new  ROIMultiPaintManager.SelectImgInfo(mouseEvent,/*imagePane.getZoom(),*/resolvedList,selectRectangle,bIgnoreIfSelected));
@@ -1747,6 +1792,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			sb.append(getZ() + 1);
 			sb.append("/");
 			sb.append(imageDataset.getSizeZ());
+			if(calcCoords != null){
+				sb.append(" "+NumberUtils.formatNumber(calcCoords.calcZ(getZ()), 6)+"/"+NumberUtils.formatNumber(calcCoords.extentZ(),6));
+			}
 		}
 		if (imageDataset.getSizeT() > 1) {
 			sb.append((bMultipleZ?"; ":"")+"T=");
@@ -1765,12 +1813,20 @@ public class OverlayEditorPanelJAI extends JPanel{
 			if (w > 0) {
 				sb.append("/");
 				sb.append(w);
+				if(calcCoords != null){
+					sb.append(" "+NumberUtils.formatNumber(calcCoords.calcX(inx),6)+"/"+NumberUtils.formatNumber(calcCoords.extentX(),6));
+				}
+
 			}
 			sb.append("; Y=");
 			sb.append(y);
 			if (h > 0) {
 				sb.append("/");
 				sb.append(h);
+				if(calcCoords != null){
+					sb.append(" "+NumberUtils.formatNumber(calcCoords.calcY(iny),6)+"/"+NumberUtils.formatNumber(calcCoords.extentY(),6));
+				}
+
 			}
 			sb.append("; zoom("+NumberUtils.formatNumber(imagePane.getZoom(), 3)+")");
 			sb.append("; contr("+imagePane.getContrastDescription()+")");
@@ -1786,7 +1842,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 					e.printStackTrace();
 					//do nothing
 				}
-				sb.append("; value"+(isOriginalValueScaled()?"(scld)":""));
+				sb.append("; value(img)"+(isOriginalValueScaled()?"(scld)":""));
 				if(pix != null){
 					if(histogramPanel.isVisible()){
 						histogramPanel.setSpecialValue((int)(pix[0]&0x0000FFFF));
@@ -1801,7 +1857,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 					sb.append(" error");
 				}
 				if(isOriginalValueScaled()){
-					sb.append("; value(orig)");
+					sb.append("; value(img)(orig)");
 					if(pix != null){
 						sb.append(pix.length > 1 ? "s=(" : "=");
 						for (int i=0; i<pix.length; i++) {
@@ -1818,6 +1874,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}
 					
 				}
+			}
+			if(allROICompositeImageArr != null){
+				sb.append(" val(roi)="+((DataBufferByte)(allROICompositeImageArr[getZ()].getRaster().getDataBuffer())).getData()[iny*allROICompositeImageArr[0].getWidth()+inx]);
 			}
 		}else{
 			sb.append((sb.length() != 0?"; ":"")+"zoom("+NumberUtils.formatNumber(imagePane.getZoom(), 3)+")");

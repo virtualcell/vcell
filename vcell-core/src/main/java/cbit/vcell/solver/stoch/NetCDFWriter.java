@@ -262,7 +262,8 @@ public class NetCDFWriter {
 					ncfile.write("JMS_BROKER", jmsString);
 					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
 					ncfile.write("JMS_USER", jmsString);
-					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword));
+				    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
+					jmsString.setString(jmsPassword);
 					ncfile.write("JMS_PASSWORD", jmsString);
 					jmsString.setString(VCellQueue.WorkerEventQueue.getName());
 					ncfile.write("JMS_QUEUE", jmsString);

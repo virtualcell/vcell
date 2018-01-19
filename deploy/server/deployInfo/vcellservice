@@ -49,7 +49,7 @@ setupJavaPrefs
 arguments="123 ${common_logdir} ${common_batchSystemType}"
 
 if [ "$vcellservice_htc_usessh" = true ] ; then
-	arguments="$arguments $vcellservice_htc_ssh_host $vcellservice_htc_ssh_user $vcellservice_htc_ssh_dsaKeyFile"
+	arguments="$arguments $vcellservice_htc_ssh_host $vcellservice_htc_ssh_user $vcellservice_htc_ssh_keyFile"
 fi
 
 #

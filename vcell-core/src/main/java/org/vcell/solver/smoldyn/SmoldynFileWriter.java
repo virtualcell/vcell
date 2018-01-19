@@ -2058,8 +2058,9 @@ private void writeJms(Simulation simulation) {
 	if (simTask != null) {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println("start_jms");
+	    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
 		printWriter.println(PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL)
-			+ " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword)
+			+ " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + jmsPassword
 			+ " " + VCellQueue.WorkerEventQueue.getName()
 			+ " " + VCellTopic.ServiceControlTopic.getName()
 			+ " " + simulation.getVersion().getOwner().getName()

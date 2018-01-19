@@ -436,7 +436,7 @@ private static final String REQUIRED_CLIENT_PROPERTIES[] = {
 private static final String REQUIRED_LOCAL_PROPERTIES[] = {
 	PropertyLoader.primarySimDataDirProperty,
 	PropertyLoader.secondarySimDataDirProperty,
-	PropertyLoader.dbPassword,
+	PropertyLoader.dbPasswordValue,
 	PropertyLoader.dbUserid,
 	PropertyLoader.dbDriverName,
 	PropertyLoader.dbConnectURL,

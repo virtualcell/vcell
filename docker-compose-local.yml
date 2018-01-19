@@ -1,0 +1,36 @@
+version: '3'
+services:
+  rmi:
+    build:
+      context: ./
+      dockerfile: Dockerfile.rmi
+    ports:
+      - "8088:8080"
+    environment:
+      - rmihost=Jamess-MacBook-Pro-2.local
+#      - rmihost=Jamess-MacBook-Pro-2.local
+  api:
+    build:
+      context: ./
+      dockerfile: Dockerfile.api
+    ports:
+      - "8081:8080"
+  master:
+    build:
+      context: ./
+      dockerfile: Dockerfile.master
+    volumes:
+      - /Volumes/vcell/users:/simdata
+  activemq:
+    image: webcenter/activemq:5.14.3
+    ports: 
+      - "61616:61616"
+      - "61613:61613"
+      - "8161:8161"
+  mongodb:
+    build:
+      context: ./docker/mongo
+      dockerfile: Dockerfile
+    ports:
+      - "27017:27017"
+

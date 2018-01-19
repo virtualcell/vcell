@@ -1,0 +1,89 @@
+FROM maven:3.5-jdk-8-alpine as build
+COPY . /app/
+WORKDIR /app
+RUN mvn clean install dependency:copy-dependencies
+
+
+FROM pboreg/vtk:latest
+
+# install thrift python package
+RUN wget https://bootstrap.pypa.io/get-pip.py \
+    && python get-pip.py \
+    && pip install thrift
+
+RUN apk update && apk upgrade && \
+    apk add openjdk8 && \
+    mkdir /tmp/tmprt && \
+    cd /tmp/tmprt && \
+    apk add zip && \
+    unzip -q /usr/lib/jvm/default-jvm/jre/lib/rt.jar && \
+    apk add zip && \
+    zip -q -r /tmp/rt.zip . && \
+    apk del zip && \
+    cd /tmp && \
+    mv rt.zip /usr/lib/jvm/default-jvm/jre/lib/rt.jar && \
+    rm -rf /tmp/tmprt /var/cache/apk/* bin/jjs bin/keytool bin/orbd bin/pack200 bin/policytool \
+          bin/rmid bin/rmiregistry bin/servertool bin/tnameserv bin/unpack200 
+
+
+RUN mkdir -p /usr/local/app
+WORKDIR /usr/local/app
+
+COPY --from=build \
+     /app/vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
+     /app/vcell-server/target/maven-jars/*.jar \
+     /app/vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
+     /app/vcell-oracle/target/maven-jars/*.jar \
+     /app/ojdbc6/src/ojdbc6.jar \
+     /app/ucp/src/ucp.jar \
+     ./lib/
+
+
+COPY --from=build /app/pythonScripts ./pythonScripts
+COPY --from=build /app/nativelibs/linux64 ./nativelibs/linux64
+
+WORKDIR /usr/local/app
+
+ENV softwareVersion=JimMac_Version_6.2_build_99 \
+	serverid=TEST2 \
+	dburl=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
+    dbdriver=oracle.jdbc.driver.OracleDriver \
+    dbuser=vcell \
+    dbpswdfile=/run/secrets/dbpswd \
+    jmsurl=failover:(tcp://activemq:61616) \
+    jmsuser=clientUser \
+    jmspswdfile=/run/secrets/jmspswd \
+    batchsystem=SLURM \
+    batchhost=vcell-service.cam.uchc.edu \
+    batchuser=vcell \
+    batchuserkeyfile=/run/secrets/batchuserkeyfile \
+    jmsblob_minsize=100000
+
+VOLUME /simdata
+
+ENTRYPOINT java \
+		-Dvcell.softwareVersion="${softwareVersion}" \
+		-Dvcell.server.id="${serverid}" \
+		-Dvcell.python.executable=/usr/bin/python \
+		-Dvcell.primarySimdatadir=/simdata \
+		-Dvcell.htc.user="${batchuser}" \
+		-Dvcell.installDir=/usr/local/app \
+		-Dvcell.server.dbConnectURL="${dburl}" \
+		-Dvcell.server.dbDriverName="${dbdriver}" \
+		-Dvcell.server.dbUserid="${dbuser}" \
+		-Dvcell.db.pswdfile="${dbpswdfile}" \
+		-Dvcell.jms.url="${jmsurl}" \
+		-Dvcell.jms.blobMessageUseMongo=true \
+    -Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
+		-Dvcell.jms.user="${jmsuser}" \
+		-Dvcell.jms.pswdfile="${jmspswdfile}" \
+		-Dvcell.mongodb.host=mongodb \
+		-Dvcell.mongodb.port=27017 \
+		-Dvcell.mongodb.database=test \
+		-Dvcell.server.maxJobsPerScan=50 \
+		-Dvcell.server.maxJobsPerSite=100 \
+		-Dvcell.server.maxOdeJobsPerUser=30 \
+		-Dvcell.server.maxPdeJobsPerUser=20 \
+		-Dvcell.limit.jobMemoryMB=2000 \
+		-cp "./lib/*" cbit.vcell.message.server.combined.VCellServices \
+		123 - "${batchsystem}" "${batchhost}" "${batchuser}" "${batchuserkeyfile}"

@@ -39,7 +39,9 @@ import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.documentation.VcellHelpViewer;
+import org.vcell.util.Coordinate;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -91,7 +93,15 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 			else if (e.getSource() == addShapeButton) {
 				getAddSubVolumePopupMenu().show(addShapeButton, 0, addShapeButton.getHeight());
 			} else if (e.getSource() == addAnalyticSubVolumeMenuItem) {
-				addAnalyticSubVolume();
+				Coordinate center = new Coordinate(getGeometry().getOrigin().getX()+getGeometry().getExtent().getX()/2,
+						(getGeometry().getDimension() > 1?getGeometry().getOrigin().getY()+getGeometry().getExtent().getY()/2:.5),
+						(getGeometry().getDimension() > 2?getGeometry().getOrigin().getZ()+getGeometry().getExtent().getZ()/2:.5));
+				try{
+					AnalyticSubVolume analyticSubVol = createAnalyticSubVolume(GeometrySubVolumePanel.this,getGeometry().getDimension(),center,getGeometrySpec().getFreeSubVolumeName());
+					addSubVolume(analyticSubVol);
+				}catch(UserCancelException uce){
+					//ignore
+				}
 			} else if (e.getSource() == addCSGSubVolumeMenuItem) {
 				addSubVolume(new CSGObject(null, getGeometrySpec().getFreeSubVolumeName(), -1));
 			}
@@ -382,19 +392,20 @@ private void addSubVolume(final SubVolume subVolume) {
 	ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, true, false, false, null, true);
 }
 
-private void addAnalyticSubVolume() {
-	Geometry g = getGeometry();
-	final int dim = g.getDimension();
-	AddShapeJPanel addShapeJPanel = new AddShapeJPanel(dim);
+public static AnalyticSubVolume createAnalyticSubVolume(Component requester,int dimensions,Coordinate center,String newSubVolName) throws UserCancelException{
+//	Geometry g = getGeometry();
+//	final int dim = g.getDimension();
+	AddShapeJPanel addShapeJPanel = new AddShapeJPanel(dimensions);
 	addShapeJPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
-	addShapeJPanel.setDefaultCenter(
-			getGeometry().getOrigin().getX()+getGeometry().getExtent().getX()/2,
-			(getGeometry().getDimension() > 1?getGeometry().getOrigin().getY()+getGeometry().getExtent().getY()/2:null),
-				(getGeometry().getDimension() > 2?getGeometry().getOrigin().getZ()+getGeometry().getExtent().getZ()/2:null));
+	addShapeJPanel.setDefaultCenter(center.getX(), center.getY(), center.getZ());
+//	addShapeJPanel.setDefaultCenter(
+//			getGeometry().getOrigin().getX()+getGeometry().getExtent().getX()/2,
+//			(getGeometry().getDimension() > 1?getGeometry().getOrigin().getY()+getGeometry().getExtent().getY()/2:null),
+//				(getGeometry().getDimension() > 2?getGeometry().getOrigin().getZ()+getGeometry().getExtent().getZ()/2:null));
 	while(true){
 		try {
 			final boolean[] acceptFlag = new boolean[] {false};
-			LWContainerHandle lwParent = LWNamespace.findLWOwner(GeometrySubVolumePanel.this);
+			LWContainerHandle lwParent = LWNamespace.findLWOwner(requester/*GeometrySubVolumePanel.this*/);
 			final JDialog d = new LWTitledDialog(lwParent,"Define New Subdomain Shape");
 //			BeanUtils.centerOnComponent(d, GeometrySubVolumePanel.this);
 			
@@ -455,14 +466,18 @@ private void addAnalyticSubVolume() {
 			//DialogUtils.showModalJDialogOnTop(d, GeometrySubVolumePanel.this);
 
 			if(acceptFlag[0]){
-				addSubVolume(new AnalyticSubVolume(null, getGeometrySpec().getFreeSubVolumeName(),
-							new Expression(addShapeJPanel.getCurrentAnalyticExpression()), -1));
+//				addSubVolume(new AnalyticSubVolume(null, getGeometrySpec().getFreeSubVolumeName(),
+//							new Expression(addShapeJPanel.getCurrentAnalyticExpression()), -1));
+				return new AnalyticSubVolume(null, newSubVolName,new Expression(addShapeJPanel.getCurrentAnalyticExpression()), -1);
 					
+			}else{
+				throw UserCancelException.CANCEL_GENERIC;
 			}
-			break;
+		} catch (UserCancelException uce) {
+			throw uce;
 		} catch (Exception e1) {
 			e1.printStackTrace();
-			DialogUtils.showErrorDialog(GeometrySubVolumePanel.this, "Error adding shape:\n"+e1.getMessage(), e1);
+			DialogUtils.showErrorDialog(requester, "Error adding shape:\n"+e1.getMessage(), e1);
 		}
 	}
 }

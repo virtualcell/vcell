@@ -10,39 +10,16 @@
 
 package org.vcell.util.graphlayout;
 
-import java.awt.Dimension;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
-import javax.swing.JApplet;
-import javax.swing.JFrame;
-
 import org.vcell.util.graphlayout.ContainedGraph.Container;
-import org.vcell.util.graphlayout.ContainedGraph.Edge;
 import org.vcell.util.graphlayout.ContainedGraph.Node;
-import org.vcell.util.graphlayout.GenericLogicGraphLayouter.ContainerContext;
-import org.vcell.util.graphlayout.GenericLogicGraphLayouter.LAYOUT_TYPE;
 
-import cbit.vcell.graph.ReactionContainerShape;
 import cbit.vcell.graph.ReactionRuleDiagramShape;
 import cbit.vcell.graph.ReactionStepShape;
 import cbit.vcell.graph.RuleParticipantSignatureDiagramShape;
-import cbit.vcell.graph.SimpleReactionShape;
 import cbit.vcell.graph.SpeciesContextShape;
-import cbit.vcell.model.Catalyst;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import edu.uci.ics.jung.algorithms.layout.SpringLayout;
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.samples.MinimumSpanningTreeDemo;
 
 public class SimpleElipticalLayouter extends ContainedGraphLayouter {
 

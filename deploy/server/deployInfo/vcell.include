@@ -43,7 +43,7 @@ common_vcell_user=GENERATED-VCELLUSER
 vcell_jms_containername=GENERATED-JMSCONTAINERNAME
 vcell_jms_url="GENERATED-JMSURL"
 vcell_jms_user=GENERATED-JMSUSER
-vcell_jms_password=GENERATED-JMSPSWD
+vcell_jms_pswdfile=GENERATED-JMSPSWDFILE
 vcell_jms_host=GENERATED-JMSHOST
 vcell_jms_port=GENERATED-JMSPORT
 vcell_jms_webport=GENERATED-JMSWEBPORT
@@ -71,7 +71,7 @@ vcell_mongodb_port=GENERATED-MONGODB-PORT
 #--------------------------------------
 vcellapi_root=GENERATED-API-ROOTDIR
 vcellapi_keystorepath=GENERATED-APIKEYSTORE-PATH
-vcellapi_keystorepswd=GENERATED-APIKEYSTORE-PSWD
+vcellapi_keystorepswdfile=GENERATED-APIKEYSTORE-PSWDFILE
 vcellapi_host=GENERATED-APIHOST
 vcellapi_port=GENERATED-APIPORT
 vcellapi_javascriptdir="${vcellapi_root}/docroot"
@@ -114,7 +114,7 @@ vcellservice_processLabel=${common_site}-master
 vcellservice_htc_usessh=GENERATED-HTC-USESSH
 vcellservice_htc_ssh_host=GENERATED-HTC-SSH-HOST
 vcellservice_htc_ssh_user=GENERATED-HTC-SSH-USER
-vcellservice_htc_ssh_dsaKeyFile=GENERATED-HTC-SSH-DSAKEYFILE
+vcellservice_htc_ssh_keyFile=GENERATED-HTC-SSH-KEYFILE
 
 vcellservice_memoryGB=5
 

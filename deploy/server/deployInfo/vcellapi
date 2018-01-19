@@ -30,7 +30,10 @@ jmxargs=
 
 jvmprop="-Xmx${vcellapi_memoryGB}G -Dvcell.propertyfile=${common_propertyfile}"
 
-arguments="${vcellapi_keystorepath} ${vcellapi_keystorepswd} ${vcellapi_javascriptdir} ${common_logdir} ${vcellapi_port}"
+#arguments="${vcellapi_keystorepath} ${vcellapi_keystorepswdfile} ${vcellapi_javascriptdir} ${common_logdir} ${vcellapi_port}"
+# move keystore path and keystore password file to environment variables
+arguments="${vcellapi_javascriptdir} ${common_logdir} ${vcellapi_port}"
+jvmprop="${jvmprop} -Dvcellapi.keystore.file=${vcellapi_keystorepath} -Dvcellapi.keystore.pswdfile=${vcellapi_keystorepswdfile}"
 
 #vcellapi_cp="${vcellapi_jars}:${vcellapi_root}/bin:${vcellapi_root}/resources"
 
