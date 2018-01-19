@@ -13,6 +13,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
@@ -558,6 +559,23 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 				g2.setPaint(getDefaultColor(Color.DARK_GRAY));
 			}
 			g2.draw(rect);
+		}
+
+		if(mt != null && !mt.getAnchors().isEmpty()) {		// paint anchor glyph
+			int z = shapePanel.getZoomFactor();
+			int x = xPos + cornerArc/2;
+			int y = yPos + baseHeight;
+			int yb = y + 5 + z/3;	// y at bottom
+			int w = 6 + z/4;
+			Line2D line = new Line2D.Float(x, y, x, yb);
+			g2.setPaint(getDefaultColor(Color.BLUE.darker()));
+			g2.setStroke(new BasicStroke(2.0f+0.14f*z));
+			g2.draw(line);
+			line = new Line2D.Float(x-w/2, yb+1, x+w/2, yb+1);
+			g2.setStroke(new BasicStroke(1.9f+0.21f*z));
+			g2.draw(line);
+			g2.setPaint(colorOld);
+			g2.setStroke(strokeOld);
 		}
 		
 		if(mt == null && mtp == null) {		// plain species context
