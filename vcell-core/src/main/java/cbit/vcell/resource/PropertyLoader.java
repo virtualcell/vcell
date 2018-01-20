@@ -40,21 +40,23 @@ public class PropertyLoader {
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",ValueType.GEN);
 
-	public static final String primaryServerSimDataDirProperty	= record("vcell.primarySimdatadir",ValueType.DIR);
-	public static final String secondaryServerSimDataDirProperty	= record("vcell.secondarySimdatadir",ValueType.DIR);
-	public static final String primarySolverSimDataDirProperty	= record("vcell.solver.primarySimdatadir",ValueType.GEN);
-	public static final String secondarySolverSimDataDirProperty	= record("vcell.solver.secondarySimdatadir",ValueType.GEN);
-	public static final String PARALLEL_DATA_DIR			= record("vcell.parallelDatadir",ValueType.DIR);
+	public static final String primarySimDataDirInternalProperty	= record("vcell.primarySimdatadir.internal",ValueType.DIR);
+	public static final String secondarySimDataDirInternalProperty	= record("vcell.secondarySimdatadir.internal",ValueType.DIR);
+	public static final String primarySimDataDirExternalProperty	= record("vcell.primarySimdatadir.external",ValueType.GEN);
+	public static final String secondarySimDataDirExternalProperty	= record("vcell.secondarySimdatadir.external",ValueType.GEN);
+	public static final String PARALLEL_DATA_DIR_INTERNAL		= record("vcell.parallelDatadir.internal",ValueType.DIR);
+	public static final String PARALLEL_DATA_DIR_EXTERNAL		= record("vcell.parallelDatadir.external",ValueType.GEN);
 
 	public static final String jobMemoryOverheadMB			= record("vcell.htc.jobMemoryOverheadMB",ValueType.GEN);
 	public static final String htcBatchSystemQueue			= record("vcell.htc.queue",ValueType.GEN);
-	public static final String htcLogDir					= record("vcell.htc.logdir",ValueType.DIR);
+	public static final String htcLogDirExternal					= record("vcell.htc.logdir.external",ValueType.GEN);
 	public static final String htcUser						= record("vcell.htc.user",ValueType.GEN);
 	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",ValueType.GEN);
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",ValueType.GEN);
 	public static final String sgeModulePath				= record("vcell.htc.sge.module",ValueType.GEN);
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
-	public static final String MPI_HOME				        = record("vcell.htc.mpi.home",ValueType.DIR);
+	public static final String MPI_HOME_INTERNAL		        = record("vcell.htc.mpi.home",ValueType.DIR);
+	public static final String MPI_HOME_EXTERNAL		        = record("vcell.htc.mpi.home",ValueType.GEN);
 
 //	public static final String finiteVolumeExecutableProperty = record("vcell.finitevolume.executable",ValueType.EXE);
 //
@@ -110,7 +112,8 @@ public class PropertyLoader {
 	public static final String simdataCacheSizeProperty		= record("vcell.simdataCacheSize",ValueType.GEN);
 
 	public static final String exportBaseURLProperty		= record("vcell.export.baseURL",ValueType.GEN);
-	public static final String exportBaseDirProperty		= record("vcell.export.baseDir",ValueType.DIR);
+	public static final String exportBaseDirInternalProperty		= record("vcell.export.baseDir.internal",ValueType.DIR);
+	public static final String exportBaseDirExternalProperty		= record("vcell.export.baseDir.external",ValueType.GEN);
 	public static final String exportMaxInMemoryLimit		= record("vcell.export.maxInMemoryLimit",ValueType.INT);
 
 	public static final String dbDriverName					= record("vcell.server.dbDriverName",ValueType.GEN);
@@ -153,9 +156,11 @@ public class PropertyLoader {
 	public static final String vcellSMTPPort = record("vcell.smtp.port",ValueType.GEN);
 	public static final String vcellSMTPEmailAddress = record("vcell.smtp.emailAddress",ValueType.GEN);
 
-	public static final String javaSimulationExecutable = record("vcell.javaSimulation.executable",ValueType.EXE);
-	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",ValueType.EXE);
-	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",ValueType.EXE);
+	public static final String vcellbatch_docker_name = record("vcell.batch.docker.name",ValueType.GEN);
+	public static final String vcellbatch_singularity_image = record("vcell.batch.singularity.image",ValueType.GEN);
+	public static final String javaSimulationExecutable = record("vcell.javaSimulation.executable",ValueType.GEN);
+	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",ValueType.GEN);
+	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",ValueType.GEN);
 
 	public final static String mongodbHost						= record("vcell.mongodb.host",ValueType.GEN);
 	public final static String mongodbPort						= record("vcell.mongodb.port",ValueType.GEN);   // default 27017
