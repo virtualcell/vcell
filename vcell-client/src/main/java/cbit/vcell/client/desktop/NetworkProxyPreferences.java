@@ -7,7 +7,7 @@ import java.util.prefs.Preferences;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.resource.NetworkProxyUtils;
 import cbit.vcell.resource.NetworkProxyUtils.RestartWarningProvider;
 
@@ -18,7 +18,7 @@ public class NetworkProxyPreferences {
 	public static final String prefProxyPort = "proxyPort";
 	public static final String PROXY_FORMAT = "[http,socks]:proxyHost:portNumber";
 	public static void setProxyPrefs(Component requester, RestartWarningProvider restartWarningProvider) throws UtilCancelException{
-		Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
+		Preferences prefs = Preferences.userNodeForPackage(RemoteProxyVCellConnectionFactory.class);
 		String proxyType = prefs.get(prefProxyType,prefProxyType);
 		String proxyHost = prefs.get(prefProxyHost,prefProxyHost);
 		String proxyPort = prefs.get(prefProxyPort,prefProxyPort);

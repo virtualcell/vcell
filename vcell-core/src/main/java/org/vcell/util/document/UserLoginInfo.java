@@ -198,7 +198,7 @@ public class UserLoginInfo implements Serializable {
 		return user;
 	}
 
-	public void setUser(User user) throws Exception {
+	public void setUser(User user) throws RuntimeException {
 		if (user.compareEqual(this.user)) {
 			// Happens during 'reconnect'
 			return;
@@ -207,12 +207,12 @@ public class UserLoginInfo implements Serializable {
 			// Different user never allowed to be reset
 			// During 'login' or 'change user' a new UserLoginInfo should be
 			// created
-			throw new Exception(
+			throw new RuntimeException(
 					"UserLoginInfo: unexpected 'set' of different user.");
 		}
 		// set 'user' name must be the same as the 'login' name
 		if (!user.getName().equals(this.userName)) {
-			throw new Exception("UserLoginInfo: 'set' user " + user.getName()
+			throw new RuntimeException("UserLoginInfo: 'set' user " + user.getName()
 					+ " does not equal login name " + this.userName);
 		}
 		this.user = user;

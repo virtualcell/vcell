@@ -24,8 +24,22 @@ import org.vcell.util.document.User;
  */
 public class VCRpcRequest implements java.io.Serializable {
 	
-	public interface RpcServiceType {
-		public String getName();
+	public enum RpcServiceType {
+		DATA("Data"), 
+		DATAEXPORT("Exprt"), 
+		DB("Db"), 
+		DISPATCH("Dsptch"), 
+		TESTING_SERVICE("testing");
+		
+		final String name;
+		
+		private RpcServiceType(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
 	}
 	
 	private User user = null;

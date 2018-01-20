@@ -99,8 +99,8 @@ public class ResultSetCrawler {
 			
 			PropertyLoader.loadProperties();
 
-			File primaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
-			File secondaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty));
+			File primaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
+			File secondaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty));
 			if (primaryDataRootDir.equals(secondaryDataRootDir)){
 				secondaryDataRootDir = null;
 			}

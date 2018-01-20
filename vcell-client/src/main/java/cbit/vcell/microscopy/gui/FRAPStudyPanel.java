@@ -1416,7 +1416,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				if(exportEvt != null)
 				{
 					final String fileURLString = System.getProperty(PropertyLoader.exportBaseURLProperty) + exportEvt.getJobID() + ".mov";
-					final String fileString = System.getProperty(PropertyLoader.exportBaseDirProperty) + exportEvt.getJobID() + ".mov";
+					final String fileString = System.getProperty(PropertyLoader.exportBaseDirInternalProperty) + exportEvt.getJobID() + ".mov";
 					fStudy.setMovieURLString(fileURLString);
 					fStudy.setMovieFileString(fileString);
 				}

@@ -20,24 +20,24 @@ public class VCellApiClientTest {
 	public static void main(String[] args) {
 		VCellApiClient vcellApiClient = null;
 		try {
-			if (args.length != 3 && args.length != 4){
-				System.out.println("usage: VCellApiClient host userid password [clientID]");
+			if (args.length != 4 && args.length != 5){
+				System.out.println("usage: VCellApiClient host port userid password [clientID]");
 				System.exit(1);
 			}
 			String host = args[0];
-			int port = 8080;
-			String username = args[1];
-			String password = args[2];
+			int port = Integer.parseInt(args[1]);
+			String username = args[2];
+			String password = args[3];
 			String clientID = DEFAULT_CLIENTID;
-			if (args.length>3){
-				clientID = args[3];
+			if (args.length>4){
+				clientID = args[4];
 			}
 			
 			boolean bIgnoreCertProblems = true;
 			boolean bIgnoreHostMismatch = true;
 			vcellApiClient = new VCellApiClient(host,port,clientID,bIgnoreCertProblems, bIgnoreHostMismatch);
 
-			vcellApiClient.authenticate(username,password);
+			vcellApiClient.authenticate(username,password,false);
 			
 			// test /biomodel[? query string]
 			BiomodelRepresentation[] biomodelReps = vcellApiClient.getBioModels(new BioModelsQuerySpec());

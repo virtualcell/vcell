@@ -10,7 +10,6 @@
 
 package cbit.vcell.clientdb;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventListener;
@@ -70,6 +69,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
@@ -201,8 +201,8 @@ public VCImageInfo addUserToGroup(VCImageInfo imageInfo, String userToAdd) throw
 
 		return newImageInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -229,8 +229,8 @@ public BioModelInfo addUserToGroup(BioModelInfo bioModelInfo, String userToAdd) 
 
 		return newBioModelInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -271,8 +271,8 @@ public GeometryInfo addUserToGroup(GeometryInfo geometryInfo, String userToAdd) 
 
 		return newGeometryInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -299,8 +299,8 @@ public MathModelInfo addUserToGroup(MathModelInfo mathModelInfo, String userToAd
 
 		return newMathModelInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -311,7 +311,7 @@ public MathModelInfo addUserToGroup(MathModelInfo mathModelInfo, String userToAd
  * Creation date: (11/28/00 5:43:44 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
-private <T extends VersionInfo> T addUserToGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteException, DataAccessException {
+private <T extends VersionInfo> T addUserToGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteProxyException, DataAccessException {
 
 	//
 	// unpublish from database
@@ -409,8 +409,8 @@ public void delete(VCImageInfo vcImageInfo) throws DataAccessException {
 		
 		fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, vcImageInfo, null));
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -450,8 +450,8 @@ public void delete(BioModelInfo bioModelInfo) throws DataAccessException {
 			//}
 		//}
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	} 
 
@@ -478,8 +478,8 @@ public void delete(GeometryInfo geometryInfo) throws DataAccessException {
 
 		fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, geometryInfo, null));
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -520,8 +520,8 @@ public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
 			//}
 		//}
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -565,8 +565,8 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 
 	try{
 		return sessionManager.getUserMetaDbServer().fieldDataDBOperation(fieldDataDBOperationSpec);	
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -589,7 +589,7 @@ public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessExcep
 		TestSuiteOPResults tsopr = getSessionManager().getUserMetaDbServer().doTestSuiteOP(tsop);
 		//fireDatabaseRefresh(new DatabaseEvent(this, DatabaseEvent.REFRESH, null, null));
 		return tsopr;
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -968,7 +968,7 @@ public static class FailToLoadDocumentExc extends DataAccessException {
 public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getBoundSpecies(dbfs);
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -983,7 +983,7 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString, boolean isBound, 
 
 	try {
 		return sessionManager.getUserMetaDbServer().getDatabaseSpecies(likeString,isBound,speciesType,restrictSearch,rowLimit,bOnlyUser);
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -997,7 +997,7 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString, boolean isBound, 
 public ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getDictionaryReactions(reactionQuerySpec);
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1386,7 +1386,7 @@ private XMLHolder<MathModel> getMathModelXML(KeyValue vKey) throws DataAccessExc
  * @return void
  * @param key KeyValue
  * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
+ * @exception RemoteProxyException The exception description.
  */
 public Preference[] getPreferences() throws DataAccessException{
 
@@ -1397,8 +1397,8 @@ public Preference[] getPreferences() throws DataAccessException{
 		try{
 			preferences = sessionManager.getUserMetaDbServer().getPreferences();
 			return preferences;
-		}catch (RemoteException e){
-			handleRemoteException(e);
+		}catch (RemoteProxyException e){
+			handleRemoteProxyException(e);
 			throw new DataAccessException(e.getMessage());
 		}
 	}
@@ -1423,7 +1423,7 @@ public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessE
 		}
 		return reactionModel;
 		
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1443,12 +1443,12 @@ public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimul
 		SimulationStatus simulationStatus = null;
 		try {
 			simulationStatus = sessionManager.getSimulationController().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-		}catch (RemoteException e){
-			handleRemoteException(e);
+		}catch (RemoteProxyException e){
+			handleRemoteProxyException(e);
 			try {
 				simulationStatus = sessionManager.getSimulationController().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-			}catch (RemoteException e2){
-				handleRemoteException(e2);
+			}catch (RemoteProxyException e2){
+				handleRemoteProxyException(e2);
 				throw new DataAccessException("SimulationStatus inquiry for '"+vcSimulationIdentifier+"' failed\n"+e2.getMessage());
 			}
 		}
@@ -1524,7 +1524,7 @@ public TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAcce
 	}
 	try {
 		return getSessionManager().getUserMetaDbServer().getTestSuite(getThisTS);
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1542,7 +1542,7 @@ public TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException {
 	}
 	try {
 		return getSessionManager().getUserMetaDbServer().getTestSuiteInfos();
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1565,7 +1565,7 @@ public User getUser() {
 public ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getUserReactionDescriptions(reactionQuerySpec);
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1579,7 +1579,7 @@ public ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec react
 public ReactionStepInfo[] getUserReactionStepInfos(KeyValue[] reactionStepKeys) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getReactionStepInfos(reactionStepKeys);
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1588,10 +1588,10 @@ public ReactionStepInfo[] getUserReactionStepInfos(KeyValue[] reactionStepKeys) 
 /**
  * Insert the method's description here.
  * Creation date: (11/14/00 5:24:29 PM)
- * @param e java.rmi.RemoteException
+ * @param e RemoteProxyException
  */
-private void handleRemoteException(RemoteException e) {
-	System.out.println("\n\n.... Handling RemoteException ...\n");
+private void handleRemoteProxyException(RemoteProxyException e) {
+	System.out.println("\n\n.... Handling RemoteProxyException ...\n");
 	e.printStackTrace(System.out);
 	System.out.println("\n\n");
 }
@@ -1632,11 +1632,10 @@ public synchronized void initAllDatabaseInfos() throws DataAccessException {
 				    }
 		    )
     	);
-		getSessionManager().getAsynchMessageManager().reportPerformanceMonitorEvent(pme);
 
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		throw new DataAccessException("RemoteException: "+e.getMessage());
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		throw new DataAccessException("RemoteProxyException: "+e.getMessage());
 	}
 	
 	//
@@ -2007,12 +2006,12 @@ private void preloadSimulationStatus(KeyValue[] simKeys) {
 			SimulationStatus[] simulationStatusArray = null;
 			try {
 				simulationStatusArray = sessionManager.getSimulationController().getSimulationStatus(simKeys);
-			}catch (RemoteException e){
-				handleRemoteException(e);
+			}catch (RemoteProxyException e){
+				handleRemoteProxyException(e);
 				try {
 					simulationStatusArray = sessionManager.getSimulationController().getSimulationStatus(simKeys);
-				}catch (RemoteException e2){
-					handleRemoteException(e2);
+				}catch (RemoteProxyException e2){
+					handleRemoteProxyException(e2);
 				}
 			}
 			for (int i = 0; i < simKeys.length; i++){
@@ -2047,9 +2046,9 @@ private void reloadBioModelInfos() throws DataAccessException {
 				bioModelInfoHash.put(bioModelInfos[i].getVersion().getVersionKey(),bioModelInfos[i]);
 			}
 		}
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		throw new DataAccessException("RemoteException: "+e.getMessage());
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		throw new DataAccessException("RemoteProxyException: "+e.getMessage());
 	}
 }
 
@@ -2069,9 +2068,9 @@ private void reloadGeometryInfos() throws DataAccessException {
 				geoInfoHash.put(geometryInfos[i].getVersion().getVersionKey(),geometryInfos[i]);
 			}
 		}
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		throw new DataAccessException("RemoteException: "+e.getMessage());
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		throw new DataAccessException("RemoteProxyException: "+e.getMessage());
 	}
 }
 
@@ -2091,9 +2090,9 @@ private void reloadMathModelInfos() throws DataAccessException {
 				mathModelInfoHash.put(mathModelInfos[i].getVersion().getVersionKey(),mathModelInfos[i]);
 			}
 		}
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		throw new DataAccessException("RemoteException: "+e.getMessage());
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		throw new DataAccessException("RemoteProxyException: "+e.getMessage());
 	}
 }
 
@@ -2132,8 +2131,8 @@ public VCImageInfo removeUserFromGroup(VCImageInfo imageInfo, String userToRemov
 
 		return newImageInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2160,8 +2159,8 @@ public BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo, String userTo
 
 		return newBioModelInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2202,8 +2201,8 @@ public GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo, String userTo
 
 		return newGeometryInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2230,8 +2229,8 @@ public MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo, String use
 
 		return newMathModelInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2242,7 +2241,7 @@ public MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo, String use
  * Creation date: (11/28/00 5:43:44 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
-private <T extends VersionInfo> T removeUserFromGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteException, DataAccessException {
+private <T extends VersionInfo> T removeUserFromGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteProxyException, DataAccessException {
 
 	//
 	// unpublish from database
@@ -2277,7 +2276,7 @@ private <T extends VersionInfo> T removeUserFromGroup0(VersionInfo versionInfo, 
  * @return void
  * @param key KeyValue
  * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
+ * @exception RemoteProxyException The exception description.
  */
 public void replacePreferences(Preference[] argPreferences) throws DataAccessException{
 
@@ -2289,8 +2288,8 @@ public void replacePreferences(Preference[] argPreferences) throws DataAccessExc
 		try{
 			sessionManager.getUserMetaDbServer().replacePreferences(argPreferences);
 			preferences = argPreferences;
-		}catch (RemoteException e){
-			handleRemoteException(e);
+		}catch (RemoteProxyException e){
+			handleRemoteProxyException(e);
 			throw new DataAccessException(e.getMessage());
 		}
 	}
@@ -2340,7 +2339,7 @@ public VCImage save(VCImage vcImage) throws DataAccessException {
 		}
 		
 		return savedVCImage;
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
@@ -2392,7 +2391,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
 
 		return savedBioModel;
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
@@ -2431,7 +2430,7 @@ public Geometry save(Geometry geometry) throws DataAccessException {
 //		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedKey)/*savedGeometryInfo*/));
 
 		return savedGeometry;
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
@@ -2476,7 +2475,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
 
 		return savedMathModel;
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
@@ -2526,7 +2525,7 @@ public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataA
 		}
 		
 		return savedVCImage;
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
@@ -2571,7 +2570,7 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
 
 		return savedBioModel;
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
@@ -2615,7 +2614,7 @@ public Geometry saveAsNew(Geometry geometry, java.lang.String newName) throws Da
 //		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedKey)/*savedGeometryInfo*/));
 
 		return savedGeometry;
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
@@ -2655,7 +2654,7 @@ public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
 
 		return savedMathModel;
-	}catch (RemoteException e){
+	}catch (RemoteProxyException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
@@ -2683,8 +2682,8 @@ public VCImageInfo setGroupPrivate(VCImageInfo imageInfo) throws DataAccessExcep
 
 		return newImageInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2711,8 +2710,8 @@ public BioModelInfo setGroupPrivate(BioModelInfo bioModelInfo) throws DataAccess
 
 		return newBioModelInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2753,8 +2752,8 @@ public GeometryInfo setGroupPrivate(GeometryInfo geometryInfo) throws DataAccess
 
 		return newGeometryInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2781,8 +2780,8 @@ public MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws DataAcc
 
 		return newMathModelInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2793,7 +2792,7 @@ public MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws DataAcc
  * Creation date: (11/28/00 5:43:44 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
-private <T extends VersionInfo> T setGroupPrivate0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteException, DataAccessException {
+private <T extends VersionInfo> T setGroupPrivate0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteProxyException, DataAccessException {
 
 	//
 	// unpublish from database
@@ -2844,8 +2843,8 @@ public VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws DataAccessExcept
 
 		return newImageInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2872,8 +2871,8 @@ public BioModelInfo setGroupPublic(BioModelInfo bioModelInfo) throws DataAccessE
 
 		return newBioModelInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2914,8 +2913,8 @@ public GeometryInfo setGroupPublic(GeometryInfo geometryInfo) throws DataAccessE
 
 		return newGeometryInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2942,8 +2941,8 @@ public MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws DataAcce
 
 		return newMathModelInfo;
 		
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -2954,7 +2953,7 @@ public MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws DataAcce
  * Creation date: (11/28/00 5:43:44 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
-private <T extends VersionInfo> T setGroupPublic0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteException, DataAccessException {
+private <T extends VersionInfo> T setGroupPublic0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteProxyException, DataAccessException {
 
 	//
 	// publish from database

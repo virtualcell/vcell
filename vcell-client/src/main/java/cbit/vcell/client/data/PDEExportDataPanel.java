@@ -2568,7 +2568,7 @@ private void startExport() {
 					File primaryDir = ResourceUtil.getLocalRootDir();
 					User usr = User.tempUser;
 					File usrDir = new File(primaryDir.getAbsolutePath(),usr.getName());
-					System.setProperty(PropertyLoader.exportBaseDirProperty, usrDir.getAbsolutePath()+File.separator);
+					System.setProperty(PropertyLoader.exportBaseDirInternalProperty, usrDir.getAbsolutePath()+File.separator);
 					System.setProperty(PropertyLoader.exportBaseURLProperty, usrDir.toURI().toURL().toString());
 					DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
 					ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);

@@ -9,23 +9,22 @@
  */
 
 package cbit.vcell.server;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
 
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.simdata.OutputContext;
 /**
  * Insert the type's description here.
  * Creation date: (6/2/2004 12:56:36 AM)
  * @author: Ion Moraru
  */
-public interface ExportController extends Remote {
+public interface ExportController {
 /**
  * Insert the method's description here.
  * Creation date: (6/2/2004 12:58:18 AM)
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  */
-ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws RemoteException;
+ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws RemoteProxyException;
 
 
 /**
@@ -33,5 +32,5 @@ ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws RemoteExcepti
  * Creation date: (6/2/2004 12:58:18 AM)
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  */
-void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws RemoteException;
+void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws RemoteProxyException;
 }

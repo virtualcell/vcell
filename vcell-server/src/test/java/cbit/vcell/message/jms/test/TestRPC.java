@@ -13,7 +13,7 @@ import cbit.vcell.message.VCPooledQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 
@@ -75,7 +75,7 @@ public class TestRPC {
 	    		        	User user = new User("schaff",new KeyValue("17"));
 	    		        	Integer n1 = new Integer(msgNum);
 	    		        	Integer n2 = new Integer(msgNum+1);
-	    		        	VCRpcRequest rpcRequest = new VCRpcRequest(user, ServiceType.TESTING_SERVICE, "add", new Object[] { n1, n2 });
+	    		        	VCRpcRequest rpcRequest = new VCRpcRequest(user, RpcServiceType.TESTING_SERVICE, "add", new Object[] { n1, n2 });
 	    		        	
 	    		        	//
 	    		        	// send request and block for response (or timeout).

@@ -90,11 +90,10 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceSpec;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
-import cbit.vcell.message.server.bootstrap.RpcDbServerProxy;
-import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
+import cbit.vcell.message.server.bootstrap.ServiceType;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
@@ -102,11 +101,10 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
-import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.VCellBootstrap;
-import cbit.vcell.server.VCellServer;
+import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XmlHelper;
 
@@ -118,7 +116,6 @@ import cbit.vcell.xml.XmlHelper;
 @SuppressWarnings("serial")
 public class ServerManageConsole extends JFrame {
 	private VCellBootstrap vcellBootstrap = null;
-	private VCellServer vcellServer = null;
 	private SessionLog log = null;
 	private List<SimpleUserConnection> userList = Collections.synchronizedList(new LinkedList<SimpleUserConnection>());
 	private List<ServiceStatus> serviceConfigList = Collections.synchronizedList(new LinkedList<ServiceStatus>());
@@ -2660,63 +2657,57 @@ private void refresh () {
 			pingThread.setName("Refresh Thread");
 			pingThread.start();
 		}		
-	} else if (tabIndex == 2) {
-		userList.clear();
-		try {
-			if (vcellBootstrap == null) {
-				HostPortDialog hpd = new HostPortDialog(this);
-				hpd.setVisible(true);
-				/*
-				String rmiHostPortString = DialogUtils.showInputDialog0(this,  "enter VCell RMI bootstrap host:port", "rmi-rel.cam.uchc.edu:40105");
-				String hostPort[] = rmiHostPortString.split(":");
-				if (hostPort == null || hostPort.length != 2){
-					throw new RuntimeException("expecting hostname:port, invalid input \""+rmiHostPortString+"\"");
-				}
-				String rmiHost = hostPort[0];
-				int rmiPort = Integer.parseInt(hostPort[1]);
-				*/
-				String rmiHost = hpd.getHost();
-				int rmiPort = hpd.getPort(); 
-				String rmiUrl = "//" + rmiHost + ":" + rmiPort + "/VCellBootstrapServer";
-
-				vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup(rmiUrl);
-				String clearTextPassword = null;
-				if(VCellDBAdminpassword == null){
-					if (commandLineAdminPassword == null) {
-						clearTextPassword = DialogUtils.showInputDialog0(this, "Enter VCell DB Administrator password", "AdminPassword");
-					}
-					else {
-						clearTextPassword = commandLineAdminPassword; 
-					}
-				}
-				try {
-					vcellServer = null;
-					vcellServer = vcellBootstrap.getVCellServer(new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID)), new UserLoginInfo.DigestedPassword(clearTextPassword));
-				} catch (Exception e) {
-					javax.swing.JOptionPane.showMessageDialog(this, "Login fail: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-				}
-				if (vcellServer!=null){
-					//everything OK, save cache password
-					VCellDBAdminpassword = clearTextPassword;
-				}else{
-					vcellBootstrap = null;
-					commandLineAdminPassword = null; //only try once 
-				}
-			}		
-
-			if (vcellServer!=null){
-				ServerInfo serverInfo = vcellServer.getServerInfo();
-				User[] users = serverInfo.getConnectedUsers();
-				for (int i = 0; i < users.length; i ++) {
-					userList.add(new SimpleUserConnection(users[i], new Date()));
-				}
-			}
-		} catch (Exception ex) {
-			javax.swing.JOptionPane.showMessageDialog(this, "Exception:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-			ex.printStackTrace();
-		}
-		showUsers(userList);
-	}
+	} 
+//	else if (tabIndex == 2) {
+//		userList.clear();
+//		try {
+//			if (vcellBootstrap == null) {
+//				HostPortDialog hpd = new HostPortDialog(this);
+//				hpd.setVisible(true);
+//				/*
+//				String rmiHostPortString = DialogUtils.showInputDialog0(this,  "enter VCell RMI bootstrap host:port", "rmi-rel.cam.uchc.edu:40105");
+//				String hostPort[] = rmiHostPortString.split(":");
+//				if (hostPort == null || hostPort.length != 2){
+//					throw new RuntimeException("expecting hostname:port, invalid input \""+rmiHostPortString+"\"");
+//				}
+//				String rmiHost = hostPort[0];
+//				int rmiPort = Integer.parseInt(hostPort[1]);
+//				*/
+//				String rmiHost = hpd.getHost();
+//				int rmiPort = hpd.getPort(); 
+//				String rmiUrl = "//" + rmiHost + ":" + rmiPort + "/VCellBootstrapServer";
+//
+//				vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup(rmiUrl);
+//				String clearTextPassword = null;
+//				if(VCellDBAdminpassword == null){
+//					if (commandLineAdminPassword == null) {
+//						clearTextPassword = DialogUtils.showInputDialog0(this, "Enter VCell DB Administrator password", "AdminPassword");
+//					}
+//					else {
+//						clearTextPassword = commandLineAdminPassword; 
+//					}
+//				}
+//				try {
+//					vcellServer = null;
+//					vcellServer = vcellBootstrap.getVCellServer(new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID)), new UserLoginInfo.DigestedPassword(clearTextPassword));
+//				} catch (Exception e) {
+//					javax.swing.JOptionPane.showMessageDialog(this, "Login fail: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+//				}
+//				if (vcellServer!=null){
+//					//everything OK, save cache password
+//					VCellDBAdminpassword = clearTextPassword;
+//				}else{
+//					vcellBootstrap = null;
+//					commandLineAdminPassword = null; //only try once 
+//				}
+//			}		
+//
+//		} catch (Exception ex) {
+//			javax.swing.JOptionPane.showMessageDialog(this, "Exception:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+//			ex.printStackTrace();
+//		}
+//		showUsers(userList);
+//	}
 		
 	return;
 }
@@ -2752,8 +2743,11 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
 		User user = adminDbTop.getUser(userid, true);
 		UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
 		userLoginInfo.setUser(user);
-		RpcDbServerProxy dbProxy = new RpcDbServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		BigString simxml = dbProxy.getSimulationXML(simKey);
+		String apihost = "vcellapi.cam.uchc.edu";
+		Integer apiport = 8080;
+		RemoteProxyVCellConnectionFactory remoteProxyVCellConnectionFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, userLoginInfo);
+		VCellConnection vcConn = remoteProxyVCellConnectionFactory.createVCellConnection();
+		BigString simxml = vcConn.getUserMetaDbServer().getSimulationXML(simKey);
 		if (simxml == null) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
@@ -2763,8 +2757,7 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo, vcMessaging_rpcProducerSession, log);
-		simProxy.startSimulation(user,sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());		
+		vcConn.getSimulationController().startSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}
@@ -3005,8 +2998,11 @@ public void stopSimulation(String userid, KeyValue simKey) {
 		User user = adminDbTop.getUser(userid, true);
 		UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
 		userLoginInfo.setUser(user);
-		RpcDbServerProxy dbProxy = new RpcDbServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		BigString simxml = dbProxy.getSimulationXML(simKey);
+		String apihost = "vcellapi.cam.uchc.edu";
+		Integer apiport = 8080;
+		RemoteProxyVCellConnectionFactory remoteProxyVCellConnectionFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, userLoginInfo);
+		VCellConnection vcConn = remoteProxyVCellConnectionFactory.createVCellConnection();
+		BigString simxml = vcConn.getUserMetaDbServer().getSimulationXML(simKey);
 		if (simxml == null) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
@@ -3016,8 +3012,7 @@ public void stopSimulation(String userid, KeyValue simKey) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		simProxy.stopSimulation(user,sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
+		vcConn.getSimulationController().stopSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}

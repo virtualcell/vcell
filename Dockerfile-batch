@@ -1,0 +1,54 @@
+FROM maven:3.5-jdk-8-alpine as build
+COPY . /app/
+WORKDIR /app
+RUN mvn clean install dependency:copy-dependencies
+
+
+FROM schaff/vcell-solvers:release-0.0.4-dev
+
+RUN apt-get install -y openjdk-8-jre-headless
+
+RUN mkdir -p /usr/local/app
+WORKDIR /usr/local/app
+
+COPY --from=build \
+     /app/vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
+     /app/vcell-server/target/maven-jars/*.jar \
+     ./lib/
+
+COPY --from=build /app/nativelibs/linux64 ./nativelibs/linux64
+COPY --from=build \
+     /app/docker/batch/JavaPreprocessor64 \
+     /app/docker/batch/JavaPostprocessor64 \
+     /app/docker/batch/JavaSimExe64 \
+     /vcellscripts/
+
+ENV PATH=/vcellscripts:$PATH \
+    CLASSPATH=/usr/local/app/lib/*
+
+ENV softwareVersion=VCell_6.2_build_99 \
+	serverid=TEST2 \
+    jmsurl="failover:(tcp://vcell-service.cam.uchc.edu:61616)" \
+    jmsuser=clientUser \
+    jmspswd=dummy \
+    mongodbhost="vcell-service.cam.uchc.edu" \
+    mongodbport=27017 \
+    jmsblob_minsize=100000
+
+VOLUME /simdata
+VOLUME /tmp
+
+ENTRYPOINT []
+CMD echo "================================================================" && \
+    echo "==                 standalone VCell commands                  ==" && \
+    echo "================================================================" && \
+    echo "  usage: docker run --rm <this-image> (Solver|Script) <args>" && \
+    echo "" && \
+    echo "Scripts:" && \
+    echo "--------" && \
+    echo "`ls -m /vcellscripts`" && \
+    echo "" && \
+    echo "Solvers:" && \
+    echo "--------" && \
+    echo "`cd /vcellbin && ls -m *_*`" && \
+    echo ""

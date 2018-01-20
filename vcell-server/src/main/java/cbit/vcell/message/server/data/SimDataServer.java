@@ -39,7 +39,7 @@ import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -161,8 +161,8 @@ public static void main(java.lang.String[] args) {
 		final SessionLog log = new StdoutSessionLog("DataServer");
 		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable, 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)), 
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty)));
 		
 		ExportServiceImpl exportServiceImpl = new ExportServiceImpl(log);
 		

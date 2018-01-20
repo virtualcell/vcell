@@ -42,14 +42,14 @@ public class SgeProxy extends HtcProxy {
 	private final static String JOB_CMD_STATUS = "qstat";
 	//private final static String JOB_CMD_QACCT = "qacct";
 	private static String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
-	private static String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
-	private static String MPI_HOME= PropertyLoader.getRequiredProperty(PropertyLoader.MPI_HOME);
+	private static String htcLogDirExternalString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+	private static String MPI_HOME_EXTERNAL= PropertyLoader.getRequiredProperty(PropertyLoader.MPI_HOME_EXTERNAL);
 	static {
 		if (!SGE_HOME.endsWith("/")){
 			SGE_HOME += "/";
 		}
-		if (!htcLogDirString.endsWith("/")){
-			htcLogDirString = htcLogDirString+"/";
+		if (!htcLogDirExternalString.endsWith("/")){
+			htcLogDirExternalString = htcLogDirExternalString+"/";
 		}
 	}
 
@@ -118,7 +118,7 @@ denied: job "6894" does not exist
 		}
 		final char SPACE = ' ';
 		StringBuilder sb = new StringBuilder( );
-		sb.append(MPI_HOME);
+		sb.append(MPI_HOME_EXTERNAL);
 		sb.append("/bin/mpiexec -np ");
 		sb.append(ncpus);
 		sb.append(SPACE);
@@ -273,7 +273,7 @@ denied: job "6894" does not exist
 
 		lsb.write("#!/bin/bash");
 		lsb.write("#$ -N " + jobName);
-		lsb.write("#$ -o " + htcLogDirString+jobName+".sge.log");
+		lsb.write("#$ -o " + htcLogDirExternalString+jobName+".sge.log");
 		//			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
 
 		//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
@@ -288,7 +288,7 @@ denied: job "6894" does not exist
 			lsb.append(ncpus);
 			lsb.newline();
 			lsb.append("#$ -v LD_LIBRARY_PATH=");
-			lsb.append(MPI_HOME);
+			lsb.append(MPI_HOME_EXTERNAL);
 			lsb.write("/lib");
 		}
 		lsb.newline();
@@ -345,7 +345,7 @@ denied: job "6894" does not exist
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, String sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
 			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands);
 
@@ -355,9 +355,9 @@ denied: job "6894" does not exist
 
 			// move submission file to final location (either locally or remotely).
 			if (LG.isDebugEnabled()) {
-				LG.debug("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
+				LG.debug("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_external+"'");
 			}
-			commandService.pushFile(tempFile,sub_file);
+			commandService.pushFile(tempFile,sub_file_external);
 			if (LG.isDebugEnabled()) {
 				LG.debug("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
 			}
@@ -367,7 +367,7 @@ denied: job "6894" does not exist
 			return null;
 		}
 
-		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-S","/bin/bash","-terse", sub_file};
+		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-S","/bin/bash","-terse", sub_file_external};
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
 

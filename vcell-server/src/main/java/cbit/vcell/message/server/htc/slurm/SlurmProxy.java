@@ -45,14 +45,14 @@ public class SlurmProxy extends HtcProxy {
 	
 	//private static String Slurm_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSlurmHome);
 	private static String Slurm_HOME = ""; // slurm commands should be in the path (empty prefix)
-	private static String htcLogDirString = ResourceUtil.getHtcLogDir().getAbsolutePath();
-	private static String MPI_HOME= PropertyLoader.getProperty(PropertyLoader.MPI_HOME,"");
+	private static String htcLogDirExternalString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+	private static String MPI_HOME_EXTERNAL= PropertyLoader.getProperty(PropertyLoader.MPI_HOME_EXTERNAL,"");
 	static {
 //		if (!Slurm_HOME.endsWith("/")){
 //			Slurm_HOME += "/";
 //		}
-		if (!htcLogDirString.endsWith("/")){
-			htcLogDirString = htcLogDirString+"/";
+		if (!htcLogDirExternalString.endsWith("/")){
+			htcLogDirExternalString = htcLogDirExternalString+"/";
 		}
 	}
 
@@ -121,7 +121,7 @@ denied: job "6894" does not exist
 		}
 		final char SPACE = ' ';
 		StringBuilder sb = new StringBuilder( );
-		sb.append(MPI_HOME);
+		sb.append(MPI_HOME_EXTERNAL);
 		sb.append("/bin/mpiexec -np ");
 		sb.append(ncpus);
 		sb.append(SPACE);
@@ -288,12 +288,15 @@ denied: job "6894" does not exist
 
 		LineStringBuilder lsb = new LineStringBuilder();
 
-		lsb.write("#!/usr/bin/bash");
+		lsb.write("#!/usr/bin/env bash");
 		String partition = "vcell";
 		lsb.write("#SBATCH --partition=" + partition);
 		lsb.write("#SBATCH -J " + jobName);
-		lsb.write("#SBATCH -o " + htcLogDirString+jobName+".slurm.log");
-		lsb.write("#SBATCH -e " + htcLogDirString+jobName+".slurm.log");
+		lsb.write("#SBATCH -o " + htcLogDirExternalString+jobName+".slurm.log");
+		lsb.write("#SBATCH -e " + htcLogDirExternalString+jobName+".slurm.log");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
+		lsb.write("source /usr/share/Modules/init/bash");
+		lsb.write("module load singularity");
 		//			sw.append("#$ -l mem=" + (int)(memSize + SLURM_MEM_OVERHEAD_MB) + "mb");
 
 		//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
@@ -302,6 +305,33 @@ denied: job "6894" does not exist
 //		lsb.write("#$ -j y");
 		//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
 //		lsb.write("#$ -cwd");
+		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
+
+		//
+		// Initialize Singularity
+		//
+		lsb.write("echo \"job running on host `hostname -f`\"");
+		lsb.newline();
+		lsb.write("echo \"id is `id`\"");
+		lsb.newline();
+		lsb.write("echo \"bash version is `bash --version`\"");
+		lsb.newline();
+		lsb.write("echo ENVIRONMENT");
+		lsb.write("env");
+		lsb.newline();
+		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
+		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
+		lsb.write("if [ ! -e "+singularity_image+" ] ; then");
+		lsb.write("   if [ \"`singularity --version`\" == \"2.3.1-dist\" ] ; then");
+		lsb.write("      singularity create "+singularity_image);
+		lsb.write("      singularity import "+singularity_image+" docker://"+docker_image);
+		lsb.write("   else");
+		lsb.write("      # assuming a mismatch is version 2.4 or later");
+		lsb.write("      singularity build "+singularity_image+" docker://"+docker_image);
+		lsb.write("   fi");
+		lsb.write("fi");
+		String invoke_container="singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" ";
+		lsb.newline();
 
 		if (isParallel) {
 			// #SBATCH
@@ -313,24 +343,28 @@ denied: job "6894" does not exist
 			lsb.newline();
 
 			lsb.append("#$ -v LD_LIBRARY_PATH=");
-			lsb.append(MPI_HOME+"/lib");
-			lsb.write(":"+ResourceUtil.getLocalSolversDirectory().getAbsolutePath());
+			lsb.append(MPI_HOME_EXTERNAL+"/lib");
+			lsb.write(":"+primaryDataDirExternal);
 		}
 		lsb.newline();
+	
+	//	lsb.write("run_in_container=\"singularity /path/to/data:/simdata /path/to/image/vcell-batch.img);
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
 		if (hasExitProcessor) {
 			ExecutableCommand exitCmd = commandSet.getExitCodeCommand();
+			exitCmd.stripPathFromCommand();
 			lsb.write("callExitProcessor( ) {");
 			lsb.append("\techo exitCommand = ");
-			lsb.write(exitCmd.getJoinedCommands("$1"));
+			lsb.write(invoke_container + exitCmd.getJoinedCommands("$1"));
 			lsb.append('\t');
-			lsb.write(exitCmd.getJoinedCommands());
+			lsb.write(invoke_container + exitCmd.getJoinedCommands());
 			lsb.write("}");
 			lsb.write("echo");
 		}
 
 		for (ExecutableCommand ec: commandSet.getExecCommands()) {
 			lsb.write("echo");
+			ec.stripPathFromCommand();
 			String cmd= ec.getJoinedCommands();
 			if (ec.isParallel()) {
 				if (isParallel) {
@@ -341,18 +375,18 @@ denied: job "6894" does not exist
 				}
 			}
 			lsb.append("echo command = ");
-			lsb.write(cmd);
+			lsb.write(invoke_container + cmd);
 
 			lsb.write("(");
 			if (ec.getLdLibraryPath()!=null){
 				lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
 			}
-			lsb.write("    "+cmd);
+			lsb.write("    "+invoke_container + cmd);
 			lsb.write(")");
 			lsb.write("stat=$?");
 
 			lsb.append("echo ");
-			lsb.append(cmd);
+			lsb.append(invoke_container + cmd);
 			lsb.write("returned $stat");
 
 			lsb.write("if [ $stat -ne 0 ]; then");
@@ -375,7 +409,7 @@ denied: job "6894" does not exist
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, String sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
 			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands);
 
@@ -385,9 +419,9 @@ denied: job "6894" does not exist
 
 			// move submission file to final location (either locally or remotely).
 			if (LG.isDebugEnabled()) {
-				LG.debug("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
+				LG.debug("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_external+"'");
 			}
-			commandService.pushFile(tempFile,sub_file);
+			commandService.pushFile(tempFile,sub_file_external);
 			if (LG.isDebugEnabled()) {
 				LG.debug("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
 			}
@@ -403,7 +437,7 @@ denied: job "6894" does not exist
 		 * Submitted batch job 5174
 		 * 
 		 */
-		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SUBMIT, sub_file};
+		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SUBMIT, sub_file_external};
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
 		final String EXPECTED_STDOUT_PREFIX = "Submitted batch job ";

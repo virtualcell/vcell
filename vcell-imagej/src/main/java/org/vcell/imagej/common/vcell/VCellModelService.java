@@ -49,7 +49,7 @@ public class VCellModelService {
 				
 		    	try {
 		    		vCellApiClient = new VCellApiClient(HOST, PORT, DEFAULT_CLIENT_ID, bIgnoreCertProblems, bIgnoreHostMismatch);
-					vCellApiClient.authenticate("ImageJ", "richarddberlin");
+					vCellApiClient.authenticate("ImageJ", "richarddberlin", false);
 		    		BioModelsQuerySpec querySpec = new BioModelsQuerySpec();
 					querySpec.owner = "tutorial";
 					final BiomodelRepresentation[] biomodelReps = vCellApiClient.getBioModels(querySpec);

@@ -17,7 +17,7 @@ import org.vcell.util.ComparableObject;
 import org.vcell.util.gui.sorttable.ColumnComparator;
 
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.bootstrap.ServiceType;
 
 
 /**

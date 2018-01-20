@@ -1,34 +1,20 @@
 version: '3.1'
 services:
-  rmi:
-    build:
-      context: ./
-      dockerfile: Dockerfile.rmi
-    environment:
-      - jmsblob_minsize=100000
-    secrets:
-      - dbpswd
-      - jmspswd
-    ports:
-      - "8088:8088"
-    networks:
-      - vcellnet
-    depends_on:
-      - activemq
-      - mongodb
   api:
     build:
       context: ./
-      dockerfile: Dockerfile.api
+      dockerfile: Dockerfile-api-dev
     environment:
-      - jmsblob_minsize=100000
+      - jmsuser=clientUser
+      - jmsurl=failover:(tcp://activemq:61616)
+    ports:
+      - "8083:8080"
+      - "8001:8000" # java remote debugging
     secrets:
       - keystorefile
       - keystorepswd
       - dbpswd
       - jmspswd
-    ports:
-      - "8081:8080"
     networks:
       - vcellnet
     depends_on:
@@ -37,9 +23,18 @@ services:
   master:
     build:
       context: ./
-      dockerfile: Dockerfile.master
+      dockerfile: Dockerfile-master-dev
     environment:
-      - jmsblob_minsize=100000
+      - jmsuser=clientUser
+      - jmsurl=failover:(tcp://activemq:61616)
+      - simdatadir_external=/share/apps/vcell3/users/
+      - htclogdir_external=/share/apps/vcell3/htclogs/
+      - singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch-remoting.img
+      - docker_name=schaff/vcell-batch:remoting
+    ports:
+      - "8002:8000" # java remote debugging
+    volumes:
+      - "/Volumes/vcell/users:/simdata"
     secrets:
       - dbpswd
       - jmspswd
@@ -51,12 +46,19 @@ services:
       - mongodb
   activemq:
     image: webcenter/activemq:5.14.3
+    ports:
+      - "8161:8161"
+      - "61619:61616"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbreq;simjob;workerevent
       - ACTIVEMQ_STATIC_TOPICS=servicecontrol;daemoncontrol;clientstatus
       - ACTIVEMQ_MIN_MEMORY=1024
       - ACTIVEMQ_MAX_MEMORY=2048
       - ACTIVEMQ_ENABLED_SCHEDULER=true
+      - ACTIVEMQ_USERS_clientUser=dummy
+      - ACTIVEMQ_GROUPS_reads=clientUser
+      - ACTIVEMQ_GROUPS_writes=clientUser
+      - ACTIVEMQ_CONFIG_AUTHENABLED=true
     networks:
       - vcellnet
   mongodb:
@@ -67,6 +69,7 @@ services:
       - "27017:27017"
     networks:
       - vcellnet
+
 networks:
   vcellnet:
 secrets:

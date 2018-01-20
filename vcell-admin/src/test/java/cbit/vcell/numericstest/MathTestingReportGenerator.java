@@ -13,14 +13,15 @@ public class MathTestingReportGenerator {
 	public static void main(String[] args) {
 		ClientServerManager clientServerManager = null;
 		try {
-			if (args.length!=2){
-				System.out.println("usage: MathTestingReportGenerator host password");
+			if (args.length!=3){
+				System.out.println("usage: MathTestingReportGenerator apihost apiport password");
 				System.exit(1);
 			}
 			String userid = "vcelltestaccount";
-			String host = args[0];
-			String password = args[1];
-			clientServerManager = ClientFactory.createRemoteClientServerManager(new String[] { host }, userid, password);
+			String apihost = args[0];
+			Integer apiport = Integer.parseInt(args[1]);
+			String password = args[2];
+			clientServerManager = ClientFactory.createRemoteClientServerManager(apihost, apiport, userid, password);
 			DocumentManager documentManager = clientServerManager.getDocumentManager();
 			TestSuiteInfoNew[] testSuiteInfos = documentManager.getTestSuiteInfos();
 			for (TestSuiteInfoNew testSuiteInfo : testSuiteInfos){

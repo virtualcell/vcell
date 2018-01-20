@@ -158,9 +158,9 @@ public final class PbsProxy extends HtcProxy {
 		}
 		try {
 
-			String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
-		    if (!(htcLogDirString.endsWith("/"))){
-		    	htcLogDirString = htcLogDirString+"/";
+			String htcLogDirExternalString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+		    if (!(htcLogDirExternalString.endsWith("/"))){
+		    	htcLogDirExternalString = htcLogDirExternalString+"/";
 		    }
 
 		    StringBuilder sb = new StringBuilder();
@@ -175,7 +175,7 @@ public final class PbsProxy extends HtcProxy {
 			}
 			sb.append("#PBS -m a\n");
 			sb.append("#PBS -M schaff@uchc.edu\n");
-			sb.append("#PBS -o "+htcLogDirString+jobName+".pbs.log\n");
+			sb.append("#PBS -o "+htcLogDirExternalString+jobName+".pbs.log\n");
 			sb.append("#PBS -j oe\n");
 //			sw.append("#PBS -k oe\n");
 			sb.append("#PBS -r n\n");
@@ -394,7 +394,7 @@ public final class PbsProxy extends HtcProxy {
 		return ar.toArray(new String[0]);
 	}
 
-	public HtcJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet,
+	public HtcJobID submitJob(String jobName, String sub_file_external, ExecutableCommand.Container commandSet,
 			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		throw new UnsupportedOperationException("not implemented yet");
 	}

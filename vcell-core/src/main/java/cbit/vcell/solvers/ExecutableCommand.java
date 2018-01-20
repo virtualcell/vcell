@@ -1,8 +1,11 @@
 package cbit.vcell.solvers;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
 
 /**
  * command string. Encapsulates information about the command
@@ -101,7 +104,13 @@ public class ExecutableCommand {
 		return exitCodeToken != null;
 	}
 	
-	public String getJoinedCommands( )  {
+	public void stripPathFromCommand() {
+		String originalCommand = cmds.get(0);
+		String strippedCommand = new File(originalCommand).getName();
+		cmds.set(0, strippedCommand);
+	}
+	
+	public String getJoinedCommands()  {
 		if (dirty) {
 			if (hasExitCodeSubstitution()) {
 				throw new IllegalStateException("exit code string required");

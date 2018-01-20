@@ -1,78 +1,86 @@
 package org.vcell.service.registration.remote;
 
-import java.net.MalformedURLException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
+import org.vcell.api.client.VCellApiClient;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 
-import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.VCellBootstrap;
 
 @Plugin(type = Service.class)
 public class RemoteRegistrationService extends AbstractService implements RegistrationService {
 
-	private VCellBootstrap vcellBootstrap = null;
-	
 	public RemoteRegistrationService() {
-		setPriority(Priority.NORMAL_PRIORITY);			
+		setPriority(Priority.NORMAL_PRIORITY);
 	}
-	
-	private VCellBootstrap getVCellBootstrap() throws RemoteException {
-		if (vcellBootstrap==null){
-			String hostList = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);
-			String[] hosts = hostList.split(";");
-			VCellBootstrap vcellBootstrap = null;
-			for (int i = 0; i < hosts.length; i ++) {
-				try {
-					vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup("//" + hosts[i]	+ "/" + RMIVCellConnectionFactory.SERVICE_NAME);
-					vcellBootstrap.getVCellSoftwareVersion(); // test connection
-					break;
-				} catch (RemoteException ex) {
-					ex.printStackTrace();
-					if (i == hosts.length - 1) {
-						throw ex;
-					}
-				} catch (MalformedURLException ex) {
-					ex.printStackTrace();
-					throw new RuntimeException("malformed URL "+hosts[i],ex);
-				} catch (NotBoundException ex) {
-					ex.printStackTrace();
-					if (i == hosts.length -1) {
-						throw new RuntimeException("malformed URL "+hosts[i],ex);
-					}
-				}
-			}
-		}
-		return vcellBootstrap;
-	}
-	
+		
 	@Override
-	public UserInfo insertUserInfo(UserInfo newUserInfo, boolean bUpdate) throws RemoteException, DataAccessException, UseridIDExistsException {
-		if(bUpdate){
-			throw new IllegalArgumentException("UPDATE User Info: Must use ClientServerManager NOT VCellBootstrap");
-		}else{
-			return getVCellBootstrap().insertUserInfo(newUserInfo);
+	public UserInfo insertUserInfo(UserInfo newUserInfo, boolean bUpdate) throws RemoteProxyException, DataAccessException, UseridIDExistsException {
+		// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:8080
+		String serverHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);
+		String[] parts = serverHost.split(":");
+		String host = parts[0];
+		int port = Integer.parseInt(parts[1]);
+		String clientID = PropertyLoader.getSecretValue(PropertyLoader.vcellapiClientid,  PropertyLoader.vcellapiClientidFile);
+		boolean bIgnoreCertProblems = false;
+		boolean bIgnoreHostMismatch = false;
+		VCellApiClient apiClient;
+		try {
+			apiClient = new VCellApiClient(host, port, clientID, bIgnoreCertProblems, bIgnoreHostMismatch);
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			e.printStackTrace();
+			throw new RemoteProxyException("failure inserting user: "+e.getMessage(), e);
 		}
+		org.vcell.api.common.UserInfo apiUserInfo;
+		try {
+			apiUserInfo = apiClient.insertUserInfo(newUserInfo.getApiUserInfo());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RemoteProxyException("failed to insert user: "+e.getMessage(), e);
+		}
+		return UserInfo.fromApiUserInfo(apiUserInfo);
 	}
 
 	@Override
-	public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException, RemoteException {
-		throw new DataAccessException("UserInfo not provided by VCellBootstrap");
+	public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException, RemoteProxyException {
+		throw new DataAccessException("getUserInfo() requires authentication");
 	}
 
 	@Override
-	public void sendLostPassword(String userid) throws DataAccessException, RemoteException {
-		getVCellBootstrap().sendLostPassword(userid);
+	public void sendLostPassword(String userid) throws DataAccessException, RemoteProxyException {
+		// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:8080
+		String serverHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);
+		String[] parts = serverHost.split(":");
+		String host = parts[0];
+		int port = Integer.parseInt(parts[1]);
+		String clientID = PropertyLoader.getSecretValue(PropertyLoader.vcellapiClientid,  PropertyLoader.vcellapiClientidFile);
+		boolean bIgnoreCertProblems = false;
+		boolean bIgnoreHostMismatch = false;
+		VCellApiClient apiClient;
+		try {
+			apiClient = new VCellApiClient(host, port, clientID, bIgnoreCertProblems, bIgnoreHostMismatch);
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			e.printStackTrace();
+			throw new RemoteProxyException("failure in send lost password request: "+e.getMessage(), e);
+		}
+		try {
+			apiClient.sendLostPassword(userid);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RemoteProxyException("failed to request lost password: "+e.getMessage(), e);
+		}
 	}
 	
 }

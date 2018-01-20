@@ -1,6 +1,8 @@
 package org.vcell.api.client;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 
 /*
  * ====================================================================
@@ -30,14 +32,19 @@ import java.io.BufferedReader;
  */
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -59,6 +66,8 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
@@ -74,6 +83,7 @@ import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.api.common.BiomodelRepresentation;
 import org.vcell.api.common.SimulationRepresentation;
 import org.vcell.api.common.SimulationTaskRepresentation;
+import org.vcell.api.common.UserInfo;
 
 import com.google.gson.Gson;
 
@@ -323,9 +333,9 @@ public class VCellApiClient {
 		return simulationTaskRepresentations;
 	}
 	
-	public void authenticate(String userid, String password) throws ClientProtocolException, IOException {
+	public AccessTokenRepresentation authenticate(String userid, String password, boolean alreadyDigested) throws ClientProtocolException, IOException {
 		// hash the password
-		String digestedPassword = createdDigestPassword(password);
+		String digestedPassword = (alreadyDigested)?(password):createdDigestPassword(password);
 		
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/access_token?user_id="+userid+"&user_password="+digestedPassword+"&client_id="+clientID);
 
@@ -353,6 +363,8 @@ public class VCellApiClient {
 		httpClientContext = HttpClientContext.create();
 		httpClientContext.setCredentialsProvider(credsProvider);
 		httpClientContext.setAuthCache(authCache);
+		
+		return accessTokenRep;
 	}
 	
 	public void clearAuthentication() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
@@ -386,4 +398,201 @@ public class VCellApiClient {
 		return sb.toString().toUpperCase();
 	}
 
+	public UserInfo insertUserInfo(UserInfo newUserInfo) throws ClientProtocolException, IOException {
+		  
+		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/users");
+		Gson gson = new Gson();
+		String newUserInfoJSON = gson.toJson(newUserInfo);
+		StringEntity input = new StringEntity(newUserInfoJSON);
+		input.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+		httppost.setEntity(input);
+		
+		System.out.println("Executing request to submit new user " + httppost.getRequestLine());
+
+		ResponseHandler<UserInfo> handler = new ResponseHandler<UserInfo>() {
+
+			public UserInfo handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
+				int status = response.getStatusLine().getStatusCode();
+				if (status == 202) {
+					HttpEntity entity = response.getEntity();
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						String json = reader.lines().collect(Collectors.joining());
+						UserInfo userInfo = gson.fromJson(json, UserInfo.class);
+						return userInfo;
+					}
+				} else {
+					throw new ClientProtocolException("Unexpected response status: " + status);
+				}
+			}
+
+		};
+		UserInfo insertedUserInfo = httpclient.execute(httppost,handler,httpClientContext);
+		System.out.println("returned userinfo: "+insertedUserInfo);
+
+		return insertedUserInfo;
+	}
+
+	public void sendLostPassword(String userid) throws ClientProtocolException, IOException {
+		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/users/lostpassword");
+		StringEntity input = new StringEntity(userid);
+		input.setContentType(ContentType.TEXT_PLAIN.getMimeType());
+		httppost.setEntity(input);
+		
+		System.out.println("Executing request to send lost password " + httppost.getRequestLine());
+
+		ResponseHandler<String> handler = new ResponseHandler<String>() {
+
+			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
+				int status = response.getStatusLine().getStatusCode();
+				if (status == 202) {
+					HttpEntity entity = response.getEntity();
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						String message = reader.lines().collect(Collectors.joining());
+						return message;
+					}
+				} else {
+					throw new ClientProtocolException("Unexpected response status: " + status);
+				}
+			}
+
+		};
+		String message = httpclient.execute(httppost,handler,httpClientContext);
+		System.out.println("requested lost password for user "+userid+", server returned "+message);
+	}
+	
+	public enum RpcDestination {
+		DataRequestQueue, DbRequestQueue, SimReqQueue;
+	}
+	
+	public static class VCellApiRpcBody implements Serializable {
+		public final RpcDestination rpcDestination;
+		public final VCellApiRpcRequest rpcRequest;
+		public final boolean returnedRequired;
+		public final int timeoutMS;
+		public final String[] specialProperties;
+		public final Object[] specialValues;
+
+		public VCellApiRpcBody(RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest,
+				boolean returnedRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) {
+			this.rpcDestination = rpcDestination;
+			this.rpcRequest = rpcRequest;
+			this.returnedRequired = returnedRequired;
+			this.timeoutMS = timeoutMS;
+			this.specialProperties = specialProperties;
+			this.specialValues = specialValues;
+		}
+	}
+
+	public Serializable sendRpcMessage(RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest, boolean returnRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) throws ClientProtocolException, IOException {
+		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/rpc");
+		VCellApiRpcBody vcellapiRpcBody = new VCellApiRpcBody(rpcDestination, rpcRequest, returnRequired, timeoutMS, specialProperties, specialValues);
+		byte[] compressedSerializedRpcBody = null;
+		try {
+			compressedSerializedRpcBody = toCompressedSerialized(vcellapiRpcBody);
+		} catch (IOException e2) {
+			e2.printStackTrace();
+			throw new RuntimeException("vcellapi rpc failure serializing request body, method="+rpcRequest.methodName+": "+e2.getMessage(),e2);
+		}
+		ByteArrayEntity input = new ByteArrayEntity(compressedSerializedRpcBody);
+		input.setContentType(ContentType.APPLICATION_OCTET_STREAM.getMimeType());
+		httppost.setEntity(input);
+		httppost.addHeader("username", rpcRequest.username);
+		httppost.addHeader("destination", rpcRequest.rpcDestination.name());
+		httppost.addHeader("method", rpcRequest.methodName);
+		httppost.addHeader("returnRequired", Boolean.toString(returnRequired));
+		httppost.addHeader("timeoutMS", Integer.toString(timeoutMS));
+		httppost.addHeader("compressed", "zip");
+		httppost.addHeader("class",VCellApiRpcBody.class.getCanonicalName());
+		if (specialProperties!=null) {
+			httppost.addHeader("specialProperties", Arrays.asList(specialProperties).toString());
+		}
+	
+		System.out.println("Executing request to submit rpc call " + httppost.getRequestLine());
+
+		ResponseHandler<Serializable> handler = new ResponseHandler<Serializable>() {
+
+			public Serializable handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
+				int status = response.getStatusLine().getStatusCode();
+				System.out.println("in rpc response handler, status="+status);
+				if (status == 200) {
+					HttpEntity entity = response.getEntity();
+					try {
+						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+						entity.writeTo(byteArrayOutputStream);
+						byte[] returnValueBytes = byteArrayOutputStream.toByteArray();
+						Serializable returnValue = fromCompressedSerialized(returnValueBytes);
+						if (returnRequired) {
+							if (returnValue instanceof Exception){
+								Exception e = (Exception)returnValue;
+								e.printStackTrace();
+								System.out.println("throwing exception from rpc response handler");
+								throw new ClientProtocolException("vcellapi rpc failure, method="+rpcRequest.methodName+": "+e.getMessage(),e);
+							} else {
+								System.out.println("returning normally from rpc response handler ("+returnValue+")");
+								return returnValue;
+							}
+						} else {
+							System.out.println("returning null from rpc response handler (returnRequired==false)");
+							return null;
+						}
+					} catch (ClassNotFoundException | IllegalStateException e1) {
+						e1.printStackTrace();
+						throw new RuntimeException("vcellapi rpc failure deserializing return value, method="+rpcRequest.methodName+": "+e1.getMessage(),e1);
+					}
+					
+				} else {
+					throw new ClientProtocolException("Unexpected response status: " + status);
+				}
+			}
+
+		};
+		Serializable returnedValue = httpclient.execute(httppost,handler,httpClientContext);
+		System.out.println("returned from vcellapi rpc method="+rpcRequest.methodName);
+		return returnedValue;
+	}
+	
+	public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
+		java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
+		java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(dos);
+		oos.writeObject(cacheObj);
+		oos.flush();
+		dos.close();
+		bos.flush();
+		byte[] objData = bos.toByteArray();
+		oos.close();
+		bos.close();
+		return objData;
+	}
+	
+	public static Serializable fromCompressedSerialized(InputStream is) throws ClassNotFoundException, java.io.IOException {
+		BufferedInputStream bis = new BufferedInputStream(is);
+		InflaterInputStream iis = new InflaterInputStream(bis);
+		java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis);
+		Serializable cacheClone = (Serializable) ois.readObject();
+		ois.close();
+		bis.close();
+		return cacheClone;
+	}
+	
+	public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, java.io.IOException {
+		java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData);
+		InflaterInputStream iis = new InflaterInputStream(bis);
+		java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis);
+		Serializable cacheClone = (Serializable) ois.readObject();
+		ois.close();
+		bis.close();
+		return cacheClone;
+	}
+
+	public String getServerSoftwareVersion() throws ClientProtocolException, IOException {
+		  
+		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/swversion");
+
+		System.out.println("Executing request to retrieve server software version " + httpget.getRequestLine());
+
+		String vcellSoftwareVersion = httpclient.execute(httpget, responseHandler, httpClientContext);
+		return vcellSoftwareVersion;
+	}
+	
 }

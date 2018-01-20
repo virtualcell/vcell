@@ -18,8 +18,8 @@ public class SgeProxyTest {
 	@Before
 	public void setEnv() {
 		System.setProperty(PropertyLoader.htcSgeHome,"/opt/sge/");
-		System.setProperty( PropertyLoader.htcLogDir,"/home/htcLogs");
-		System.setProperty( PropertyLoader.MPI_HOME,"/opt/mpich/");
+		System.setProperty( PropertyLoader.htcLogDirExternal,"/home/htcLogs");
+		System.setProperty( PropertyLoader.MPI_HOME_EXTERNAL,"/opt/mpich/");
 	}
 	
 	private void write(String name, String text) {

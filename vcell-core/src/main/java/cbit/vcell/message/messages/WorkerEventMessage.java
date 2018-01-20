@@ -15,6 +15,8 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import com.google.gson.Gson;
+
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
@@ -99,20 +101,24 @@ private void parseMessage(UserResolver userResolver, VCMessage message) throws D
 		throw new RuntimeException("Wrong message: expecting property "+VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
 	}
 	String msgType = message.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
-	if (!msgType.equals(MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE)) {
+	if (msgType!=null && !msgType.equals(MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE)) {
 		throw new RuntimeException("Wrong message type: "+msgType+", expecting: "+MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE);
 	}
 			
 	Object obj = message.getObjectContent();
 	if (obj!=null){
+		if (obj instanceof WorkerEvent) {
 		// from Java executable or htcWorker
-		if (!(obj instanceof WorkerEvent)) {
+			workerEvent = (WorkerEvent)obj;
+		}else if (obj instanceof String) {
+		// from c++ executable (REST API where message stored as a single JSON object)
+			String jsonContent = (String)obj;
+			System.out.println("received JSON from message: "+jsonContent);
+		}else {
 			throw new IllegalArgumentException("Expecting object message with object " + WorkerEvent.class.getName() + ", found object :"+obj.getClass().getName());
 		}
-		workerEvent = (WorkerEvent)obj;
-
 	} else {
-		// from c++ executable
+		// from c++ executable (activemq-cpp native protocol communication library)
 		int status = message.getIntProperty(MessageConstants.WORKEREVENT_STATUS);
 		String hostname = message.getStringProperty(MessageConstants.HOSTNAME_PROPERTY);
 		String username = message.getStringProperty(VCMessagingConstants.USERNAME_PROPERTY);

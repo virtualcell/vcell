@@ -1,7 +1,6 @@
 package org.vcell.rest;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -12,7 +11,6 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.restlet.Client;
 import org.restlet.Server;
@@ -27,6 +25,7 @@ import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.server.RestDatabaseService;
+import org.vcell.rest.server.RpcService;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -41,7 +40,7 @@ import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
@@ -220,7 +219,8 @@ public class VCellApiMain {
 			PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.COPASI, PythonPackage.LIBSBML, PythonPackage.THRIFT });
 			OptServerImpl optServerImpl = new OptServerImpl();
 			optServerImpl.start();
-			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, templateConfiguration,javascriptDir);
+			RpcService rpcService = new RpcService(vcMessagingService);
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, templateConfiguration,javascriptDir);
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  
 

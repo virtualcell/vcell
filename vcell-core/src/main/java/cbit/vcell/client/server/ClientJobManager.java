@@ -9,13 +9,12 @@
  */
 
 package cbit.vcell.client.server;
-import java.rmi.RemoteException;
-
 import javax.swing.event.EventListenerList;
 
 import org.vcell.util.DataAccessException;
 
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.ExportJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.OutputContext;
@@ -91,13 +90,13 @@ private ClientServerManager getClientServerManager() {
 public ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
 	try {
 		return getClientServerManager().getExportController().getExportJobStatus(exportSpecs);
-	} catch (RemoteException rexc) {
-		handleRemoteException(rexc);
+	} catch (RemoteProxyException rexc) {
+		handleRemoteProxyException(rexc);
 		// once more before we fail
 		try {
 			return getClientServerManager().getExportController().getExportJobStatus(exportSpecs);
-		} catch (RemoteException rexc2) {
-			handleRemoteException(rexc2);
+		} catch (RemoteProxyException rexc2) {
+			handleRemoteProxyException(rexc2);
 			throw new DataAccessException("ExportJobStatus inquiry for '"+exportSpecs.getVCDataIdentifier()+"' failed\n"+rexc2.getMessage());
 		}
 	}
@@ -116,10 +115,10 @@ public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimul
 /**
  * Insert the method's description here.
  * Creation date: (1/4/01 1:38:14 PM)
- * @param remoteException java.rmi.RemoteException
+ * @param RemoteProxyException RemoteProxyException
  */
-private void handleRemoteException(RemoteException remoteException) {
-	remoteException.printStackTrace(System.out);
+private void handleRemoteProxyException(RemoteProxyException RemoteProxyException) {
+	RemoteProxyException.printStackTrace(System.out);
 }
 
 
@@ -155,13 +154,13 @@ public void simulationJobStatusChanged(cbit.rmi.event.SimulationJobStatusEvent s
 public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException {
 	try {
 		getClientServerManager().getExportController().startExport(outputContext,exportSpecs);
-	} catch (RemoteException rexc) {
-		handleRemoteException(rexc);
+	} catch (RemoteProxyException rexc) {
+		handleRemoteProxyException(rexc);
 		// once more before we fail
 //		try {
 //			getClientServerManager().getExportController().startExport(outputContext,exportSpecs);
-//		} catch (RemoteException rexc2) {
-//			handleRemoteException(rexc2);
+//		} catch (RemoteProxyException rexc2) {
+//			handleRemoteProxyException(rexc2);
 //			throw new DataAccessException("Start export for '"+exportSpecs.getVCDataIdentifier()+"' failed\n"+rexc2.getMessage());
 //		}
 	}
@@ -175,14 +174,14 @@ public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdent
 	try {
 		SimulationStatus simulationStatus = getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier, numSimulationScanJobs);
 		return simulationStatus;
-	} catch (RemoteException rexc) {
-		handleRemoteException(rexc);
+	} catch (RemoteProxyException rexc) {
+		handleRemoteProxyException(rexc);
 		// once more before we fail
 		try {
 			SimulationStatus simulationStatus = getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier, numSimulationScanJobs);
 			return simulationStatus;
-		} catch (RemoteException rexc2) {
-			handleRemoteException(rexc2);
+		} catch (RemoteProxyException rexc2) {
+			handleRemoteProxyException(rexc2);
 			throw new DataAccessException("Start simulation '"+vcSimulationIdentifier+"' failed\n"+rexc2.getMessage());
 		}
 	}
@@ -197,14 +196,14 @@ public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimulationIdenti
 	try {
 		SimulationStatus simulationStatus = getClientServerManager().getSimulationController().stopSimulation(vcSimulationIdentifier);
 		return simulationStatus;
-	} catch (RemoteException rexc) {
-		handleRemoteException(rexc);
+	} catch (RemoteProxyException rexc) {
+		handleRemoteProxyException(rexc);
 		// once more before we fail
 		try {
 			SimulationStatus simulationStatus = getClientServerManager().getSimulationController().stopSimulation(vcSimulationIdentifier);
 			return simulationStatus;
-		} catch (RemoteException rexc2) {
-			handleRemoteException(rexc2);
+		} catch (RemoteProxyException rexc2) {
+			handleRemoteProxyException(rexc2);
 			throw new DataAccessException("Stop simulation '"+vcSimulationIdentifier+"' failed\n"+rexc2.getMessage());
 		}
 	}

@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -160,15 +161,15 @@ private static class PostProcessingChores {
  */
 private PostProcessingChores choresFor(SimulationTask simTask) {
 	String userDir = "/" + simTask.getUserName();
-	String primary = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty);
+	String primaryExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 	PostProcessingChores chores = null;
 	final SolverTaskDescription slvTaskDesc = simTask.getSimulation( ).getSolverTaskDescription();
 	if (!slvTaskDesc.isParallel()) {
-		chores = new PostProcessingChores(primary + userDir);
+		chores = new PostProcessingChores(primaryExternal + userDir);
 	}
 	else {
-		String runDir = PropertyLoader.getRequiredProperty(PropertyLoader.PARALLEL_DATA_DIR);
-		chores = new PostProcessingChores(runDir + userDir , primary + userDir);
+		String runDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.PARALLEL_DATA_DIR_EXTERNAL);
+		chores = new PostProcessingChores(runDirExternal + userDir , primaryExternal + userDir);
 	}
 	chores.setVtkUser( slvTaskDesc.isVtkUser() ) ;
 
@@ -225,12 +226,12 @@ private void initQueueConsumer() {
 private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, SessionLog log, PostProcessingChores chores) throws XmlParseException, IOException, SolverException, ExecutableException {
 
 	HtcJobID jobid = null;
-	String htcLogDirString = ResourceUtil.getHtcLogDir().getAbsolutePath();
-    if (!htcLogDirString.endsWith("/")){
-    	htcLogDirString = htcLogDirString+"/";
+	String htcLogDirExternalString = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal)).getAbsolutePath();
+	if (!htcLogDirExternalString.endsWith("/")){
+		htcLogDirExternalString = htcLogDirExternalString+"/";
     }
     String jobname = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID()));   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex()+ "_" + simTask.getTaskID();
-	String subFile = htcLogDirString+jobname + clonedHtcProxy.getSubmissionFileExtension();
+	String subFileExternal = htcLogDirExternalString+jobname + clonedHtcProxy.getSubmissionFileExtension();
 
 	File parallelDir = new File(chores.runDirectory);
 	File primaryUserDir = new File(chores.finalDataDirectory);
@@ -267,7 +268,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 			Integer.toString(jobId),
 			Integer.toString(simTask.getTaskID()),
 			SOLVER_EXIT_CODE_REPLACE_STRING,
-			subFile);
+			subFileExternal);
 	postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
 	commandContainer.add(postprocessorCmd);
 
@@ -316,7 +317,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		commandContainer.add(ec);
 	}
 
-	jobid = clonedHtcProxy.submitJob(jobname, subFile, commandContainer, ncpus, simTask.getEstimatedMemorySizeMB(), postProcessingCommands);
+	jobid = clonedHtcProxy.submitJob(jobname, subFileExternal, commandContainer, ncpus, simTask.getEstimatedMemorySizeMB(), postProcessingCommands);
 	if (jobid == null) {
 		throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}

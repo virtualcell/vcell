@@ -10,16 +10,13 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.sftp.SFTPClient;
-import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 
 public class CommandServiceSsh extends CommandService {
-	private SSHClient ssh = null;
 	private String remoteHostName = null;
 	private String username = null;
 	private File keyFile = null;
@@ -29,14 +26,29 @@ public class CommandServiceSsh extends CommandService {
 		this.remoteHostName = remoteHostName;
 		this.username = username;
 		this.keyFile = keyFile;
-		
-		ssh = new SSHClient();
-		ssh.addHostKeyVerifier(new PromiscuousVerifier());
-		ssh.connect(remoteHostName);
-		FileKeyProvider keyProvider = new OpenSSHKeyFile();
-		keyProvider.init(keyFile);
-		ssh.authPublickey(username,keyProvider);
-//		ssh.authPassword(username,password);
+	}
+	
+	private SSHClient createNewSSHClient(boolean bRetry) throws IOException {
+		SSHClient ssh = new SSHClient();
+		try {
+			ssh.addHostKeyVerifier(new PromiscuousVerifier());
+			ssh.connect(remoteHostName);
+			FileKeyProvider keyProvider = new OpenSSHKeyFile();
+			keyProvider.init(keyFile);
+			ssh.authPublickey(username,keyProvider);
+			return ssh;
+		}catch (Exception e) {
+			try {
+				ssh.close();
+			}catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			if (bRetry) {
+				return createNewSSHClient(false);
+			}else {
+				throw e;
+			}
+		}
 	}
 	
 	@Override
@@ -44,10 +56,10 @@ public class CommandServiceSsh extends CommandService {
 		if (allowableReturnCodes == null){
 			throw new IllegalArgumentException("allowableReturnCodes must not be null");
 		}
-		Session session = null;
-		try {
-			long timeMS = System.currentTimeMillis();
-			session = ssh.startSession();
+		long timeMS = System.currentTimeMillis();
+		try (SSHClient ssh = createNewSSHClient(true);
+			Session session = ssh.startSession();)
+		{
             boolean bSuppressQStat = false;
 			String cmd = CommandOutput.concatCommandStrings(commandStrings);
 			if (PropertyLoader.getBooleanProperty(PropertyLoader.suppressQStatStandardOutLogging, true) && cmd.contains("qstat -f")){
@@ -90,16 +102,6 @@ public class CommandServiceSsh extends CommandService {
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			throw new ExecutableException(e.getMessage());
-		} finally {
-			if (session!=null){
-				try {
-					session.close();
-				} catch (TransportException e) {
-					e.printStackTrace(System.out);
-				} catch (ConnectionException e) {
-					e.printStackTrace(System.out);
-				}
-			}
 		}
 	}
 
@@ -118,48 +120,24 @@ public class CommandServiceSsh extends CommandService {
 	
 	@Override
 	public void pushFile(File tempFile, String remotePath) throws IOException {
-		SFTPClient sftpClient = null;
-		try {
-			sftpClient = ssh.newSFTPClient();
+		try (SSHClient ssh = createNewSSHClient(true);
+			SFTPClient sftpClient = ssh.newSFTPClient();)
+		{
+			System.out.println("CommandServiceSsh.pushFile("+tempFile.getAbsolutePath()+" (exists="+tempFile.exists()+") ==> "+remotePath);
 			sftpClient.put(tempFile.getPath(), remotePath);
-		} finally {
-			if (sftpClient!=null){
-				try {
-					sftpClient.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 
 	public void deleteFile(String remoteFilePath) throws IOException {
-		SFTPClient sftpClient = null;
-		try {
-			sftpClient = ssh.newSFTPClient();
+		try (SSHClient ssh = createNewSSHClient(true);
+			SFTPClient sftpClient = ssh.newSFTPClient();)
+		{
 			sftpClient.rm(remoteFilePath);
-		} finally {
-			if (sftpClient!=null){
-				try {
-					sftpClient.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 
 	@Override
 	public void close() {
-		if (ssh!=null){
-			try {
-				ssh.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				ssh = null;
-			}
-		}
 	}
 	
 }
