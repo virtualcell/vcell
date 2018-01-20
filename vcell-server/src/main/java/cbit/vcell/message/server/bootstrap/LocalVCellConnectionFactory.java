@@ -79,8 +79,8 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 		boolean bCache = false;
 		Cachetable cacheTable = null;
 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog, cacheTable , 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primaryServerSimDataDirProperty)), 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondaryServerSimDataDirProperty)));
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)), 
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty)));
 		SimulationDatabaseDirect simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, bCache, sessionLog);
 		ExportServiceImpl exportServiceImpl = new ExportServiceImpl(sessionLog);
 		LocalVCellConnection vcConn = new LocalVCellConnection(userLoginInfo, sessionLog, simulationDatabase, dataSetControllerImpl, exportServiceImpl);

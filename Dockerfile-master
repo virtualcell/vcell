@@ -61,6 +61,7 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     jmsblob_minsize=100000
 
 VOLUME /simdata
+VOLUME /htclogdir
 
 ENTRYPOINT java \
 		-Dvcell.softwareVersion="${softwareVersion}" \
@@ -69,6 +70,7 @@ ENTRYPOINT java \
 		-Dvcell.primarySimdatadir=/simdata \
         -Dvcell.solver.primarySimdatadir="${solverprimarydata}" \
 		-Dvcell.htc.user="${batchuser}" \
+        -Dvcell.htc.logdir=/htclogdir \
 		-Dvcell.installDir=/usr/local/app \
 		-Dvcell.server.dbConnectURL="${dburl}" \
 		-Dvcell.server.dbDriverName="${dbdriver}" \

@@ -4529,7 +4529,7 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 		}
 		try {
 			CartesianMeshVtkFileWriter cartesianMeshVTKFileWriter = new CartesianMeshVtkFileWriter();
-			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primaryServerSimDataDirProperty);
+			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
 			VtuFileContainer vtuFiles = cartesianMeshVTKFileWriter.getEmptyVtuMeshFiles(vcellSimFiles, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
@@ -4541,7 +4541,7 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 	public VtuFileContainer getEmptyVtuMeshFiles(MovingBoundarySimFiles movingBoundarySimFiles, VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
 		try {
 			MovingBoundaryVtkFileWriter movingBoundaryVtkFileWriter = new MovingBoundaryVtkFileWriter();
-			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primaryServerSimDataDirProperty);
+			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
 			VtuFileContainer vtuFiles = movingBoundaryVtkFileWriter.getEmptyVtuMeshFiles(movingBoundarySimFiles, timeIndex, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
@@ -4627,7 +4627,7 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 	
 	
 	private File getUserDataDirectory(VCDataIdentifier vcdataID){
-		File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primaryServerSimDataDirProperty);
+		File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
 		return new File(primaryDirectory,vcdataID.getOwner().getName());
 	}
 

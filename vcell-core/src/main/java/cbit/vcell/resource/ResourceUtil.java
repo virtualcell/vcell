@@ -514,22 +514,4 @@ public class ResourceUtil {
 		}
 	}
 
-	public static File getHtcLogDir() {
-		String htcLogDirProp = PropertyLoader.getProperty(PropertyLoader.htcLogDir,null);
-		File htcLogDir = null;
-		if (htcLogDirProp!=null){
-			htcLogDir = new File(htcLogDirProp);
-		}else{
-			htcLogDir = new File(getVcellHome(),"htclogs");
-			htcLogDir.mkdir();
-		}
-		if (htcLogDir.exists() && htcLogDir.isDirectory()){
-			return htcLogDir;
-		}else{
-			throw new RuntimeException("htcLogDir "+htcLogDir.getAbsolutePath()+" not found");
-		}
-		
-	}
-
-
 }

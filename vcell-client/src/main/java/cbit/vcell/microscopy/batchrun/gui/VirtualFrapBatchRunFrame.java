@@ -344,7 +344,7 @@ public class VirtualFrapBatchRunFrame extends LWTopFrame implements DropTargetLi
 	      
 //		  System.setProperty(PropertyLoader.primarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 //		  System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
-		  System.setProperty(PropertyLoader.exportBaseDirProperty, localWorkspace.getDefaultSimDataDirectory());
+		  System.setProperty(PropertyLoader.exportBaseDirInternalProperty, localWorkspace.getDefaultSimDataDirectory());
 	      System.setProperty(PropertyLoader.exportBaseURLProperty, "file://"+localWorkspace.getDefaultSimDataDirectory());
 
 	      

@@ -1,0 +1,43 @@
+#!/bin/bash
+
+printusage() {
+	echo "Usage: JavaPreprocessor64 simTaskFileName [parallel_dir]"
+	exit 1
+}
+
+# main code
+if [ "$#" < "2" ] ; then 
+	printusage
+fi
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+preprocessor_mainclass="cbit.vcell.message.server.sim"
+
+jvmprop="-Djava.io.tmpdir=/tmp"
+jvmprop="${jmsprop} -Dvcell.jms.url=${jmsurl}"
+jvmprop="${jmsprop} -Dvcell.jms.user=${jmsuser}"
+jvmprop="${jmsprop} -Dvcell.jms.pswd=${jmspswd}"
+jvmprop="${jmsprop} -Dvcell.primarySimdatadir=/simdata"
+jvmprop="${jmsprop} -Dvcell.secondarySimdatadir=/simdata"
+jvmprop="${jmsprop} -Dvcell.server.id=${serverid}"
+jvmprop="${jmsprop} -Dvcell.softwareVersion=${softwareVersion}"
+
+simTaskFileName=$1
+arguments=/simdata/$simTaskFileName /simdata
+if [ "$#" = "2" ] ; then
+	parallel_dir=$2
+	arguments=${arguments} ${parallel_dir}
+fi
+
+echo "starting preprocessor"
+
+nice java ${jvmprop} ${preprocessor_mainclass} ${arguments} 
+
+echo "preprocessor returned"
+
+exit 0
+

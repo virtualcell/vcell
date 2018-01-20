@@ -1,0 +1,44 @@
+#!/bin/bash
+
+printusage() {
+	echo "Usage: JavaPostprocessor64 simKey userid userKey jobindex taskid solverExitCode"
+	exit 1
+}
+
+# main code
+if [ $# -lt 6 ] ; then
+	printusage
+fi
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+postprocessor_mainclass=cbit.vcell.message.server.sim
+
+jvmprop="-Djava.io.tmpdir=/tmp"
+jvmprop="${jmsprop} -Dvcell.jms.url=${jmsurl}"
+jvmprop="${jmsprop} -Dvcell.jms.user=${jmsuser}"
+jvmprop="${jmsprop} -Dvcell.jms.pswd=${jmspswd}"
+jvmprop="${jmsprop} -Dvcell.primarySimdatadir=/simdata"
+jvmprop="${jmsprop} -Dvcell.secondarySimdatadir=/simdata"
+jvmprop="${jmsprop} -Dvcell.server.id=${serverid}"
+jvmprop="${jmsprop} -Dvcell.softwareVersion=${softwareVersion}"
+jvmprop="${jvmprop} -Dvcell.lib=${common_siteNativelibsDir}"
+
+setupJavaPrefs
+
+arguments=$*
+
+echo "starting postprocessor"
+
+nice java ${jvmprop} ${postprocessor_mainclass} ${arguments} | tee -ai /dev/stderr |grep -q 'os::commit_memory'
+if [ $? -eq 0 ]; then
+	echo "MEMORY FAILURE DETECTED"
+fi
+
+echo "postprocessor returned"
+
+exit 0
+

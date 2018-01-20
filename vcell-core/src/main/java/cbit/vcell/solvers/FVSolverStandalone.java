@@ -219,7 +219,7 @@ protected void writeVCGAndResampleFieldData() throws SolverException {
 					getResampledGeometry().getExtent(),
 					simTask.getSimulation().getMeshSpecification().getSamplingSize(),
 					getResampledGeometry().getGeometrySurfaceDescription().getRegionImage());
-			String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondaryServerSimDataDirProperty, null);			
+			String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);			
 			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(), null, getSaveDirectory().getParentFile(),
 					secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 			dsci.writeFieldFunctionData(null,argFieldDataIDSpecs, bResample, simpleMesh, simResampleInfoProvider, 

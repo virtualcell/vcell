@@ -505,7 +505,7 @@ public class NagiosVCellMonitor {
 					if(!bPropertiesRead){
 						bPropertiesRead = true;
 						PropertyLoader.loadProperties();
-						String dataDir = System.getProperty(PropertyLoader.primaryServerSimDataDirProperty);
+						String dataDir = System.getProperty(PropertyLoader.primarySimDataDirInternalProperty);
 						if(dataDir == null){
 							return;
 						}

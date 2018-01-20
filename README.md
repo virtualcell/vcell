@@ -60,9 +60,9 @@ server-config.include file must be customized for your configuration (see exampl
 ### Building VCell Server with docker-compose
 ```bash
 mvn clean install dependency:copy-dependencies
-docker-compose -f docker-compose.yml build
-docker-compose -f docker-compose.yml up
-docker-compose down
+docker-compose -f docker-compose-build.yml build
+docker-compose -f docker-compose-build.yml up
+docker-compose -f docker-compose-build.yml down
 ```
 
 ## License

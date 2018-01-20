@@ -226,9 +226,9 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 			throw new RuntimeException("required System property \""+PropertyLoader.exportBaseURLProperty+"\" not defined");
 		}
 		try {
-			exportBaseDir = System.getProperty(PropertyLoader.exportBaseDirProperty);
+			exportBaseDir = System.getProperty(PropertyLoader.exportBaseDirInternalProperty);
 		} catch (Exception e){
-			throw new RuntimeException("required System property \""+PropertyLoader.exportBaseDirProperty+"\" not defined");
+			throw new RuntimeException("required System property \""+PropertyLoader.exportBaseDirInternalProperty+"\" not defined");
 		}
 
 		

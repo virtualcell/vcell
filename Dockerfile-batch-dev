@@ -1,4 +1,4 @@
-FROM vcell-solvers:0.0.4-local
+FROM schaff/vcell-solvers:release-0.0.4-dev
 
 RUN apt-get install -y openjdk-8-jre-headless
 
@@ -10,20 +10,38 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./lib/
 
 COPY ./nativelibs/linux64 ./nativelibs/linux64
-COPY ./solvers.sh ./solvers.sh
+COPY ./docker/batch/JavaPreprocessor64 \
+     ./docker/batch/JavaPostprocessor64 \
+     ./docker/batch/JavaSimExe64 \
+     /vcellscripts/
+
+ENV PATH=/vcellscripts:$PATH \
+    CLASSPATH=/usr/local/app/lib/*
 
 ENV softwareVersion=JimMac_Version_6.2_build_99 \
 	serverid=TEST2 \
-    jmsurl=failover:(tcp://vcell-service.cam.uchc.edu:61619) \
+    jmsurl=failover:(tcp://localhost:61616) \
     jmsuser=clientUser \
     jmspswd=dummy \
-    mongodbhost="vcell-service.cam.uchc.edu" \
-    mongodbport=27020 \
     solverprimarydata=/simdata/ \
+    mongodbhost=localhost \
+    mongodbport=27017 \
     jmsblob_minsize=100000
 
 VOLUME /simdata
-VOLUME /htclogs
+VOLUME /tmp
 
-ENTRYPOINT ["./solvers.sh"]
-CMD []
+ENTRYPOINT []
+CMD echo "================================================================" && \
+    echo "==                 standalone VCell commands                  ==" && \
+    echo "================================================================" && \
+    echo "  usage: docker run --rm <this-image> (Solver|Script) <args>" && \
+    echo "" && \
+    echo "Scripts:" && \
+    echo "--------" && \
+    echo "`ls -m /vcellscripts`" && \
+    echo "" && \
+    echo "Solvers:" && \
+    echo "--------" && \
+    echo "`cd /vcellbin && ls -m *_*`" && \
+    echo ""

@@ -4,11 +4,12 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile-api-dev
-    ports:
-      - "8083:8080"
     environment:
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
+    ports:
+      - "8083:8080"
+      - "8001:8000" # java remote debugging
     secrets:
       - keystorefile
       - keystorepswd
@@ -26,6 +27,11 @@ services:
     environment:
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
+      - simdatadir_external=/Volumes/vcell/users
+      - singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch.img
+      - docker_name="vcell-batch-dev"
+    ports:
+      - "8002:8000" # java remote debugging
     volumes:
       - "/Volumes/vcell/users:/simdata"
     secrets:
