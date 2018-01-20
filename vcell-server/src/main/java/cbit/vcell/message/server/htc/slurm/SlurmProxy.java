@@ -288,12 +288,15 @@ denied: job "6894" does not exist
 
 		LineStringBuilder lsb = new LineStringBuilder();
 
-		lsb.write("#!/usr/bin/bash");
+		lsb.write("#!/usr/bin/env bash");
 		String partition = "vcell";
 		lsb.write("#SBATCH --partition=" + partition);
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + htcLogDirExternalString+jobName+".slurm.log");
 		lsb.write("#SBATCH -e " + htcLogDirExternalString+jobName+".slurm.log");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
+		lsb.write("source /usr/share/Modules/init/bash");
+		lsb.write("module load singularity");
 		//			sw.append("#$ -l mem=" + (int)(memSize + SLURM_MEM_OVERHEAD_MB) + "mb");
 
 		//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
@@ -302,9 +305,30 @@ denied: job "6894" does not exist
 //		lsb.write("#$ -j y");
 		//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
 //		lsb.write("#$ -cwd");
-
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
-		lsb.write("simdatadir=\""+primaryDataDirExternal+"\"");
+
+		//
+		// Initialize Singularity
+		//
+		lsb.write("echo \"job running on host `hostname -f`\"");
+		lsb.newline();
+		lsb.write("echo \"id is `id`\"");
+		lsb.newline();
+		lsb.write("echo \"bash version is `bash --version`\"");
+		lsb.newline();
+		lsb.write("echo ENVIRONMENT");
+		lsb.write("env");
+		lsb.newline();
+		lsb.write("module load singularity/2.3.1");
+		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
+		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
+		lsb.write("if [ ! -e "+singularity_image+" ] ; then");
+		lsb.write("   singularity create "+singularity_image);
+		lsb.write("   singularity import "+singularity_image+" docker://"+docker_image);
+		lsb.write("fi");
+		String invoke_container="singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" ";
+		lsb.newline();
+
 		if (isParallel) {
 			// #SBATCH
 //			lsb.append("#$ -pe mpich ");
@@ -316,36 +340,27 @@ denied: job "6894" does not exist
 
 			lsb.append("#$ -v LD_LIBRARY_PATH=");
 			lsb.append(MPI_HOME_EXTERNAL+"/lib");
-			lsb.write(":${simdatadir}");
+			lsb.write(":"+primaryDataDirExternal);
 		}
-		lsb.newline();
-		lsb.write("module load singularity");
-		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
-		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
-		lsb.write("singularity_image=\""+singularity_image+"\"");
-		lsb.write("docker_name=\""+docker_image+"\"");
-		lsb.write("if [ ! -e \"${singularity_image}\" ] ; then");
-		lsb.write("   singularity create \"${singularity_image}\"");
-		lsb.write("   singularity import \"${singularity_image}\" \"docker://${docker_image}\"");
-		lsb.write("fi");
-		lsb.write("invoke_container=\"singularity run --bind ${simdatadir}:/simdata ${singularity_image}\"");
 		lsb.newline();
 	
 	//	lsb.write("run_in_container=\"singularity /path/to/data:/simdata /path/to/image/vcell-batch.img);
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
 		if (hasExitProcessor) {
 			ExecutableCommand exitCmd = commandSet.getExitCodeCommand();
+			exitCmd.stripPathFromCommand();
 			lsb.write("callExitProcessor( ) {");
 			lsb.append("\techo exitCommand = ");
-			lsb.write("\"${invoke_container}\" " + exitCmd.getJoinedCommands("$1"));
+			lsb.write(invoke_container + exitCmd.getJoinedCommands("$1"));
 			lsb.append('\t');
-			lsb.write(exitCmd.getJoinedCommands());
+			lsb.write(invoke_container + exitCmd.getJoinedCommands());
 			lsb.write("}");
 			lsb.write("echo");
 		}
 
 		for (ExecutableCommand ec: commandSet.getExecCommands()) {
 			lsb.write("echo");
+			ec.stripPathFromCommand();
 			String cmd= ec.getJoinedCommands();
 			if (ec.isParallel()) {
 				if (isParallel) {
@@ -356,18 +371,18 @@ denied: job "6894" does not exist
 				}
 			}
 			lsb.append("echo command = ");
-			lsb.write("\"${invoke_container}\" " + cmd);
+			lsb.write(invoke_container + cmd);
 
 			lsb.write("(");
 			if (ec.getLdLibraryPath()!=null){
 				lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
 			}
-			lsb.write("    "+"\"${invoke_container}\" " + cmd);
+			lsb.write("    "+invoke_container + cmd);
 			lsb.write(")");
 			lsb.write("stat=$?");
 
 			lsb.append("echo ");
-			lsb.append(cmd);
+			lsb.append(invoke_container + cmd);
 			lsb.write("returned $stat");
 
 			lsb.write("if [ $stat -ne 0 ]; then");

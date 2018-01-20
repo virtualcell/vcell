@@ -188,7 +188,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				File sshKeyFile = new File(args[5]);
 				try {
 					commandService = new CommandServiceSsh(sshHost,sshUser,sshKeyFile);
-					commandService.command(new String[] { "/usr/bin/env bash -c ls" });
+					commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
 					System.out.println("SSH Connection test passed, running ls as user "+sshUser+" on "+sshHost);
 				} catch (Exception e) {
 					e.printStackTrace();
