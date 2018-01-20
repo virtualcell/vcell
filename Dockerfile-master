@@ -53,7 +53,10 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     jmsurl=failover:(tcp://activemq:61616) \
     jmsuser=clientUser \
     jmspswdfile=/run/secrets/jmspswd \
-    solverprimarydata=/share/apps/vcell3/users/ \
+    simdatadir_external=/share/apps/vcell3/users/ \
+    htclogdir_external=/share/apps/vcell3/htclogs/ \
+    singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch-0.0.1-alpha.1.img \
+    docker_name="schaff/vcell-batch:0.0.1-alpha.1" \
     batchsystem=SLURM \
     batchhost=vcell-service.cam.uchc.edu \
     batchuser=vcell \
@@ -61,33 +64,40 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     jmsblob_minsize=100000
 
 VOLUME /simdata
-VOLUME /htclogdir
+
+EXPOSE 8000
 
 ENTRYPOINT java \
-		-Dvcell.softwareVersion="${softwareVersion}" \
-		-Dvcell.server.id="${serverid}" \
-		-Dvcell.python.executable=/usr/bin/python \
-		-Dvcell.primarySimdatadir=/simdata \
-        -Dvcell.solver.primarySimdatadir="${solverprimarydata}" \
-		-Dvcell.htc.user="${batchuser}" \
-        -Dvcell.htc.logdir=/htclogdir \
-		-Dvcell.installDir=/usr/local/app \
-		-Dvcell.server.dbConnectURL="${dburl}" \
-		-Dvcell.server.dbDriverName="${dbdriver}" \
-		-Dvcell.server.dbUserid="${dbuser}" \
-		-Dvcell.db.pswdfile="${dbpswdfile}" \
-		-Dvcell.jms.url="${jmsurl}" \
-		-Dvcell.jms.blobMessageUseMongo=true \
-    -Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
-		-Dvcell.jms.user="${jmsuser}" \
-		-Dvcell.jms.pswdfile="${jmspswdfile}" \
-		-Dvcell.mongodb.host=mongodb \
-		-Dvcell.mongodb.port=27017 \
-		-Dvcell.mongodb.database=test \
-		-Dvcell.server.maxJobsPerScan=50 \
-		-Dvcell.server.maxJobsPerSite=100 \
-		-Dvcell.server.maxOdeJobsPerUser=30 \
-		-Dvcell.server.maxPdeJobsPerUser=20 \
-		-Dvcell.limit.jobMemoryMB=2000 \
-		-cp "./lib/*" cbit.vcell.message.server.combined.VCellServices \
-		123 - "${batchsystem}" "${batchhost}" "${batchuser}" "${batchuserkeyfile}"
+	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+	-Dvcell.softwareVersion="${softwareVersion}" \
+	-Dvcell.server.id="${serverid}" \
+	-Dvcell.python.executable=/usr/bin/python \
+	-Dvcell.primarySimdatadir.internal=/simdata \
+	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
+	-Dvcell.htc.user="${batchuser}" \
+	-Dvcell.htc.logdir.external="${htclogdir_external}" \
+	-Dvcell.batch.singularity.image="${singularity_imagefile}" \
+	-Dvcell.batch.docker.name="${docker_name}" \
+	-Dvcell.simulation.postprocessor=JavaPostprocessor64 \
+	-Dvcell.simulation.preprocessor=JavaPreprocessor64 \
+	-Dvcell.javaSimulation.executable=JavaSimExe64 \
+	-Dvcell.installDir=/usr/local/app \
+	-Dvcell.server.dbConnectURL="${dburl}" \
+	-Dvcell.server.dbDriverName="${dbdriver}" \
+	-Dvcell.server.dbUserid="${dbuser}" \
+	-Dvcell.db.pswdfile="${dbpswdfile}" \
+	-Dvcell.jms.url="${jmsurl}" \
+	-Dvcell.jms.blobMessageUseMongo=true \
+	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
+	-Dvcell.jms.user="${jmsuser}" \
+	-Dvcell.jms.pswdfile="${jmspswdfile}" \
+	-Dvcell.mongodb.host=mongodb \
+	-Dvcell.mongodb.port=27017 \
+	-Dvcell.mongodb.database=test \
+	-Dvcell.server.maxJobsPerScan=50 \
+	-Dvcell.server.maxJobsPerSite=100 \
+	-Dvcell.server.maxOdeJobsPerUser=30 \
+	-Dvcell.server.maxPdeJobsPerUser=20 \
+	-Dvcell.limit.jobMemoryMB=2000 \
+	-cp "./lib/*" cbit.vcell.message.server.combined.VCellServices \
+	123 - "${batchsystem}" "${batchhost}" "${batchuser}" "${batchuserkeyfile}"

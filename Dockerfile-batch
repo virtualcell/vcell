@@ -21,34 +21,22 @@ COPY --from=build \
      /app/docker/batch/JavaPreprocessor64 \
      /app/docker/batch/JavaPostprocessor64 \
      /app/docker/batch/JavaSimExe64 \
+     /app/docker/batch/entrypoint.sh \
      /vcellscripts/
 
 ENV PATH=/vcellscripts:$PATH \
     CLASSPATH=/usr/local/app/lib/*
 
-ENV softwareVersion=VCell_6.2_build_99 \
+ENV softwareVersion=VCell_7.0_build_99 \
 	serverid=TEST2 \
     jmsurl="failover:(tcp://vcell-service.cam.uchc.edu:61616)" \
     jmsuser=clientUser \
     jmspswd=dummy \
+    solverprimarydata=/simdata/ \
     mongodbhost="vcell-service.cam.uchc.edu" \
     mongodbport=27017 \
     jmsblob_minsize=100000
 
 VOLUME /simdata
-VOLUME /tmp
 
-ENTRYPOINT []
-CMD echo "================================================================" && \
-    echo "==                 standalone VCell commands                  ==" && \
-    echo "================================================================" && \
-    echo "  usage: docker run --rm <this-image> (Solver|Script) <args>" && \
-    echo "" && \
-    echo "Scripts:" && \
-    echo "--------" && \
-    echo "`ls -m /vcellscripts`" && \
-    echo "" && \
-    echo "Solvers:" && \
-    echo "--------" && \
-    echo "`cd /vcellbin && ls -m *_*`" && \
-    echo ""
+ENTRYPOINT [ "/vcellscripts/entrypoint.sh" ]

@@ -13,12 +13,13 @@ COPY ./nativelibs/linux64 ./nativelibs/linux64
 COPY ./docker/batch/JavaPreprocessor64 \
      ./docker/batch/JavaPostprocessor64 \
      ./docker/batch/JavaSimExe64 \
+     ./docker/batch/entrypoint.sh \
      /vcellscripts/
 
 ENV PATH=/vcellscripts:$PATH \
     CLASSPATH=/usr/local/app/lib/*
 
-ENV softwareVersion=JimMac_Version_6.2_build_99 \
+ENV softwareVersion=JimMac_Version_7.0_build_99 \
 	serverid=TEST2 \
     jmsurl=failover:(tcp://localhost:61616) \
     jmsuser=clientUser \
@@ -29,19 +30,5 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     jmsblob_minsize=100000
 
 VOLUME /simdata
-VOLUME /tmp
 
-ENTRYPOINT []
-CMD echo "================================================================" && \
-    echo "==                 standalone VCell commands                  ==" && \
-    echo "================================================================" && \
-    echo "  usage: docker run --rm <this-image> (Solver|Script) <args>" && \
-    echo "" && \
-    echo "Scripts:" && \
-    echo "--------" && \
-    echo "`ls -m /vcellscripts`" && \
-    echo "" && \
-    echo "Solvers:" && \
-    echo "--------" && \
-    echo "`cd /vcellbin && ls -m *_*`" && \
-    echo ""
+ENTRYPOINT [ "/vcellscripts/entrypoint.sh" ]

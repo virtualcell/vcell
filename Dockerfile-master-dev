@@ -56,27 +56,24 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     batchuserkeyfile=/run/secrets/batchuserkeyfile \
     jmsblob_minsize=100000
 
-ENV JPDA_ADDRESS="8000"
-ENV JPDA_TRANSPORT="dt_socket"
-
 VOLUME /simdata
 
 EXPOSE 8000
 
 ENTRYPOINT java \
-    -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
-    -Dvcell.primarySimdatadir.external="${simdatadir_external}" \
+	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.htc.user="${batchuser}" \
-    -Dvcell.htc.logdir.external="${htclogdir_external}" \
-    -Dvcell.batch.singularity.image="${singularity_imagefile}" \
-    -Dvcell.batch.docker.name="${docker_name}" \
-    -Dvcell.simulation.postprocessor=JavaPostprocessor64 \
-    -Dvcell.simulation.preprocessor=JavaPreprocessor64 \
-    -Dvcell.javaSimulation.executable=JavaSimExe64 \
+	-Dvcell.htc.logdir.external="${htclogdir_external}" \
+	-Dvcell.batch.singularity.image="${singularity_imagefile}" \
+	-Dvcell.batch.docker.name="${docker_name}" \
+	-Dvcell.simulation.postprocessor=JavaPostprocessor64 \
+	-Dvcell.simulation.preprocessor=JavaPreprocessor64 \
+	-Dvcell.javaSimulation.executable=JavaSimExe64 \
 	-Dvcell.installDir=/usr/local/app \
 	-Dvcell.server.dbConnectURL="${dburl}" \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
@@ -84,7 +81,7 @@ ENTRYPOINT java \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
 	-Dvcell.jms.url="${jmsurl}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
-    -Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
+	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \
 	-Dvcell.jms.pswdfile="${jmspswdfile}" \
 	-Dvcell.mongodb.host=mongodb \
