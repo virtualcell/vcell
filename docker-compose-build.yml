@@ -29,7 +29,7 @@ services:
       - jmsurl=failover:(tcp://activemq:61616)
       - simdatadir_external=/share/apps/vcell3/users/
       - htclogdir_external=/share/apps/vcell3/htclogs/
-      - singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch.img
+      - singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch-remoting.img
       - docker_name=schaff/vcell-batch:remoting
     ports:
       - "8002:8000" # java remote debugging

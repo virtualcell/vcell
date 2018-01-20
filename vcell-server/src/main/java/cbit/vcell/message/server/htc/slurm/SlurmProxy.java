@@ -294,9 +294,6 @@ denied: job "6894" does not exist
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + htcLogDirExternalString+jobName+".slurm.log");
 		lsb.write("#SBATCH -e " + htcLogDirExternalString+jobName+".slurm.log");
-		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
-		lsb.write("source /usr/share/Modules/init/bash");
-		lsb.write("module load singularity");
 		//			sw.append("#$ -l mem=" + (int)(memSize + SLURM_MEM_OVERHEAD_MB) + "mb");
 
 		//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
@@ -305,29 +302,6 @@ denied: job "6894" does not exist
 //		lsb.write("#$ -j y");
 		//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
 //		lsb.write("#$ -cwd");
-		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
-
-		//
-		// Initialize Singularity
-		//
-		lsb.write("echo \"job running on host `hostname -f`\"");
-		lsb.newline();
-		lsb.write("echo \"id is `id`\"");
-		lsb.newline();
-		lsb.write("echo \"bash version is `bash --version`\"");
-		lsb.newline();
-		lsb.write("echo ENVIRONMENT");
-		lsb.write("env");
-		lsb.newline();
-		lsb.write("module load singularity/2.3.1");
-		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
-		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
-		lsb.write("if [ ! -e "+singularity_image+" ] ; then");
-		lsb.write("   singularity create "+singularity_image);
-		lsb.write("   singularity import "+singularity_image+" docker://"+docker_image);
-		lsb.write("fi");
-		String invoke_container="singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" ";
-		lsb.newline();
 
 		if (isParallel) {
 			// #SBATCH
@@ -343,6 +317,40 @@ denied: job "6894" does not exist
 			lsb.write(":"+primaryDataDirExternal);
 		}
 		lsb.newline();
+
+		lsb.write("# must be placed after all #SBATCH and #$ lines");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
+		lsb.write("source /usr/share/Modules/init/bash");
+		lsb.write("module load singularity");
+		
+		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
+
+		//
+		// Initialize Singularity
+		//
+		lsb.write("echo \"job running on host `hostname -f`\"");
+		lsb.newline();
+		lsb.write("echo \"id is `id`\"");
+		lsb.newline();
+		lsb.write("echo \"bash version is `bash --version`\"");
+		lsb.newline();
+		lsb.write("echo ENVIRONMENT");
+		lsb.write("env");
+		lsb.newline();
+		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
+		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
+		lsb.write("if [ ! -e "+singularity_image+" ] ; then");
+		lsb.write("   if [ \"`singularity --version`\" == \"2.3.1-dist\" ] ; then");
+		lsb.write("      singularity create "+singularity_image);
+		lsb.write("      singularity import "+singularity_image+" docker://"+docker_image);
+		lsb.write("   else");
+		lsb.write("      # assuming a mismatch is version 2.4 or later");
+		lsb.write("      singularity build "+singularity_image+" docker://"+docker_image);
+		lsb.write("   fi");
+		lsb.write("fi");
+		String invoke_container="singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" ";
+		lsb.newline();
+
 	
 	//	lsb.write("run_in_container=\"singularity /path/to/data:/simdata /path/to/image/vcell-batch.img);
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
