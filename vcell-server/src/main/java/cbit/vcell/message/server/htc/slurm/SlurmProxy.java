@@ -294,6 +294,9 @@ denied: job "6894" does not exist
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + htcLogDirExternalString+jobName+".slurm.log");
 		lsb.write("#SBATCH -e " + htcLogDirExternalString+jobName+".slurm.log");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
+		lsb.write("source /usr/share/Modules/init/bash");
+		lsb.write("module load singularity");
 		//			sw.append("#$ -l mem=" + (int)(memSize + SLURM_MEM_OVERHEAD_MB) + "mb");
 
 		//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
@@ -302,27 +305,6 @@ denied: job "6894" does not exist
 //		lsb.write("#$ -j y");
 		//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
 //		lsb.write("#$ -cwd");
-
-		if (isParallel) {
-			// #SBATCH
-//			lsb.append("#$ -pe mpich ");
-//			lsb.append(ncpus);
-//			lsb.newline();
-			
-			lsb.append("#SBATCH -n " + ncpus);
-			lsb.newline();
-
-			lsb.append("#$ -v LD_LIBRARY_PATH=");
-			lsb.append(MPI_HOME_EXTERNAL+"/lib");
-			lsb.write(":"+primaryDataDirExternal);
-		}
-		lsb.newline();
-
-		lsb.write("# must be placed after all #SBATCH and #$ lines");
-		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
-		lsb.write("source /usr/share/Modules/init/bash");
-		lsb.write("module load singularity");
-		
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 
 		//
@@ -351,6 +333,20 @@ denied: job "6894" does not exist
 		String invoke_container="singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" ";
 		lsb.newline();
 
+		if (isParallel) {
+			// #SBATCH
+//			lsb.append("#$ -pe mpich ");
+//			lsb.append(ncpus);
+//			lsb.newline();
+			
+			lsb.append("#SBATCH -n " + ncpus);
+			lsb.newline();
+
+			lsb.append("#$ -v LD_LIBRARY_PATH=");
+			lsb.append(MPI_HOME_EXTERNAL+"/lib");
+			lsb.write(":"+primaryDataDirExternal);
+		}
+		lsb.newline();
 	
 	//	lsb.write("run_in_container=\"singularity /path/to/data:/simdata /path/to/image/vcell-batch.img);
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
