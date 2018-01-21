@@ -1,12 +1,15 @@
 version: '3.1'
 services:
   api:
-    image: schaff/vcell-api:remoting
-    ports:
-      - "8083:8080"
+    image: schaff/vcell-api:7.0.0-alpha.3
     environment:
+      - softwareVersion=VCell_7.0_Alpha_3
+      - serverid=TEST
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
+    ports:
+      - "8083:8080"
+      - "8013:8000" # java remote debugging
     secrets:
       - keystorefile
       - keystorepswd
@@ -25,10 +28,18 @@ services:
           - node.hostname == vcellapi
           - node.labels.zone == DMZ
   master:
-    image: schaff/vcell-master:remoting
+    image: schaff/vcell-master:7.0.0-alpha.3
     environment:
+      - softwareVersion=VCell_7.0_Alpha_3
+      - serverid=TEST
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
+      - simdatadir_external=/share/apps/vcell3/users/
+      - htclogdir_external=/share/apps/vcell3/htclogs/
+      - singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch-7.0.0-alpha.3.img
+      - docker_name=schaff/vcell-batch:7.0.0-alpha.3
+    ports:
+      - "8023:8000" # java remote debugging
     volumes:
       - "/opt/vcelldata/users:/simdata"
     secrets:
@@ -70,7 +81,7 @@ services:
 #          - node.hostname != vcell-docker.cam.uchc.edu
           - node.labels.zone == INTERNAL
   mongodb:
-    image: schaff/vcell-mongo:latest
+    image: schaff/vcell-mongo:7.0.0-alpha.3
     ports:
       - "27020:27017"
     networks:

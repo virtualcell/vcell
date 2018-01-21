@@ -9,7 +9,7 @@ services:
       - jmsurl=failover:(tcp://activemq:61616)
     ports:
       - "8083:8080"
-      - "8001:8000" # java remote debugging
+      - "8013:8000" # java remote debugging
     secrets:
       - keystorefile
       - keystorepswd
@@ -32,7 +32,7 @@ services:
       - singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch-remoting.img
       - docker_name=schaff/vcell-batch:remoting
     ports:
-      - "8002:8000" # java remote debugging
+      - "8023:8000" # java remote debugging
     volumes:
       - "/Volumes/vcell/users:/simdata"
     secrets:

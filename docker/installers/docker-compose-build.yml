@@ -1,0 +1,52 @@
+version: '3.1'
+services:
+  clientgen:
+    build:
+      context: ../../
+      dockerfile: docker/installers/Dockerfile-clientgen-dev
+    environment:
+      - compiler_updateSiteBaseUrl=http://vcell.org/webstart/Test
+      - compiler_Site=Test
+      - compiler_vcellVersion=7.0
+      - compiler_vcellBuild=2
+      - compiler_softwareVersionString=Test_Version_7.0_build_7
+      - compiler_rmiHosts=vcell-rmi-alpha.cam.uchc.edu:40108
+      - compiler_bioformatsJarFile=vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
+      - compiler_bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
+      - compiler_applicationId=1471-8022-1038-5555
+      - macJre=macosx-amd64-1.8.0_141.tar.gz
+      - win64Jre=windows-amd64-1.8.0_141.tar.gz
+      - win32Jre=windows-x86-1.8.0_141.tar.gz
+      - linux64Jre=linux-amd64-1.8.0_66.tar.gz
+      - linux32Jre=linux-x86-1.8.0_66.tar.gz
+    volumes:
+      #
+      # Java JRE archive files for inclusion in the installed VCell Client (mapped to /jres folder in Docker container)
+      #    macosx-amd64-1.8.0_141.tar.gz
+      #    windows-amd64-1.8.0_141.tar.gz
+      #    windows-x86-1.8.0_141.tar.gz
+      #
+      - "$HOME/.install4j6/jres:/jres"
+      - "./generated_installers:/outputdir"
+    secrets:
+      - winCodeSignKeystore_pfx
+      - winCodeSignKeystore_pswdfile
+      - macCodeSignKeystore_p12
+      - macCodeSignKeystore_pswdfile
+      - Install4J_product_key_file
+secrets:
+  #
+  # simple and slightly secure way of handling credentials (if file permissions are locked down)
+  # even better if using a proper 'secrets' management infrastructure like Vault 
+  # (https://www.vaultproject.io/community.html).
+  #
+  winCodeSignKeystore_pfx:
+    file: ~/vcellkeys/VCELL_UCONN_MS_2017.pfx
+  winCodeSignKeystore_pswdfile:
+    file: ~/vcellkeys/VCELL_UCONN_MS_2017_pswd.txt  
+  macCodeSignKeystore_p12:
+    file: ~/vcellkeys/VCELL_APPLE_2015.p12
+  macCodeSignKeystore_pswdfile:
+    file: ~/vcellkeys/VCELL_APPLE_2015_pswd.txt  
+  Install4J_product_key_file:
+    file: ~/vcellkeys/Install4J_product_key.txt
