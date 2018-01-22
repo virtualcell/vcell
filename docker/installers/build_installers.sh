@@ -7,10 +7,9 @@
 shopt -s -o nounset
 
 # gather classpath (filenames only), Install4J will add the correct separator
-vcellClasspathColonSep=`ls -m /vcellclient/lib | tr -d '[:space:]' | tr ',' ':'`
+compiler_vcellClasspathColonSep=`ls -m /vcellclient/vcell-client/target/maven-jars | tr -d '[:space:]' | tr ',' ':'`
 
-
-cd /vcellclient
+cd /config
 
 PATH=/installer/install4j6/bin:$PATH
 
@@ -24,7 +23,7 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #
 # install Install4J product key (only really needed first time when running this Docker container)
 #
-/installer/install4j6/bin/install4jc -L $Install4J_product_key
+/installer/install4j6.1.6/bin/install4jc -L $Install4J_product_key
 
 #echo "jres found in /jres are `ls /jres`"
 #cp /jres/* /config
@@ -48,7 +47,7 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #
 # run install4jc to create installers for VCell Client on supported platforms.
 #
-/installer/install4j6/bin/install4jc \
+/installer/install4j6.1.6/bin/install4jc \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
 	-D \
@@ -68,9 +67,9 @@ Site=$compiler_Site,\
 vcellVersion=$compiler_vcellVersion,\
 vcellBuild=$compiler_vcellBuild,\
 updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
-vcellClasspathColonSep=$vcellClasspathColonSep,\
+vcellClasspathColonSep=$compiler_vcellClasspathColonSep,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
 bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
-	/config/VCell.install4j
+	VCell.install4j
 

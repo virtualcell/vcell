@@ -1,13 +1,13 @@
 version: '3.1'
 services:
   clientgen:
-    image: schaff/vcell-clientgen:7.0.0-alpha.3
+    image: schaff/vcell-clientgen:7.0.0-alpha.4
     environment:
       - compiler_updateSiteBaseUrl=http://vcell.org/webstart/Test
       - compiler_Site=Test
       - compiler_vcellVersion=7.0
-      - compiler_vcellBuild=2
-      - compiler_softwareVersionString=Test_Version_7.0_build_7
+      - compiler_vcellBuild=4
+      - compiler_softwareVersionString=Test_Version_7.0_build_4
       - compiler_rmiHosts=vcell-rmi-alpha.cam.uchc.edu:40108
       - compiler_bioformatsJarFile=vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
       - compiler_bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar

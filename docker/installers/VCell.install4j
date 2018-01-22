@@ -22,7 +22,7 @@
       <variable name="vcellVersion" value="NO-VERSION" description="" category="" />
       <variable name="vcellBuild" value="NO-BUILD" description="" category="" />
       <variable name="vcellNativeLibsDirSourcePath" value="${compiler:mavenRootDir}/nativelibs" description="" category="" />
-      <variable name="vcellLibSourcePath" value="${compiler:mavenRootDir}/lib" description="" category="" />
+      <variable name="vcellLibSourcePath" value="${compiler:mavenRootDir}/vcell-client/target/maven-jars" description="" category="" />
       <variable name="outputDir" value="NO-OUTPUT-DIR" description="" category="" />
       <variable name="vcell5SplashScreenPngFilePath" value="${compiler:mavenRootDir}/vcellSplash.png" description="" category="" />
       <variable name="vcellLocalSolversDirPath" value="${compiler:mavenRootDir}/localsolvers" description="" category="" />
