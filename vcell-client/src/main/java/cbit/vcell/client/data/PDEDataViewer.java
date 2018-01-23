@@ -585,7 +585,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 //						try {
 					if(getSimulationModelInfo() != null){
 						SimulationModelInfo simulationWorkspaceModelInfo = PDEDataViewer.this.getSimulationModelInfo();
-						simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+						simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata(null);
 					}
 //						}catch (Exception e){
 //							e.printStackTrace();

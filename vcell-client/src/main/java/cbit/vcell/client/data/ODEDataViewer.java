@@ -11,6 +11,7 @@
 package cbit.vcell.client.data;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import javax.swing.JTabbedPane;
@@ -26,6 +27,7 @@ import org.vcell.util.gui.SpecialtyTableRenderer;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.BioModelCategoryType;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
@@ -33,11 +35,13 @@ import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.SpatialSelection;
+import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
 import cbit.vcell.solver.ode.gui.OutputSpeciesResultsPanel;
+import cbit.vcell.util.ColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:01:46 AM)
@@ -79,6 +83,13 @@ public ODEDataViewer() {
 	initialize();
 }
 
+private DataSymbolMetadata sensitivityMetaDataParser(String symbolName) {
+	String parts[] = symbolName.replaceFirst("sens_", "").replaceAll("_wrt_", " ").split(" ");
+	String var = parts[0];
+	String param =  parts[1];
+	DataSymbolMetadata dataSymbolMetadata = new DataSymbolMetadata(BioModelCategoryType.Sensitivity,null, "Sensitivity of "+var+" for "+param);
+	return dataSymbolMetadata;
+}
 /**
  * connEtoM2:  (ODESolverPlotSpecificationPanel1.singleXPlot2D --> PlotPane1.plot2D)
  * @param arg1 java.beans.PropertyChangeEvent
@@ -104,6 +115,13 @@ private void updateMetadata() {
 	if(getOdeSolverResultSet() == null){
 		return;
 	}
+	final HashMap<String, DataSymbolMetadata> auxDataSymbolMap = new HashMap();
+	for(ColumnDescription columnDescription:getOdeSolverResultSet().getColumnDescriptions()){
+		if(columnDescription.getName().startsWith("sens_") && columnDescription.getName().contains("_wrt_")){
+			DataSymbolMetadata dataSymbolMetadata = sensitivityMetaDataParser(columnDescription.getName());
+			auxDataSymbolMap.put(columnDescription.getName(), dataSymbolMetadata);
+		}
+	}
 	//check if clienttaskdispatcher is busy, if so schedule this method to run later (workaround spurious threading problem)
 	if((odeDataViewersetupTimer = ClientTaskDispatcher.getBlockingTimer(ODEDataViewer.this, null, null, odeDataViewersetupTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){updateMetadata();}},"ODEDataViewer Setup...")) != null){
 		return;
@@ -115,7 +133,7 @@ private void updateMetadata() {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				if(ODEDataViewer.this.getSimulationModelInfo() != null){
 					SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
-					simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+					simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata(auxDataSymbolMap);
 				}
 			}
 		};
