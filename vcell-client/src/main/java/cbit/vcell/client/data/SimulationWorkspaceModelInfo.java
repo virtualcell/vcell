@@ -265,13 +265,16 @@ public String getVolumeNameGeometry(int subVolumeID) {
 //	}
 //}
 
-private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataResolver {
-
+public class InternalDataSymbolMetadataResolver implements DataSymbolMetadataResolver {
+	private String[] sensVars;
 	private HashMap<String, DataSymbolMetadata> savedMetadataMap = null;
 	
 	private InternalDataSymbolMetadataResolver(){
 	}
-	
+	public void setSensitivityVarNames(String[] sensVars){
+		this.sensVars = sensVars;
+	}
+
 	@Override
 	public DataSymbolMetadata getDataSymbolMetadata(SymbolTableEntry ste) {
 		//
@@ -346,13 +349,17 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 	}
 	
 	@Override
-	public void populateDataSymbolMetadata() {
+	public void populateDataSymbolMetadata(HashMap<String, DataSymbolMetadata> auxMap) {
 		VCellThreadChecker.checkCpuIntensiveInvocation();	// must be explicitly called from a non-swing thread
 
 		if (savedMetadataMap != null){
 			if(simulationOwner instanceof SimulationContext){
 				addOutputFunctionsToMetaData((SimulationContext)simulationOwner, savedMetadataMap);
 			}
+			if(auxMap != null){
+				savedMetadataMap.putAll(auxMap);
+			}
+
 			return;
 		}
 		HashMap<String, DataSymbolMetadata> metadataMap = new HashMap<String,DataSymbolMetadata>();
@@ -491,18 +498,22 @@ buffer.append(line+"\n");
 		}else{
 			throw new RuntimeException("Unexpected SimulationOwner="+simulationOwner.getClass().getName());
 		}
+		if(auxMap != null){
+			savedMetadataMap.putAll(auxMap);
+		}
 	}
 
 }
 
-private static enum BioModelCategoryType implements ModelCategoryType {
+public static enum BioModelCategoryType implements ModelCategoryType {
 	Species(true,true),
 	Reactions,
 	UserFunctions,
 	Observables(true,true),
 	GeneratedSpecies,
 	ReservedXYZT(true,false),
-	Other;
+	Other,
+	Sensitivity;
 	/**
 	 * should this be selected initially on GUI?
 	 */

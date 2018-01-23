@@ -10,6 +10,8 @@
 
 package cbit.vcell.solver;
 
+import java.util.HashMap;
+
 import cbit.vcell.parser.SymbolTableEntry;
 
 
@@ -35,7 +37,7 @@ public interface SimulationModelInfo {
 		
 		ModelCategoryType[] getUniqueFilterCategories();
 		
-		void populateDataSymbolMetadata();
+		void populateDataSymbolMetadata(HashMap<String, DataSymbolMetadata> auxMap);
 	}	
 
 	String getContextName();

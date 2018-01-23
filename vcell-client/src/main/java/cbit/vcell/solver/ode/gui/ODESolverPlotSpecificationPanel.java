@@ -521,7 +521,7 @@ public ODEDataInterface getMyDataInterface() {
  */
 private Constant getSensitivityParameter() throws ExpressionException {
 	String sensParamName = "";
-	FunctionColumnDescription fcds[] = getMyDataInterface().getFunctionColumnDescriptions();
+	ColumnDescription fcds[] = getMyDataInterface().getAllColumnDescriptions();
 
 	// Check for any column description name that starts with the substring "sens" and contains "wrt_".
 	for (int i = 0; i < fcds.length; i++){
@@ -1033,16 +1033,28 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 				for (int i=0;i<allData.length-1;i++) {
 					// Finding sensitivity var column for each column in result set.
 					ColumnDescription cd = getMyDataInterface().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
+					String sensVarName = null;
+					ColumnDescription[] allColumnDescriptions = getMyDataInterface().getAllColumnDescriptions();
+					for (int j = 0; j < allColumnDescriptions.length; j++) {
+						String obj = "sens_"+cd.getName()+"_wrt_"+sensParam.getName();
+						if (allColumnDescriptions[j].getName().equals(obj)) {
+							sensVarName = obj;
+							break;
+						}
+					}
 					int sensIndex = -1;
-					for (int j = 0; j < ((DefaultListModel)getYAxisChoice().getModel()).size(); j++) {
-						if (((DefaultListModel)getYAxisChoice().getModel()).elementAt(j).equals("sens_"+cd.getName()+"_wrt_"+sensParam.getName())) {
-							sensIndex = j;
+					if(sensVarName != null){
+						for (int j = 0; j < ((DefaultListModel)getYAxisChoice().getModel()).getSize(); j++) {
+							if (((String)((DefaultListModel)getYAxisChoice().getModel()).get(j)).equals(sensVarName)) {
+								sensIndex = j;
+								break;
+							}
 						}
 					}
 					yData = getMyDataInterface().extractColumn(cd.getName());
 					// If sensitivity var exists, compute log sensitivity
-					if (sensIndex > -1) {
-						double[] sens = getMyDataInterface().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(sensIndex));
+					if (sensVarName != null) {
+						double[] sens = getMyDataInterface().extractColumn(sensVarName);
 						for (int k = 0; k < yData.length; k++) {
 							// Extrapolated statevars and functions
 							if (Math.abs(yData[k]) > 1e-6) {
@@ -1063,7 +1075,9 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 									logSens = tempLogSens;
 								}
 							}
-							allData[sensIndex+1][k] = logSens;
+							if(sensIndex > -1){
+								allData[sensIndex+1][k] = logSens;
+							}
 						}
 					// If sensitivity var does not exist, retain  original value of column (var or function).
 					} else {
