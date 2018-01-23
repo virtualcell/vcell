@@ -100,6 +100,8 @@ public class VCellApiClient {
 	private HttpClientContext httpClientContext;
 	boolean bIgnoreCertProblems = true;
 	boolean bIgnoreHostMismatch = true;
+	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
+
 
 	// Create a custom response handler
 	private ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
@@ -116,9 +118,9 @@ public class VCellApiClient {
 
 	};
 
-	public VCellApiClient(String host, int port, String clientID, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
+	public VCellApiClient(String host, int port, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
 		this.httpHost = new HttpHost(host,port,"https");
-		this.clientID = clientID;
+		this.clientID = DEFAULT_CLIENTID;
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
 		this.bIgnoreHostMismatch = bIgnoreHostMismatch;
 		initClient();

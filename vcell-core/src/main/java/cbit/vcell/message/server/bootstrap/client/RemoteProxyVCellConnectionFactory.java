@@ -17,8 +17,8 @@ import java.security.NoSuchAlgorithmException;
 
 import org.apache.http.client.ClientProtocolException;
 import org.vcell.api.client.VCellApiClient;
-import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.api.client.VCellApiClient.RpcDestination;
+import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.SessionLog;
@@ -28,7 +28,6 @@ import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellConnection;
@@ -83,8 +82,7 @@ public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLo
 	boolean bIgnoreCertProblems = true;
 	boolean bIgnoreHostMismatch = true;
 	try {
-		String clientId = PropertyLoader.getSecretValue(PropertyLoader.vcellapiClientid, PropertyLoader.vcellapiClientidFile);
-		this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, clientId, bIgnoreCertProblems, bIgnoreHostMismatch);
+		this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, bIgnoreCertProblems, bIgnoreHostMismatch);
 	} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
 		e.printStackTrace();
 		throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
@@ -106,8 +104,7 @@ public static String getVCellSoftwareVersion(String apihost, Integer apiport) {
 	boolean bIgnoreCertProblems = true;
 	boolean bIgnoreHostMismatch = true;
 	try {
-		String clientId = PropertyLoader.getSecretValue(PropertyLoader.vcellapiClientid, PropertyLoader.vcellapiClientidFile);
-		VCellApiClient tempApiClient = new VCellApiClient(apihost, apiport, clientId, bIgnoreCertProblems, bIgnoreHostMismatch);
+		VCellApiClient tempApiClient = new VCellApiClient(apihost, apiport, bIgnoreCertProblems, bIgnoreHostMismatch);
 		String serverSoftwareVersion = tempApiClient.getServerSoftwareVersion();
 		return serverSoftwareVersion;
 	} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {

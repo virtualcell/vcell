@@ -12,8 +12,6 @@ import org.vcell.api.common.SimulationTaskRepresentation;
 
 public class VCellApiClientTest {
 	
-	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
-	
 	/**
 	 * @param args
 	 */
@@ -28,14 +26,10 @@ public class VCellApiClientTest {
 			int port = Integer.parseInt(args[1]);
 			String username = args[2];
 			String password = args[3];
-			String clientID = DEFAULT_CLIENTID;
-			if (args.length>4){
-				clientID = args[4];
-			}
 			
 			boolean bIgnoreCertProblems = true;
 			boolean bIgnoreHostMismatch = true;
-			vcellApiClient = new VCellApiClient(host,port,clientID,bIgnoreCertProblems, bIgnoreHostMismatch);
+			vcellApiClient = new VCellApiClient(host,port,bIgnoreCertProblems,bIgnoreHostMismatch);
 
 			vcellApiClient.authenticate(username,password,false);
 			

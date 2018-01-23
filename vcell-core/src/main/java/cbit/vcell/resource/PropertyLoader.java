@@ -79,8 +79,6 @@ public class PropertyLoader {
 	public static final String visitExe						= record("vcell.visit.executable",ValueType.EXE);
 
 	public static final String vcellServerHost				= record("vcell.serverHost",ValueType.GEN);
-	public static final String vcellapiClientid				= record("vcellapi.clientid",ValueType.INT);
-	public static final String vcellapiClientidFile			= record("vcellapi.clientidfile",ValueType.INT);
 
 	//Python properties
 	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);

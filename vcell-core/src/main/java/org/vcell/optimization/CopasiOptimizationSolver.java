@@ -122,7 +122,7 @@ public class CopasiOptimizationSolver {
 			String[] parts = serverHost.split(":");
 			String host = parts[0];
 			int port = Integer.parseInt(parts[1]);
-			VCellApiClient apiClient = new VCellApiClient(host, port, "123456", bIgnoreCertProblems, bIgnoreHostMismatch);
+			VCellApiClient apiClient = new VCellApiClient(host, port, bIgnoreCertProblems, bIgnoreHostMismatch);
 
 			TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
 			String optProblemJson = serializer.toString(optProblem);

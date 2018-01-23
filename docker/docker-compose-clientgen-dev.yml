@@ -2,29 +2,29 @@ version: '3.1'
 services:
   clientgen:
     build:
-      context: ../../
-      dockerfile: docker/installers/Dockerfile-clientgen-dev
+      context: ../
+      dockerfile: docker/Dockerfile-clientgen-dev
     environment:
-      - compiler_updateSiteBaseUrl=http://vcell.org/webstart/Test
-      - compiler_Site=Test
-      - compiler_vcellVersion=7.0
-      - compiler_vcellBuild=4
-      - compiler_softwareVersionString=Test_Version_7.0_build_4
-      - compiler_rmiHosts=vcell-rmi-alpha.cam.uchc.edu:40108
-      - compiler_bioformatsJarFile=vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
-      - compiler_bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
-      - compiler_applicationId=1471-8022-1038-5555
-      - macJre=macosx-amd64-1.8.0_141.tar.gz
-      - win64Jre=windows-amd64-1.8.0_141.tar.gz
-      - win32Jre=windows-x86-1.8.0_141.tar.gz
-      - linux64Jre=linux-amd64-1.8.0_66.tar.gz
-      - linux32Jre=linux-x86-1.8.0_66.tar.gz
+      - compiler_updateSiteBaseUrl=$VCELL_UPDATE_SITE
+      - compiler_Site=$VCELL_SITE_CAMEL
+      - compiler_vcellVersion=$VCELL_VERSION_NUMBER
+      - compiler_vcellBuild=$VCELL_BUILD_NUMBER
+      - compiler_softwareVersionString=$VCELL_VERSION
+      - compiler_rmiHosts=${VCELL_APIHOST}:$VCELL_APIPORT
+      - compiler_bioformatsJarFile=$BIOFORMATS_JAR_FILE
+      - compiler_bioformatsJarDownloadURL=$BIOFORMATS_JAR_URL
+      - compiler_applicationId=$VCELL_CLIENT_APPID
+      - macJre=$INSTALLER_JRE_MAC
+      - win64Jre=$INSTALLER_JRE_WIN64
+      - win32Jre=$INSTALLER_JRE_WIN32
+      - linux64Jre=$INSTALLER_JRE_LINUX64
+      - linux32Jre=$INSTALLER_JRE_LINUX32
     volumes:
       #
       # Java JRE archive files for inclusion in the installed VCell Client (mapped to /jres folder in Docker container)
-      #    macosx-amd64-1.8.0_141.tar.gz
-      #    windows-amd64-1.8.0_141.tar.gz
-      #    windows-x86-1.8.0_141.tar.gz
+      #    macosx-amd64-1.8.0_141
+      #    windows-amd64-1.8.0_141
+      #    windows-x86-1.8.0_141
       #
       - "$HOME/.install4j6/jres:/jres"
       - "./generated_installers:/outputdir"

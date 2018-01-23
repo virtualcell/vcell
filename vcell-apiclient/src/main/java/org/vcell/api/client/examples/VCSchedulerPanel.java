@@ -1,20 +1,29 @@
 package org.vcell.api.client.examples;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JPasswordField;
-import javax.swing.JTable;
-import javax.swing.JScrollPane;
-
-import java.awt.GridBagLayout;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 import org.apache.http.client.ClientProtocolException;
 import org.vcell.api.client.VCellApiClient;
@@ -25,26 +34,8 @@ import org.vcell.api.common.BiomodelRepresentation;
 import org.vcell.api.common.SimulationRepresentation;
 import org.vcell.api.common.SimulationTaskRepresentation;
 
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
 public class VCSchedulerPanel extends JPanel {
 	
-	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
-
 	private JPanel panel;
 	private JButton btnLogin;
 	private JLabel lblUser;
@@ -328,18 +319,14 @@ public class VCSchedulerPanel extends JPanel {
 		
 	public static void main(String[] args) {
 		try {
-			if (args.length != 3 && args.length != 4){
-				System.out.println("usage: VCellApiClient host userid password [clientID]");
+			if (args.length != 3){
+				System.out.println("usage: VCellApiClient host userid password");
 				System.exit(1);
 			}
 			String host = args[0];
 			int port = 8080;
 			String username = args[1];
 			String password = args[2];
-			String clientID = DEFAULT_CLIENTID;
-			if (args.length>3){
-				clientID = args[3];
-			}
 			
 			JFrame jframe = new JFrame();
 			VCSchedulerPanel panel = new VCSchedulerPanel();
@@ -347,7 +334,7 @@ public class VCSchedulerPanel extends JPanel {
 			panel.setPassword(password);
 			boolean bIgnoreCertProblems = true;
 			boolean bIgnoreHostMismatch = true;
-			panel.vcellApiClient = new VCellApiClient(host,port,clientID,bIgnoreCertProblems, bIgnoreHostMismatch);
+			panel.vcellApiClient = new VCellApiClient(host,port,bIgnoreCertProblems, bIgnoreHostMismatch);
 
 			jframe.getContentPane().add(panel);
 			jframe.setSize(800,500);

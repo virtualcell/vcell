@@ -2,14 +2,16 @@ version: '3.1'
 services:
   api:
     build:
-      context: ./
-      dockerfile: Dockerfile-api-dev
+      context: ../
+      dockerfile: docker/Dockerfile-api-dev
     environment:
+      - softwareVersion="${VCELL_VERSION}"
+      - serverid="${VCELL_SITE}"
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
     ports:
-      - "8083:8080"
-      - "8013:8000" # java remote debugging
+      - "${VCELL_APIPORT}:8080"
+      - "8000" # java remote debugging
     secrets:
       - keystorefile
       - keystorepswd
@@ -22,19 +24,21 @@ services:
       - mongodb
   master:
     build:
-      context: ./
-      dockerfile: Dockerfile-master-dev
+      context: ../
+      dockerfile: docker/Dockerfile-master-dev
     environment:
+      - softwareVersion="${VCELL_VERSION}"
+      - serverid="${VCELL_SITE}"
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
-      - simdatadir_external=/share/apps/vcell3/users/
-      - htclogdir_external=/share/apps/vcell3/htclogs/
-      - singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch-remoting.img
-      - docker_name=schaff/vcell-batch:remoting
+      - simdatadir_external="${VCELL_SIMDATADIR_EXTERNAL}"
+      - htclogdir_external="${VCELL_HTCLOGS_EXTERNAL}
+      - singularity_imagefile="{VCELL_SINGULARITY_EXTERNAL}/vcell-batch-${VCELL_TAG}.img"
+      - docker_name=schaff/vcell-batch:${VCELL_TAG}
     ports:
-      - "8023:8000" # java remote debugging
+      - "8000" # java remote debugging
     volumes:
-      - "/Volumes/vcell/users:/simdata"
+      - "${VCELL_SIMDATADIR_HOST}:/simdata"
     secrets:
       - dbpswd
       - jmspswd
@@ -47,8 +51,8 @@ services:
   activemq:
     image: webcenter/activemq:5.14.3
     ports:
-      - "8161:8161"
-      - "61619:61616"
+      - "${VCELL_JMSPORT}:61616"
+      - "${VCELL_JMSRESTPORT}:8161"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbreq;simjob;workerevent
       - ACTIVEMQ_STATIC_TOPICS=servicecontrol;daemoncontrol;clientstatus
@@ -63,10 +67,10 @@ services:
       - vcellnet
   mongodb:
     build:
-      context: ./docker/mongo
-      dockerfile: Dockerfile
+      context: ./mongo
+      dockerfile: ./mongo/Dockerfile
     ports:
-      - "27017:27017"
+      - "${VCELL_MONGOPORT}:27017"
     networks:
       - vcellnet
 
@@ -74,12 +78,12 @@ networks:
   vcellnet:
 secrets:
   dbpswd:
-    file: ~/vcellkeys/dbpswd.txt
+    file: "${VCELL_SECRETS_DIR}/dbpswd.txt"
   jmspswd:
-    file: ~/vcellkeys/jmspswd.txt
+    file: "${VCELL_SECRETS_DIR}/jmspswd.txt"
   keystorepswd:
-    file: ~/vcellkeys/keystorepswd.txt
+    file: "${VCELL_SECRETS_DIR}/keystorepswd.txt"
   keystorefile:
-    file: ~/vcellkeys/keystore_macbook.jks
+    file: "${VCELL_SECRETS_DIR}/keystore.jks"
   batchuserkeyfile:
-    file: ~/.ssh/schaff_rsa
+    file: "${VCELL_SECRETS_DIR}/schaff_rsa"

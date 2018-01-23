@@ -39,9 +39,9 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 # fi	
 
 # cd /jres
-#       - macJre=macosx-amd64-1.8.0_141.tar.gz
-#       - win64Jre=windows-amd64-1.8.0_141.tar.gz
-#       - win32Jre=windows-x86-1.8.0_141.tar.gz
+#       - macJre=macosx-amd64-1.8.0_141
+#       - win64Jre=windows-amd64-1.8.0_141
+#       - win32Jre=windows-x86-1.8.0_141
 
 
 #

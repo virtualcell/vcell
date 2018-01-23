@@ -23,7 +23,7 @@ public class OptimizationApiTest {
 		try {
 			boolean bIgnoreCertProblems = true;
 			boolean bIgnoreHostMismatch = true;
-			VCellApiClient apiClient = new VCellApiClient(host, port, "123456", bIgnoreCertProblems, bIgnoreHostMismatch);
+			VCellApiClient apiClient = new VCellApiClient(host, port, bIgnoreCertProblems, bIgnoreHostMismatch);
 
 			File optProbFile = new File("../pythonScripts/VCell_Opt/optprob.bin");
 			System.out.println("using optProblem: "+optProbFile.getAbsolutePath());
