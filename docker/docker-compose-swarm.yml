@@ -34,6 +34,8 @@ services:
       - htclogdir_external=${VCELL_HTCLOGS_EXTERNAL}
       - singularity_imagefile=${VCELL_SINGULARITY_EXTERNAL}/vcell-batch-${VCELL_TAG}.img
       - docker_name=schaff/vcell-batch:${VCELL_TAG}
+      - batchhost=${VCELL_BATCH_HOST}
+      - batchuser=${VCELL_BATCH_USER}
     ports:
       - "8000" # java remote debugging
     volumes:

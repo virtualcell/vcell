@@ -38,9 +38,9 @@ public class SlurmProxy extends HtcProxy {
 
 
 	// note: full commands use the PropertyLoader.htcPbsHome path.
-	private final static String JOB_CMD_SUBMIT = "sbatch";
-	private final static String JOB_CMD_DELETE = "scancel";
-	private final static String JOB_CMD_STATUS = "sacct";
+	private final static String JOB_CMD_SUBMIT = "bash -l sbatch";
+	private final static String JOB_CMD_DELETE = "bash -l scancel";
+	private final static String JOB_CMD_STATUS = "bash -l sacct";
 	//private final static String JOB_CMD_QACCT = "qacct";
 	
 	//private static String Slurm_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSlurmHome);
@@ -321,20 +321,35 @@ denied: job "6894" does not exist
 		lsb.newline();
 		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
 		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
-		lsb.write("if [ ! -e "+singularity_image+" ] ; then");
-		lsb.write("   echo \"singularity image "+singularity_image+" not found, building from docker image");
-		lsb.write("   echo \"assuming Singularity version 2.4 or later is installed on host system.\"");
-		lsb.write("   singularity build "+singularity_image+" docker://"+docker_image);
-		lsb.write("   stat=$?");
-		lsb.write("   if [ $stat -ne 0 ]; then");
-		lsb.write("      echo \"failed to build singularity image, returning $stat to Slurm\"");
-		lsb.write("      exit $stat");
+		lsb.write("cmd_prefix=");
+		lsb.write("if command -v singularity >/dev/null 2>&1; then");
+		lsb.write("   # singularity command exists");
+		lsb.write("   if [ ! -e "+singularity_image+" ] ; then");
+		lsb.write("      echo \"singularity image "+singularity_image+" not found, building from docker image\"");
+		lsb.write("      echo \"assuming Singularity version 2.4 or later is installed on host system.\"");
+		lsb.write("      singularity build "+singularity_image+" docker://"+docker_image);
+		lsb.write("      stat=$?");
+		lsb.write("      if [ $stat -ne 0 ]; then");
+		lsb.write("         echo \"failed to build singularity image, returning $stat to Slurm\"");
+		lsb.write("         exit $stat");
+		lsb.write("      fi");
+		lsb.write("   else");
+		lsb.write("      echo \"singularity image "+singularity_image+" found\"");
 		lsb.write("   fi");
+		lsb.write("   cmd_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" \"");
 		lsb.write("else");
-		lsb.write("   echo \"singularity image "+singularity_image+" found\"");
+		lsb.write("   if command -v docker >/dev/null 2>&1; then");
+		String jmsurl=PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL);
+		String jmsuser=PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
+		String jmspswd=PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue,PropertyLoader.jmsPasswordFile);
+		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+		String environmentVars = "-e jmsurl="+jmsurl+" -e jmsuser="+jmsuser+" -e jmspswd="+jmspswd+" -e serverid="+serverid+" softwareVersion="+softwareVersion;
+		lsb.write("       cmd_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata "+environmentVars+" "+docker_image+" \"");
+		lsb.write("   fi");
 		lsb.write("fi");
+		lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
 
-		String invoke_container="singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" ";
 		lsb.newline();
 		/**
 		 * excerpt from vcell-batch Dockerfile
@@ -376,9 +391,9 @@ denied: job "6894" does not exist
 			exitCmd.stripPathFromCommand();
 			lsb.write("callExitProcessor( ) {");
 			lsb.append("\techo exitCommand = ");
-			lsb.write(invoke_container + exitCmd.getJoinedCommands("$1"));
+			lsb.write("$cmd_prefix " + exitCmd.getJoinedCommands("$1"));
 			lsb.append('\t');
-			lsb.write(invoke_container + exitCmd.getJoinedCommands());
+			lsb.write("$cmd_prefix " + exitCmd.getJoinedCommands());
 			lsb.write("}");
 			lsb.write("echo");
 		}
@@ -396,18 +411,18 @@ denied: job "6894" does not exist
 				}
 			}
 			lsb.append("echo command = ");
-			lsb.write(invoke_container + cmd);
+			lsb.write("$cmd_prefix " + cmd);
 
 			lsb.write("(");
 			if (ec.getLdLibraryPath()!=null){
 				lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
 			}
-			lsb.write("    "+invoke_container + cmd);
+			lsb.write("    "+"$cmd_prefix " + cmd);
 			lsb.write(")");
 			lsb.write("stat=$?");
 
 			lsb.append("echo ");
-			lsb.append(invoke_container + cmd);
+			lsb.append("$cmd_prefix " + cmd);
 			lsb.write("returned $stat");
 
 			lsb.write("if [ $stat -ne 0 ]; then");

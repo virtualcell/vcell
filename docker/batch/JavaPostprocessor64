@@ -18,16 +18,14 @@ shopt -s -o nounset
 postprocessor_mainclass=cbit.vcell.message.server.sim
 
 jvmprop="-Djava.io.tmpdir=/tmp"
-jvmprop="${jmsprop} -Dvcell.jms.url=${jmsurl}"
-jvmprop="${jmsprop} -Dvcell.jms.user=${jmsuser}"
-jvmprop="${jmsprop} -Dvcell.jms.pswd=${jmspswd}"
-jvmprop="${jmsprop} -Dvcell.primarySimdatadir=/simdata"
-jvmprop="${jmsprop} -Dvcell.secondarySimdatadir=/simdata"
-jvmprop="${jmsprop} -Dvcell.server.id=${serverid}"
-jvmprop="${jmsprop} -Dvcell.softwareVersion=${softwareVersion}"
-jvmprop="${jvmprop} -Dvcell.lib=${common_siteNativelibsDir}"
-
-setupJavaPrefs
+jvmprop="${jvmprop} -Dvcell.jms.url=${jmsurl}"
+jvmprop="${jvmprop} -Dvcell.jms.user=${jmsuser}"
+jvmprop="${jvmprop} -Dvcell.jms.pswd=${jmspswd}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir=/simdata"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir=/simdata"
+jvmprop="${jvmprop} -Dvcell.server.id=${serverid}"
+jvmprop="${jvmprop} -Dvcell.softwareVersion=${softwareVersion}"
+jvmprop="${jvmprop} -Dvcell.lib=/usr/local/app/nativelibs/linux64"
 
 arguments=$*
 
