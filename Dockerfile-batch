@@ -28,8 +28,11 @@ ENV PATH=/vcellscripts:$PATH \
     CLASSPATH=/usr/local/app/lib/*
 
 ENV softwareVersion=VCell_7.0_build_99 \
-	serverid=TEST2 \
-    jmsurl="failover:(tcp://vcell-service.cam.uchc.edu:61616)" \
+	serverid=TEST \
+	jmshost=vcell-service.cam.uchc.edu \
+	jmsport=61619 \
+	jmsrestport=8164 \
+    jmsurl=failover:(tcp://vcell-service.cam.uchc.edu:61619) \
     jmsuser=clientUser \
     jmspswd=dummy \
     solverprimarydata=/simdata/ \

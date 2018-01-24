@@ -5,8 +5,8 @@ services:
       context: ../
       dockerfile: docker/Dockerfile-api-dev
     environment:
-      - softwareVersion="${VCELL_VERSION}"
-      - serverid="${VCELL_SITE}"
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
     ports:
@@ -27,13 +27,13 @@ services:
       context: ../
       dockerfile: docker/Dockerfile-master-dev
     environment:
-      - softwareVersion="${VCELL_VERSION}"
-      - serverid="${VCELL_SITE}"
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
-      - simdatadir_external="${VCELL_SIMDATADIR_EXTERNAL}"
-      - htclogdir_external="${VCELL_HTCLOGS_EXTERNAL}
-      - singularity_imagefile="{VCELL_SINGULARITY_EXTERNAL}/vcell-batch-${VCELL_TAG}.img"
+      - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
+      - htclogdir_external=${VCELL_HTCLOGS_EXTERNAL}
+      - singularity_imagefile=${VCELL_SINGULARITY_EXTERNAL}/vcell-batch-${VCELL_TAG}.img
       - docker_name=schaff/vcell-batch:${VCELL_TAG}
     ports:
       - "8000" # java remote debugging
@@ -68,7 +68,7 @@ services:
   mongodb:
     build:
       context: ./mongo
-      dockerfile: ./mongo/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "${VCELL_MONGOPORT}:27017"
     networks:
@@ -78,12 +78,12 @@ networks:
   vcellnet:
 secrets:
   dbpswd:
-    file: "${VCELL_SECRETS_DIR}/dbpswd.txt"
+    file: ${VCELL_SECRETS_DIR}/dbpswd.txt
   jmspswd:
-    file: "${VCELL_SECRETS_DIR}/jmspswd.txt"
+    file: ${VCELL_SECRETS_DIR}/jmspswd.txt
   keystorepswd:
-    file: "${VCELL_SECRETS_DIR}/keystorepswd.txt"
+    file: ${VCELL_SECRETS_DIR}/keystorepswd.txt
   keystorefile:
-    file: "${VCELL_SECRETS_DIR}/keystore.jks"
+    file: ${VCELL_SECRETS_DIR}/keystore.jks
   batchuserkeyfile:
-    file: "${VCELL_SECRETS_DIR}/schaff_rsa"
+    file: ${VCELL_SECRETS_DIR}/schaff_rsa

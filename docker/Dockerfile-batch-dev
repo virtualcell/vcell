@@ -21,7 +21,7 @@ ENV PATH=/vcellscripts:$PATH \
 
 ENV softwareVersion=JimMac_Version_7.0_build_99 \
 	serverid=TEST2 \
-    jmsurl=failover:(tcp://localhost:61616) \
+    jmsurlExternal=failover:(tcp://localhost:61616) \
     jmsuser=clientUser \
     jmspswd=dummy \
     solverprimarydata=/simdata/ \

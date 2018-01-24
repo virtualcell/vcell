@@ -1,10 +1,10 @@
 version: '3.1'
 services:
   api:
-    image: "schaff/vcell-api:${VCELL_TAG}"
+    image: schaff/vcell-api:${VCELL_TAG}
     environment:
-      - softwareVersion="${VCELL_VERSION}"
-      - serverid="${VCELL_SITE}"
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
     ports:
@@ -23,20 +23,16 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == vcellapi
-          - node.labels.zone == DMZ
   master:
     image: schaff/vcell-master:${VCELL_TAG}
     environment:
-      - softwareVersion="${VCELL_VERSION}"
-      - serverid="${VCELL_SITE}"
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
       - jmsuser=clientUser
       - jmsurl=failover:(tcp://activemq:61616)
-      - simdatadir_external="${VCELL_SIMDATADIR_EXTERNAL}"
-      - htclogdir_external="${VCELL_HTCLOGS_EXTERNAL}
-      - singularity_imagefile="{VCELL_SINGULARITY_EXTERNAL}/vcell-batch-${VCELL_TAG}.img"
+      - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
+      - htclogdir_external=${VCELL_HTCLOGS_EXTERNAL}
+      - singularity_imagefile=${VCELL_SINGULARITY_EXTERNAL}/vcell-batch-${VCELL_TAG}.img
       - docker_name=schaff/vcell-batch:${VCELL_TAG}
     ports:
       - "8000" # java remote debugging
@@ -61,6 +57,7 @@ services:
     image: webcenter/activemq:5.14.3
     ports:
       - "${VCELL_JMSPORT}:61616"
+      - "${VCELL_JMSRESTPORT}:8161"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbreq;simjob;workerevent
       - ACTIVEMQ_STATIC_TOPICS=servicecontrol;daemoncontrol;clientstatus
@@ -76,10 +73,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-#          - node.hostname != vcell-docker.cam.uchc.edu
-          - node.labels.zone == INTERNAL
   mongodb:
     image: schaff/vcell-mongo:${VCELL_TAG}
     ports:
@@ -106,12 +99,12 @@ networks:
   vcellnet:
 secrets:
   dbpswd:
-    file: /usr/local/deploy/dbpswd.txt
+    file: ${VCELL_SECRETS_DIR}/dbpswd.txt
   jmspswd:
-    file: /usr/local/deploy/jmspswd.txt
+    file: ${VCELL_SECRETS_DIR}/jmspswd.txt
   keystorepswd:
-    file: /usr/local/deploy/keystorepswd.txt
+    file: ${VCELL_SECRETS_DIR}/keystorepswd.txt
   keystorefile:
-    file: /usr/local/deploy/keystore.jks
+    file: ${VCELL_SECRETS_DIR}/keystore.jks
   batchuserkeyfile:
-    file: /usr/local/deploy/schaff_rsa
+    file: ${VCELL_SECRETS_DIR}/schaff_rsa

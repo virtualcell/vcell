@@ -322,16 +322,37 @@ denied: job "6894" does not exist
 		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
 		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
 		lsb.write("if [ ! -e "+singularity_image+" ] ; then");
-		lsb.write("   if [ \"`singularity --version`\" == \"2.3.1-dist\" ] ; then");
-		lsb.write("      singularity create "+singularity_image);
-		lsb.write("      singularity import "+singularity_image+" docker://"+docker_image);
-		lsb.write("   else");
-		lsb.write("      # assuming a mismatch is version 2.4 or later");
-		lsb.write("      singularity build "+singularity_image+" docker://"+docker_image);
+		lsb.write("   echo \"singularity image "+singularity_image+" not found, building from docker image");
+		lsb.write("   echo \"assuming Singularity version 2.4 or later is installed on host system.\"");
+		lsb.write("   singularity build "+singularity_image+" docker://"+docker_image);
+		lsb.write("   stat=$?");
+		lsb.write("   if [ $stat -ne 0 ]; then");
+		lsb.write("      echo \"failed to build singularity image, returning $stat to Slurm\"");
+		lsb.write("      exit $stat");
 		lsb.write("   fi");
+		lsb.write("else");
+		lsb.write("   echo \"singularity image "+singularity_image+" found\"");
 		lsb.write("fi");
+
 		String invoke_container="singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" ";
 		lsb.newline();
+		/**
+		 * excerpt from vcell-batch Dockerfile
+		 * 
+		 * ENV softwareVersion=VCell_7.0_build_99 \
+		 *   serverid=TEST2 \
+		 *   jmsurl="failover:(tcp://vcell-service.cam.uchc.edu:61616)" \
+		 *   jmsuser=clientUser \
+		 *   jmspswd=dummy \
+		 *   solverprimarydata=/simdata/ \
+		 *   mongodbhost="vcell-service.cam.uchc.edu" \
+		 *   mongodbport=27017 \
+		 *   jmsblob_minsize=100000
+		 */
+//		String serverid = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+//		PropertyLoader.api
+//		String jmsurlExternal = PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL);
+//		lsb.write("SINGULARITY_serverid="+serverid);
 
 		if (isParallel) {
 			// #SBATCH
@@ -348,8 +369,8 @@ denied: job "6894" does not exist
 		}
 		lsb.newline();
 	
-	//	lsb.write("run_in_container=\"singularity /path/to/data:/simdata /path/to/image/vcell-batch.img);
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
+	//	lsb.write("run_in_container=\"singularity /path/to/data:/simdata /path/to/image/vcell-batch.img);
 		if (hasExitProcessor) {
 			ExecutableCommand exitCmd = commandSet.getExitCodeCommand();
 			exitCmd.stripPathFromCommand();
