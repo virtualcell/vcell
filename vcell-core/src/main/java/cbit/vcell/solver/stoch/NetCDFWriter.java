@@ -258,7 +258,7 @@ public class NetCDFWriter {
 				// write jms info
 				if (bMessaging) {
 					ArrayChar.D1 jmsString = new ArrayChar.D1(stringLen.getLength());
-					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL));
+					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal));
 					ncfile.write("JMS_BROKER", jmsString);
 					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
 					ncfile.write("JMS_USER", jmsString);

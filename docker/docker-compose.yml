@@ -1,16 +1,14 @@
 version: '3.1'
 services:
   api:
-    build:
-      context: ../
-      dockerfile: docker/Dockerfile-api-dev
+    image: "${VCELL_REPO}/vcell-api:${VCELL_TAG}"
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
       - jmsuser=clientUser
-      - jmsurl=failover:(tcp://activemq:61616)
+      - jmsurl_internal=failover:(tcp://activemq:61616)
     ports:
-      - "${VCELL_APIPORT}:8080"
+      - "${VCELL_API_PORT_EXTERNAL}:8080"
       - "8000" # java remote debugging
     secrets:
       - keystorefile
@@ -22,19 +20,26 @@ services:
     depends_on:
       - activemq
       - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
   master:
-    build:
-      context: ../
-      dockerfile: docker/Dockerfile-master-dev
+    image: "${VCELL_REPO}/vcell-master:${VCELL_TAG}"
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
       - jmsuser=clientUser
-      - jmsurl=failover:(tcp://activemq:61616)
+      - jmsurl_internal=failover:(tcp://activemq:61616)
+      - jmshost_external=${VCELL_JMS_HOST_EXTERNAL}
+      - jmsrestport_external=${VCELL_JMS_RESTPORT_EXTERNAL}
+      - jmsport_external=${VCELL_JMS_PORT_EXTERNAL}
+      - jmsurl_external=${VCELL_JMS_URL_EXTERNAL}
+      - mongodb_host_external=${VCELL_MONGO_HOST_EXTERNAL}
+      - mongodb_port_external=${VCELL_MONGO_PORT_EXTERNAL}
       - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
       - htclogdir_external=${VCELL_HTCLOGS_EXTERNAL}
       - singularity_imagefile=${VCELL_SINGULARITY_EXTERNAL}/vcell-batch-${VCELL_TAG}.img
-      - docker_name=schaff/vcell-batch:${VCELL_TAG}
+      - docker_name=${VCELL_REPO}/vcell-batch:${VCELL_TAG}
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
     ports:
@@ -50,11 +55,17 @@ services:
     depends_on:
       - activemq
       - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   activemq:
     image: webcenter/activemq:5.14.3
     ports:
-      - "${VCELL_JMSPORT}:61616"
-      - "${VCELL_JMSRESTPORT}:8161"
+      - "${VCELL_JMS_PORT_EXTERNAL}:61616"
+      - "${VCELL_JMS_RESTPORT_EXTERNAL}:8161"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbreq;simjob;workerevent
       - ACTIVEMQ_STATIC_TOPICS=servicecontrol;daemoncontrol;clientstatus
@@ -67,12 +78,28 @@ services:
       - ACTIVEMQ_CONFIG_AUTHENABLED=true
     networks:
       - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
   mongodb:
-    build:
-      context: ./mongo
-      dockerfile: Dockerfile
+    image: "${VCELL_REPO}/vcell-mongo:${VCELL_TAG}"
     ports:
-      - "${VCELL_MONGOPORT}:27017"
+      - "${VCELL_MONGO_PORT_EXTERNAL}:27017"
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+      
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
     networks:
       - vcellnet
 

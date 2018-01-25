@@ -80,8 +80,8 @@ public class VCMongoDbDriver {
 	
 	    		// send to MongoDB
 	        	if (m==null){
-	        		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
-	        		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+	        		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
+	        		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
 	        		m = new MongoClient(mongoDbHost,mongoDbPort);
 	        	}
 	        	
@@ -206,8 +206,8 @@ public class VCMongoDbDriver {
 		try {
 			// send to MongoDB
 			if (m == null) {
-				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
-				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
+				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
 				m = new MongoClient(mongoDbHost, mongoDbPort);
 			}
 
@@ -244,8 +244,8 @@ public class VCMongoDbDriver {
 	public byte[] getBLOB(ObjectId objectId) {
 		try {
 			if (m == null) {
-				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
-				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
+				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
 				m = new MongoClient(mongoDbHost, mongoDbPort);
 			}
 			ByteArrayOutputStream streamToDownloadTo = new ByteArrayOutputStream();
@@ -272,8 +272,8 @@ public class VCMongoDbDriver {
 	public void removeBLOB(ObjectId objectId) {
 		try {
 			if (m == null) {
-				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
-				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
+				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
 				m = new MongoClient(mongoDbHost, mongoDbPort);
 			}
 			MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
@@ -314,8 +314,8 @@ public class VCMongoDbDriver {
 			//
 			// "independently" query the contents of the log collection
 			//
-    		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
-    		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+    		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
+    		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
     		m = new MongoClient(mongoDbHost,mongoDbPort);
         	String mongoDbDatabaseName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
         	MongoDatabase db = m.getDatabase(mongoDbDatabaseName);

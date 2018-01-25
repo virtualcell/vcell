@@ -49,8 +49,8 @@ public class Log4JSessionTest {
 	
 	//@Test
 	public void compare( ) {
-		System.setProperty(PropertyLoader.mongodbHost,"mongo.cam.uchc.edu");
-		System.setProperty(PropertyLoader.mongodbPort,"27017");
+		System.setProperty(PropertyLoader.mongodbHostInternal,"mongo.cam.uchc.edu");
+		System.setProperty(PropertyLoader.mongodbPortInternal,"27017");
 		
 		StdoutSessionLog ssl = new StdoutSessionLog("JUnitTest");
 		walkThrough(ssl);

@@ -21,7 +21,6 @@ import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
@@ -339,12 +338,18 @@ denied: job "6894" does not exist
 		lsb.write("   cmd_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" \"");
 		lsb.write("else");
 		lsb.write("   if command -v docker >/dev/null 2>&1; then");
-		String jmsurl=PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL);
+		String jmsurl_external=PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal);
 		String jmsuser=PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
 		String jmspswd=PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue,PropertyLoader.jmsPasswordFile);
 		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
 		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-		String environmentVars = "-e jmsurl="+jmsurl+" -e jmsuser="+jmsuser+" -e jmspswd="+jmspswd+" -e serverid="+serverid+" softwareVersion="+softwareVersion;
+		jmsurl_external = jmsurl_external.replace("(","\\(").replace(")","\\)");
+		String environmentVars = " -e jmsurl_internal=\""+jmsurl_external+"\""+
+								" -e jmsuser="+jmsuser+
+								" -e jmspswd="+jmspswd+
+								" -e serverid="+serverid+
+								" -e datadir_internal="+primaryDataDirExternal+
+								" -e softwareVersion="+softwareVersion;
 		lsb.write("       cmd_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata "+environmentVars+" "+docker_image+" \"");
 		lsb.write("   fi");
 		lsb.write("fi");

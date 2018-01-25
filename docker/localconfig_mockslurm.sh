@@ -2,16 +2,17 @@
 
 shopt -s -o nounset
 
-if [ "$#" -ne 5 ]; then
-    echo "usage: config.sh SITE TAG VCELL_VERSION_NUMBER VCELL_BUILD_NUMBER OUTPUTFILE"
+if [ "$#" -ne 6 ]; then
+    echo "usage: config.sh SITE REPO TAG VCELL_VERSION_NUMBER VCELL_BUILD_NUMBER OUTPUTFILE"
     exit -1
 fi
 
 _site=$1
-_tag=$2
-_version_number=$3
-_build_number=$4
-_outputfile=$5
+_repo=$2
+_tag=$3
+_version_number=$4
+_build_number=$5
+_outputfile=$6
 
 _site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
 _site_upper=`echo $_site | tr '[:lower:]' '[:upper:]'`
@@ -19,7 +20,10 @@ _site_camel="${_site_upper:0:1}${_site_lower:1:100}"
 
 
 VCELL_SITE="${_site_upper}"
+VCELL_REPO=$_repo
 VCELL_TAG=$_tag
+VCELL_VERSION_NUMBER=$_version_number
+VCELL_BUILD_NUMBER=$_build_number
 
 case $VCELL_SITE in
 	REL)
@@ -47,20 +51,36 @@ case $VCELL_SITE in
 		;;
 esac
 
+VCELL_API_HOST_EXTERNAL=`hostname`
+VCELL_JMS_HOST_EXTERNAL=`hostname`
+VCELL_MONGO_HOST_EXTERNAL=`hostname`
+VCELL_INSTALLER_SCP_DESTINATION=localhost:/Volumes/vcell/installers
+VCELL_BATCH_HOST=`hostname`
+
+VCELL_API_PORT_EXTERNAL=$((8080 + $_site_port_offset))
+VCELL_JMS_PORT_EXTERNAL=$((61616 + $_site_port_offset))
+VCELL_JMS_URL_EXTERNAL='failover:(tcp://$VCELL_JMS_HOST_EXTERNAL:$VCELL_JMS_PORT_EXTERNAL)'
+VCELL_JMS_RESTPORT_EXTERNAL=$((8161 + $_site_port_offset))
+VCELL_MONGO_PORT_EXTERNAL=$((27017 + $_site_port_offset))
 
 cat <<EOF >$_outputfile
 VCELL_SITE=$VCELL_SITE
+VCELL_REPO=$VCELL_REPO
 VCELL_TAG=$VCELL_TAG
-VCELL_VERSION=VCell_${VCELL_TAG}
-VCELL_APIHOST=`hostname`
-VCELL_APIPORT=$((8080 + $_site_port_offset))
-VCELL_JMSPORT=$((61616 + $_site_port_offset))
-VCELL_JMSRESTPORT=$((8161 + $_site_port_offset))
-VCELL_MONGOPORT=$((27017 + $_site_port_offset))
-VCELL_BATCH_HOST=`hostname`
+VCELL_VERSION_NUMBER=$VCELL_VERSION_NUMBER
+VCELL_BUILD_NUMBER=$VCELL_BUILD_NUMBER
+VCELL_VERSION=VCell_${VCELL_VERSION_NUMBER}_build_${VCELL_BUILD_NUMBER}
+VCELL_API_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
+VCELL_API_PORT_EXTERNAL=$VCELL_API_PORT_EXTERNAL
+VCELL_JMS_HOST_EXTERNAL=$VCELL_JMS_HOST_EXTERNAL
+VCELL_JMS_PORT_EXTERNAL=$VCELL_JMS_PORT_EXTERNAL
+VCELL_JMS_URL_EXTERNAL=$VCELL_JMS_URL_EXTERNAL
+VCELL_JMS_RESTPORT_EXTERNAL=$VCELL_JMS_RESTPORT_EXTERNAL
+VCELL_MONGO_HOST_EXTERNAL=$VCELL_MONGO_HOST_EXTERNAL
+VCELL_MONGO_PORT_EXTERNAL=$VCELL_MONGO_PORT_EXTERNAL
+VCELL_BATCH_HOST=$VCELL_BATCH_HOST
 VCELL_BATCH_USER=schaff
 VCELL_CLIENT_APPID=${_applicationId}
-VCELL_INSTALLER_SCP_DESTINATION=localhost:/Volumes/vcell/installers
 VCELL_HTCLOGS_EXTERNAL=/Volumes/vcell/htclogs
 VCELL_SINGULARITY_EXTERNAL=/Volumes/vcell/singularity
 VCELL_SIMDATADIR_EXTERNAL=/Volumes/vcell/users
@@ -68,8 +88,6 @@ VCELL_SIMDATADIR_HOST=/Volumes/vcell/users
 VCELL_SECRETS_DIR=/Users/schaff/vcellkeys
 VCELL_SITE_CAMEL=${_site_camel}
 VCELL_UPDATE_SITE=http://vcell.org/webstart/${_site_camel}
-VCELL_VERSION_NUMBER=$_version_number
-VCELL_BUILD_NUMBER=$_build_number
 BIOFORMATS_JAR_FILE=vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
 BIOFORMATS_JAR_URL=http://vcell.org/webstart/vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
 INSTALLER_JRE_MAC=macosx-amd64-1.8.0_141

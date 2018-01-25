@@ -1138,8 +1138,8 @@ private JSortTable getQueryResultTable() {
 						Number simID = (Number)ivjQueryResultTable.getModel().getValueAt(ivjQueryResultTable.getSelectedRow(), JobTableModel.columnIndex_SimID);
 						String userid = (String)ivjQueryResultTable.getModel().getValueAt(ivjQueryResultTable.getSelectedRow(), JobTableModel.columnIndex_UserID);
 						System.out.println("----- user="+userid+" simID="+simID);
-						String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
-						int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+						String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
+						int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
 						Mongo m = new Mongo(mongoDbHost,mongoDbPort);
 						String mongoDbDatabaseName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
 						DB db = m.getDB(mongoDbDatabaseName);

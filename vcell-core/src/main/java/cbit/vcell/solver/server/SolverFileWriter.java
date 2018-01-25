@@ -76,7 +76,7 @@ protected void writeJMSParamters() {
 	if (bUseMessaging) {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println(SolverInputFileKeyword.JMS_PARAM_BEGIN);
-		printWriter.println(SolverInputFileKeyword.JMS_BROKER + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL));
+		printWriter.println(SolverInputFileKeyword.JMS_BROKER + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal));
 	    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
 	    printWriter.println(SolverInputFileKeyword.JMS_USER + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + jmsPassword);
 	    printWriter.println(SolverInputFileKeyword.JMS_QUEUE + " " + VCellQueue.WorkerEventQueue.getName());  
@@ -120,7 +120,7 @@ private Element create(SolverInputFileKeyword sifk, int number) {
  */
 protected Element xmlJMSParameters () {
 	Element jms = create(SolverInputFileKeyword.JMS_PARAM_BEGIN,null);
-	Element broker = create(SolverInputFileKeyword.JMS_BROKER, PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL)) ;
+	Element broker = create(SolverInputFileKeyword.JMS_BROKER, PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal)) ;
 	Element jmsUser = create(SolverInputFileKeyword.JMS_USER, PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
     String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
 	Element pw = create(SolverInputFileKeyword.JMS_PW, jmsPassword);

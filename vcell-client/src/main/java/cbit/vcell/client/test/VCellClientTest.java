@@ -445,9 +445,9 @@ private static final String REQUIRED_LOCAL_PROPERTIES[] = {
 	PropertyLoader.dbConnectURL,
 	PropertyLoader.vcellServerIDProperty,
 	PropertyLoader.mongodbDatabase,
-	PropertyLoader.mongodbHost,
+	PropertyLoader.mongodbHostInternal,
 	PropertyLoader.mongodbLoggingCollection,
-	PropertyLoader.mongodbPort
+	PropertyLoader.mongodbPortInternal
 	
 };
 }

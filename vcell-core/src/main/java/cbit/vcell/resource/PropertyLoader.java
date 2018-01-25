@@ -122,7 +122,8 @@ public class PropertyLoader {
 
 	public static final String jmsProvider				= record("vcell.jms.provider",ValueType.GEN);
 	public static final String jmsProviderValueActiveMQ		= record("ActiveMQ",ValueType.GEN);
-	public static final String jmsURL					= record("vcell.jms.url",ValueType.GEN);
+	public static final String jmsURLInternal				= record("vcell.jms.url.internal",ValueType.GEN);
+	public static final String jmsURLExternal				= record("vcell.jms.url.external",ValueType.GEN);
 	public static final String jmsUser					= record("vcell.jms.user",ValueType.GEN);
 	public static final String jmsPasswordValue				= record("vcell.jms.password",ValueType.GEN);
 	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.GEN);
@@ -160,8 +161,10 @@ public class PropertyLoader {
 	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",ValueType.GEN);
 	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",ValueType.GEN);
 
-	public final static String mongodbHost						= record("vcell.mongodb.host",ValueType.GEN);
-	public final static String mongodbPort						= record("vcell.mongodb.port",ValueType.GEN);   // default 27017
+	public final static String mongodbHostInternal				= record("vcell.mongodb.host.internal",ValueType.GEN);
+	public final static String mongodbPortInternal				= record("vcell.mongodb.port.internal",ValueType.GEN);   // default 27017
+	public final static String mongodbHostExternal				= record("vcell.mongodb.host.external",ValueType.GEN);
+	public final static String mongodbPortExternal				= record("vcell.mongodb.port.external",ValueType.GEN);   // default 27017
 	public final static String mongodbDatabase					= record("vcell.mongodb.database",ValueType.GEN);
 	public final static String mongodbLoggingCollection			= record("vcell.mongodb.loggingCollection",ValueType.GEN);
 	public final static String mongodbThreadSleepMS				= record("vcell.mongodb.threadSleepMS",ValueType.GEN);

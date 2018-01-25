@@ -2,7 +2,7 @@ FROM schaff/vcell-solvers:release-0.0.4-dev
 
 RUN apt-get install -y openjdk-8-jre-headless
 
-RUN mkdir -p /usr/local/app
+RUN mkdir -p /usr/local/app/localsolvers && ln -s /vcellbin  /usr/local/app/localsolvers/linux64
 WORKDIR /usr/local/app
 
 COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
@@ -19,14 +19,20 @@ COPY ./docker/batch/JavaPreprocessor64 \
 ENV PATH=/vcellscripts:$PATH \
     CLASSPATH=/usr/local/app/lib/*
 
-ENV softwareVersion=JimMac_Version_7.0_build_99 \
-	serverid=TEST2 \
-    jmsurlExternal=failover:(tcp://localhost:61616) \
+ENV softwareVersion=VCell_7.0_build_99 \
+	serverid=TEST \
+	installdir=/usr/local/app \
+	jmshost_internal=Jamess-MacBook-Pro-2.local \
+	jmsport_internal=61619 \
+	jmsrestport_internal=8164 \
+    jmsurl_internal=failover:(tcp://Jamess-MacBook-Pro-2.local:61619) \
     jmsuser=clientUser \
     jmspswd=dummy \
-    solverprimarydata=/simdata/ \
-    mongodbhost=localhost \
-    mongodbport=27017 \
+    datadir_internal=/simdata \
+    datadir_external=/Volumes/vcell/users \
+    mongodbhost_internal=Jamess-MacBook-Pro-2.local \
+    mongodbport_internal=27017 \
+    mongodb_database=test \
     jmsblob_minsize=100000
 
 VOLUME /simdata

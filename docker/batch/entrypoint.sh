@@ -86,7 +86,7 @@ case $command in
 		exit $?
 		;;
 	JavaPostprocessor64)
-		/vcellscripts/JavaPostpocessor64 "$@"
+		/vcellscripts/JavaPostprocessor64 "$@"
 		exit $?
 		;;
 	*)

@@ -8,7 +8,7 @@ FROM schaff/vcell-solvers:release-0.0.4-dev
 
 RUN apt-get install -y openjdk-8-jre-headless
 
-RUN mkdir -p /usr/local/app
+RUN mkdir -p /usr/local/app/localsolvers && ln -s /vcellbin  /usr/local/app/localsolvers/linux64
 WORKDIR /usr/local/app
 
 COPY --from=build \
@@ -29,15 +29,18 @@ ENV PATH=/vcellscripts:$PATH \
 
 ENV softwareVersion=VCell_7.0_build_99 \
 	serverid=TEST \
-	jmshost=vcell-service.cam.uchc.edu \
-	jmsport=61619 \
-	jmsrestport=8164 \
-    jmsurl=failover:(tcp://vcell-service.cam.uchc.edu:61619) \
+	installdir=/usr/local/app \
+	jmshost_internal=vcell-service.cam.uchc.edu \
+	jmsport_internal=61619 \
+	jmsrestport_internal=8164 \
+    jmsurl_internal=failover:(tcp://vcell-service.cam.uchc.edu:61619) \
     jmsuser=clientUser \
     jmspswd=dummy \
-    solverprimarydata=/simdata/ \
-    mongodbhost="vcell-service.cam.uchc.edu" \
-    mongodbport=27017 \
+    datadir_internal=/simdata \
+    datadir_external=/share/apps/vcell3/users \
+    mongodbhost_internal="vcell-service.cam.uchc.edu" \
+    mongodbport_internal=27017 \
+    mongodb_database=test \
     jmsblob_minsize=100000
 
 VOLUME /simdata

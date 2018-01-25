@@ -172,7 +172,7 @@ private Element getXMLJms()
 	Element jms = new Element(SolverInputFileKeyword.JMS_PARAM_BEGIN.xml);
 	
 	Element e = new Element(SolverInputFileKeyword.JMS_BROKER.xml);
-	e.setText(PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL));
+	e.setText(PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal));
 	jms.addContent(e);
 	
 	e = new Element(SolverInputFileKeyword.JMS_USER.xml);
