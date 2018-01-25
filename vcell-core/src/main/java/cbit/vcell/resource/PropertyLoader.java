@@ -53,6 +53,7 @@ public class PropertyLoader {
 	public static final String htcUser						= record("vcell.htc.user",ValueType.GEN);
 	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",ValueType.GEN);
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",ValueType.GEN);
+	public static final String htcNodeList                   = record("vcell.htc.nodelist",ValueType.GEN);
 	public static final String sgeModulePath				= record("vcell.htc.sge.module",ValueType.GEN);
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
 	public static final String MPI_HOME_INTERNAL		        = record("vcell.htc.mpi.home",ValueType.DIR);

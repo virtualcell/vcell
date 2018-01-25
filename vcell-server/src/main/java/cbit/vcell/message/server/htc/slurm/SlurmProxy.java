@@ -293,6 +293,10 @@ denied: job "6894" does not exist
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + htcLogDirExternalString+jobName+".slurm.log");
 		lsb.write("#SBATCH -e " + htcLogDirExternalString+jobName+".slurm.log");
+		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
+		if (nodelist!=null && nodelist.trim().length()>0) {
+			lsb.write("#SBATCH --nodelist="+nodelist);
+		}
 		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
 		lsb.write("source /usr/share/Modules/init/bash");
 		lsb.write("module load singularity");

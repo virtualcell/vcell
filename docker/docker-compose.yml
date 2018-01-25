@@ -38,6 +38,7 @@ services:
       - mongodb_port_external=${VCELL_MONGO_PORT_EXTERNAL}
       - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
       - htclogdir_external=${VCELL_HTCLOGS_EXTERNAL}
+      - htcnodelist=${VCELL_HTC_NODELIST}
       - singularity_imagefile=${VCELL_SINGULARITY_EXTERNAL}/vcell-batch-${VCELL_TAG}.img
       - docker_name=${VCELL_REPO}/vcell-batch:${VCELL_TAG}
       - batchhost=${VCELL_BATCH_HOST}

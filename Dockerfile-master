@@ -60,6 +60,7 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
 	mongodb_port_external=27020 \
     simdatadir_external=/share/apps/vcell3/users/ \
     htclogdir_external=/share/apps/vcell3/htclogs/ \
+    htcnodelist \
     singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch-0.0.1-alpha.1.img \
     docker_name="schaff/vcell-batch:0.0.1-alpha.1" \
     batchsystem=SLURM \
@@ -81,6 +82,7 @@ ENTRYPOINT java \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.htc.user="${batchuser}" \
 	-Dvcell.htc.logdir.external="${htclogdir_external}" \
+	-Dvcell.htc.nodelist="${htcnodelist}" \
 	-Dvcell.batch.singularity.image="${singularity_imagefile}" \
 	-Dvcell.batch.docker.name="${docker_name}" \
 	-Dvcell.simulation.postprocessor=JavaPostprocessor64 \

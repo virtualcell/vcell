@@ -21,26 +21,31 @@ tag=$3
 build_api() {
 	echo "building $repo/vcell-api:$tag"
 	docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ..
+	docker push $repo/vcell-api:$tag
 }
 
 build_batch() {
 	echo "building $repo/vcell-batch:$tag"
 	docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ..
+	docker push $repo/vcell-batch:$tag
 }
 
 build_clientgen() {
 	echo "building $repo/vcell-clientgen:$tag"
 	docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ..
+	docker push $repo/vcell-clientgen:$tag
 }
 
 build_master() {
 	echo "building $repo/vcell-master:$tag"
 	docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag ..
+	docker push $repo/vcell-master:$tag
 }
 
 build_mongo() {
 	echo "building $repo/vcell-mongo:$tag"
 	docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo
+	docker push $repo/vcell-mongo:$tag
 }
 
 shift

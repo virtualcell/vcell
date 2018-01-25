@@ -117,4 +117,19 @@ to build dev vcell-batch containers (from <vcellroot>/docker)
 docker build -f Dockerfile-batch-dev --tag localhost:5000/vcell-batch-dev ..
 ```
 
+# Cusing a private Docker repository with a self-signed certificate
+
+how to set up a registry with self-signed certificate  http://ralph.soika.com/how-to-setup-a-private-docker-registry/
+trusting self signed certificate on Macos  https://github.com/docker/distribution/issues/2295
+trusting self signed certificates on linux and windows  https://docs.docker.com/registry/insecure/#failing
+
+to trust the self-signed certificate on Centos 7.2:
+
+```bash
+sudo scp vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/vcell-docker.cam.uchc.edu.crt
+sudo update-ca-trust
+sudo service docker stop
+sudo service docker start
+```
+
 
