@@ -23,7 +23,7 @@ or deploy a development version using docker-compose (from <vcellroot>/docker)
 pushd ..
 mvn clean install dependency:copy-dependencies
 popd
-./rebuild.sh all localhost:5000 dev
+./build.sh all localhost:5000 dev
 ./localconfig_mockslurm.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
 env $(cat local_mockslurm.config | xargs) docker-compose -f docker-compose-clientgen.yml rm --force
 env $(cat local_mockslurm.config | xargs) docker-compose -f docker-compose-clientgen.yml up
@@ -117,13 +117,14 @@ to build dev vcell-batch containers (from <vcellroot>/docker)
 docker build -f Dockerfile-batch-dev --tag localhost:5000/vcell-batch-dev ..
 ```
 
-# Cusing a private Docker repository with a self-signed certificate
+# Private Docker repository
+
+## to set up a private Docker repository with self-signed certificate
 
 how to set up a registry with self-signed certificate  http://ralph.soika.com/how-to-setup-a-private-docker-registry/
-trusting self signed certificate on Macos  https://github.com/docker/distribution/issues/2295
-trusting self signed certificates on linux and windows  https://docs.docker.com/registry/insecure/#failing
 
-to trust the self-signed certificate on Centos 7.2:
+## install self-signed cert as trusted CA
+trusting self signed certificate on Macos (https://github.com/docker/distribution/issues/2295), and Linux/Windows (https://docs.docker.com/registry/insecure/#failing).  For example, to trust the self-signed certificate on UCHC server nodes using Centos 7.2:
 
 ```bash
 sudo scp vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/vcell-docker.cam.uchc.edu.crt
@@ -132,4 +133,44 @@ sudo service docker stop
 sudo service docker start
 ```
 
+https://vcell-docker.cam.uchc.edu:5000/v2/_catalog
+
+for a simple web-based UI to the private repository see http://vcell-docker.cam.uchc.edu:5001/home, this UI was recently ported to registry:2 and has limited functionality (as of Jan 25, 2018).
+
+```bash
+sudo docker run \
+  -d --restart=always --name registry-ui \
+  -e ENV_DOCKER_REGISTRY_HOST=vcell-docker.cam.uchc.edu \
+  -e ENV_DOCKER_REGISTRY_PORT=5000 \
+  -e ENV_DOCKER_REGISTRY_USE_SSL=1 \
+  -p 5001:80 \
+  konradkleine/docker-registry-frontend:v2
+
+open http://localhost:5001
+```
+# example deployment using 
+```
+git commit .... (returns git commit hash e.g. d3f79ab)
+serverconfig-uch.sh SITE REPO TAG VCELL_VERSION_NUMBER VCELL_BUILD_NUMBER OUTPUTFILE
+
+```
+
+```bash
+git commit ==> git commit hash f98dfe3
+cd <vcellroot>/docker
+
+./build.sh all vcell-docker.cam.uchc.edu:5000 f98dfe3
+
+./serverconfig-uch.sh test vcell-docker.cam.uchc.edu:5000 f98dfe3 7.0.0 5 server_7.0.0_5_f98dfe3.config
+
+./deploy.sh \
+  --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \
+  --installer-deploy apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Test \
+  vcellapi.cam.uchc.edu \
+  ./server_7.0.0_5_f98dfe3.config /usr/local/deploy/Test/server_7.0.0_5_f98dfe3.config \
+  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_f98dfe3.yml \
+  vcelltest
+
+ssh -i 
+```
 

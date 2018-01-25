@@ -39,12 +39,12 @@ secrets:
   # (https://www.vaultproject.io/community.html).
   #
   winCodeSignKeystore_pfx:
-    file: "${VCELL_SECRETS_DIR}/VCELL_UCONN_MS_2017.pfx"
+    file: "${VCELL_DEPLOY_SECRETS_DIR}/VCELL_UCONN_MS_2017.pfx"
   winCodeSignKeystore_pswdfile:
-    file: "${VCELL_SECRETS_DIR}/VCELL_UCONN_MS_2017_pswd.txt"
+    file: "${VCELL_DEPLOY_SECRETS_DIR}/VCELL_UCONN_MS_2017_pswd.txt"
   macCodeSignKeystore_p12:
-    file: "${VCELL_SECRETS_DIR}/VCELL_APPLE_2015.p12"
+    file: "${VCELL_DEPLOY_SECRETS_DIR}/VCELL_APPLE_2015.p12"
   macCodeSignKeystore_pswdfile:
-    file: "${VCELL_SECRETS_DIR}/VCELL_APPLE_2015_pswd.txt"
+    file: "${VCELL_DEPLOY_SECRETS_DIR}/VCELL_APPLE_2015_pswd.txt"
   Install4J_product_key_file:
-    file: "${VCELL_SECRETS_DIR}/Install4J_product_key.txt"
+    file: "${VCELL_DEPLOY_SECRETS_DIR}/Install4J_product_key.txt"

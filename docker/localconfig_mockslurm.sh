@@ -88,6 +88,7 @@ VCELL_SINGULARITY_EXTERNAL=/Volumes/vcell/singularity
 VCELL_SIMDATADIR_EXTERNAL=/Volumes/vcell/users
 VCELL_SIMDATADIR_HOST=/Volumes/vcell/users
 VCELL_SECRETS_DIR=/Users/schaff/vcellkeys
+VCELL_DEPLOY_SECRETS_DIR=/Users/schaff/vcellkeys
 VCELL_SITE_CAMEL=${_site_camel}
 VCELL_UPDATE_SITE=http://vcell.org/webstart/${_site_camel}
 BIOFORMATS_JAR_FILE=vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar

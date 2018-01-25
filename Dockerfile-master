@@ -60,7 +60,7 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
 	mongodb_port_external=27020 \
     simdatadir_external=/share/apps/vcell3/users/ \
     htclogdir_external=/share/apps/vcell3/htclogs/ \
-    htcnodelist \
+    htcnodelist="" \
     singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch-0.0.1-alpha.1.img \
     docker_name="schaff/vcell-batch:0.0.1-alpha.1" \
     batchsystem=SLURM \
