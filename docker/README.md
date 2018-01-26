@@ -156,28 +156,30 @@ serverconfig-uch.sh SITE REPO TAG VCELL_VERSION_NUMBER VCELL_BUILD_NUMBER OUTPUT
 ```
 
 ```bash
-git commit ==> git commit hash f98dfe3
+git commit ==> git commit hash 10854d2
 cd <vcellroot>/docker
 
-./build.sh all vcell-docker.cam.uchc.edu:5000/schaff f98dfe3
+./build.sh all vcell-docker.cam.uchc.edu:5000/schaff 10854d2
 
-./serverconfig-uch.sh test vcell-docker.cam.uchc.edu:5000/schaff f98dfe3 7.0.0 5 server_7.0.0_5_f98dfe3.config
+./serverconfig-uch.sh test vcell-docker.cam.uchc.edu:5000/schaff 10854d2 7.0.0 6 server_7.0.0_6_10854d2.config
 
 ./deploy.sh \
   --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \
+  --build-singularity \
   --installer-deploy apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Test \
   vcellapi.cam.uchc.edu \
-  ./server_7.0.0_5_f98dfe3.config /usr/local/deploy/Test/server_7.0.0_5_f98dfe3.config \
-  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_f98dfe3.yml \
+  ./server_7.0.0_6_10854d2.config /usr/local/deploy/Test/server_7.0.0_6_10854d2.config \
+  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_10854d2.yml \
   vcelltest
 
 ./deploy.sh \
   --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \
+  --build-singularity \
   vcellapi.cam.uchc.edu \
-  ./server_7.0.0_5_f98dfe3.config /usr/local/deploy/Test/server_7.0.0_5_f98dfe3.config \
-  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_f98dfe3.yml \
+  ./server_7.0.0_6_10854d2.config /usr/local/deploy/Test/server_7.0.0_6_10854d2.config \
+  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_10854d2.yml \
   vcelltest
 
-ssh -i 
+
 ```
 
