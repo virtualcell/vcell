@@ -43,7 +43,7 @@ import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
@@ -168,7 +168,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-			CommandService.bQuiet = true;
+			CommandService.bQuiet = false;
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
@@ -188,6 +188,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				File sshKeyFile = new File(args[5]);
 				try {
 					commandService = new CommandServiceSsh(sshHost,sshUser,sshKeyFile);
+					commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+					System.out.println("SSH Connection test passed, running ls as user "+sshUser+" on "+sshHost);
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
@@ -251,8 +253,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 			Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
 			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable,
-					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)),
-					new File(PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty))));
+					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)),
+					new File(PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty))));
 
 			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(log);
 
@@ -305,20 +307,25 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	}
 
 	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
-		PropertyLoader.primarySimDataDirProperty,
+		PropertyLoader.primarySimDataDirInternalProperty,
+		PropertyLoader.primarySimDataDirExternalProperty,
 		PropertyLoader.vcellServerIDProperty,
 		PropertyLoader.installationRoot,
 		PropertyLoader.dbConnectURL,
 		PropertyLoader.dbDriverName,
 		PropertyLoader.dbUserid,
 		PropertyLoader.dbPasswordFile,
-		PropertyLoader.mongodbHost,
-		PropertyLoader.mongodbPort,
+		PropertyLoader.mongodbHostInternal,
+		PropertyLoader.mongodbPortInternal,
+		PropertyLoader.mongodbHostExternal,
+		PropertyLoader.mongodbPortExternal,
 		PropertyLoader.mongodbDatabase,
-		PropertyLoader.jmsURL,
+		PropertyLoader.jmsURLInternal,
+		PropertyLoader.jmsURLExternal,
 		PropertyLoader.jmsUser,
 		PropertyLoader.jmsPasswordFile,
 		PropertyLoader.htcUser,
+		PropertyLoader.htcLogDirExternal,
 		PropertyLoader.pythonExe,
 		PropertyLoader.jmsBlobMessageUseMongo,
 		PropertyLoader.maxJobsPerScan

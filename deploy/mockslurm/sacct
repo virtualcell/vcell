@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+if [ "$#" -ne 7 ] ; then
+   echo "========== MOCK SLURM sacct =========="
+   echo "usage: sacct -u vcell -P -s R,CF,RS -o jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode"
+   echo " with 7 args, returns empty job list: "
+   echo "JobID|JobName|Partition|User|AllocCPUS|NCPUS|NTasks|State|ExitCode"
+   exit 1;
+fi
+
+
+#
+# > sacct -u vcell -P -s R,CF,RS -o jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode
+# JobID|JobName|Partition|User|AllocCPUS|NCPUS|NTasks|State|ExitCode
+# 14845|V_BETA_121419792_0_0|vcell|vcell|1|1||RUNNING|0:0
+# 22513|V_BETA_121540540_0_0|vcell|vcell|1|1||RUNNING|0:0
+# 40263|V_BETA_121954290_2_0|vcell|vcell|1|1||RUNNING|0:0
+# 47168|V_REL_122112733_0_0|vcell|vcell|1|1||RUNNING|0:0
+# 64243|V_REL_121751041_0_0|vcell|vcell|1|1||RUNNING|0:0
+# 72821|V_REL_122682454_0_0|vcell|vcell|1|1||RUNNING|0:0
+#
+
+
+echo "JobID|JobName|Partition|User|AllocCPUS|NCPUS|NTasks|State|ExitCode"
+# 14845|V_BETA_121419792_0_0|vcell|vcell|1|1||RUNNING|0:0
+
+#
+# don't echo any job status ... like slurm has no jobs
+#
+exit 0

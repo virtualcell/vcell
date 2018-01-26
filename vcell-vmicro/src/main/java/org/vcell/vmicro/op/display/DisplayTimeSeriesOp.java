@@ -5,7 +5,6 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.rmi.RemoteException;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -50,6 +49,7 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.simdata.ClientPDEDataContext;
@@ -206,12 +206,12 @@ public class DisplayTimeSeriesOp {
 		final DataSetController dataSetController = new DataSetController() {
 			
 			@Override
-			public ExportEvent makeRemoteFile(OutputContext outputContext, ExportSpecs exportSpecs) throws DataAccessException,	RemoteException {
+			public ExportEvent makeRemoteFile(OutputContext outputContext, ExportSpecs exportSpecs) throws DataAccessException,	RemoteProxyException {
 				throw new RuntimeException("not yet implemented");
 			}
 
 			@Override
-			public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID,	TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException, DataAccessException {
+			public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID,	TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteProxyException, DataAccessException {
 				pdeDataViewer.dataJobMessage(new DataJobEvent(timeSeriesJobSpec.getVcDataJobID(), MessageEvent.DATA_START, vcdataID, new Double(0), null, null));
 				if (!timeSeriesJobSpec.isCalcSpaceStats() && !timeSeriesJobSpec.isCalcTimeStats()){
 					int[][] indices = timeSeriesJobSpec.getIndices();
@@ -237,7 +237,7 @@ public class DisplayTimeSeriesOp {
 			}
 			
 			@Override
-			public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdataID, String varName, double time) throws RemoteException, DataAccessException {
+			public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdataID, String varName, double time) throws RemoteProxyException, DataAccessException {
 				double timePoint = time;
 				double[] timePoints = getDataSetTimes(vcdataID);
 				int index=-1;
@@ -254,78 +254,78 @@ public class DisplayTimeSeriesOp {
 			}
 			
 			@Override
-			public boolean getParticleDataExists(VCDataIdentifier vcdataID)	throws DataAccessException, RemoteException {
+			public boolean getParticleDataExists(VCDataIdentifier vcdataID)	throws DataAccessException, RemoteProxyException {
 				return false;
 			}
 			
 			@Override
-			public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdataID, double time) throws DataAccessException, RemoteException {
+			public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdataID, double time) throws DataAccessException, RemoteProxyException {
 				return null;
 			}
 			
 			@Override
-			public ODESimData getODEData(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException {
+			public ODESimData getODEData(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
 				return null;
 			}
 			
 			@Override
-			public CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+			public CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 				return mesh;
 			}
 			
 			@Override
-			public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdataID, String variable, double time, SpatialSelection spatialSelection) throws RemoteException, DataAccessException {
+			public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdataID, String variable, double time, SpatialSelection spatialSelection) throws RemoteProxyException, DataAccessException {
 				throw new RuntimeException("not yet implemented");
 			}
 			
 			@Override
-			public AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdataID) throws DataAccessException,	RemoteException {
+			public AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdataID) throws DataAccessException,	RemoteProxyException {
 				return new AnnotatedFunction[0];
 			}
 			
 			@Override
-			public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+			public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 				return imageTimeSeries.getImageTimeStamps();
 			}
 			
 			@Override
-			public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteException {
+			public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteProxyException {
 				throw new RuntimeException("not yet implemented");
 			}
 			
 			@Override
-			public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException {
+			public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
 				throw new RuntimeException("not yet implemented");
 			}
 			
 			@Override
-			public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,	VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+			public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,	VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 				return new DataIdentifier[] { dataIdentifier };
 			}
 			
 			@Override
-			public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws RemoteException, DataAccessException {
+			public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws RemoteProxyException, DataAccessException {
 				throw new RuntimeException("not yet implemented");
 			}
 			
 			@Override
-			public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException, RemoteException {
+			public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException, RemoteProxyException {
 				throw new RuntimeException("not yet implemented");
 			}
 
 			@Override
-			public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int timeIndex) throws RemoteException, DataAccessException {
+			public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int timeIndex) throws RemoteProxyException, DataAccessException {
 				throw new RuntimeException("not yet implemented");
 			}
 
 			@Override
-			public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+			public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 				throw new RuntimeException("not yet implemented");
 			}
 
 			@Override
 			public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID,
-					VtuVarInfo var, double time) throws RemoteException,
+					VtuVarInfo var, double time) throws RemoteProxyException,
 					DataAccessException {
 				// TODO Auto-generated method stub
 				return null;
@@ -334,14 +334,14 @@ public class DisplayTimeSeriesOp {
 			@Override
 			public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,
 					VCDataIdentifier vcDataIdentifier)
-					throws DataAccessException, RemoteException {
+					throws DataAccessException, RemoteProxyException {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID)
-					throws RemoteException, DataAccessException {
+					throws RemoteProxyException, DataAccessException {
 				// TODO Auto-generated method stub
 				return null;
 			}

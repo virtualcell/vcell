@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.client.server;
-import java.rmi.RemoteException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -151,7 +150,6 @@ private void poll( )  {
 				    new PerformanceDataEntry[] {new PerformanceDataEntry("remote call duration", Double.toString(duration))}
 			    )
 			);
-			reportPerformanceMonitorEvent(performanceMonitorEvent);
 	    }
     } catch (Exception exc) {
 	    System.out.println(">> polling failure << " + exc.getMessage());
@@ -460,9 +458,4 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	fireSimStatusEvent(simStatusEvent);
 }
 
-
-public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws RemoteException {
-	// just pass it to the the messaging service
-	clientServerManager.reportPerformanceMonitorEvent(pme);
-}
 }

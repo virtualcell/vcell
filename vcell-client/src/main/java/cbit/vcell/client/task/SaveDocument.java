@@ -15,10 +15,6 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 
-import cbit.rmi.event.MessageEvent;
-import cbit.rmi.event.PerformanceData;
-import cbit.rmi.event.PerformanceDataEntry;
-import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
@@ -122,18 +118,18 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	// generate PerformanceMonitorEvent
 	long l2 = System.currentTimeMillis();
 	double duration = ((double)(l2 - l1)) / 1000;
-	requestManager.getAsynchMessageManager().reportPerformanceMonitorEvent(
-	    new PerformanceMonitorEvent(
-		    this, documentManager.getUser(), new PerformanceData(
-			    "SaveDocument.run()",
-			    MessageEvent.SAVING_STAT,
-			    new PerformanceDataEntry[] {
-				    new PerformanceDataEntry("document saved", savedDocument.getName()),
-				    new PerformanceDataEntry("remote call duration", Double.toString(duration))
-				    }
-		    )
-    	)
-	);
+//	requestManager.getAsynchMessageManager().reportPerformanceMonitorEvent(
+//	    new PerformanceMonitorEvent(
+//		    this, documentManager.getUser(), new PerformanceData(
+//			    "SaveDocument.run()",
+//			    MessageEvent.SAVING_STAT,
+//			    new PerformanceDataEntry[] {
+//				    new PerformanceDataEntry("document saved", savedDocument.getName()),
+//				    new PerformanceDataEntry("remote call duration", Double.toString(duration))
+//				    }
+//		    )
+//    	)
+//	);
 
 }
 

@@ -10,8 +10,6 @@
 
 package cbit.vcell.simdata;
 
-import java.rmi.RemoteException;
-
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCellThreadChecker;
@@ -25,6 +23,7 @@ import cbit.plot.PlotData;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.math.Function;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.solver.ode.ODESimData;
@@ -50,12 +49,12 @@ public VCDataManager(DataSetControllerProvider dataSetControllerProvider) {
 public synchronized FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException {
 	try {
 		return getDataSetController().fieldDataFileOperation(fieldDataFielOperationSpec);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().fieldDataFileOperation(fieldDataFielOperationSpec);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -83,12 +82,12 @@ private DataSetControllerProvider getDataSetControllerProvider() {
 public synchronized DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getDataIdentifiers(outputContext,vcdID);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getDataIdentifiers(outputContext,vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -121,12 +120,12 @@ private DataSetController getDataSetController() throws DataAccessException {
 public synchronized double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getDataSetTimes(vcdID);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getDataSetTimes(vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -145,12 +144,12 @@ public synchronized double[] getDataSetTimes(VCDataIdentifier vcdID) throws Data
 public synchronized double[] getVtuTimes(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getVtuTimes(vcdID);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getVtuTimes(vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -171,12 +170,12 @@ public synchronized double[] getVtuTimes(VCDataIdentifier vcdID) throws DataAcce
 public synchronized cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputContext, org.vcell.util.document.VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getFunctions(outputContext,vcdID);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getFunctions(outputContext,vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -200,12 +199,12 @@ public synchronized cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputCon
 public synchronized PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID, String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
 	try {
 		return getDataSetController().getLineScan(outputContext,vcdID,variable,time,spatialSelection);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getLineScan(outputContext,vcdID,variable,time,spatialSelection);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -226,12 +225,12 @@ public synchronized PlotData getLineScan(OutputContext outputContext, VCDataIden
 public synchronized CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getMesh(vcdID);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getMesh(vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -250,12 +249,12 @@ public synchronized CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAcc
 public synchronized ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getODEData(vcdID);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getODEData(vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -265,12 +264,12 @@ public synchronized ODESimData getODEData(VCDataIdentifier vcdID) throws DataAcc
 public synchronized NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getNFSimMolecularConfigurations(vcdID);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getNFSimMolecularConfigurations(vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -291,12 +290,12 @@ public synchronized NFSimMolecularConfigurations getNFSimMolecularConfigurations
 public synchronized ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws DataAccessException {
 	try {
 		return getDataSetController().getParticleDataBlock(vcdID,time);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getParticleDataBlock(vcdID,time);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -305,12 +304,12 @@ public synchronized ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdI
 public synchronized DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException {
 	try {
 		return getDataSetController().doDataOperation(dataOperation);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().doDataOperation(dataOperation);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -330,12 +329,12 @@ public synchronized DataOperationResults doDataOperation(DataOperation dataOpera
 public synchronized boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getParticleDataExists(vcdID);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getParticleDataExists(vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -357,12 +356,12 @@ public synchronized boolean getParticleDataExists(VCDataIdentifier vcdID) throws
 public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
 	try {
 		return getDataSetController().getSimDataBlock(outputContext,vcdID,varName,time);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getSimDataBlock(outputContext,vcdID,varName,time);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -385,12 +384,12 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, VC
 public synchronized TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdID, TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	try {
 		return getDataSetController().getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -400,11 +399,11 @@ public synchronized TimeSeriesJobResults getTimeSeriesValues(OutputContext outpu
 /**
  * Insert the method's description here.
  * Creation date: (1/4/01 1:38:14 PM)
- * @param remoteException java.rmi.RemoteException
+ * @param RemoteProxyException RemoteProxyException
  */
-private void handleRemoteException(RemoteException remoteException) {
-	System.out.println("\n\n.... Handling RemoteException ...\n");
-	remoteException.printStackTrace(System.out);
+private void handleRemoteProxyException(RemoteProxyException RemoteProxyException) {
+	System.out.println("\n\n.... Handling RemoteProxyException ...\n");
+	RemoteProxyException.printStackTrace(System.out);
 	System.out.println("\n\n");
 }
 
@@ -412,12 +411,12 @@ private void handleRemoteException(RemoteException remoteException) {
 public synchronized VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcDataIdentifier, int timeIndex) throws DataAccessException {
 	try {
 		return getDataSetController().getEmptyVtuMeshFiles(vcDataIdentifier, timeIndex);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getEmptyVtuMeshFiles(vcDataIdentifier, timeIndex);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -426,12 +425,12 @@ public synchronized VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcDat
 public synchronized double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcDataIdentifier, VtuVarInfo var, double time) throws DataAccessException {
 	try {
 		return getDataSetController().getVtuMeshData(outputContext, vcDataIdentifier, var, time);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getVtuMeshData(outputContext, vcDataIdentifier, var, time);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
@@ -441,12 +440,12 @@ public synchronized double[] getVtuMeshData(OutputContext outputContext, VCDataI
 public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,	VCDataIdentifier vcDataIdentifier) throws DataAccessException {
 	try {
 		return getDataSetController().getVtuVarInfos(outputContext, vcDataIdentifier);
-	}catch (RemoteException e){
-		handleRemoteException(e);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
 		try {
 			return getDataSetController().getVtuVarInfos(outputContext, vcDataIdentifier);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}

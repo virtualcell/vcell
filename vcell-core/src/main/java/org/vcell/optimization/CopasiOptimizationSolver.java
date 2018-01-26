@@ -116,9 +116,13 @@ public class CopasiOptimizationSolver {
 			
 			boolean bIgnoreCertProblems = true;
 			boolean bIgnoreHostMismatch = true;
-			int port = PropertyLoader.getIntProperty(PropertyLoader.vcellapiPort, 8080);
-			String host = PropertyLoader.getProperty(PropertyLoader.vcellapiHost, "vcellapi.cam.uchc.edu");
-			VCellApiClient apiClient = new VCellApiClient(host, port, "123456", bIgnoreCertProblems, bIgnoreHostMismatch);
+			
+			// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:8080
+			String serverHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);
+			String[] parts = serverHost.split(":");
+			String host = parts[0];
+			int port = Integer.parseInt(parts[1]);
+			VCellApiClient apiClient = new VCellApiClient(host, port, bIgnoreCertProblems, bIgnoreHostMismatch);
 
 			TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
 			String optProblemJson = serializer.toString(optProblem);

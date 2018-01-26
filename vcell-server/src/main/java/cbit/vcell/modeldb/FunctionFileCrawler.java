@@ -77,7 +77,7 @@ public FunctionFileCrawler(AdminDatabaseServer argAdminDbServer, SessionLog argS
 private FunctionFileCrawler(AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, String argOutputDirName) throws SQLException {
 	this.log = argSessionLog;
 	this.adminDbServer = argAdminDbServer;
-	dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
+	dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
 	outputDirName = argOutputDirName;
 }
 

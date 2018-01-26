@@ -1,0 +1,52 @@
+#!/bin/bash
+
+printusage() {
+	echo "Usage: JavaPreprocessor64 simTaskFileName [parallel_dir]"
+	exit 1
+}
+
+# main code
+if [[ $# -eq 0 ]] ; then 
+	printusage
+	exit 1
+fi
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+preprocessor_mainclass=cbit.vcell.message.server.sim.SolverPreprocessor
+
+jvmprop="-Djava.io.tmpdir=/tmp"
+jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"
+jvmprop="${jvmprop} -Dvcell.jms.url.internal=${jmsurl_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.user=${jmsuser}"
+jvmprop="${jvmprop} -Dvcell.jms.password=${jmspswd}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.server.id=${serverid}"
+jvmprop="${jvmprop} -Dvcell.softwareVersion=${softwareVersion}"
+jvmprop="${jvmprop} -Dvcell.mongodb.database=${mongodb_database}"
+jvmprop="${jvmprop} -Dvcell.mongodb.host.internal=${mongodbhost_internal}"
+jvmprop="${jvmprop} -Dvcell.mongodb.port.internal=${mongodbport_internal}"
+
+simTaskFileName=$1
+arguments="$simTaskFileName $datadir_internal"
+if [[ $# -eq 2 ]] ; then
+	parallel_dir=$2
+	arguments="${arguments} ${parallel_dir}"
+fi
+
+arguments=${arguments//$datadir_external/$datadir_internal}
+
+echo "starting preprocessor"
+
+nice java ${jvmprop} ${preprocessor_mainclass} ${arguments} 
+
+echo "preprocessor returned"
+
+exit 0
+

@@ -2,7 +2,6 @@ package org.vcell.sbml;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +18,7 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.message.server.console.LoginChecker;
 import cbit.vcell.message.server.console.LoginChecker.SiteInfo;
 import cbit.vcell.server.UserMetaDbServer;
@@ -130,7 +130,7 @@ public class SBMLExportTest {
 		throw new RuntimeException("No connection for site " + siteName);
 	}
 
-	static BioModel getBiomodelByName(VCellConnection vcn, String name) throws RemoteException, DataAccessException, XmlParseException {
+	static BioModel getBiomodelByName(VCellConnection vcn, String name) throws RemoteProxyException, DataAccessException, XmlParseException {
 		EscapedName eName = new EscapedName(name);
 		UserMetaDbServer dataServer = vcn.getUserMetaDbServer();
 		for (BioModelInfo bmi : dataServer.getBioModelInfos(false)) {

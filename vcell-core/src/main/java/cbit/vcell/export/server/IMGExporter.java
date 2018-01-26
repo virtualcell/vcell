@@ -168,7 +168,7 @@ private static class ParticleInfo{
  */
 public ExportOutput[] makeMediaData(
 		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,FileDataContainerManager fileDataContainerManager)
-						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
+						throws IOException, GIFFormatException, DataAccessException, Exception {
 
 	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
 	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
@@ -217,8 +217,8 @@ private File[] getParticleFiles(ExportSpecs exportSpecs,User user,DataServerImpl
 	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
 	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
 	SimulationData simData = new SimulationData(vcdID,
-			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),vcdID.getOwner().getName()),
-			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirProperty,null),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty,null),vcdID.getOwner().getName()),
 			simDataAmplistorInfo);
 		
 	File logFile = simData.getLogFile();
@@ -268,8 +268,8 @@ private ParticleInfo checkParticles_unused(final ExportSpecs exportSpecs,User us
 	//-----Get all data (from archive if necessary)
 	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
 	SimulationData simData = new SimulationData(vcdID,
-			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),vcdID.getOwner().getName()),
-			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirProperty,null),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty,null),vcdID.getOwner().getName()),
 			simDataAmplistorInfo);
 		
 	File logFile = simData.getLogFile();

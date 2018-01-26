@@ -79,31 +79,6 @@ vcellapi_processLabel=${common_site}-api
 vcellapi_memoryGB=2
 
 #--------------------------------------
-# rmi bootstrap services (http port, high port)
-#    common definitions
-#--------------------------------------
-bootstrap_mainclass=cbit.vcell.message.server.bootstrap.LocalVCellBootstrap
-bootstrap_policyfile=${common_siteCfgDir}/java.policy
-bootstrap_host=GENERATED-RMIHOST
-bootstrap_rmihost=GENERATED-RMIHOST
-bootstrap_jmxhost=${bootstrap_rmihost}
-bootstrap_memoryGB=1
-
-#--------------------------------------
-# rmi bootstrap services (http port) "vcellbootstrap_http"
-#--------------------------------------
-bootstrap_http_rmiport=GENERATED-RMIPORT-LOW
-bootstrap_http_jmxport=GENERATED-RMISERVICEHTTP-JMXPORT
-bootstrap_http_processLabel=${common_site}-rmi-http
-
-#--------------------------------------
-# rmi bootstrap services (high port) "vcellbootstrap_high"
-#--------------------------------------
-bootstrap_high_rmiport=GENERATED-RMIPORT-HIGH
-bootstrap_high_jmxport=GENERATED-RMISERVICEHIGH-JMXPORT
-bootstrap_high_processLabel=${common_site}-rmi-high
-
-#--------------------------------------
 # vcell service "vcellservice"
 #--------------------------------------
 vcellservice_mainclass=cbit.vcell.message.server.combined.VCellServices

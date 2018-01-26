@@ -1404,7 +1404,21 @@ public class OverlayEditorPanelJAI extends JPanel{
 		if(!mouseEvent.isPopupTrigger() || (!selectButton.isSelected() && bFromImage)){
 			return SHOWCONVERT.IGNORED;
 		}
-		if(resolvedList.getModel().getSize() == 1){
+		JMenuItem addSubVolMenuItem = null;
+		if(bFromImage){
+			addSubVolMenuItem = new JMenuItem("Add Subvolume...");
+			if(roiComboBox.getSelectedItem() == null){
+				addSubVolMenuItem.setEnabled(false);
+			}
+			addSubVolMenuItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					firePropertyChange(FRAP_DATA_ADDANALYTIC_PROPERTY,null,
+							new ImgSubVolHelper((ROIMultiPaintManager.ComboboxROIName)roiComboBox.getSelectedItem(), mouseEvent.getPoint(),getZ(), (Component)mouseEvent.getSource()));
+				}
+			});
+		}
+		if(resolvedList.getModel().getSize() == 1 && !bFromImage){
 			return SHOWCONVERT.HANDLED;
 		}
 
@@ -1442,15 +1456,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			});
 			convertMenu.add(jMenuItem);
 		}
-		JMenuItem addSubVolMenuItem = new JMenuItem("Add Subvolume...");
-		addSubVolMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				firePropertyChange(FRAP_DATA_ADDANALYTIC_PROPERTY,null,
-						new ImgSubVolHelper((ROIMultiPaintManager.ComboboxROIName)roiComboBox.getSelectedItem(), mouseEvent.getPoint(),getZ(), (Component)mouseEvent.getSource()));
-			}
-		});
-		jPopupMenu.add(addSubVolMenuItem);
+		if(addSubVolMenuItem != null){
+			jPopupMenu.add(addSubVolMenuItem);
+		}
 		jPopupMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
 		return SHOWCONVERT.HANDLED;
 	}

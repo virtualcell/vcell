@@ -593,7 +593,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 		}
 		File userDirectory = outputFile.getParentFile();
 
-		String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);
+		String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);
 		DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 		CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
 		SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
@@ -2059,7 +2059,7 @@ private void writeJms(Simulation simulation) {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println("start_jms");
 	    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
-		printWriter.println(PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL)
+		printWriter.println(PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal)
 			+ " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + jmsPassword
 			+ " " + VCellQueue.WorkerEventQueue.getName()
 			+ " " + VCellTopic.ServiceControlTopic.getName()

@@ -10,7 +10,6 @@
 
 package cbit.vcell.message.server.console;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -23,9 +22,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -54,8 +51,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ServerMessagingDelegate;
-import cbit.vcell.message.server.bootstrap.RpcDbServerProxy;
-import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
@@ -65,6 +61,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XmlHelper;
 
@@ -102,8 +99,8 @@ public ServerManagerCLI(VCMessagingService vcMessagingService, AdminDBTopLevel a
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private Object[][] getQueryResultTable(String userid, Number simID) {
 	System.out.println("----- user="+userid+" simID="+simID);
-	String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
-	int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+	String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
+	int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
 	Mongo m = new Mongo(mongoDbHost,mongoDbPort);
 	String mongoDbDatabaseName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
 	DB db = m.getDB(mongoDbDatabaseName);
@@ -190,23 +187,22 @@ private SimpleJobStatus[] query(SimpleJobStatusQuerySpec querySpec) throws Objec
  * @throws  
  */
 public void resubmitSimulation(String userid, KeyValue simKey) throws Exception {
-	try (VCMessageSession vcMessaging_rpcProducerSession = vcMessagingService.createProducerSession())
-	{
-		User user = adminDbTop.getUser(userid, true);
-		UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
-		userLoginInfo.setUser(user);
-		RpcDbServerProxy dbProxy = new RpcDbServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		BigString simxml = dbProxy.getSimulationXML(simKey);
-		if (simxml == null) {
-			throw new RuntimeException("Simulation [" + simKey + "] doesn't exit, might have been deleted.");
-		}
-		Simulation sim = XmlHelper.XMLToSim(simxml.toString());
-		if (sim == null) {
-			throw new RuntimeException("Simulation [" + simKey + "] doesn't exit, might have been deleted.");
-		}
-		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo, vcMessaging_rpcProducerSession, log);
-		simProxy.startSimulation(user,sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());
+	User user = adminDbTop.getUser(userid, true);
+	UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
+	userLoginInfo.setUser(user);
+	String apihost = "vcellapi.cam.uchc.edu";
+	Integer apiport = 8080;
+	RemoteProxyVCellConnectionFactory remoteProxyVCellConnectionFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, userLoginInfo);
+	VCellConnection vcConn = remoteProxyVCellConnectionFactory.createVCellConnection();
+	BigString simxml = vcConn.getUserMetaDbServer().getSimulationXML(simKey);
+	if (simxml == null) {
+		throw new RuntimeException("Simulation [" + simKey + "] doesn't exit, might have been deleted.");
 	}
+	Simulation sim = XmlHelper.XMLToSim(simxml.toString());
+	if (sim == null) {
+		throw new RuntimeException("Simulation [" + simKey + "] doesn't exit, might have been deleted.");
+	}
+	vcConn.getSimulationController().startSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());
 }
 
 
@@ -248,23 +244,22 @@ public void sendMessageButton_ActionPerformed(String broadcastMessage, String op
  * @throws Exception 
  */
 public void stopSimulation(String userid, KeyValue simKey) throws Exception {
-	try (VCMessageSession vcMessaging_rpcProducerSession = vcMessagingService.createProducerSession())
-	{
-		User user = adminDbTop.getUser(userid, true);
-		UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
-		userLoginInfo.setUser(user);
-		RpcDbServerProxy dbProxy = new RpcDbServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		BigString simxml = dbProxy.getSimulationXML(simKey);
-		if (simxml == null) {
-			throw new RuntimeException("Simulation [" + simKey + "] doesn't exit, might have been deleted.");
-		}
-		cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
-		if (sim == null) {
-			throw new RuntimeException("Simulation [" + simKey + "] doesn't exit, might have been deleted.");
-		}
-		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		simProxy.stopSimulation(user,sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());	
+	User user = adminDbTop.getUser(userid, true);
+	UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
+	userLoginInfo.setUser(user);
+	String apihost = "vcellapi.cam.uchc.edu";
+	Integer apiport = 8080;
+	RemoteProxyVCellConnectionFactory remoteProxyVCellConnectionFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, userLoginInfo);
+	VCellConnection vcConn = remoteProxyVCellConnectionFactory.createVCellConnection();
+	BigString simxml = vcConn.getUserMetaDbServer().getSimulationXML(simKey);
+	if (simxml == null) {
+		throw new RuntimeException("Simulation [" + simKey + "] doesn't exit, might have been deleted.");
 	}
+	cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
+	if (sim == null) {
+		throw new RuntimeException("Simulation [" + simKey + "] doesn't exit, might have been deleted.");
+	}
+	vcConn.getSimulationController().stopSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());	
 }
 
 /**

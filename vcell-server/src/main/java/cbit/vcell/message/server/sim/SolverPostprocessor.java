@@ -161,8 +161,8 @@ public class SolverPostprocessor  {
 		return null;
 	}
 	private static final String POST_PROCESSOR_PROPERTIES[] = {
-			PropertyLoader.primarySimDataDirProperty,
-			PropertyLoader.secondarySimDataDirProperty
+			PropertyLoader.primarySimDataDirInternalProperty,
+			PropertyLoader.secondarySimDataDirInternalProperty
 		};
 
 }

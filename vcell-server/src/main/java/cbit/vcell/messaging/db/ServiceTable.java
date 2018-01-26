@@ -20,9 +20,9 @@ import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.message.server.ServiceSpec;
 import cbit.vcell.message.server.ServiceSpec.ServiceStartupType;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
+import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.server.HtcJobID;
 
 public class ServiceTable extends cbit.sql.Table {

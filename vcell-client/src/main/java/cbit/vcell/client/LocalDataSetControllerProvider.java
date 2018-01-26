@@ -10,8 +10,6 @@
 
 package cbit.vcell.client;
 
-import java.rmi.RemoteException;
-
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -28,6 +26,7 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.simdata.DataIdentifier;
@@ -112,12 +111,12 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 		}
 
 		@Override
-		public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException {
+		public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
 			return dataServerImpl.getDataSetMetadata(user, vcdataID);
 		}
 
 		@Override
-		public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteException {
+		public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteProxyException {
 			return dataServerImpl.getDataSetTimeSeries(user, vcdataID, variableNames);
 		}
 
@@ -137,12 +136,12 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 		}
 
 		@Override
-		public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+		public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 			return dataServerImpl.getVtuTimes(user, vcdataID);
 		}
 		
 		@Override
-		public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+		public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 			return dataServerImpl.getNFSimMolecularConfigurations(user, vcdataID);
 		}
 

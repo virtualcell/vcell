@@ -63,7 +63,7 @@ import cbit.vcell.client.pyvcellproxy.VCellProxyServer;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer;
-import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ErrorUtils;
@@ -204,7 +204,7 @@ public static void main(java.lang.String[] args) {
 	Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener,AWTEvent.MOUSE_EVENT_MASK);
 
 	//check synchronize Proxy prefs, Proxy Properties
-	Preferences prefs = Preferences.userNodeForPackage(RMIVCellConnectionFactory.class);
+	Preferences prefs = Preferences.userNodeForPackage(RemoteProxyVCellConnectionFactory.class);
 	Boolean bHttp =
 		(System.getProperty(NetworkProxyUtils.PROXY_HTTP_HOST)==null && System.getProperty(NetworkProxyUtils.PROXY_SOCKS_HOST)==null?null:System.getProperty(NetworkProxyUtils.PROXY_HTTP_HOST) != null);
 	String currentProxyHost =
@@ -292,7 +292,10 @@ public static void main(java.lang.String[] args) {
 	if (hosts[0]!=null && hosts[0].equalsIgnoreCase("-local")) {
 		csInfo = ClientServerInfo.createLocalServerInfo(user, (password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	} else {
-		csInfo = ClientServerInfo.createRemoteServerInfo(hosts, user,(password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
+		String[] hostParts = hosts[0].split(":");
+		String apihost = hostParts[0];
+		int apiport = Integer.parseInt(hostParts[1]);
+		csInfo = ClientServerInfo.createRemoteServerInfo(apihost, apiport, user,(password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	}
 	try {
 		String propertyFile = PropertyLoader.getProperty(PropertyLoader.propertyFileProperty, "");
@@ -434,17 +437,17 @@ private static final String REQUIRED_CLIENT_PROPERTIES[] = {
  * array of properties required for correct local operation
  */
 private static final String REQUIRED_LOCAL_PROPERTIES[] = {
-	PropertyLoader.primarySimDataDirProperty,
-	PropertyLoader.secondarySimDataDirProperty,
+	PropertyLoader.primarySimDataDirInternalProperty,
+	PropertyLoader.secondarySimDataDirInternalProperty,
 	PropertyLoader.dbPasswordValue,
 	PropertyLoader.dbUserid,
 	PropertyLoader.dbDriverName,
 	PropertyLoader.dbConnectURL,
 	PropertyLoader.vcellServerIDProperty,
 	PropertyLoader.mongodbDatabase,
-	PropertyLoader.mongodbHost,
+	PropertyLoader.mongodbHostInternal,
 	PropertyLoader.mongodbLoggingCollection,
-	PropertyLoader.mongodbPort
+	PropertyLoader.mongodbPortInternal
 	
 };
 }

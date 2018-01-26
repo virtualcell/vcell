@@ -45,14 +45,24 @@ COPY --from=build /app/nativelibs/linux64 ./nativelibs/linux64
 WORKDIR /usr/local/app
 
 ENV softwareVersion=JimMac_Version_6.2_build_99 \
-	serverid=TEST2 \
+	serverid=TEST \
 	dburl=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
     dbdriver=oracle.jdbc.driver.OracleDriver \
     dbuser=vcell \
     dbpswdfile=/run/secrets/dbpswd \
-    jmsurl=failover:(tcp://activemq:61616) \
+    jmsurl_internal=failover:(tcp://activemq:61616) \
+    jmsurl_external=failover:(tcp://vcell-service.cam.uchc.edu:61619) \
     jmsuser=clientUser \
     jmspswdfile=/run/secrets/jmspswd \
+	mongodb_host_internal=mongodb \
+	mongodb_port_internal=27017 \
+	mongodb_host_external=Jamess-MacBook-Pro-2.local \
+	mongodb_port_external=27020 \
+    simdatadir_external=/share/apps/vcell3/users/ \
+    htclogdir_external=/share/apps/vcell3/htclogs/ \
+    htcnodelist="" \
+    singularity_imagefile=/share/apps/vcell3/singularity/vcell-batch-0.0.1-alpha.1.img \
+    docker_name="schaff/vcell-batch:0.0.1-alpha.1" \
     batchsystem=SLURM \
     batchhost=vcell-service.cam.uchc.edu \
     batchuser=vcell \
@@ -61,29 +71,43 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
 
 VOLUME /simdata
 
+EXPOSE 8000
+
 ENTRYPOINT java \
-		-Dvcell.softwareVersion="${softwareVersion}" \
-		-Dvcell.server.id="${serverid}" \
-		-Dvcell.python.executable=/usr/bin/python \
-		-Dvcell.primarySimdatadir=/simdata \
-		-Dvcell.htc.user="${batchuser}" \
-		-Dvcell.installDir=/usr/local/app \
-		-Dvcell.server.dbConnectURL="${dburl}" \
-		-Dvcell.server.dbDriverName="${dbdriver}" \
-		-Dvcell.server.dbUserid="${dbuser}" \
-		-Dvcell.db.pswdfile="${dbpswdfile}" \
-		-Dvcell.jms.url="${jmsurl}" \
-		-Dvcell.jms.blobMessageUseMongo=true \
-    -Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
-		-Dvcell.jms.user="${jmsuser}" \
-		-Dvcell.jms.pswdfile="${jmspswdfile}" \
-		-Dvcell.mongodb.host=mongodb \
-		-Dvcell.mongodb.port=27017 \
-		-Dvcell.mongodb.database=test \
-		-Dvcell.server.maxJobsPerScan=50 \
-		-Dvcell.server.maxJobsPerSite=100 \
-		-Dvcell.server.maxOdeJobsPerUser=30 \
-		-Dvcell.server.maxPdeJobsPerUser=20 \
-		-Dvcell.limit.jobMemoryMB=2000 \
-		-cp "./lib/*" cbit.vcell.message.server.combined.VCellServices \
-		123 - "${batchsystem}" "${batchhost}" "${batchuser}" "${batchuserkeyfile}"
+	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+	-Dvcell.softwareVersion="${softwareVersion}" \
+	-Dvcell.server.id="${serverid}" \
+	-Dvcell.python.executable=/usr/bin/python \
+	-Dvcell.primarySimdatadir.internal=/simdata \
+	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
+	-Dvcell.htc.user="${batchuser}" \
+	-Dvcell.htc.logdir.external="${htclogdir_external}" \
+	-Dvcell.htc.nodelist="${htcnodelist}" \
+	-Dvcell.batch.singularity.image="${singularity_imagefile}" \
+	-Dvcell.batch.docker.name="${docker_name}" \
+	-Dvcell.simulation.postprocessor=JavaPostprocessor64 \
+	-Dvcell.simulation.preprocessor=JavaPreprocessor64 \
+	-Dvcell.javaSimulation.executable=JavaSimExe64 \
+	-Dvcell.installDir=/usr/local/app \
+	-Dvcell.server.dbConnectURL="${dburl}" \
+	-Dvcell.server.dbDriverName="${dbdriver}" \
+	-Dvcell.server.dbUserid="${dbuser}" \
+	-Dvcell.db.pswdfile="${dbpswdfile}" \
+	-Dvcell.jms.url.internal="${jmsurl_internal}" \
+	-Dvcell.jms.url.external="${jmsurl_external}" \
+	-Dvcell.jms.blobMessageUseMongo=true \
+	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
+	-Dvcell.jms.user="${jmsuser}" \
+	-Dvcell.jms.pswdfile="${jmspswdfile}" \
+	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
+	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
+	-Dvcell.mongodb.host.external=${mongodb_host_external} \
+	-Dvcell.mongodb.port.external=${mongodb_port_external} \
+	-Dvcell.mongodb.database=test \
+	-Dvcell.server.maxJobsPerScan=50 \
+	-Dvcell.server.maxJobsPerSite=100 \
+	-Dvcell.server.maxOdeJobsPerUser=30 \
+	-Dvcell.server.maxPdeJobsPerUser=20 \
+	-Dvcell.limit.jobMemoryMB=2000 \
+	-cp "./lib/*" cbit.vcell.message.server.combined.VCellServices \
+	123 - "${batchsystem}" "${batchhost}" "${batchuser}" "${batchuserkeyfile}"

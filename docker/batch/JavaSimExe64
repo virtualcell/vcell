@@ -1,0 +1,46 @@
+#!/bin/bash
+
+printusage() {
+	echo "Usage: JavaSimExe64 simTaskFileName"
+	exit 1
+}
+
+# main code
+if [[ $# -ne 1 ]] ; then 
+	printusage
+fi
+
+simTaskFileName=$1
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+javasolver_mainclass=cbit.vcell.message.server.sim.JavaSimulationExecutable
+
+jvmprop="-Djava.io.tmpdir=/tmp"
+jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"
+jvmprop="${jvmprop} -Dvcell.jms.url.internal=${jmsurl_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.user=${jmsuser}"
+jvmprop="${jvmprop} -Dvcell.jms.password=${jmspswd}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.server.id=${serverid}"
+jvmprop="${jvmprop} -Dvcell.softwareVersion=${softwareVersion}"
+jvmprop="${jvmprop} -Dvcell.mongodb.database=${mongodb_database}"
+jvmprop="${jvmprop} -Dvcell.mongodb.host.internal=${mongodbhost_internal}"
+jvmprop="${jvmprop} -Dvcell.mongodb.port.internal=${mongodbport_internal}"
+
+arguments="/simdata/$simTaskFileName /simdata"
+
+echo "starting java solver"
+
+nice java ${jvmprop} ${javasolver_mainclass} ${arguments}
+
+echo "java solver returned"
+
+exit 0
+

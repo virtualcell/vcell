@@ -9,11 +9,11 @@
  */
 
 package cbit.vcell.client.server;
-import java.rmi.RemoteException;
 
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.AuthenticationException;
+import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.VCellThreadChecker;
@@ -22,11 +22,13 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;
+import cbit.vcell.client.server.ClientServerInfo.ServerType;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.message.server.bootstrap.client.RMIVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.PropertyLoader;
@@ -68,7 +70,8 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 	public static final String PROPERTY_NAME_CONNECTION_STATUS = "connectionStatus";
 	private class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info
-		private String serverHost = null;
+		private String apihost = null;
+		private Integer apiport = null;
 		private String userName = null;
 		private int status = NOT_CONNECTED;
 
@@ -77,19 +80,21 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 		 * @param serverHost java.lang.String
 		 * @param status int
 		 */
-		private ClientConnectionStatus(String userName, String serverHost, int status) {
+		private ClientConnectionStatus(String userName, String apihost, Integer apiport, int status) {
 			switch (status) {
 				case NOT_CONNECTED: {
 					setUserName(null);
-					setServerHost(null);
+					setApihost(null);
+					setApiport(null);
 					break;
 				}
 				case INITIALIZING:
 				case CONNECTED:
 				case DISCONNECTED: {
-					if (userName == null || serverHost == null) throw new RuntimeException("userName and serverHost should be non-null unless NOT_CONNECTED");
+					if (userName == null) throw new RuntimeException("userName should be non-null unless NOT_CONNECTED");
 					setUserName(userName);
-					setServerHost(serverHost);
+					setApihost(apihost);
+					setApiport(apiport);
 					break;
 				}
 				default: {
@@ -100,8 +105,12 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 		}
 
 
-		public java.lang.String getServerHost() {
-			return serverHost;
+		public String getApihost() {
+			return apihost;
+		}
+
+		public Integer getApiport() {
+			return apiport;
 		}
 
 		public int getStatus() {
@@ -113,8 +122,12 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 		}
 
 
-		private void setServerHost(java.lang.String newServerHost) {
-			serverHost = newServerHost;
+		private void setApihost(java.lang.String newApihost) {
+			this.apihost = newApihost;
+		}
+
+		private void setApiport(Integer newApiport) {
+			this.apiport = newApiport;
 		}
 
 
@@ -127,7 +140,7 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 		}
 
 		public String toString() {
-			return "status " + getStatus() + " server " + getServerHost() + " user " + getUserName();
+			return "status " + getStatus() + " apihost " + getApihost() + " apiport " + getApiport() + " user " + getUserName();
 		}
 
 
@@ -141,7 +154,8 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((serverHost == null) ? 0 : serverHost.hashCode());
+			result = prime * result + ((apihost == null) ? 0 : apihost.hashCode());
+			result = prime * result + ((apiport == null) ? 0 : apiport.hashCode());
 			result = prime * result + status;
 			result = prime * result + ((userName == null) ? 0 : userName.hashCode());
 			return result;
@@ -149,25 +163,22 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
+			if (obj instanceof ClientConnectionStatus) {
 				return false;
-			if (getClass() != obj.getClass())
-				return false;
+			}
 			ClientConnectionStatus other = (ClientConnectionStatus) obj;
-			if (serverHost == null) {
-				if (other.serverHost != null)
-					return false;
-			} else if (!serverHost.equals(other.serverHost))
+			if (!Compare.isEqualOrNull(apihost, other.apihost)) {
 				return false;
-			if (status != other.status)
+			}
+			if (!Compare.isEqualOrNull(apiport, other.apiport)) {
 				return false;
-			if (userName == null) {
-				if (other.userName != null)
-					return false;
-			} else if (!userName.equals(other.userName))
+			}
+			if (status != other.status) {
 				return false;
+			}
+			if (!Compare.isEqualOrNull(userName, other.userName)) {
+				return false;
+			}
 			return true;
 		}
 
@@ -205,7 +216,7 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 	private VCDataManager vcDataManager = null;
 	private UserPreferences userPreferences = new UserPreferences(this);
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private ClientConnectionStatus fieldConnectionStatus = new ClientConnectionStatus(null, null, ConnectionStatus.NOT_CONNECTED);
+	private ClientConnectionStatus fieldConnectionStatus = new ClientConnectionStatus(null, null, null, ConnectionStatus.NOT_CONNECTED);
 	private ReconnectStatus reconnectStat = ReconnectStatus.NOT;
 	private final InteractiveContextDefaultProvider defaultInteractiveContextProvider;
 	/**
@@ -244,27 +255,19 @@ private void changeConnection(InteractiveContext requester, VCellConnection newV
 			// load user preferences
 			getUserPreferences().resetFromSaved(getDocumentManager().getPreferences());
 
-			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.CONNECTED));
+			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), ConnectionStatus.CONNECTED));
 		} catch (DataAccessException exc) {
 			// unlikely, since we just connected, but it looks like we did loose the connection...
 			lastVCellConnection = getVcellConnection();
 			setVcellConnection(null);
-			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
+			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), ConnectionStatus.DISCONNECTED));
 			exc.printStackTrace(System.out);
 			requester.showErrorDialog("Server connection failed:\n\n" + exc.getMessage());
 		}
 	} else if(lastVCellConnection != null) {
-		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
+		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getApihost(), getClientServerInfo().getApiport(),  ConnectionStatus.DISCONNECTED));
 	} else {
-		setConnectionStatus(new ClientConnectionStatus(null, null, ConnectionStatus.NOT_CONNECTED));
-	}
-}
-
-
-public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws RemoteException {
-	// just pass it to the the messaging service
-	if (isStatusConnected()) {
-		vcellConnection.reportPerformanceMonitorEvent(pme);
+		setConnectionStatus(new ClientConnectionStatus(null, null, null, ConnectionStatus.NOT_CONNECTED));
 	}
 }
 
@@ -277,7 +280,7 @@ public void cleanup() {
 	setVcellConnection(null);
 }
 
-public MessageEvent[] getMessageEvents() throws RemoteException{
+public MessageEvent[] getMessageEvents() throws RemoteProxyException{
 	if (vcellConnection!=null && isStatusConnected()){
 		return vcellConnection.getMessageEvents();
 	} else {
@@ -290,17 +293,15 @@ private void checkClientServerSoftwareVersion(InteractiveContext requester, Clie
 	if (clientSoftwareVersion != null &&  clientSoftwareVersion.toLowerCase().contains("devel") ) {
 		return;
 	}
-	if (clientServerInfo.getServerType() == ClientServerInfo.SERVER_REMOTE) {
-		String[] hosts = clientServerInfo.getHosts();
-		for (int i = 0; i < hosts.length; i ++) {
-			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(hosts[i]);
-			if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
-					requester.showWarningDialog("A new VCell client is available:\n"
-						+ "current version : " + clientSoftwareVersion + "\n"
-						+ "new version : " + serverSoftwareVersion + "\n"
-						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
-				break;
-			}
+	if (clientServerInfo.getServerType() == ServerType.SERVER_REMOTE) {
+		String apihost = clientServerInfo.getApihost();
+		Integer apiport = clientServerInfo.getApiport();
+		String serverSoftwareVersion = RemoteProxyVCellConnectionFactory.getVCellSoftwareVersion(apihost,apiport);
+		if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
+			requester.showWarningDialog("A new VCell client is available:\n"
+				+ "current version : " + clientSoftwareVersion + "\n"
+				+ "new version : " + serverSoftwareVersion + "\n"
+				+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
 		}
 	}
 }
@@ -358,12 +359,12 @@ public void reconnect(InteractiveContext requester) {
 public void connectAs(InteractiveContext requester, String user, DigestedPassword digestedPassword) {
 	reconnectStat = ReconnectStatus.NOT;
 	switch (getClientServerInfo().getServerType()) {
-		case ClientServerInfo.SERVER_LOCAL: {
+		case SERVER_LOCAL: {
 			clientServerInfo = ClientServerInfo.createLocalServerInfo(user, digestedPassword);
 			break;
 		}
-		case ClientServerInfo.SERVER_REMOTE: {
-			clientServerInfo = ClientServerInfo.createRemoteServerInfo(getClientServerInfo().getHosts(), user, digestedPassword);
+		case SERVER_REMOTE: {
+			clientServerInfo = ClientServerInfo.createRemoteServerInfo(getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), user, digestedPassword);
 			break;
 		}
 	}
@@ -383,38 +384,25 @@ private VCellConnection connectToServer(InteractiveContext requester) {
 	String badConnStr = "";
 	try {
 		switch (getClientServerInfo().getServerType()) {
-			case ClientServerInfo.SERVER_REMOTE: {
-				String[] hosts = getClientServerInfo().getHosts();
-				for (int i = 0; i < hosts.length; i ++) {
-					try {
-						if (i == 0) {
-							badConnStr += "(";
-						}
-						getClientServerInfo().setActiveHost(hosts[i]);
-
-						badConnStr += hosts[i] + ";";
-						vcConnFactory = new RMIVCellConnectionFactory(hosts[i], getClientServerInfo().getUserLoginInfo());
-						setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), hosts[i], ConnectionStatus.INITIALIZING));
-						newVCellConnection = vcConnFactory.createVCellConnection();
-						break;
-					} catch (AuthenticationException ex) {
-						throw ex;
-					} catch (Exception ex) {
-						if (i == hosts.length - 1) {
-							badConnStr += ")";
-							throw ex;
-						}
-					}
+			case SERVER_REMOTE: {
+				String apihost = getClientServerInfo().getApihost();
+				Integer apiport = getClientServerInfo().getApiport();
+				try {
+					badConnStr += apihost+":"+apiport;
+					vcConnFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, getClientServerInfo().getUserLoginInfo());
+					setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), apihost, apiport, ConnectionStatus.INITIALIZING));
+					newVCellConnection = vcConnFactory.createVCellConnection();
+				} catch (AuthenticationException ex) {
+					throw ex;
 				}
 				break;
 			}
-			case ClientServerInfo.SERVER_LOCAL: {
+			case SERVER_LOCAL: {
 				new PropertyLoader();
-				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);
 				SessionLog log = new StdoutSessionLog(getClientServerInfo().getUsername());
 				LocalVCellConnectionService localVCellConnectionService = VCellServiceHelper.getInstance().loadService(LocalVCellConnectionService.class);
 				vcConnFactory = localVCellConnectionService.getLocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo(), log);
-				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), ClientServerInfo.LOCAL_SERVER, ConnectionStatus.INITIALIZING));
+				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), null, null, ConnectionStatus.INITIALIZING));
 				newVCellConnection = vcConnFactory.createVCellConnection();
 				break;
 			}
@@ -534,15 +522,15 @@ public synchronized DataSetController getDataSetController() throws DataAccessEx
 		try {
 			dataSetController = getVcellConnection().getDataSetController();
 			return dataSetController;
-		} catch (java.rmi.RemoteException rexc) {
+		} catch (RemoteProxyException rexc) {
 			rexc.printStackTrace(System.out);
 			try {
 				// one more time before we fail../
 				dataSetController = getVcellConnection().getDataSetController();
 				return dataSetController;
-			} catch (java.rmi.RemoteException rexc2) {
+			} catch (RemoteProxyException rexc2) {
 				rexc.printStackTrace(System.out);
-				throw new DataAccessException("RemoteException: "+rexc2.getMessage());
+				throw new DataAccessException("RemoteProxyException: "+rexc2.getMessage());
 			}
 		}
 	}
@@ -611,15 +599,15 @@ public synchronized SimulationController getSimulationController() {
 		try {
 			simulationController = getVcellConnection().getSimulationController();
 			return simulationController;
-		} catch (java.rmi.RemoteException rexc) {
+		} catch (RemoteProxyException rexc) {
 			rexc.printStackTrace(System.out);
 			try {
 				// one more time before we fail../
 				simulationController = getVcellConnection().getSimulationController();
 				return simulationController;
-			} catch (java.rmi.RemoteException rexc2) {
+			} catch (RemoteProxyException rexc2) {
 				rexc.printStackTrace(System.out);
-				throw new RuntimeException("RemoteException: "+rexc2.getMessage());
+				throw new RuntimeException("RemoteProxyException: "+rexc2.getMessage());
 			}
 		}
 	}
@@ -641,9 +629,9 @@ public synchronized User getUser() {
 		try {
 			user = getVcellConnection().getUserLoginInfo().getUser();
 			return user;
-		} catch (java.rmi.RemoteException rexc) {
+		} catch (RemoteProxyException rexc) {
 			rexc.printStackTrace(System.out);
-			throw new RuntimeException("RemoteException: "+rexc.getMessage());
+			throw new RuntimeException("RemoteProxyException: "+rexc.getMessage());
 		}
 	}
 }
@@ -664,15 +652,15 @@ public synchronized UserMetaDbServer getUserMetaDbServer() throws DataAccessExce
 		try {
 			userMetaDbServer = getVcellConnection().getUserMetaDbServer();
 			return userMetaDbServer;
-		} catch (java.rmi.RemoteException rexc) {
+		} catch (RemoteProxyException rexc) {
 			rexc.printStackTrace(System.out);
 			try {
 				// one more time before we fail../
 				userMetaDbServer = getVcellConnection().getUserMetaDbServer();
 				return userMetaDbServer;
-			} catch (java.rmi.RemoteException rexc2) {
+			} catch (RemoteProxyException rexc2) {
 				rexc.printStackTrace(System.out);
-				throw new DataAccessException("RemoteException: "+rexc2.getMessage());
+				throw new DataAccessException("RemoteProxyException: "+rexc2.getMessage());
 			}
 		}
 	}
@@ -759,7 +747,7 @@ void reconnect() {
 			asynchMessageManager.startPolling();
 			return;
 		}
-		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
+		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), ConnectionStatus.DISCONNECTED));
 	} finally {
 		rc.notificationPause(false);
 	}
@@ -855,7 +843,7 @@ public void sendErrorReport(Throwable exception, VCellConnection.ExtraContext ex
  */
 void setDisconnected() {
 	getReconnector().start();
-	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
+	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), ConnectionStatus.DISCONNECTED));
 }
 
 public RegistrationService getRegistrationProvider() {

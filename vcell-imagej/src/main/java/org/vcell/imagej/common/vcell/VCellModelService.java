@@ -11,13 +11,6 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.sbml.jsbml.SBMLDocument;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.query.BioModelsQuerySpec;
@@ -33,7 +26,6 @@ public class VCellModelService {
     // VCell API
     private final static String HOST = "vcellapi.cam.uchc.edu";
     private final static int PORT = 8080;
-    private final static String DEFAULT_CLIENT_ID = "85133f8d-26f7-4247-8356-d175399fc2e6";
     
     public Task<List<VCellModel>, String> getModels(VCellService vCellService) {
     	
@@ -48,8 +40,8 @@ public class VCellModelService {
 				List<VCellModel> vCellModels = new ArrayList<VCellModel>();
 				
 		    	try {
-		    		vCellApiClient = new VCellApiClient(HOST, PORT, DEFAULT_CLIENT_ID, bIgnoreCertProblems, bIgnoreHostMismatch);
-					vCellApiClient.authenticate("ImageJ", "richarddberlin");
+		    		vCellApiClient = new VCellApiClient(HOST, PORT, bIgnoreCertProblems, bIgnoreHostMismatch);
+					vCellApiClient.authenticate("ImageJ", "richarddberlin", false);
 		    		BioModelsQuerySpec querySpec = new BioModelsQuerySpec();
 					querySpec.owner = "tutorial";
 					final BiomodelRepresentation[] biomodelReps = vCellApiClient.getBioModels(querySpec);
@@ -108,7 +100,7 @@ public class VCellModelService {
     
     private String getVCML(BiomodelRepresentation biomodelRep) {
     	try {
-			VCellApiClient client = new VCellApiClient(HOST,PORT,"12345",true,true);
+			VCellApiClient client = new VCellApiClient(HOST,PORT,true,true);
 			try {
 				String vcml = client.getBioModelVCML(biomodelRep.getBmKey());
 				return vcml;

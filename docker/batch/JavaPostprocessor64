@@ -1,0 +1,50 @@
+#!/bin/bash
+
+printusage() {
+	echo "Usage: JavaPostprocessor64 simKey userid userKey jobindex taskid solverExitCode"
+	exit 1
+}
+
+# main code
+if [ $# -lt 6 ] ; then
+	printusage
+fi
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+postprocessor_mainclass=cbit.vcell.message.server.sim.SolverPostprocessor
+
+jvmprop="-Djava.io.tmpdir=/tmp"
+jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"
+jvmprop="${jvmprop} -Dvcell.jms.url.internal=${jmsurl_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.user=${jmsuser}"
+jvmprop="${jvmprop} -Dvcell.jms.password=${jmspswd}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.server.id=${serverid}"
+jvmprop="${jvmprop} -Dvcell.softwareVersion=${softwareVersion}"
+jvmprop="${jvmprop} -Dvcell.lib=/usr/local/app/nativelibs/linux64"
+jvmprop="${jvmprop} -Dvcell.mongodb.database=${mongodb_database}"
+jvmprop="${jvmprop} -Dvcell.mongodb.host.internal=${mongodbhost_internal}"
+jvmprop="${jvmprop} -Dvcell.mongodb.port.internal=${mongodbport_internal}"
+
+arguments=$*
+
+arguments=${arguments//$datadir_external/$datadir_internal}
+
+echo "starting postprocessor"
+
+nice java ${jvmprop} ${postprocessor_mainclass} ${arguments} | tee -ai /dev/stderr |grep -q 'os::commit_memory'
+if [ $? -eq 0 ]; then
+	echo "MEMORY FAILURE DETECTED"
+fi
+
+echo "postprocessor returned"
+
+exit 0
+

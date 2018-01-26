@@ -347,11 +347,11 @@ public static void login(final RequestManager requestManager, final ClientServer
 
 public static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,DigestedPassword digestedPassword){
 	switch (clientServerInfo.getServerType()) {
-		case ClientServerInfo.SERVER_LOCAL: {
+		case SERVER_LOCAL: {
 			return ClientServerInfo.createLocalServerInfo(userid,digestedPassword);
 		}
-		case ClientServerInfo.SERVER_REMOTE: {
-			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getHosts(),userid,digestedPassword);
+		case SERVER_REMOTE: {
+			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getApihost(), clientServerInfo.getApiport(),userid,digestedPassword);
 		}
 	};
 	return null;

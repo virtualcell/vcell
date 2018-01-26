@@ -110,9 +110,7 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputTimeSeriesOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -4531,7 +4529,7 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 		}
 		try {
 			CartesianMeshVtkFileWriter cartesianMeshVTKFileWriter = new CartesianMeshVtkFileWriter();
-			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
+			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
 			VtuFileContainer vtuFiles = cartesianMeshVTKFileWriter.getEmptyVtuMeshFiles(vcellSimFiles, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
@@ -4543,7 +4541,7 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 	public VtuFileContainer getEmptyVtuMeshFiles(MovingBoundarySimFiles movingBoundarySimFiles, VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
 		try {
 			MovingBoundaryVtkFileWriter movingBoundaryVtkFileWriter = new MovingBoundaryVtkFileWriter();
-			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
+			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
 			VtuFileContainer vtuFiles = movingBoundaryVtkFileWriter.getEmptyVtuMeshFiles(movingBoundarySimFiles, timeIndex, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
@@ -4629,7 +4627,7 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 	
 	
 	private File getUserDataDirectory(VCDataIdentifier vcdataID){
-		File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
+		File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
 		return new File(primaryDirectory,vcdataID.getOwner().getName());
 	}
 
