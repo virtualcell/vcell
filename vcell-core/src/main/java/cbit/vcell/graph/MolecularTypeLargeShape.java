@@ -12,6 +12,7 @@ import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -34,6 +35,7 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 
 public class MolecularTypeLargeShape extends IssueManagerContainer implements LargeShape, HighlightableShapeInterface {
 	
@@ -377,6 +379,35 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		}
 	}
 	
+	public Rectangle getAnchorRectangle() {
+		if(mt != null && !mt.getAnchors().isEmpty()) {
+			int z = shapePanel.getZoomFactor();
+			int x = xPos + cornerArc/2;
+			int y = yPos + baseHeight;
+			int yb = y + 9 + z/3;	// y at bottom
+			int w = 9 + z/6;
+			Rectangle r2d = new Rectangle(x-w/2, y, w, yb-y);
+			return r2d;
+		}
+		return null;
+	}
+	public String getAnchorsHTML() {
+		String str = "";
+		if(mt != null && !mt.getAnchors().isEmpty()) {
+			str += "<html>";
+			boolean first = true;
+			for(Structure s : mt.getAnchors()) {
+				if(!first) {
+					str += "<br>";
+				}
+				first = false;
+				str += s.getName();
+			}
+			str += "</html>";
+		}
+		return str;
+	}
+	
 	@Override
 	public void paintSelf(Graphics g) {
 		paintSpecies(g);
@@ -561,19 +592,27 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 			g2.draw(rect);
 		}
 
-		if(mt != null && !mt.getAnchors().isEmpty()) {		// paint anchor glyph
+		Rectangle r = getAnchorRectangle();
+		if(r != null) {		// paint anchor glyph
 			int z = shapePanel.getZoomFactor();
-			int x = xPos + cornerArc/2;
-			int y = yPos + baseHeight;
-			int yb = y + 5 + z/3;	// y at bottom
-			int w = 6 + z/4;
+			int w = r.width;
+			int x = r.x + w/2;
+			int y = r.y;
+			int yb = y + r.height;	// y at bottom
+//			g2.drawRect(r.x, r.y, r.width, r.height);		// hotspot for anchor tooltips
 			Line2D line = new Line2D.Float(x, y, x, yb);
-			g2.setPaint(getDefaultColor(Color.BLUE.darker()));
-			g2.setStroke(new BasicStroke(2.0f+0.14f*z));
+			g2.setPaint(getDefaultColor(Color.RED.darker().darker()));
+			g2.setStroke(new BasicStroke(2.1f+0.13f*z));
 			g2.draw(line);
-			line = new Line2D.Float(x-w/2, yb+1, x+w/2, yb+1);
-			g2.setStroke(new BasicStroke(1.9f+0.21f*z));
-			g2.draw(line);
+//			line = new Line2D.Float(x-w/2, yb+1, x+w/2, yb+1);
+//			g2.setStroke(new BasicStroke(1.9f+0.21f*z));
+//			g2.draw(line);
+			int h = r.height + 1;
+			h = z < -3 ? h-1 : h;
+			Arc2D arc = new Arc2D.Double(x-w/2, y, w, h, 
+					210, 120, Arc2D.OPEN);
+			g2.setStroke(new BasicStroke(2.1f+0.20f*z));
+			g2.draw(arc);
 			g2.setPaint(colorOld);
 			g2.setStroke(strokeOld);
 		}
