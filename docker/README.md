@@ -159,13 +159,20 @@ serverconfig-uch.sh SITE REPO TAG VCELL_VERSION_NUMBER VCELL_BUILD_NUMBER OUTPUT
 git commit ==> git commit hash f98dfe3
 cd <vcellroot>/docker
 
-./build.sh all vcell-docker.cam.uchc.edu:5000 f98dfe3
+./build.sh all vcell-docker.cam.uchc.edu:5000/schaff f98dfe3
 
-./serverconfig-uch.sh test vcell-docker.cam.uchc.edu:5000 f98dfe3 7.0.0 5 server_7.0.0_5_f98dfe3.config
+./serverconfig-uch.sh test vcell-docker.cam.uchc.edu:5000/schaff f98dfe3 7.0.0 5 server_7.0.0_5_f98dfe3.config
 
 ./deploy.sh \
   --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \
   --installer-deploy apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Test \
+  vcellapi.cam.uchc.edu \
+  ./server_7.0.0_5_f98dfe3.config /usr/local/deploy/Test/server_7.0.0_5_f98dfe3.config \
+  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_f98dfe3.yml \
+  vcelltest
+
+./deploy.sh \
+  --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \
   vcellapi.cam.uchc.edu \
   ./server_7.0.0_5_f98dfe3.config /usr/local/deploy/Test/server_7.0.0_5_f98dfe3.config \
   ./docker-compose.yml /usr/local/deploy/Test/docker-compose_f98dfe3.yml \

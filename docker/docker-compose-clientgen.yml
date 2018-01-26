@@ -1,7 +1,7 @@
 version: '3.1'
 services:
   clientgen:
-    image: "${VCELL_REPO}/vcell-clientgen:${VCELL_TAG}"
+    image: "${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}"
     environment:
       - compiler_updateSiteBaseUrl=$VCELL_UPDATE_SITE
       - compiler_Site=$VCELL_SITE_CAMEL

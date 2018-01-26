@@ -37,9 +37,9 @@ public class SlurmProxy extends HtcProxy {
 
 
 	// note: full commands use the PropertyLoader.htcPbsHome path.
-	private final static String JOB_CMD_SUBMIT = "bash -l sbatch";
-	private final static String JOB_CMD_DELETE = "bash -l scancel";
-	private final static String JOB_CMD_STATUS = "bash -l sacct";
+	private final static String JOB_CMD_SUBMIT = "sbatch";
+	private final static String JOB_CMD_DELETE = "scancel";
+	private final static String JOB_CMD_STATUS = "sacct";
 	//private final static String JOB_CMD_QACCT = "qacct";
 	
 	//private static String Slurm_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSlurmHome);

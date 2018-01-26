@@ -1,7 +1,7 @@
 version: '3.1'
 services:
   api:
-    image: "${VCELL_REPO}/vcell-api:${VCELL_TAG}"
+    image: "${VCELL_REPO_NAMESPACE}/vcell-api:${VCELL_TAG}"
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
@@ -24,7 +24,7 @@ services:
       mode: replicated
       replicas: 1
   master:
-    image: "${VCELL_REPO}/vcell-master:${VCELL_TAG}"
+    image: "${VCELL_REPO_NAMESPACE}/vcell-master:${VCELL_TAG}"
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
@@ -39,8 +39,8 @@ services:
       - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
       - htclogdir_external=${VCELL_HTCLOGS_EXTERNAL}
       - htcnodelist=${VCELL_HTC_NODELIST}
-      - singularity_imagefile=${VCELL_SINGULARITY_EXTERNAL}/vcell-batch-${VCELL_TAG}.img
-      - docker_name=${VCELL_REPO}/vcell-batch:${VCELL_TAG}
+      - singularity_imagefile=${VCELL_SINGULARITY_IMAGE_EXTERNAL}
+      - docker_name=${VCELL_REPO_NAMESPACE}/vcell-batch:${VCELL_TAG}
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
     ports:
@@ -83,7 +83,7 @@ services:
       mode: replicated
       replicas: 1
   mongodb:
-    image: "${VCELL_REPO}/vcell-mongo:${VCELL_TAG}"
+    image: "${VCELL_REPO_NAMESPACE}/vcell-mongo:${VCELL_TAG}"
     ports:
       - "${VCELL_MONGO_PORT_EXTERNAL}:27017"
     networks:

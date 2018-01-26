@@ -11,9 +11,10 @@ show_help() {
 	echo "    manager-node          swarm node with manager role ( vcellapi.cam.uchc.edu )"
 	echo ""
 	echo "    local-config-file     local config file for deployment, copied to manager-node including:"
-	echo "                              VCELL_REPO=repo (e.g. schaff or vcell-docker.cam.uchc.edu:5000 )"
-	echo "                                              (must be reachable from swarm nodes)"
-	echo "                              VCELL_TAG=tag (e.g. dev | 7.0.0-alpha.4 | f98dfe3)"
+	echo "                              VCELL_REPO_NAMESPACE=(repo/namespace | namespace)"
+	echo "                                  (e.g. schaff or vcell-docker.cam.uchc.edu:5000/schaff )"
+	echo "                                  (must be reachable from swarm nodes and include namespace)"
+	echo "                              VCELL_TAG=tag (e.g. dev | 7.0.0-alpha.4 | f98dfe3)" 
 	echo ""
 	echo "    remote-config-file    absolute path of target config file on remote manager-node"
 	echo "                          WARNING: will overwrite remote file"
@@ -68,7 +69,7 @@ while :; do
 			;;
 		--ssh-key)
 			shift
-			ssh_key=$1
+			ssh_key="-i $1"
 			;;
 		--installer-deploy)
 			shift
@@ -98,104 +99,130 @@ stack_name=$6
 
 echo ""
 echo "coping $local_config_file to $manager_node:$remote_config_file as user $ssh_user"
-retcode=1
-if [ ! -z $ssh_key ]; then
-	echo "scp -i $ssh_key $local_config_file $ssh_user@$manager_node:$remote_config_file"
-	scp -i $ssh_key $local_config_file $ssh_user@$manager_node:$remote_config_file
-	retcode=$?
-else
-	echo "scp $local_config_file $ssh_user@$manager_node:$remote_config_file"
-	scp $local_config_file $ssh_user@$manager_node:$remote_config_file
-	retcode=$?
-fi
-if [[ $retcode -ne 0 ]]; then
-	echo "failed to upload config file, returned $retcode"
-	exit 1
-fi
+cmd="scp $ssh_key $local_config_file $ssh_user@$manager_node:$remote_config_file"
+echo $cmd
+($cmd) || (echo "failed to upload config file" && exit 1)
 
 echo ""
 echo "coping $local_compose_file to $manager_node:$remote_compose_file as user $ssh_user"
-retcode=1
-if [ ! -z $ssh_key ]; then
-	echo "scp -i $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_file"
-	scp -i $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_file
-	retcode=$?
-else
-	echo "scp $local_compose_file $ssh_user@$manager_node:$remote_compose_file"
-	scp $local_compose_file $ssh_user@$manager_node:$remote_compose_file
-	retcode=$?
-fi
-if [[ $retcode -ne 0 ]]; then
-	echo "failed to upload docker-compose file, returned $retcode"
-	exit 1
-fi
+cmd="scp $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_file"
+echo $cmd
+($cmd) || (echo "failed to upload docker-compose file" && exit 1)
 
 echo ""
+cmd="cd singularity-vm"
+cd singularity-vm
+echo ""
+echo "CURRENT DIRECTORY IS $PWD"
+
+#
+# prepare Vagrant Singularity box for building the singularity image (bring up, install cert)
+#
+echo ""
+echo "generating singularity image for vcell-batch and uploading to remote server for HTC cluster"
+cmd="sudo scp $ssh_key vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert ."
+echo $cmd
+($cmd) || (echo "failed to download cert from vcell-docker private Docker registry")
+
+echo ""
+echo "vagrant up"
+vagrant up
+if [[ $? -ne 0 ]]; then echo "failed to bring vagrant up"); fi
+
+echo ""
+remote_cmd="sudo cp /vagrant/domain.cert /usr/local/share/ca-certificates/vcell-docker.cam.uchc.edu.crt"
+echo "vagrant ssh -c \"$remote_cmd\""
+vagrant ssh -c "$remote_cmd"
+if [[ $? -ne 0 ]]; then echo "failed to upload domain.cert to trust the private Docker registry" && exit 1; fi
+
+echo ""
+remote_cmd="sudo update-ca-certificates"
+echo "vagrant ssh -c \"$remote_cmd\""
+vagrant ssh -c "$remote_cmd"
+if [[ $? -ne 0 ]]; then
+    echo "failed to update ca certificates in vagrant box" && exit 1
+fi
+#
+# get configuration from config file and load into current bash environment
+#
+echo ""
+docker_image_url=`cat ../$local_config_file | grep VCELL_BATCH_DOCKER_IMAGE | cut -d"=" -f2`
+remote_singularity_image=`cat ../$local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
+local_singularity_image_name=temp_singularity_image.img
+
+#
+# build the singularity image and place in singularity-vm directory
+#
+echo ""
+remote_cmd="singularity build /vagrant/$local_singularity_image_name docker://$docker_image_url"
+echo "vagrant ssh -c \"$remote_cmd\""
+vagrant ssh -c "$remote_cmd"
+if [[ $? -ne 0 ]]; then echo "failed to build singularity image from vagrant" && exit 1; fi
+
+#
+# bring down Vagrant Singularity box
+#
+echo ""
+echo "vagrant halt"
+vagrant halt
+if [[ $? -ne 0 ]]; then echo "failed to stop vagrant box"; fi
+
+# copy singularity image from singularity-vm directory to remote destination
+echo ""
+echo "coping $local_singularity_image_name to $remote_singularity_image as user $ssh_user"
+cmd="scp $ssh_key ./$local_singularity_image_name $ssh_user@$manager_node:$remote_singularity_image"
+echo $cmd
+($cmd) || (echo "failed to upload generated singularity image for vcell-batch" && exit 1)
+
+echo ""
+cmd="rm ./$local_singularity_image_name"
+echo $cmd
+($cmd) || (echo "failed to remove temporary local singularity image" && exit 1)
+
+echo "cd .."
+cd ..
+
+
+#
+# deploy the stack on remote cluster
+#
+echo ""
 echo "deploying stack $stack_name to $manager_node using config in $manager_node:$remote_config_file"
-deploy_cmd="sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
-retcode=1
-if [ ! -z $ssh_key ]; then
-	echo "ssh -i $ssh_key -t $ssh_user@$manager_node $deploy_cmd"
-	ssh -i $ssh_key -t $ssh_user@$manager_node $deploy_cmd
-	retcode=$?
-else	
-	echo "ssh -t $ssh_user@$manager_node $deploy_cmd"
-	ssh -t $ssh_user@$manager_node $deploy_cmd
-	retcode=$?
-fi
-if [[ $retcode -ne 0 ]]; then
-	echo "failed to deploy stack, returned $retcode"
-	exit 1
-fi
+cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
+echo $cmd
+($cmd) || (echo "failed to deploy stack" && exit 1)
 
 #
 # generate client installers, placing then in ./generated_installers
 #
-retcode=1
 # remove old installers
 if [ -e "./generated_installers" ]; then
-	echo "rm ./generated_installers/*"
-	rm ./generated_installers/*
+	cmd="rm ./generated_installers/*"
+	echo $cmd
+	$cmd
 fi
+
 # remove old installer Docker container
-echo "env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force"
-env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force
-retcode=$1
-if [[ $retcode -ne 0 ]]; then
-	echo "failed to remove previous container for vcell-clientgen, returned $retcode"
-	exit 1
-fi
+echo ""
+cmd="env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force"
+echo $cmd
+($cmd) || (echo "failed to remove previous container for vcell-clientgen" && exit 1)
+
 # run vcell-clientgen to generate new installers (placed into ./generated_installers)
-retcode=1
-echo "env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up"
-env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up
-retcode=$?
-if [[ $retcode -ne 0 ]]; then
-	echo "failed to run vcell-clientgen, returned $retcode"
-	exit 1
-fi
+echo ""
+cmd="env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up"
+echo $cmd
+($cmd) || (echo "failed to run vcell-clientgen" && exit 1)
 
 #
 # if --installer-deploy, then scp the installers to the web directory
 #
-retcode=1
 if [ ! -z $installer_deploy ]; then
 	echo ""
 	echo "coping installers to $installer_deploy as user $ssh_user"
-	retcode=1
-	if [ ! -z $ssh_key ]; then
-		echo "scp -i $ssh_key ./generated_installers/* $ssh_user@$installer_deploy"
-		scp -i $ssh_key ./generated_installers/* $ssh_user@$installer_deploy
-		retcode=$?
-	else
-		echo "scp ./generated_installers/* $ssh_user@$installer_deploy"
-		scp ./generated_installers/* $ssh_user@$installer_deploy
-		retcode=$?
-	fi
-	if [[ $retcode -ne 0 ]]; then
-		echo "failed to upload generated client installers, returned $retcode"
-		exit 1
-	fi
+	cmd="scp $ssh_key ./generated_installers/* $ssh_user@$installer_deploy"
+	echo $cmd
+	($cmd) || (echo "failed to upload generated client installers" && exit 1)
 fi
 
 
