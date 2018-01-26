@@ -203,16 +203,15 @@ if [ -e "./generated_installers" ]; then
 fi
 
 # remove old installer Docker container
-echo ""
-cmd="env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force"
-echo $cmd
-($cmd) || (echo "failed to remove previous container for vcell-clientgen" && exit 1)
+echo "env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force"
+env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force
+if [[ $? -ne 0 ]]; then echo "failed to remove previous container for vcell-clientgen" && exit 1; fi
 
 # run vcell-clientgen to generate new installers (placed into ./generated_installers)
 echo ""
 cmd="env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up"
-echo $cmd
-($cmd) || (echo "failed to run vcell-clientgen" && exit 1)
+env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up
+if [[ $? -ne 0 ]]; then echo "failed to run vcell-clientgen" && exit 1; fi
 
 #
 # if --installer-deploy, then scp the installers to the web directory
