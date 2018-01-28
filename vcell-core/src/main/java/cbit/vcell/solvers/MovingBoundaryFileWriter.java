@@ -172,7 +172,10 @@ private Element getXMLJms()
 	Element jms = new Element(SolverInputFileKeyword.JMS_PARAM_BEGIN.xml);
 	
 	Element e = new Element(SolverInputFileKeyword.JMS_BROKER.xml);
-	e.setText(PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal));
+	String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
+	String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+	String jmsurl = jmshost+":"+jmsrestport;
+	e.setText(jmsurl);
 	jms.addContent(e);
 	
 	e = new Element(SolverInputFileKeyword.JMS_USER.xml);

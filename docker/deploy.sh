@@ -42,6 +42,8 @@ show_help() {
 	echo "    --build-singularity   optionally build and upload Singularity image for vcell-batch container"
 	echo "                          not required - SLURM submit script lazily creates the Singularity image"
 	echo ""
+	echo "    --build-installers    optionally build client installers and place in ./generated_installers dir"
+	echo ""
 	echo ""
 	echo "example:"
 	echo ""
@@ -61,6 +63,7 @@ ssh_user=$(whoami)
 ssh_key=
 installer_deploy=
 build_singularity=false
+build_installers=false
 while :; do
 	case $1 in
 		-h|--help)
@@ -81,6 +84,9 @@ while :; do
 			;;
 		--build-singularity)
 			build_singularity=true
+			;;
+		--build-installers)
+			build_installers=true
 			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2
@@ -228,42 +234,50 @@ fi
 #
 echo ""
 echo "deploying stack $stack_name to $manager_node using config in $manager_node:$remote_config_file"
-cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
-echo $cmd
-($cmd) || (echo "failed to deploy stack" && exit 1)
+localmachine=`hostname`
+if [ "$localmachine" == "$manager_node" ]; then
+	echo "env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
+	env $(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name
+	if [[ $? -ne 0 ]]; then echo "failed to deploy stack" && exit 1; fi
+else
+	cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
+	echo $cmd
+	($cmd) || (echo "failed to deploy stack" && exit 1)
+fi
 
 #
 # generate client installers, placing then in ./generated_installers
 #
-# remove old installers
-if [ -e "./generated_installers" ]; then
-	cmd="rm ./generated_installers/*"
-	echo $cmd
-	$cmd
-fi
+if [ "$build_installers" == "true" ]; then
+	# remove old installers
+	if [ -e "./generated_installers" ]; then
+		cmd="rm ./generated_installers/*"
+		echo $cmd
+		$cmd
+	fi
 
-# remove old installer Docker container
-echo "env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force"
-env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force
-if [[ $? -ne 0 ]]; then echo "failed to remove previous container for vcell-clientgen" && exit 1; fi
+	# remove old installer Docker container
+	echo "env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force"
+	env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force
+	if [[ $? -ne 0 ]]; then echo "failed to remove previous container for vcell-clientgen" && exit 1; fi
 
-# run vcell-clientgen to generate new installers (placed into ./generated_installers)
-echo ""
-cmd="env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up"
-env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up
-if [[ $? -ne 0 ]]; then echo "failed to run vcell-clientgen" && exit 1; fi
-
-#
-# if --installer-deploy, then scp the installers to the web directory
-#
-if [ ! -z $installer_deploy ]; then
+	# run vcell-clientgen to generate new installers (placed into ./generated_installers)
 	echo ""
-	echo "coping installers to $installer_deploy as user $ssh_user"
-	cmd="scp $ssh_key ./generated_installers/* $ssh_user@$installer_deploy"
-	echo $cmd
-	($cmd) || (echo "failed to upload generated client installers" && exit 1)
-fi
+	cmd="env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up"
+	env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up
+	if [[ $? -ne 0 ]]; then echo "failed to run vcell-clientgen" && exit 1; fi
 
+	#
+	# if --installer-deploy, then scp the installers to the web directory
+	#
+	if [ ! -z $installer_deploy ]; then
+		echo ""
+		echo "coping installers to $installer_deploy as user $ssh_user"
+		cmd="scp $ssh_key ./generated_installers/* $ssh_user@$installer_deploy"
+		echo $cmd
+		($cmd) || (echo "failed to upload generated client installers" && exit 1)
+	fi
+fi
 
 echo "exited normally"
 

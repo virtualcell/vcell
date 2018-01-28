@@ -156,30 +156,38 @@ serverconfig-uch.sh SITE REPO TAG VCELL_VERSION_NUMBER VCELL_BUILD_NUMBER OUTPUT
 ```
 
 ```bash
-git commit ==> git commit hash 10854d2
+git commit ==> git commit hash cf968ee
 cd <vcellroot>/docker
 
-./build.sh all vcell-docker.cam.uchc.edu:5000/schaff 10854d2
+./build.sh all vcell-docker.cam.uchc.edu:5000/schaff cf968ee
 
-./serverconfig-uch.sh test vcell-docker.cam.uchc.edu:5000/schaff 10854d2 7.0.0 6 server_7.0.0_6_10854d2.config
-
-./deploy.sh \
-  --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \
-  --build-singularity \
-  --installer-deploy apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Test \
-  vcellapi.cam.uchc.edu \
-  ./server_7.0.0_6_10854d2.config /usr/local/deploy/Test/server_7.0.0_6_10854d2.config \
-  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_10854d2.yml \
-  vcelltest
+./serverconfig-uch.sh test vcell-docker.cam.uchc.edu:5000/schaff cf968ee 7.0.0 6 server_7.0.0_6_cf968ee.config
 
 ./deploy.sh \
   --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \
   --build-singularity \
+  --build-installers --installer-deploy apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Test \
   vcellapi.cam.uchc.edu \
-  ./server_7.0.0_6_10854d2.config /usr/local/deploy/Test/server_7.0.0_6_10854d2.config \
-  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_10854d2.yml \
+  ./server_7.0.0_6_cf968ee.config /usr/local/deploy/Test/server_7.0.0_6_cf968ee.config \
+  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_cf968ee.yml \
   vcelltest
+```
 
+```bash
+
+export VCELL_TAG=dev1
+export VCELL_NAMESPACE=schaff
+
+./build.sh all localhost:5000/$VCELL_NAMESPACE $VCELL_TAG
+
+./localconfig_mockslurm.sh test2 localhost:5000/$VCELL_NAMESPACE $VCELL_TAG 7.0.0 6 ${VCELL_TAG}.config
+
+./deploy.sh \
+  --ssh-user `whoami` --ssh-key ~/.ssh/id_rsa \
+  `hostname` \
+  ./${VCELL_TAG}.config $PWD/local-${VCELL_TAG}.config \
+  ./docker-compose.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
+  vcelltest
 
 ```
 

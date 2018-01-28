@@ -33,16 +33,19 @@ ENV softwareVersion=VCell_7.0_build_99 \
 	jmshost_internal=vcell-service.cam.uchc.edu \
 	jmsport_internal=61619 \
 	jmsrestport_internal=8164 \
-    jmsurl_internal=failover:(tcp://vcell-service.cam.uchc.edu:61619) \
     jmsuser=clientUser \
     jmspswd=dummy \
+    blob_message_use_mongo=true \
     datadir_internal=/simdata \
     datadir_external=/share/apps/vcell3/users \
-    mongodbhost_internal="vcell-service.cam.uchc.edu" \
+    htclogsdir_internal=/htclogsdir \
+    htclogsdir_external=/share/apps/vcell3/htclogs \
+    mongodbhost_internal=vcell-service.cam.uchc.edu \
     mongodbport_internal=27017 \
     mongodb_database=test \
     jmsblob_minsize=100000
 
 VOLUME /simdata
+VOLUME /htclogsdir
 
 ENTRYPOINT [ "/vcellscripts/entrypoint.sh" ]

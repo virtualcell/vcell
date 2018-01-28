@@ -54,6 +54,9 @@ public class PropertyLoader {
 	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",ValueType.GEN);
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",ValueType.GEN);
 	public static final String htcNodeList                   = record("vcell.htc.nodelist",ValueType.GEN);
+	public static final String slurm_cmd_sbatch				= record("vcell.slurm.cmd.sbatch",ValueType.GEN);
+	public static final String slurm_cmd_scancel				= record("vcell.slurm.cmd.scancel",ValueType.GEN);
+	public static final String slurm_cmd_sacct				= record("vcell.slurm.cmd.sacct",ValueType.GEN);
 	public static final String sgeModulePath				= record("vcell.htc.sge.module",ValueType.GEN);
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
 	public static final String MPI_HOME_INTERNAL		        = record("vcell.htc.mpi.home",ValueType.DIR);
@@ -123,8 +126,12 @@ public class PropertyLoader {
 
 	public static final String jmsProvider				= record("vcell.jms.provider",ValueType.GEN);
 	public static final String jmsProviderValueActiveMQ		= record("ActiveMQ",ValueType.GEN);
-	public static final String jmsURLInternal				= record("vcell.jms.url.internal",ValueType.GEN);
-	public static final String jmsURLExternal				= record("vcell.jms.url.external",ValueType.GEN);
+	public static final String jmsHostInternal				= record("vcell.jms.host.internal",ValueType.GEN);
+	public static final String jmsPortInternal				= record("vcell.jms.port.internal",ValueType.GEN);
+	public static final String jmsRestPortInternal			= record("vcell.jms.restport.internal",ValueType.GEN);
+	public static final String jmsHostExternal				= record("vcell.jms.host.external",ValueType.GEN);
+	public static final String jmsPortExternal				= record("vcell.jms.port.external",ValueType.GEN);
+	public static final String jmsRestPortExternal			= record("vcell.jms.restport.external",ValueType.GEN);
 	public static final String jmsUser					= record("vcell.jms.user",ValueType.GEN);
 	public static final String jmsPasswordValue				= record("vcell.jms.password",ValueType.GEN);
 	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.GEN);

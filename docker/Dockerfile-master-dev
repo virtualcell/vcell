@@ -42,25 +42,34 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
 	dburl=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
     dbdriver=oracle.jdbc.driver.OracleDriver \
     dbuser=vcell \
-    dbpswdfile=/run/secrets/dbpswd \
-    jmsurl_internal=failover:(tcp://activemq:61616) \
-    jmsurl_external=failover:(tcp://Jamess-MacBook-Pro-2.local:61619) \
+    jmshost_internal=activemq \
+    jmsport_internal=61616 \
+    jmsrestport=internal=8161 \
+    jmshost_internal=vcell-service.cam.uchc.edu \
+    jmsport_internal=61619 \
+    jmsrestport=internal=8164 \
     jmsuser=clientUser \
-    jmspswdfile=/run/secrets/jmspswd \
 	mongodb_host_internal=mongodb \
 	mongodb_port_internal=27017 \
-	mongodb_host_external=Jamess-MacBook-Pro-2.local \
+	mongodb_database=test \
+	mongodb_host_external=vcell-service.cam.uchc.edu \
 	mongodb_port_external=27020 \
-    simdatadir_external=/Volumes/vcell/users/ \
-    htclogdir_external=/Volumes/vcell/htclogs/ \
+    simdatadir_external=/share/apps/vcell3/users/ \
+    htclogdir_external=/share/apps/vcell3/htclogs/ \
     htcnodelist="" \
-    singularity_imagefile=/Volumes/vcell/singularity/vcell-batch-dev.img \
-    docker_name="localhost:5000/vcell-batch-dev" \
+    singularity_imagefile=/share/apps/vcell3/singularity/schaff_vcell-batch_latest.img \
+    docker_name="schaff/vcell-batch:latest" \
     batchsystem=SLURM \
     batchhost=vcell-service.cam.uchc.edu \
     batchuser=vcell \
-    batchuserkeyfile=/run/secrets/batchuserkeyfile \
+    slurm_cmd_sbatch=sbatch \
+    slurm_cmd_sacct=sacct \
+    slurm_cmd_scancel=scancel \
     jmsblob_minsize=100000
+
+ENV dbpswdfile=/run/secrets/dbpswd \
+    jmspswdfile=/run/secrets/jmspswd \
+    batchuserkeyfile=/run/secrets/batchuserkeyfile
 
 VOLUME /simdata
 
@@ -76,6 +85,9 @@ ENTRYPOINT java \
 	-Dvcell.htc.user="${batchuser}" \
 	-Dvcell.htc.logdir.external="${htclogdir_external}" \
 	-Dvcell.htc.nodelist="${htcnodelist}" \
+	-Dvcell.slurm.cmd.sbatch="${slurm_cmd_sbatch}" \
+	-Dvcell.slurm.cmd.sacct="${slurm_cmd_sacct}" \
+	-Dvcell.slurm.cmd.scancel="${slurm_cmd_scancel}" \
 	-Dvcell.batch.singularity.image="${singularity_imagefile}" \
 	-Dvcell.batch.docker.name="${docker_name}" \
 	-Dvcell.simulation.postprocessor=JavaPostprocessor64 \
@@ -86,8 +98,12 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
-	-Dvcell.jms.url.internal="${jmsurl_internal}" \
-	-Dvcell.jms.url.external="${jmsurl_external}" \
+	-Dvcell.jms.host.internal="${jmshost_internal}" \
+	-Dvcell.jms.port.internal="${jmsport_internal}" \
+	-Dvcell.jms.restport.internal="${jmsrestport_internal}" \
+	-Dvcell.jms.host.external="${jmshost_external}" \
+	-Dvcell.jms.port.external="${jmsport_external}" \
+	-Dvcell.jms.restport.external="${jmsrestport_external}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
 	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \
@@ -96,7 +112,7 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
 	-Dvcell.mongodb.host.external=${mongodb_host_external} \
 	-Dvcell.mongodb.port.external=${mongodb_port_external} \
-	-Dvcell.mongodb.database=test \
+	-Dvcell.mongodb.database=${mongodb_database} \
 	-Dvcell.server.maxJobsPerScan=50 \
 	-Dvcell.server.maxJobsPerSite=100 \
 	-Dvcell.server.maxOdeJobsPerUser=30 \

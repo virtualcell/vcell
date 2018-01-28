@@ -37,9 +37,9 @@ public class SlurmProxy extends HtcProxy {
 
 
 	// note: full commands use the PropertyLoader.htcPbsHome path.
-	private final static String JOB_CMD_SUBMIT = "sbatch";
-	private final static String JOB_CMD_DELETE = "scancel";
-	private final static String JOB_CMD_STATUS = "sacct";
+	private final static String JOB_CMD_SUBMIT = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sbatch,"sbatch");
+	private final static String JOB_CMD_DELETE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scancel,"scancel");
+	private final static String JOB_CMD_STATUS = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sacct,"sacct");
 	//private final static String JOB_CMD_QACCT = "qacct";
 	
 	//private static String Slurm_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSlurmHome);
@@ -322,6 +322,18 @@ denied: job "6894" does not exist
 		lsb.write("echo ENVIRONMENT");
 		lsb.write("env");
 		lsb.newline();
+		String jmshost_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
+		String jmsport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsPortExternal);
+		String jmsrestport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+	    String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+		String jmsuser=PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
+		String jmspswd=PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue,PropertyLoader.jmsPasswordFile);
+		String jmsblob_minsize = PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageMinSize, "10000");
+		String mongodbhost_external = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostExternal);
+		String mongodbport_external = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortExternal);
+		String mongodb_database = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
+		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
 		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
 		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
 		String Singularity_file = singularity_image+".Singularity";
@@ -354,23 +366,33 @@ denied: job "6894" does not exist
 		lsb.write("   else");
 		lsb.write("      echo \"singularity image "+singularity_image+" found\"");
 		lsb.write("   fi");
-		lsb.write("   cmd_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata "+singularity_image+" \"");
+		lsb.write("   cmd_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs "+singularity_image+" \"");
 		lsb.write("else");
-		lsb.write("   if command -v docker >/dev/null 2>&1; then");
-		String jmsurl_external=PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal);
-		String jmsuser=PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
-		String jmspswd=PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue,PropertyLoader.jmsPasswordFile);
-		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
-		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-		jmsurl_external = jmsurl_external.replace("(","\\(").replace(")","\\)");
-		String environmentVars = " -e jmsurl_internal=\""+jmsurl_external+"\""+
+		//lsb.write("   if command -v docker >/dev/null 2>&1; then");
+		//jmsurl_external = jmsurl_external.replace("(","\\(").replace(")","\\)");
+
+		
+//			    mongodbhost_internal=vcell-service.cam.uchc.edu \
+//			    mongodbport_internal=27017 \
+//			    mongodb_database=test \
+//			    jmsblob_minsize=100000		
+		
+		
+		String environmentVars = " -e jmshost_internal="+jmshost_external+
+								" -e jmsport_internal="+jmsport_external+
+								" -e jmsrestport_internal="+jmsrestport_external+
 								" -e jmsuser="+jmsuser+
 								" -e jmspswd="+jmspswd+
-								" -e serverid="+serverid+
-								" -e datadir_internal="+primaryDataDirExternal+
-								" -e softwareVersion="+softwareVersion;
-		lsb.write("       cmd_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata "+environmentVars+" "+docker_image+" \"");
-		lsb.write("   fi");
+								" -e jmsblob_minsize="+jmsblob_minsize+
+								" -e mongodbhost_internal="+mongodbhost_external+
+								" -e mongodbport_internal="+mongodbport_external+
+								" -e mongodb_database="+mongodb_database+
+								" -e datadir_external="+primaryDataDirExternal+
+								" -e htclogdir_external="+htclogdir_external+
+								" -e softwareVersion="+softwareVersion+
+								" -e serverid="+serverid;
+		lsb.write("       cmd_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs "+environmentVars+" "+docker_image+" \"");
+		//lsb.write("   fi");
 		lsb.write("fi");
 		lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
 

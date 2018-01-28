@@ -22,19 +22,22 @@ ENV PATH=/vcellscripts:$PATH \
 ENV softwareVersion=VCell_7.0_build_99 \
 	serverid=TEST \
 	installdir=/usr/local/app \
-	jmshost_internal=Jamess-MacBook-Pro-2.local \
+	jmshost_internal=vcell-service.cam.uchc.edu \
 	jmsport_internal=61619 \
 	jmsrestport_internal=8164 \
-    jmsurl_internal=failover:(tcp://Jamess-MacBook-Pro-2.local:61619) \
     jmsuser=clientUser \
     jmspswd=dummy \
+    blob_message_use_mongo=true \
     datadir_internal=/simdata \
-    datadir_external=/Volumes/vcell/users \
-    mongodbhost_internal=Jamess-MacBook-Pro-2.local \
+    datadir_external=/share/apps/vcell3/users \
+    htclogdir_internal=/htclogs \
+    htclogdir_external=/share/apps/vcell3/htclogs \
+    mongodbhost_internal=vcell-service.cam.uchc.edu \
     mongodbport_internal=27017 \
     mongodb_database=test \
     jmsblob_minsize=100000
 
 VOLUME /simdata
+VOLUME /htclogs
 
 ENTRYPOINT [ "/vcellscripts/entrypoint.sh" ]

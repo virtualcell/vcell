@@ -258,7 +258,10 @@ public class NetCDFWriter {
 				// write jms info
 				if (bMessaging) {
 					ArrayChar.D1 jmsString = new ArrayChar.D1(stringLen.getLength());
-					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal));
+					String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
+					String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+					String jmsurl = jmshost+":"+jmsrestport;
+					jmsString.setString(jmsurl);
 					ncfile.write("JMS_BROKER", jmsString);
 					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
 					ncfile.write("JMS_USER", jmsString);
