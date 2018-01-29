@@ -542,6 +542,16 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				} else {
 					shapePanel.setToolTipText("Right click for " + hsi.getDisplayType() + " menus");
 				}
+				for (SpeciesPatternLargeShape sps : spsList) {
+					for (MolecularTypeLargeShape mtls : sps.getMolecularTypeLargeShapes()) {
+						Rectangle r = mtls.getAnchorRectangle();
+						if(r != null && r.contains(overWhat)) {
+							mtls.getMolecularType();
+							shapePanel.setToolTipText(mtls.getAnchorsHTML());
+							break;
+						}
+					}
+				}
 			} 
 		});
 		

@@ -663,6 +663,14 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				} else {
 					shapePanel.setToolTipText("Right click for " + hsi.getDisplayType() + " menus");
 				}
+				for (MolecularTypeLargeShape mtls : molecularTypeShapeList) {
+					Rectangle r = mtls.getAnchorRectangle();
+					if(r != null && r.contains(overWhat)) {
+						mtls.getMolecularType();
+						shapePanel.setToolTipText(mtls.getAnchorsHTML());
+						break;
+					}
+				}
 			} 
 		});
 

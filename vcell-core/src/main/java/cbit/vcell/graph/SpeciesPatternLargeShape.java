@@ -59,6 +59,9 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	List <BondSingle> bondSingles = new ArrayList <BondSingle>();	// component with no explicit bond
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
+	public List<MolecularTypeLargeShape> getMolecularTypeLargeShapes() {
+		return speciesShapes;
+	}
 	
 	public static int calculateYLetterOffset(LargeShapeCanvas shapePanel) {
 		if(shapePanel == null) {
