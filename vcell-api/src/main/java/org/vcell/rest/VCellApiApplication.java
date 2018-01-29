@@ -22,7 +22,10 @@ import org.restlet.routing.Router;
 import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.auth.CustomAuthHelper;
+import org.vcell.rest.events.EventsRestlet;
+import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.rpc.RpcRestlet;
+import org.vcell.rest.rpc.RpcService;
 import org.vcell.rest.server.AccessTokenServerResource;
 import org.vcell.rest.server.BiomodelDiagramServerResource;
 import org.vcell.rest.server.BiomodelServerResource;
@@ -37,7 +40,6 @@ import org.vcell.rest.server.OptimizationServerResource;
 import org.vcell.rest.server.PublicationServerResource;
 import org.vcell.rest.server.PublicationsServerResource;
 import org.vcell.rest.server.RestDatabaseService;
-import org.vcell.rest.server.RpcService;
 import org.vcell.rest.server.SimDataServerResource;
 import org.vcell.rest.server.SimDataValuesServerResource;
 import org.vcell.rest.server.SimulationStatusServerResource;
@@ -130,6 +132,9 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String SIMDATA = "simdata";
 	public static final String SIMDATAID = "simdataid";
 	
+	public static final String EVENTS = "events";
+	public static final String EVENTS_BEGINTIMESTAMP = "beginTimestamp";
+	
 	public static final String JOBINDEX = "jobindex";
 	
 	public static final String SAVESIMULATION = "save";
@@ -160,6 +165,7 @@ public class VCellApiApplication extends WadlApplication {
 	private File javascriptDir = null;
 	private OptServerImpl optServerImpl = null;
 	private RpcService rpcService = null;
+	private RestEventService restEventService = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
@@ -174,13 +180,24 @@ public class VCellApiApplication extends WadlApplication {
 		return rpcService;
 	}
 
+	public RestEventService getEventsService() {
+		return restEventService;
+	}
+
 	@Override
 	protected Representation createHtmlRepresentation(ApplicationInfo applicationInfo) {
 		// TODO Auto-generated method stub
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
-	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, OptServerImpl optServerImpl, RpcService rpcService, Configuration templateConfiguration, File javascriptDir) {
+	public VCellApiApplication(
+			RestDatabaseService restDatabaseService, 
+			UserVerifier userVerifier, OptServerImpl optServerImpl, 
+			RpcService rpcService, 
+			RestEventService restEventService, 
+			Configuration templateConfiguration, 
+			File javascriptDir) {
+		
         setName("RESTful VCell API application");
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
@@ -191,6 +208,7 @@ public class VCellApiApplication extends WadlApplication {
 		this.userVerifier = userVerifier;
 		this.optServerImpl = optServerImpl;
 		this.rpcService = rpcService;
+		this.restEventService = restEventService;
 		this.templateConfiguration = templateConfiguration;
 		getLogger().setLevel(Level.FINE);
 	}
@@ -300,6 +318,8 @@ public class VCellApiApplication extends WadlApplication {
 	    rootRouter.attach("/"+SWVERSION, new SWVersionRestlet(getContext()));
 
 	    rootRouter.attach("/"+RPC, new RpcRestlet(getContext()));
+
+	    rootRouter.attach("/"+EVENTS, new EventsRestlet(getContext()));
 
 	    rootRouter.attach("/auth/user", new Restlet(getContext()){
 

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+if [ "$#" -ne 1 ] ; then
+   echo "========= MOCK SLURM sbatch =========="
+   echo "usage sbatch SubmitScript"
+   exit 1;
+fi
+
+job=$1
+
+jobid=$(( ( RANDOM % 1000 )  + 42000000000 ))
+
+#
+# sbatch /share/apps/vcell3/htclogs/V_TEST_116065096_0_96.slurm.sub
+# Submitted batch job 155527
+#
+(
+  #
+  # spawn new process for the job
+  # 
+  echo "job dispatched $jobid"
+  echo $jobid >> slurm.jobid
+  echo "starting job $jobid on Vagrant singularity box"
+  ../../docker/singularity-vm/run.sh $job
+  retcode=$?
+  if [[ $retcode -ne 0 ]]; then
+     echo "job failed"
+     exit $retcode
+  else
+     echo "job $jobid ended"
+     exit 0
+  fi
+) >>/Users/schaff/Documents/workspace-modular/vcell/deploy/mockslurm/slurm.log 2>&1 &
+
+echo Submitted batch job $jobid
+exit 0

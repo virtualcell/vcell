@@ -4,6 +4,7 @@ printusage() {
 	echo "Usage: JavaPostprocessor64 simKey userid userKey jobindex taskid solverExitCode"
 	exit 1
 }
+echo "JavaPostprocessor64 $@"
 
 # main code
 if [ $# -lt 6 ] ; then
@@ -19,9 +20,15 @@ postprocessor_mainclass=cbit.vcell.message.server.sim.SolverPostprocessor
 
 jvmprop="-Djava.io.tmpdir=/tmp"
 jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"
-jvmprop="${jvmprop} -Dvcell.jms.url.internal=${jmsurl_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.host.internal=${jmshost_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.port.internal=${jmsport_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.restport.internal=${jmsrestport_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.host.external=${jmshost_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.port.external=${jmsport_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.restport.external=${jmsrestport_internal}"
 jvmprop="${jvmprop} -Dvcell.jms.user=${jmsuser}"
 jvmprop="${jvmprop} -Dvcell.jms.password=${jmspswd}"
+jvmprop="${jvmprop} -Dvcell.jms.blobMessageUseMongo=${blob_message_use_mongo}"
 jvmprop="${jvmprop} -Dvcell.primarySimdatadir.internal=${datadir_internal}"
 jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.internal=${datadir_internal}"
 jvmprop="${jvmprop} -Dvcell.primarySimdatadir.external=${datadir_external}"
@@ -34,8 +41,6 @@ jvmprop="${jvmprop} -Dvcell.mongodb.host.internal=${mongodbhost_internal}"
 jvmprop="${jvmprop} -Dvcell.mongodb.port.internal=${mongodbport_internal}"
 
 arguments=$*
-
-arguments=${arguments//$datadir_external/$datadir_internal}
 
 echo "starting postprocessor"
 

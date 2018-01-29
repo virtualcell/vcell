@@ -11,6 +11,7 @@ show_help() {
 	echo "  Script Commands"
 	echo "    JavaPreprocessor64"
 	echo "    JavaPostprocessor64"
+	echo "    JavaSimExe64"
 	echo ""
 	echo "  Solver Commands - see https://github.com/virtualcell or http://vcell.org"
 	echo "    FiniteVolume_x64"
@@ -53,40 +54,49 @@ fi
 command=$1
 shift
 
+arguments=$*
+
+arguments=${arguments//$datadir_external/$datadir_internal}
+arguments=${arguments//$htclogdir_external/$htclogdir_internal}
+
 export PATH="/vcellbin:/vcellscripts:${PATH}"
 export LD_LIBRARY_PATH="/vcellbin:${LD_LIBRARY_PATH}"
 
 case $command in
 	FiniteVolume_x64)
-		/vcellbin/FiniteVolume_x64 "$@"
+		/vcellbin/FiniteVolume_x64 $arguments
 		exit $?
 		;;
 	MovingBoundary_x64)
-		/vcellbin/MovingBoundary_x64 "$@"
+		/vcellbin/MovingBoundary_x64 $arguments
 		exit $?
 		;;
 	NFSim_x64)
-		/vcellbin/NFSim_x64 "$@"
+		/vcellbin/NFSim_x64 $arguments
 		exit $?
 		;;
 	smoldyn_x64)
-		/vcellbin/smoldyn_x64 "$@"
+		/vcellbin/smoldyn_x64 $arguments
 		exit $?
 		;;
 	SundialsSolverStandalone_x64)
-		/vcellbin/SundialsSolverStandalone_x64 "$@"
+		/vcellbin/SundialsSolverStandalone_x64 $arguments
 		exit $?
 		;;
 	VCellStoch_x64)
-		/vcellbin/VCellStoch_x64 "$@"
+		/vcellbin/VCellStoch_x64 $arguments
 		exit $?
 		;;
 	JavaPreprocessor64)
-		/vcellscripts/JavaPreprocessor64 "$@"
+		/vcellscripts/JavaPreprocessor64 $arguments
 		exit $?
 		;;
 	JavaPostprocessor64)
-		/vcellscripts/JavaPostprocessor64 "$@"
+		/vcellscripts/JavaPostprocessor64 $arguments
+		exit $?
+		;;
+	JavaSimExe64)
+		/vcellscripts/JavaSimExe64 $arguments
 		exit $?
 		;;
 	*)

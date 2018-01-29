@@ -2059,7 +2059,10 @@ private void writeJms(Simulation simulation) {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println("start_jms");
 	    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
-		printWriter.println(PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLExternal)
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
+		String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+		String jmsurl = jmshost+":"+jmsrestport;
+		printWriter.println(PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider) + " " + jmsurl
 			+ " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + jmsPassword
 			+ " " + VCellQueue.WorkerEventQueue.getName()
 			+ " " + VCellTopic.ServiceControlTopic.getName()

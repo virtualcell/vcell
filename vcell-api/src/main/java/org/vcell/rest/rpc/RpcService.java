@@ -1,4 +1,4 @@
-package org.vcell.rest.server;
+package org.vcell.rest.rpc;
 
 import java.io.Serializable;
 

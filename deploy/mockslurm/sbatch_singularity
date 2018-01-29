@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+DIR=${0%/*}
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+cd $DIR
+
+
 if [ "$#" -ne 1 ] ; then
    echo "========= MOCK SLURM sbatch =========="
    echo "usage sbatch SubmitScript"
@@ -19,12 +24,18 @@ jobid=$(( ( RANDOM % 1000 )  + 42000000000 ))
   # spawn new process for the job
   # 
   echo "job dispatched $jobid"
-  echo $jobid > slurm.jobid
-  sleep 5
-  echo "job started $jobid"
-  $job
-  sleep 5
-  echo "job ended $jobid" 
+  echo $jobid >> slurm.jobid
+  echo "sbatch $job"
+  echo "starting job $jobid on Vagrant singularity box"
+  ../../docker/singularity-vm/run.sh $job
+  retcode=$?
+  if [[ $retcode -ne 0 ]]; then
+     echo "job failed"
+     exit $retcode
+  else
+     echo "job $jobid ended"
+     exit 0
+  fi
 ) >>/Users/schaff/Documents/workspace-modular/vcell/deploy/mockslurm/slurm.log 2>&1 &
 
 echo Submitted batch job $jobid

@@ -42,13 +42,19 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
 	dburl=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
     dbdriver=oracle.jdbc.driver.OracleDriver \
     dbuser=vcell \
-    dbpswdfile=/run/secrets/dbpswd \
-    jmsurl_internal=failover:(tcp://activemq:61616) \
+    jmshost_internal=activemq \
+    jmsport_internal=61616 \
+    jmsrestport=internal=8161 \
     jmsuser=clientUser \
+    mongodb_host_internal=mongodb \
+    mongodb_port_internal=27017 \
+    mongodb_database=test \
+    jmsblob_minsize=100000
+
+ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
     keystore=/run/secrets/keystorefile \
-    keystorepswdfile=/run/secrets/keystorepswd \
-    jmsblob_minsize=100000
+    keystorepswdfile=/run/secrets/keystorepswd
 
 EXPOSE 8080
 EXPOSE 8000
@@ -63,14 +69,16 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
-	-Dvcell.jms.url.internal="${jmsurl_internal}" \
+	-Dvcell.jms.host.internal="${jmshost_internal}" \
+	-Dvcell.jms.port.internal="${jmsport_internal}" \
+	-Dvcell.jms.restport.internal="${jmsrestport_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
 	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \
 	-Dvcell.jms.pswdfile="${jmspswdfile}" \
-	-Dvcell.mongodb.host.internal=mongodb \
-	-Dvcell.mongodb.port.internal=27017 \
-	-Dvcell.mongodb.database=test \
+	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
+	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
+	-Dvcell.mongodb.database=${mongodb_database} \
 	-Dvcellapi.keystore.file="${keystore}" \
 	-Dvcellapi.keystore.pswdfile="${keystorepswdfile}" \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \

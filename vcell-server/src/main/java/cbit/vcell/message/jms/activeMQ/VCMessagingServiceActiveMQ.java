@@ -64,7 +64,10 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 	 */
 	private String jmsUrl( ) {
 		if (JMS_URL == null) {
-			JMS_URL = PropertyLoader.getRequiredProperty(PropertyLoader.jmsURLInternal);
+			String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostInternal);
+			String jmsport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsPortInternal);
+			String jmsurl = "failover:(tcp://"+jmshost+":"+jmsport+")";
+			JMS_URL = jmsurl;
 			Objects.requireNonNull(JMS_URL);
 		}
 		return JMS_URL;

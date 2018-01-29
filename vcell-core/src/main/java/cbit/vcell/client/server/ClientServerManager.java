@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.server;
 
+import java.io.IOException;
+
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.AuthenticationException;
@@ -280,7 +282,7 @@ public void cleanup() {
 	setVcellConnection(null);
 }
 
-public MessageEvent[] getMessageEvents() throws RemoteProxyException{
+public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOException{
 	if (vcellConnection!=null && isStatusConnected()){
 		return vcellConnection.getMessageEvents();
 	} else {

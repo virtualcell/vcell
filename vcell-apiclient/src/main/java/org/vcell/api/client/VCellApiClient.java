@@ -84,6 +84,7 @@ import org.vcell.api.common.BiomodelRepresentation;
 import org.vcell.api.common.SimulationRepresentation;
 import org.vcell.api.common.SimulationTaskRepresentation;
 import org.vcell.api.common.UserInfo;
+import org.vcell.api.common.events.EventWrapper;
 
 import com.google.gson.Gson;
 
@@ -182,6 +183,21 @@ public class VCellApiClient {
 		Gson gson = new Gson();
 		BiomodelRepresentation[] biomodelReps = gson.fromJson(bimodelsJson,BiomodelRepresentation[].class);
 		return biomodelReps;
+	}
+	
+	public EventWrapper[] getEvents(long beginTimestamp) throws IOException {
+		  
+		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/events?beginTimestamp="+beginTimestamp);
+
+		System.out.println("Executing request to retrieve user events " + httpget.getRequestLine());
+
+		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String eventWrappersJson = responseBody;
+		System.out.println("returned: "+eventWrappersJson);
+
+		Gson gson = new Gson();
+		EventWrapper[] eventWrappers = gson.fromJson(eventWrappersJson,EventWrapper[].class);
+		return eventWrappers;
 	}
 	
 	public BiomodelRepresentation getBioModel(String bmId) throws IOException {

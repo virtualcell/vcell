@@ -24,8 +24,9 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.optimization.OptServerImpl;
+import org.vcell.rest.events.RestEventService;
+import org.vcell.rest.rpc.RpcService;
 import org.vcell.rest.server.RestDatabaseService;
-import org.vcell.rest.server.RpcService;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -54,7 +55,7 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
 public class VCellApiMain {
-	  /**
+	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -96,10 +97,6 @@ public class VCellApiMain {
 			
 		    System.out.println("connecting to database");
 
-			VCMessagingService vcMessagingService = null;
-			RestDatabaseService restDatabaseService = null;
-			UserVerifier userVerifier = null;
-
 			final SessionLog log = new StdoutSessionLog("VCellWebApi");
 			lg.trace("oracle factory (next)");
 			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
@@ -112,7 +109,7 @@ public class VCellApiMain {
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
 			
 			lg.trace("messaging service (next)");
-			vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+			VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 			vcMessagingService.setDelegate(new VCMessagingDelegate() {
 				
 				@Override
@@ -148,10 +145,13 @@ public class VCellApiMain {
 			});
 							
 			lg.trace("rest database service (next)");
-			restDatabaseService = new RestDatabaseService(databaseServerImpl, localAdminDbServer, vcMessagingService, log);
+			RestDatabaseService restDatabaseService = new RestDatabaseService(databaseServerImpl, localAdminDbServer, vcMessagingService, log);
+			
+			lg.trace("rest event service (next)");
+			RestEventService restEventService = new RestEventService(vcMessagingService, log);
 			
 			lg.trace("use verifier (next)");
-			userVerifier = new UserVerifier(adminDbTopLevel);
+			UserVerifier userVerifier = new UserVerifier(adminDbTopLevel);
 
 			lg.trace("mongo (next)");
 			VCMongoMessage.enabled=true;
@@ -220,7 +220,7 @@ public class VCellApiMain {
 			OptServerImpl optServerImpl = new OptServerImpl();
 			optServerImpl.start();
 			RpcService rpcService = new RpcService(vcMessagingService);
-			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, templateConfiguration,javascriptDir);
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, templateConfiguration,javascriptDir);
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  
 
