@@ -1,4 +1,4 @@
-FROM schaff/vcell-solvers:release-0.0.4-dev
+FROM localhost:5000/schaff/vcell-solvers:dev1
 
 RUN apt-get install -y openjdk-8-jre-headless
 
