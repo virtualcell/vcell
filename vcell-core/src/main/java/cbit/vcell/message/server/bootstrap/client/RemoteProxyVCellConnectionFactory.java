@@ -14,18 +14,26 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.http.client.ClientProtocolException;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.api.common.AccessTokenRepresentation;
+import org.vcell.api.common.events.EventWrapper;
+import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
+import com.google.gson.Gson;
+
+import cbit.rmi.event.MessageEvent;
+import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.resource.StdoutSessionLog;
@@ -40,6 +48,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 	private final Integer apiport;
 	private final SessionLog sessionLog;
 	private final VCellApiClient vcellApiClient;
+	private long lastEventTimestamp = System.currentTimeMillis();
 	
 	private RpcSender rpcSender = new RemoteProxyRpcSender();
 	
@@ -62,6 +71,34 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 					userLoginInfo.getUserName(), 
 					rpcDestination, vcRpcRequest.getMethodName(), vcRpcRequest.getArguments());
 			return vcellApiClient.sendRpcMessage(rpcDestination,apiRpcRequest,returnRequired,timeoutMS,specialProperties,specialValues);
+		}
+
+		@Override
+		public MessageEvent[] getMessageEvents() throws IOException {
+			EventWrapper[] eventWrappers = vcellApiClient.getEvents(lastEventTimestamp);
+			
+			ArrayList<EventWrapper> eventWrapperList = new ArrayList<EventWrapper>();
+			eventWrapperList.addAll(Arrays.asList(eventWrappers));
+			eventWrapperList.sort((a,b) -> (int)(a.id - b.id));
+			
+			ArrayList<MessageEvent> messageEvents = new ArrayList<MessageEvent>();
+			Gson gson = new Gson();
+			for (EventWrapper eventWrapper : eventWrapperList) {
+				switch (eventWrapper.eventType) {
+				case SimJob:{
+					lastEventTimestamp = Math.max(lastEventTimestamp, eventWrapper.timestamp);
+					SimulationJobStatusEventRepresentation simJobStatusEventRep = 
+							gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);
+					SimulationJobStatusEvent simJobStatusEvent = SimulationJobStatusEvent.fromJsonRep(this, simJobStatusEventRep);
+					messageEvents.add(simJobStatusEvent);
+					break;
+				}
+				default:{
+					throw new RuntimeException("unsupported event type: "+eventWrapper.eventType);
+				}
+				}
+			}
+			return messageEvents.toArray(new MessageEvent[0]);
 		}
 	}
 	

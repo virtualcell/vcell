@@ -184,6 +184,7 @@ export VCELL_NAMESPACE=schaff
 
 ./deploy.sh \
   --ssh-user `whoami` --ssh-key ~/.ssh/id_rsa \
+  --build-installers \
   `hostname` \
   ./${VCELL_TAG}.config $PWD/local-${VCELL_TAG}.config \
   ./docker-compose.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \

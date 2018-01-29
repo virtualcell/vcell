@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.message.server.bootstrap.client;
+import java.io.IOException;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -94,9 +96,8 @@ public void sendErrorReport(Throwable exception, ExtraContext extra) {
 }
 
 @Override
-public MessageEvent[] getMessageEvents() throws RemoteProxyException {
-	// TODO Auto-generated method stub
-	return null;
+public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOException {
+	return rpcSender.getMessageEvents();
 }
 
 }

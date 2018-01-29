@@ -127,6 +127,11 @@ public class SimulationMessage implements Serializable {
 		}
 	}
 
+	public static SimulationMessage create(DetailedState detailedState, String message, HtcJobID htcJobID) {
+		SimulationMessage simMessage = new SimulationMessage(detailedState, message);
+		simMessage.htcJobId = htcJobID;
+		return simMessage;
+	}
 
 	public static SimulationMessage fromSerializedMessage(String serializedMessage) {
 		if (serializedMessage != null) {

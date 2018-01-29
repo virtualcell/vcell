@@ -10,6 +10,7 @@
 
 package cbit.vcell.server;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import org.vcell.util.DataAccessException;
@@ -79,6 +80,6 @@ public UserMetaDbServer getUserMetaDbServer() throws RemoteProxyException, DataA
 void sendErrorReport(Throwable exception) throws RemoteProxyException;
 void sendErrorReport(Throwable exception, ExtraContext extra) throws RemoteProxyException;
 
-MessageEvent[] getMessageEvents() throws RemoteProxyException;
+MessageEvent[] getMessageEvents() throws RemoteProxyException, IOException;
 //void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) throws RemoteProxyException;
 }

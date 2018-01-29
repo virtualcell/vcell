@@ -19,7 +19,6 @@ import org.vcell.api.client.VCellApiClient.VCellApiRpcBody;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
-import org.vcell.rest.server.RpcService;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
@@ -37,14 +36,11 @@ public final class RpcRestlet extends Restlet {
 	public void handle(Request req, Response response) {
 		if (req.getMethod().equals(Method.POST)){
 			try {
-				boolean isAuthenticated = req.getClientInfo().isAuthenticated();
-				List<Principal> principals = req.getClientInfo().getPrincipals();
-				List<Role> roles = req.getClientInfo().getRoles();	
-				System.out.println(req.getClass().getCanonicalName());
+				VCellApiApplication application = ((VCellApiApplication)getApplication());
+				User vcellUser = application.getVCellUser(req.getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 				HttpRequest request = (HttpRequest)req;
-				System.out.println("authenticated="+isAuthenticated+", principles="+principals+", roles="+roles);
-				String username = request.getHeaders().getFirstValue("Username");
-				String userkey = request.getHeaders().getFirstValue("Userkey");
+				String username = vcellUser.getName();
+				String userkey = vcellUser.getID().toString();
 				String destination = request.getHeaders().getFirstValue("Destination");
 				String method = request.getHeaders().getFirstValue("Method");
 				String returnRequired = request.getHeaders().getFirstValue("ReturnRequired");
@@ -66,9 +62,6 @@ public final class RpcRestlet extends Restlet {
 					throw new RuntimeException("expecting post content of type VCellApiRpcBody");
 				}
 				VCellApiRpcBody rpcBody = (VCellApiRpcBody)rpcRequestBodyObject;
-				// <<<< VERIFY USER CREDENTIALS >>>>
-				VCellApiApplication application = ((VCellApiApplication)getApplication());
-				User vcellUser = application.getVCellUser(req.getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 				RpcServiceType st = null;
 				VCellQueue queue = null;
 				switch (rpcBody.rpcRequest.rpcDestination) {
