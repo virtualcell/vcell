@@ -95,8 +95,8 @@ services:
       - "${VCELL_JMS_PORT_EXTERNAL}:61616"
       - "${VCELL_JMS_RESTPORT_EXTERNAL}:8161"
     environment:
-      - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbreq;simjob;workerevent
-      - ACTIVEMQ_STATIC_TOPICS=servicecontrol;daemoncontrol;clientstatus
+      - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbReq;simJob;workerEvent
+      - ACTIVEMQ_STATIC_TOPICS=serviceControl;daemonControl;clientStatus
       - ACTIVEMQ_MIN_MEMORY=1024
       - ACTIVEMQ_MAX_MEMORY=2048
       - ACTIVEMQ_ENABLED_SCHEDULER=true
@@ -130,6 +130,29 @@ services:
         constraints: [node.role == manager]
     networks:
       - vcellnet
+
+  # zookeeper:
+  #   image: wurstmeister/zookeeper
+  #   ports:
+  #     - "2181:2181"
+  # kafka:
+  #   image: ${REPO}kafka-docker:latest
+  #   ports:
+  #     - target: 9094
+  #       published: 9094
+  #       protocol: tcp
+  #       mode: host
+  #   environment:
+  #     HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"      
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+  #     KAFKA_ADVERTISED_PROTOCOL_NAME: OUTSIDE
+  #     KAFKA_ADVERTISED_PORT: 9094
+  #     KAFKA_PROTOCOL_NAME: INSIDE
+  #     KAFKA_PORT: 9092
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+
 
 networks:
   vcellnet:

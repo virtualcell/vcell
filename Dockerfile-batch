@@ -4,7 +4,7 @@ WORKDIR /app
 RUN mvn clean install dependency:copy-dependencies
 
 
-FROM schaff/vcell-solvers:release-0.0.4-dev
+FROM schaff/vcell-solvers:0.0.5-dev
 
 RUN apt-get install -y openjdk-8-jre-headless
 
