@@ -83,7 +83,7 @@ public class SimulationDispatcher extends ServiceProvider {
 	/**
 	 * minutes between zombie kill runs
 	 */
-	public static final int ZOMBIE_MINUTES = 2; 
+	public static final int ZOMBIE_MINUTES = 1; 
 	/**
 	 * minutes between queue flushing
 	 */
