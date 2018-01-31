@@ -692,7 +692,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			if(shapePanel.isShowDifferencesOnly()) {
 				g2.setColor(getDefaultColor(Color.gray));
 			} else {
-				g2.setColor(getDefaultColor(GraphConstants.bondHtmlColors[bp.id]));
+				g2.setColor(getDefaultColor(GraphConstants.bondHtmlColors[bp.id%GraphConstants.bondHtmlColors.length]));
 			}
 			g2.drawLine(bp.from.x, bp.from.y, bp.from.x, bp.from.y+yDouble+i*separ);
 			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+yDouble+i*separ);

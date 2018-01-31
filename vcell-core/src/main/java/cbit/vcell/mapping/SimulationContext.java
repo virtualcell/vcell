@@ -34,6 +34,7 @@ import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
+import org.vcell.util.Preference;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCAssert;
@@ -412,7 +413,7 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 	this.version = null;
 	this.characteristicSize = oldSimulationContext.getCharacteristicSize();
 	this.fieldName = "copied_from_"+oldSimulationContext.getName();
-	this.fieldDescription = "(copied from "+oldSimulationContext.getName()+") "+oldSimulationContext.getDescription();
+	this.setFieldDescription("(copied from "+oldSimulationContext.getName()+") "+oldSimulationContext.getDescription());
 	this.bioModel = oldSimulationContext.getBioModel();
 	if(oldSimulationContext.networkConstraints != null) {
 		this.networkConstraints = new NetworkConstraints(oldSimulationContext.networkConstraints);
@@ -582,7 +583,7 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
 	geometry.getGeometrySpec().addPropertyChangeListener(this);
 	if (argVersion!=null){
 		this.fieldName = argVersion.getName();
-		this.fieldDescription = argVersion.getAnnot();
+		this.setFieldDescription(argVersion.getAnnot());
 	} else {
 		this.fieldName = "Application_with_"+geometry.getName();
 	}
@@ -1057,21 +1058,6 @@ public void fireVetoableChange(String propertyName, boolean oldValue, boolean ne
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/18/2004 1:54:51 PM)
- * @param newVersion cbit.sql.Version
- */
-public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoException {
-	if (getVersion().getVersionKey().equals(newVersion.getVersionKey())) {
-		setVersion(newVersion);
-	} else {
-		throw new RuntimeException("SimulationContext.forceNewVersionAnnotation failed : version keys not equal");
-	}
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (11/1/2005 9:30:09 AM)
@@ -1247,7 +1233,7 @@ public Double getCharacteristicSize() {
  * @see #setDescription
  */
 public java.lang.String getDescription() {
-	return fieldDescription;
+	return getFieldDescription();
 }
 
 
@@ -2086,12 +2072,33 @@ public void setCharacteristicSize(Double size) throws java.beans.PropertyVetoExc
  * @see #getDescription
  */
 public void setDescription(java.lang.String description) throws java.beans.PropertyVetoException {
-	String oldValue = fieldDescription;
+	String oldValue = getFieldDescription();
 	fireVetoableChange(PROPERTY_NAME_DESCRIPTION, oldValue, description);
-	fieldDescription = description;
+	setFieldDescription(description);
 	firePropertyChange(PROPERTY_NAME_DESCRIPTION, oldValue, description);
 }
 
+
+private java.lang.String getFieldDescription() {
+	return fieldDescription;
+}
+
+private void setFieldDescription(java.lang.String newFieldDescription) {
+	this.fieldDescription = truncateForDB(newFieldDescription);
+}
+
+private String truncateForDB(String s){
+	if(s != null && s.length() > 0){
+		StringBuffer temp = new StringBuffer(s);
+		while(TokenMangler.getSQLEscapedString(temp.toString()).length() >= Preference.MAX_VALUE_LENGTH){
+			temp.deleteCharAt(temp.length()-1);
+		}
+		System.out.println("-----truncated "+(s.length()-temp.length())+" characters of simcontext='"+getName()+"' to fit DB constraint of "+Preference.MAX_VALUE_LENGTH);
+		return temp.toString();
+	}
+	
+	return s;
+}
 
 /**
  * Sets the electricalStimuli property (cbit.vcell.mapping.ElectricalStimulus[]) value.
@@ -2383,21 +2390,6 @@ public void setTemperatureKelvin(double temperatureKelvin) throws java.beans.Pro
 	fieldTemperatureKelvin = temperatureKelvin;
 	firePropertyChange("temperatureKelvin", new Double(oldValue), new Double(temperatureKelvin));
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 3:49:12 PM)
- * @param version cbit.sql.Version
- */
-private void setVersion(Version newVersion) throws PropertyVetoException {
-	this.version = newVersion;
-	if (newVersion != null){
-		setName(newVersion.getName());
-		setDescription(newVersion.getAnnot());
-	}
-}
-
 
 /**
  * This method was created by a SmartGuide.
