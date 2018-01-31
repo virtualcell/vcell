@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -245,10 +246,12 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		// write simTask file locally, and send it to server, and delete local copy.
 		File tempFile = File.createTempFile("simTask", "xml");
 		XmlUtil.writeXMLStringToFile(simTaskXmlText, tempFile.getAbsolutePath(), true);
+		clonedHtcProxy.getCommandService().command(new String[] { "mkdir", "-p", ResourceUtil.forceUnixPath(primaryUserDir.getAbsolutePath()) });
 		clonedHtcProxy.getCommandService().pushFile(tempFile, simTaskFilePath);
 		tempFile.delete();
 	}else{
 		// write final file directly.
+		FileUtils.forceMkdir(primaryUserDir);
 		XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePath, true);
 	}
 

@@ -27,6 +27,9 @@ jobid=$(( ( RANDOM % 1000 )  + 42000000000 ))
   echo $jobid >> slurm.jobid
   echo "sbatch $job"
   echo "starting job $jobid on Vagrant singularity box"
+  if [ -e "$job" ] && [ ! -x "$job" ]; then
+     chmod +x $job
+  fi
   bash -lc $job
   retcode=$?
   if [[ $retcode -ne 0 ]]; then

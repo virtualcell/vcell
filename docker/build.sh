@@ -8,12 +8,21 @@ show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
 	echo "    target                ( batch | api | master | mongo | clientgen | all)"
+	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
+	echo ""
 	echo "    tag                   ( dev | 7.0.0-alpha-new | f98dfe3) last option for git commit hash"
+	echo ""
 	echo "  [OPTIONS]"
+	echo ""
 	echo "    -h | --help           show this message"
+	echo ""
+	echo "    --skip-singularity    skip build of Singularity image for vcell-batch container (stored in ./singularity/)"
+	echo ""
 	echo "    --skip-maven          skip vcell software build prior to building containers"
+	echo ""
 	echo "    --skip-push           skip pushing containers to repository"
+	echo ""
 	echo "    --mvn-repo REPO_DIR   override local maven repository (defaults to $HOME/.m2)"
 	exit 1
 }
@@ -22,6 +31,7 @@ if [[ $# -lt 3 ]]; then
     show_help
 fi
 
+skip_singularity=false
 while :; do
 	case $1 in
 		-h|--help)
@@ -37,6 +47,9 @@ while :; do
 			;;
 		--skip-push)
 			skip_push=true
+			;;
+		--skip-singularity)
+			skip_singularity=true
 			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2
@@ -97,6 +110,92 @@ build_mongo() {
 	fi
 }
 
+build_singularity() {
+
+	if [ "$skip_singularity" == "false" ]; then
+		echo ""
+		cmd="cd singularity-vm"
+		cd singularity-vm
+		echo ""
+		echo "CURRENT DIRECTORY IS $PWD"
+
+		#
+		# prepare Vagrant Singularity box for building the singularity image (bring up, install cert)
+		#
+		echo ""
+		echo "generating singularity image for vcell-batch and uploading to remote server for HTC cluster"
+		cmd="sudo scp $ssh_key vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert ."
+		echo $cmd
+		($cmd) || (echo "failed to download cert from vcell-docker private Docker registry")
+
+		echo ""
+		echo "vagrant up"
+		vagrant up
+		if [[ $? -ne 0 ]]; then echo "failed to bring vagrant up"; fi
+
+		echo ""
+		remote_cmd="sudo cp /vagrant/domain.cert /usr/local/share/ca-certificates/vcell-docker.cam.uchc.edu.crt"
+		echo "vagrant ssh -c \"$remote_cmd\""
+		vagrant ssh -c "$remote_cmd"
+		if [[ $? -ne 0 ]]; then echo "failed to upload domain.cert to trust the private Docker registry" && exit 1; fi
+
+		echo ""
+		remote_cmd="sudo update-ca-certificates"
+		echo "vagrant ssh -c \"$remote_cmd\""
+		vagrant ssh -c "$remote_cmd"
+		if [[ $? -ne 0 ]]; then
+		    echo "failed to update ca certificates in vagrant box" && exit 1
+		fi
+		#
+		# create temporary Singularity file which imports existing docker image from registry and adds a custom entrypoint
+		#
+		_vcell_batch_docker_name="${repo}/vcell-batch:${tag}"
+		_singularity_image_file="${_vcell_batch_docker_name//[\/:]/_}.img"
+		_singularity_file="Singularity_${_vcell_batch_docker_name//[\/:]/_}"
+
+cat <<EOF >$_singularity_file
+Bootstrap: docker
+From: $_vcell_batch_docker_name
+
+%runscript
+
+    exec /vcellscripts/entrypoint.sh "\$@"
+
+%labels
+
+AUTHOR jcschaff
+EOF
+
+		echo ""
+		echo "wrote Singularity file $_singularity_file"
+		cat $_singularity_file
+
+		#
+		# build the singularity image and place in singularity-vm directory
+		#
+		echo ""
+		remote_cmd="sudo singularity build /vagrant/$_singularity_image_file /vagrant/$_singularity_file"
+		echo "vagrant ssh -c \"$remote_cmd\""
+		vagrant ssh -c "$remote_cmd"
+		if [[ $? -ne 0 ]]; then echo "failed to build singularity image from vagrant" && exit 1; fi
+
+		#
+		# bring down Vagrant Singularity box
+		#
+		echo ""
+		echo "vagrant halt"
+		vagrant halt
+		if [[ $? -ne 0 ]]; then echo "failed to stop vagrant box"; fi
+
+		echo ""
+		echo "created Singularity image for vcell-bash ./$local_singularity_image_name locally (in ./singularity folder), can be pushed to remote server during deploy"
+		echo ""
+		echo "cd .."
+		cd ..
+	fi
+}
+
+
 shift
 
 if [ "$skip_maven" == "false" ]; then
@@ -107,7 +206,7 @@ fi
 
 case $target in
 	batch)
-		build_batch
+		build_batch && build_singularity
 		exit $?
 		;;
 	api)
@@ -127,7 +226,7 @@ case $target in
 		exit $?
 		;;
 	all)
-		build_batch && build_api && build_master && build_clientgen && build_mongo
+		build_batch && build_api && build_master && build_clientgen && build_mongo && build_singularity
 		exit $?
 		;;
 	*)
@@ -137,6 +236,8 @@ case $target in
 		exit 1
 		;;
 esac
+
+
 
 
 

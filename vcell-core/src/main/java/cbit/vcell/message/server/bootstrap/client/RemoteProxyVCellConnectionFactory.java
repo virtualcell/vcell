@@ -15,7 +15,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.http.client.ClientProtocolException;
 import org.vcell.api.client.VCellApiClient;
@@ -48,7 +48,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 	private final Integer apiport;
 	private final SessionLog sessionLog;
 	private final VCellApiClient vcellApiClient;
-	private long lastEventTimestamp = System.currentTimeMillis();
+	private final static AtomicLong lastProcessedEventTimestamp = new AtomicLong(0);
 	
 	private RpcSender rpcSender = new RemoteProxyRpcSender();
 	
@@ -75,18 +75,22 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 
 		@Override
 		public MessageEvent[] getMessageEvents() throws IOException {
-			EventWrapper[] eventWrappers = vcellApiClient.getEvents(lastEventTimestamp);
-			
-			ArrayList<EventWrapper> eventWrapperList = new ArrayList<EventWrapper>();
-			eventWrapperList.addAll(Arrays.asList(eventWrappers));
-			eventWrapperList.sort((a,b) -> (int)(a.id - b.id));
-			
+			long previousTimestamp = lastProcessedEventTimestamp.get();
+			long latestTimestapRetrieved = previousTimestamp;
+			EventWrapper[] eventWrappers = vcellApiClient.getEvents(previousTimestamp);
+			for (EventWrapper eventWrapper : eventWrappers) {
+				latestTimestapRetrieved = Math.max(eventWrapper.timestamp, latestTimestapRetrieved);
+			}
+			if (!lastProcessedEventTimestamp.compareAndSet(previousTimestamp, latestTimestapRetrieved)) {
+				throw new RuntimeException("concurrent update failure of event timestamp - aborting processing of retrieved events");
+			}
+
 			ArrayList<MessageEvent> messageEvents = new ArrayList<MessageEvent>();
 			Gson gson = new Gson();
-			for (EventWrapper eventWrapper : eventWrapperList) {
+			for (EventWrapper eventWrapper : eventWrappers) {
+				System.out.println("received event: ("+eventWrapper.id+", "+eventWrapper.timestamp+", "+eventWrapper.userid+", "+eventWrapper.eventJSON+")");
 				switch (eventWrapper.eventType) {
 				case SimJob:{
-					lastEventTimestamp = Math.max(lastEventTimestamp, eventWrapper.timestamp);
 					SimulationJobStatusEventRepresentation simJobStatusEventRep = 
 							gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);
 					SimulationJobStatusEvent simJobStatusEvent = SimulationJobStatusEvent.fromJsonRep(this, simJobStatusEventRep);
