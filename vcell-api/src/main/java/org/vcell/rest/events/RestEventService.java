@@ -87,13 +87,12 @@ public class RestEventService {
 	
 	public EventWrapper[] query(String userid, long lasttimestamp) {
 		ArrayList<EventWrapper> eventList = new ArrayList<EventWrapper>();
-		Iterator<EventWrapper> iter = events.descendingIterator();
+		Iterator<EventWrapper> iter = events.iterator();
 		while (iter.hasNext()) {
 			EventWrapper eventWrapper = iter.next();
 			if (eventWrapper.timestamp > lasttimestamp) {
+				System.out.println("returning event to userid: ("+eventWrapper.id+", "+eventWrapper.timestamp+", "+eventWrapper.userid+", "+eventWrapper.eventJSON+")");
 				eventList.add(0, eventWrapper);
-			}else {
-				break;
 			}
 		}
 		EventWrapper[] eventArray = eventList.toArray(new EventWrapper[0]);
