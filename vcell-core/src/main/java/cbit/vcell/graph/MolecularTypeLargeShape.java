@@ -7,6 +7,7 @@ import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
@@ -16,6 +17,7 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +67,9 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 	private int yPos = 0;
 	private int width;
 	private final int height;
+	private int positionInPattern = 0;	// index of molecule within a species pattern (if applicable)
 
+	private Structure structure = null;
 	final LargeShapeCanvas shapePanel;
 	
 	private final String name;
@@ -186,7 +190,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 	}
 	// called for species patterns (rules, species, observables)
 	public MolecularTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapeCanvas shapePanel, 
-			Displayable owner, int positionInPattern, IssueListProvider issueListProvider) {
+			Displayable owner, int positionInPattern, Structure structure, IssueListProvider issueListProvider) {
 		super(issueListProvider);
 		
 		this.owner = owner;
@@ -196,6 +200,8 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.shapePanel = shapePanel;
+		this.positionInPattern = positionInPattern;
+		this.structure = structure;
 
 		baseWidth = calculateBaseWidth(shapePanel);
 		baseHeight = calculateBasHeight(shapePanel);
@@ -380,7 +386,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 	}
 	
 	public Rectangle getAnchorRectangle() {
-		if(mt != null && !mt.getAnchors().isEmpty()) {
+		if(mt != null && !mt.isAnchorAll()) {
 			int z = shapePanel.getZoomFactor();
 			int x = xPos + cornerArc/2;
 			int y = yPos + baseHeight;
@@ -393,7 +399,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 	}
 	public String getAnchorsHTML() {
 		String str = "";
-		if(mt != null && !mt.getAnchors().isEmpty()) {
+		if(mt != null && !mt.isAnchorAll()) {
 			str += "<html>";
 			boolean first = true;
 			for(Structure s : mt.getAnchors()) {
@@ -406,6 +412,33 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 			str += "</html>";
 		}
 		return str;
+	}
+	
+	public void paintNarrowCompartment(Graphics g) {
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		Paint paintOld = g2.getPaint();
+		
+		Rectangle r = getAnchorRectangle();
+		Color darker = getDefaultColor(Color.gray);	// a bit darker for border
+		Rectangle2D border = new Rectangle2D.Double(xPos, yPos-4, 22, 62);
+//		Rectangle2D border = new Rectangle2D.Double(r.x-1, r.y-3, r.width+2, r.height+6);
+		g2.setColor(darker);
+		g2.draw(border);
+		
+		Color lighter;
+		if(structure.getTypeName().equals(Structure.TYPE_NAME_MEMBRANE)) {
+			lighter = new Color(192, 192, 192);		// 192	208
+		} else {
+			lighter = new Color(240, 240, 240);		// 244
+		}
+		Rectangle2D filling = new Rectangle2D.Double(xPos, yPos-3, 22, 61);
+//		Rectangle2D filling = new Rectangle2D.Double(r.x, r.y-3, r.width+1, r.height+6);
+		g2.setPaint(lighter);
+		g2.fill(filling);
+		
+	    g2.setPaint(paintOld);
+		g2.setColor(colorOld);
 	}
 	
 	@Override
@@ -557,6 +590,14 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 				}
 			}
 		}
+		
+		// paint the structure contour if applicable (only for anchored molecules!)
+//		if(structure != null && mt != null && !mt.isAnchorAll()) {
+		if(positionInPattern != 0 && structure != null && mt != null && !mt.isAnchorAll()) {
+			paintNarrowCompartment(g);
+		}
+		
+		// paint the shape of the molecule and fill it with color
 		GradientPaint p = new GradientPaint(xPos, yPos, primaryColor, xPos, yPos + baseHeight/2, Color.WHITE, true);
 		g2.setPaint(p);
 
@@ -592,8 +633,9 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 			g2.draw(rect);
 		}
 
+		// paint the anchor glyph
 		Rectangle r = getAnchorRectangle();
-		if(r != null) {		// paint anchor glyph
+		if(r != null) {
 			int z = shapePanel.getZoomFactor();
 			int w = r.width;
 			int x = r.x + w/2;
@@ -617,6 +659,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 			g2.setStroke(strokeOld);
 		}
 		
+		// the text inside the molecule shape 
 		if(mt == null && mtp == null) {		// plain species context
 			 // don't write any text inside
 		} else {							// molecular type, species pattern
@@ -645,7 +688,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		g.setColor(colorOld);
 		g2.setStroke(strokeOld);
 		
-		for(MolecularComponentLargeShape mcls : componentShapes) {
+		for(MolecularComponentLargeShape mcls : componentShapes) {	// paint the components
 			mcls.paintSelf(g);
 		}
 		g2.setFont(fontOld);

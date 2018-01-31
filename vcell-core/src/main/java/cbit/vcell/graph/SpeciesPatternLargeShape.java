@@ -136,9 +136,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		}
 		
 		int numPatterns = sp.getMolecularTypePatterns().size();
+		Structure structure = getStructure();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, mtp, shapePanel, owner, i, issueListProvider);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, mtp, shapePanel, owner, i, structure, issueListProvider);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}
@@ -365,11 +366,9 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);
 	}
-	public void paintCompartment(Graphics g) {
-
-		Color structureColor = getDefaultColor(Color.black);
+	public Structure getStructure() {
 		Structure structure = null;
-		if(owner instanceof ReactionRule && !speciesShapes.isEmpty()) {
+		if(owner instanceof ReactionRule) {
 			ReactionRule rr = (ReactionRule)owner;
 			ReactantPattern rp = rr.getReactantPattern(sp);
 			ProductPattern pp = rr.getProductPattern(sp);
@@ -380,15 +379,32 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			} else {
 				structure = ((ReactionRule)owner).getStructure();
 			}
+		}  else if(owner instanceof SpeciesContext && ((SpeciesContext)owner).hasSpeciesPattern()) {
+			structure = ((SpeciesContext)owner).getStructure();
+	} else if(owner instanceof RbmObservable) {
+			structure = ((RbmObservable)owner).getStructure();
+	}
+		return structure;
+	}
+	public Structure getStructureEx() {
+		// only if speciesShapes is not empty
+		Structure structure = null;
+		if(owner instanceof ReactionRule && !speciesShapes.isEmpty()) {
+			structure = getStructure();
 		} else if(owner instanceof SpeciesContext && ((SpeciesContext)owner).hasSpeciesPattern()) {
 				structure = ((SpeciesContext)owner).getStructure();
-				structureColor = getDefaultColor(Color.gray);
 		} else if(owner instanceof RbmObservable && !speciesShapes.isEmpty()) {
 				structure = ((RbmObservable)owner).getStructure();			
-		} else {
-			return;		// other things don't have structure
 		}
-		
+		return structure;
+	}
+	
+	public void paintCompartment(Graphics g) {
+		Color structureColor = getDefaultColor(Color.black);
+		Structure structure = getStructureEx();
+		if(owner instanceof SpeciesContext && ((SpeciesContext)owner).hasSpeciesPattern()) {
+			structureColor = getDefaultColor(Color.gray);
+		}		
 		// for whatever lacks a structure, we show it structureless
 		if(structure == null || structure.getName() == null) {
 			return;
