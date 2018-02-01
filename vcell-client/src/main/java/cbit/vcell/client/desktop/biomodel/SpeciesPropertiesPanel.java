@@ -477,7 +477,7 @@ private void initialize() {
 					shapePanel.setToolTipText("Right click for " + hsi.getDisplayType() + " menus");
 				}
 				for (MolecularTypeLargeShape mtls : spls.getMolecularTypeLargeShapes()) {
-					Rectangle r = mtls.getAnchorRectangle();
+					Rectangle r = mtls.getAnchorHotspot();
 					if(r != null && r.contains(overWhat)) {
 						mtls.getMolecularType();
 						shapePanel.setToolTipText(mtls.getAnchorsHTML());

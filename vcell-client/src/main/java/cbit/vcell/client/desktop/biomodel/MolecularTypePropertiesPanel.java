@@ -664,7 +664,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					shapePanel.setToolTipText("Right click for " + hsi.getDisplayType() + " menus");
 				}
 				for (MolecularTypeLargeShape mtls : molecularTypeShapeList) {
-					Rectangle r = mtls.getAnchorRectangle();
+					Rectangle r = mtls.getAnchorHotspot();
 					if(r != null && r.contains(overWhat)) {
 						mtls.getMolecularType();
 						shapePanel.setToolTipText(mtls.getAnchorsHTML());

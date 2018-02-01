@@ -385,21 +385,21 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		}
 	}
 	
-	public Rectangle getAnchorRectangle() {
-		if(mt != null && !mt.isAnchorAll()) {
-			int z = shapePanel.getZoomFactor();
-			int x = xPos + cornerArc/2;
-			int y = yPos + baseHeight;
-			int yb = y + 9 + z/3;	// y at bottom
-			int w = 9 + z/6;
-			Rectangle r2d = new Rectangle(x-w/2, y, w, yb-y);
-			return r2d;
-		}
+	public Rectangle getAnchorHotspot() {		// mouse over this rectangle should display the anchor tooltip
+//		if(mt != null && !mt.isAnchorAll() && mt.getAnchors().size()>0) {	// TODO: disabled for now
+//			int z = shapePanel.getZoomFactor();
+//			int x = xPos + cornerArc/2;
+//			int y = yPos + baseHeight;
+//			int yb = y + 9 + z/3;	// y at bottom
+//			int w = 9 + z/6;
+//			Rectangle r2d = new Rectangle(x-w/2, y, w, yb-y);
+//			return r2d;
+//		}
 		return null;
 	}
 	public String getAnchorsHTML() {
 		String str = "";
-		if(mt != null && !mt.isAnchorAll()) {
+		if(mt != null && !mt.isAnchorAll() && mt.getAnchors().size()>0) {
 			str += "<html>";
 			boolean first = true;
 			for(Structure s : mt.getAnchors()) {
@@ -414,15 +414,52 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		return str;
 	}
 	
-	public void paintNarrowCompartment(Graphics g) {
+//	public void paintNarrowCompartment(Graphics g) {
+//		Graphics2D g2 = (Graphics2D)g;
+//		Color colorOld = g2.getColor();
+//		Paint paintOld = g2.getPaint();
+//		
+//		Rectangle r = getAnchorHotspot();
+//		Color darker = getDefaultColor(Color.gray);	// a bit darker for border
+//		Rectangle2D border = new Rectangle2D.Double(xPos, yPos-4, 22, 62);
+////		Rectangle2D border = new Rectangle2D.Double(r.x-1, r.y-3, r.width+2, r.height+6);
+//		g2.setColor(darker);
+//		g2.draw(border);
+//		
+//		Color lighter;
+//		if(structure.getTypeName().equals(Structure.TYPE_NAME_MEMBRANE)) {
+//			lighter = new Color(192, 192, 192);		// 192	208
+//		} else {
+//			lighter = new Color(240, 240, 240);		// 244
+//		}
+//		Rectangle2D filling = new Rectangle2D.Double(xPos, yPos-3, 22, 61);
+////		Rectangle2D filling = new Rectangle2D.Double(r.x, r.y-3, r.width+1, r.height+6);
+//		g2.setPaint(lighter);
+//		g2.fill(filling);
+//		
+//	    g2.setPaint(paintOld);
+//		g2.setColor(colorOld);
+//	}
+	public Rectangle getAnchorRectangleRight() {
+		if(mt != null && !mt.isAnchorAll() && mt.getAnchors().size()>0) {
+			int compWidth = MolecularComponentLargeShape.calculateBaseWidth(shapePanel)-2;
+			int x = xPos + width - compWidth - 2;
+			int y = yPos-4;
+			int compHeight = 62;
+			Rectangle r2d = new Rectangle(x, y, compWidth, compHeight);
+			return r2d;
+		}
+		return null;
+	}
+	public void paintNarrowCompartmentRight(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
 		
-		Rectangle r = getAnchorRectangle();
-		Color darker = getDefaultColor(Color.gray);	// a bit darker for border
-		Rectangle2D border = new Rectangle2D.Double(xPos, yPos-4, 22, 62);
-//		Rectangle2D border = new Rectangle2D.Double(r.x-1, r.y-3, r.width+2, r.height+6);
+		int z = shapePanel.getZoomFactor();
+		Rectangle r = getAnchorRectangleRight();
+		Rectangle2D border = new Rectangle2D.Double(r.x, r.y, r.width, r.height);
+		Color darker = getDefaultColor(Color.cyan.darker());	// a bit darker for border
 		g2.setColor(darker);
 		g2.draw(border);
 		
@@ -432,8 +469,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		} else {
 			lighter = new Color(240, 240, 240);		// 244
 		}
-		Rectangle2D filling = new Rectangle2D.Double(xPos, yPos-3, 22, 61);
-//		Rectangle2D filling = new Rectangle2D.Double(r.x, r.y-3, r.width+1, r.height+6);
+		Rectangle2D filling = new Rectangle2D.Double(r.x, r.y+1, r.width, r.height-1);
 		g2.setPaint(lighter);
 		g2.fill(filling);
 		
@@ -592,9 +628,10 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		}
 		
 		// paint the structure contour if applicable (only for anchored molecules!)
-//		if(structure != null && mt != null && !mt.isAnchorAll()) {
-		if(positionInPattern != 0 && structure != null && mt != null && !mt.isAnchorAll()) {
-			paintNarrowCompartment(g);
+		if(structure != null && mt != null && !mt.isAnchorAll() && mt.getAnchors().size()>0) {
+//		if(positionInPattern != 0 && structure != null && mt != null && !mt.isAnchorAll() && mt.getAnchors().size()>0) {
+//			paintNarrowCompartment(g);
+			paintNarrowCompartmentRight(g);
 		}
 		
 		// paint the shape of the molecule and fill it with color
@@ -634,30 +671,42 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		}
 
 		// paint the anchor glyph
-		Rectangle r = getAnchorRectangle();
-		if(r != null) {
-			int z = shapePanel.getZoomFactor();
-			int w = r.width;
-			int x = r.x + w/2;
-			int y = r.y;
-			int yb = y + r.height;	// y at bottom
-//			g2.drawRect(r.x, r.y, r.width, r.height);		// hotspot for anchor tooltips
-			Line2D line = new Line2D.Float(x, y, x, yb);
-			g2.setPaint(getDefaultColor(Color.RED.darker().darker()));
-			g2.setStroke(new BasicStroke(2.1f+0.13f*z));
-			g2.draw(line);
-//			line = new Line2D.Float(x-w/2, yb+1, x+w/2, yb+1);
-//			g2.setStroke(new BasicStroke(1.9f+0.21f*z));
+//		Rectangle r = getAnchorRectangleRight();
+//		if(r != null) {
+//			// icon looking like a double circle
+//			int z = shapePanel.getZoomFactor();
+//			int rad = 9+z/2;
+//			g2.setColor(Color.cyan);
+//			g2.fillOval(r.x, r.y, rad, rad);
+//			
+//			g2.setColor(Color.cyan.darker());
+//			g2.setStroke(new BasicStroke(2.4f+0.20f*z));
+//			g2.drawOval(r.x, r.y, rad, rad);
+//		}
+		
+		
+//		Rectangle r = getAnchorRectangle();
+//		if(r != null) {
+//			// icon looking like an anchor
+//			int z = shapePanel.getZoomFactor();
+//			int w = r.width;
+//			int x = r.x + w/2;
+//			int y = r.y;
+//			int yb = y + r.height;	// y at bottom
+////			g2.drawRect(r.x, r.y, r.width, r.height);		// hotspot for anchor tooltips
+//			Line2D line = new Line2D.Float(x, y, x, yb);
+//			g2.setPaint(getDefaultColor(Color.RED.darker().darker()));
+//			g2.setStroke(new BasicStroke(2.1f+0.13f*z));
 //			g2.draw(line);
-			int h = r.height + 1;
-			h = z < -3 ? h-1 : h;
-			Arc2D arc = new Arc2D.Double(x-w/2, y, w, h, 
-					210, 120, Arc2D.OPEN);
-			g2.setStroke(new BasicStroke(2.1f+0.20f*z));
-			g2.draw(arc);
-			g2.setPaint(colorOld);
-			g2.setStroke(strokeOld);
-		}
+//			int h = r.height + 1;
+//			h = z < -3 ? h-1 : h;
+//			Arc2D arc = new Arc2D.Double(x-w/2, y, w, h, 
+//					210, 120, Arc2D.OPEN);
+//			g2.setStroke(new BasicStroke(2.1f+0.20f*z));
+//			g2.draw(arc);
+//			g2.setPaint(colorOld);
+//			g2.setStroke(strokeOld);
+//		}
 		
 		// the text inside the molecule shape 
 		if(mt == null && mtp == null) {		// plain species context

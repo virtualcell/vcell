@@ -544,7 +544,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				}
 				for (SpeciesPatternLargeShape sps : spsList) {
 					for (MolecularTypeLargeShape mtls : sps.getMolecularTypeLargeShapes()) {
-						Rectangle r = mtls.getAnchorRectangle();
+						Rectangle r = mtls.getAnchorHotspot();
 						if(r != null && r.contains(overWhat)) {
 							mtls.getMolecularType();
 							shapePanel.setToolTipText(mtls.getAnchorsHTML());
