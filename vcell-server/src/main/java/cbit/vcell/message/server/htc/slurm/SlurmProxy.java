@@ -337,6 +337,23 @@ denied: job "6894" does not exist
 		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
 		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
 		String Singularity_file = singularity_image+".Singularity";
+
+		String[] environmentVars = new String[] {
+				"jmshost_internal="+jmshost_external,
+				"jmsport_internal="+jmsport_external,
+				"jmsrestport_internal="+jmsrestport_external,
+				"jmsuser="+jmsuser,
+				"jmspswd="+jmspswd,
+				"jmsblob_minsize="+jmsblob_minsize,
+				"mongodbhost_internal="+mongodbhost_external,
+				"mongodbport_internal="+mongodbport_external,
+				"mongodb_database="+mongodb_database,
+				"datadir_external="+primaryDataDirExternal,
+				"htclogdir_external="+htclogdir_external,
+				"softwareVersion="+softwareVersion,
+				"serverid="+serverid
+		};
+		
 		lsb.write("cmd_prefix=");
 		lsb.write("if command -v singularity >/dev/null 2>&1; then");
 		lsb.write("   # singularity command exists");
@@ -366,32 +383,18 @@ denied: job "6894" does not exist
 		lsb.write("   else");
 		lsb.write("      echo \"singularity image "+singularity_image+" found\"");
 		lsb.write("   fi");
+		for (String envVar : environmentVars) {
+			lsb.write("export SINGULARITYENV_"+envVar);
+		}
 		lsb.write("   cmd_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs "+singularity_image+" \"");
 		lsb.write("else");
 		//lsb.write("   if command -v docker >/dev/null 2>&1; then");
-		//jmsurl_external = jmsurl_external.replace("(","\\(").replace(")","\\)");
-
 		
-//			    mongodbhost_internal=vcell-service.cam.uchc.edu \
-//			    mongodbport_internal=27017 \
-//			    mongodb_database=test \
-//			    jmsblob_minsize=100000		
-		
-		
-		String environmentVars = " -e jmshost_internal="+jmshost_external+
-								" -e jmsport_internal="+jmsport_external+
-								" -e jmsrestport_internal="+jmsrestport_external+
-								" -e jmsuser="+jmsuser+
-								" -e jmspswd="+jmspswd+
-								" -e jmsblob_minsize="+jmsblob_minsize+
-								" -e mongodbhost_internal="+mongodbhost_external+
-								" -e mongodbport_internal="+mongodbport_external+
-								" -e mongodb_database="+mongodb_database+
-								" -e datadir_external="+primaryDataDirExternal+
-								" -e htclogdir_external="+htclogdir_external+
-								" -e softwareVersion="+softwareVersion+
-								" -e serverid="+serverid;
-		lsb.write("       cmd_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs "+environmentVars+" "+docker_image+" \"");
+		StringBuffer dockerEnvironmentVars = new StringBuffer();
+		for (String envVar : environmentVars) {
+			dockerEnvironmentVars.append(" -e "+envVar);
+		}
+		lsb.write("       cmd_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs "+dockerEnvironmentVars+" "+docker_image+" \"");
 		//lsb.write("   fi");
 		lsb.write("fi");
 		lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
