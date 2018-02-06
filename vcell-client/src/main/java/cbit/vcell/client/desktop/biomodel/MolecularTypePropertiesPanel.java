@@ -142,9 +142,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			} else if (source == getAnchorAllButton()) {
 				molecularType.setAnchorAll(true);
 				anchorPanel.enableAll(false);
+				updateInterface();
 			} else if (source == getAnchorOnlyButton()) {
 				molecularType.setAnchorAll(false);
 				anchorPanel.enableAll(true);
+				updateInterface();
 //			} else if (source == getRenameFromShapeMenuItem()) {
 //				molecularTypeTree.startEditingAtPath(molecularTypeTree.getSelectionPath());
 			}			
