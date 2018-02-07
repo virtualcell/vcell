@@ -56,6 +56,7 @@ services:
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
       - htclogdir_external=${VCELL_HTCLOGS_EXTERNAL}
+      - nativesolverdir_external=${VCELL_NATIVESOLVERDIR_EXTERNAL}
       - htcnodelist=${VCELL_HTC_NODELIST}
       - batchsystem=SLURM
       - slurm_cmd_sbatch=${VCELL_SLURM_CMD_SBATCH:-slurm}
