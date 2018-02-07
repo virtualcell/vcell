@@ -131,6 +131,44 @@ services:
     networks:
       - vcellnet
 
+
+  # cadvisor:
+  #   image: google/cadvisor:latest
+  #   volumes:
+  #     - /:/rootfs:ro
+  #     - /var/run:/var/run:rw
+  #     - /sys:/sys:ro
+  #     - /var/lib/docker/:/var/lib/docker:ro
+  #   ports:
+  #     - "8080"
+  #   # restart: always
+  #   # cpuset: 0,1
+  #   # cpu_shares: 512
+  #   # mem_limit: 1g
+
+  # nodeexporter:
+  #   image: prom/node-exporter
+  #   ports:
+  #     - "9100"
+  #   deploy:
+  #     mode: global
+
+  # alertmanager:
+  #   image: prom/alertmanager:v0.6.2
+
+  # dockerui:
+  #   image: dockerui/dockerui
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   ports:
+  #     - "9000:9000"
+  #   privileged: true
+  #   # restart: always
+  #   # cpuset: 0,1
+  #   # cpu_shares: 512
+  #   # mem_limit: 1g
+
+
   # zookeeper:
   #   image: wurstmeister/zookeeper
   #   ports:
@@ -156,6 +194,8 @@ services:
 
 networks:
   vcellnet:
+  # prometheus_network:
+  #   driver: overlay
 secrets:
   dbpswd:
     file: ${VCELL_SECRETS_DIR}/dbpswd.txt
