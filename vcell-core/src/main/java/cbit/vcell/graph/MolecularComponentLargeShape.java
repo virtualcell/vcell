@@ -73,7 +73,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			return cs < 1 ? 1 : cs;
 		}
 	}
-	private static int calculateBaseWidth(LargeShapeCanvas shapePanel) {
+	static int calculateBaseWidth(LargeShapeCanvas shapePanel) {	// package visibility
 		if(shapePanel == null) {
 			return BaseWidth;
 		} else {

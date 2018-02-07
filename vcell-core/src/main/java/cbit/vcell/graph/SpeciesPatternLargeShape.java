@@ -437,7 +437,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		}
 		
 		Color darker = getDefaultColor(Color.gray);	// a bit darker for border
-		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, w, 62);		// 58
+		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, w, 59);
 		g2.setColor(darker);
 		g2.draw(border);
 		
@@ -447,12 +447,12 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		} else {
 			lighter = new Color(240, 240, 240);		// 244
 		}
-		Rectangle2D filling = new Rectangle2D.Double(xPos-9, yPos-3, w, 61);	// 57
+		Rectangle2D filling = new Rectangle2D.Double(xPos-9, yPos-3, w, 58);
 		g2.setPaint(lighter);
 		g2.fill(filling);
 		
 		g.setColor(structureColor);
-		g2.drawString(name, xPos-4, yPos+52);	// 48
+		g2.drawString(name, xPos-4, yPos+50);
 		
 		g2.setFont(fontOld);
 	    g2.setPaint(paintOld);

@@ -327,7 +327,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					if(spsList != null) {
 						for (SpeciesPatternLargeShape sps : spsList) {
 							for (MolecularTypeLargeShape mtls : sps.getMolecularTypeLargeShapes()) {
-								Rectangle r = mtls.getAnchorRectangle();
+								Rectangle r = mtls.getAnchorHotspot();
 								if(r != null && r.contains(overWhat)) {
 									mtls.getMolecularType();
 									shapePanel.setToolTipText(mtls.getAnchorsHTML());
