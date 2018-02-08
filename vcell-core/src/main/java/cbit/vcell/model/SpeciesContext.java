@@ -423,7 +423,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 					continue;	// no restrictions for this molecular type
 				}
 				if(!mt.getAnchors().contains(structure)) {
-					String message = "The Structure " + structure.getName() + " is restricted for the Molecule " + mt.getDisplayName();
+					String message = "The Structure " + structure.getName() + " is not allowed for the Molecule " + mt.getDisplayName();
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 				}
 			}

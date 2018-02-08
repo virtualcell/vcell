@@ -442,7 +442,9 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 	public Rectangle getAnchorHotspot() {		// mouse over this rectangle should display the anchor tooltip
 		if(mt != null && !mt.isAnchorAll() && mt.getAnchors().size()>0) {
 			Rectangle r = getAnchorRectangleRight();	// position and dimension based on anchor gray rectangle
-			
+
+			Rectangle r2d = new Rectangle(r.x+1, yPos+baseHeight+1, r.width-2, r.height-baseHeight-6);
+			return r2d;
 		}
 		return null;
 	}
@@ -468,11 +470,22 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 				// so we leave it white since it may be a mix of membranes and compartments
 				lighter = Color.white;
 			}
-		} else {
-			if(structure.getTypeName().equals(Structure.TYPE_NAME_MEMBRANE)) {
-				lighter = new Color(192, 192, 192);		// 192	208
+		} else {	// non molecular type, we make sure before calling this that structure is not null
+			boolean found = false;
+			for(Structure struct : mt.getAnchors()) {
+				if(structure.getName().equals(struct.getName())) {
+					found = true;
+					break;
+				}
+			}
+			if(!found) {	// molecule can't be in the structure where the species pattern is
+				lighter = MolecularComponentLargeShape.componentBad;
 			} else {
-				lighter = new Color(240, 240, 240);		// 244
+				if(structure.getTypeName().equals(Structure.TYPE_NAME_MEMBRANE)) {
+					lighter = new Color(192, 192, 192);		// 192	208
+				} else {
+					lighter = new Color(240, 240, 240);		// 244
+				}
 			}
 		}
 		Rectangle2D filling = new Rectangle2D.Double(r.x, r.y+1, r.width, r.height-1);
@@ -635,8 +648,6 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		
 		// paint the structure contour if applicable (only for anchored molecules!)
 		if(structure != null && mt != null && !mt.isAnchorAll() && mt.getAnchors().size()>0) {
-//		if(positionInPattern != 0 && structure != null && mt != null && !mt.isAnchorAll() && mt.getAnchors().size()>0) {
-//			paintNarrowCompartment(g);
 			paintNarrowCompartmentRight(g);
 		} else if(owner instanceof MolecularType && !mt.isAnchorAll()) {
 			paintNarrowCompartmentRight(g);
@@ -679,18 +690,32 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		}
 
 		// paint the anchor glyph
-//		Rectangle r = getAnchorRectangleRight();
-//		if(r != null) {
-//			// icon looking like a double circle
-//			int z = shapePanel.getZoomFactor();
-//			int rad = 9+z/2;
-//			g2.setColor(Color.cyan);
-//			g2.fillOval(r.x, r.y, rad, rad);
-//			
-//			g2.setColor(Color.cyan.darker());
-//			g2.setStroke(new BasicStroke(2.4f+0.20f*z));
-//			g2.drawOval(r.x, r.y, rad, rad);
-//		}
+		Rectangle r = getAnchorHotspot();
+		if(r != null) {
+//			g2.drawRect(r.x, r.y, r.width, r.height);	// anchor tooltip hotspot area 
+			int z = shapePanel.getZoomFactor();
+			int w = r.width;
+			int x = r.x + w/2;
+			int y = r.y;
+			int h = 12+z/2;
+			h = z<-2 ? h-1 : h;
+			h = z<-4 ? h-1 : h;
+			
+			Line2D line = new Line2D.Float(x, y, x, y+h);
+			g2.setPaint(getDefaultColor(Color.RED.darker().darker()));
+			g2.setStroke(new BasicStroke(2.6f+0.13f*z));
+			g2.draw(line);
+			
+			// TODO: adjust the arc at deep zoom!
+			double a1 = z<-3 ? 245 : 240;
+			double a2 = z<-3 ? 52 : 59;	// 60
+			Arc2D arc = new Arc2D.Double(x-h, y-h, 2*h, 2*h, 
+					a1, a2, Arc2D.OPEN);
+			g2.setStroke(new BasicStroke(2.6f+0.20f*z));
+			g2.draw(arc);
+			g2.setPaint(colorOld);
+			g2.setStroke(strokeOld);
+		}
 		
 		
 //		Rectangle r = getAnchorRectangle();
