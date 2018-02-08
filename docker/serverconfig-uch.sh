@@ -30,15 +30,15 @@ VCELL_BUILD_NUMBER=$_build_number
 case $VCELL_SITE in
 	REL)
 		_site_port_offset=0
-		_applicationId="0000-0000-0000-0000"
+		_applicationId="1471-8022-1038-5553"
 		;;
 	BETA)
 		_site_port_offset=1
-		_applicationId="0000-0000-0000-0000"
+		_applicationId="1471-8022-1038-5552"
 		;;
 	ALPHA)
 		_site_port_offset=2
-		_applicationId="0000-0000-0000-0000"
+		_applicationId="1471-8022-1038-5554"
 		;;
 	TEST)
 		_site_port_offset=3
@@ -46,7 +46,19 @@ case $VCELL_SITE in
 		;;
 	TEST2)
 		_site_port_offset=4
-		_applicationId="0000-0000-0000-0000"
+		_applicationId="1471-8022-1038-5556"
+		;;
+	TEST3)
+		_site_port_offset=5
+		_applicationId="1471-8022-1038-5557"
+		;;
+	TEST4)
+		_site_port_offset=6
+		_applicationId="1471-8022-1038-5558"
+		;;
+	TEST5)
+		_site_port_offset=7
+		_applicationId="1471-8022-1038-5559"
 		;;
 	*)
 		printf 'ERROR: Unknown site: %s\n' "$1" >&2
@@ -93,6 +105,7 @@ VCELL_SLURM_CMD_SACCT=$VCELL_SLURM_CMD_SACCT
 VCELL_SLURM_CMD_SCANCEL=$VCELL_SLURM_CMD_SCANCEL
 VCELL_CLIENT_APPID=${_applicationId}
 VCELL_HTCLOGS_EXTERNAL=/share/apps/vcell3/htclogs
+VCELL_NATIVESOLVERDIR_EXTERNAL=/share/apps/vcell3/nativesolvers
 VCELL_BATCH_DOCKER_IMAGE=$VCELL_BATCH_DOCKER_IMAGE
 VCELL_SINGULARITY_FILENAME=$VCELL_SINGULARITY_FILENAME
 VCELL_SINGULARITY_IMAGE_EXTERNAL=$VCELL_SINGULARITY_IMAGE_EXTERNAL

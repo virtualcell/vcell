@@ -61,6 +61,7 @@ public class PropertyLoader {
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
 	public static final String MPI_HOME_INTERNAL		        = record("vcell.htc.mpi.home",ValueType.DIR);
 	public static final String MPI_HOME_EXTERNAL		        = record("vcell.htc.mpi.home",ValueType.GEN);
+	public static final String nativeSolverDir_External      = record("vcell.nativesolverdir.external",ValueType.GEN);
 
 //	public static final String finiteVolumeExecutableProperty = record("vcell.finitevolume.executable",ValueType.EXE);
 //

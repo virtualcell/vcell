@@ -309,6 +309,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.primarySimDataDirInternalProperty,
 		PropertyLoader.primarySimDataDirExternalProperty,
+		PropertyLoader.nativeSolverDir_External,
 		PropertyLoader.vcellServerIDProperty,
 		PropertyLoader.installationRoot,
 		PropertyLoader.dbConnectURL,

@@ -354,7 +354,7 @@ denied: job "6894" does not exist
 				"serverid="+serverid
 		};
 		
-		lsb.write("cmd_prefix=");
+		lsb.write("container_prefix=");
 		lsb.write("if command -v singularity >/dev/null 2>&1; then");
 		lsb.write("   # singularity command exists");
 		lsb.write("   if [ ! -e "+singularity_image+" ] ; then");
@@ -386,7 +386,7 @@ denied: job "6894" does not exist
 		for (String envVar : environmentVars) {
 			lsb.write("export SINGULARITYENV_"+envVar);
 		}
-		lsb.write("   cmd_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs "+singularity_image+" \"");
+		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs "+singularity_image+" \"");
 		lsb.write("else");
 		//lsb.write("   if command -v docker >/dev/null 2>&1; then");
 		
@@ -394,10 +394,10 @@ denied: job "6894" does not exist
 		for (String envVar : environmentVars) {
 			dockerEnvironmentVars.append(" -e "+envVar);
 		}
-		lsb.write("       cmd_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs "+dockerEnvironmentVars+" "+docker_image+" \"");
+		lsb.write("       container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs "+dockerEnvironmentVars+" "+docker_image+" \"");
 		//lsb.write("   fi");
 		lsb.write("fi");
-		lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
+		lsb.write("echo \"container_prefix is '${container_prefix}'\"");
 
 		lsb.newline();
 		/**
@@ -440,9 +440,9 @@ denied: job "6894" does not exist
 			exitCmd.stripPathFromCommand();
 			lsb.write("callExitProcessor( ) {");
 			lsb.append("\techo exitCommand = ");
-			lsb.write("$cmd_prefix " + exitCmd.getJoinedCommands("$1"));
+			lsb.write("$container_prefix" + exitCmd.getJoinedCommands("$1"));
 			lsb.append('\t');
-			lsb.write("$cmd_prefix " + exitCmd.getJoinedCommands());
+			lsb.write("$container_prefix" + exitCmd.getJoinedCommands());
 			lsb.write("}");
 			lsb.write("echo");
 		}
@@ -450,7 +450,22 @@ denied: job "6894" does not exist
 		for (ExecutableCommand ec: commandSet.getExecCommands()) {
 			lsb.write("echo");
 			ec.stripPathFromCommand();
+			//
+			// The first token in the command list is always the name of the executable.
+			// if an executable with that name exists in the nativesolvers directory, then use that instead.
+			//
 			String cmd= ec.getJoinedCommands();
+			String exeName= ec.getCommands().get(0);
+			File nativeSolverDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.nativeSolverDir_External));
+			File nativeExe = new File(nativeSolverDir,exeName);
+			lsb.write("echo \"testing existance of native exe '"+nativeExe.getAbsolutePath()+"' which overrides container invocations\"");
+			lsb.write("nativeExe="+nativeExe.getAbsolutePath());
+			lsb.write("if [ -e \"${nativeExe}\" ]; then");
+			lsb.write("   cmd_prefix=\""+nativeSolverDir.getAbsolutePath()+"/"+"\"");
+			lsb.write("else");
+			lsb.write("   cmd_prefix=\"$container_prefix\"");
+			lsb.write("fi");
+			lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
 			if (ec.isParallel()) {
 				if (isParallel) {
 					cmd = buildExeCommand(ncpus, cmd);
@@ -460,18 +475,18 @@ denied: job "6894" does not exist
 				}
 			}
 			lsb.append("echo command = ");
-			lsb.write("$cmd_prefix " + cmd);
+			lsb.write("${cmd_prefix}" + cmd);
 
 			lsb.write("(");
 			if (ec.getLdLibraryPath()!=null){
 				lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
 			}
-			lsb.write("    "+"$cmd_prefix " + cmd);
+			lsb.write("    "+"${cmd_prefix}" + cmd);
 			lsb.write(")");
 			lsb.write("stat=$?");
 
 			lsb.append("echo ");
-			lsb.append("$cmd_prefix " + cmd);
+			lsb.append("${cmd_prefix}" + cmd);
 			lsb.write("returned $stat");
 
 			lsb.write("if [ $stat -ne 0 ]; then");

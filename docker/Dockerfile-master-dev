@@ -56,6 +56,7 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
 	mongodb_port_external=27020 \
     simdatadir_external=/share/apps/vcell3/users/ \
     htclogdir_external=/share/apps/vcell3/htclogs/ \
+    nativesolverdir_external=/share/apps/vcell3/nativesolvers/ \
     htcnodelist="" \
     singularity_imagefile=/share/apps/vcell3/singularity/schaff_vcell-batch_latest.img \
     docker_name="schaff/vcell-batch:latest" \
@@ -82,6 +83,7 @@ ENTRYPOINT java \
 	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
+	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \
 	-Dvcell.htc.user="${batchuser}" \
 	-Dvcell.htc.logdir.external="${htclogdir_external}" \
 	-Dvcell.htc.nodelist="${htcnodelist}" \
