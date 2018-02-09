@@ -44,10 +44,10 @@ ENV softwareVersion=JimMac_Version_6.2_build_99 \
     dbuser=vcell \
     jmshost_internal=activemq \
     jmsport_internal=61616 \
-    jmsrestport=internal=8161 \
-    jmshost_internal=vcell-service.cam.uchc.edu \
-    jmsport_internal=61619 \
-    jmsrestport=internal=8164 \
+    jmsrestport_internal=8161 \
+    jmshost_external=vcell-service.cam.uchc.edu \
+    jmsport_external=61619 \
+    jmsrestport_external=8164 \
     jmsuser=clientUser \
 	mongodb_host_internal=mongodb \
 	mongodb_port_internal=27017 \
