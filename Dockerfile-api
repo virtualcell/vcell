@@ -13,7 +13,7 @@ RUN yum -y update \
     && bash /tmp/miniconda.sh -bfp /usr/local/ \
     && rm -rf /tmp/miniconda.sh \
     && conda install -y python=2 \
-    && conda update conda \
+    && conda update -y conda \
     && conda clean --all --yes \
     && rpm -e --nodeps bzip2 \
     && yum -y autoremove \
