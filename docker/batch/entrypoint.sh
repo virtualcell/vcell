@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+shopt -s -o nounset
+
 show_help() {
 	echo "*************************************************"
 	echo "** Virtual Cell command line tools and solvers **"

@@ -44,14 +44,14 @@ COPY --from=build /app/vcell-api/docroot ./docroot
 COPY --from=build /app/vcell-api/webapp ./webapp
 COPY --from=build /app/vcell-api/keystore_macbook.jks .
 
-ENV softwareVersion=JimMac_Version_6.2_build_99 \
-	serverid=TEST2 \
-	dburl=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
-    dbdriver=oracle.jdbc.driver.OracleDriver \
-    dbuser=vcell \
+ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
+	serverid=SITE \
+	dburl="db-url-not-set" \
+    dbdriver="db-driver-not-set" \
+    dbuser="db-user-not-set" \
     jmshost_internal=activemq \
     jmsport_internal=61616 \
-    jmsrestport=internal=8161 \
+    jmsrestport_internal=8161 \
     jmsuser=clientUser \
     mongodb_host_internal=mongodb \
     mongodb_port_internal=27017 \

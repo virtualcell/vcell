@@ -6,9 +6,9 @@ services:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
       
-      - dburl=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu
-      - dbdriver=oracle.jdbc.driver.OracleDriver
-      - dbuser=vcell
+      - dburl=${VCELL_DB_URL}
+      - dbdriver=${VCELL_DB_DRIVER}
+      - dbuser=${VCELL_DB_USER}
 
       - jmsuser=clientUser
       - jmshost_internal=activemq
@@ -39,11 +39,11 @@ services:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
       - singularity_imagefile=${VCELL_SINGULARITY_IMAGE_EXTERNAL}
-      - docker_name=${VCELL_REPO_NAMESPACE}/vcell-batch:${VCELL_TAG}
+      - docker_name=${VCELL_BATCH_DOCKER_IMAGE}
 
-      - dburl=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu
-      - dbdriver=oracle.jdbc.driver.OracleDriver
-      - dbuser=vcell
+      - dburl=${VCELL_DB_URL}
+      - dbdriver=${VCELL_DB_DRIVER}
+      - dbuser=${VCELL_DB_USER}
 
       - jmshost_external=${VCELL_JMS_HOST_EXTERNAL}
       - jmsrestport_external=${VCELL_JMS_RESTPORT_EXTERNAL}

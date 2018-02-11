@@ -9,14 +9,14 @@ services:
       - compiler_vcellBuild=$VCELL_BUILD_NUMBER
       - compiler_softwareVersionString=$VCELL_VERSION
       - compiler_rmiHosts=${VCELL_API_HOST_EXTERNAL}:$VCELL_API_PORT_EXTERNAL
-      - compiler_bioformatsJarFile=$BIOFORMATS_JAR_FILE
-      - compiler_bioformatsJarDownloadURL=$BIOFORMATS_JAR_URL
+      - compiler_bioformatsJarFile=$VCELL_BIOFORMATS_JAR_FILE
+      - compiler_bioformatsJarDownloadURL=$VCELL_BIOFORMATS_JAR_URL
       - compiler_applicationId=$VCELL_CLIENT_APPID
-      - macJre=$INSTALLER_JRE_MAC
-      - win64Jre=$INSTALLER_JRE_WIN64
-      - win32Jre=$INSTALLER_JRE_WIN32
-      - linux64Jre=$INSTALLER_JRE_LINUX64
-      - linux32Jre=$INSTALLER_JRE_LINUX32
+      - macJre=$VCELL_INSTALLER_JRE_MAC
+      - win64Jre=$VCELL_INSTALLER_JRE_WIN64
+      - win32Jre=$VCELL_INSTALLER_JRE_WIN32
+      - linux64Jre=$VCELL_INSTALLER_JRE_LINUX64
+      - linux32Jre=$VCELL_INSTALLER_JRE_LINUX32
     volumes:
       #
       # Java JRE archive files for inclusion in the installed VCell Client (mapped to /jres folder in Docker container)

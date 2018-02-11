@@ -27,25 +27,25 @@ COPY --from=build \
 ENV PATH=/vcellscripts:$PATH \
     CLASSPATH=/usr/local/app/lib/*
 
-ENV softwareVersion=VCell_7.0_build_99 \
-	serverid=TEST \
+ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
+	serverid=SITE \
 	installdir=/usr/local/app \
-	jmshost_internal=vcell-service.cam.uchc.edu \
-	jmsport_internal=61619 \
-	jmsrestport_internal=8164 \
-    jmsuser=clientUser \
-    jmspswd=dummy \
+	jmshost_internal="jms-host-not-set" \
+	jmsport_internal="jms-port-not-set" \
+	jmsrestport_internal="jms-restport-not-set" \
+    jmsuser="jms-user-not-set" \
+    jmspswd="jms-pswd-not-set" \
     blob_message_use_mongo=true \
     datadir_internal=/simdata \
-    datadir_external=/share/apps/vcell3/users \
-    htclogsdir_internal=/htclogsdir \
-    htclogsdir_external=/share/apps/vcell3/htclogs \
-    mongodbhost_internal=vcell-service.cam.uchc.edu \
-    mongodbport_internal=27017 \
+    datadir_external=/path/to/external/simdata \
+    htclogdir_internal=/htclogs \
+    htclogdir_external=/path/to/external/htclogs \
+    mongodbhost_internal="mongo-host-not-set" \
+    mongodbport_internal="mongo-port-not-set" \
     mongodb_database=test \
     jmsblob_minsize=100000
 
 VOLUME /simdata
-VOLUME /htclogsdir
+VOLUME /htclogs
 
 ENTRYPOINT [ "/vcellscripts/entrypoint.sh" ]
