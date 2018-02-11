@@ -72,41 +72,51 @@ tag=$3
 
 build_api() {
 	echo "building $repo/vcell-api:$tag"
-	docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ..
+	echo "sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag .."
+	sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		docker push $repo/vcell-api:$tag
+		sudo docker push $repo/vcell-api:$tag
 	fi
 }
 
 build_batch() {
 	echo "building $repo/vcell-batch:$tag"
-	docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ..
+	echo "sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag .."
+	sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		docker push $repo/vcell-batch:$tag
+		sudo docker push $repo/vcell-batch:$tag
 	fi
 }
 
 build_clientgen() {
 	echo "building $repo/vcell-clientgen:$tag"
-	docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ..
+	echo "sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag .."
+	sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		docker push $repo/vcell-clientgen:$tag
+		sudo docker push $repo/vcell-clientgen:$tag
 	fi
 }
 
 build_master() {
 	echo "building $repo/vcell-master:$tag"
-	docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag ..
+	echo "sudo docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag .."
+	sudo docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag ..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		docker push $repo/vcell-master:$tag
+		sudo docker push $repo/vcell-master:$tag
 	fi
 }
 
 build_mongo() {
 	echo "building $repo/vcell-mongo:$tag"
-	docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo
+	echo "sudo docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo"
+	sudo docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		docker push $repo/vcell-mongo:$tag
+		sudo docker push $repo/vcell-mongo:$tag
 	fi
 }
 
