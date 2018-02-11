@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-shopt -s -o nounset
-
 show_help() {
 	echo "*************************************************"
 	echo "** Virtual Cell command line tools and solvers **"
@@ -53,6 +51,11 @@ if [ "$#" -lt 1 ]; then
     show_help
 fi
 
+export PATH="/vcellbin:/vcellscripts:${PATH}"
+export LD_LIBRARY_PATH="/vcellbin:${LD_LIBRARY_PATH}"
+
+shopt -s -o nounset
+
 command=$1
 shift
 
@@ -60,9 +63,6 @@ arguments=$*
 
 arguments=${arguments//$datadir_external/$datadir_internal}
 arguments=${arguments//$htclogdir_external/$htclogdir_internal}
-
-export PATH="/vcellbin:/vcellscripts:${PATH}"
-export LD_LIBRARY_PATH="/vcellbin:${LD_LIBRARY_PATH}"
 
 case $command in
 	FiniteVolume_x64)
