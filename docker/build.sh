@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
+shopt -s -o nounset
+
 skip_push=false
 skip_maven=false
+skip_singularity=false
 mvn_repo=$HOME/.m2
 
 show_help() {
@@ -31,7 +34,6 @@ if [[ $# -lt 3 ]]; then
     show_help
 fi
 
-skip_singularity=false
 while :; do
 	case $1 in
 		-h|--help)
@@ -121,47 +123,36 @@ build_mongo() {
 }
 
 build_singularity() {
-
 	if [ "$skip_singularity" == "false" ]; then
-		echo ""
-		cmd="cd singularity-vm"
-		cd singularity-vm
-		echo ""
-		echo "CURRENT DIRECTORY IS $PWD"
-
-		#
-		# prepare Vagrant Singularity box for building the singularity image (bring up, install cert)
-		#
-		echo ""
-		echo "generating singularity image for vcell-batch and uploading to remote server for HTC cluster"
-		cmd="sudo scp $ssh_key vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert ."
-		echo $cmd
-		($cmd) || (echo "failed to download cert from vcell-docker private Docker registry")
-
-		echo ""
-		echo "vagrant up"
-		vagrant up
-		if [[ $? -ne 0 ]]; then echo "failed to bring vagrant up"; fi
-
-		echo ""
-		remote_cmd="sudo cp /vagrant/domain.cert /usr/local/share/ca-certificates/vcell-docker.cam.uchc.edu.crt"
-		echo "vagrant ssh -c \"$remote_cmd\""
-		vagrant ssh -c "$remote_cmd"
-		if [[ $? -ne 0 ]]; then echo "failed to upload domain.cert to trust the private Docker registry" && exit 1; fi
-
-		echo ""
-		remote_cmd="sudo update-ca-certificates"
-		echo "vagrant ssh -c \"$remote_cmd\""
-		vagrant ssh -c "$remote_cmd"
-		if [[ $? -ne 0 ]]; then
-		    echo "failed to update ca certificates in vagrant box" && exit 1
+		if [ -x "$(command -v singularity)" ]; then
+			build_singularity_direct
+			if [[ $? -ne 0 ]]; then echo "failed to build singularity image using singularity commands"; exit 1; fi
+		else 
+			if [ -x "$(command -v vagrant)" ]; then
+				build_singularity_vagrant
+				if [[ $? -ne 0 ]]; then echo "failed to build singularity image using singularity vagrant box"; exit 1; fi
+			else
+				echo "found neither singularity nor vagrant, cannot build singularity image"
+				exit 1
+			fi
 		fi
-		#
-		# create temporary Singularity file which imports existing docker image from registry and adds a custom entrypoint
-		#
-		_vcell_batch_docker_name="${repo}/vcell-batch:${tag}"
-		_singularity_image_file="${_vcell_batch_docker_name//[\/:]/_}.img"
-		_singularity_file="Singularity_${_vcell_batch_docker_name//[\/:]/_}"
+	fi
+}
+
+build_singularity_direct() {
+
+	echo ""
+	cmd="cd singularity-vm"
+	cd singularity-vm
+	echo ""
+	echo "CURRENT DIRECTORY IS $PWD"
+
+	#
+	# create temporary Singularity file which imports existing docker image from registry and adds a custom entrypoint
+	#
+	_vcell_batch_docker_name="${repo}/vcell-batch:${tag}"
+	_singularity_image_file="${_vcell_batch_docker_name//[\/:]/_}.img"
+	_singularity_file="Singularity_${_vcell_batch_docker_name//[\/:]/_}"
 
 cat <<EOF >$_singularity_file
 Bootstrap: docker
@@ -176,33 +167,106 @@ From: $_vcell_batch_docker_name
 AUTHOR jcschaff
 EOF
 
-		echo ""
-		echo "wrote Singularity file $_singularity_file"
-		cat $_singularity_file
+	echo ""
+	echo "wrote Singularity file $_singularity_file"
+	cat $_singularity_file
 
-		#
-		# build the singularity image and place in singularity-vm directory
-		#
-		echo ""
-		remote_cmd="sudo singularity build /vagrant/$_singularity_image_file /vagrant/$_singularity_file"
-		echo "vagrant ssh -c \"$remote_cmd\""
-		vagrant ssh -c "$remote_cmd"
-		if [[ $? -ne 0 ]]; then echo "failed to build singularity image from vagrant" && exit 1; fi
+	#
+	# build the singularity image and place in singularity-vm directory
+	#
+	echo ""
+	remote_cmd="sudo singularity build $_singularity_image_file $_singularity_file"
+	echo "$remote_cmd"
+	($remote_cmd)
+	if [[ $? -ne 0 ]]; then echo "failed to build singularity image" && exit 1; fi
 
-		#
-		# bring down Vagrant Singularity box
-		#
-		echo ""
-		echo "vagrant halt"
-		vagrant halt
-		if [[ $? -ne 0 ]]; then echo "failed to stop vagrant box"; fi
+	echo ""
+	echo "created Singularity image for vcell-bash ./$local_singularity_image_name locally (in ./singularity-vm folder), can be pushed to remote server during deploy"
+	echo ""
+	echo "cd .."
+	cd ..
+}
 
-		echo ""
-		echo "created Singularity image for vcell-bash ./$local_singularity_image_name locally (in ./singularity folder), can be pushed to remote server during deploy"
-		echo ""
-		echo "cd .."
-		cd ..
+build_singularity_vagrant() {
+	echo ""
+	cmd="cd singularity-vm"
+	cd singularity-vm
+	echo ""
+	echo "CURRENT DIRECTORY IS $PWD"
+
+	#
+	# prepare Vagrant Singularity box for building the singularity image (bring up, install cert)
+	#
+	echo ""
+	echo "generating singularity image for vcell-batch and uploading to remote server for HTC cluster"
+	cmd="sudo scp $ssh_key vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert ."
+	echo $cmd
+	($cmd) || (echo "failed to download cert from vcell-docker private Docker registry")
+
+	echo ""
+	echo "vagrant up"
+	vagrant up
+	if [[ $? -ne 0 ]]; then echo "failed to bring vagrant up"; fi
+
+	echo ""
+	remote_cmd="sudo cp /vagrant/domain.cert /usr/local/share/ca-certificates/vcell-docker.cam.uchc.edu.crt"
+	echo "vagrant ssh -c \"$remote_cmd\""
+	vagrant ssh -c "$remote_cmd"
+	if [[ $? -ne 0 ]]; then echo "failed to upload domain.cert to trust the private Docker registry" && exit 1; fi
+
+	echo ""
+	remote_cmd="sudo update-ca-certificates"
+	echo "vagrant ssh -c \"$remote_cmd\""
+	vagrant ssh -c "$remote_cmd"
+	if [[ $? -ne 0 ]]; then
+	    echo "failed to update ca certificates in vagrant box" && exit 1
 	fi
+	#
+	# create temporary Singularity file which imports existing docker image from registry and adds a custom entrypoint
+	#
+	_vcell_batch_docker_name="${repo}/vcell-batch:${tag}"
+	_singularity_image_file="${_vcell_batch_docker_name//[\/:]/_}.img"
+	_singularity_file="Singularity_${_vcell_batch_docker_name//[\/:]/_}"
+
+cat <<EOF >$_singularity_file
+Bootstrap: docker
+From: $_vcell_batch_docker_name
+
+%runscript
+
+    exec /vcellscripts/entrypoint.sh "\$@"
+
+%labels
+
+AUTHOR jcschaff
+EOF
+
+	echo ""
+	echo "wrote Singularity file $_singularity_file"
+	cat $_singularity_file
+
+	#
+	# build the singularity image and place in singularity-vm directory
+	#
+	echo ""
+	remote_cmd="sudo singularity build /vagrant/$_singularity_image_file /vagrant/$_singularity_file"
+	echo "vagrant ssh -c \"$remote_cmd\""
+	vagrant ssh -c "$remote_cmd"
+	if [[ $? -ne 0 ]]; then echo "failed to build singularity image from vagrant" && exit 1; fi
+
+	#
+	# bring down Vagrant Singularity box
+	#
+	echo ""
+	echo "vagrant halt"
+	vagrant halt
+	if [[ $? -ne 0 ]]; then echo "failed to stop vagrant box"; fi
+
+	echo ""
+	echo "created Singularity image for vcell-bash ./$local_singularity_image_name locally (in ./singularity-vm folder), can be pushed to remote server during deploy"
+	echo ""
+	echo "cd .."
+	cd ..
 }
 
 

@@ -10,6 +10,20 @@ docker swarm init
 docker node update --label-add zone=INTERNAL `docker node ls -q`
 ```
 
+2a) install singularity on the build machine if Linux (or use Vagrant Box for singularity on Macos)
+
+```bash
+git clone https://github.com/singularityware/singularity.git
+cd singularity
+./autogen.sh
+./configure --prefix=/usr/local
+make
+sudo make install
+sudo yum install squashfs-tools.x86_64
+sudo ln -s /usr/local/bin/singularity /usr/bin/singularityls 
+```
+
+
 3) deploy a vcell production stack (named "local") on a single machine Docker swarm mode
 
 ```bash
@@ -156,7 +170,7 @@ open http://localhost:5001
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 ```bash
-export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=d5f39be 
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=a9a83bb
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
@@ -174,7 +188,7 @@ using deploy configuration and Docker images, generate client installers and dep
 
 ```bash
 ./deploy.sh \
-   --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa --upload-singularity --build-installers --installer-deploy $VCELL_INSTALLER_REMOTE_DIR \
+   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --upload-singularity --build-installers --installer-deploy $VCELL_INSTALLER_REMOTE_DIR \
    vcellapi.cam.uchc.edu \
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
