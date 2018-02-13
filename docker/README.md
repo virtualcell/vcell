@@ -206,12 +206,16 @@ edit local configuration (vi $VCELL_CONFIG_FILE_NAME) and redeploy (copies local
   vcell${VCELL_SITE}
 ```
 
+```bash
+sudo env ${cat server_alpha_7.0.0_10_a9a83bb-2.config | xargs) docker stack deploy -c docker-compose_a9a83bb-2.yml vcellalpha
+```
+
 ### Deploy local stack to Docker Swarm (with local mock SLURM/Docker simulations)
 
 build the containers (e.g. localhost:5000/schaff/vcell-api:dev1) and upload to local registry Docker registry (e.g. localhost:5000).  
 
 ```bash
-export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev1 
+export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev2
 ./build.sh --skip-singularity all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
