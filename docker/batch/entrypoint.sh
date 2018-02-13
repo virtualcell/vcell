@@ -5,7 +5,7 @@ show_help() {
 	echo "** Virtual Cell command line tools and solvers **"
 	echo "*************************************************"
 	echo ""
-	echo "usage: docker run --rm -v /host/path/to/file:/simdata schaff/vcell-batch:latest [OPTIONS] command <args>"
+	echo "usage: docker run --rm -e v1=a -e v2=b -v /host/path/to/file:/simdata schaff/vcell-batch:latest [OPTIONS] command <args>"
 	echo "  or   singularity run --bind /host/path/to/file:/simdata docker://schaff/vcell-batch:latest [OPTIONS] command <args>"
 	echo ""
 	echo "  Script Commands"
@@ -23,6 +23,8 @@ show_help() {
 	echo ""
 	echo "  [OPTIONS]"
 	echo "    -h | --help           show this message"
+	echo "    -e | --env var=value  add environment variable (needed for Singularity only)"
+	echo "                             this option can be repeated to define multiple variables"
 	exit 1
 }
 
@@ -35,6 +37,10 @@ while :; do
 		-h|--help)
 			show_help
 			exit
+			;;
+		-e|--env)
+			shift
+			export $1
 			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2

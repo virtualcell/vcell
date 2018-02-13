@@ -383,10 +383,11 @@ denied: job "6894" does not exist
 		lsb.write("   else");
 		lsb.write("      echo \"singularity image "+singularity_image+" found\"");
 		lsb.write("   fi");
+		StringBuffer singularityEnvironmentVars = new StringBuffer();
 		for (String envVar : environmentVars) {
-			lsb.write("export SINGULARITYENV_"+envVar);
+			singularityEnvironmentVars.append(" --env "+envVar);
 		}
-		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs "+singularity_image+" \"");
+		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs "+singularity_image+" "+singularityEnvironmentVars+" \"");
 		lsb.write("else");
 		//lsb.write("   if command -v docker >/dev/null 2>&1; then");
 		
