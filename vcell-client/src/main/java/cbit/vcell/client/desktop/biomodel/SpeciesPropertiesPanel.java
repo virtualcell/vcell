@@ -42,6 +42,7 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -112,6 +113,7 @@ import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.graph.gui.LargeShapePanel;
+import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
@@ -151,6 +153,10 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 
 	private SpeciesPatternLargeShape spls;
 	private LargeShapePanel shapePanel = null;
+	
+	private JButton zoomLargerButton = null;
+	private JButton zoomSmallerButton = null;
+
 	
 	public class BioModelNodeEditableTree extends JTree {
 		@Override
@@ -257,6 +263,16 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 				changeName();
 			} else if (source == showDetailsCheckBox) {
 				speciesPropertiesTreeModel.setShowDetails(showDetailsCheckBox.isSelected());
+			} else if (source == getZoomLargerButton()) {
+				boolean ret = shapePanel.zoomLarger();
+				getZoomLargerButton().setEnabled(ret);
+				getZoomSmallerButton().setEnabled(true);
+				updateShape();
+			} else if (source == getZoomSmallerButton()) {
+				boolean ret = shapePanel.zoomSmaller();
+				getZoomLargerButton().setEnabled(true);
+				getZoomSmallerButton().setEnabled(ret);
+				updateShape();
 			}
 		};
 		@Override
@@ -431,6 +447,7 @@ private void initialize() {
 		};
 		shapePanel.setBorder(border);
 		shapePanel.setBackground(Color.white);		
+		shapePanel.setZoomFactor(-1);
 		shapePanel.setEditable(true);
 		shapePanel.setShowMoleculeColor(true);
 		shapePanel.setShowNonTrivialOnly(true);
@@ -581,13 +598,49 @@ private void initialize() {
         scrollPane = new JScrollPane(shapePanel);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		
+		// -----------------------------------------------------------
+		JPanel optionsPanel = new JPanel();
+		optionsPanel.setLayout(new GridBagLayout());
+		
+		getZoomSmallerButton().setEnabled(true);
+		getZoomLargerButton().setEnabled(true);
+		
+		GridBagConstraints gbc2 = new GridBagConstraints();
+		gbc2.gridx = 0;
+		gbc2.gridy = 0;
+		gbc2.insets = new Insets(4,4,0,10);
+		gbc2.anchor = GridBagConstraints.WEST;
+		optionsPanel.add(getZoomLargerButton(), gbc2);
+
+		gbc2 = new GridBagConstraints();
+		gbc2.gridx = 0;
+		gbc2.gridy = 1;
+		gbc2.insets = new Insets(4,4,4,10);
+		gbc2.anchor = GridBagConstraints.WEST;
+		optionsPanel.add(getZoomSmallerButton(), gbc2);
+		
+		gbc2 = new GridBagConstraints();
+		gbc2.gridx = 0;
+		gbc2.gridy = 2;
+		gbc2.weightx = 1;
+		gbc2.weighty = 1;		// fake cell used for filling all the vertical empty space
+		gbc2.anchor = GridBagConstraints.WEST;
+		gbc2.insets = new Insets(4, 4, 4, 10);
+		optionsPanel.add(new JLabel(""), gbc2);
+		
+		JPanel containerOfScrollPanel = new JPanel();
+		containerOfScrollPanel.setLayout(new BorderLayout());
+		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
+		containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
+		
 //		gbc1 = new GridBagConstraints();
         gbc1.gridx = 0;
         gbc1.gridy = 1;
         gbc1.weightx = 1;
         gbc1.weighty = 0.1;
         gbc1.fill = GridBagConstraints.BOTH;
-        leftPanel.add(scrollPane, gbc1); 
+        leftPanel.add(containerOfScrollPanel, gbc1); 
 		
 		setName("SpeciesEditorPanel");
 		setLayout(new BorderLayout());
@@ -599,6 +652,25 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+private JButton getZoomLargerButton() {
+	if (zoomLargerButton == null) {
+		zoomLargerButton = new JButton();		// "+"
+//		ResizeCanvasShape.setCanvasNormalMod(zoomLargerButton, ResizeCanvasShape.Sign.expand);
+		ZoomShapeIcon.setZoomMod(zoomLargerButton, ZoomShapeIcon.Sign.plus);
+		zoomLargerButton.addActionListener(eventHandler);
+	}
+	return zoomLargerButton;
+}
+private JButton getZoomSmallerButton() {
+	if (zoomSmallerButton == null) {
+		zoomSmallerButton = new JButton();		// -
+//		ResizeCanvasShape.setCanvasNormalMod(zoomSmallerButton, ResizeCanvasShape.Sign.shrink);
+		ZoomShapeIcon.setZoomMod(zoomSmallerButton, ZoomShapeIcon.Sign.minus);
+		zoomSmallerButton.addActionListener(eventHandler);
+	}
+	return zoomSmallerButton;
 }
 
 /**
