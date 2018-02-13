@@ -93,6 +93,7 @@ import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.graph.gui.LargeShapePanel;
+import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.RbmObservable.ObservableType;
@@ -156,6 +157,16 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				} catch(Exception ex) {
 					System.out.println(ex);
 				}
+			} else if (source == getZoomLargerButton()) {
+				boolean ret = shapePanel.zoomLarger();
+				getZoomLargerButton().setEnabled(ret);
+				getZoomSmallerButton().setEnabled(true);
+				updateShape();
+			} else if (source == getZoomSmallerButton()) {
+				boolean ret = shapePanel.zoomSmaller();
+				getZoomLargerButton().setEnabled(true);
+				getZoomSmallerButton().setEnabled(ret);
+				updateShape();
 			} else if (source == getLengthEqualTextField()) {
 			} else if (source == getLengthGreaterTextField()) {
 			}
@@ -277,8 +288,10 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	
 	LargeShapePanel shapePanel;
 	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
-
 	List<SpeciesPatternLargeShape> spsList = new ArrayList<SpeciesPatternLargeShape>();
+	
+	private JButton zoomLargerButton = null;
+	private JButton zoomSmallerButton = null;
 
 	private JPopupMenu popupFromShapeMenu;
 	private JMenu addFromShapeMenu;
@@ -489,6 +502,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		shapePanel.setBorder(border);
 		shapePanel.setBackground(Color.white);
 		shapePanel.setLayout(null);
+		shapePanel.setZoomFactor(-1);
 		shapePanel.setEditable(true);
 		shapePanel.setShowMoleculeColor(true);
 		shapePanel.setShowNonTrivialOnly(true);
@@ -559,6 +573,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		optionsPanel.setPreferredSize(new Dimension(140, 200));		// gray options panel
 		optionsPanel.setLayout(new GridBagLayout());
 		
+		getZoomSmallerButton().setEnabled(true);
+		getZoomLargerButton().setEnabled(true);
+
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -568,7 +585,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		optionsPanel.add(getAddSpeciesButton(), gbc);
-
 		
 		ButtonGroup bg = new ButtonGroup();
 		bg.add(getSequenceMultimolecularButton());
@@ -625,8 +641,32 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(1,4,4,4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		optionsPanel.add(getLengthGreaterTextField(), gbc);
-
-		// --------------------------------------------------------------------------------
+		
+		//--- zoom buttons in their own panel, for alignment ---
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridBagLayout());
+		GridBagConstraints gbc2 = new GridBagConstraints();
+		gbc2.gridx = 0;
+		gbc2.gridy = 0;
+		gbc2.insets = new Insets(1,1,1,1);
+		gbc2.anchor = GridBagConstraints.WEST;
+		buttonPanel.add(getZoomLargerButton(), gbc2);
+		gbc2 = new GridBagConstraints();
+		gbc2.gridx = 1;
+		gbc2.gridy = 0;
+		gbc2.insets = new Insets(1,1,1,1);
+		gbc2.anchor = GridBagConstraints.WEST;
+		buttonPanel.add(getZoomSmallerButton(), gbc2);
+		// ---------------------------------------------------
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(1,4,4,2);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		optionsPanel.add(buttonPanel, gbc);		// zoom buttons panel
 		
 		gridy++;
 		gbc = new GridBagConstraints();
@@ -636,7 +676,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.weightx = 1;
 		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
 		gbc.anchor = GridBagConstraints.WEST;
-		gbc.insets = new Insets(4, 4, 4, 10);
+		gbc.insets = new Insets(2, 1, 2, 10);
 		optionsPanel.add(new JLabel(""), gbc);
 
 // -----------------------------------------------------------------------------------------		
@@ -798,6 +838,26 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 
 		splitPaneHorizontal.repaint();
 	}
+	
+	private JButton getZoomLargerButton() {
+		if (zoomLargerButton == null) {
+			zoomLargerButton = new JButton();		// "+"
+//			ResizeCanvasShape.setCanvasNormalMod(zoomLargerButton, ResizeCanvasShape.Sign.expand);
+			ZoomShapeIcon.setZoomMod(zoomLargerButton, ZoomShapeIcon.Sign.plus);
+			zoomLargerButton.addActionListener(eventHandler);
+		}
+		return zoomLargerButton;
+	}
+	private JButton getZoomSmallerButton() {
+		if (zoomSmallerButton == null) {
+			zoomSmallerButton = new JButton();		// -
+//			ResizeCanvasShape.setCanvasNormalMod(zoomSmallerButton, ResizeCanvasShape.Sign.shrink);
+			ZoomShapeIcon.setZoomMod(zoomSmallerButton, ZoomShapeIcon.Sign.minus);
+			zoomSmallerButton.addActionListener(eventHandler);
+		}
+		return zoomSmallerButton;
+	}
+	
 	private void changeFreeTextAnnotation() {
 		try{
 			if (observable == null) {
