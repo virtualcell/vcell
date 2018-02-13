@@ -10,6 +10,20 @@ docker swarm init
 docker node update --label-add zone=INTERNAL `docker node ls -q`
 ```
 
+2a) install singularity on the build machine if Linux (or use Vagrant Box for singularity on Macos)
+
+```bash
+git clone https://github.com/singularityware/singularity.git
+cd singularity
+./autogen.sh
+./configure --prefix=/usr/local
+make
+sudo make install
+sudo yum install squashfs-tools.x86_64
+sudo ln -s /usr/local/bin/singularity /usr/bin/singularityls 
+```
+
+
 3) deploy a vcell production stack (named "local") on a single machine Docker swarm mode
 
 ```bash
@@ -156,17 +170,17 @@ open http://localhost:5001
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 ```bash
-export VCELL_TAG=40e4267 VCELL_REPO=vcell-docker.cam.uchc.edu:5000 VCELL_NAMESPACE=schaff
-./build.sh all ${VCELL_REPO}/${VCELL_NAMESPACE} ${VCELL_TAG}
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=f7fc03c-2
+./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=8 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=13 VCELL_SITE=alpha
 export VCELL_INSTALLER_REMOTE_DIR="apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
-./serverconfig-uch.sh $VCELL_SITE ${VCELL_REPO}/$VCELL_NAMESPACE \
+./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
 
@@ -174,12 +188,18 @@ using deploy configuration and Docker images, generate client installers and dep
 
 ```bash
 ./deploy.sh \
-   --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa --upload-singularity --build-installers --installer-deploy $VCELL_INSTALLER_REMOTE_DIR \
+   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --upload-singularity --build-installers --installer-deploy $VCELL_INSTALLER_REMOTE_DIR \
    vcellapi.cam.uchc.edu \
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
    vcell${VCELL_SITE}
 ```
+
+debug installers on Macos?
+
+```bash
+INSTALL4J_LOG=yes myLauncher.app/Contents/MacOS/JavaApplicationStub
+````
 
 edit local configuration (vi $VCELL_CONFIG_FILE_NAME) and redeploy (copies local config to server and restarts).
 
@@ -192,13 +212,17 @@ edit local configuration (vi $VCELL_CONFIG_FILE_NAME) and redeploy (copies local
   vcell${VCELL_SITE}
 ```
 
+```bash
+sudo env ${cat server_alpha_7.0.0_10_a9a83bb-2.config | xargs) docker stack deploy -c docker-compose_a9a83bb-2.yml vcellalpha
+```
+
 ### Deploy local stack to Docker Swarm (with local mock SLURM/Docker simulations)
 
 build the containers (e.g. localhost:5000/schaff/vcell-api:dev1) and upload to local registry Docker registry (e.g. localhost:5000).  
 
 ```bash
-export VCELL_TAG=dev1 VCELL_REPO=localhost:5000 VCELL_NAMESPACE=schaff
-./build.sh --skip-singularity all ${VCELL_REPO}/$VCELL_NAMESPACE $VCELL_TAG
+export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev2
+./build.sh --skip-singularity all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
 create local deploy configuration file (e.g. Test2 7.0.0 build 7) file for local debugging. Note that some local configuration is hard-coded in **localconfig_mockslurm.sh** script.
@@ -206,7 +230,7 @@ create local deploy configuration file (e.g. Test2 7.0.0 build 7) file for local
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=7 VCELL_SITE=test2
 export VCELL_CONFIG_FILE_NAME=${VCELL_TAG}.config
-./localconfig_mockslurm.sh $VCELL_SITE ${VCELL_REPO}/$VCELL_NAMESPACE \
+./localconfig_mockslurm.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
 

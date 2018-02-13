@@ -6,24 +6,14 @@ RUN mvn clean install dependency:copy-dependencies
 
 FROM nimmis/java-centos:openjdk-8-jre-headless
 
-# install miniconda
-RUN yum -y update \
-    && yum -y install curl bzip2 \
-    && curl -sSL https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -o /tmp/miniconda.sh \
-    && bash /tmp/miniconda.sh -bfp /usr/local/ \
-    && rm -rf /tmp/miniconda.sh \
-    && conda install -y python=2 \
-    && conda update conda \
-    && conda clean --all --yes \
-    && rpm -e --nodeps bzip2 \
-    && yum -y autoremove \
-    && yum clean all
-
-# install 4 reqired packages into miniconda
-RUN conda install --yes -q -c sbmlteam python-libsbml \
-	&& conda install --yes -q -c fbergmann python-copasi \
-	&& conda install --yes -q -c conda-forge thrift \
-	&& conda install --yes -q -c conda-forge vtk
+# install thrift, libsbml, and copasi python packages.
+RUN wget https://bootstrap.pypa.io/get-pip.py && \
+    python get-pip.py && \
+    pip install thrift && \
+    pip install python-libsbml && \
+    cd /etc/yum.repos.d/ && \
+    wget https://download.opensuse.org/repositories/home:fbergman:COPASI/CentOS_7/home:fbergman:COPASI.repo && \
+    yum -y install python-copasi
 
 RUN mkdir -p /usr/local/app/lib
 WORKDIR /usr/local/app
@@ -44,14 +34,14 @@ COPY --from=build /app/vcell-api/docroot ./docroot
 COPY --from=build /app/vcell-api/webapp ./webapp
 COPY --from=build /app/vcell-api/keystore_macbook.jks .
 
-ENV softwareVersion=JimMac_Version_6.2_build_99 \
-	serverid=TEST2 \
-	dburl=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
-    dbdriver=oracle.jdbc.driver.OracleDriver \
-    dbuser=vcell \
+ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
+	serverid=SITE \
+	dburl="db-url-not-set" \
+    dbdriver="db-driver-not-set" \
+    dbuser="db-user-not-set" \
     jmshost_internal=activemq \
     jmsport_internal=61616 \
-    jmsrestport=internal=8161 \
+    jmsrestport_internal=8161 \
     jmsuser=clientUser \
     mongodb_host_internal=mongodb \
     mongodb_port_internal=27017 \
@@ -70,7 +60,7 @@ ENTRYPOINT java \
     -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Dvcell.server.id="${serverid}" \
-	-Dvcell.python.executable=/usr/local/bin/python \
+	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.installDir=/usr/local/app \
 	-Dvcell.server.dbConnectURL="${dburl}" \
 	-Dvcell.server.dbDriverName="${dbdriver}" \

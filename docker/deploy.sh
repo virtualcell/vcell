@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-
+shopt -s -o nounset
 
 show_help() {
 	echo "Deploys or updates a deployment of VCell on remote Docker swarm cluster"
@@ -184,15 +184,10 @@ if [ "$build_installers" == "true" ]; then
 		$cmd
 	fi
 
-	# remove old installer Docker container
-	echo "env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force"
-	env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml rm --force
-	if [[ $? -ne 0 ]]; then echo "failed to remove previous container for vcell-clientgen" && exit 1; fi
-
 	# run vcell-clientgen to generate new installers (placed into ./generated_installers)
 	echo ""
-	cmd="env \$(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up"
-	env $(cat $local_config_file | xargs) docker-compose -f ./docker-compose-clientgen.yml up
+	echo "./generate_installers.sh $local_config_file"
+	./generate_installers.sh $local_config_file
 	if [[ $? -ne 0 ]]; then echo "failed to run vcell-clientgen" && exit 1; fi
 
 	#

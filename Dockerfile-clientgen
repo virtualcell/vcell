@@ -33,30 +33,31 @@ WORKDIR /config
 
 VOLUME /jres
 VOLUME /outputdir
+VOLUME /buildsecrets
 
 #
 # Install4j code signing certificates and Install4J product key (using docker-compose 'secrets' facility)
 #
-ENV winCodeSignKeystore_pfx=/run/secrets/winCodeSignKeystore_pfx \
-    macCodeSignKeystore_p12=/run/secrets/macCodeSignKeystore_p12 \
-    winCodeSignKeystore_pswdfile=/run/secrets/winCodeSignKeystore_pswdfile \
-    macCodeSignKeystore_pswdfile=/run/secrets/macCodeSignKeystore_pswdfile \
-    Install4J_product_key_file=/run/secrets/Install4J_product_key_file
+ENV winCodeSignKeystore_pfx=/buildsecrets/winCodeSignKeystore_pfx \
+    macCodeSignKeystore_p12=/buildsecrets/macCodeSignKeystore_p12 \
+    winCodeSignKeystore_pswdfile=/buildsecrets/winCodeSignKeystore_pswdfile \
+    macCodeSignKeystore_pswdfile=/buildsecrets/macCodeSignKeystore_pswdfile \
+    Install4J_product_key_file=/buildsecrets/Install4J_product_key_file
 
 #
 # these are to be overridden for a particular context
 #
-ENV compiler_updateSiteBaseUrl=http://vcell.org/webstart/Test \
+ENV compiler_updateSiteBaseUrl="update-site-not-set" \
     compiler_vcellIcnsFile=/install/icons/vcell.icns \
     compiler_mavenRootDir=/vcellclient \
-    compiler_softwareVersionString=Test_Version_6.2_build_7 \
-    compiler_Site=Test \
-    compiler_vcellVersion=6.2 \
-    compiler_vcellBuild=7 \
-    compiler_rmiHosts=vcellapi.cam.uchc.edu:40108 \
+    compiler_softwareVersionString="SOFTWARE-VERSION-NOT-SET" \
+    compiler_Site=Site \
+    compiler_vcellVersion=VCELL-VERSION-NOT-SET \
+    compiler_vcellBuild=VCELL-BUILD-NOT-SET \
+    compiler_rmiHosts="apihost-not-set:api-port-not-set" \
     compiler_bioformatsJarFile=vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar \
     compiler_bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar \
-    compiler_applicationId=1471-8022-1038-5555 \
+    compiler_applicationId="client-applicationId-not-set" \
     macJre=macosx-amd64-1.8.0_141 \
     win64Jre=windows-amd64-1.8.0_141 \
     win32Jre=windows-x86-1.8.0_141 \

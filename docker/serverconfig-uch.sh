@@ -65,6 +65,9 @@ case $VCELL_SITE in
 		;;
 esac
 
+VCELL_DB_URL="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
+VCELL_DB_DRIVER="oracle.jdbc.driver.OracleDriver"
+VCELL_DB_USER="vcell"
 VCELL_API_HOST_EXTERNAL=vcellapi.cam.uchc.edu
 VCELL_JMS_HOST_EXTERNAL=vcell-service.cam.uchc.edu
 VCELL_MONGO_HOST_EXTERNAL=vcell-service.cam.uchc.edu
@@ -74,7 +77,15 @@ VCELL_SLURM_CMD_SBATCH=sbatch
 VCELL_SLURM_CMD_SACCT=sacct
 VCELL_SLURM_CMD_SCANCEL=scancel
 
-VCELL_API_PORT_EXTERNAL=$((8080 + $_site_port_offset))
+#
+# VCELL_API_PORT_EXTERNAL starts with 8078 so that "ALPHA" can bind to 8080 as needed by vcell.org website.
+#
+# soon, we'll introduce a reverse proxy (e.g. nginx) listening on port 443 which will distribute to the 
+# correct vcell-api for each site based on the url path.
+#
+VCELL_API_PORT_EXTERNAL=$((8078 + $_site_port_offset))
+
+
 VCELL_JMS_PORT_EXTERNAL=$((61616 + $_site_port_offset))
 VCELL_JMS_RESTPORT_EXTERNAL=$((8161 + $_site_port_offset))
 VCELL_MONGO_PORT_EXTERNAL=$((27017 + $_site_port_offset))
@@ -93,6 +104,9 @@ VCELL_BUILD_NUMBER=$VCELL_BUILD_NUMBER
 VCELL_VERSION=VCell_${VCELL_VERSION_NUMBER}_build_${VCELL_BUILD_NUMBER}
 VCELL_API_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_API_PORT_EXTERNAL=$VCELL_API_PORT_EXTERNAL
+VCELL_DB_URL=$VCELL_DB_URL
+VCELL_DB_DRIVER=$VCELL_DB_DRIVER
+VCELL_DB_USER=$VCELL_DB_USER
 VCELL_JMS_HOST_EXTERNAL=$VCELL_JMS_HOST_EXTERNAL
 VCELL_JMS_PORT_EXTERNAL=$VCELL_JMS_PORT_EXTERNAL
 VCELL_JMS_RESTPORT_EXTERNAL=$VCELL_JMS_RESTPORT_EXTERNAL
@@ -113,15 +127,15 @@ VCELL_HTC_NODELIST=$VCELL_HTC_NODELIST
 VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users
 VCELL_SIMDATADIR_HOST=/opt/vcelldata/users
 VCELL_SECRETS_DIR=/usr/local/deploy
-VCELL_DEPLOY_SECRETS_DIR=${HOME}/vcellkeys
+VCELL_DEPLOY_SECRETS_DIR=/usr/local/deploy
 VCELL_SITE_CAMEL=${_site_camel}
 VCELL_UPDATE_SITE=http://vcell.org/webstart/${_site_camel}
-BIOFORMATS_JAR_FILE=vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
-BIOFORMATS_JAR_URL=http://vcell.org/webstart/vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
-INSTALLER_JRE_MAC=macosx-amd64-1.8.0_141
-INSTALLER_JRE_WIN64=windows-amd64-1.8.0_141
-INSTALLER_JRE_WIN32=windows-x86-1.8.0_141
-INSTALLER_JRE_LINUX64=linux-amd64-1.8.0_66
-INSTALLER_JRE_LINUX32=linux-x86-1.8.0_66
+VCELL_BIOFORMATS_JAR_FILE=vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
+VCELL_BIOFORMATS_JAR_URL=http://vcell.org/webstart/vcell-bioformats-0.0.3-SNAPSHOT-jar-with-dependencies.jar
+VCELL_INSTALLER_JRE_MAC=macosx-amd64-1.8.0_141
+VCELL_INSTALLER_JRE_WIN64=windows-amd64-1.8.0_141
+VCELL_INSTALLER_JRE_WIN32=windows-x86-1.8.0_141
+VCELL_INSTALLER_JRE_LINUX64=linux-amd64-1.8.0_66
+VCELL_INSTALLER_JRE_LINUX32=linux-x86-1.8.0_66
 EOF
 
