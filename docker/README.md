@@ -170,14 +170,14 @@ open http://localhost:5001
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 ```bash
-export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=a9a83bb
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=f6bc470
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=10 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=11 VCELL_SITE=alpha
 export VCELL_INSTALLER_REMOTE_DIR="apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
@@ -194,6 +194,12 @@ using deploy configuration and Docker images, generate client installers and dep
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
    vcell${VCELL_SITE}
 ```
+
+debug installers on Macos?
+
+```bash
+INSTALL4J_LOG=yes myLauncher.app/Contents/MacOS/JavaApplicationStub
+````
 
 edit local configuration (vi $VCELL_CONFIG_FILE_NAME) and redeploy (copies local config to server and restarts).
 

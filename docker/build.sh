@@ -181,7 +181,7 @@ EOF
 	if [[ $? -ne 0 ]]; then echo "failed to build singularity image" && exit 1; fi
 
 	echo ""
-	echo "created Singularity image for vcell-bash ./$local_singularity_image_name locally (in ./singularity-vm folder), can be pushed to remote server during deploy"
+	echo "created Singularity image for vcell-bash ./$_singularity_image_file locally (in ./singularity-vm folder), can be pushed to remote server during deploy"
 	echo ""
 	echo "cd .."
 	cd ..

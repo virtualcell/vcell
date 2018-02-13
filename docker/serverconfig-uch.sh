@@ -77,7 +77,15 @@ VCELL_SLURM_CMD_SBATCH=sbatch
 VCELL_SLURM_CMD_SACCT=sacct
 VCELL_SLURM_CMD_SCANCEL=scancel
 
-VCELL_API_PORT_EXTERNAL=$((8080 + $_site_port_offset))
+#
+# VCELL_API_PORT_EXTERNAL starts with 8078 so that "ALPHA" can bind to 8080 as needed by vcell.org website.
+#
+# soon, we'll introduce a reverse proxy (e.g. nginx) listening on port 443 which will distribute to the 
+# correct vcell-api for each site based on the url path.
+#
+VCELL_API_PORT_EXTERNAL=$((8078 + $_site_port_offset))
+
+
 VCELL_JMS_PORT_EXTERNAL=$((61616 + $_site_port_offset))
 VCELL_JMS_RESTPORT_EXTERNAL=$((8161 + $_site_port_offset))
 VCELL_MONGO_PORT_EXTERNAL=$((27017 + $_site_port_offset))
