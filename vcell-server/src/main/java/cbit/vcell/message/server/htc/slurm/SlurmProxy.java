@@ -297,9 +297,11 @@ denied: job "6894" does not exist
 		if (nodelist!=null && nodelist.trim().length()>0) {
 			lsb.write("#SBATCH --nodelist="+nodelist);
 		}
+		lsb.write("echo \"1 date=`date`\"");
 		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
 		lsb.write("source /usr/share/Modules/init/bash");
 		lsb.write("module load singularity");
+		lsb.write("echo \"2 date=`date`\"");
 		//			sw.append("#$ -l mem=" + (int)(memSize + SLURM_MEM_OVERHEAD_MB) + "mb");
 
 		//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
@@ -318,6 +320,7 @@ denied: job "6894" does not exist
 		lsb.write("echo \"id is `id`\"");
 		lsb.newline();
 		lsb.write("echo \"bash version is `bash --version`\"");
+		lsb.write("date");
 		lsb.newline();
 		lsb.write("echo ENVIRONMENT");
 		lsb.write("env");
@@ -399,6 +402,7 @@ denied: job "6894" does not exist
 		//lsb.write("   fi");
 		lsb.write("fi");
 		lsb.write("echo \"container_prefix is '${container_prefix}'\"");
+		lsb.write("echo \"3 date=`date`\"");
 
 		lsb.newline();
 		/**
@@ -440,6 +444,7 @@ denied: job "6894" does not exist
 			ExecutableCommand exitCmd = commandSet.getExitCodeCommand();
 			exitCmd.stripPathFromCommand();
 			lsb.write("callExitProcessor( ) {");
+			lsb.write("echo \"4 date=`date`\"");
 			lsb.append("\techo exitCommand = ");
 			lsb.write("$container_prefix" + exitCmd.getJoinedCommands("$1"));
 			lsb.append('\t');
@@ -467,6 +472,7 @@ denied: job "6894" does not exist
 			lsb.write("   cmd_prefix=\"$container_prefix\"");
 			lsb.write("fi");
 			lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
+			lsb.write("echo \"5 date=`date`\"");
 			if (ec.isParallel()) {
 				if (isParallel) {
 					cmd = buildExeCommand(ncpus, cmd);
@@ -489,6 +495,7 @@ denied: job "6894" does not exist
 			lsb.append("echo ");
 			lsb.append("${cmd_prefix}" + cmd);
 			lsb.write("returned $stat");
+			lsb.write("echo \"6 date=`date`\"");
 
 			lsb.write("if [ $stat -ne 0 ]; then");
 			if (hasExitProcessor) {
@@ -505,6 +512,7 @@ denied: job "6894" does not exist
 		if (hasExitProcessor) {
 			lsb.write("callExitProcessor 0");
 		}
+		lsb.write("echo \"7 date=`date`\"");
 		lsb.newline();
 		return lsb.sb.toString();
 	}

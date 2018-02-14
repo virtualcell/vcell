@@ -18,6 +18,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -69,7 +70,7 @@ public abstract class RectangleShape extends Shape {
 
 	@Override
 	public Dimension getPreferedSizeSelf(Graphics2D g) {
-		if (g == null) {
+		if (g == null || GraphicsEnvironment.isHeadless()) {
 			setLabelSize(10, 20);
 		} else {
 			try {

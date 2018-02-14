@@ -139,7 +139,7 @@ if [ "$upload_singularity" == "true" ]; then
 	singularity_remote_path=`cat ../$local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
 
 	if [ ! -e "./${singularity_filename}" ]; then
-		echo "failed to find local singularity image file $singularity_filename in ./singularity directory"
+		echo "failed to find local singularity image file $singularity_filename in ./singularity-vm directory"
 		exit 1
 	fi
 
@@ -179,7 +179,7 @@ fi
 if [ "$build_installers" == "true" ]; then
 	# remove old installers
 	if [ -e "./generated_installers" ]; then
-		cmd="rm ./generated_installers/*"
+		cmd="rm -f ./generated_installers/*"
 		echo $cmd
 		$cmd
 	fi

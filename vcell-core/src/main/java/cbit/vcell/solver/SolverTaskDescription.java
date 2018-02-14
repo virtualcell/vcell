@@ -679,7 +679,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 						double outputTime = getTimeBounds().getEndingTime()/10;
 						setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 					}
-					if (chomboSolverSpec.getTimeIntervalList().size() == 0)
+					if (chomboSolverSpec!=null && chomboSolverSpec.getTimeIntervalList().size() == 0)
 					{
 						chomboSolverSpec.addTimeInterval(TimeInterval.getDefaultTimeInterval());
 					}

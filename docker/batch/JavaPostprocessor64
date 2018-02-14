@@ -44,12 +44,13 @@ arguments=$*
 
 echo "starting postprocessor"
 
-nice java ${jvmprop} ${postprocessor_mainclass} ${arguments} | tee -ai /dev/stderr |grep -q 'os::commit_memory'
-if [ $? -eq 0 ]; then
-	echo "MEMORY FAILURE DETECTED"
+java ${jvmprop} ${postprocessor_mainclass} ${arguments}
+stat=$?
+
+if [[ $stat -ne 0 ]]; then
+	echo "postprocessor failed with exit code $stat"
+	exit $stat
+else
+	echo "postprocessor returned"
+	exit 0
 fi
-
-echo "postprocessor returned"
-
-exit 0
-

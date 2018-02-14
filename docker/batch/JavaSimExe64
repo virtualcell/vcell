@@ -40,8 +40,16 @@ echo "starting java solver"
 
 arguments=$*
 
-nice java ${jvmprop} ${javasolver_mainclass} ${arguments}
+java ${jvmprop} ${javasolver_mainclass} ${arguments}
+stat=$?
 
+if [[ $stat -ne 0 ]]; then
+	echo "java solver failed with exit code $stat"
+	exit $stat
+else
+	echo "java solver returned"
+	exit 0
+fi
 echo "java solver returned"
 
 exit 0
