@@ -35,6 +35,7 @@ public class VCellSoftwareVersion implements Serializable {
 	private String versionNumber = "";
 	private int majorVersion  = -1;
 	private int minorVersion = -1;
+	private int patchVersion = -1;
 	private int buildInt = -1; 
 	/**
 	 * lazy evaluate {@link #fromSystemProperty()} version
@@ -67,12 +68,16 @@ public class VCellSoftwareVersion implements Serializable {
 				if (!stk.nextToken().equalsIgnoreCase("build")) throw new RuntimeException("Expecting 'build'");
 				buildNumber = stk.nextToken();
 				buildInt = safeParse(buildNumber);
-				int dot = versionNumber.indexOf('.');
-				if (dot >= 0) {
-					String major = versionNumber.substring(0, dot);
-					String minor = versionNumber.substring(++dot);
+				String[] parts = versionNumber.split(".");
+				if (parts.length > 1) {
+					String major = parts[0];
+					String minor = parts[1];
 					majorVersion = safeParse(major);
 					minorVersion = safeParse(minor);
+				}
+				if (parts.length > 2) {
+					String patch = parts[1];
+					patchVersion = safeParse(patch);
 				}
 			} catch (Exception exc) {
 				// deliberately ignored to reduce clutter (10K's of "unknown" versions in database).
@@ -154,6 +159,10 @@ public class VCellSoftwareVersion implements Serializable {
 
 	public int getMinorVersion() {
 		return minorVersion;
+	}
+
+	public int getPatchVersion() {
+		return patchVersion;
 	}
 
 	public int getBuildInt() {

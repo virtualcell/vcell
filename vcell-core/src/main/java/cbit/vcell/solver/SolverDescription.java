@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 
-import cbit.vcell.client.constants.VCellCodeVersion;
 import cbit.vcell.math.ProblemRequirements;
 
 
@@ -125,7 +124,7 @@ public enum SolverDescription {
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions,
 			   SolverFeature.Feature_DirichletAtMembraneBoundary, SolverFeature.Feature_Parallel,  SolverFeature.Feature_FastSystem},
 	      SolverExecutable.VCellChombo, "KISAO:0000285",
-	      VCellCodeVersion.CURRENT.compare(5,4) < 0),
+	      false),
 
 	   NFSim(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "NFSim","NFSim (Network Free Simulator)","NFSim",
 	      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
