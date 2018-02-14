@@ -41,12 +41,13 @@ import cbit.vcell.parser.SymbolTable;
 public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesGroupTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 5;
+	public static final int colCount = 6;
 	public static final int iColOriginalName = 0;
 	public static final int iColStructure = 1;
 	public static final int iColDepiction = 2;
 	public static final int iColDefinition = 3;
-	public static final int iColExpression = 4;
+	public static final int iColCount = 4;
+	public static final int iColExpression = 5;
 	
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
@@ -63,7 +64,7 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
 	public ObservablesGroupTableModel(EditorScrollTable table, NetworkConstraintsPanel owner, GeneratedSpeciesTableModel2 sibling) {
-		super(table, new String[] {"Name", "Structure", "Depiction", "BioNetGen Definition", "Expression"});
+		super(table, new String[] {"Name", "Structure", "Depiction", "BioNetGen Definition", "Count", "Expression"});
 		this.owner = owner;
 		this.sibling = sibling;
 		setMaxRowsPerPage(1000);
@@ -78,6 +79,8 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 			}case iColDepiction: {
 				return Object.class;
 			}case iColDefinition: {
+				return String.class;
+			}case iColCount: {
 				return String.class;
 			}case iColExpression: {
 				return String.class;
@@ -132,6 +135,8 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 					exp = getExpressionAsString(observablesTableRow.getObservableGroupObject());
 				}
 				return exp;
+			case iColCount:
+				return obs.getType().name();
 			default:
 				return null;
 		}

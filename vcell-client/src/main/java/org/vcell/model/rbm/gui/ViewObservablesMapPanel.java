@@ -163,7 +163,6 @@ public class ViewObservablesMapPanel extends DocumentEditorSubPanel  {
 			if(this == eventHandlerO) {
 				int[] selectedRows = observablesTable.getSelectedRows();
 				if(selectedRows.length == 1 && !e.getValueIsAdjusting()) {
-					System.out.println("Observable, row " + selectedRows[0]);
 					speciesTableModel.setObservableFilter(observablesTableModel.getValueAt(selectedRows[0]));
 					updateShapeObservable(selectedRows[0]);
 				} else if(selectedRows.length != 1 && !e.getValueIsAdjusting()) {
@@ -174,7 +173,7 @@ public class ViewObservablesMapPanel extends DocumentEditorSubPanel  {
 			} else if(this == eventHandlerS) {
 				int[] selectedRows = speciesTable.getSelectedRows();
 				if(selectedRows.length == 1 && !e.getValueIsAdjusting()) {
-					System.out.println("Species, row " + selectedRows[0]);
+//					System.out.println("Species, row " + selectedRows[0]);
 					updateShapeSpecies(selectedRows[0]);
 				}
 			} else {
@@ -184,29 +183,30 @@ public class ViewObservablesMapPanel extends DocumentEditorSubPanel  {
 		@Override
 		public void tableChanged(TableModelEvent e) {
 			if(this == eventHandlerO) {
-				if(observablesTable.getModel().getRowCount() == 0) {
-					System.out.println("table is empty");
-				} else {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {				
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						if(observablesTable.getModel().getRowCount() == 0) {
+							System.out.println("table is empty");
+						} else {
 							observablesTable.setRowSelectionInterval(0,0);
 						}
-					});
-				}
-				totalObservablesLabel.setText("Observables: " + observablesTable.getModel().getRowCount());
+						totalObservablesLabel.setText("Observables: " + observablesTable.getModel().getRowCount());
+					}
+				});
 			} else if(this == eventHandlerS) {
-				if(speciesTable.getModel().getRowCount() == 0) {
-					System.out.println("table is empty");
-					spls = null;
-					shapePanelSpecies.repaint();
-				} else {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {				
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						if(speciesTable.getModel().getRowCount() == 0) {
+							System.out.println("table is empty");
+							spls = null;
+							shapePanelSpecies.repaint();
+						} else {
 							speciesTable.setRowSelectionInterval(0,0);
 						}
-					});
-				}
-				totalSpeciesLabel.setText("Species: " + speciesTable.getModel().getRowCount());
+//						System.out.println("table changed, " + speciesTable.getModel().getRowCount() + " species");
+						totalSpeciesLabel.setText("Species: " + speciesTable.getModel().getRowCount());
+					}
+				});
 			}
 		}
 	}

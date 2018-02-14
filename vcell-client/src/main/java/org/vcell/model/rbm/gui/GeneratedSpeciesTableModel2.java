@@ -201,12 +201,11 @@ public class GeneratedSpeciesTableModel2 extends VCellSortTableModel<GeneratedSp
 			}
 			if (fakeParam != null) {
 				originalName = fakeParam.speciesContextName;
-				System.out.println(originalName);
+//				System.out.println(originalName);
 				scMap.put(originalName, originalName);
 				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, multiplier, originalName, species.toStringShort());
 				allGeneratedSpeciesList.add(newRow);
 				networkFileIndexToNameMap.put(species.getNetworkFileIndex(), originalName);
-
 			}
 		}
 				
