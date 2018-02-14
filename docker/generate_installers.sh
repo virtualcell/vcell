@@ -62,6 +62,7 @@ VCELL_INSTALLER_JRE_WIN64=`cat $local_config_file | grep VCELL_INSTALLER_JRE_WIN
 VCELL_INSTALLER_JRE_WIN32=`cat $local_config_file | grep VCELL_INSTALLER_JRE_WIN32 | cut -d"=" -f2`
 VCELL_INSTALLER_JRE_LINUX64=`cat $local_config_file | grep VCELL_INSTALLER_JRE_LINUX64 | cut -d"=" -f2`
 VCELL_INSTALLER_JRE_LINUX32=`cat $local_config_file | grep VCELL_INSTALLER_JRE_LINUX32 | cut -d"=" -f2`
+VCELL_INSTALLER_JREDIR=`cat $local_config_file | grep VCELL_INSTALLER_JREDIR | cut -d"=" -f2`
 
 VCELL_REPO_NAMESPACE=`cat $local_config_file | grep VCELL_REPO_NAMESPACE | cut -d"=" -f2`
 VCELL_TAG=`cat $local_config_file | grep VCELL_TAG | cut -d"=" -f2`
@@ -90,7 +91,7 @@ echo "    -e winCodeSignKeystore_pswdfile=/buildsecrets/VCELL_UCONN_MS_2017_pswd
 echo "    -e macCodeSignKeystore_p12=/buildsecrets/VCELL_APPLE_2015.p12 \\"
 echo "    -e macCodeSignKeystore_pswdfile=/buildsecrets/VCELL_APPLE_2015_pswd.txt \\"
 echo "    -e Install4J_product_key_file=/buildsecrets/Install4J_product_key.txt \\"
-echo "    -v /usr/local/deploy/.install4j6/jres:/jres \\"
+echo "    -v $VCELL_INSTALLER_JREDIR:/jres \\"
 echo "    -v $PWD/generated_installers:/outputdir \\"
 echo "    -v ${VCELL_DEPLOY_SECRETS_DIR}:/buildsecrets \\"
 echo "    ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}"
@@ -117,7 +118,7 @@ sudo docker run --rm \
     -e macCodeSignKeystore_p12=/buildsecrets/VCELL_APPLE_2015.p12 \
     -e macCodeSignKeystore_pswdfile=/buildsecrets/VCELL_APPLE_2015_pswd.txt \
     -e Install4J_product_key_file=/buildsecrets/Install4J_product_key.txt \
-    -v /usr/local/deploy/.install4j6/jres:/jres \
+    -v $VCELL_INSTALLER_JREDIR:/jres \
     -v $PWD/generated_installers:/outputdir \
     -v ${VCELL_DEPLOY_SECRETS_DIR}:/buildsecrets \
     ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}

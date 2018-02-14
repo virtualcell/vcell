@@ -9,10 +9,13 @@
  */
 
 package cbit.vcell.graph;
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
@@ -95,7 +98,14 @@ public class SpeciesContextShape extends ElipseShape {
 	
 	@Override
 	public Dimension getPreferedSizeSelf(Graphics2D g) {
-		FontMetrics fm = g.getFontMetrics();
+		FontMetrics fm = null;
+		if (g==null || GraphicsEnvironment.isHeadless()) {
+			Font font = new Font("Helvetica",Font.PLAIN,12);
+			Canvas c = new Canvas();
+			fm = c.getFontMetrics(font);
+		}else {
+			fm = g.getFontMetrics();
+		}
 		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		smallLabelSize.width = (smallLabel != null ? fm.stringWidth(smallLabel) : getLabelSize().width);
 		smallLabelSize.height = getLabelSize().height;
