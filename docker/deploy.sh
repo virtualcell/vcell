@@ -179,7 +179,7 @@ fi
 if [ "$build_installers" == "true" ]; then
 	# remove old installers
 	if [ -e "./generated_installers" ]; then
-		cmd="rm ./generated_installers/*"
+		cmd="rm -f ./generated_installers/*"
 		echo $cmd
 		$cmd
 	fi
