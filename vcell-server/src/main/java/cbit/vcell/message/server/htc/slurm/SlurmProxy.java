@@ -312,6 +312,22 @@ denied: job "6894" does not exist
 //		lsb.write("#$ -cwd");
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 
+		lsb.write("# determine temp directory to use for storing singularity images");
+		lsb.write("if [ ! -e \"$TMPDIR\" ]; then");
+		lsb.write("   if [ -e /local ]; then");
+		lsb.write("       TMPDIR=/local");
+		lsb.write("       mkdir -p /local/singularityImages");
+		lsb.write("   else");
+		lsb.write("      if [ -e /state/partition1 ]; then");
+		lsb.write("         TMPDIR=/state/partition1");
+		lsb.write("         mkdir -p /state/partition1/singularityImages");
+		lsb.write("      fi");
+		lsb.write("   fi");
+		lsb.write("else");
+		lsb.write("   mkdir -p $TMPDIR/singularityImages");
+		lsb.write("fi");
+		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
+		
 		//
 		// Initialize Singularity
 		//
@@ -337,9 +353,10 @@ denied: job "6894" does not exist
 		String mongodb_database = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
 		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
 		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-		String singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
+		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
 		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
-		String Singularity_file = singularity_image+".Singularity";
+		String Singularity_file = remote_singularity_image+".Singularity";
+		String singularityImageName = new File(remote_singularity_image).getName();
 
 		String[] environmentVars = new String[] {
 				"jmshost_internal="+jmshost_external,
@@ -360,8 +377,8 @@ denied: job "6894" does not exist
 		lsb.write("container_prefix=");
 		lsb.write("if command -v singularity >/dev/null 2>&1; then");
 		lsb.write("   # singularity command exists");
-		lsb.write("   if [ ! -e "+singularity_image+" ] ; then");
-		lsb.write("      echo \"singularity image "+singularity_image+" not found, building from docker image\"");
+		lsb.write("   if [ ! -e "+remote_singularity_image+" ] ; then");
+		lsb.write("      echo \"remote singularity image "+remote_singularity_image+" not found, building from docker image\"");
 		lsb.write("      echo \"assuming Singularity version 2.4 or later is installed on host system.\"");
 		lsb.write("");
 		lsb.write("cat <<EOF >"+Singularity_file);
@@ -377,20 +394,28 @@ denied: job "6894" does not exist
 		lsb.write("AUTHOR jcschaff");
 		lsb.write("EOF");
 		lsb.write("");
-		lsb.write("      singularity build "+singularity_image+" "+Singularity_file);
+		lsb.write("      singularity build "+remote_singularity_image+" "+Singularity_file);
 		lsb.write("      stat=$?");
 		lsb.write("      if [ $stat -ne 0 ]; then");
-		lsb.write("         echo \"failed to build singularity image, returning $stat to Slurm\"");
+		lsb.write("         echo \"failed to build remote singularity image, returning $stat to Slurm\"");
 		lsb.write("         exit $stat");
 		lsb.write("      fi");
 		lsb.write("   else");
-		lsb.write("      echo \"singularity image "+singularity_image+" found\"");
+		lsb.write("      echo \"remote singularity image "+remote_singularity_image+" found\"");
+		lsb.write("   fi");
+		lsb.write("");
+		lsb.write("   #");
+		lsb.write("   # assure that a local singularity image is present in the temp dir $TMPDIR");
+		lsb.write("   #");
+		lsb.write("   localSingularityImage=${TMPDIR}/singularityImages/"+singularityImageName+"\"");
+		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
+		lsb.write("       cp -p "+remote_singularity_image+" $localSingularityImage");
 		lsb.write("   fi");
 		StringBuffer singularityEnvironmentVars = new StringBuffer();
 		for (String envVar : environmentVars) {
 			singularityEnvironmentVars.append(" --env "+envVar);
 		}
-		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs "+singularity_image+" "+singularityEnvironmentVars+" \"");
+		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs $localSingularityImage "+singularityEnvironmentVars+" \"");
 		lsb.write("else");
 		//lsb.write("   if command -v docker >/dev/null 2>&1; then");
 		
