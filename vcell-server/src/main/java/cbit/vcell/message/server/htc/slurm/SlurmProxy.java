@@ -298,9 +298,9 @@ denied: job "6894" does not exist
 			lsb.write("#SBATCH --nodelist="+nodelist);
 		}
 		lsb.write("echo \"1 date=`date`\"");
-		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
-		lsb.write("source /usr/share/Modules/init/bash");
-		lsb.write("module load singularity");
+		lsb.write("#export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
+		lsb.write("#source /usr/share/Modules/init/bash");
+		lsb.write("#module load singularity");
 		lsb.write("echo \"2 date=`date`\"");
 		//			sw.append("#$ -l mem=" + (int)(memSize + SLURM_MEM_OVERHEAD_MB) + "mb");
 
