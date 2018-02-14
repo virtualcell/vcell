@@ -91,7 +91,7 @@ public String toString() {
 
 public org.vcell.api.common.UserInfo getApiUserInfo(){
 	org.vcell.api.common.UserInfo apiUserInfo = new org.vcell.api.common.UserInfo(
-			id.toString(),userid,digestedPassword0.getString(),email,wholeName,title,company,country,notify,insertDate);
+			(id!=null)?id.toString():null,userid,digestedPassword0.getString(),email,wholeName,title,company,country,notify,insertDate);
 	return apiUserInfo;
 }
 
