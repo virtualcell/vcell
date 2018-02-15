@@ -55,6 +55,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	mongodb_host_external="mongodb-host-external-not-set" \
 	mongodb_port_external="mongodb-port-external-not-set" \
     simdatadir_external=/path/to/external/simdata/ \
+    simdatadir_parallel_external=/path/to/external/parallel/simdata/
     htclogdir_external=/path/to/external/htclogs/ \
     nativesolverdir_external=/path/to/external/nativesolvers/ \
     htcnodelist="" \
@@ -83,6 +84,7 @@ ENTRYPOINT java \
 	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
+	-Dvcell.parallelDatadir.external="${simdatadir_parallel_external}" \
 	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \
 	-Dvcell.htc.user="${batchuser}" \
 	-Dvcell.htc.logdir.external="${htclogdir_external}" \

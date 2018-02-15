@@ -44,7 +44,7 @@ public class PropertyLoader {
 	public static final String secondarySimDataDirInternalProperty	= record("vcell.secondarySimdatadir.internal",ValueType.DIR);
 	public static final String primarySimDataDirExternalProperty	= record("vcell.primarySimdatadir.external",ValueType.GEN);
 	public static final String secondarySimDataDirExternalProperty	= record("vcell.secondarySimdatadir.external",ValueType.GEN);
-	public static final String PARALLEL_DATA_DIR_INTERNAL		= record("vcell.parallelDatadir.internal",ValueType.DIR);
+	//public static final String PARALLEL_DATA_DIR_INTERNAL		= record("vcell.parallelDatadir.internal",ValueType.DIR);
 	public static final String PARALLEL_DATA_DIR_EXTERNAL		= record("vcell.parallelDatadir.external",ValueType.GEN);
 
 	public static final String jobMemoryOverheadMB			= record("vcell.htc.jobMemoryOverheadMB",ValueType.GEN);

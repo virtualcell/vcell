@@ -52,6 +52,7 @@ services:
       - mongodb_host_external=${VCELL_MONGO_HOST_EXTERNAL}
       - mongodb_port_external=${VCELL_MONGO_PORT_EXTERNAL}
       - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
+      - simdatadir_parallel_external=${VCELL_SIMDATADIR_PARALLEL_EXTERNAL}
 
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
