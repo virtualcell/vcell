@@ -2062,7 +2062,7 @@ private void writeJms(Simulation simulation) {
 		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
 		String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
 		String jmsurl = jmshost+":"+jmsrestport;
-		printWriter.println(PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider) + " " + jmsurl
+		printWriter.println("ActiveMQ" + " " + jmsurl
 			+ " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + jmsPassword
 			+ " " + VCellQueue.WorkerEventQueue.getName()
 			+ " " + VCellTopic.ServiceControlTopic.getName()

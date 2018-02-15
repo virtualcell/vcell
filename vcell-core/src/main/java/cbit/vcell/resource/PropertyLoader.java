@@ -97,9 +97,6 @@ public class PropertyLoader {
 //	public static final String hybridMilExecutableProperty	= record("vcell.hybridMil.executable",ValueType.EXE);
 //	public static final String hybridMilAdaptiveExecutableProperty = record("vcell.hybridMilAdaptive.executable",ValueType.EXE);
 
-	public static final String visitSmoldynVisitExecutableProperty	= record("vcell.visit.smoldynvisitexecutable",ValueType.EXE);
-	public static final String visitSmoldynScriptPathProperty		= record("vcell.visit.smoldynscript",ValueType.GEN);
-
 	//BioFormats plugin properties
 
 	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",ValueType.GEN);
@@ -125,8 +122,6 @@ public class PropertyLoader {
 	public static final String dbPasswordValue				= record("vcell.server.dbPassword",ValueType.GEN);
 	public static final String dbPasswordFile				= record("vcell.db.pswdfile",ValueType.GEN);
 
-	public static final String jmsProvider				= record("vcell.jms.provider",ValueType.GEN);
-	public static final String jmsProviderValueActiveMQ		= record("ActiveMQ",ValueType.GEN);
 	public static final String jmsHostInternal				= record("vcell.jms.host.internal",ValueType.GEN);
 	public static final String jmsPortInternal				= record("vcell.jms.port.internal",ValueType.GEN);
 	public static final String jmsRestPortInternal			= record("vcell.jms.restport.internal",ValueType.GEN);

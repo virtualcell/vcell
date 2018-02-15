@@ -407,7 +407,7 @@ denied: job "6894" does not exist
 		lsb.write("   #");
 		lsb.write("   # assure that a local singularity image is present in the temp dir $TMPDIR");
 		lsb.write("   #");
-		lsb.write("   localSingularityImage=${TMPDIR}/singularityImages/"+singularityImageName+"\"");
+		lsb.write("   localSingularityImage=\"${TMPDIR}/singularityImages/"+singularityImageName+"\"");
 		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
 		lsb.write("       cp -p "+remote_singularity_image+" $localSingularityImage");
 		lsb.write("   fi");

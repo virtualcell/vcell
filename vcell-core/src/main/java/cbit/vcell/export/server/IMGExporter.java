@@ -242,143 +242,143 @@ private File[] getParticleFiles(ExportSpecs exportSpecs,User user,DataServerImpl
 	return smoldynPointFiles.toArray(new File[0]);
 }
 
-private ParticleInfo checkParticles_unused(final ExportSpecs exportSpecs,User user,DataServerImpl dataServerImpl,final long jobID) throws Exception{
-	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
-	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
-		particleMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
-	}else if (exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
-		particleMode = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
-	}
-	if(particleMode == FormatSpecificSpecs.PARTICLE_NONE){
-		return null;
-	}
-	
-	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
-	CartesianMesh cartesianMesh = dataServerImpl.getMesh(user, vcdID);
-	int dimension = cartesianMesh.getGeometryDimension();
-	
-	String[] variableNames = exportSpecs.getVariableSpecs().getVariableNames();
-	
-	File visitExeLocation =
-		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynVisitExecutableProperty));
-	File visitSmoldynScriptLocation =
-		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynScriptPathProperty));
-	final File visitSmoldynScriptTempDir = PropertyLoader.getSystemTemporaryDirectory();
-
-	//-----Get all data (from archive if necessary)
-	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
-	SimulationData simData = new SimulationData(vcdID,
-			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty),vcdID.getOwner().getName()),
-			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty,null),vcdID.getOwner().getName()),
-			simDataAmplistorInfo);
-		
-	File logFile = simData.getLogFile();
-	if(!logFile.exists()){
-		throw new Exception("ImgExport particle, Couldn't find Log file "+logFile.getAbsolutePath());
-	}
-	simData.getMesh();//gets mesh and meshmetrics files from archive if necessary
-	simData.getSubdomainFile();
-	simData.getFunctionsFile(false);
-	int timeIndex = 1;//smoldyn always begins at timeindex 1
-	while(true){
-		if(!simData.getSmoldynOutputFile(timeIndex).exists()){//get smoldynOutput files
-			break;
-		}
-		timeIndex++;
-	}
-	//-----
-	
-	File visitDataPathFragment = new File(logFile.getParent(),vcdID.getID()+"_");
-	System.out.println(visitExeLocation.getAbsolutePath());
-	System.out.println(visitSmoldynScriptLocation.getAbsolutePath());
-	System.out.println(visitSmoldynScriptTempDir.getAbsolutePath());
-	System.out.println(visitDataPathFragment.getAbsolutePath());
-	
-//if(true){return new ParticleInfo(visitSmoldynScriptTempDir);}
-	if(exportSpecs.getTimeSpecs().getAllTimes().length == 1){
-		throw new IllegalArgumentException("Time zero not valid for smoldyn particle data");
-	}
-	int beginIndexTime = exportSpecs.getTimeSpecs().getBeginTimeIndex();
-	int endIndexTime = exportSpecs.getTimeSpecs().getEndTimeIndex();
-	
-	System.out.println("beginIndexTime="+beginIndexTime+" endIndexTime="+endIndexTime);
-	
-	ArrayList<String> args = new ArrayList<String>();
-	args.add(visitExeLocation.getAbsolutePath());//location of visit
-	args.add("-nowin");
-	args.add("-cli");
-	args.add("-s");
-	
-	args.add(visitSmoldynScriptLocation.getAbsolutePath());//location of the script
-	args.add(visitDataPathFragment.getAbsolutePath()); //location of the SimID 
-	args.add(visitSmoldynScriptTempDir.getAbsolutePath());  // where frames are dumped 
-	args.add(dimension+""); //dimension
-	args.add(beginIndexTime+"");
-	args.add(endIndexTime+"");
-	args.add(4+"");//particle sphere size
-	args.add(FormatSpecificSpecs.SMOLDYN_DEFAULT_FRAME_SIZE.width+"");//frame size X
-	args.add(FormatSpecificSpecs.SMOLDYN_DEFAULT_FRAME_SIZE.height+"");//frame size Y
-	args.add(variableNames.length+""); // 0 = show all the particles.  >0 == show n different particles, to be listed below
-	for (int i = 0; i < variableNames.length; i++) {
-		args.add(variableNames[i]);
-	}
-	
-	final String tempFilePrefix = vcdID.getID()+"_p3d";
-	
-	//Monitor progress of smoldyn script
-	exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", 0.0);
-	final boolean[] finishedFlag = new boolean[] {false};
-	final int numTimePoints = exportSpecs.getTimeSpecs().getEndTimeIndex()-exportSpecs.getTimeSpecs().getBeginTimeIndex()+1;
-	Thread progressThread = new Thread(new Runnable() {
-		public void run() {
-			System.out.println("smoldyn progress monitor started");
-			while(!finishedFlag[0]){
-				int count = 0;
-				File[] tempFiles = visitSmoldynScriptTempDir.listFiles();
-				for (int i = 0; i < tempFiles.length; i++) {
-					if(tempFiles[i].getName().startsWith(tempFilePrefix) ||
-						(tempFiles[i].getName().startsWith(vcdID.getID()) &&
-								tempFiles[i].getName().endsWith(".jpeg"))){
-						count+= 1;
-					}
-				}
-				double progress = .5 * (double)count / (double)(2*numTimePoints);
-				exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", progress);
-				//System.out.println("All files read="+tempFiles.length+" Files counted="+count+" progress="+progress);
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					return;//This shouldn't happen but if so just quit
-				}
-			}
-			System.out.println("smoldyn progress monitor finished");
-		}
-	});
-	progressThread.start();
-	
-	
-	try{
-		final long TIME_OUT = 1200000; //20 minutes
-		Executable executable = new Executable(args.toArray(new String[0]),TIME_OUT);
-		executable.start();//blocking, internal monitoring, return after timeout
-		if(!executable.getStatus().equals(ExecutableStatus.COMPLETE)){
-			System.out.println(executable.getStderrString());
-			System.out.println(executable.getStdoutString());
-			throw new Exception("Particle data exporter did not complete normally. "+(executable.getStatus()==null?"":executable.getStatus().toString()));
-		}
-	}finally{
-		finishedFlag[0] = true;
-		//Remove temp files created by smoldyn script
-		File[] tempFiles = visitSmoldynScriptTempDir.listFiles();
-		for (int i = 0; i < tempFiles.length; i++) {
-			if(tempFiles[i].getName().startsWith(tempFilePrefix)){
-				tempFiles[i].delete();
-			}
-		}
-	}
-	return new ParticleInfo(visitSmoldynScriptTempDir);
-}
+//private ParticleInfo checkParticles_unused(final ExportSpecs exportSpecs,User user,DataServerImpl dataServerImpl,final long jobID) throws Exception{
+//	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
+//	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
+//		particleMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
+//	}else if (exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
+//		particleMode = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
+//	}
+//	if(particleMode == FormatSpecificSpecs.PARTICLE_NONE){
+//		return null;
+//	}
+//	
+//	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+//	CartesianMesh cartesianMesh = dataServerImpl.getMesh(user, vcdID);
+//	int dimension = cartesianMesh.getGeometryDimension();
+//	
+//	String[] variableNames = exportSpecs.getVariableSpecs().getVariableNames();
+//	
+//	File visitExeLocation =
+//		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynVisitExecutableProperty));
+//	File visitSmoldynScriptLocation =
+//		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynScriptPathProperty));
+//	final File visitSmoldynScriptTempDir = PropertyLoader.getSystemTemporaryDirectory();
+//
+//	//-----Get all data (from archive if necessary)
+//	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
+//	SimulationData simData = new SimulationData(vcdID,
+//			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty),vcdID.getOwner().getName()),
+//			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty,null),vcdID.getOwner().getName()),
+//			simDataAmplistorInfo);
+//		
+//	File logFile = simData.getLogFile();
+//	if(!logFile.exists()){
+//		throw new Exception("ImgExport particle, Couldn't find Log file "+logFile.getAbsolutePath());
+//	}
+//	simData.getMesh();//gets mesh and meshmetrics files from archive if necessary
+//	simData.getSubdomainFile();
+//	simData.getFunctionsFile(false);
+//	int timeIndex = 1;//smoldyn always begins at timeindex 1
+//	while(true){
+//		if(!simData.getSmoldynOutputFile(timeIndex).exists()){//get smoldynOutput files
+//			break;
+//		}
+//		timeIndex++;
+//	}
+//	//-----
+//	
+//	File visitDataPathFragment = new File(logFile.getParent(),vcdID.getID()+"_");
+//	System.out.println(visitExeLocation.getAbsolutePath());
+//	System.out.println(visitSmoldynScriptLocation.getAbsolutePath());
+//	System.out.println(visitSmoldynScriptTempDir.getAbsolutePath());
+//	System.out.println(visitDataPathFragment.getAbsolutePath());
+//	
+////if(true){return new ParticleInfo(visitSmoldynScriptTempDir);}
+//	if(exportSpecs.getTimeSpecs().getAllTimes().length == 1){
+//		throw new IllegalArgumentException("Time zero not valid for smoldyn particle data");
+//	}
+//	int beginIndexTime = exportSpecs.getTimeSpecs().getBeginTimeIndex();
+//	int endIndexTime = exportSpecs.getTimeSpecs().getEndTimeIndex();
+//	
+//	System.out.println("beginIndexTime="+beginIndexTime+" endIndexTime="+endIndexTime);
+//	
+//	ArrayList<String> args = new ArrayList<String>();
+//	args.add(visitExeLocation.getAbsolutePath());//location of visit
+//	args.add("-nowin");
+//	args.add("-cli");
+//	args.add("-s");
+//	
+//	args.add(visitSmoldynScriptLocation.getAbsolutePath());//location of the script
+//	args.add(visitDataPathFragment.getAbsolutePath()); //location of the SimID 
+//	args.add(visitSmoldynScriptTempDir.getAbsolutePath());  // where frames are dumped 
+//	args.add(dimension+""); //dimension
+//	args.add(beginIndexTime+"");
+//	args.add(endIndexTime+"");
+//	args.add(4+"");//particle sphere size
+//	args.add(FormatSpecificSpecs.SMOLDYN_DEFAULT_FRAME_SIZE.width+"");//frame size X
+//	args.add(FormatSpecificSpecs.SMOLDYN_DEFAULT_FRAME_SIZE.height+"");//frame size Y
+//	args.add(variableNames.length+""); // 0 = show all the particles.  >0 == show n different particles, to be listed below
+//	for (int i = 0; i < variableNames.length; i++) {
+//		args.add(variableNames[i]);
+//	}
+//	
+//	final String tempFilePrefix = vcdID.getID()+"_p3d";
+//	
+//	//Monitor progress of smoldyn script
+//	exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", 0.0);
+//	final boolean[] finishedFlag = new boolean[] {false};
+//	final int numTimePoints = exportSpecs.getTimeSpecs().getEndTimeIndex()-exportSpecs.getTimeSpecs().getBeginTimeIndex()+1;
+//	Thread progressThread = new Thread(new Runnable() {
+//		public void run() {
+//			System.out.println("smoldyn progress monitor started");
+//			while(!finishedFlag[0]){
+//				int count = 0;
+//				File[] tempFiles = visitSmoldynScriptTempDir.listFiles();
+//				for (int i = 0; i < tempFiles.length; i++) {
+//					if(tempFiles[i].getName().startsWith(tempFilePrefix) ||
+//						(tempFiles[i].getName().startsWith(vcdID.getID()) &&
+//								tempFiles[i].getName().endsWith(".jpeg"))){
+//						count+= 1;
+//					}
+//				}
+//				double progress = .5 * (double)count / (double)(2*numTimePoints);
+//				exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", progress);
+//				//System.out.println("All files read="+tempFiles.length+" Files counted="+count+" progress="+progress);
+//				try {
+//					Thread.sleep(1000);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//					return;//This shouldn't happen but if so just quit
+//				}
+//			}
+//			System.out.println("smoldyn progress monitor finished");
+//		}
+//	});
+//	progressThread.start();
+//	
+//	
+//	try{
+//		final long TIME_OUT = 1200000; //20 minutes
+//		Executable executable = new Executable(args.toArray(new String[0]),TIME_OUT);
+//		executable.start();//blocking, internal monitoring, return after timeout
+//		if(!executable.getStatus().equals(ExecutableStatus.COMPLETE)){
+//			System.out.println(executable.getStderrString());
+//			System.out.println(executable.getStdoutString());
+//			throw new Exception("Particle data exporter did not complete normally. "+(executable.getStatus()==null?"":executable.getStatus().toString()));
+//		}
+//	}finally{
+//		finishedFlag[0] = true;
+//		//Remove temp files created by smoldyn script
+//		File[] tempFiles = visitSmoldynScriptTempDir.listFiles();
+//		for (int i = 0; i < tempFiles.length; i++) {
+//			if(tempFiles[i].getName().startsWith(tempFilePrefix)){
+//				tempFiles[i].delete();
+//			}
+//		}
+//	}
+//	return new ParticleInfo(visitSmoldynScriptTempDir);
+//}
 
 private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
 		OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
