@@ -2,7 +2,7 @@
 /*
 * Plugin Name: VCell ShortCode
 * Description: Shortcode for VCell model content.
-* Version: 1.0
+* Version: 1.1
 * Author: Jim Schaff
 */
 register_activation_hook(__FILE__, 'vcell_my_activation');
@@ -31,7 +31,7 @@ function vcell_do_this_hourly(){
 		if (!empty($pub->biomodelReferences)){
 			foreach ($pub->biomodelReferences as $bioref){
 				$bmKey = $bioref->bmKey;
-				$biomodelvcml =& vcell_get_biomodel_vcml_object($bmKey);
+//				$biomodelvcml =& vcell_get_biomodel_vcml_object($bmKey);
 				$biomodel =& vcell_get_biomodel_object($bmKey);
 				$bmPost =& vcell_find_biomodel_post($bmKey);
 				if (is_null($bmPost)){
@@ -166,6 +166,7 @@ function vcell_insert_publication_post($publication){
 		'post_title'   => vcell_get_publication_post_title($publication),
 		'post_content' => vcell_get_publication_post_content($publication),
 		'post_status'  => 'publish',
+		'post_date'    => date("Y-m-d H:i:s", strtotime("Jan 1, " . $publication->year) ),
 		'post_author'  => get_current_user_id(),
 		'meta_input'   => array(
 			'pubKey' => $publication->pubKey,
@@ -184,7 +185,8 @@ function &vcell_get_biomodel_object($bmKey) {
 
 function &vcell_get_biomodel_vcml_object($bmKey){
 	$vcmlString = file_get_contents("https://vcellapi.cam.uchc.edu:8080/biomodel/" . $bmKey . '/biomodel.vcml');
-	$biomodel_vcml = new SimpleXMLElement($vcmlString) or die('unable to retrieve vcml');
+    vcell_log_me("bmKey is " . $bmKey . ", vcmlString is '" . $vcmlString . "'");
+    $biomodel_vcml = new SimpleXMLElement($vcmlString) or die('unable to retrieve vcml');
 	return $biomodel_vcml;
 }
 
@@ -195,7 +197,9 @@ function &vcell_get_publication_object($pubKey) {
 }
 
 function &vcell_get_publications_object() {
+vcell_log_me('calling vcellapi for publications');
 	$json = file_get_contents("https://vcellapi.cam.uchc.edu:8080/publication");
+vcell_log_me('vcellapi publications json = ' . $json );
 	$publications = json_decode($json);
 	return $publications;
 }
@@ -445,8 +449,13 @@ vcell_log_me('calling shortcode vcell-biomodel-compartments with bmKey = ' . $at
 vcell_log_me($atts);
 	$bmKey = $atts['bmkey'];
 vcell_log_me('in shortcode vcell-biomodel-compartments using bmKey = ' . $bmKey );
- 	$biomodelvcml =& vcell_get_biomodel_vcml_object($bmKey);
-	$text = vcell_get_biomodel_compartment_content($biomodelvcml);
+	try {
+        $biomodelvcml =& vcell_get_biomodel_vcml_object($bmKey);
+        $text = vcell_get_biomodel_compartment_content($biomodelvcml);
+    } catch (Exception $e) {
+		echo 'Caught exception: ', $e->getMessage(), "\n";
+		$text = "model details unavailable for this model";
+	}
 vcell_log_me('returning ' . $text);
 	return $text;
 }
@@ -487,4 +496,5 @@ print("<h1>Biomodel Example</h1>");
 print(test_biomodel());
 */
 ?>
+
 
