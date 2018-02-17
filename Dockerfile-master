@@ -86,6 +86,7 @@ EXPOSE 8000
 
 ENTRYPOINT java \
 	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.python.executable=/usr/bin/python \

@@ -33,6 +33,13 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1000M
+        reservations:
+          cpus: '0.25'
+          memory: 100M
   master:
     image: "${VCELL_REPO_NAMESPACE}/vcell-master:${VCELL_TAG}"
     environment:
@@ -61,7 +68,6 @@ services:
       - htcnodelist=${VCELL_HTC_NODELIST}
       - batchsystem=SLURM
       - slurm_cmd_sbatch=${VCELL_SLURM_CMD_SBATCH:-slurm}
-#function func() { cd /Users/schaff/Documents/workspace-modular/vcell/docker/singularity-vm && CMD="vagrant ssh -c '$@'" && exec $CMD; } && func /vagrant
       - slurm_cmd_sacct=${VCELL_SLURM_CMD_SACCT:-sacct}
       - slurm_cmd_scancel=${VCELL_SLURM_CMD_SCANCEL:-scancel}
 
@@ -88,6 +94,13 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1500M
+        reservations:
+          cpus: '0.25'
+          memory: 500M
       placement:
         constraints:
           - node.labels.zone == INTERNAL
@@ -99,7 +112,7 @@ services:
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbReq;simJob;workerEvent
       - ACTIVEMQ_STATIC_TOPICS=serviceControl;daemonControl;clientStatus
-      - ACTIVEMQ_MIN_MEMORY=1024
+      - ACTIVEMQ_MIN_MEMORY=512
       - ACTIVEMQ_MAX_MEMORY=2048
       - ACTIVEMQ_ENABLED_SCHEDULER=true
       - ACTIVEMQ_USERS_clientUser=dummy
@@ -111,6 +124,13 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 2500M
+        reservations:
+          cpus: '0.25'
+          memory: 600M
   mongodb:
     image: "${VCELL_REPO_NAMESPACE}/vcell-mongo:${VCELL_TAG}"
     ports:
@@ -120,6 +140,13 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 500M
+        reservations:
+          cpus: '0.25'
+          memory: 50M
       
   visualizer:
     image: dockersamples/visualizer:stable
@@ -130,6 +157,13 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 500M
+        reservations:
+          cpus: '0.15'
+          memory: 50M
     networks:
       - vcellnet
 

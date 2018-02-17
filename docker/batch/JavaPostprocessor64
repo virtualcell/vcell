@@ -40,11 +40,16 @@ jvmprop="${jvmprop} -Dvcell.mongodb.database=${mongodb_database}"
 jvmprop="${jvmprop} -Dvcell.mongodb.host.internal=${mongodbhost_internal}"
 jvmprop="${jvmprop} -Dvcell.mongodb.port.internal=${mongodbport_internal}"
 
+jvmoptions="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M"
+
 arguments=$*
 
 echo "starting postprocessor"
 
-java ${jvmprop} ${postprocessor_mainclass} ${arguments}
+echo "expecting jre 1.8_144 or later for memory options"
+java --version
+
+java ${jvmoptions} ${jvmprop} ${postprocessor_mainclass} ${arguments}
 stat=$?
 
 if [[ $stat -ne 0 ]]; then
