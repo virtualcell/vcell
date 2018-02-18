@@ -1,24 +1,4 @@
-FROM pboreg/vtk:latest
-
-# install thrift python package
-RUN wget https://bootstrap.pypa.io/get-pip.py \
-    && python get-pip.py \
-    && pip install thrift
-
-RUN apk update && apk upgrade && \
-    apk add openjdk8 && \
-    mkdir /tmp/tmprt && \
-    cd /tmp/tmprt && \
-    apk add zip && \
-    unzip -q /usr/lib/jvm/default-jvm/jre/lib/rt.jar && \
-    apk add zip && \
-    zip -q -r /tmp/rt.zip . && \
-    apk del zip && \
-    cd /tmp && \
-    mv rt.zip /usr/lib/jvm/default-jvm/jre/lib/rt.jar && \
-    rm -rf /tmp/tmprt /var/cache/apk/* bin/jjs bin/keytool bin/orbd bin/pack200 bin/policytool \
-          bin/rmid bin/rmiregistry bin/servertool bin/tnameserv bin/unpack200 
-
+FROM schaff/vtk-openjdk-alpine:latest
 
 RUN mkdir -p /usr/local/app
 WORKDIR /usr/local/app
@@ -80,6 +60,7 @@ EXPOSE 8000
 ENTRYPOINT java \
 	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
 	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
+    -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.python.executable=/usr/bin/python \

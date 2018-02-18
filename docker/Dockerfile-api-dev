@@ -1,14 +1,5 @@
-FROM nimmis/java-centos:openjdk-8-jre-headless
-
-# install thrift, libsbml, and copasi python packages.
-RUN wget https://bootstrap.pypa.io/get-pip.py && \
-    python get-pip.py && \
-    pip install thrift && \
-    pip install python-libsbml && \
-    cd /etc/yum.repos.d/ && \
-    wget https://download.opensuse.org/repositories/home:fbergman:COPASI/CentOS_7/home:fbergman:COPASI.repo && \
-    yum -y install python-copasi
-
+FROM schaff/python-copasi-jre:latest
+    
 RUN mkdir -p /usr/local/app/lib
 WORKDIR /usr/local/app
 
@@ -50,8 +41,8 @@ EXPOSE 8080
 EXPOSE 8000
 
 ENTRYPOINT java \
-	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
     -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+    -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.python.executable=/usr/bin/python \
