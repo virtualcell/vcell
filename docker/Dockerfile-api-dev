@@ -30,7 +30,11 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     mongodb_host_internal=mongodb \
     mongodb_port_internal=27017 \
     mongodb_database=test \
-    jmsblob_minsize=100000
+    jmsblob_minsize=100000 \
+    	smtp_hostname="smtp-host-not-set" \
+	smtp_port="smtp-port-not-set" \
+	smtp_emailaddress="smtp-emailaddress-not-set"
+    
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -63,5 +67,8 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.database=${mongodb_database} \
 	-Dvcellapi.keystore.file="${keystore}" \
 	-Dvcellapi.keystore.pswdfile="${keystorepswdfile}" \
+	-Dvcell.smtp.hostName="${smtp_hostname}" \
+	-Dvcell.smtp.port="${smtp_port}" \
+	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
 	/usr/local/app/docroot - 8080

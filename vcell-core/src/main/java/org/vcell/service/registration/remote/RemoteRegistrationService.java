@@ -75,7 +75,7 @@ public class RemoteRegistrationService extends AbstractService implements Regist
 		}
 		try {
 			apiClient.sendLostPassword(userid);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RemoteProxyException("failed to request lost password: "+e.getMessage(), e);
 		}

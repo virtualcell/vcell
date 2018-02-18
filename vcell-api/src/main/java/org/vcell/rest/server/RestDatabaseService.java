@@ -810,4 +810,8 @@ public class RestDatabaseService {
 	   	return publicationReps;
 	}
 
+	public void sendLostPassword(String userid) throws DataAccessException {
+		localAdminDbServer.sendLostPassword(userid);
+	}
+
 }

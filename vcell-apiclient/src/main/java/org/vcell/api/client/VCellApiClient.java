@@ -50,6 +50,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.ProtocolException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -451,7 +452,7 @@ public class VCellApiClient {
 	}
 
 	public void sendLostPassword(String userid) throws ClientProtocolException, IOException {
-		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/users/lostpassword");
+		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/lostpassword");
 		StringEntity input = new StringEntity(userid);
 		input.setContentType(ContentType.TEXT_PLAIN.getMimeType());
 		httppost.setEntity(input);
@@ -462,14 +463,19 @@ public class VCellApiClient {
 
 			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
 				int status = response.getStatusLine().getStatusCode();
-				if (status == 202) {
+				if (status == HttpStatus.SC_ACCEPTED) {
 					HttpEntity entity = response.getEntity();
 					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
 						String message = reader.lines().collect(Collectors.joining());
 						return message;
 					}
 				} else {
-					throw new ClientProtocolException("Unexpected response status: " + status);
+					HttpEntity entity = response.getEntity();
+					String message = null;
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						message = reader.lines().collect(Collectors.joining());
+					}
+					throw new ClientProtocolException("Failed to request lost password, response status: " + status + "\nreason: " + message);
 				}
 			}
 

@@ -172,7 +172,7 @@ current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 ```bash
-export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=a525df5
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=62ac93a
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
@@ -224,7 +224,7 @@ sudo env ${cat server_alpha_7.0.0_10_a9a83bb-2.config | xargs) docker stack depl
 build the containers (e.g. localhost:5000/schaff/vcell-api:dev1) and upload to local registry Docker registry (e.g. localhost:5000).  
 
 ```bash
-export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev3
+export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev5
 ./build.sh --skip-singularity all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
