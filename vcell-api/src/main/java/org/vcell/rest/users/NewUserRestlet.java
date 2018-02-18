@@ -1,6 +1,7 @@
 package org.vcell.rest.users;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Date;
 
 import org.restlet.Context;
@@ -12,11 +13,16 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
+import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+
+import com.google.gson.Gson;
 
 import cbit.vcell.resource.PropertyLoader;
 
@@ -25,10 +31,99 @@ public final class NewUserRestlet extends Restlet {
 		super(context);
 	}
 
+	private void handleJsonRequest(Request request, Response response) {
+		String content = request.getEntityAsText();
+		Gson gson = new Gson();
+		org.vcell.api.common.UserInfo userinfo = gson.fromJson(content, org.vcell.api.common.UserInfo.class);
+		
+		if (userinfo.email.length()<4){
+			response.setStatus(Status.CLIENT_ERROR_FORBIDDEN);
+			response.setEntity("valid email required", MediaType.TEXT_PLAIN);
+			return;
+		}
+		if (userinfo.userid.length()<4 || !userinfo.userid.equals(org.vcell.util.TokenMangler.fixTokenStrict(userinfo.userid))){
+			response.setStatus(Status.CLIENT_ERROR_FORBIDDEN);
+			response.setEntity("userid must be at least 4 characters and contain only alpha-numeric characters", MediaType.TEXT_PLAIN);
+			return;
+		}
+				
+		// form new UnverifiedUserInfo
+		UserInfo newUserInfo = new UserInfo();
+		newUserInfo.company = userinfo.company;
+		newUserInfo.country = userinfo.country;
+		newUserInfo.digestedPassword0 = DigestedPassword.createAlreadyDigested(userinfo.digestedPassword0);
+		newUserInfo.email = userinfo.email;
+		newUserInfo.wholeName = userinfo.wholeName;
+		newUserInfo.notify = userinfo.notify;
+		newUserInfo.title = userinfo.title;
+		newUserInfo.userid = userinfo.userid;
+		
+		boolean bEmailVerification = false;
+		
+		if (!bEmailVerification) {
+			// add Unverified UserInfo and send email
+			VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
+			try {
+				UserInfo insertedUserInfo = vcellApiApplication.getRestDatabaseService().addUser(newUserInfo);
+				org.vcell.api.common.UserInfo inserted = insertedUserInfo.getApiUserInfo();				
+				String userInfoJson = gson.toJson(inserted);
+				JsonRepresentation userRep = new JsonRepresentation(userInfoJson);
+				response.setStatus(Status.SUCCESS_CREATED);
+				response.setEntity(userRep);
+				return;
+				
+			} catch (SQLException | DataAccessException | UseridIDExistsException e) {
+				e.printStackTrace();
+				response.setStatus(Status.SERVER_ERROR_INTERNAL);
+				response.setEntity("failed to add user "+newUserInfo.userid+": "+e.getMessage(), MediaType.TEXT_PLAIN);
+				return;
+			}
+		} else {
+			Date submitDate = new Date();
+			long timeExpiresMS = 1000*60*60*1; // one hour
+			Date expirationDate = new Date(System.currentTimeMillis()+timeExpiresMS);
+			DigestedPassword emailVerifyToken = new DigestedPassword(Long.toString(System.currentTimeMillis()));
+			UnverifiedUser unverifiedUser = new UnverifiedUser(newUserInfo,submitDate,expirationDate,emailVerifyToken.getString());
+			
+			// add Unverified UserInfo and send email
+			VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
+			vcellApiApplication.getUserVerifier().addUnverifiedUser(unverifiedUser);
+			
+			try {
+				//Send new password to user
+				PropertyLoader.loadProperties();
+				BeanUtils.sendSMTP(
+					PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName),
+					new Integer(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)).intValue(),
+					PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress),
+					newUserInfo.email,
+					"new VCell account verification",
+					"You have received this email to verify that a Virtual Cell account has been associated " +
+					"with this email address.  To activate this account, please follow this link: " +
+					request.getResourceRef().getHostIdentifier()+"/"+VCellApiApplication.NEWUSER_VERIFY+"?"+VCellApiApplication.EMAILVERIFYTOKEN_FORMNAME+"="+emailVerifyToken.getString()
+				);
+			} catch (Exception e) {
+				e.printStackTrace();
+				response.setStatus(Status.SERVER_ERROR_INTERNAL);
+				response.setEntity("we failed to send a verification email to "+newUserInfo.email, MediaType.TEXT_PLAIN);
+				return;
+			}
+			response.setStatus(Status.SUCCESS_CREATED);
+			response.setEntity("we sent you a verification email at "+newUserInfo.email+", please follow the link in that email", MediaType.TEXT_PLAIN);
+		}
+	}
+
 	@Override
 	public void handle(Request request, Response response) {
 		if (request.getMethod().equals(Method.POST)){
 			Representation entity = request.getEntity();
+			if (entity.getMediaType().equals(MediaType.APPLICATION_JSON)) {
+				handleJsonRequest(request, response);
+				return;
+			}
+			
+			String content = request.getEntityAsText();
+			System.out.println(content);
 			Form form = new Form(entity);
 			
 			String userid = form.getFirstValue(VCellApiApplication.NEWUSERID_FORMNAME,"");

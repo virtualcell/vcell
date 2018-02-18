@@ -419,7 +419,7 @@ public class VCellApiClient {
 
 	public UserInfo insertUserInfo(UserInfo newUserInfo) throws ClientProtocolException, IOException {
 		  
-		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/users");
+		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/newuser");
 		Gson gson = new Gson();
 		String newUserInfoJSON = gson.toJson(newUserInfo);
 		StringEntity input = new StringEntity(newUserInfoJSON);
@@ -432,7 +432,7 @@ public class VCellApiClient {
 
 			public UserInfo handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
 				int status = response.getStatusLine().getStatusCode();
-				if (status == 202) {
+				if (status == HttpStatus.SC_CREATED) {
 					HttpEntity entity = response.getEntity();
 					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
 						String json = reader.lines().collect(Collectors.joining());
@@ -440,7 +440,12 @@ public class VCellApiClient {
 						return userInfo;
 					}
 				} else {
-					throw new ClientProtocolException("Unexpected response status: " + status);
+					HttpEntity entity = response.getEntity();
+					String message = null;
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						message = reader.lines().collect(Collectors.joining());
+					}
+					throw new ClientProtocolException("Unexpected response status: " + status + "\nreason: " + message);
 				}
 			}
 
