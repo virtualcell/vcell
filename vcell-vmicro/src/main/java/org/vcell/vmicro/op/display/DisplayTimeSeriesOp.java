@@ -126,6 +126,7 @@ public class DisplayTimeSeriesOp {
 			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 			final VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
 				public User getOwner() {	return new User("nouser",null);		}
+				public KeyValue getDataKey() { return null; }
 				public String getID()  {	return "mydata";					}
 			};
 			PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcDataIdentifier);

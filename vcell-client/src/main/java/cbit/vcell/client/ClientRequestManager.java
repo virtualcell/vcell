@@ -135,7 +135,6 @@ import cbit.image.VCImageInfo;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.ExportEvent.AnnotatedExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
@@ -2400,15 +2399,14 @@ public static void downloadExportedData(final Component requester, final UserPre
 //					    		fos.write(mybuf, 0, numread);
 //					    	}
 //					    	fos.close();
-			    	AnnotatedExportEvent annotatedExportEvent = (AnnotatedExportEvent)evt;
-			    	TimeSpecs timeSpecs = annotatedExportEvent.getExportSpecs().getTimeSpecs();
+			    	TimeSpecs timeSpecs = evt.getTimeSpecs();
 			    	double[] timePoints = new double[timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1];
 			    	for (int tp = timeSpecs.getBeginTimeIndex(); tp <= timeSpecs.getEndTimeIndex(); tp++){
 			    		timePoints[tp-timeSpecs.getBeginTimeIndex()] = timeSpecs.getAllTimes()[tp];
 			    	}
 			    	imagejConnetArr[0] = new ImageJConnection(ImageJHelper.ExternalCommunicator.IMAGEJ);//doesn't open connection until later
 			    	bis = new BufferedInputStream(zis);
-			    	ImageJHelper.vcellSendNRRD(requester,bis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'",timePoints,annotatedExportEvent.getExportSpecs().getVariableSpecs().getVariableNames());
+			    	ImageJHelper.vcellSendNRRD(requester,bis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'",timePoints,evt.getVariableSpecs().getVariableNames());
 		    	}finally{
 		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}
 		    		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
@@ -2426,7 +2424,7 @@ public static void downloadExportedData(final Component requester, final UserPre
 			final VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setMultiSelectionEnabled(false);
-		    String name = evt.getVCDataIdentifier().getID();
+		    String name = evt.getDataIdString();
 		    String suffix = null;
 		    if(evt.getLocation().toLowerCase().endsWith(".mov")){
 				fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MOV);

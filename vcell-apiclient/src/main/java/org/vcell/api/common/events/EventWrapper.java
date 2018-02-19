@@ -3,7 +3,8 @@ package org.vcell.api.common.events;
 public class EventWrapper {
 	
 	public static enum EventType {
-		SimJob
+		SimJob,
+		ExportEvent
 	}
 	
 	public final long id;

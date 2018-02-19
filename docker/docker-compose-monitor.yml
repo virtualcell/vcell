@@ -1,0 +1,18 @@
+version: '3.1'
+services:
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 500M
+        reservations:
+          cpus: '0.15'
+          memory: 50M

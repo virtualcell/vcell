@@ -26,6 +26,8 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -35,6 +37,7 @@ import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 
 /**
  * This type was created in VisualAge.
@@ -88,7 +91,19 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent.AnnotatedExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_COMPLETE, format, location, null,exportSpecs);
+	TimeSpecs timeSpecs = (exportSpecs!=null)?exportSpecs.getTimeSpecs():(null);
+	VariableSpecs varSpecs = (exportSpecs!=null)?exportSpecs.getVariableSpecs():(null);
+	final KeyValue dataKey;
+	if (vcdID instanceof VCSimulationDataIdentifier) {
+		dataKey = ((VCSimulationDataIdentifier)vcdID).getSimulationKey();
+	}else if (vcdID instanceof ExternalDataIdentifier) {
+		dataKey = ((ExternalDataIdentifier)vcdID).getSimulationKey();
+	}else {
+		throw new RuntimeException("unexpected VCDataIdentifier");
+	}
+	ExportEvent event = new ExportEvent(
+			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE, 
+			format, location, null, timeSpecs, varSpecs);
 	fireExportEvent(event);
 	return event;
 }
@@ -100,7 +115,7 @@ protected void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String f
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_ASSEMBLING, format, null, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_ASSEMBLING, format, null, null, null, null);
 	fireExportEvent(event);
 }
 
@@ -136,7 +151,7 @@ protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String forma
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null, null, null);
 	fireExportEvent(event);
 }
 
@@ -153,7 +168,7 @@ protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String for
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress));
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress), null, null);
 	fireExportEvent(event);
 }
 
@@ -169,7 +184,7 @@ protected void fireExportStarted(long jobID, VCDataIdentifier vcdID, String form
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_START, format, null, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_START, format, null, null, null, null);
 	fireExportEvent(event);
 }
 
@@ -217,19 +232,8 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 
 	try {
 
-		// check required properties first
-		String exportBaseURL = null;
-		String exportBaseDir = null;
-		try {
-			exportBaseURL = System.getProperty(PropertyLoader.exportBaseURLProperty);
-		} catch (Exception e){
-			throw new RuntimeException("required System property \""+PropertyLoader.exportBaseURLProperty+"\" not defined");
-		}
-		try {
-			exportBaseDir = System.getProperty(PropertyLoader.exportBaseDirInternalProperty);
-		} catch (Exception e){
-			throw new RuntimeException("required System property \""+PropertyLoader.exportBaseDirInternalProperty+"\" not defined");
-		}
+		String exportBaseURL = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty);
+		String exportBaseDir = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirInternalProperty);
 
 		
 //		// see if we've done this before, and try to get it

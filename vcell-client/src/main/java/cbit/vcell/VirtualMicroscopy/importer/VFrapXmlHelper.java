@@ -213,6 +213,9 @@ public class VFrapXmlHelper {
 			public String getID(){
 				return dataID;
 			}
+			public KeyValue getDataKey() {
+				return null;
+			}
 			public User getOwner(){
 				return new User(userName, new KeyValue("123345432334"));
 			}

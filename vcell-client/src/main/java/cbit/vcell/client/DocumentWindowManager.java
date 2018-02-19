@@ -35,7 +35,6 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.xml.merge.XmlTreeDiff;
 /**
@@ -210,11 +209,13 @@ public void dataJobMessage(DataJobEvent event){
  * @param exportEvent cbit.rmi.event.ExportEvent
  */
 public void exportMessage(ExportEvent exportEvent) {
-	if(exportEvent.getVCDataIdentifier() instanceof VCSimulationDataIdentifier){
-		VCSimulationDataIdentifier vcSimulationDataIdentifier = (VCSimulationDataIdentifier)(exportEvent.getVCDataIdentifier());
-		if (haveSimulationWindow(vcSimulationDataIdentifier.getVcSimID()) == null) {// && exportEvent.getEventTypeID() != ExportEvent.EXPORT_COMPLETE) {
-			return;
-		}		
+	//
+	// may not come from a simulation, but we'll create a VCSimulationIdentifer to match with the window just in case
+	// if it is not a match, no harm.
+	//
+	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(exportEvent.getDataKey(),exportEvent.getUser());
+	if (haveSimulationWindow(vcSimID) == null) {// && exportEvent.getEventTypeID() != ExportEvent.EXPORT_COMPLETE) {
+		return;
 	}
 	// just pass them along...
 	fireExportMessage(exportEvent);

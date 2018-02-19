@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver;
 
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
 
 /**
@@ -123,5 +124,11 @@ public boolean isParameterScanType() {
  */
 public String toString() {
 	return "VCSimulationIdentifier["+getSimulationKey()+","+jobIndex+","+getOwner()+"]";
+}
+
+
+@Override
+public KeyValue getDataKey() {
+	return getSimulationKey();
 }
 }

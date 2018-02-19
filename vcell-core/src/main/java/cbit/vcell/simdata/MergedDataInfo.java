@@ -10,6 +10,7 @@
 
 package cbit.vcell.simdata;
 
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
@@ -135,5 +136,10 @@ public int hashCode() {
 
 public String[] getDataSetPrefix() {
 	return dataSetPrefix;
+}
+
+@Override
+public KeyValue getDataKey() {
+	return null;
 }
 }

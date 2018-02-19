@@ -48,7 +48,7 @@ public void dataJobMessage(DataJobEvent dje) {
  * @param event cbit.rmi.event.ExportEvent
  */
 public void exportMessage(ExportEvent event) {
-	getExportMonitorPanel().addExportEvent(event, event.getVCDataIdentifier().getID());
+	getExportMonitorPanel().addExportEvent(event, event.getDataIdString());
 }
 
 

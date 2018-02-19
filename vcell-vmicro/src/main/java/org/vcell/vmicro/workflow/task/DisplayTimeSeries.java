@@ -11,6 +11,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
@@ -243,6 +244,7 @@ public class DisplayTimeSeries extends Task {
 		OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 		VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
 			public User getOwner() {	return new User("nouser",null);		}
+			public KeyValue getDataKey() { return null; }
 			public String getID()  {	return "mydata";					}
 		};
 		PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcDataIdentifier);

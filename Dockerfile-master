@@ -38,9 +38,10 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsrestport_external="jms-restport-external-not-set" \
 	mongodb_host_internal=mongodb \
 	mongodb_port_internal=27017 \
-	mongodb_database=test \
-	mongodb_host_external="mongodb-host-external-not-set" \
-	mongodb_port_external="mongodb-port-external-not-set" \
+    mongodb_database=test \
+    mongodb_host_external="mongodb-host-external-not-set" \
+    mongodb_port_external="mongodb-port-external-not-set" \
+    export_baseurl="export-baseurl-not-set" \
     simdatadir_external=/path/to/external/simdata/ \
     simdatadir_parallel_external=/path/to/external/parallel/simdata/ \
     htclogdir_external=/path/to/external/htclogs/ \
@@ -61,6 +62,7 @@ ENV dbpswdfile=/run/secrets/dbpswd \
     batchuserkeyfile=/run/secrets/batchuserkeyfile
 
 VOLUME /simdata
+VOLUME /exportdir
 
 EXPOSE 8000
 
@@ -75,6 +77,8 @@ ENTRYPOINT java \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.parallelDatadir.external="${simdatadir_parallel_external}" \
 	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \
+	-Dvcell.export.baseDir.internal=/exportdir \
+	-Dvcell.export.baseURL="${export_baseurl}" \
 	-Dvcell.htc.user="${batchuser}" \
 	-Dvcell.htc.logdir.external="${htclogdir_external}" \
 	-Dvcell.htc.nodelist="${htcnodelist}" \

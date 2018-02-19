@@ -7,8 +7,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.vcell.api.common.events.EventWrapper;
 import org.vcell.api.common.events.EventWrapper.EventType;
-import org.vcell.rest.server.ClientTopicMessageCollector;
+import org.vcell.api.common.events.ExportEventRepresentation;
 import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
+import org.vcell.rest.server.ClientTopicMessageCollector;
 import org.vcell.util.Compare;
 import org.vcell.util.SessionLog;
 
@@ -16,7 +17,6 @@ import com.google.gson.Gson;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.ExportEvent.AnnotatedExportEvent;
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
@@ -51,15 +51,23 @@ public class RestEventService {
 	
 	private void newEventMessage(MessageEvent event) {
 		System.out.println(getClass().getName()+".newEventMessage("+event.getClass().getSimpleName()+": "+event);
-		if (event instanceof DataJobEvent) {
-			DataJobEvent dataJobEvent = (DataJobEvent)event;
-		}else if (event instanceof ExportEvent) {
+		if (event instanceof ExportEvent) {
 			ExportEvent exportEvent = (ExportEvent) event;
-			if (exportEvent instanceof AnnotatedExportEvent) {
-				AnnotatedExportEvent annotatedExportEvent = (AnnotatedExportEvent)exportEvent;
+			try {
+				ExportEventRepresentation exportEventRep = exportEvent.toJsonRep();
+				ExportEvent event2 = ExportEvent.fromJsonRep(this, exportEventRep);
+				if (!Compare.isEqual(event2.getFormat(),exportEvent.getFormat())) {
+					throw new RuntimeException("Export event round-trip failed");
+				}
+				if (!Compare.isEqual(event2.getJobID(),exportEvent.getJobID())) {
+					throw new RuntimeException("Export event round-trip failed");
+				}
+				Gson gson = new Gson();
+				String eventJSON = gson.toJson(exportEventRep);
+				insert(exportEventRep.username,EventType.ExportEvent,eventJSON);
+			}catch (Exception e) {
+				e.printStackTrace();
 			}
-		}else if (event instanceof PerformanceMonitorEvent) {
-			PerformanceMonitorEvent performanceMonitorEvent = (PerformanceMonitorEvent)event;
 		}else if (event instanceof SimulationJobStatusEvent) {
 			SimulationJobStatusEvent simJobEvent = (SimulationJobStatusEvent)event;
 			try {
@@ -81,6 +89,10 @@ public class RestEventService {
 			VCellMessageEvent vcellMessageEvent = (VCellMessageEvent)event;
 		}else if (event instanceof WorkerEvent) {
 			WorkerEvent workerEvent = (WorkerEvent)event;
+		}else if (event instanceof PerformanceMonitorEvent) {
+			PerformanceMonitorEvent performanceMonitorEvent = (PerformanceMonitorEvent)event;
+		}else if (event instanceof DataJobEvent) {
+			DataJobEvent dataJobEvent = (DataJobEvent)event;
 		}
 	}
 	

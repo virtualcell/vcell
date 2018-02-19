@@ -3,7 +3,7 @@ services:
   activemq:
     image: webcenter/activemq:5.14.3
     ports:
-      - "61619:61616"
+      - "61620:61616"
       - "8164:8161"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbReq;simJob;workerEvent
@@ -30,7 +30,7 @@ services:
   mongodb:
     image: schaff/vcell-mongo:7.0.0-alpha
     ports:
-      - "27020:27017"
+      - "27021:27017"
     networks:
       - vcellnet
     deploy:

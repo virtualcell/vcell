@@ -9,47 +9,56 @@
  */
 
 package cbit.rmi.event;
-import java.io.Serializable;
-
+import org.vcell.api.common.events.ExportEventRepresentation;
+import org.vcell.api.common.events.ExportTimeSpecs;
+import org.vcell.api.common.events.ExportVariableSpecs;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.export.server.VariableSpecs;
 
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
  */
 public class ExportEvent extends MessageEvent {
-	private int eventType = 0;
-	private Double progress = null;
-	private String format = null;
-	private String location = null;
-	private User user = null;
-	private long jobID = 0L;
-	private VCDataIdentifier vcDataIdentifier = null;
+	private final int eventType;
+	private final Double progress;
+	private final String format;
+	private final String location;
+	private final User user;
+	private final long jobID;
+	private final KeyValue dataKey;
+	private final String dataIdString;
+	private final TimeSpecs timeSpecs;
+	private final VariableSpecs variableSpecs;
+	
+	public ExportEvent(Object source, long jobID, User user, 
+			VCDataIdentifier vcDataId, int argEventType, 
+			String format, String location, Double argProgress,
+			TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
 
-	public static class AnnotatedExportEvent extends ExportEvent implements Serializable{
-		private ExportSpecs exportSpecs;
-		public AnnotatedExportEvent(Object source, long jobID, User user, VCDataIdentifier vcsID, int argEventType, String format, String location, Double argProgress,ExportSpecs exportSpecs){
-			super(source, jobID, user, vcsID, argEventType, format, location, argProgress);
-			this.exportSpecs = exportSpecs;
-		}
-		public ExportSpecs getExportSpecs(){
-			return exportSpecs;
-		}
+		this(source,jobID,user,
+			vcDataId.getID(),vcDataId.getDataKey(),argEventType,
+			format,location,argProgress,timeSpecs,variableSpecs);
 	}
-/**
- * ExportEvent constructor comment.
- */
-public ExportEvent(Object source, long jobID, User user, VCDataIdentifier vcsID, int argEventType, String format, String location, Double argProgress) {
-	super(source, new MessageSource(source, vcsID.getID()), new MessageData(argProgress));
+	
+	public ExportEvent(Object source, long jobID, User user, 
+		String dataIdString, KeyValue dataKey, int argEventType, 
+		String format, String location, Double argProgress,
+		TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
+	super(source, new MessageSource(source, dataIdString), new MessageData(argProgress));
 	this.eventType = argEventType;
 	this.format = format;
 	this.location = location;
 	this.progress = argProgress;
 	this.jobID = jobID;
 	this.user = user;
-	this.vcDataIdentifier = vcsID;
+	this.dataIdString = dataIdString;
+	this.dataKey = dataKey;
+	this.timeSpecs = timeSpecs;
+	this.variableSpecs = variableSpecs;
 }
 
 
@@ -112,16 +121,21 @@ public User getUser() {
 	return user;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/2/2001 8:59:46 PM)
- * @return cbit.vcell.solver.SimulationInfo
- */
-public VCDataIdentifier getVCDataIdentifier() {
-	return vcDataIdentifier;
+public KeyValue getDataKey() {
+	return dataKey;
 }
 
+
+public String getDataIdString() {
+	return dataIdString;
+}
+
+public TimeSpecs getTimeSpecs() {
+	return timeSpecs;
+}
+public VariableSpecs getVariableSpecs() {
+	return variableSpecs;
+}
 
 @Override
 public boolean isSupercededBy(MessageEvent messageEvent) {
@@ -162,7 +176,42 @@ public String toString() {
 		+ "\", user="
 		+ getUser()
 		+ ", simID="
-		+ (getVCDataIdentifier() != null ?
-			getVCDataIdentifier().getID() : null);
+		+ dataIdString;
+}
+
+
+public ExportEventRepresentation toJsonRep() {
+	ExportTimeSpecs exportTimeSpecs = null;
+	if (timeSpecs!=null) {
+		exportTimeSpecs = timeSpecs.toJsonRep();
+	}
+	ExportVariableSpecs exportVariableSpecs = null;
+	if (variableSpecs!=null) {
+		exportVariableSpecs = variableSpecs.toJsonRep();
+	}
+	return new ExportEventRepresentation(
+			eventType,progress,format,
+			location,user.getName(),user.getID().toString(), jobID,
+			dataIdString, dataKey.toString(),
+			exportTimeSpecs, exportVariableSpecs);
+}
+
+
+public static ExportEvent fromJsonRep(Object eventSource, ExportEventRepresentation rep) {
+	User user = new User(rep.username, new KeyValue(rep.userkey));
+	TimeSpecs timeSpecs = null;
+	if (rep.exportTimeSpecs!=null) {
+		timeSpecs = TimeSpecs.fromJsonRep(rep.exportTimeSpecs);
+	}
+	VariableSpecs variableSpecs = null;
+	if (rep.exportVariableSpecs!=null) {
+		variableSpecs = VariableSpecs.fromJsonRep(rep.exportVariableSpecs);
+	}
+	ExportEvent event = new ExportEvent(
+		eventSource, rep.jobid, user, 
+		rep.dataIdString, new KeyValue(rep.dataKey), rep.eventType, 
+		rep.format, rep.location, rep.progress,
+		timeSpecs, variableSpecs);
+	return event;
 }
 }

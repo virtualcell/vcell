@@ -128,4 +128,9 @@ public KeyValue getSimulationKey(){
 public boolean isParameterScanType() {
 	return true;//???check this
 }
+
+@Override
+public KeyValue getDataKey() {
+	return getKey();
+}
 }

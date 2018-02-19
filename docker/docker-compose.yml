@@ -65,6 +65,7 @@ services:
       - mongodb_port_external=${VCELL_MONGO_PORT_EXTERNAL}
       - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
       - simdatadir_parallel_external=${VCELL_SIMDATADIR_PARALLEL_EXTERNAL}
+      - export_baseurl=${VCELL_EXPORT_BASEURL}
 
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
@@ -87,6 +88,7 @@ services:
       - "8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd
       - jmspswd
@@ -152,91 +154,9 @@ services:
         reservations:
           cpus: '0.25'
           memory: 50M
-      
-  visualizer:
-    image: dockersamples/visualizer:stable
-    ports:
-      - "8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 500M
-        reservations:
-          cpus: '0.15'
-          memory: 50M
-    networks:
-      - vcellnet
-
-
-  # cadvisor:
-  #   image: google/cadvisor:latest
-  #   volumes:
-  #     - /:/rootfs:ro
-  #     - /var/run:/var/run:rw
-  #     - /sys:/sys:ro
-  #     - /var/lib/docker/:/var/lib/docker:ro
-  #   ports:
-  #     - "8080"
-  #   # restart: always
-  #   # cpuset: 0,1
-  #   # cpu_shares: 512
-  #   # mem_limit: 1g
-
-  # nodeexporter:
-  #   image: prom/node-exporter
-  #   ports:
-  #     - "9100"
-  #   deploy:
-  #     mode: global
-
-  # alertmanager:
-  #   image: prom/alertmanager:v0.6.2
-
-  # dockerui:
-  #   image: dockerui/dockerui
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   ports:
-  #     - "9000:9000"
-  #   privileged: true
-  #   # restart: always
-  #   # cpuset: 0,1
-  #   # cpu_shares: 512
-  #   # mem_limit: 1g
-
-
-  # zookeeper:
-  #   image: wurstmeister/zookeeper
-  #   ports:
-  #     - "2181:2181"
-  # kafka:
-  #   image: ${REPO}kafka-docker:latest
-  #   ports:
-  #     - target: 9094
-  #       published: 9094
-  #       protocol: tcp
-  #       mode: host
-  #   environment:
-  #     HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"      
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-  #     KAFKA_ADVERTISED_PROTOCOL_NAME: OUTSIDE
-  #     KAFKA_ADVERTISED_PORT: 9094
-  #     KAFKA_PROTOCOL_NAME: INSIDE
-  #     KAFKA_PORT: 9092
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-
 
 networks:
   vcellnet:
-  # prometheus_network:
-  #   driver: overlay
 secrets:
   dbpswd:
     file: ${VCELL_SECRETS_DIR}/dbpswd.txt

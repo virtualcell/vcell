@@ -62,6 +62,9 @@ public static void main(String[] args) {
 		public String getID() {
 			return "SimID_8483780";
 		}
+		public KeyValue getDataKey() {
+			return new KeyValue("8483780");
+		}
 		public org.vcell.util.document.User getOwner() {
 			return user;
 		}

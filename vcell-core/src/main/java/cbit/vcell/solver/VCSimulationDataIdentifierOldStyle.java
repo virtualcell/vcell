@@ -123,4 +123,10 @@ public int hashCode() {
 public String toString() {
 	return "VCSimulationIdentifierOldStyle["+vcSimID.getSimulationKey()+","+getOwner()+"]";
 }
+
+
+@Override
+public KeyValue getDataKey() {
+	return getSimulationKey();
+}
 }

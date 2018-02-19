@@ -333,7 +333,9 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		PropertyLoader.htcLogDirExternal,
 		PropertyLoader.pythonExe,
 		PropertyLoader.jmsBlobMessageUseMongo,
-		PropertyLoader.maxJobsPerScan
+		PropertyLoader.maxJobsPerScan,
+		PropertyLoader.exportBaseURLProperty,
+		PropertyLoader.exportBaseDirInternalProperty
 	};
 
 

@@ -23,6 +23,7 @@ import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.api.common.events.EventWrapper;
+import org.vcell.api.common.events.ExportEventRepresentation;
 import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.SessionLog;
@@ -32,6 +33,7 @@ import org.vcell.util.document.UserLoginInfo;
 
 import com.google.gson.Gson;
 
+import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.message.VCRpcRequest;
@@ -78,6 +80,9 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 			long previousTimestamp = lastProcessedEventTimestamp.get();
 			long latestTimestapRetrieved = previousTimestamp;
 			EventWrapper[] eventWrappers = vcellApiClient.getEvents(previousTimestamp);
+			if (eventWrappers == null || eventWrappers.length==0) {
+				return new MessageEvent[0];
+			}
 			for (EventWrapper eventWrapper : eventWrappers) {
 				latestTimestapRetrieved = Math.max(eventWrapper.timestamp, latestTimestapRetrieved);
 			}
@@ -95,6 +100,12 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 							gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);
 					SimulationJobStatusEvent simJobStatusEvent = SimulationJobStatusEvent.fromJsonRep(this, simJobStatusEventRep);
 					messageEvents.add(simJobStatusEvent);
+					break;
+				}
+				case ExportEvent:{
+					ExportEventRepresentation exportEventRep = gson.fromJson(eventWrapper.eventJSON, ExportEventRepresentation.class);
+					ExportEvent exportEvent = ExportEvent.fromJsonRep(this, exportEventRep);
+					messageEvents.add(exportEvent);
 					break;
 				}
 				default:{

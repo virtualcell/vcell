@@ -23,6 +23,8 @@ public interface VCDataIdentifier {
  * @return java.lang.String
  */
 String getID();
+
+KeyValue getDataKey();
 /**
  * Insert the method's description here.
  * Creation date: (9/22/2003 11:31:01 AM)
