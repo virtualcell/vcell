@@ -28,7 +28,7 @@ services:
           cpus: '0.25'
           memory: 600M
   mongodb:
-    image: schaff/vcell-mongo:7.0.0-alpha
+    image: schaff/vcell-mongo:latest
     ports:
       - "27021:27017"
     networks:
