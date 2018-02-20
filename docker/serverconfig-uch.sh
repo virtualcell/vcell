@@ -98,7 +98,7 @@ VCELL_SMTP_HOSTNAME=vdsmtp.cam.uchc.edu
 VCELL_SMTP_PORT=25
 VCELL_SMTP_EMAILADDRESS=VCell_Support@uchc.edu
 VCELL_EXPORT_BASEURL=http://vcell.org/export/
-VCELL_EXPORTDIR_HOST=/share/apps/vcell3/export/
+VCELL_EXPORTDIR_HOST=/opt/vcelldata/export/
 
 cat <<EOF >$_outputfile
 VCELL_SITE=$VCELL_SITE
