@@ -20,6 +20,9 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+       placement:
+        constraints:
+          - node.hostname == vcell-docker
       resources:
         limits:
           cpus: '0.50'
@@ -36,6 +39,9 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints:
+          - node.hostname == vcell-docker
       resources:
         limits:
           cpus: '0.50'
