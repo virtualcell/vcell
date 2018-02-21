@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
@@ -142,25 +143,52 @@ public class GeneratedSpeciesTableModel2 extends VCellSortTableModel<GeneratedSp
 		
 	}
 	
+	@Override
+	public boolean isSortable(int column) {
+		switch (column) {
+		default:
+			return true;	// sortable by all
+		}
+	};
 	public Comparator<GeneratedSpeciesTableRow> getComparator(final int col, final boolean ascending) {
 		final int scale = ascending ? 1 : -1;
 		return new Comparator<GeneratedSpeciesTableRow>() {
 		    public int compare(GeneratedSpeciesTableRow o1, GeneratedSpeciesTableRow o2) {
 				switch (col) {
+				case iColMultiplier:
+					return scale * o1.getMultiplier().compareTo(o2.getMultiplier());
 				case iColOriginalName:
 					return scale * o1.getOriginalName().compareToIgnoreCase(o2.getOriginalName());
 				case iColStructure:
-					String es1 = o1.getExpression();
-					String es2 = o2.getExpression();
-					if(es1.startsWith("@") && es1.contains(":")) {		// no point to check es2 as well
-						String n1 = es1.substring(1, es1.indexOf(":"));
-						String n2 = es2.substring(1, es2.indexOf(":"));
-						return scale * n1.compareToIgnoreCase(n2);
-					} else {
-						return 0;	// we should be here only if we have one single structure, so nothing to sort
+//					String es1 = o1.getExpression();
+//					String n1 = es1.substring(1, es1.indexOf(":"));
+					return 0;		// all generated species must belong to the same structure - the one of the observable
+				case iColDefinition:	// sort just by the expression, doesn't matter if the structure is mentioned or not because 
+										// all the generated species for this observable are in the same structure anyway
+					return scale * o1.getExpression().compareToIgnoreCase(o2.getExpression());
+				case iColDepiction:
+					if(o1.getSpecies() != null && o1.getSpecies().hasSpeciesPattern() && o2.getSpecies() != null && o2.getSpecies().hasSpeciesPattern()) {
+						Integer i1 = o1.getSpecies().getSpeciesPattern().getMolecularTypePatterns().size();
+						Integer i2 = o2.getSpecies().getSpeciesPattern().getMolecularTypePatterns().size();
+						if(scale * i1.compareTo(i2) == 0) {
+							// if same number of molecule we try to sort by number of sites of the mt
+							i1 = 0;
+							i2 = 0;
+							for(MolecularTypePattern mtp : o1.getSpecies().getSpeciesPattern().getMolecularTypePatterns()) {
+								i1 += mtp.getMolecularType().getComponentList().size();
+							}
+							for(MolecularTypePattern mtp : o2.getSpecies().getSpeciesPattern().getMolecularTypePatterns()) {
+								i2 += mtp.getMolecularType().getComponentList().size();
+							}
+							return scale * i1.compareTo(i2);
+						} else {
+							return scale * i1.compareTo(i2);
+						}
 					}
+					return 0;
+					default:
+						return 0;
 				}
-		    	return 0;
 		    }
 		};
 	}

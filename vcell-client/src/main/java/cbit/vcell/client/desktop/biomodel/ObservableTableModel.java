@@ -264,8 +264,40 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 					return scale * RbmUtils.toBnglString(o1.getSpeciesPattern(0), null, CompartmentMode.hide, 0).compareToIgnoreCase(RbmUtils.toBnglString(o2.getSpeciesPattern(0), null, CompartmentMode.hide, 0));
 				case type:					
 					return scale * o1.getType().name().compareToIgnoreCase(o2.getType().name());
+				case depiction:
+					Integer s1 = o1.getSpeciesPatternList().size();	// the sp list is always allocated even though it may be empty
+					Integer s2 = o2.getSpeciesPatternList().size();
+					if(s1 != s2) {
+						return scale * s1.compareTo(s2);	// different number of species patterns, sort by number of patterns
+															// this includes the case when one list is empty
+					}
+					if(s1>1 && s2>1) {
+						return 0;				// same number of species patterns, more than one - we don't bother to sort
+												// TODO: add functionality to sort by total number of molecules / sites
+					}
+					// one pattern each, sort by number of molecules, if that equal sort by total number of sites
+					if(s1 == 1 && s2 == 1) {
+						Integer i1 = o1.getSpeciesPattern(0).getMolecularTypePatterns().size();
+						Integer i2 = o2.getSpeciesPattern(0).getMolecularTypePatterns().size();
+						if(scale * i1.compareTo(i2) == 0) {
+							// if same number of molecule we try to sort by number of sites of the mt
+							i1 = 0;
+							i2 = 0;
+							for(MolecularTypePattern mtp : o1.getSpeciesPattern(0).getMolecularTypePatterns()) {
+								i1 += mtp.getMolecularType().getComponentList().size();
+							}
+							for(MolecularTypePattern mtp : o2.getSpeciesPattern(0).getMolecularTypePatterns()) {
+								i2 += mtp.getMolecularType().getComponentList().size();
+							}
+							return scale * i1.compareTo(i2);
+						} else {
+							return scale * i1.compareTo(i2);
+						}
+					}
+					return 0;
+				default:
+					return 0;
 				}
-				return 0;
 			}
 		};
 	}

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.gui.AutoCompleteTableModel;
@@ -39,7 +40,7 @@ import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
 public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesGroupTableRow> 
-	implements  PropertyChangeListener, AutoCompleteTableModel{
+	implements  PropertyChangeListener, AutoCompleteTableModel {
 
 	public static final int colCount = 6;
 	public static final int iColOriginalName = 0;
@@ -194,12 +195,23 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 		
 	}
 	
+	@Override
+	public boolean isSortable(int column) {
+		switch (column) {
+		case iColExpression:
+			return false;
+		default:
+			return true;
+		}
+	};
 	public Comparator<ObservablesGroupTableRow> getComparator(final int col, final boolean ascending) {
 		final int scale = ascending ? 1 : -1;
 		return new Comparator<ObservablesGroupTableRow>() {
 		    public int compare(ObservablesGroupTableRow o1, ObservablesGroupTableRow o2) {
 		    	String n1 = o1.getObservableGroupObject().getObservableGroupName();
 		    	String n2 = o2.getObservableGroupObject().getObservableGroupName();
+				RbmObservable ob1 = o1.getObservable(n1);
+				RbmObservable ob2 = o2.getObservable(n2);
 				switch (col) {
 				case iColOriginalName:
 					return scale * n1.compareToIgnoreCase(n2);
@@ -213,8 +225,55 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 					} else {
 						return 0;	// we should be here only if we have one single structure, so nothing to sort
 					}
+				case iColDepiction:
+					if(ob1 == null && ob2 == null) {
+						return 0;
+					}
+					Integer s1 = ob1.getSpeciesPatternList().size();	// the sp list is always allocated even though it may be empty
+					Integer s2 = ob2.getSpeciesPatternList().size();
+					if(s1 != s2) {
+						return scale * s1.compareTo(s2);	// different number of species patterns, sort by number of patterns
+															// this includes the case when one list is empty
+					}
+					if(s1>1 && s2>1) {
+						return 0;				// same number of species patterns, more than one - we don't bother to sort
+												// TODO: add functionality to sort by total number of molecules / sites
+					}
+					// one pattern each, sort by number of molecules, if that equal sort by total number of sites
+					if(s1 == 1 && s2 == 1) {
+						Integer i1 = ob1.getSpeciesPattern(0).getMolecularTypePatterns().size();
+						Integer i2 = ob2.getSpeciesPattern(0).getMolecularTypePatterns().size();
+						if(scale * i1.compareTo(i2) == 0) {
+							// if same number of molecule we try to sort by number of sites of the mt
+							i1 = 0;
+							i2 = 0;
+							for(MolecularTypePattern mtp : ob1.getSpeciesPattern(0).getMolecularTypePatterns()) {
+								i1 += mtp.getMolecularType().getComponentList().size();
+							}
+							for(MolecularTypePattern mtp : ob2.getSpeciesPattern(0).getMolecularTypePatterns()) {
+								i2 += mtp.getMolecularType().getComponentList().size();
+							}
+							return scale * i1.compareTo(i2);
+						} else {
+							return scale * i1.compareTo(i2);
+						}
+					}
+					return 0;
+				case iColDefinition:
+					es1 = ObservablesGroupTableRow.toBnglString(o1.getObservable(n1));
+					es2 = ObservablesGroupTableRow.toBnglString(o2.getObservable(n2));
+					if(es1.startsWith("@") && es1.contains(":")) {		// multi-structure; no point to check es2 as well
+						String sn1 = es1.substring(es1.indexOf(":")+1);
+						String sn2 = es2.substring(es2.indexOf(":")+1);
+						return scale * sn1.compareToIgnoreCase(sn2);
+					} else {
+						return scale * es1.compareToIgnoreCase(es2);	// single structure
+					}
+				case iColCount:
+					return scale * ob1.getType().name().compareTo(ob2.getType().name());
+				default:
+					return 0;
 				}
-		    	return 0;
 		    }
 		};
 	}
