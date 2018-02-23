@@ -7,11 +7,12 @@
 
 ```bash
 docker swarm init
+docker swarm 
 docker node update --label-add zone=INTERNAL `docker node ls -q`
 sudo sudo sysctl -w vm.max_map_count=262144 ### for elasticsearch (ELK stack)
 ```
 
-2a) install singularity on the build machine if Linux (or use Vagrant Box for singularity on Macos)
+2a) set up a build machine.  Install java jdk 1.8, maven 3.5, and singularity on a Linux or Macos build machine (use Vagrant Box in vcell/docker/singularity-vm for singularity on Macos).
 
 ```bash
 git clone https://github.com/singularityware/singularity.git
@@ -23,7 +24,6 @@ sudo make install
 sudo yum install squashfs-tools.x86_64
 sudo ln -s /usr/local/bin/singularity /usr/bin/singularity 
 ```
-
 
 3) deploy a vcell production stack (named "local") on a single machine Docker swarm mode
 
@@ -173,14 +173,14 @@ current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 ```bash
-export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=9865783
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=87f7191
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=15 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=16 VCELL_SITE=alpha
 export VCELL_INSTALLER_REMOTE_DIR="apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
