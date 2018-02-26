@@ -190,6 +190,17 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 	}
 	
 	@Override
+	public boolean isSortable(int column) {
+		Column col = Column.values()[column];
+		switch (col) {
+		case link:
+			return false;
+		default:
+			return true;
+		}
+	};
+	
+	@Override
 	protected Comparator<MolecularType> getComparator(final int columnIndex, final boolean ascending) {
 		final int scale = ascending ? 1 : -1;
 		final Column col = Column.values()[columnIndex];
@@ -198,8 +209,19 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 				switch (col) {
 				case name:
 					return scale * o1.getName().compareToIgnoreCase(o2.getName());
+				case bngl_pattern:
+					return scale * pattern(o1).compareToIgnoreCase(pattern(o2));
+				case depiction:
+					Integer n1 = o1.getComponentList().size();
+					Integer n2 = o2.getComponentList().size();
+					if(n1 != n2) {
+						return scale * n1.compareTo(n2);
+					} else {	// if same number of sites, sort by name
+						return scale * o1.getName().compareToIgnoreCase(o2.getName());
+					}
+					default:
+						return 0;
 				}
-				return 0;
 			}
 		};
 	}
