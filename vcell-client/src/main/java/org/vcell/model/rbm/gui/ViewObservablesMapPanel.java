@@ -57,6 +57,8 @@ import org.vcell.util.gui.EditorScrollTable;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.ObservableTableModel;
+import cbit.vcell.client.desktop.biomodel.RbmTableRenderer;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.graph.GraphConstants;
@@ -401,6 +403,32 @@ private void initialize() {
 				return true;
 			}
 		};
+		
+		// 
+		DefaultScrollTableCellRenderer rbmSpeciesPatternCellRenderer = new DefaultScrollTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof GeneratedSpeciesTableModel2) {
+					Object selectedObject = null;
+					if (table.getModel() == speciesTableModel) {
+						selectedObject = speciesTableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof GeneratedSpeciesTableRow && value instanceof String) {
+							SpeciesPattern sp = ((GeneratedSpeciesTableRow)selectedObject).getSpecies().getSpeciesPattern();
+							String text = "<html>";
+							text += RbmTableRenderer.toHtml(sp, isSelected);
+							text += "</html>";
+							setText(text);
+						}
+					}
+				}
+				return this;
+			}
+		};
 
 		//shapePanelObservable.setLayout(null);
 		shapePanelObservable.setLayout(new GridBagLayout());
@@ -466,6 +494,9 @@ private void initialize() {
 		observablesTable.setModel(observablesTableModel);
 		observablesTable.getSelectionModel().addListSelectionListener(eventHandlerO);
 		observablesTable.getModel().addTableModelListener(eventHandlerO);
+		
+		speciesTable.getColumnModel().getColumn(GeneratedSpeciesTableModel2.iColDefinition).setCellRenderer(rbmSpeciesPatternCellRenderer);
+
 		
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
