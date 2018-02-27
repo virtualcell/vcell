@@ -33,15 +33,20 @@ public class CSGObject extends SubVolume {
 	}
 
 	public boolean compareEqual(Matchable obj) {
-		if (!compareEqual0(obj)){
-			return false;
-		}
 		if (!(obj instanceof CSGObject)){
 			return false;
 		}
 		CSGObject csgo = (CSGObject)obj;
 
-		if (!(root.compareEqual(csgo.root))){
+		if (!compareEqual0(csgo)){
+			return false;
+		}
+
+		if (csgo.root != null && !(csgo.root.compareEqual(root))){
+			return false;
+		}else if(root != null && !(root.compareEqual(csgo.root))){
+			return false;
+		}else if (this != csgo){//roots both null, fallback to instance check
 			return false;
 		}
 
