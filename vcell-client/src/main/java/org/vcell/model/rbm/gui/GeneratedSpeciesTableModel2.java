@@ -180,6 +180,9 @@ public class GeneratedSpeciesTableModel2 extends VCellSortTableModel<GeneratedSp
 							for(MolecularTypePattern mtp : o2.getSpecies().getSpeciesPattern().getMolecularTypePatterns()) {
 								i2 += mtp.getMolecularType().getComponentList().size();
 							}
+							if(i1 == i2) {	// equal number of molecules and sites, sort by name as a last resort
+								return scale * o1.getOriginalName().compareToIgnoreCase(o2.getOriginalName());
+							}
 							return scale * i1.compareTo(i2);
 						} else {
 							return scale * i1.compareTo(i2);

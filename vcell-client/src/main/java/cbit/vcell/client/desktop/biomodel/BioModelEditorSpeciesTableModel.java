@@ -280,7 +280,12 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 
 	@Override
 	public boolean isSortable(int col) {
-		return true;
+		switch (col) {
+		case COLUMN_LINK:
+			return false;
+		default:
+			return true;	// sortable by all
+		}
 	}
 	
 	@Override
@@ -288,12 +293,55 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		return new Comparator<SpeciesContext>() {
             public int compare(SpeciesContext o1, SpeciesContext o2) {
             	int scale = ascending ? 1 : -1;
-                if (col==COLUMN_NAME){
+            	
+            	switch (col) {
+            	
+            	case COLUMN_NAME:
 					return scale * o1.getName().compareTo(o2.getName());
-				} else if (col == COLUMN_STRUCTURE) {
+            	case COLUMN_STRUCTURE:
 					return scale * o1.getStructure().getName().compareTo(o2.getStructure().getName());
-				}
-				return 0;
+            	case COLUMN_DEPICTION:
+            		if(o1.hasSpeciesPattern() && o2.hasSpeciesPattern()) {
+						Integer i1 = o1.getSpeciesPattern().getMolecularTypePatterns().size();
+						Integer i2 = o2.getSpeciesPattern().getMolecularTypePatterns().size();
+						if(scale * i1.compareTo(i2) == 0) {
+							// if same number of molecule we try to sort by number of sites of the mt
+							i1 = 0;
+							i2 = 0;
+							for(MolecularTypePattern mtp : o1.getSpeciesPattern().getMolecularTypePatterns()) {
+								i1 += mtp.getMolecularType().getComponentList().size();
+							}
+							for(MolecularTypePattern mtp : o2.getSpeciesPattern().getMolecularTypePatterns()) {
+								i2 += mtp.getMolecularType().getComponentList().size();
+							}
+							if(i1 == i2) {	// equal number of molecules and sites, sort by name as a last resort
+								return scale * o1.getName().compareToIgnoreCase(o2.getName());
+							}
+							return scale * i1.compareTo(i2);
+						} else {
+							return scale * i1.compareTo(i2);
+						}
+            		} else if(!o1.hasSpeciesPattern() && o2.hasSpeciesPattern()) {
+                		return scale;
+                	} else if(o1.hasSpeciesPattern() && !o2.hasSpeciesPattern()) {
+                		return -scale;
+            		} else {	// both species have null species pattern, just sort by name
+            			return scale * o1.getName().compareToIgnoreCase(o2.getName());
+            		}
+            	case COLUMN_DEFINITION:
+            		if(o1.hasSpeciesPattern() && o2.hasSpeciesPattern()) {
+            			return scale * o1.getSpeciesPattern().toString().compareToIgnoreCase(o2.getSpeciesPattern().toString());
+            		} else if(!o1.hasSpeciesPattern() && o2.hasSpeciesPattern()) {
+                		return scale;
+                	} else if(o1.hasSpeciesPattern() && !o2.hasSpeciesPattern()) {
+                		return -scale;
+            		} else {	// both species have null species pattern, just sort by name
+            			return scale * o1.getName().compareToIgnoreCase(o2.getName());
+            		}
+            	default:
+            		return 0;
+            	
+            	}
             }
 		};
 	}
