@@ -390,18 +390,24 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 
 	@Override
 	public boolean isSortable(int col) {
-		return true;
+		switch (col) {
+		case COLUMN_LINK:
+			return false;
+		default:
+			return true;	// sortable by all
+		}
 	}
 	
 	@Override
 	public Comparator<ModelProcess> getComparator(final int col, final boolean ascending) {
 		return new Comparator<ModelProcess>() {
-            public int compare(ModelProcess o1, ModelProcess o2) {
-            	int scale = ascending ? 1 : -1;
-                if (col==COLUMN_NAME) {
+			public int compare(ModelProcess o1, ModelProcess o2) {
+				int scale = ascending ? 1 : -1;
+				switch (col) {
+				case COLUMN_NAME:
                 	// TODO: find a good "natural order" sorting algorithm
                 	return scale * o1.getName().compareTo(o2.getName());	// normal ASCII sort
-				} else if (col == COLUMN_EQUATION) {
+				case COLUMN_EQUATION:
 					ModelProcessEquation re1 = new ModelProcessEquation(o1, bioModel.getModel());
 					ModelProcessEquation re2 = new ModelProcessEquation(o2, bioModel.getModel());
 					if(o1 instanceof ReactionStep && o2 instanceof ReactionRule) {
@@ -409,11 +415,32 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 					} else if(o1 instanceof ReactionRule && o2 instanceof ReactionStep) {
 						return -scale;
 					}
+					// this field simply says "Reaction Rule" for all rules
 					return scale * re1.toString().compareTo(re2.toString());
-				} else if (col == COLUMN_STRUCTURE) {
+				case COLUMN_STRUCTURE:
 					return scale * o1.getStructure().getName().compareTo(o2.getStructure().getName());
+				case COLUMN_DEPICTION:
+					if(o1 instanceof ReactionStep && o2 instanceof ReactionRule) {
+						return scale;
+					} else if(o1 instanceof ReactionRule && o2 instanceof ReactionStep) {
+						return -scale;
+					}
+					return scale * o1.getNumParticipants().compareTo(o2.getNumParticipants());
+				case COLUMN_KINETICS:
+					return scale * o1.getDynamics().toString().compareTo(o2.getDynamics().toString());
+				case COLUMN_DEFINITION:
+					ModelProcessEquation mpe1 = new ModelProcessEquation(o1, bioModel.getModel());
+					ModelProcessEquation mpe2 = new ModelProcessEquation(o2, bioModel.getModel());
+					if(o1 instanceof ReactionStep && o2 instanceof ReactionRule) {
+						return scale;
+					} else if(o1 instanceof ReactionRule && o2 instanceof ReactionStep) {
+						return -scale;
+					}
+					// for rules, we compare just the equation strings, without the "@Compartment:" prefix
+					return scale * mpe1.toString().compareToIgnoreCase(mpe2.toString());
+				default:
+					return 0;
 				}
-				return 0;
              }
 		};
 	}

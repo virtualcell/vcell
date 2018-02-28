@@ -284,7 +284,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		case COLUMN_LINK:
 			return false;
 		default:
-			return true;	// sortable by all
+			return true;
 		}
 	}
 	
@@ -293,10 +293,8 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		return new Comparator<SpeciesContext>() {
             public int compare(SpeciesContext o1, SpeciesContext o2) {
             	int scale = ascending ? 1 : -1;
-            	
             	switch (col) {
-            	
-            	case COLUMN_NAME:
+             	case COLUMN_NAME:
 					return scale * o1.getName().compareTo(o2.getName());
             	case COLUMN_STRUCTURE:
 					return scale * o1.getStructure().getName().compareTo(o2.getStructure().getName());
@@ -340,7 +338,6 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
             		}
             	default:
             		return 0;
-            	
             	}
             }
 		};
