@@ -492,6 +492,13 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 public ReactionParticipant[] getReactionParticipants() {
 	return fieldReactionParticipants;
 }
+@Override
+public Integer getNumParticipants() {
+	if(fieldReactionParticipants == null) {
+		return 0;
+	}
+	return fieldReactionParticipants.length;
+}
 /**
  * Gets the reactionParticipants index property (cbit.vcell.model.ReactionParticipant) value.
  * @return The reactionParticipants property value.

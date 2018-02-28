@@ -465,6 +465,11 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		all.addAll(productPatterns);
 		return all;
 	}
+	@Override
+	public Integer getNumParticipants() {
+		int numParticipants = reactantPatterns.size() + productPatterns.size();
+		return numParticipants;
+	}
 	
 	public final List<ReactantPattern> getReactantPatterns() {
 		return reactantPatterns;

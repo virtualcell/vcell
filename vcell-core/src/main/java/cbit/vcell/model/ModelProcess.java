@@ -16,6 +16,8 @@ public interface ModelProcess extends BioModelEntityObject, Displayable, Matchab
 	
 	ModelProcessDynamics getDynamics();
 	
+	Integer getNumParticipants();
+	
 	void setName(String inputValue) throws PropertyVetoException;
 
 	void setStructure(Structure s);
