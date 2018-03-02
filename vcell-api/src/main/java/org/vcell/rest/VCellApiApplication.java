@@ -24,6 +24,8 @@ import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.events.EventsRestlet;
 import org.vcell.rest.events.RestEventService;
+import org.vcell.rest.health.HealthRestlet;
+import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcRestlet;
 import org.vcell.rest.rpc.RpcService;
 import org.vcell.rest.server.AccessTokenServerResource;
@@ -135,6 +137,8 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String EVENTS = "events";
 	public static final String EVENTS_BEGINTIMESTAMP = "beginTimestamp";
 	
+	public static final String HEALTH = "health";
+	
 	public static final String JOBINDEX = "jobindex";
 	
 	public static final String SAVESIMULATION = "save";
@@ -166,6 +170,7 @@ public class VCellApiApplication extends WadlApplication {
 	private OptServerImpl optServerImpl = null;
 	private RpcService rpcService = null;
 	private RestEventService restEventService = null;
+	private HealthService healthService = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
@@ -183,10 +188,13 @@ public class VCellApiApplication extends WadlApplication {
 	public RestEventService getEventsService() {
 		return restEventService;
 	}
+	
+	public HealthService getHealthService() {
+		return healthService;
+	}
 
 	@Override
 	protected Representation createHtmlRepresentation(ApplicationInfo applicationInfo) {
-		// TODO Auto-generated method stub
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
@@ -196,6 +204,7 @@ public class VCellApiApplication extends WadlApplication {
 			RpcService rpcService, 
 			RestEventService restEventService, 
 			Configuration templateConfiguration, 
+			HealthService healthService,
 			File javascriptDir) {
 		
         setName("RESTful VCell API application");
@@ -210,6 +219,7 @@ public class VCellApiApplication extends WadlApplication {
 		this.rpcService = rpcService;
 		this.restEventService = restEventService;
 		this.templateConfiguration = templateConfiguration;
+		this.healthService = healthService;
 		getLogger().setLevel(Level.FINE);
 	}
 	
@@ -320,6 +330,8 @@ public class VCellApiApplication extends WadlApplication {
 	    rootRouter.attach("/"+RPC, new RpcRestlet(getContext()));
 
 	    rootRouter.attach("/"+EVENTS, new EventsRestlet(getContext()));
+
+	    rootRouter.attach("/"+HEALTH, new HealthRestlet(getContext()));
 
 	    rootRouter.attach("/auth/user", new Restlet(getContext()){
 

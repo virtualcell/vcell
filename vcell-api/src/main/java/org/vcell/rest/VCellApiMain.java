@@ -25,10 +25,13 @@ import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.events.RestEventService;
+import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcService;
 import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.logging.WatchLogging;
@@ -55,6 +58,8 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
 public class VCellApiMain {
+	
+	private final static String TEST_USER = "vcellNagios";
 	/**
 	 * @param args
 	 */
@@ -214,13 +219,22 @@ public class VCellApiMain {
 			Configuration templateConfiguration = new Configuration();
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 			
-			lg.trace("create app");
-			
+			lg.trace("verify python installation");
 			PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.COPASI, PythonPackage.LIBSBML, PythonPackage.THRIFT });
+
+			lg.trace("start Optimization Service");
 			OptServerImpl optServerImpl = new OptServerImpl();
 			optServerImpl.start();
+			
+			
+			lg.trace("create app");
+			boolean bIgnoreHostProblems = true;
+			boolean bIgnoreCertProblems = true;
+			User testUser = localAdminDbServer.getUser(TEST_USER);
+			UserInfo testUserInfo = localAdminDbServer.getUserInfo(testUser.getID()); // lookup hashed auth credentials in database.
+			HealthService healthService = new HealthService(ManageUtils.getHostName(), port, bIgnoreCertProblems, bIgnoreHostProblems, testUserInfo.userid, testUserInfo.digestedPassword0);
 			RpcService rpcService = new RpcService(vcMessagingService);
-			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, templateConfiguration,javascriptDir);
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, templateConfiguration, healthService, javascriptDir);
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  
 
@@ -230,6 +244,9 @@ public class VCellApiMain {
 			System.out.println("component ended.");
 			lg.trace("component started");
 
+			lg.trace("start VCell Health Monitoring service");
+			healthService.start();
+			
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		}
