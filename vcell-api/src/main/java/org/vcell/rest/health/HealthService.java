@@ -1,12 +1,12 @@
 package org.vcell.rest.health;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.io.IOUtils;
+import org.omg.PortableServer.THREAD_POLICY_ID;
 import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
@@ -24,9 +24,12 @@ import cbit.vcell.xml.XmlHelper;
 
 public class HealthService {
 	
-	private long SIMULATION_TIMEOUT = 60*1000;
-	private long LOGIN_LOOP_SLEEP = 60*1000;
-	private long RUNSIM_LOOP_SLEEP = 5*60*1000;
+	private static final long LOGIN_TIME_WARNING = 10*1000;
+	private static final long LOGIN_TIME_ERROR = 30*1000;
+	private static final long SIMULATION_TIME_WARNING = 15*1000;
+	private static final long SIMULATION_TIMEOUT = 60*1000;
+	private static final long LOGIN_LOOP_SLEEP = 60*1000;
+	private static final long RUNSIM_LOOP_SLEEP = 5*60*1000;
 
 	public static enum HealthEventType {
 		LOGIN_START,
@@ -51,6 +54,34 @@ public class HealthService {
 		}
 	}
 	
+	public static class NagiosStatus {
+		String nagiosStatusName;
+		int nagiosStatusCode;
+		String message;
+		Long elapsedTime_MS;
+		
+		// exit with parsed nagios code (0-OK,1-Warning,2-Critical,3-Unknown)
+		NagiosStatus(String nagiosStatusName, int nagiosStatusCode, String message, Long elapsedTime_MS){
+			this.nagiosStatusName = nagiosStatusName;
+			this.nagiosStatusCode = nagiosStatusCode;
+			this.message = message;
+			this.elapsedTime_MS = elapsedTime_MS;
+		}
+
+		static NagiosStatus OK(Long elapsedTime_MS) {
+			return new NagiosStatus("OK",0,null,elapsedTime_MS);
+		}
+		static NagiosStatus Warning(Long elapsedTime_MS) {
+			return new NagiosStatus("Warning",1,null,elapsedTime_MS);
+		}
+		static NagiosStatus Critical(Long elapsedTime_MS, String message) {
+			return new NagiosStatus("Critical",2,message,elapsedTime_MS);
+		}
+		static NagiosStatus Unknown(Long elapsedTime_MS, String message) {
+			return new NagiosStatus("Unknown",3,null,elapsedTime_MS);
+		}
+	}
+
 	final AtomicLong eventSequence = new AtomicLong(0);
 	final ConcurrentLinkedDeque<HealthEvent> healthEvents = new ConcurrentLinkedDeque<>();
 	Thread loginThread;
@@ -119,14 +150,20 @@ public class HealthService {
 		}
 		loginThread = new Thread(() -> loginLoop(), "login monitor thread");
 		loginThread.setDaemon(true);
+		loginThread.setPriority(Thread.currentThread().getPriority()-1);
 		loginThread.start();
 		
 		runsimThread = new Thread(() -> runsimLoop(), "runsim monitor thread");
 		runsimThread.setDaemon(true);
+		runsimThread.setPriority(Thread.currentThread().getPriority()-1);
 		runsimThread.start();
 	}
 	
 	private void loginLoop() {
+		try {
+			Thread.sleep(15*1000);
+		} catch (InterruptedException e1) {
+		}
 		while (true) {
 			long id = loginStartEvent();
 			try {
@@ -147,6 +184,10 @@ public class HealthService {
 	}
 	
 	private void runsimLoop() {
+		try {
+			Thread.sleep(15*1000);
+		} catch (InterruptedException e1) {
+		}
 		UserLoginInfo userLoginInfo = new UserLoginInfo(testUserid, testPassword);
 		while (true) {
 			long id = simStartEvent();
@@ -215,6 +256,104 @@ public class HealthService {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public NagiosStatus getLoginStatus() {
+		long curr_MS = System.currentTimeMillis();
+		// get last 5 minutes of events to determine status
+		HealthEvent[] events = query(curr_MS-(300*1000), curr_MS);
+		
+		// find last completed login event (if any)
+		HealthEvent loginCompleteEvent = null;
+		for (HealthEvent event : events) {
+			if (event.eventType == HealthEventType.LOGIN_FAILED 
+					|| event.eventType == HealthEventType.LOGIN_SUCCESS) {
+				if (loginCompleteEvent==null || loginCompleteEvent.timestamp_MS < event.timestamp_MS) {
+					loginCompleteEvent = event;
+				}
+			}
+		}
+
+		// find corresponding START event to determine elapsed time
+		Long elapsedTime_MS = null;
+		if (loginCompleteEvent!=null) {
+			for (HealthEvent event : events) {
+				if (event.eventType == HealthEventType.LOGIN_START 
+						&& event.transactionId == loginCompleteEvent.transactionId) {
+					elapsedTime_MS = loginCompleteEvent.timestamp_MS - event.timestamp_MS;
+				}
+			}
+		}
+		
+		if (loginCompleteEvent==null) {
+			return NagiosStatus.Unknown(null, "no completed login attempts");
+			
+		} else if (loginCompleteEvent.eventType==HealthEventType.LOGIN_SUCCESS) {
+			//
+			// OK or WARNING depending on time
+			//
+			if (elapsedTime_MS==null || elapsedTime_MS > LOGIN_TIME_ERROR) {
+				return NagiosStatus.Critical(elapsedTime_MS, "login timeout");
+			}
+			if (elapsedTime_MS < LOGIN_TIME_WARNING) {
+				return NagiosStatus.OK(elapsedTime_MS);
+			}
+			return NagiosStatus.Warning(elapsedTime_MS);
+
+		} else if (loginCompleteEvent.eventType==HealthEventType.LOGIN_FAILED) {
+			return NagiosStatus.Critical(elapsedTime_MS, loginCompleteEvent.message);
+		} else {
+			throw new RuntimeException("unexpected HealthEventType");
+		}
+	}
+	
+	public NagiosStatus getRunsimStatus() {
+		long curr_MS = System.currentTimeMillis();
+		// get last 5 minutes of events to determine status
+		HealthEvent[] events = query(curr_MS-(300*1000), curr_MS);
+		
+		// find last completed sim event (if any)
+		HealthEvent loginCompleteEvent = null;
+		for (HealthEvent event : events) {
+			if (event.eventType == HealthEventType.RUNSIM_SUCCESS 
+					|| event.eventType == HealthEventType.RUNSIM_FAILED) {
+				if (loginCompleteEvent==null || loginCompleteEvent.timestamp_MS < event.timestamp_MS) {
+					loginCompleteEvent = event;
+				}
+			}
+		}
+
+		// find corresponding START event to determine elapsed time
+		Long elapsedTime_MS = null;
+		if (loginCompleteEvent!=null) {
+			for (HealthEvent event : events) {
+				if (event.eventType == HealthEventType.RUNSIM_START 
+						&& event.transactionId == loginCompleteEvent.transactionId) {
+					elapsedTime_MS = loginCompleteEvent.timestamp_MS - event.timestamp_MS;
+				}
+			}
+		}
+		
+		if (loginCompleteEvent==null) {
+			return NagiosStatus.Unknown(null, "no completed simulation attempts");
+			
+		} else if (loginCompleteEvent.eventType==HealthEventType.RUNSIM_SUCCESS) {
+			//
+			// OK or WARNING depending on time
+			//
+			if (elapsedTime_MS==null || elapsedTime_MS > SIMULATION_TIMEOUT) {
+				return NagiosStatus.Critical(elapsedTime_MS, "simulation timeout");
+			}
+			if (elapsedTime_MS==null || elapsedTime_MS < SIMULATION_TIME_WARNING) {
+				return NagiosStatus.OK(elapsedTime_MS);
+			}
+			return NagiosStatus.Warning(elapsedTime_MS);
+
+		} else if (loginCompleteEvent.eventType==HealthEventType.RUNSIM_FAILED) {
+			return NagiosStatus.Critical(elapsedTime_MS, loginCompleteEvent.message);
+		} else {
+			throw new RuntimeException("unexpected HealthEventType");
 		}
 	}
 	

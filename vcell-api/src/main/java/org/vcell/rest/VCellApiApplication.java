@@ -138,6 +138,10 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String EVENTS_BEGINTIMESTAMP = "beginTimestamp";
 	
 	public static final String HEALTH = "health";
+	public static final String HEALTH_CHECK = "check";
+	public static final String 	HEALTH_CHECK_LOGIN = "login";
+	public static final String 	HEALTH_CHECK_SIM = "sim";
+	public static final String 	HEALTH_CHECK_ALL = "all";
 	
 	public static final String JOBINDEX = "jobindex";
 	
