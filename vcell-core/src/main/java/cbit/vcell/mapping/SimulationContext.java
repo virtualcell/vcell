@@ -494,6 +494,8 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 					this.spatialProcesses[i] = new PointKinematics((PointKinematics) otherSpatialProcesses[i], this);
 				}else if (otherSpatialProcesses[i] instanceof SurfaceKinematics){
 					this.spatialProcesses[i] = new SurfaceKinematics((SurfaceKinematics) otherSpatialProcesses[i], this);
+				}else if (otherSpatialProcesses[i] instanceof VolumeKinematics){
+					this.spatialProcesses[i] = new VolumeKinematics((VolumeKinematics) otherSpatialProcesses[i], this);
 				}else{
 					throw new RuntimeException("unexpected Spatial process in SimulationContext()");
 				}

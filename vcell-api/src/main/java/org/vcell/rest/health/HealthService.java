@@ -13,6 +13,8 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCInfoContainer;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.VCellConnection;
@@ -26,9 +28,11 @@ public class HealthService {
 	private static final long LOGIN_TIME_WARNING = 10*1000;
 	private static final long LOGIN_TIME_ERROR = 30*1000;
 	private static final long SIMULATION_TIME_WARNING = 15*1000;
-	private static final long SIMULATION_TIMEOUT = 60*1000;
-	private static final long LOGIN_LOOP_SLEEP = 60*1000;
-	private static final long RUNSIM_LOOP_SLEEP = 5*60*1000;
+	private static final long SIMULATION_TIMEOUT = 120*1000;
+	private static final long LOGIN_LOOP_START_DELAY = 40*1000;
+	private static final long LOGIN_LOOP_SLEEP = 3*60*1000;
+	private static final long SIMULATION_LOOP_START_DELAY = 60*1000;
+	private static final long SIMULATION_LOOP_SLEEP = 5*60*1000;
 
 	public static enum HealthEventType {
 		LOGIN_START,
@@ -126,7 +130,7 @@ public class HealthService {
 	}
 	
 	private void loginSuccess(long id) {
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.LOGIN_SUCCESS, "simulation success ("+id+")"));
+		healthEvents.addFirst(new HealthEvent(id, HealthEventType.LOGIN_SUCCESS, "login success ("+id+")"));
 	}
 	
 	
@@ -160,7 +164,7 @@ public class HealthService {
 	
 	private void loginLoop() {
 		try {
-			Thread.sleep(15*1000);
+			Thread.sleep(LOGIN_LOOP_START_DELAY);
 		} catch (InterruptedException e1) {
 		}
 		while (true) {
@@ -184,7 +188,7 @@ public class HealthService {
 	
 	private void runsimLoop() {
 		try {
-			Thread.sleep(15*1000);
+			Thread.sleep(SIMULATION_LOOP_START_DELAY);
 		} catch (InterruptedException e1) {
 		}
 		UserLoginInfo userLoginInfo = new UserLoginInfo(testUserid, testPassword);
@@ -197,11 +201,28 @@ public class HealthService {
 				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection();
 				
 				String vcmlString = IOUtils.toString(getClass().getResourceAsStream("/TestTemplate.vcml"));
+				
 				BioModel templateBioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlString));
+				templateBioModel.clearVersion();
+				String newBiomodelName = "test_"+System.currentTimeMillis();
+				templateBioModel.setName(newBiomodelName);
+				// remove all existing simulations from stored template model, and add new one
+				while (templateBioModel.getNumSimulations()>0) {
+					templateBioModel.removeSimulation(templateBioModel.getSimulation(0));
+				}
+				MathMappingCallback callback = new MathMappingCallback() {
+					@Override
+					public void setProgressFraction(float fractionDone) { }
+					@Override
+					public void setMessage(String message) { }
+					@Override
+					public boolean isInterrupted() { return false; }
+				};
+				templateBioModel.getSimulationContext(0).addNewSimulation("sim", callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
+				
 				BigString vcml = new BigString(XmlHelper.bioModelToXML(templateBioModel));
 				String[] independentSims = new String[0];
-				String newName = "test_"+System.currentTimeMillis();
-				BigString savedBioModelVCML = vcellConnection.getUserMetaDbServer().saveBioModelAs(vcml, newName, independentSims);
+				BigString savedBioModelVCML = vcellConnection.getUserMetaDbServer().saveBioModelAs(vcml, newBiomodelName, independentSims);
 				BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(savedBioModelVCML.toString()));
 				savedBioModelKey = savedBioModel.getVersion().getVersionKey();
 				
@@ -251,7 +272,7 @@ public class HealthService {
 				}
 			}
 			try {
-				Thread.sleep(RUNSIM_LOOP_SLEEP);
+				Thread.sleep(SIMULATION_LOOP_SLEEP);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
