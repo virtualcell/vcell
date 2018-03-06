@@ -173,14 +173,14 @@ current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 ```bash
-export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=f890bc8
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=af177d3
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=1 VCELL_SITE=beta
+export VCELL_VERSION=7.0.0 VCELL_BUILD=2 VCELL_SITE=beta
 export VCELL_INSTALLER_REMOTE_DIR="apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Beta"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
@@ -188,7 +188,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=17 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=18 VCELL_SITE=alpha
 export VCELL_INSTALLER_REMOTE_DIR="apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
@@ -263,7 +263,34 @@ Deploy VCell Docker containers on local machine in Swarm Mode with mocked SLURM 
   ./$VCELL_CONFIG_FILE_NAME $PWD/local-${VCELL_TAG}.config \
   ./docker-compose.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
   vcell${VCELL_SITE}
+```
 
-  add --build-installers if needed.
+### Deploy local stack to Docker Swarm (with remote SLURM/Singularity simulations)
+
+build the containers (e.g. localhost:5000/schaff/vcell-api:dev1) and upload to local registry Docker registry (e.g. localhost:5000).  
+
+```bash
+export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev6
+./build.sh --ssh-user vcell --ssh-key ~/.ssh/id_rsa all $VCELL_REPO_NAMESPACE $VCELL_TAG
+```
+
+create local deploy configuration file (e.g. Test2 7.0.0 build 7) file for local debugging. Note that some local configuration is hard-coded in **localconfig_mockslurm.sh** script.
+
+```bash
+export VCELL_VERSION=7.0.0 VCELL_BUILD=8 VCELL_SITE=test2
+export VCELL_CONFIG_FILE_NAME=${VCELL_TAG}.config
+./localconfig_realslurm.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
+  $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
+```
+
+Deploy VCell Docker containers on local machine in Swarm Mode with mocked SLURM scripts and generated local client installers.  This uses the local deploy configuration and local Docker registry and defaults to Docker instead of Singularity for SLURM simulations.  Note that the Docker and Singularity images and docker-compose.yml file remain independent of the deployed configuration.  Only the local configuration file ./$VCELL_CONFIG_FILE_NAME contains server dependencies.  Local client installers are generated (e.g. open ./generated_installers/VCell_Test_macos_7.0.0_7_64bit.dmg)
+
+```bash
+./deploy.sh \
+  --ssh-user `whoami` --ssh-key ~/.ssh/schaff_rsa --build-installers --upload-singularity \
+  `hostname` \
+  ./$VCELL_CONFIG_FILE_NAME $PWD/local-${VCELL_TAG}.config \
+  ./docker-compose.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
+  vcell${VCELL_SITE}
 ```
 

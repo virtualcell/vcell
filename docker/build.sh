@@ -2,6 +2,8 @@
 
 shopt -s -o nounset
 
+ssh_user=$(whoami)
+ssh_key=
 skip_push=false
 skip_maven=false
 skip_singularity=false
@@ -19,6 +21,11 @@ show_help() {
 	echo "  [OPTIONS]"
 	echo ""
 	echo "    -h | --help           show this message"
+	echo ""
+	echo "    --ssh-user user       user for ssh to node [defaults to current user id using whoami]"
+	echo "                          (user must have passwordless sudo for docker commands on manager-node)"
+	echo ""
+	echo "    --ssh-key  keyfile    ssh key for passwordless ssh to node"
 	echo ""
 	echo "    --skip-singularity    skip build of Singularity image for vcell-batch container (stored in ./singularity/)"
 	echo ""
@@ -39,6 +46,14 @@ while :; do
 		-h|--help)
 			show_help
 			exit
+			;;
+		--ssh-user)
+			shift
+			ssh_user=$1
+			;;
+		--ssh-key)
+			shift
+			ssh_key="-i $1"
 			;;
 		--mvn-repo)
 			shift

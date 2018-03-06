@@ -384,23 +384,23 @@ public class VCellApiApplication extends WadlApplication {
 					}
 				}else if (accessToken.getStatus()==AccessTokenStatus.invalidated){
 					if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
-						getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken has been invalidated ... returning user = null");
+						getLogger().log(Level.INFO,"VCellApiApplication.getVCellUser(response) - ApiAccessToken has been invalidated ... returning user = null");
 						return null;
 					}else{
 						throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "access_token invalid");
 					}
 				}else{
-					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken is valid ... returning user = "+accessToken.getUser().getName());
+					getLogger().log(Level.FINE,"VCellApiApplication.getVCellUser(response) - ApiAccessToken is valid ... returning user = "+accessToken.getUser().getName());
 					return accessToken.getUser();
 				}
 			}else{ // accessToken is null
 				AuthenticationStatus authStatus = userVerifier.verify(response);
 				if (authStatus==AuthenticationStatus.missing){
-					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken not provided ... returning user = null");
+					getLogger().log(Level.FINE,"VCellApiApplication.getVCellUser(response) - ApiAccessToken not provided ... returning user = null");
 					return null;
 				}else{
 					if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
-						getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken not found in database ... returning user = null");
+						getLogger().log(Level.INFO,"VCellApiApplication.getVCellUser(response) - ApiAccessToken not found in database ... returning user = null");
 						return null;
 					}else{
 						throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "access_token invalid");
@@ -409,7 +409,7 @@ public class VCellApiApplication extends WadlApplication {
 			}
 		}catch (Exception e){
 			if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
-				getLogger().log(Level.SEVERE,"VCellApiApplication.getVCellUse(response) - error authenticating user", e);
+				getLogger().log(Level.SEVERE,"VCellApiApplication.getVCellUser(response) - error authenticating user", e);
 				return null;
 			}else{
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED,e.getMessage());

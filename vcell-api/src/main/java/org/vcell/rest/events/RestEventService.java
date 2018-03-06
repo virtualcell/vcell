@@ -102,7 +102,7 @@ public class RestEventService {
 		Iterator<EventWrapper> iter = events.iterator();
 		while (iter.hasNext()) {
 			EventWrapper eventWrapper = iter.next();
-			if (eventWrapper.timestamp > lasttimestamp) {
+			if (eventWrapper.timestamp > lasttimestamp && (eventWrapper.userid==null || eventWrapper.userid.equals(userid))) {
 				System.out.println("returning event to userid: ("+eventWrapper.id+", "+eventWrapper.timestamp+", "+eventWrapper.userid+", "+eventWrapper.eventJSON+")");
 				eventList.add(0, eventWrapper);
 			}
