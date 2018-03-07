@@ -247,7 +247,21 @@ public class SimulationDispatcher extends ServiceProvider {
 						}
 					}
 					if (lg.isDebugEnabled()) {
-						lg.debug("Dispatcher starting, database says there are "+allActiveJobs.length+" active jobs (waiting,running,dispatched,queued) with "+simKeys.size()+" unique simulations");
+						int numRunning = 0;
+						int numWaiting = 0;
+						int numDispatched = 0;
+						int numQueued = 0;
+						for (SimulationJobStatus simJobStatus : allActiveJobs) {
+							if (simJobStatus.getSchedulerStatus().isRunning()) numRunning++;
+							if (simJobStatus.getSchedulerStatus().isWaiting()) numWaiting++;
+							if (simJobStatus.getSchedulerStatus().isDispatched()) numDispatched++;
+							if (simJobStatus.getSchedulerStatus().isQueued()) numQueued++;
+						}
+						if (numWaiting>0 || numDispatched>0 || numQueued>0){
+							lg.debug("Dispatcher starting, database shows "+
+										allActiveJobs.length+" active sim jobs ("+numWaiting+" waiting,"+numDispatched+" dispatched,"+numQueued+" queued,"+numRunning+" running)" +
+										" with "+simKeys.size()+" unique sims for this site");
+						}
 					}
 					if (allActiveJobs != null && allActiveJobs.length > 0) {
 						int maxJobsPerSite = BatchScheduler.getMaxJobsPerSite();
@@ -257,9 +271,9 @@ public class SimulationDispatcher extends ServiceProvider {
 
 						final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
 						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, simulationRequirementsMap, maxJobsPerSite, maxOdePerUser, maxPdePerUser, serverID, log);
-						if (lg.isDebugEnabled()) {
-							lg.debug("Dispatcher limits: maxJobsPerSite="+maxJobsPerSite+", maxOdePerUser="+maxOdePerUser+", maxPdePerUser="+maxPdePerUser);
-							lg.debug(waitingJobs.length + " waiting jobs to process: "+Arrays.asList(waitingJobs));
+						if (lg.isTraceEnabled()) {
+							lg.trace("Dispatcher limits: maxJobsPerSite="+maxJobsPerSite+", maxOdePerUser="+maxOdePerUser+", maxPdePerUser="+maxPdePerUser);
+							lg.trace(waitingJobs.length + " waiting jobs to process: "+Arrays.asList(waitingJobs));
 						}
 
 						//
@@ -294,7 +308,7 @@ public class SimulationDispatcher extends ServiceProvider {
 					log.exception(ex);
 				}
 
-				// if there are no messages or no qualified jobs or exceptions, sleep for a while
+				// if there are no messages or no qualified jobs or exceptions, sleep for a few seconds while
 				// this will be interrupted if there is a start request.
 				if (!bDispatchedAnyJobs){
 					synchronized (notifyObject) {
@@ -302,8 +316,13 @@ public class SimulationDispatcher extends ServiceProvider {
 							long waitTime = 5 * MessageConstants.SECOND_IN_MS;
 							notifyObject.wait(waitTime);
 						} catch (InterruptedException ex) {
-							lg.warn("Dispatch thread wait interrupted", ex);
+							lg.debug("Dispatch thread wait interrupted", ex);
 						}
+					}
+				}else {
+					try { 
+						Thread.sleep(1000);
+					}catch (InterruptedException e) {
 					}
 				}
 			} // while(true)

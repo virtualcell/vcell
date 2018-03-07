@@ -308,7 +308,7 @@ public class HealthService {
 	public NagiosStatus getLoginStatus() {
 		long curr_MS = System.currentTimeMillis();
 		// get last 5 minutes of events to determine status
-		HealthEvent[] events = query(curr_MS-(300*1000), curr_MS);
+		HealthEvent[] events = query(curr_MS-(SIMULATION_TIMEOUT+SIMULATION_LOOP_SLEEP+1000), curr_MS);
 		
 		// find last completed login event (if any)
 		HealthEvent loginCompleteEvent = null;
