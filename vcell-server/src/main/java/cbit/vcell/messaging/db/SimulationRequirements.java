@@ -48,4 +48,9 @@ public KeyValue getSimKey() {
 public boolean isPDE() {
 	return dimension > 0;
 }
+
+public String toString() {
+	return "SimKey="+simKey+"(dim="+dimension+")";
+}
+
 }

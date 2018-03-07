@@ -32,7 +32,7 @@ public class HealthService {
 	private static final long LOGIN_TIME_WARNING = 10*1000;
 	private static final long LOGIN_TIME_ERROR = 30*1000;
 	private static final long SIMULATION_TIME_WARNING = 25*1000;
-	private static final long SIMULATION_TIMEOUT = 180*1000;
+	private static final long SIMULATION_TIMEOUT = 8*60*1000;
 	private static final long LOGIN_LOOP_START_DELAY = 40*1000;
 	private static final long LOGIN_LOOP_SLEEP = 3*60*1000;
 	private static final long SIMULATION_LOOP_START_DELAY = 60*1000;
@@ -120,8 +120,8 @@ public class HealthService {
 		return id;
 	}
 	
-	private void simSubmitEvent(long id) {
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.RUNSIM_SUBMIT, "simulation submitted ("+id+")"));
+	private void simSubmitEvent(long id, VCSimulationIdentifier vcSimId) {
+		healthEvents.addFirst(new HealthEvent(id, HealthEventType.RUNSIM_SUBMIT, "simulation "+vcSimId.getID()+"_0_0"+" submitted ("+id+")"));
 	}
 	
 	private void simFailed(long id, String message) {
@@ -243,7 +243,7 @@ public class HealthService {
 				VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(sim.getKey(), sim.getVersion().getOwner());
 				long eventTimestamp = System.currentTimeMillis();
 				SimulationStatus simStatus = vcellConnection.getSimulationController().startSimulation(vcSimId, 1);
-				simSubmitEvent(id);
+				simSubmitEvent(id, vcSimId);
 				runningSimId = vcSimId;
 				
 				long startTime_MS = System.currentTimeMillis();

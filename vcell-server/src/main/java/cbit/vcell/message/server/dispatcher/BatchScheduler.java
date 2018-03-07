@@ -56,6 +56,10 @@ public class BatchScheduler {
 			return new Integer(numRunningODEs+numRunningPDEs);
 		}
 		
+		public String toString() {
+			return "WaitingJob("+simRequirements+": waitingTimeStamp="+waitingTimeStamp+", user="+user+", numRunningPde="+numRunningPDEs+", numRunningOdes="+numRunningODEs+", simJobStatus="+simJobStatus+")";
+		}
+		
 	};
 
 /**

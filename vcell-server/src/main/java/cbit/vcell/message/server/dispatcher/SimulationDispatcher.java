@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.exe.ExecutableException;
+
+import com.google.gson.Gson;
 
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.RollbackException;
@@ -62,8 +65,8 @@ import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
-import cbit.vcell.server.SimulationService;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.server.SimulationService;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -110,27 +113,37 @@ public class SimulationDispatcher extends ServiceProvider {
 	 * format for logging. Lazily created on {@link #getDateFormat()}
 	 */
 	private DateFormat dateFormat = null;
-	private static Logger lg = Logger.getLogger(SimulationDispatcher.class);
+	public static Logger lg = Logger.getLogger(SimulationDispatcher.class);
 
 	public class SimulationServiceImpl implements SimulationService {
 
 		@Override
 		public SimulationStatus stopSimulation(User user, VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException {
+			if (lg.isDebugEnabled()) {
+				lg.debug("stop simulation requested for "+vcSimulationIdentifier);
+			}
 			try {
 				simDispatcherEngine.onStopRequest(vcSimulationIdentifier, user, simulationDatabase, dispatcherQueueSession, log);
 			} catch (VCMessagingException | SQLException e) {
-				e.printStackTrace();
+				lg.error("failed to stop simulation "+vcSimulationIdentifier, e);
 				throw new DataAccessException(e.getMessage(),e);
 			}
-			return simulationDatabase.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+			SimulationStatus simulationStatus = simulationDatabase.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+			if (lg.isDebugEnabled()) {
+				lg.debug("stopped simulation processed for "+vcSimulationIdentifier+", status="+simulationStatus);
+			}
+			return simulationStatus;
 		}
 
 		@Override
 		public SimulationStatus startSimulation(User user, VCSimulationIdentifier vcSimulationIdentifier,int numSimulationScanJobs) throws DataAccessException {
+			if (lg.isDebugEnabled()) {
+				lg.debug("start simulation requested for "+vcSimulationIdentifier+" with "+numSimulationScanJobs+" jobs");
+			}
 			try {
 				simDispatcherEngine.onStartRequest(vcSimulationIdentifier, user, numSimulationScanJobs, simulationDatabase, dispatcherQueueSession, dispatcherQueueSession, log);
 			} catch (VCMessagingException | SQLException e1) {
-				e1.printStackTrace();
+				lg.error("failed to start simulation "+vcSimulationIdentifier, e1);
 				throw new DataAccessException(e1.getMessage(),e1);
 			}
 
@@ -141,30 +154,45 @@ public class SimulationDispatcher extends ServiceProvider {
 						dispatchThread.notifyObject.notify();
 					}
 				}catch (IllegalMonitorStateException e){
-					e.printStackTrace();
+					lg.error("failed to notify dispatchThread",e);
 				}
 			}
-			return simulationDatabase.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+			SimulationStatus simulationStatus = simulationDatabase.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+			if (lg.isDebugEnabled()) {
+				lg.debug("start simulation processed for "+vcSimulationIdentifier+", status="+simulationStatus);
+			}
+			return simulationStatus;
 		}
 
 		@Override
 		public SimulationStatus getSimulationStatus(User user, KeyValue simulationKey) throws DataAccessException {
+			if (lg.isDebugEnabled()) {
+				lg.debug("getting simulation status for sim "+simulationKey+" for user "+user);
+			}
 			SimulationStatus simStatus = simulationDatabase.getSimulationStatus(simulationKey);
 			if (simStatus.getVCSimulationIdentifier().getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
+				if (lg.isDebugEnabled()) {
+					lg.debug("simulation status for sim "+simulationKey+" is '"+simStatus+"'");
+				}
 				return simStatus;
 			}else{
+				lg.error("User "+user.getName()+" doesn't have access to simulation "+simulationKey);
 				throw new PermissionException("User "+user.getName()+" doesn't have access to simulation "+simulationKey);
 			}
 		}
 
 		@Override
 		public SimulationStatus[] getSimulationStatus(User user, KeyValue[] simKeys) throws DataAccessException {
+			if (lg.isDebugEnabled()) {
+				lg.debug("getting simulation status for sims "+Arrays.asList(simKeys)+" for user "+user);
+			}
 			SimulationStatus[] simStatusArray = simulationDatabase.getSimulationStatus(simKeys);
 			for (SimulationStatus simStatus : simStatusArray){
 				if (simStatus!=null){
 					if (simStatus.getVCSimulationIdentifier().getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
 						continue;
 					}
+					lg.error("User "+user.getName()+" doesn't have access to simulation "+simStatus.getVCSimulationIdentifier().getSimulationKey());
 					//throw new PermissionException("User "+user.getName()+" doesn't have access to simulation "+simStatus.getVCSimulationIdentifier().getSimulationKey());
 				}
 			}
@@ -173,13 +201,18 @@ public class SimulationDispatcher extends ServiceProvider {
 
 		@Override
 		public SimpleJobStatus[] getSimpleJobStatus(User user, SimpleJobStatusQuerySpec simJobStatusQuerySpec) throws DataAccessException {
+			if (lg.isDebugEnabled()) {
+				Gson gson = new Gson();
+				lg.debug("getting simpleJobStatus for query "+gson.toJson(simJobStatusQuerySpec)+" for user "+user);
+			}
 			SimpleJobStatus[] simpleJobStatusArray = simulationDatabase.getSimpleJobStatus(user,simJobStatusQuerySpec);
 			for (SimpleJobStatus simStatus : simpleJobStatusArray){
 				if (simStatus!=null){
 					if (simStatus.simulationMetadata.vcSimID.getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
 						continue;
 					}
-					throw new PermissionException("User "+user.getName()+" doesn't have access to simulation "+simStatus.simulationMetadata.vcSimID.getSimulationKey());
+					lg.error("User "+user.getName()+" doesn't have access to simulation "+simStatus.simulationMetadata.vcSimID.getSimulationKey());
+					//throw new PermissionException("User "+user.getName()+" doesn't have access to simulation "+simStatus.simulationMetadata.vcSimID.getSimulationKey());
 				}
 			}
 			return simpleJobStatusArray;
@@ -213,23 +246,30 @@ public class SimulationDispatcher extends ServiceProvider {
 							simKeys.add(simKey);
 						}
 					}
+					if (lg.isDebugEnabled()) {
+						lg.debug("Dispatcher starting, database says there are "+allActiveJobs.length+" active jobs (waiting,running,dispatched,queued) with "+simKeys.size()+" unique simulations");
+					}
 					if (allActiveJobs != null && allActiveJobs.length > 0) {
 						int maxJobsPerSite = BatchScheduler.getMaxJobsPerSite();
 						int maxOdePerUser = BatchScheduler.getMaxOdeJobsPerUser();
 						int maxPdePerUser = BatchScheduler.getMaxPdeJobsPerUser();
 						VCellServerID serverID = VCellServerID.getSystemServerID();
+						if (lg.isDebugEnabled()) {
+							lg.debug("Dispatcher limits: maxJobsPerSite="+maxJobsPerSite+", maxOdePerUser="+maxOdePerUser+", maxPdePerUser="+maxPdePerUser);
+						}
 
 						final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
 						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, simulationRequirementsMap, maxJobsPerSite, maxOdePerUser, maxPdePerUser, serverID, log);
+						if (lg.isDebugEnabled()) {
+							lg.debug("Dispatcher limits: maxJobsPerSite="+maxJobsPerSite+", maxOdePerUser="+maxOdePerUser+", maxPdePerUser="+maxPdePerUser);
+							lg.debug(waitingJobs.length + " waiting jobs to process: "+Arrays.asList(waitingJobs));
+						}
 
 						//
 						// temporarily save simulations during this dispatch iteration (to expedite dispatching multiple simulation jobs for same simulation).
 						// cache is discarded after use.
 						//
 						HashMap<KeyValue,Simulation> tempSimulationMap = new HashMap<KeyValue,Simulation>();
-						if (lg.isDebugEnabled()) {
-							lg.debug(waitingJobs.length + " jobs to process");
-						}
 						for (WaitingJob waitingJob : waitingJobs){
 							SimulationJobStatus jobStatus = waitingJob.simJobStatus;
 							VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
@@ -241,14 +281,12 @@ public class SimulationDispatcher extends ServiceProvider {
 									tempSimulationMap.put(simKey, sim);
 								}
 								if (lg.isDebugEnabled()) {
-									lg.debug("dispatching  " +  vcSimID);
+									lg.debug("dispatching simKey="+vcSimID+", jobId="+jobStatus.getJobIndex()+", taskId="+jobStatus.getTaskID());
 								}
 								simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession, log);
 								bDispatchedAnyJobs = true;
 							} catch (Exception e) {
-								if (lg.isEnabledFor(Level.WARN)) {
-									lg.warn("failed to dispatch " + vcSimID);
-								}
+								lg.error("failed to dispatch simKey="+vcSimID+", jobId="+jobStatus.getJobIndex()+", taskId="+jobStatus.getTaskID(), e);
 								final String failureMessage = FAILED_LOAD_MESSAGE + e.getMessage();
 								simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
 							}
