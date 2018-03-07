@@ -232,7 +232,7 @@ public class VCellApiMain {
 			boolean bIgnoreCertProblems = true;
 			User testUser = localAdminDbServer.getUser(TEST_USER);
 			UserInfo testUserInfo = localAdminDbServer.getUserInfo(testUser.getID()); // lookup hashed auth credentials in database.
-			HealthService healthService = new HealthService("localhost", port, bIgnoreCertProblems, bIgnoreHostProblems, testUserInfo.userid, testUserInfo.digestedPassword0);
+			HealthService healthService = new HealthService(restEventService, "localhost", port, bIgnoreCertProblems, bIgnoreHostProblems, testUserInfo.userid, testUserInfo.digestedPassword0);
 			RpcService rpcService = new RpcService(vcMessagingService);
 			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, templateConfiguration, healthService, javascriptDir);
 			lg.trace("attach app");

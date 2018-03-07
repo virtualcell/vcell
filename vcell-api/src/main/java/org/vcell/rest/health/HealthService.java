@@ -6,16 +6,20 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.io.IOUtils;
+import org.vcell.rest.events.RestEventService;
 import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCInfoContainer;
 
+import cbit.rmi.event.MessageEvent;
+import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
+import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.Simulation;
@@ -39,6 +43,7 @@ public class HealthService {
 		LOGIN_FAILED,
 		LOGIN_SUCCESS,
 		RUNSIM_START,
+		RUNSIM_SUBMIT,
 		RUNSIM_FAILED,
 		RUNSIM_SUCCESS
 	}
@@ -85,6 +90,7 @@ public class HealthService {
 		}
 	}
 
+	final RestEventService eventService;
 	final AtomicLong eventSequence = new AtomicLong(0);
 	final ConcurrentLinkedDeque<HealthEvent> healthEvents = new ConcurrentLinkedDeque<>();
 	Thread loginThread;
@@ -96,7 +102,10 @@ public class HealthService {
 	final String testUserid;
 	final DigestedPassword testPassword;
 
-	public HealthService(String host, int port, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch, String testUserid, DigestedPassword testPassword) {
+	public HealthService(RestEventService eventService, String host, int port, 
+			boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch, 
+			String testUserid, DigestedPassword testPassword) {
+		this.eventService = eventService;
 		this.host = host;
 		this.port = port;
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
@@ -107,8 +116,12 @@ public class HealthService {
 			
 	private long simStartEvent() {
 		long id = eventSequence.getAndIncrement();
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.RUNSIM_START, "starting simulation ("+id+")"));
+		healthEvents.addFirst(new HealthEvent(id, HealthEventType.RUNSIM_START, "starting simulation loop ("+id+")"));
 		return id;
+	}
+	
+	private void simSubmitEvent(long id) {
+		healthEvents.addFirst(new HealthEvent(id, HealthEventType.RUNSIM_SUBMIT, "simulation submitted ("+id+")"));
 	}
 	
 	private void simFailed(long id, String message) {
@@ -228,17 +241,30 @@ public class HealthService {
 				
 				Simulation sim = savedBioModel.getSimulation(0);
 				VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(sim.getKey(), sim.getVersion().getOwner());
-				SimulationStatus initialSimStatus = vcellConnection.getSimulationController().startSimulation(vcSimId, 1);
+				long eventTimestamp = System.currentTimeMillis();
+				SimulationStatus simStatus = vcellConnection.getSimulationController().startSimulation(vcSimId, 1);
+				simSubmitEvent(id);
 				runningSimId = vcSimId;
 				
 				long startTime_MS = System.currentTimeMillis();
-				SimulationStatus simStatus = vcellConnection.getSimulationController().getSimulationStatus(sim.getKey());
 				while (simStatus.isActive()) {
 					if ((System.currentTimeMillis() - startTime_MS) > SIMULATION_TIMEOUT ) {
 						throw new RuntimeException("simulation took longer than "+SIMULATION_TIMEOUT+" to complete");
 					}
 					Thread.sleep(1000);
-					simStatus = vcellConnection.getSimulationController().getSimulationStatus(sim.getKey());
+					MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+					if (messageEvents!=null) {
+						for (MessageEvent event : messageEvents) {
+							if (event instanceof SimulationJobStatusEvent) {
+								SimulationJobStatusEvent jobEvent = (SimulationJobStatusEvent)event;
+								SimulationJobStatus jobStatus = jobEvent.getJobStatus();
+								VCSimulationIdentifier eventSimId = jobStatus.getVCSimulationIdentifier();
+								if (eventSimId.getOwner().equals(userLoginInfo.getUser()) && eventSimId.getSimulationKey().equals(sim.getKey())) {
+									simStatus = SimulationStatus.updateFromJobEvent(simStatus, jobEvent);
+								}
+							}
+						}
+					}
 				}
 				runningSimId = null;
 				

@@ -8,7 +8,6 @@ import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.PropertyLoader;
 
 public class CommandServiceLocal extends CommandService {
 	
@@ -26,15 +25,11 @@ public class CommandServiceLocal extends CommandService {
 		exe.start(allowableReturnCodes);
 		long elapsedTimeMS = System.currentTimeMillis() - timeMS;
 		CommandOutput commandOutput = new CommandOutput(command, exe.getStdoutString(), exe.getStderrString(), exe.getExitValue(), elapsedTimeMS);
-        boolean bSuppressQStat = false;
-		VCMongoMessage.sendCommandServiceCall(commandOutput);
-		if (PropertyLoader.getBooleanProperty(PropertyLoader.suppressQStatStandardOutLogging, true) && commandOutput.getCommand().contains("qstat -f")){
-			bSuppressQStat = true;
-		}
-		System.out.println("Command: " + commandOutput.getCommand());
-		if(!bQuiet && !bSuppressQStat){System.out.println("Command: stdout = " + commandOutput.getStandardOutput());}
-		System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
-		System.out.println("Command: exit = " + commandOutput.getExitStatus());
+        VCMongoMessage.sendCommandServiceCall(commandOutput);
+		lg.trace("Command: " + commandOutput.getCommand());
+		lg.trace("Command: stdout = " + commandOutput.getStandardOutput());
+		lg.trace("Command: stderr = " + commandOutput.getStandardError()); 
+		lg.trace("Command: exit = " + commandOutput.getExitStatus());
 		
 		return commandOutput;
 	}

@@ -3,12 +3,13 @@ package cbit.vcell.message.server.cmd;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.exe.ExecutableException;
 
 
 public abstract class CommandService {
 
-	public static boolean bQuiet = false;
+	protected static Logger lg = Logger.getLogger(CommandServiceSsh.class);
 	
 	public static class CommandOutput {
 		private String[] commandStrings;

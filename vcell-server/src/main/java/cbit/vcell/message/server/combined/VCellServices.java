@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -168,7 +170,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-			CommandService.bQuiet = false;
+			Logger.getLogger(CommandService.class).setLevel(Level.DEBUG);
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
