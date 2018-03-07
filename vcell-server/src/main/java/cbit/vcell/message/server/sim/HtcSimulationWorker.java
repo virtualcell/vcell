@@ -14,7 +14,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -75,7 +74,7 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	private VCQueueConsumer queueConsumer = null;
 	private VCMessageSession sharedMessageProducer = null;
 	private VCPooledQueueConsumer pooledQueueConsumer = null;
-	private static Logger lg = Logger.getLogger(HtcSimulationWorker.class);
+	public static Logger lg = Logger.getLogger(HtcSimulationWorker.class);
 
 	/**
 	 * SimulationWorker constructor comment.
@@ -193,28 +192,44 @@ private void initQueueConsumer() {
 			try {
 				SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
 				simTask = simTaskMessage.getSimulationTask();
+				if (lg.isInfoEnabled()) {
+					lg.info("onQueueMessage() run simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
+				}
 				PostProcessingChores rd = choresFor(simTask);
 				HtcProxy clonedHtcProxy = htcProxy.cloneThreadsafe();
+				if (lg.isInfoEnabled()) {
+					lg.info("onQueueMessage() submit job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
+				}
 				HtcJobID pbsId = submit2PBS(simTask, clonedHtcProxy, log, rd);
+				if (lg.isInfoEnabled()) {
+					lg.info("onQueueMessage() sending 'accepted' message for job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
+				}
 				synchronized (sharedMessageProducer) {
 					WorkerEventMessage.sendAccepted(sharedMessageProducer, HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), pbsId);
+				}
+				if (lg.isInfoEnabled()) {
+					lg.info("onQueueMessage() sent 'accepted' message for job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
 				}
 			} catch (Exception e) {
 				log.exception(e);
 				if (simTask!=null){
 					try {
+						lg.error("failed to process simTask request: "+e.getMessage()+" for simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName(), e);
 						synchronized (sharedMessageProducer) {
 							WorkerEventMessage.sendFailed(sharedMessageProducer,  HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), SimulationMessage.jobFailed(e.getMessage()));
 						}
+						lg.error("sent 'failed' message for simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName(), e);
 					} catch (VCMessagingException e1) {
 						log.exception(e1);
 					}
+				}else {
+					lg.error("failed to process simTask request: "+e.getMessage(), e);
 				}
 			}
 		}
 	};
 
-	int numHtcworkerThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.htcworkerThreadsProperty, "10"));
+	int numHtcworkerThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.htcworkerThreadsProperty, "5"));
 	this.pooledQueueConsumer = new VCPooledQueueConsumer(queueListener, log, numHtcworkerThreads, sharedMessageProducer);
 	this.pooledQueueConsumer.initThreadPool();
 	VCellQueue queue = VCellQueue.SimJobQueue;

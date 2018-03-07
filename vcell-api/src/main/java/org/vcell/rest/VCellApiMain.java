@@ -21,6 +21,7 @@ import org.restlet.engine.Engine;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
 import org.restlet.util.Series;
+import org.vcell.api.client.VCellApiClient;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -73,6 +74,7 @@ public class VCellApiMain {
 			Logger lg = Logger.getLogger(VCellApiMain.class);
 			DatabasePolicySQL.lg.setLevel(Level.WARN);
 			DbDriver.lg.setLevel(Level.WARN);
+			VCellApiClient.lg.setLevel(java.util.logging.Level.INFO);
 
 			if (args.length!=3){
 				System.out.println("usage: VCellApiMain javascriptDir (-|logDir) port");

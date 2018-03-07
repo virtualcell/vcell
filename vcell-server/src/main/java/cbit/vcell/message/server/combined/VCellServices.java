@@ -177,6 +177,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			DbDriver.lg.setLevel(Level.WARN);
 			HtcProxy.LG.setLevel(Level.TRACE);
 			SimulationDispatcher.lg.setLevel(Level.DEBUG);
+			HtcSimulationWorker.lg.setLevel(Level.INFO);
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
