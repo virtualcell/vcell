@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +66,7 @@ public class SlurmProxy extends HtcProxy {
 		if (statusMap.containsKey(htcJobId)) {
 			return statusMap.get(htcJobId).status;
 		}
+		LG.warn("SLURM job not found, htcJobId="+htcJobId);
 		throw new HtcJobNotFoundException("job not found", htcJobId);
 	}
 
@@ -90,16 +92,19 @@ denied: job "6894" does not exist
 		String[] cmd = new String[]{Slurm_HOME + JOB_CMD_DELETE, Long.toString(htcJobId.getJobNumber())};
 		try {
 			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
-
+			if (LG.isDebugEnabled()) {
+				LG.debug("killing SLURM job htcJobId="+htcJobId+": '"+CommandOutput.concatCommandStrings(cmd)+"'");
+			}
 			CommandOutput commandOutput = commandService.command(cmd,new int[] { 0, SCANCEL_JOB_NOT_FOUND_RETURN_CODE });
 
 			Integer exitStatus = commandOutput.getExitStatus();
 			String standardOut = commandOutput.getStandardOutput();
 			if (exitStatus!=null && exitStatus.intValue()==SCANCEL_JOB_NOT_FOUND_RETURN_CODE && standardOut!=null && standardOut.toLowerCase().contains(SCANCEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
+				LG.error("failed to cancel SLURM htcJobId="+htcJobId+", job not found");
 				throw new HtcJobNotFoundException(standardOut, htcJobId);
 			}
 		}catch (ExecutableException e){
-			e.printStackTrace();
+			LG.error("failed to cancel SLURM htcJobId="+htcJobId, e);
 			if (!e.getMessage().toLowerCase().contains(SCANCEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
 				throw e;
 			}else{
@@ -545,6 +550,9 @@ denied: job "6894" does not exist
 	@Override
 	public HtcJobID submitJob(String jobName, String sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
+			if (LG.isDebugEnabled()) {
+				LG.debug("generating local SLURM submit script for jobName="+jobName);
+			}
 			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands);
 
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
@@ -553,12 +561,9 @@ denied: job "6894" does not exist
 
 			// move submission file to final location (either locally or remotely).
 			if (LG.isDebugEnabled()) {
-				LG.debug("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_external+"'");
+				LG.debug("moving local SLURM submit file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_external+"'");
 			}
 			commandService.pushFile(tempFile,sub_file_external);
-			if (LG.isDebugEnabled()) {
-				LG.debug("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
-			}
 			tempFile.delete();
 		} catch (IOException ex) {
 			ex.printStackTrace(System.out);
@@ -572,15 +577,23 @@ denied: job "6894" does not exist
 		 * 
 		 */
 		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SUBMIT, sub_file_external};
+		if (LG.isDebugEnabled()) {
+			LG.debug("submitting SLURM job: '"+CommandOutput.concatCommandStrings(completeCommand)+"'");
+		}
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
 		final String EXPECTED_STDOUT_PREFIX = "Submitted batch job ";
 		if (jobid.startsWith(EXPECTED_STDOUT_PREFIX)){
 			jobid = jobid.replace(EXPECTED_STDOUT_PREFIX, "");
 		}else{
+			LG.error("failed to submit SLURM job '"+sub_file_external+"', stdout='"+commandOutput.getStandardOutput()+"', stderr='"+commandOutput.getStandardError()+"'");
 			throw new ExecutableException("unexpected response from '"+JOB_CMD_SUBMIT+"' while submitting simulation: '"+jobid+"'");
 		}
-		return new HtcJobID(jobid,BatchSystemType.SLURM);
+		HtcJobID htcJobID = new HtcJobID(jobid,BatchSystemType.SLURM);
+		if (LG.isDebugEnabled()) {
+			LG.debug("SLURM job '"+CommandOutput.concatCommandStrings(completeCommand)+"' started as htcJobId '"+htcJobID+"'");
+		}
+		return htcJobID;
 	}
 
 	/**

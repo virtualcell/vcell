@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
@@ -71,7 +72,7 @@ public static VCDatabaseScanner createDatabaseScanner(SessionLog log) throws Exc
 	
 	new PropertyLoader();
 		
-	DatabasePolicySQL.bSilent = true;
+	DatabasePolicySQL.lg.setLevel(Level.WARN);
 	DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	
 	ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);

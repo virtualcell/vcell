@@ -11,6 +11,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.restlet.Client;
 import org.restlet.Server;
@@ -46,7 +47,9 @@ import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -68,6 +71,9 @@ public class VCellApiMain {
 			WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
 			//don't use static field -- want to initialize logging first
 			Logger lg = Logger.getLogger(VCellApiMain.class);
+			DatabasePolicySQL.lg.setLevel(Level.WARN);
+			DbDriver.lg.setLevel(Level.WARN);
+
 			if (args.length!=3){
 				System.out.println("usage: VCellApiMain javascriptDir (-|logDir) port");
 				System.exit(1);

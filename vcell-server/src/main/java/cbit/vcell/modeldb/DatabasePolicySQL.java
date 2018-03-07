@@ -12,6 +12,7 @@ package cbit.vcell.modeldb;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.document.User;
 
@@ -22,7 +23,7 @@ import cbit.vcell.resource.PropertyLoader;
  * This type was created in VisualAge.
  */
 public class DatabasePolicySQL {
-	public static boolean bSilent = false;
+	public static final Logger lg = Logger.getLogger(DbDriver.class);
 	public static boolean bAllowAdministrativeAccess = false;
 	private static final String alias = "_alias";
 
@@ -43,8 +44,8 @@ public static String enforceOwnershipDelete(User user, VersionTable vTable, Stri
 	//	if((special != null) && (special.length() != 0)){
 	//		sb.append (special);
 	//	}
-	if (!bSilent){
-		System.out.println("\nDatabasePolicySQL.enforceOwnershipDelete(), sql = "+sb.toString());
+	if (lg.isTraceEnabled()) {
+		lg.trace("\nDatabasePolicySQL.enforceOwnershipDelete(), sql = "+sb.toString());
 	}
 	return sb.toString();
 }
@@ -104,8 +105,8 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
 															(String) valueData[1],
 															version));
 	}
-	if (!bSilent){
-		System.out.println("\nDatabasePolicySQL.enforceOwnershipInsert(), sql = "+sb.toString());
+	if (lg.isTraceEnabled()){
+		lg.trace("\nDatabasePolicySQL.enforceOwnershipInsert(), sql = "+sb.toString());
 	}
 	return sb.toString();
 }
@@ -321,8 +322,8 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
 	if((special != null) && (special.length() != 0)){
 		sb.append (" "+special);
 	}
-	if (!bSilent){
-		System.out.println("\nDatabasePolicySQL.enforceOwnershipSelect(), sql = "+sb.toString());
+	if (lg.isTraceEnabled()){
+		lg.trace("\nDatabasePolicySQL.enforceOwnershipSelect(), sql = "+sb.toString());
 	}
 	return sb.toString();
 }
@@ -346,8 +347,8 @@ public static String enforceOwnershipUpdate(User user, VersionTable vTable, Stri
 	//	if((special != null) && (special.length() != 0)){
 	//		sb.append (special);
 	//	}
-	if (!bSilent){
-		System.out.println("\nDatabasePolicySQL.enforceOwnershipUpdate(), sql = "+sb.toString());
+	if (lg.isTraceEnabled()){
+		lg.trace("\nDatabasePolicySQL.enforceOwnershipUpdate(), sql = "+sb.toString());
 	}
 	return sb.toString();
 }

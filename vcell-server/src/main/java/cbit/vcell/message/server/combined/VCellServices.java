@@ -62,7 +62,9 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.message.server.sim.HtcSimulationWorker;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.LibraryLoaderThread;
@@ -171,6 +173,9 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
 			Logger.getLogger(CommandService.class).setLevel(Level.DEBUG);
+			DatabasePolicySQL.lg.setLevel(Level.WARN);
+			DbDriver.lg.setLevel(Level.WARN);
+			HtcProxy.LG.setLevel(Level.TRACE);
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 

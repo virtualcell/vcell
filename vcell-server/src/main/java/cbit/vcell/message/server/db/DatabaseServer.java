@@ -15,6 +15,7 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.log4j.Level;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -101,7 +102,7 @@ public static void main(java.lang.String[] args) {
 	
 	try {
 		PropertyLoader.loadProperties();
-		DatabasePolicySQL.bSilent = true;
+		DatabasePolicySQL.lg.setLevel(Level.ALL);
 		
 		int serviceOrdinal = Integer.parseInt(args[0]);
 		String logdir = null;

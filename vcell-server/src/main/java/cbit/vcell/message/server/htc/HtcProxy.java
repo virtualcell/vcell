@@ -28,7 +28,7 @@ import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.solvers.ExecutableCommand;
 
 public abstract class HtcProxy {
-	protected static final Logger LG = Logger.getLogger(HtcProxy.class);
+	public static final Logger LG = Logger.getLogger(HtcProxy.class);
 
 	/**
 	 *

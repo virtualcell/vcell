@@ -117,7 +117,7 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
  * This type was created in VisualAge.
  */
 public abstract class DbDriver {
-	private static final Logger lg = Logger.getLogger(DbDriver.class);
+	public static final Logger lg = Logger.getLogger(DbDriver.class);
 	//
 	private static final int VARCHAR_SIZE_LIMIT = 4000;
 	public static final String INSERT_VARCHAR2_HERE = "INSERT_VARCHAR2_HERE";
@@ -2277,9 +2277,9 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 	ResultSet rset = null;
 	String sql = null;
 	
-	boolean origBSilent = DatabasePolicySQL.bSilent;
+	Level origLogLevel = DatabasePolicySQL.lg.getLevel();
 	try{
-		DatabasePolicySQL.bSilent = true;
+		DatabasePolicySQL.lg.setLevel(Level.WARN);
 		
 //double begTime=System.currentTimeMillis();
 //int counter = 0;
@@ -2763,7 +2763,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 		lg.error("failed: ("+sql+"): "+e.getMessage(), e);
 		throw e;
 	}finally{
-		DatabasePolicySQL.bSilent = origBSilent;
+		DatabasePolicySQL.lg.setLevel(origLogLevel);
 		if(stmt != null){
 			stmt.close();
 		}
