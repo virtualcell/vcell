@@ -254,9 +254,6 @@ public class SimulationDispatcher extends ServiceProvider {
 						int maxOdePerUser = BatchScheduler.getMaxOdeJobsPerUser();
 						int maxPdePerUser = BatchScheduler.getMaxPdeJobsPerUser();
 						VCellServerID serverID = VCellServerID.getSystemServerID();
-						if (lg.isDebugEnabled()) {
-							lg.debug("Dispatcher limits: maxJobsPerSite="+maxJobsPerSite+", maxOdePerUser="+maxOdePerUser+", maxPdePerUser="+maxPdePerUser);
-						}
 
 						final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
 						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, simulationRequirementsMap, maxJobsPerSite, maxOdePerUser, maxPdePerUser, serverID, log);
