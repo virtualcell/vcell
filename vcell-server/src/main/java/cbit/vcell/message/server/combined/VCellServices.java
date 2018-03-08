@@ -178,6 +178,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			HtcProxy.LG.setLevel(Level.TRACE);
 			SimulationDispatcher.lg.setLevel(Level.DEBUG);
 			HtcSimulationWorker.lg.setLevel(Level.INFO);
+			CommandServiceSsh.lg.setLevel(Level.TRACE);
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 

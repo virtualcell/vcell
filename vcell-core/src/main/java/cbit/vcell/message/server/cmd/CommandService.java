@@ -9,7 +9,7 @@ import org.vcell.util.exe.ExecutableException;
 
 public abstract class CommandService {
 
-	protected static Logger lg = Logger.getLogger(CommandServiceSsh.class);
+	public static Logger lg = Logger.getLogger(CommandServiceSsh.class);
 	
 	public static class CommandOutput {
 		private String[] commandStrings;

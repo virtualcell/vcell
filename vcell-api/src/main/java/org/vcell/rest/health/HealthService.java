@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
@@ -37,6 +39,8 @@ public class HealthService {
 	private static final long LOGIN_LOOP_SLEEP = 3*60*1000;
 	private static final long SIMULATION_LOOP_START_DELAY = 60*1000;
 	private static final long SIMULATION_LOOP_SLEEP = 5*60*1000;
+	
+	Logger lg = LoggerFactory.getLogger(HealthService.class);
 
 	public static enum HealthEventType {
 		LOGIN_START,
@@ -59,6 +63,10 @@ public class HealthService {
 			this.transactionId = transactionId;
 			this.eventType = eventType;
 			this.message = message;
+		}
+		
+		public String toString() {
+			return "HealthEvent("+transactionId+","+timestamp_MS+","+eventType+","+message;
 		}
 	}
 	
@@ -116,34 +124,48 @@ public class HealthService {
 			
 	private long simStartEvent() {
 		long id = eventSequence.getAndIncrement();
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.RUNSIM_START, "starting simulation loop ("+id+")"));
+		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.RUNSIM_START, "starting simulation loop ("+id+")");
+		addHealthEvent(healthEvent);
 		return id;
 	}
 	
 	private void simSubmitEvent(long id, VCSimulationIdentifier vcSimId) {
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.RUNSIM_SUBMIT, "simulation "+vcSimId.getID()+"_0_0"+" submitted ("+id+")"));
+		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.RUNSIM_SUBMIT, "simulation "+vcSimId.getID()+"_0_0"+" submitted ("+id+")");
+		addHealthEvent(healthEvent);
 	}
 	
 	private void simFailed(long id, String message) {
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.RUNSIM_FAILED, "simulation failed ("+id+"): " + message));
+		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.RUNSIM_FAILED, "simulation failed ("+id+"): " + message);
+		addHealthEvent(healthEvent);
 	}
 	
 	private void simSuccess(long id) {
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.RUNSIM_SUCCESS, "simulation success ("+id+")"));
+		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.RUNSIM_SUCCESS, "simulation success ("+id+")");
+		addHealthEvent(healthEvent);
 	}
 	
 	private long loginStartEvent() {
 		long id = eventSequence.getAndIncrement();
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.LOGIN_START, "starting login ("+id+")"));
+		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.LOGIN_START, "starting login ("+id+")");
+		addHealthEvent(healthEvent);
 		return id;
 	}
 	
 	private void loginFailed(long id, String message) {
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.LOGIN_FAILED, "login failed ("+id+"): " + message));
+		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.LOGIN_FAILED, "login failed ("+id+"): " + message);
+		addHealthEvent(healthEvent);
 	}
 	
 	private void loginSuccess(long id) {
-		healthEvents.addFirst(new HealthEvent(id, HealthEventType.LOGIN_SUCCESS, "login success ("+id+")"));
+		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.LOGIN_SUCCESS, "login success ("+id+")");
+		addHealthEvent(healthEvent);
+	}
+
+	private void addHealthEvent(HealthEvent healthEvent) {
+		if (lg.isDebugEnabled()) {
+			lg.debug(healthEvent.toString());
+		}
+		healthEvents.addFirst(healthEvent);
 	}
 	
 	
@@ -166,12 +188,10 @@ public class HealthService {
 		}
 		loginThread = new Thread(() -> loginLoop(), "login monitor thread");
 		loginThread.setDaemon(true);
-		loginThread.setPriority(Thread.currentThread().getPriority()-1);
 		loginThread.start();
 		
 		runsimThread = new Thread(() -> runsimLoop(), "runsim monitor thread");
 		runsimThread.setDaemon(true);
-		runsimThread.setPriority(Thread.currentThread().getPriority()-1);
 		runsimThread.start();
 	}
 	
