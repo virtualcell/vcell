@@ -35,14 +35,16 @@ public final class RpcRestlet extends Restlet {
 	@Override
 	public void handle(Request req, Response response) {
 		if (req.getMethod().equals(Method.POST)){
+			String destination = null;
+			String method = null;
 			try {
 				VCellApiApplication application = ((VCellApiApplication)getApplication());
 				User vcellUser = application.getVCellUser(req.getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 				HttpRequest request = (HttpRequest)req;
 				String username = vcellUser.getName();
 				String userkey = vcellUser.getID().toString();
-				String destination = request.getHeaders().getFirstValue("Destination");
-				String method = request.getHeaders().getFirstValue("Method");
+				destination = request.getHeaders().getFirstValue("Destination");
+				method = request.getHeaders().getFirstValue("Method");
 				String returnRequired = request.getHeaders().getFirstValue("ReturnRequired");
 				String timeoutMS = request.getHeaders().getFirstValue("TimeoutMS");
 				String compressed = request.getHeaders().getFirstValue("Compressed");
@@ -98,9 +100,10 @@ public final class RpcRestlet extends Restlet {
 				response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");
 				response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 			} catch (Exception e) {
+				getLogger().severe("internal error invoking "+destination+":"+method+"(): "+e.getMessage());
 				e.printStackTrace();
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
-				response.setEntity("failed to invoke RPC method", MediaType.TEXT_PLAIN);
+				response.setEntity("internal error invoking "+destination+":"+method+"(): "+e.getMessage(), MediaType.TEXT_PLAIN);
 			}
 		}
 	}

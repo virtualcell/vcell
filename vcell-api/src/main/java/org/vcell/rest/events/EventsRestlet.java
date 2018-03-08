@@ -43,9 +43,10 @@ public final class EventsRestlet extends Restlet {
 				response.setStatus(Status.SUCCESS_OK, "event query succeeded");
 				response.setEntity(new JsonRepresentation(eventWrappersJSON));
 			} catch (Exception e) {
+				getLogger().severe("internal error retrieving events: "+e.getMessage());
 				e.printStackTrace();
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
-				response.setEntity("failed to invoke RPC method", MediaType.TEXT_PLAIN);
+				response.setEntity("internal error retrieving events: "+e.getMessage(), MediaType.TEXT_PLAIN);
 			}
 		}
 	}
