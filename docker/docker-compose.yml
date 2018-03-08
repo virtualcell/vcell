@@ -22,8 +22,6 @@ services:
       - smtp_port=${VCELL_SMTP_PORT}
       - smtp_emailaddress=${VCELL_SMTP_EMAILADDRESS}
 
-      - JAVA_OPTIONS=-Xmx1500m -Xms500m
-
     ports:
       - "${VCELL_API_PORT_EXTERNAL}:8080"
       - "8000" # java remote debugging
@@ -84,9 +82,6 @@ services:
       - mongodb_host_internal=mongodb
       - mongodb_port_internal=27017
       - mongodb_database=test
-
-      - JAVA_OPTIONS=-Xmx2500m -Xms500m
-
     ports:
       - "8000" # java remote debugging
     volumes:

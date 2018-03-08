@@ -188,10 +188,12 @@ public class HealthService {
 		}
 		loginThread = new Thread(() -> loginLoop(), "login monitor thread");
 		loginThread.setDaemon(true);
+		loginThread.setPriority(Thread.currentThread().getPriority()-1);
 		loginThread.start();
 		
 		runsimThread = new Thread(() -> runsimLoop(), "runsim monitor thread");
 		runsimThread.setDaemon(true);
+		runsimThread.setPriority(Thread.currentThread().getPriority()-1);
 		runsimThread.start();
 	}
 	

@@ -33,8 +33,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsblob_minsize=100000 \
     	smtp_hostname="smtp-host-not-set" \
 	smtp_port="smtp-port-not-set" \
-	smtp_emailaddress="smtp-emailaddress-not-set" \
-	JAVA_OPTIONS=""
+	smtp_emailaddress="smtp-emailaddress-not-set"
     
 
 ENV dbpswdfile=/run/secrets/dbpswd \
@@ -45,10 +44,9 @@ ENV dbpswdfile=/run/secrets/dbpswd \
 EXPOSE 8080
 EXPOSE 8000
 
-#    -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M
 ENTRYPOINT java \
     -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
-	-XX:+PrintFlagsFinal -XX:+PrintGCDetails $JAVA_OPTIONS \
+    -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.python.executable=/usr/bin/python \

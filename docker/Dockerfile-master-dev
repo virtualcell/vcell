@@ -48,8 +48,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     slurm_cmd_sbatch=sbatch \
     slurm_cmd_sacct=sacct \
     slurm_cmd_scancel=scancel \
-    jmsblob_minsize=100000 \
-    JAVA_OPTIONS=""
+    jmsblob_minsize=100000
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -60,10 +59,9 @@ VOLUME /exportdir
 
 EXPOSE 8000
 
-#	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M
 ENTRYPOINT java \
 	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
-	-XX:+PrintFlagsFinal -XX:+PrintGCDetails $JAVA_OPTIONS \
+	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
     -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Dvcell.server.id="${serverid}" \
