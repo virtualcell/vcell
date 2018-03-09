@@ -318,19 +318,23 @@ denied: job "6894" does not exist
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 
 		lsb.write("# determine temp directory to use for storing singularity images");
-		lsb.write("if [ ! -e \"$TMPDIR\" ]; then");
-		lsb.write("   if [ -e /local ]; then");
-		lsb.write("       TMPDIR=/local");
-		lsb.write("       mkdir -p /local/singularityImages");
-		lsb.write("   else");
-		lsb.write("      if [ -e /state/partition1 ]; then");
+		lsb.write("#if [ ! -e \"$TMPDIR\" ]; then");
+		lsb.write("#  if [ -e /local ]; then");
+		lsb.write("#      TMPDIR=/local");
+		lsb.write("#      mkdir -p /local/singularityImages");
+		lsb.write("#  else");
+		lsb.write("#     if [ -e /state/partition1 ]; then");
 		lsb.write("         TMPDIR=/state/partition1");
 		lsb.write("         mkdir -p /state/partition1/singularityImages");
-		lsb.write("      fi");
-		lsb.write("   fi");
-		lsb.write("else");
-		lsb.write("   mkdir -p $TMPDIR/singularityImages");
-		lsb.write("fi");
+		lsb.write("         if [[ $? -ne 0 ]]; then");
+		lsb.write("             echo \"couldn't create /state/partition1/singularityImages temp directory for singularity\"");
+		lsb.write("             exit 1");
+		lsb.write("         fi");
+		lsb.write("#     fi");
+		lsb.write("#  fi");
+		lsb.write("#else");
+		lsb.write("#   mkdir -p $TMPDIR/singularityImages");
+		lsb.write("#fi");
 		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
 		
 		//
