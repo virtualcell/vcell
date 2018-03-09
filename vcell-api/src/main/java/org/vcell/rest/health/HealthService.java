@@ -327,10 +327,9 @@ public class HealthService {
 		}
 	}
 	
-	public NagiosStatus getLoginStatus() {
-		long curr_MS = System.currentTimeMillis();
+	public NagiosStatus getLoginStatus(long status_timestamp) {
 		// get last 5 minutes of events to determine status
-		HealthEvent[] events = query(curr_MS-(LOGIN_TIME_ERROR+LOGIN_LOOP_SLEEP+120000), curr_MS);
+		HealthEvent[] events = query(status_timestamp-(LOGIN_TIME_ERROR+LOGIN_LOOP_SLEEP+120000), status_timestamp);
 		
 		// find last completed login event (if any)
 		HealthEvent loginCompleteEvent = null;
@@ -376,10 +375,9 @@ public class HealthService {
 		}
 	}
 	
-	public NagiosStatus getRunsimStatus() {
-		long curr_MS = System.currentTimeMillis();
+	public NagiosStatus getRunsimStatus(long status_timestamp) {
 		// get last 5 minutes of events to determine status
-		HealthEvent[] events = query(curr_MS-(SIMULATION_TIMEOUT+SIMULATION_LOOP_SLEEP+120000), curr_MS);
+		HealthEvent[] events = query(status_timestamp-(SIMULATION_TIMEOUT+SIMULATION_LOOP_SLEEP+120000), status_timestamp);
 		
 		// find last completed sim event (if any)
 		HealthEvent loginCompleteEvent = null;
