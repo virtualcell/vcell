@@ -26,6 +26,7 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.optimization.OptServerImpl;
+import org.vcell.rest.admin.AdminService;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcService;
@@ -241,8 +242,9 @@ public class VCellApiMain {
 			User testUser = localAdminDbServer.getUser(TEST_USER);
 			UserInfo testUserInfo = localAdminDbServer.getUserInfo(testUser.getID()); // lookup hashed auth credentials in database.
 			HealthService healthService = new HealthService(restEventService, "localhost", port, bIgnoreCertProblems, bIgnoreHostProblems, testUserInfo.userid, testUserInfo.digestedPassword0);
+			AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);
 			RpcService rpcService = new RpcService(vcMessagingService);
-			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, templateConfiguration, healthService, javascriptDir);
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  
 

@@ -21,6 +21,8 @@ import org.restlet.resource.ResourceException;
 import org.restlet.routing.Router;
 import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
+import org.vcell.rest.admin.AdminJobsRestlet;
+import org.vcell.rest.admin.AdminService;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.events.EventsRestlet;
 import org.vcell.rest.events.RestEventService;
@@ -146,6 +148,9 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String     HEALTH_CHECK_ALL_START_TIMESTAMP = "start_timestamp";
 	public static final String     HEALTH_CHECK_ALL_END_TIMESTAMP = "end_timestamp";
 	
+	public static final String ADMIN = "admin";
+	public static final String 	ADMIN_JOBS = "jobs";
+	
 	public static final String JOBINDEX = "jobindex";
 	
 	public static final String SAVESIMULATION = "save";
@@ -178,6 +183,7 @@ public class VCellApiApplication extends WadlApplication {
 	private RpcService rpcService = null;
 	private RestEventService restEventService = null;
 	private HealthService healthService = null;
+	private AdminService adminService = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
@@ -210,6 +216,7 @@ public class VCellApiApplication extends WadlApplication {
 			UserVerifier userVerifier, OptServerImpl optServerImpl, 
 			RpcService rpcService, 
 			RestEventService restEventService, 
+			AdminService adminService,
 			Configuration templateConfiguration, 
 			HealthService healthService,
 			File javascriptDir) {
@@ -221,6 +228,7 @@ public class VCellApiApplication extends WadlApplication {
 		setStatusService(new VCellStatusService());
 		this.javascriptDir = javascriptDir;
 		this.restDatabaseService = restDatabaseService;
+		this.adminService = adminService;
 		this.userVerifier = userVerifier;
 		this.optServerImpl = optServerImpl;
 		this.rpcService = rpcService;
@@ -340,6 +348,8 @@ public class VCellApiApplication extends WadlApplication {
 
 	    rootRouter.attach("/"+HEALTH, new HealthRestlet(getContext()));
 
+	    rootRouter.attach("/"+ADMIN+"/"+ADMIN_JOBS, new AdminJobsRestlet(getContext()));
+
 	    rootRouter.attach("/auth/user", new Restlet(getContext()){
 
 			@Override
@@ -372,6 +382,10 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public UserVerifier getUserVerifier(){
 		return userVerifier;
+	}
+
+	public AdminService getAdminService() {
+		return this.adminService;
 	}
 
 	public User getVCellUser(ChallengeResponse response, AuthenticationPolicy authPolicy) {

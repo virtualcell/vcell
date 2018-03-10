@@ -42,7 +42,7 @@ services:
         limits:
           memory: 2000M
         reservations:
-          memory: 1000M
+          memory: 100M
   master:
     image: "${VCELL_REPO_NAMESPACE}/vcell-master:${VCELL_TAG}"
     environment:
@@ -131,7 +131,7 @@ services:
         limits:
           memory: 2000M
         reservations:
-          memory: 1000M
+          memory: 500M
   mongodb:
     image: "${VCELL_REPO_NAMESPACE}/vcell-mongo:${VCELL_TAG}"
     ports:
@@ -145,7 +145,7 @@ services:
         limits:
           memory: 1500M
         reservations:
-          memory: 500M
+          memory: 100M
 
 networks:
   vcellnet:

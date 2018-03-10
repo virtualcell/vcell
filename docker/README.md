@@ -92,6 +92,10 @@ cflee8p55yph        local_mongodb       replicated          1/1                 
 > docker service logs -f local_api
 ```
 
+```bash
+> curl --verbose --insecure "https://vcellapi.cam.uchc.edu/admin/jobs?completed=false&stopped=false&serverId=REL" | jq '.'
+(see AdminJobsRestlet for details)
+```
 
 # build VCell Client installers (this uses docker-compose rather than docker stack)
 required files:
@@ -241,7 +245,7 @@ sudo env ${cat server_alpha_7.0.0_10_a9a83bb-2.config | xargs) docker stack depl
 build the containers (e.g. localhost:5000/schaff/vcell-api:dev1) and upload to local registry Docker registry (e.g. localhost:5000).  
 
 ```bash
-export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev6
+export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev7
 ./build.sh --skip-singularity all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
