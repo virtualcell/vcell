@@ -47,7 +47,7 @@ arguments=$*
 echo "starting preprocessor"
 
 echo "expecting jre 1.8_144 or later for memory options"
-java --version
+java -version
 
 java ${jvmoptions} ${jvmprop} ${preprocessor_mainclass} ${arguments}
 stat=$?
