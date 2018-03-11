@@ -12,6 +12,8 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.mongodb.VCMongoMessage;
+import net.schmizz.keepalive.KeepAliveProvider;
+import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -65,7 +67,9 @@ public class CommandServiceSsh extends CommandService {
 				timestamp_ms = System.currentTimeMillis();
 				lg.error("creating new ssh client");
 			}
-			SSHClient ssh = new SSHClient();
+	        DefaultConfig defaultConfig = new DefaultConfig();
+	        defaultConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
+	        final SSHClient ssh = new SSHClient(defaultConfig);
 			try {
 				ssh.addHostKeyVerifier(new PromiscuousVerifier());
 				ssh.connect(remoteHostName);
@@ -80,7 +84,9 @@ public class CommandServiceSsh extends CommandService {
 			}catch (Exception e) {
 				lg.error("failed to create new SSH client (retry="+bRetry+"): "+e.getMessage(), e);
 				try {
-					ssh.close();
+					if (ssh != null) {
+						ssh.close();
+					}
 				}catch (IOException e1) {
 					lg.error("failed to create new ssh client", e1);
 				}
