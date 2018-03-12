@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -552,7 +551,7 @@ denied: job "6894" does not exist
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, String sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, String sub_file_internal, String sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
@@ -567,7 +566,7 @@ denied: job "6894" does not exist
 			if (LG.isDebugEnabled()) {
 				LG.debug("moving local SLURM submit file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_external+"'");
 			}
-			commandService.pushFile(tempFile,sub_file_external);
+			FileUtils.copyFile(tempFile, new File(sub_file_internal));
 			tempFile.delete();
 		} catch (IOException ex) {
 			ex.printStackTrace(System.out);

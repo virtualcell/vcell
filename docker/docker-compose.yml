@@ -87,6 +87,7 @@ services:
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
+      - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - dbpswd
       - jmspswd

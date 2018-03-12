@@ -171,7 +171,7 @@ public abstract class HtcProxy {
 	 * @param postProcessingCommands non null
 	 * @throws ExecutableException
 	 */
-	public abstract HtcJobID submitJob(String jobName, String sub_file_external, ExecutableCommand.Container commandSet,
+	public abstract HtcJobID submitJob(String jobName, String sub_file_internal, String sub_file_external, ExecutableCommand.Container commandSet,
 			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException;
 
 	public abstract HtcProxy cloneThreadsafe();

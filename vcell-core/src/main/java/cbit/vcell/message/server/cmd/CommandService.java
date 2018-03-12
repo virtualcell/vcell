@@ -60,10 +60,10 @@ public abstract class CommandService {
 	@Override
 	public abstract CommandService clone();
 
-	public abstract void pushFile(File tempFile, String remotePath) throws IOException;
-	
-	public abstract void deleteFile(String remoteFilePath) throws IOException;
- 
+//	public abstract void pushFile(File tempFile, String remotePath) throws IOException;
+//	
+//	public abstract void deleteFile(String remoteFilePath) throws IOException;
+// 
 	public final CommandOutput command(String[] command) throws ExecutableException {
 		return command(command,new int[] { 0 });
 	}

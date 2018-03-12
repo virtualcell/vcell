@@ -103,11 +103,20 @@ private static class PostProcessingChores {
 	/**
 	 * where solver runs
 	 */
-	final String runDirectory;
+	final String runDirectoryExternal;
 	/**
 	 * where data ends up
 	 */
-	final String finalDataDirectory;
+	final String finalDataDirectoryExternal;
+
+	/**
+	 * where solver runs
+	 */
+	final String runDirectoryInternal;
+	/**
+	 * where data ends up
+	 */
+	final String finalDataDirectoryInternal;
 
 	/**
 	 * will we need a VTK mesh?
@@ -118,8 +127,8 @@ private static class PostProcessingChores {
 	 * directories are same
 	 * @param runDirectory
 	 */
-	PostProcessingChores(String runDirectory) {
-		this(runDirectory,runDirectory);
+	PostProcessingChores(String runDirectoryInternal, String runDirectoryExternal) {
+		this(runDirectoryInternal,runDirectoryExternal,runDirectoryInternal,runDirectoryExternal);
 	}
 
 	/**
@@ -127,17 +136,19 @@ private static class PostProcessingChores {
 	 * @param runDirectory
 	 * @param finalDataDirectory
 	 */
-	PostProcessingChores(String runDirectory, String finalDataDirectory) {
-		this.runDirectory = runDirectory;
-		this.finalDataDirectory = finalDataDirectory;
+	PostProcessingChores(String runDirectoryInternal, String runDirectoryExternal, String finalDataDirectoryInternal, String finalDataDirectoryExternal) {
+		this.runDirectoryInternal = runDirectoryInternal;
+		this.runDirectoryExternal = runDirectoryExternal;
+		this.finalDataDirectoryInternal = finalDataDirectoryInternal;
+		this.finalDataDirectoryExternal = finalDataDirectoryExternal;
 		isVtk = false;
 	}
 
 	boolean isCopyNeeded( ) {
-		return !runDirectory.equals(finalDataDirectory);
+		return !runDirectoryExternal.equals(finalDataDirectoryExternal);
 	}
 	boolean isParallel( ) {
-		return !runDirectory.equals(finalDataDirectory);
+		return !runDirectoryExternal.equals(finalDataDirectoryExternal);
 	}
 
 	public boolean isVtkUser() {
@@ -150,7 +161,7 @@ private static class PostProcessingChores {
 
 	@Override
 	public String toString() {
-		return "PostProcessorChores( " +runDirectory + ", "  + finalDataDirectory + ", isVtkUser " + isVtk + ")";
+		return "PostProcessorChores( " +runDirectoryExternal + ", "  + finalDataDirectoryExternal + ", isVtkUser " + isVtk + ")";
 	}
 }
 
@@ -161,11 +172,12 @@ private static class PostProcessingChores {
  */
 private PostProcessingChores choresFor(SimulationTask simTask) {
 	String userDir = "/" + simTask.getUserName();
+	String primaryInternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
 	String primaryExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 	PostProcessingChores chores = null;
 	final SolverTaskDescription slvTaskDesc = simTask.getSimulation( ).getSolverTaskDescription();
 	if (!slvTaskDesc.isParallel()) {
-		chores = new PostProcessingChores(primaryExternal + userDir);
+		chores = new PostProcessingChores(primaryInternal + userDir, primaryExternal + userDir);
 	}
 	else {
 		String runDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.PARALLEL_DATA_DIR_EXTERNAL);
@@ -246,28 +258,36 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 	if (!htcLogDirExternalString.endsWith("/")){
 		htcLogDirExternalString = htcLogDirExternalString+"/";
     }
+	String htcLogDirInternalString = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirInternal)).getAbsolutePath();
+	if (!htcLogDirInternalString.endsWith("/")){
+		htcLogDirInternalString = htcLogDirInternalString+"/";
+    }
     String jobname = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID()));   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex()+ "_" + simTask.getTaskID();
 	String subFileExternal = htcLogDirExternalString+jobname + clonedHtcProxy.getSubmissionFileExtension();
+	String subFileInternal = htcLogDirInternalString+jobname + clonedHtcProxy.getSubmissionFileExtension();
 
-	File parallelDir = new File(chores.runDirectory);
-	File primaryUserDir = new File(chores.finalDataDirectory);
-	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, primaryUserDir,parallelDir, simTask, true);
+	File parallelDirInternal = new File(chores.runDirectoryInternal);
+	File parallelDirExternal = new File(chores.runDirectoryExternal);
+	File primaryUserDirInternal = new File(chores.finalDataDirectoryInternal);
+	File primaryUserDirExternal = new File(chores.finalDataDirectoryExternal);
+	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, primaryUserDirInternal,parallelDirInternal, simTask, true);
 	realSolver.setUnixMode();
 
 	String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
-	String simTaskFilePath = ResourceUtil.forceUnixPath(new File(primaryUserDir ,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
+	String simTaskFilePathInternal = ResourceUtil.forceUnixPath(new File(primaryUserDirInternal ,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
+	String simTaskFilePathExternal = ResourceUtil.forceUnixPath(new File(primaryUserDirExternal ,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
 
 	if (clonedHtcProxy.getCommandService() instanceof CommandServiceSsh){
 		// write simTask file locally, and send it to server, and delete local copy.
 		File tempFile = File.createTempFile("simTask", "xml");
 		XmlUtil.writeXMLStringToFile(simTaskXmlText, tempFile.getAbsolutePath(), true);
-		clonedHtcProxy.getCommandService().command(new String[] { "mkdir", "-p", ResourceUtil.forceUnixPath(primaryUserDir.getAbsolutePath()) });
-		clonedHtcProxy.getCommandService().pushFile(tempFile, simTaskFilePath);
+		clonedHtcProxy.getCommandService().command(new String[] { "mkdir", "-p", ResourceUtil.forceUnixPath(primaryUserDirInternal.getAbsolutePath()) });
+		FileUtils.copyFile(tempFile, new File(simTaskFilePathInternal));
 		tempFile.delete();
 	}else{
 		// write final file directly.
-		FileUtils.forceMkdir(primaryUserDir);
-		XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePath, true);
+		FileUtils.forceMkdir(primaryUserDirInternal);
+		XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePathInternal, true);
 	}
 
 	final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
@@ -298,10 +318,10 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 
 		List<String> args = new ArrayList<>( 4 );
 		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
-		args.add( simTaskFilePath );
-		args.add( primaryUserDir.getAbsolutePath() );
+		args.add( simTaskFilePathExternal );
+		args.add( primaryUserDirExternal.getAbsolutePath() );
 		if ( chores.isParallel()) {
-			args.add(chores.runDirectory);
+			args.add(chores.runDirectoryExternal);
 		}
 		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
 		//the pre-processor command itself is neither messaging nor parallel; it's independent of the subsequent solver call
@@ -317,8 +337,8 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		}
 
 		if (chores.isCopyNeeded()) {
-			String logName = chores.finalDataDirectory + '/' + SimulationData.createCanonicalSimLogFileName(simKey, jobId, false);
-			CopySimFiles csf = new CopySimFiles(simTask.getSimulationJobID(), chores.runDirectory,chores.finalDataDirectory, logName);
+			String logName = chores.finalDataDirectoryInternal + '/' + SimulationData.createCanonicalSimLogFileName(simKey, jobId, false);
+			CopySimFiles csf = new CopySimFiles(simTask.getSimulationJobID(), chores.runDirectoryInternal, chores.finalDataDirectoryInternal, logName);
 			postProcessingCommands.add(csf);
 		}
 		if (chores.isVtkUser()) {
@@ -329,13 +349,13 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 	} else {
 		ExecutableCommand ec = new ExecutableCommand(null, false,false,
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable),
-				simTaskFilePath,
-				ResourceUtil.forceUnixPath(parallelDir.getAbsolutePath())
+				simTaskFilePathExternal,
+				ResourceUtil.forceUnixPath(parallelDirExternal.getAbsolutePath())
 		);
 		commandContainer.add(ec);
 	}
 
-	jobid = clonedHtcProxy.submitJob(jobname, subFileExternal, commandContainer, ncpus, simTask.getEstimatedMemorySizeMB(), postProcessingCommands);
+	jobid = clonedHtcProxy.submitJob(jobname, subFileInternal, subFileExternal, commandContainer, ncpus, simTask.getEstimatedMemorySizeMB(), postProcessingCommands);
 	if (jobid == null) {
 		throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}

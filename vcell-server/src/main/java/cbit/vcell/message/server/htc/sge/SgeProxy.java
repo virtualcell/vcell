@@ -345,7 +345,7 @@ denied: job "6894" does not exist
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, String sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, String sub_file_internal, String sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
 			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands);
 
@@ -355,9 +355,9 @@ denied: job "6894" does not exist
 
 			// move submission file to final location (either locally or remotely).
 			if (LG.isDebugEnabled()) {
-				LG.debug("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_external+"'");
+				LG.debug("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_internal+"'");
 			}
-			commandService.pushFile(tempFile,sub_file_external);
+			FileUtils.copyFile(tempFile, new File(sub_file_internal));
 			if (LG.isDebugEnabled()) {
 				LG.debug("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
 			}

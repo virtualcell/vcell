@@ -9,6 +9,7 @@ import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -29,7 +30,7 @@ public class CommandServiceSsh extends CommandService {
 	private String remoteHostName = null;
 	private String username = null;
 	private File keyFile = null;
-	private ObjectPool<SSHClient> pool = new GenericObjectPool<SSHClient>(new SSHClientFactory());
+	private final ObjectPool<SSHClient> pool;
 			
 	public class SSHClientFactory
 	    extends BasePooledObjectFactory<SSHClient> {
@@ -124,6 +125,9 @@ public class CommandServiceSsh extends CommandService {
 		this.remoteHostName = remoteHostName;
 		this.username = username;
 		this.keyFile = keyFile;
+		GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+		config.setTestOnBorrow(true);
+		this.pool = new GenericObjectPool<SSHClient>(new SSHClientFactory(), config);
 	}
 		
 	@Override
@@ -209,76 +213,76 @@ public class CommandServiceSsh extends CommandService {
 		}
 	}
 	
-	@Override
-	public void pushFile(File tempFile, String remotePath) throws IOException {
-		if (lg.isTraceEnabled()) {
-			lg.trace("pushing file "+tempFile+" (exists="+tempFile.exists()+") ==> "+remotePath);
-		}
-		long timestamp_ms = System.currentTimeMillis();
-		SSHClient ssh = null;
-		try {
-			ssh = pool.borrowObject();
-			try (SFTPClient sftpClient = ssh.newSFTPClient();)
-			{
-				sftpClient.put(tempFile.getPath(), remotePath);
-			} catch (Exception e) {
-				lg.error("failed to push file", e);
-				throw new IOException("failed to push file: "+e.getMessage(),e);
-			}
-			if (lg.isTraceEnabled()) {
-				long diff_ms = System.currentTimeMillis() - timestamp_ms;
-				lg.trace("pushed file to "+remotePath+": elapsedTime = "+diff_ms+" ms");
-			}
-		} catch (IOException e) {
-			throw e;
-		} catch (Exception e) {
-			lg.error("failed to borrow ssh connection from pool", e);
-			throw new IOException(e.getMessage());
-		} finally {
-			if (ssh != null) {
-				try {
-					pool.returnObject(ssh);
-				} catch (Exception e) {
-					lg.error("failed to return ssh connection to pool", e);
-					e.printStackTrace();
-				}
-			}
-		}
-		
-	}
-
-	public void deleteFile(String remoteFilePath) throws IOException {
-		if (lg.isTraceEnabled()) {
-			lg.trace("deleting remote file "+remoteFilePath);
-		}
-		long timestamp_ms = System.currentTimeMillis();
-		SSHClient ssh = null;
-		try {
-			ssh = pool.borrowObject();
-			try (SFTPClient sftpClient = ssh.newSFTPClient();)
-			{
-				sftpClient.rm(remoteFilePath);
-			}
-			if (lg.isTraceEnabled()) {
-				long diff_ms = System.currentTimeMillis() - timestamp_ms;
-				lg.trace("deleted remote file "+remoteFilePath+": elapsedTime = "+diff_ms+" ms");
-			}
-		} catch (IOException e) {
-			throw e;
-		} catch (Exception e) {
-			lg.error("failed to borrow ssh connection from pool", e);
-			throw new IOException(e.getMessage());
-		} finally {
-			if (ssh != null) {
-				try {
-					pool.returnObject(ssh);
-				} catch (Exception e) {
-					lg.error("failed to return ssh connection to pool", e);
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+//	@Override
+//	public void pushFile(File tempFile, String remotePath) throws IOException {
+//		if (lg.isTraceEnabled()) {
+//			lg.trace("pushing file "+tempFile+" (exists="+tempFile.exists()+") ==> "+remotePath);
+//		}
+//		long timestamp_ms = System.currentTimeMillis();
+//		SSHClient ssh = null;
+//		try {
+//			ssh = pool.borrowObject();
+//			try (SFTPClient sftpClient = ssh.newSFTPClient();)
+//			{
+//				sftpClient.put(tempFile.getPath(), remotePath);
+//			} catch (Exception e) {
+//				lg.error("failed to push file", e);
+//				throw new IOException("failed to push file: "+e.getMessage(),e);
+//			}
+//			if (lg.isTraceEnabled()) {
+//				long diff_ms = System.currentTimeMillis() - timestamp_ms;
+//				lg.trace("pushed file to "+remotePath+": elapsedTime = "+diff_ms+" ms");
+//			}
+//		} catch (IOException e) {
+//			throw e;
+//		} catch (Exception e) {
+//			lg.error("failed to borrow ssh connection from pool", e);
+//			throw new IOException(e.getMessage());
+//		} finally {
+//			if (ssh != null) {
+//				try {
+//					pool.returnObject(ssh);
+//				} catch (Exception e) {
+//					lg.error("failed to return ssh connection to pool", e);
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//		
+//	}
+//
+//	public void deleteFile(String remoteFilePath) throws IOException {
+//		if (lg.isTraceEnabled()) {
+//			lg.trace("deleting remote file "+remoteFilePath);
+//		}
+//		long timestamp_ms = System.currentTimeMillis();
+//		SSHClient ssh = null;
+//		try {
+//			ssh = pool.borrowObject();
+//			try (SFTPClient sftpClient = ssh.newSFTPClient();)
+//			{
+//				sftpClient.rm(remoteFilePath);
+//			}
+//			if (lg.isTraceEnabled()) {
+//				long diff_ms = System.currentTimeMillis() - timestamp_ms;
+//				lg.trace("deleted remote file "+remoteFilePath+": elapsedTime = "+diff_ms+" ms");
+//			}
+//		} catch (IOException e) {
+//			throw e;
+//		} catch (Exception e) {
+//			lg.error("failed to borrow ssh connection from pool", e);
+//			throw new IOException(e.getMessage());
+//		} finally {
+//			if (ssh != null) {
+//				try {
+//					pool.returnObject(ssh);
+//				} catch (Exception e) {
+//					lg.error("failed to return ssh connection to pool", e);
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//	}
 
 	@Override
 	public void close() {

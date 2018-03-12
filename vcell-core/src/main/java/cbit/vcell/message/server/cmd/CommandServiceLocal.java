@@ -39,14 +39,15 @@ public class CommandServiceLocal extends CommandService {
 		return new CommandServiceLocal();
 	}
 
-	@Override
-	public void pushFile(File tempFile, String remotePath) throws IOException {
-		FileUtils.copyFile(tempFile, new File(remotePath));
-	}
-
-	public void deleteFile(String remoteFilePath) throws IOException {
-		FileUtils.deleteFile(remoteFilePath);
-	}
+//	@Override
+//	public void pushFile(File tempFile, String remotePath) throws IOException {
+//		FileUtils.copyFile(tempFile, new File(remotePath));
+//	}
+//
+//	@Override
+//	public void deleteFile(String remoteFilePath) throws IOException {
+//		FileUtils.deleteFile(remoteFilePath);
+//	}
 
 	@Override
 	public void close() {
