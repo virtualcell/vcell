@@ -277,18 +277,8 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 	String simTaskFilePathInternal = ResourceUtil.forceUnixPath(new File(primaryUserDirInternal ,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
 	String simTaskFilePathExternal = ResourceUtil.forceUnixPath(new File(primaryUserDirExternal ,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
 
-	if (clonedHtcProxy.getCommandService() instanceof CommandServiceSsh){
-		// write simTask file locally, and send it to server, and delete local copy.
-		File tempFile = File.createTempFile("simTask", "xml");
-		XmlUtil.writeXMLStringToFile(simTaskXmlText, tempFile.getAbsolutePath(), true);
-		clonedHtcProxy.getCommandService().command(new String[] { "mkdir", "-p", ResourceUtil.forceUnixPath(primaryUserDirInternal.getAbsolutePath()) });
-		FileUtils.copyFile(tempFile, new File(simTaskFilePathInternal));
-		tempFile.delete();
-	}else{
-		// write final file directly.
-		FileUtils.forceMkdir(primaryUserDirInternal);
-		XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePathInternal, true);
-	}
+	FileUtils.forceMkdir(primaryUserDirInternal);
+	XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePathInternal, true);
 
 	final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
 

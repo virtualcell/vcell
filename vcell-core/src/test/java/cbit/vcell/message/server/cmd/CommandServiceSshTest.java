@@ -5,20 +5,22 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.Level;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.mongodb.VCMongoMessage;
 
-@Ignore
+//@Ignore
 public class CommandServiceSshTest {
 
 	@Before
 	public void setUp() throws Exception {
+		VCMongoMessage.enabled = false;
 	}
 
 	@After
@@ -27,14 +29,23 @@ public class CommandServiceSshTest {
 
 	@Test
 	public void test() throws IOException, ExecutableException {
+		CommandServiceSsh cmd = null;
 		try {
-			VCMongoMessage.enabled=true;
-			CommandServiceSsh cmd = new CommandServiceSsh("vcell-service.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
+			cmd = new CommandServiceSsh("vcell-service.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
 			System.out.println("after created cmdService");
-			CommandOutput output = cmd.command(new String[] { "ls" });
+			CommandOutput output = cmd.command(new String[] { "ls -al | head -4" });
+			System.out.println("ls output is: "+output.getStandardOutput());
+			output = cmd.command(new String[] { "ls -al | head -9" });
+			System.out.println("ls output is: "+output.getStandardOutput());
+			output = cmd.command(new String[] { "ls -al | head -4" });
 			System.out.println("ls output is: "+output.getStandardOutput());
 		}catch (Exception e) {
+			e.printStackTrace();
 			fail("exception thrown: "+e.getMessage());
+		}finally {
+			if (cmd != null) {
+				cmd.close();
+			}
 		}
 	}
 

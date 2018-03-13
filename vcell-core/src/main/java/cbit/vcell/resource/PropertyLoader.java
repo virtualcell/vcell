@@ -50,7 +50,7 @@ public class PropertyLoader {
 	public static final String jobMemoryOverheadMB			= record("vcell.htc.jobMemoryOverheadMB",ValueType.GEN);
 	public static final String htcBatchSystemQueue			= record("vcell.htc.queue",ValueType.GEN);
 	public static final String htcLogDirExternal				= record("vcell.htc.logdir.external",ValueType.GEN);
-	public static final String htcLogDirInternal				= record("vcell.htc.logdir.external",ValueType.GEN);
+	public static final String htcLogDirInternal				= record("vcell.htc.logdir.internal",ValueType.GEN);
 	public static final String htcUser						= record("vcell.htc.user",ValueType.GEN);
 	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",ValueType.GEN);
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",ValueType.GEN);

@@ -19,7 +19,7 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
-import net.schmizz.sshj.sftp.SFTPClient;
+import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
@@ -30,25 +30,75 @@ public class CommandServiceSsh extends CommandService {
 	private String remoteHostName = null;
 	private String username = null;
 	private File keyFile = null;
-	private final ObjectPool<SSHClient> pool;
+	private final ObjectPool<SshConnection> pool;
+	
+	private static class SshConnection {
+		public final SSHClient client;
+		private boolean bFailed=false;
+		
+		private SshConnection(SSHClient client) {
+			super();
+			this.client = client;
+		}
+		
+		public void close() {
+			try {
+				client.disconnect();
+			} catch (Exception e) {
+				CommandServiceSsh.lg.error("failed to release ssh connection and session: "+e.getMessage(), e);
+			}
+		}
+
+		public void setFailed() {
+			this.bFailed = true;
+		}
+		
+		public boolean isFailed() {
+			return bFailed;
+		}
+	}
 			
-	public class SSHClientFactory
-	    extends BasePooledObjectFactory<SSHClient> {
+	private class SshConnectionFactory
+	    extends BasePooledObjectFactory<SshConnection> {
 
 	    @Override
-	    public SSHClient create() {
-	        return createNewSSHClient_0(true);
+	    public SshConnection create() {
+	        return createNewConnection();
 	    }
 
 		@Override
-		public void destroyObject(PooledObject<SSHClient> p) throws Exception {
+		public void destroyObject(PooledObject<SshConnection> p) throws Exception {
 			p.getObject().close();
 		}
 
 		@Override
-		public boolean validateObject(PooledObject<SSHClient> p) {
-			try (Session session = p.getObject().startSession();) {
-				session.exec("echo hello");
+		public boolean validateObject(PooledObject<SshConnection> p) {
+			try {
+				if (p.getObject().isFailed()) {
+					return false;
+				}
+				Command cmd = null;
+				try (Session session = p.getObject().client.startSession();) {
+					if (lg.isTraceEnabled()) {
+						lg.trace("ssh connection pool testing connection with 'echo hello' command");
+					}
+					cmd = session.exec("echo hello");
+				}
+				if (cmd == null) {
+					if (lg.isWarnEnabled()) {
+						lg.warn("pool couldn't validate ssh connection: cmd is null");
+					}
+					return false;
+				}
+				if (cmd.getExitStatus() != null && cmd.getExitStatus().intValue() != 0) {
+					if (lg.isWarnEnabled()) {
+						lg.warn("pool couldn't validate ssh connection: expecting 0 exit status, status=("+cmd.getExitStatus()+")");
+					}
+					return false;
+				}
+				if (lg.isTraceEnabled()) {
+					lg.trace("pool validated ssh connection");
+				}
 				return true;
 			} catch (TransportException | ConnectionException e) {
 				e.printStackTrace();
@@ -56,13 +106,7 @@ public class CommandServiceSsh extends CommandService {
 			}
 		}
 
-		@Override
-		public void activateObject(PooledObject<SSHClient> p) throws Exception {
-			// TODO Auto-generated method stub
-			super.activateObject(p);
-		}
-
-		private SSHClient createNewSSHClient_0(boolean bRetry) {
+		private SshConnection createNewConnection() {
 			long timestamp_ms = 0;
 			if (lg.isTraceEnabled()) {
 				timestamp_ms = System.currentTimeMillis();
@@ -81,9 +125,9 @@ public class CommandServiceSsh extends CommandService {
 					long diff_ms = System.currentTimeMillis() - timestamp_ms;
 					lg.trace("created new SSH client, elapsed time = "+diff_ms+" ms");
 				}
-				return ssh;
+				return new SshConnection(ssh);
 			}catch (Exception e) {
-				lg.error("failed to create new SSH client (retry="+bRetry+"): "+e.getMessage(), e);
+				lg.error("failed to create new SSH client: "+e.getMessage(), e);
 				try {
 					if (ssh != null) {
 						ssh.close();
@@ -91,11 +135,7 @@ public class CommandServiceSsh extends CommandService {
 				}catch (IOException e1) {
 					lg.error("failed to create new ssh client", e1);
 				}
-				if (bRetry) {
-					return createNewSSHClient_0(false);
-				}else {
-					throw new RuntimeException("failed to create SSH connection: "+e.getMessage(), e);
-				}
+				throw new RuntimeException("failed to create SSH connection: "+e.getMessage(), e);
 			}
 		}
 		
@@ -103,17 +143,16 @@ public class CommandServiceSsh extends CommandService {
 	     * Use the default PooledObject implementation.
 	     */
 	    @Override
-	    public PooledObject<SSHClient> wrap(SSHClient sshClient) {
-	        return new DefaultPooledObject<SSHClient>(sshClient);
+	    public PooledObject<SshConnection> wrap(SshConnection sshConnection) {
+	        return new DefaultPooledObject<SshConnection>(sshConnection);
 	    }
 
 	    /**
 	     * When an object is returned to the pool, clear the buffer.
 	     */
 	    @Override
-	    public void passivateObject(PooledObject<SSHClient> pooledObject) {
-	        // pooledObject.getObject().close();
-	    		//pooledObject.getObject().
+	    public void passivateObject(PooledObject<SshConnection> pooledObject) {
+//	    		IOUtils.readFully(pooledObject.getObject().session.getInputStream());
 	    }
 
 	    // for all other methods, the no-op implementation
@@ -127,7 +166,7 @@ public class CommandServiceSsh extends CommandService {
 		this.keyFile = keyFile;
 		GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 		config.setTestOnBorrow(true);
-		this.pool = new GenericObjectPool<SSHClient>(new SSHClientFactory(), config);
+		this.pool = new GenericObjectPool<SshConnection>(new SshConnectionFactory(), config);
 	}
 		
 	@Override
@@ -136,23 +175,23 @@ public class CommandServiceSsh extends CommandService {
 			throw new IllegalArgumentException("allowableReturnCodes must not be null");
 		}
 		long timeMS = System.currentTimeMillis();
-		SSHClient ssh = null;
+		SshConnection sshConnection = null;
 		try {
-			ssh = pool.borrowObject();
-			try (Session session = ssh.startSession();)
-			{
+			sshConnection = pool.borrowObject();
+			try (Session session = sshConnection.client.startSession(); ){
 				String cmd = CommandOutput.concatCommandStrings(commandStrings);
 				Session.Command command = session.exec(cmd);
 				command.join(1,TimeUnit.MINUTES); //wait up to a minute for return -- will return sooner if command completes
 				String standardOutput = IOUtils.readFully(command.getInputStream()).toString();
 				String standardError = IOUtils.readFully(command.getErrorStream()).toString();
-				Integer exitStatus = command.getExitStatus();
 				command.close();
+				Integer exitStatus = command.getExitStatus();
 				long elapsedTimeMS = System.currentTimeMillis() - timeMS;
 				CommandOutput commandOutput = new CommandOutput(commandStrings, standardOutput, standardError, exitStatus, elapsedTimeMS);
 				
-				VCMongoMessage.sendCommandServiceCall(commandOutput);
-
+				if (VCMongoMessage.enabled) {
+					VCMongoMessage.sendCommandServiceCall(commandOutput);
+				}
 				
 				if (commandOutput.getExitStatus()==null){
 					lg.error("Command: " + commandOutput.getCommand());
@@ -184,17 +223,20 @@ public class CommandServiceSsh extends CommandService {
 
 			} catch (Exception e) {
 				lg.error("command failed", e);
-				throw new ExecutableException(e.getMessage());
+				throw new ExecutableException(e.getMessage(),e);
 			}
 		} catch (ExecutableException e) {
 			throw e;
 		} catch (Exception e) {
 			lg.error("failed to borrow ssh connection from pool", e);
-			throw new ExecutableException(e.getMessage());
+			if (sshConnection!=null) {
+				sshConnection.setFailed();
+			}
+			throw new ExecutableException(e.getMessage(),e);
 		} finally {
-			if (ssh != null) {
+			if (sshConnection != null) {
 				try {
-					pool.returnObject(ssh);
+					pool.returnObject(sshConnection);
 				} catch (Exception e) {
 					lg.error("failed to return ssh connection to pool", e);
 					e.printStackTrace();
