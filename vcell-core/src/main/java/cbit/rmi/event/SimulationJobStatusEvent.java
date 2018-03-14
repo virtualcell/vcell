@@ -179,9 +179,9 @@ public static SimulationJobStatusEvent fromJsonRep(Object eventSource, Simulatio
 	
 	SimulationQueueEntryStatus simQueueStatus = null;
 	Date queueDate = eventRep.jobStatus.queueDate;
-	int queuePriority = eventRep.jobStatus.queuePriority;
+	Integer queuePriority = eventRep.jobStatus.queuePriority;
 	SimulationJobStatusRepresentation.SimulationQueueID queueId2 = eventRep.jobStatus.queueId;
-	if (queueDate!=null) {
+	if (queueDate!=null && queuePriority!=null) {
 		simQueueStatus = new SimulationQueueEntryStatus(queueDate,queuePriority,SimulationQueueID.valueOf(queueId2.name()));
 	}
 	
