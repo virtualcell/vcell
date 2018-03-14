@@ -1884,7 +1884,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 				}
 			}
 			if(allROICompositeImageArr != null){
-				sb.append(" val(roi)="+((DataBufferByte)(allROICompositeImageArr[getZ()].getRaster().getDataBuffer())).getData()[iny*allROICompositeImageArr[0].getWidth()+inx]);
+//				System.out.println(getZ()+" "+x+" "+y);
+				DataBufferByte dataBufferByte = (DataBufferByte)(allROICompositeImageArr[getZ()].getRaster().getDataBuffer());
+				sb.append(" val(roi)="+dataBufferByte.getData()[y*allROICompositeImageArr[0].getWidth()+x]);
 			}
 		}else{
 			sb.append((sb.length() != 0?"; ":"")+"zoom("+NumberUtils.formatNumber(imagePane.getZoom(), 3)+")");
