@@ -130,7 +130,7 @@ public class UserVerifier implements Verifier {
 		ChallengeResponse challengeResponse = request.getChallengeResponse();
 		AuthenticationStatus result = verify(challengeResponse);
 		
-		Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning "+result+", request='"+request+"'");
+		Context.getCurrent().getLogger().log(Level.FINE,"UserVerifier.verify(request,response) - returning "+result+", request='"+request+"'");
 		
 		switch (result){
 			case invalid:{

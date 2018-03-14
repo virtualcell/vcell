@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.apache.log4j.Level;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -85,7 +86,7 @@ public class VCComprehensiveStatistics {
 	VCComprehensiveStatistics() throws Exception {
 		new PropertyLoader();
 		
-		DatabasePolicySQL.bSilent = true;
+		DatabasePolicySQL.lg.setLevel(Level.WARN);
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 		
 		SessionLog sessionLog = new StdoutSessionLog("VCComprehensiveStatistics");

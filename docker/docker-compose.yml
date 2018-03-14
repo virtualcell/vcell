@@ -40,10 +40,8 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.50'
-          memory: 1000M
+          memory: 2000M
         reservations:
-          cpus: '0.25'
           memory: 100M
   master:
     image: "${VCELL_REPO_NAMESPACE}/vcell-master:${VCELL_TAG}"
@@ -89,6 +87,7 @@ services:
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
+      - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - dbpswd
       - jmspswd
@@ -103,11 +102,9 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.50'
-          memory: 1500M
+          memory: 3000M
         reservations:
-          cpus: '0.25'
-          memory: 500M
+          memory: 1000M
       placement:
         constraints:
           - node.labels.zone == INTERNAL
@@ -133,11 +130,9 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.50'
-          memory: 2500M
+          memory: 2000M
         reservations:
-          cpus: '0.25'
-          memory: 600M
+          memory: 500M
   mongodb:
     image: "${VCELL_REPO_NAMESPACE}/vcell-mongo:${VCELL_TAG}"
     ports:
@@ -149,11 +144,9 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.50'
-          memory: 500M
+          memory: 1500M
         reservations:
-          cpus: '0.25'
-          memory: 50M
+          memory: 100M
 
 networks:
   vcellnet:

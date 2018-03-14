@@ -1,5 +1,6 @@
 package org.vcell.rest.health;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -49,15 +50,39 @@ public final class HealthRestlet extends Restlet {
 				}
 				if (requestType==null){
 					throw new RuntimeException("expecting /"+VCellApiApplication.HEALTH+"?"+VCellApiApplication.HEALTH_CHECK+"="+
-							"("+VCellApiApplication.HEALTH_CHECK_LOGIN+"|"+VCellApiApplication.HEALTH_CHECK_SIM+"|"+VCellApiApplication.HEALTH_CHECK_ALL+")");
+							"("+VCellApiApplication.HEALTH_CHECK_LOGIN+"|"+VCellApiApplication.HEALTH_CHECK_SIM+"|"+VCellApiApplication.HEALTH_CHECK_ALL+")"
+							+ "[&"+VCellApiApplication.HEALTH_CHECK_ALL_START_TIMESTAMP+"=<start_ms>]"
+							+ "[&"+VCellApiApplication.HEALTH_CHECK_ALL_END_TIMESTAMP+"=<end_ms>]"
+							+ "[&"+VCellApiApplication.HEALTH_CHECK_STATUS_TIMESTAMP+"=<status_ms>]");
 				}
 				
+				// defaults to current status
+				long status_timestamp = System.currentTimeMillis();
+				String statusTimestampString = form.getFirstValue(VCellApiApplication.HEALTH_CHECK_STATUS_TIMESTAMP, true);
+				if (statusTimestampString!=null) {
+					status_timestamp = Long.parseLong(statusTimestampString);
+				}
+
+				// defaults to returning logs (all option) starting two hours ago
+				long start_timestamp = System.currentTimeMillis() - (2*60*60*1000);
+				String startTimestampString = form.getFirstValue(VCellApiApplication.HEALTH_CHECK_ALL_START_TIMESTAMP, true);
+				if (startTimestampString!=null) {
+					start_timestamp = Long.parseLong(startTimestampString);
+				}
+
+				// defaults to returning logs (all option) up to present time
+				long end_timestamp = System.currentTimeMillis();
+				String endTimestampString = form.getFirstValue(VCellApiApplication.HEALTH_CHECK_ALL_END_TIMESTAMP, true);
+				if (endTimestampString!=null) {
+					end_timestamp = Long.parseLong(endTimestampString);
+				}
+
 				HealthService healthService = application.getHealthService();
 
 				switch (requestType) {
 					case all:{
-						long beginTimestamp = System.currentTimeMillis() - (30*60*1000);
-						HealthEvent[] events = healthService.query(beginTimestamp, System.currentTimeMillis());
+						HealthEvent[] events = healthService.query(start_timestamp, end_timestamp);
+						ArrayUtils.reverse(events);
 						Gson gson = new Gson();
 						String healthEventsJSON = gson.toJson(events);
 						response.setStatus(Status.SUCCESS_OK);
@@ -65,7 +90,7 @@ public final class HealthRestlet extends Restlet {
 						break;
 					}
 					case login:{
-						NagiosStatus nagiosStatus = healthService.getLoginStatus();
+						NagiosStatus nagiosStatus = healthService.getLoginStatus(status_timestamp);
 						Gson gson = new Gson();
 						String statusJSON = gson.toJson(nagiosStatus);
 						response.setStatus(Status.SUCCESS_OK);
@@ -73,7 +98,7 @@ public final class HealthRestlet extends Restlet {
 						break;
 					}
 					case sim:{
-						NagiosStatus nagiosStatus = healthService.getRunsimStatus();
+						NagiosStatus nagiosStatus = healthService.getRunsimStatus(status_timestamp);
 						Gson gson = new Gson();
 						String statusJSON = gson.toJson(nagiosStatus);
 						response.setStatus(Status.SUCCESS_OK);

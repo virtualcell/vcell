@@ -60,7 +60,7 @@ public interface MessageConstants {
 	public static final long INTERVAL_PING_SERVER_MS = 5 * MINUTE_IN_MS; // in milliseconds
 	public static final long INTERVAL_SERVER_FAIL_MS = 10 * MINUTE_IN_MS; // in milliseconds
 	public static final long INTERVAL_HTCJOBKILL_DONE_TIMEOUT_MS = 10 * MINUTE_IN_MS; // in milliseconds
-	public static final long INTERVAL_SIMULATIONJOBSTATUS_DISPATCHED_RUNNING_TIMEOUT_MS = 10 * MINUTE_IN_MS; // in milliseconds
+	public static final long INTERVAL_SIMULATIONJOBSTATUS_DISPATCHED_RUNNING_TIMEOUT_MS = 365 * 24 * HOUR_IN_MS; // in milliseconds
 	public static final long INTERVAL_SIMULATIONJOBSTATUS_QUEUED_TIMEOUT_MS = 24 * HOUR_IN_MS; // in milliseconds
 	public static final long INTERVAL_PROGRESS_MESSAGE_MS = 5 * SECOND_IN_MS;
 	

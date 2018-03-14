@@ -2095,7 +2095,9 @@ private String truncateForDB(String s){
 		while(TokenMangler.getSQLEscapedString(temp.toString()).length() >= Preference.MAX_VALUE_LENGTH){
 			temp.deleteCharAt(temp.length()-1);
 		}
-		System.out.println("-----truncated "+(s.length()-temp.length())+" characters of simcontext='"+getName()+"' to fit DB constraint of "+Preference.MAX_VALUE_LENGTH);
+		if ((s.length()-temp.length()) > 0) {
+			System.out.println("-----truncated "+(s.length()-temp.length())+" characters of simcontext='"+getName()+"' to fit DB constraint of "+Preference.MAX_VALUE_LENGTH);
+		}
 		return temp.toString();
 	}
 	

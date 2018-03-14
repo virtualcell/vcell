@@ -118,7 +118,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 
 					if (replyMessage == null || !(replyMessage instanceof ObjectMessage)) {
 						throw new JMSException("Server is temporarily not responding, please try again. If problem persists, contact VCell_Support@uchc.edu." +
-								" (server=" + vcRpcRequest.getRequestedServiceType().getName() + ", method=" + vcRpcRequest.getMethodName() +")");
+								" (server " + vcRpcRequest.getRequestedServiceType().getName() + ", method " + vcRpcRequest.getMethodName() +")");
 					} else {
 						VCMessageJms vcReplyMessage = new VCMessageJms(replyMessage, vcMessagingServiceJms.getDelegate());
 						vcReplyMessage.loadBlobFile();

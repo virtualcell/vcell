@@ -42,6 +42,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -96,6 +98,7 @@ import com.google.gson.Gson;
  */
 public class VCellApiClient {
 	
+	public static final Logger lg = Logger.getLogger(VCellApiClient.class.getName());
 	private HttpHost httpHost;
 	private String clientID;
 	private CloseableHttpClient httpclient;
@@ -160,11 +163,15 @@ public class VCellApiClient {
 
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/simtask?"+simTasksQuerySpec.getQueryString());
 
-		System.out.println("Executing request to retrieve simulation tasks " + httpget.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve simulation tasks " + httpget.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String simTasksJson = responseBody;
-		System.out.println("returned: "+simTasksJson);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+toStringTruncated(simTasksJson));
+		}
 
 		Gson gson = new Gson();
 		SimulationTaskRepresentation[] simTaskReps = gson.fromJson(simTasksJson,SimulationTaskRepresentation[].class);
@@ -175,11 +182,15 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel?"+bioModelsQuerySpec.getQueryString());
 
-		System.out.println("Executing request to retrieve biomodels " + httpget.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve biomodels " + httpget.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String bimodelsJson = responseBody;
-		System.out.println("returned: "+bimodelsJson);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+toStringTruncated(bimodelsJson));
+		}
 
 		Gson gson = new Gson();
 		BiomodelRepresentation[] biomodelReps = gson.fromJson(bimodelsJson,BiomodelRepresentation[].class);
@@ -190,11 +201,15 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/events?beginTimestamp="+beginTimestamp);
 
-		System.out.println("Executing request to retrieve user events " + httpget.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve user events " + httpget.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String eventWrappersJson = responseBody;
-		System.out.println("returned: "+eventWrappersJson);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+toStringTruncated(eventWrappersJson));
+		}
 
 		Gson gson = new Gson();
 		EventWrapper[] eventWrappers = gson.fromJson(eventWrappersJson,EventWrapper[].class);
@@ -205,11 +220,15 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId);
 		
-		System.out.println("Executing request to retrieve biomodel " + httpget.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String bimodelsJson = responseBody;
-		System.out.println("returned: "+bimodelsJson);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+toStringTruncated(bimodelsJson));
+		}
 
 		Gson gson = new Gson();
 		BiomodelRepresentation biomodelRep = gson.fromJson(bimodelsJson,BiomodelRepresentation.class);
@@ -220,7 +239,9 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/biomodel.vcml");
 		
-		System.out.println("Executing request to retrieve biomodel " + httpget.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String vcml = responseBody;
@@ -232,24 +253,32 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey);
 		
-		System.out.println("Executing request to retrieve simulation " + httpget.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve simulation " + httpget.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
-		String bimodelsJson = responseBody;
-		System.out.println("returned: "+bimodelsJson);
+		String simulationJson = responseBody;
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+toStringTruncated(simulationJson));
+		}
 
 		Gson gson = new Gson();
-		SimulationRepresentation simulationRepresentation = gson.fromJson(bimodelsJson,SimulationRepresentation.class);
+		SimulationRepresentation simulationRepresentation = gson.fromJson(simulationJson,SimulationRepresentation.class);
 		return simulationRepresentation;
 	}
 	
 	public String getOptRunJson(String optimizationId) throws IOException {
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization/"+optimizationId);
 		
-		System.out.println("Executing request to retrieve optimization run " + httpget.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve optimization run " + httpget.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
-		System.out.println("returned: "+responseBody);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+toStringTruncated(responseBody));
+		}
 		return responseBody;
 	}
 
@@ -260,7 +289,9 @@ public class VCellApiClient {
 		input.setContentType("application/json");
 		httppost.setEntity(input);
 		
-		System.out.println("Executing request to submit optProblem " + httppost.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to submit optProblem " + httppost.getRequestLine());
+		}
 
 		ResponseHandler<String> handler = new ResponseHandler<String>() {
 
@@ -268,8 +299,10 @@ public class VCellApiClient {
 				int status = response.getStatusLine().getStatusCode();
 				if (status == 202) {
 					HttpEntity entity = response.getEntity();
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-						System.out.println("optimizationId = "+reader.readLine());
+					if (lg.isLoggable(Level.INFO)) {
+						try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+							lg.info("optimizationId = "+reader.readLine());
+						}
 					}
 			        final Header locationHeader = response.getFirstHeader("location");
 			        if (locationHeader == null) {
@@ -288,7 +321,9 @@ public class VCellApiClient {
 
 		};
 		String responseUri = httpclient.execute(httppost,handler,httpClientContext);
-		System.out.println("returned: "+responseUri);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+toStringTruncated(responseUri));
+		}
 
 		String optimizationId = responseUri.substring(responseUri.lastIndexOf('/') + 1);
 		return optimizationId;
@@ -322,11 +357,15 @@ public class VCellApiClient {
 		  
 		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey+"/startSimulation");
 		
-		System.out.println("Executing request to retrieve simulation " + httppost.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httppost, responseHandler, httpClientContext);
 		String simTaskReps = responseBody;
-		System.out.println("returned: "+simTaskReps);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+toStringTruncated(simTaskReps));
+		}
 
 		if (responseBody.equals("simulation start failed")){
 			throw new RuntimeException("simulation start failed for SimID="+simKey+" within BioModelKey="+bmId);
@@ -341,11 +380,15 @@ public class VCellApiClient {
 		  
 		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey+"/stopSimulation");
 		
-		System.out.println("Executing request to retrieve simulation " + httppost.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httppost, responseHandler, httpClientContext);
 		String simTaskReps = responseBody;
-		System.out.println("returned: "+simTaskReps);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+toStringTruncated(simTaskReps));
+		}
 
 		Gson gson = new Gson();
 		SimulationTaskRepresentation[] simulationTaskRepresentations = gson.fromJson(simTaskReps,SimulationTaskRepresentation[].class);
@@ -358,11 +401,15 @@ public class VCellApiClient {
 		
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/access_token?user_id="+userid+"&user_password="+digestedPassword+"&client_id="+clientID);
 
-		System.out.println("Executing request to retrieve access_token " + httpget.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve access_token " + httpget.getRequestLine());
+		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler);
 		String accessTokenJson = responseBody;
-		System.out.println("returned: "+accessTokenJson);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned: "+accessTokenJson);
+		}
 
 		Gson gson = new Gson();
 		AccessTokenRepresentation accessTokenRep = gson.fromJson(accessTokenJson,AccessTokenRepresentation.class);
@@ -426,7 +473,9 @@ public class VCellApiClient {
 		input.setContentType(ContentType.APPLICATION_JSON.getMimeType());
 		httppost.setEntity(input);
 		
-		System.out.println("Executing request to submit new user " + httppost.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to submit new user " + httppost.getRequestLine());
+		}
 
 		ResponseHandler<UserInfo> handler = new ResponseHandler<UserInfo>() {
 
@@ -451,7 +500,9 @@ public class VCellApiClient {
 
 		};
 		UserInfo insertedUserInfo = httpclient.execute(httppost,handler,httpClientContext);
-		System.out.println("returned userinfo: "+insertedUserInfo);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned userinfo: "+insertedUserInfo);
+		}
 
 		return insertedUserInfo;
 	}
@@ -462,7 +513,9 @@ public class VCellApiClient {
 		input.setContentType(ContentType.TEXT_PLAIN.getMimeType());
 		httppost.setEntity(input);
 		
-		System.out.println("Executing request to send lost password " + httppost.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to send lost password " + httppost.getRequestLine());
+		}
 
 		ResponseHandler<String> handler = new ResponseHandler<String>() {
 
@@ -486,7 +539,9 @@ public class VCellApiClient {
 
 		};
 		String message = httpclient.execute(httppost,handler,httpClientContext);
-		System.out.println("requested lost password for user "+userid+", server returned "+message);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("requested lost password for user "+userid+", server returned "+message);
+		}
 	}
 	
 	public enum RpcDestination {
@@ -536,13 +591,17 @@ public class VCellApiClient {
 			httppost.addHeader("specialProperties", Arrays.asList(specialProperties).toString());
 		}
 	
-		System.out.println("Executing request to submit rpc call " + httppost.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to submit rpc call " + httppost.getRequestLine());
+		}
 
 		ResponseHandler<Serializable> handler = new ResponseHandler<Serializable>() {
 
 			public Serializable handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
 				int status = response.getStatusLine().getStatusCode();
-				System.out.println("in rpc response handler, status="+status);
+				if (lg.isLoggable(Level.INFO)) {
+					lg.info("in rpc response handler, status="+status);
+				}
 				if (status == 200) {
 					HttpEntity entity = response.getEntity();
 					try {
@@ -554,30 +613,59 @@ public class VCellApiClient {
 							if (returnValue instanceof Exception){
 								Exception e = (Exception)returnValue;
 								e.printStackTrace();
-								System.out.println("throwing exception from rpc response handler");
+								lg.severe("vcellapi rpc failure, method="+rpcRequest.methodName+": "+e.getMessage());
 								throw new ClientProtocolException("vcellapi rpc failure, method="+rpcRequest.methodName+": "+e.getMessage(),e);
 							} else {
-								System.out.println("returning normally from rpc response handler ("+returnValue+")");
+								if (lg.isLoggable(Level.INFO)) {
+									lg.info("returning normally from rpc response handler ("+toStringTruncated(returnValue)+")");
+								}
 								return returnValue;
 							}
 						} else {
-							System.out.println("returning null from rpc response handler (returnRequired==false)");
+							if (lg.isLoggable(Level.INFO)) {
+								lg.info("returning null from rpc response handler (returnRequired==false)");
+							}
 							return null;
 						}
 					} catch (ClassNotFoundException | IllegalStateException e1) {
 						e1.printStackTrace();
+						lg.severe("vcellapi rpc failure deserializing return value, method="+rpcRequest.methodName+": "+e1.getMessage());
 						throw new RuntimeException("vcellapi rpc failure deserializing return value, method="+rpcRequest.methodName+": "+e1.getMessage(),e1);
 					}
 					
 				} else {
-					throw new ClientProtocolException("Unexpected response status: " + status);
+					HttpEntity entity = response.getEntity();
+					String message = null;
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						message = reader.lines().collect(Collectors.joining());
+					}
+					lg.severe("RPC method "+rpcDestination+":"+rpcRequest.methodName+"() failed: response status: " + status + "\nreason: " + message);
+					throw new ClientProtocolException("RPC method "+rpcDestination+":"+rpcRequest.methodName+"() failed: response status: " + status + "\nreason: " + message);
 				}
 			}
 
 		};
 		Serializable returnedValue = httpclient.execute(httppost,handler,httpClientContext);
-		System.out.println("returned from vcellapi rpc method="+rpcRequest.methodName);
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("returned from vcellapi rpc method="+rpcDestination+":"+rpcRequest.methodName+"()");
+		}
 		return returnedValue;
+	}
+	
+	private static String toStringTruncated(Object obj) {
+		return toStringTruncated(obj, 30);
+	}
+
+	private static String toStringTruncated(Object obj, int maxlength) {
+		if (obj == null) {
+			return "null";
+		}
+		String str = obj.toString();
+		if (str.length() <= maxlength) {
+			return str;
+		}else {
+			return str.substring(0, maxlength-4)+"...";
+		}
 	}
 	
 	public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
@@ -618,7 +706,9 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/swversion");
 
-		System.out.println("Executing request to retrieve server software version " + httpget.getRequestLine());
+		if (lg.isLoggable(Level.INFO)) {
+			lg.info("Executing request to retrieve server software version " + httpget.getRequestLine());
+		}
 
 		String vcellSoftwareVersion = httpclient.execute(httpget, responseHandler, httpClientContext);
 		return vcellSoftwareVersion;

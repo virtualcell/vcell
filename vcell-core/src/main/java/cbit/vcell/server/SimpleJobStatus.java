@@ -11,8 +11,12 @@
 package cbit.vcell.server;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
+import org.vcell.api.common.SimpleJobStatusRepresentation;
+import org.vcell.api.common.events.SimulationJobStatusRepresentation;
 import org.vcell.util.ComparableObject;
+import org.vcell.util.document.User;
 
 import cbit.vcell.solver.SimulationMetadata;
 
@@ -64,6 +68,58 @@ public Object[] toObjects() {
 			jobStatus.getEndDate(),
 			elapsedTime, 
 			new Long(simulationMetadata.getMeshSize())};
+}
+
+public SimpleJobStatusRepresentation toRep() {
+	String vcellServerID = this.jobStatus.getServerID().toString();
+	String simulationKey = this.jobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
+	int taskID = this.jobStatus.getTaskID();
+	int jobIndex = this.jobStatus.getJobIndex();
+	long submitDate = this.jobStatus.getSubmitDate().getTime();
+	User owner = this.simulationMetadata.owner;
+	SimpleJobStatusRepresentation .SchedulerStatus schedulerStatus = SimpleJobStatusRepresentation.SchedulerStatus.valueOf(this.jobStatus.getSchedulerStatus().name());
+	SimpleJobStatusRepresentation.DetailedState detailedState = SimpleJobStatusRepresentation.DetailedState.valueOf(this.jobStatus.getSimulationMessage().getDetailedState().name());
+	String detailedStateMessage = this.jobStatus.getSimulationMessage().getDisplayMessage();
+	
+	Long htcJobNumber = null;
+	String htcComputeServer = null;
+	SimpleJobStatusRepresentation.BatchSystemType htcBatchSystemType = null;
+	Date simexe_startDate = null;
+	Date simexe_latestUpdateDate = null;
+	Date simexe_endDate = null;
+	String computeHost = null;
+	Boolean hasData = null;
+	SimulationExecutionStatus simExeStatus = this.jobStatus.getSimulationExecutionStatus();
+	if (simExeStatus!=null) {
+		HtcJobID htcJobID = simExeStatus.getHtcJobID();
+		if (htcJobID!=null) {
+			htcJobNumber = htcJobID.getJobNumber();
+			htcComputeServer = htcJobID.getServer();
+			htcBatchSystemType = SimpleJobStatusRepresentation.BatchSystemType.valueOf(htcJobID.getBatchSystemType().name());
+		}
+		simexe_startDate = simExeStatus.getStartDate();
+		simexe_latestUpdateDate = simExeStatus.getLatestUpdateDate();
+		simexe_endDate = simExeStatus.getEndDate();
+		computeHost = simExeStatus.getComputeHost();
+		hasData = simExeStatus.hasData();
+	}
+	
+	Integer queuePriority = null;
+	Date queueDate = null;
+	SimpleJobStatusRepresentation.SimulationQueueID queueId = null;
+	SimulationQueueEntryStatus simQueueStatus = this.jobStatus.getSimulationQueueEntryStatus();
+	if (simQueueStatus!=null) {
+		queuePriority = simQueueStatus.getQueuePriority();
+		queueDate = simQueueStatus.getQueueDate();
+		queueId = SimpleJobStatusRepresentation.SimulationQueueID.valueOf(simQueueStatus.getQueueID().name());
+	}
+	
+	SimpleJobStatusRepresentation rep = new SimpleJobStatusRepresentation(
+			vcellServerID, simulationKey, taskID, jobIndex, new Date(submitDate), owner.getName(), owner.getID().toString(), 
+			schedulerStatus, detailedState, detailedStateMessage, htcJobNumber, htcComputeServer, htcBatchSystemType, queuePriority, queueDate, queueId, 
+			simexe_startDate, simexe_latestUpdateDate, simexe_endDate, computeHost, hasData);
+	
+	return rep;
 }
 
 }

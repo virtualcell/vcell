@@ -47,7 +47,7 @@ arguments=$*
 echo "starting postprocessor"
 
 echo "expecting jre 1.8_144 or later for memory options"
-java --version
+java -version
 
 java ${jvmoptions} ${jvmprop} ${postprocessor_mainclass} ${arguments}
 stat=$?

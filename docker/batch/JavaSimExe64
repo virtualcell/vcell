@@ -41,7 +41,7 @@ jvmoptions="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -X
 echo "starting java solver"
 
 echo "expecting jre 1.8_144 or later for memory options"
-java --version
+java -version
 
 arguments=$*
 

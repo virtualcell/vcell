@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -60,7 +62,9 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.message.server.sim.HtcSimulationWorker;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.LibraryLoaderThread;
@@ -168,7 +172,13 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-			CommandService.bQuiet = false;
+			Logger.getLogger(CommandService.class).setLevel(Level.DEBUG);
+			DatabasePolicySQL.lg.setLevel(Level.WARN);
+			DbDriver.lg.setLevel(Level.WARN);
+			HtcProxy.LG.setLevel(Level.TRACE);
+			SimulationDispatcher.lg.setLevel(Level.DEBUG);
+			HtcSimulationWorker.lg.setLevel(Level.INFO);
+			CommandServiceSsh.lg.setLevel(Level.TRACE);
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
@@ -331,6 +341,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		PropertyLoader.jmsPasswordFile,
 		PropertyLoader.htcUser,
 		PropertyLoader.htcLogDirExternal,
+		PropertyLoader.htcLogDirInternal,
 		PropertyLoader.pythonExe,
 		PropertyLoader.jmsBlobMessageUseMongo,
 		PropertyLoader.maxJobsPerScan,

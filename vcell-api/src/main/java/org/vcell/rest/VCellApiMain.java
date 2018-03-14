@@ -11,6 +11,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.restlet.Client;
 import org.restlet.Server;
@@ -20,10 +21,12 @@ import org.restlet.engine.Engine;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
 import org.restlet.util.Series;
+import org.vcell.api.client.VCellApiClient;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.optimization.OptServerImpl;
+import org.vcell.rest.admin.AdminService;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcService;
@@ -46,7 +49,9 @@ import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -68,6 +73,10 @@ public class VCellApiMain {
 			WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
 			//don't use static field -- want to initialize logging first
 			Logger lg = Logger.getLogger(VCellApiMain.class);
+			DatabasePolicySQL.lg.setLevel(Level.WARN);
+			DbDriver.lg.setLevel(Level.WARN);
+			VCellApiClient.lg.setLevel(java.util.logging.Level.INFO);
+
 			if (args.length!=3){
 				System.out.println("usage: VCellApiMain javascriptDir (-|logDir) port");
 				System.exit(1);
@@ -232,9 +241,10 @@ public class VCellApiMain {
 			boolean bIgnoreCertProblems = true;
 			User testUser = localAdminDbServer.getUser(TEST_USER);
 			UserInfo testUserInfo = localAdminDbServer.getUserInfo(testUser.getID()); // lookup hashed auth credentials in database.
-			HealthService healthService = new HealthService("localhost", port, bIgnoreCertProblems, bIgnoreHostProblems, testUserInfo.userid, testUserInfo.digestedPassword0);
+			HealthService healthService = new HealthService(restEventService, "localhost", port, bIgnoreCertProblems, bIgnoreHostProblems, testUserInfo.userid, testUserInfo.digestedPassword0);
+			AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);
 			RpcService rpcService = new RpcService(vcMessagingService);
-			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, templateConfiguration, healthService, javascriptDir);
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  
 

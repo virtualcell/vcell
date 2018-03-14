@@ -117,7 +117,7 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
  * This type was created in VisualAge.
  */
 public abstract class DbDriver {
-	private static final Logger lg = Logger.getLogger(DbDriver.class);
+	public static final Logger lg = Logger.getLogger(DbDriver.class);
 	//
 	private static final int VARCHAR_SIZE_LIMIT = 4000;
 	public static final String INSERT_VARCHAR2_HERE = "INSERT_VARCHAR2_HERE";
@@ -920,7 +920,9 @@ public static GroupAccess getGroupAccessFromGroupID(java.sql.Connection con,BigD
 							+	userTable.id.getQualifiedColName()+ " = "+groupTable.userRef.getQualifiedColName()
 							+ " ORDER BY " + groupTable.groupid.getQualifiedColName();
 			//
-			System.out.println("getGroupAccessFromGroupID(), sql = " + sql);
+			if (lg.isTraceEnabled()) {
+				lg.trace("getGroupAccessFromGroupID(), sql = " + sql);
+			}
 			java.sql.Statement stmt = con.createStatement();
 			BigDecimal currGroupId = null;
 			BigDecimal rowGroupId = null;
@@ -1225,7 +1227,9 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 				bioModelInfos = new BioModelInfo[tempInfos.size()];
 				tempInfos.toArray(bioModelInfos);
 			}
-			System.out.println("BioModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
+			if (lg.isInfoEnabled()) {
+				lg.info("BioModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
+			}
 		}
 		
 		//
@@ -1254,7 +1258,9 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 				mathModelInfos = new MathModelInfo[tempInfos.size()];
 				tempInfos.toArray(mathModelInfos);
 			}
-			System.out.println("MathModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
+			if (lg.isInfoEnabled()) {
+				lg.info("MathModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
+			}
 		}
 		
 		//
@@ -1283,7 +1289,9 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 				vcImageInfos = new VCImageInfo[tempInfos.size()];
 				tempInfos.toArray(vcImageInfos);
 			}
-			System.out.println("ImageInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
+			if (lg.isInfoEnabled()) {
+				lg.info("ImageInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
+			}
 		}
 		
 		//
@@ -1312,7 +1320,9 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 				geometryInfos = new GeometryInfo[tempInfos.size()];
 				tempInfos.toArray(geometryInfos);
 			}
-			System.out.println("GeometryInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
+			if (lg.isInfoEnabled()) {
+				lg.info("GeometryInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
+			}
 		}
 
 	
@@ -1512,10 +1522,10 @@ private static Version getVersionFromKeyValue(Connection con,VersionableType vTy
 				throw new ObjectNotFoundException("Failed to find " + vType.getTypeName()+" (Key=" + keyValue + ")");
 			}
 		} catch(ObjectNotFoundException e){
-			e.printStackTrace(System.out);
+			lg.error("objectNotFound: "+e.getMessage(),e);
 			throw e;
-		} catch(Throwable e){
-			e.printStackTrace(System.out);
+		} catch(Exception e){
+			lg.error("failed to get version: "+e.getMessage(),e);
 			throw new DataAccessException("Failed to find " + vType.getTypeName()+" (Key=" + keyValue 
 					+ "). \nError: " + e.getMessage());
 		}finally {
@@ -2267,9 +2277,9 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 	ResultSet rset = null;
 	String sql = null;
 	
-	boolean origBSilent = DatabasePolicySQL.bSilent;
+	Level origLogLevel = DatabasePolicySQL.lg.getLevel();
 	try{
-		DatabasePolicySQL.bSilent = true;
+		DatabasePolicySQL.lg.setLevel(Level.WARN);
 		
 //double begTime=System.currentTimeMillis();
 //int counter = 0;
@@ -2750,10 +2760,10 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 		}
 
 	}catch(SQLException e){
-		System.out.println(sql);
+		lg.error("failed: ("+sql+"): "+e.getMessage(), e);
 		throw e;
 	}finally{
-		DatabasePolicySQL.bSilent = origBSilent;
+		DatabasePolicySQL.lg.setLevel(origLogLevel);
 		if(stmt != null){
 			stmt.close();
 		}
@@ -4380,7 +4390,9 @@ public static int updateCleanSQL(Connection con, String sql) throws SQLException
 	if (sql == null || con == null) {
 		throw new IllegalArgumentException("Improper parameters for updateClean");
 	}
-System.out.println("updateClean SQL "+sql);
+	if (lg.isTraceEnabled()) {
+		lg.trace("updateClean SQL "+sql);
+	}
 	Statement s = con.createStatement();
 	try {
 		return s.executeUpdate(sql);
@@ -4400,7 +4412,9 @@ public static int updatePreparedCleanSQL(Connection con, String sql, String data
 	if (!sql.contains("?")){
 		throw new RuntimeException("expected exactly one '?' in prepared statement in DbDriver.updatePreparedCleanSQL(): "+sql);
 	}
-System.out.println("DbDriver.updatePreparedCleanSQL(): "+sql);
+	if (lg.isTraceEnabled()) {
+		lg.trace("DbDriver.updatePreparedCleanSQL(): "+sql);
+	}
 	try (PreparedStatement ps = con.prepareStatement(sql)){
 		ps.setString(1, data);
 		return ps.executeUpdate();
@@ -4418,7 +4432,9 @@ public static int updatePreparedCleanSQL(Connection con, String sql, byte[] data
 	if (!sql.contains("?")){
 		throw new RuntimeException("expected exactly one '?' in prepared statement in DbDriver.updatePreparedCleanSQL(): "+sql);
 	}
-System.out.println("DbDriver.updatePreparedCleanSQL(): "+sql);
+	if (lg.isTraceEnabled()) {
+		lg.trace("DbDriver.updatePreparedCleanSQL(): "+sql);
+	}
 	try (PreparedStatement ps = con.prepareStatement(sql)){
 		ps.setBytes(1, data);
 		return ps.executeUpdate();

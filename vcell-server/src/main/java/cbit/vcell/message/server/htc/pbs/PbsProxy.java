@@ -141,18 +141,18 @@ public final class PbsProxy extends HtcProxy {
 		}
 	}
 
-	protected HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize,
+	protected HtcJobID submitJob(String jobName, String sub_file_internal, String sub_file_external, String[] command, int ncpus, double memSize,
 			String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag,
 			Collection<PortableCommand> postProcessingCommands) throws ExecutableException{
 		if (LG.isInfoEnabled()) {
 			char space=' ';
-			LG.info("submit: " + jobName + space + sub_file + space + Arrays.toString(command)
+			LG.info("submit: " + jobName + space + sub_file_external + space + Arrays.toString(command)
 				 + space + ncpus + space + memSize + " second cmd:  " + Arrays.toString(secondCommand)
 				 + " exit cmd:  " + Arrays.toString(exitCommand) + " ecrt:  " + exitCodeReplaceTag);
 		}
 		if (LG.isInfoEnabled()) {
 			char space=' ';
-			LG.info("submit: " + jobName + space + sub_file + space + Arrays.toString(command)
+			LG.info("submit: " + jobName + space + sub_file_external + space + Arrays.toString(command)
 				 + space + ncpus + space + memSize + " second cmd:  " + Arrays.toString(secondCommand)
 				 + " exit cmd:  " + Arrays.toString(exitCommand) + " ecrt:  " + exitCodeReplaceTag);
 		}
@@ -257,8 +257,8 @@ public final class PbsProxy extends HtcProxy {
 			writeUnixStyleTextFile(tempFile, sb.toString());
 
 			// move submission file to final location (either locally or remotely).
-			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
-			commandService.pushFile(tempFile,sub_file);
+			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to '"+sub_file_internal+"'");
+			FileUtils.copyFile(tempFile, new File(sub_file_internal));
 			System.out.println("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
 			tempFile.delete();
 		} catch (IOException ex) {
@@ -270,7 +270,7 @@ public final class PbsProxy extends HtcProxy {
 		if (!PBS_HOME.endsWith("/")){
 			PBS_HOME += "/";
 		}
-		String[] completeCommand = new String[] {PBS_HOME + JOB_CMD_SUBMIT, sub_file};
+		String[] completeCommand = new String[] {PBS_HOME + JOB_CMD_SUBMIT, sub_file_external};
 		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, completeCommand));
 		String jobid = commandOutput.getStandardOutput().trim();
 
@@ -394,7 +394,7 @@ public final class PbsProxy extends HtcProxy {
 		return ar.toArray(new String[0]);
 	}
 
-	public HtcJobID submitJob(String jobName, String sub_file_external, ExecutableCommand.Container commandSet,
+	public HtcJobID submitJob(String jobName, String sub_file_internal, String sub_file_external, ExecutableCommand.Container commandSet,
 			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		throw new UnsupportedOperationException("not implemented yet");
 	}
