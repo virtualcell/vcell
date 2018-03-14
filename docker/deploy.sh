@@ -128,10 +128,11 @@ vcell_build=`cat $local_config_file | grep VCELL_BUILD_NUMBER | cut -d"=" -f2`
 singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
 singularity_remote_path=`cat $local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
 singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
-partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
+#partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
+partitionName=vcell
 #slurmSingularityImagePath=`cat ../$local_config_file | grep VCELL_SLURM_SINGULARITY_IMAGE_PATH | cut -d"=" -f2`
 slurmSingularityImagePath=/state/partition1/
-batchHost=`cat ../$local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
+batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
 
 
 echo ""
@@ -199,14 +200,16 @@ if [ "$install_singularity" == "true" ]; then
 		exit 1
 	fi
 
+	echo "nodeList=\$(ssh ${ssh_user}@${batchHost} \"sinfo -N -h -p $partitionName --Format='nodelist'\" | xargs)"
 	nodeList=$(ssh ${ssh_user}@${batchHost} "sinfo -N -h -p $partitionName --Format='nodelist'" | xargs)
     if [[ $? -ne 0 ]]; then
     	echo "failed to get compute node list from batch host as partition $partitionName"
     	exit 1
     fi
+	echo "compute node list is $nodeList"
 
     for computenode in $nodeList; do
-    	echo "scp file vcell@${n}:${slurmSingularityImagePath}"
+    	echo "scp file vcell@${computenode}:${slurmSingularityImagePath}"
 		# copy singularity image from singularity-vm directory to remote destination
 		echo ""
 		echo "coping ./$singularity_filename to $slurmSingularityImagePath on $computenode as user $ssh_user"
