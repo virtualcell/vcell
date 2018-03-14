@@ -22,7 +22,6 @@ _site_camel="${_site_upper:0:1}${_site_lower:1:100}"
 
 
 VCELL_SITE="${_site_upper}"
-VCELL_SITE_CAMEL="${_site_camel}"
 VCELL_REPO_NAMESPACE=$_repo
 VCELL_TAG=$_tag
 VCELL_VERSION_NUMBER=$_version_number
@@ -115,7 +114,6 @@ VCELL_EXPORTDIR_HOST=/opt/vcelldata/export/
 
 cat <<EOF >$_outputfile
 VCELL_SITE=$VCELL_SITE
-VCELL_SITE_CAMEL=$VCELL_SITE_CAMEL
 VCELL_REPO_NAMESPACE=$VCELL_REPO_NAMESPACE
 VCELL_TAG=$VCELL_TAG
 VCELL_VERSION_NUMBER=$VCELL_VERSION_NUMBER

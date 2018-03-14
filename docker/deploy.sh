@@ -67,6 +67,7 @@ ssh_key=
 installer_deploy=
 upload_singularity=false
 build_installers=false
+link_installers=false
 install_singularity=false
 while :; do
 	case $1 in
@@ -95,6 +96,9 @@ while :; do
 		--build-installers)
 			build_installers=true
 			;;
+		--link-installers)
+			link_installers=true
+			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2
 			echo ""
@@ -118,13 +122,13 @@ remote_compose_file=$5
 stack_name=$6
 
 # get settings from config file
-vcell_siteCamel=`cat ../$local_config_file | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
-vcell_version=`cat ../$local_config_file | grep VCELL_VERSION_NUMBER | cut -d"=" -f2`
-vcell_build=`cat ../$local_config_file | grep VCELL_VERSION_NUMBER | cut -d"=" -f2`
-singularity_filename=`cat ../$local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
-singularity_remote_path=`cat ../$local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
-singularity_filename=`cat ../$local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
-partitionName=`cat ../$local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
+vcell_siteCamel=`cat $local_config_file | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
+vcell_version=`cat $local_config_file | grep VCELL_VERSION_NUMBER | cut -d"=" -f2`
+vcell_build=`cat $local_config_file | grep VCELL_BUILD_NUMBER | cut -d"=" -f2`
+singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
+singularity_remote_path=`cat $local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
+singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
+partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
 #slurmSingularityImagePath=`cat ../$local_config_file | grep VCELL_SLURM_SINGULARITY_IMAGE_PATH | cut -d"=" -f2`
 slurmSingularityImagePath=/state/partition1/
 batchHost=`cat ../$local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
@@ -265,6 +269,9 @@ if [ "$build_installers" == "true" ]; then
 			./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg \
 			./generated_installers/VCell_${vcell_siteCamel}_windows_${version}_32bit.exe \
 			./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh \
+			./generated_installers/updates.xml \
+			./generated_installers/output.txt \
+			./generated_installers/md5sums \
 				${installer_deploy_dir}
 		if [[ $? -ne 0 ]]; then 
 			echo "failed to copy installers"; 
@@ -275,25 +282,35 @@ if [ "$build_installers" == "true" ]; then
 		# if --link-installers, then create symbolic links from permanent paths to most recent installers (for durable web urls).
 		#
 		if [ "$link_installers" == "true" ]; then
-			ln -s ${installer_deploy_dir}/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe \
-				${installer_deploy_dir}/VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe
+
+			pushd ${installer_deploy_dir}
+
+			rm VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe && \
+			ln -s VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe \
+				  VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe
 			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Win64 installer"; exit 1; fi
 
-			ln -s ${installer_deploy_dir}/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh \
-				${installer_deploy_dir}/VCell_${vcell_siteCamel}_unix_latest_32bit.sh
+			rm VCell_${vcell_siteCamel}_unix_latest_32bit.sh && \
+			ln -s VCell_${vcell_siteCamel}_unix_${version}_32bit.sh \
+				  VCell_${vcell_siteCamel}_unix_latest_32bit.sh
 			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Linux32 installer"; exit 1; fi
 
-			ln -s ${installer_deploy_dir}/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg \
-				${installer_deploy_dir}/VCell_${vcell_siteCamel}_macos_latest_64bit.dmg
+			rm VCell_${vcell_siteCamel}_macos_latest_64bit.dmg && \
+			ln -s VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg \
+				  VCell_${vcell_siteCamel}_macos_latest_64bit.dmg
 			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Macos installer"; exit 1; fi
 
-			ln -s ${installer_deploy_dir}/VCell_${vcell_siteCamel}_windows_${version}_32bit.exe \
-				${installer_deploy_dir}/VCell_${vcell_siteCamel}_windows_latest_32bit.exe
+			rm VCell_${vcell_siteCamel}_windows_latest_32bit.exe && \
+			ln -s VCell_${vcell_siteCamel}_windows_${version}_32bit.exe \
+				  VCell_${vcell_siteCamel}_windows_latest_32bit.exe
 			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Win32 installer"; exit 1; fi
 
-			ln -s ${installer_deploy_dir}/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh \
-				${installer_deploy_dir}/VCell_${vcell_siteCamel}_unix_latest_64bit.sh
+			rm VCell_${vcell_siteCamel}_unix_latest_64bit.sh && \
+			ln -s VCell_${vcell_siteCamel}_unix_${version}_64bit.sh \
+				  VCell_${vcell_siteCamel}_unix_latest_64bit.sh
 			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Linux64 installer"; exit 1; fi
+
+			popd
 		fi
 	fi
 fi
