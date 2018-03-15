@@ -40,7 +40,7 @@ public class CommandServiceSshNative extends CommandService {
 		if (allowableReturnCodes == null){
 			throw new IllegalArgumentException("allowableReturnCodes must not be null");
 		}
-		String[] sshCmdPrefix = new String[] { "ssh", "-i", installedKeyFile.getAbsolutePath(), username+"@"+remoteHostName };
+		String[] sshCmdPrefix = new String[] { "ssh", "-i", installedKeyFile.getAbsolutePath(), "-o", "StrictHostKeyChecking=No", username+"@"+remoteHostName };
 		ArrayList<String> cmdList = new ArrayList<String>();
 		cmdList.addAll(Arrays.asList(sshCmdPrefix));
 		cmdList.addAll(Arrays.asList(commandStrings));
