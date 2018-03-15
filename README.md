@@ -12,7 +12,7 @@ and cell kinetimatics (moving boundary problems).
 
 The VCell software consists of:
 1) a standalone modeling and simulation tool (vcell-client)
-2) a shared server providing a centralized model database, cluster computing and shared storage (vcell-server)
+2) a shared server providing a centralized model database, cluster computing and shared storage (vcell-server, vcell-api)
 3) simulation solvers written in C++/Fortran/Python and developed as part of the project as well as third party solvers and analysis. 
 
 ## Download VCell
@@ -21,8 +21,7 @@ for cluster computing and shared database.
 
 ## Building VCell
 This VCell github project includes all Java/Python source code required to build both the VCell client and the VCell Server.  
-The simulation solver source code is available as a separate project, but the executables currently bundled within this repository for 
-your convenience, but are separately available in the vcell-solvers project (http://github.com/jcschaff/vcell-solvers).
+The simulation solver source code is available as a separate project (http://github.com/jcschaff/vcell-solvers).
 
 ### Building VCell Client as a standalone tool
 Requirements:  Git, Maven, and Java JDK 1.8 or later
@@ -30,40 +29,31 @@ Requirements:  Git, Maven, and Java JDK 1.8 or later
 ```bash
 git clone https://github.com/virtualcell/vcell
 cd vcell
-mvn clean verify
+mvn clean install dependency:copy-dependencies
+./vcell.sh
 ```
 
 #### scripts to run the standalone client will be available soon. ####
 
 ### Building VCell Client/Server
 Requirements:
+  * Linux or Macos
   * Git, Maven, and Java JDK 1.8 or later to build vcell-client and vcell-server
+  * Docker (swarm mode)
+  * Singularity (Linux) or Singularity in a Virtual Machine (Macos needs VirtualBox and Vagrant)
   * PostgreSQL or Oracle database
-  * ActiveMQ messaging service
-  * MongoDB nosql database (for distributed logging)
   * SLURM service for batch scheduling
-  * Install4J, VirtualBox, Vagrant to build platform installers for Windows, Mac, Linux.
-  ** Install VirtualBox for your platform
-  ** Install Vagrant for your platform (using the VirtualBox provider.
-  ** Obtain an Install4J license if creating client installers
+  * Obtain an Install4J license if creating client installers
 
 ```bash
 $ git clone https://github.com/jcschaff/vcell
-$ cd vcell
-$ cd deploy
-$ ./deploy.sh server-config.include
+$ cd vcell/docker
+$ ./build.sh <args>
+$ ./serverconfig.sh <args>
+$ ./deploy.sh <args>
+# see README in vcell/docker
 ```
-server-config.include file must be customized for your configuration (see examples in /deploy directory).  
-
-**a Vagrant box virtual machine will act as a reference implementation for a VCell Server**
-
-### Building VCell Server with docker-compose
-```bash
-mvn clean install dependency:copy-dependencies
-docker-compose -f docker-compose-build.yml build
-docker-compose -f docker-compose-build.yml up
-docker-compose -f docker-compose-build.yml down
-```
+serverconfig.sh file must be customized for your configuration (see vcell/docker/serverconfig-uch.sh).  
 
 ## License
 Virtual Cell software is licensed under the MIT open source license.
