@@ -19,7 +19,10 @@ public class CommandServiceSshNative extends CommandService {
 		super();
 		this.remoteHostName = remoteHostName;
 		this.username = username;
-		this.installedKeyFile = new File("~/.ssh/"+username+"_rsa");
+		//
+		// assumes that the keyFile is supplied as a secret within a container running as user root
+		//
+		this.installedKeyFile = new File("/root/.ssh/"+username+"_rsa");
 		if (!keyFile.getAbsolutePath().equals(installedKeyFile.getAbsolutePath())) {
 			try {
 				cmdServiceLocal.command(new String[] { "cp", keyFile.getAbsolutePath(), installedKeyFile.getAbsolutePath()}, new int [] { 0 });
