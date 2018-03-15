@@ -25,6 +25,8 @@ public class CommandServiceSshNative extends CommandService {
 		this.installedKeyFile = new File("/root/.ssh/"+username+"_rsa");
 		if (!keyFile.getAbsolutePath().equals(installedKeyFile.getAbsolutePath())) {
 			try {
+				cmdServiceLocal.command(new String[] { "mkdir", "-p", "/root/.ssh" });
+				cmdServiceLocal.command(new String[] { "chmod", "500", "/root/.ssh" });
 				cmdServiceLocal.command(new String[] { "cp", keyFile.getAbsolutePath(), installedKeyFile.getAbsolutePath()}, new int [] { 0 });
 				cmdServiceLocal.command(new String[] { "chmod", "400", installedKeyFile.getAbsolutePath() }, new int[] { 0 });
 			} catch (ExecutableException e) {
