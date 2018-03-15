@@ -199,10 +199,17 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				try {
 					commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile);
 					commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
-					System.out.println("SSH Connection test passed, running ls as user "+sshUser+" on "+sshHost);
+					System.out.println("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
 				} catch (Exception e) {
 					e.printStackTrace();
-					throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
+					try {
+						commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile,new File("/root"));
+						commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+						System.out.println("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
+					} catch (Exception e2) {
+						e.printStackTrace();
+						throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
+					}
 				}
 				AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
 			}else{

@@ -13,26 +13,32 @@ public class CommandServiceSshNative extends CommandService {
 	private final String username;
 	private final File installedKeyFile;
 	CommandServiceLocal cmdServiceLocal = new CommandServiceLocal();
-			
 	
-	public CommandServiceSshNative(String remoteHostName, String username, File keyFile) throws IOException{
+	public CommandServiceSshNative(String remoteHostName, String username, File secretKeyFile, File homeDir) throws IOException{
 		super();
 		this.remoteHostName = remoteHostName;
 		this.username = username;
 		//
 		// assumes that the keyFile is supplied as a secret within a container running as user root
 		//
-		this.installedKeyFile = new File("/root/.ssh/"+username+"_rsa");
-		if (!keyFile.getAbsolutePath().equals(installedKeyFile.getAbsolutePath())) {
+		this.installedKeyFile = new File(homeDir.getAbsolutePath()+"/.ssh/"+username+"_rsa");
+		if (!secretKeyFile.getAbsolutePath().equals(installedKeyFile.getAbsolutePath())) {
 			try {
-				cmdServiceLocal.command(new String[] { "mkdir", "-p", "/root/.ssh" });
-				cmdServiceLocal.command(new String[] { "chmod", "500", "/root/.ssh" });
-				cmdServiceLocal.command(new String[] { "cp", keyFile.getAbsolutePath(), installedKeyFile.getAbsolutePath()}, new int [] { 0 });
+				cmdServiceLocal.command(new String[] { "mkdir", "-p", homeDir.getAbsolutePath()+"/.ssh" });
+				cmdServiceLocal.command(new String[] { "chmod", "700", homeDir.getAbsolutePath()+"/.ssh" });
+				cmdServiceLocal.command(new String[] { "cp", secretKeyFile.getAbsolutePath(), installedKeyFile.getAbsolutePath()}, new int [] { 0 });
 				cmdServiceLocal.command(new String[] { "chmod", "400", installedKeyFile.getAbsolutePath() }, new int[] { 0 });
 			} catch (ExecutableException e) {
-				lg.error("failed to install keyFile "+keyFile.getAbsolutePath()+" for ssh user "+username+" into "+installedKeyFile.getAbsolutePath(), e);
+				lg.error("failed to install keyFile "+secretKeyFile.getAbsolutePath()+" for ssh user "+username+" into "+installedKeyFile.getAbsolutePath(), e);
 			}
 		}
+	}
+		
+	public CommandServiceSshNative(String remoteHostName, String username, File installedKeyFile) throws IOException{
+		super();
+		this.remoteHostName = remoteHostName;
+		this.username = username;
+		this.installedKeyFile = installedKeyFile;
 	}
 		
 	@Override
