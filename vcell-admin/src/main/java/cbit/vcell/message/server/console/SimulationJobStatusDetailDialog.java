@@ -1709,6 +1709,6 @@ public void stopButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
  * Creation date: (7/19/2004 3:15:42 PM)
  */
 public void stopSimulation() {
-	smConsole.stopSimulation(simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName(), simpleJobStatus.simulationMetadata.vcSimID.getSimulationKey());
+//	smConsole.stopSimulation(simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName(), simpleJobStatus.simulationMetadata.vcSimID.getSimulationKey());
 }
 }
