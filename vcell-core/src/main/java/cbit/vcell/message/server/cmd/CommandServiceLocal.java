@@ -1,9 +1,5 @@
 package cbit.vcell.message.server.cmd;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.vcell.util.FileUtils;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
 
@@ -38,16 +34,6 @@ public class CommandServiceLocal extends CommandService {
 	public CommandService clone() {
 		return new CommandServiceLocal();
 	}
-
-//	@Override
-//	public void pushFile(File tempFile, String remotePath) throws IOException {
-//		FileUtils.copyFile(tempFile, new File(remotePath));
-//	}
-//
-//	@Override
-//	public void deleteFile(String remoteFilePath) throws IOException {
-//		FileUtils.deleteFile(remoteFilePath);
-//	}
 
 	@Override
 	public void close() {

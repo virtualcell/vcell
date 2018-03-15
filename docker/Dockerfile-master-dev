@@ -1,6 +1,10 @@
 FROM schaff/vtk-openjdk-alpine:latest
 
-RUN mkdir -p /usr/local/app
+RUN mkdir -p /usr/local/app && \
+	apk update && \
+    apk add openssh-client && \
+    apk add screen
+
 WORKDIR /usr/local/app
 
 COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \

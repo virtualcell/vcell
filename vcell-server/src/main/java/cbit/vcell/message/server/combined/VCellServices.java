@@ -48,7 +48,7 @@ import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
-import cbit.vcell.message.server.cmd.CommandServiceSsh;
+import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.data.SimDataServer;
 import cbit.vcell.message.server.db.DatabaseServer;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
@@ -178,7 +178,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			HtcProxy.LG.setLevel(Level.TRACE);
 			SimulationDispatcher.lg.setLevel(Level.DEBUG);
 			HtcSimulationWorker.lg.setLevel(Level.INFO);
-			CommandServiceSsh.lg.setLevel(Level.TRACE);
+			CommandServiceSshNative.lg.setLevel(Level.TRACE);
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
@@ -197,7 +197,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				String sshUser = args[4];
 				File sshKeyFile = new File(args[5]);
 				try {
-					commandService = new CommandServiceSsh(sshHost,sshUser,sshKeyFile);
+					commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile);
 					commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
 					System.out.println("SSH Connection test passed, running ls as user "+sshUser+" on "+sshHost);
 				} catch (Exception e) {
