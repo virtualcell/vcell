@@ -144,7 +144,7 @@ public enum SolverDescription {
        VCellPetsc(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Hybrid Implicit","Finite Volume-Particle Hybrid, Implicit (Experimental)","VCellPetsc",
 	      SolverLongDesc.VCellPetsc, 3, SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Hybrid, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, "KISAO", false),
+	      SolverExecutable.FiniteVolume_PETSc, "KISAO", false),
 	   
    ;
 

@@ -8,6 +8,7 @@ package cbit.vcell.solver;
 public enum SolverExecutable {
 	VCellChombo("VCellChombo2D","VCellChombo3D"),
 	FiniteVolume("FiniteVolume" ),
+	FiniteVolume_PETSc("FiniteVolume_PETSc" ),
 	SundialsOde("SundialsSolverStandalone" ),
 	Gibson("VCellStoch" ),
 	Hybrid_EM("Hybrid_EM" ),
