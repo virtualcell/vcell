@@ -83,7 +83,7 @@ class SimulationWarning {
 		MathDescription cm = simulation.getMathDescription();
 		Objects.requireNonNull(cm);
 		MathDescription localMath = new MathDescription(cm);
-		SimulationSymbolTable symTable = new SimulationSymbolTable(simulation, -999);
+		SimulationSymbolTable symTable = new SimulationSymbolTable(simulation, 0);
 		Map<MembraneSubDomain, List<DiffusionValue>> dvMap = new HashMap<>();
 		double maxDiffValue = Double.MIN_VALUE;
 		List<DiffusionValue> diffusionList = new ArrayList<>();

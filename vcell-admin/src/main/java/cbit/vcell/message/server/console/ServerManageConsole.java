@@ -57,7 +57,6 @@ import javax.swing.Timer;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.BigString;
 import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
@@ -77,17 +76,6 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 
-import cbit.vcell.message.VCMessage;
-import cbit.vcell.message.VCMessageSelector;
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingConstants;
-import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCTopicConsumer;
-import cbit.vcell.message.VCTopicConsumer.TopicListener;
-import cbit.vcell.message.VCellTopic;
-import cbit.vcell.message.messages.MessageConstants;
-import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceSpec;
 import cbit.vcell.message.server.ServiceStatus;
@@ -122,12 +110,7 @@ public class ServerManageConsole extends JFrame {
 	private List<ServiceInstanceStatus> serviceInstanceStatusList = Collections.synchronizedList(new LinkedList<ServiceInstanceStatus>());
 	private JPanel ivjJFrameContentPane = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	
-	private VCMessagingService vcMessagingService = null;
-	private VCMessageSession vcMessaging_daemonTopicProducerSession = null;
-	private VCMessageSession vcMessaging_rpcProducerSession = null;
-	private VCMessageSession vcMessaging_clientTopicProducerSession = null;
-	
+		
 	private JTabbedPane ivjTabbedPane = null;
 	private JPanel ivjServiceStatusPage = null;
 	private JPanel ivjConfigPage = null;
@@ -201,10 +184,6 @@ public class ServerManageConsole extends JFrame {
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
-				if (e.getSource() == ServerManageConsole.this.getStopServiceButton()) 
-					stopServiceButton_ActionPerformed(e);
-				if (e.getSource() == ServerManageConsole.this.getStartServiceButton()) 
-					startServiceButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getQueryGoButton()) 
 					queryGoButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getQueryResetButton()) 
@@ -217,24 +196,10 @@ public class ServerManageConsole extends JFrame {
 					removeFromListButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getSubmitSelectedButton()) 
 					submitSelectedButton_ActionPerformed(e);
-				if (e.getSource() == ServerManageConsole.this.getSendMessageButton()) 
-					sendMessageButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getMessageResetButton()) 
 					messageResetButton_ActionEvents();
 				if (e.getSource() == getNewServiceButton()) {
 					newService();
-				}
-				if (e.getSource() == getDeleteServiceButton()) {
-					deleteService();
-				}
-				if (e.getSource() == getModifyServiceButton()) {
-					modifyService();
-				}
-				if (e.getSource() == getRefreshServerManagerButton()) {
-					refreshServerManager();
-				}
-				if (e.getSource() == ServerManageConsole.this.getStopSelectedButton()) { 
-					stopSelectedButton_ActionPerformed(e);
 				}
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -298,9 +263,8 @@ public class ServerManageConsole extends JFrame {
 /**
  * ServerManageConsole constructor comment.
  */
-public ServerManageConsole(VCMessagingService vcMessagingService, AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl, SessionLog log) throws java.io.IOException, java.io.FileNotFoundException, org.jdom.JDOMException, javax.jms.JMSException {
+public ServerManageConsole(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl, SessionLog log) throws java.io.IOException, java.io.FileNotFoundException, org.jdom.JDOMException, javax.jms.JMSException {
 	super();
-	this.vcMessagingService = vcMessagingService;
 	this.adminDbTop = adminDbTopLevel;
 	this.dbServerImpl = dbServerImpl;
 	this.log = log;
@@ -323,61 +287,6 @@ void newService() {
 		}
 		refresh();
 	}	
-}
-
-private void deleteService() {
-	int srow = getConfigTable().getSelectedRow();
-	ServiceStatus config = (ServiceStatus)((ServiceStatusTableModel)getConfigTable().getModel()).getValueAt(srow);
-	int n = javax.swing.JOptionPane.showConfirmDialog(this, "You are going to delete " + config + ". Continue?", "Confirm", javax.swing.JOptionPane.YES_NO_OPTION);
-	if (n == javax.swing.JOptionPane.NO_OPTION) {
-		return;
-	}
-	
-	try {
-		adminDbTop.deleteServiceStatus(config, true);
-		stopService(config.getServiceSpec());
-	} catch (Exception e) {
-		e.printStackTrace();
-		javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-	}
-	refresh();
-}
-
-private void modifyService() {	
-	int srow = getConfigTable().getSelectedRow();
-	ServiceStatus oldConfig = (ServiceStatus)((ServiceStatusTableModel)getConfigTable().getModel()).getValueAt(srow);
-	ServiceSpec oldSpec = oldConfig.getServiceSpec();
-	
-	AddNewServiceDialog dialog = new AddNewServiceDialog(this);
-	dialog.modifyService(oldSpec);
-	dialog.setLocationRelativeTo(this);
-	dialog.setVisible(true);
-	
-	if (dialog.isAction()) {
-		ServiceSpec newSpec = dialog.getServiceSpec();
-		if (newSpec.getMemoryMB() == oldSpec.getMemoryMB() && newSpec.getStartupType() == oldSpec.getStartupType()) {
-			return;
-		}
-		ServiceStatus newConfig = new ServiceStatus(newSpec, null, ServiceStatusType.ServiceNotRunning, "newly modified",	null);
-		try {
-			newConfig = adminDbTop.modifyServiceStatus(oldConfig, newConfig, true);
-			stopService(newConfig.getServiceSpec());						
-		} catch (Exception e) {
-			e.printStackTrace();
-			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-		}
-		refresh();
-	}
-	
-}
-/**
- * Insert the method's description here.
- * Creation date: (7/6/2004 1:36:54 PM)
- */
-private void clearServiceStatusTab() {
-	getServiceStatusTable().clearSelection();
-	getStopServiceButton().setEnabled(false);
-	getStartServiceButton().setEnabled(false);
 }
 
 /**
@@ -2072,7 +1981,6 @@ private void initConnections() throws java.lang.Exception {
 private void initialize() {
 	try {
 		// user code begin {1}
-		setTitle("Virtual Cell Management Console -- " + VCellServerID.getSystemServerID());
 			
 		// user code end
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -2114,9 +2022,6 @@ public static void main(java.lang.String[] args) {
 		
 		javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 
-		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-		vcMessagingService.setDelegate(new ServerMessagingDelegate());
-
 		SessionLog log = new StdoutSessionLog("Console");
 
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
@@ -2124,8 +2029,7 @@ public static void main(java.lang.String[] args) {
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
 
-		ServerManageConsole aServerManageConsole = new ServerManageConsole(vcMessagingService, adminDbTopLevel, databaseServerImpl, log);
-		aServerManageConsole.reconnect();
+		ServerManageConsole aServerManageConsole = new ServerManageConsole(adminDbTopLevel, databaseServerImpl, log);
 
 		aServerManageConsole.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
@@ -2189,28 +2093,6 @@ private void onArrivingService(ServiceInstanceStatus arrivingService) {
 public SimpleJobStatus getReturnedSimulationJobStatus(int selectedRow) {	
 	return (SimpleJobStatus)((JobTableModel)getQueryResultTable().getModel()).getValueAt(selectedRow);
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (10/24/2001 11:08:09 PM)
- * @param simulation cbit.vcell.solver.Simulation
- */
-private void pingAll(int waitingTimeSec) {
-	try {
-		VCMessage msg = vcMessaging_daemonTopicProducerSession.createMessage();
-		msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE);		
-		log.print("sending ping message [" + msg.show() + "]");		
-		vcMessaging_daemonTopicProducerSession.sendTopicMessage(VCellTopic.DaemonControlTopic, msg);
-		try {
-			Thread.sleep(waitingTimeSec * MessageConstants.SECOND_IN_MS);
-		} catch (InterruptedException ex) {
-			log.exception(ex);
-		}		
-	} catch (Exception ex) {
-		log.exception(ex);
-	}
-}
-
 
 /**
  * Insert the method's description here.
@@ -2395,31 +2277,6 @@ private void submitSelectedButton_ActionPerformed(ActionEvent e) {
 	}
 }
 
-private void stopSelectedButton_ActionPerformed(ActionEvent e) {
-	int srows[] = getQueryResultTable().getSelectedRows();
-	if (srows==null || srows.length==0) {
-		return;
-	}
-	final String STOP_JOBS_OPTION = "stop jobs";
-	final String CANCEL_OPTION = "cancel";
-	String response = DialogUtils.showWarningDialog(this, "Are you sure you want to stop "
-			+srows.length+" simulation job(s)? (see console for progress printed to stdout)", 
-			new String[] { STOP_JOBS_OPTION, CANCEL_OPTION }, CANCEL_OPTION);
-	if (response.equals(STOP_JOBS_OPTION)){
-		for (int i = 0; i < srows.length; i++) {
-			int selectedRow = srows[i];
-			SimpleJobStatus simpleJobStatus = getReturnedSimulationJobStatus(selectedRow);
-			String statusString = "["+ simpleJobStatus.simulationMetadata.vcSimID + ", " + simpleJobStatus.jobStatus.getSchedulerStatus().getDescription() + "]";
-			if (!simpleJobStatus.jobStatus.getSchedulerStatus().isDone()) {
-				log.print("Stopping job ("+(i+1)+" of "+srows.length+") : "+statusString);	
-				stopSimulation(simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName(), simpleJobStatus.simulationMetadata.vcSimID.getSimulationKey());
-			} else {
-				log.print("***Stopping job ("+(i+1)+" of "+srows.length+") : "+statusString + ", is already finished, skipping");
-			}
-		}
-	}
-}
-
 /**
  * Comment
  */
@@ -2474,9 +2331,6 @@ public void configTable_mouseClicked(java.awt.event.MouseEvent mouseEvent) {
 	getDeleteServiceButton().setEnabled(true);
 	getModifyServiceButton().setEnabled(true);
 	
-	if (mouseEvent.getClickCount() == 2) {
-		modifyService();
-	}
 }
 
 /**
@@ -2532,53 +2386,6 @@ public void querySubmitDateCheck_ItemStateChanged(java.awt.event.ItemEvent itemE
 public void queryWaitingCheck_ItemStateChanged(java.awt.event.ItemEvent itemEvent) {
 	updateChecks(itemEvent);
 	return;
-}
-
-/**
- * Comment
- */
-private void reconnect() {
-
-	TopicListener listener = new TopicListener() {
-		
-		@Override
-		public void onTopicMessage(VCMessage vcMessage, VCMessageSession session) {
-			log.print("onMessage [" + vcMessage.show() + "]");	
-			String msgType = vcMessage.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
-			
-			if (msgType == null) {
-				return;
-			}
-			
-			if (msgType.equals(MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE) && vcMessage.getObjectContent()!=null) {			
-				Object obj = vcMessage.getObjectContent();
-				if (obj instanceof ServiceInstanceStatus) {
-					final ServiceInstanceStatus serviceInfo = (ServiceInstanceStatus)obj;
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							onArrivingService(serviceInfo);
-						}
-					});
-				}
-			}		
-		}
-	};
-
-	String filter = VCMessagingConstants.MESSAGE_TYPE_PROPERTY + " NOT IN " 
-			+ "('" + MessageConstants.MESSAGE_TYPE_IAMALIVE_VALUE + "'" 
-			+ ",'" + MessageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE + "'" 
-			+ ",'" + MessageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
-			+ ",'" + MessageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE + "'"
-			+ ")";
-	VCMessageSelector selector = vcMessagingService.createSelector(filter);
-	String threadName = "Daemon Control Topic Consumer";
-	vcMessagingService.addMessageConsumer(new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_DAEMON_CONTROL));
-	
-	vcMessaging_daemonTopicProducerSession = vcMessagingService.createProducerSession();
-	
-	vcMessaging_rpcProducerSession = vcMessagingService.createProducerSession();
-	
-	vcMessaging_clientTopicProducerSession = vcMessagingService.createProducerSession();
 }
 
 private String VCellDBAdminpassword;
@@ -2644,7 +2451,7 @@ private void refresh () {
 			showServices(serviceInstanceStatusList);
 			Thread pingThread = new Thread(new Runnable() {
 				public void run() {			
-					pingAll(waitingTimeSec);	
+					//pingAll(waitingTimeSec);	
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							getProgressBar().setIndeterminate(false);
@@ -2767,43 +2574,9 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
 /**
  * Comment
  */
-public void sendMessageButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	try {
-		int n = javax.swing.JOptionPane.showConfirmDialog(this, "You are going to send message to " + getBroadcastMessageToTextField().getText() + ". Continue?", "Confirm", javax.swing.JOptionPane.YES_NO_OPTION);
-		if (n == javax.swing.JOptionPane.NO_OPTION) {
-			return;
-		}	
-		
-		VCMessage msg = vcMessaging_clientTopicProducerSession.createObjectMessage(new BigString(getBroadcastMessageTextArea().getText()));
-		String username = getBroadcastMessageToTextField().getText();
-
-		if (username.equalsIgnoreCase(VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL)) {
-			username = VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL;
-		}
-			
-		msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE);
-		msg.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, username);
-		
-		log.print("sending broadcast message [" + msg.show() + "]");		
-		vcMessaging_clientTopicProducerSession.sendTopicMessage(VCellTopic.ClientStatusTopic, msg);
-
-	} catch (Exception ex) {
-		log.exception(ex);
-	}
-}
-
-
-/**
- * Comment
- */
 public void serverManageConsole_WindowClosed(java.awt.event.WindowEvent windowEvent) {
 	try {
 		dispose();
-		if (vcMessagingService != null) {
-			vcMessagingService.close();
-		}
-	} catch (VCMessagingException ex) {
-		log.exception(ex);
 	} finally {
  		System.exit(0);	
  	}	
@@ -2886,136 +2659,6 @@ private void showConfigs(List<ServiceStatus> configList0) {
 private void showUsers(List<SimpleUserConnection> userList0) {
 	((UserConnectionTableModel)(getUserConnectionTable().getModel())).setData(userList0);
 	getNumUserConnectionLabel().setText(userList0.size() + "");
-}
-
-/**
- * Comment
- */
-public void startServiceButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	startServices();
-	return;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/20/2003 1:15:33 PM)
- */
-private void startServices() {
-//	try
-//	} catch (Exception ex) {
-//		javax.swing.JOptionPane.showMessageDialog(this, "Failed!!: " + ex.getMessage(), "Bad News", javax.swing.JOptionPane.ERROR_MESSAGE);
-//	}
-}
-
-/**
- * Comment
- */
-public void stopServiceButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	stopServices();
-	return;
-}
-
-private void refreshServerManager() {
-	try {
-		int n = javax.swing.JOptionPane.showConfirmDialog(this, "You are going to refresh server manager. Continue?", "Confirm", javax.swing.JOptionPane.YES_NO_OPTION);
-		if (n == javax.swing.JOptionPane.NO_OPTION) {
-			return;
-		}			
-		VCMessage msg = vcMessaging_daemonTopicProducerSession.createMessage();
-			
-		msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE);
-			
-		log.print("sending refresh server manager message [" + msg.show() + "]");		
-		vcMessaging_daemonTopicProducerSession.sendTopicMessage(VCellTopic.DaemonControlTopic,msg);
-	} catch (Exception ex) {
-		javax.swing.JOptionPane.showMessageDialog(this, "Failed!!: " + ex.getMessage(), "Bad News", javax.swing.JOptionPane.ERROR_MESSAGE);
-	}	
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (8/20/2003 1:15:33 PM)
- */
-private void stopServices() {
-	try {
-		int selectedCount = getServiceStatusTable().getSelectedRowCount();
-		int[] selectedRows = getServiceStatusTable().getSelectedRows();
-		if (selectedRows == null || selectedCount < 1) {
-			return;
-		}
-
-		for (int i = 0; i < selectedCount; i ++){					
-			int row = selectedRows[i];
-			ServiceInstanceStatus serviceInstanceStatus = (ServiceInstanceStatus)((ServiceInstanceStatusTableModel)getServiceStatusTable().getModel()).getValueAt(row);		
-			if (!serviceInstanceStatus.isRunning()) {
-				continue;
-			}			
-			
-			sendStopMessage(serviceInstanceStatus.getID());		
-		}
-		refresh();
-		clearServiceStatusTab();
-	} catch (Exception ex) {
-		javax.swing.JOptionPane.showMessageDialog(this, "Failed!!: " + ex.getMessage(), "Bad News", javax.swing.JOptionPane.ERROR_MESSAGE);
-	}	
-}
-
-private void sendStopMessage(String serviceInstanceID) throws VCMessagingException {
-	VCMessage msg = vcMessaging_daemonTopicProducerSession.createMessage();
-	
-	msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE);
-	msg.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, serviceInstanceID);
-	
-	log.print("sending stop service message [" + msg.show() + "]");		
-	vcMessaging_daemonTopicProducerSession.sendTopicMessage(VCellTopic.DaemonControlTopic,msg);
-}
-
-private void stopService(ServiceSpec ss) {
-	try {	
-		int count = getServiceStatusTable().getRowCount();
-		for (int i = 0; i < count; i ++){					
-			ServiceInstanceStatus serviceInstanceStatus = (ServiceInstanceStatus)((ServiceInstanceStatusTableModel)getServiceStatusTable().getModel()).getValueAt(i);
-			if (!serviceInstanceStatus.isRunning() || !serviceInstanceStatus.getSpecID().equals(ss.getID())) {
-				continue;
-			}
-			
-			sendStopMessage(serviceInstanceStatus.getID());
-		}
-	} catch (Exception ex) {
-		javax.swing.JOptionPane.showMessageDialog(this, "Failed!!: " + ex.getMessage(), "Bad News", javax.swing.JOptionPane.ERROR_MESSAGE);
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (7/19/2004 3:32:52 PM)
- * @param simKey cbit.sql.KeyValue
- */
-public void stopSimulation(String userid, KeyValue simKey) {
-	try {
-		User user = adminDbTop.getUser(userid, true);
-		UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
-		userLoginInfo.setUser(user);
-		String apihost = "vcellapi.cam.uchc.edu";
-		Integer apiport = 8080;
-		RemoteProxyVCellConnectionFactory remoteProxyVCellConnectionFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, userLoginInfo);
-		VCellConnection vcConn = remoteProxyVCellConnectionFactory.createVCellConnection();
-		BigString simxml = vcConn.getUserMetaDbServer().getSimulationXML(simKey);
-		if (simxml == null) {
-			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-		cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
-		if (sim == null) {
-			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-		vcConn.getSimulationController().stopSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
-	} catch (Exception ex) {
-		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-	}
 }
 
 
