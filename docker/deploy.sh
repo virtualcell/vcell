@@ -64,7 +64,7 @@ fi
 
 ssh_user=$(whoami)
 ssh_key=
-installer_deploy=
+installer_deploy_dir=
 upload_singularity=false
 build_installers=false
 link_installers=false

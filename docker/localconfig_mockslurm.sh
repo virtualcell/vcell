@@ -81,9 +81,9 @@ VCELL_JMS_HOST_EXTERNAL=`hostname`
 VCELL_MONGO_HOST_EXTERNAL=`hostname`
 VCELL_INSTALLER_SCP_DESTINATION=localhost:${VCELL_DEPLOY_ROOT_DIR}/installers
 VCELL_BATCH_HOST=`hostname`
-VCELL_SLURM_CMD_SBATCH=${VCELL_ROOTDIR}/deploy/mockslurm/sbatch_docker
-VCELL_SLURM_CMD_SACCT=${VCELL_ROOTDIR}/deploy/mockslurm/sacct
-VCELL_SLURM_CMD_SCANCEL=${VCELL_ROOTDIR}/deploy/mockslurm/scancel
+VCELL_SLURM_CMD_SBATCH=${VCELL_ROOTDIR}/docker/mockslurm/sbatch_docker
+VCELL_SLURM_CMD_SACCT=${VCELL_ROOTDIR}/docker/mockslurm/sacct
+VCELL_SLURM_CMD_SCANCEL=${VCELL_ROOTDIR}/docker/mockslurm/scancel
 
 VCELL_API_PORT_EXTERNAL=$((8080 + $_site_port_offset))
 VCELL_JMS_PORT_EXTERNAL=$((61616 + $_site_port_offset))

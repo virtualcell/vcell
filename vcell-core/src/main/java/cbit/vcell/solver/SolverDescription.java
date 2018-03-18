@@ -666,6 +666,11 @@ public enum SolverDescription {
 		return this == Chombo;
 	}
 
+	public boolean isPETSc()
+	{
+		return this == VCellPetsc;
+	}
+
 	public boolean isNFSimSolver()
 	{
 		return this == NFSim;

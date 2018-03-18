@@ -15,6 +15,7 @@ show_help() {
 	echo ""
 	echo "  Solver Commands - see https://github.com/virtualcell or http://vcell.org"
 	echo "    FiniteVolume_x64"
+	echo "    FiniteVolume_PETSc_x64"
 	echo "    MovingBoundary_x64"
 	echo "    NFSim_x64"
 	echo "    smoldyn_x64"
@@ -73,6 +74,10 @@ arguments=${arguments//$htclogdir_external/$htclogdir_internal}
 case $command in
 	FiniteVolume_x64)
 		/vcellbin/FiniteVolume_x64 $arguments
+		exit $?
+		;;
+	FiniteVolume_PETSc_x64)
+		/vcellbin/FiniteVolume_PETSc_x64 $arguments
 		exit $?
 		;;
 	MovingBoundary_x64)

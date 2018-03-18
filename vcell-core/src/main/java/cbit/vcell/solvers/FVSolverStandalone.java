@@ -66,6 +66,7 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 	 * for now, until classes are split
 	 */
 	private final boolean isChombo;
+	private final boolean isPETSc;
 	/**
 	 * lazily evaluated first command to support FiniteVolume quick-run
 	 * (pending a better refactoring)
@@ -107,6 +108,7 @@ public FVSolverStandalone (SimulationTask simTask, File userDir, File destinatio
 	SolverTaskDescription sts = notNull(SolverTaskDescription.class, s.getSolverTaskDescription());
 	SolverDescription sd = notNull(SolverDescription.class,sts.getSolverDescription());
 	isChombo = sd.isChomboSolver(); 
+	isPETSc = sd.isPETSc();
 }
 
 
@@ -360,19 +362,39 @@ public MathExecutable getMathExecutable() {
 
 @Override
 public Collection<ExecutableCommand> getCommands() {
-	if (!isChombo) {
-		return getFVCommands();
+	if (isChombo) {
+		return getChomboCommands( );
+	}else if (isPETSc) {
+		return getPETScCommands();
 	}
-	return getChomboCommands( );
+	return getFVCommands();
 }
 
 private Collection<ExecutableCommand> getFVCommands() {
-	assert (!isChombo);
+	assert (!isChombo && !isPETSc);
 	Simulation simulation = getSimulationJob().getSimulation();
 	final boolean isParallel = simulation.getSolverTaskDescription().isParallel();
 	String executableName = null;
 	try {
 		executableName = SolverUtilities.getExes(SolverDescription.FiniteVolumeStandalone)[0].getAbsolutePath();
+	}catch (IOException e){
+		throw new RuntimeException("failed to get executable for solver "+SolverDescription.FiniteVolumeStandalone.getDisplayLabel()+": "+e.getMessage(),e);
+	}
+	if (isParallel) {
+		throw new UnsupportedOperationException(executableName + " does not support parallel");
+	}
+	String inputFilename = getInputFilename();
+	primaryCommand = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), true, false, executableName, inputFilename );
+	return Arrays.asList(primaryCommand);
+}
+
+private Collection<ExecutableCommand> getPETScCommands() {
+	assert (!isChombo);
+	Simulation simulation = getSimulationJob().getSimulation();
+	final boolean isParallel = simulation.getSolverTaskDescription().isParallel();
+	String executableName = null;
+	try {
+		executableName = SolverUtilities.getExes(SolverDescription.VCellPetsc)[0].getAbsolutePath();
 	}catch (IOException e){
 		throw new RuntimeException("failed to get executable for solver "+SolverDescription.FiniteVolumeStandalone.getDisplayLabel()+": "+e.getMessage(),e);
 	}
