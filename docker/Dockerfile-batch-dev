@@ -1,4 +1,4 @@
-FROM vcell-docker.cam.uchc.edu:5000/schaff/vcell-solvers:0.0.7-dev
+FROM schaff/vcell-solvers:0.0.7-dev
 
 RUN apt-get -y update && \
     apt-get install -y openjdk-8-jre-headless
