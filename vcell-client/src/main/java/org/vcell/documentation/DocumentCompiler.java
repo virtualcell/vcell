@@ -78,7 +78,9 @@ public class DocumentCompiler {
 			}
 			docSourceDir = new File(args[0]); // vcell-client/UserDocumentation/originalXML
 			docTargetDir = new File(args[1]); // vcell-client/src/main/resources/vcellDoc
-
+			System.out.println("docSourceDir="+docSourceDir);
+			System.out.println("docTargetDir="+docTargetDir);
+			System.out.flush();
 			if (!docSourceDir.exists() || !docSourceDir.isDirectory()){
 				throw new RuntimeException("document source directory "+docSourceDir.getPath()+" doesn't exist or isn't a directory");
 			}

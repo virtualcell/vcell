@@ -12,6 +12,7 @@ package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -25,6 +26,7 @@ import java.util.EventObject;
 import java.util.Hashtable;
 
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -138,8 +140,10 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	//Added Oct. 17th, 2007. To put a tool menu in
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
+	private JMenuItem viewJobsMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
 	private JLabel warningText = null;
+	private JDialog viewSpeciesDialog = null;
 
 	private JMenuItem menuItemImportPathwayWebLocation = null;
 	private JMenuItem menuItemImportPathwayFile = null;
@@ -217,6 +221,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				startVCellVisIt();
 			if (e.getSource() == DocumentWindow.this.getTransMAMenuItem())
 				showTransMADialog();
+			if (e.getSource() == DocumentWindow.this.getViewJobsMenuItem())
+				showViewJobsDialog();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData())
 				connEtoC38(e);
 			if (e.getSource() == DocumentWindow.this.getUpdate_UserMenuItem()){
@@ -827,6 +833,7 @@ private JMenu getToolMenu() {
 			toolMenu.add(getRunVCellVisItItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getTransMAMenuItem());
+			toolMenu.add(getViewJobsMenuItem());
 		} catch (Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -854,6 +861,23 @@ private javax.swing.JMenuItem getTransMAMenuItem() {
 		}
 	}
 	return transMAMenuItem;
+}
+
+private javax.swing.JMenuItem getViewJobsMenuItem() {
+	if (viewJobsMenuItem == null) {
+		try {
+			viewJobsMenuItem = new javax.swing.JMenuItem();
+			viewJobsMenuItem.setName("ViewJobs");
+			viewJobsMenuItem.setText("View Simulation Jobs");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return viewJobsMenuItem;
 }
 
 /**
@@ -1985,6 +2009,7 @@ private void initConnections() throws java.lang.Exception {
 	getRunVFrapItem().addActionListener(ivjEventHandler);
 	getRunVCellVisItItem().addActionListener(ivjEventHandler);
 	getTransMAMenuItem().addActionListener(ivjEventHandler);
+	getViewJobsMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemFieldData().addActionListener(ivjEventHandler);
 	getPermissionsMenuItem().addActionListener(ivjEventHandler);
 }
@@ -2323,6 +2348,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 					getWindowManager().getVCDocument() != null &&
 					getWindowManager().getVCDocument() instanceof BioModel
 			);
+			getViewJobsMenuItem().setEnabled(true);
 			//getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
 			getPermissionsMenuItem().setEnabled(bVersionedDocument && getWindowManager().getVCDocument().getVersion().getOwner().equals(getWindowManager().getUser()));
 			break;
@@ -2486,6 +2512,25 @@ public void showTransMADialog()
 
 		}
 	}
+}
+
+public void showViewJobsDialog() {
+	System.out.println("ViewJobs menu item pressed.");
+	// https://vcellapi.cam.uchc.edu:8080/simtask?submitLow=&submitHigh=&startRow=1&maxRows=100&serverId=&computeHost+value%3D=&simId=&jobId=&taskId=&hasData=all&queued=on&dispatched=on&running=on
+	DocumentWindowManager dwm = getWindowManager();
+	ViewJobsPanel panel = new ViewJobsPanel(dwm);
+	panel.setPreferredSize(new Dimension(1000,600));
+
+	if(viewSpeciesDialog != null) {		// uncomment these 3 lines to allow only one instance of the dialog
+		viewSpeciesDialog.dispose();
+	}
+	
+	JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
+	viewSpeciesDialog = pane.createDialog(this, "View Simulation Jobs Status");
+	viewSpeciesDialog.setModal(false);
+	viewSpeciesDialog.setResizable(true);
+	viewSpeciesDialog.setVisible(true);
+
 }
 
 	private JMenuItem getMntmLicenseInformation() {
