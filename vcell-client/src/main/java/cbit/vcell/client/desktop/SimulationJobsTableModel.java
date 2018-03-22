@@ -38,7 +38,7 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 //	public static final int iColHost = 8;
 	
 	private static final String[] header = new String[] {"Model / Application", 
-			"Simulation", "Sim Id / Job", "Solver", "Start Date", "Has Data",
+			"Simulation", "Sim Id / Job", "Solver", "Start Date", "Data",
 			"Status", "Message", "Site"};
 
 	// filtering variables 
