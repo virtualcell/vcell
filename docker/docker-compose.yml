@@ -42,7 +42,7 @@ services:
         limits:
           memory: 2000M
         reservations:
-          memory: 100M
+          memory: 1000M
   master:
     image: "${VCELL_REPO_NAMESPACE}/vcell-master:${VCELL_TAG}"
     environment:
@@ -132,7 +132,10 @@ services:
         limits:
           memory: 2000M
         reservations:
-          memory: 500M
+          memory: 1000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   mongodb:
     image: "${VCELL_REPO_NAMESPACE}/vcell-mongo:${VCELL_TAG}"
     ports:
@@ -146,7 +149,7 @@ services:
         limits:
           memory: 1500M
         reservations:
-          memory: 100M
+          memory: 1000M
 
 networks:
   vcellnet:
