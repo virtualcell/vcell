@@ -33,7 +33,7 @@ public class SlurmProxy extends HtcProxy {
 	private final static int SCANCEL_JOB_NOT_FOUND_RETURN_CODE = 1;
 	private final static String SCANCEL_UNKNOWN_JOB_RESPONSE = "does not exist";
 	protected final static String SLURM_SUBMISSION_FILE_EXT = ".slurm.sub";
-	private Map<HtcJobID, JobInfoAndStatus> statusMap;
+//	private Map<HtcJobID, JobInfoAndStatus> statusMap;
 
 
 	// note: full commands use the PropertyLoader.htcPbsHome path.
@@ -57,32 +57,7 @@ public class SlurmProxy extends HtcProxy {
 
 	public SlurmProxy(CommandService commandService, String htcUser) {
 		super(commandService, htcUser);
-		statusMap = new HashMap<HtcJobID,JobInfoAndStatus>( );
 	}
-
-	@Override
-	public HtcJobStatus getJobStatus(HtcJobID htcJobId) throws HtcException, ExecutableException {
-		if (statusMap.containsKey(htcJobId)) {
-			return statusMap.get(htcJobId).status;
-		}
-		LG.warn("SLURM job not found, htcJobId="+htcJobId);
-		throw new HtcJobNotFoundException("job not found", htcJobId);
-	}
-
-	/**
-	 * qdel 6894
-	 *
-vcell has registered the job 6894 for deletion
-	 *
-	 * qdel 6894
-	 *
-job 6894 is already in deletion
-	 *
-	 * qdel 6894
-	 *
-denied: job "6894" does not exist
-
-	 */
 
 
 	@Override
@@ -200,7 +175,7 @@ denied: job "6894" does not exist
 	 */
 
 	@Override
-	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException, IOException {
+	public Map<HtcJobID, JobInfoAndStatus> getRunningJobs() throws ExecutableException, IOException {
 		String states = SlurmJobStatus.RUNNING.shortName+","+
 						SlurmJobStatus.CONFIGURING.shortName+","+
 						SlurmJobStatus.RESIZING.shortName;
@@ -208,16 +183,32 @@ denied: job "6894" does not exist
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
-		return extractJobIds(output, statusMap);
+		Map<HtcJobID, JobInfoAndStatus> statusMap = extractJobIds(output);
+		return statusMap;
 	}
 
-	public static List<HtcJobID> extractJobIds(String output, Map<HtcJobID, JobInfoAndStatus> statusMap) throws IOException {
+	@Override
+	public Map<HtcJobID,JobInfoAndStatus> getJobStatus(List<HtcJobID> htcJobIDs) throws ExecutableException, IOException {
+		ArrayList<String> jobNumbers = new ArrayList<String>();
+		for (HtcJobID job : htcJobIDs) {
+			jobNumbers.add(Long.toString(job.getJobNumber()));
+		}
+		String jobList = String.join(",", jobNumbers);
+		String[] cmds = {Slurm_HOME + JOB_CMD_STATUS,"-u","vcell","-P","-j",jobList,"-o","jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode"};
+		CommandOutput commandOutput = commandService.command(cmds);
+		
+		String output = commandOutput.getStandardOutput();
+		Map<HtcJobID, JobInfoAndStatus> statusMap = extractJobIds(output);
+		return statusMap;
+	}
+	
+	static Map<HtcJobID, JobInfoAndStatus> extractJobIds(String output) throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();
 		if (!line.equals("JobID|JobName|Partition|User|AllocCPUS|NCPUS|NTasks|State|ExitCode")){
 			throw new RuntimeException("unexpected first line from sacct: '"+line+"'");
 		}
-		statusMap.clear();
+		Map<HtcJobID, JobInfoAndStatus> statusMap = new HashMap<HtcJobID, JobInfoAndStatus>();
 		while ((line = reader.readLine()) != null){
 			String[] tokens = line.split("\\|");
 			String jobID = tokens[0];
@@ -239,40 +230,7 @@ denied: job "6894" does not exist
 			HtcJobStatus htcJobStatus = new HtcJobStatus(SlurmJobStatus.parseStatus(state));
 			statusMap.put(htcJobID, new JobInfoAndStatus(htcJobInfo, htcJobStatus));
 		}
-		return new ArrayList<HtcJobID>(statusMap.keySet());
-	}
-
-	@Override
-	public Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
-		HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
-		for (HtcJobID htcJobID : htcJobIDs){
-			HtcJobInfo htcJobInfo = getJobInfo(htcJobID);
-			if (htcJobInfo!=null){
-				jobInfoMap.put(htcJobID,htcJobInfo);
-			}
-		}
-		return jobInfoMap;
-	}
-	
-
-
-	/**
-	 * @param htcJobID
-	 * @return job info or null
-	 */
-	public HtcJobInfo getJobInfo(HtcJobID htcJobID) {
-		return statusMap.get(htcJobID).info;
-	}
-
-	public String[] getEnvironmentModuleCommandPrefix() {
-//		ArrayList<String> ar = new ArrayList<String>();
-//		ar.add("source");
-//		ar.add("/etc/profile.d/modules.sh;");
-//		ar.add("module");
-//		ar.add("load");
-//		ar.add(PropertyLoader.getProperty(PropertyLoader.slurmModulePath, "htc/slurm")+";");
-//		return ar.toArray(new String[0]);
-		return new String[0];
+		return statusMap;
 	}
 
 	/**
@@ -599,26 +557,4 @@ denied: job "6894" does not exist
 		return htcJobID;
 	}
 
-	/**
-	 * package job info and status
-	 */
-	public static class JobInfoAndStatus {
-		final HtcJobInfo info;
-		final HtcJobStatus status;
-		/**
-		 * @param info not null
-		 * @param status not null
-		 */
-		JobInfoAndStatus(HtcJobInfo info, HtcJobStatus status) {
-			Objects.requireNonNull(info);
-			Objects.requireNonNull(status);
-			this.info = info;
-			this.status = status;
-		}
-		@Override
-		public String toString() {
-			return info.toString() + ": "  + status.toString();
-		}
-
-	}
 }

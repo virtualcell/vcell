@@ -10,7 +10,6 @@
 
 package cbit.vcell.solver.server;
 
-import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.solver.SimulationJob;
 
 /**

@@ -8,11 +8,10 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -20,8 +19,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandService;
-import cbit.vcell.message.server.cmd.CommandServiceLocal;
-import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.simdata.PortableCommand;
@@ -95,6 +92,30 @@ public abstract class HtcProxy {
 			}
 		}
 	}
+	
+	/**
+	 * package job info and status
+	 */
+	public static class JobInfoAndStatus {
+		public final HtcJobInfo info;
+		public final HtcJobStatus status;
+		/**
+		 * @param info not null
+		 * @param status not null
+		 */
+		public JobInfoAndStatus(HtcJobInfo info, HtcJobStatus status) {
+			Objects.requireNonNull(info);
+			Objects.requireNonNull(status);
+			this.info = info;
+			this.status = status;
+		}
+		@Override
+		public String toString() {
+			return info.toString() + ": "  + status.toString();
+		}
+
+	}
+
 
 	public static class SimTaskInfo {
 		
@@ -127,7 +148,7 @@ public abstract class HtcProxy {
 
 	/**
 	 * set {@link HtcProxy#HTC_SIMULATION_JOB_NAME_PREFIX}
-	 * @return V_<i>server<i> or V_
+	 * @return V_<i>server<i>
 	 */
 	private static String jobNamePrefix( ){
 		String stub = "V_";
@@ -150,21 +171,8 @@ public abstract class HtcProxy {
 		this.htcUser = htcUser;
 	}
 
-	public abstract HtcJobStatus getJobStatus(HtcJobID htcJobId) throws HtcException, ExecutableException;
-
 	public abstract void killJob(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException;
 
-//	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSizeMB, String[] exitCommand,
-//			String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
-//		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, secondCommand, exitCommand, exitCodeReplaceTag, postProcessingCommands);
-//	}
-//
-//	/**
-//	 * @param postProcessingCommands may be null if no commands desired
-//	 * @throws ExecutableException
-//	 */
-//	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] secondCommand, String[] exitCommand,
-//			String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException;
 	/**
 	 * @param postProcessingCommands may be null if no commands desired
 	 * @param ncpus must be > 1 if any {@link ExecutableCommand}s are marked parallel
@@ -176,19 +184,13 @@ public abstract class HtcProxy {
 
 	public abstract HtcProxy cloneThreadsafe();
 
-	public final List<HtcJobID> getRunningSimulationJobIDs() throws ExecutableException, IOException {
-		return getRunningJobIDs(HTC_SIMULATION_JOB_NAME_PREFIX);
-	}
+	public abstract Map<HtcJobID,JobInfoAndStatus> getRunningJobs() throws ExecutableException, IOException;
 
-	public abstract List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException, IOException;
-
-	public abstract Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
+	public abstract Map<HtcJobID,JobInfoAndStatus> getJobStatus(List<HtcJobID> htcJobIDs) throws ExecutableException, IOException;
 
 	public final CommandService getCommandService() {
 		return commandService;
 	}
-
-	public abstract String[] getEnvironmentModuleCommandPrefix();
 
 	public final String getHtcUser() {
 		return htcUser;
@@ -248,9 +250,10 @@ public abstract class HtcProxy {
 			//do this to not write the zeros at the end of unixByteBuffer
 			ByteBuffer bb = ByteBuffer.wrap(unixByteBuffer.array(),0,count);
 
-			FileChannel fc = fos.getChannel();
-			fc.write(bb);
-			fc.close();
+			try (FileChannel fc = fos.getChannel()) {
+				fc.write(bb);
+				fc.close();
+			}
 		}
 	}
 
@@ -261,12 +264,12 @@ public abstract class HtcProxy {
 	 * the SSH command already invokes this with a shell, so it is not required.
 	 */
 	protected final String[] constructShellCommand(CommandService commandService, String[] cmd){
-		if (commandService instanceof CommandServiceSsh){
-			ArrayList<String> ar = new ArrayList<String>();
-			ar.addAll(Arrays.asList(getEnvironmentModuleCommandPrefix()));
-			ar.addAll(Arrays.asList(cmd));
-			return ar.toArray(new String[0]);
-		}else if (commandService instanceof CommandServiceLocal){
+//		if (commandService instanceof CommandServiceSsh_sshj || commandService instanceof CommandServiceSshNative){
+//			ArrayList<String> ar = new ArrayList<String>();
+//			ar.addAll(Arrays.asList(getEnvironmentModuleCommandPrefix()));
+//			ar.addAll(Arrays.asList(cmd));
+//			return ar.toArray(new String[0]);
+//		}else if (commandService instanceof CommandServiceLocal){
 			StringBuffer sb = new StringBuffer();
 
 
@@ -282,8 +285,8 @@ public abstract class HtcProxy {
 				sb.append((i>0?" ":"")+cmd[i]);
 			}
 			return new String[] { "/bin/sh","-c",sb.toString()};
-		}
-		throw new RuntimeException("expected either SSH or Local CommandService");
+//		}
+//		throw new RuntimeException("expected either SSH or Local CommandService");
 	}
 
 }

@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -57,7 +56,7 @@ import cbit.vcell.message.server.dispatcher.BatchScheduler.WaitingJob;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+import cbit.vcell.message.server.htc.HtcProxy.JobInfoAndStatus;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
@@ -354,13 +353,12 @@ public class SimulationDispatcher extends ServiceProvider {
 				try {
 					traceThread(this);
 
-					List<HtcJobID> runningSimulations = htcProxy.getRunningSimulationJobIDs();
-					Map<HtcJobID,HtcJobInfo> jobInfos = htcProxy.getJobInfos(runningSimulations);
-					for (HtcJobID htcJobID : runningSimulations){
-						HtcJobInfo jobInfo = jobInfos.get(htcJobID);
-						if (jobInfo!=null && jobInfo.isFound()){
+					Map<HtcJobID, JobInfoAndStatus> runningJobs = htcProxy.getRunningJobs();
+					for (HtcJobID htcJobID : runningJobs.keySet()){
+						JobInfoAndStatus jobInfoAndStatus = runningJobs.get(htcJobID);
+						if (jobInfoAndStatus.info!=null && jobInfoAndStatus.info.isFound()){
 							try {
-								String simJobName = jobInfo.getJobName();
+								String simJobName = jobInfoAndStatus.info.getJobName();
 								HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
 								SimulationJobStatus simJobStatus = simulationDatabase.getLatestSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex);
 								String failureMessage = null;
@@ -383,9 +381,9 @@ public class SimulationDispatcher extends ServiceProvider {
 										}
 									}
 								}
-								if (killJob && HtcProxy.isMyJob(jobInfo)){
+								if (killJob && HtcProxy.isMyJob(jobInfoAndStatus.info)){
 									if (lg.isEnabledFor(Level.WARN)) {
-										lg.warn("killing " + jobInfo + ", " + failureMessage);
+										lg.warn("killing " + jobInfoAndStatus.info + ", " + failureMessage);
 									}
 									if (simJobStatus == null) { 
 										simJobStatus = SimulationJobStatus.noSuchJob();

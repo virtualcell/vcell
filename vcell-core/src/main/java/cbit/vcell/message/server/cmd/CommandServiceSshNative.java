@@ -49,7 +49,7 @@ public class CommandServiceSshNative extends CommandService {
 		String[] sshCmdPrefix = new String[] { "ssh", "-i", installedKeyFile.getAbsolutePath(), "-o", "StrictHostKeyChecking=No", username+"@"+remoteHostName };
 		ArrayList<String> cmdList = new ArrayList<String>();
 		cmdList.addAll(Arrays.asList(sshCmdPrefix));
-		cmdList.addAll(Arrays.asList(commandStrings));
+		cmdList.add(String.join(" ", Arrays.asList(commandStrings)));
 		String[] cmd = cmdList.toArray(new String[0]);
 		long timeMS = System.currentTimeMillis();
 		CommandOutput commandOutput = cmdServiceLocal.command(cmd, allowableReturnCodes);

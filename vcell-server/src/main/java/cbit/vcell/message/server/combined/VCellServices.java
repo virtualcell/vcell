@@ -55,8 +55,6 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.message.server.dispatcher.SimulationDispatcher;
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.message.server.htc.pbs.PbsProxy;
-import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
@@ -172,13 +170,12 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-			Logger.getLogger(CommandService.class).setLevel(Level.DEBUG);
+			Logger.getLogger(CommandService.class).setLevel(Level.TRACE);
 			DatabasePolicySQL.lg.setLevel(Level.WARN);
 			DbDriver.lg.setLevel(Level.WARN);
 			HtcProxy.LG.setLevel(Level.TRACE);
 			SimulationDispatcher.lg.setLevel(Level.DEBUG);
 			HtcSimulationWorker.lg.setLevel(Level.INFO);
-			CommandServiceSshNative.lg.setLevel(Level.TRACE);
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
@@ -217,14 +214,6 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			}
 			HtcProxy htcProxy = null;
 			switch(batchSystemType){
-				case PBS:{
-					htcProxy = new PbsProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-					break;
-				}
-				case SGE:{
-					htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-					break;
-				}
 				case SLURM:{
 					htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 					break;

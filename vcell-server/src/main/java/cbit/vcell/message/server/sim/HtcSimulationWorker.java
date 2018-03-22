@@ -43,7 +43,6 @@ import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;

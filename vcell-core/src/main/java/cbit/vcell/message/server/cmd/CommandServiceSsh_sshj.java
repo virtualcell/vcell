@@ -26,7 +26,7 @@ import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 
 
-public class CommandServiceSsh extends CommandService {
+public class CommandServiceSsh_sshj extends CommandService {
 	private String remoteHostName = null;
 	private String username = null;
 	private File keyFile = null;
@@ -45,7 +45,7 @@ public class CommandServiceSsh extends CommandService {
 			try {
 				client.disconnect();
 			} catch (Exception e) {
-				CommandServiceSsh.lg.error("failed to release ssh connection and session: "+e.getMessage(), e);
+				CommandServiceSsh_sshj.lg.error("failed to release ssh connection and session: "+e.getMessage(), e);
 			}
 		}
 
@@ -159,7 +159,7 @@ public class CommandServiceSsh extends CommandService {
 	    // in BasePooledObjectFactory will suffice
 	}
 	
-	public CommandServiceSsh(String remoteHostName, String username, File keyFile) throws IOException{
+	CommandServiceSsh_sshj(String remoteHostName, String username, File keyFile) throws IOException{
 		super();
 		this.remoteHostName = remoteHostName;
 		this.username = username;
@@ -248,7 +248,7 @@ public class CommandServiceSsh extends CommandService {
 	@Override
 	public CommandService clone() {
 		try {
-			return new CommandServiceSsh(remoteHostName, username, keyFile);
+			return new CommandServiceSsh_sshj(remoteHostName, username, keyFile);
 		}catch (Exception e){
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());

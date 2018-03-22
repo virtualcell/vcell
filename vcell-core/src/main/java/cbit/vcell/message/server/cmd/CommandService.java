@@ -1,15 +1,12 @@
 package cbit.vcell.message.server.cmd;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.apache.log4j.Logger;
 import org.vcell.util.exe.ExecutableException;
 
 
 public abstract class CommandService {
 
-	public static Logger lg = Logger.getLogger(CommandServiceSsh.class);
+	public static Logger lg = Logger.getLogger(CommandService.class);
 	
 	public static class CommandOutput {
 		private String[] commandStrings;
