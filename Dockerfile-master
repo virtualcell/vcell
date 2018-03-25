@@ -6,7 +6,11 @@ RUN mvn clean install dependency:copy-dependencies
 
 FROM schaff/vtk-openjdk-alpine:latest
 
-RUN mkdir -p /usr/local/app
+RUN mkdir -p /usr/local/app && \
+	apk update && \
+    apk add openssh-client && \
+    apk add screen
+
 WORKDIR /usr/local/app
 
 COPY --from=build \
@@ -44,6 +48,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     export_baseurl="export-baseurl-not-set" \
     simdatadir_external=/path/to/external/simdata/ \
     simdatadir_parallel_external=/path/to/external/parallel/simdata/ \
+    htclogdir_internal=/path/to/internal/htclogs/ \
     htclogdir_external=/path/to/external/htclogs/ \
     nativesolverdir_external=/path/to/external/nativesolvers/ \
     htcnodelist="" \
@@ -63,6 +68,7 @@ ENV dbpswdfile=/run/secrets/dbpswd \
 
 VOLUME /simdata
 VOLUME /exportdir
+VOLUME /htclogs
 
 EXPOSE 8000
 
@@ -80,6 +86,7 @@ ENTRYPOINT java \
 	-Dvcell.export.baseDir.internal=/exportdir \
 	-Dvcell.export.baseURL="${export_baseurl}" \
 	-Dvcell.htc.user="${batchuser}" \
+	-Dvcell.htc.logdir.internal=/htclogs \
 	-Dvcell.htc.logdir.external="${htclogdir_external}" \
 	-Dvcell.htc.nodelist="${htcnodelist}" \
 	-Dvcell.slurm.cmd.sbatch="${slurm_cmd_sbatch}" \
