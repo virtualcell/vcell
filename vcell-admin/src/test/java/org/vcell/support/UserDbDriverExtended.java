@@ -7,7 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -16,8 +15,8 @@ import cbit.vcell.modeldb.UserTable;
 
 public class UserDbDriverExtended extends UserDbDriver {
 
-	public UserDbDriverExtended(SessionLog sessionLog) {
-		super(sessionLog);
+	public UserDbDriverExtended() {
+		super();
 	}
 
 	/**

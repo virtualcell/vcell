@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.vis.io.VtuFileContainer;
@@ -13,7 +12,6 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -57,15 +55,14 @@ public class VtkMeshGenerator implements PortableCommand {
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 		VCSimulationDataIdentifier vcdataID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 
-		final SessionLog log = new StdoutSessionLog("DataServer");
 		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
-		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable,
+		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable,
 				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)),
 				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty)));
 
-		ExportServiceImpl exportServiceImpl = new ExportServiceImpl(log);
+		ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 
-		DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);
+		DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);
 
 //		@SuppressWarnings("unused")
 		if (!dataSetControllerImpl.getIsMovingBoundary(vcdataID)){

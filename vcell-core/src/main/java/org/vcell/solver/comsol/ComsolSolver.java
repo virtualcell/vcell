@@ -12,7 +12,6 @@ import org.apache.commons.io.FileUtils;
 import org.vcell.solver.comsol.model.VCCModel;
 import org.vcell.solver.comsol.service.ComsolService;
 import org.vcell.solver.comsol.service.ComsolServiceFactory;
-import org.vcell.util.SessionLog;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 
 import cbit.vcell.messaging.server.SimulationTask;
@@ -33,8 +32,8 @@ public class ComsolSolver extends AbstractSolver {
 	private double progress = 0.0;
 	private double time = 0.0;
 
-	public ComsolSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
-		super(simTask, directory, sessionLog);
+	public ComsolSolver(SimulationTask simTask, File directory) throws SolverException {
+		super(simTask, directory);
 	}
 
 	@Override

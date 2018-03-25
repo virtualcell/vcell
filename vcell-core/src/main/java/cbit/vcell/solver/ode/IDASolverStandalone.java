@@ -14,8 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
@@ -36,8 +34,8 @@ public class IDASolverStandalone extends SundialsSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public IDASolverStandalone(SimulationTask simTask, File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
-	super(simTask, directory, sessionLog, bMessaging);
+public IDASolverStandalone(SimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
+	super(simTask, directory, bMessaging);
 }
 /**
  *  This method takes the place of the old runUnsteady()...

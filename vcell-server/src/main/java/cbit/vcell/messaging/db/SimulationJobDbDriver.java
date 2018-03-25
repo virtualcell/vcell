@@ -21,10 +21,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
@@ -52,22 +52,22 @@ import cbit.vcell.solver.SimulationMetadata;
  * @author: Fei Gao
  */
 public class SimulationJobDbDriver {
+	public static Logger lg = Logger.getLogger(SimulationJobDbDriver.class);
+
 	private static final SimulationJobTable jobTable = SimulationJobTable.table;
 	private static final cbit.vcell.modeldb.SimulationTable simTable = cbit.vcell.modeldb.SimulationTable.table;
 	private static final cbit.vcell.modeldb.UserTable userTable = cbit.vcell.modeldb.UserTable.table;
 	private static final cbit.vcell.modeldb.MathDescTable mathDescTable = cbit.vcell.modeldb.MathDescTable.table;
 	private static final cbit.vcell.modeldb.GeometryTable geometryTable = cbit.vcell.modeldb.GeometryTable.table;
-	private final SessionLog log;
 	private final DatabaseSyntax dbSyntax;
 	private String standardJobStatusSQL = null;
 
 /**
  * LocalDBManager constructor comment.
  */
-public SimulationJobDbDriver(DatabaseSyntax dbSyntax,SessionLog sessionLog) {
+public SimulationJobDbDriver(DatabaseSyntax dbSyntax) {
 	super();
 	this.dbSyntax = dbSyntax;
-	this.log = sessionLog;
 	standardJobStatusSQL = "SELECT current_timestamp as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName()+".*," + simTable.ownerRef.getQualifiedColName() + "," + userTable.userid.getQualifiedColName()
 			+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName()
 			+ " WHERE " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName()
@@ -474,7 +474,9 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 		sql = subquery + " " + additionalConditionsClause + " " + orderByClause;
 	}
 	
-	System.out.println(sql);
+	if (lg.isTraceEnabled()) {
+		lg.trace(sql);
+	}
 	
 	List<SimpleJobStatusPersistent> resultList = new ArrayList<SimpleJobStatusPersistent>();
 	Statement stmt = con.createStatement();	
@@ -495,7 +497,8 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 					std = new cbit.vcell.solver.SolverTaskDescription(new org.vcell.util.CommentStringTokenizer(org.vcell.util.TokenMangler.getSQLRestoredString(taskDesc)));
 				}
 			} catch (DataAccessException ex) {
-				log.exception(ex);
+				ex.printStackTrace();
+				lg.error("failed to parse SolverTaskDescription",ex);
 			}
 			Integer meshSizeX = rset.getInt(SimulationTable.table.meshSpecX.getUnqualifiedColName());
 			if (rset.wasNull()){
@@ -514,17 +517,27 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 			SimulationDocumentLink simulationDocumentLink = null;
 			String latestBioModelLinkJSON = rset.getString(BMLINK);
 			if (latestBioModelLinkJSON!=null){
-				Gson gson = new Gson();
-				BioModelLink bioModelLink = gson.fromJson(latestBioModelLinkJSON, BioModelLink.class);
-				bioModelLink.clearZeroPadding();
-				simulationDocumentLink = bioModelLink;
+				try {
+					Gson gson = new Gson();
+					BioModelLink bioModelLink = gson.fromJson(latestBioModelLinkJSON, BioModelLink.class);
+					bioModelLink.clearZeroPadding();
+					simulationDocumentLink = bioModelLink;
+				}catch (Exception e) {
+					e.printStackTrace();
+					lg.error("failed to parse BioModelLink",e);
+				}
 			}
 			String latestMathModelLinkJSON = rset.getString(MMLINK);
 			if (latestMathModelLinkJSON!=null){
 				Gson gson = new Gson();
-				MathModelLink mathModelLink = gson.fromJson(latestMathModelLinkJSON, MathModelLink.class);
-				mathModelLink.clearZeroPadding();
-				simulationDocumentLink = mathModelLink;
+				try {
+					MathModelLink mathModelLink = gson.fromJson(latestMathModelLinkJSON, MathModelLink.class);
+					mathModelLink.clearZeroPadding();
+					simulationDocumentLink = mathModelLink;
+				}catch (Exception e) {
+					e.printStackTrace();
+					lg.error("failed to parse MathModelLink",e);
+				}
 			}
 			CommentStringTokenizer mathOverridesTokens = SimulationTable.getMathOverridesTokenizer(rset,dbSyntax);
 			List<MathOverrides.Element> mathOverrideElements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokens);
@@ -742,11 +755,15 @@ public void insertSimulationJobStatus(Connection con, SimulationJobStatusPersist
 	if (simulationJobStatus == null){
 		throw new IllegalArgumentException("simulationJobStatus cannot be null");
 	}
-	log.print("SimulationJobDbDriver.insertSimulationJobStatus(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
+	if (lg.isTraceEnabled()) {
+		lg.trace("SimulationJobDbDriver.insertSimulationJobStatus(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
+	}
 	String sql = "INSERT INTO " + jobTable.getTableName() + " " + jobTable.getSQLColumnList() + " VALUES " 
 		+ jobTable.getSQLValueList(key, simulationJobStatus);
 
-	log.print(sql);			
+	if (lg.isTraceEnabled()) {
+		lg.trace(sql);			
+	}
 	executeUpdate(con,sql);
 }
 
@@ -762,13 +779,17 @@ public void updateSimulationJobStatus(Connection con, SimulationJobStatusPersist
 		throw new IllegalArgumentException("Improper parameters for updateSimulationJobStatus()");
 	}
 
-	log.print("SimulationJobDbDriver.updateSimulationJobStatus(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
+	if (lg.isTraceEnabled()) {
+		lg.trace("SimulationJobDbDriver.updateSimulationJobStatus(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
+	}
 	
 	String sql = "UPDATE " + jobTable.getTableName() +	" SET "  + jobTable.getSQLUpdateList(simulationJobStatus) + 
 			" WHERE " + jobTable.simRef + "=" + simulationJobStatus.getVCSimulationIdentifier().getSimulationKey() +
 			" AND " + jobTable.jobIndex + "=" + simulationJobStatus.getJobIndex() +
 			" AND " + jobTable.taskID + "=" + simulationJobStatus.getTaskID();
-	//log.print(sql);			
+	if (lg.isTraceEnabled()) {
+		lg.trace(sql);			
+	}
 	executeUpdate(con,sql);
 }
 }

@@ -14,8 +14,8 @@ import java.util.HashSet;
 
 import javax.swing.event.EventListenerList;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 
 import cbit.rmi.event.WorkerEvent;
 import cbit.rmi.event.WorkerEventListener;
@@ -33,9 +33,10 @@ import cbit.vcell.solver.server.SolverStatus;
  */
 @SuppressWarnings("serial")
 public class LocalSolverController implements SolverListener {
+	public static final Logger lg = Logger.getLogger(LocalSolverController.class);
+
 	private SolverControllerImpl solverControllerImpl = null;
 	private EventListenerList listenerList = new EventListenerList();
-	private SessionLog log = null;
 	private VCellConnection vcConn = null;
 
 	private HashSet<VCSimulationDataIdentifier> resultSetSavedSet = new HashSet<VCSimulationDataIdentifier>();
@@ -51,10 +52,9 @@ public class LocalSolverController implements SolverListener {
  * @exception java.rmi.RemoteException The exception description.
  * @throws SolverException 
  */
-public LocalSolverController(VCellConnection vcellConnection, SessionLog sessionLog, SimulationTask simTask, File dataDirectory) throws SolverException {
-	this.log = sessionLog;
+public LocalSolverController(VCellConnection vcellConnection, SimulationTask simTask, File dataDirectory) throws SolverException {
 	this.vcConn = vcellConnection;
-	solverControllerImpl = new SolverControllerImpl(vcellConnection, sessionLog, simTask, dataDirectory);
+	solverControllerImpl = new SolverControllerImpl(vcellConnection, simTask, dataDirectory);
 	solverControllerImpl.getSolver().addSolverListener(this);
 }
 
@@ -104,19 +104,9 @@ public double getProgress() throws DataAccessException {
 	try {
 		return solverControllerImpl.getSolver().getProgress();
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}	
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/10/2002 10:38:55 AM)
- * @return cbit.vcell.server.SessionLog
- */
-public SessionLog getSessionLog() {
-	return log;
 }
 
 
@@ -127,7 +117,7 @@ public SimulationTask getSimulationTask() throws DataAccessException {
 	try {
 		return solverControllerImpl.getSimulationTask();
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -142,7 +132,7 @@ public SolverStatus getSolverStatus() throws DataAccessException {
 	try {
 		return solverControllerImpl.getSolver().getSolverStatus();
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -170,7 +160,7 @@ public void setMessagingInterval(int newMessagingInterval) {
  */
 public void solverAborted(SolverEvent event) {
 	try {
-		log.print("LocalSolverController Caught solverAborted("+event.getSource().toString()+",error='"+event.getSimulationMessage()+"')");
+		if (lg.isTraceEnabled()) lg.trace("LocalSolverController Caught solverAborted("+event.getSource().toString()+",error='"+event.getSimulationMessage()+"')");
 		SimulationJob simJob = getSimulationTask().getSimulationJob();
 		if (serialParameterScanJobIndex >= 0) {
 			SimulationTask newSimTask = new SimulationTask(new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
@@ -179,7 +169,7 @@ public void solverAborted(SolverEvent event) {
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_FAILURE, this, getSimulationTask(), hostname, event.getSimulationMessage()));
 		}
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 	}
 }
 
@@ -190,7 +180,7 @@ public void solverAborted(SolverEvent event) {
  */
 public void solverFinished(SolverEvent event) {
 	try {
-		log.print("LocalSolverController Caught solverFinished("+event.getSource().toString()+")");
+		if (lg.isTraceEnabled()) lg.trace("LocalSolverController Caught solverFinished("+event.getSource().toString()+")");
 		SimulationJob simJob = getSimulationTask().getSimulationJob();
 		if (serialParameterScanJobIndex >= 0) {
 			SimulationTask newSimTask = new SimulationTask(new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
@@ -199,7 +189,7 @@ public void solverFinished(SolverEvent event) {
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, getSimulationTask(), hostname, new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));	
 		}		
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 	}
 }
 
@@ -215,7 +205,7 @@ public void solverPrinted(SolverEvent event) {
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_DATA, this, getSimulationTask(), hostname, event.getProgress(), new Double(event.getTimePoint()), event.getSimulationMessage()));
 		}
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 	}	
 }
 
@@ -240,7 +230,7 @@ public void solverProgress(SolverEvent event) {
 			}
 		}
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 	}
 }
 
@@ -251,7 +241,7 @@ public void solverProgress(SolverEvent event) {
  */
 public void solverStarting(SolverEvent event) {
 	try {
-		log.print("LocalSolverController Caught solverStarting("+event.getSource().toString()+")");
+		if (lg.isTraceEnabled()) lg.trace("LocalSolverController Caught solverStarting("+event.getSource().toString()+")");
 		if (serialParameterScanJobIndex >= 0) {
 			SimulationTask newSimTask = new SimulationTask(new SimulationJob(getSimulationTask().getSimulation(), serialParameterScanJobIndex, getSimulationTask().getSimulationJob().getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, newSimTask, hostname, event.getSimulationMessage()));
@@ -259,7 +249,7 @@ public void solverStarting(SolverEvent event) {
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, getSimulationTask(), hostname, event.getSimulationMessage()));
 		}
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 	}
 }
 
@@ -271,9 +261,9 @@ public void solverStarting(SolverEvent event) {
  */
 public void solverStopped(SolverEvent event) {
 	try {
-		log.print("LocalSolverController Caught solverStopped("+event.getSource().toString()+")");
+		if (lg.isTraceEnabled()) lg.trace("LocalSolverController Caught solverStopped("+event.getSource().toString()+")");
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 	}
 }
 
@@ -289,7 +279,7 @@ public void startSimulationJob() throws SimExecutionException, DataAccessExcepti
 		}
 		solverControllerImpl.startSimulationJob();
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
@@ -301,7 +291,7 @@ public void stopSimulationJob() throws DataAccessException {
 	try {
 		solverControllerImpl.stopSimulationJob();
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }

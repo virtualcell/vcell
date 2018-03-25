@@ -55,7 +55,6 @@ import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -645,7 +644,6 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					//run simulation
 					FRAPStudy.runFVSolverStandalone(
 						new File(getLocalWorkspace().getDefaultSimDataDirectory()),
-						new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 						bioModel.getSimulation(0),
 						fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 						fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),

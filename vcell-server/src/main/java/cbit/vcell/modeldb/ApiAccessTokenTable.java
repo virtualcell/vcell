@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -53,7 +54,7 @@ private ApiAccessTokenTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public ApiAccessToken getApiAccessToken(ResultSet rset, SessionLog log) throws SQLException, DataAccessException {
+public ApiAccessToken getApiAccessToken(ResultSet rset) throws SQLException, DataAccessException {
 
 	KeyValue key = new KeyValue(rset.getBigDecimal(id.toString()));
 	String token = rset.getString(accesstoken.toString());

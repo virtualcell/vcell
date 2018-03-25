@@ -9,11 +9,8 @@
  */
 
 package cbit.vcell.simdata;
-import java.rmi.RemoteException;
-
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
@@ -34,18 +31,16 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public class LocalDataSetController implements DataSetController {
 	private VCellConnection vcConn = null;
-	private SessionLog log = null;
 	private User user = null;
 	private DataServerImpl dataServerImpl = null;
 
 /**
  * This method was created by a SmartGuide.
  */
-public LocalDataSetController (VCellConnection argvcConn, SessionLog log, DataSetControllerImpl dsControllerImpl, ExportServiceImpl exportServiceImpl, User user) {
+public LocalDataSetController (VCellConnection argvcConn, DataSetControllerImpl dsControllerImpl, ExportServiceImpl exportServiceImpl, User user) {
 	this.vcConn = argvcConn;
 	this.user = user;
-	this.log = log;
-	dataServerImpl = new DataServerImpl(log, dsControllerImpl, exportServiceImpl);	
+	dataServerImpl = new DataServerImpl(dsControllerImpl, exportServiceImpl);	
 }
 
 

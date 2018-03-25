@@ -13,8 +13,6 @@ package cbit.vcell.solvers;
 import java.io.File;
 import java.util.Vector;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.SolverException;
@@ -38,12 +36,12 @@ public class CombinedSundialsSolver extends SimpleCompiledSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public CombinedSundialsSolver(SimulationTask simTask, File directory, SessionLog sessionLog, boolean bMessaging) throws cbit.vcell.solver.SolverException {
-	super(simTask, directory, sessionLog, bMessaging);
+public CombinedSundialsSolver(SimulationTask simTask, File directory, boolean bMessaging) throws cbit.vcell.solver.SolverException {
+	super(simTask, directory, bMessaging);
 	if (simTask.getSimulation().getMathDescription().hasFastSystems()) {
-		realSolver = new IDASolverStandalone(simTask, directory, sessionLog, bMessaging);
+		realSolver = new IDASolverStandalone(simTask, directory, bMessaging);
 	} else {
-		realSolver = new CVodeSolverStandalone(simTask, directory, sessionLog, bMessaging);
+		realSolver = new CVodeSolverStandalone(simTask, directory, bMessaging);
 	}
 	realSolver.addSolverListener(new SolverListener() {
 		public final void solverAborted(SolverEvent event) {		

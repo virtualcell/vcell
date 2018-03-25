@@ -16,7 +16,6 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 
 /**
  * read database to get user emails (with notify="on"), dump to file
@@ -137,7 +136,6 @@ public class EmailList {
 	private Connection getConnection( ) throws SQLException {
 		String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
 		ConnectionFactory connectionFactory = DatabaseService.getInstance().createConnectionFactory(
-				new StdoutSessionLog("test"),
 			dbDriverName,
 			EmailList.JDBC_URL,
 			USER_ID,

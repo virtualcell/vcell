@@ -121,7 +121,6 @@ import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
@@ -1696,7 +1695,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						//run simulation
 						FRAPStudy.runFVSolverStandalone(
 							new File(getLocalWorkspace().getDefaultSimDataDirectory()),
-							new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 							bioModel.getSimulation(0),
 							fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 							fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),

@@ -17,8 +17,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
@@ -61,8 +59,8 @@ public class HybridSolver extends SimpleCompiledSolver {
 	private int integratorType = EMIntegrator;
 
 
-public HybridSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog, int type, boolean b_Msging) throws cbit.vcell.solver.SolverException {
-	super(simTask, directory, sessionLog, b_Msging);
+public HybridSolver(SimulationTask simTask, java.io.File directory, int type, boolean b_Msging) throws cbit.vcell.solver.SolverException {
+	super(simTask, directory, b_Msging);
 	integratorType = type;
 }
 
@@ -320,8 +318,7 @@ private void writeLogFile() throws SolverException {
  */
 protected void initialize() throws SolverException 
 {
-	SessionLog sessionLog = getSessionLog();
-	sessionLog.print("HybridSolver.initialize()");
+	if (lg.isTraceEnabled()) lg.trace("HybridSolver.initialize()");
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	writeFunctionsFile();
 	writeLogFile();
@@ -329,7 +326,7 @@ protected void initialize() throws SolverException
 	//
 	String inputFilename = getInputFilename();//file used by precompiled solver.
 	//
-	sessionLog.print("HybridSolver.initialize() baseName = " + getBaseName());
+	if (lg.isTraceEnabled()) lg.trace("HybridSolver.initialize() baseName = " + getBaseName());
 	//
 	NetCDFWriter ncWriter = new NetCDFWriter(simTask,inputFilename, bMessaging);
 	try {
@@ -513,7 +510,7 @@ public void setIntegratorType(int integratorType) {
  */
 public static void main(String[] args) {
 	try{
-	HybridSolver hs = new HybridSolver(null,null,null,HybridSolver.EMIntegrator, false);
+	HybridSolver hs = new HybridSolver(null,null,HybridSolver.EMIntegrator, false);
 	hs.getHybridSolverResultSet(); //put file name to be open in getHybridSolverResultSet()
 	}catch(Exception e){
 		e.printStackTrace(System.err);

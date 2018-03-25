@@ -16,7 +16,6 @@ import java.util.ArrayList;
 
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
@@ -61,11 +60,11 @@ private MathModelTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log,DatabaseSyntax dbSyntax) throws SQLException,org.vcell.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax) throws SQLException,org.vcell.util.DataAccessException {
 
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	
 	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,MathModelTable.table.childSummarySmall,MathModelTable.table.childSummaryLarge,dbSyntax);
 
@@ -121,14 +120,14 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public MathModelMetaData getMathModelMetaData(ResultSet rset, SessionLog log, MathModelDbDriver mathModelDbDriver, Connection con, DatabaseSyntax dbSyntax) 
+public MathModelMetaData getMathModelMetaData(ResultSet rset, MathModelDbDriver mathModelDbDriver, Connection con, DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
 	// Get Version
 	//
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	KeyValue mathModelKey = version.getVersionKey();
 
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
@@ -151,14 +150,14 @@ public MathModelMetaData getMathModelMetaData(ResultSet rset, SessionLog log, Ma
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public MathModelMetaData getMathModelMetaData(ResultSet rset, Connection con,SessionLog log, KeyValue simulationKeys[], DatabaseSyntax dbSyntax) 
+public MathModelMetaData getMathModelMetaData(ResultSet rset, Connection con, KeyValue simulationKeys[], DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
 	// Get Version
 	//
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version mathModelVersion = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version mathModelVersion = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 
 	KeyValue mathDescrRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
 	

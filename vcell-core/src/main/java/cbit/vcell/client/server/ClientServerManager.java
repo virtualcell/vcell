@@ -17,7 +17,6 @@ import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
@@ -401,9 +400,8 @@ private VCellConnection connectToServer(InteractiveContext requester) {
 			}
 			case SERVER_LOCAL: {
 				new PropertyLoader();
-				SessionLog log = new StdoutSessionLog(getClientServerInfo().getUsername());
 				LocalVCellConnectionService localVCellConnectionService = VCellServiceHelper.getInstance().loadService(LocalVCellConnectionService.class);
-				vcConnFactory = localVCellConnectionService.getLocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo(), log);
+				vcConnFactory = localVCellConnectionService.getLocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo());
 				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), null, null, ConnectionStatus.INITIALIZING));
 				newVCellConnection = vcConnFactory.createVCellConnection();
 				break;

@@ -25,11 +25,9 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
-import org.vcell.util.SessionLog;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.vcell.resource.StdoutSessionLog;
 /**
  * This type was created in VisualAge.
  */
@@ -108,7 +106,7 @@ private static void createTables(Connection con, Table tables[], DatabaseSyntax 
 /**
  * This method was created in VisualAge.
  */
-private static void destroyAndRecreateTables(SessionLog log, ConnectionFactory conFactory, KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
+private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
 	try {
 		JPanel panel = new JPanel(new BorderLayout());
 		JCheckBox c1 = new JCheckBox("Drop all tables");
@@ -352,14 +350,12 @@ public static void main(java.lang.String[] args) {
             throw new RuntimeException("Aborted by user");
         }
 
-        SessionLog log = new StdoutSessionLog("SQLCreateAllTables");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
         new cbit.vcell.resource.PropertyLoader();
         if (args[0].equalsIgnoreCase(oracle)) {
             String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    log,
                     driverName,
                     connectURL,
                     dbSchemaUser,
@@ -367,7 +363,6 @@ public static void main(java.lang.String[] args) {
         }else if (args[0].equalsIgnoreCase(postgres)){
             String driverName = "org.postgresql.Driver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    log,
                     driverName,
                     connectURL,
                     dbSchemaUser,
@@ -376,7 +371,7 @@ public static void main(java.lang.String[] args) {
             System.out.println(usage);
             System.exit(1);
         }
-        destroyAndRecreateTables(log, conFactory, conFactory.getKeyFactory(), conFactory.getDatabaseSyntax());
+        destroyAndRecreateTables(conFactory, conFactory.getKeyFactory(), conFactory.getDatabaseSyntax());
     } catch (Throwable e) {
         e.printStackTrace(System.out);
     }

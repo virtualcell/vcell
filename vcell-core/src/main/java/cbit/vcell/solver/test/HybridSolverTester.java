@@ -37,7 +37,6 @@ import cbit.rmi.event.MessageEvent;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.SimulationStatusPersistent;
@@ -119,7 +118,7 @@ public class HybridSolverTester {
 				 * When you want to run the multiple trials on server (without VCell user interface), use the next line of code 
 				 * Corresponding changes should be made in the shell script runhybridtest for the location of executable on server
 				 */
-				FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simDataDir,new StdoutSessionLog(sim.getVersion().getOwner().getName()),false);		
+				FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simDataDir,false);		
 				fvSolver.startSolver();
 				
 				SolverStatus status = fvSolver.getSolverStatus();

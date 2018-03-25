@@ -27,7 +27,6 @@ import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
@@ -37,7 +36,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.server.SimulationStatusPersistent;
@@ -59,7 +57,6 @@ public class VCComprehensiveStatistics {
 	private ArrayList<String> internalDeveloper = new ArrayList<String>();
 	
 	private DatabaseServerImpl dbServerImpl = null;
-	private SessionLog log = null;
 	private LocalAdminDbServer localAdminDbServer = null;
 	private ArrayList<User> userList = new ArrayList<User>();
 	private ArrayList<String> userConstraintList = new ArrayList<String>();
@@ -89,14 +86,13 @@ public class VCComprehensiveStatistics {
 		DatabasePolicySQL.lg.setLevel(Level.WARN);
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 		
-		SessionLog sessionLog = new StdoutSessionLog("VCComprehensiveStatistics");
-		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		
-		localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory, sessionLog);
-		dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,sessionLog);
+		localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory);
+		dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
 		
-		oracleConnection = DatabaseService.getInstance().createConnectionFactory(sessionLog);
+		oracleConnection = DatabaseService.getInstance().createConnectionFactory();
 		
 		internalDeveloper.add("fgao");
 		internalDeveloper.add("anu");

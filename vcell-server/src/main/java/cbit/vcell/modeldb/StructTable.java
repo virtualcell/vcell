@@ -10,7 +10,6 @@
 
 package cbit.vcell.modeldb;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
@@ -104,7 +103,7 @@ private String getStructType(Structure structure) throws DataAccessException {
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public Structure getStructure(java.sql.ResultSet rset, SessionLog log, KeyValue structKey) throws java.sql.SQLException, DataAccessException {
+public Structure getStructure(java.sql.ResultSet rset, KeyValue structKey) throws java.sql.SQLException, DataAccessException {
 	
 	//KeyValue key = new KeyValue(rset.getBigDecimal(StructTable.id.toString(),0));
 	String name = TokenMangler.getSQLRestoredString(rset.getString(StructTable.table.strName.toString()));

@@ -3,8 +3,8 @@ package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
@@ -38,6 +38,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 
 public class SimulationStateMachine {
+	public static final Logger lg = Logger.getLogger(SimulationStateMachine.class);
 	
 	// bitmapped counter so that allows 3 retries for each request (but preserves ordinal nature)
 	// bits 0-3: retry count
@@ -120,7 +121,7 @@ public class SimulationStateMachine {
 		return solverProcessTimestamp;
 	}
 
-	public synchronized void onWorkerEvent(WorkerEvent workerEvent, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws DataAccessException, VCMessagingException, SQLException {
+	public synchronized void onWorkerEvent(WorkerEvent workerEvent, SimulationDatabase simulationDatabase, VCMessageSession session) throws DataAccessException, VCMessagingException, SQLException {
 		updateSolverProcessTimestamp();
 		WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 		VCMongoMessage.sendWorkerEvent(workerEventMessage);
@@ -128,7 +129,7 @@ public class SimulationStateMachine {
 		String userName = workerEvent.getUserName(); // as the filter of the client
 		int workerEventTaskID = workerEvent.getTaskID();
 
-		log.print("onWorkerEventMessage[" + workerEvent.getEventTypeID() + "," + workerEvent.getSimulationMessage() + "][simid=" + workerEvent.getVCSimulationDataIdentifier() + ",job=" + jobIndex + ",task=" + workerEventTaskID + "]");
+		if (lg.isTraceEnabled()) lg.trace("onWorkerEventMessage[" + workerEvent.getEventTypeID() + "," + workerEvent.getSimulationMessage() + "][simid=" + workerEvent.getVCSimulationDataIdentifier() + ",job=" + jobIndex + ",task=" + workerEventTaskID + "]");
 
 		VCSimulationDataIdentifier vcSimDataID = workerEvent.getVCSimulationDataIdentifier();
 		if (vcSimDataID == null) {
@@ -362,12 +363,12 @@ public class SimulationStateMachine {
 				simulationDatabase.updateSimulationJobStatus(newJobStatus,runningStateInfo);
 				StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, progress, timepoint);
 				msgForClient.sendToClient(session);
-				log.print("Send status to client: " + msgForClient);
+				if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
 			} else {
 				simulationDatabase.updateSimulationJobStatus(newJobStatus);
 				StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
 				msgForClient.sendToClient(session);
-				log.print("Send status to client: " + msgForClient);
+				if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
 			}
 		}else if (workerEvent.isProgressEvent() || workerEvent.isNewDataEvent()){
 			Double progress = workerEvent.getProgress();
@@ -379,7 +380,7 @@ public class SimulationStateMachine {
 			simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,runningStateInfo);
 			StatusMessage msgForClient = new StatusMessage(oldSimulationJobStatus, userName, progress, timepoint);
 			msgForClient.sendToClient(session);
-			log.print("Send status to client: " + msgForClient);
+			if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
 		}else{
 			VCMongoMessage.sendInfo("onWorkerEvent() ignoring WorkerEvent (currState="+oldSchedulerStatus.getDescription()+"): "+workerEvent.show());
 		}
@@ -387,10 +388,10 @@ public class SimulationStateMachine {
 
 	}
 
-	public synchronized void onStartRequest(User user, VCSimulationIdentifier vcSimID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+	public synchronized void onStartRequest(User user, VCSimulationIdentifier vcSimID, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, DataAccessException, SQLException {
 
 		if (!user.equals(vcSimID.getOwner())) {
-			log.alert(user + " is not authorized to start simulation (key=" + simKey + ")");
+			lg.error(user + " is not authorized to start simulation (key=" + simKey + ")");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null, 
 					SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to start this simulation!"), null, null), user.getName(), null, null);
 			message.sendToClient(session);
@@ -450,7 +451,7 @@ public class SimulationStateMachine {
 	}
 	
 
-	public synchronized void onDispatch(Simulation simulation, SimulationJobStatus oldSimulationJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+	public synchronized void onDispatch(Simulation simulation, SimulationJobStatus oldSimulationJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, DataAccessException, SQLException {
 		updateSolverProcessTimestamp();
 		VCSimulationIdentifier vcSimID = oldSimulationJobStatus.getVCSimulationIdentifier();
 		int taskID = oldSimulationJobStatus.getTaskID();
@@ -510,11 +511,11 @@ public class SimulationStateMachine {
 
 	}
 
-	public synchronized void onStopRequest(User user, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+	public synchronized void onStopRequest(User user, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, DataAccessException, SQLException {
 		updateSolverProcessTimestamp();
 		
 		if (!user.equals(simJobStatus.getVCSimulationIdentifier().getOwner())) {
-			log.alert(user + " is not authorized to stop simulation (key=" + simKey + ")");
+			lg.error(user + " is not authorized to stop simulation (key=" + simKey + ")");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), simJobStatus.getVCSimulationIdentifier(), 0, null, 
 					SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to stop this simulation!"), null, null), user.getName(), null, null);
 			message.sendToClient(session);
@@ -535,7 +536,7 @@ public class SimulationStateMachine {
 			//
 			// send stopSimulation to serviceControl topic
 			//
-			log.print("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
+			if (lg.isTraceEnabled()) lg.trace("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
 			VCMessage msg = session.createMessage();
 			msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
 			msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
@@ -556,7 +557,7 @@ public class SimulationStateMachine {
 		}
 	}
 
-	public synchronized void onSystemAbort(SimulationJobStatus oldJobStatus, String failureMessage, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, UpdateSynchronizationException, DataAccessException, SQLException {
+	public synchronized void onSystemAbort(SimulationJobStatus oldJobStatus, String failureMessage, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, UpdateSynchronizationException, DataAccessException, SQLException {
 		updateSolverProcessTimestamp();
 		
 		int taskID = oldJobStatus.getTaskID();
@@ -616,7 +617,7 @@ public class SimulationStateMachine {
 		String userName = VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL;
 		StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
 		msgForClient.sendToClient(session);
-		log.print("Send status to client: " + msgForClient);
+		if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
 	}
 
 //	public int getLatestKnownTaskID() {

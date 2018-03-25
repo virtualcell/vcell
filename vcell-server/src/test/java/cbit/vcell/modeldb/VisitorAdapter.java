@@ -6,7 +6,6 @@ import java.util.Arrays;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.vcell.util.NullSessionLog;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
@@ -96,7 +95,7 @@ public abstract class VisitorAdapter {
 			throw new IllegalStateException("Call init( )");
 		}
 		try{
-			VCDatabaseScanner scanner = new VCDatabaseScanner(new NullSessionLog()); 
+			VCDatabaseScanner scanner = new VCDatabaseScanner(); 
 			User[] users = null; 
 			if (!VCDatabaseScanner.ALL_USERS.equals(user)) { 
 				User u = scanner.getUser(user);

@@ -11,14 +11,12 @@ import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;
 
 @Plugin(type = Service.class)
@@ -32,12 +30,11 @@ public class LocaldbRegistrationService extends AbstractService implements Regis
 	
 	private AdminDatabaseServer getAdminDbServer() throws DataAccessException {
 		if (adminDbServer==null){
-			SessionLog log = new StdoutSessionLog("Local");
 			ConnectionFactory conFactory;
 			try {
-				conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+				conFactory = DatabaseService.getInstance().createConnectionFactory();
 				KeyFactory keyFactory = conFactory.getKeyFactory();
-				adminDbServer = new LocalAdminDbServer(conFactory, keyFactory, log);
+				adminDbServer = new LocalAdminDbServer(conFactory, keyFactory);
 			} catch (SQLException e) {
 				e.printStackTrace();
 				throw new RuntimeException("failed to establish database connection for RegistrationService: "+e.getMessage(),e);

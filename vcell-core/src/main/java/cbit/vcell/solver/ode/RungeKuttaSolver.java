@@ -12,8 +12,6 @@ package cbit.vcell.solver.ode;
 
 import java.io.File;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SolverException;
 /**
@@ -31,8 +29,8 @@ public abstract class RungeKuttaSolver extends DefaultODESolver {
  * @param valueVectorCount int
  * @param temporaryVectorCount int
  */
-public RungeKuttaSolver(SimulationTask simTask, File directory, SessionLog sessionLog, int valueVectorCount, int workArrayCount)  throws SolverException {
-	super(simTask, directory, sessionLog, valueVectorCount);
+public RungeKuttaSolver(SimulationTask simTask, File directory, int valueVectorCount, int workArrayCount)  throws SolverException {
+	super(simTask, directory, valueVectorCount);
 	fieldWorkArrayCount = workArrayCount;
 }
 protected void initialize() throws cbit.vcell.solver.SolverException {

@@ -22,9 +22,9 @@ import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -43,6 +43,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
  * This type was created in VisualAge.
  */
 public class ExportServiceImpl implements ExportConstants, ExportService {
+	public static final Logger lg = Logger.getLogger(ExportServiceImpl.class);
 	
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 
@@ -53,20 +54,13 @@ public class ExportServiceImpl implements ExportConstants, ExportService {
 	private IMGExporter imgExporter = new IMGExporter(this);
 	private RasterExporter rrExporter = new RasterExporter(this);
 
-	private SessionLog log = null;
-
-	
-		
-
-
 
 /**
  * Insert the method's description here.
  * Creation date: (3/29/2001 4:09:29 PM)
  * @param log cbit.vcell.server.SessionLog
  */
-public ExportServiceImpl(SessionLog log) {
-	this.log = log;
+public ExportServiceImpl() {
 }
 
 
@@ -205,7 +199,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 	}
 	JobRequest newExportJob = JobRequest.createExportJobRequest(user);
 	jobRequestIDs.put(new Long(newExportJob.getJobID()), user);
-	log.print("ExportServiceImpl.makeRemoteFile(): " + newExportJob + ", " + exportSpecs);
+	if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): " + newExportJob + ", " + exportSpecs);
 	String fileFormat = null;
 	switch (exportSpecs.getFormat()) {
 		case CSV:
@@ -245,7 +239,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 //				File file = new File(exportBaseDir + previousRequest.getJobID() + ".zip");
 //				if (file.exists()) {
 //					URL url = new URL(exportBaseURL + file.getName());
-//					log.print("ExportServiceImpl.makeRemoteFile(): Found previously made file: " + file.getName());
+//					if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Found previously made file: " + file.getName());
 //					fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString());
 //					// now that we start logging exports, we should do the persistence thing soon...
 //					// so far retutn null, so we at least don't double log during the same server session
@@ -253,12 +247,12 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 //				}
 //			} catch (Throwable exc) {
 //				completedExportRequests.remove(exportSpecs);
-//				log.print("ExportServiceImpl.makeRemoteFile(): WARNING: did not find previous export output; attempting to export again");
+//				if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): WARNING: did not find previous export output; attempting to export again");
 //			}
 //		}
 
 		// we need to make new output
-		log.print("ExportServiceImpl.makeRemoteFile(): Starting new export job: " + newExportJob);
+		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Starting new export job: " + newExportJob);
 		FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
 		try{
 			ExportOutput[] exportOutputs = null;
@@ -305,7 +299,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		throw ex;
 	}
 	catch (Throwable exc) {
-		log.exception(exc);
+		lg.error(exc.getMessage(), exc);
 		fireExportFailed(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exc.getMessage());
 		throw new DataAccessException(exc.getMessage());
 	}
@@ -349,7 +343,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 	
 	if (exportValid) {
 		completedExportRequests.put(exportSpecs, newExportJob);
-		log.print("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
+		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 		URL url = new URL(exportBaseURL + zipFile.getName());
 		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 	}
@@ -392,7 +386,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 			
 			if (exportValid) {
 				completedExportRequests.put(exportSpecs, newExportJob);
-				log.print("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
+				if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 				URL url = new URL(exportBaseURL + zipFile.getName());
 				return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 			}
@@ -443,7 +437,7 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 	}
 	if (exportValid) {
 		completedExportRequests.put(exportSpecs, newExportJob);
-		log.print("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileNames);
+		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileNames);
 		URL url = new URL(exportBaseURL + fileNames);
 		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 	}

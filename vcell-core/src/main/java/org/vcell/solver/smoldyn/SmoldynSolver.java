@@ -16,7 +16,6 @@ import java.io.StringWriter;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.vcell.util.ExceptionInterpreter;
-import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -48,8 +47,8 @@ public class SmoldynSolver extends SimpleCompiledSolver {
 		
 	}
 
-public SmoldynSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog, boolean bMsging) throws SolverException {
-	super(simTask, directory, sessionLog, bMsging);
+public SmoldynSolver(SimulationTask simTask, java.io.File directory, boolean bMsging) throws SolverException {
+	super(simTask, directory, bMsging);
 }
 
 
@@ -93,8 +92,7 @@ protected ApplicationMessage getApplicationMessage(String message) {
  */
 protected void initialize() throws SolverException 
 {
-	SessionLog sessionLog = getSessionLog();
-	sessionLog.print("SmoldynSolver.initialize()");
+	if (lg.isTraceEnabled()) lg.trace("SmoldynSolver.initialize()");
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	writeFunctionsFile();
 	
@@ -110,7 +108,7 @@ protected void initialize() throws SolverException
 	}
 
 	String inputFilename = getInputFilename();
-	sessionLog.print("SmoldynSolver.initialize() baseName = " + getBaseName());
+	if (lg.isTraceEnabled()) lg.trace("SmoldynSolver.initialize() baseName = " + getBaseName());
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);

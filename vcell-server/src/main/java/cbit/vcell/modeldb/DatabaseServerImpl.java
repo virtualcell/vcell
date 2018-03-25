@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
@@ -67,10 +68,11 @@ import cbit.vcell.xml.XmlParseException;
  * This type was created in VisualAge.
  */
 public class DatabaseServerImpl {
+	public static final Logger lg = Logger.getLogger(DatabaseServerImpl.class);
+
 	private DBTopLevel dbTop = null;
 	private DictionaryDBTopLevel dictionaryTop = null;
 	private AdminDBTopLevel adminDbTop = null;
-	private SessionLog log = null;
 	private ServerDocumentManager serverDocumentManager = new ServerDocumentManager(this);
 
 	public enum OrderBy {
@@ -84,35 +86,25 @@ public class DatabaseServerImpl {
 /**
  * This method was created in VisualAge.
  */
-public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) 
+public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory) 
 						throws DataAccessException {
 	super();
-	this.log = sessionLog;
 	try {
-		dbTop = new DBTopLevel(conFactory,log);
-	} catch (SQLException e) {
-		log.exception(e);
-		throw new DataAccessException("Error creating DBTopLevel " + e.getMessage());
-	} catch (Throwable e) {
-		log.exception(e);
+		dbTop = new DBTopLevel(conFactory);
+	} catch (Exception e) {
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("Error creating DBTopLevel " + e.getMessage());
 	}		
 	try {
-		dictionaryTop = new DictionaryDBTopLevel(conFactory,log);
-	} catch (SQLException e) {
-		log.exception(e);
-		throw new DataAccessException("Error creating DictionaryDbTopLevel " + e.getMessage());
-	} catch (Throwable e) {
-		log.exception(e);
+		dictionaryTop = new DictionaryDBTopLevel(conFactory);
+	} catch (Exception e) {
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("Error creating DictionaryDbTopLevel " + e.getMessage());
 	}		
 	try {
-		adminDbTop = new AdminDBTopLevel(conFactory,log);
-	} catch (SQLException e) {
-		log.exception(e);
-		throw new DataAccessException("Error creating AdminDbTopLevel " + e.getMessage());
-	} catch (Throwable e) {
-		log.exception(e);
+		adminDbTop = new AdminDBTopLevel(conFactory);
+	} catch (Exception e) {
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("Error creating AdminDbTopLevel " + e.getMessage());
 	}		
 }
@@ -125,18 +117,18 @@ public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory, S
 public VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException{
 	
 	try {
-		log.print("DatabaseServerImpl.curate(user="+user+" curateSpec="+curateSpec+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.curate(user="+user+" curateSpec="+curateSpec+")");
 		return dbTop.curate(user,curateSpec);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 	catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} 
 	catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 	
@@ -148,32 +140,32 @@ public VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessE
  */
 void delete(User user, VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.delete(vType="+vType.getTypeName()+", Key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.delete(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.deleteVersionable(user, vType, key, true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
 
 public UserRegistrationResults userRegistrationOP(User user, UserRegistrationOP userRegistrationOP) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.userRegistrationOP(...)");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.userRegistrationOP(...)");
 		return dbTop.userRegistrationOP(user,userRegistrationOP,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -192,16 +184,16 @@ public void deleteBioModel(User user, KeyValue key) throws DataAccessException, 
  */
 public FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.fieldDataDBOperation opType="+fieldDataDBOperationSpec.opType);
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.fieldDataDBOperation opType="+fieldDataDBOperationSpec.opType);
 		return dbTop.fieldDataDBOperation(user, fieldDataDBOperationSpec, true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -242,13 +234,13 @@ public TestSuiteOPResults doTestSuiteOP(User user, TestSuiteOP tsop)
 	throws DataAccessException {
 		
 	try {
-		log.print("DatabaseServerImpl.doTestSuiteOP(op="+tsop+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.doTestSuiteOP(op="+tsop+")");
 	return dbTop.doTestSuiteOP(tsop,user,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -261,18 +253,18 @@ public TestSuiteOPResults doTestSuiteOP(User user, TestSuiteOP tsop)
 public ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs) throws DataAccessException{
 	
 	try {
-		log.print("DatabaseServerImpl.findReferences(user="+user+" refQuerySpec="+rqs+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.findReferences(user="+user+" refQuerySpec="+rqs+")");
 		return dbTop.findReferences(user,rqs,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 	//catch (ObjectNotFoundException e) {
-		//log.exception(e);
+		//lg.error(e.getMessage(),e);
 		//throw new ObjectNotFoundException(e.getMessage());
 	//} 
 	catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 	
@@ -284,17 +276,17 @@ public ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs) th
  */
 public VersionableFamily getAllReferences(User user, VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getAllReferences(vType="+vType.getTypeName()+", Key="+key+")");
-		log.alert("DatabaseServerImpl.getAllReferences() can return 'version' objects that aren't viewable to user !!!!!!!!!!!!!!!! ");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getAllReferences(vType="+vType.getTypeName()+", Key="+key+")");
+		if (lg.isWarnEnabled()) lg.warn("DatabaseServerImpl.getAllReferences() can return 'version' objects that aren't viewable to user !!!!!!!!!!!!!!!! ");
 		return dbTop.getAllReferences(user,key,vType,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -371,17 +363,17 @@ public SimulationInfo[] getSimulationInfos(User user, boolean bAll) throws DataA
  */
 public BioModelMetaData getBioModelMetaData(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getBioModelMetaData(key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getBioModelMetaData(key="+key+")");
 		BioModelMetaData bioModelMetaData = dbTop.getBioModelMetaData(new QueryHashtable(), user, key);
 		return bioModelMetaData;
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -392,17 +384,17 @@ public BioModelMetaData getBioModelMetaData(User user, KeyValue key) throws Data
  */
 public BioModelMetaData[] getBioModelMetaDatas(User user, boolean bAll) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.getBioModelMetaDatas(bAll="+bAll+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getBioModelMetaDatas(bAll="+bAll+")");
 		BioModelMetaData bioModelMetaDataArray[] = dbTop.getBioModelMetaDatas(user,bAll,true);
 		return bioModelMetaDataArray;
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 
@@ -414,13 +406,13 @@ public BioModelMetaData[] getBioModelMetaDatas(User user, boolean bAll) throws D
  */
 public BigString getBioModelXML(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getBioModelXML(user="+user+", Key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getBioModelXML(user="+user+", Key="+key+")");
 		return new BigString(serverDocumentManager.getBioModelXML(new QueryHashtable(), user, key, false));
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -432,13 +424,13 @@ public BigString getBioModelXML(User user, KeyValue key) throws DataAccessExcept
  */
 public DBSpecies getBoundSpecies(User user, DBFormalSpecies dbfs) throws DataAccessException{
 	try {
-		log.print("DatabaseServerImpl.getBoundSpecies");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getBoundSpecies");
 		return dictionaryTop.getBoundSpecies(dbfs,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
 }
@@ -450,13 +442,13 @@ public DBSpecies getBoundSpecies(User user, DBFormalSpecies dbfs) throws DataAcc
  */
 public DBFormalSpecies[] getDatabaseSpecies(User argUser,String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit, boolean bOnlyUser) throws DataAccessException{
 	try {
-		log.print("DatabaseServerImpl.getDatabaseSpecies");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getDatabaseSpecies");
 		return dictionaryTop.getDatabaseSpecies(true,argUser,likeString,isBound,speciesType,restrictSearch,rowLimit,bOnlyUser);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
 }
@@ -476,13 +468,13 @@ DBTopLevel getDBTopLevel() {
 public ReactionDescription[] getDictionaryReactions(User user, ReactionQuerySpec reactionQuerySpec) throws DataAccessException{
 		
 	try {
-		log.print("DatabaseServerImpl.getDictionaryReactions");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getDictionaryReactions");
 		return dictionaryTop.getDictionaryReactions(true,reactionQuerySpec);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
 }
@@ -516,14 +508,14 @@ public GeometryInfo[] getGeometryInfos(User user, boolean bAll) throws DataAcces
  */
 public BigString getGeometryXML(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getGeometryXML(user="+user+", Key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getGeometryXML(user="+user+", Key="+key+")");
 		Geometry geometry = dbTop.getGeometry(new QueryHashtable(), user,key,true);
 		return new BigString(XmlHelper.geometryToXML(geometry));
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -558,17 +550,17 @@ public MathModelInfo[] getMathModelInfos(User user, boolean bAll) throws DataAcc
  */
 public MathModelMetaData getMathModelMetaData(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getMathModelMetaData(key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getMathModelMetaData(key="+key+")");
 		MathModelMetaData mathModelMetaData = dbTop.getMathModelMetaData(new QueryHashtable(), user,key);
 		return mathModelMetaData;
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -579,17 +571,17 @@ public MathModelMetaData getMathModelMetaData(User user, KeyValue key) throws Da
  */
 public MathModelMetaData[] getMathModelMetaDatas(User user, boolean bAll) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.getMathModelMetaDatas(bAll="+bAll+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getMathModelMetaDatas(bAll="+bAll+")");
 		MathModelMetaData mathModelMetaDataArray[] = dbTop.getMathModelMetaDatas(user,bAll,true);
 		return mathModelMetaDataArray;
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 
@@ -601,13 +593,13 @@ public MathModelMetaData[] getMathModelMetaDatas(User user, boolean bAll) throws
  */
 public BigString getMathModelXML(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getMathModelXML(user="+user+", Key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getMathModelXML(user="+user+", Key="+key+")");
 		return new BigString(serverDocumentManager.getMathModelXML(new QueryHashtable(), user, key, false));
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -618,10 +610,10 @@ public BigString getMathModelXML(User user, KeyValue key) throws DataAccessExcep
  */
 public Preference[] getPreferences(User user) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.getPreferences(User="+user.getName()+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getPreferences(User="+user.getName()+")");
 		return dbTop.getPreferences(user,true);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -632,13 +624,13 @@ public Preference[] getPreferences(User user) throws DataAccessException {
  */
 public Model getReactionStepAsModel(User user, KeyValue reactionStepKey) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.getReactionStep");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getReactionStep");
 		return dbTop.getReactionStepAsModel(new QueryHashtable(), user,reactionStepKey,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
 }
@@ -649,13 +641,13 @@ public Model getReactionStepAsModel(User user, KeyValue reactionStepKey) throws 
  */
 public ReactionStepInfo[] getReactionStepInfos(User user, KeyValue reactionStepKeys[]) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.getReactionStepInfos()");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getReactionStepInfos()");
 		return dictionaryTop.getReactionStepInfos(user, true,reactionStepKeys);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
 }
@@ -676,10 +668,10 @@ public ServerDocumentManager getServerDocumentManager() {
  */
 public SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getSimulationStatus(simulationKey="+simulationKeys+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getSimulationStatus(simulationKey="+simulationKeys+")");
 		return adminDbTop.getSimulationStatus(simulationKeys,true);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 
@@ -688,10 +680,10 @@ public SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[
 
 public List<SimpleJobStatusPersistent> getSimpleJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.getSimulationStatus(simStatusQuerySpec="+simStatusQuerySpec+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getSimulationStatus(simStatusQuerySpec="+simStatusQuerySpec+")");
 		return adminDbTop.getSimpleJobStatus(simStatusQuerySpec,true);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -702,10 +694,10 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(SimpleJobStatusQuerySp
  */
 public SimulationStatusPersistent getSimulationStatus(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getSimulationStatus(simulationKey="+simulationKey+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getSimulationStatus(simulationKey="+simulationKey+")");
 		return adminDbTop.getSimulationStatus(simulationKey,true);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 
@@ -717,14 +709,14 @@ public SimulationStatusPersistent getSimulationStatus(KeyValue simulationKey) th
  */
 public BigString getSimulationXML(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getSimulationXML(user="+user+", Key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getSimulationXML(user="+user+", Key="+key+")");
 		Simulation sim = dbTop.getSimulation(new QueryHashtable(), user,key);
 		return new BigString(XmlHelper.simToXML(sim));
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -741,13 +733,13 @@ public TestSuiteNew getTestSuite(User user, java.math.BigDecimal getThisTS)
 	throws DataAccessException {
 		
 	try {
-		log.print("DatabaseServerImpl.getTestSuite(tsin="+getThisTS+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getTestSuite(tsin="+getThisTS+")");
 	return dbTop.getTestSuite(getThisTS,user,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -764,13 +756,13 @@ public TestSuiteInfoNew[] getTestSuiteInfos(User user) throws DataAccessExceptio
 	
 	
 	try {
-		log.print("DatabaseServerImpl.getTestSuiteInfos(user="+user+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getTestSuiteInfos(user="+user+")");
 		return dbTop.getTestSuiteInfos(user,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -781,13 +773,13 @@ public TestSuiteInfoNew[] getTestSuiteInfos(User user) throws DataAccessExceptio
  */
 public ReactionDescription[] getUserReactionDescriptions(User user, ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.getUserReactions");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getUserReactions");
 		return dictionaryTop.getUserReactionDescriptions(user, true,reactionQuerySpec);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
 }
@@ -822,15 +814,15 @@ public VCImageInfo[] getVCImageInfos(User user, boolean bAll) throws DataAccessE
  */
 public BigString getVCImageXML(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.getVCImageXML(user="+user+", Key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getVCImageXML(user="+user+", Key="+key+")");
 		boolean bCheckPermission = true;
 		VCImage image = dbTop.getVCImage(new QueryHashtable(), user,key,bCheckPermission);
 		return new BigString(XmlHelper.imageToXML(image));
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -841,14 +833,14 @@ public BigString getVCImageXML(User user, KeyValue key) throws DataAccessExcepti
  */
 public VCInfoContainer getVCInfoContainer(User user) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.getVCInfoContainer()");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getVCInfoContainer()");
 		VCInfoContainer vcInfoContainer = dbTop.getVCInfoContainer(user,true);
 		return vcInfoContainer;
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 
@@ -864,7 +856,7 @@ public VCInfoContainer getVCInfoContainer(User user) throws DataAccessException 
  */
 private VersionInfo[] getVersionInfos(User user, KeyValue key, VersionableType vType, boolean bAll, boolean bCheckPermission) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.getVersionInfos(User="+user+",vType="+vType+",bAll="+bAll+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getVersionInfos(User="+user+",vType="+vType+",bAll="+bAll+")");
 		Vector<VersionInfo> vector = dbTop.getVersionableInfos(user, key, vType, bAll, bCheckPermission, true);
 		if (vType.equals(VersionableType.BioModelMetaData)) {
 			BioModelInfo[] bioModelInfos = new BioModelInfo[vector.size()];
@@ -890,13 +882,13 @@ private VersionInfo[] getVersionInfos(User user, KeyValue key, VersionableType v
 			throw new IllegalArgumentException("Wrong VersinableType vType:" + vType);
 		}		
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 
@@ -912,18 +904,18 @@ private VersionInfo[] getVersionInfos(User user, KeyValue key, VersionableType v
  */
 public VersionInfo groupAddUser(User user, VersionableType vType, KeyValue key,String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.groupAddUser(vType="+vType.getTypeName()+", Key="+key+", userToAdd="+addUserToGroup+", isHidden="+isHidden+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.groupAddUser(vType="+vType.getTypeName()+", Key="+key+", userToAdd="+addUserToGroup+", isHidden="+isHidden+")");
 		dbTop.groupAddUser(user,vType,key,true,addUserToGroup,isHidden);
 		VersionInfo newVersionInfo = (VersionInfo)(dbTop.getVersionableInfos(user,key,vType,false,true, true).elementAt(0));
 		return newVersionInfo;
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -939,18 +931,18 @@ public VersionInfo groupAddUser(User user, VersionableType vType, KeyValue key,S
 public VersionInfo groupRemoveUser(User user, VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) 
 			throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.groupRemoveUser(vType="+vType.getTypeName()+", Key="+key+", userRemoveFromGroup="+userRemoveFromGroup+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.groupRemoveUser(vType="+vType.getTypeName()+", Key="+key+", userRemoveFromGroup="+userRemoveFromGroup+")");
 		dbTop.groupRemoveUser(user,vType,key,true,userRemoveFromGroup,isHiddenFromOwner);
 		VersionInfo newVersionInfo = (VersionInfo)(dbTop.getVersionableInfos(user,key,vType,false,true, true).elementAt(0));
 		return newVersionInfo;
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -965,18 +957,18 @@ public VersionInfo groupRemoveUser(User user, VersionableType vType, KeyValue ke
  */
 public VersionInfo groupSetPrivate(User user, VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.groupSetPrivate(vType="+vType.getTypeName()+", Key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.groupSetPrivate(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.groupSetPrivate(user,vType,key,true);
 		VersionInfo newVersionInfo = (VersionInfo)(dbTop.getVersionableInfos(user,key,vType,false,true, true).elementAt(0));
 		return newVersionInfo;
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -991,18 +983,18 @@ public VersionInfo groupSetPrivate(User user, VersionableType vType, KeyValue ke
  */
 public VersionInfo groupSetPublic(User user, VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
-		log.print("DatabaseServerImpl.groupSetPublic(vType="+vType.getTypeName()+", Key="+key+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.groupSetPublic(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.groupSetPublic(user,vType,key,true);
 		VersionInfo newVersionInfo = (VersionInfo)(dbTop.getVersionableInfos(user,key,vType,false,true, true).elementAt(0));
 		return newVersionInfo;
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1013,16 +1005,16 @@ public VersionInfo groupSetPublic(User user, VersionableType vType, KeyValue key
  */
 void insertVersionableChildSummary(User user, VersionableType vType,KeyValue vKey,String serialDBChildSummary) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.insertVersionableChildSummary(vType="+vType.getTypeName()+", key="+vKey);
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.insertVersionableChildSummary(vType="+vType.getTypeName()+", key="+vKey);
 		dbTop.insertVersionableChildSummary(user,vType,vKey,serialDBChildSummary,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1033,16 +1025,16 @@ void insertVersionableChildSummary(User user, VersionableType vType,KeyValue vKe
  */
 void insertVersionableXML(User user, VersionableType vType,KeyValue vKey,String xml) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.insertVersionableXML(vType="+vType.getTypeName()+", key="+vKey);
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.insertVersionableXML(vType="+vType.getTypeName()+", key="+vKey);
 		dbTop.insertVersionableXML(user,vType,vKey,xml,true);
 	} catch (SQLException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new ObjectNotFoundException(e.getMessage());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1053,10 +1045,10 @@ void insertVersionableXML(User user, VersionableType vType,KeyValue vKey,String 
  */
 public void replacePreferences(User user, Preference[] preferences) throws DataAccessException {
 	try {
-		log.print("DatabaseServerImpl.replacePreferences(User="+user.getName()+",preferenceCount="+preferences.length+")");
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.replacePreferences(User="+user.getName()+",preferenceCount="+preferences.length+")");
 		dbTop.replacePreferences(user,preferences,true);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1071,20 +1063,20 @@ public void replacePreferences(User user, Preference[] preferences) throws DataA
  * @exception java.rmi.RemoteException The exception description.
  */
 public BigString saveBioModel(User user, BigString bioModelXML, String independentSims[]) throws DataAccessException {
-	log.print("DatabaseServerImpl.saveBioModel()");
+	if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.saveBioModel()");
 	try {
 		return new BigString(getServerDocumentManager().saveBioModel(new QueryHashtable(), user, bioModelXML.toString(), null, independentSims));
 	}catch (MappingException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (java.beans.PropertyVetoException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (XmlParseException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1099,20 +1091,20 @@ public BigString saveBioModel(User user, BigString bioModelXML, String independe
  * @exception java.rmi.RemoteException The exception description.
  */
 public BigString saveBioModelAs(User user, BigString bioModelXML, String newName, String independentSims[]) throws DataAccessException {
-	log.print("DatabaseServerImpl.saveBioModelAs("+newName+")");
+	if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.saveBioModelAs("+newName+")");
 	try {
 		return new BigString(getServerDocumentManager().saveBioModel(new QueryHashtable(), user, bioModelXML.toString(), newName, independentSims));
 	}catch (MappingException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e);
 	}catch (java.beans.PropertyVetoException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e);
 	}catch (SQLException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e);
 	}catch (XmlParseException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e);
 	}
 }
@@ -1126,14 +1118,14 @@ public BigString saveBioModelAs(User user, BigString bioModelXML, String newName
  * @exception java.rmi.RemoteException The exception description.
  */
 public BigString saveGeometry(User user, BigString geometryXML) throws DataAccessException {
-	log.print("DatabaseServerImpl.saveGeometry()");
+	if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.saveGeometry()");
 	try {
 		return new BigString(getServerDocumentManager().saveGeometry(new QueryHashtable(), user, geometryXML.toString(), null));
 	}catch (XmlParseException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1148,14 +1140,14 @@ public BigString saveGeometry(User user, BigString geometryXML) throws DataAcces
  * @exception java.rmi.RemoteException The exception description.
  */
 public BigString saveGeometryAs(User user, BigString geometryXML, java.lang.String newName) throws DataAccessException {
-	log.print("DatabaseServerImpl.saveGeometryAs("+newName+")");
+	if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.saveGeometryAs("+newName+")");
 	try {
 		return new BigString(getServerDocumentManager().saveGeometry(new QueryHashtable(), user, geometryXML.toString(), newName));
 	}catch (XmlParseException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1170,17 +1162,17 @@ public BigString saveGeometryAs(User user, BigString geometryXML, java.lang.Stri
  * @exception java.rmi.RemoteException The exception description.
  */
 public BigString saveMathModel(User user, BigString mathModelXML, String independentSims[]) throws DataAccessException {
-	log.print("DatabaseServerImpl.saveMathModel()");
+	if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.saveMathModel()");
 	try {
 		return new BigString(getServerDocumentManager().saveMathModel(new QueryHashtable(), user, mathModelXML.toString(), null, independentSims));
 	}catch (java.beans.PropertyVetoException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (XmlParseException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1195,17 +1187,17 @@ public BigString saveMathModel(User user, BigString mathModelXML, String indepen
  * @exception java.rmi.RemoteException The exception description.
  */
 public BigString saveMathModelAs(User user, BigString mathModelXML, java.lang.String newName, String independentSims[]) throws DataAccessException {
-	log.print("DatabaseServerImpl.saveMathModelAs(" + newName + ")");
+	if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.saveMathModelAs(" + newName + ")");
 	try {
 		return new BigString(getServerDocumentManager().saveMathModel(new QueryHashtable(), user, mathModelXML.toString(), newName, independentSims));
 	}catch (java.beans.PropertyVetoException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (XmlParseException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1220,17 +1212,17 @@ public BigString saveMathModelAs(User user, BigString mathModelXML, java.lang.St
  * @exception java.rmi.RemoteException The exception description.
  */
 public BigString saveSimulation(User user, BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
-	log.print("DatabaseServerImpl.saveSimulation()");
+	if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.saveSimulation()");
 	try {
 		return new BigString(getServerDocumentManager().saveSimulation(new QueryHashtable(), user, simulationXML.toString(), bForceIndependent));
 	}catch (java.beans.PropertyVetoException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (XmlParseException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1245,14 +1237,14 @@ public BigString saveSimulation(User user, BigString simulationXML, boolean bFor
  * @exception java.rmi.RemoteException The exception description.
  */
 public BigString saveVCImage(User user, BigString vcImageXML) throws DataAccessException {
-	log.print("DatabaseServerImpl.saveVCImage()");
+	if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.saveVCImage()");
 	try {
 		return new BigString(getServerDocumentManager().saveVCImage(user, vcImageXML.toString(), null));
 	}catch (XmlParseException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -1267,14 +1259,14 @@ public BigString saveVCImage(User user, BigString vcImageXML) throws DataAccessE
  * @exception java.rmi.RemoteException The exception description.
  */
 public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String newName) throws DataAccessException {
-	log.print("DatabaseServerImpl.saveVCImageAs(" + newName + ")");
+	if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.saveVCImageAs(" + newName + ")");
 	try {
 		return new BigString(getServerDocumentManager().saveVCImage(user, vcImageXML.toString(), newName));
 	}catch (XmlParseException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }

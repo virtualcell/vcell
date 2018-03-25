@@ -3,7 +3,6 @@ package org.vcell.optimization;
 import java.util.Random;
 import java.util.Vector;
 
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
@@ -20,7 +19,6 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
@@ -53,8 +51,7 @@ public class ParameterEstimationTaskSimulatorIDA {
 			mathOverrides.putConstant(new Constant(paramNames[i],new Expression(paramValues[i])));
 		}
 		SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
-		SessionLog sessionLog = new StdoutSessionLog("idaSolver");
-		IDASolverStandalone idaSolver = new IDASolverStandalone(simTask, ResourceUtil.getLocalSimDir("temp"), sessionLog, false);
+		IDASolverStandalone idaSolver = new IDASolverStandalone(simTask, ResourceUtil.getLocalSimDir("temp"), false);
 		idaSolver.runSolver();	//startSolver();
 		Thread.sleep(1000);
 		long startTimeMS = System.currentTimeMillis();

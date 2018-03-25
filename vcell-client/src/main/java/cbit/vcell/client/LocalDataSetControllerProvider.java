@@ -12,7 +12,6 @@ package cbit.vcell.client;
 
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
@@ -47,15 +46,13 @@ import cbit.vcell.solvers.CartesianMesh;
 public class LocalDataSetControllerProvider implements DataSetControllerProvider {
 
 	class LocalDataSetReader implements DataSetController {
-		private SessionLog log = null;
 		private User user = null;
 		private DataServerImpl dataServerImpl = null;
 
-		public LocalDataSetReader(SessionLog log, User usr, DataSetControllerImpl dsci, ExportServiceImpl esi) {
+		public LocalDataSetReader(User usr, DataSetControllerImpl dsci, ExportServiceImpl esi) {
 			super();
-			this.log = log;
 			this.user = usr;
-			this.dataServerImpl = new DataServerImpl(log, dsci, esi);
+			this.dataServerImpl = new DataServerImpl(dsci, esi);
 		}
 
 		public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
@@ -147,21 +144,19 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 
 	}
 	
-	private SessionLog log = null;
 	private User user = null;
 	private DataSetControllerImpl dataSetControllerImpl = null;
 	private ExportServiceImpl exportServiceImpl = null;
 	
-	public LocalDataSetControllerProvider(SessionLog log, User usr, DataSetControllerImpl dsci, ExportServiceImpl esi) {
+	public LocalDataSetControllerProvider(User usr, DataSetControllerImpl dsci, ExportServiceImpl esi) {
 		super();
-		this.log = log;
 		this.user = usr;
 		this.dataSetControllerImpl = dsci;
 		this.exportServiceImpl = esi;
 	}
 
 	public DataSetController getDataSetController() throws DataAccessException {
-		LocalDataSetReader localDatasetReader = new LocalDataSetReader(log, user, dataSetControllerImpl, exportServiceImpl);
+		LocalDataSetReader localDatasetReader = new LocalDataSetReader(user, dataSetControllerImpl, exportServiceImpl);
 		return localDatasetReader;
 	}
 

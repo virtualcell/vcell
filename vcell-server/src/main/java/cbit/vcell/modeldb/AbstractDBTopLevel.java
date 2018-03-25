@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
@@ -21,17 +22,17 @@ import org.vcell.util.SessionLog;
  */
 public abstract class AbstractDBTopLevel {
 	
+	public static Logger lg = Logger.getLogger(AdminDBTopLevel.class);
+
 	protected final ConnectionFactory conFactory;
-	protected final SessionLog log;
 /**
  * Insert the method's description here.
  * Creation date: (9/4/2003 3:02:41 PM)
  * @param confactory cbit.sql.ConnectionFactory
  * @param argSessionLog cbit.vcell.server.SessionLog
  */
-AbstractDBTopLevel(ConnectionFactory argConFactory, org.vcell.util.SessionLog argSessionLog) {
+AbstractDBTopLevel(ConnectionFactory argConFactory) {
 	this.conFactory = argConFactory;
-	this.log = argSessionLog;
 }
 /**
  * Insert the method's description here.
@@ -82,7 +83,7 @@ protected void handle_SQLException(Throwable t) throws java.sql.SQLException {
  */
 protected boolean isBadConnection(java.sql.Connection con) {
 
-	return isBadConnection(con, log, conFactory.getDatabaseSyntax());
+	return isBadConnection(con, lg, conFactory.getDatabaseSyntax());
 }
 /**
  * Insert the method's description here.
@@ -90,7 +91,7 @@ protected boolean isBadConnection(java.sql.Connection con) {
  * @return boolean
  * @param con java.sql.Connection
  */
-public static boolean isBadConnection(java.sql.Connection con, SessionLog log, DatabaseSyntax dbSyntax) {
+public static boolean isBadConnection(java.sql.Connection con, Logger lg, DatabaseSyntax dbSyntax) {
 
 	//if(throwable instanceof cbit.vcell.server.DataAccessException){
 	//	return false;
@@ -119,11 +120,11 @@ public static boolean isBadConnection(java.sql.Connection con, SessionLog log, D
 		if(rset.next()){
 			return false;
 		}else{
-			log.alert("AbstractDBTopLevel.isBadConnection query returned no results");
+			lg.error("AbstractDBTopLevel.isBadConnection query returned no results");
 			return true;
 		}
 	}catch(Throwable e){
-		log.alert("AbstractDBTopLevel.isBadConnection query failed - "+e.getMessage());
+		lg.error("AbstractDBTopLevel.isBadConnection query failed - ",e);
 		return true;
 	}finally{
 		try{
@@ -131,7 +132,7 @@ public static boolean isBadConnection(java.sql.Connection con, SessionLog log, D
 				stmt.close();
 			}
 		}catch(Throwable e){
-			log.alert("AbstractDBTopLevel.isBadConnection query cleanup failed - "+e.getMessage());
+			lg.error("AbstractDBTopLevel.isBadConnection query cleanup failed - ", e);
 			return true;
 		}
 	}

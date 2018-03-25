@@ -12,7 +12,6 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -36,7 +35,6 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -62,11 +60,11 @@ public class StochtestRunService {
 	private long bngTimeoutMS;
 
 
-	public StochtestRunService(File baseDir, int numTrials, long bngTimeoutMS, ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog) 
+	public StochtestRunService(File baseDir, int numTrials, long bngTimeoutMS, ConnectionFactory argConFactory, KeyFactory argKeyFactory) 
 			throws DataAccessException, SQLException {
 		this.conFactory = argConFactory;
 		this.keyFactory = argKeyFactory;
-		this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,argSessionLog);
+		this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
 		this.baseDir = baseDir;
 		this.numTrials = numTrials;
 		this.bngTimeoutMS = bngTimeoutMS;
@@ -90,7 +88,6 @@ public class StochtestRunService {
 		long bngTimeoutMS = Long.valueOf(args[2]);
 		
 		PropertyLoader.loadProperties();
-	    SessionLog sessionLog = new StdoutSessionLog("StochtestService");
 
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	    String driverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
@@ -101,9 +98,9 @@ public class StochtestRunService {
 	    // get appropriate database factory objects
 	    //
 	    ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(
-	    		sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
+	    		driverName,connectURL,dbSchemaUser,dbPassword);
 	    KeyFactory keyFactory = conFactory.getKeyFactory();
-	    StochtestRunService stochtestService = new StochtestRunService(baseDir, numTrials, bngTimeoutMS, conFactory, keyFactory, sessionLog);
+	    StochtestRunService stochtestService = new StochtestRunService(baseDir, numTrials, bngTimeoutMS, conFactory, keyFactory);
 	    
 	    while (true){
 	    	stochtestService.runOne();
@@ -254,7 +251,6 @@ public class StochtestRunService {
 			varNameList.add(scs.getSpeciesContext().getName());
 		}
 		String[] varNames = varNameList.toArray(new String[0]);
-		StdoutSessionLog log = new StdoutSessionLog(sim.getName());
 
 		//
 		// get time points to save
@@ -277,12 +273,12 @@ public class StochtestRunService {
 		// run N trials and save data
 		//
 		TimeSeriesMultitrialData sampleData = new TimeSeriesMultitrialData(sim.getName(),varNames, sampleTimes, numTrials);
-		runsolver(sim,log,baseDirectory,numTrials,sampleData);
+		runsolver(sim,baseDirectory,numTrials,sampleData);
 		StochtestFileUtils.writeData(sampleData, StochtestFileUtils.getStochtestRunDataFile(baseDir, stochtestRun));
 	}
 	
 	
-	private static void runsolver(Simulation newSimulation, StdoutSessionLog sessionLog, File baseDirectory, int numRuns, TimeSeriesMultitrialData timeSeriesMultitrialData){
+	private static void runsolver(Simulation newSimulation, File baseDirectory, int numRuns, TimeSeriesMultitrialData timeSeriesMultitrialData){
 		Simulation versSimulation = null;
 		File destDir = null;
 		boolean bTimeout = false;
@@ -299,7 +295,7 @@ public class StochtestRunService {
 //				printout(ruleBasedTestDir.getAbsolutePath());
 				destDir = new File(baseDirectory,timeSeriesMultitrialData.datasetName);
 				SimulationTask simTask = new SimulationTask(new SimulationJob(versSimulation, 0, null),0);
-				Solver solver = ClientSimManager.createQuickRunSolver(sessionLog, destDir, simTask);
+				Solver solver = ClientSimManager.createQuickRunSolver(destDir, simTask);
 				solver.startSolver();
 		
 				while (true){

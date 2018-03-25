@@ -8,7 +8,6 @@ import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.client.VCellGuiInteractiveContextDefaultProvider;
 import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.client.server.ClientServerInfo.ServerType;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 /**
@@ -86,15 +85,14 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 	cbit.vcell.server.VCellConnectionFactory vcConnFactory = null;
 	new cbit.vcell.resource.PropertyLoader();		
 	if (args[0].startsWith("-")) {
-		UserLoginInfo userLoginInfo = new UserLoginInfo(args[1], new UserLoginInfo.DigestedPassword(args[2]));
-		org.vcell.util.SessionLog log = new cbit.vcell.resource.StdoutSessionLog(userLoginInfo.getUserName());
+		UserLoginInfo userLoginInfo = new UserLoginInfo(args[1], new UserLoginInfo.DigestedPassword(args[2])); 
 		if (args[0].equalsIgnoreCase("-jms")) {
-			vcConnFactory = new cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory(userLoginInfo, log);
+			vcConnFactory = new cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory(userLoginInfo);
 		} else if (args[0].equalsIgnoreCase("-local")) {
-			vcConnFactory = new cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory(userLoginInfo, log);
+			vcConnFactory = new cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory(userLoginInfo);
 			if (args.length == 7) {
 				ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(
-						log, args[3], args[4], args[5], args[6]);
+						args[3], args[4], args[5], args[6]);
 				((cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory)vcConnFactory).setConnectionFactory(conFactory);
 			}
 		}

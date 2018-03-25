@@ -9,10 +9,10 @@
  */
 
 package cbit.vcell.simdata;
+import org.apache.log4j.Logger;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
@@ -34,16 +34,16 @@ import cbit.vcell.solvers.CartesianMesh;
  * 
  */
 public class DataServerImpl {
-	private SessionLog log = null;
+	public static final Logger lg = Logger.getLogger(DataServerImpl.class);
+
 	private DataSetControllerImpl dataSetControllerImpl = null;
 	private ExportServiceImpl exportServiceImpl = null;
 
 /**
  * This method was created by a SmartGuide.
  */
-public DataServerImpl (SessionLog log, DataSetControllerImpl dsControllerImpl, ExportServiceImpl esl) {
+public DataServerImpl (DataSetControllerImpl dsControllerImpl, ExportServiceImpl esl) {
 	super();
-	this.log = log;
 	this.dataSetControllerImpl = dsControllerImpl;
 	exportServiceImpl = esl;
 }
@@ -90,10 +90,10 @@ public FieldDataFileOperationResults fieldDataFileOperation(User user,FieldDataF
 	try {
 		return dataSetControllerImpl.fieldDataFileOperation(fieldDataOpearationSpec);
 	}catch (DataAccessException e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw e;
 	}catch (Exception e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException("Error FieldDataFileOperation",e);
 	}
 }
@@ -109,7 +109,7 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, User use
 	try {
 		return dataSetControllerImpl.getDataIdentifiers(outputContext, vcdID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage(),e);
 	}
 }
@@ -120,12 +120,12 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, User use
  * @return double[]
  */
 public double[] getDataSetTimes(User user, VCDataIdentifier vcdID) throws DataAccessException {
-	log.print("DataServerImpl.getDataSetTimes()");
+	if (lg.isTraceEnabled()) lg.trace("DataServerImpl.getDataSetTimes()");
 	checkReadAccess(user, vcdID);
 	try {
 		return dataSetControllerImpl.getDataSetTimes(vcdID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -139,12 +139,12 @@ public double[] getDataSetTimes(User user, VCDataIdentifier vcdID) throws DataAc
  * @exception java.rmi.RemoteException The exception description.
  */
 public AnnotatedFunction[] getFunctions(OutputContext outputContext,User user, VCDataIdentifier vcdID) throws DataAccessException {
-	log.print("DataServerImpl.getFunctions()");
+	if (lg.isTraceEnabled()) lg.trace("DataServerImpl.getFunctions()");
 	checkReadAccess(user, vcdID);
 	try {
 		return dataSetControllerImpl.getFunctions(outputContext,vcdID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -163,10 +163,10 @@ public cbit.plot.PlotData getLineScan(OutputContext outputContext, User user, VC
 	try {
 		return dataSetControllerImpl.getLineScan(outputContext,vcdID,varName,time,spatialSelection);
 	} catch (DataAccessException e) {
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw e;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -181,7 +181,7 @@ public CartesianMesh getMesh(User user, VCDataIdentifier vcdID) throws DataAcces
 	try {
 		return dataSetControllerImpl.getMesh(vcdID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -199,7 +199,7 @@ public cbit.vcell.solver.ode.ODESimData getODEData(User user, VCDataIdentifier v
 	try {
 		return dataSetControllerImpl.getODEDataBlock(vcdID).getODESimData();
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -215,7 +215,7 @@ public ParticleDataBlock getParticleDataBlock(User user, VCDataIdentifier vcdID,
 	try {
 		return dataSetControllerImpl.getParticleDataBlock(vcdID, time);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -231,7 +231,7 @@ public DataOperationResults doDataOperation(User user, DataOperation dataOperati
 	try {
 		return dataSetControllerImpl.doDataOperation(dataOperation);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -246,7 +246,7 @@ public boolean getParticleDataExists(User user, VCDataIdentifier vcdID) throws D
 	try {
 		return dataSetControllerImpl.getParticleDataExists(vcdID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -262,10 +262,10 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, User user, VCDa
 	try {
 		return dataSetControllerImpl.getSimDataBlock(outputContext,vcdID,var,time);
 	}catch (DataAccessException e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw (DataAccessException)e;
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -284,7 +284,7 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 	try {
 		return dataSetControllerImpl.getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -297,12 +297,12 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
  * @exception org.vcell.util.DataAccessException The exception description.
  */
 public ExportEvent makeRemoteFile(OutputContext outputContext,User user, cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
-	log.print("DataServerImpl.makeRemoteFile(" + exportSpecs.getVCDataIdentifier() + ")");
+	if (lg.isTraceEnabled()) lg.trace("DataServerImpl.makeRemoteFile(" + exportSpecs.getVCDataIdentifier() + ")");
 	try {
 		ExportEvent exportEvent = exportServiceImpl.makeRemoteFile(outputContext,user, this, exportSpecs);
 		return exportEvent;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -313,7 +313,7 @@ public DataSetMetadata getDataSetMetadata(User user, VCDataIdentifier vcdataID) 
 	try {
 		return dataSetControllerImpl.getDataSetMetadata(vcdataID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -323,7 +323,7 @@ public DataSetTimeSeries getDataSetTimeSeries(User user, VCDataIdentifier vcdata
 	try {
 		return dataSetControllerImpl.getDataSetTimeSeries(vcdataID, variableNames);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -334,7 +334,7 @@ public boolean isChombo(User user, VCDataIdentifier vcdataID) throws DataAccessE
 	try {
 		return dataSetControllerImpl.getIsChombo(vcdataID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage(),e);
 	}
 }
@@ -345,7 +345,7 @@ public boolean isMovingBoundary(User user, VCDataIdentifier vcdataID) throws Dat
 	try {
 		return dataSetControllerImpl.getIsMovingBoundary(vcdataID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -355,7 +355,7 @@ public boolean isComsol(User user, VCDataIdentifier vcdataID) throws DataAccessE
 	try {
 		return dataSetControllerImpl.getIsComsol(vcdataID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -365,7 +365,7 @@ public ChomboFiles getChomboFiles(User user, VCDataIdentifier vcdataID) throws D
 	try {
 		return dataSetControllerImpl.getChomboFiles(vcdataID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -376,7 +376,7 @@ public VCellSimFiles getVCellSimFiles(User user, VCDataIdentifier vcdataID) thro
 	try {
 		return dataSetControllerImpl.getVCellSimFiles(vcdataID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -386,7 +386,7 @@ public ComsolSimFiles getComsolSimFiles(User user, VCDataIdentifier vcdataID) th
 	try {
 		return dataSetControllerImpl.getComsolSimFiles(vcdataID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -396,7 +396,7 @@ public MovingBoundarySimFiles getMovingBoundarySimFiles(User user, VCDataIdentif
 	try {
 		return dataSetControllerImpl.getMovingBoundarySimFiles(vcdataID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -406,7 +406,7 @@ public MovingBoundarySimFiles getMovingBoundarySimFiles(User user, VCDataIdentif
  * @return double[]
  */
 public double[] getVtuTimes(User user, VCDataIdentifier vcdID) throws DataAccessException {
-	log.print("DataServerImpl.getVtuTimes()");
+	if (lg.isTraceEnabled()) lg.trace("DataServerImpl.getVtuTimes()");
 	checkReadAccess(user, vcdID);
 	try {
 		if (isComsol(user,vcdID)){
@@ -416,7 +416,7 @@ public double[] getVtuTimes(User user, VCDataIdentifier vcdID) throws DataAccess
 			return dataSetControllerImpl.getDataSetTimes(vcdID);
 		}
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -440,7 +440,7 @@ public double[] getVtuMeshData(User user, OutputContext outputContext, VCDataIde
 			return dataSetControllerImpl.getVtuMeshData(vcellFiles, outputContext, vcdataID, var, time);
 		}
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -462,7 +462,7 @@ public VtuFileContainer getEmptyVtuMeshFiles(User user, VCDataIdentifier vcdataI
 			return dataSetControllerImpl.getEmptyVtuMeshFiles(vcellFiles, vcdataID, timeIndex);
 		}
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -485,18 +485,18 @@ public VtuVarInfo[] getVtuVarInfos(User user, OutputContext outputContext, VCDat
 			return dataSetControllerImpl.getVtuVarInfos(vcellFiles, outputContext, vcdataID);
 		}
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage(),e);
 	}
 }
 
 public NFSimMolecularConfigurations getNFSimMolecularConfigurations(User user, VCDataIdentifier vcdID) throws DataAccessException {
-	log.print("DataServerImpl.getNFSimMolecularConfigurations()");
+	if (lg.isTraceEnabled()) lg.trace("DataServerImpl.getNFSimMolecularConfigurations()");
 	checkReadAccess(user, vcdID);
 	try {
 		return dataSetControllerImpl.getNFSimMolecularConfigurations(vcdID);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }

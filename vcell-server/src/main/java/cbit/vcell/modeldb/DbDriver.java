@@ -35,7 +35,6 @@ import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.Preference;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
@@ -124,7 +123,6 @@ public abstract class DbDriver {
 	public static final String INSERT_CLOB_HERE = "INSERT_CLOB_HERE";
 	//
 
-	protected final SessionLog log;
 	protected final DatabaseSyntax dbSyntax;
 
 	protected final KeyFactory keyFactory;
@@ -137,10 +135,9 @@ public abstract class DbDriver {
 /**
  * DBService constructor comment.
  */
-public DbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory, SessionLog sessionLog) {
+public DbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory) {
 	this.dbSyntax = dbSyntax;
 	this.keyFactory = keyFactory;
-	this.log = sessionLog;
 }
 
 
@@ -468,7 +465,7 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 	}
 
 	
-	VCDocumentInfo dbVCDocumentInfo = (VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false,dbSyntax).elementAt(0);
+	VCDocumentInfo dbVCDocumentInfo = (VCDocumentInfo)getVersionableInfos(con,user,vType,false,vKey,false,dbSyntax).elementAt(0);
 	return dbVCDocumentInfo;
 }
 
@@ -509,7 +506,7 @@ protected void deleteVersionableInit(Connection con, User user, VersionableType 
 					throws DependencyException,ObjectNotFoundException,SQLException,DataAccessException,
 							PermissionException {
 	
-	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,vType,true,versionKey,true,dbSyntax);
+	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,user,vType,true,versionKey,true,dbSyntax);
 	if(versionInfoVector.size() == 0){
 		throw new ObjectNotFoundException("DbDriver:deleteVersionableInit "+vType.getTypeName()+"("+versionKey+") not found for user="+user);
 	}
@@ -660,7 +657,7 @@ private static void findAllChildren(java.sql.Connection con, VersionableTypeVers
 			while (rset.next()) {
 				try{
 					BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-					Version version = VersionTable.getVersion(rset,getGroupAccessFromGroupID(con,groupid),null);
+					Version version = VersionTable.getVersion(rset,getGroupAccessFromGroupID(con,groupid));
 					VersionableTypeVersion childVTV = new VersionableTypeVersion(vr.getVType(),version);
 					allChildrenVTV.addElement(childVTV);
 				} catch(Throwable e) {
@@ -746,7 +743,7 @@ private static void findAllReferences(java.sql.Connection con, VersionableTypeVe
 			while (rset.next()) {
 				try{
 					BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-					Version version = VersionTable.getVersion(rset,getGroupAccessFromGroupID(con,groupid),null);
+					Version version = VersionTable.getVersion(rset,getGroupAccessFromGroupID(con,groupid));
 					VersionableTypeVersion referencingVTV = new VersionableTypeVersion(vr.getVType(),version);
 					allReferencingVTV.addElement(referencingVTV);
 				} catch(Throwable e) {
@@ -1183,7 +1180,7 @@ private static User getUserFromUserid(Connection con, String userid) throws SQLE
  * Creation date: (9/24/2003 12:54:32 PM)
  * @return cbit.vcell.modeldb.VCInfoContainer
  */
-public static VCInfoContainer getVCInfoContainer(User user,Connection con,SessionLog mySessionLog, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
+public static VCInfoContainer getVCInfoContainer(User user,Connection con, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
 
 	VCInfoContainer results = null;
 	//
@@ -1216,7 +1213,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			ArrayList<BioModelInfo> tempInfos = new ArrayList<BioModelInfo>();
 			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
-				BioModelInfo versionInfo = (BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog,dbSyntax);
+				BioModelInfo versionInfo = (BioModelInfo)BioModelTable.table.getInfo(rset,con,dbSyntax);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1247,7 +1244,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			ArrayList<MathModelInfo> tempInfos = new ArrayList<MathModelInfo>();
 			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
-				MathModelInfo versionInfo = (MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog,dbSyntax);
+				MathModelInfo versionInfo = (MathModelInfo)MathModelTable.table.getInfo(rset,con,dbSyntax);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1278,7 +1275,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			ArrayList<VCImageInfo> tempInfos = new ArrayList<VCImageInfo>();
 			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
-				VCImageInfo versionInfo = (VCImageInfo)ImageTable.table.getInfo(rset,con,mySessionLog,dbSyntax);
+				VCImageInfo versionInfo = (VCImageInfo)ImageTable.table.getInfo(rset,con,dbSyntax);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1309,7 +1306,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			ArrayList<GeometryInfo> tempInfos = new ArrayList<GeometryInfo>();
 			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
-				GeometryInfo versionInfo = (GeometryInfo)GeometryTable.table.getInfo(rset,con,mySessionLog);
+				GeometryInfo versionInfo = (GeometryInfo)GeometryTable.table.getInfo(rset,con);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1344,7 +1341,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
  * @param user cbit.vcell.server.User
  * @param vType int
  */
-public static Vector<VersionInfo> getVersionableInfos(Connection con,SessionLog gvilog,User user, VersionableType vType, boolean bAll,KeyValue versionKey,boolean bCheckPermission, DatabaseSyntax dbSyntax) 
+public static Vector<VersionInfo> getVersionableInfos(Connection con,User user, VersionableType vType, boolean bAll,KeyValue versionKey,boolean bCheckPermission, DatabaseSyntax dbSyntax) 
 							throws ObjectNotFoundException, SQLException, DataAccessException {
 								
 	if (user == null) {
@@ -1402,21 +1399,21 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,SessionLog 
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
 			if (vType.equals(VersionableType.BioModelMetaData)){
-				vInfo = ((BioModelTable)vTable).getInfo(rset,con,gvilog,dbSyntax);
+				vInfo = ((BioModelTable)vTable).getInfo(rset,con,dbSyntax);
 			}else if (vType.equals(VersionableType.MathModelMetaData)){
-				vInfo = ((MathModelTable)vTable).getInfo(rset,con,gvilog,dbSyntax);
+				vInfo = ((MathModelTable)vTable).getInfo(rset,con,dbSyntax);
 			}else if (vType.equals(VersionableType.Simulation)){
-				vInfo = ((SimulationTable)vTable).getInfo(rset,con,gvilog);
+				vInfo = ((SimulationTable)vTable).getInfo(rset,con);
 			}else if (vType.equals(VersionableType.Geometry)){
-				vInfo = ((GeometryTable)vTable).getInfo(rset,con,gvilog);
+				vInfo = ((GeometryTable)vTable).getInfo(rset,con);
 			}else if (vType.equals(VersionableType.VCImage)){
-				vInfo = ((ImageTable)vTable).getInfo(rset,con,gvilog,dbSyntax);
+				vInfo = ((ImageTable)vTable).getInfo(rset,con,dbSyntax);
 			}else if (vType.equals(VersionableType.Model)){
-				vInfo = ((ModelTable)vTable).getInfo(rset,con,gvilog);
+				vInfo = ((ModelTable)vTable).getInfo(rset,con);
 			}else if (vType.equals(VersionableType.SimulationContext)){
-				vInfo = ((SimContextTable)vTable).getInfo(rset,con,gvilog);
+				vInfo = ((SimContextTable)vTable).getInfo(rset,con);
 			}else if (vType.equals(VersionableType.MathDescription)){
-				vInfo = ((MathDescTable)vTable).getInfo(rset,con,gvilog);
+				vInfo = ((MathDescTable)vTable).getInfo(rset,con);
 			}else{
 				throw new RuntimeException("VersionInfo not availlable for type '"+vType.getTypeName()+"'");
 			}
@@ -1517,7 +1514,7 @@ private static Version getVersionFromKeyValue(Connection con,VersionableType vTy
 			java.sql.ResultSet rset = stmt.executeQuery(sql);
 			if (rset.next()) {
 				BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-				version = VersionTable.getVersion(rset,getGroupAccessFromGroupID(con,groupid),null);
+				version = VersionTable.getVersion(rset,getGroupAccessFromGroupID(con,groupid));
 			} else {
 				throw new ObjectNotFoundException("Failed to find " + vType.getTypeName()+" (Key=" + keyValue + ")");
 			}
@@ -1542,7 +1539,7 @@ private static Version getVersionFromKeyValue(Connection con,VersionableType vTy
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public static void groupAddUser(Connection con, KeyFactory keyFactory, SessionLog newLog, User owner,
+public static void groupAddUser(Connection con, KeyFactory keyFactory, User owner,
 										VersionableType vType, KeyValue vKey,
 										String userAddToGroupString,boolean isHiddenFromOwner,DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
@@ -1553,7 +1550,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, SessionLo
 		throw new IllegalArgumentException("User name "+userAddToGroupString+" not found");
 	}
 	//
-	if ((con == null)||(newLog == null)||(vType == null)||(owner == null) || (vKey == null)||(userAddToGroup==null)) {
+	if ((con == null)||(vType == null)||(owner == null) || (vKey == null)||(userAddToGroup==null)) {
 		throw new IllegalArgumentException("Improper parameters for groupAddUser userAddToGroupString="+(userAddToGroupString == null?"NULL":userAddToGroupString));
 	}
 	//
@@ -1572,7 +1569,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, SessionLo
 	if(currentVersion.getOwner().compareEqual(userAddToGroup) || bExists){
 		throw new DataAccessException(userAddToGroup+" Already a member of group");
 	}
-	newLog.print("DbDriver.groupAddUser(user=" + owner + ", type =" + vType + ", key=" + vKey + ")");
+	if (lg.isTraceEnabled()) lg.trace("DbDriver.groupAddUser(user=" + owner + ", type =" + vType + ", key=" + vKey + ")");
 	
 	VersionTable vTable = VersionTable.getVersionTable(vType);
 	//
@@ -1676,7 +1673,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, SessionLo
 		//
 		// check if update failed
 		//
-		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true,dbSyntax);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,owner,vType,false,vKey,true,dbSyntax);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("Add User "+userAddToGroup+" Permission to access failed, "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1693,7 +1690,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, SessionLo
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public static void groupRemoveUser(Connection con,KeyFactory keyFactory, SessionLog newLog, User owner,
+public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User owner,
 										VersionableType vType, KeyValue vKey,
 										String userRemoveFromGroupString,boolean isHiddenFromOwner,DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
@@ -1704,7 +1701,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, Session
 		throw new IllegalArgumentException("User name "+userRemoveFromGroupString+" not found");
 	}
 	//
-	if ((con == null)||(newLog == null)||(vType == null)||(owner == null) || (vKey == null)||(userRemoveFromGroup==null)) {
+	if ((con == null)||(vType == null)||(owner == null) || (vKey == null)||(userRemoveFromGroup==null)) {
 		throw new IllegalArgumentException("Improper parameters for groupRemoveUser userRemoveFromGroupString="+(userRemoveFromGroupString == null?"NULL":userRemoveFromGroupString));
 	}
 	//
@@ -1719,7 +1716,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, Session
 	if(!bExists){
 		throw new DataAccessException(userRemoveFromGroup+" not a member of group");
 	}
-	newLog.print("DbDriver.groupAccessRemoveUser(user=" + owner + ", type =" + vType + ", key=" + vKey + ")");
+	if (lg.isTraceEnabled()) lg.trace("DbDriver.groupAccessRemoveUser(user=" + owner + ", type =" + vType + ", key=" + vKey + ")");
 	
 	GroupAccessSome currentGroup = (GroupAccessSome)currentVersion.getGroupAccess();
 	VersionTable vTable = VersionTable.getVersionTable(vType);
@@ -1811,7 +1808,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, Session
 		//
 		// check if update failed, or just already updated
 		//
-		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true,dbSyntax);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,owner,vType,false,vKey,true,dbSyntax);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("Remove User "+userRemoveFromGroup+" Permission to access failed, "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1828,18 +1825,18 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, Session
  * @param owner cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public static void groupSetPrivate(Connection con,SessionLog newLog,User owner, 
+public static void groupSetPrivate(Connection con,User owner, 
 										VersionableType vType, KeyValue vKey,DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException/*, DependencyException*/ {
 
 
-	if ((con == null)||(newLog == null)||(vType == null)||(owner == null) || (vKey == null)) {
+	if ((con == null)||(vType == null)||(owner == null) || (vKey == null)) {
 		throw new IllegalArgumentException("Improper parameters for groupAccessSetPrivate");
 	}
 	//
 	Version currentVersion = permissionInit(con,vType,vKey,owner);
 
-	newLog.print("DbDriver.groupAccessSetPrivate(owner=" + owner + ", type =" + vType.getTypeName() + ", key=" + vKey + ")");
+	if (lg.isTraceEnabled()) lg.trace("DbDriver.groupAccessSetPrivate(owner=" + owner + ", type =" + vType.getTypeName() + ", key=" + vKey + ")");
 
 	BigDecimal updatedGroupID = GroupAccess.GROUPACCESS_NONE;
 	VersionTable vTable = VersionTable.getVersionTable(vType);
@@ -1852,7 +1849,7 @@ public static void groupSetPrivate(Connection con,SessionLog newLog,User owner,
 		//
 		// check if update failed, or just already updated
 		//
-		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true,dbSyntax);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,owner,vType,false,vKey,true,dbSyntax);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("groupSetPrivate failed "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1869,18 +1866,18 @@ public static void groupSetPrivate(Connection con,SessionLog newLog,User owner,
  * @param owner cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public static void groupSetPublic(Connection con,SessionLog newLog,User owner, 
+public static void groupSetPublic(Connection con,User owner, 
 										VersionableType vType, KeyValue vKey, DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
 
 
-	if ((con == null)||(newLog == null)||(vType == null)||(owner == null) || (vKey == null)) {
+	if ((con == null)||(vType == null)||(owner == null) || (vKey == null)) {
 		throw new IllegalArgumentException("Improper parameters for groupAccessSetPublic");
 	}
 	//
 	Version currentVersion = permissionInit(con,vType,vKey,owner);
 
-	newLog.print("DbDriver.groupSetPublic(owner=" + owner + ", type =" + vType + ", key=" + vKey + ")");
+	if (lg.isTraceEnabled()) lg.trace("DbDriver.groupSetPublic(owner=" + owner + ", type =" + vType + ", key=" + vKey + ")");
 
 	BigDecimal updatedGroupID = GroupAccess.GROUPACCESS_ALL;
 	VersionTable vTable = VersionTable.getVersionTable(vType);
@@ -1894,7 +1891,7 @@ public static void groupSetPublic(Connection con,SessionLog newLog,User owner,
 		//
 		// check if update failed, or just already updated
 		//
-		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true,dbSyntax);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,owner,vType,false,vKey,true,dbSyntax);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("groupSetPublic failed "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -2259,7 +2256,7 @@ public static void showMetaData(ResultSet rset) throws SQLException {
  * Creation date: (10/16/2004 2:39:49 PM)
  * @return cbit.vcell.numericstest.TestSuiteInfoNew[]
  */
-public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User user,SessionLog sessionLog,DatabaseSyntax dbSyntax)
+public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User user,DatabaseSyntax dbSyntax)
 			throws SQLException, DataAccessException {
 	
 	if(!user.isTestAccount()){
@@ -2393,7 +2390,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 
 			SimulationInfo simInfo = (SimulationInfo)simulationInfoH.get(simRef);
 			if(simInfo == null){
-				Vector<VersionInfo> simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRef),false,dbSyntax);
+				Vector<VersionInfo> simVector = getVersionableInfos(con,user,VersionableType.Simulation,false,new KeyValue(simRef),false,dbSyntax);
 				if (simVector != null && simVector.size() > 0) {
 					simInfo = (SimulationInfo)simVector.firstElement();
 					simulationInfoH.put(simRef,simInfo);
@@ -2405,7 +2402,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			if(simRegrRef != null){
 				regrSimInfo = (SimulationInfo)simulationInfoH.get(simRegrRef);
 				if(regrSimInfo == null){
-					Vector<VersionInfo> regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRegrRef),false,dbSyntax);
+					Vector<VersionInfo> regSimVector = getVersionableInfos(con,user,VersionableType.Simulation,false,new KeyValue(simRegrRef),false,dbSyntax);
 					if (regSimVector != null && regSimVector.size() > 0) {
 						regrSimInfo = (SimulationInfo)regSimVector.firstElement();
 						simulationInfoH.put(simRegrRef,regrSimInfo);
@@ -2413,7 +2410,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 				}
 				regrMathModelInfo = (MathModelInfo)mathModelInfoH.get(mathRegrRef);
 				if(regrMathModelInfo == null){
-					Vector<VersionInfo> regMathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mathRegrRef),false,dbSyntax);
+					Vector<VersionInfo> regMathVector = getVersionableInfos(con,user,VersionableType.MathModelMetaData,false,new KeyValue(mathRegrRef),false,dbSyntax);
 					if (regMathVector != null && regMathVector.size() > 0) {
 						regrMathModelInfo = (MathModelInfo)regMathVector.firstElement();
 						mathModelInfoH.put(mathRegrRef,regrMathModelInfo);
@@ -2521,7 +2518,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 
 			SimulationInfo simInfo = (SimulationInfo)simulationInfoH.get(tcSimRef);
 			if(simInfo == null){
-				Vector<VersionInfo> simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(tcSimRef),false,dbSyntax);
+				Vector<VersionInfo> simVector = getVersionableInfos(con,user,VersionableType.Simulation,false,new KeyValue(tcSimRef),false,dbSyntax);
 				if (simVector != null && simVector.size() == 1) {
 					simInfo = (SimulationInfo)simVector.firstElement();
 					simulationInfoH.put(tcSimRef,simInfo);
@@ -2535,7 +2532,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			if(regrSimRef != null){
 				regrSimInfo = (SimulationInfo)simulationInfoH.get(regrSimRef);
 				if(regrSimInfo == null){
-					Vector<VersionInfo> regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(regrSimRef),false,dbSyntax);
+					Vector<VersionInfo> regSimVector = getVersionableInfos(con,user,VersionableType.Simulation,false,new KeyValue(regrSimRef),false,dbSyntax);
 					if (regSimVector != null && regSimVector.size() == 1) {
 						regrSimInfo = (SimulationInfo)regSimVector.firstElement();
 						simulationInfoH.put(regrSimRef,regrSimInfo);
@@ -2545,7 +2542,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 				}
 				regrBioModelInfo = (BioModelInfo)mathModelInfoH.get(regrBioModelRef);
 				if(regrBioModelInfo == null){
-					Vector<VersionInfo> regBioModelVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(regrBioModelRef),false,dbSyntax);
+					Vector<VersionInfo> regBioModelVector = getVersionableInfos(con,user,VersionableType.BioModelMetaData,false,new KeyValue(regrBioModelRef),false,dbSyntax);
 					if (regBioModelVector != null && regBioModelVector.size() == 1) {
 						regrBioModelInfo = (BioModelInfo)regBioModelVector.firstElement();
 						mathModelInfoH.put(regrBioModelRef,regrBioModelInfo);
@@ -2672,7 +2669,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			if(mmRef != null){
 				mmInfo = (MathModelInfo)mathModelInfoH.get(mmRef);		
 				if(mmInfo == null){
-					Vector<VersionInfo> mathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mmRef),false,dbSyntax);
+					Vector<VersionInfo> mathVector = getVersionableInfos(con,user,VersionableType.MathModelMetaData,false,new KeyValue(mmRef),false,dbSyntax);
 					if (mathVector != null && mathVector.size() > 0) {
 						mmInfo = (MathModelInfo)mathVector.firstElement();
 						mathModelInfoH.put(mmRef,mmInfo);
@@ -2681,7 +2678,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			}else if(bioModelRef != null){
 				bmInfo = (BioModelInfo)bioModelInfoH.get(bioModelRef);		
 				if(bmInfo == null){
-					Vector<VersionInfo> bmAppVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(bioModelRef),false,dbSyntax);
+					Vector<VersionInfo> bmAppVector = getVersionableInfos(con,user,VersionableType.BioModelMetaData,false,new KeyValue(bioModelRef),false,dbSyntax);
 					if (bmAppVector != null && bmAppVector.size() > 0) {
 						bmInfo = (BioModelInfo)bmAppVector.firstElement();
 						bioModelInfoH.put(bioModelRef,bmInfo);
@@ -2776,7 +2773,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
  * Creation date: (10/16/2004 2:39:49 PM)
  * @return cbit.vcell.numericstest.TestSuiteInfoNew[]
  */
-public static TestSuiteInfoNew[] testSuiteInfosGet(Connection con,User user,SessionLog sessionLog) throws SQLException{
+public static TestSuiteInfoNew[] testSuiteInfosGet(Connection con,User user) throws SQLException{
 	
 	if(!user.isTestAccount()){
 		throw new PermissionException("User="+user.getName()+" not allowed TestSuiteInfo");
@@ -3007,7 +3004,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
  * @return cbit.vcell.numericstest.TestSuiteNew
  * @param tsop cbit.vcell.numericstest.TestSuiteOP
  */
-public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,User user,SessionLog sessionLog, KeyFactory keyFactory) 
+public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,User user, KeyFactory keyFactory) 
 			throws SQLException,DataAccessException{
 
 	java.util.TreeSet<BigDecimal> changedTestSuiteKeys = new java.util.TreeSet<BigDecimal>();
@@ -3289,7 +3286,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 								((AddTestCasesOPMathModel)atcOP).getMathModelKey(),
 								atcOP.getTestCaseType(),atcOP.getAnnotation(),
 								((AddTestCasesOPMathModel)atcOP).getAddTestCriteriaOPsMathModel()),
-							con,user,sessionLog,keyFactory);
+							con,user,keyFactory);
 					}else if(atcOP instanceof AddTestCasesOPBioModel){
 						testSuiteOP(
 							new AddTestCasesOPBioModel(
@@ -3298,7 +3295,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 								((AddTestCasesOPBioModel)atcOP).getSimContextKey(),
 								atcOP.getTestCaseType(),atcOP.getAnnotation(),
 								((AddTestCasesOPBioModel)atcOP).getAddTestCriteriaOPsBioModel()),
-							con,user,sessionLog,keyFactory);
+							con,user,keyFactory);
 					}
 				}
 			}
@@ -3347,7 +3344,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 							tcKey,atcritOP.getBioModelSimKey(),
 							atcritOP.getRegressionBioModelKey(),atcritOP.getRegressionBioModelSimKey(),
 							atcritOP.getMaxAbsoluteError(),atcritOP.getMaxRelativeError(),atcritOP.getAddTestResultsOP()),
-						con,user,sessionLog,keyFactory);
+						con,user,keyFactory);
 				}
 			}
 			changedTestSuiteKeys.add(addtc_tsop.getTestSuiteKey());
@@ -3375,7 +3372,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 							atcritOP.getRegressionMathModelKey(),
 							atcritOP.getRegressionMathModelSimKey(),
 							atcritOP.getMaxAbsoluteError(),atcritOP.getMaxRelativeError(),atcritOP.getAddTestResultsOP()),
-						con,user,sessionLog,keyFactory);
+						con,user,keyFactory);
 				}
 			}
 			changedTestSuiteKeys.add(addtc_tsop.getTestSuiteKey());			
@@ -3484,14 +3481,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 						addtcrit_tsop.getRegressionMathModelKey(),
 						addtcrit_tsop.getRegressionMathModelSimKey(),
 						addtcrit_tsop.getMaxAbsoluteError(),addtcrit_tsop.getMaxRelativeError()),
-					con,user,sessionLog,keyFactory);
+					con,user,keyFactory);
 			}
 			if(addtcrit_tsop.getAddTestResultsOP() != null){
 				AddTestResultsOP atrOP = addtcrit_tsop.getAddTestResultsOP();
 				//Set new TSKey,TCritKey and do child OPs
 				testSuiteOP(
 					new AddTestResultsOP(tcritKey,atrOP.getVariableComparisonSummaries()),
-					con,user,sessionLog, keyFactory);
+					con,user, keyFactory);
 			}
 			
 			rset = stmt.executeQuery(
@@ -3582,14 +3579,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 						addtcrit_tsop.getRegressionBioModelKey(),
 						addtcrit_tsop.getRegressionBioModelSimKey(),
 						addtcrit_tsop.getMaxAbsoluteError(),addtcrit_tsop.getMaxRelativeError()),
-					con,user,sessionLog,keyFactory);
+					con,user,keyFactory);
 			}
 			if(addtcrit_tsop.getAddTestResultsOP() != null){
 				AddTestResultsOP atrOP = addtcrit_tsop.getAddTestResultsOP();
 				//Set new TSKey,TCritKey and do child OPs
 				testSuiteOP(
 					new AddTestResultsOP(tcritKey,atrOP.getVariableComparisonSummaries()),
-					con,user,sessionLog,keyFactory);
+					con,user,keyFactory);
 			}			
 				
 			rset = stmt.executeQuery(
@@ -3737,7 +3734,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
 			if(newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
-				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[] {tcritKey}), con, user, sessionLog,keyFactory);
+				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[] {tcritKey}), con, user,keyFactory);
 			}
 
 			ResultSet rset = stmt.executeQuery(
@@ -3791,7 +3788,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog,keyFactory);
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
 
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3861,7 +3858,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog,keyFactory);
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
 			
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3893,7 +3890,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+maxRelErrorArr[i]:"")+
 					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString()
 					);
-				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog, keyFactory);
+				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, keyFactory);
 			}
 			ResultSet rset = stmt.executeQuery(
 					"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3973,7 +3970,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					for (int j = 0; j < tcritKeyV.size(); j++) {
 						EditTestCriteriaOPReportStatus etcors = 
 							new EditTestCriteriaOPReportStatus(tcritKeyV.elementAt(j),TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null);
-						testSuiteOP(etcors, con, user, sessionLog, keyFactory);
+						testSuiteOP(etcors, con, user, keyFactory);
 						
 					}
 				}

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -21,7 +20,6 @@ import cbit.sql.Table;
 import cbit.vcell.modeldb.SQLCreateAllTables;
 import cbit.vcell.modeldb.SimContextStat2Table;
 import cbit.vcell.modeldb.SimContextStatTable;
-import cbit.vcell.resource.StdoutSessionLog;
 
 public class MigrateDbManager {
 
@@ -30,19 +28,17 @@ public class MigrateDbManager {
 		ConnectionFactory conFactory_Postgres = null;
 		try {
 
-			SessionLog sessionLog_Oracle = new StdoutSessionLog("oracle");
 			String driverName_Oracle = "oracle.jdbc.driver.OracleDriver";
 			String connectionURL_Oracle = "jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu";
 			String userid_Oracle = "vcell";
 			String password_Oracle = "cbittech";
-			conFactory_Oracle = DatabaseService.getInstance().createConnectionFactory(sessionLog_Oracle,driverName_Oracle,connectionURL_Oracle,userid_Oracle,password_Oracle);
+			conFactory_Oracle = DatabaseService.getInstance().createConnectionFactory(driverName_Oracle,connectionURL_Oracle,userid_Oracle,password_Oracle);
 			
-			SessionLog sessionLog_Postgres = new StdoutSessionLog("postgres");
 			String driverName_Postgres = "org.postgresql.Driver";
 			String connectionURL_Postgres = "jdbc:postgresql://localhost:5432/schaff";
 			String userid_Postgres = "schaff";
 			String password_Postgres = "cbittech";
-			conFactory_Postgres = DatabaseService.getInstance().createConnectionFactory(sessionLog_Postgres,driverName_Postgres,connectionURL_Postgres,userid_Postgres,password_Postgres);
+			conFactory_Postgres = DatabaseService.getInstance().createConnectionFactory(driverName_Postgres,connectionURL_Postgres,userid_Postgres,password_Postgres);
 			
 			int retryCount = 0;
 			boolean done = false;

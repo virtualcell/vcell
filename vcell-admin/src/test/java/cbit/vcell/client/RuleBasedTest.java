@@ -25,7 +25,6 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -163,7 +162,6 @@ public class RuleBasedTest {
 				varNameList.add(scs.getSpeciesContext().getName());
 			}
 			String[] varNames = varNameList.toArray(new String[0]);
-			StdoutSessionLog log = new StdoutSessionLog(bioModel.getVersion().getOwner().getName());
 			OutputTimeSpec outputTimeSpec = nonspatialStochAppNewSim.getSolverTaskDescription().getOutputTimeSpec();
 
 			ArrayList<Double> sampleTimeList = new ArrayList<Double>();
@@ -184,9 +182,9 @@ public class RuleBasedTest {
 			TimeSeriesMultitrialData sampleDataStoch1 = new TimeSeriesMultitrialData("stochastic1",varNames, sampleTimes, numTrials);
 			TimeSeriesMultitrialData sampleDataStoch2 = new TimeSeriesMultitrialData("stochastic2",varNames, sampleTimes, numTrials);
 			TimeSeriesMultitrialData sampleDataDeterministic = new TimeSeriesMultitrialData("determinstic",varNames, sampleTimes, 1);
-			runsolver(nonspatialStochAppNewSim,log,baseDirectory,numTrials,sampleDataStoch1);
-			runsolver(newODEAppNewSim,log,baseDirectory,1,sampleDataDeterministic);
-			runsolver(newRuleBasedAppNewSim,log,baseDirectory,numTrials,sampleDataStoch2);
+			runsolver(nonspatialStochAppNewSim,baseDirectory,numTrials,sampleDataStoch1);
+			runsolver(newODEAppNewSim,baseDirectory,1,sampleDataDeterministic);
+			runsolver(newRuleBasedAppNewSim,baseDirectory,numTrials,sampleDataStoch2);
 			
 			writeVarDiffData(baseDirectory,sampleDataStoch1,sampleDataStoch2);
 			writeKolmogorovSmirnovTest(baseDirectory, sampleDataStoch1, sampleDataStoch2);
@@ -286,7 +284,7 @@ public class RuleBasedTest {
 //		disableSystemOut(true);
 //	}
 	
-	private static void runsolver(Simulation newSimulation, StdoutSessionLog sessionLog, File baseDirectory, int numRuns, TimeSeriesMultitrialData timeSeriesMultitrialData){
+	private static void runsolver(Simulation newSimulation, File baseDirectory, int numRuns, TimeSeriesMultitrialData timeSeriesMultitrialData){
 		Simulation versSimulation = null;
 		File destDir = null;
 //		int progress = 1;
@@ -300,7 +298,7 @@ public class RuleBasedTest {
 //				printout(ruleBasedTestDir.getAbsolutePath());
 				destDir = new File(baseDirectory,timeSeriesMultitrialData.datasetName);
 				SimulationTask simTask = new SimulationTask(new SimulationJob(versSimulation, 0, null),0);
-				Solver solver = ClientSimManager.createQuickRunSolver(sessionLog, destDir, simTask);
+				Solver solver = ClientSimManager.createQuickRunSolver(destDir, simTask);
 				solver.startSolver();
 		
 				while (true){

@@ -28,7 +28,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
@@ -122,7 +121,7 @@ public class SimulationDispatcher extends ServiceProvider {
 				lg.debug("stop simulation requested for "+vcSimulationIdentifier);
 			}
 			try {
-				simDispatcherEngine.onStopRequest(vcSimulationIdentifier, user, simulationDatabase, dispatcherQueueSession, log);
+				simDispatcherEngine.onStopRequest(vcSimulationIdentifier, user, simulationDatabase, dispatcherQueueSession);
 			} catch (VCMessagingException | SQLException e) {
 				lg.error("failed to stop simulation "+vcSimulationIdentifier, e);
 				throw new DataAccessException(e.getMessage(),e);
@@ -140,7 +139,7 @@ public class SimulationDispatcher extends ServiceProvider {
 				lg.debug("start simulation requested for "+vcSimulationIdentifier+" with "+numSimulationScanJobs+" jobs");
 			}
 			try {
-				simDispatcherEngine.onStartRequest(vcSimulationIdentifier, user, numSimulationScanJobs, simulationDatabase, dispatcherQueueSession, dispatcherQueueSession, log);
+				simDispatcherEngine.onStartRequest(vcSimulationIdentifier, user, numSimulationScanJobs, simulationDatabase, dispatcherQueueSession, dispatcherQueueSession);
 			} catch (VCMessagingException | SQLException e1) {
 				lg.error("failed to start simulation "+vcSimulationIdentifier, e1);
 				throw new DataAccessException(e1.getMessage(),e1);
@@ -269,7 +268,7 @@ public class SimulationDispatcher extends ServiceProvider {
 						VCellServerID serverID = VCellServerID.getSystemServerID();
 
 						final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
-						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, simulationRequirementsMap, maxJobsPerSite, maxOdePerUser, maxPdePerUser, serverID, log);
+						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, simulationRequirementsMap, maxJobsPerSite, maxOdePerUser, maxPdePerUser, serverID);
 						if (lg.isTraceEnabled()) {
 							lg.trace("Dispatcher limits: maxJobsPerSite="+maxJobsPerSite+", maxOdePerUser="+maxOdePerUser+", maxPdePerUser="+maxPdePerUser);
 							lg.trace(waitingJobs.length + " waiting jobs to process: "+Arrays.asList(waitingJobs));
@@ -293,18 +292,18 @@ public class SimulationDispatcher extends ServiceProvider {
 								if (lg.isDebugEnabled()) {
 									lg.debug("dispatching simKey="+vcSimID+", jobId="+jobStatus.getJobIndex()+", taskId="+jobStatus.getTaskID());
 								}
-								simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession, log);
+								simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession);
 								bDispatchedAnyJobs = true;
 							} catch (Exception e) {
 								lg.error("failed to dispatch simKey="+vcSimID+", jobId="+jobStatus.getJobIndex()+", taskId="+jobStatus.getTaskID(), e);
 								final String failureMessage = FAILED_LOAD_MESSAGE + e.getMessage();
-								simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
+								simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession);
 							}
 							Thread.yield();
 						}
 					}
 				} catch (Exception ex) {
-					log.exception(ex);
+					lg.error(ex.getMessage(), ex);
 				}
 
 				// if there are no messages or no qualified jobs or exceptions, sleep for a few seconds while
@@ -392,7 +391,7 @@ public class SimulationDispatcher extends ServiceProvider {
 									htcProxy.killJob(htcJobID);
 								}
 							}catch (Exception e){
-								log.exception(e);
+								lg.error(e.getMessage(), e);
 							}
 						}
 					}
@@ -401,7 +400,7 @@ public class SimulationDispatcher extends ServiceProvider {
 					//in case of transient status failure, reset timestamps to avoid premature termination of 
 					//jobs
 					simDispatcherEngine.resetTimeStamps();
-					log.exception(e);
+					lg.error(e.getMessage(), e);
 				}
 			}
 		}
@@ -426,7 +425,7 @@ public class SimulationDispatcher extends ServiceProvider {
 					//
 					abortStalledOrUnreferencedSimulationTasks(messageFlushTimeMS);
 				} catch (Exception e1) {
-					log.exception(e1);
+					lg.error(e1.getMessage(), e1);
 				}
 			}
 			
@@ -497,7 +496,7 @@ public class SimulationDispatcher extends ServiceProvider {
 						//SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(activeJobStatus.getVCSimulationIdentifier().getSimulationKey(), activeJobStatus.getJobIndex());
 						//					System.out.println(simStateMachine.show());
 						VCMongoMessage.sendObsoleteJob(activeJobStatus,failureMessage);
-						simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
+						simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, simMonitorThreadSession);
 						if (activeJobStatus.getSimulationExecutionStatus()!=null && activeJobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
 							HtcJobID htcJobId = activeJobStatus.getSimulationExecutionStatus().getHtcJobID();
 							try {
@@ -532,8 +531,8 @@ public class SimulationDispatcher extends ServiceProvider {
 	/**
 	 * Scheduler constructor comment.
 	 */
-	public SimulationDispatcher(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SimulationDatabase simulationDatabase, SessionLog log, boolean bSlaveMode) throws Exception {
-		super(vcMessagingService,serviceInstanceStatus,log,bSlaveMode);
+	public SimulationDispatcher(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SimulationDatabase simulationDatabase, boolean bSlaveMode) throws Exception {
+		super(vcMessagingService,serviceInstanceStatus,bSlaveMode);
 		this.simulationDatabase = simulationDatabase;
 		this.htcProxy = htcProxy;
 	}
@@ -561,7 +560,7 @@ public class SimulationDispatcher extends ServiceProvider {
 
 		VCMessageSelector simRequestSelector = null;
 		threadName = "Sim Request Consumer";
-		this.rpcMessageHandler = new VCRpcMessageHandler(simServiceImpl, VCellQueue.SimReqQueue, log);
+		this.rpcMessageHandler = new VCRpcMessageHandler(simServiceImpl, VCellQueue.SimReqQueue);
 
 		simRequestConsumer = new VCQueueConsumer(VCellQueue.SimReqQueue, rpcMessageHandler, simRequestSelector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_REQUEST);
 		vcMessagingService.addMessageConsumer(simRequestConsumer);
@@ -613,10 +612,10 @@ public class SimulationDispatcher extends ServiceProvider {
 			
 			WorkerEventMessage workerEventMessage = new WorkerEventMessage(userResolver, vcMessage);
 			WorkerEvent workerEvent = workerEventMessage.getWorkerEvent();
-			simDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabase, session, log);
+			simDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabase, session);
 
 		} catch (Exception ex) {
-			log.exception(ex);
+			lg.error(ex.getMessage(), ex);
 		}
 	}
 	

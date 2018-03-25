@@ -17,7 +17,6 @@ import java.sql.SQLException;
 
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -62,7 +61,7 @@ private GeometryTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public Geometry getGeometry(ResultSet rset, Connection con,SessionLog log) throws SQLException,DataAccessException,PropertyVetoException{
+public Geometry getGeometry(ResultSet rset, Connection con) throws SQLException,DataAccessException,PropertyVetoException{
 
 	int dim = rset.getInt(dimension.toString());
 
@@ -75,7 +74,7 @@ public Geometry getGeometry(ResultSet rset, Connection con,SessionLog log) throw
 	double ez = rset.getBigDecimal(ExtentTable.table.extentZ.toString()).doubleValue();
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	
 	Geometry geometry = new Geometry(version,dim);
 	geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(ox,oy,oz));
@@ -89,10 +88,10 @@ public Geometry getGeometry(ResultSet rset, Connection con,SessionLog log) throw
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con, SessionLog log) throws SQLException,DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,DataAccessException {
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	
 	int dim = rset.getInt(GeometryTable.table.dimension.toString());
 	

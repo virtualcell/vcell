@@ -12,7 +12,6 @@ package cbit.vcell.dictionary.db;
 
 import java.util.Vector;
 
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -54,7 +53,7 @@ public EnzymeTable() {
  * @return cbit.vcell.dictionary.enzyme
  * @param rset java.sql.ResultSet
  */
-public DBFormalSpecies[] getEnzymes(java.sql.ResultSet rset, SessionLog log,boolean createBound) throws java.sql.SQLException {
+public DBFormalSpecies[] getEnzymes(java.sql.ResultSet rset,boolean createBound) throws java.sql.SQLException {
 
 	Vector enzymes = new Vector();
 	Vector aliasNames = new Vector();

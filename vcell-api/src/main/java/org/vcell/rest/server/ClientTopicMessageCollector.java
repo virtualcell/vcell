@@ -11,8 +11,8 @@
 package org.vcell.rest.server;
 import javax.swing.event.EventListenerList;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.BigString;
-import org.vcell.util.SessionLog;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
@@ -43,9 +43,10 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * @author: Fei Gao
  */
 public class ClientTopicMessageCollector implements MessageCollector, TopicListener {
+	public static final Logger lg = Logger.getLogger(ClientTopicMessageCollector.class);
+
 	private EventListenerList listenerList = new EventListenerList();	
 	private VCMessagingService vcMessagingService = null;
-	private SessionLog log = null;
 
 	private long timeSinceLastMessage = System.currentTimeMillis();
 	private VCTopicConsumer topicConsumer = null;
@@ -56,9 +57,8 @@ public class ClientTopicMessageCollector implements MessageCollector, TopicListe
  * @param serviceName java.lang.String
  * @param queueName java.lang.String
  */
-public ClientTopicMessageCollector(VCMessagingService vcMessagingService, SessionLog log) {
+public ClientTopicMessageCollector(VCMessagingService vcMessagingService) {
 	this.vcMessagingService = vcMessagingService;
-	this.log = log;
 }
 
 
@@ -178,7 +178,7 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 		}
 	} catch (Exception e) {
 		e.printStackTrace();
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 	}
 }
 

@@ -216,7 +216,6 @@ public static void main(java.lang.String[] args) {
         	dbSyntax = DatabaseSyntax.ORACLE;
             String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    log,
                     driverName,
                     connectURL,
                     dbSchemaUser,
@@ -226,7 +225,6 @@ public static void main(java.lang.String[] args) {
         	dbSyntax = DatabaseSyntax.POSTGRES;
             String driverName = "org.postgresql.Driver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    log,
                     driverName,
                     connectURL,
                     dbSchemaUser,

@@ -15,7 +15,6 @@ import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -41,26 +40,18 @@ import cbit.vcell.xml.XmlParseException;
  * @author: Jim Schaff
  */
 public class VCDatabaseScanner {
+	public static final Logger lg = Logger.getLogger(VCDatabaseScanner.class);
+
 	/**
 	 * special user id meaning all users
 	 */
 	public static final String ALL_USERS = "-all";
 	protected DatabaseServerImpl dbServerImpl = null;
-	protected SessionLog log = null;
 	private LocalAdminDbServer localAdminDbServer = null;
 	protected ConnectionFactory connFactory;
 	private User[] allUsers = null;
 
 	
-
-	/**
-	 * create scanner with Session logging to standard out
-	 * @return new scanner
-	 * @throws Exception
-	 */
-public static VCDatabaseScanner createDatabaseScanner() throws Exception{
-	return createDatabaseScanner(new cbit.vcell.resource.StdoutSessionLog("Admin"));
-}
 
 /**
  * create database scanner with specified log
@@ -68,17 +59,17 @@ public static VCDatabaseScanner createDatabaseScanner() throws Exception{
  * @return new scanner 
  * @throws Exception
  */
-public static VCDatabaseScanner createDatabaseScanner(SessionLog log) throws Exception{
+public static VCDatabaseScanner createDatabaseScanner() throws Exception{
 	
 	new PropertyLoader();
 		
 	DatabasePolicySQL.lg.setLevel(Level.WARN);
 	DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	
-	ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+	ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 	KeyFactory keyFactory = conFactory.getKeyFactory();
 
-	VCDatabaseScanner databaseScanner = new VCDatabaseScanner(conFactory, keyFactory, log);
+	VCDatabaseScanner databaseScanner = new VCDatabaseScanner(conFactory, keyFactory);
 	
 	return databaseScanner;
 }
@@ -90,7 +81,6 @@ public static VCDatabaseScanner createDatabaseScanner(SessionLog log) throws Exc
  */
 public VCDatabaseScanner(VCDatabaseScanner rhs) throws Exception{
 	dbServerImpl = rhs.dbServerImpl;
-	log = rhs.log;
 	localAdminDbServer = rhs.localAdminDbServer;
 	allUsers = rhs.allUsers;
 	connFactory = rhs.connFactory;
@@ -106,23 +96,13 @@ public VCDatabaseScanner() throws Exception{
 }
 
 /**
- * constructor with specified log
- * same code as {@link #createDatabaseScanner()}
- * @throws Exception
- */
-public VCDatabaseScanner(SessionLog log) throws Exception{
-	this(createDatabaseScanner(log));
-}
-
-/**
  * ResultSetCrawler constructor comment.
  * @throws RemoteException 
  */
-private VCDatabaseScanner(ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog) throws DataAccessException, SQLException, RemoteException {
+private VCDatabaseScanner(ConnectionFactory argConFactory, KeyFactory argKeyFactory) throws DataAccessException, SQLException, RemoteException {
 	this.connFactory = argConFactory;
-	this.log = argSessionLog;
-	this.localAdminDbServer = new LocalAdminDbServer(argConFactory, argKeyFactory, argSessionLog);
-	this.dbServerImpl = new DatabaseServerImpl(argConFactory,argKeyFactory,argSessionLog);
+	this.localAdminDbServer = new LocalAdminDbServer(argConFactory, argKeyFactory);
+	this.dbServerImpl = new DatabaseServerImpl(argConFactory,argKeyFactory);
 }
 
 public User[] getAllUsers() throws DataAccessException{
@@ -187,7 +167,7 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
 					databaseVisitor.visitBioModel(bioModel,logFilePrintStream);
 //					verifyMathDescriptionsUnchanged(bioModel, logFilePrintWriter);
 				}catch (Exception e2){
-					log.exception(e2);
+					lg.error(e2.getMessage(), e2);
 					logFilePrintStream.println("======= " + e2.getMessage());
 					if (bAbortOnDataAccessException){
 						throw e2;
@@ -271,7 +251,7 @@ public void scanGeometries(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 					geometry.refreshDependencies();
 					databaseVisitor.visitGeometry(geometry,logFilePrintStream);
 				}catch (Exception e2){
-					log.exception(e2);
+					lg.error(e2.getMessage(), e2);
 					if (bAbortOnDataAccessException){
 						throw e2;
 					}
@@ -333,7 +313,7 @@ public void scanMathModels(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 						badMathVisitor.unableToLoad(vk, e2);
 					}
 					
-					log.exception(e2);
+					lg.error(e2.getMessage(), e2);
 					if (bAbortOnDataAccessException){
 						throw e2;
 					}
@@ -394,7 +374,7 @@ public void multiScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer,
 						}
 					}
 				}catch (Exception e2){
-					log.exception(e2);
+					lg.error(e2.getMessage(), e2);
 					printWriter.println("======= " + e2.getMessage());
 					if (bAbortOnDataAccessException){
 						throw e2;

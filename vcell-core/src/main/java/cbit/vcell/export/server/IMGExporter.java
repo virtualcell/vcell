@@ -36,13 +36,10 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.Range;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.exe.Executable;
-import org.vcell.util.exe.ExecutableStatus;
 
 import GIFUtils.GIFFormatException;
 import GIFUtils.GIFImage;
@@ -62,7 +59,6 @@ import cbit.vcell.export.gloworm.quicktime.VRWorld;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -70,7 +66,6 @@ import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.util.AmplistorUtils;
 /**
  * Insert the type's description here.
@@ -114,10 +109,9 @@ public static void main(String [] args) throws Exception{
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(SimulationKey), user);
 	VCSimulationDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, 0);
 	
-	StdoutSessionLog sessionLog = new StdoutSessionLog(user.getName());
 	class PrintingExportServiceImpl extends ExportServiceImpl {
-		public PrintingExportServiceImpl(SessionLog sessionLog){
-			super(sessionLog);
+		public PrintingExportServiceImpl(){
+			super();
 		}
 		@Override
 		protected void fireExportEvent(ExportEvent event) {
@@ -125,11 +119,11 @@ public static void main(String [] args) throws Exception{
 			System.out.println("Event type="+event.getEventTypeID()+" JobID="+event.getJobID()+" progress="+event.getProgress());
 		}
 	}
-	ExportServiceImpl exportServiceImpl = new PrintingExportServiceImpl(sessionLog);
+	ExportServiceImpl exportServiceImpl = new PrintingExportServiceImpl();
 	Cachetable cachetable = new Cachetable(10*Cachetable.minute);
 	File primaryDir = new File(primaryDirStr);
-	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,cachetable,primaryDir,null);
-	DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, exportServiceImpl);
+	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cachetable,primaryDir,null);
+	DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);
 	double[] allTimes = dataSetControllerImpl.getDataSetTimes(vcdID);
 	TimeSpecs timeSpecs = new TimeSpecs(beginTimeIndex, endTimeIndex, allTimes, ExportConstants.TIME_RANGE);
 	VariableSpecs variableSpecs = new VariableSpecs(varNames, ExportConstants.VARIABLE_MULTI);

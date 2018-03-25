@@ -15,7 +15,6 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Preference;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
@@ -61,9 +60,9 @@ public class LocalUserMetaDbServer implements UserMetaDbServer {
 /**
  * This method was created in VisualAge.
  */
-public LocalUserMetaDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, User argUser, SessionLog sessionLog) throws DataAccessException {
+public LocalUserMetaDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, User argUser) throws DataAccessException {
 	this.user = argUser;
-	dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory, sessionLog);
+	dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
 }
 
 

@@ -27,7 +27,6 @@ import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.LifeSignThread;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.logging.WatchLogging;
 
@@ -71,9 +70,6 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.PythonSupport.PythonPackage;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.StdoutSessionLog;
-import cbit.vcell.resource.StdoutSessionLogConcurrent;
-import cbit.vcell.resource.StdoutSessionLogConcurrent.LifeSignInfo;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
@@ -104,8 +100,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	/**
 	 * Scheduler constructor comment.
 	 */
-	public VCellServices(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, DataServerImpl dataServerImpl, SimulationDatabase simulationDatabase, SessionLog log) throws Exception {
-		super(vcMessagingService,serviceInstanceStatus,log,false);
+	public VCellServices(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, DataServerImpl dataServerImpl, SimulationDatabase simulationDatabase) throws Exception {
+		super(vcMessagingService,serviceInstanceStatus,false);
 		this.htcProxy = htcProxy;
 		this.vcMessagingService = vcMessagingService;
 		this.databaseServerImpl = databaseServerImpl;
@@ -118,23 +114,23 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		initControlTopicListener();
 
 		ServiceInstanceStatus dispatcherServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DISPATCH,99,ManageUtils.getHostName(), new Date(), true);
-		simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, dispatcherServiceInstanceStatus, simulationDatabase, new StdoutSessionLog("DISPATCH"), true);
+		simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, dispatcherServiceInstanceStatus, simulationDatabase, true);
 		simulationDispatcher.init();
 
 		ServiceInstanceStatus databaseServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DB,99,ManageUtils.getHostName(), new Date(), true);
-		databaseServer = new DatabaseServer(databaseServiceInstanceStatus,databaseServerImpl,vcMessagingService,new StdoutSessionLog("DB"), true);
+		databaseServer = new DatabaseServer(databaseServiceInstanceStatus,databaseServerImpl,vcMessagingService, true);
 		databaseServer.init();
 
 		ServiceInstanceStatus simDataServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DATA,99,ManageUtils.getHostName(), new Date(), true);
-		simDataServer = new SimDataServer(simDataServiceInstanceStatus,dataServerImpl,vcMessagingService,new StdoutSessionLog("DATA"), true);
+		simDataServer = new SimDataServer(simDataServiceInstanceStatus,dataServerImpl,vcMessagingService,true);
 		simDataServer.init();
 
 		ServiceInstanceStatus dataExportServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DATAEXPORT,99,ManageUtils.getHostName(), new Date(), true);
-		exportDataServer = new SimDataServer(dataExportServiceInstanceStatus,dataServerImpl,vcMessagingService,new StdoutSessionLog("EXPORTDATA"), true);
+		exportDataServer = new SimDataServer(dataExportServiceInstanceStatus,dataServerImpl,vcMessagingService, true);
 		exportDataServer.init();
 
 		ServiceInstanceStatus htcServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.PBSCOMPUTE,99,ManageUtils.getHostName(), new Date(), true);
-		htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, htcServiceInstanceStatus,new StdoutSessionLog("PBSCOMPUTE"), true);
+		htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, htcServiceInstanceStatus, true);
 		htcSimulationWorker.init();
 
 		dataSession = vcMessagingService.createProducerSession();
@@ -235,41 +231,26 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 					ServiceType.MASTER, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 
 			OutputStream os = initLog(serviceInstanceStatus, logdir);
-			SessionLog log  = null;
-			if (os != null) {
-				Objects.requireNonNull(os);
 
-				final StdoutSessionLogConcurrent sslc = new StdoutSessionLogConcurrent(serviceInstanceStatus.getID(),os, new LifeSignInfo( ));
-				final PrintStream concurrentPrintStream = sslc.printStreamFacade();
-				System.setOut(concurrentPrintStream);
-				System.setErr(concurrentPrintStream);
-				log = sslc;
-			}
-			else {
-				int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
-				log = new StdoutSessionLog(serviceInstanceStatus.getID());
-				new LifeSignThread(log,lifeSignMessageInterval_MS).start();
-			}
-
-			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 			KeyFactory keyFactory = conFactory.getKeyFactory();
-			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
-			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true, log);
+			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
+			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true);
 
 			Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
-			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable,
+			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable,
 					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)),
 					new File(PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty))));
 
-			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(log);
+			ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 
-			DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);        //add dataJobListener
+			DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);        //add dataJobListener
 
 			VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 			vcMessagingService.setDelegate(new ServerMessagingDelegate());
 
-			VCellServices vcellServices = new VCellServices(htcProxy, vcMessagingService, serviceInstanceStatus, databaseServerImpl, dataServerImpl, simulationDatabase, log);
+			VCellServices vcellServices = new VCellServices(htcProxy, vcMessagingService, serviceInstanceStatus, databaseServerImpl, dataServerImpl, simulationDatabase);
 
 			dataSetControllerImpl.addDataJobListener(vcellServices);
 	        exportServiceImpl.addExportListener(vcellServices);
@@ -291,7 +272,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, dataEventMessage);
 				//dataSession.close();
 			} catch (VCMessagingException ex) {
-				log.exception(ex);
+				lg.error(ex.getMessage(),ex);
 			}
 		}
 	}
@@ -307,7 +288,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				exportSession.sendTopicMessage(VCellTopic.ClientStatusTopic, exportEventMessage);
 				//dataSession.close();
 			} catch (VCMessagingException ex) {
-				log.exception(ex);
+				lg.error(ex.getMessage(),ex);
 			}
 		}
 	}

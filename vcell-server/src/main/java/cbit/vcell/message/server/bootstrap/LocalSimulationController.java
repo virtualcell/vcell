@@ -10,8 +10,8 @@
 
 package cbit.vcell.message.server.bootstrap;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -27,15 +27,15 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * @author: Jim Schaff
  */
 public class LocalSimulationController implements SimulationController {
-	private SessionLog sessionLog = null;
+	public static final Logger lg = Logger.getLogger(LocalSimulationController.class);
+
 	private SimulationControllerImpl simulationControllerImpl = null;
 	private User user = null;
 
 /**
  * LocalSimulationController constructor comment.
  */
-protected LocalSimulationController(User user, SimulationControllerImpl simulationControllerImpl, SessionLog argSessionLog) {
-	this.sessionLog = argSessionLog;
+protected LocalSimulationController(User user, SimulationControllerImpl simulationControllerImpl) {
 	this.simulationControllerImpl = simulationControllerImpl;
 	this.user = user;
 }
@@ -45,13 +45,13 @@ protected LocalSimulationController(User user, SimulationControllerImpl simulati
  * This method was created by a SmartGuide.
  */
 public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) {
-	sessionLog.print("LocalSimulationController.startSimulation(simInfo="+vcSimulationIdentifier+")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationController.startSimulation(simInfo="+vcSimulationIdentifier+")");
 	try {
 		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
-		simulationControllerImpl.startSimulation(simulation,sessionLog);
+		simulationControllerImpl.startSimulation(simulation);
 		return simulationControllerImpl.getSimulationDatabase().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 	}catch (Exception e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException("startSimluation" + vcSimulationIdentifier.getID() + " " + numSimulationScanJobs + " scan jobs",e);
 	}
 }
@@ -61,16 +61,16 @@ public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdent
  * This method was created by a SmartGuide.
  */
 public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) {
-	sessionLog.print("LocalSimulationController.getSolverStatus(simInfo="+vcSimulationIdentifier+")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationController.getSolverStatus(simInfo="+vcSimulationIdentifier+")");
 	try {
 		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
 		simulationControllerImpl.stopSimulation(simulation);
 		return simulationControllerImpl.getSimulationDatabase().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 	}catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -78,11 +78,11 @@ public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimulationIdenti
 
 @Override
 public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAccessException {
-	sessionLog.print("LocalSimulationController.getSimulationStatus(simKeys="+simKeys+")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationController.getSimulationStatus(simKeys="+simKeys+")");
 	try {
 		return simulationControllerImpl.getSimulationStatus(simKeys);
 	}catch (Exception e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -90,11 +90,11 @@ public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAcc
 
 @Override
 public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException {
-	sessionLog.print("LocalSimulationController.getSimulationStatus(simKey="+simulationKey+")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationController.getSimulationStatus(simKey="+simulationKey+")");
 	try {
 		return simulationControllerImpl.getSimulationStatus(simulationKey);
 	}catch (Exception e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -102,11 +102,11 @@ public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataA
 
 @Override
 public SimpleJobStatus[] getSimpleJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec) throws DataAccessException {
-	sessionLog.print("LocalSimulationController.getSimulationStatus(simStatusQuerySpec="+simStatusQuerySpec+")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationController.getSimulationStatus(simStatusQuerySpec="+simStatusQuerySpec+")");
 	try {
 		return simulationControllerImpl.getSimpleJobStatus(simStatusQuerySpec);
 	}catch (Exception e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }

@@ -23,7 +23,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
@@ -81,11 +80,11 @@ private SimulationTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,DataAccessException {
 	
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(SimulationTable.table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	SimulationVersion simulationVersion = (SimulationVersion)version;
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
@@ -140,7 +139,7 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, SessionLog log, Connection con, User user, MathDescriptionDbDriver mathDB, DatabaseSyntax dbSyntax) 
+public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, Connection con, User user, MathDescriptionDbDriver mathDB, DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException,PropertyVetoException {
 
 	//
@@ -178,7 +177,7 @@ public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, SessionLog l
 	// Get Version
 	//
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	SimulationVersion simulationVersion = (SimulationVersion)getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	SimulationVersion simulationVersion = (SimulationVersion)getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 
 	java.math.BigDecimal bigD = rset.getBigDecimal(SimulationTable.table.mathRef.toString());
 	KeyValue mathKey = null;

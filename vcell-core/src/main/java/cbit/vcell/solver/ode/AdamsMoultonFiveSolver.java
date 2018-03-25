@@ -13,8 +13,6 @@ package cbit.vcell.solver.ode;
 import java.io.File;
 import java.io.IOException;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.math.MathException;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
@@ -36,8 +34,8 @@ public class AdamsMoultonFiveSolver extends AdamsSolver {
  * @param valueVectorCount int
  * @param temporaryVectorCount int
  */
-public AdamsMoultonFiveSolver(SimulationTask simTask, File directory, SessionLog sessionLog)  throws SolverException {
-	super(simTask, directory, sessionLog, 2, 5);
+public AdamsMoultonFiveSolver(SimulationTask simTask, File directory)  throws SolverException {
+	super(simTask, directory, 2, 5);
 }
 protected void initialize() throws SolverException {
 	super.initialize();

@@ -11,7 +11,6 @@
 package cbit.vcell.modeldb;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -91,7 +90,7 @@ private ReactStepTable() {
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public ReactionStep getReactionStep(Structure structure, Model model, KeyValue rsKey, java.sql.ResultSet rset, SessionLog log,DatabaseSyntax dbSyntax) throws java.sql.SQLException, DataAccessException {
+public ReactionStep getReactionStep(Structure structure, Model model, KeyValue rsKey, java.sql.ResultSet rset,DatabaseSyntax dbSyntax) throws java.sql.SQLException, DataAccessException {
 	
 	KeyValue key = rsKey;
 	if (rset.wasNull()){
@@ -181,7 +180,7 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 			chargeValenceParameter.setExpression(new cbit.vcell.parser.Expression(valenceValue));
 		}
 	}catch (Exception e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 	rs.setKinetics(kinetics);

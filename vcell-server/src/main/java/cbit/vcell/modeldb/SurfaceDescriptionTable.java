@@ -14,7 +14,6 @@ import java.sql.SQLException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -83,7 +82,7 @@ public String getSQLValueList(KeyValue key, GeometrySurfaceDescription geometryS
  * @param rset ResultSet
  * @param log SessionLog
  */
-public void populateGeometrySurfaceDescription(ResultSet rset, GeometrySurfaceDescription geometrySurfaceDescription, SessionLog log) throws SQLException, java.beans.PropertyVetoException, DataAccessException {
+public void populateGeometrySurfaceDescription(ResultSet rset, GeometrySurfaceDescription geometrySurfaceDescription) throws SQLException, java.beans.PropertyVetoException, DataAccessException {
 	
 	int sizeX = rset.getInt(this.sampleSizeX.toString());
 	int sizeY = rset.getInt(this.sampleSizeY.toString());

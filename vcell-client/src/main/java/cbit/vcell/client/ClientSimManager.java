@@ -56,7 +56,6 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.resource.VCellConfiguration;
 import cbit.vcell.resource.VisitSupport;
 import cbit.vcell.server.SimulationStatus;
@@ -297,12 +296,11 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 							documentWindowManager.addDataListener(dataViewerController);//For changes in time or variable
 						} else {
 							// ---- preliminary : construct the localDatasetControllerProvider
-							StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
 							File primaryDir = ResourceUtil.getLocalRootDir();
 							User usr = sim.getVersion().getOwner();
-							DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-							ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
+							DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(null,primaryDir,null);
+							ExportServiceImpl localExportServiceImpl = new ExportServiceImpl();
+							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(usr, dataSetControllerImpl, localExportServiceImpl);
 							VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
 							File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
 							LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
@@ -334,12 +332,11 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 							vtkManager = documentWindowManager.getRequestManager().getVtkManager(outputContext,new VCSimulationDataIdentifier(vcSimulationIdentifier,0));
 						} else {
 							// ---- preliminary : construct the localDatasetControllerProvider
-							StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
 							File primaryDir = ResourceUtil.getLocalRootDir();
 							User usr = sim.getVersion().getOwner();
-							DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-							ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
+							DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(null,primaryDir,null);
+							ExportServiceImpl localExportServiceImpl = new ExportServiceImpl();
+							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(usr, dataSetControllerImpl, localExportServiceImpl);
 							VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
 							File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
 							VCSimulationDataIdentifier simulationDataIdentifier = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
@@ -639,9 +636,8 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 						
 			Simulation simulation = new TempSimulation(originalSimulation, false);
-			StdoutSessionLog log = new StdoutSessionLog("Quick run");
 			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
-			Solver solver = createQuickRunSolver(log, localSimDataDir, simTask);
+			Solver solver = createQuickRunSolver(localSimDataDir, simTask);
 			if (solver == null) {
 				throw new RuntimeException("null solver");
 			}
@@ -731,7 +727,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 }
 
 
-public static Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory, SimulationTask simTask) throws SolverException, IOException {
+public static Solver createQuickRunSolver(File directory, SimulationTask simTask) throws SolverException, IOException {
 	SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");
@@ -744,7 +740,7 @@ public static Solver createQuickRunSolver(StdoutSessionLog sessionLog, File dire
 	
 	SolverUtilities.prepareSolverExecutable(solverDescription);	
 	// create solver from SolverFactory
-	Solver solver = SolverFactory.createSolver(sessionLog, directory, simTask, false);
+	Solver solver = SolverFactory.createSolver(directory, simTask, false);
 
 	return solver;
 }

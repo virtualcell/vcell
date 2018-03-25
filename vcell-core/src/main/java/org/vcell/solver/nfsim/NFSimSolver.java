@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.vcell.util.SessionLog;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.messaging.server.SimulationTask;
@@ -47,8 +46,8 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
 public class NFSimSolver extends SimpleCompiledSolver {
 
 	public NFSimSolver(SimulationTask simTask, java.io.File directory,
-			SessionLog sessionLog, boolean bMsging) throws SolverException {
-		super(simTask, directory, sessionLog, bMsging);
+			boolean bMsging) throws SolverException {
+		super(simTask, directory, bMsging);
 	}
 
 	/**
@@ -95,13 +94,12 @@ public class NFSimSolver extends SimpleCompiledSolver {
 	 * This method takes the place of the old runUnsteady()...
 	 */
 	protected void initialize() throws SolverException {
-		SessionLog sessionLog = getSessionLog();
-		sessionLog.print("NFSimSolver.initialize()");
+		if (lg.isTraceEnabled()) lg.trace("NFSimSolver.initialize()");
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 		writeFunctionsFile();
 
 		String inputFilename = getInputFilename();
-		sessionLog.print("NFSimSolver.initialize() inputFilename = " + getInputFilename()); 
+		if (lg.isTraceEnabled()) lg.trace("NFSimSolver.initialize() inputFilename = " + getInputFilename()); 
 
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,
 				SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));

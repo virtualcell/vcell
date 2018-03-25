@@ -13,8 +13,8 @@ package cbit.vcell.solvers;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.ConfigurationException;
-import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathUtilities;
@@ -42,8 +42,9 @@ import cbit.vcell.solver.server.SolverStatus;
  * @author: Ion Moraru
  */
 public abstract class AbstractSolver implements Solver, SimDataConstants {
+	public static final Logger lg = Logger.getLogger(AbstractSolver.class);
+
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
-	private org.vcell.util.SessionLog fieldSessionLog = null;
 	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
 	private File saveDirectory = null;
 	private boolean saveEnabled = true;
@@ -53,14 +54,13 @@ public abstract class AbstractSolver implements Solver, SimDataConstants {
 /**
  * AbstractSolver constructor comment.
  */
-public AbstractSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
+public AbstractSolver(SimulationTask simTask, File directory) throws SolverException {
 
 	this.simTask = simTask;
-	this.fieldSessionLog = sessionLog;
 	if (!directory.exists() && !simTask.getSimulation().getSolverTaskDescription().isParallel()){
 		if (bMakeUserDirs && !directory.mkdirs()){
 			String msg = "could not create directory "+directory;
-			sessionLog.alert(msg);
+			if (lg.isWarnEnabled()) lg.warn(msg);
 			throw new ConfigurationException(msg);
 		}
 	}		 
@@ -314,14 +314,6 @@ protected final java.io.File getSaveDirectory() {
 	return saveDirectory;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.math.MathDescription
- */
-protected final SessionLog getSessionLog() {
-	return (fieldSessionLog);
-}
 
 /**
  * Gets the running property (boolean) value.

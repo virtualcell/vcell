@@ -25,7 +25,6 @@ import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.logging.Log4jSessionLog;
 import org.vcell.util.logging.Logging;
 
 import cbit.vcell.message.VCMessageSession;
@@ -54,7 +53,7 @@ import cbit.vcell.xml.XmlHelper;
  * @author: Jim Schaff
  */
 public class SolverPreprocessor  {
-	private static final String LOG_NAME = "solverPreprocessor";
+	public static final Logger lg = Logger.getLogger(SolverPreprocessor.class);
 	/**
 	 * Starts the application.
 	 * @param args an array of command-line arguments
@@ -101,7 +100,6 @@ public class SolverPreprocessor  {
 			}
 		}
 		Logging.init();
-		Log4jSessionLog log = new Log4jSessionLog(LOG_NAME);
 		try {
 			
 			PropertyLoader.loadProperties();
@@ -124,7 +122,7 @@ public class SolverPreprocessor  {
 			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
 			
- 	        final HTCSolver htcSolver = new HTCSolver(simTask, userDirectory,parallelDirectory, log) {
+ 	        final HTCSolver htcSolver = new HTCSolver(simTask, userDirectory,parallelDirectory) {
 				public void startSolver() {
 					try {
 						super.initialize();
@@ -180,10 +178,10 @@ public class SolverPreprocessor  {
 			htcSolver.addSolverListener(solverListener);
 			htcSolver.startSolver();
 			VCMongoMessage.sendInfo("preprocessor done");
-			exitWithCode(0, log.getLogger());
+			exitWithCode(0);
 		} catch (Throwable e) {
-			log.exception(e);
-			exitWithCode(-1,log.getLogger());
+			lg.error(e.getMessage(),e);
+			exitWithCode(-1);
 		}
 	}
 	
@@ -191,7 +189,7 @@ public class SolverPreprocessor  {
 	 * commence shutdown countdown, shutdown mongo
 	 * @param systemReturnCode
 	 */
-	private static void exitWithCode(int systemReturnCode, Logger lg) {
+	private static void exitWithCode(int systemReturnCode) {
 		ApplicationTerminator.beginCountdown(TimeUnit.SECONDS, 10, systemReturnCode); 
 		long start = 0;
 		if (lg.isDebugEnabled()) {

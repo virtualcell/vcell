@@ -13,7 +13,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.vcell.db.ConnectionFactory;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -40,12 +39,12 @@ public class DictionaryDBTopLevel extends AbstractDBTopLevel{
      * DictionaryDBTopLevel constructor.
      * Creates a new DictionaryDBTopLevel object
      */
-    DictionaryDBTopLevel(ConnectionFactory aConFactory, SessionLog newLog) throws SQLException {
-	super(aConFactory,newLog);
-	this.dictionaryDB = new DictionaryDbDriver(aConFactory.getKeyFactory(), aConFactory.getDatabaseSyntax(), log);
+    DictionaryDBTopLevel(ConnectionFactory aConFactory) throws SQLException {
+	super(aConFactory);
+	this.dictionaryDB = new DictionaryDbDriver(aConFactory.getKeyFactory(), aConFactory.getDatabaseSyntax());
 
-	this.reactStepDB = new ReactStepDbDriver(conFactory.getDatabaseSyntax(),conFactory.getKeyFactory(),null,this.log,this.dictionaryDB);
-		ModelDbDriver modelDB = new ModelDbDriver(this.reactStepDB,this.log);
+	this.reactStepDB = new ReactStepDbDriver(conFactory.getDatabaseSyntax(),conFactory.getKeyFactory(),null,this.dictionaryDB);
+		ModelDbDriver modelDB = new ModelDbDriver(this.reactStepDB);
 		this.reactStepDB.init(modelDB);
 
 }
@@ -65,12 +64,11 @@ void clearCompoundDBEntries(boolean bEnableRetry) throws java.sql.SQLException {
         dictionaryDB.removeCompounds(con);
         con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -98,12 +96,11 @@ void clearEnzymeDBEntries(boolean bEnableRetry) throws java.sql.SQLException {
         dictionaryDB.removeEnzymes(con);
         con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -131,12 +128,11 @@ void clearProteinDBEntries(boolean bEnableRetry) throws java.sql.SQLException {
         dictionaryDB.removeProteins(con);
         con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -165,7 +161,7 @@ int countTableEntries(String tableName, boolean bEnableRetry)
     try {
         return dictionaryDB.countTableEntries(con, tableName);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return countTableEntries(tableName, false);
@@ -190,7 +186,7 @@ DBSpecies getBoundSpecies(DBFormalSpecies dbfs,boolean bEnableRetry) throws java
     try {
         return dictionaryDB.getBoundSpecies(con, dbfs);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getBoundSpecies(dbfs,false);
@@ -217,7 +213,7 @@ String[] getCompoundAliases(boolean bEnableRetry, String filter) throws java.sql
     try {
         return dictionaryDB.getCompoundAliases(con, filter);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getCompoundAliases (false, filter);
@@ -247,7 +243,7 @@ FormalCompound getCompoundFromKeggID(String dbID, boolean bEnableRetry)
         FormalCompound result = dictionaryDB.getCompoundFromKeggID(con, dbID);
         return result;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getCompoundFromKeggID(dbID, false);
@@ -272,7 +268,7 @@ DBFormalSpecies[] getDatabaseSpecies(boolean bEnableRetry,User argUser,String li
     try {
         return dictionaryDB.getDatabaseSpecies(con,argUser,likeString,isBound,speciesType,restrictSearch,rowLimit,bOnlyUser);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getDatabaseSpecies(false,argUser,likeString,isBound,speciesType,restrictSearch,rowLimit,bOnlyUser);
@@ -297,7 +293,7 @@ public ReactionDescription[] getDictionaryReactions(boolean bEnableRetry,Reactio
     try {
         return dictionaryDB.getDictionaryReactions(con,reactionQuerySpec);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getDictionaryReactions(false,reactionQuerySpec);
@@ -324,7 +320,7 @@ String[] getEnzymeAliases(boolean bEnableRetry, String filter) throws java.sql.S
     try {
         return dictionaryDB.getEnzymeAliases(con, filter);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getEnzymeAliases (false, filter);
@@ -354,7 +350,7 @@ FormalEnzyme getEnzymeFromECNumber(String dbID, boolean bEnableRetry)
         FormalEnzyme result = dictionaryDB.getEnzymeFromECNumber(con, dbID);
         return result;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getEnzymeFromECNumber(dbID, false);
@@ -381,7 +377,7 @@ String[] getProteinAliases(boolean bEnableRetry, String filter) throws java.sql.
     try {
         return dictionaryDB.getProteinAliases(con, filter);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getProteinAliases (false, filter);
@@ -411,7 +407,7 @@ FormalProtein getProteinFromSwissProtID(String swissProtID, boolean bEnableRetry
         FormalProtein result = dictionaryDB.getProteinFromSwissProtID(con, swissProtID);
         return result;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getProteinFromSwissProtID(swissProtID, false);
@@ -436,7 +432,7 @@ public ReactionStepInfo[] getReactionStepInfos(User user, boolean bEnableRetry,K
     try {
         return dictionaryDB.getReactionStepInfos(con,user,reactionStepKeys);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getReactionStepInfos(user, false,reactionStepKeys);
@@ -460,7 +456,7 @@ public ReactionDescription[] getUserReactionDescriptions(User user, boolean bEna
     try {
         return dictionaryDB.getUserReactionDescriptions(con,user,reactionQuerySpec);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getUserReactionDescriptions(user, false,reactionQuerySpec);
@@ -490,12 +486,11 @@ KeyValue insertCompound(CompoundInfo newCompound, boolean bEnableRetry)
         con.commit();
         return key;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -526,12 +521,11 @@ KeyValue insertEnzyme(EnzymeInfo newEnzyme, boolean bEnableRetry)
         con.commit();
         return key;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -562,12 +556,11 @@ KeyValue insertProtein(ProteinInfo newProtein, boolean bEnableRetry)
         con.commit();
         return key;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -596,12 +589,11 @@ void removeCompound(CompoundInfo compound, boolean bEnableRetry)
         dictionaryDB.removeCompound(con, compound);
         con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -629,12 +621,11 @@ void removeEnzyme(EnzymeInfo enzyme, boolean bEnableRetry)
         dictionaryDB.removeEnzyme(con, enzyme);
         con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -662,12 +653,11 @@ void removeProtein(ProteinInfo protein, boolean bEnableRetry)
         dictionaryDB.removeProtein(con, protein);
         con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);

@@ -11,7 +11,6 @@
 package cbit.vcell.modeldb;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
@@ -47,7 +46,7 @@ private SpeciesTable() {
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public Species getSpecies(java.sql.ResultSet rset, SessionLog log,DBSpecies dbSpecies) throws java.sql.SQLException, DataAccessException {
+public Species getSpecies(java.sql.ResultSet rset,DBSpecies dbSpecies) throws java.sql.SQLException, DataAccessException {
 	
 	String annotation = rset.getString(SpeciesTable.table.annotation.toString());
 	if (annotation!=null){

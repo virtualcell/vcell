@@ -38,15 +38,13 @@ import cbit.vcell.resource.PropertyLoader;
  */
 public class UserDbDriver /*extends DbDriver*/ {
 	public static final UserTable userTable = UserTable.table;
-	private SessionLog log = null;
 	private Random passwordGen = null; 
 	private static final Logger lg = Logger.getLogger(UserDbDriver.class);
 /**
  * LocalDBManager constructor comment.
  */
-public UserDbDriver(SessionLog sessionLog) {
+public UserDbDriver() {
 	super();
-	this.log = sessionLog;
 }
 /**
  * This method was created in VisualAge.
@@ -58,12 +56,16 @@ public User getUserFromUserid(Connection con, String userid) throws SQLException
 	Statement stmt;
 	String sql;
 	ResultSet rset;
-	log.print("UserDbDriver.getUserFromUserid(userid=" + userid + ")");
+	if (lg.isTraceEnabled()) {
+		lg.trace("UserDbDriver.getUserFromUserid(userid=" + userid + ")");
+	}
 	sql = 	"SELECT " + UserTable.table.id + 
 			" FROM " + userTable.getTableName() + 
 			" WHERE " + UserTable.table.userid + " = '" + userid + "'";
 			
-	//System.out.println(sql);
+	if (lg.isTraceEnabled()) {
+		lg.trace(sql);
+	}
 	stmt = con.createStatement();
 	User user = null;
 	try {
@@ -89,7 +91,9 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 	Statement stmt = null;
 	String sql;
 	ResultSet rset;
-	log.print("UserDbDriver.getUserFromUseridAndPassword(userid='" + userid+",xxx)");
+	if (lg.isTraceEnabled()) {
+		lg.trace("UserDbDriver.getUserFromUseridAndPassword(userid='" + userid+",xxx)");
+	}
 	sql = 	"SELECT " + UserTable.table.id + ","+UserTable.table.digestPW+","+UserTable.table.password+
 			" FROM " + userTable.getTableName() + 
 			" WHERE " + UserTable.table.userid + " = '" + userid + "'";
@@ -192,7 +196,9 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
  * getModel method comment.
  */
 public UserInfo getUserInfo(Connection con, KeyValue key) throws SQLException, DataAccessException, ObjectNotFoundException {
-	log.print("UserDbDriver.getUserInfo(key=" + key + ")");
+	if (lg.isTraceEnabled()) {
+		lg.trace("UserDbDriver.getUserInfo(key=" + key + ")");
+	}
 	String sql;
 	sql = 	" SELECT " + " * " + 
 			" FROM " + userTable.getTableName() + 
@@ -225,7 +231,9 @@ public UserInfo getUserInfo(Connection con, KeyValue key) throws SQLException, D
  * getModel method comment.
  */
 public UserInfo[] getUserInfos(Connection con) throws SQLException, DataAccessException, ObjectNotFoundException {
-	log.print("UserDbDriver.getUserInfos()");
+	if (lg.isTraceEnabled()) {
+		lg.trace("UserDbDriver.getUserInfos()");
+	}
 	String sql;
 	sql = " SELECT " + " * " + " FROM " + userTable.getTableName();
 
@@ -265,7 +273,9 @@ public KeyValue insertUserInfo(Connection con, KeyFactory keyFactory, UserInfo u
 	if (userInfo == null){
 		throw new SQLException("Improper parameters for insertModel");
 	}
-	log.print("UserDbDriver.insertUserInfo(userinfo="+userInfo+")");
+	if (lg.isTraceEnabled()) {
+		lg.trace("UserDbDriver.insertUserInfo(userinfo="+userInfo+")");
+	}
 	//Connection con = conFact.getConnection();
 	KeyValue key = keyFactory.getNewKey(con);
 	insertUserInfoSQL(con,keyFactory,key,userInfo);
@@ -300,7 +310,9 @@ public void removeUserInfo(Connection con, User user) throws SQLException {
 	if (user == null){
 		throw new IllegalArgumentException("Improper parameters for removeUser");
 	}
-	log.print("UserDbDriver.removeUserInfo(user="+user+")");
+	if (lg.isTraceEnabled()) {
+		lg.trace("UserDbDriver.removeUserInfo(user="+user+")");
+	}
 	//Connection con = conFact.getConnection();
 	removeUserInfoSQL(con,user);
 }
@@ -328,7 +340,9 @@ public void updateUserInfo(Connection con, UserInfo userInfo) throws SQLExceptio
 	if (userInfo == null){
 		throw new SQLException("Improper parameters for insertModel");
 	}
-	log.print("UserDbDriver.updateUserInfo(userinfo="+userInfo+")");
+	if (lg.isTraceEnabled()) {
+		lg.trace("UserDbDriver.updateUserInfo(userinfo="+userInfo+")");
+	}
 	//Connection con = conFact.getConnection();
 	updateUserInfoSQL(con,userInfo);
 }
@@ -428,7 +442,9 @@ public ApiAccessToken getApiAccessToken(Connection con, String accessToken) thro
 	ResultSet rset;
 	ApiAccessTokenTable tokenTable = ApiAccessTokenTable.table;
 
-	log.print("UserDbDriver.getApiAccessToken(token=" + accessToken + ")");
+	if (lg.isTraceEnabled()) {
+		lg.trace("UserDbDriver.getApiAccessToken(token=" + accessToken + ")");
+	}
 	
 	sql = 	"SELECT " + userTable.userid.getUnqualifiedColName()+", "+tokenTable.getTableName()+".* " + 
 			" FROM " + userTable.getTableName() + ", " + tokenTable.getTableName() + 
@@ -441,7 +457,7 @@ public ApiAccessToken getApiAccessToken(Connection con, String accessToken) thro
 	try {
 		rset = stmt.executeQuery(sql);
 		if (rset.next()) {
-			apiAccessToken = tokenTable.getApiAccessToken(rset, log);
+			apiAccessToken = tokenTable.getApiAccessToken(rset);
 		}
 	} finally {
 		stmt.close();
@@ -455,7 +471,9 @@ public ApiClient getApiClient(Connection con, String clientId) throws SQLExcepti
 	ResultSet rset;
 	ApiClientTable clientTable = ApiClientTable.table;
 
-	log.print("UserDbDriver.getApiClient(clientId=" + clientId + ")");
+	if (lg.isTraceEnabled()) {
+		lg.trace("UserDbDriver.getApiClient(clientId=" + clientId + ")");
+	}
 	
 	sql = 	"SELECT " + clientTable.getTableName()+".* " + 
 			" FROM " + clientTable.getTableName() + 
@@ -467,7 +485,7 @@ public ApiClient getApiClient(Connection con, String clientId) throws SQLExcepti
 	try {
 		rset = stmt.executeQuery(sql);
 		if (rset.next()) {
-			apiClient = clientTable.getApiClient(rset, log);
+			apiClient = clientTable.getApiClient(rset, lg);
 		}
 	} finally {
 		stmt.close();

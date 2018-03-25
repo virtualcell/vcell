@@ -26,7 +26,6 @@ import org.vcell.util.DependencyException;
 import org.vcell.util.Extent;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
@@ -78,8 +77,8 @@ public class GeomDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public GeomDbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory, SessionLog sessionLog) {
-	super(dbSyntax,keyFactory,sessionLog);
+public GeomDbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory) {
+	super(dbSyntax,keyFactory);
 }
 
 
@@ -340,7 +339,7 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, Resu
 	//
 	Geometry tempGeometry = null;
 	try {
-		tempGeometry = geomTable.getGeometry(rset,con,log);
+		tempGeometry = geomTable.getGeometry(rset,con);
 	}catch (PropertyVetoException e){
 		throw new DataAccessException(e.getMessage());
 	}
@@ -366,7 +365,7 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, Resu
 		try {
 			geom.getGeometrySpec().setSubVolumes(subVolumes);
 		}catch (java.beans.PropertyVetoException e){
-			log.exception(e);
+			lg.error(e.getMessage(),e);
 			throw new DataAccessException(e.getMessage());
 		}
 	}
@@ -391,7 +390,7 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, Resu
 		try {
 			geom.getGeometrySurfaceDescription().setSurfaceClasses(surfaceClasses);
 		}catch (java.beans.PropertyVetoException e){
-			log.exception(e);
+			lg.error(e.getMessage(),e);
 			throw new DataAccessException(e.getMessage());
 		}
 	}
@@ -562,10 +561,10 @@ private SubVolume getSubVolume(QueryHashtable dbc, Connection con, ResultSet rse
 	}
 	
 	if (imageRegionKey == null) {
-		subVolume = subVolumeTable.getAnalyticOrCompartmentSubVolume(svKey, rset, log);
+		subVolume = subVolumeTable.getAnalyticOrCompartmentSubVolume(svKey, rset);
 	} else {
 		VCPixelClass vcPixelClass = getPixelClass(dbc, con, imageRegionKey);
-		subVolume = subVolumeTable.getImageSubVolume(svKey, rset, log, vcPixelClass);
+		subVolume = subVolumeTable.getImageSubVolume(svKey, rset, vcPixelClass);
 	}
 	//
 	// put newly read SumVolume into object cache
@@ -719,10 +718,12 @@ private void getSurfaceDescription(Connection con, Geometry geom) throws SQLExce
 System.out.println(sql);
 		ResultSet rset = stmt.executeQuery(sql);
 		if (rset.next()){
-			geoSurfaceTable.populateGeometrySurfaceDescription(rset,geom.getGeometrySurfaceDescription(),log);
+			geoSurfaceTable.populateGeometrySurfaceDescription(rset,geom.getGeometrySurfaceDescription());
 			rset.close();
 		}else{
-			log.alert("surface description not found for geometry "+geom.getVersion().toString());
+			if (lg.isWarnEnabled()) {
+				lg.warn("surface description not found for geometry "+geom.getVersion().toString());
+			}
 			rset.close();
 			return;
 		}
@@ -742,7 +743,7 @@ System.out.println(sql);
 		rset = stmt.executeQuery(sql);
 		Vector<GeometricRegion> regionList = new Vector<GeometricRegion>();
 		while (rset.next()){
-			VolumeGeometricRegion volumeRegion = geoRegionTable.getVolumeRegion(rset,geom,log);
+			VolumeGeometricRegion volumeRegion = geoRegionTable.getVolumeRegion(rset,geom);
 			regionList.add(volumeRegion);
 		}
 		VolumeGeometricRegion volumeRegions[] = (VolumeGeometricRegion[])BeanUtils.getArray(regionList,VolumeGeometricRegion.class);
@@ -765,7 +766,7 @@ System.out.println(sql);
 System.out.println(sql);
 		rset = stmt.executeQuery(sql);
 		while (rset.next()){
-			SurfaceGeometricRegion surfaceRegion = geoRegionTable.getSurfaceRegion(rset, volumeRegions, geom.getUnitSystem(), log);
+			SurfaceGeometricRegion surfaceRegion = geoRegionTable.getSurfaceRegion(rset, volumeRegions, geom.getUnitSystem());
 			regionList.add(surfaceRegion);
 		}
 
@@ -811,7 +812,7 @@ private VCImage getVCImage(QueryHashtable dbc, Connection con, User user, KeyVal
 	ResultSet rset = stmt.executeQuery(sql);
 	
 		if (rset.next()) {
-			vcImage = imageTable.getImage(rset,con,log,imageDataTable,dbSyntax);
+			vcImage = imageTable.getImage(rset,con,imageDataTable,dbSyntax);
 			getImageRegionsForVCImage(dbc, con, vcImage);
 		}else{
 			throw new ObjectNotFoundException("Image id="+imageKey+" not found for user '"+user+"'");
@@ -1255,7 +1256,7 @@ private void insertVCImage(InsertHashtable hash, Connection con, User user,VCIma
 	try{
 		insertBrowseImageDataSQL(con, browseImageKey, newVersion.getVersionKey()/*imageKey*/, image);
 	}catch(cbit.image.GifParsingException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("Error Parsing BrowseImage",e);
 	}
 	VCPixelClass vcPixelClasses[] = image.getPixelClasses();
@@ -1283,7 +1284,7 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 		insertVCImage(hash, con, user, vcImage, newVersion);
 		return newVersion.getVersionKey();
 	} catch (ImageException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("ImageException: " + e.getMessage());
 	}
 }
@@ -1304,7 +1305,7 @@ public KeyValue insertVersionable(InsertHashtable hash, QueryHashtable dbc, Conn
 		insertGeometry(hash, dbc, con, user, geometry, updatedImageKey, newVersion,bVersion);
 		return newVersion.getVersionKey();
 	} catch (ImageException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("ImageException: " + e.getMessage());
 	}
 }
@@ -1324,7 +1325,7 @@ public KeyValue updateVersionable(InsertHashtable hash, Connection con, User use
 		newVersion = updateVersionableInit(hash, con, user, vcImage, bVersion);
 		insertVCImage(hash, con, user, vcImage, newVersion);
 	} catch (ImageException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("ImageException: " + e.getMessage());
 	}
 	return newVersion.getVersionKey();
@@ -1345,7 +1346,7 @@ public KeyValue updateVersionable(InsertHashtable hash, QueryHashtable dbc, Conn
 		newVersion = updateVersionableInit(hash, con, user, geometry, bVersion);
 		insertGeometry(hash, dbc, con, user, geometry, updatedImageKey, newVersion, bVersion);
 	} catch (ImageException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("ImageException: " + e.getMessage());
 	}
 	return newVersion.getVersionKey();

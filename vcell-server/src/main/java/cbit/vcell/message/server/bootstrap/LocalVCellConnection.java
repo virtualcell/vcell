@@ -12,10 +12,10 @@ package cbit.vcell.message.server.bootstrap;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.rmi.event.DataJobEvent;
@@ -30,6 +30,7 @@ import cbit.rmi.event.SimpleMessageService;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.LocalUserMetaDbServer;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.server.DataSetController;
@@ -46,6 +47,8 @@ import cbit.vcell.simdata.LocalDataSetController;
  * @author: Jim Schaff.
  */
 public class LocalVCellConnection implements VCellConnection, ExportListener, DataJobListener {
+	public static final Logger lg = Logger.getLogger(LocalVCellConnection.class);
+
 	private SimulationController simulationController = null;
 	private SimulationControllerImpl simulationControllerImpl = null;
 	private ExportServiceImpl exportServiceImpl = null;
@@ -63,7 +66,6 @@ public class LocalVCellConnection implements VCellConnection, ExportListener, Da
 	private static KeyFactory keyFactory = null;
 
 	
-	private SessionLog fieldSessionLog = null;
 	private PerformanceMonitoringFacility performanceMonitoringFacility;
 	private LocalDataSetController localDataSetController;
 
@@ -71,11 +73,10 @@ public class LocalVCellConnection implements VCellConnection, ExportListener, Da
  * This method was created by a SmartGuide.
  * @exception RemoteProxyException The exception description.
  */
-public LocalVCellConnection(UserLoginInfo userLoginInfo, SessionLog sessionLog, SimulationDatabase simulationDatabase, DataSetControllerImpl dataSetControllerImpl, ExportServiceImpl exportServiceImpl) throws SQLException, FileNotFoundException {
+public LocalVCellConnection(UserLoginInfo userLoginInfo, SimulationDatabase simulationDatabase, DataSetControllerImpl dataSetControllerImpl, ExportServiceImpl exportServiceImpl) throws SQLException, FileNotFoundException {
 	this.userLoginInfo = userLoginInfo;
-	this.fieldSessionLog = sessionLog;
-	this.simulationControllerImpl = new SimulationControllerImpl(sessionLog, simulationDatabase, this);
-	sessionLog.print("new LocalVCellConnection(" + userLoginInfo.getUserName() + ")");
+	this.simulationControllerImpl = new SimulationControllerImpl(simulationDatabase, this);
+	if (lg.isTraceEnabled()) lg.trace("new LocalVCellConnection(" + userLoginInfo.getUserName() + ")");
 	messageService = new SimpleMessageService(userLoginInfo.getUser());
 	messageCollector = new SimpleMessageCollector();
 	messageCollector.addMessageListener(messageService);
@@ -109,9 +110,9 @@ public void exportMessage(ExportEvent event) {
  */
 @Override
 public DataSetController getDataSetController() throws DataAccessException {
-	getSessionLog().print("LocalVCellConnection.getDataSetController()");
+	if (lg.isTraceEnabled()) lg.trace("LocalVCellConnection.getDataSetController()");
 	if (localDataSetController == null) {
-		localDataSetController = new LocalDataSetController(this, getSessionLog(), dataSetControllerImpl, exportServiceImpl, getUserLoginInfo().getUser());
+		localDataSetController = new LocalDataSetController(this, dataSetControllerImpl, exportServiceImpl, getUserLoginInfo().getUser());
 	}
 
 	return localDataSetController;
@@ -123,15 +124,6 @@ MessageCollector getMessageCollector() {
 
 /**
  * This method was created by a SmartGuide.
- * @return java.lang.String
- * @param simIdentifier java.lang.String
- */
-private SessionLog getSessionLog() {
-	return (fieldSessionLog);
-}
-
-/**
- * This method was created by a SmartGuide.
  * @return cbit.vcell.solvers.MathController
  * @param mathDesc cbit.vcell.math.MathDescription
  * @exception RemoteProxyException The exception description.
@@ -139,7 +131,7 @@ private SessionLog getSessionLog() {
 @Override
 public SimulationController getSimulationController() {
 	if (simulationController == null){
-		simulationController = new LocalSimulationController(getUserLoginInfo().getUser(),simulationControllerImpl,getSessionLog());
+		simulationController = new LocalSimulationController(getUserLoginInfo().getUser(),simulationControllerImpl);
 	}
 	return simulationController;
 }
@@ -162,9 +154,9 @@ public UserLoginInfo getUserLoginInfo() {
  */
 @Override
 public UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
-	getSessionLog().print("LocalVCellConnection.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalVCellConnection.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServer == null) {
-		userMetaDbServer = new LocalUserMetaDbServer(conFactory, keyFactory, getUserLoginInfo().getUser(), getSessionLog());
+		userMetaDbServer = new LocalUserMetaDbServer(conFactory, keyFactory, getUserLoginInfo().getUser());
 	}
 	return userMetaDbServer;
 }

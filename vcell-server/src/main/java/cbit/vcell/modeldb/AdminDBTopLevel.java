@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -46,6 +47,7 @@ import cbit.vcell.server.UpdateSynchronizationException;
  * This type was created in VisualAge.
  */
 public class AdminDBTopLevel extends AbstractDBTopLevel{
+	
 	private UserDbDriver userDB = null;
 	private SimulationJobDbDriver jobDB = null;
 	private ServiceStatusDbDriver serviceStatusDB = null; 
@@ -54,10 +56,10 @@ public class AdminDBTopLevel extends AbstractDBTopLevel{
 /**
  * DBTopLevel constructor comment.
  */
-public AdminDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog) throws SQLException{
-	super(aConFactory,newLog);
-	userDB = new UserDbDriver(log);
-	jobDB = new SimulationJobDbDriver(aConFactory.getDatabaseSyntax(),log); 
+public AdminDBTopLevel(ConnectionFactory aConFactory) throws SQLException{
+	super(aConFactory);
+	userDB = new UserDbDriver();
+	jobDB = new SimulationJobDbDriver(aConFactory.getDatabaseSyntax()); 
 	serviceStatusDB = new ServiceStatusDbDriver();
 }
 
@@ -71,7 +73,7 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner,b
 				con, conFactory.getKeyFactory(), null,
 				FieldDataDBOperationSpec.createGetExtDataIDsSpec(fieldDataOwner)).extDataIDArr;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getExternalDataIdentifiers()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getExternalDataIdentifiers(fieldDataOwner,false);
@@ -98,7 +100,7 @@ public SimulationJobStatusPersistent[] getActiveJobs(VCellServerID serverID, boo
 	try {
 		return jobDB.getActiveJobs(con,serverID);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getActiveJobs()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getActiveJobs(serverID, false);
@@ -117,7 +119,7 @@ public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Collection
 	try {
 		return jobDB.getSimulationRequirements(con, simKeys);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getSimulationRequirements()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimulationRequirements(simKeys, false);
@@ -139,7 +141,7 @@ public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws jav
 		Set<KeyValue> unreferencedSimulations = DBBackupAndClean.getUnreferencedSimulations(con);
 		return unreferencedSimulations;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getUnreferencedSimulations()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getUnreferencedSimulations(false);
@@ -168,7 +170,7 @@ public SimulationJobStatusPersistent getSimulationJobStatus(KeyValue simKey, int
 		SimulationJobStatusPersistent jobStatus = getSimulationJobStatus(con, simKey, jobIndex, taskID);
 		return jobStatus;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getSimulationJobStatus()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimulationJobStatus(simKey,jobIndex,taskID,false);
@@ -197,7 +199,7 @@ public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simK
 		SimulationJobStatusPersistent[] jobStatus = getSimulationJobStatusArray(con, simKey);
 		return jobStatus;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getSimulationJobStatusArray()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimulationJobStatusArray(simKey,false);
@@ -226,7 +228,7 @@ public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simK
 		SimulationJobStatusPersistent[] jobStatus = getSimulationJobStatusArray(con, simKey, jobIndex);
 		return jobStatus;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getSimulationJobStatusArray()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimulationJobStatusArray(simKey,jobIndex,false);
@@ -253,7 +255,7 @@ public java.util.List<SimpleJobStatusPersistent> getSimpleJobStatus(String condi
 	try {
 		return jobDB.getSimpleJobStatus(con, conditions, startRow, maxNumRows);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getSimpleJobStatus()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimpleJobStatus(conditions,startRow,maxNumRows,false);
@@ -274,7 +276,7 @@ public java.util.List<SimpleJobStatusPersistent> getSimpleJobStatus(SimpleJobSta
 	try {
 		return jobDB.getSimpleJobStatus(con, simStatusQuerySpec);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getSimpleJobStatus()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimpleJobStatus(simStatusQuerySpec,false);
@@ -343,7 +345,7 @@ SimulationJobStatusPersistent[] getSimulationJobStatus(boolean bActiveOnly, User
 	try {
 		return jobDB.getSimulationJobStatus(con,bActiveOnly,owner);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getSimulationJobStatus()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimulationJobStatus(bActiveOnly,owner,false);
@@ -386,7 +388,7 @@ SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[], bool
 		}
 		return simStatuses;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getSimulationStatus()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimulationStatus(simulationKeys,false);
@@ -419,7 +421,7 @@ SimulationStatusPersistent getSimulationStatus(KeyValue simKey, boolean bEnableR
 			return null;
 		}
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getSimulationStatus()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimulationStatus(simKey,false);
@@ -451,7 +453,7 @@ public User getUser(String userid, UserLoginInfo.DigestedPassword digestedPasswo
 	try {
 		return userDB.getUserFromUseridAndPassword(con, userid, digestedPassword, isLocal);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getUser()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getUser(userid, digestedPassword, false, isLocal);
@@ -475,12 +477,11 @@ public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user, D
 		con.commit();
 		return apiAccessToken;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in generateApiAccessToken()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("failure in rollback in generateApiAccessToken(), bEnableRetry="+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -503,12 +504,11 @@ public void setApiAccessTokenStatus(ApiAccessToken accessToken, AccessTokenStatu
 		userDB.setApiAccessTokenStatus(con, accessToken.getKey(), newAccessTokenStatus);
 		con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in setApiAccessTokenStatus()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -529,7 +529,7 @@ public ApiAccessToken getApiAccessToken(String accessToken, boolean bEnableRetry
 	try {
 		return userDB.getApiAccessToken(con, accessToken);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getApiAccessToken()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getApiAccessToken(accessToken, false);
@@ -550,7 +550,7 @@ public ApiClient getApiClient(String clientId, boolean bEnableRetry) throws SQLE
 	try {
 		return userDB.getApiClient(con, clientId);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getApiClient()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getApiClient(clientId, false);
@@ -582,7 +582,7 @@ public User getUser(String userid, boolean bEnableRetry) throws DataAccessExcept
 	try {
 		return userDB.getUserFromUserid(con, userid);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getUser()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getUser(userid, false);
@@ -613,7 +613,7 @@ public User getUserFromSimulationKey(KeyValue simKey, boolean bEnableRetry) thro
 	try {
 		return jobDB.getUserFromSimulationKey(con, simKey);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getUserFromSimulationKey()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getUserFromSimulationKey(simKey,false);
@@ -645,7 +645,7 @@ UserInfo getUserInfo(KeyValue key, boolean bEnableRetry)
 	try {
 		return userDB.getUserInfo(con, key);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getUserInfo()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getUserInfo(key, false);
@@ -664,7 +664,7 @@ void sendLostPassword(String userid, boolean bEnableRetry) throws DataAccessExce
 	try {
 		userDB.sendLostPassword(con,userid);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in sendLostPassword()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			sendLostPassword(userid, false);
@@ -696,7 +696,7 @@ UserInfo[] getUserInfos(boolean bEnableRetry)
 	try {
 		return userDB.getUserInfos(con);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getUserInfos()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getUserInfos(false);
@@ -723,12 +723,11 @@ public void insertSimulationJobStatus(SimulationJobStatusPersistent simulationJo
 		insertSimulationJobStatus(con, simulationJobStatus);
 		con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in insertSimulationJobStatus()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -768,15 +767,14 @@ KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 		con.commit();
 		return key;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in insertUserInfo()",e);
 		if(e instanceof UseridIDExistsException){
 			throw (UseridIDExistsException)e;
 		}
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -804,12 +802,11 @@ public void updateSimulationJobStatus(SimulationJobStatusPersistent newSimulatio
 		updateSimulationJobStatus(con, newSimulationJobStatus);
 		con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in updateSimulationJobStatus()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry,rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -847,12 +844,11 @@ KeyValue updateUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 		con.commit();
 		return newUserInfo.id;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in updateUserInfo()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -874,12 +870,11 @@ void updateUserStat(UserLoginInfo userLoginInfo,boolean bEnableRetry) throws SQL
 		userDB.updateUserStat(con,conFactory.getKeyFactory(),userLoginInfo);
 		con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in updateUserStat()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -912,12 +907,11 @@ public ServiceStatus insertServiceStatus(ServiceStatus serviceStatus, boolean bE
 				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);		
 		return newServiceStatus;
 	}  catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in insertServiceStatus()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -943,12 +937,11 @@ public void deleteServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetr
 		serviceStatusDB.deleteServiceStatus(con, serviceStatus, conFactory.getKeyFactory().getNewKey(con));
 		con.commit();
 	}  catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in deleteServiceStatus()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -976,12 +969,11 @@ public ServiceStatus modifyServiceStatus(ServiceStatus oldServiceStatus, Service
 				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), false);
 		return updatedServiceStatus;
 	}  catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in modifyServiceStatus()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1008,7 +1000,7 @@ public ServiceStatus updateServiceStatus(ServiceStatus oldServiceStatus, Transac
 		try {
 			newServiceStatus = serviceOP.doOperation(oldServiceStatus);
 		} catch (Exception ex) {
-			log.exception(ex);
+			lg.error("failure in updateServiceStatus()",ex);
 			throw new RuntimeException("transactional operation failed for " + newServiceStatus + " : " + ex.getMessage());
 		}
 		serviceStatusDB.updateServiceStatus(con,newServiceStatus);
@@ -1017,12 +1009,11 @@ public ServiceStatus updateServiceStatus(ServiceStatus oldServiceStatus, Transac
 				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), false);
 		return updatedServiceStatus;
 	}  catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in updateServiceStatus()",e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1043,7 +1034,7 @@ public java.util.List<ServiceStatus> getAllServiceStatus(boolean bEnableRetry) t
 	try {
 		return serviceStatusDB.getAllServiceStatus(con);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error("failure in getAllServiceStatus()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getAllServiceStatus(false);

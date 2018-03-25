@@ -58,7 +58,6 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -88,7 +87,6 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.VCellBootstrap;
@@ -104,7 +102,6 @@ import cbit.vcell.xml.XmlHelper;
 @SuppressWarnings("serial")
 public class ServerManageConsole extends JFrame {
 	private VCellBootstrap vcellBootstrap = null;
-	private SessionLog log = null;
 	private List<SimpleUserConnection> userList = Collections.synchronizedList(new LinkedList<SimpleUserConnection>());
 	private List<ServiceStatus> serviceConfigList = Collections.synchronizedList(new LinkedList<ServiceStatus>());
 	private List<ServiceInstanceStatus> serviceInstanceStatusList = Collections.synchronizedList(new LinkedList<ServiceInstanceStatus>());
@@ -263,11 +260,10 @@ public class ServerManageConsole extends JFrame {
 /**
  * ServerManageConsole constructor comment.
  */
-public ServerManageConsole(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl, SessionLog log) throws java.io.IOException, java.io.FileNotFoundException, org.jdom.JDOMException, javax.jms.JMSException {
+public ServerManageConsole(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl) throws java.io.IOException, java.io.FileNotFoundException, org.jdom.JDOMException, javax.jms.JMSException {
 	super();
 	this.adminDbTop = adminDbTopLevel;
 	this.dbServerImpl = dbServerImpl;
-	this.log = log;
 	initialize();
 }
 
@@ -2022,14 +2018,12 @@ public static void main(java.lang.String[] args) {
 		
 		javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 
-		SessionLog log = new StdoutSessionLog("Console");
-
-		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
-		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
-		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
+		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
+		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
 
-		ServerManageConsole aServerManageConsole = new ServerManageConsole(adminDbTopLevel, databaseServerImpl, log);
+		ServerManageConsole aServerManageConsole = new ServerManageConsole(adminDbTopLevel, databaseServerImpl);
 
 		aServerManageConsole.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
@@ -2174,7 +2168,7 @@ private void query() {
 	}
 	
 	try {
-		SimulationDatabase simDatabase = new SimulationDatabaseDirect(adminDbTop, dbServerImpl, false, log);
+		SimulationDatabase simDatabase = new SimulationDatabaseDirect(adminDbTop, dbServerImpl, false);
 		SimpleJobStatus[] resultList = simDatabase.getSimpleJobStatus(null,querySpec);
 		getNumResultsLabel().setText("" + resultList.length);
 		getNumSelectedLabel().setText("0");
@@ -2268,10 +2262,10 @@ private void submitSelectedButton_ActionPerformed(ActionEvent e) {
 			SimpleJobStatus simpleJobStatus = getReturnedSimulationJobStatus(selectedRow);
 			String statusString = "["+ simpleJobStatus.simulationMetadata.vcSimID + ", " + simpleJobStatus.jobStatus.getSchedulerStatus().getDescription() + "]";
 			if (simpleJobStatus.jobStatus.getSchedulerStatus().isDone()) {
-				log.print("Submitting job (" + (i+1) + " of " + srows.length + ") : " + statusString);
+				System.out.println("Submitting job (" + (i+1) + " of " + srows.length + ") : " + statusString);
 				resubmitSimulation(simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName(), simpleJobStatus.simulationMetadata.vcSimID.getSimulationKey());
 			} else {
-				log.print("Submitting job ("+(i+1)+" of "+srows.length+") : " + statusString + ", is still running, skipping...");
+				System.out.println("Submitting job ("+(i+1)+" of "+srows.length+") : " + statusString + ", is still running, skipping...");
 			}
 		}
 	}

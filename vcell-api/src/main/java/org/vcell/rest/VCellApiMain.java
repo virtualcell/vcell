@@ -32,7 +32,6 @@ import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcService;
 import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.service.VCellServiceHelper;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
@@ -58,7 +57,6 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.PythonSupport.PythonPackage;
-import cbit.vcell.resource.StdoutSessionLog;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
@@ -111,16 +109,15 @@ public class VCellApiMain {
 			
 		    System.out.println("connecting to database");
 
-			final SessionLog log = new StdoutSessionLog("VCellWebApi");
 			lg.trace("oracle factory (next)");
-			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 			KeyFactory keyFactory = conFactory.getKeyFactory();
 			lg.trace("database impl (next)");
-			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
+			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
 			lg.trace("local db server (next)");
-			LocalAdminDbServer localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory, log);
+			LocalAdminDbServer localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory);
 			lg.trace("admin db server (next)");
-			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
+			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
 			
 			lg.trace("messaging service (next)");
 			VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
@@ -159,10 +156,10 @@ public class VCellApiMain {
 			});
 							
 			lg.trace("rest database service (next)");
-			RestDatabaseService restDatabaseService = new RestDatabaseService(databaseServerImpl, localAdminDbServer, vcMessagingService, log);
+			RestDatabaseService restDatabaseService = new RestDatabaseService(databaseServerImpl, localAdminDbServer, vcMessagingService);
 			
 			lg.trace("rest event service (next)");
-			RestEventService restEventService = new RestEventService(vcMessagingService, log);
+			RestEventService restEventService = new RestEventService(vcMessagingService);
 			
 			lg.trace("use verifier (next)");
 			UserVerifier userVerifier = new UserVerifier(adminDbTopLevel);

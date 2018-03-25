@@ -14,7 +14,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import cbit.vcell.resource.StdoutSessionLog;
 /**
  * This type was created in VisualAge.
  */
@@ -66,7 +65,7 @@ public static void main(String args[]) {
 
 		new cbit.vcell.resource.PropertyLoader();
 		
-		conFactory = DatabaseService.getInstance().createConnectionFactory(new StdoutSessionLog("KeyFactoryTest"));
+		conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		
 		con = conFactory.getConnection(lock);

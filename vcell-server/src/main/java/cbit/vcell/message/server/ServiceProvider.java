@@ -18,7 +18,7 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.vcell.util.SessionLog;
+import org.apache.log4j.Logger;
 
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
@@ -37,17 +37,17 @@ import cbit.vcell.message.messages.MessageConstants;
  * @author: Fei Gao
  */
 public abstract class ServiceProvider {
+	public static final Logger lg = Logger.getLogger(ServiceProvider.class);
+
 	protected ServiceInstanceStatus serviceInstanceStatus = null;
 	protected VCMessagingService vcMessagingService = null;
 	protected VCTopicConsumer vcTopicConsumer = null;
-	protected SessionLog log = null;
 	public final boolean bSlaveMode;
 
 /**
  * JmsMessaging constructor comment.
  */
-protected ServiceProvider(VCMessagingService vcMessageService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log, boolean bSlaveMode) {
-	this.log = log;
+protected ServiceProvider(VCMessagingService vcMessageService, ServiceInstanceStatus serviceInstanceStatus, boolean bSlaveMode) {
 	this.vcMessagingService = vcMessageService;
 	this.serviceInstanceStatus = serviceInstanceStatus;
 	this.bSlaveMode = bSlaveMode;
@@ -102,7 +102,7 @@ public void initControlTopicListener() {
 					VCMessage reply = session.createObjectMessage(ServiceProvider.this.serviceInstanceStatus);
 					reply.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_IAMALIVE_VALUE);
 					reply.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
-					log.print("sending reply [" + reply.toString() + "]");
+					if (lg.isTraceEnabled()) lg.trace("sending reply [" + reply.toString() + "]");
 					if (message.getReplyTo() != null) {
 						reply.setCorrelationID(message.getMessageID());
 						session.sendTopicMessage((VCellTopic)message.getReplyTo(), reply);
@@ -114,7 +114,7 @@ public void initControlTopicListener() {
 					reply.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
 					reply.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 					session.sendTopicMessage(VCellTopic.DaemonControlTopic, reply);			
-					log.print("sending reply [" + reply.toString() + "]");
+					if (lg.isTraceEnabled()) lg.trace("sending reply [" + reply.toString() + "]");
 					
 				} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE)) {
 					serviceID = message.getStringProperty(MessageConstants.SERVICE_ID_PROPERTY);
@@ -123,7 +123,7 @@ public void initControlTopicListener() {
 					}
 				}
 			} catch (Exception ex) {
-				log.exception(ex);
+				lg.error(ex.getMessage(),ex);
 			}	
 		}
 

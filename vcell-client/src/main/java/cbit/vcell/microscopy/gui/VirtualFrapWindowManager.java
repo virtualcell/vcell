@@ -16,7 +16,6 @@ import java.util.Vector;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
 import cbit.rmi.event.DataJobEvent;
@@ -30,7 +29,6 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.DataEvent;
 import cbit.vcell.simdata.DataListener;
 import cbit.vcell.simdata.DataServerImpl;
@@ -150,9 +148,8 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	
 	public void startExport(Component requester,OutputContext outContext, ExportSpecs exportSpecs){
 		try {
-			SessionLog log = new StdoutSessionLog("export");
-			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(new StdoutSessionLog("export"));
-			DataServerImpl dataServerImpl = new DataServerImpl(log,localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
+			ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
+			DataServerImpl dataServerImpl = new DataServerImpl(localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
 			exportServiceImpl.addExportListener(new ExportListener() {
 				public void exportMessage(ExportEvent event) {
 					System.out.println(event.toString());
@@ -171,9 +168,8 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	{
 		ExportEvent exportEvt = null;
 		
-		SessionLog log = new StdoutSessionLog("export");
-		ExportServiceImpl exportServiceImpl = new ExportServiceImpl(new StdoutSessionLog("export"));
-		DataServerImpl dataServerImpl = new DataServerImpl(log,localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
+		ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
+		DataServerImpl dataServerImpl = new DataServerImpl(localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
 		exportServiceImpl.addExportListener(new ExportListener() {
 			public void exportMessage(ExportEvent event) {
 				System.out.println(event.toString());

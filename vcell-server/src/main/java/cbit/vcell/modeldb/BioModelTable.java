@@ -20,7 +20,6 @@ import java.util.Date;
 
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -62,14 +61,14 @@ private BioModelTable() {
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public BioModelMetaData getBioModelMetaData(ResultSet rset, SessionLog log, BioModelDbDriver bioModelDbDriver, Connection con,DatabaseSyntax dbSyntax) 
+public BioModelMetaData getBioModelMetaData(ResultSet rset, BioModelDbDriver bioModelDbDriver, Connection con,DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
 	// Get Version
 	//
 	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	KeyValue bioModelKey = version.getVersionKey();
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
@@ -103,14 +102,14 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, SessionLog log, BioM
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,SessionLog log, KeyValue simContextKeys[], KeyValue simulationKeys[],DatabaseSyntax dbSyntax) 
+public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con, KeyValue simContextKeys[], KeyValue simulationKeys[],DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
 	// Get Version
 	//
 	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
 
@@ -129,11 +128,11 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,Sessi
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log,DatabaseSyntax dbSyntax) throws SQLException,org.vcell.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax) throws SQLException,org.vcell.util.DataAccessException {
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
 	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	VCellSoftwareVersion vcSoftwareVersion = VCellSoftwareVersion.fromString(softwareVersion);
 	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge,dbSyntax);

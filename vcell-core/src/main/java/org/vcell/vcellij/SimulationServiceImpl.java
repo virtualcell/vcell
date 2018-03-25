@@ -19,8 +19,6 @@ import org.vcell.sbml.vcell.SBMLExporter.VCellSBMLDoc;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.NullSessionLog;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.vcellij.api.DomainType;
 import org.vcell.vcellij.api.SBMLModel;
@@ -40,7 +38,6 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -244,7 +241,6 @@ public class SimulationServiceImpl {
         	// ----------- run simulation(s)
         	final File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());	
 			Simulation simulation = new TempSimulation(newsim, false);
-			StdoutSessionLog log = new StdoutSessionLog("Quick run");
 			
 			
 	        final SimulationServiceContext simServiceContext = new SimulationServiceContext();
@@ -252,7 +248,7 @@ public class SimulationServiceImpl {
 	        simServiceContext.simState = SimulationState.running;
 	        simServiceContext.simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
     		simServiceContext.vcDataIdentifier = simServiceContext.simTask.getSimulationJob().getVCDataIdentifier();
-	        simServiceContext.solver = createQuickRunSolver(log, localSimDataDir, simServiceContext.simTask );
+	        simServiceContext.solver = createQuickRunSolver(localSimDataDir, simServiceContext.simTask );
 	        simServiceContext.localSimDataDir = localSimDataDir;
 	        if (simServiceContext.solver == null) {
 	        	throw new RuntimeException("null solver");
@@ -324,7 +320,7 @@ public class SimulationServiceImpl {
     		return new SimulationInfo().setId(1);
     	}
     }
-    private static Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory, SimulationTask simTask) throws SolverException, IOException {
+    private static Solver createQuickRunSolver(File directory, SimulationTask simTask) throws SolverException, IOException {
     	SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
     	if (solverDescription == null) {
     		throw new IllegalArgumentException("SolverDescription cannot be null");
@@ -337,7 +333,7 @@ public class SimulationServiceImpl {
     	
     	SolverUtilities.prepareSolverExecutable(solverDescription);	
     	// create solver from SolverFactory
-    	Solver solver = SolverFactory.createSolver(sessionLog, directory, simTask, false);
+    	Solver solver = SolverFactory.createSolver(directory, simTask, false);
 
     	return solver;
     }
@@ -346,9 +342,8 @@ public class SimulationServiceImpl {
 		try {
 			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 			
-			SessionLog log = new NullSessionLog();
 			Cachetable cacheTable = new Cachetable(10000);
-			DataSetControllerImpl datasetController = new DataSetControllerImpl(log,cacheTable,simServiceContext.localSimDataDir.getParentFile(), null);
+			DataSetControllerImpl datasetController = new DataSetControllerImpl(cacheTable,simServiceContext.localSimDataDir.getParentFile(), null);
 			simServiceContext.times = datasetController.getDataSetTimes(simServiceContext.vcDataIdentifier);
 			simServiceContext.dataIdentifiers = datasetController.getDataIdentifiers(outputContext, simServiceContext.vcDataIdentifier);
 			return datasetController;

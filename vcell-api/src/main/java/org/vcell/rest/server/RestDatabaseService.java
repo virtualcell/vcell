@@ -19,7 +19,6 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.KeyValue;
@@ -71,13 +70,11 @@ public class RestDatabaseService {
 	ConcurrentHashMap<KeyValue, SimContextRep> scMap = new ConcurrentHashMap<KeyValue, SimContextRep>();
 	ConcurrentHashMap<KeyValue, SimulationRep> simMap = new ConcurrentHashMap<KeyValue, SimulationRep>();
 	VCMessagingService vcMessagingService = null;
-	SessionLog log = null;
 
-	public RestDatabaseService(DatabaseServerImpl databaseServerImpl, LocalAdminDbServer localAdminDbServer, VCMessagingService vcMessagingService, SessionLog log) {
+	public RestDatabaseService(DatabaseServerImpl databaseServerImpl, LocalAdminDbServer localAdminDbServer, VCMessagingService vcMessagingService) {
 		this.databaseServerImpl = databaseServerImpl;
 		this.localAdminDbServer = localAdminDbServer;
 		this.vcMessagingService = vcMessagingService;
-		this.log = log;
 	}
 	
 	public static class SimulationSaveResponse {
@@ -165,7 +162,7 @@ public class RestDatabaseService {
 				e.printStackTrace();
 				throw new DataAccessException(e.getMessage());
 			}
-			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 			rpcSimServerProxy.startSimulation(vcellUser, vcSimID, simRep.getScanCount());
 			return simRep;
@@ -194,7 +191,7 @@ public class RestDatabaseService {
 				e.printStackTrace();
 				throw new DataAccessException(e.getMessage());
 			}
-			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 			rpcSimServerProxy.stopSimulation(vcellUser, vcSimID);
 			return simRep;
@@ -218,7 +215,7 @@ public class RestDatabaseService {
 		int jobIndex = 0;
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
-			RpcDataServerProxy rpcDataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSession, log);
+			RpcDataServerProxy rpcDataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSession);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 			DataSetMetadata dataSetMetadata = rpcDataServerProxy.getDataSetMetadata(vcdID);
@@ -245,7 +242,7 @@ public class RestDatabaseService {
 		User owner = simRep.getOwner();
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
-			RpcDataServerProxy rpcDataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSession, log);
+			RpcDataServerProxy rpcDataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSession);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 			DataSetTimeSeries dataSetTimeSeries = rpcDataServerProxy.getDataSetTimeSeries(vcdID, variableNames);
@@ -673,7 +670,7 @@ public class RestDatabaseService {
 				e.printStackTrace();
 				throw new DataAccessException(e.getMessage());
 			}
-			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
 			SimpleJobStatus[] simpleJobStatusArray = rpcSimServerProxy.getSimpleJobStatus(vcellUser, simQuerySpec);
 			return simpleJobStatusArray;
 		}finally{
@@ -738,7 +735,7 @@ public class RestDatabaseService {
 				e.printStackTrace();
 				throw new DataAccessException(e.getMessage());
 			}
-			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
 			SimpleJobStatus[] simpleJobStatusArray = rpcSimServerProxy.getSimpleJobStatus(vcellUser, simQuerySpec);
 			// gather unique simIDs and go back and ask server for SimulationStatuses
 			for (SimpleJobStatus simpleJobStatus : simpleJobStatusArray){

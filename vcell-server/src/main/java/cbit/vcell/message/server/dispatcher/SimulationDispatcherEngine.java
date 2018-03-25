@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
@@ -24,6 +24,7 @@ import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.messages.StatusMessage;
+import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.UpdateSynchronizationException;
@@ -38,6 +39,7 @@ import cbit.vcell.solver.server.SimulationMessage;
  * @author: Jim Schaff
  */
 public class SimulationDispatcherEngine {
+	public static final Logger lg = Logger.getLogger(SimulationDispatcherEngine.class);
 
 	private HashMap<KeyValue,List<SimulationStateMachine>> simStateMachineHash = new HashMap<KeyValue, List<SimulationStateMachine>>();
 
@@ -75,11 +77,11 @@ public class SimulationDispatcherEngine {
 		return newStateMachine;
 	}
 
-	public void onDispatch(Simulation simulation, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession dispatcherQueueSession, SessionLog log) throws VCMessagingException, DataAccessException, SQLException{
+	public void onDispatch(Simulation simulation, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession dispatcherQueueSession) throws VCMessagingException, DataAccessException, SQLException{
 		KeyValue simulationKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey();
 		SimulationStateMachine simStateMachine = getSimulationStateMachine(simulationKey, simJobStatus.getJobIndex());
 		
-		simStateMachine.onDispatch(simulation, simJobStatus, simulationDatabase, dispatcherQueueSession, log);
+		simStateMachine.onDispatch(simulation, simJobStatus, simulationDatabase, dispatcherQueueSession);
 	}
 	/**
 	 * @param vcMessage
@@ -88,21 +90,21 @@ public class SimulationDispatcherEngine {
 	 * @throws SQLException 
 	 * @throws DataAccessException 
 	 */
-	public void onStartRequest(VCSimulationIdentifier vcSimID, User user, int simulationScanCount, SimulationDatabase simulationDatabase, VCMessageSession session, VCMessageSession dispatcherQueueSession, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+	public void onStartRequest(VCSimulationIdentifier vcSimID, User user, int simulationScanCount, SimulationDatabase simulationDatabase, VCMessageSession session, VCMessageSession dispatcherQueueSession) throws VCMessagingException, DataAccessException, SQLException {
 		KeyValue simKey = vcSimID.getSimulationKey();
 
 		SimulationInfo simulationInfo = null;
 		try {
 			simulationInfo = simulationDatabase.getSimulationInfo(user, simKey);
 		} catch (DataAccessException ex) {
-			log.alert("Bad simulation " + vcSimID);
+			if (lg.isWarnEnabled()) lg.warn("Bad simulation " + vcSimID);
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
 					SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Failed to dispatch simulation: "+ ex.getMessage()), null, null), user.getName(), null, null);
 			message.sendToClient(session);
 			return;
 		}
 		if (simulationInfo == null) {
-			log.alert("Can't start, simulation [" + vcSimID + "] doesn't exist in database");
+			if (lg.isWarnEnabled()) lg.warn("Can't start, simulation [" + vcSimID + "] doesn't exist in database");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
 					SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Can't start, simulation [" + vcSimID + "] doesn't exist"), null, null), user.getName(), null, null);
 			message.sendToClient(session);
@@ -110,7 +112,7 @@ public class SimulationDispatcherEngine {
 		}
 
 		if (simulationScanCount > Integer.parseInt(cbit.vcell.resource.PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.maxJobsPerScan))) {
-			log.alert("Too many simulations (" + simulationScanCount + ") for parameter scan." + vcSimID);
+			if (lg.isWarnEnabled()) lg.warn("Too many simulations (" + simulationScanCount + ") for parameter scan." + vcSimID);
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
 					SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Too many simulations (" + simulationScanCount + ") for parameter scan."), null, null), user.getName(), null, null);
 			message.sendToClient(session);
@@ -120,15 +122,15 @@ public class SimulationDispatcherEngine {
 		for (int jobIndex = 0; jobIndex < simulationScanCount; jobIndex++){
 			SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, jobIndex);
 			try {
-				simStateMachine.onStartRequest(user, vcSimID, simulationDatabase, session, log);
+				simStateMachine.onStartRequest(user, vcSimID, simulationDatabase, session);
 			}catch (UpdateSynchronizationException e){
-				simStateMachine.onStartRequest(user, vcSimID, simulationDatabase, session, log);
+				simStateMachine.onStartRequest(user, vcSimID, simulationDatabase, session);
 			}
 		}
 	}
 
 	
-	public void onStopRequest(VCSimulationIdentifier vcSimID, User user, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws DataAccessException, VCMessagingException, SQLException {
+	public void onStopRequest(VCSimulationIdentifier vcSimID, User user, SimulationDatabase simulationDatabase, VCMessageSession session) throws DataAccessException, VCMessagingException, SQLException {
 		KeyValue simKey = vcSimID.getSimulationKey();
 
 		SimulationJobStatus[] allActiveSimJobStatusArray = simulationDatabase.getActiveJobs();
@@ -141,9 +143,9 @@ public class SimulationDispatcherEngine {
 		for (SimulationJobStatus simJobStatus : simJobStatusArray){
 			SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, simJobStatus.getJobIndex());
 			try {
-				simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session, log);
+				simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session);
 			}catch (UpdateSynchronizationException e){
-				simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session, log);
+				simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session);
 			}
 		}
 	}
@@ -154,26 +156,26 @@ public class SimulationDispatcherEngine {
 	 * @param vcMessage
 	 * @param session
 	 */
-	public void onWorkerEvent(WorkerEvent workerEvent, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) {
+	public void onWorkerEvent(WorkerEvent workerEvent, SimulationDatabase simulationDatabase, VCMessageSession session) {
 		try {
 			KeyValue simKey = workerEvent.getVCSimulationDataIdentifier().getSimulationKey();
 			int jobIndex = workerEvent.getJobIndex();
 			SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, jobIndex);
-			simStateMachine.onWorkerEvent(workerEvent, simulationDatabase, session, log);
+			simStateMachine.onWorkerEvent(workerEvent, simulationDatabase, session);
 		} catch (Exception ex) {
-			log.exception(ex);
+			lg.error(ex.getMessage(),ex);
 		}
 	}
 
 
-	public void onSystemAbort(SimulationJobStatus jobStatus, String failureMessage, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) {
+	public void onSystemAbort(SimulationJobStatus jobStatus, String failureMessage, SimulationDatabase simulationDatabase, VCMessageSession session) {
 		try {
 			KeyValue simKey = jobStatus.getVCSimulationIdentifier().getSimulationKey();
 			int jobIndex = jobStatus.getJobIndex();
 			SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, jobIndex);
-			simStateMachine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, session, log);
+			simStateMachine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, session);
 		} catch (Exception ex) {
-			log.exception(ex);
+			lg.error(ex.getMessage(),ex);
 		}
 	}
 

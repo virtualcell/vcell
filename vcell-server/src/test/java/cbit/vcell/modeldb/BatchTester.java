@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -68,8 +67,8 @@ public class BatchTester extends VCDatabaseScanner {
 	 */
 	public static final User ADMINISTRATOR = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 
-	public BatchTester(SessionLog log) throws Exception {
-		super(log);
+	public BatchTester() throws Exception {
+		super();
 	}
 	
 	/**
@@ -120,7 +119,7 @@ public class BatchTester extends VCDatabaseScanner {
 								ps.setLong(2,convert(vk));
 								ps.execute( );
 							}catch (Exception e2){
-								log.exception(e2);
+								lg.error(e2.getMessage(),e2);
 								printWriter.println("======= " + e2.getMessage());
 								if (bAbortOnDataAccessException){
 									throw e2;
@@ -244,7 +243,7 @@ public class BatchTester extends VCDatabaseScanner {
 								scanStatus = ScanStatus.FILTERED;
 							}
 						}catch (Exception e){
-							log.exception(e);
+							lg.error(e.getMessage(),e);
 							scanStatus = ScanStatus.FAIL;
 							exceptionClass = e.getClass().getName();
 							exceptionMessage = e.getMessage();
@@ -311,7 +310,7 @@ public class BatchTester extends VCDatabaseScanner {
 								ps.setLong(1,convert(vk));
 								ps.execute( );
 							}catch (Exception e2){
-								log.exception(e2);
+								lg.error(e2.getMessage(),e2);
 								printWriter.println("======= " + e2.getMessage());
 								if (bAbortOnDataAccessException){
 									throw e2;
@@ -403,7 +402,7 @@ public class BatchTester extends VCDatabaseScanner {
 							MathModel storedModel = cbit.vcell.xml.XmlHelper.XMLToMathModel( new XMLSource(mathModelXML.toString()));
 							databaseVisitor.visitMathModel(storedModel,System.out);
 						}catch (Exception e){
-							log.exception(e);
+							lg.error(e.getMessage(),e);
 							scanStatus = ScanStatus.FAIL;
 							exceptionClass = e.getClass().getName();
 							exceptionMessage = e.getMessage();

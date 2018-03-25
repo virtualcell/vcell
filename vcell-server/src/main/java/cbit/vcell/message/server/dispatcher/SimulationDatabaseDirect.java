@@ -11,10 +11,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -28,6 +28,7 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusPersistent;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
@@ -52,10 +53,10 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
 public class SimulationDatabaseDirect implements SimulationDatabase {
+	public static final Logger lg = Logger.getLogger(SimulationDatabaseDirect.class);
 
 	private AdminDBTopLevel adminDbTopLevel = null;
 	private DatabaseServerImpl databaseServerImpl = null;
-	private SessionLog log = null;
 	private Map<KeyValue, FieldDataIdentifierSpec[]> simFieldDataIDMap = Collections.synchronizedMap(new HashMap<KeyValue, FieldDataIdentifierSpec[]>());
 	private Map<String, User> userMap = Collections.synchronizedMap(new HashMap<String, User>());
 	private SimpleJobStatusCache cache = null;
@@ -157,7 +158,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	};
 
 	
-	public SimulationDatabaseDirect(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl databaseServerImpl, boolean bCache, SessionLog log){
+	public SimulationDatabaseDirect(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl databaseServerImpl, boolean bCache){
 		this.databaseServerImpl = databaseServerImpl;
 		this.adminDbTopLevel = adminDbTopLevel;
 		if (bCache){
@@ -165,7 +166,6 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 		}else{
 			this.cache = new SimpleJobStatusCache_DONT_CACHE();
 		}
-		this.log = log;
 	}
 
 	@Override
@@ -250,7 +250,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 			try {
 				sim = XmlHelper.XMLToSim(simstr.toString());
 			}catch (XmlParseException e){
-				log.exception(e);
+				lg.error(e.getMessage(),e);
 				throw new DataAccessException(e.getMessage());
 			}
 		}
@@ -262,7 +262,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(Simulation sim) throws DataAccessException {
 		try {		
 			KeyValue simKey = sim.getKey();
-			log.print("Get FieldDataIdentifierSpec for [" + simKey + "]");	
+			if (lg.isTraceEnabled()) lg.trace("Get FieldDataIdentifierSpec for [" + simKey + "]");	
 			FieldDataIdentifierSpec[] fieldDataIDSs = (FieldDataIdentifierSpec[])simFieldDataIDMap.get(simKey);
 
 			if (fieldDataIDSs != null) {
@@ -302,7 +302,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 			simFieldDataIDMap.put(simKey, fieldDataIDSs);		
 			return fieldDataIDSs;
 		} catch (Exception ex) {
-			log.exception(ex);
+			lg.error(ex.getMessage(), ex);
 			throw new DataAccessException(ex.getMessage());
 		}
 	}

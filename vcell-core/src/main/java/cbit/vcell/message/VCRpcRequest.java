@@ -12,9 +12,9 @@ package cbit.vcell.message;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
 /**
@@ -23,6 +23,7 @@ import org.vcell.util.document.User;
  * @author: Fei Gao
  */
 public class VCRpcRequest implements java.io.Serializable {
+	public static final Logger lg = Logger.getLogger(VCRpcRequest.class);
 	
 	public enum RpcServiceType {
 		DATA("Data"), 
@@ -126,7 +127,7 @@ public String toString() {
 	return "[" + user + "," + requestedServiceType + "," + methodName + "]";
 }
 
-public final Object rpc(Object rpcServiceImpl, SessionLog log) throws DataAccessException, ObjectNotFoundException {
+public final Object rpc(Object rpcServiceImpl) throws DataAccessException, ObjectNotFoundException {
 	String methodName = getMethodName();
 	Object[] arguments = getArguments();
 	
@@ -209,8 +210,8 @@ public final Object rpc(Object rpcServiceImpl, SessionLog log) throws DataAccess
 		return result;
 		
 	} catch (InvocationTargetException ex) {
-		log.exception(ex);
-	 	Throwable targetExcepton = ex.getTargetException();
+		lg.error(ex.getMessage(), ex);
+		Throwable targetExcepton = ex.getTargetException();
 	 	if (targetExcepton instanceof ObjectNotFoundException) {
 		 	throw (ObjectNotFoundException)targetExcepton;
 	 	} else if (targetExcepton instanceof DataAccessException) {
@@ -219,7 +220,7 @@ public final Object rpc(Object rpcServiceImpl, SessionLog log) throws DataAccess
 		 	throw new RuntimeException(targetExcepton.getMessage());
 	 	}
 	} catch (IllegalAccessException e){
-		log.exception(e);
+		lg.error(e.getMessage(), e);
 		throw new RuntimeException("IllegalAccessException for rpc(method=" + methodName);
 	}
 }

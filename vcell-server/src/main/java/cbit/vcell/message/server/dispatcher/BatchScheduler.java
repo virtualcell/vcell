@@ -18,7 +18,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
@@ -87,7 +86,7 @@ public static int getMaxJobsPerSite() {
  * Insert the method's description here.
  * Creation date: (5/11/2006 9:32:58 AM)
  */
-public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsThisSite, Map<KeyValue,SimulationRequirements> simulationRequirementsMap, int siteJobQuota, int userQuotaOde, int userQuotaPde, VCellServerID systemID, SessionLog log) {
+public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsThisSite, Map<KeyValue,SimulationRequirements> simulationRequirementsMap, int siteJobQuota, int userQuotaOde, int userQuotaPde, VCellServerID systemID) {
 	Hashtable<User, Integer> userPdeRunningJobsThisSite = new Hashtable<User, Integer>();
 	Hashtable<User, Integer> userOdeRunningJobsThisSite = new Hashtable<User, Integer>();
 	

@@ -14,8 +14,6 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -66,8 +64,8 @@ public abstract class DefaultODESolver extends AbstractJavaSolver implements ODE
  * is not to be performed...
  * @param simContext cbit.vcell.math.MathDescription
  */
-public DefaultODESolver(SimulationTask simTask, File directory, SessionLog sessionLog, int valueVectorCount)  throws SolverException {
-	super(simTask, directory, sessionLog);
+public DefaultODESolver(SimulationTask simTask, File directory, int valueVectorCount)  throws SolverException {
+	super(simTask, directory);
 	if (simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use DefaultODESolver on spatial simulation");
 	}

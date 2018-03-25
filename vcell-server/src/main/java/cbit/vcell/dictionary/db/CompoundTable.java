@@ -12,7 +12,6 @@ package cbit.vcell.dictionary.db;
 
 import java.util.Vector;
 
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -53,7 +52,7 @@ public CompoundTable() {
  * @return cbit.vcell.dictionary.Compound
  * @param rset java.sql.ResultSet
  */
-public DBFormalSpecies[] getCompounds(java.sql.ResultSet rset, SessionLog log,boolean createBound) throws java.sql.SQLException {
+public DBFormalSpecies[] getCompounds(java.sql.ResultSet rset,boolean createBound) throws java.sql.SQLException {
 
 	Vector compounds = new Vector();
 	Vector aliasNames = new Vector();

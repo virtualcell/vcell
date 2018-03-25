@@ -85,7 +85,6 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataInfoProvider;
@@ -2564,15 +2563,14 @@ private void startExport() {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				try {
-					StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
 					File primaryDir = ResourceUtil.getLocalRootDir();
 					User usr = User.tempUser;
 					File usrDir = new File(primaryDir.getAbsolutePath(),usr.getName());
 					System.setProperty(PropertyLoader.exportBaseDirInternalProperty, usrDir.getAbsolutePath()+File.separator);
 					System.setProperty(PropertyLoader.exportBaseURLProperty, usrDir.toURI().toURL().toString());
-					DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-					ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-					DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, localExportServiceImpl);
+					DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(null,primaryDir,null);
+					ExportServiceImpl localExportServiceImpl = new ExportServiceImpl();
+					DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, localExportServiceImpl);
 					ExportEvent localExportEvent = dataServerImpl.makeRemoteFile(outputContext,usr, exportSpecs);
 					File sourceFile = new File(usrDir,new File((new URL(localExportEvent.getLocation()).getPath())).getName());
 					hashTable.put(SOURCE_FILE_KEY, sourceFile);

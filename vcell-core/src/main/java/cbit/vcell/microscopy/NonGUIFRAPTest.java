@@ -40,7 +40,6 @@ import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -403,7 +402,6 @@ public class NonGUIFRAPTest {
 		MicroscopyXmlproducer.writeXMLFile(frapStudy, new File(outputXMLFileName), true, null,false);//no progress listener, need to change
 		FRAPStudy.runFVSolverStandalone(
 			new File(localWorkspace.getDefaultSimDataDirectory()),
-			new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 			bioModel.getSimulation(0),
 			imageDatasetExternalDataInfo.getExternalDataIdentifier(),
 			roiExternalDataInfo.getExternalDataIdentifier(),

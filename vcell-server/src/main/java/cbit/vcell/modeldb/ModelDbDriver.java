@@ -20,7 +20,6 @@ import java.util.Vector;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -61,8 +60,8 @@ public class ModelDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public ModelDbDriver(ReactStepDbDriver argReactStepDB,SessionLog sessionLog) {
-	super(argReactStepDB.dbSyntax,argReactStepDB.keyFactory,sessionLog);
+public ModelDbDriver(ReactStepDbDriver argReactStepDB) {
+	super(argReactStepDB.dbSyntax,argReactStepDB.keyFactory);
 	this.reactStepDB = argReactStepDB;
 }
 
@@ -126,7 +125,7 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
 private Diagram getDiagram(QueryHashtable dbc, Connection con,ResultSet rset, StructureTopology structureTopology) throws SQLException, DataAccessException {
 
 	KeyValue structKey = new KeyValue(rset.getBigDecimal(diagramTable.structRef.toString()));
-	Diagram diagram = diagramTable.getDiagram(rset,log,dbSyntax);
+	Diagram diagram = diagramTable.getDiagram(rset,dbSyntax);
 	diagram.setStructure(reactStepDB.getStructure(dbc, con,structKey));
 	
 	return diagram;
@@ -275,7 +274,7 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 	//KeyValue ownerRef = new KeyValue(rset.getBigDecimal(ModelTable.ownerRef.toString(), 0));
 	//User owner = new User(ownerName, ownerRef);
 	try {
-		Model model = modelTable.getModel(rset,con,log);
+		Model model = modelTable.getModel(rset,con);
 		//model.setOwner(owner);
 		KeyValue modelKey = model.getVersion().getVersionKey();
 		
@@ -335,11 +334,11 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 						SpeciesContext speciesContext = model.getSpeciesContext(params[j].getName());
 						if (speciesContext!=null){
 							reactSteps[i].addCatalyst(speciesContext);
-							log.alert("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with SpeciesContext, added as a catalyst");
+							if (lg.isWarnEnabled()) lg.warn("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with SpeciesContext, added as a catalyst");
 						}
 					}
 				}catch (Throwable e){
-					log.exception(e);
+					lg.error(e.getMessage(),e);
 				}
 				try {
 					reactSteps[i].rebindAllToModel(model);
@@ -374,7 +373,7 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 		
 		return model;
 	}catch (PropertyVetoException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -447,7 +446,7 @@ private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, Res
 	//
 	// get object (ignoring foreign keys)
 	//
-	speciesContext = speciesContextModelTable.getSpeciesContext(rset,log,scKey);
+	speciesContext = speciesContextModelTable.getSpeciesContext(rset,scKey);
 	String speciesPatternString = speciesContext.getSpeciesPatternString();
 	//
 	// add objects corresponding to foreign keys
@@ -670,7 +669,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 		if (structKey != null){
 			insertDiagramSQL(con, key, diagram, newVersion.getVersionKey()/*modelKey*/, hash.getDatabaseKey(diagram.getStructure()));
 		}else{
-			log.alert("ModelDbDriver.insertModel(),  diagram "+diagram.toString()+" is orphaned, check Model logic");
+			if (lg.isWarnEnabled()) lg.warn("ModelDbDriver.insertModel(),  diagram "+diagram.toString()+" is orphaned, check Model logic");
 		}
 	}
 	//

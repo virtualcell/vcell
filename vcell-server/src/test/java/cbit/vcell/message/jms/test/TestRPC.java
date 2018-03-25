@@ -15,7 +15,6 @@ import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 
 /**
  * Hello world!
@@ -43,13 +42,12 @@ public class TestRPC {
 			
     		VCMessagingService messagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
     		messagingService.setDelegate(new SimpleMessagingDelegate());
-    		StdoutSessionLog log = new StdoutSessionLog("log");
 	    	
 	        // reading message and computing sum
 	        // create N comsumers
 	        MyRpcServer myRpcServer = new MyRpcServer();
-			VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue, log);
-			VCPooledQueueConsumer pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, log, NUM_THREADS, messagingService.createProducerSession());
+			VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue);
+			VCPooledQueueConsumer pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, NUM_THREADS, messagingService.createProducerSession());
 			pooledQueueConsumer.initThreadPool();
 			VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellTestQueue.JimQueue, pooledQueueConsumer, null, "Queue["+VCellTestQueue.JimQueue.getName()+"] ==== RPC Consumer Master Thread ", 1000);
 

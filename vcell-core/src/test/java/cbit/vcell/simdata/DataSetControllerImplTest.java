@@ -4,17 +4,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.NullSessionLog;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -39,7 +35,6 @@ public class DataSetControllerImplTest extends TestCase {
 		ResourceUtil.setNativeLibraryDirectory();
 		NativeLib.HDF5.load();
 
-		SessionLog sessionLog = new NullSessionLog();
 		Cachetable cachetable = new Cachetable(2000);
 		File resourcesDirectory = new File("src/test/resources/simdata");
 		File primarydir = resourcesDirectory;
@@ -47,7 +42,7 @@ public class DataSetControllerImplTest extends TestCase {
 		KeyValue simKey = new KeyValue("1771409053");
 		VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(new KeyValue("1771409053"), User.tempUser);
 		vcDataIdentifier = new VCSimulationDataIdentifier(vcSimId, 0);
-		dsc = new DataSetControllerImpl(sessionLog, cachetable, primarydir, secondarydir);
+		dsc = new DataSetControllerImpl(cachetable, primarydir, secondarydir);
 	}
 
 	@After

@@ -17,7 +17,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.vcell.service.VCellServiceHelper;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.rmi.event.DataJobListener;
@@ -70,8 +69,8 @@ public class SimDataServer extends ServiceProvider implements ExportListener, Da
  * @param log
  * @throws Exception
  */
-public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl dataServerImpl, VCMessagingService vcMessagingService, SessionLog log, boolean bSlaveMode) throws Exception {
-	super(vcMessagingService,serviceInstanceStatus,log,bSlaveMode);
+public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl dataServerImpl, VCMessagingService vcMessagingService, boolean bSlaveMode) throws Exception {
+	super(vcMessagingService,serviceInstanceStatus,bSlaveMode);
 	this.dataServerImpl = dataServerImpl;
 }
 
@@ -96,8 +95,8 @@ public void init() throws Exception {
 	}
 
 	this.sharedProducerSession = vcMessagingService.createProducerSession();
-	rpcMessageHandler = new VCRpcMessageHandler(dataServerImpl, VCellQueue.DataRequestQueue, log);
-	this.pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, log, numThreads, sharedProducerSession);
+	rpcMessageHandler = new VCRpcMessageHandler(dataServerImpl, VCellQueue.DataRequestQueue);
+	this.pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, numThreads, sharedProducerSession);
 	this.pooledQueueConsumer.initThreadPool();
 	rpcConsumer = new VCQueueConsumer(VCellQueue.DataRequestQueue, pooledQueueConsumer, selector, serviceType.getName()+" RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DATA_REQUEST);
 
@@ -158,20 +157,19 @@ public static void main(java.lang.String[] args) {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
  		
-		final SessionLog log = new StdoutSessionLog("DataServer");
 		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
-		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable, 
+		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable, 
 				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)), 
 				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty)));
 		
-		ExportServiceImpl exportServiceImpl = new ExportServiceImpl(log);
+		ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 		
-		DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);
+		DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);
 
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 		vcMessagingService.setDelegate(new ServerMessagingDelegate());
 		
-        SimDataServer simDataServer = new SimDataServer(serviceInstanceStatus, dataServerImpl, vcMessagingService, log, false);
+        SimDataServer simDataServer = new SimDataServer(serviceInstanceStatus, dataServerImpl, vcMessagingService, false);
         //add dataJobListener
         dataSetControllerImpl.addDataJobListener(simDataServer);
         // add export listener
@@ -198,7 +196,7 @@ public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 		dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, dataEventMessage);
 		dataSession.close();
 	} catch (VCMessagingException ex) {
-		log.exception(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 }
 
@@ -218,7 +216,7 @@ public void exportMessage(cbit.rmi.event.ExportEvent event) {
 		dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, exportEventMessage);
 		dataSession.close();
 	} catch (VCMessagingException ex) {
-		log.exception(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 }
 

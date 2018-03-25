@@ -15,7 +15,6 @@ import java.sql.SQLException;
 
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -52,7 +51,7 @@ private DiagramTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public Diagram getDiagram(ResultSet rset, SessionLog log, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
+public Diagram getDiagram(ResultSet rset, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
 
 	KeyValue key = new KeyValue(rset.getBigDecimal(id.toString()));
 	String mName = rset.getString(name.toString());
@@ -75,7 +74,7 @@ public Diagram getDiagram(ResultSet rset, SessionLog log, DatabaseSyntax dbSynta
 	try {
 		diagram.fromTokens(tokens);
 	}catch (Exception e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 	

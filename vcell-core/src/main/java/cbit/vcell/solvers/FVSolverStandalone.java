@@ -25,8 +25,6 @@ import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
-import org.vcell.util.NullSessionLog;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.SimResampleInfoProvider;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -80,8 +78,8 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 	public static final int HESM_THROW_EXCEPTION = 1;
 	public static final int HESM_OVERWRITE_AND_CONTINUE = 2;
 	
-	public FVSolverStandalone (SimulationTask simTask, File userDir, SessionLog sessionLog, boolean bMsging) throws SolverException {
-		this(simTask, userDir, userDir, sessionLog, bMsging);
+	public FVSolverStandalone (SimulationTask simTask, File userDir, boolean bMsging) throws SolverException {
+		this(simTask, userDir, userDir, bMsging);
 	}
 
 /**
@@ -93,8 +91,8 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
  * @param simID java.lang.String
  * @param clientProxy cbit.vcell.solvers.ClientProxy
  */
-public FVSolverStandalone (SimulationTask simTask, File userDir, File destinationDirectory, SessionLog sessionLog, boolean bMsging) throws SolverException {
-	super(simTask, userDir, sessionLog, bMsging);
+public FVSolverStandalone (SimulationTask simTask, File userDir, File destinationDirectory, boolean bMsging) throws SolverException {
+	super(simTask, userDir, bMsging);
 	this.destinationDirectory = destinationDirectory;
 	if (! simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use FVSolver on non-spatial simulation");
@@ -222,7 +220,7 @@ protected void writeVCGAndResampleFieldData() throws SolverException {
 					simTask.getSimulation().getMeshSpecification().getSamplingSize(),
 					getResampledGeometry().getGeometrySurfaceDescription().getRegionImage());
 			String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);			
-			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(), null, getSaveDirectory().getParentFile(),
+			DataSetControllerImpl dsci = new DataSetControllerImpl(null, getSaveDirectory().getParentFile(),
 					secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 			dsci.writeFieldFunctionData(null,argFieldDataIDSpecs, bResample, simpleMesh, simResampleInfoProvider, 
 					numMembraneElements, HESM_OVERWRITE_AND_CONTINUE);

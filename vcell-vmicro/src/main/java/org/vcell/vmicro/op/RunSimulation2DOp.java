@@ -6,7 +6,6 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -16,7 +15,6 @@ import org.vcell.vmicro.workflow.data.LocalWorkspace;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -36,7 +34,6 @@ public class RunSimulation2DOp {
 		
 		runFVSolverStandalone(
 			new File(localWorkspace.getDefaultSimDataDirectory()),
-			new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 			simulation,
 			progressListener);
 
@@ -65,7 +62,6 @@ public class RunSimulation2DOp {
 	
 	private static void runFVSolverStandalone(
 			File simulationDataDir,
-			SessionLog sessionLog,
 			Simulation sim,
 			ClientTaskStatusSupport progressListener) throws Exception{
 
@@ -73,7 +69,7 @@ public class RunSimulation2DOp {
 			SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, null),0);
 			SolverUtilities.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 			
-			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,sessionLog,false);		
+			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,false);		
 			fvSolver.startSolver(); 
 //			fvSolver.runSolver();
 			

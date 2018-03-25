@@ -28,7 +28,6 @@ public class SolverControllerImpl {
 	private SolverListener solverListener = null;
 	
 	private SimulationTask simulationTask = null;
-	private org.vcell.util.SessionLog sessionLog = null;
 	private Solver solver = null;
 	private File directory = null;
 	private Date startDate = null;
@@ -41,15 +40,14 @@ public class SolverControllerImpl {
  * @param directory java.lang.String
  * @param simIdentifier java.lang.String
  */
-public SolverControllerImpl (VCellConnection argVCellConnection, org.vcell.util.SessionLog sessionLog, SimulationTask simulationTask, java.io.File directory) throws cbit.vcell.solver.SolverException {
+public SolverControllerImpl (VCellConnection argVCellConnection, SimulationTask simulationTask, java.io.File directory) throws cbit.vcell.solver.SolverException {
 	this.simulationTask = simulationTask;
 	this.directory = directory;
-	this.sessionLog = sessionLog;
 	this.vcConn = argVCellConnection;
 	//
 	// instantiate an appropriate solver
 	//
-	this.solver = cbit.vcell.solver.server.SolverFactory.createSolver(sessionLog,directory,simulationTask, false);
+	this.solver = cbit.vcell.solver.server.SolverFactory.createSolver(directory,simulationTask, false);
 }
 
 
@@ -94,13 +92,11 @@ public Date getStartDate() {
  * This method was created by a SmartGuide.
  */
 public void startSimulationJob() throws SimExecutionException {
-	sessionLog.print("SolverControllerImpl.startSimulationJob() ... starting...");
 	if (getSolver() != null){
 		startDate = new Date();
 		getSolver().startSolver();
 		endDate = new Date();
 	}
-	sessionLog.print("SolverControllerImpl.startSimulationJob() ... started");
 }
 
 

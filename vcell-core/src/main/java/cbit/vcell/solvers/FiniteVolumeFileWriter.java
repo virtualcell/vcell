@@ -38,7 +38,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
-import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
 
 import cbit.image.ImageException;
@@ -1692,7 +1691,7 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 	}
 
 	String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);	
-	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,workingDirectory.getParentFile(),
+	DataSetControllerImpl dsci = new DataSetControllerImpl(null,workingDirectory.getParentFile(),
 			secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 	
 	printWriter.println("# Field Data");

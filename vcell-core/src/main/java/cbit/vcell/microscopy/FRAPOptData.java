@@ -27,7 +27,6 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
@@ -331,7 +330,6 @@ public class FRAPOptData {
 			//run simulation
 			FRAPStudy.runFVSolverStandalone_ref(
 				new File(getLocalWorkspace().getDefaultSimDataDirectory()),
-				new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 				bioModel.getSimulation(0),
 				getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 				getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),

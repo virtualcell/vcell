@@ -16,8 +16,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
@@ -47,8 +45,8 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 /**
  * AbstractPDESolver constructor comment.
  */
-public AbstractCompiledSolver(SimulationTask simTask, File directory, SessionLog sessionLog, boolean bMsging) throws SolverException {
-	super(simTask, directory, sessionLog);
+public AbstractCompiledSolver(SimulationTask simTask, File directory, boolean bMsging) throws SolverException {
+	super(simTask, directory);
 	bMessaging = bMsging;
 	setCurrentTime(simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
 }
@@ -105,7 +103,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		}
 		ApplicationMessage appMessage = getApplicationMessage(messageString);
 		if (appMessage==null){
-			getSessionLog().alert("AbstractCompiledSolver: Unexpected Message '"+messageString+"'");
+			if (lg.isWarnEnabled()) lg.warn("AbstractCompiledSolver: Unexpected Message '"+messageString+"'");
 			return;
 		}else{
 			switch (appMessage.getMessageType()) {
@@ -118,7 +116,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 					break;
 				}
 				case ApplicationMessage.ERROR_MESSAGE: {
-					getSessionLog().alert(appMessage.getError());
+					if (lg.isWarnEnabled()) lg.warn(appMessage.getError());
 					break;
 				}
 				// ignore unknown message types
@@ -169,21 +167,21 @@ public void runSolver() {
 			fireSolverFinished();
 		}
 	} catch (SolverException integratorException) {
-		getSessionLog().exception(integratorException);
+		lg.error(integratorException.getMessage(),integratorException);
 		cleanup();
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(integratorException.getMessage())));
 		fireSolverAborted(SimulationMessage.solverAborted(integratorException.getMessage()));
 	} catch (org.vcell.util.exe.ExecutableException executableException) {
-		getSessionLog().exception(executableException);
+		lg.error(executableException.getMessage(),executableException);
 		cleanup();
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not execute code: " + executableException.getMessage())));
 		fireSolverAborted(SimulationMessage.solverAborted(executableException.getMessage()));
-	} catch (Throwable throwable) {
-		getSessionLog().alert("AbstractODESolver.start() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!");
-		getSessionLog().exception(throwable);
+	} catch (Exception exception) {
+		if (lg.isWarnEnabled()) lg.warn("AbstractODESolver.start() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!");
+		lg.error(exception.getMessage(),exception);
 		cleanup();
-		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(throwable.getMessage())));
-		fireSolverAborted(SimulationMessage.solverAborted(throwable.getMessage()));
+		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(exception.getMessage())));
+		fireSolverAborted(SimulationMessage.solverAborted(exception.getMessage()));
 	} finally {
 		synchronized(this) {
 			fieldThread = null;

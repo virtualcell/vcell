@@ -24,8 +24,6 @@ import java.util.Vector;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 
-import cbit.vcell.resource.StdoutSessionLog;
-
 public class VCStatistics {
 	private ConnectionFactory connectionFactory = null;
 	private ArrayList<String> userNameList = new ArrayList<String>();
@@ -66,7 +64,6 @@ public class VCStatistics {
 	}
 	private VCStatistics(String dbDriverName, String dbConnectURL,String dbUserid,String dbPassword) throws Exception {
 		connectionFactory = DatabaseService.getInstance().createConnectionFactory(
-				new StdoutSessionLog("test"),
 				dbDriverName,
 				dbConnectURL,
 				dbUserid,

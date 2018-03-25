@@ -2,7 +2,6 @@ package org.vcell.vmicro.workflow.data;
 
 import java.io.File;
 
-import org.vcell.util.NullSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -24,8 +23,7 @@ public class VCellSimReader {
 
 	public static DataSetControllerImpl getDataSetControllerImplFromVCellSimulationData(File vcellSimLogFile) throws Exception{
 		File primaryDir = vcellSimLogFile.getParentFile();
-		return new DataSetControllerImpl(
-			new NullSessionLog(),new Cachetable(Cachetable.minute*10),primaryDir,primaryDir);
+		return new DataSetControllerImpl(new Cachetable(Cachetable.minute*10),primaryDir,primaryDir);
 	}
 
 	public static User getDotUser(){

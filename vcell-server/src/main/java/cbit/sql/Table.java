@@ -10,15 +10,19 @@
 
 package cbit.sql;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 
 import cbit.sql.Field.SQLDataType;
+import cbit.vcell.messaging.db.SimulationJobDbDriver;
 
 /**
  * This type was created in VisualAge.
  */
 public abstract class Table {
 	
+	public static Logger lg = Logger.getLogger(Table.class);
+
 	public static final String SQL_GLOBAL_HINT = "";//" /*+ RULE */ ";
 	
 	public static final String SEQ = "newSeq";

@@ -30,7 +30,6 @@ import org.vcell.util.ISize;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccessNone;
@@ -688,17 +687,15 @@ public class FRAPStudy implements Matchable{
 	
 	public static void runFVSolverStandalone(
 			File simulationDataDir,
-			SessionLog sessionLog,
 			Simulation sim,
 			ExternalDataIdentifier imageDataExtDataID,
 			ExternalDataIdentifier roiExtDataID,
 			ClientTaskStatusSupport progressListener) throws Exception{
-		runFVSolverStandalone(simulationDataDir, sessionLog, sim, imageDataExtDataID, roiExtDataID, progressListener, false);
+		runFVSolverStandalone(simulationDataDir, sim, imageDataExtDataID, roiExtDataID, progressListener, false);
 	}
 	
 	public static void runFVSolverStandalone_ref(
 		File simulationDataDir,
-		SessionLog sessionLog,
 		Simulation sim,
 		ExternalDataIdentifier imageDataExtDataID,
 		ExternalDataIdentifier roiExtDataID,
@@ -730,7 +727,7 @@ public class FRAPStudy implements Matchable{
 //			simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 		}
 		
-		FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,sessionLog,false);		
+		FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,false);		
 		fvSolver.startSolver();
 		
 		SolverStatus status = fvSolver.getSolverStatus();
@@ -762,7 +759,6 @@ public class FRAPStudy implements Matchable{
 	
 	public static void runFVSolverStandalone(
 			File simulationDataDir,
-			SessionLog sessionLog,
 			Simulation sim,
 			ExternalDataIdentifier imageDataExtDataID,
 			ExternalDataIdentifier roiExtDataID,
@@ -792,7 +788,7 @@ public class FRAPStudy implements Matchable{
 			
 			SolverUtilities.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 			
-			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,sessionLog,false);		
+			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,false);		
 			fvSolver.startSolver();
 			
 			SolverStatus status = fvSolver.getSolverStatus();

@@ -13,6 +13,7 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -47,7 +48,7 @@ private ApiClientTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public ApiClient getApiClient(ResultSet rset, SessionLog log) throws SQLException, DataAccessException {
+public ApiClient getApiClient(ResultSet rset, Logger lg) throws SQLException, DataAccessException {
 
 	KeyValue key = new KeyValue(rset.getBigDecimal(id.toString()));
 

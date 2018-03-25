@@ -12,8 +12,6 @@ package cbit.vcell.solver.ode;
 import java.io.File;
 import java.io.IOException;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -43,8 +41,8 @@ public abstract class AbstractJavaSolver extends AbstractSolver {
 /**
  * AbstractIntegrator constructor comment.
  */
-public AbstractJavaSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
-	super(simTask, directory, sessionLog);
+public AbstractJavaSolver(SimulationTask simTask, File directory) throws SolverException {
+	super(simTask, directory);
 }
 
 
@@ -140,7 +138,7 @@ protected final void printToFile(double progress) throws IOException {
 				}
 				ODESimData odeSimData = new ODESimData(new VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), odeSolverResultSet);
 				String mathName = odeSimData.getMathName();
-				getSessionLog().print("AbstractJavaSolver.printToFile(" + mathName + ")");
+				if (lg.isTraceEnabled()) lg.trace("AbstractJavaSolver.printToFile(" + mathName + ")");
 				File logFile = new File(getBaseName() + LOGFILE_EXTENSION);
 				File dataFile = new File(getBaseName() + ODE_DATA_EXTENSION);
 				ODESimData.writeODEDataFile(odeSimData, dataFile);
@@ -169,23 +167,22 @@ public void runSolver() {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVER_FINISHED));
 		fireSolverFinished();
 	} catch (SolverException integratorException) {
-		getSessionLog().exception(integratorException);
+		lg.error(integratorException.getMessage(),integratorException);
 		SimulationMessage simulationMessage = SimulationMessage.solverAborted(integratorException.getMessage());
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, simulationMessage));
 		fireSolverAborted(simulationMessage);
 	} catch (IOException ioException) {
-		getSessionLog().exception(ioException);
+		lg.error(ioException.getMessage(),ioException);
 		SimulationMessage simulationMessage = SimulationMessage.solverAborted(ioException.getMessage());
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, simulationMessage));
 		fireSolverAborted(simulationMessage);
 	} catch (UserStopException userStopException) {
-		getSessionLog().exception(userStopException);
+		lg.error(userStopException.getMessage(),userStopException);
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_STOPPED, SimulationMessage.solverStopped(userStopException.getMessage())));
 		fireSolverStopped();
-	} catch (Throwable throwable) {
-		getSessionLog().alert("AbstractJavaSolver.runSolver() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!");
-		getSessionLog().exception(throwable);
-		SimulationMessage simulationMessage = SimulationMessage.solverAborted(throwable.getMessage());
+	} catch (Exception e) {
+		lg.error("AbstractJavaSolver.runSolver() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!",e);
+		SimulationMessage simulationMessage = SimulationMessage.solverAborted(e.getMessage());
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, simulationMessage));
 		fireSolverAborted(simulationMessage);
 	} finally {

@@ -20,7 +20,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -112,10 +111,10 @@ public static void readRbmElement(Connection con,Model model,DatabaseSyntax dbSy
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset, Connection con,SessionLog log) throws SQLException,DataAccessException {
+public VersionInfo getInfo(ResultSet rset, Connection con) throws SQLException,DataAccessException {
 	
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
 	return new ModelInfo(version,VCellSoftwareVersion.fromString(softwareVersion));
@@ -163,10 +162,10 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
  * @param rset ResultSet
  * @param log SessionLog
  */
-public Model getModel(ResultSet rset, Connection con,SessionLog log) throws SQLException,DataAccessException {
+public Model getModel(ResultSet rset, Connection con) throws SQLException,DataAccessException {
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 
 	ModelUnitSystem modelUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
 	

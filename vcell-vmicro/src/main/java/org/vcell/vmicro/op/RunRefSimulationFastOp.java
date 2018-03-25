@@ -12,7 +12,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Origin;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccessNone;
@@ -58,7 +57,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
@@ -174,7 +172,6 @@ public class RunRefSimulationFastOp {
 		
 		runFVSolverStandalone(
 			new File(localWorkspace.getDefaultSimDataDirectory()),
-			new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 			simulation,
 			initialConcentrationExtData.getExternalDataIdentifier(),
 			roiExtData.getExternalDataIdentifier(),
@@ -376,7 +373,6 @@ public class RunRefSimulationFastOp {
 
 	private void runFVSolverStandalone(
 			File simulationDataDir,
-			SessionLog sessionLog,
 			Simulation sim,
 			ExternalDataIdentifier initialConditionExtDataID,
 			ExternalDataIdentifier roiExtDataID,
@@ -408,7 +404,7 @@ public class RunRefSimulationFastOp {
 				simTask.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
 			}
 			
-			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,sessionLog,false);		
+			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,false);		
 			fvSolver.startSolver(); 
 //			fvSolver.runSolver();
 			

@@ -21,7 +21,6 @@ import org.jdom.Element;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -85,7 +84,7 @@ private SimContextTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,DataAccessException {
 
 	KeyValue mathRef = null;
 	java.math.BigDecimal mathRefValue = rset.getBigDecimal(SimContextTable.table.mathRef.toString());
@@ -98,7 +97,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(SimContextTable.table.modelRef.toString()));
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
 	return new SimulationContextInfo(mathRef,geomRef,modelRef,version,VCellSoftwareVersion.fromString(softwareVersion));
@@ -152,12 +151,12 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
  * @param log cbit.vcell.server.SessionLog
  * @deprecated shouldn't do recursive query
  */
-public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User user,ResultSet rset,SessionLog log,
+public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User user,ResultSet rset,
 										GeomDbDriver geomDB,ModelDbDriver modelDB,MathDescriptionDbDriver mathDB) 
 							throws SQLException,DataAccessException, java.beans.PropertyVetoException {
 			
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	KeyValue geomKey = new KeyValue(rset.getBigDecimal(SimContextTable.table.geometryRef.toString()));
 	Geometry geom = (Geometry)geomDB.getVersionable(dbc, con,user, VersionableType.Geometry,geomKey,false);
 	KeyValue modelKey = new KeyValue(rset.getBigDecimal(SimContextTable.table.modelRef.toString()));

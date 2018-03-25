@@ -20,7 +20,6 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -63,8 +62,8 @@ public abstract class SundialsSolver extends SimpleCompiledSolver implements ODE
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param simulation cbit.vcell.solver.Simulation
  */
-public SundialsSolver(SimulationTask simTask, File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
-	super(simTask, directory, sessionLog, bMessaging);
+public SundialsSolver(SimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
+	super(simTask, directory, bMessaging);
 	if (simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use SundialsSolver on spatial simulation");
 	}
@@ -339,7 +338,7 @@ private ODESolverResultSet getStateVariableResultSet() {
 				inputStream.close();
 			}
 		} catch (Exception ex) {
-			getSessionLog().exception(ex);
+			lg.error(ex.getMessage(),ex);
 		}
 	}
 	return (odeSolverResultSet);

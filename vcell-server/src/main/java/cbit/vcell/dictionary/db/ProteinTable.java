@@ -11,7 +11,6 @@
 package cbit.vcell.dictionary.db;
 import java.util.Vector;
 
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -58,7 +57,7 @@ public ProteinTable() {
  * @return cbit.vcell.dictionary.protein
  * @param rset java.sql.ResultSet
  */
-public DBFormalSpecies[] getProteins(java.sql.ResultSet rset, SessionLog log,boolean createBound) throws java.sql.SQLException {
+public DBFormalSpecies[] getProteins(java.sql.ResultSet rset, boolean createBound) throws java.sql.SQLException {
 
 	Vector proteins = new Vector();
 	Vector aliasNames = new Vector();

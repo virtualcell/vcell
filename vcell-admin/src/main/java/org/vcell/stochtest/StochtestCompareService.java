@@ -14,7 +14,6 @@ import org.vcell.stochtest.StochtestCompare.StochtestCompareStatus;
 import org.vcell.stochtest.StochtestRun.StochtestRunStatus;
 import org.vcell.stochtest.TimeSeriesMultitrialData.SummaryStatistics;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 
 import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
@@ -24,7 +23,6 @@ import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.xml.XmlParseException;
 
 
@@ -36,11 +34,11 @@ public class StochtestCompareService {
 	private File baseDir = null;
 
 
-	public StochtestCompareService(File baseDir, ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog) 
+	public StochtestCompareService(File baseDir, ConnectionFactory argConFactory, KeyFactory argKeyFactory) 
 			throws DataAccessException, SQLException {
 		this.conFactory = argConFactory;
 		this.keyFactory = argKeyFactory;
-		this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,argSessionLog);
+		this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
 		this.baseDir = baseDir;
 	}
 
@@ -58,7 +56,6 @@ public class StochtestCompareService {
 		}
 		
 		PropertyLoader.loadProperties();
-	    SessionLog sessionLog = new StdoutSessionLog("StochtestCompareService");
 
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	    String driverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
@@ -69,9 +66,9 @@ public class StochtestCompareService {
 	    // get appropriate database factory objects
 	    //
 	    ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(
-	    		sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
+	    		driverName,connectURL,dbSchemaUser,dbPassword);
 	    KeyFactory keyFactory = conFactory.getKeyFactory();
-	    StochtestCompareService stochtestService = new StochtestCompareService(baseDir, conFactory, keyFactory, sessionLog);
+	    StochtestCompareService stochtestService = new StochtestCompareService(baseDir, conFactory, keyFactory);
 	    
 	    while (true){
 	    	stochtestService.compareOne();

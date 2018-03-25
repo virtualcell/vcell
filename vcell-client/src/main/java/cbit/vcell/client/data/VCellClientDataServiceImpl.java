@@ -40,7 +40,6 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -133,12 +132,11 @@ public class VCellClientDataServiceImpl implements VCellClientDataService {
 				vtkManager = vcellClient.getRequestManager().getVtkManager(null,vcSimulationDataIdentifier);
 			} else {
 				// ---- preliminary : construct the localDatasetControllerProvider
-				StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
 				File primaryDir = ResourceUtil.getLocalRootDir();
 				User usr = User.tempUser;
-				DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-				ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-				LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
+				DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(null,primaryDir,null);
+				ExportServiceImpl localExportServiceImpl = new ExportServiceImpl();
+				LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(usr, dataSetControllerImpl, localExportServiceImpl);
 				VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
 				vtkManager = new VtkManager(null, vcDataManager, vcSimulationDataIdentifier);
 			}
@@ -150,11 +148,10 @@ public class VCellClientDataServiceImpl implements VCellClientDataService {
 			KeyValue simKeyValue = new KeyValue(simulationDataSetRef.getSimId());
 			VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKeyValue, user);
 			if (simulationDataSetRef.isIsLocal()){
-				StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
 				File primaryDir = ResourceUtil.getLocalRootDir();
-				DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-				ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-				LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, user, dataSetControllerImpl, localExportServiceImpl);
+				DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(null,primaryDir,null);
+				ExportServiceImpl localExportServiceImpl = new ExportServiceImpl();
+				LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(user, dataSetControllerImpl, localExportServiceImpl);
 				VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
 				File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
 				VCSimulationDataIdentifier simulationDataIdentifier = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);

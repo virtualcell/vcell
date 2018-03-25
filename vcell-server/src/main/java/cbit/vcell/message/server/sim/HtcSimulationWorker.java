@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.exe.ExecutableException;
@@ -81,8 +80,8 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
 	 * @param argInitialContext javax.naming.Context
 	 */
-public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log, boolean bSlaveMode) throws DataAccessException, FileNotFoundException, UnknownHostException {
-	super(vcMessagingService, serviceInstanceStatus, log, bSlaveMode);
+public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, boolean bSlaveMode) throws DataAccessException, FileNotFoundException, UnknownHostException {
+	super(vcMessagingService, serviceInstanceStatus, bSlaveMode);
 	this.htcProxy = htcProxy;
 }
 
@@ -211,7 +210,7 @@ private void initQueueConsumer() {
 				if (lg.isInfoEnabled()) {
 					lg.info("onQueueMessage() submit job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
 				}
-				HtcJobID pbsId = submit2PBS(simTask, clonedHtcProxy, log, rd);
+				HtcJobID pbsId = submit2PBS(simTask, clonedHtcProxy, rd);
 				if (lg.isInfoEnabled()) {
 					lg.info("onQueueMessage() sending 'accepted' message for job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
 				}
@@ -222,7 +221,7 @@ private void initQueueConsumer() {
 					lg.info("onQueueMessage() sent 'accepted' message for job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
 				}
 			} catch (Exception e) {
-				log.exception(e);
+				lg.error(e.getMessage(), e);
 				if (simTask!=null){
 					try {
 						lg.error("failed to process simTask request: "+e.getMessage()+" for simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName(), e);
@@ -231,7 +230,7 @@ private void initQueueConsumer() {
 						}
 						lg.error("sent 'failed' message for simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName(), e);
 					} catch (VCMessagingException e1) {
-						log.exception(e1);
+						lg.error(e1.getMessage(),e);
 					}
 				}else {
 					lg.error("failed to process simTask request: "+e.getMessage(), e);
@@ -241,7 +240,7 @@ private void initQueueConsumer() {
 	};
 
 	int numHtcworkerThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.htcworkerThreadsProperty, "5"));
-	this.pooledQueueConsumer = new VCPooledQueueConsumer(queueListener, log, numHtcworkerThreads, sharedMessageProducer);
+	this.pooledQueueConsumer = new VCPooledQueueConsumer(queueListener, numHtcworkerThreads, sharedMessageProducer);
 	this.pooledQueueConsumer.initThreadPool();
 	VCellQueue queue = VCellQueue.SimJobQueue;
 	VCMessageSelector selector = vcMessagingService.createSelector(getJobSelector());
@@ -250,7 +249,7 @@ private void initQueueConsumer() {
 	vcMessagingService.addMessageConsumer(queueConsumer);
 }
 
-private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, SessionLog log, PostProcessingChores chores) throws XmlParseException, IOException, SolverException, ExecutableException {
+private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, PostProcessingChores chores) throws XmlParseException, IOException, SolverException, ExecutableException {
 
 	HtcJobID jobid = null;
 	String htcLogDirExternalString = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal)).getAbsolutePath();
@@ -269,7 +268,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 	File parallelDirExternal = new File(chores.runDirectoryExternal);
 	File primaryUserDirInternal = new File(chores.finalDataDirectoryInternal);
 	File primaryUserDirExternal = new File(chores.finalDataDirectoryExternal);
-	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, primaryUserDirInternal,parallelDirInternal, simTask, true);
+	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(primaryUserDirInternal,parallelDirInternal, simTask, true);
 	realSolver.setUnixMode();
 
 	String simTaskXmlText = XmlHelper.simTaskToXML(simTask);

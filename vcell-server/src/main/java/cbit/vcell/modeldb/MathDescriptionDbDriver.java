@@ -19,7 +19,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -52,8 +51,8 @@ public class MathDescriptionDbDriver extends DbDriver {
  * @param connectionFactory cbit.sql.ConnectionFactory
  * @param sessionLog cbit.vcell.server.SessionLog
  */
-public MathDescriptionDbDriver(GeomDbDriver argGeomDB,SessionLog sessionLog) {
-	super(argGeomDB.dbSyntax,argGeomDB.keyFactory,sessionLog);
+public MathDescriptionDbDriver(GeomDbDriver argGeomDB) {
+	super(argGeomDB.dbSyntax,argGeomDB.keyFactory);
 	this.geomDB = argGeomDB;
 }
 /**
@@ -116,7 +115,7 @@ private MathDescription getMathDescriptionSQL(QueryHashtable dbc, Connection con
 			//
 			// note: must call mathDescTable.getMathDescription() first (rset.getBytes(language) must be called first)
 			//
-			mathDescription = mathDescTable.getMathDescription(rset,con,log,dbSyntax);
+			mathDescription = mathDescTable.getMathDescription(rset,con,dbSyntax);
 			//
 			// get Geometry reference and assign to mathDescription
 			//
@@ -216,7 +215,7 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 		insertMathDescriptionSQL(hash, con, user, mathDescription, updatedGeometryKey, newVersion, bVersion);
 		return newVersion.getVersionKey();
 	} catch (MathException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("MathException: " + e.getMessage());
 	}
 }
@@ -265,7 +264,7 @@ public KeyValue updateVersionable(InsertHashtable hash, Connection con, User use
 		newVersion = updateVersionableInit(hash, con, user, mathDescription, bVersion);
 		insertMathDescriptionSQL(hash, con, user, mathDescription, updatedGeometryKey, newVersion, bVersion);
 	} catch (MathException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("MathException: " + e.getMessage());
 	}
 	return newVersion.getVersionKey();

@@ -17,8 +17,8 @@ import java.util.Locale;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
@@ -251,7 +251,7 @@ public static java.util.Vector getReferencingVersionableTypes(VersionableType vT
  * @param rset ResultSet
  * @param log SessionLog
  */
-public static Version getVersion(ResultSet rset, org.vcell.util.document.GroupAccess groupAccess,SessionLog log) throws SQLException ,DataAccessException{
+public static Version getVersion(ResultSet rset, GroupAccess groupAccess) throws SQLException ,DataAccessException{
 	KeyValue vBranchPointRef = null;
 	java.math.BigDecimal vBranchID = null;
 	java.util.Date vDate = null;
@@ -304,7 +304,7 @@ public static Version getVersion(ResultSet rset, org.vcell.util.document.GroupAc
 		}
 	}catch (SQLException e){
 		e.printStackTrace(System.out);
-		log.print("VersionTable.getVersion(): consuming exception for missing column "+versionParentSimRef_ColumnName+": "+e.getMessage());
+		lg.warn("VersionTable.getVersion(): consuming exception for missing column "+versionParentSimRef_ColumnName+": "+e.getMessage(), e);
 	}
 	//
 	KeyValue key = new KeyValue(rset.getBigDecimal(Table.id_ColumnName));

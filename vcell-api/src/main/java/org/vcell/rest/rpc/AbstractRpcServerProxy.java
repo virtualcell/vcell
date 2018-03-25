@@ -9,7 +9,7 @@
  */
 
 package org.vcell.rest.rpc;
-import org.vcell.util.SessionLog;
+import org.apache.log4j.Logger;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessageSession;
@@ -24,19 +24,19 @@ import cbit.vcell.resource.PropertyLoader;
  * @author: Fei Gao
  */
 public abstract class AbstractRpcServerProxy {
+	public static final Logger lg = Logger.getLogger(AbstractRpcServerProxy.class);
+
 	private VCMessageSession vcMessagingSession = null;
 	protected UserLoginInfo userLoginInfo = null;
 	private VCellQueue queue = null;
-	protected org.vcell.util.SessionLog log = null;
 
 /**
  * RpcServerProxy constructor comment.
  */
-protected AbstractRpcServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, VCellQueue queue, SessionLog argLog) {
+protected AbstractRpcServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, VCellQueue queue) {
 	super();
 	this.userLoginInfo = userLoginInfo;
 	this.vcMessagingSession = vcMessageSession;
-	this.log = argLog;
 	this.queue = queue;
 }
 

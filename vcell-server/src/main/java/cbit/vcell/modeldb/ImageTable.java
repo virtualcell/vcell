@@ -15,7 +15,6 @@ import java.sql.SQLException;
 
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -64,9 +63,9 @@ private ImageTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public VCImageCompressed getImage(ResultSet rset,Connection con,SessionLog log,ImageDataTable imageDataTable,DatabaseSyntax dbSyntax) throws SQLException, DataAccessException{
+public VCImageCompressed getImage(ResultSet rset,Connection con,ImageDataTable imageDataTable,DatabaseSyntax dbSyntax) throws SQLException, DataAccessException{
 	
-	byte data[] = imageDataTable.getData(rset,log, dbSyntax);
+	byte data[] = imageDataTable.getData(rset, dbSyntax);
 	
 	int nx = rset.getInt(numX.toString());
 	int ny = rset.getInt(numY.toString());
@@ -77,13 +76,13 @@ public VCImageCompressed getImage(ResultSet rset,Connection con,SessionLog log,I
 	double ez = rset.getBigDecimal(ExtentTable.table.extentZ.toString()).doubleValue();
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	try {
 		org.vcell.util.Extent extent = new org.vcell.util.Extent(ex,ey,ez);
 		VCImageCompressed vcImage = new VCImageCompressed(version,data,extent,nx,ny,nz);
 		return vcImage;
 	}catch (ImageException e){
-		log.exception(e);
+		lg.error(e.getMessage());
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -95,7 +94,7 @@ public VCImageCompressed getImage(ResultSet rset,Connection con,SessionLog log,I
  * @param rset ResultSet
  * @param log SessionLog
  */
-public VersionInfo getInfo(ResultSet rset, Connection con,SessionLog log,DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
+public VersionInfo getInfo(ResultSet rset, Connection con,DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 
 	GIFImage gifImage = null;
 	try{
@@ -108,7 +107,7 @@ public VersionInfo getInfo(ResultSet rset, Connection con,SessionLog log,Databas
 	}
 	
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	
 	int x = rset.getInt(ImageTable.table.numX.toString());
 	int y = rset.getInt(ImageTable.table.numY.toString());

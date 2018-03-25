@@ -15,7 +15,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import org.vcell.util.SessionLog;
 import org.vcell.util.exe.Executable;
 
 import cbit.vcell.messaging.server.SimulationTask;
@@ -37,19 +36,11 @@ public abstract class HTCSolver extends AbstractSolver {
 	protected ArrayList<String> cmdArguments = new ArrayList<String>();
 	protected SimulationTask simulationTask = null;
 
-/**
- * LSFSolver constructor comment.
- * @param userDirectory java.io.File
- * @param parallelDirectory if required, may be null 
- * @param sessionLog cbit.vcell.server.SessionLog
- * @param simulation cbit.vcell.solver.Simulation
- * @exception cbit.vcell.solver.SolverException The exception description.
- */
-public HTCSolver(SimulationTask simTask, File userDirectory, File parallelDirectory, SessionLog sessionLog) throws SolverException {
-	super(simTask, userDirectory, sessionLog);
+public HTCSolver(SimulationTask simTask, File userDirectory, File parallelDirectory) throws SolverException {
+	super(simTask, userDirectory);
 	simulationTask = simTask;
 	if (!simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {
-		realSolver = (AbstractSolver)SolverFactory.createSolver(sessionLog, userDirectory, parallelDirectory, simTask, true);
+		realSolver = (AbstractSolver)SolverFactory.createSolver(userDirectory, parallelDirectory, simTask, true);
 		realSolver.addSolverListener(new SolverListener() {
 			public final void solverAborted(SolverEvent event) {		
 				fireSolverAborted(event.getSimulationMessage());

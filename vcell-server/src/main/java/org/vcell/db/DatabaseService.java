@@ -16,7 +16,6 @@ import java.util.ServiceConfigurationError;
 
 import org.scijava.SciJava;
 import org.vcell.db.spi.Database;
-import org.vcell.util.SessionLog;
 
 import cbit.vcell.resource.PropertyLoader;
 
@@ -39,20 +38,20 @@ public class DatabaseService {
 		return service;
 	}
 	
-	public ConnectionFactory createConnectionFactory(SessionLog sessionLog) throws SQLException {
-		return createConnectionFactory(sessionLog,
+	public ConnectionFactory createConnectionFactory() throws SQLException {
+		return createConnectionFactory(
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL),
 						PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid),
 						PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue,PropertyLoader.dbPasswordFile));
 	}
 	
-	public ConnectionFactory createConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {
+	public ConnectionFactory createConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {
 		try {
 			List<Database> databases = scijava.plugin().createInstancesOfType(Database.class);
 			for (Database database : databases){
 				if (database.getDriverClassName().equals(argDriverName)){
-					return database.createConnctionFactory(sessionLog, argDriverName, argConnectURL, argUserid, argPassword);
+					return database.createConnctionFactory(argDriverName, argConnectURL, argUserid, argPassword);
 				}
 			}
 			throw new SQLException("no database provider found");

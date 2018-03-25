@@ -13,17 +13,16 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.FunctionFileGenerator;
@@ -34,8 +33,9 @@ import cbit.vcell.solvers.FunctionFileGenerator;
  * @author: Jim Schaff
  */
 public class FunctionFileCrawler {
+	public static final Logger lg = Logger.getLogger(FunctionFileCrawler.class);
+
 	private AdminDatabaseServer adminDbServer = null;
-	private SessionLog log = null;
 	private File dataRootDir = null;
 	private String outputDirName = null;
 	private int totalNumOfFilesModified = 0;
@@ -66,16 +66,15 @@ public class FunctionFileCrawler {
 /**
  * ResultSetCrawler constructor comment.
  */
-public FunctionFileCrawler(AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog) throws SQLException {
-	this(argAdminDbServer, argSessionLog, null);
+public FunctionFileCrawler(AdminDatabaseServer argAdminDbServer) throws SQLException {
+	this(argAdminDbServer, null);
 }
 
 
 /**
  * ResultSetCrawler constructor comment.
  */
-private FunctionFileCrawler(AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, String argOutputDirName) throws SQLException {
-	this.log = argSessionLog;
+private FunctionFileCrawler(AdminDatabaseServer argAdminDbServer, String argOutputDirName) throws SQLException {
 	this.adminDbServer = argAdminDbServer;
 	dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
 	outputDirName = argOutputDirName;
@@ -134,12 +133,11 @@ public static void main(String[] args) {
 		}
 			
 		PropertyLoader.loadProperties();
-		SessionLog log = new StdoutSessionLog("FunctionFileCrawler");
-		conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+		conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
-		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
+		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory);
 			
-		FunctionFileCrawler crawler = new FunctionFileCrawler(adminDbServer, log, outputdir);
+		FunctionFileCrawler crawler = new FunctionFileCrawler(adminDbServer, outputdir);
 		if (SCAN_SINGLE) {
 			crawler.scanAUser(username);
 		} else {
@@ -232,7 +230,7 @@ private void scan(File userDir, File outputDir) throws Exception {
 		if (pw != null) {
 			pw.close();
 		}
-		log.print("User " + userDir.getName() + ", See " + outputFile.getAbsolutePath() + " for details");
+		if (lg.isTraceEnabled()) lg.trace("User " + userDir.getName() + ", See " + outputFile.getAbsolutePath() + " for details");
 	}
 }
 
@@ -244,7 +242,7 @@ private void scan(File userDir, File outputDir) throws Exception {
 private void scanAllUsers() throws SQLException, DataAccessException, java.rmi.RemoteException {
 		
 	File userDirs[] = dataRootDir.listFiles();
-	log.print("Total user directories: " + userDirs.length);
+	if (lg.isTraceEnabled()) lg.trace("Total user directories: " + userDirs.length);
 
 	UserInfo userInfos[] = adminDbServer.getUserInfos();	
 
@@ -253,8 +251,8 @@ private void scanAllUsers() throws SQLException, DataAccessException, java.rmi.R
 	for (int i = 0; i < userDirs.length; i ++){
 		try {
 			userDir = userDirs[i];
-			log.print("----------------------------------------------------------");
-			log.print("USER: " + userDir.getName());
+			if (lg.isTraceEnabled()) lg.trace("----------------------------------------------------------");
+			if (lg.isTraceEnabled()) lg.trace("USER: " + userDir.getName());
 
 			User user = null;
 			for (int j = 0; j < userInfos.length; j ++) {
@@ -265,23 +263,23 @@ private void scanAllUsers() throws SQLException, DataAccessException, java.rmi.R
 			}
 			
 			if (user == null) {
-				log.alert("User " + user + " doesn't exit!!");
+				if (lg.isWarnEnabled()) lg.warn("User " + user + " doesn't exit!!");
 				continue;
 			}
 
 			if (!userDir.exists() || !userDir.isDirectory()) {
-				log.alert("UserDir " + userDir + " doesn't exist or is not a directory");
+				if (lg.isWarnEnabled()) lg.warn("UserDir " + userDir + " doesn't exist or is not a directory");
 				continue;
 			}
 			
 			// find all the user simulations
 			scan(userDir,outputDir);
-			log.print(" Total NUM of files modified : " + totalNumOfFilesModified);
-			log.print("----------------------------------------------------------");
+			if (lg.isTraceEnabled()) lg.trace(" Total NUM of files modified : " + totalNumOfFilesModified);
+			if (lg.isTraceEnabled()) lg.trace("----------------------------------------------------------");
 		} catch (Exception ex) {
-				log.exception(ex);
+			lg.error(ex.getMessage(), ex);
 		}
-		log.print(" Total NUM of files modified : " + totalNumOfFilesModified);
+		if (lg.isTraceEnabled()) lg.trace(" Total NUM of files modified : " + totalNumOfFilesModified);
 	}			
 }
 
@@ -297,25 +295,25 @@ private void scanAUser(String username) throws SQLException, DataAccessException
 		File outputDir = getOutputDirectory();
 		
 		if (!userDir.exists() || !userDir.isDirectory()) {
-			log.alert("UserDir " + userDir + " doesn't exist or is not a directory");
+			if (lg.isWarnEnabled()) lg.warn("UserDir " + userDir + " doesn't exist or is not a directory");
 			return;
 		}
 
-		log.print("----------------------------------------------------------");
-		log.print("USER: " + userDir.getName());
+		if (lg.isTraceEnabled()) lg.trace("----------------------------------------------------------");
+		if (lg.isTraceEnabled()) lg.trace("USER: " + userDir.getName());
 
 		User user = adminDbServer.getUser(username);
 		
 		if (user == null) {
-			log.alert("User " + user + " doesn't exit!!");
+			if (lg.isWarnEnabled()) lg.warn("User " + user + " doesn't exit!!");
 			return;
 		}
 		
 		scan(userDir,outputDir);
-		log.print(" Total NUM of files modified : " + totalNumOfFilesModified);
-		log.print("----------------------------------------------------------");
+		if (lg.isTraceEnabled()) lg.trace(" Total NUM of files modified : " + totalNumOfFilesModified);
+		if (lg.isTraceEnabled()) lg.trace("----------------------------------------------------------");
 	} catch (Exception ex) {
-		log.exception(ex);
+		lg.error(ex.getMessage(),ex);
 	}				
 }
 }

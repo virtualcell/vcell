@@ -12,8 +12,6 @@ package cbit.vcell.solver.ode;
 
 import java.io.File;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.SolverException;
@@ -29,8 +27,8 @@ public class RungeKuttaTwoSolver extends RungeKuttaSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param numVectors int
  */
-public RungeKuttaTwoSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
-	super(simTask, directory, sessionLog, 2, 2);
+public RungeKuttaTwoSolver(SimulationTask simTask, File directory) throws SolverException {
+	super(simTask, directory, 2, 2);
 }
 /**
  * Integrate over time step using the forward Euler method (1st order explicit)

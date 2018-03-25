@@ -15,7 +15,6 @@ import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 
 /**
  * Hello world!
@@ -53,13 +52,12 @@ public class TestBlobRpcMessages {
 	    	
 	    	VCMessagingService messagingService = new VCMessagingServiceActiveMQ();
 	    	messagingService.setDelegate(new SimpleMessagingDelegate());
-	    	StdoutSessionLog log = new StdoutSessionLog("log");
 
 	        // reading message and computing sum
 	        // create N comsumers
 	        MyRpcServer myRpcServer = new MyRpcServer();
 	        for (int i=0;i<NUM_COMSUMERS;i++){
-	        	VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue, log);
+	        	VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue);
 				VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellTestQueue.JimQueue, rpcMessageHandler, null, "Queue["+VCellTestQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i, 1);
 	        	messagingService.addMessageConsumer(rpcConsumer);
 	        }

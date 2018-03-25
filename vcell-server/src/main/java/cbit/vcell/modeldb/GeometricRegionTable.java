@@ -11,7 +11,6 @@
 package cbit.vcell.modeldb;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -120,7 +119,7 @@ public String getSQLValueList(KeyValue key, VolumeGeometricRegion volumeRegion, 
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public SurfaceGeometricRegion getSurfaceRegion(java.sql.ResultSet rset, VolumeGeometricRegion volumeRegions[], VCUnitSystem unitSystem, SessionLog log) throws java.sql.SQLException, DataAccessException {
+public SurfaceGeometricRegion getSurfaceRegion(java.sql.ResultSet rset, VolumeGeometricRegion volumeRegions[], VCUnitSystem unitSystem) throws java.sql.SQLException, DataAccessException {
 
 	String _name = rset.getString(this.name.toString());
 	double _size = rset.getBigDecimal(this.size.toString()).doubleValue();
@@ -159,7 +158,7 @@ public SurfaceGeometricRegion getSurfaceRegion(java.sql.ResultSet rset, VolumeGe
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public VolumeGeometricRegion getVolumeRegion(java.sql.ResultSet rset, cbit.vcell.geometry.Geometry geometry, SessionLog log) throws java.sql.SQLException, DataAccessException {
+public VolumeGeometricRegion getVolumeRegion(java.sql.ResultSet rset, cbit.vcell.geometry.Geometry geometry) throws java.sql.SQLException, DataAccessException {
 	String _name = rset.getString(this.name.toString());
 	double _size = rset.getBigDecimal(this.size.toString()).doubleValue();
 	String _sizeUnitSymbol = rset.getString(this.sizeUnit.toString());

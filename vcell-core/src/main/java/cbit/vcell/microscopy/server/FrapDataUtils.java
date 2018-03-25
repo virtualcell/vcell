@@ -10,7 +10,6 @@ import java.util.Random;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
-import org.vcell.util.NullSessionLog;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -53,8 +52,7 @@ public class FrapDataUtils {
 
 	public static DataSetControllerImpl getDataSetControllerImplFromVCellSimulationData(File vcellSimLogFile) throws Exception{
 		File primaryDir = vcellSimLogFile.getParentFile();
-		return new DataSetControllerImpl(
-			new NullSessionLog(),new Cachetable(Cachetable.minute*10),primaryDir,primaryDir);
+		return new DataSetControllerImpl(new Cachetable(Cachetable.minute*10),primaryDir,primaryDir);
 	}
 
 	public static FRAPData importFRAPDataFromImageDataSet(ImageDataset imageDataSet){

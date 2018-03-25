@@ -25,7 +25,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
@@ -49,7 +48,7 @@ public class ChangeEmail extends JFrame {
 	public ChangeEmail(String password) {
 		super.setPreferredSize(new Dimension(500, 400));
 		super.setTitle("Notify / email updater");
-		dbDriver = new UserDbDriverExtended(new StdoutSessionLog("local"));
+		dbDriver = new UserDbDriverExtended();
 		userInfos = new ArrayList<>( );
 		dynamic = new ArrayList<>( );
 		regex = Pattern.compile(".*<(.*)>.*");
@@ -193,7 +192,6 @@ public class ChangeEmail extends JFrame {
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
 			char[] pw = pwField.getPassword();
 			ConnectionFactory connectionFactory = DatabaseService.getInstance().createConnectionFactory(
-				new StdoutSessionLog("test"),
 				dbDriverName,
 				EmailList.JDBC_URL,
 				EmailList.USER_ID,

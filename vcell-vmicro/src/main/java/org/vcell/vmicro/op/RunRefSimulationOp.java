@@ -10,7 +10,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Origin;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccessNone;
@@ -51,7 +50,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ErrorTolerance;
@@ -119,7 +117,6 @@ public class RunRefSimulationOp {
 		//run simulation
 		runFVSolverStandalone(
 			new File(localWorkspace.getDefaultSimDataDirectory()),
-			new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 			bioModel.getSimulation(0),
 			initialConcentrationExtData.getExternalDataIdentifier(),
 			progressListener, true);
@@ -145,7 +142,6 @@ public class RunRefSimulationOp {
 	
 	private static void runFVSolverStandalone(
 			File simulationDataDir,
-			SessionLog sessionLog,
 			Simulation sim,
 			ExternalDataIdentifier initialConditionExtDataID,
 			ClientTaskStatusSupport progressListener,
@@ -171,7 +167,7 @@ public class RunRefSimulationOp {
 				simTask.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
 			}
 			
-			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,sessionLog,false);		
+			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,false);		
 			fvSolver.startSolver(); 
 //			fvSolver.runSolver();
 			

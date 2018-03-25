@@ -17,7 +17,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.simdata.Cachetable;
@@ -38,7 +37,6 @@ public class LocalWorkspace {
 	
 	private static long LAST_GENERATED_KEY = System.currentTimeMillis();
 	
-	private StdoutSessionLog sessionLog = null;
 	private LocalDataSetController localDataSetController = null;
 	
 	private static final String SIMULATION_DATA_SUBDIRECTORY = "SimulationData";
@@ -50,7 +48,6 @@ public class LocalWorkspace {
 	public LocalWorkspace(File workingDirectory){
 		this.workingDirectory = workingDirectory;
 		this.userPreferences = new UserPreferences(null);
-		this.sessionLog = new StdoutSessionLog(LocalWorkspace.SIMULATION_OWNER.getName());
 	}
 
 	public static final KeyValue createNewKeyValue(){
@@ -125,7 +122,7 @@ public class LocalWorkspace {
 	public DataSetControllerImpl getDataSetControllerImpl() throws FileNotFoundException{ 
 		if (dataSetControllerImpl==null){
 			File rootDir = new File(getDefaultWorkspaceDirectory());
-			dataSetControllerImpl = new DataSetControllerImpl(sessionLog,new Cachetable(10000),rootDir,rootDir);
+			dataSetControllerImpl = new DataSetControllerImpl(new Cachetable(10000),rootDir,rootDir);
 		}
 		return dataSetControllerImpl;
 	}
@@ -138,7 +135,7 @@ public class LocalWorkspace {
 		if (vcDataManager==null){
 			localDataSetController =
 				new LocalDataSetController(
-						null,sessionLog,
+						null,
 						getDataSetControllerImpl(),
 						null,getDefaultOwner()
 					);

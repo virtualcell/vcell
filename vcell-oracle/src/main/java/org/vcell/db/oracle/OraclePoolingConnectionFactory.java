@@ -18,7 +18,6 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.ConfigurationException;
-import org.vcell.util.SessionLog;
 
 import cbit.vcell.resource.PropertyLoader;
 import oracle.ucp.UniversalConnectionPoolException;
@@ -33,19 +32,17 @@ public final class OraclePoolingConnectionFactory implements ConnectionFactory  
 
 	private String connectionCacheName = null;
 	private PoolDataSource poolDataSource = null;
-	private SessionLog log = null;
 	private static final Logger lg = Logger.getLogger(OraclePoolingConnectionFactory.class);
 
-OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, ConfigurationException, UniversalConnectionPoolException {
-	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
+OraclePoolingConnectionFactory() throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, ConfigurationException, UniversalConnectionPoolException {
+	this(PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
 			PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL),
 			PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid),
 		    PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile)
 );
 }
 
-OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, UniversalConnectionPoolException {
-	this.log = sessionLog;
+OraclePoolingConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, UniversalConnectionPoolException {
 	connectionCacheName = "UCP_ImplicitPool_" + System.nanoTime();
 
 	poolDataSource = PoolDataSourceFactory.getPoolDataSource();
@@ -70,7 +67,7 @@ public synchronized void close() throws java.sql.SQLException {
 }
 
 public void failed(Connection con, Object lock) throws SQLException {
-	log.print("OraclePoolingConnectionFactory.failed("+con+")");
+	if (lg.isTraceEnabled()) lg.trace("OraclePoolingConnectionFactory.failed("+con+")");
 	((ValidConnection)con).setInvalid();
 	release(con, lock);
 }
@@ -82,13 +79,13 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 		conn = poolDataSource.getConnection();
 	} catch (SQLException ex) {
 		// might be invalid or stale connection
-		log.print("first time #getConnection( ) fail " + ex.getMessage() + ", state " + ex.getSQLState() + ", attempting refresh");
+		if (lg.isTraceEnabled()) lg.trace("first time #getConnection( ) fail " + ex.getMessage() + ", state " + ex.getSQLState() + ", attempting refresh");
 		// get connection again.
 		try {
 			conn = poolDataSource.getConnection();
 		} catch (SQLException e) {
-			log.print("refresh failed");
-			log.exception(e);
+			if (lg.isTraceEnabled()) lg.trace("refresh failed");
+			lg.error(e.getMessage(),e);
 		}
 	}
 	if (conn == null) {

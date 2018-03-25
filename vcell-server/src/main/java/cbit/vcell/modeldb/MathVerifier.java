@@ -23,6 +23,7 @@ import java.util.Vector;
 import javax.swing.JFrame;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -30,7 +31,6 @@ import org.vcell.util.BigString;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -57,7 +57,6 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.solver.Simulation;
@@ -72,6 +71,8 @@ import cbit.vcell.xml.XmlParseException;
  * @author: Jim Schaff
  */
 public class MathVerifier {
+	public static final Logger lg = Logger.getLogger(DbDriver.class);
+
 	//
 	// list of files to discard ???
 	//
@@ -85,7 +86,6 @@ public class MathVerifier {
 	private ConnectionFactory conFactory = null;
 	private DatabaseServerImpl dbServerImpl = null;
 	private KeyFactory keyFactory = null;
-	private org.vcell.util.SessionLog log = null;
 	private cbit.vcell.modeldb.MathDescriptionDbDriver mathDescDbDriver = null;
 	private java.util.HashSet skipHash = new java.util.HashSet(); // holds KeyValues of BioModels to skip
 	private String testFlag;
@@ -95,14 +95,13 @@ public class MathVerifier {
  * ResultSetCrawler constructor comment.
  */
 public MathVerifier(ConnectionFactory argConFactory, KeyFactory argKeyFactory,
-		AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog) throws DataAccessException, SQLException {
+		AdminDatabaseServer argAdminDbServer) throws DataAccessException, SQLException {
 	this.conFactory = argConFactory;
 	this.keyFactory = argKeyFactory;
-	this.log = argSessionLog;
 	this.adminDbServer = argAdminDbServer;
-	GeomDbDriver geomDB = new GeomDbDriver(conFactory.getDatabaseSyntax(), conFactory.getKeyFactory(), argSessionLog);
-	this.mathDescDbDriver = new MathDescriptionDbDriver(geomDB,argSessionLog);
-	this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,argSessionLog);
+	GeomDbDriver geomDB = new GeomDbDriver(conFactory.getDatabaseSyntax(), conFactory.getKeyFactory());
+	this.mathDescDbDriver = new MathDescriptionDbDriver(geomDB);
+	this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
 }
 
 
@@ -172,7 +171,6 @@ public static final String MV_LOAD_XML = "MV_LOAD_XML";
 public static MathVerifier createMathVerifier(
 		String dbHostName,String dbName,String dbSchemaUser,String dbPassword) throws Exception{
 	
-    SessionLog sessionLog = new StdoutSessionLog("MathVerifier");
     ConnectionFactory conFactory = null;
     KeyFactory keyFactory = null;
     new cbit.vcell.resource.PropertyLoader();
@@ -184,7 +182,6 @@ public static MathVerifier createMathVerifier(
     // get appropriate database factory objects
     //
     conFactory =DatabaseService.getInstance().createConnectionFactory(
-        	sessionLog,
             driverName,
             connectURL,
             dbSchemaUser,
@@ -192,9 +189,9 @@ public static MathVerifier createMathVerifier(
     keyFactory = conFactory.getKeyFactory();
     
     AdminDatabaseServer adminDbServer =
-    	new LocalAdminDbServer(conFactory, keyFactory, sessionLog);
+    	new LocalAdminDbServer(conFactory, keyFactory);
     
-    return new MathVerifier(conFactory, keyFactory, adminDbServer, sessionLog);
+    return new MathVerifier(conFactory, keyFactory, adminDbServer);
 }
 /**
  * Starts the application.
@@ -296,7 +293,7 @@ public void runLoadTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,Stri
 	User[] scanUsers = createUsersFromUserids(scanUserids);
     try{
     	if(bUpdateDatabase){
-    		MathVerifier.initLoadModelsStatTable(softwareVersion,(scanUserids==null?null:scanUsers),bioAndMathModelKeys,this.timeStamp,this.conFactory,this.keyFactory,this.log);
+    		MathVerifier.initLoadModelsStatTable(softwareVersion,(scanUserids==null?null:scanUsers),bioAndMathModelKeys,this.timeStamp,this.conFactory,this.keyFactory);
     	}
     	this.scan(scanUsers, bUpdateDatabase, bioAndMathModelKeys);
     }finally{
@@ -314,7 +311,7 @@ public void runMathTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,bool
     }
 }
 private static void initLoadModelsStatTable(String softwareVersion,User[] users,KeyValue[] bioAndMathModelKeys,Timestamp timestamp,
-		ConnectionFactory conFactory,KeyFactory keyFactory,SessionLog sessionLog) throws Exception{
+		ConnectionFactory conFactory,KeyFactory keyFactory) throws Exception{
 	java.sql.Connection con = null;
 	java.sql.Statement stmt = null;
 	try {
@@ -423,20 +420,20 @@ private static void initLoadModelsStatTable(String softwareVersion,User[] users,
 		con.commit();
 	}catch (Exception e2){
 		if(con != null){
-			try{con.rollback();}catch(Exception e){sessionLog.exception(e);}
+			try{con.rollback();}catch(Exception e){lg.error(e.getMessage(),e);}
 		}
 		throw e2;
 	}finally{
 		if (stmt != null){
-			try{stmt.close();}catch(Exception e){sessionLog.exception(e);}
+			try{stmt.close();}catch(Exception e){lg.error(e.getMessage(),e);}
 		}
 		if(con != null){
-			try{con.close();}catch(Exception e){sessionLog.exception(e);}
+			try{con.close();}catch(Exception e){lg.error(e.getMessage(),e);}
 		}
 	}
 }
 
-private void updateLoadModelsStatTable_LoadTest(long loadTimeMilliSec,SessionLog userLog,KeyValue BioOrMathModelKey,Exception exception){
+private void updateLoadModelsStatTable_LoadTest(long loadTimeMilliSec,KeyValue BioOrMathModelKey,Exception exception){
 	String sql =
 		"UPDATE "+LoadModelsStatTable.table.getTableName()+
 		" SET "+
@@ -465,11 +462,11 @@ private void updateLoadModelsStatTable_LoadTest(long loadTimeMilliSec,SessionLog
     		if(con != null){conFactory.release(con, lock);}
     	}
 	}catch(Exception e){
-		userLog.exception(e);
+		lg.error(e.getMessage(),e);
 	}
 }
 
-private void updateLoadModelsStatTable_CompareTest(SessionLog userLog,KeyValue BioOrMathModelKey,
+private void updateLoadModelsStatTable_CompareTest(KeyValue BioOrMathModelKey,
 		Long loadOriginalXMLTime,Long loadUnresolvedTime,
 		Boolean bSameCachedAndNotCachedXML,Boolean bSameCachedAndNotCachedObj,Boolean bSameSelfXMLCachedRoundtrip,
 		Exception bSameCachedAndNotCachedXMLExc,Exception bSameCachedAndNotCachedObjExc,Exception bSameSelfXMLCachedRoundtripExc){
@@ -515,10 +512,10 @@ private void updateLoadModelsStatTable_CompareTest(SessionLog userLog,KeyValue B
     		if(con != null){conFactory.release(con, lock);}
     	}
 	}catch(Exception e){
-		userLog.exception(e);
+		lg.error(e.getMessage(),e);
 	}
 }
-private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelFromDB,User user,SessionLog userLog,boolean bUpdateDatabase) throws Exception{
+private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelFromDB,User user,boolean bUpdateDatabase) throws Exception{
 	BioModel bioModelNewMath = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLFromDB.toString()));
 	bioModelFromDB.refreshDependencies();
 	bioModelNewMath.refreshDependencies();
@@ -623,10 +620,10 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 						System.out.println("failed to update status");
 					}
 					con.commit();
-					userLog.print("-------------- Update=true, saved 'newMath' for Application '"+simContextFromDB.getName()+"'");
+					if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved 'newMath' for Application '"+simContextFromDB.getName()+"'");
 				}catch (SQLException e){
-					userLog.exception(e);
-					userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE MATH for Application '"+simContextFromDB.getName()+"'");
+					lg.error(e.getMessage(),e);
+					if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE MATH for Application '"+simContextFromDB.getName()+"'");
 				}finally{
 					if (stmt != null){
 						stmt.close();
@@ -635,7 +632,7 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 				}
 			}
 		}catch (Throwable e){
-			log.exception(e); // exception in SimContext
+			lg.error(e.getMessage(),e); // exception in SimContext
 			if (bUpdateDatabase){
 				java.sql.Connection con = null;
 				java.sql.Statement stmt = null;
@@ -651,10 +648,10 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 						System.out.println("failed to update status with exception");
 					}
 					con.commit();
-					userLog.print("-------------- Update=true, saved exception for Application '"+simContextFromDB.getName()+"'");
+					if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved exception for Application '"+simContextFromDB.getName()+"'");
 				}catch (SQLException e2){
-					userLog.exception(e2);
-					userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application '"+simContextFromDB.getName()+"'");
+					lg.error(e2.getMessage(),e2);
+					if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application '"+simContextFromDB.getName()+"'");
 				}finally{
 					if (stmt != null){
 						stmt.close();
@@ -669,7 +666,7 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 		for (int l = 0; l < appSimsFromDB.length; l++){
 			try {
 				boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l], appSimsFromDB[l], mathCompareResults_latest);
-				userLog.print("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+
+				if (lg.isTraceEnabled()) lg.trace("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+
 							  "Simulation("+modelSimsFromDB[l].getKey()+") '"+modelSimsFromDB[l].getName()+"':"+modelSimsFromDB[l].getVersion().getDate()+
 							  "mathEquivalency="+mathCompareResults_latest.isEquivalent()+", simEquivalency="+bSimEquivalent);
 				//
@@ -690,10 +687,10 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 							System.out.println("failed to update status");
 						}
 						con.commit();
-						userLog.print("-------------- Update=true, saved 'simulation status for simulation '"+appSimsFromDB[l].getName()+"'");
+						if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved 'simulation status for simulation '"+appSimsFromDB[l].getName()+"'");
 					}catch (SQLException e){
-						userLog.exception(e);
-						userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE status for simulation '"+appSimsFromDB[l].getName()+"'");
+						lg.error(e.getMessage(),e);
+						if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE status for simulation '"+appSimsFromDB[l].getName()+"'");
 					}finally{
 						if (stmt != null){
 							stmt.close();
@@ -702,7 +699,7 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 					}
 				}
 			}catch (Throwable e){
-				log.exception(e); // exception in SimContext
+				lg.error(e.getMessage(),e); // exception in SimContext
 				if (bUpdateDatabase){
 					java.sql.Connection con = null;
 					java.sql.Statement stmt = null;
@@ -718,10 +715,10 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 							System.out.println("failed to update status with exception");
 						}
 						con.commit();
-						userLog.print("-------------- Update=true, saved exception for Simulation '"+appSimsFromDB[l].getName()+"'");
+						if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved exception for Simulation '"+appSimsFromDB[l].getName()+"'");
 					}catch (SQLException e2){
-						userLog.exception(e2);
-						userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for simulation '"+appSimsFromDB[l].getName()+"'");
+						lg.error(e2.getMessage(),e2);
+						if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for simulation '"+appSimsFromDB[l].getName()+"'");
 					}finally{
 						if (stmt != null){
 							stmt.close();
@@ -763,9 +760,8 @@ public static class MathGenerationResults{
 public MathGenerationResults testMathGeneration(KeyValue simContextKey) throws SQLException, ObjectNotFoundException, DataAccessException, XmlParseException, MappingException, MathException, MatrixException, ExpressionException, ModelException, PropertyVetoException{
 
 	User adminUser = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-    SessionLog userLog = new cbit.vcell.resource.StdoutSessionLog(adminUser.toString());
 
-    userLog.print("Testing SimContext with key '" + simContextKey + "'");
+    if (lg.isTraceEnabled()) lg.trace("Testing SimContext with key '" + simContextKey + "'");
     // get biomodel refs
     java.sql.Connection con = null;
     java.sql.Statement stmt = null;
@@ -904,8 +900,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 		User user = users[i];
 		BioModelInfo[] bioModelInfos0 = dbServerImpl.getBioModelInfos(user,false);
 		MathModelInfo[] mathModelInfos0 = dbServerImpl.getMathModelInfos(user,false);
-		SessionLog userLog = new cbit.vcell.resource.StdoutSessionLog(user.toString());
-		userLog.print("Testing user '"+user+"'");
+		if (lg.isTraceEnabled()) lg.trace("Testing user '"+user+"'");
 
 		Vector<VCDocumentInfo> userBioAndMathModelInfoV =
 			new Vector<VCDocumentInfo>();
@@ -969,12 +964,12 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 					}
 					if(bUpdateDatabase && testFlag.equals(MathVerifier.MV_LOAD_XML)){
 						updateLoadModelsStatTable_LoadTest(System.currentTimeMillis()-startTime,
-							userLog, versionKey, null);
+							versionKey, null);
 					}
 				}catch(Exception e){
-					log.exception(e);
+					lg.error(e.getMessage(),e);
 					if (bUpdateDatabase && testFlag.equals(MathVerifier.MV_LOAD_XML)){
-						updateLoadModelsStatTable_LoadTest(0,userLog, versionKey, e);
+						updateLoadModelsStatTable_LoadTest(0, versionKey, e);
 					}
 				}
 				
@@ -983,7 +978,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 					// OPERATION = LOADTEST
 					//
 					if (vcDocumentXMLFromDBCache != null){
-						testDocumentLoad(bUpdateDatabase, user, userLog, documentInfo, vcDocumentFromDBCache);
+						testDocumentLoad(bUpdateDatabase, user, documentInfo, vcDocumentFromDBCache);
 					}
 					
 				}else if (testFlag.equals(MathVerifier.MV_DEFAULT)){
@@ -992,19 +987,19 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 					//
 					if (vcDocumentFromDBCache instanceof BioModel){
 						BioModel bioModel = (BioModel)vcDocumentFromDBCache;
-						checkMathForBioModel(vcDocumentXMLFromDBCache, bioModel, user, userLog, bUpdateDatabase);
+						checkMathForBioModel(vcDocumentXMLFromDBCache, bioModel, user, bUpdateDatabase);
 					}
 				}
 				
 			}catch (Throwable e){
-	            log.exception(e); // exception in whole BioModel
+	            lg.error(e.getMessage(),e); // exception in whole BioModel
 	            // can't update anything in database, since we don't know what simcontexts are involved
 			}
 		}	
 	}
 }
 
-private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog userLog, VCDocumentInfo documentInfo, VCDocument vcDocumentFromDBCache) {
+private void testDocumentLoad(boolean bUpdateDatabase, User user, VCDocumentInfo documentInfo, VCDocument vcDocumentFromDBCache) {
 	KeyValue versionKey = documentInfo.getVersion().getVersionKey();
 	//	try{
 	//		String vcDocumentXMLFromDBCacheRoundtrip = null;
@@ -1041,7 +1036,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 			bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && objectSame;
 		} catch (Exception e) {
 			bSameSelfCachedRoundtrip = null;
-			log.exception(e);
+			lg.error(e.getMessage(),e);
 			bSameSelfXMLCachedRoundtripExc = e;
 		}finally{
 			Compare.loggingEnabled = false;
@@ -1058,7 +1053,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 			loadUnresolvedTime = System.currentTimeMillis()-startTime;
 			bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
 		} catch (Exception e) {
-			log.exception(e);
+			lg.error(e.getMessage(),e);
 			bSameCachedAndNotCachedObjExc = e;
 		}
 		
@@ -1068,7 +1063,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 					XmlHelper.bioModelToXML((BioModel)vcDocumentFromDBCache);
 				bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBBioModelUnresolvedXML, true);
 			} catch (Exception e) {
-				log.exception(e);
+				lg.error(e.getMessage(),e);
 				bSameCachedAndNotCachedXMLExc = e;
 			}
 		}
@@ -1087,7 +1082,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 			bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && mathModelRndTrip0.compareEqual(mathModelRndTrip1);
 		} catch (Exception e) {
 			bSameSelfCachedRoundtrip = null;
-			log.exception(e);
+			lg.error(e.getMessage(),e);
 			bSameSelfXMLCachedRoundtripExc = e;
 		}finally{
 			Compare.loggingEnabled = false;
@@ -1104,7 +1099,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 			fromDBMathModelUnresolvedXML = XmlHelper.mathModelToXML(vcDocumentFromDBNotCached);
 			bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
 		} catch (Exception e) {
-			log.exception(e);
+			lg.error(e.getMessage(),e);
 			bSameCachedAndNotCachedObjExc = e;
 		}
 
@@ -1114,14 +1109,14 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 					XmlHelper.mathModelToXML((MathModel)vcDocumentFromDBCache);
 				bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBMathModelUnresolvedXML, true);
 			} catch (Exception e) {
-				log.exception(e);
+				lg.error(e.getMessage(),e);
 				bSameCachedAndNotCachedXMLExc = e;
 			}
 		}
 	}
 
 	if(bUpdateDatabase){
-		updateLoadModelsStatTable_CompareTest(userLog, versionKey,
+		updateLoadModelsStatTable_CompareTest(versionKey,
 			null/*loadOriginalXMLTime*/, loadUnresolvedTime,
 			bSameCachedAndNotCachedXML, bSameCachedAndNotCachedObj, bSameSelfCachedRoundtrip,
 			bSameCachedAndNotCachedXMLExc, bSameCachedAndNotCachedObjExc, bSameSelfXMLCachedRoundtripExc);
@@ -1153,10 +1148,9 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 	
 
 	User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-	SessionLog userLog = new cbit.vcell.resource.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
-		userLog.print("Testing bioModel with key '"+bioModelKeys[i]+"'");
+		if (lg.isTraceEnabled()) lg.trace("Testing bioModel with key '"+bioModelKeys[i]+"'");
         java.sql.Connection con = null;
         java.sql.Statement stmt = null;
 
@@ -1259,10 +1253,10 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 								System.out.println("failed to update status");
 							}
 							con.commit();
-							userLog.print("-------------- Update=true, saved 'newMath' for Application '"+simContextFromDB.getName()+"'");
+							if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved 'newMath' for Application '"+simContextFromDB.getName()+"'");
 						}catch (SQLException e){
-							userLog.exception(e);
-							userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE MATH for Application '"+simContextFromDB.getName()+"'");
+							lg.error(e.getMessage(),e);
+							if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE MATH for Application '"+simContextFromDB.getName()+"'");
 						}finally{
 							if (stmt != null){
 								stmt.close();
@@ -1271,7 +1265,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 						}
 					}
 				}catch (Throwable e){
-					log.exception(e); // exception in SimContext
+					lg.error(e.getMessage(),e); // exception in SimContext
 					if (bUpdateDatabase){
 						con = null;
 						stmt = null;
@@ -1288,10 +1282,10 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 								System.out.println("failed to update status with exception");
 							}
 							con.commit();
-							userLog.print("-------------- Update=true, saved exception for Application '"+simContextFromDB.getName()+"'");
+							if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved exception for Application '"+simContextFromDB.getName()+"'");
 						}catch (SQLException e2){
-							userLog.exception(e2);
-							userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application '"+simContextFromDB.getName()+"'");
+							lg.error(e2.getMessage(),e2);
+							if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application '"+simContextFromDB.getName()+"'");
 						}finally{
 							if (stmt != null){
 								stmt.close();
@@ -1306,7 +1300,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 				for (int l = 0; l < appSimsFromDB.length; l++){
 					try {
 						boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l], appSimsFromDB[l], mathCompareResults);
-						userLog.print("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+
+						if (lg.isTraceEnabled()) lg.trace("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+
 									  "Simulation("+modelSimsFromDB[l].getKey()+") '"+modelSimsFromDB[l].getName()+"':"+modelSimsFromDB[l].getVersion().getDate()+
 									  "mathEquivalency="+mathCompareResults.isEquivalent()+", simEquivalency="+bSimEquivalent);
 						//
@@ -1327,10 +1321,10 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 									System.out.println("failed to update status");
 								}
 								con.commit();
-								userLog.print("-------------- Update=true, saved 'simulation status for simulation '"+appSimsFromDB[l].getName()+"'");
+								if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved 'simulation status for simulation '"+appSimsFromDB[l].getName()+"'");
 							}catch (SQLException e){
-								userLog.exception(e);
-								userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE status for simulation '"+appSimsFromDB[l].getName()+"'");
+								lg.error(e.getMessage(),e);
+								if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE status for simulation '"+appSimsFromDB[l].getName()+"'");
 							}finally{
 								if (stmt != null){
 									stmt.close();
@@ -1339,7 +1333,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 							}
 						}
 					}catch (Throwable e){
-						log.exception(e); // exception in SimContext
+						lg.error(e.getMessage(),e); // exception in SimContext
 						if (bUpdateDatabase){
 							con = null;
 							stmt = null;
@@ -1356,10 +1350,10 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 									System.out.println("failed to update status with exception");
 								}
 								con.commit();
-								userLog.print("-------------- Update=true, saved exception for Simulation '"+appSimsFromDB[l].getName()+"'");
+								if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved exception for Simulation '"+appSimsFromDB[l].getName()+"'");
 							}catch (SQLException e2){
-								userLog.exception(e2);
-								userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for simulation '"+appSimsFromDB[l].getName()+"'");
+								lg.error(e2.getMessage(),e2);
+								if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for simulation '"+appSimsFromDB[l].getName()+"'");
 							}finally{
 								if (stmt != null){
 									stmt.close();
@@ -1371,7 +1365,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 				}
 			}
 		}catch (Throwable e){
-            log.exception(e); // exception in whole BioModel
+            lg.error(e.getMessage(),e); // exception in whole BioModel
             // can't update anything in database, since we don't know what simcontexts are involved
 		}
 	}
@@ -1393,9 +1387,8 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
     final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
     User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-    SessionLog userLog = new cbit.vcell.resource.StdoutSessionLog(user.toString());
     for (int i = 0; i < simContextKeys.length; i++) {
-        userLog.print("Testing SimContext with key '" + simContextKeys[i] + "'");
+        if (lg.isTraceEnabled()) lg.trace("Testing SimContext with key '" + simContextKeys[i] + "'");
         // get biomodel refs
         java.sql.Connection con = null;
         java.sql.Statement stmt = null;
@@ -1532,10 +1525,10 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                                 System.out.println("failed to update status");
                             }
                             con.commit();
-                            userLog.print("-------------- Update=true, saved 'newMath' for Application '"+simContextFromDB.getName()+"'");
+                            if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved 'newMath' for Application '"+simContextFromDB.getName()+"'");
                         } catch (SQLException e) {
-                            userLog.exception(e);
-                            userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE MATH for Application '"+simContextFromDB.getName()+"'");
+                            lg.error(e.getMessage(),e);
+                            if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE MATH for Application '"+simContextFromDB.getName()+"'");
                         } finally {
                             if (stmt != null) {
                                 stmt.close();
@@ -1544,7 +1537,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                         }
                     }
                 } catch (Throwable e) {
-                    log.exception(e); // exception in SimContext
+                    lg.error(e.getMessage(),e); // exception in SimContext
                     if (bUpdateDatabase) {
                         con = null;
                         stmt = null;
@@ -1561,10 +1554,10 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                                 System.out.println("failed to update status with exception");
                             }
                             con.commit();
-                            userLog.print("-------------- Update=true, saved exception for Application '"+simContextFromDB.getName()+"'");
+                            if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved exception for Application '"+simContextFromDB.getName()+"'");
                         } catch (SQLException e2) {
-                            userLog.exception(e2);
-                            userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application '"+simContextFromDB.getName()+"'");
+                            lg.error(e2.getMessage(),e2);
+                            if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application '"+simContextFromDB.getName()+"'");
                         } finally {
                             if (stmt != null) {
                                 stmt.close();
@@ -1579,7 +1572,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                 for (int l = 0; l < appSimsFromDB.length; l++) {
                     try {
                         boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l],appSimsFromDB[l],mathCompareResults);
-                        userLog.print("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+"Simulation("+modelSimsFromDB[l].getKey()+") '"+modelSimsFromDB[l].getName()+"':"+modelSimsFromDB[l].getVersion().getDate()+"mathEquivalency="+mathCompareResults.isEquivalent()+", simEquivalency="+bSimEquivalent);
+                        if (lg.isTraceEnabled()) lg.trace("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+"Simulation("+modelSimsFromDB[l].getKey()+") '"+modelSimsFromDB[l].getName()+"':"+modelSimsFromDB[l].getVersion().getDate()+"mathEquivalency="+mathCompareResults.isEquivalent()+", simEquivalency="+bSimEquivalent);
                         //
                         // update Database Status for Simulation
                         //
@@ -1597,10 +1590,10 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                                     System.out.println("failed to update status");
                                 }
                                 con.commit();
-                                userLog.print("-------------- Update=true, saved 'simulation status for simulation '"+appSimsFromDB[l].getName()+"'");
+                                if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved 'simulation status for simulation '"+appSimsFromDB[l].getName()+"'");
                             } catch (SQLException e) {
-                                userLog.exception(e);
-                                userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE status for simulation '"+appSimsFromDB[l].getName()+"'");
+                                lg.error(e.getMessage(),e);
+                                if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE status for simulation '"+appSimsFromDB[l].getName()+"'");
                             } finally {
                                 if (stmt != null) {
                                     stmt.close();
@@ -1609,7 +1602,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                             }
                         }
                     } catch (Throwable e) {
-                        log.exception(e); // exception in SimContext
+                        lg.error(e.getMessage(),e); // exception in SimContext
                         if (bUpdateDatabase) {
                             con = null;
                             stmt = null;
@@ -1626,10 +1619,10 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                                     System.out.println("failed to update status with exception");
                                 }
                                 con.commit();
-                                userLog.print("-------------- Update=true, saved exception for Simulation '"+appSimsFromDB[l].getName()+"'");
+                                if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved exception for Simulation '"+appSimsFromDB[l].getName()+"'");
                             } catch (SQLException e2) {
-                                userLog.exception(e2);
-                                userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for simulation '"+appSimsFromDB[l].getName()+"'");
+                                lg.error(e2.getMessage(),e2);
+                                if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for simulation '"+appSimsFromDB[l].getName()+"'");
                             } finally {
                                 if (stmt != null) {
                                     stmt.close();
@@ -1641,7 +1634,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                 }
         	}
         } catch (Throwable e) {
-            log.exception(e); // exception in whole BioModel
+            lg.error(e.getMessage(),e); // exception in whole BioModel
 	        // update database, since we know the simcontext...
 			if (bUpdateDatabase) {
 				con = null;
@@ -1658,10 +1651,10 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
 						System.out.println("failed to update status with exception");
 					}
 					con.commit();
-					userLog.print("-------------- Update=true, saved exception for Application with key '"+simContextKeys[i]+"'");
+					if (lg.isTraceEnabled()) lg.trace("-------------- Update=true, saved exception for Application with key '"+simContextKeys[i]+"'");
 				} catch (SQLException e2) {
-					userLog.exception(e2);
-					userLog.alert("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application with key '"+simContextKeys[i]+"'");
+					lg.error(e2.getMessage(),e2);
+					if (lg.isWarnEnabled()) lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application with key '"+simContextKeys[i]+"'");
 				} finally {
 					if (stmt != null) {
 						stmt.close();

@@ -10,7 +10,6 @@
 
 package cbit.vcell.modeldb;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -57,7 +56,7 @@ private ReactPartTable() {
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public ReactionParticipant getReactionParticipant(KeyValue rpKey, java.sql.ResultSet rset, SessionLog log) throws java.sql.SQLException, DataAccessException {
+public ReactionParticipant getReactionParticipant(KeyValue rpKey, java.sql.ResultSet rset) throws java.sql.SQLException, DataAccessException {
 	
 	ReactionParticipant rp = null;
 	

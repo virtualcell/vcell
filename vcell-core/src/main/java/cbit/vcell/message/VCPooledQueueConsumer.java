@@ -8,20 +8,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.vcell.util.SessionLog;
-
+import org.apache.log4j.Logger;
 
 public class VCPooledQueueConsumer implements VCQueueConsumer.QueueListener {
+	public static final Logger lg = Logger.getLogger(VCPooledQueueConsumer.class);
+
 	private VCQueueConsumer.QueueListener queueListener = null;
-	private SessionLog log = null;
 	private int numThreads;
 	private ExecutorService executorService = null;
 	private ArrayList<Future<Boolean>> messageProcessorFutures = new ArrayList<Future<Boolean>>();
 	private VCMessageSession producerSession = null;
 
-	public VCPooledQueueConsumer(VCQueueConsumer.QueueListener queueListener, SessionLog log, int numThreads, VCMessageSession producerSession) {
+	public VCPooledQueueConsumer(VCQueueConsumer.QueueListener queueListener, int numThreads, VCMessageSession producerSession) {
 		this.queueListener = queueListener;
-		this.log = log;
 		this.numThreads = numThreads;
 		this.producerSession = producerSession;
 	}
@@ -37,8 +36,9 @@ public class VCPooledQueueConsumer implements VCQueueConsumer.QueueListener {
 			if (!executorService.awaitTermination(20, TimeUnit.SECONDS)) {
 				executorService.shutdownNow(); // Cancel currently executing tasks
 				// Wait a while for tasks to respond to being cancelled
-				if (!executorService.awaitTermination(20, TimeUnit.SECONDS))
-					log.alert("Pool did not terminate");
+				if (!executorService.awaitTermination(20, TimeUnit.SECONDS)) {
+					lg.error("Pool did not terminate");
+				}
 			}
 		} catch (InterruptedException ie) {
 			// (Re-)Cancel if current thread also interrupted

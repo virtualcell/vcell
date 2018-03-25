@@ -21,7 +21,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
@@ -50,8 +49,8 @@ public class SimulationDbDriver extends DbDriver {
  * @param connectionFactory cbit.sql.ConnectionFactory
  * @param sessionLog cbit.vcell.server.SessionLog
  */
-public SimulationDbDriver(MathDescriptionDbDriver argMathDB,SessionLog sessionLog) {
-	super(argMathDB.dbSyntax, argMathDB.keyFactory, sessionLog);
+public SimulationDbDriver(MathDescriptionDbDriver argMathDB) {
+	super(argMathDB.dbSyntax, argMathDB.keyFactory);
 	this.mathDB = argMathDB;
 }
 
@@ -162,9 +161,9 @@ private Simulation getSimulationSQL(QueryHashtable dbc, Connection con,User user
 			// note: must call simulationTable.getSimulation() first (rset.getBytes(language) must be called first)
 			//
 			try {
-				simulation = simTable.getSimulation(dbc, rset,log,con,user,mathDB,dbSyntax);
+				simulation = simTable.getSimulation(dbc, rset,con,user,mathDB,dbSyntax);
 			}catch (PropertyVetoException e){
-				log.exception(e);
+				lg.error(e.getMessage(),e);
 				throw new DataAccessException(e.getMessage());
 			}			
 		} else {

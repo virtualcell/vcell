@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
@@ -46,8 +44,8 @@ public class GibsonSolver extends SimpleCompiledSolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 
-public GibsonSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
-	super(simTask, directory, sessionLog, bMessaging);
+public GibsonSolver(SimulationTask simTask, java.io.File directory, boolean bMessaging) throws SolverException {
+	super(simTask, directory, bMessaging);
 }
 
 
@@ -163,7 +161,7 @@ public ODESolverResultSet getStochSolverResultSet()
 				inputStream.close();
 			}
 		} catch (Exception ex) {
-			getSessionLog().exception(ex);
+			lg.error(ex.getMessage(),ex);
 		}
 	}
 	
@@ -207,14 +205,13 @@ public ODESolverResultSet getStochSolverResultSet()
  */
 protected void initialize() throws SolverException 
 {
-	SessionLog sessionLog = getSessionLog();
-	sessionLog.print("StochSolver.initialize()");
+	if (lg.isTraceEnabled()) lg.trace("StochSolver.initialize()");
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	writeFunctionsFile();
 	writeLogFile();
 
 	String inputFilename = getInputFilename();
-	sessionLog.print("StochSolver.initialize() baseName = " + getBaseName());
+	if (lg.isTraceEnabled()) lg.trace("StochSolver.initialize() baseName = " + getBaseName());
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);

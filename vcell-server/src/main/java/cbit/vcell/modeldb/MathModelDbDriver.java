@@ -22,7 +22,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.User;
@@ -50,8 +49,8 @@ public class MathModelDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public MathModelDbDriver(DatabaseSyntax dbSyntax,KeyFactory keyFactory, SessionLog sessionLog) {
-	super(dbSyntax,keyFactory,sessionLog);
+public MathModelDbDriver(DatabaseSyntax dbSyntax,KeyFactory keyFactory) {
+	super(dbSyntax,keyFactory);
 }
 
 
@@ -87,11 +86,11 @@ private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue math
 	//for (int i=0;i<simKeys.length;i++){
 		//try {
 			//this.simDB.deleteVersionable(con,user,VersionableType.Simulation,simKeys[i]);
-			//log.print("MathModelDbDriver.delete("+mathModelKey+") deletion of Simulation("+simKeys[i]+") succeeded");
+			//if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.delete("+mathModelKey+") deletion of Simulation("+simKeys[i]+") succeeded");
 		//}catch (cbit.vcell.server.PermissionException e){
-			//log.print("MathModelDbDriver.delete("+mathModelKey+") deletion of Simulation("+simKeys[i]+") failed: "+e.getMessage());
+			//if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.delete("+mathModelKey+") deletion of Simulation("+simKeys[i]+") failed: "+e.getMessage());
 		//}catch (cbit.vcell.server.DependencyException e){
-			//log.print("MathModelDbDriver.delete("+mathModelKey+") deletion of Simulation("+simKeys[i]+") failed: "+e.getMessage());
+			//if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.delete("+mathModelKey+") deletion of Simulation("+simKeys[i]+") failed: "+e.getMessage());
 		//}
 	//}
 	////
@@ -99,11 +98,11 @@ private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue math
 	////
 	//try {
 		//this.mathDescDB.deleteVersionable(con,user,VersionableType.MathDescription,mathKey);
-		//log.print("MathModelDbDriver.delete("+mathModelKey+") deletion of MathDescription("+mathKey+") succeeded");
+		//if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.delete("+mathModelKey+") deletion of MathDescription("+mathKey+") succeeded");
 	//}catch (cbit.vcell.server.PermissionException e){
-		//log.print("MathModelDbDriver.delete("+mathModelKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
+		//if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.delete("+mathModelKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
 	//}catch (cbit.vcell.server.DependencyException e){
-		//log.print("MathModelDbDriver.delete("+mathModelKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
+		//if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.delete("+mathModelKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
 	//}
 
 }
@@ -132,7 +131,7 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
  * getModels method comment.
  */
 KeyValue[] getDeletableSimulationEntriesFromMathModel(Connection con,User user,KeyValue mathModelKey) throws SQLException, DataAccessException {
-//	log.print("MathModelDbDriver.getSimulationEntriesFromMathModel(mathModelKey=" + mathModelKey + ")");
+//	if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.getSimulationEntriesFromMathModel(mathModelKey=" + mathModelKey + ")");
 	String sql;
 	
 	sql = 	" SELECT " + mathModelSimLinkTable.simRef.getQualifiedColName() +
@@ -175,7 +174,7 @@ private MathModelMetaData getMathModelMetaData(Connection con,User user, KeyValu
 	if (user == null || mathModelKey == null) {
 		throw new IllegalArgumentException("Improper parameters for getMathModelMetaData");
 	}
-	log.print("MathModelDbDriver.getMathModelMetaData(user=" + user + ", id=" + mathModelKey + ")");
+	if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.getMathModelMetaData(user=" + user + ", id=" + mathModelKey + ")");
 
 	//
 	// to construct a MathModelMetaData as an immutable object, lets collect all keys first
@@ -207,7 +206,7 @@ private MathModelMetaData getMathModelMetaData(Connection con,User user, KeyValu
 		//showMetaData(rset);
 
 		if (rset.next()) {
-			mathModelMetaData = mathModelTable.getMathModelMetaData(rset,con,log,simKeys,dbSyntax);
+			mathModelMetaData = mathModelTable.getMathModelMetaData(rset,con,simKeys,dbSyntax);
 		} else {
 			throw new ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
 		}
@@ -226,7 +225,7 @@ MathModelMetaData[] getMathModelMetaDatas(Connection con,User user, boolean bAll
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getMathModelMetaDatas");
 	}
-	log.print("MathModelDbDriver.getMathModelMetaData(user=" + user + ", bAll=" + bAll + ")");
+	if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.getMathModelMetaData(user=" + user + ", bAll=" + bAll + ")");
 
 	//
 	// to construct a MathModelMetaData as an immutable object, lets collect all keys first
@@ -258,7 +257,7 @@ MathModelMetaData[] getMathModelMetaDatas(Connection con,User user, boolean bAll
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			MathModelMetaData mathModelMetaData = mathModelTable.getMathModelMetaData(rset,log,this,con,dbSyntax);
+			MathModelMetaData mathModelMetaData = mathModelTable.getMathModelMetaData(rset,this,con,dbSyntax);
 			mathModelMetaDataList.addElement(mathModelMetaData);
 		}
 	} finally {
@@ -274,7 +273,7 @@ MathModelMetaData[] getMathModelMetaDatas(Connection con,User user, boolean bAll
  * getModels method comment.
  */
 KeyValue[] getSimulationEntriesFromMathModel(Connection con,KeyValue mathModelKey) throws SQLException, DataAccessException {
-//	log.print("MathModelDbDriver.getSimulationEntriesFromMathModel(mathModelKey=" + mathModelKey + ")");
+//	if (lg.isTraceEnabled()) lg.trace("MathModelDbDriver.getSimulationEntriesFromMathModel(mathModelKey=" + mathModelKey + ")");
 	String sql;
 	
 	sql = 	" SELECT " + mathModelSimLinkTable.simRef +

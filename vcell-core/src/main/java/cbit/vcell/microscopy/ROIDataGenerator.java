@@ -7,7 +7,6 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
-import org.vcell.util.NullSessionLog;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -88,7 +87,7 @@ public class ROIDataGenerator extends DataGenerator {
 			throw new DataAccessException("Can't find sample image in ROI data generator.");
 		}
 		String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);	
-		DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
+		DataSetControllerImpl dsci = new DataSetControllerImpl(null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 		CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
 		SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
 		VariableType varType = fdis.getFieldFuncArgs().getVariableType();

@@ -13,8 +13,6 @@ import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
-import org.vcell.util.NullSessionLog;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -59,8 +57,7 @@ public class MathVisitor implements BadMathVisitor {
 		MathVisitor visitor = new MathVisitor();
 		boolean bAbortOnDataAccessException = false;
 			PropertyLoader.loadProperties();
-			SessionLog sl = new NullSessionLog(); 
-			VCDatabaseScanner scanner = VCDatabaseScanner.createDatabaseScanner(sl);
+			VCDatabaseScanner scanner = VCDatabaseScanner.createDatabaseScanner();
 			User[] users = scanner.getAllUsers();
 			scanner.scanMathModels(visitor,System.err,users,null,null,null, bAbortOnDataAccessException);
 		}catch(Exception e){
@@ -78,16 +75,14 @@ public class MathVisitor implements BadMathVisitor {
 	
 	@Test
 	public void populateDatabase( ) throws Exception {
-		SessionLog lg = new StdoutSessionLog("me", System.out);
-		BatchTester bt = new BatchTester(lg);
+		BatchTester bt = new BatchTester();
 		FileWriter writer = new FileWriter("populateLog.txt");
 		bt.keyScanMathModels(this, writer, false,STATUS_TABLE); 
 	}
 	
 	@Test
 	public void batchScan( ) throws Exception {
-		SessionLog lg = new StdoutSessionLog("me", System.out);
-		BatchTester bt = new BatchTester(lg);
+		BatchTester bt = new BatchTester();
 		bt.batchScanMathModels(this, STATUS_TABLE,5);
 	}
 

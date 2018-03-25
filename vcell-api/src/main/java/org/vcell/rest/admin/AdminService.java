@@ -9,7 +9,6 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 
@@ -26,7 +25,7 @@ public class AdminService {
 	}
 
 	public SimpleJobStatus[] query(SimpleJobStatusQuerySpec querySpec) throws ObjectNotFoundException, DataAccessException {
-		SimulationDatabase simDatabase = new SimulationDatabaseDirect(adminDbTop, dbServerImpl, false, new StdoutSessionLog("Console"));
+		SimulationDatabase simDatabase = new SimulationDatabaseDirect(adminDbTop, dbServerImpl, false);
 		SimpleJobStatus[] resultList = simDatabase.getSimpleJobStatus(null,querySpec);
 		return resultList;
 	}

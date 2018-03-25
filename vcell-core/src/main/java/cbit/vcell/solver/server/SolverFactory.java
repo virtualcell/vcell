@@ -17,7 +17,6 @@ import java.util.Map;
 import org.vcell.solver.comsol.ComsolSolver;
 import org.vcell.solver.nfsim.NFSimSolver;
 import org.vcell.solver.smoldyn.SmoldynSolver;
-import org.vcell.util.SessionLog;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -36,7 +35,6 @@ import cbit.vcell.solvers.CombinedSundialsSolver;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solvers.MovingBoundarySolver;
 import cbit.vcell.xml.XmlHelper;
-import edu.uchc.connjur.wb.ExecutionTrace;
 
 /**
  * The Abstract definition for the solver factory that creates
@@ -50,59 +48,59 @@ public class SolverFactory {
  */
 	
 	private interface Maker {
-		Solver make(SimulationTask task, File userDir, File parallelWorkingDirectory, SessionLog log, boolean messaging) throws SolverException;
+		Solver make(SimulationTask task, File userDir, File parallelWorkingDirectory, boolean messaging) throws SolverException;
 	}
 	
 	private static final Map<SolverDescription,Maker> FACTORY = new HashMap<SolverDescription, SolverFactory.Maker>( );
 	static {
 		{  //finite volume Java solvers
-			Maker fv = (t,d,pwd,sl,m) -> new FVSolverStandalone(t, d, sl, m);
+			Maker fv = (t,d,pwd,m) -> new FVSolverStandalone(t, d, m);
 			FACTORY.put(SolverDescription.FiniteVolumeStandalone, fv); 
 			FACTORY.put(SolverDescription.FiniteVolume, fv); 
 			FACTORY.put(SolverDescription.SundialsPDE, fv); 
 			FACTORY.put(SolverDescription.VCellPetsc, fv); 
 			Maker chomboMaker = new Maker(){
 				@Override
-				public Solver make(SimulationTask t, File userDir, File parallelWorkingDir, SessionLog sl, boolean m) throws SolverException {
+				public Solver make(SimulationTask t, File userDir, File parallelWorkingDir, boolean m) throws SolverException {
 					if (t.getSimulation().getSolverTaskDescription().isParallel()){
 						File workingDir = parallelWorkingDir;
 						File destinationDirectory = userDir;
-						return new FVSolverStandalone(t,workingDir,destinationDirectory,sl,m);
+						return new FVSolverStandalone(t,workingDir,destinationDirectory,m);
 					}else{
 						File workingDir = userDir;
 						File destinationDirectory = userDir;
-						return new FVSolverStandalone(t,workingDir,destinationDirectory,sl,m);
+						return new FVSolverStandalone(t,workingDir,destinationDirectory,m);
 					}
 				}
 			};
 			FACTORY.put(SolverDescription.Chombo, chomboMaker); 
 		}
 
-		FACTORY.put(SolverDescription.ForwardEuler, (t,d,pwd,sl,m) -> new ForwardEulerSolver(t, d, sl) );
-		FACTORY.put(SolverDescription.RungeKutta2, (t,d,pwd,sl,m) -> new RungeKuttaTwoSolver(t, d, sl) );
-		FACTORY.put(SolverDescription.RungeKutta4, (t,d,pwd,sl,m) -> new RungeKuttaFourSolver(t, d, sl) );
-		FACTORY.put(SolverDescription.AdamsMoulton, (t,d,pwd,sl,m) -> new AdamsMoultonFiveSolver(t, d, sl) );
-		FACTORY.put(SolverDescription.RungeKuttaFehlberg, (t,d,pwd,sl,m) -> new RungeKuttaFehlbergSolver(t, d, sl) );
-		FACTORY.put(SolverDescription.IDA, (t,d,pwd,sl,m) -> new IDASolverStandalone(t, d, sl,m) ); 
-		FACTORY.put(SolverDescription.CVODE, (t,d,pwd,sl,m) -> new CVodeSolverStandalone (t, d, sl,m) ); 
-		FACTORY.put(SolverDescription.CombinedSundials, (t,d,pd,sl,m) -> new CombinedSundialsSolver(t, d, sl,m) ); 
-		FACTORY.put(SolverDescription.StochGibson, (t,d,pwd,sl,m) -> new GibsonSolver(t, d, sl,m) ); 
-		FACTORY.put(SolverDescription.HybridEuler, (t,d,pwd,sl,m) -> new HybridSolver(t, d, sl,HybridSolver.EMIntegrator,m) ); 
-		FACTORY.put(SolverDescription.HybridMilstein, (t,d,pwd,sl,m) -> new HybridSolver(t, d, sl,HybridSolver.MilsteinIntegrator,m) ); 
-		FACTORY.put(SolverDescription.HybridMilAdaptive , (t,d,pwd,sl,m) -> new HybridSolver(t, d, sl,HybridSolver.AdaptiveMilsteinIntegrator,m) ); 
-		FACTORY.put(SolverDescription.Smoldyn, (t,d,pwd,sl,m) -> new SmoldynSolver(t, d, sl,m) ); 
-		FACTORY.put(SolverDescription.NFSim, (t,d,pwd,sl,m) -> new NFSimSolver(t, d, sl,m) ); 
-		FACTORY.put(SolverDescription.MovingBoundary, (t,d,pwd,sl,m) -> new MovingBoundarySolver(t, d, sl,m) ); 
-		FACTORY.put(SolverDescription.Comsol, (t,d,pwd,sl,m) -> new ComsolSolver(t, d, sl) ); 
+		FACTORY.put(SolverDescription.ForwardEuler, (t,d,pwd,m) -> new ForwardEulerSolver(t, d) );
+		FACTORY.put(SolverDescription.RungeKutta2, (t,d,pwd,m) -> new RungeKuttaTwoSolver(t, d) );
+		FACTORY.put(SolverDescription.RungeKutta4, (t,d,pwd,m) -> new RungeKuttaFourSolver(t, d) );
+		FACTORY.put(SolverDescription.AdamsMoulton, (t,d,pwd,m) -> new AdamsMoultonFiveSolver(t, d) );
+		FACTORY.put(SolverDescription.RungeKuttaFehlberg, (t,d,pwd,m) -> new RungeKuttaFehlbergSolver(t, d) );
+		FACTORY.put(SolverDescription.IDA, (t,d,pwd,m) -> new IDASolverStandalone(t, d,m) ); 
+		FACTORY.put(SolverDescription.CVODE, (t,d,pwd,m) -> new CVodeSolverStandalone (t, d,m) ); 
+		FACTORY.put(SolverDescription.CombinedSundials, (t,d,pd,m) -> new CombinedSundialsSolver(t, d,m) ); 
+		FACTORY.put(SolverDescription.StochGibson, (t,d,pwd,m) -> new GibsonSolver(t, d,m) ); 
+		FACTORY.put(SolverDescription.HybridEuler, (t,d,pwd,m) -> new HybridSolver(t, d,HybridSolver.EMIntegrator,m) ); 
+		FACTORY.put(SolverDescription.HybridMilstein, (t,d,pwd,m) -> new HybridSolver(t, d,HybridSolver.MilsteinIntegrator,m) ); 
+		FACTORY.put(SolverDescription.HybridMilAdaptive , (t,d,pwd,m) -> new HybridSolver(t, d,HybridSolver.AdaptiveMilsteinIntegrator,m) ); 
+		FACTORY.put(SolverDescription.Smoldyn, (t,d,pwd,m) -> new SmoldynSolver(t, d,m) ); 
+		FACTORY.put(SolverDescription.NFSim, (t,d,pwd,m) -> new NFSimSolver(t, d,m) ); 
+		FACTORY.put(SolverDescription.MovingBoundary, (t,d,pwd,m) -> new MovingBoundarySolver(t, d,m) ); 
+		FACTORY.put(SolverDescription.Comsol, (t,d,pwd,m) -> new ComsolSolver(t, d) ); 
 	}
 	
-public static Solver createSolver(SessionLog sessionLog, File userDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
+public static Solver createSolver(File userDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
 	{
-		return createSolver(sessionLog, userDir, null, simTask, bMessaging);
+		return createSolver(userDir, null, simTask, bMessaging);
 	}
 }
 
-public static Solver createSolver(SessionLog sessionLog, File userDir, File parallelDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
+public static Solver createSolver(File userDir, File parallelDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
 	SolverDescription solverDescription = simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription();
 
 	File simTaskFile = new File(userDir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml");
@@ -121,8 +119,7 @@ public static Solver createSolver(SessionLog sessionLog, File userDir, File para
 	}
 	Maker maker = FACTORY.get(solverDescription);
 	if (maker != null) {
-		Solver s = maker.make(simTask, userDir, parallelDir, sessionLog,bMessaging); 
-		sessionLog.print("LocalSolverFactory.createSolver() returning " + solverDescription + " solver " + ExecutionTrace.justClassName(s));
+		Solver s = maker.make(simTask, userDir, parallelDir, bMessaging); 
 		return s;
 	}
 	throw new SolverException("Unknown solver: " + solverDescription);

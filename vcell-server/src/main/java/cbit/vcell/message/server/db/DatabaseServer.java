@@ -20,7 +20,6 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.VCMessageSession;
@@ -64,16 +63,16 @@ public class DatabaseServer extends ServiceProvider {
 /**
  * Scheduler constructor comment.
  */
-public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, VCMessagingService vcMessagingService, SessionLog log, boolean bSlaveMode) throws Exception {
-	super(vcMessagingService,serviceInstanceStatus,log,bSlaveMode);
+public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, VCMessagingService vcMessagingService, boolean bSlaveMode) throws Exception {
+	super(vcMessagingService,serviceInstanceStatus,bSlaveMode);
 	this.databaseServerImpl = databaseServerImpl;
 }
 
 public void init() throws Exception {
 	int numDatabaseThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.databaseThreadsProperty, "5"));
 	this.sharedProducerSession = vcMessagingService.createProducerSession();
-	rpcMessageHandler = new VCRpcMessageHandler(databaseServerImpl, VCellQueue.DbRequestQueue, log);
-	this.pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, log, numDatabaseThreads, sharedProducerSession);
+	rpcMessageHandler = new VCRpcMessageHandler(databaseServerImpl, VCellQueue.DbRequestQueue);
+	this.pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, numDatabaseThreads, sharedProducerSession);
 	this.pooledQueueConsumer.initThreadPool();
 	rpcConsumer = new VCQueueConsumer(VCellQueue.DbRequestQueue, this.pooledQueueConsumer, null, "Database RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DB_REQUEST);
 
@@ -118,17 +117,15 @@ public static void main(java.lang.String[] args) {
 		//
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
- 		
-		final SessionLog log = new StdoutSessionLog("DatabaseServer");
-		
-		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+ 				
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
-		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
+		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
 		
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 		vcMessagingService.setDelegate(new ServerMessagingDelegate());
 		
-		DatabaseServer databaseServer = new DatabaseServer(serviceInstanceStatus, databaseServerImpl, vcMessagingService, log, false);
+		DatabaseServer databaseServer = new DatabaseServer(serviceInstanceStatus, databaseServerImpl, vcMessagingService, false);
         databaseServer.init();
     } catch (Throwable e) {
 	    e.printStackTrace(System.out); 

@@ -22,9 +22,6 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
-import org.vcell.util.SessionLog;
-
-import cbit.vcell.resource.StdoutSessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2003 11:59:47 PM)
@@ -56,7 +53,7 @@ private static void addOnDeleteCascade(Statement s, String fromTable, String fro
  * Insert the method's description here.
  * Creation date: (2/8/2003 12:04:27 AM)
  */
-private static void changeSchema(SessionLog log,ConnectionFactory conFactory,KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
+private static void changeSchema(ConnectionFactory conFactory,KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
 	
 	
 	String sql = null;
@@ -747,13 +744,11 @@ public static void main(String[] args) {
             throw new RuntimeException("Aborted by user");
         }
 
-        SessionLog log = new StdoutSessionLog("ChangeVCellSchema");
         ConnectionFactory conFactory = null;
         new cbit.vcell.resource.PropertyLoader();
         if (args[0].equalsIgnoreCase(oracle)) {
             String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    log,
                     driverName,
                     connectURL,
                     dbSchemaUser,
@@ -761,7 +756,6 @@ public static void main(String[] args) {
         }else if (args[0].equalsIgnoreCase(postgres)){
         	String driverName = "org.postgresql.Driver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    log,
                     driverName,
                     connectURL,
                     dbSchemaUser,
@@ -770,7 +764,7 @@ public static void main(String[] args) {
             System.out.println(usage);
             System.exit(1);
 		}
-        changeSchema(log, conFactory, conFactory.getKeyFactory(), conFactory.getDatabaseSyntax());
+        changeSchema(conFactory, conFactory.getKeyFactory(), conFactory.getDatabaseSyntax());
     } catch (Throwable e) {
         e.printStackTrace(System.out);
     }

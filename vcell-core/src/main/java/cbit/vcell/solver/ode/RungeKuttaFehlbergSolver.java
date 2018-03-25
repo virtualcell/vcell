@@ -13,8 +13,6 @@ package cbit.vcell.solver.ode;
 import java.io.File;
 import java.io.IOException;
 
-import org.vcell.util.SessionLog;
-
 import cbit.vcell.math.MathException;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
@@ -45,8 +43,8 @@ public class RungeKuttaFehlbergSolver extends RungeKuttaSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param numVectors int
  */
-public RungeKuttaFehlbergSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
-	super(simTask, directory, sessionLog, 3, 6);
+public RungeKuttaFehlbergSolver(SimulationTask simTask, File directory) throws SolverException {
+	super(simTask, directory, 3, 6);
 }
 public double calculateErrorTerm(int i) {
 	int I = getVariableIndex(i);

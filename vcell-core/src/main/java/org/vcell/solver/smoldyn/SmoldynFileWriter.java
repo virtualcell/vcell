@@ -41,7 +41,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
-import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.VCAssert;
@@ -594,7 +593,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 		File userDirectory = outputFile.getParentFile();
 
 		String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);
-		DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
+		DataSetControllerImpl dsci = new DataSetControllerImpl(null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 		CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
 		SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
 		VariableType varType = fdis.getFieldFuncArgs().getVariableType();

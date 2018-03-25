@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -43,6 +43,7 @@ import cbit.vcell.util.AmplistorUtils;
  * @author: Jim Schaff
  */
 public class ResultSetCrawler {
+	public static final Logger lg = Logger.getLogger(ResultSetCrawler.class);
 	
 	public static void main(String[] args) {
 		ConnectionFactory conFactory = null;
@@ -106,11 +107,10 @@ public class ResultSetCrawler {
 			}
 			
 			// initialize database
-			SessionLog log = new cbit.vcell.resource.StdoutSessionLog("ResultSetCrawler");		
-			conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+			conFactory = DatabaseService.getInstance().createConnectionFactory();
 			KeyFactory keyFactory = conFactory.getKeyFactory();
-			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
-			DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
+			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+			DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
 			
 			//
 			// determine the list of users to scan
@@ -135,13 +135,12 @@ public class ResultSetCrawler {
 			//
 			// get list of directories to scan (for selected users on both user data directories)
 			//
-			List<File> useDirectoriesToScan = getDirectoriesToScan(usersToScan, primaryDataRootDir, secondaryDataRootDir, log);
+			List<File> useDirectoriesToScan = getDirectoriesToScan(usersToScan, primaryDataRootDir, secondaryDataRootDir);
 			
 			for (File userDir : useDirectoriesToScan){
 				try {
-					log.print("----------------------------------------------------------");
-					log.print("USER: " + userDir.getName());
-
+					if (lg.isTraceEnabled()) lg.trace("USER: " + userDir.getName());
+					
 					User user = usersToScan.get(userDir.getName());
 					
 					// find all the user simulations and external data sets (field data)
@@ -149,9 +148,9 @@ public class ResultSetCrawler {
 					ExternalDataIdentifier[] extDataIDArr = adminDbTopLevel.getExternalDataIdentifiers(user,true);
 					
 					// scan this user directory
-					scanUserDirectory(userDir, extDataIDArr, simulationInfos, outputDir, log, SCAN_ONLY,(ampliCredName==null || ampliCredPassword==null?null:new AmplistorUtils.AmplistorCredential(ampliCredName, ampliCredPassword)));
+					scanUserDirectory(userDir, extDataIDArr, simulationInfos, outputDir, SCAN_ONLY,(ampliCredName==null || ampliCredPassword==null?null:new AmplistorUtils.AmplistorCredential(ampliCredName, ampliCredPassword)));
 				} catch (Exception ex) {
-					log.exception(ex);
+					lg.error(ex.getMessage(), ex);
 				}
 			}
 			
@@ -185,7 +184,7 @@ public class ResultSetCrawler {
 
 
 
-private static List<File> getDirectoriesToScan(HashMap<String,User> usersToScan, File primaryDataRootDir, File secondaryDataRootDir, SessionLog log) throws SQLException, DataAccessException, java.rmi.RemoteException {
+private static List<File> getDirectoriesToScan(HashMap<String,User> usersToScan, File primaryDataRootDir, File secondaryDataRootDir) throws SQLException, DataAccessException, java.rmi.RemoteException {
 		
 	//
 	// get list of all userDirs in both primary and secondary user data directories and sort them alphabetically (case insensitive)
@@ -215,13 +214,13 @@ private static List<File> getDirectoriesToScan(HashMap<String,User> usersToScan,
 			}
 			
 			if (!userDir.exists() || !userDir.isDirectory()) {
-				log.alert("user directory '" + userDir + "' doesn't exist or is not a directory");
+				if (lg.isWarnEnabled()) lg.warn("user directory '" + userDir + "' doesn't exist or is not a directory");
 				continue;
 			}
 			
 			dirsToScan.add(userDir);
 		} catch (Exception ex) {
-			log.exception(ex);
+			lg.error(ex.getMessage(), ex);
 		}
 	}
 	return dirsToScan;
@@ -232,7 +231,7 @@ private static List<File> getDirectoriesToScan(HashMap<String,User> usersToScan,
  * Insert the method's description here.
  * Creation date: (2/2/01 3:40:29 PM)
  */
-private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] extDataIDArr, SimulationInfo[] simulationInfos, File outputDir, final SessionLog log, final boolean bScanOnly,AmplistorUtils.AmplistorCredential amplistorCredential) throws Exception {
+private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] extDataIDArr, SimulationInfo[] simulationInfos, File outputDir, final boolean bScanOnly,AmplistorUtils.AmplistorCredential amplistorCredential) throws Exception {
 	File outputFile = null;
 	java.io.PrintWriter writer = null;
 	try {
@@ -242,7 +241,7 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 		final PrintWriter pw = writer;
 		
 		pw.println("scanning directory : "+userDir.getPath());
-		log.print("scanning directory : "+userDir.getPath());
+		if (lg.isTraceEnabled()) lg.trace("scanning directory : "+userDir.getPath());
 		
 		//
 		// gather list of keys that should be retained.
@@ -262,19 +261,19 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 						AmplistorUtils.deleteSimFilesNotInHash(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName(), referencedKeys,bScanOnly,amplistorCredential);
 					for(String fileName:shouldBeDeleted){
 						pw.println("Should delete Amplistor "+fileName);
-						log.print("Should delete Amplistor "+fileName);					
+						if (lg.isTraceEnabled()) lg.trace("Should delete Amplistor "+fileName);					
 					}
 				}else{
 					ArrayList<String> wasDeleted =
 						AmplistorUtils.deleteSimFilesNotInHash(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName(), referencedKeys,bScanOnly,amplistorCredential);
 					for(String fileName:wasDeleted){
 						pw.println("deleted Amplistor "+fileName);
-						log.print("deleted Amplistor "+fileName);					
+						if (lg.isTraceEnabled()) lg.trace("deleted Amplistor "+fileName);					
 						
 					}
 				}
 			}catch(Exception e){
-				log.print("Amplistor delete failed url="+AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName()+" : "+e.getMessage());
+				if (lg.isTraceEnabled()) lg.trace("Amplistor delete failed url="+AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName()+" : "+e.getMessage());
 				pw.println("Amplistor delete failed url="+AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName()+" : "+e.getMessage());
 			}
 		}
@@ -305,15 +304,15 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 	        					}
 	        					if (bScanOnly){
 	        						pw.println("Should delete file("+count+") with key " + simKey + " : " + file.getPath());
-	        						log.print("Should delete file("+count+") with key " + simKey + " : " + file.getPath());
+	        						if (lg.isTraceEnabled()) lg.trace("Should delete file("+count+") with key " + simKey + " : " + file.getPath());
 	        					}else{
 	        						pw.println("deleted file("+simKey+":"+count+") " + file.getPath());
-	        						log.print("deleted file("+simKey+":"+count+") " + file.getPath());
+	        						if (lg.isTraceEnabled()) lg.trace("deleted file("+simKey+":"+count+") " + file.getPath());
 	        						file.delete();
 	        					}
 	        				}
 	        			}catch (Exception e){
-	        				log.print("failed to process file "+file.getPath()+": "+e.getMessage());
+	        				if (lg.isTraceEnabled()) lg.trace("failed to process file "+file.getPath()+": "+e.getMessage());
 	        			}
 	        		}
 	        	}
@@ -328,12 +327,12 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 		userDir.listFiles(fileVisitor);
 		
 		pw.println("done scanning directory : "+userDir.getPath());
-		log.print("done scanning directory : "+userDir.getPath());
+		if (lg.isTraceEnabled()) lg.trace("done scanning directory : "+userDir.getPath());
 	} finally {
 		if (writer != null) {
 			writer.close();
 		}
-		log.print("User " + userDir.getName() + ", See " + outputFile.getAbsolutePath() + " for details");
+		if (lg.isTraceEnabled()) lg.trace("User " + userDir.getName() + ", See " + outputFile.getAbsolutePath() + " for details");
 	}
 }
 

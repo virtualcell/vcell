@@ -17,12 +17,12 @@ import java.sql.SQLException;
 import javax.jms.JMSException;
 import javax.swing.event.EventListenerList;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
@@ -64,8 +64,9 @@ import cbit.vcell.solvers.LocalSolverController;
  * @author: Jim Schaff
  */
 public class SimulationControllerImpl implements WorkerEventListener {
+	public static final Logger lg = Logger.getLogger(SimulationControllerImpl.class);
+
 	private java.util.Hashtable<SimulationTaskID, LocalSolverController> solverControllerHash = new java.util.Hashtable<SimulationTaskID, LocalSolverController>();
-	private SessionLog adminSessionLog = null;
 	private LocalVCellConnection localVCellConnection = null;
 	private SimulationDatabase simulationDatabase = null;
 	private EventListenerList listenerList = new javax.swing.event.EventListenerList();
@@ -76,9 +77,8 @@ public class SimulationControllerImpl implements WorkerEventListener {
 /**
  * SimulationControllerImpl constructor comment.
  */
-public SimulationControllerImpl(SessionLog argAdminSessionLog, SimulationDatabase simulationDatabase, LocalVCellConnection localVCellConnection) {
+public SimulationControllerImpl(SimulationDatabase simulationDatabase, LocalVCellConnection localVCellConnection) {
 	super();
-	adminSessionLog = argAdminSessionLog;
 	this.localVCellConnection = localVCellConnection;
 	this.simulationDatabase = simulationDatabase;
 }
@@ -125,19 +125,18 @@ public SimulationDatabase getSimulationDatabase(){
  * @throws SolverException 
  * @throws ConfigurationException 
  */
-private LocalSolverController createNewSolverController(SimulationTask simTask, SessionLog userSessionLog) throws FileNotFoundException, DataAccessException, AuthenticationException, SQLException, ConfigurationException, SolverException  {
+private LocalSolverController createNewSolverController(SimulationTask simTask) throws FileNotFoundException, DataAccessException, AuthenticationException, SQLException, ConfigurationException, SolverException  {
 	//
 	// either no appropriate slave server or THIS IS A SLAVE SERVER (can't pass the buck).
 	//
 	LocalSolverController localSolverController = new LocalSolverController(
 		localVCellConnection,
-		userSessionLog,
 		simTask,
 		getUserSimulationDirectory(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty))
 		);
 
 	localSolverController.addWorkerEventListener(this);
-	userSessionLog.alert("returning local SolverController for "+simTask.getSimulationJobID());
+	if (lg.isTraceEnabled()) lg.trace("returning local SolverController for "+simTask.getSimulationJobID());
 	return localSolverController;
 }
 
@@ -173,7 +172,7 @@ protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
  * @throws SQLException 
  * @throws FileNotFoundException 
  */
-LocalSolverController getOrCreateSolverController(SimulationTask simTask, SessionLog userSessionLog) throws FileNotFoundException, ConfigurationException, DataAccessException, AuthenticationException, SQLException, SolverException  {
+LocalSolverController getOrCreateSolverController(SimulationTask simTask) throws FileNotFoundException, ConfigurationException, DataAccessException, AuthenticationException, SQLException, SolverException  {
 	Simulation simulation = simTask.getSimulation();
 	VCSimulationIdentifier vcSimID = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 	if (vcSimID == null){
@@ -185,7 +184,7 @@ LocalSolverController getOrCreateSolverController(SimulationTask simTask, Sessio
 	SimulationTaskID simTaskInfo = new SimulationTaskID(simTask);
 	LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
 	if (solverController==null){
-		solverController = createNewSolverController(simTask,userSessionLog);
+		solverController = createNewSolverController(simTask);
 		solverControllerHash.put(simTaskInfo,solverController);
 	}
 	return solverController;
@@ -212,7 +211,7 @@ private File getUserSimulationDirectory(String simDataRoot) {
 	if (!directory.exists()){
 		if (!directory.mkdirs()){
 			String msg = "could not create directory "+directory;
-			adminSessionLog.alert(msg);
+			if (lg.isWarnEnabled()) lg.warn(msg);
 			throw new ConfigurationException(msg);
 		}
 	}		 
@@ -242,10 +241,10 @@ public void onWorkerEvent(WorkerEvent workerEvent) {
 		};
 		
 		LocalVCMessageAdapter vcMessageSession = new LocalVCMessageAdapter(localVCMessageListener);
-		simulationDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabase, vcMessageSession, adminSessionLog);
+		simulationDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabase, vcMessageSession);
 		vcMessageSession.deliverAll();
 	}catch (Exception e){
-		adminSessionLog.exception(e);
+		lg.error(e.getMessage(), e);
 	}
 }
 
@@ -263,12 +262,12 @@ private void onSimJobQueue_SimulationTask(VCMessage vcMessage) {
 		SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
 		simTask = simTaskMessage.getSimulationTask();
 		
-		LocalSolverController solverController = getOrCreateSolverController(simTask,adminSessionLog);
+		LocalSolverController solverController = getOrCreateSolverController(simTask);
 		
 		solverController.startSimulationJob(); // can only start after updating the database is done
 		
 	} catch (Exception e) {
-		adminSessionLog.exception(e);
+		lg.error(e.getMessage(), e);
 		KeyValue simKey = simTask.getSimKey();
 		VCSimulationIdentifier vcSimID = simTask.getSimulationJob().getVCDataIdentifier().getVcSimID();
 		int jobIndex = simTask.getSimulationJob().getJobIndex();
@@ -283,7 +282,7 @@ private void onSimJobQueue_SimulationTask(VCMessage vcMessage) {
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(Simulation simulation, SessionLog userSessionLog) throws Exception {
+public void startSimulation(Simulation simulation) throws Exception {
 
 	LocalVCMessageListener localVCMessageListener = new LocalVCMessageListener(){
 		
@@ -305,11 +304,11 @@ public void startSimulation(Simulation simulation, SessionLog userSessionLog) th
 	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulation.getKey(), simulation.getVersion().getOwner());
-	simulationDispatcherEngine.onStartRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulation.getScanCount(), simulationDatabase, vcMessageSession, vcMessageSession, adminSessionLog);
+	simulationDispatcherEngine.onStartRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulation.getScanCount(), simulationDatabase, vcMessageSession, vcMessageSession);
 	vcMessageSession.deliverAll();
 	for (int jobIndex = 0; jobIndex < simulation.getScanCount(); jobIndex++){
 		SimulationJobStatus latestSimJobStatus = simulationDatabase.getLatestSimulationJobStatus(simulation.getKey(), jobIndex);
-		simulationDispatcherEngine.onDispatch(simulation, latestSimJobStatus, simulationDatabase, vcMessageSession, adminSessionLog);
+		simulationDispatcherEngine.onDispatch(simulation, latestSimJobStatus, simulationDatabase, vcMessageSession);
 		vcMessageSession.deliverAll();
 	}
 }
@@ -327,7 +326,7 @@ private void onServiceControlTopic_StopSimulation(VCMessage message){
 		}
 		
 	} catch (Exception e) {
-		adminSessionLog.exception(e);
+		lg.error(e.getMessage(), e);
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, localVCellConnection.getUserLoginInfo().getUser());
 		SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, jobIndex, null, SchedulerStatus.FAILED, taskID, SimulationMessage.jobFailed(e.getMessage()), null, null);
 		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(simKey), newJobStatus, null, null,vcSimID.getOwner().getName());
@@ -365,7 +364,7 @@ public void stopSimulation(Simulation simulation) throws FileNotFoundException, 
 	LocalVCMessageAdapter vcMessageSession = new LocalVCMessageAdapter(localVCMessageListener);
 
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulation.getKey(), simulation.getVersion().getOwner());
-	simulationDispatcherEngine.onStopRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulationDatabase, vcMessageSession, adminSessionLog);
+	simulationDispatcherEngine.onStopRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulationDatabase, vcMessageSession);
 	vcMessageSession.deliverAll();
 }
 

@@ -15,7 +15,6 @@ import java.sql.SQLException;
 
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -49,7 +48,7 @@ private ImageDataTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public byte[] getData(ResultSet rset, SessionLog log, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
+public byte[] getData(ResultSet rset, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 
 	//byte byteData[] = rset.getBytes(data.toString());
 	byte byteData[] = (byte[]) DbDriver.getLOB(rset,data,dbSyntax);

@@ -21,7 +21,6 @@ import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.Preference;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
@@ -77,21 +76,21 @@ public class DBTopLevel extends AbstractDBTopLevel{
 /**
  * DBTopLevel constructor comment.
  */
-DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog) throws SQLException{
-	super(aConFactory,newLog);
+DBTopLevel(ConnectionFactory aConFactory) throws SQLException{
+	super(aConFactory);
 	
 	KeyFactory keyFactory = conFactory.getKeyFactory();
 	DatabaseSyntax databaseSyntax = conFactory.getDatabaseSyntax();
-	this.geomDB = new GeomDbDriver(databaseSyntax, keyFactory, log);
-	this.mathDB = new MathDescriptionDbDriver(this.geomDB,log);
-	this.reactStepDB = new ReactStepDbDriver(databaseSyntax, keyFactory, null, log, new DictionaryDbDriver(keyFactory, databaseSyntax, newLog));
-	this.modelDB = new ModelDbDriver(this.reactStepDB,log);
+	this.geomDB = new GeomDbDriver(databaseSyntax, keyFactory);
+	this.mathDB = new MathDescriptionDbDriver(this.geomDB);
+	this.reactStepDB = new ReactStepDbDriver(databaseSyntax, keyFactory, null, new DictionaryDbDriver(keyFactory, databaseSyntax));
+	this.modelDB = new ModelDbDriver(this.reactStepDB);
 	this.reactStepDB.init(modelDB);
-	this.simulationDB = new SimulationDbDriver(this.mathDB,log);
-	this.simContextDB = new SimulationContextDbDriver(this.geomDB,this.modelDB,this.mathDB,log);
-	this.userDB = new UserDbDriver(log); 
-	this.bioModelDB = new BioModelDbDriver(databaseSyntax,keyFactory,log);
-	this.mathModelDB = new MathModelDbDriver(databaseSyntax, keyFactory, log);
+	this.simulationDB = new SimulationDbDriver(this.mathDB);
+	this.simContextDB = new SimulationContextDbDriver(this.geomDB,this.modelDB,this.mathDB);
+	this.userDB = new UserDbDriver(); 
+	this.bioModelDB = new BioModelDbDriver(databaseSyntax,keyFactory);
+	this.mathModelDB = new MathModelDbDriver(databaseSyntax, keyFactory);
 }
 
 
@@ -123,12 +122,12 @@ private VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRe
 		con.commit();
 		return newVCDocumentInfo;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -160,12 +159,12 @@ FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperation
 		con.commit();
 		return fieldDataDBOperationResults;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -201,12 +200,12 @@ void deleteVersionable(User user, VersionableType versionableType, KeyValue key,
 		con.commit();
 		return;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -255,12 +254,12 @@ throws java.sql.SQLException, DataAccessException, DependencyException, Permissi
 		}
 		return new UserRegistrationResults(userDB.getUserInfo(con, userKey));
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -291,16 +290,16 @@ TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop,User u
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		TestSuiteOPResults tsor  = DbDriver.testSuiteOP(tsop,con,user,log,conFactory.getKeyFactory());
+		TestSuiteOPResults tsor  = DbDriver.testSuiteOP(tsop,con,user,conFactory.getKeyFactory());
 		con.commit();
 		return tsor;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -375,7 +374,7 @@ ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs2, boolean 
 		
 		return new ReferenceQueryResult(finalVersionalbeFamily);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return findReferences(user,rqs2,false);
@@ -408,7 +407,7 @@ VersionableFamily getAllReferences(User user,KeyValue key, VersionableType versi
 	try {
 		return DbDriver.getAllReferences(con,versionableType, key);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getAllReferences(user,key,versionableType,false);
@@ -467,7 +466,7 @@ BioModelMetaData[] getBioModelMetaDatas(User user, boolean bAll, boolean bEnable
 		//NewEnd
 		return bioModelDB.getBioModelMetaDatas(con,user,bAll,conFactory.getDatabaseSyntax());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getBioModelMetaDatas(user, bAll, false);
@@ -514,7 +513,7 @@ String getBioModelXML(User user, KeyValue key, boolean bEnableRetry)
 		
 		return driver.getVersionableXML(con,VersionableType.BioModelMetaData, key);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getBioModelXML(user, key, false);
@@ -561,7 +560,7 @@ KeyValue[] getMathDescKeysForExternalData(KeyValue extDataKey, User owner,boolea
 	try {
 		return DbDriver.getMathDescKeysForExternalData(con, owner,extDataKey);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getMathDescKeysForExternalData(extDataKey,owner, false);
@@ -651,7 +650,7 @@ MathModelMetaData[] getMathModelMetaDatas(User user, boolean bAll, boolean bEnab
 		//NewEnd
 		return mathModelDB.getMathModelMetaDatas(con,user,bAll);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getMathModelMetaDatas(user, bAll, false);
@@ -699,7 +698,7 @@ String getMathModelXML(User user, KeyValue key, boolean bEnableRetry)
 		
 		return driver.getVersionableXML(con,versionableType, key);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getMathModelXML(user, key, false);
@@ -739,12 +738,12 @@ public Preference[] getPreferences(User user,boolean bEnableRetry) throws DataAc
 		Preference[] preferences = DbDriver.getPreferences(con,user);
 		return preferences;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -769,7 +768,7 @@ Model getReactionStepAsModel(QueryHashtable dbc, User user,KeyValue reactionStep
 	try {
 		return reactStepDB.getReactionStepAsModel(dbc, con,user,reactionStepKey);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getReactionStepAsModel(dbc, user,reactionStepKey,false);
@@ -829,9 +828,9 @@ TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS,User user,boolean bEnab
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.testSuiteGet(getThisTS,con,user,log,conFactory.getDatabaseSyntax());
+		return DbDriver.testSuiteGet(getThisTS,con,user,conFactory.getDatabaseSyntax());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getTestSuite(getThisTS,user, false);
@@ -861,9 +860,9 @@ TestSuiteInfoNew[] getTestSuiteInfos(User user,boolean bEnableRetry)
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.testSuiteInfosGet(con,user,log);
+		return DbDriver.testSuiteInfosGet(con,user);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getTestSuiteInfos(user,false);
@@ -903,9 +902,9 @@ VCInfoContainer getVCInfoContainer(User user, boolean bEnableRetry) throws DataA
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.getVCInfoContainer(user,con,log,conFactory.getDatabaseSyntax());
+		return DbDriver.getVCInfoContainer(user,con,conFactory.getDatabaseSyntax());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getVCInfoContainer(user,false);
@@ -966,7 +965,7 @@ private Versionable getVersionable(QueryHashtable dbc, User user, KeyValue key, 
 			throw new IllegalArgumentException("Wrong VersinableType vType:" + versionableType);
 		}				
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getVersionable(dbc, user, key, versionableType, bCheckPermission, false);
@@ -996,9 +995,9 @@ Vector<VersionInfo> getVersionableInfos(User user, KeyValue key, VersionableType
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.getVersionableInfos(con,log,user,versionableType, bAll, key, bCheckPermission,conFactory.getDatabaseSyntax());
+		return DbDriver.getVersionableInfos(con,user,versionableType, bAll, key, bCheckPermission,conFactory.getDatabaseSyntax());
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getVersionableInfos(user,key,versionableType,bAll,bCheckPermission, false);
@@ -1028,16 +1027,16 @@ void groupAddUser(User user, VersionableType versionableType, KeyValue key, bool
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupAddUser(con, conFactory.getKeyFactory(), log, user, versionableType, key, userAddToGroup,isHidden,conFactory.getDatabaseSyntax());
+		DbDriver.groupAddUser(con, conFactory.getKeyFactory(), user, versionableType, key, userAddToGroup,isHidden,conFactory.getDatabaseSyntax());
 		con.commit();
 		return;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1067,16 +1066,16 @@ void groupRemoveUser(User user, VersionableType versionableType, KeyValue key, b
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupRemoveUser(con, conFactory.getKeyFactory(), log, user, versionableType, key,userRemoveFromGroup,isHiddenFromOwner,conFactory.getDatabaseSyntax());
+		DbDriver.groupRemoveUser(con, conFactory.getKeyFactory(), user, versionableType, key,userRemoveFromGroup,isHiddenFromOwner,conFactory.getDatabaseSyntax());
 		con.commit();
 		return;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1106,16 +1105,16 @@ void groupSetPrivate(User user, VersionableType versionableType, KeyValue key, b
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupSetPrivate(con, log, user, versionableType, key, conFactory.getDatabaseSyntax());
+		DbDriver.groupSetPrivate(con, user, versionableType, key, conFactory.getDatabaseSyntax());
 		con.commit();
 		return;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1145,16 +1144,16 @@ void groupSetPublic(User user, VersionableType versionableType, KeyValue key, bo
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupSetPublic(con, log, user, versionableType, key, conFactory.getDatabaseSyntax());
+		DbDriver.groupSetPublic(con, user, versionableType, key, conFactory.getDatabaseSyntax());
 		con.commit();
 		return;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1189,12 +1188,12 @@ KeyValue insertVersionable(User user, VCImage vcImage, String name, boolean bVer
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1229,12 +1228,12 @@ KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,BioModel
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1269,12 +1268,12 @@ KeyValue insertVersionable(QueryHashtable dbc, User user, Geometry geometry, Key
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1309,12 +1308,12 @@ KeyValue insertVersionable(User user, SimulationContext simulationContext, KeyVa
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1349,12 +1348,12 @@ KeyValue insertVersionable(User user, MathDescription mathDescription, KeyValue 
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1389,12 +1388,12 @@ KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, MathM
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1429,12 +1428,12 @@ KeyValue insertVersionable(User user, Model model, String name, boolean bVersion
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1469,12 +1468,12 @@ KeyValue insertVersionable(User user, Simulation simulation, KeyValue updatedMat
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1508,12 +1507,12 @@ void insertVersionableChildSummary(User user,VersionableType vType,KeyValue vKey
 		DbDriver.insertVersionableChildSummary(con,serialDBChildSummary,vType,vKey,conFactory.getDatabaseSyntax());
 		con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1546,12 +1545,12 @@ void insertVersionableXML(User user,VersionableType vType,KeyValue vKey,String x
 		DbDriver.insertVersionableXML(con,xml,vType,vKey,conFactory.getKeyFactory(),conFactory.getDatabaseSyntax());
 		con.commit();
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1581,12 +1580,12 @@ boolean isNameUsed(User owner, VersionableType vType, String vName, boolean bEna
 	try {
 		return DbDriver.isNameUsed(con,vType,owner,vName);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1613,12 +1612,12 @@ public void replacePreferences(User user,Preference[] preferences,boolean bEnabl
 		con.commit();
 		return;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1652,12 +1651,12 @@ KeyValue updateVersionable(User user, VCImage vcImage, boolean bVersion, boolean
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1692,12 +1691,12 @@ KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, BioMode
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1732,12 +1731,12 @@ KeyValue updateVersionable(QueryHashtable dbc, User user, Geometry geometry, Key
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1772,12 +1771,12 @@ KeyValue updateVersionable(User user, SimulationContext simulationContext, KeyVa
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1812,12 +1811,12 @@ KeyValue updateVersionable(User user, MathDescription mathDescription, KeyValue 
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1852,12 +1851,12 @@ KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, MathM
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1892,12 +1891,12 @@ KeyValue updateVersionable(User user, Model model, boolean bVersion, boolean bEn
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1932,12 +1931,12 @@ KeyValue updateVersionable(User user, Simulation simulation, KeyValue updatedMat
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1959,12 +1958,12 @@ public BioModelRep[] getBioModelReps(User user, String conditions, OrderBy order
 		BioModelRep[] biomodelreps = bioModelDB.getBioModelReps(con,user,conditions, orderBy, startRow, numRows);
 		return biomodelreps;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -1986,12 +1985,12 @@ public PublicationRep[] getPublicationReps(User user, String conditions, OrderBy
 		PublicationRep[] publicationreps = bioModelDB.getPublicationReps(con,user,conditions, orderBy);
 		return publicationreps;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -2013,12 +2012,12 @@ public SimContextRep[] getSimContextReps(KeyValue startingSimContextKey, int num
 		SimContextRep[] simContextReps = simContextDB.getSimContextReps(con,startingSimContextKey, numRows);
 		return simContextReps;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -2039,12 +2038,12 @@ public SimContextRep getSimContextRep(KeyValue simContextKey, boolean bEnableRet
 		SimContextRep simContextRep = simContextDB.getSimContextRep(con,simContextKey);
 		return simContextRep;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -2065,12 +2064,12 @@ public SimulationRep[] getSimulationReps(KeyValue startingSimKey, int numRows, b
 		SimulationRep[] simulationReps = simulationDB.getSimulationReps(con,startingSimKey, numRows);
 		return simulationReps;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
@@ -2091,12 +2090,12 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 		SimulationRep simulationRep = simulationDB.getSimulationRep(con,simKey);
 		return simulationRep;
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);

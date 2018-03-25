@@ -24,7 +24,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -54,6 +53,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.MathException;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
@@ -83,8 +83,8 @@ public class SimulationContextDbDriver extends DbDriver {
  * @param sessionLog cbit.vcell.server.SessionLog
  */
 public SimulationContextDbDriver(GeomDbDriver argGeomDB,ModelDbDriver argModelDB,
-		MathDescriptionDbDriver argMathDescDB,SessionLog sessionLog) {
-	super(argGeomDB.dbSyntax, argGeomDB.keyFactory, sessionLog);
+		MathDescriptionDbDriver argMathDescDB) {
+	super(argGeomDB.dbSyntax, argGeomDB.keyFactory);
 	this.geomDB = argGeomDB;
 	this.modelDB = argModelDB;
 	this.mathDescDB = argMathDescDB;
@@ -112,17 +112,8 @@ private void assignAnalysisTasksSQL(Connection con,KeyValue simContextKey, Simul
 			cbit.vcell.modelopt.ParameterEstimationTask parameterEstimationTask = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getParameterEstimationTask(rootElement,simContext);
 			simContext.addAnalysisTask(parameterEstimationTask);
 		}
-	}catch (cbit.vcell.math.MathException e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}catch (MappingException e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}catch (PropertyVetoException e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}catch (ExpressionException e){
-		log.exception(e);
+	}catch (MathException | MappingException | PropertyVetoException | ExpressionException e){
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} finally {
 		if(stmt != null){
@@ -446,10 +437,8 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 					throw new DataAccessException("unknown stimulusType <"+stimulusType+">");
 				}
 				
-			}catch (ExpressionException e){
-				log.exception(e);
-			}catch (PropertyVetoException e){
-				log.exception(e);
+			}catch (ExpressionException | PropertyVetoException e){
+				lg.error(e.getMessage(),e);
 			}
 		}
 	} finally {
@@ -531,7 +520,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 			try {
 				sm.setGeometryClass(theGeometryClass);
 			}catch (PropertyVetoException e){
-				log.exception(e);
+				lg.error(e.getMessage(),e);
 				throw new DataAccessException(e.getMessage());
 			}
 			if (sm instanceof FeatureMapping) {
@@ -675,11 +664,13 @@ private void deleteSimContextSQL(Connection con,User user, KeyValue simContextKe
 	//
 	try {
 		mathDescDB.deleteVersionable(con,user,VersionableType.MathDescription,mathKey);
-		log.print("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") succeeded");
-	}catch (org.vcell.util.PermissionException e){
-		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
-	}catch (org.vcell.util.DependencyException e){
-		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
+		if (lg.isTraceEnabled()) {
+			lg.trace("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") succeeded");
+		}
+	}catch (PermissionException | DependencyException e){
+		if (lg.isWarnEnabled()) {
+			lg.warn("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
+		}
 	}
 }
 
@@ -759,7 +750,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		if (rset.next()) {
-			simContext = simContextTable.getSimContext(dbc, con,user,rset, log, geomDB,modelDB,mathDescDB);
+			simContext = simContextTable.getSimContext(dbc, con,user,rset, geomDB,modelDB,mathDescDB);
 		} else {
 			throw new ObjectNotFoundException("SimulationContext id=" + simContextKey + " not found for user '" + user + "'");
 		}
@@ -1109,7 +1100,7 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 		insertSimulationContext(hash, con, user, simContext, updatedMathDescKey, updatedModel, updatedGeometryKey, newVersion, bVersion);
 		return newVersion.getVersionKey();
 	} catch (DependencyException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("DependencyException: " + e.getMessage());
 	}
 }
@@ -1129,7 +1120,7 @@ public KeyValue updateVersionable(InsertHashtable hash,Connection con,User user,
         newVersion = updateVersionableInit(hash, con, user, simContext, bVersion);
         insertSimulationContext(hash,con,user,simContext,updatedMathDescKey,updatedModel,updatedGeometryKey,newVersion,bVersion);
     } catch (DependencyException e) {
-        log.exception(e);
+        lg.error(e.getMessage(),e);
         throw new DataAccessException("MathException: " + e.getMessage());
     }
     return newVersion.getVersionKey();

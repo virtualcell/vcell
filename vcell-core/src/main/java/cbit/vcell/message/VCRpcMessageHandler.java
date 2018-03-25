@@ -2,17 +2,17 @@ package cbit.vcell.message;
 
 import java.io.Serializable;
 
-import org.vcell.util.SessionLog;
+import org.apache.log4j.Logger;
 
 public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
+	public static final Logger lg = Logger.getLogger(VCRpcMessageHandler.class);
+
 	private Object serviceImplementation = null;
 	private VCellQueue queue = null;
-	private SessionLog log = null;
 
-	public VCRpcMessageHandler(Object serviceImplementation, VCellQueue queue, SessionLog log) {
+	public VCRpcMessageHandler(Object serviceImplementation, VCellQueue queue) {
 		this.serviceImplementation = serviceImplementation;
 		this.queue = queue;
-		this.log = log;
 	}
 	
 	public void onQueueMessage(VCMessage rpcVCMessage, VCMessageSession session) {
@@ -31,9 +31,9 @@ public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 			//
 			// invoke the local RPC implementation and collect either the return value or the exception that was thrown
 			//
-			returnValue = (Serializable) vcRpcRequest.rpc(serviceImplementation, log);
+			returnValue = (Serializable) vcRpcRequest.rpc(serviceImplementation);
 		} catch (Exception ex) {
-			log.exception(ex);
+			lg.error(ex.getMessage(), ex);
 			returnValue = ex; // if exception occurs, send client the exception
 		}
 
@@ -66,7 +66,7 @@ public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 System.out.println("sent reply message with JMSCorrelationID to "+vcReplyMessage.getCorrelationID()+", and messageID = "+vcReplyMessage.getMessageID());
 			}
 		} catch (VCMessagingException e) {
-			log.exception(e);
+			lg.error(e.getMessage(),e);
 			throw new RuntimeException("error sending reply to RPC message: "+e.getMessage(),e);
 		}
 		session.getDelegate().onRpcRequestProcessed(vcRpcRequest,rpcVCMessage);

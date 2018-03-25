@@ -16,7 +16,6 @@ import java.sql.SQLException;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -58,11 +57,11 @@ private MathDescTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,org.vcell.util.DataAccessException {
 	
 	KeyValue geomRef = new KeyValue(rset.getBigDecimal(MathDescTable.table.geometryRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
 	return new cbit.vcell.math.MathInfo(geomRef,version,VCellSoftwareVersion.fromString(softwareVersion));
@@ -119,14 +118,14 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public MathDescription getMathDescription(ResultSet rset, Connection con,SessionLog log, DatabaseSyntax dbSyntax) 
+public MathDescription getMathDescription(ResultSet rset, Connection con, DatabaseSyntax dbSyntax) 
 										throws SQLException,DataAccessException {
 
 	//
 	// Get Version
 	//
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
 
 	//
 	// get MathDescription Data (language) (MUST BE READ FIRST)

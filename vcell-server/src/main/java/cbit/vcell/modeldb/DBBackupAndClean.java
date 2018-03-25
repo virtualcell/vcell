@@ -46,11 +46,9 @@ import java.util.zip.ZipOutputStream;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.util.NumberUtils;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.util.AmplistorUtils;
 
 
@@ -266,8 +264,7 @@ public class DBBackupAndClean {
 			String url = "jdbc:oracle:thin:"+"system"+"/"+password+"@//"+importServerName+":1521/"+importDBSrvcName;
 			System.out.println(url);
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-			SessionLog sessionLog = new StdoutSessionLog("test");
-			connectionFactory = DatabaseService.getInstance().createConnectionFactory(sessionLog, dbDriverName, url, "system", password);
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, "system", password);
 
 			con = connectionFactory.getConnection(new Object());
 			con.setAutoCommit(false);
@@ -1114,8 +1111,7 @@ public class DBBackupAndClean {
 //			//<database> = <host>:<port>:<SID>
 			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-			SessionLog sessionLog = new StdoutSessionLog("test");
-			connectionFactory = DatabaseService.getInstance().createConnectionFactory(sessionLog, dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
 			
 			String sql = 
 				"SELECT simid,userid" +
@@ -1281,12 +1277,11 @@ public class DBBackupAndClean {
 		StringBuffer logStringBuffer = new StringBuffer();
 
 		try{
-			SessionLog log = new StdoutSessionLog("test");
 			//jdbc:oracle:<drivertype>:<username/password>@<database>
 			//<database> = <host>:<port>:<SID>
 			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-			connectionFactory = DatabaseService.getInstance().createConnectionFactory(log, dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
 
 			con = connectionFactory.getConnection(new Object());
 			con.setAutoCommit(false);

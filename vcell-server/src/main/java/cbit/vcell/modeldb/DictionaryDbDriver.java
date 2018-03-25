@@ -17,10 +17,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
@@ -57,6 +57,7 @@ import cbit.vcell.model.ReactionStepInfo;
  * This type was created in VisualAge.
  */
 public class DictionaryDbDriver {
+	public static Logger lg = Logger.getLogger(DictionaryDbDriver.class);
 	//
     public static final CompoundTable compoundTable = CompoundTable.table;
     public static final CompoundAliasTable compoundAliasTable = CompoundAliasTable.table;
@@ -66,7 +67,6 @@ public class DictionaryDbDriver {
     public static final ProteinTable proteinTable = ProteinTable.table;
 	public static final DBSpeciesTable dbSpeciesTable = DBSpeciesTable.table;
 	
-    private final SessionLog log;
     private final KeyFactory keyFactory;
     private final DatabaseSyntax dbSyntax;
     
@@ -74,11 +74,10 @@ public class DictionaryDbDriver {
 /**
  * DictionaryDBManager constructor.
  */
-public DictionaryDbDriver(KeyFactory keyFactory, DatabaseSyntax dbSyntax, SessionLog sessionLog) {
+public DictionaryDbDriver(KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
 	super();
 	this.keyFactory = keyFactory;
 	this.dbSyntax = dbSyntax;
-	this.log = sessionLog;
 }
 
 
@@ -499,11 +498,11 @@ public DBFormalSpecies[] getDatabaseSpecies(Connection con, User user, String li
     try {
         ResultSet rset = stmt.executeQuery(sql);
 		if(speciesType.equals(FormalSpeciesType.compound)){
-	        	databaseSpecies = CompoundTable.table.getCompounds(rset,log,isBound);
+	        	databaseSpecies = CompoundTable.table.getCompounds(rset,isBound);
         }else if (speciesType.equals(FormalSpeciesType.enzyme)){
-	        	databaseSpecies = EnzymeTable.table.getEnzymes(rset,log,isBound);
+	        	databaseSpecies = EnzymeTable.table.getEnzymes(rset,isBound);
         }else if(speciesType.equals(FormalSpeciesType.protein)){
-	        	databaseSpecies = ProteinTable.table.getProteins(rset,log,isBound);
+	        	databaseSpecies = ProteinTable.table.getProteins(rset,isBound);
         }else{
 	        throw new RuntimeException("FormalSpeciesType="+speciesType.getName()+" Unsupported");
         }
@@ -854,8 +853,7 @@ public KeyValue insertCompound(Connection con, CompoundInfo compound)
     if (compound == null) {
         throw new SQLException("Improper parameters for insertCompound");
     }
-    log.print(
-        "DictionaryDbDriver.insertCompound(compound=" + compound.getFormalID() + ")");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.insertCompound(compound=" + compound.getFormalID() + ")");
     KeyValue key = keyFactory.getNewKey(con);
     insertCompoundSQL(con, key, compound);
     return key;
@@ -918,7 +916,7 @@ public KeyValue insertEnzyme(Connection con, EnzymeInfo enzyme)
     if (enzyme == null) {
         throw new SQLException("Improper parameters for insertEnzyme");
     }
-    log.print("DictionaryDbDriver.insertEnzyme(enzyme=" + enzyme.getFormalID() + ")");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.insertEnzyme(enzyme=" + enzyme.getFormalID() + ")");
     KeyValue key = keyFactory.getNewKey(con);
     insertEnzymeSQL(con, key, enzyme);
     return key;
@@ -981,7 +979,7 @@ public KeyValue insertProtein(Connection con, ProteinInfo protein)
     if (protein == null) {
         throw new SQLException("Improper parameters for insertProtein");
     }
-    //log.print("DictionaryDbDriver.insertProtein(protein=" + protein.getDBID() + ")");
+    //if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.insertProtein(protein=" + protein.getDBID() + ")");
     KeyValue key = keyFactory.getNewKey(con);
     insertProteinSQL(con, key, protein);
     return key;
@@ -1111,7 +1109,7 @@ public void removeCompound(Connection con, CompoundInfo compound)
     if (compound == null) {
         throw new IllegalArgumentException("Improper parameters for removeCompound");
     }
-    log.print(
+    if (lg.isTraceEnabled()) lg.trace(
         "DictionaryDbDriver.removeCompound(compound=" + compound.getFormalID() + ")");
     //Connection con = conFact.getConnection();
     // first remove all its names...
@@ -1131,7 +1129,7 @@ public void removeCompoundAlias(Connection con, KeyValue compoundRef)
     if (compoundRef == null) {
         throw new IllegalArgumentException("Improper parameters for removeAlias");
     }
-    log.print(
+    if (lg.isTraceEnabled()) lg.trace(
         "DictionaryDbDriver.removeCompoundAlias(compoundRef=" + compoundRef + ")");
     removeCompoundAliasSQL(con, compoundRef);
 }
@@ -1144,7 +1142,7 @@ public void removeCompoundAliases(Connection con) throws SQLException {
     if (con == null) {
         throw new IllegalArgumentException("Improper parameters for removeAliases");
     }
-    log.print("DictionaryDbDriver.removeCompoundAliases()");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.removeCompoundAliases()");
     removeCompoundAliasesSQL(con);
 }
 
@@ -1192,7 +1190,7 @@ public void removeCompounds(Connection con) throws SQLException {
     if (con == null) {
         throw new IllegalArgumentException("Improper parameters for removeCompounds");
     }
-    log.print("DictionaryDbDriver.removeCompounds()");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.removeCompounds()");
     //Connection con = conFact.getConnection();
     //First remove all aliases...
     removeCompoundAliases(con);
@@ -1251,7 +1249,7 @@ public void removeEnzyme(Connection con, EnzymeInfo enzyme) throws SQLException 
     if (enzyme == null) {
         throw new IllegalArgumentException("Improper parameters for removeEnzyme");
     }
-    log.print("DictionaryDbDriver.removeEnzyme(enzyme=" + enzyme.getFormalID() + ")");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.removeEnzyme(enzyme=" + enzyme.getFormalID() + ")");
     //Connection con = conFact.getConnection();
     // first remove all its names...
 
@@ -1270,7 +1268,7 @@ public void removeEnzymeAlias(Connection con, KeyValue enzymeRef)
     if (enzymeRef == null) {
         throw new IllegalArgumentException("Improper parameters for removeEnzymeAlias");
     }
-    log.print("DictionaryDbDriver.removeEnzymeAlias(enzymeRef=" + enzymeRef + ")");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.removeEnzymeAlias(enzymeRef=" + enzymeRef + ")");
     removeEnzymeAliasSQL(con, enzymeRef);
 }
 
@@ -1282,7 +1280,7 @@ public void removeEnzymeAliases(Connection con) throws SQLException {
     if (con == null) {
         throw new IllegalArgumentException("Improper parameters for removeEnzymeAliases");
     }
-    log.print("DictionaryDbDriver.removeEnzymeAliases()");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.removeEnzymeAliases()");
     removeEnzymeAliasesSQL(con);
 }
 
@@ -1331,7 +1329,7 @@ public void removeEnzymes(Connection con) throws SQLException {
     if (con == null) {
         throw new IllegalArgumentException("Improper parameters for removeEnzymes");
     }
-    log.print("DictionaryDbDriver.removeEnzymes()");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.removeEnzymes()");
     //First remove all aliases...
     removeEnzymeAliases(con);
     removeEnzymesSQL(con);
@@ -1390,7 +1388,7 @@ public void removeProtein(Connection con, ProteinInfo protein)
     if (protein == null) {
         throw new IllegalArgumentException("Improper parameters for removeProtein");
     }
-    log.print(
+    if (lg.isTraceEnabled()) lg.trace(
         "DictionaryDbDriver.removeProtein(protein=" + protein.getFormalID() + ")");
 
     // first remove all its names...
@@ -1409,7 +1407,7 @@ public void removeProteinAlias(Connection con, KeyValue proteinRef)
     if (proteinRef == null) {
         //throw new IllegalArgumentException("Improper parameters for removeProteinAlias");
     } else {
-        log.print(
+        if (lg.isTraceEnabled()) lg.trace(
             "DictionaryDbDriver.removeProteinAlias(proteinRef=" + proteinRef + ")");
         removeProteinAliasSQL(con, proteinRef);
     }
@@ -1423,7 +1421,7 @@ public void removeProteinAliases(Connection con) throws SQLException {
     if (con == null) {
         throw new IllegalArgumentException("Improper parameters for removeProteinAliases");
     }
-    log.print("DictionaryDbDriver.removeProteinAliases()");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.removeProteinAliases()");
     removeProteinAliasesSQL(con);
 }
 
@@ -1486,7 +1484,7 @@ public void removeProteins(Connection con) throws SQLException {
     if (con == null) {
         throw new IllegalArgumentException("Improper parameters for removeProteins");
     }
-    //log.print("DictionaryDbDriver.removeProteins()");
+    //if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.removeProteins()");
     //First remove all aliases and keywords...
     removeProteinAliases(con);
     //removeProteinKeyWords(con);
@@ -1542,7 +1540,7 @@ public void updateCompound(Connection con, CompoundInfo compound)
     if (compound == null) {
         throw new SQLException("Improper parameters for updateCompound");
     }
-    log.print(
+    if (lg.isTraceEnabled()) lg.trace(
         "DictionaryDbDriver.updateCompound(compound=" + compound.getFormalID() + ")");
     updateCompoundSQL(con, compound);
 }
@@ -1582,7 +1580,7 @@ public void updateEnzyme(Connection con, EnzymeInfo enzyme) throws SQLException 
     if (enzyme == null) {
         throw new SQLException("Improper parameters for updateEnzyme");
     }
-    log.print("DictionaryDbDriver.updateEnzyme(enzyme=" + enzyme.getFormalID() + ")");
+    if (lg.isTraceEnabled()) lg.trace("DictionaryDbDriver.updateEnzyme(enzyme=" + enzyme.getFormalID() + ")");
     updateEnzymeSQL(con, enzyme);
 }
 
@@ -1622,7 +1620,7 @@ public void updateProtein(Connection con, ProteinInfo protein)
     if (protein == null) {
         throw new SQLException("Improper parameters for updateProtein");
     }
-    log.print(
+    if (lg.isTraceEnabled()) lg.trace(
         "DictionaryDbDriver.updateProtein(protein=" + protein.getFormalID() + ")");
     updateProteinSQL(con, protein);
 }

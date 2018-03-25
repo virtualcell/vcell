@@ -11,10 +11,10 @@
 package cbit.vcell.modeldb;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -31,21 +31,21 @@ import cbit.vcell.server.UpdateSynchronizationException;
  * This type was created in VisualAge.
  */
 public class LocalAdminDbServer implements AdminDatabaseServer {
-	private SessionLog log = null;
+	public static final Logger lg = Logger.getLogger(LocalAdminDbServer.class);
+
 	private AdminDBTopLevel adminDbTop = null;
 
 /**
  * LocalAdminDbServer constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalAdminDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) 
+public LocalAdminDbServer(ConnectionFactory conFactory, KeyFactory keyFactory) 
 		throws DataAccessException {
 
-	this.log = sessionLog;
 	try {
-		adminDbTop = new AdminDBTopLevel(conFactory,log);
+		adminDbTop = new AdminDBTopLevel(conFactory);
 	} catch (Throwable e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("Error creating AdminDbTop " + e.getMessage());
 	}		
 }
@@ -54,7 +54,7 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner) 
 	try {
 		return adminDbTop.getExternalDataIdentifiers(fieldDataOwner,true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure getExternalDataIdentifierKeys");
 	}
 }
@@ -71,7 +71,7 @@ public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simK
 	try {
 		return adminDbTop.getSimulationJobStatusArray(simKey,jobIndex,true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure getting SimulationJobStatus");
 	}
 }
@@ -80,7 +80,7 @@ public SimulationJobStatusPersistent getSimulationJobStatus(KeyValue simKey, int
 	try {
 		return adminDbTop.getSimulationJobStatus(simKey,jobIndex,taskID,true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure getting SimulationJobStatus");
 	}
 }
@@ -92,7 +92,7 @@ public List<SimpleJobStatusPersistent> getSimulationJobStatus(java.lang.String c
 	try {
 		return adminDbTop.getSimpleJobStatus(conditions, startRow, maxNumRows, true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure getting SimulationJobStatus");
 	}
 }
@@ -110,7 +110,7 @@ public SimulationJobStatusPersistent[] getSimulationJobStatus(boolean bActiveOnl
 	try {
 		return adminDbTop.getSimulationJobStatus(bActiveOnly,userOnly,true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure getting SimulationJobStatus");
 	}
 }
@@ -123,7 +123,7 @@ public User getUser(String userid) throws DataAccessException {
 	try {
 		return adminDbTop.getUser(userid,true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure getting user "+userid);
 	}
 }
@@ -136,7 +136,7 @@ public User getUser(String userid, UserLoginInfo.DigestedPassword digestedPasswo
 	try {
 		return adminDbTop.getUser(userid,digestedPassword,true, runningLocally);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure authenticating user "+userid);
 	}
 }
@@ -152,7 +152,7 @@ public org.vcell.util.document.User getUserFromSimulationKey(org.vcell.util.docu
 	try {
 		return adminDbTop.getUserFromSimulationKey(simKey,true);
 	} catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure authenticating user ");
 	}
 }
@@ -165,7 +165,7 @@ public UserInfo getUserInfo(KeyValue userKey) throws DataAccessException {
 	try {
 		return adminDbTop.getUserInfo(userKey,true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure getting userInfo with key="+userKey);
 	}
 }
@@ -178,7 +178,7 @@ public UserInfo[] getUserInfos() throws DataAccessException {
 	try {
 		return adminDbTop.getUserInfos(true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure getting userInfos");
 	}
 }
@@ -197,7 +197,7 @@ public void insertSimulationJobStatus(SimulationJobStatusPersistent simulationJo
 	}catch (UpdateSynchronizationException ex){
 		throw ex;
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure inserting SimulationJobStatus: "+simulationJobStatus);
 	}
 }
@@ -213,10 +213,10 @@ public org.vcell.util.document.UserInfo insertUserInfo(UserInfo newUserInfo) thr
 		KeyValue key = adminDbTop.insertUserInfo(newUserInfo,true);
 		return adminDbTop.getUserInfo(key,true);
 	}catch (UseridIDExistsException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -233,7 +233,7 @@ public void updateSimulationJobStatus(SimulationJobStatusPersistent simulationJo
 	try {
 		adminDbTop.updateSimulationJobStatus(simulationJobStatus,true);
 	} catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure updating SimulationJobStatus: "+simulationJobStatus);
 	}
 }
@@ -249,7 +249,7 @@ public UserInfo updateUserInfo(UserInfo newUserInfo) throws DataAccessException 
 		KeyValue key = adminDbTop.updateUserInfo(newUserInfo,true);
 		return adminDbTop.getUserInfo(key,true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure updating user '"+newUserInfo.userid+"'\n"+e.getMessage());
 	}
 }
@@ -258,7 +258,7 @@ public void updateUserStat(UserLoginInfo userLoginInfo) throws DataAccessExcepti
 	try {
 		adminDbTop.updateUserStat(userLoginInfo,true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure updating user stat '"+userLoginInfo.getUserName()+"'\n"+e.getMessage());
 	}
 }
@@ -268,7 +268,7 @@ public void sendLostPassword(String userid) throws DataAccessException {
 	try {
 		adminDbTop.sendLostPassword(userid,true);
 	}catch (Throwable e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new DataAccessException("failure sending password for user '"+userid+"'\n"+e.getMessage());
 	}
 }

@@ -24,7 +24,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -58,8 +57,8 @@ public class BioModelDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public BioModelDbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory, SessionLog sessionLog) {
-	super(dbSyntax, keyFactory, sessionLog);
+public BioModelDbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory) {
+	super(dbSyntax, keyFactory);
 }
 
 
@@ -96,11 +95,11 @@ private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioMo
 	//for (int i=0;i<simKeys.length;i++){
 		//try {
 			//this.simDB.deleteVersionable(con,user,VersionableType.Simulation,simKeys[i]);
-			//log.print("BioModelDbDriver.delete("+bioModelKey+") deletion of Simulation("+simKeys[i]+") succeeded");
+			//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.delete("+bioModelKey+") deletion of Simulation("+simKeys[i]+") succeeded");
 		//}catch (cbit.vcell.server.PermissionException e){
-			//log.print("BioModelDbDriver.delete("+bioModelKey+") deletion of Simulation("+simKeys[i]+") failed: "+e.getMessage());
+			//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.delete("+bioModelKey+") deletion of Simulation("+simKeys[i]+") failed: "+e.getMessage());
 		//}catch (cbit.vcell.server.DependencyException e){
-			//log.print("BioModelDbDriver.delete("+bioModelKey+") deletion of Simulation("+simKeys[i]+") failed: "+e.getMessage());
+			//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.delete("+bioModelKey+") deletion of Simulation("+simKeys[i]+") failed: "+e.getMessage());
 		//}
 	//}
 	////
@@ -109,11 +108,11 @@ private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioMo
 	//for (int i=0;i<simContextKeys.length;i++){
 		//try {
 			//this.simContextDB.deleteVersionable(con,user,VersionableType.SimulationContext,simContextKeys[i]);
-			//log.print("BioModelDbDriver.delete("+bioModelKey+") deletion of SimulationContext("+simContextKeys[i]+") succeeded");
+			//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.delete("+bioModelKey+") deletion of SimulationContext("+simContextKeys[i]+") succeeded");
 		//}catch (cbit.vcell.server.PermissionException e){
-			//log.print("BioModelDbDriver.delete("+bioModelKey+") deletion of SimulationContext("+simContextKeys[i]+") failed: "+e.getMessage());
+			//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.delete("+bioModelKey+") deletion of SimulationContext("+simContextKeys[i]+") failed: "+e.getMessage());
 		//}catch (cbit.vcell.server.DependencyException e){
-			//log.print("BioModelDbDriver.delete("+bioModelKey+") deletion of SimulationContext("+simContextKeys[i]+") failed: "+e.getMessage());
+			//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.delete("+bioModelKey+") deletion of SimulationContext("+simContextKeys[i]+") failed: "+e.getMessage());
 		//}
 	//}
 	////
@@ -121,11 +120,11 @@ private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioMo
 	////
 	//try {
 		//this.modelDB.deleteVersionable(con,user,VersionableType.Model,modelKey);
-		//log.print("BioModelDbDriver.delete("+bioModelKey+") deletion of Model("+modelKey+") succeeded");
+		//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.delete("+bioModelKey+") deletion of Model("+modelKey+") succeeded");
 	//}catch (cbit.vcell.server.PermissionException e){
-		//log.print("BioModelDbDriver.delete("+bioModelKey+") deletion of Model("+modelKey+") failed: "+e.getMessage());
+		//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.delete("+bioModelKey+") deletion of Model("+modelKey+") failed: "+e.getMessage());
 	//}catch (cbit.vcell.server.DependencyException e){
-		//log.print("BioModelDbDriver.delete("+bioModelKey+") deletion of Model("+modelKey+") failed: "+e.getMessage());
+		//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.delete("+bioModelKey+") deletion of Model("+modelKey+") failed: "+e.getMessage());
 	//}
 
 }
@@ -159,7 +158,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 	if (user == null || bioModelKey == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelMetaData");
 	}
-	//log.print("BioModelDbDriver.getBioModelMetaData(user=" + user + ", id=" + bioModelKey + ")");
+	//if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getBioModelMetaData(user=" + user + ", id=" + bioModelKey + ")");
 
 	//
 	// to construct a BioModelMetaData as an immutable object, lets collect all keys first
@@ -217,7 +216,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 		//showMetaData(rset);
 
 		if (rset.next()) {
-			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,log,simContextKeys,simKeys,dbSyntax);
+			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,simContextKeys,simKeys,dbSyntax);
 		} else {
 			throw new ObjectNotFoundException("BioModel id=" + bioModelKey + " not found for user '" + user + "'");
 		}
@@ -236,7 +235,7 @@ BioModelMetaData[] getBioModelMetaDatas(Connection con,User user, boolean bAll,D
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelMetaDatas");
 	}
-	log.print("BioModelDbDriver.getBioModelMetaDatas(user=" + user + ", bAll=" + bAll + ")");
+	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getBioModelMetaDatas(user=" + user + ", bAll=" + bAll + ")");
 
 	//
 	// to construct a BioModelMetaData as an immutable object, lets collect all keys first
@@ -268,7 +267,7 @@ BioModelMetaData[] getBioModelMetaDatas(Connection con,User user, boolean bAll,D
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			BioModelMetaData bioModelMetaData = bioModelTable.getBioModelMetaData(rset,log,this,con, dbSyntax);
+			BioModelMetaData bioModelMetaData = bioModelTable.getBioModelMetaData(rset,this,con, dbSyntax);
 			bioModelMetaDataList.addElement(bioModelMetaData);
 		}
 	} finally {
@@ -284,7 +283,7 @@ BioModelMetaData[] getBioModelMetaDatas(Connection con,User user, boolean bAll,D
  * getModels method comment.
  */
 KeyValue[] getDeletableSimContextEntriesFromBioModel(Connection con,User user,KeyValue bioModelKey) throws SQLException, DataAccessException {
-//	log.print("BioModelDbDriver.getSimContextEntriesFromBioModel(bioModelKey=" + bioModelKey + ")");
+//	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getSimContextEntriesFromBioModel(bioModelKey=" + bioModelKey + ")");
 	String sql;
 	
 	sql = 	" SELECT " + bioModelSimContextLinkTable.simContextRef.getQualifiedColName() +
@@ -324,7 +323,7 @@ KeyValue[] getDeletableSimContextEntriesFromBioModel(Connection con,User user,Ke
  * getModels method comment.
  */
 KeyValue[] getDeletableSimulationEntriesFromBioModel(Connection con,User user,KeyValue bioModelKey) throws SQLException, DataAccessException {
-//	log.print("BioModelDbDriver.getSimulationEntriesFromBioModel(bioModelKey=" + bioModelKey + ")");
+//	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getSimulationEntriesFromBioModel(bioModelKey=" + bioModelKey + ")");
 	String sql;
 	
 	sql = 	" SELECT " + bioModelSimLinkTable.simRef.getQualifiedColName() +
@@ -363,7 +362,7 @@ KeyValue[] getDeletableSimulationEntriesFromBioModel(Connection con,User user,Ke
  * getModels method comment.
  */
 KeyValue[] getSimContextEntriesFromBioModel(Connection con,KeyValue bioModelKey) throws SQLException, DataAccessException {
-//	log.print("BioModelDbDriver.getSimContextEntriesFromBioModel(bioModelKey=" + bioModelKey + ")");
+//	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getSimContextEntriesFromBioModel(bioModelKey=" + bioModelKey + ")");
 	String sql;
 	
 	sql = 	" SELECT " + bioModelSimContextLinkTable.simContextRef +
@@ -401,7 +400,7 @@ KeyValue[] getSimContextEntriesFromBioModel(Connection con,KeyValue bioModelKey)
  * getModels method comment.
  */
 KeyValue[] getSimulationEntriesFromBioModel(Connection con,KeyValue bioModelKey) throws SQLException, DataAccessException {
-//	log.print("BioModelDbDriver.getSimulationEntriesFromBioModel(bioModelKey=" + bioModelKey + ")");
+//	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getSimulationEntriesFromBioModel(bioModelKey=" + bioModelKey + ")");
 	String sql;
 	
 	sql = 	" SELECT " + bioModelSimLinkTable.simRef +
@@ -603,7 +602,7 @@ public BioModelRep[] getBioModelReps(Connection con, User user, String condition
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelMetaDatas");
 	}
-	log.print("BioModelDbDriver.getBioModelReps(user=" + user + ", conditions=" + conditions + ")");
+	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getBioModelReps(user=" + user + ", conditions=" + conditions + ")");
 	
 	String sql = bioModelTable.getPreparedStatement_BioModelReps(conditions, orderBy, startRow, numRows);
 	
@@ -632,7 +631,7 @@ public PublicationRep[] getPublicationReps(Connection con, User user, String con
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getPublicationReps");
 	}
-	log.print("BioModelDbDriver.getPublicationReps(user=" + user + ", conditions=" + conditions + ")");
+	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getPublicationReps(user=" + user + ", conditions=" + conditions + ")");
 	
 	String sql = publicationTable.getPreparedStatement_PublicationReps(conditions, orderBy);
 	

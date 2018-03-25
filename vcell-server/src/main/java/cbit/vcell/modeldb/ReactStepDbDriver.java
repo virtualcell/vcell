@@ -23,7 +23,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Versionable;
@@ -59,8 +58,8 @@ public class ReactStepDbDriver extends DbDriver {
 	/**
  * LocalDBManager constructor comment.
  */
-public ReactStepDbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory, ModelDbDriver modelDB, SessionLog sessionLog,DictionaryDbDriver argDictDB) {
-	super(dbSyntax, keyFactory, sessionLog);
+public ReactStepDbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory, ModelDbDriver modelDB, DictionaryDbDriver argDictDB) {
+	super(dbSyntax, keyFactory);
 	this.modelDB = modelDB;
 	this.dictDB = argDictDB;
 }
@@ -120,7 +119,7 @@ private ReactionParticipant getReactionParticipant(QueryHashtable dbc, Connectio
 	//
 	// get ReactionParticipant
 	//
-	rp = reactPartTable.getReactionParticipant(rpKey, rset, log);
+	rp = reactPartTable.getReactionParticipant(rpKey, rset);
 
 	//
 	// get referenced Objects (Species and Structure)
@@ -300,7 +299,7 @@ private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultS
 	KeyValue structKey = new KeyValue(rset.getBigDecimal(ReactStepTable.table.structRef.toString()));
 	
 	Structure structure = getStructure(dbc, con, structKey);
-	rs = reactStepTable.getReactionStep(structure, model, rsKey, rset, log,dbSyntax);
+	rs = reactStepTable.getReactionStep(structure, model, rsKey, rset,dbSyntax);
 
 	//
 	// add reaction participants for this reactionStep
@@ -355,7 +354,7 @@ private ReactionStep[] getReactionStepArray(QueryHashtable dbc, Connection con, 
 		for (int j = i+1; j < reactStepList.size(); j++){
 			ReactionStep rs2 = (ReactionStep)reactStepList.elementAt(j);
 			if (rs1.compareEqual(rs2)){
-				log.alert("ReactStepDbDriver.getReactionStepArray, detected duplicate reactionStep id="+rs2.getKey()+" name='"+rs2.getName()+"', should be removed and proper SQL constraint added to schema");
+				if (lg.isWarnEnabled()) lg.warn("ReactStepDbDriver.getReactionStepArray, detected duplicate reactionStep id="+rs2.getKey()+" name='"+rs2.getName()+"', should be removed and proper SQL constraint added to schema");
 			}
 		}
 	}
@@ -505,7 +504,7 @@ private Species getSpecies(QueryHashtable dbc, ResultSet rset,Connection con) th
 			}
 		}
 		
-		species = speciesTable.getSpecies(rset,log,dbSpeciesRef);
+		species = speciesTable.getSpecies(rset,dbSpeciesRef);
 		//
 		// stick new one in cache
 		//
@@ -554,7 +553,7 @@ public Structure getStructure(QueryHashtable dbc, Connection con, KeyValue struc
 
 		while (rset.next()) {
 			KeyValue key = new KeyValue(rset.getBigDecimal(structTable.id.toString()));
-			struct = structTable.getStructure(rset, log, key);
+			struct = structTable.getStructure(rset, key);
 			dbc.put(key, struct);
 		}
 	} finally {

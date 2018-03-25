@@ -21,7 +21,6 @@ import org.postgresql.ds.PGConnectionPoolDataSource;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.modeldb.UserTable;
@@ -30,14 +29,12 @@ import cbit.vcell.modeldb.UserTable;
  * This type was created in VisualAge.y
  */
 public final class PostgresConnectionFactory implements ConnectionFactory  {
-
-	private PGConnectionPoolDataSource poolDataSource = null;
-	private SessionLog log = null;
 	private static final Logger lg = Logger.getLogger(PostgresConnectionFactory.class);
 
+	private PGConnectionPoolDataSource poolDataSource = null;
 
-PostgresConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword)  {
-	this.log = sessionLog;
+
+PostgresConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword)  {
 	poolDataSource = new PGConnectionPoolDataSource();
 	poolDataSource.setUrl(argConnectURL);
 	poolDataSource.setUser(argUserid);
@@ -52,7 +49,7 @@ public synchronized void close() throws java.sql.SQLException {
 }
 
 public void failed(Connection con, Object lock) throws SQLException {
-	log.print("OraclePoolingConnectionFactory.failed("+con+")");
+	if (lg.isTraceEnabled()) lg.trace("OraclePoolingConnectionFactory.failed("+con+")");
 	release(con, lock);
 }
 
@@ -63,13 +60,13 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 		conn.setAutoCommit(false);
 	} catch (SQLException ex) {
 		// might be invalid or stale connection
-		log.print("first time #getConnection( ) fail " + ex.getMessage() + ", state " + ex.getSQLState() + ", attempting refresh");
+		if (lg.isTraceEnabled()) lg.trace("first time #getConnection( ) fail " + ex.getMessage() + ", state " + ex.getSQLState() + ", attempting refresh");
 		// get connection again.
 		try {
 			conn = poolDataSource.getConnection();
 		} catch (SQLException e) {
-			log.print("refresh failed");
-			log.exception(e);
+			if (lg.isTraceEnabled()) lg.trace("refresh failed");
+			lg.error(e.getMessage(),e);
 		}
 	}
 	if (conn == null) {

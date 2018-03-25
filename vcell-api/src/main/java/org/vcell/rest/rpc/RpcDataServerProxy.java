@@ -12,7 +12,6 @@ package org.vcell.rest.rpc;
 
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
@@ -42,8 +41,8 @@ public class RpcDataServerProxy extends AbstractRpcServerProxy implements cbit.v
 /**
  * DataServerProxy constructor comment.
  */
-public RpcDataServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog log) {
-	super(userLoginInfo, vcMessageSession, VCellQueue.DataRequestQueue, log);
+public RpcDataServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession) {
+	super(userLoginInfo, vcMessageSession, VCellQueue.DataRequestQueue);
 }
 
 
@@ -106,13 +105,13 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 			rpc(RpcServiceType.DATA, "getTimeSeriesValues", new Object[]{outputContext,userLoginInfo.getUser(), vcdID,timeSeriesJobSpec}, false);
 		}
 	} catch (DataAccessException ex) {
-		log.exception(ex);
+		lg.error(ex.getMessage(),ex);
 		throw ex;
 	} catch (RuntimeException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Exception e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 	return null;
@@ -123,13 +122,13 @@ public cbit.rmi.event.ExportEvent makeRemoteFile(OutputContext outputContext,cbi
 	try {
 		rpc(RpcServiceType.DATA, "makeRemoteFile", new Object[]{outputContext,userLoginInfo.getUser(), exportSpecs}, false, new String[]{RpcServiceType.DATAEXPORT.getName()}, new Object[]{new Boolean(true)});
 	} catch (DataAccessException ex) {
-		log.exception(ex);
+		lg.error(ex.getMessage(),ex);
 		throw ex;
 	} catch (RuntimeException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Exception e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 	return null;
@@ -151,13 +150,13 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
 	try {
 		return rpc(RpcServiceType.DATA, methodName, args, true);
 	} catch (DataAccessException ex) {
-		log.exception(ex);
+		lg.error(ex.getMessage(),ex);
 		throw ex;
 	} catch (RuntimeException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Exception e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }

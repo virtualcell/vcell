@@ -15,7 +15,6 @@ import java.sql.SQLException;
 
 import org.jdom.Element;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
@@ -64,7 +63,7 @@ private SubVolumeTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public SubVolume getAnalyticOrCompartmentSubVolume(KeyValue key, ResultSet rset, SessionLog log) throws SQLException, ExpressionException, DataAccessException {
+public SubVolume getAnalyticOrCompartmentSubVolume(KeyValue key, ResultSet rset) throws SQLException, ExpressionException, DataAccessException {
 
 	//KeyValue key = new KeyValue(rset.getBigDecimal(id.toString(),0));
 	String svName = rset.getString(name.toString());
@@ -101,7 +100,7 @@ public SubVolume getAnalyticOrCompartmentSubVolume(KeyValue key, ResultSet rset,
  * @param rset ResultSet
  * @param log SessionLog
  */
-public ImageSubVolume getImageSubVolume(KeyValue key, ResultSet rset, SessionLog log, cbit.image.VCPixelClass pixelClass) throws SQLException, DataAccessException {
+public ImageSubVolume getImageSubVolume(KeyValue key, ResultSet rset, cbit.image.VCPixelClass pixelClass) throws SQLException, DataAccessException {
 
 	//KeyValue key = new KeyValue(rset.getBigDecimal(id.toString(),0));
 	String svName = rset.getString(name.toString());

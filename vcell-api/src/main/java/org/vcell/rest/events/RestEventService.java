@@ -11,7 +11,6 @@ import org.vcell.api.common.events.ExportEventRepresentation;
 import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
 import org.vcell.rest.server.ClientTopicMessageCollector;
 import org.vcell.util.Compare;
-import org.vcell.util.SessionLog;
 
 import com.google.gson.Gson;
 
@@ -30,16 +29,14 @@ public class RestEventService {
 	final static ConcurrentLinkedDeque<EventWrapper> events = new ConcurrentLinkedDeque<>();
 	ClientTopicMessageCollector clientTopicMessageCollector = null;
 	VCMessagingService vcMessagingService = null;
-	SessionLog log = null;
 
-	public RestEventService(VCMessagingService vcMessagingService, SessionLog log) {
+	public RestEventService(VCMessagingService vcMessagingService) {
 		this.vcMessagingService = vcMessagingService;
 		if (this.vcMessagingService!=null){
-			clientTopicMessageCollector = new ClientTopicMessageCollector(vcMessagingService,log);
+			clientTopicMessageCollector = new ClientTopicMessageCollector(vcMessagingService);
 			clientTopicMessageCollector.init();
 			clientTopicMessageCollector.addMessageListener((e) -> newEventMessage(e));
 		}
-		this.log = log;
 	}
 		
 	public void insert(String userid, EventType eventType, String eventJSON) {
