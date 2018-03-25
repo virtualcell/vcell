@@ -214,6 +214,12 @@ private File getUserSimulationDirectory(String simDataRoot) {
 			if (lg.isWarnEnabled()) lg.warn(msg);
 			throw new ConfigurationException(msg);
 		}
+		//
+		// directory create from container (possibly) as root, make this user directory accessible from user "vcell" 
+		//
+		directory.setWritable(true,false);
+		directory.setExecutable(true,false);
+		directory.setReadable(true,false);
 	}		 
 	return directory;
 }

@@ -58,10 +58,18 @@ public AbstractSolver(SimulationTask simTask, File directory) throws SolverExcep
 
 	this.simTask = simTask;
 	if (!directory.exists() && !simTask.getSimulation().getSolverTaskDescription().isParallel()){
-		if (bMakeUserDirs && !directory.mkdirs()){
-			String msg = "could not create directory "+directory;
-			if (lg.isWarnEnabled()) lg.warn(msg);
-			throw new ConfigurationException(msg);
+		if (bMakeUserDirs && !directory.exists()) {
+			if (!directory.mkdirs()){
+				String msg = "could not create directory "+directory;
+				if (lg.isWarnEnabled()) lg.warn(msg);
+				throw new ConfigurationException(msg);
+			}
+			//
+			// directory create from container (possibly) as root, make this user directory accessible from user "vcell" 
+			//
+			directory.setWritable(true,false);
+			directory.setExecutable(true,false);
+			directory.setReadable(true,false);
 		}
 	}		 
 	this.saveDirectory = directory;

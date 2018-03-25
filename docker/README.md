@@ -170,14 +170,14 @@ open http://localhost:5001
 
 
 
-#### Build VCell and deploy to ALPHA server (from ./docker directory)
+#### Build VCell and deploy to production servers (from ./docker directory)
 
 current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 ```bash
-export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=d37ab6d
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=38490a5
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
@@ -192,7 +192,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=23 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=26 VCELL_SITE=alpha
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
@@ -211,11 +211,19 @@ using deploy configuration and Docker images, generate client installers and dep
 
 ```bash
 ./deploy.sh \
-   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --upload-singularity --install-singularity --build-installers --link-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
+   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --upload-singularity --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR --link-installers \
    vcellapi.cam.uchc.edu \
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
    vcell${VCELL_SITE}
+
+./deploy.sh \
+   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --upload-singularity --install-singularity  \
+   vcellapi.cam.uchc.edu \
+   ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
+   ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
+   vcell${VCELL_SITE}
+
 
 ```
 

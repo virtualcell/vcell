@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -275,7 +276,15 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 	String simTaskFilePathInternal = ResourceUtil.forceUnixPath(new File(primaryUserDirInternal ,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
 	String simTaskFilePathExternal = ResourceUtil.forceUnixPath(new File(primaryUserDirExternal ,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
 
-	FileUtils.forceMkdir(primaryUserDirInternal);
+	if (!primaryUserDirInternal.exists()){
+		FileUtils.forceMkdir(primaryUserDirInternal);
+		//
+		// directory create from container (possibly) as root, make this user directory accessible from user "vcell" 
+		//
+		primaryUserDirInternal.setWritable(true,false);
+		primaryUserDirInternal.setExecutable(true,false);
+		primaryUserDirInternal.setReadable(true,false);
+	}		 
 	XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePathInternal, true);
 
 	final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
