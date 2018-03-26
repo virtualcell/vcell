@@ -2,10 +2,14 @@ package cbit.vcell.client.desktop;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -41,6 +45,7 @@ import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.ColorIconEx;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.generic.DatePanel;
 
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
@@ -68,6 +73,9 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 
 	private JTextField textFieldSearch = null;
 	private JLabel countLabel = new JLabel("");
+	
+	private JTextField textFieldJobsLimit = null;
+	int maxRows = 200;
 
 	private JButton refreshAllButton;
 	/*
@@ -80,6 +88,13 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	private JCheckBox completedButton = null;
 	private JCheckBox failedButton = null;
 	private JCheckBox stoppedButton = null;
+	
+	private JCheckBox orphanedButton = null;
+
+	private JCheckBox submitBetweenButton = null;
+	private DatePanel endDate = null;
+	private DatePanel startDate = null;
+	private JPanel submitDatePanel = null;
 	
 	private Icon waitingIcon = new ColorIcon(11,11, Color.lightGray, true);
 	private Icon queuedIcon = new ColorIcon(11,11, Color.white, true);
@@ -143,14 +158,142 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		}
 		return stoppedButton;
 	}
+	public JCheckBox getOrphanedButton() {
+		if(orphanedButton == null) {
+			orphanedButton = new JCheckBox("Hide orphaned");
+			orphanedButton.setToolTipText("Hide the Jobs whose Model have since been deleted.");
+			orphanedButton.addActionListener(eventHandler);
+		}
+		return orphanedButton;
+	}
+	public JCheckBox getSubmitBetweenButton() {
+		if(submitBetweenButton == null) {
+			submitBetweenButton = new JCheckBox("Submitted Between");
+			submitBetweenButton.setToolTipText("Show only the Jobs submitted in this interval.");
+			submitBetweenButton.addActionListener(eventHandler);
+		}
+		return submitBetweenButton;
+	}
+	private DatePanel getEndDate() {
+		if (endDate == null) {
+			try {
+				endDate = new DatePanel();
+				endDate.setName("EndDate");
+				endDate.setLayout(new FlowLayout());
+				endDate.setEnabled(true);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return endDate;
+	}
+	private DatePanel getStartDate() {
+		if (startDate == null) {
+			try {
+				startDate = new DatePanel();
+				startDate.setName("StartDate");
+				startDate.setLayout(new FlowLayout());
+				startDate.setEnabled(true);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return startDate;
+	}
+	private javax.swing.JPanel getSubmitDatePanel() {
+		if (submitDatePanel == null) {
+			try {
+				submitDatePanel = new javax.swing.JPanel();
+				submitDatePanel.setName("QuerySubmitDatePanel");
+				submitDatePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder()));
+				
+				submitDatePanel.setLayout(new GridBagLayout());
+				int gridy = 0;
+				GridBagConstraints gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.weightx = 0;
+				gbc.weighty = 0;
+				gbc.gridwidth = 2;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
+				submitDatePanel.add(getSubmitBetweenButton(), gbc);
 
+				gbc = new GridBagConstraints();
+				gbc.gridx = 2;
+				gbc.gridy = gridy;
+				gbc.weightx = 1.0;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(5, 2, 2, 3);
+				submitDatePanel.add(new JLabel(""), gbc);
+
+				gridy++;
+				gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.weightx = 0;
+				gbc.weighty = 0;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(5, 40, 2, 3);
+				submitDatePanel.add(new JLabel("End Date: "), gbc);
+
+				gbc = new GridBagConstraints();
+				gbc.gridx = 1;
+				gbc.gridy = gridy;
+				gbc.weightx = 0;
+				gbc.weighty = 0;
+				gbc.gridwidth = 2;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(5, 2, 2, 3);
+				submitDatePanel.add(getEndDate(), gbc);
+
+				gridy++;
+				gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.weightx = 0;
+				gbc.weighty = 0;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(5, 40, 2, 3);
+				submitDatePanel.add(new JLabel("Start Date: "), gbc);
+
+				gbc = new GridBagConstraints();
+				gbc.gridx = 1;
+				gbc.gridy = gridy;
+				gbc.weightx = 0;
+				gbc.weighty = 0;
+				gbc.gridwidth = 2;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(5, 2, 2, 3);
+				submitDatePanel.add(getStartDate(), gbc);
+		} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return submitDatePanel;
+	}
 
 	
 	private class EventHandler implements ActionListener, ListSelectionListener, TableModelListener, DocumentListener {
 		@Override
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if(e.getSource() == getRefreshAllButton()) {
-				refreshInterface();
+				String text = textFieldJobsLimit.getText();
+				int rows = 0;
+				boolean isInt = true;
+				try {
+					rows = Integer.parseInt(text);
+				} catch(NumberFormatException ex) {
+					isInt = false;
+				}
+				if(isInt && rows>0) {
+					maxRows = rows;
+					refreshInterface();
+				} else {
+					System.out.println("Not an int");
+				}
+			} else if(e.getSource() == getOrphanedButton()) {
+				
 			}
 		}
 		@Override
@@ -199,7 +342,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			
 			SimpleJobStatusQuerySpec ssqs = new SimpleJobStatusQuerySpec();
 			ssqs.userid = cdm.getUser().getName();
-			ssqs.maxRows = 200;
+			ssqs.maxRows = maxRows;
 			ssqs.completed = getCompletedButton().isSelected();
 			ssqs.dispatched = getDispatchedButton().isSelected();
 			ssqs.failed = getFailedButton().isSelected();
@@ -231,6 +374,18 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			}
 			model.setData(sjs);
 			table.getColumnModel().getColumn(SimulationJobsTableModel.iColMessage).setPreferredWidth(40);
+		}
+	}
+	private class SeparatedJPanel extends JPanel {
+		
+		@Override
+		protected void paintComponent(Graphics g) {
+			Color oldColor = g.getColor();
+			int h = this.getHeight();
+			super.paintComponent(g);
+			g.setColor(Color.lightGray);
+			g.fillRect(0, 0, 1, h-5);
+			g.setColor(oldColor);
 		}
 	}
 
@@ -287,8 +442,8 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			add(bottom, gbc);
 			// --------------------------------------- top panel (filters, button) --------------
 			JPanel left = new JPanel();		// filters
-			JPanel center = new JPanel();
-			JPanel right = new JPanel();	// buttons
+			JPanel center = new SeparatedJPanel();
+			JPanel right = new SeparatedJPanel();	// buttons
 			
 			top.setLayout(new GridBagLayout());
 			gbc = new GridBagConstraints();
@@ -318,15 +473,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.insets = new Insets(5, 2, 2, 3);
 			top.add(right, gbc);
 			
-			/*
-			 hasData
-			 * 
-			waiting		queued	
-			dispatched		running	
-			completed		failed	
-			stopped
-			*/
-
+			// ------------------------------------ left panel (of top panel) -------------
 			left.setLayout(new GridBagLayout());
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -359,7 +506,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 3);
+			gbc.insets = new Insets(5, 0, 2, 10);
 			label = new JLabel(queuedIcon);
 			left.add(label, gbc);
 //-------------------------------------
@@ -393,7 +540,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 3);
+			gbc.insets = new Insets(5, 0, 2, 10);
 			label = new JLabel(runningIcon);
 			left.add(label, gbc);
 //-------------------------------------
@@ -427,7 +574,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 3);
+			gbc.insets = new Insets(5, 0, 2, 10);
 			label = new JLabel(failedIcon);
 			left.add(label, gbc);
 //-------------------------------------
@@ -447,18 +594,88 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.insets = new Insets(5, 0, 2, 3);
 			label = new JLabel(stoppedIcon);
 			left.add(label, gbc);
-
-
-			right.setLayout(new GridBagLayout());
+			// ---------------------------------------- center panel (of top panel) ------------
+			center.setLayout(new GridBagLayout());
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc.insets = new Insets(4,15,4,4);
+			center.add(new JLabel("Max # of results "), gbc);
+
+			textFieldJobsLimit = new JTextField();
+			textFieldJobsLimit.addActionListener(eventHandler);
+			//textFieldJobsLimit.getDocument().addDocumentListener(eventHandler);
+			textFieldJobsLimit.setText(maxRows+"");
+			Dimension d = textFieldJobsLimit.getPreferredSize();
+			d.width = 80;
+			textFieldJobsLimit.setPreferredSize(d);
+			textFieldJobsLimit.setMaximumSize(d);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1; 
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc.insets = new Insets(4, 0, 4, 4);
+			center.add(textFieldJobsLimit, gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
 			gbc.gridy = 0;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 2, 2, 3);
+			gbc.insets = new Insets(5, 15, 2, 3);
+			center.add(getOrphanedButton(), gbc);
+
+//			gbc = new GridBagConstraints();
+//			gbc.weighty = 1.0;
+//			gbc.gridx = 0;
+//			gbc.gridy = 2;
+////			gbc.gridheight = GridBagConstraints.REMAINDER;
+//			gbc.anchor = GridBagConstraints.WEST;
+//			gbc.fill = java.awt.GridBagConstraints.VERTICAL;
+//			gbc.insets = new Insets(4,4,4,4);
+//			center.add(new JLabel("---"), gbc);			// fake vertical
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.gridwidth = 3;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4,11,4,4);
+			center.add(getSubmitDatePanel(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.weightx = 1.0;
+			gbc.gridx = 3;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.EAST;
+			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(4,4,4,4);
+			center.add(new JLabel("-"), gbc);			// fake horizontal
+			
+			// ---------------------------------------- right panel (of top panel) -------------
+			right.setLayout(new GridBagLayout());
+			gbc = new GridBagConstraints();
+			gbc.weighty = 1.0;
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = java.awt.GridBagConstraints.VERTICAL;
+			right.add(new JLabel(""), gbc);			// fake vertical
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.weightx = 0;
+			gbc.weighty = 0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(4, 12, 4, 8);
 			right.add(getRefreshAllButton(), gbc);
 			
+
 			getCompletedButton().setSelected(false);
 			getDispatchedButton().setSelected(true);
 			getFailedButton().setSelected(true);
@@ -466,9 +683,12 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			getRunningButton().setSelected(true);
 			getStoppedButton().setSelected(true);
 			getWaitingButton().setSelected(true);
-
 			
-			// ----------------------------------------- bottom panel (table) -------------------
+			getOrphanedButton().setSelected(false);
+			getSubmitBetweenButton().setSelected(false);
+			getSubmitBetweenButton().setEnabled(false);		// TODO: disabled for now
+			
+			// ----------------------------------------- bottom panel (the table) -------------------
 			table = new EditorScrollTable();
 			model = new SimulationJobsTableModel(table, this);
 			table.setModel(model);
