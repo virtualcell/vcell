@@ -10,49 +10,48 @@
 
 package cbit.rmi.event;
 
+import org.vcell.api.common.events.DataJobEventRepresentation;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
  */
 public class DataJobEvent extends MessageEvent {
-	private int eventType = 0;
-	private Double progress = null;
-	private VCDataIdentifier vcDataID = null;
-	private TimeSeriesJobResults timeSeriesJobResults = null;
-	private Exception failedJobException = null;
-	private VCDataJobID vcDataJobID = null;
+	private final int eventType;
+	private final Double progress;
+	private final KeyValue dataKey;
+	private final String dataIdString;
+	private final VCDataJobID vcDataJobID;
 
 /**
  * ExportEvent constructor comment.
  */
 public DataJobEvent(VCDataJobID argVCDataJobID,
 		int argEventType,
-		VCDataIdentifier argVCDataID,
-		Double argProgress,
-		TimeSeriesJobResults argTSJR,
-		Exception argFJE) {
-	super(argVCDataJobID,new MessageSource(argVCDataID,argVCDataID.getID()),new MessageData(argTSJR));
+		KeyValue dataKey,
+		String dataIdString,
+		Double argProgress
+		) {
+	super(argVCDataJobID,new MessageSource(argVCDataJobID,dataIdString),new MessageData(argProgress));
 	this.eventType = argEventType;
 	this.progress = argProgress;
-	this.vcDataID = argVCDataID;
-	this.timeSeriesJobResults = argTSJR;
-	this.failedJobException = argFJE;
+	this.dataKey = dataKey;
+	this.dataIdString = dataIdString;
 	this.vcDataJobID = argVCDataJobID;
 	
 }
 
-public Exception getFailedJobException(){
-	return failedJobException;
+public KeyValue getDataKey() {
+	return dataKey;
 }
 
-public VCDataIdentifier getVCDataIdentifier(){
-	return vcDataID;
-}
 
+public String getDataIdString() {
+	return dataIdString;
+}
 
 /**
  * Insert the method's description here.
@@ -70,10 +69,6 @@ public int getEventTypeID() {
  */
 public Double getProgress() {
 	return progress;
-}
-
-public TimeSeriesJobResults getTimeSeriesJobResults(){
-	return timeSeriesJobResults;
 }
 
 @Override
@@ -120,6 +115,32 @@ public boolean isIntendedFor(User user){
 		return true;
 	}
 	return user.equals(getUser());
+}
+
+public DataJobEventRepresentation toJsonRep() {
+	int eventType = this.eventType;
+	Double progress = this.progress;
+	String username = this.vcDataJobID.getJobOwner().getName();
+	String userkey = this.vcDataJobID.getJobOwner().getID().toString();
+	long jobid = this.vcDataJobID.getJobID();
+	boolean isBackgroundTask = this.vcDataJobID.isBackgroundTask();
+	String dataIdString = this.dataIdString;
+	String dataKey = this.dataKey.toString();
+	
+	DataJobEventRepresentation rep = new DataJobEventRepresentation(
+			eventType, progress, username, userkey, jobid, isBackgroundTask, dataIdString, dataKey);
+	return rep;
+}
+
+public static DataJobEvent fromJsonRep(Object eventSource, DataJobEventRepresentation eventRep) {
+	Double progress = eventRep.progress;
+	User owner = new User(eventRep.username,new KeyValue(eventRep.userkey));
+	VCDataJobID dataJobID = new VCDataJobID(eventRep.jobid, owner, eventRep.isBackgroundTask);
+	int eventType = eventRep.eventType;
+	KeyValue dataKey = new KeyValue(eventRep.dataKey);
+	String dataIdString = eventRep.dataIdString;
+	DataJobEvent dataJobEvent = new DataJobEvent(dataJobID, eventType, dataKey, dataIdString, progress);
+	return dataJobEvent;
 }
 
 }

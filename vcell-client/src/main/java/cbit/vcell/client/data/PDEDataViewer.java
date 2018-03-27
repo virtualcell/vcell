@@ -31,14 +31,11 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,7 +46,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -69,7 +65,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -91,6 +86,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TSJobResultsSpaceStats;
+import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
@@ -153,16 +149,12 @@ import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFormatException;
-import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -255,10 +247,10 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 				}
 				break;
 			case MessageEvent.DATA_COMPLETE:
-				hashTable.put(StringKey_timeSeriesJobResults, dje.getTimeSeriesJobResults());
+//				hashTable.put(StringKey_timeSeriesJobResults, dje.timeSeriesJobResults);
 				break;
 			case MessageEvent.DATA_FAILURE:
-				hashTable.put(StringKey_timeSeriesJobException,dje.getFailedJobException());
+//				hashTable.put(StringKey_timeSeriesJobException,dje.exception);
 				break;
 			}
 		}
@@ -278,31 +270,33 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 			DataJobListener djl = null;
 			try {
 				TimeSeriesJobSpec timeSeriesJobSpec = (TimeSeriesJobSpec)hashTable.get(StringKey_timeSeriesJobSpec);
-				djl =
-					new TimeSeriesDataJobListener(timeSeriesJobSpec.getVcDataJobID(), hashTable, getClientTaskStatusSupport());
+				TimeSeriesJobResults timeSeriesJobResults = myPDEDataContext.getTimeSeriesValues(timeSeriesJobSpec);
+				hashTable.put(StringKey_timeSeriesJobResults, timeSeriesJobResults);
+				djl = new TimeSeriesDataJobListener(timeSeriesJobSpec.getVcDataJobID(), hashTable, getClientTaskStatusSupport());
 				dataJobListenerHolder.addDataJobListener(djl);
-				myPDEDataContext.getTimeSeriesValues(timeSeriesJobSpec);
-				while (true) {
-					Throwable timeSeriesJobFailed = (Throwable)hashTable.get(StringKey_timeSeriesJobException);
-					if (timeSeriesJobFailed != null) {
-						throw new Exception(timeSeriesJobFailed.getMessage());
-					}
-					if (hashTable.get(StringKey_timeSeriesJobResults) != null) {
-						break;
-					}
-					if (getClientTaskStatusSupport() != null && getClientTaskStatusSupport().isInterrupted()) {
-						break;
-					}
-					try {
-						Thread.sleep(200);
-					} catch (InterruptedException e) {
-						if (getClientTaskStatusSupport().isInterrupted()) {
-							throw UserCancelException.CANCEL_GENERIC;
-						} else {
-							throw e;
-						}
-					}
-				}
+//				while (true) {
+//					Throwable timeSeriesJobFailed = (Throwable)hashTable.get(StringKey_timeSeriesJobException);
+//					if (timeSeriesJobFailed != null) {
+//						throw new Exception(timeSeriesJobFailed.getMessage());
+//					}
+//					if (hashTable.get(StringKey_timeSeriesJobResults) != null) {
+//						break;
+//					}
+//					if (getClientTaskStatusSupport() != null && getClientTaskStatusSupport().isInterrupted()) {
+//						break;
+//					}
+//					try {
+//						Thread.sleep(200);
+//					} catch (InterruptedException e) {
+//						if (getClientTaskStatusSupport().isInterrupted()) {
+//							throw UserCancelException.CANCEL_GENERIC;
+//						} else {
+//							throw e;
+//						}
+//					}
+//				}
+			} catch (Exception exception) {
+				hashTable.put(StringKey_timeSeriesJobException,exception);
 			} finally {
 				if(djl != null){dataJobListenerHolder.removeDataJobListener(djl);}
 			}

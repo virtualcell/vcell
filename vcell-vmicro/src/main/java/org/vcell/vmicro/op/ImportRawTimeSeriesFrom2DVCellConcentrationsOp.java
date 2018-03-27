@@ -86,9 +86,6 @@ public class ImportRawTimeSeriesFrom2DVCellConcentrationsOp {
 		//wait for job to finish
 		while(bStatus[0] == null || bStatus[0].getEventTypeID() != DataJobEvent.DATA_COMPLETE){
 			Thread.sleep(100);
-			if(bStatus[0].getEventTypeID() == DataJobEvent.DATA_FAILURE){
-				throw bStatus[0].getFailedJobException();
-			}
 		}
 		double allTimesMin = tsJobResultsSpaceStats.getMinimums()[0][0];
 		double allTimesMax = allTimesMin;

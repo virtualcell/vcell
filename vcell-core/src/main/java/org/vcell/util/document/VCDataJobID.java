@@ -11,30 +11,30 @@
 package org.vcell.util.document;
 
 import java.io.Serializable;
-import java.rmi.dgc.VMID;
+import java.util.Random;
 
 
 @SuppressWarnings("serial")
 public class VCDataJobID implements Serializable{
 
-	private VMID jobID;
+	private long jobID;
 	private User jobOwner;
 	private boolean isBackgroundTask;
 	
-	private VCDataJobID(VMID jobID, User jobOwner, boolean isBackgroundTask) {
+	public VCDataJobID(long jobID, User jobOwner, boolean isBackgroundTask) {
 		this.jobID = jobID;
 		this.jobOwner = jobOwner;
 		this.isBackgroundTask = isBackgroundTask;
 	}
 
 	public static VCDataJobID createVCDataJobID(User argJobOwner,boolean argIsBackgroundTask){
-		return new VCDataJobID(new VMID(),argJobOwner,argIsBackgroundTask);
+		return new VCDataJobID(new Random().nextLong(),argJobOwner,argIsBackgroundTask);
 	}
 	public boolean isBackgroundTask() {
 		return isBackgroundTask;
 	}
 
-	public VMID getJobID() {
+	public long getJobID() {
 		return jobID;
 	}
 
@@ -52,11 +52,11 @@ public class VCDataJobID implements Serializable{
 		return
 			(obj instanceof VCDataJobID)
 			&&
-			getJobID().equals(((VCDataJobID)obj).getJobID());
+			getJobID() == ((VCDataJobID)obj).getJobID();
 	}
 
 	@Override
 	public int hashCode() {
-		return jobID.hashCode();
+		return new Long(jobID).hashCode();
 	}
 }

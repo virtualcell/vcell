@@ -99,11 +99,7 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier
 public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 //	return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 	try {
-		if(!timeSeriesJobSpec.getVcDataJobID().isBackgroundTask()){
-			return (org.vcell.util.document.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{outputContext,userLoginInfo.getUser(), vcdID,timeSeriesJobSpec});
-		}else{
-			rpc(RpcServiceType.DATA, "getTimeSeriesValues", new Object[]{outputContext,userLoginInfo.getUser(), vcdID,timeSeriesJobSpec}, false);
-		}
+		return (org.vcell.util.document.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{outputContext,userLoginInfo.getUser(), vcdID,timeSeriesJobSpec});
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;
@@ -114,7 +110,6 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 		log.exception(e);
 		throw new RuntimeException(e.getMessage());
 	}
-	return null;
 }
 
 

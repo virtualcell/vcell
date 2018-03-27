@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.api.common.events.DataJobEventRepresentation;
 import org.vcell.api.common.events.EventWrapper;
 import org.vcell.api.common.events.EventWrapper.EventType;
 import org.vcell.api.common.events.ExportEventRepresentation;
@@ -24,6 +27,7 @@ import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessagingService;
 
 public class RestEventService {
+	private final static Logger lg = LogManager.getLogger(RestEventService.class);
 	
 	final static AtomicLong eventSequence = new AtomicLong(0);
 	final static ConcurrentLinkedDeque<EventWrapper> events = new ConcurrentLinkedDeque<>();
@@ -84,12 +88,31 @@ public class RestEventService {
 			}
 		}else if (event instanceof VCellMessageEvent) {
 			VCellMessageEvent vcellMessageEvent = (VCellMessageEvent)event;
+			lg.error("event of type VCellMessageEvent not supported");
 		}else if (event instanceof WorkerEvent) {
+			lg.error("event of type WorkerEvent not supported");
 			WorkerEvent workerEvent = (WorkerEvent)event;
 		}else if (event instanceof PerformanceMonitorEvent) {
+			lg.error("event of type PerformanceMonitorEvent not supported");
 			PerformanceMonitorEvent performanceMonitorEvent = (PerformanceMonitorEvent)event;
 		}else if (event instanceof DataJobEvent) {
+			lg.error("event of type DataJobEvent not supported");
 			DataJobEvent dataJobEvent = (DataJobEvent)event;
+			try {
+				DataJobEventRepresentation dataJobEventRep = dataJobEvent.toJsonRep();
+				DataJobEvent event2 = DataJobEvent.fromJsonRep(this, dataJobEventRep);
+				if (!Compare.isEqual(event2.getDataIdString(),dataJobEvent.getDataIdString())) {
+					throw new RuntimeException("DataJob event round-trip failed");
+				}
+				if (!Compare.isEqual(event2.getProgress(),dataJobEvent.getProgress())) {
+					throw new RuntimeException("DataJob <PROGRESS> event round-trip failed");
+				}
+				Gson gson = new Gson();
+				String eventJSON = gson.toJson(dataJobEventRep);
+				insert(dataJobEventRep.username,EventType.DataJob,eventJSON);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

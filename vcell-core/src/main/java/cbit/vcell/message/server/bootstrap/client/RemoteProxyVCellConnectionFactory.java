@@ -22,6 +22,7 @@ import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.api.common.AccessTokenRepresentation;
+import org.vcell.api.common.events.DataJobEventRepresentation;
 import org.vcell.api.common.events.EventWrapper;
 import org.vcell.api.common.events.ExportEventRepresentation;
 import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
@@ -33,6 +34,7 @@ import org.vcell.util.document.UserLoginInfo;
 
 import com.google.gson.Gson;
 
+import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
@@ -106,6 +108,12 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 					ExportEventRepresentation exportEventRep = gson.fromJson(eventWrapper.eventJSON, ExportEventRepresentation.class);
 					ExportEvent exportEvent = ExportEvent.fromJsonRep(this, exportEventRep);
 					messageEvents.add(exportEvent);
+					break;
+				}
+				case DataJob:{
+					DataJobEventRepresentation dataJobEventRep = gson.fromJson(eventWrapper.eventJSON, DataJobEventRepresentation.class);
+					DataJobEvent dataJobEvent = DataJobEvent.fromJsonRep(this, dataJobEventRep);
+					messageEvents.add(dataJobEvent);
 					break;
 				}
 				default:{

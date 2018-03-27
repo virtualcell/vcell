@@ -2799,14 +2799,14 @@ private void fireDataJobEventIfNecessary(
 	if(vcDataJobID == null || !vcDataJobID.isBackgroundTask()){
 		return;
 	}
-	fireDataJobMessage_private(
-		new DataJobEvent(
+	DataJobEvent dataJobEvent = new DataJobEvent(
 			vcDataJobID,
 			argEventType,
-			argVCDataID,
-			argProgress,
-			argTSJR,argFailedJobExc
-		));
+			argVCDataID.getDataKey(),
+			argVCDataID.getID(),
+			argProgress
+		);
+	fireDataJobMessage_private(dataJobEvent);
 			
 }
 /**

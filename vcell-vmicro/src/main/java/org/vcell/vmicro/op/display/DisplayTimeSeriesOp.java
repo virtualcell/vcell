@@ -213,7 +213,7 @@ public class DisplayTimeSeriesOp {
 
 			@Override
 			public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID,	TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteProxyException, DataAccessException {
-				pdeDataViewer.dataJobMessage(new DataJobEvent(timeSeriesJobSpec.getVcDataJobID(), MessageEvent.DATA_START, vcdataID, new Double(0), null, null));
+				pdeDataViewer.dataJobMessage(new DataJobEvent(timeSeriesJobSpec.getVcDataJobID(), MessageEvent.DATA_START, vcdataID.getDataKey(), vcdataID.getID(), new Double(0)));
 				if (!timeSeriesJobSpec.isCalcSpaceStats() && !timeSeriesJobSpec.isCalcTimeStats()){
 					int[][] indices = timeSeriesJobSpec.getIndices();
 					double[] timeStamps = imageTimeSeries.getImageTimeStamps();
@@ -231,7 +231,7 @@ public class DisplayTimeSeriesOp {
 						}
 					}
 					TSJobResultsNoStats timeSeriesJobResults = new TSJobResultsNoStats(new String[] { "var" }, indices, timeStamps, dataValues);
-					pdeDataViewer.dataJobMessage(new DataJobEvent(timeSeriesJobSpec.getVcDataJobID(), MessageEvent.DATA_COMPLETE, vcdataID, new Double(0), timeSeriesJobResults, null));
+					pdeDataViewer.dataJobMessage(new DataJobEvent(timeSeriesJobSpec.getVcDataJobID(), MessageEvent.DATA_COMPLETE, vcdataID.getDataKey(), vcdataID.getID(), new Double(0)));
 					return timeSeriesJobResults;
 				}
 				return null;

@@ -4,7 +4,8 @@ public class EventWrapper {
 	
 	public static enum EventType {
 		SimJob,
-		ExportEvent
+		ExportEvent,
+		DataJob
 	}
 	
 	public final long id;
