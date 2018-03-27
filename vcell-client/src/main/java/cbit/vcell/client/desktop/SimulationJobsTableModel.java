@@ -236,12 +236,25 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 		for(SimpleJobStatus sjj : jobStatusArray) {
 			allJobStatusList.add(sjj);
 		}
+		// ----- apply filters that are not applied by running the query -----------------
+		List<SimpleJobStatus> filteredJobStatusList = new ArrayList<>();
+		if(owner.getOrphanedButton().isSelected()) {	// if checked, hide orphans
+			for(SimpleJobStatus sjj : allJobStatusList) {
+				if(sjj.simulationDocumentLink != null) {
+					filteredJobStatusList.add(sjj);
+				}
+			}
+		} else {
+			filteredJobStatusList = allJobStatusList;
+		}
+		
+		
 		// ---------------------------------------------------------------------------
 		List<SimpleJobStatus> jobStatusList = new ArrayList<>();
 		if (searchText == null || searchText.length() == 0) {
-			jobStatusList.addAll(allJobStatusList);
+			jobStatusList.addAll(filteredJobStatusList);
 		} else {
-			jobStatusList.addAll(allJobStatusList);		// TODO: implement search here
+			jobStatusList.addAll(filteredJobStatusList);		// TODO: implement search here
 		}
 		setData(jobStatusList);
 		GuiUtils.flexResizeTableColumns(ownerTable);
