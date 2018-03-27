@@ -3305,13 +3305,28 @@ public class SBMLImporter {
 
 	}
 
-	protected void addGeometry() {
-		// get a Geometry object via SpatialModelPlugin object.
-		org.sbml.jsbml.ext.spatial.Geometry sbmlGeometry = getSbmlGeometry();
-		if (sbmlGeometry == null) {
-			return;
+	public static class DimOrigExtent {
+		private int dimension = 0;
+		private Origin vcOrigin = null;
+		private Extent vcExtent = null;
+		public DimOrigExtent(int dimension, Origin vcOrigin, Extent vcExtent) {
+			super();
+			this.dimension = dimension;
+			this.vcOrigin = vcOrigin;
+			this.vcExtent = vcExtent;
+		}
+		public int getDimension() {
+			return dimension;
+		}
+		public Origin getVcOrigin() {
+			return vcOrigin;
+		}
+		public Extent getVcExtent() {
+			return vcExtent;
 		}
 
+	}
+	public static DimOrigExtent calcDimOrigExtent(org.sbml.jsbml.ext.spatial.Geometry sbmlGeometry){
 		int dimension = 0;
 		Origin vcOrigin = null;
 		Extent vcExtent = null;
@@ -3355,6 +3370,16 @@ public class SBMLImporter {
 			vcOrigin = new Origin(ox, oy, oz);
 			vcExtent = new Extent(ex, ey, ez);
 		}
+		return new DimOrigExtent(dimension, vcOrigin, vcExtent);
+	}
+	
+	protected void addGeometry() {
+		// get a Geometry object via SpatialModelPlugin object.
+		org.sbml.jsbml.ext.spatial.Geometry sbmlGeometry = getSbmlGeometry();
+		if (sbmlGeometry == null) {
+			return;
+		}
+
 
 		// from geometry definition, find out which type of geometry : image or
 		// analytic or CSG
@@ -3420,10 +3445,11 @@ public class SBMLImporter {
 		} else {
 			throw new SBMLImportException("no geometry definition found");
 		}
+		DimOrigExtent dimOrigExtent = calcDimOrigExtent(sbmlGeometry);
 		Geometry vcGeometry = null;
 		if (selectedGeometryDefinition == analyticGeometryDefinition
 				|| selectedGeometryDefinition == csGeometry) {
-			vcGeometry = new Geometry("spatialGeom", dimension);
+			vcGeometry = new Geometry("spatialGeom", dimOrigExtent.getDimension());
 		} else if (selectedGeometryDefinition == distanceMapSampledFieldGeometry
 				|| selectedGeometryDefinition == segmentedSampledFieldGeometry) {
 			SampledFieldGeometry sfg = (SampledFieldGeometry) selectedGeometryDefinition;
@@ -3482,14 +3508,14 @@ public class SBMLImporter {
 
 				if (ck == CompressionKind.deflated) {
 					vcImage = new VCImageCompressed(null, imageInBytes,
-							vcExtent, numX, numY, numZ);
+							dimOrigExtent.getVcExtent(), numX, numY, numZ);
 				} else {
 					switch (dk) {
 					case UINT8:
 					case UINT16:
 					case UINT32:
 						vcImage = new VCImageUncompressed(null, imageInBytes,
-								vcExtent, numX, numY, numZ);
+								dimOrigExtent.getVcExtent(), numX, numY, numZ);
 					default:
 					}
 				}
@@ -3530,9 +3556,9 @@ public class SBMLImporter {
 			}
 		}
 		GeometrySpec vcGeometrySpec = vcGeometry.getGeometrySpec();
-		vcGeometrySpec.setOrigin(vcOrigin);
+		vcGeometrySpec.setOrigin(dimOrigExtent.getVcOrigin());
 		try {
-			vcGeometrySpec.setExtent(vcExtent);
+			vcGeometrySpec.setExtent(dimOrigExtent.getVcExtent());
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
 			throw new SBMLImportException(
@@ -3688,9 +3714,9 @@ public class SBMLImporter {
 		int numX = sampleSize.getX();
 		int numY = sampleSize.getY();
 		int numZ = sampleSize.getZ();
-		double ox = vcOrigin.getX();
-		double oy = vcOrigin.getY();
-		double oz = vcOrigin.getZ();
+		double ox = dimOrigExtent.getVcOrigin().getX();
+		double oy = dimOrigExtent.getVcOrigin().getY();
+		double oz = dimOrigExtent.getVcOrigin().getZ();
 
 		for (Domain domain : listOfDomains){
 			String domainType = domain.getDomainType();
@@ -3732,17 +3758,17 @@ public class SBMLImporter {
 													/ (numZ - 1)
 													: 0.5;
 											double coordZ = oz
-													+ vcExtent.getZ() * unit_z;
+													+ dimOrigExtent.getVcExtent().getZ() * unit_z;
 											double unit_y = (numY > 1) ? ((double) y)
 													/ (numY - 1)
 													: 0.5;
 											double coordY = oy
-													+ vcExtent.getY() * unit_y;
+													+ dimOrigExtent.getVcExtent().getY() * unit_y;
 											double unit_x = (numX > 1) ? ((double) x)
 													/ (numX - 1)
 													: 0.5;
 											double coordX = ox
-													+ vcExtent.getX() * unit_x;
+													+ dimOrigExtent.getVcExtent().getX() * unit_x;
 											// for now, find the shortest dist
 											// coord. Can refine algo later.
 											Coordinate vcCoord = new Coordinate(

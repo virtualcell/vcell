@@ -54,6 +54,9 @@ import org.vcell.vcellij.api.SimulationInfo;
 import org.vcell.vcellij.api.SimulationService;
 import org.vcell.vcellij.api.VariableInfo;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.display.ImageDisplay;
@@ -137,9 +140,10 @@ public class SimulateFRAP<T extends RealType<T>, B extends BooleanType<B>> imple
 			URL modelFileURL = SimulateFRAP.class.getResource("ImageJ_FRAP.xml");
 	        // Read SBML document
 			File sbmlModelFile = new File(modelFileURL.getFile());
-	        SBMLDocument sbmlDocument = null;
-	        sbmlDocument = SBMLReader.read(sbmlModelFile);
-			simResult = RunVCellSimFromSBML.simulate(sbmlDocument.getModel(), 2, .1, appService, taskService, simService, statusService);
+			BioModel bioModel = (BioModel)XmlHelper.importSBML(SimulationServiceImpl.vcLogger(), new XMLSource(sbmlModelFile), true);
+//	        SBMLDocument sbmlDocument = null;
+//	        sbmlDocument = SBMLReader.read(sbmlModelFile);
+			simResult = RunVCellSimFromSBML.simulate(bioModel/*sbmlDocument.getModel()*/, 2, .1, appService, taskService, simService, statusService);
 //			result = simResult.image();
 		}
 		catch (final Exception e) {

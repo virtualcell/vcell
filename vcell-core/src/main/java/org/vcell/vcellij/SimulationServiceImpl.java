@@ -21,9 +21,11 @@ import org.vcell.sbml.vcell.SBMLExporter.VCellSBMLDoc;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
 import org.vcell.vcellij.api.DomainType;
 import org.vcell.vcellij.api.SBMLModel;
 import org.vcell.vcellij.api.SimulationInfo;
@@ -41,6 +43,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.StdoutSessionLog;
@@ -223,7 +226,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
         }
     }
 
-    private cbit.util.xml.VCLogger vcLogger() {
+    public static cbit.util.xml.VCLogger vcLogger() {
         return new cbit.util.xml.VCLogger() {
             @Override
             public void sendMessage(Priority p, ErrorType et, String message) {
@@ -240,11 +243,21 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
         };
     }
 
-    private SimulationInfo computeModel(BioModel bioModel, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) throws Exception{
+    public SimulationInfo computeModel(VCDocument vcDoc, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) throws Exception{
+    	
 //    	try {
-	    	SimulationContext simContext = bioModel.getSimulationContext(0);
+    	Simulation newsim = null;
+    	if(vcDoc instanceof BioModel){
+	    	SimulationContext simContext = ((BioModel)vcDoc).getSimulationContext(0);
 			MathMappingCallback callback = new MathMappingCallbackTaskAdapter(statusCallback);
-			Simulation newsim = simContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
+			newsim = simContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
+			newsim.getMeshSpecification().setSamplingSize(new ISize(simContext.getGeometry().getGeometrySpec().getImage().getNumX(), simContext.getGeometry().getGeometrySpec().getImage().getNumY(), simContext.getGeometry().getGeometrySpec().getImage().getNumZ()));
+    	}else if(vcDoc instanceof MathModel){
+    		newsim = ((MathModel)vcDoc).addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
+    	}else{
+    		throw new IllegalArgumentException("computeModel expecting BioModel or MathModel but got "+vcDoc.getClass().getName());
+    	}
+//			newsim.getMeshSpecification().setSamplingSize(new ISize(simContext.getGeometry().getGeometrySpec().getImage().getNumX(), simContext.getGeometry().getGeometrySpec().getImage().getNumY(), simContext.getGeometry().getGeometrySpec().getImage().getNumZ()));
 			newsim.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, simSpec.getTotalTime()));
 			newsim.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(simSpec.getOutputTimeStep()));
 	    	SimulationInfo simulationInfo = new SimulationInfo();
@@ -306,8 +319,13 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 				}
 			});
 
-            XmlUtil.writeXMLStringToFile(XmlHelper.bioModelToXML(bioModel), "C:\\Users\\frm\\vcGititImageJWorkspace\\vcell\\imagej_true.xml", true);
-
+			if(true){//debug
+				if(vcDoc instanceof BioModel){
+					XmlUtil.writeXMLStringToFile(XmlHelper.bioModelToXML(((BioModel)vcDoc)), "C:\\Users\\frm\\vcGititImageJWorkspace\\vcell\\imagej_BM_true.xml", true);
+				}else if(vcDoc instanceof MathModel){
+					XmlUtil.writeXMLStringToFile(XmlHelper.mathModelToXML(((MathModel)vcDoc)), "C:\\Users\\frm\\vcGititImageJWorkspace\\vcell\\imagej_MM_true.xml", true);
+				}
+			}
 			simServiceContext.solver.startSolver();
 
 //			while (true){

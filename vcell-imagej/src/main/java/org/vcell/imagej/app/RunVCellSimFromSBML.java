@@ -19,6 +19,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,11 +30,15 @@ import javax.swing.JScrollBar;
 import javax.swing.SwingUtilities;
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.axis.utils.XMLUtils;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
+import org.sbml.jsbml.ext.spatial.Geometry;
+import org.sbml.jsbml.ext.spatial.SampledField;
+import org.sbml.jsbml.ext.spatial.SpatialModelPlugin;
 import org.scijava.ItemIO;
 import org.scijava.app.AppService;
 import org.scijava.app.StatusService;
@@ -47,6 +52,8 @@ import org.scijava.event.EventHandler;
 import org.scijava.module.DefaultMutableModule;
 import org.scijava.module.DefaultMutableModuleInfo;
 import org.scijava.module.DefaultMutableModuleItem;
+import org.scijava.module.ModuleCanceledException;
+import org.scijava.module.MutableModule;
 import org.scijava.module.MutableModuleInfo;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -60,8 +67,14 @@ import org.scijava.ui.swing.widget.SwingInputPanel;
 import org.scijava.ui.viewer.DisplayViewer;
 import org.vcell.imagej.app.RunVCellSimFromSBML.Sim;
 import org.vcell.imagej.app.VCellOpenSBML.MyTest;
+import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLImporter.DimOrigExtent;
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.FileUtils;
 import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.document.VCDocument;
+import org.vcell.vcellij.SimulationServiceImpl;
 import org.vcell.vcellij.api.DomainType;
 import org.vcell.vcellij.api.SimulationInfo;
 import org.vcell.vcellij.api.SimulationService;
@@ -69,16 +82,25 @@ import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
 import org.vcell.vcellij.api.VariableInfo;
 
+import cbit.image.VCImageUncompressed;
+import cbit.util.xml.VCLogger;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
+import cbit.vcell.geometry.surface.RayCaster;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 import io.scif.gui.GUIService;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
 import net.imagej.display.DatasetView;
+import net.imagej.display.DefaultImageDisplay;
 import net.imagej.display.ImageDisplay;
 import net.imagej.lut.LUTService;
 import net.imagej.ops.OpService;
@@ -109,6 +131,8 @@ import net.miginfocom.swing.MigLayout;
  */
 @Plugin(type = Command.class, menuPath = "Plugins>VCell>Run SBML Simulation",initializer = "initParameters")
 public class RunVCellSimFromSBML implements Command {
+	private static final String MODEL_DEFAULT = "model default";
+	private static final String GEOMETRY_SOURCE = "Geometry source";
 	private static final String SIM_RESULTS_TITLE = "SimResultsTitle";
     private static final String SIM_STEP_TIME = "SimStepTime";
 	private static final String SIM_DURATION_TIME = "SimDurationTime";
@@ -123,14 +147,17 @@ public class RunVCellSimFromSBML implements Command {
 //	@Parameter(type = ItemIO.INPUT)
 //	private Display<String> disp;
 //
-	@Parameter(type = ItemIO.INPUT,label=SIM_DURATION_TIME)
-    private double simDuration;
-
-    @Parameter(type = ItemIO.INPUT,label=SIM_STEP_TIME)
-    private double simTimeStep;
-
-    @Parameter(type = ItemIO.INPUT,label=SIM_RESULTS_TITLE)
-    private String displayName;
+//	@Parameter(type = ItemIO.INPUT,label=SIM_DURATION_TIME)
+    private double simDuration = 2;
+//
+//    @Parameter(type = ItemIO.INPUT,label=SIM_STEP_TIME)
+    private double simTimeStep = .1;
+//
+//    @Parameter(type = ItemIO.INPUT,label=SIM_RESULTS_TITLE)
+    private String displayName = Sim.SIMULATED_FRAP;
+    
+//    @Parameter(type = ItemIO.INPUT,choices={"Option 1", "Option 2"}, style="listBox")
+//    private String myChoice123;
 
     @Parameter
     private DisplayService dispService;
@@ -205,9 +232,9 @@ public class RunVCellSimFromSBML implements Command {
 //    		sih.setContext(appService.getContext());
 //    		sih.harvest(dmm);
 
-			simDuration = 2;
-			simTimeStep = .1;
-			displayName = Sim.SIMULATED_FRAP;
+//			simDuration = 2;
+//			simTimeStep = .1;
+//			displayName = Sim.SIMULATED_FRAP;
 			
 
 		} catch (Exception e) {
@@ -220,32 +247,50 @@ public class RunVCellSimFromSBML implements Command {
     public void run() {
 
     	try{
-//    		//Show default default sim parameters panel
+    		//Show default default sim parameters panel
+    		MutableModuleInfo mmi = new DefaultMutableModuleInfo();
 //    		MutableModuleInfo mmi = new DefaultMutableModuleInfo(){
 //				@Override
 //				public boolean isInteractive() {
 //					return true;
 //				}
 //    		};
-//			DefaultMutableModuleItem<String> dmiStr = new DefaultMutableModuleItem<>(mmi, SIM_RESULTS_TITLE, String.class);
-//    		dmiStr.setDefaultValue(Sim.SIMULATED_FRAP);
-//    		mmi.addInput(dmiStr);
-//    		
-//    		DefaultMutableModuleItem<Double> dmi = new DefaultMutableModuleItem<>(mmi,SIM_DURATION_TIME, Double.class);
-//    		dmi.setDefaultValue(.2);
-//    		mmi.addInput(dmi);
-//    		
-//    		dmi = new DefaultMutableModuleItem<>(mmi, SIM_STEP_TIME, Double.class);
-//    		dmi.setDefaultValue(.1);
-//    		mmi.addInput(dmi);
-//
-//    		DefaultMutableModule dmm = new DefaultMutableModule(mmi);
-//    		SwingInputHarvester sih = new SwingInputHarvester();
-//    		sih.setContext(appService.getContext());
-//    		SwingInputPanel paramPanel = sih.createInputPanel();
-//    		sih.buildPanel(paramPanel, dmm);
-////    		Display<?> disp = dispService.createDisplay(paramPanel);
-//    		sih.harvest(dmm);
+    		ArrayList<String> geomChoices = new ArrayList<>();
+    		geomChoices.add(MODEL_DEFAULT);
+    		List<Display<?>> displays = dispService.getDisplays();
+    		for(Display<?> disp:displays){
+    			System.out.println(disp.getName()+" -- "+disp);
+    			if(disp instanceof DefaultImageDisplay){
+    				geomChoices.add(disp.getName());
+    			}
+    		}
+
+    		DefaultMutableModuleItem<String> dmis = new DefaultMutableModuleItem<>(mmi, GEOMETRY_SOURCE, String.class);
+    		dmis.setWidgetStyle("listBox");
+    		dmis.setChoices(geomChoices);
+    		dmis.setDefaultValue(dmis.getChoices().get(0));
+    		mmi.addInput(dmis);
+
+			DefaultMutableModuleItem<String> dmiStr = new DefaultMutableModuleItem<>(mmi, SIM_RESULTS_TITLE, String.class);
+    		dmiStr.setDefaultValue(Sim.SIMULATED_FRAP);
+    		mmi.addInput(dmiStr);
+    		
+    		DefaultMutableModuleItem<Double> dmi = new DefaultMutableModuleItem<>(mmi,SIM_DURATION_TIME, Double.class);
+    		dmi.setDefaultValue(.2);
+    		mmi.addInput(dmi);
+    		
+    		dmi = new DefaultMutableModuleItem<>(mmi, SIM_STEP_TIME, Double.class);
+    		dmi.setDefaultValue(.1);
+    		mmi.addInput(dmi);
+
+    		DefaultMutableModule dmm = new DefaultMutableModule(mmi);
+    		SwingInputHarvester sih = new SwingInputHarvester();
+    		sih.setContext(appService.getContext());
+    		SwingInputPanel paramPanel = sih.createInputPanel();
+    		sih.buildPanel(paramPanel, dmm);
+//    		Display<?> disp = dispService.createDisplay(paramPanel);
+    		sih.harvest(dmm);
+
 
 //    		//Show sbml text
 //    		UserInterface defaultUI = uiService.getDefaultUI();
@@ -269,31 +314,35 @@ public class RunVCellSimFromSBML implements Command {
     		}
 			// Read SBML document
 	        MyTest activeDisplay = (MyTest)displayService.getActiveDisplay();
-	        activeDisplay.getSwingInputHarvester().processResults(activeDisplay.getSwingInputPanel(), activeDisplay.getDefaultMutableModule());
-            SBMLDocument sbmlDocument = SBMLReader.read(activeDisplay.getSbmlFile());
-            Model model = sbmlDocument.getModel();
-			List<org.sbml.jsbml.Parameter> paramList = model.getListOfParameters();
-			for (org.sbml.jsbml.Parameter param:paramList) {
-				if(param.isConstant()){
-					String paramIdName = param.getId()+" "+param.getName();
-		    		System.out.println("Model Param '"+paramIdName+"' = "+activeDisplay.getDefaultMutableModule().getInput(paramIdName));
-		    		param.setValue((Double)activeDisplay.getDefaultMutableModule().getInput(paramIdName));
-				}
-			}
-			List<Reaction> reactList = model.getListOfReactions();
-			for (Reaction react:reactList) {
-				List<LocalParameter> locParamList = react.getKineticLaw().getListOfLocalParameters();
-				for(LocalParameter locParam:locParamList){
-					String paramIdName = locParam.getId()+" "+locParam.getName();
-					System.out.println("Rx Param '"+paramIdName+"' = "+activeDisplay.getDefaultMutableModule().getInput(paramIdName));
-					locParam.setValue((Double)activeDisplay.getDefaultMutableModule().getInput(paramIdName));
-				}
-			}
+//	        activeDisplay.getSwingInputHarvester().processResults(activeDisplay.getSwingInputPanel(), activeDisplay.getDefaultMutableModule());
+	        
+//            SBMLDocument sbmlDocument = SBMLReader.read(activeDisplay.getSbmlFile());
+            
+            BioModel bioModel = getAdjustedModel(activeDisplay.getSbmlFile(),activeDisplay.getDefaultMutableModule(),dmm,displayService);
+//			List<org.sbml.jsbml.Parameter> paramList = model.getListOfParameters();
+//			for (org.sbml.jsbml.Parameter param:paramList) {
+//				if(param.isConstant()){
+//					String paramIdName = param.getId()+" "+param.getName();
+//		    		System.out.println("Model Param '"+paramIdName+"' = "+activeDisplay.getDefaultMutableModule().getInput(paramIdName));
+//		    		param.setValue((Double)activeDisplay.getDefaultMutableModule().getInput(paramIdName));
+//				}
+//			}
+//			List<Reaction> reactList = model.getListOfReactions();
+//			for (Reaction react:reactList) {
+//				List<LocalParameter> locParamList = react.getKineticLaw().getListOfLocalParameters();
+//				for(LocalParameter locParam:locParamList){
+//					String paramIdName = locParam.getId()+" "+locParam.getName();
+//					System.out.println("Rx Param '"+paramIdName+"' = "+activeDisplay.getDefaultMutableModule().getInput(paramIdName));
+//					locParam.setValue((Double)activeDisplay.getDefaultMutableModule().getInput(paramIdName));
+//				}
+//			}
 //if(true){return;}
 
 
-            RunVCellSimFromSBML.Sim simResult = simulate(model, simDuration, simTimeStep, appService, taskService, simService, statusService);
+            RunVCellSimFromSBML.Sim simResult = simulate(bioModel, simDuration, simTimeStep, appService, taskService, simService, statusService);
             initDisplay((ImgPlus<RealType>)simResult.image(),displayName, simResult.simInfo(), simService, displayService, uiService, cmdService, lutService, opService);
+    	}catch(ModuleCanceledException e){
+    		//ignore
     	}catch(Exception e){
     		e.printStackTrace();
     	}
@@ -318,9 +367,188 @@ public class RunVCellSimFromSBML implements Command {
 //        displayService.createDisplay(img);
     }
     
-	public static  Sim simulate(Model sbmlModel,double simDuration,double simTimeStep,AppService appService,TaskService taskService,SimulationService simService,StatusService statusService) throws Exception {
+    private static BioModel getAdjustedModel(File sbmlFile,MutableModule modelParamModule,MutableModule simParamModule,DisplayService dispService) throws Exception {
+    	
+    	String geomChoice = (String)simParamModule.getInput(GEOMETRY_SOURCE);
+    	Display<?> altGeomDisp = null;
+    	if(!geomChoice.equals(MODEL_DEFAULT)){
+    		List<Display<?>> displays = dispService.getDisplays();
+    		for(Display<?> disp:displays){
+    			if(disp instanceof DefaultImageDisplay && geomChoice.equals(disp.getName())){
+    				altGeomDisp = disp;
+    				break;
+    			}
+    		}    		
+    	}
+
+
+//		VCImageUncompressed vcImage = new VCImageUncompressed(null,pixels,extent,numX,numY,numZ);
+//		Geometry geometry = new Geometry("newGeometry",vcImage);
+//		geometry.getGeometrySpec().setExtent(extent);
+//		geometry.getGeometrySpec().setOrigin(origin);
+//		geometry.precomputeAll(geometryThumbnailImageFactory, true, true);
+//    	XMLSource xmlSource = new XMLSource(myTest.getSbmlFile());
+//    	TLogger vcLogger = new TLogger();
+//    	VCDocument vcDocument = XmlHelper.importSBML(vcLogger, xmlSource, true);
+//    	if(vcDocument instanceof BioModel){
+//    		BioModel bioModel = (BioModel)vcDocument;
+//    		SimulationContext simulationContext = bioModel.getSimulationContext(0);
+//    		Geometry geom = simulationContext.getGeometry();
+//    		RayCaster.resampleGeometry(geometryThumbnailImageFactory, origGeometry, sampleSize)
+//    	}
+        SBMLDocument sbmlDocument = SBMLReader.read(sbmlFile);
+        
+        Model model = sbmlDocument.getModel();
+        
+		List<org.sbml.jsbml.Parameter> paramList = model.getListOfParameters();
+		for (org.sbml.jsbml.Parameter param:paramList) {
+			if(param.isConstant()){
+				String paramIdName = param.getId()+" "+param.getName();
+	    		System.out.println("Model Param '"+paramIdName+"' = "+modelParamModule.getInput(paramIdName));
+	    		param.setValue((Double)modelParamModule.getInput(paramIdName));
+			}
+		}
+		List<Reaction> reactList = model.getListOfReactions();
+		for (Reaction react:reactList) {
+			List<LocalParameter> locParamList = react.getKineticLaw().getListOfLocalParameters();
+			for(LocalParameter locParam:locParamList){
+				String paramIdName = locParam.getId()+" "+locParam.getName();
+				System.out.println("Rx Param '"+paramIdName+"' = "+modelParamModule.getInput(paramIdName));
+				locParam.setValue((Double)modelParamModule.getInput(paramIdName));
+			}
+		}
+
+    	BioModel bioModel = (BioModel)XmlHelper.importSBML(SimulationServiceImpl.vcLogger(), new XMLSource(sbmlFile), true);
+    	bioModel.refreshDependencies();
+        if(altGeomDisp != null){
+	        SpatialModelPlugin modelPlugin = (SpatialModelPlugin) model.getPlugin("spatial");
+	        Geometry geometry = modelPlugin.getGeometry();
+        	DimOrigExtent dimOrigExtent = SBMLImporter.calcDimOrigExtent(geometry);
+//	        SampledField sampledField = geometry.getListOfSampledFields().get(0);
+
+        	DatasetView dsv = (DatasetView)altGeomDisp.get(0);
+        	long xsize = dsv.getData().getImgPlus().getImg().dimension(0);
+        	long ysize = dsv.getData().getImgPlus().getImg().dimension(1);
+        	long zsize = dsv.getData().getImgPlus().getImg().dimension(2);
+        	byte[] newBytes = new byte[(int)(xsize*ysize*zsize)];
+        	Iterator<RealType<?>> iterator = dsv.getData().iterator();
+        	int cnt = 0;
+        	int cnt2 = 0;
+        	while(iterator.hasNext()){
+        		int realDouble = (int)iterator.next().getRealDouble();
+        		if(cnt2 < 100 && realDouble == 1){
+        			realDouble = 2;
+        			cnt2++;
+        		}
+        		newBytes[cnt] = (byte)(realDouble & 0xFF);
+        		cnt++;
+        	}
+        	VCImageUncompressed vcImageUncompressed = new VCImageUncompressed(null, newBytes, dimOrigExtent.getVcExtent(), (int)xsize, (int)ysize, (int)zsize);
+			cbit.image.VCPixelClass[] orig = bioModel.getSimulationContext(0).getGeometry().getGeometrySpec().getImage().getPixelClasses();
+			cbit.image.VCPixelClass[] temp = new cbit.image.VCPixelClass[orig.length];
+			for(int i=0;i<orig.length;i+= 1){
+				temp[i] = new cbit.image.VCPixelClass(orig[i].getKey(),orig[i].getPixelClassName(),orig[i].getPixel());
+			}
+			vcImageUncompressed.setPixelClasses(temp);
+//            SBMLImporter importer = new SBMLImporter(sbmlDocument.getModel(),SimulationServiceImpl.vcLogger(),true);
+//        	BioModel bioModel = (BioModel)XmlHelper.importSBML(SimulationServiceImpl.vcLogger(), new XMLSource(sbmlFile), true);
+//            BioModel bioModel = importer.getBioModel();
+//            byte[] pixels = bioModel.getSimulationContext(0).getGeometry().getGeometrySpec().getImage().getPixels();
+//            System.arraycopy(newBytes, 0, pixels, 0, pixels.length);
+            bioModel.getSimulationContext(0).getGeometry().getGeometrySpec().setImage(vcImageUncompressed);
+            bioModel.getSimulationContext(0).getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT(),true, true);
+            bioModel.getSimulationContext(0).getGeometryContext().refreshStructureMappings();
+            bioModel.refreshDependencies();
+            bioModel.getSimulationContext(0).refreshSpatialObjects();
+//            FileUtils.writeByteArrayToFile(XmlHelper.bioModelToXML(bioModel).getBytes(), new File("C:\\temp\\test.vcml")); 
+        }
+            
+//            SBMLExporter sbmlExporter = new SBMLExporter(bioModel, sbmlDocument.getLevel(), sbmlDocument.getVersion(), true);
+//			sbmlExporter.setSelectedSimContext(bioModel.getSimulationContext(0));
+//			sbmlExporter.setSelectedSimulationJob(null);
+//            SBMLDocument sbmlDocumentNew = SBMLReader.read(sbmlExporter.getSBMLFile());
+//            model = sbmlDocumentNew.getModel();
+
+//	        // Get SBML geometry
+//	        SpatialModelPlugin modelPlugin = (SpatialModelPlugin) model.getPlugin("spatial");
+//	        Geometry geometry = modelPlugin.getGeometry();
+//	        SampledField sampledField = geometry.getListOfSampledFields().get(0);
+////if(true){return null;}
+////	        String geomPixels = sampledField.getDataString();
+//	        int[] sbmlGeomXYZ = new int[] {sampledField.getNumSamples1(),sampledField.getNumSamples2(),sampledField.getNumSamples3()};
+//	        int sbmlNumDims = (sbmlGeomXYZ[0]>1?1:0)+(sbmlGeomXYZ[1]>1?1:0)+(sbmlGeomXYZ[2]>1?1:0);
+//	        //Get alt geom data
+//        	DatasetView dsv = (DatasetView)altGeomDisp.get(0);
+//        	
+////        	System.out.println("Alternate geom "+dsv.getData().getWidth()+"x"+dsv.getData().getHeight()+"x"+dsv.getData().getDepth()+" cc="+dsv.getChannelCount()+" fc="+dsv.getData().getFrames()+" lc="+altGeomDisp.size());
+////        	int altNumDims = dsv.getData().numDimensions();
+//        	int altNumDims = dsv.getData().getImgPlus().getImg().numDimensions();
+//        	if(sbmlNumDims != altNumDims){
+//        		throw new Exception(altGeomDisp.getName()+" geom dimensions="+altNumDims+" not equal model geom dimensions= "+sbmlNumDims);
+//        	}
+//        	boolean dimValOK = true;
+//        	String dimvals = "";
+//        	for (int i = 0; i < sbmlGeomXYZ.length; i++) {
+//        		dimvals+= i+"("+dsv.getData().getImgPlus().getImg().dimension(i)+":"+sbmlGeomXYZ[i]+") ";
+//        		if(dsv.getData().getImgPlus().getImg().dimension(i) != sbmlGeomXYZ[i]){
+//        			dimValOK = false;
+//        		}
+//			}
+//        	if(!dimValOK){
+//        		throw new Exception(altGeomDisp.getName()+" geom dimension values not match model geom "+dimvals);
+//        	}
+////        	if(sbmlNumDims != altNumDims || dsv.getData().getWidth() != width || dsv.getData().getHeight() != height || dsv.getData().getDepth() != zslices){
+////        		throw new Exception("Alternate geom "+dsv.getData().getWidth()+"x"+dsv.getData().getHeight()+"x"+dsv.getData().getDepth()+" not equal model geom "+width+"x"+height+"x"+zslices);
+////        	}
+//        	StringBuffer sb = new StringBuffer();
+//        	Iterator<RealType<?>> iterator = dsv.getData().iterator();
+//        	int cnt = 0;
+//        	while(iterator.hasNext()){
+//        		int realDouble = (int)iterator.next().getRealDouble();
+//        		if(cnt < 1000 && realDouble == 1){
+//        			realDouble = 2;
+//        			cnt++;
+//        		}
+//				sb.append(realDouble+" ");
+//        	}
+//        	sb.deleteCharAt(sb.length()-1);
+//        	
+//        	System.out.println(sb.toString().equals(sampledField.getSamples()));
+//        	
+//        	sampledField.setSamples(sb.toString());
+        	
+//	        // Parse pixel values to int
+//	        String[] imgStringArray = sampledField.getSamples().split(" ");
+//	        int[] imgArray = new int[width*height*zslices];
+//	        for (int i = 0; i < imgArray.length; i++) {
+//	        	imgArray[i] = Integer.parseInt(imgStringArray[i]);
+//	        }
+
+//        }
+        
+//		List<org.sbml.jsbml.Parameter> paramList = model.getListOfParameters();
+//		for (org.sbml.jsbml.Parameter param:paramList) {
+//			if(param.isConstant()){
+//				String paramIdName = param.getId()+" "+param.getName();
+//	    		System.out.println("Model Param '"+paramIdName+"' = "+modelParamModule.getInput(paramIdName));
+//	    		param.setValue((Double)modelParamModule.getInput(paramIdName));
+//			}
+//		}
+//		List<Reaction> reactList = model.getListOfReactions();
+//		for (Reaction react:reactList) {
+//			List<LocalParameter> locParamList = react.getKineticLaw().getListOfLocalParameters();
+//			for(LocalParameter locParam:locParamList){
+//				String paramIdName = locParam.getId()+" "+locParam.getName();
+//				System.out.println("Rx Param '"+paramIdName+"' = "+modelParamModule.getInput(paramIdName));
+//				locParam.setValue((Double)modelParamModule.getInput(paramIdName));
+//			}
+//		}
+		return bioModel;
+    }
+    
+	public static  Sim simulate(BioModel bioModel,double simDuration,double simTimeStep,AppService appService,TaskService taskService,SimulationService simService,StatusService statusService) throws Exception {
     	initializeVCell(appService);
-		final RunVCellSimFromSBML.Sim sim = createSimulation(sbmlModel,taskService,simService,simDuration,simTimeStep);
+		final RunVCellSimFromSBML.Sim sim = createSimulation(bioModel,taskService,simService,simDuration,simTimeStep);
 
 		// Wait for the simulation to complete.
 		final StatusUpdater statusUpdater = new StatusUpdater(sim.task(),statusService);
@@ -380,44 +608,44 @@ public class RunVCellSimFromSBML implements Command {
 		}
 	}
 
-	public static Sim createSimulation(final Model sbmlModel,TaskService taskService,SimulationService simService,double simDuration,double simTimeStep) throws Exception {
+	public static Sim createSimulation(final BioModel bioModel,TaskService taskService,SimulationService simService,double simDuration,double simTimeStep) throws Exception {
 		// TODO: make SimulationServiceImpl a singleton of VCellService.
 		final SimulationSpec simSpec = new SimulationSpec();
 		simSpec.setOutputTimeStep(simTimeStep);
 		simSpec.setTotalTime(simDuration);
 		final Task task = taskService.createTask("Simulate FRAP");
 		task.setProgressMaximum(100); // TODO: Double check this.
-		final SimulationInfo simInfo = simService.computeModel(sbmlModel, simSpec,
-			new ClientTaskStatusSupport()
+		ClientTaskStatusSupport clientTaskStatusSupport = new ClientTaskStatusSupport()
 		{
 
-				@Override
-				public void setProgress(final int progress) {
-					task.setProgressValue(progress);
-				}
+			@Override
+			public void setProgress(final int progress) {
+				task.setProgressValue(progress);
+			}
 
-				@Override
-				public void setMessage(final String message) {
-					task.setStatusMessage(message);
-				}
+			@Override
+			public void setMessage(final String message) {
+				task.setStatusMessage(message);
+			}
 
-				@Override
-				public boolean isInterrupted() {
-					return task.isCanceled();
-				}
+			@Override
+			public boolean isInterrupted() {
+				return task.isCanceled();
+			}
 
-				@Override
-				public int getProgress() {
-					return (int) task.getProgressValue();
-				}
+			@Override
+			public int getProgress() {
+				return (int) task.getProgressValue();
+			}
 
-				@Override
-				public void addProgressDialogListener(
-					final ProgressDialogListener progressDialogListener)
-			{
-					throw new UnsupportedOperationException();
-				}
-			});
+			@Override
+			public void addProgressDialogListener(
+				final ProgressDialogListener progressDialogListener)
+		{
+				throw new UnsupportedOperationException();
+			}
+		};
+		final SimulationInfo simInfo = simService.computeModel(bioModel, simSpec,clientTaskStatusSupport);
 		task.run(() -> {
 			try {
 				while ((simService.getStatus(simInfo).getSimState() != SimulationState.done) && 

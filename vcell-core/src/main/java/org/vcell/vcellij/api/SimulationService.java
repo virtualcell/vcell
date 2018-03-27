@@ -7,10 +7,12 @@ import org.sbml.jsbml.Model;
 import net.imagej.ImageJService;
 
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.document.VCDocument;
 
 public interface SimulationService extends ImageJService /*extends SciJavaService*/{
 
 	SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec,ClientTaskStatusSupport clientTaskStatusSupport);
+	SimulationInfo computeModel(VCDocument vcDoc, SimulationSpec simSpec,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception;
 
 	SimulationStatus getStatus(SimulationInfo simInfo);
 

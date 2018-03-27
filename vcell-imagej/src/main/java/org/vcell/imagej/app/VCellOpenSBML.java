@@ -3,6 +3,7 @@ package org.vcell.imagej.app;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JEditorPane;
@@ -211,11 +212,12 @@ public class VCellOpenSBML implements Command {
 	}
 
 	private void makeMyDisplay(SwingInputPanel paramPanel,File sbmlFile,DefaultMutableModule dmm,SwingInputHarvester sih,SwingInputPanel sip) {
-//		final MyTest myTest = new MyTest();
-//		myTest.setSbmlFile(sbmlFile);
-//		myTest.setContext(dispService.getContext());
-//		myTest.add(paramPanel);
-		final MyTest disp = (MyTest)dispService.createDisplay(paramPanel);
+		final MyTest myTest = new MyTest();
+		myTest.setSbmlFile(sbmlFile);
+		myTest.setContext(dispService.getContext());
+		myTest.add(paramPanel);
+		
+		final MyTest disp = myTest;//(MyTest)dispService.createDisplay(paramPanel);
 		disp.setSbmlFile(sbmlFile);
 		disp.setDefaultMutableModule(dmm);
 		disp.setSwingInputHarvester(sih);

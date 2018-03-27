@@ -84,11 +84,13 @@ public class ImportSBMLCommand<T extends RealType<T>> implements Command {
 	        String[] imgStringArray = sampledField.getSamples().split(" ");
 	        int[] imgArray = new int[width*height*zslices];
 	        for (int i = 0; i < imgArray.length; i++) {
-	        	imgArray[i] = Integer.parseInt(imgStringArray[i]);				        }
+	        	imgArray[i] = Integer.parseInt(imgStringArray[i]);
+	        }
 	
 	        // Create the image and display
 	        ArrayImg<UnsignedIntType, IntArray> img = ArrayImgs.unsignedInts(imgArray, width, height,zslices);
-	        displayService.createDisplay(img);
+	        Display<?> disp = displayService.createDisplay("Img: "+activeDisplay.getSbmlFile().getName(),img);
+//	        disp.setName("Img: "+activeDisplay.getSbmlFile().getName());
     	}catch(Exception e){
     		e.printStackTrace();
     	}

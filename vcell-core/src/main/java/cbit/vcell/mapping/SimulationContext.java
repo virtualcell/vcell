@@ -2235,7 +2235,8 @@ public void refreshSpatialObjects() {
 			if (unmappedRegion instanceof VolumeGeometricRegion){
 				VolumeGeometricRegion unmappedVolRegion = (VolumeGeometricRegion) unmappedRegion;
 				try {
-					addSpatialObject(new VolumeRegionObject(unmappedVolRegion.getSubVolume(), unmappedVolRegion.getRegionID(), this));
+					VolumeRegionObject vro = new VolumeRegionObject(unmappedVolRegion.getSubVolume(), unmappedVolRegion.getRegionID(), this);
+					addSpatialObject(vro);
 				} catch (PropertyVetoException e) {
 					e.printStackTrace();
 				}
@@ -2262,16 +2263,23 @@ public void refreshSpatialObjects() {
 		//
 		// for spatial objects no longer represented in the new geometry, try to delete one-by-one ... and cancel if vetoed.
 		//
-		for (SpatialObject unmappedSpatialObject : spatialObjects){
-			if (unmappedSpatialObject instanceof VolumeRegionObject){
-				System.err.println("volume region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete???");
+		try {
+			for (SpatialObject unmappedSpatialObject : unmappedSpatialObjects){
+				if (unmappedSpatialObject instanceof VolumeRegionObject){
+					System.err.println("volume region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
+					removeSpatialObject(unmappedSpatialObject);
+				}
+				if (unmappedSpatialObject instanceof SurfaceRegionObject){
+					System.err.println("surface region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
+					removeSpatialObject(unmappedSpatialObject);
+				}
+				if (unmappedSpatialObject instanceof PointObject){
+					System.err.println("point spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, this is expected.");
+//					removeSpatialObject(unmappedSpatialObject);
+				}
 			}
-			if (unmappedSpatialObject instanceof SurfaceRegionObject){
-				System.err.println("surface region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete???");
-			}
-			if (unmappedSpatialObject instanceof PointObject){
-				System.err.println("point spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, this is expected");
-			}
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
 		}
 	}
 }
