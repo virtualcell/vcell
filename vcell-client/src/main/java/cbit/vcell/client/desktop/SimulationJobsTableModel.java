@@ -30,7 +30,7 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 	public static final int iColSimulation = 1;
 	public static final int iColSimId = 2;
 	public static final int iColSolver = 3;
-	public static final int iColStartDate = 4;
+	public static final int iColSubmitDate = 4;
 	public static final int iColHasData = 5;
 	public static final int iColStatus = 6;
 	public static final int iColMessage = 7;
@@ -38,7 +38,7 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 //	public static final int iColHost = 8;
 	
 	private static final String[] header = new String[] {"Model / Application", 
-			"Simulation", "Sim Id / Job", "Solver", "Start Date", "Data",
+			"Simulation", "Sim Id / Job / Task", "Solver", "Submit Date", "Data",
 			"Status", "Message", "Site"};
 
 	// filtering variables 
@@ -66,7 +66,7 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 		case iColSimulation:
 		case iColSimId:
 		case iColSolver:
-		case iColStartDate:
+		case iColSubmitDate:
 		case iColHasData:
 			return String.class;
 		case iColStatus:
@@ -94,7 +94,7 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 		case iColModelApp:
 			if(sjs.simulationDocumentLink instanceof BioModelLink) {
 				BioModelLink bml = (BioModelLink)sjs.simulationDocumentLink;
-				return "(BM) " + bml.bioModelName + ",(App) " + bml.simContextName;
+				return "(BM) " + bml.bioModelName + ", (App) " + bml.simContextName;
 			} else if(sjs.simulationDocumentLink instanceof MathModelLink) {
 				MathModelLink mml = (MathModelLink)sjs.simulationDocumentLink;
 				return "(MM) " + mml.mathModelName;
@@ -105,14 +105,15 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 			return sjs.simulationMetadata.simname;
 		case iColSimId:
 			return sjs.simulationMetadata.vcSimID.getSimulationKey().toString() +
-					", [" + sjs.jobStatus.getJobIndex() + "]";
+					" / " + sjs.jobStatus.getJobIndex() + " / " +
+					sjs.jobStatus.getTaskID();
 		case iColSolver:
 			String str = "";
 			if(sjs.simulationMetadata.solverTaskDesc != null) {
 				str = sjs.simulationMetadata.solverTaskDesc.getSolverDescription() == null ? "" : sjs.simulationMetadata.solverTaskDesc.getSolverDescription().getDisplayLabel();		
 			}
 			return str;
-		case iColStartDate:
+		case iColSubmitDate:
 			DateFormat df = new SimpleDateFormat("MM.dd.yyyy");
 			Date date = sjs.jobStatus.getStartDate();
 			return df.format(date);
@@ -181,8 +182,8 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 						return scale * d1.compareTo(d2);
 					}
 				case iColSimId:
-					s1 = o1.simulationMetadata.vcSimID.getSimulationKey().toString() + "," + o1.jobStatus.getJobIndex();
-					s2 = o2.simulationMetadata.vcSimID.getSimulationKey().toString() + "," + o2.jobStatus.getJobIndex();
+					s1 = o1.simulationMetadata.vcSimID.getSimulationKey().toString() + "," + o1.jobStatus.getJobIndex() + "," + o1.jobStatus.getTaskID();
+					s2 = o2.simulationMetadata.vcSimID.getSimulationKey().toString() + "," + o2.jobStatus.getJobIndex() + "," + o2.jobStatus.getTaskID();
 					return scale * s1.compareToIgnoreCase(s2);
 				case iColSolver:
 					if(o1.simulationMetadata.solverTaskDesc != null && o1.simulationMetadata.solverTaskDesc.getSolverDescription() != null) {
@@ -192,9 +193,9 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 						s2 = o2.simulationMetadata.solverTaskDesc.getSolverDescription().getDisplayLabel();		
 					}
 					return scale * s1.compareToIgnoreCase(s2);
-				case iColStartDate:
-					Date d1 = o1.jobStatus.getStartDate();
-					Date d2 = o2.jobStatus.getStartDate();
+				case iColSubmitDate:
+					Date d1 = o1.jobStatus.getSubmitDate();
+					Date d2 = o2.jobStatus.getSubmitDate();
 					return scale * d1.compareTo(d2);
 				case iColHasData:
 					Boolean b1 = o1.jobStatus.hasData();
@@ -247,14 +248,49 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 		} else {
 			filteredJobStatusList = allJobStatusList;
 		}
-		
-		
-		// ---------------------------------------------------------------------------
+		// ------- apply search --------------------------------------------------------------------
 		List<SimpleJobStatus> jobStatusList = new ArrayList<>();
 		if (searchText == null || searchText.length() == 0) {
 			jobStatusList.addAll(filteredJobStatusList);
 		} else {
-			jobStatusList.addAll(filteredJobStatusList);		// TODO: implement search here
+			String lowerCaseSearchText = searchText.toLowerCase();
+			for(SimpleJobStatus sjs : filteredJobStatusList) {
+				// search in Solver column
+				if(sjs.simulationMetadata.solverTaskDesc != null && sjs.simulationMetadata.solverTaskDesc.getSolverDescription() != null) {
+					String str = sjs.simulationMetadata.solverTaskDesc.getSolverDescription().getDisplayLabel();
+					if(str != null && str.toLowerCase().contains(lowerCaseSearchText)) {
+						jobStatusList.add(sjs);
+						continue;
+					}
+				}
+				// search in Message column
+				if(sjs.jobStatus != null && sjs.jobStatus.getSimulationMessage() != null) {
+					String str = sjs.jobStatus.getSimulationMessage().getDisplayMessage();
+					if(str != null && str.toLowerCase().contains(lowerCaseSearchText)) {
+						jobStatusList.add(sjs);
+						continue;
+					}
+				}
+				// search in Model name, Application name (if available)
+				String str = null;
+				if(sjs.simulationDocumentLink instanceof BioModelLink) {
+					BioModelLink bml = (BioModelLink)sjs.simulationDocumentLink;
+					str = "(BM) " + bml.bioModelName + ",(App) " + bml.simContextName;
+				} else if(sjs.simulationDocumentLink instanceof MathModelLink) {
+					MathModelLink mml = (MathModelLink)sjs.simulationDocumentLink;
+					str = "(MM) " + mml.mathModelName;
+				}
+				if(str != null && !str.isEmpty() && str.toLowerCase().contains(lowerCaseSearchText)) {
+					jobStatusList.add(sjs);
+					continue;
+				}
+				// Search in Simulation name
+				str = sjs.simulationMetadata.simname;
+				if(str != null && !str.isEmpty() && str.toLowerCase().contains(lowerCaseSearchText)) {
+					jobStatusList.add(sjs);
+					continue;
+				}
+			}
 		}
 		setData(jobStatusList);
 		GuiUtils.flexResizeTableColumns(ownerTable);
@@ -267,10 +303,6 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 		searchText = newValue;
 		refreshData();
 	}
-	
-
-
-
 	
 	@Override
 	public String checkInputValue(String inputValue, int row, int column) {

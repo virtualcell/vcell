@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EventObject;
 import java.util.Hashtable;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -44,6 +45,7 @@ import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.ColorIconEx;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.generic.DatePanel;
 
@@ -92,12 +94,12 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	private JCheckBox orphanedButton = null;
 
 	private JCheckBox submitBetweenButton = null;
-	private DatePanel endDate = null;
-	private DatePanel startDate = null;
+	private DatePanel fromDate = null;
+	private DatePanel toDate = null;
 	private JPanel submitDatePanel = null;
 	
 	private Icon waitingIcon = new ColorIcon(11,11, Color.lightGray, true);
-	private Icon queuedIcon = new ColorIcon(11,11, Color.white, true);
+	private Icon queuedIcon = new ColorIcon(11,11, Color.yellow.darker(), true);
 	private Icon dispatchedIcon = new ColorIcon(11,11, Color.magenta, true);
 	private Icon runningIcon = new ColorIcon(11,11, Color.blue, true);
 	private Icon completedIcon = new ColorIcon(11,11, Color.green, true);
@@ -174,31 +176,31 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		}
 		return submitBetweenButton;
 	}
-	private DatePanel getEndDate() {
-		if (endDate == null) {
+	private DatePanel getSubmitToDate() {
+		if (toDate == null) {
 			try {
-				endDate = new DatePanel();
-				endDate.setName("EndDate");
-				endDate.setLayout(new FlowLayout());
-				endDate.setEnabled(true);
+				toDate = new DatePanel();
+				toDate.setName("ToDate");
+				toDate.setLayout(new FlowLayout());
+				toDate.setEnabled(true);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
-		return endDate;
+		return toDate;
 	}
-	private DatePanel getStartDate() {
-		if (startDate == null) {
+	private DatePanel getSubmitFromDate() {
+		if (fromDate == null) {
 			try {
-				startDate = new DatePanel();
-				startDate.setName("StartDate");
-				startDate.setLayout(new FlowLayout());
-				startDate.setEnabled(true);
+				fromDate = new DatePanel();
+				fromDate.setName("FromDate");
+				fromDate.setLayout(new FlowLayout());
+				fromDate.setEnabled(true);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
-		return startDate;
+		return fromDate;
 	}
 	private javax.swing.JPanel getSubmitDatePanel() {
 		if (submitDatePanel == null) {
@@ -235,7 +237,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				gbc.weighty = 0;
 				gbc.fill = GridBagConstraints.HORIZONTAL;
 				gbc.insets = new Insets(5, 40, 2, 3);
-				submitDatePanel.add(new JLabel("End Date: "), gbc);
+				submitDatePanel.add(new JLabel("From Date: "), gbc);
 
 				gbc = new GridBagConstraints();
 				gbc.gridx = 1;
@@ -245,7 +247,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				gbc.gridwidth = 2;
 				gbc.fill = GridBagConstraints.HORIZONTAL;
 				gbc.insets = new Insets(5, 2, 2, 3);
-				submitDatePanel.add(getEndDate(), gbc);
+				submitDatePanel.add(getSubmitFromDate(), gbc);
 
 				gridy++;
 				gbc = new GridBagConstraints();
@@ -255,7 +257,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				gbc.weighty = 0;
 				gbc.fill = GridBagConstraints.HORIZONTAL;
 				gbc.insets = new Insets(5, 40, 2, 3);
-				submitDatePanel.add(new JLabel("Start Date: "), gbc);
+				submitDatePanel.add(new JLabel("To Date: "), gbc);
 
 				gbc = new GridBagConstraints();
 				gbc.gridx = 1;
@@ -265,7 +267,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				gbc.gridwidth = 2;
 				gbc.fill = GridBagConstraints.HORIZONTAL;
 				gbc.insets = new Insets(5, 2, 2, 3);
-				submitDatePanel.add(getStartDate(), gbc);
+				submitDatePanel.add(getSubmitToDate(), gbc);
 		} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -286,14 +288,22 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				} catch(NumberFormatException ex) {
 					isInt = false;
 				}
-				if(isInt && rows>0) {
-					maxRows = rows;
-					refreshInterface();
-				} else {
-					System.out.println("Not an int");
+				if(!isInt || rows<=0) {
+					DialogUtils.showErrorDialog(ViewJobsPanel.this, "Number of results must be a positive integer.");
+					return;
 				}
+				if(getSubmitBetweenButton().isSelected()) {
+					long low = getSubmitFromDate().getDate().getTime();								// first second of day low time
+					long high = getSubmitToDate().getDate().getTime()+TimeUnit.DAYS.toMillis(1)-1;	// last second of day high time
+					if(low > high) {
+						DialogUtils.showErrorDialog(ViewJobsPanel.this, "Invalid interval, 'From Date' must be smaller than 'To Date' or equal.");
+						return;
+					}
+				}
+				maxRows = rows;
+				refreshInterface();
 			} else if(e.getSource() == getOrphanedButton()) {
-				
+				// nothing to do here
 			}
 		}
 		@Override
@@ -350,6 +360,10 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			ssqs.running = getRunningButton().isSelected();
 			ssqs.stopped = getStoppedButton().isSelected();
 			ssqs.waiting = getWaitingButton().isSelected();
+			if(getSubmitBetweenButton().isSelected()) {
+				ssqs.submitLowMS = getSubmitFromDate().getDate().getTime();								// first second of day low time
+				ssqs.submitHighMS = getSubmitToDate().getDate().getTime()+TimeUnit.DAYS.toMillis(1)-1;	// last second of day high time
+			}		// else default is null, bring everything
 			
 			SimpleJobStatus[] sjs = null;
 			try {
@@ -371,6 +385,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			SimpleJobStatus[] sjs = (SimpleJobStatus[])hashTable.get("SimpleJobStatus");
 			if(sjs == null) {
 				System.out.println("SimpleJobStatus is null");
+				return;
 			}
 			model.setData(sjs);
 			table.getColumnModel().getColumn(SimulationJobsTableModel.iColMessage).setPreferredWidth(40);
@@ -686,7 +701,6 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			
 			getOrphanedButton().setSelected(false);
 			getSubmitBetweenButton().setSelected(false);
-			getSubmitBetweenButton().setEnabled(false);		// TODO: disabled for now
 			
 			// ----------------------------------------- bottom panel (the table) -------------------
 			table = new EditorScrollTable();
@@ -849,7 +863,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				}
 			};
 			table.getColumnModel().getColumn(SimulationJobsTableModel.iColStatus).setCellRenderer(statusCellRenderer);
-			table.getColumnModel().getColumn(SimulationJobsTableModel.iColStartDate).setCellRenderer(dateTimeCellRenderer);
+			table.getColumnModel().getColumn(SimulationJobsTableModel.iColSubmitDate).setCellRenderer(dateTimeCellRenderer);
 			table.getColumnModel().getColumn(SimulationJobsTableModel.iColHasData).setCellRenderer(hasDataCellRenderer);
 //			table.getColumnModel().getColumn(SimulationJobsTableModel.iColDepiction).setMinWidth(400);
 //			table.getColumnModel().getColumn(SimulationJobsTableModel.iColStatus).setPreferredWidth(30);
@@ -864,7 +878,6 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	}
 	
 	private void refreshInterface() {
-		
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		AsynchClientTask[] tasksArray = new AsynchClientTask[2];
 		tasksArray[0] = new RunQuery();
