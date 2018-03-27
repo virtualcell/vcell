@@ -41,7 +41,6 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 
 /**
  * Insert the type's description here.
@@ -109,7 +108,6 @@ public static void main(java.lang.String[] args) {
 			logdir = args[1];
 		}
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DB, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-		initLog(serviceInstanceStatus, logdir);
 		VCMongoMessage.serviceStartup(ServiceName.database, new Integer(serviceOrdinal), args);
 
 		//

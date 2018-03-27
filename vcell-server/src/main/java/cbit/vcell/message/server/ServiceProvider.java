@@ -161,37 +161,4 @@ public void stopService() {
 	}
 }
 
-/**
- * @param serviceInstanceStatus
- * @param logDirectory, if null, use stdout
- * @return {@link OutputStream} created or null
- * @throws FileNotFoundException
- */
-public static OutputStream initLog(ServiceInstanceStatus serviceInstanceStatus, String logDirectory) throws FileNotFoundException {
-	if (serviceInstanceStatus == null) {
-		throw new RuntimeException("initLog: serviceInstanceStatus can't be null");		
-	}
-	if (logDirectory != null && !logDirectory.trim().equals("-")) {
-		File logdir = new File(logDirectory);
-		if (!logdir.exists()) {
-			throw new RuntimeException("Log directory " + logDirectory + " doesn't exist");
-		}
-			
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_kkmmss");
-		File logfile = new File(logdir, serviceInstanceStatus.getServerID()+"_"+serviceInstanceStatus.getType().getName()+"_"+serviceInstanceStatus.getOrdinal() + "_"+dateFormat.format(new Date())+".log");
-		FileOutputStream fos = new FileOutputStream(logfile); // don't append, auto flush
-		java.io.PrintStream ps = new PrintStream(fos,true); // don't append, auto flush
-		System.out.println("logging to file " + logfile.getAbsolutePath());
-		System.setOut(ps);
-		System.setErr(ps);
-		return fos;
-	}else{
-		System.out.println("logging to stdout");
-		return null;
-	}
-}
-
-
-
-
 }

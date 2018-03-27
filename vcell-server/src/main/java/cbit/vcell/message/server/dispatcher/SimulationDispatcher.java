@@ -641,4 +641,8 @@ public class SimulationDispatcher extends ServiceProvider {
 	}
 
 
+	public void stopService() {
+	}
+
+
 }

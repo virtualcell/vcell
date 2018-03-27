@@ -10,15 +10,7 @@
 
 package cbit.vcell.message.server.combined;
 import java.io.File;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
 import java.util.Date;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -26,9 +18,7 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
-import org.vcell.util.LifeSignThread;
 import org.vcell.util.document.VCellServerID;
-import org.vcell.util.logging.WatchLogging;
 
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportListener;
@@ -55,8 +45,6 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.message.server.dispatcher.SimulationDispatcher;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.message.server.sim.HtcSimulationWorker;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabasePolicySQL;
@@ -156,49 +144,35 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	 * @param args an array of command-line arguments
 	 */
 	public static void main(java.lang.String[] args) {
-		WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
 		OperatingSystemInfo.getInstance();
 
-		if (args.length != 3 && args.length != 6) {
-			System.out.println("Missing arguments: " + VCellServices.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE|SLURM) [sshHost sshUser sshKeyFile] ");
+		if (args.length != 3 && args.length != 0) {
+			System.out.println("Missing arguments: " + VCellServices.class.getName() + " [sshHost sshUser sshKeyFile] ");
 			System.exit(1);
 		}
 
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-			Logger.getLogger(CommandService.class).setLevel(Level.TRACE);
-			DatabasePolicySQL.lg.setLevel(Level.WARN);
-			DbDriver.lg.setLevel(Level.WARN);
-			HtcProxy.LG.setLevel(Level.TRACE);
-			SimulationDispatcher.lg.setLevel(Level.DEBUG);
-			HtcSimulationWorker.lg.setLevel(Level.INFO);
 			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 
 			PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.VTK, PythonPackage.THRIFT});
 
-			int serviceOrdinal = Integer.parseInt(args[0]);
-			String logdir = null;
-			if (args.length > 1) {
-				logdir = args[1];
-			}
-
-			BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
 			CommandService commandService = null;
-			if (args.length==6){
-				String sshHost = args[3];
-				String sshUser = args[4];
-				File sshKeyFile = new File(args[5]);
+			if (args.length==3){
+				String sshHost = args[0];
+				String sshUser = args[1];
+				File sshKeyFile = new File(args[2]);
 				try {
 					commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile);
 					commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
-					System.out.println("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
+					lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
 				} catch (Exception e) {
 					e.printStackTrace();
 					try {
 						commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile,new File("/root"));
 						commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
-						System.out.println("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
+						lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
 					} catch (Exception e2) {
 						e.printStackTrace();
 						throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
@@ -208,6 +182,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			}else{
 				commandService = new CommandServiceLocal();
 			}
+			BatchSystemType batchSystemType = BatchSystemType.SLURM;
 			HtcProxy htcProxy = null;
 			switch(batchSystemType){
 				case SLURM:{
@@ -219,18 +194,17 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				}
 			}
 
+			int serviceOrdinal = 0;
 			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
 
-			//
-			// JMX registration
-			//
-			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+//			//
+//			// JMX registration
+//			//
+//			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+//			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
 
 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),
 					ServiceType.MASTER, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-
-			OutputStream os = initLog(serviceInstanceStatus, logdir);
 
 			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 			KeyFactory keyFactory = conFactory.getKeyFactory();

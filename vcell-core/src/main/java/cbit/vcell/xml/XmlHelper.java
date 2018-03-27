@@ -164,8 +164,8 @@ public class XmlHelper {
 			e.printStackTrace();
 			throw new XmlParseException("Unable to generate Biomodel XML: ", e);
 		} 
-		if (lg.isDebugEnabled()) {
-			lg.debug(xmlString);
+		if (lg.isTraceEnabled()) {
+			lg.trace(xmlString);
 		}
 		return xmlString;
 	}
@@ -513,9 +513,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 //		Element element = xmlProducer.getXML(mathModel);
 //		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS_ALT));		
 //		xmlString = XmlUtil.xmlToString(element);
-		lg.info(xmlString);
-		
-		lg.info(xmlString);
+		if (lg.isTraceEnabled()) lg.trace(xmlString);		
 		return xmlString;
 	}
 

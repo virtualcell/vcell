@@ -1,8 +1,6 @@
 package org.vcell.rest;
 
 import java.io.File;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -11,8 +9,8 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Client;
 import org.restlet.Server;
 import org.restlet.data.Parameter;
@@ -21,7 +19,6 @@ import org.restlet.engine.Engine;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
 import org.restlet.util.Series;
-import org.vcell.api.client.VCellApiClient;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -35,22 +32,14 @@ import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCellServerID;
-import org.vcell.util.logging.WatchLogging;
 
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessagingDelegate;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.message.server.ManageUtils;
-import cbit.vcell.message.server.ServiceInstanceStatus;
-import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -62,21 +51,15 @@ import freemarker.template.DefaultObjectWrapper;
 
 public class VCellApiMain {
 	
+	private final static Logger lg = LogManager.getLogger(VCellApiMain.class);
 	private final static String TEST_USER = "vcellNagios";
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		try {
-			WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
-			//don't use static field -- want to initialize logging first
-			Logger lg = Logger.getLogger(VCellApiMain.class);
-			DatabasePolicySQL.lg.setLevel(Level.WARN);
-			DbDriver.lg.setLevel(Level.WARN);
-			VCellApiClient.lg.setLevel(java.util.logging.Level.INFO);
-
-			if (args.length!=3){
-				System.out.println("usage: VCellApiMain javascriptDir (-|logDir) port");
+			if (args.length!=2){
+				System.out.println("usage: VCellApiMain javascriptDir port");
 				System.exit(1);
 			}
 			File javascriptDir = new File(args[0]);
@@ -86,19 +69,9 @@ public class VCellApiMain {
 
 			PropertyLoader.loadProperties( ); //don't validate
 			
-			lg.trace("properties loaded");
+			lg.debug("properties loaded");
 			
-			//
-			// Redirect output to the logfile (append if exists)
-			//
-			String logdir = args[1];
-			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.API, 1, ManageUtils.getHostName(), new Date(), true);
-			if (lg.isTraceEnabled()) {
-				lg.trace("log redirection to " + logdir);
-			}
-			ServiceProvider.initLog(serviceInstanceStatus, logdir);
-			
-			String portString = args[2];
+			String portString = args[1];
 			Integer port=null; // was hard-coded at 8080
 			try {
 				port = Integer.parseInt(portString);
@@ -107,7 +80,7 @@ public class VCellApiMain {
 				throw new RuntimeException("failed to parse port argument '"+portString+"'",e);
 			}
 			
-		    System.out.println("connecting to database");
+		    lg.trace("connecting to database");
 
 			lg.trace("oracle factory (next)");
 			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();

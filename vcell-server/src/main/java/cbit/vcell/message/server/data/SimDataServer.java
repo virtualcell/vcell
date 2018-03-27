@@ -44,7 +44,6 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -148,7 +147,6 @@ public static void main(java.lang.String[] args) {
 			serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DATA, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 			serviceName = ServiceName.simData;
 		}
-		initLog(serviceInstanceStatus, logdir);
 		VCMongoMessage.serviceStartup(serviceName, new Integer(serviceOrdinal), args);
 
 		//

@@ -18,8 +18,7 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
 
 COPY ./pythonScripts ./pythonScripts
 COPY ./nativelibs/linux64 ./nativelibs/linux64
-
-WORKDIR /usr/local/app
+COPY ./docker/vcell-master.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \
@@ -47,7 +46,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     htcnodelist="" \
     singularity_imagefile=/path/to/external/singularity.img \
     docker_name="repo/namespace/vcell-batch:tag" \
-    batchsystem=SLURM \
     batchhost="batch-host-not-set" \
     batchuser="batch-user-not-set" \
     slurm_cmd_sbatch=sbatch \
@@ -70,6 +68,7 @@ ENTRYPOINT java \
 	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
     -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
+	-Dlog4j.configurationFile=/usr/local/app/vcell-master.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
@@ -116,4 +115,4 @@ ENTRYPOINT java \
 	-Dvcell.server.maxPdeJobsPerUser=20 \
 	-Dvcell.limit.jobMemoryMB=2000 \
 	-cp "./lib/*" cbit.vcell.message.server.combined.VCellServices \
-	123 - "${batchsystem}" "${batchhost}" "${batchuser}" "${batchuserkeyfile}"
+	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"
