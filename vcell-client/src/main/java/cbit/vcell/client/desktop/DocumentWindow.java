@@ -833,7 +833,7 @@ private JMenu getToolMenu() {
 			toolMenu.add(getRunVCellVisItItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getTransMAMenuItem());
-			toolMenu.add(getViewJobsMenuItem());
+//			toolMenu.add(getViewJobsMenuItem());	// moved to Server
 		} catch (Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -1777,6 +1777,8 @@ private javax.swing.JMenu getServerMenu() {
 			ivjServerMenu.add(getChange_ProxyMenuItem());
 			ivjServerMenu.add(getUpdate_UserMenuItem());
 			ivjServerMenu.add(getReconnectMenuItem());
+			ivjServerMenu.add(new JSeparator());
+			ivjServerMenu.add(getViewJobsMenuItem());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2297,7 +2299,8 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getChange_UserMenuItem().setEnabled(true);
 			getUpdate_UserMenuItem().setEnabled(false);
 			getReconnectMenuItem().setEnabled(false);
-
+			getViewJobsMenuItem().setEnabled(false);
+			
 			enableOpenMenuItems(false);
 
 			getSaveMenuItem().setEnabled(false);
@@ -2321,6 +2324,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getChange_UserMenuItem().setEnabled(true);
 			getUpdate_UserMenuItem().setEnabled(true);
 			getReconnectMenuItem().setEnabled(true);
+			getViewJobsMenuItem().setEnabled(true);
 
 			enableOpenMenuItems(true);
 

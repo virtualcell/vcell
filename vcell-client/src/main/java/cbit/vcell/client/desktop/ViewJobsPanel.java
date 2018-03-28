@@ -3,13 +3,11 @@ package cbit.vcell.client.desktop;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -20,7 +18,6 @@ import java.util.Date;
 import java.util.EventObject;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -30,8 +27,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -47,11 +46,9 @@ import javax.swing.event.TableModelListener;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.ColorIcon;
-import org.vcell.util.gui.ColorIconEx;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.generic.DatePanel;
 
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
@@ -97,15 +94,15 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	
 	private JCheckBox orphanedButton = null;
 
-//	private JCheckBox submitBetweenButton = null;
-//	private DatePanel fromDate = null;
-//	private DatePanel toDate = null;
 	private JPanel submitDatePanel = null;
 	private ButtonGroup timeGroup = null;
 	private JRadioButton anyTimeRadio = null;
 	private JRadioButton pastDayRadio = null;
 	private JRadioButton pastMonthRadio = null;
 	private JRadioButton pastYearRadio = null;
+	
+	private JPanel propertiesPanel = null;
+	private JTextPane details = null;
 	
 	private Icon waitingIcon = new ColorIcon(11,11, Color.lightGray, true);
 	private Icon queuedIcon = new ColorIcon(11,11, Color.yellow.darker(), true);
@@ -118,7 +115,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	
 	private Icon dataYesIcon = new ColorIcon(7,7, Color.green.brighter(), true);
 	private Icon dataNoIcon = new ColorIcon(7,7, Color.lightGray, true);
-
+	
 	private JCheckBox getWaitingButton() {
 		if(waitingButton == null) {
 			waitingButton = new JCheckBox("Waiting");
@@ -176,40 +173,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		}
 		return orphanedButton;
 	}
-//	public JCheckBox getSubmitBetweenButton() {
-//		if(submitBetweenButton == null) {
-//			submitBetweenButton = new JCheckBox("Submitted Between");
-//			submitBetweenButton.setToolTipText("Show only the Jobs submitted in this interval.");
-//			submitBetweenButton.addActionListener(eventHandler);
-//		}
-//		return submitBetweenButton;
-//	}
-//	private DatePanel getSubmitToDate() {
-//		if (toDate == null) {
-//			try {
-//				toDate = new DatePanel();
-//				toDate.setName("ToDate");
-//				toDate.setLayout(new FlowLayout());
-//				toDate.setEnabled(true);
-//			} catch (java.lang.Throwable ivjExc) {
-//				handleException(ivjExc);
-//			}
-//		}
-//		return toDate;
-//	}
-//	private DatePanel getSubmitFromDate() {
-//		if (fromDate == null) {
-//			try {
-//				fromDate = new DatePanel();
-//				fromDate.setName("FromDate");
-//				fromDate.setLayout(new FlowLayout());
-//				fromDate.setEnabled(true);
-//			} catch (java.lang.Throwable ivjExc) {
-//				handleException(ivjExc);
-//			}
-//		}
-//		return fromDate;
-//	}
+
 	private JRadioButton getAnyTimeRadio() {
 		if(anyTimeRadio == null) {
 			anyTimeRadio = new JRadioButton("Any Time");
@@ -248,67 +212,6 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		}
 		return timeGroup;
 	}
-
-	private javax.swing.JPanel getSubmitDatePanel() {
-		if (submitDatePanel == null) {
-			try {
-				Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-				TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " Time interval selector ");
-				titleTop.setTitleJustification(TitledBorder.LEFT);
-				titleTop.setTitlePosition(TitledBorder.TOP);
-
-				submitDatePanel = new javax.swing.JPanel();
-				submitDatePanel.setName("QuerySubmitDatePanel");
-				submitDatePanel.setBorder(titleTop);
-				
-				submitDatePanel.setLayout(new GridBagLayout());
-				int gridy = 0;
-				GridBagConstraints gbc = new GridBagConstraints();
-				gbc.gridx = 0;
-				gbc.gridy = gridy;
-				gbc.weightx = 1;
-				gbc.weighty = 1;
-				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(1, 2, 0, 0);	//  top, left, bottom, right 
-				submitDatePanel.add(getAnyTimeRadio(), gbc);
-
-				gridy++;
-				gbc = new GridBagConstraints();
-				gbc.gridx = 0;
-				gbc.gridy = gridy;
-				gbc.weightx = 1;
-				gbc.weighty = 1;
-				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(0, 2, 0, 0);
-				submitDatePanel.add(getPastDayRadio(), gbc);
-
-				gridy++;
-				gbc = new GridBagConstraints();
-				gbc.gridx = 0;
-				gbc.gridy = gridy;
-				gbc.weightx = 1;
-				gbc.weighty = 1;
-				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(0, 2, 0, 0);
-				submitDatePanel.add(getPastMonthRadio(), gbc);
-
-				gridy++;
-				gbc = new GridBagConstraints();
-				gbc.gridx = 0;
-				gbc.gridy = gridy;
-				gbc.weightx = 1;
-				gbc.weighty = 1;
-				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(0, 2, 1, 0);
-				submitDatePanel.add(getPastYearRadio(), gbc);
-
-			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
-			}
-		}
-		return submitDatePanel;
-	}
-
 	
 	private class EventHandler implements ActionListener, ListSelectionListener, TableModelListener, DocumentListener {
 		@Override
@@ -347,6 +250,18 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
+			if(!e.getValueIsAdjusting()) {
+				int row = table.getSelectedRow();
+				String message = (String) model.getValueAt(row, SimulationJobsTableModel.iColMessage);
+				if(message != null) {
+//					final String htmlStart = "<html><font face = \"Arial\"><font size =\"-1\">";
+//					final String htmlEnd = "</font></font></html>";
+					final String htmlStart = "<html><font size =\"-1\">";
+					final String htmlEnd = "</font></font></html>";
+					String text = FormatMessage(message);
+					details.setText(htmlStart + text + htmlEnd);
+				}
+			}
 		}
 		
 		@Override
@@ -406,6 +321,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				ssqs.submitHighMS = now;
 			}
 			
+			getRefreshAllButton().setEnabled(false);
 			SimpleJobStatus[] sjs = null;
 			try {
 				sjs = sc.getSimpleJobStatus(ssqs);
@@ -413,6 +329,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				e.printStackTrace();
 			}
 			hashTable.put("SimpleJobStatus", sjs);
+			getRefreshAllButton().setEnabled(true);
 			System.out.println("Finish Querry Run");
 		}
 	}
@@ -445,16 +362,147 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		}
 	}
 
+	public static String FormatMessage(String  text) {
+		// colorize keywords
+//		for(String entry : commentKeywords) {
+//			String replacement = "<br>" + "<b><font color=\"#005500\">" + entry + "</font></b>";
+//			text = text.replaceAll(entry, replacement);
+//		}
+//		for(String entry : otherKeywords) {
+//			String replacement = "<font color=\"#770000\">" + entry + "</font>";
+//			text = text.replaceAll(entry, replacement);
+//		}
+//		if(text.startsWith("<br>")) {
+//			text = text.replaceFirst("<br>", "");
+//		}
+		text = text.replace("\\", "/");
+		return text;
+	}
+	private JPanel getPropertiesPanel() {	// ----------- right panel (of top panel) -------------
+		if (propertiesPanel == null) {
+			try {
+				propertiesPanel = new JPanel();
+				Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+				TitledBorder titleRight = BorderFactory.createTitledBorder(loweredEtchedBorder, " Properties and Actions ");
+				titleRight.setTitleJustification(TitledBorder.LEFT);
+				titleRight.setTitlePosition(TitledBorder.TOP);
+				propertiesPanel.setBorder(titleRight);
+				
+				propertiesPanel.setLayout(new GridBagLayout());
+				int gridy = 0;
+				GridBagConstraints gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.weightx = 0;
+				gbc.weighty = 0;
+				gbc.anchor = GridBagConstraints.WEST;
+				gbc.insets = new Insets(4,4,4,4);
+				propertiesPanel.add(new JLabel("Message"), gbc);
+
+				details = new JTextPane();
+				details.setContentType("text/html");
+				details.setEditable(false);
+				JScrollPane scrl = new JScrollPane(details);
+				
+				gbc = new GridBagConstraints();
+				gbc.gridx = 2;
+				gbc.gridy = gridy;
+				gbc.weightx = 1.0;
+				gbc.weighty = 1.0;
+				gbc.gridwidth = 4;
+				gbc.gridheight = 3;		// 3 rows high
+				gbc.anchor = GridBagConstraints.EAST;
+				gbc.fill = java.awt.GridBagConstraints.BOTH;
+				gbc.insets = new Insets(4,4,4,4);
+				propertiesPanel.add(scrl, gbc);
+				
+//				GridBagConstraints gbc = new GridBagConstraints();
+//				gbc.weighty = 1.0;
+//				gbc.gridx = 0;
+//				gbc.gridy = gridy;
+//				gbc.anchor = GridBagConstraints.WEST;
+//				gbc.fill = java.awt.GridBagConstraints.VERTICAL;
+//				propertiesPanel.add(new JLabel("-"), gbc);			// fake vertical
+//
+//				gbc = new GridBagConstraints();
+//				gbc.weightx = 1.0;
+//				gbc.gridx = 1;
+//				gbc.gridy = gridy;
+//				gbc.anchor = GridBagConstraints.EAST;
+//				gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//				gbc.insets = new Insets(4,4,4,4);
+//				propertiesPanel.add(new JLabel("-"), gbc);			// fake horizontal
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return propertiesPanel;
+	}
+	
+	private javax.swing.JPanel getSubmitDatePanel() {
+		if (submitDatePanel == null) {
+			try {
+				Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+				TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " Time interval selector ");
+				titleTop.setTitleJustification(TitledBorder.LEFT);
+				titleTop.setTitlePosition(TitledBorder.TOP);
+
+				submitDatePanel = new javax.swing.JPanel();
+				submitDatePanel.setName("QuerySubmitDatePanel");
+				submitDatePanel.setBorder(titleTop);
+				
+				submitDatePanel.setLayout(new GridBagLayout());
+				int gridy = 0;
+				GridBagConstraints gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.weightx = 1;
+				gbc.weighty = 1;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(1, 2, 0, 0);	//  top, left, bottom, right 
+				submitDatePanel.add(getAnyTimeRadio(), gbc);
+
+				gridy++;
+				gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.weightx = 1;
+				gbc.weighty = 1;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(0, 2, 0, 0);
+				submitDatePanel.add(getPastDayRadio(), gbc);
+
+				gridy++;
+				gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.weightx = 1;
+				gbc.weighty = 1;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(0, 2, 0, 0);
+				submitDatePanel.add(getPastMonthRadio(), gbc);
+
+				gridy++;
+				gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.weightx = 1;
+				gbc.weighty = 1;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(0, 2, 1, 0);
+				submitDatePanel.add(getPastYearRadio(), gbc);
+
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return submitDatePanel;
+	}
 	
 	public ViewJobsPanel(DocumentWindowManager dwm) {
 		super();
 		this.dwm = dwm;
 		initialize();
-	}
-	
-	private void handleException(java.lang.Throwable exception) {
-		 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-		 exception.printStackTrace(System.out);
 	}
 	
 	private void initialize() {
@@ -506,12 +554,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			left.setBorder(titleLeft);
 
 			JPanel center = new SeparatedJPanel();
-			JPanel right = new JPanel();			// statistics
-			TitledBorder titleRight = BorderFactory.createTitledBorder(loweredEtchedBorder, " Statistics and Actions ");
-			titleRight.setTitleJustification(TitledBorder.LEFT);
-			titleRight.setTitlePosition(TitledBorder.TOP);
-			right.setBorder(titleRight);
-			
+
 			top.setLayout(new GridBagLayout());
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -562,7 +605,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.anchor = GridBagConstraints.NORTHEAST;
 			gbc.fill = GridBagConstraints.BOTH;
 			gbc.insets = new Insets(2, 2, 2, 3);
-			top.add(right, gbc);
+			top.add(getPropertiesPanel(), gbc);
 			
 			// ------------------------------------ left panel (of top panel) -------------
 			left.setLayout(new GridBagLayout());
@@ -725,34 +768,6 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.insets = new Insets(4,11,2,4);
 			center.add(getSubmitDatePanel(), gbc);
 			
-			// ---------------------------------------- right panel (of top panel) -------------
-			right.setLayout(new GridBagLayout());
-			gbc = new GridBagConstraints();
-			gbc.weighty = 1.0;
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.anchor = GridBagConstraints.WEST;
-			gbc.fill = java.awt.GridBagConstraints.VERTICAL;
-			right.add(new JLabel("-"), gbc);			// fake vertical
-
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 1;
-			gbc.weightx = 0;
-			gbc.weighty = 0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(4, 12, 4, 8);
-			right.add(new JLabel("Placeholder for statistics data"), gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.weightx = 1.0;
-			gbc.gridx = 1;
-			gbc.gridy = 1;
-			gbc.anchor = GridBagConstraints.EAST;
-			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(4,4,4,4);
-			right.add(new JLabel("-"), gbc);			// fake horizontal
-
 			getCompletedButton().setSelected(false);
 			getDispatchedButton().setSelected(true);
 			getFailedButton().setSelected(true);
@@ -762,9 +777,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			getWaitingButton().setSelected(true);
 			
 			getOrphanedButton().setSelected(false);
-//			getAnyTimeRadio().setSelected(true);
 			getPastMonthRadio().setSelected(true);
-//			getSubmitBetweenButton().setSelected(false);
 			
 			// ----------------------------------------- bottom panel (the table) -------------------
 			table = new EditorScrollTable();
@@ -950,6 +963,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			@Override
 			public void cancelButton_actionPerformed(EventObject newEvent) {
 				try {
+					getRefreshAllButton().setEnabled(true);
 					System.out.println("...user cancelled.");
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -971,6 +985,10 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		model.setSearchText(searchText);
 	}
 	
+	private void handleException(java.lang.Throwable exception) {
+		 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
+		 exception.printStackTrace(System.out);
+	}
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
