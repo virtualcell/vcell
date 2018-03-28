@@ -7,7 +7,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
-import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -21,11 +20,11 @@ import cbit.vcell.resource.ResourceUtil;
 /**
  * Exercises the {@link SimulationServiceImpl}.
  */
-@Ignore
+//@Ignore
 public class SimulationServiceImplTest {
 
 	@Test
-	public void test() throws URISyntaxException, ThriftDataAccessException, TException {
+	public void test() throws URISyntaxException, Exception {
 		SimulationServiceImpl simService = new SimulationServiceImpl();
 		// TODO - Eliminate code duplication.
 		URL sbmlFileUrl = SimulationServiceImplTest.class.getResource("../../sbml/optoPlexin_PRG_rule_based.xml");
@@ -40,24 +39,25 @@ public class SimulationServiceImplTest {
 
 		file = new File("src/test/resources/org/vcell/sbml/optoPlexin_PRG_rule_based.xml");
 		Assert.assertTrue(file.exists());
-		
-		SBMLModel sbmlModel = new SBMLModel(file.getAbsolutePath());
-		
+
+		SBMLModel sbmlModel = new SBMLModel(file);
+
 		SimulationSpec simSpec = new SimulationSpec();
 		SimulationInfo simInfo = simService.computeModel(sbmlModel, simSpec);
-		
+
 		long timeMS = System.currentTimeMillis();
-		while (simService.getStatus(simInfo).simState==SimulationState.running){
+		while (simService.getStatus(simInfo).getSimState() != SimulationState.done
+				&& simService.getStatus(simInfo).getSimState() != SimulationState.failed) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 			}
 			long time2MS = System.currentTimeMillis();
-			if (time2MS-timeMS>10000){
+			if (time2MS - timeMS > 10000) {
 				fail("timed out after 10 seconds");
 			}
 		}
-		
+
 		List<VariableInfo> vars = simService.getVariableList(simInfo);
 		Assert.assertNotNull(vars);
 		// TODO - Assert more things.
@@ -66,9 +66,8 @@ public class SimulationServiceImplTest {
 		vars.stream().forEach(var -> {
 			try {
 				System.out.println(var.getVariableDisplayName() + "[0] = " + //
-					simService.getData(simInfo, var, 0));
-			}
-			catch (Exception exc) {
+				simService.getData(simInfo, var, 0));
+			} catch (Exception exc) {
 				exc.printStackTrace();
 			}
 		});

@@ -330,7 +330,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	
 	private JButton roiButton = null;
 	private JPopupMenu roiPopupMenu = null;
-	private JButton imagejButton;
+	//private JButton imagejButton;
 	private JPopupMenu imagejPopupMenu = null;
 
 	private JMenuItem statisticsMenuItem;
@@ -361,8 +361,8 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					getPlotPopupMenu().show(getPlotButton(), 0, getPlotButton().getHeight());
 				} else if (e.getSource() == getROIButton()) {
 					getROIPopupMenu().show(getROIButton(), 0, getROIButton().getHeight());
-				} else if (e.getSource() == getImagejButton()) {
-					getImagejPopupMenu().show(getImagejButton(), 0, getImagejButton().getHeight());
+//				} else if (e.getSource() == getImagejButton()) {
+//					getImagejPopupMenu().show(getImagejButton(), 0, getImagejButton().getHeight());
 				} else if (e.getSource() == spatialPlotMenuItem) { 
 					connEtoC2(e);
 				} else if (e.getSource() == timePlotMenuItem) { 
@@ -477,7 +477,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					}
 					
 					if (getPdeDataContext() != null) {
-						getImagejButton().setEnabled(true);
+//						getImagejButton().setEnabled(true);
 						getSendDomainImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
 						getSendTimePointImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
 						getsendTimeSeriesImageMenuItem().setEnabled(getPdeDataContext().getDataIdentifier().getVariableType().getType() == VariableType.VOLUME.getType());
@@ -493,7 +493,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 							localSimLogFilePathTextField.setText(localSimLogFilePath);
 						}
 					}else{
-						getImagejButton().setEnabled(false);
+//						getImagejButton().setEnabled(false);
 					}
 					if(!(evt.getNewValue() instanceof PostProcessDataPDEDataContext)) {
 						updateMetadata();
@@ -1597,7 +1597,7 @@ private javax.swing.JPanel getJPanelButtons() {
 			ivjJPanelButtons.setName("JPanelButtons");
 			ivjJPanelButtons.add(getPlotButton());
 			ivjJPanelButtons.add(getROIButton());
-			ivjJPanelButtons.add(getImagejButton());
+//			ivjJPanelButtons.add(getImagejButton());
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
@@ -1709,19 +1709,19 @@ private javax.swing.JPopupMenu getROIPopupMenu() {
 	return roiPopupMenu;
 }
 
-private JButton getImagejButton() {
-	if (imagejButton == null) {
-		try {
-			imagejButton = new JButton("ImageJ");
-			imagejButton.setHorizontalTextPosition(SwingConstants.LEFT);
-			imagejButton.setIcon(new DownArrowIcon());
-			imagejButton.addActionListener(ivjEventHandler);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return imagejButton;
-}
+//private JButton getImagejButton() {
+//	if (imagejButton == null) {
+//		try {
+//			imagejButton = new JButton("ImageJ");
+//			imagejButton.setHorizontalTextPosition(SwingConstants.LEFT);
+//			imagejButton.setIcon(new DownArrowIcon());
+//			imagejButton.addActionListener(ivjEventHandler);
+//		} catch (java.lang.Throwable ivjExc) {
+//			handleException(ivjExc);
+//		}
+//	}
+//	return imagejButton;
+//}
 private JMenuItem sendDomainImageMenuItem;
 private JMenuItem getSendDomainImageMenuItem(){
 	if(sendDomainImageMenuItem == null){
