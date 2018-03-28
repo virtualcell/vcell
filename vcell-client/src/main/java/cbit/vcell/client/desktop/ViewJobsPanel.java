@@ -15,17 +15,21 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.EventObject;
+import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -93,10 +97,15 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	
 	private JCheckBox orphanedButton = null;
 
-	private JCheckBox submitBetweenButton = null;
-	private DatePanel fromDate = null;
-	private DatePanel toDate = null;
+//	private JCheckBox submitBetweenButton = null;
+//	private DatePanel fromDate = null;
+//	private DatePanel toDate = null;
 	private JPanel submitDatePanel = null;
+	private ButtonGroup timeGroup = null;
+	private JRadioButton anyTimeRadio = null;
+	private JRadioButton pastDayRadio = null;
+	private JRadioButton pastMonthRadio = null;
+	private JRadioButton pastYearRadio = null;
 	
 	private Icon waitingIcon = new ColorIcon(11,11, Color.lightGray, true);
 	private Icon queuedIcon = new ColorIcon(11,11, Color.yellow.darker(), true);
@@ -109,7 +118,6 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	
 	private Icon dataYesIcon = new ColorIcon(7,7, Color.green.brighter(), true);
 	private Icon dataNoIcon = new ColorIcon(7,7, Color.lightGray, true);
-
 
 	private JCheckBox getWaitingButton() {
 		if(waitingButton == null) {
@@ -168,107 +176,133 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		}
 		return orphanedButton;
 	}
-	public JCheckBox getSubmitBetweenButton() {
-		if(submitBetweenButton == null) {
-			submitBetweenButton = new JCheckBox("Submitted Between");
-			submitBetweenButton.setToolTipText("Show only the Jobs submitted in this interval.");
-			submitBetweenButton.addActionListener(eventHandler);
+//	public JCheckBox getSubmitBetweenButton() {
+//		if(submitBetweenButton == null) {
+//			submitBetweenButton = new JCheckBox("Submitted Between");
+//			submitBetweenButton.setToolTipText("Show only the Jobs submitted in this interval.");
+//			submitBetweenButton.addActionListener(eventHandler);
+//		}
+//		return submitBetweenButton;
+//	}
+//	private DatePanel getSubmitToDate() {
+//		if (toDate == null) {
+//			try {
+//				toDate = new DatePanel();
+//				toDate.setName("ToDate");
+//				toDate.setLayout(new FlowLayout());
+//				toDate.setEnabled(true);
+//			} catch (java.lang.Throwable ivjExc) {
+//				handleException(ivjExc);
+//			}
+//		}
+//		return toDate;
+//	}
+//	private DatePanel getSubmitFromDate() {
+//		if (fromDate == null) {
+//			try {
+//				fromDate = new DatePanel();
+//				fromDate.setName("FromDate");
+//				fromDate.setLayout(new FlowLayout());
+//				fromDate.setEnabled(true);
+//			} catch (java.lang.Throwable ivjExc) {
+//				handleException(ivjExc);
+//			}
+//		}
+//		return fromDate;
+//	}
+	private JRadioButton getAnyTimeRadio() {
+		if(anyTimeRadio == null) {
+			anyTimeRadio = new JRadioButton("Any Time");
+			anyTimeRadio.addActionListener(eventHandler);
 		}
-		return submitBetweenButton;
+		return anyTimeRadio;
 	}
-	private DatePanel getSubmitToDate() {
-		if (toDate == null) {
-			try {
-				toDate = new DatePanel();
-				toDate.setName("ToDate");
-				toDate.setLayout(new FlowLayout());
-				toDate.setEnabled(true);
-			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
-			}
+	private JRadioButton getPastDayRadio() {
+		if(pastDayRadio == null) {
+			pastDayRadio = new JRadioButton("Past 24 hours");
+			pastDayRadio.addActionListener(eventHandler);
 		}
-		return toDate;
+		return pastDayRadio;
 	}
-	private DatePanel getSubmitFromDate() {
-		if (fromDate == null) {
-			try {
-				fromDate = new DatePanel();
-				fromDate.setName("FromDate");
-				fromDate.setLayout(new FlowLayout());
-				fromDate.setEnabled(true);
-			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
-			}
+	private JRadioButton getPastMonthRadio() {
+		if(pastMonthRadio == null) {
+			pastMonthRadio = new JRadioButton("Past month");
+			pastMonthRadio.addActionListener(eventHandler);
 		}
-		return fromDate;
+		return pastMonthRadio;
 	}
+	private JRadioButton getPastYearRadio() {
+		if(pastYearRadio == null) {
+			pastYearRadio = new JRadioButton("Past year");
+			pastYearRadio.addActionListener(eventHandler);
+		}
+		return pastYearRadio;
+	}
+	private ButtonGroup getTimeGroup() {
+		if(timeGroup == null) {
+			timeGroup = new ButtonGroup();
+			timeGroup.add(getAnyTimeRadio());
+			timeGroup.add(getPastDayRadio());
+			timeGroup.add(getPastMonthRadio());
+			timeGroup.add(getPastYearRadio());
+		}
+		return timeGroup;
+	}
+
 	private javax.swing.JPanel getSubmitDatePanel() {
 		if (submitDatePanel == null) {
 			try {
+				Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+				TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " Time interval selector ");
+				titleTop.setTitleJustification(TitledBorder.LEFT);
+				titleTop.setTitlePosition(TitledBorder.TOP);
+
 				submitDatePanel = new javax.swing.JPanel();
 				submitDatePanel.setName("QuerySubmitDatePanel");
-				submitDatePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder()));
+				submitDatePanel.setBorder(titleTop);
 				
 				submitDatePanel.setLayout(new GridBagLayout());
 				int gridy = 0;
 				GridBagConstraints gbc = new GridBagConstraints();
 				gbc.gridx = 0;
 				gbc.gridy = gridy;
-				gbc.weightx = 0;
-				gbc.weighty = 0;
-				gbc.gridwidth = 2;
+				gbc.weightx = 1;
+				gbc.weighty = 1;
 				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
-				submitDatePanel.add(getSubmitBetweenButton(), gbc);
-
-				gbc = new GridBagConstraints();
-				gbc.gridx = 2;
-				gbc.gridy = gridy;
-				gbc.weightx = 1.0;
-				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(5, 2, 2, 3);
-				submitDatePanel.add(new JLabel(""), gbc);
+				gbc.insets = new Insets(1, 2, 0, 0);	//  top, left, bottom, right 
+				submitDatePanel.add(getAnyTimeRadio(), gbc);
 
 				gridy++;
 				gbc = new GridBagConstraints();
 				gbc.gridx = 0;
 				gbc.gridy = gridy;
-				gbc.weightx = 0;
-				gbc.weighty = 0;
+				gbc.weightx = 1;
+				gbc.weighty = 1;
 				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(5, 40, 2, 3);
-				submitDatePanel.add(new JLabel("From Date: "), gbc);
-
-				gbc = new GridBagConstraints();
-				gbc.gridx = 1;
-				gbc.gridy = gridy;
-				gbc.weightx = 0;
-				gbc.weighty = 0;
-				gbc.gridwidth = 2;
-				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(5, 2, 2, 3);
-				submitDatePanel.add(getSubmitFromDate(), gbc);
+				gbc.insets = new Insets(0, 2, 0, 0);
+				submitDatePanel.add(getPastDayRadio(), gbc);
 
 				gridy++;
 				gbc = new GridBagConstraints();
 				gbc.gridx = 0;
 				gbc.gridy = gridy;
-				gbc.weightx = 0;
-				gbc.weighty = 0;
+				gbc.weightx = 1;
+				gbc.weighty = 1;
 				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(5, 40, 2, 3);
-				submitDatePanel.add(new JLabel("To Date: "), gbc);
+				gbc.insets = new Insets(0, 2, 0, 0);
+				submitDatePanel.add(getPastMonthRadio(), gbc);
 
+				gridy++;
 				gbc = new GridBagConstraints();
-				gbc.gridx = 1;
+				gbc.gridx = 0;
 				gbc.gridy = gridy;
-				gbc.weightx = 0;
-				gbc.weighty = 0;
-				gbc.gridwidth = 2;
+				gbc.weightx = 1;
+				gbc.weighty = 1;
 				gbc.fill = GridBagConstraints.HORIZONTAL;
-				gbc.insets = new Insets(5, 2, 2, 3);
-				submitDatePanel.add(getSubmitToDate(), gbc);
-		} catch (java.lang.Throwable ivjExc) {
+				gbc.insets = new Insets(0, 2, 1, 0);
+				submitDatePanel.add(getPastYearRadio(), gbc);
+
+			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
@@ -291,14 +325,6 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				if(!isInt || rows<=0) {
 					DialogUtils.showErrorDialog(ViewJobsPanel.this, "Number of results must be a positive integer.");
 					return;
-				}
-				if(getSubmitBetweenButton().isSelected()) {
-					long low = getSubmitFromDate().getDate().getTime();								// first second of day low time
-					long high = getSubmitToDate().getDate().getTime()+TimeUnit.DAYS.toMillis(1)-1;	// last second of day high time
-					if(low > high) {
-						DialogUtils.showErrorDialog(ViewJobsPanel.this, "Invalid interval, 'From Date' must be smaller than 'To Date' or equal.");
-						return;
-					}
 				}
 				maxRows = rows;
 				refreshInterface();
@@ -360,10 +386,25 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			ssqs.running = getRunningButton().isSelected();
 			ssqs.stopped = getStoppedButton().isSelected();
 			ssqs.waiting = getWaitingButton().isSelected();
-			if(getSubmitBetweenButton().isSelected()) {
-				ssqs.submitLowMS = getSubmitFromDate().getDate().getTime();								// first second of day low time
-				ssqs.submitHighMS = getSubmitToDate().getDate().getTime()+TimeUnit.DAYS.toMillis(1)-1;	// last second of day high time
-			}		// else default is null, bring everything
+			
+			Calendar cal = new GregorianCalendar();
+			long now = cal.getTimeInMillis();
+			long day = 24 * 60 * 60 * 1000;
+			// if the "Any Time" button is selected, do nothing
+			if(getPastDayRadio().isSelected()) {
+				ssqs.submitLowMS = now - day;
+				ssqs.submitHighMS = now;
+//				Date date = new Date(ssqs.submitLowMS);
+//				System.out.println(date.toString());
+			} else if(getPastMonthRadio().isSelected()) {
+				long month = day * 30;
+				ssqs.submitLowMS = now - month;
+				ssqs.submitHighMS = now;
+			} else if(getPastYearRadio().isSelected()) {
+				long year = day * 365;
+				ssqs.submitLowMS = now - year;
+				ssqs.submitHighMS = now;
+			}
 			
 			SimpleJobStatus[] sjs = null;
 			try {
@@ -415,11 +456,13 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 		 exception.printStackTrace(System.out);
 	}
+	
 	private void initialize() {
 		try {
 			setName("ViewSimulationJobsPanel");
 			
 			getRefreshAllButton().addActionListener(eventHandler);
+			getTimeGroup();		// initialize the time button group and its components
 			
 			// ----------------------------------------------------------------------------------
 			JPanel top = new JPanel();		// filters, buttons
@@ -427,7 +470,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			
 			Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 			Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
-			TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " Query Filters ");
+			TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " User Options ");
 			titleTop.setTitleJustification(TitledBorder.LEFT);
 			titleTop.setTitlePosition(TitledBorder.TOP);
 			TitledBorder titleBottom = BorderFactory.createTitledBorder(loweredEtchedBorder, " Query Results ");
@@ -444,7 +487,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
+			gbc.insets = new Insets(2, 2, 2, 3);	//  top, left, bottom, right 
 			add(top, gbc);
 			
 			gbc = new GridBagConstraints();
@@ -457,8 +500,17 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			add(bottom, gbc);
 			// --------------------------------------- top panel (filters, button) --------------
 			JPanel left = new JPanel();		// filters
+			TitledBorder titleLeft = BorderFactory.createTitledBorder(loweredEtchedBorder, " Status Filter ");
+			titleLeft.setTitleJustification(TitledBorder.LEFT);
+			titleLeft.setTitlePosition(TitledBorder.TOP);
+			left.setBorder(titleLeft);
+
 			JPanel center = new SeparatedJPanel();
-			JPanel right = new SeparatedJPanel();	// buttons
+			JPanel right = new JPanel();			// statistics
+			TitledBorder titleRight = BorderFactory.createTitledBorder(loweredEtchedBorder, " Statistics and Actions ");
+			titleRight.setTitleJustification(TitledBorder.LEFT);
+			titleRight.setTitlePosition(TitledBorder.TOP);
+			right.setBorder(titleRight);
 			
 			top.setLayout(new GridBagLayout());
 			gbc = new GridBagConstraints();
@@ -466,149 +518,179 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.gridy = 0;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
+			gbc.gridwidth = 2;
+			gbc.anchor = GridBagConstraints.NORTHWEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 2, 2, 3);
+			gbc.insets = new Insets(5, 2, 1, 3);
 			top.add(left, gbc);
 			
 			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.weightx = 0;
+			gbc.weighty = 0;
+			gbc.anchor = GridBagConstraints.NORTHWEST;
+			gbc.insets = new Insets(3, 8, 2, 3);
+			top.add(getOrphanedButton(), gbc);
+
+			gbc = new GridBagConstraints();
 			gbc.gridx = 1;
+			gbc.gridy = 1;
+			gbc.weightx = 0;
+			gbc.weighty = 0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(4, 8, 2, 3);
+			top.add(getRefreshAllButton(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
 			gbc.gridy = 0;
-			gbc.weightx = 1.0;
-			gbc.weighty = 1.0;
+			gbc.weightx = 0;
+			gbc.weighty = 0;
+			gbc.gridheight = 2;
+			gbc.anchor = GridBagConstraints.NORTH;
 			gbc.fill = GridBagConstraints.BOTH;
 			gbc.insets = new Insets(5, 2, 2, 3);
 			top.add(center, gbc);
 			
 			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
+			gbc.gridx = 3;
 			gbc.gridy = 0;
-			gbc.weightx = 0.0;
-			gbc.weighty = 0.0;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.gridheight = 2;
+			gbc.anchor = GridBagConstraints.NORTHEAST;
 			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(5, 2, 2, 3);
+			gbc.insets = new Insets(2, 2, 2, 3);
 			top.add(right, gbc);
 			
 			// ------------------------------------ left panel (of top panel) -------------
 			left.setLayout(new GridBagLayout());
+			int gridy = 0;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
-			gbc.gridy = 0;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 2, 2, 0);
+			gbc.insets = new Insets(1, 2, 0, 0);
 			left.add(getWaitingButton(), gbc);
 
 			gbc.gridx = 1;
-			gbc.gridy = 0;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 3);
+			gbc.insets = new Insets(1, 0, 0, 3);
 			JLabel label = new JLabel(waitingIcon);
 			left.add(label, gbc);
 
 			gbc.gridx = 2;
-			gbc.gridy = 0;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 15, 2, 0);
+			gbc.insets = new Insets(1, 15, 0, 0);
 			left.add(getQueuedButton(), gbc);
 			
 			gbc.gridx = 3;
-			gbc.gridy = 0;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 10);
+			gbc.insets = new Insets(1, 0, 0, 10);
 			label = new JLabel(queuedIcon);
 			left.add(label, gbc);
 //-------------------------------------
+			gridy++;
 			gbc.gridx = 0;
-			gbc.gridy = 1;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 2, 2, 0);
+			gbc.insets = new Insets(0, 2, 0, 0);
 			left.add(getDispatchedButton(), gbc);
 			
 			gbc.gridx = 1;
-			gbc.gridy = 1;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 3);
+			gbc.insets = new Insets(0, 0, 0, 3);
 			label = new JLabel(dispatchedIcon);
 			left.add(label, gbc);
 
 			gbc.gridx = 2;
-			gbc.gridy = 1;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 15, 2, 0);
+			gbc.insets = new Insets(0, 15, 0, 0);
 			left.add(getRunningButton(), gbc);
 			
 			gbc.gridx = 3;
-			gbc.gridy = 1;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 10);
+			gbc.insets = new Insets(0, 0, 0, 10);
 			label = new JLabel(runningIcon);
 			left.add(label, gbc);
 //-------------------------------------
+			gridy++;
 			gbc.gridx = 0;
-			gbc.gridy = 2;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 2, 2, 0);
+			gbc.insets = new Insets(0, 2, 0, 0);
 			left.add(getCompletedButton(), gbc);
 			
 			gbc.gridx = 1;
-			gbc.gridy = 2;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 3);
+			gbc.insets = new Insets(0, 0, 0, 3);
 			label = new JLabel(completedIcon);
 			left.add(label, gbc);
 
 			gbc.gridx = 2;
-			gbc.gridy = 2;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 15, 2, 3);
+			gbc.insets = new Insets(0, 15, 0, 3);
 			left.add(getFailedButton(), gbc);
 			
 			gbc.gridx = 3;
-			gbc.gridy = 2;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 10);
+			gbc.insets = new Insets(0, 0, 0, 10);
 			label = new JLabel(failedIcon);
 			left.add(label, gbc);
+			
 //-------------------------------------
+			gridy++;
 			gbc.gridx = 0;
-			gbc.gridy = 3;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 2, 2, 0);
+			gbc.insets = new Insets(0, 2, 0, 0);
 			left.add(getStoppedButton(), gbc);
 			
 			gbc.gridx = 1;
-			gbc.gridy = 3;
+			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 0, 2, 3);
+			gbc.insets = new Insets(0, 0, 0, 3);
 			label = new JLabel(stoppedIcon);
 			left.add(label, gbc);
+
 			// ---------------------------------------- center panel (of top panel) ------------
 			center.setLayout(new GridBagLayout());
 			gbc = new GridBagConstraints();
@@ -635,41 +717,13 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			center.add(textFieldJobsLimit, gbc);
 
 			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = 0;
-			gbc.weightx = 0;
-			gbc.weighty = 0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5, 15, 2, 3);
-			center.add(getOrphanedButton(), gbc);
-
-//			gbc = new GridBagConstraints();
-//			gbc.weighty = 1.0;
-//			gbc.gridx = 0;
-//			gbc.gridy = 2;
-////			gbc.gridheight = GridBagConstraints.REMAINDER;
-//			gbc.anchor = GridBagConstraints.WEST;
-//			gbc.fill = java.awt.GridBagConstraints.VERTICAL;
-//			gbc.insets = new Insets(4,4,4,4);
-//			center.add(new JLabel("---"), gbc);			// fake vertical
-			
-			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = 2;
-			gbc.gridwidth = 3;
+			gbc.gridwidth = 2;
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = java.awt.GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,11,4,4);
+			gbc.insets = new Insets(4,11,2,4);
 			center.add(getSubmitDatePanel(), gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.weightx = 1.0;
-			gbc.gridx = 3;
-			gbc.gridy = 2;
-			gbc.anchor = GridBagConstraints.EAST;
-			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(4,4,4,4);
-			center.add(new JLabel("-"), gbc);			// fake horizontal
 			
 			// ---------------------------------------- right panel (of top panel) -------------
 			right.setLayout(new GridBagLayout());
@@ -679,7 +733,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.gridy = 0;
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = java.awt.GridBagConstraints.VERTICAL;
-			right.add(new JLabel(""), gbc);			// fake vertical
+			right.add(new JLabel("-"), gbc);			// fake vertical
 
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -688,8 +742,16 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(4, 12, 4, 8);
-			right.add(getRefreshAllButton(), gbc);
+			right.add(new JLabel("Placeholder for statistics data"), gbc);
 			
+			gbc = new GridBagConstraints();
+			gbc.weightx = 1.0;
+			gbc.gridx = 1;
+			gbc.gridy = 1;
+			gbc.anchor = GridBagConstraints.EAST;
+			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(4,4,4,4);
+			right.add(new JLabel("-"), gbc);			// fake horizontal
 
 			getCompletedButton().setSelected(false);
 			getDispatchedButton().setSelected(true);
@@ -700,7 +762,9 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			getWaitingButton().setSelected(true);
 			
 			getOrphanedButton().setSelected(false);
-			getSubmitBetweenButton().setSelected(false);
+//			getAnyTimeRadio().setSelected(true);
+			getPastMonthRadio().setSelected(true);
+//			getSubmitBetweenButton().setSelected(false);
 			
 			// ----------------------------------------- bottom panel (the table) -------------------
 			table = new EditorScrollTable();
@@ -718,7 +782,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			});
 
 			bottom.setLayout(new GridBagLayout());
-			int gridy = 0;
+			gridy = 0;
 			gbc = new java.awt.GridBagConstraints();		
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
