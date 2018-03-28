@@ -9,15 +9,6 @@ import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
-import net.imagej.Dataset;
-import net.imagej.DatasetService;
-import net.imagej.ops.OpService;
-import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.Img;
-import net.imglib2.type.numeric.real.DoubleType;
-
-import org.apache.thrift.TException;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLWriter;
 import org.sbml.jsbml.Species;
@@ -33,8 +24,16 @@ import org.vcell.vcellij.api.SBMLModel;
 import org.vcell.vcellij.api.SimulationInfo;
 import org.vcell.vcellij.api.SimulationSpec;
 import org.vcell.vcellij.api.SimulationState;
-import org.vcell.vcellij.api.ThriftDataAccessException;
 import org.vcell.vcellij.api.VariableInfo;
+
+import cbit.vcell.client.pyvcellproxy.ThriftDataAccessException;
+import net.imagej.Dataset;
+import net.imagej.DatasetService;
+import net.imagej.ops.OpService;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.real.DoubleType;
 
 /**
  * Created by kevingaffney on 7/10/17.
@@ -88,12 +87,12 @@ public class VCellService extends AbstractService {
 		final String vcml, final String applicationName)
 		throws ThriftDataAccessException, XMLStreamException, IOException
 	{
-		final String sbml;
+		String sbml;
 		try {
 			sbml = client.getSBML(vcml, applicationName);
-		}
-		catch (final TException e) {
-			throw new IOException(e);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage(),e);
 		}
 		final SBMLReader reader = new SBMLReader();
 		final SBMLDocument document = reader.readSBMLFromString(sbml);
@@ -120,8 +119,7 @@ public class VCellService extends AbstractService {
 					final File sbmlSpatialFile = new File(vCellModel.getName() + ".xml");
 					new SBMLWriter().write(vCellModel.getSbmlDocument(), sbmlSpatialFile);
 
-					final SBMLModel model = new SBMLModel();
-					model.setFilepath(sbmlSpatialFile.getAbsolutePath());
+					final SBMLModel model = new SBMLModel(sbmlSpatialFile);
 					final SimulationInfo simulationInfo = client.computeModel(model,
 						simSpec);
 					try {
