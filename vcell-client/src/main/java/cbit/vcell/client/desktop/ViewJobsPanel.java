@@ -908,8 +908,11 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 						if(selectedObject != null && selectedObject instanceof SimpleJobStatus) {
 							SimpleJobStatus sjs = (SimpleJobStatus)selectedObject;
 							DateFormat df = new SimpleDateFormat("MM.dd.yyyy HH:MM:SS");
-							Date date = sjs.jobStatus.getStartDate();
-							String str = df.format(date);
+							Date date = sjs.jobStatus.getSubmitDate();
+							String str = "";
+							if(date != null) {
+								str = df.format(date);
+							}
 							setToolTipText(str);
 						}
 					}

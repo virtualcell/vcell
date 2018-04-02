@@ -115,8 +115,12 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 			return str;
 		case iColSubmitDate:
 			DateFormat df = new SimpleDateFormat("MM.dd.yyyy");
-			Date date = sjs.jobStatus.getStartDate();
-			return df.format(date);
+			//Date date = sjs.jobStatus.getStartDate();
+			Date date = sjs.jobStatus.getSubmitDate();
+			if(date != null) {
+				return df.format(date);
+			}
+			return null;
 		case iColHasData:
 			return sjs.jobStatus.hasData() == true ? "Yes" : "No";
 		case iColStatus:
@@ -177,8 +181,8 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 					if(!s1.equalsIgnoreCase(s2)) {
 						return scale * s1.compareToIgnoreCase(s2);
 					} else {	// if same simulation, sort by date
-						Date d1 = o1.jobStatus.getStartDate();
-						Date d2 = o2.jobStatus.getStartDate();
+						Date d1 = o1.jobStatus.getSubmitDate();
+						Date d2 = o2.jobStatus.getSubmitDate();
 						return scale * d1.compareTo(d2);
 					}
 				case iColSimId:
