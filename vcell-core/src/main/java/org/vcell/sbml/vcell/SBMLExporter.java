@@ -721,12 +721,16 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 		for (ReactionParticipant rxnParticpant:rxnParticipants) { 
 			SimpleSpeciesReference ssr = null;
 			SpeciesReference sr = null;
+			String rolePostfix = "";	// to get unique ID when the same species is both a reactant and a product
 			if (rxnParticpant instanceof cbit.vcell.model.Reactant) {
+				rolePostfix = "r";
 				ssr = sr = sbmlReaction.createReactant();
 			} else if (rxnParticpant instanceof cbit.vcell.model.Product) {
+				rolePostfix = "p";
 				ssr = sr  = sbmlReaction.createProduct();
 			} 
 			if (rxnParticpant instanceof cbit.vcell.model.Catalyst) {
+				rolePostfix = "c";
 				ssr = sbmlReaction.createModifier();
 			}
 			if (ssr != null) {
@@ -734,7 +738,7 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 			}
 			if (sr != null) {
 				sr.setStoichiometry(Double.parseDouble(Integer.toString(rxnParticpant.getStoichiometry())));
-				String modelUniqueName = vcReactionStep.getName() + '_'  + rxnParticpant.getName();
+				String modelUniqueName = vcReactionStep.getName() + '_'  + rxnParticpant.getName() + rolePostfix;
 				sr.setId(TokenMangler.mangleToSName(modelUniqueName));
 				sr.setConstant(true); //SBML-REVIEW
 				//int rcode = sr.appendNotes("<
