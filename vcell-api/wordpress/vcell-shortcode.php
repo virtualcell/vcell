@@ -178,27 +178,27 @@ function vcell_insert_publication_post($publication){
 }
 
 function &vcell_get_biomodel_object($bmKey) {
-	$json = file_get_contents("https://vcellapi.cam.uchc.edu:8080/biomodel/" . $bmKey);
+	$json = file_get_contents("https://vcellapi.cam.uchc.edu/biomodel/" . $bmKey);
 	$biomodel = json_decode($json);
 	return $biomodel;
 }
 
 function &vcell_get_biomodel_vcml_object($bmKey){
-	$vcmlString = file_get_contents("https://vcellapi.cam.uchc.edu:8080/biomodel/" . $bmKey . '/biomodel.vcml');
+	$vcmlString = file_get_contents("https://vcellapi.cam.uchc.edu/biomodel/" . $bmKey . '/biomodel.vcml');
     vcell_log_me("bmKey is " . $bmKey . ", vcmlString is '" . $vcmlString . "'");
     $biomodel_vcml = new SimpleXMLElement($vcmlString) or die('unable to retrieve vcml');
 	return $biomodel_vcml;
 }
 
 function &vcell_get_publication_object($pubKey) {
-	$json = file_get_contents("https://vcellapi.cam.uchc.edu:8080/publication/" . $pubKey);
+	$json = file_get_contents("https://vcellapi.cam.uchc.edu/publication/" . $pubKey);
 	$publication = json_decode($json);
 	return $publication;
 }
 
 function &vcell_get_publications_object() {
 vcell_log_me('calling vcellapi for publications');
-	$json = file_get_contents("https://vcellapi.cam.uchc.edu:8080/publication");
+	$json = file_get_contents("https://vcellapi.cam.uchc.edu/publication");
 vcell_log_me('vcellapi publications json = ' . $json );
 	$publications = json_decode($json);
 	return $publications;
@@ -301,11 +301,11 @@ function vcell_get_biomodel_post_content($biomodel){
 	$nametext = 'Name: <strong>"' . $biomodel->name . '"</strong>';
 	$datetext = 'Saved: <strong>' . vcell_date_from_timestamp($biomodel->savedDate) . '</strong>';
 	$ownertext = 'Owned by: <strong>"' . $biomodel->ownerName . '"</strong>';
-	$bmBaseUrl = 'https://vcellapi.cam.uchc.edu:8080/biomodel/' . $bmKey;
+	$bmBaseUrl = 'https://vcellapi.cam.uchc.edu/biomodel/' . $bmKey;
 	$bmIdentifier = 'vcell identifier: <strong>biomodel-' . $bmKey . '</strong>';
 	$filename = 'VCBioModel_' . $bmKey . '.vcml';
 	$downloadtext = '<a href="' . $bmBaseUrl . '/biomodel.vcml" type="application/vcml+xml" download="' . $filename . '">download model (.vcml)</a>';
-	$diagramtext = '<img src="https://vcellapi.cam.uchc.edu:8080/biomodel/' . $bmKey . '/diagram"/>';
+	$diagramtext = '<img src="https://vcellapi.cam.uchc.edu/biomodel/' . $bmKey . '/diagram"/>';
 	return $nametext . '<br/>' . $datetext . '<br/>' . $bmIdentifier . '<br>' . $ownertext . '<br/><br/>' . $downloadtext . '<br/><br/>' . $diagramtext . '<br/><br/>' . $compartmenttext;
 }
 

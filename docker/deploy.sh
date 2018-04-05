@@ -8,7 +8,7 @@ show_help() {
 	echo "usage: deploy.sh [OPTIONS] REQUIRED-ARGUMENTS"
 	echo ""
 	echo "  REQUIRED-ARGUMENTS"
-	echo "    manager-node          swarm node with manager role ( vcellapi.cam.uchc.edu )"
+	echo "    manager-node          swarm node with manager role ( vcellapi.cam.uchc.edu or vcellapi-beta.cam.uchc.edu )"
 	echo ""
 	echo "    local-config-file     local config file for deployment, copied to manager-node including:"
 	echo "                              VCELL_REPO_NAMESPACE=(repo/namespace | namespace)"

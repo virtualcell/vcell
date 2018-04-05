@@ -6,7 +6,7 @@ info:
   description: vcellapi as of VCell 6.2 build 23
 schemes:
   - https
-host: vcellapi.cam.uchc.edu:8080
+host: vcellapi.cam.uchc.edu:443
 basePath: /.
 paths:
   /publication:

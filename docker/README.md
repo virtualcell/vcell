@@ -184,7 +184,17 @@ export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=7e2f
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
 
 ```bash
+export VCELL_VERSION=7.0.0 VCELL_BUILD=1 VCELL_SITE=rel
+export MANAGER_NODE=vcellapi.cam.uchc.edu
+export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"
+export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
+./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
+  $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
+```
+
+```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=4 VCELL_SITE=beta
+export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Beta"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
@@ -193,6 +203,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=27 VCELL_SITE=alpha
+export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
@@ -201,6 +212,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=7 VCELL_SITE=test
+export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Test"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
@@ -212,14 +224,14 @@ using deploy configuration and Docker images, generate client installers and dep
 ```bash
 ./deploy.sh \
    --ssh-user vcell --ssh-key ~/.ssh/id_rsa --upload-singularity --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR --link-installers \
-   vcellapi.cam.uchc.edu \
+   ${MANAGER_NODE} \
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
    vcell${VCELL_SITE}
 
 ./deploy.sh \
    --ssh-user vcell --ssh-key ~/.ssh/id_rsa --upload-singularity --install-singularity  \
-   vcellapi.cam.uchc.edu \
+   ${MANAGER_NODE} \
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
    vcell${VCELL_SITE}
@@ -238,7 +250,7 @@ edit local configuration (vi $VCELL_CONFIG_FILE_NAME) and redeploy (copies local
 ```bash
 ./deploy.sh \
   --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \
-  vcellapi.cam.uchc.edu \
+  ${MANAGER_NODE} \
   ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
   ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
   vcell${VCELL_SITE}

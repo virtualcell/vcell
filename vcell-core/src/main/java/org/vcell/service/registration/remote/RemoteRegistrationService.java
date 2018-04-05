@@ -28,7 +28,7 @@ public class RemoteRegistrationService extends AbstractService implements Regist
 		
 	@Override
 	public UserInfo insertUserInfo(UserInfo newUserInfo, boolean bUpdate) throws RemoteProxyException, DataAccessException, UseridIDExistsException {
-		// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:8080
+		// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:443
 		String serverHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);
 		String[] parts = serverHost.split(":");
 		String host = parts[0];
@@ -59,7 +59,7 @@ public class RemoteRegistrationService extends AbstractService implements Regist
 
 	@Override
 	public void sendLostPassword(String userid) throws DataAccessException, RemoteProxyException {
-		// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:8080
+		// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:443
 		String serverHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);
 		String[] parts = serverHost.split(":");
 		String host = parts[0];

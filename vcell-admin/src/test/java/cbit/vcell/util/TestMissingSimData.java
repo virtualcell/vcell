@@ -1086,7 +1086,7 @@ public class TestMissingSimData {
 	}
 	
 	private static void startClient(VCSimulationIdentifier vcSimulationIdentifier,UserLoginInfo userLoginInfo) throws Exception{
-		ClientServerInfo clientServerInfo = ClientServerInfo.createRemoteServerInfo("vcellapi.cam.uchc.edu", 8080, userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword());
+		ClientServerInfo clientServerInfo = ClientServerInfo.createRemoteServerInfo("vcellapi.cam.uchc.edu", 443, userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword());
 		VCellClient vCellClient = VCellClient.startClient(null, clientServerInfo);
 		while(vCellClient.getClientServerManager() == null || vCellClient.getClientServerManager().getConnectionStatus() == null || vCellClient.getClientServerManager().getConnectionStatus().getStatus() != ConnectionStatus.CONNECTED){
 			Thread.sleep(1000);

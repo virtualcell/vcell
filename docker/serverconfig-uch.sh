@@ -30,44 +30,50 @@ VCELL_BUILD_NUMBER=$_build_number
 case $VCELL_SITE in
 	REL)
 		_site_port_offset=0
-		# VCELL_API_PORT_EXTERNAL=$((8078 + $_site_port_offset))
+		VCELL_API_HOST_EXTERNAL=vcellapi.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		_applicationId="1471-8022-1038-5553"
 		;;
 	BETA)
 		_site_port_offset=1
-		# VCELL_API_PORT_EXTERNAL=$((8078 + $_site_port_offset))
+		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		_applicationId="1471-8022-1038-5552"
 		;;
 	ALPHA)
 		_site_port_offset=2
+		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8080
 		_applicationId="1471-8022-1038-5554"
 		;;
 	TEST)
 		_site_port_offset=3
 		# VCELL_API_PORT_EXTERNAL=8081
+		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		_applicationId="1471-8022-1038-5555"
 		;;
 	TEST2)
 		_site_port_offset=4
+		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8082
 		_applicationId="1471-8022-1038-5556"
 		;;
 	TEST3)
 		_site_port_offset=5
+		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8083
 		_applicationId="1471-8022-1038-5557"
 		;;
 	TEST4)
 		_site_port_offset=6
+		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8084
 		_applicationId="1471-8022-1038-5558"
 		;;
 	TEST5)
 		_site_port_offset=7
+		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8085
 		_applicationId="1471-8022-1038-5559"
 		;;
@@ -79,9 +85,8 @@ esac
 VCELL_DB_URL="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
 VCELL_DB_DRIVER="oracle.jdbc.driver.OracleDriver"
 VCELL_DB_USER="vcell"
-VCELL_API_HOST_EXTERNAL=vcellapi.cam.uchc.edu
-VCELL_JMS_HOST_EXTERNAL=vcellapi.cam.uchc.edu
-VCELL_MONGO_HOST_EXTERNAL=vcellapi.cam.uchc.edu
+VCELL_JMS_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
+VCELL_MONGO_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_INSTALLER_SCP_DESTINATION=vcell@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/${_site_camel}
 VCELL_BATCH_HOST=vcell-service.cam.uchc.edu
 VCELL_SLURM_CMD_SBATCH=sbatch
@@ -89,12 +94,9 @@ VCELL_SLURM_CMD_SACCT=sacct
 VCELL_SLURM_CMD_SCANCEL=scancel
 
 #
-# VCELL_API_PORT_EXTERNAL uses 443 for Beta and Rel (must change before moving to Rel)
+# VCELL_API_PORT_EXTERNAL uses 443 for Beta and Rel (but on different machines/swarm clusters)
 #     ALPHA, TEST, TEST2, TEST3, etc. uses ports starting with 8080
 #     Note: port 8080 is currently needed by vcell.org website.
-#
-# soon, we'll introduce a reverse proxy (e.g. nginx) listening on port 443 which will distribute to the 
-# correct vcell-api for each site based on the url path.
 #
 
 

@@ -2520,7 +2520,7 @@ public void showTransMADialog()
 
 public void showViewJobsDialog() {
 	System.out.println("ViewJobs menu item pressed.");
-	// https://vcellapi.cam.uchc.edu:8080/simtask?submitLow=&submitHigh=&startRow=1&maxRows=100&serverId=&computeHost+value%3D=&simId=&jobId=&taskId=&hasData=all&queued=on&dispatched=on&running=on
+	// https://vcellapi.cam.uchc.edu/simtask?submitLow=&submitHigh=&startRow=1&maxRows=100&serverId=&computeHost+value%3D=&simId=&jobId=&taskId=&hasData=all&queued=on&dispatched=on&running=on
 	DocumentWindowManager dwm = getWindowManager();
 	ViewJobsPanel panel = new ViewJobsPanel(dwm);
 	panel.setPreferredSize(new Dimension(1000,600));

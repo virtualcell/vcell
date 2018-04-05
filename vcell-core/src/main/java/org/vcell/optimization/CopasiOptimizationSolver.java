@@ -117,7 +117,7 @@ public class CopasiOptimizationSolver {
 			boolean bIgnoreCertProblems = true;
 			boolean bIgnoreHostMismatch = true;
 			
-			// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:8080
+			// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:443
 			String serverHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);
 			String[] parts = serverHost.split(":");
 			String host = parts[0];
