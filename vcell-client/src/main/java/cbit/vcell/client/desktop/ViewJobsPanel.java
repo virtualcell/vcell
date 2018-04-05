@@ -49,6 +49,7 @@ import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.StatusIcon;
 
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
@@ -104,13 +105,13 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	private JPanel propertiesPanel = null;
 	private JTextPane details = null;
 	
-	private Icon waitingIcon = new ColorIcon(11,11, Color.lightGray, true);
-	private Icon queuedIcon = new ColorIcon(11,11, Color.yellow.darker(), true);
-	private Icon dispatchedIcon = new ColorIcon(11,11, Color.magenta, true);
-	private Icon runningIcon = new ColorIcon(11,11, Color.blue, true);
-	private Icon completedIcon = new ColorIcon(11,11, Color.green, true);
-	private Icon failedIcon = new ColorIcon(11,11, Color.red, true);
-	private Icon stoppedIcon = new ColorIcon(11,11, Color.yellow, true);
+	private Icon waitingIcon = new StatusIcon(11,10, SchedulerStatus.WAITING);
+	private Icon queuedIcon = new StatusIcon(11,10, SchedulerStatus.QUEUED);
+	private Icon dispatchedIcon = new StatusIcon(11,10, SchedulerStatus.DISPATCHED);
+	private Icon runningIcon = new StatusIcon(11,10, SchedulerStatus.RUNNING);
+	private StatusIcon completedIcon = new StatusIcon(11, 10, SchedulerStatus.COMPLETED);
+	private Icon failedIcon = new StatusIcon(11, 10, SchedulerStatus.FAILED);
+	private Icon stoppedIcon = new StatusIcon(11,10, SchedulerStatus.STOPPED);
 //	Icon icon = new ColorIconEx(10,10,c1,c2);
 	
 	private Icon dataYesIcon = new ColorIcon(7,7, Color.green.brighter(), true);
@@ -616,16 +617,17 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(1, 2, 0, 0);
+			gbc.insets = new Insets(0, 2, 0, 0);
 			left.add(getWaitingButton(), gbc);
 
 			gbc.gridx = 1;
 			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(1, 0, 0, 3);
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(0, 0, 0, 3);
 			JLabel label = new JLabel(waitingIcon);
+			label.setText(" ");
 			left.add(label, gbc);
 
 			gbc.gridx = 2;
@@ -633,16 +635,17 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(1, 15, 0, 0);
+			gbc.insets = new Insets(0, 15, 0, 0);
 			left.add(getQueuedButton(), gbc);
 			
 			gbc.gridx = 3;
 			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(1, 0, 0, 10);
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(0, 0, 0, 10);
 			label = new JLabel(queuedIcon);
+			label.setText(" ");
 			left.add(label, gbc);
 //-------------------------------------
 			gridy++;
@@ -658,9 +661,10 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.fill = GridBagConstraints.BOTH;
 			gbc.insets = new Insets(0, 0, 0, 3);
 			label = new JLabel(dispatchedIcon);
+			label.setText(" ");
 			left.add(label, gbc);
 
 			gbc.gridx = 2;
@@ -675,9 +679,10 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.fill = GridBagConstraints.BOTH;
 			gbc.insets = new Insets(0, 0, 0, 10);
 			label = new JLabel(runningIcon);
+			label.setText(" ");
 			left.add(label, gbc);
 //-------------------------------------
 			gridy++;
@@ -693,9 +698,10 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.fill = GridBagConstraints.BOTH;
 			gbc.insets = new Insets(0, 0, 0, 3);
 			label = new JLabel(completedIcon);
+			label.setText(" ");
 			left.add(label, gbc);
 
 			gbc.gridx = 2;
@@ -703,16 +709,17 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.weightx = 0;
 			gbc.weighty = 0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(0, 15, 0, 3);
+			gbc.insets = new Insets(0, 15, 0, 0);
 			left.add(getFailedButton(), gbc);
 			
 			gbc.gridx = 3;
 			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.fill = GridBagConstraints.BOTH;
 			gbc.insets = new Insets(0, 0, 0, 10);
 			label = new JLabel(failedIcon);
+			label.setText(" ");
 			left.add(label, gbc);
 			
 //-------------------------------------
@@ -729,9 +736,10 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.gridy = gridy;
 			gbc.weightx = 0;
 			gbc.weighty = 0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.fill = GridBagConstraints.BOTH;
 			gbc.insets = new Insets(0, 0, 0, 3);
 			label = new JLabel(stoppedIcon);
+			label.setText(" ");
 			left.add(label, gbc);
 
 			// ---------------------------------------- center panel (of top panel) ------------
