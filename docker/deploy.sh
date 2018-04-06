@@ -131,7 +131,7 @@ singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME |
 #partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
 partitionName=vcell
 #slurmSingularityImagePath=`cat ../$local_config_file | grep VCELL_SLURM_SINGULARITY_IMAGE_PATH | cut -d"=" -f2`
-slurmSingularityImagePath=/state/partition1/
+slurmSingularityImagePath=/state/partition1/singularityImages/
 batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
 
 
