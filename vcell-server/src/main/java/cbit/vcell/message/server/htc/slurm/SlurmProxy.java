@@ -260,38 +260,15 @@ public class SlurmProxy extends HtcProxy {
 			lsb.write("#SBATCH --nodelist="+nodelist);
 		}
 		lsb.write("echo \"1 date=`date`\"");
-		lsb.write("#export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
-		lsb.write("#source /usr/share/Modules/init/bash");
-		lsb.write("#module load singularity");
-		lsb.write("echo \"2 date=`date`\"");
-		//			sw.append("#$ -l mem=" + (int)(memSize + SLURM_MEM_OVERHEAD_MB) + "mb");
 
-		//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
-
-		//long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
-//		lsb.write("#$ -j y");
-		//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
-//		lsb.write("#$ -cwd");
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 
-		lsb.write("# determine temp directory to use for storing singularity images");
-		lsb.write("#if [ ! -e \"$TMPDIR\" ]; then");
-		lsb.write("#  if [ -e /local ]; then");
-		lsb.write("#      TMPDIR=/local");
-		lsb.write("#      mkdir -p /local/singularityImages");
-		lsb.write("#  else");
-		lsb.write("#     if [ -e /state/partition1 ]; then");
-		lsb.write("         TMPDIR=/state/partition1");
-		lsb.write("         mkdir -p /state/partition1/singularityImages");
-		lsb.write("         if [[ $? -ne 0 ]]; then");
-		lsb.write("             echo \"couldn't create /state/partition1/singularityImages temp directory for singularity\"");
-		lsb.write("             exit 1");
-		lsb.write("         fi");
-		lsb.write("#     fi");
-		lsb.write("#  fi");
-		lsb.write("#else");
-		lsb.write("#   mkdir -p $TMPDIR/singularityImages");
-		lsb.write("#fi");
+		lsb.write("TMPDIR=/state/partition1");
+		lsb.write("mkdir -p /state/partition1/singularityImages");
+		lsb.write("if [[ $? -ne 0 ]]; then");
+		lsb.write("    echo \"couldn't create /state/partition1/singularityImages temp directory for singularity\"");
+		lsb.write("    exit 1");
+		lsb.write("fi");
 		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
 		
 		//
@@ -321,7 +298,6 @@ public class SlurmProxy extends HtcProxy {
 		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
 		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
 		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
-		String Singularity_file = remote_singularity_image+".Singularity";
 		String singularityImageName = new File(remote_singularity_image).getName();
 
 		String[] environmentVars = new String[] {
@@ -342,40 +318,13 @@ public class SlurmProxy extends HtcProxy {
 		
 		lsb.write("container_prefix=");
 		lsb.write("if command -v singularity >/dev/null 2>&1; then");
-		lsb.write("   # singularity command exists");
-//		lsb.write("   if [ ! -e "+remote_singularity_image+" ] ; then");
-//		lsb.write("      echo \"remote singularity image "+remote_singularity_image+" not found, building from docker image\"");
-//		lsb.write("      echo \"assuming Singularity version 2.4 or later is installed on host system.\"");
-//		lsb.write("");
-//		lsb.write("cat <<EOF >"+Singularity_file);
-//		lsb.write("Bootstrap: docker");
-//		lsb.write("From: "+docker_image);
-//		lsb.write("");
-//		lsb.write("%runscript");
-//		lsb.write("");
-//		lsb.write("    exec /vcellscripts/entrypoint.sh \"$@\"");
-//		lsb.write("");
-//		lsb.write("%labels");
-//		lsb.write("");
-//		lsb.write("AUTHOR jcschaff");
-//		lsb.write("EOF");
-//		lsb.write("");
-//		lsb.write("      singularity build "+remote_singularity_image+" "+Singularity_file);
-//		lsb.write("      stat=$?");
-//		lsb.write("      if [ $stat -ne 0 ]; then");
-//		lsb.write("         echo \"failed to build remote singularity image, returning $stat to Slurm\"");
-//		lsb.write("         exit $stat");
-//		lsb.write("      fi");
-//		lsb.write("   else");
-//		lsb.write("      echo \"remote singularity image "+remote_singularity_image+" found\"");
-//		lsb.write("   fi");
-//		lsb.write("");
 		lsb.write("   #");
-		lsb.write("   # assure that a local singularity image is present in the temp dir $TMPDIR");
+		lsb.write("   # local copy of singularity image should already be present in ${TMPDIR}/singularityImages/ (pushed during deploy)");
 		lsb.write("   #");
 		lsb.write("   localSingularityImage=\"${TMPDIR}/singularityImages/"+singularityImageName+"\"");
 		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
-		lsb.write("       cp -p "+remote_singularity_image+" $localSingularityImage");
+		lsb.write("       echo \"local singularity image $localSingularityImage not found\"");
+		lsb.write("       exit 1");
 		lsb.write("   fi");
 		StringBuffer singularityEnvironmentVars = new StringBuffer();
 		for (String envVar : environmentVars) {
@@ -383,14 +332,11 @@ public class SlurmProxy extends HtcProxy {
 		}
 		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs $localSingularityImage "+singularityEnvironmentVars+" \"");
 		lsb.write("else");
-		//lsb.write("   if command -v docker >/dev/null 2>&1; then");
-		
 		StringBuffer dockerEnvironmentVars = new StringBuffer();
 		for (String envVar : environmentVars) {
 			dockerEnvironmentVars.append(" -e "+envVar);
 		}
-		lsb.write("       container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs "+dockerEnvironmentVars+" "+docker_image+" \"");
-		//lsb.write("   fi");
+		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs "+dockerEnvironmentVars+" "+docker_image+" \"");
 		lsb.write("fi");
 		lsb.write("echo \"container_prefix is '${container_prefix}'\"");
 		lsb.write("echo \"3 date=`date`\"");
@@ -409,10 +355,6 @@ public class SlurmProxy extends HtcProxy {
 		 *   mongodbport=27017 \
 		 *   jmsblob_minsize=100000
 		 */
-//		String serverid = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
-//		PropertyLoader.api
-//		String jmsurlExternal = PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL);
-//		lsb.write("SINGULARITY_serverid="+serverid);
 
 		if (isParallel) {
 			// #SBATCH
