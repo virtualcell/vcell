@@ -109,7 +109,7 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.host.external=${mongodb_host_external} \
 	-Dvcell.mongodb.port.external=${mongodb_port_external} \
 	-Dvcell.mongodb.database=${mongodb_database} \
-	-Dvcell.server.maxJobsPerScan=50 \
+	-Dvcell.server.maxJobsPerScan=100 \
 	-Dvcell.server.maxJobsPerSite=100 \
 	-Dvcell.server.maxOdeJobsPerUser=30 \
 	-Dvcell.server.maxPdeJobsPerUser=20 \
