@@ -159,8 +159,8 @@ secrets:
   jmspswd:
     file: ${VCELL_SECRETS_DIR}/jmspswd.txt
   keystorepswd:
-    file: ${VCELL_SECRETS_DIR}/keystorepswd.txt
+    file: ${VCELL_SECRETS_DIR}/vcellapi-beta-keystorepswd.txt
   keystorefile:
-    file: ${VCELL_SECRETS_DIR}/keystore.jks
+    file: ${VCELL_SECRETS_DIR}/vcellapi-beta.jks
   batchuserkeyfile:
     file: ${VCELL_SECRETS_DIR}/schaff_rsa
