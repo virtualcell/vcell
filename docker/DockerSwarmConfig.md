@@ -69,6 +69,15 @@ rm /tmp/vcellsecrets.tgz
 manager-node> rm /tmp/vcellsecrets.tgz
 ```
 
+install self-signed cert as trusted CA trusting self signed certificate on Macos (https://github.com/docker/distribution/issues/2295), and Linux/Windows (https://docs.docker.com/registry/insecure/#failing).  For example, to trust the self-signed certificate on UCHC server nodes using Centos 7.2:
+
+```bash
+sudo scp vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/vcell-docker.cam.uchc.edu.crt
+sudo update-ca-trust
+sudo service docker stop
+sudo service docker start
+```
+
 set as an "internal node" to schedule "vcell-master it needs a non-root-squashed share".  
 
 ```bash
