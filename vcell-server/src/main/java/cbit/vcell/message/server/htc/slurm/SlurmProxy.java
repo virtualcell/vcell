@@ -34,13 +34,6 @@ public class SlurmProxy extends HtcProxy {
 	private final static String SCANCEL_UNKNOWN_JOB_RESPONSE = "does not exist";
 	protected final static String SLURM_SUBMISSION_FILE_EXT = ".slurm.sub";
 //	private Map<HtcJobID, JobInfoAndStatus> statusMap;
-
-
-	// note: full commands use the PropertyLoader.htcPbsHome path.
-	private final static String JOB_CMD_SUBMIT = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sbatch,"sbatch");
-	private final static String JOB_CMD_DELETE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scancel,"scancel");
-	private final static String JOB_CMD_STATUS = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sacct,"sacct");
-	//private final static String JOB_CMD_QACCT = "qacct";
 	
 	//private static String Slurm_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSlurmHome);
 	private static String Slurm_HOME = ""; // slurm commands should be in the path (empty prefix)
@@ -62,7 +55,7 @@ public class SlurmProxy extends HtcProxy {
 
 	@Override
 	public void killJob(HtcJobID htcJobId) throws ExecutableException, HtcException {
-
+		final String JOB_CMD_DELETE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scancel,"scancel");
 		String[] cmd = new String[]{Slurm_HOME + JOB_CMD_DELETE, Long.toString(htcJobId.getJobNumber())};
 		try {
 			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
@@ -117,111 +110,39 @@ public class SlurmProxy extends HtcProxy {
 		return SLURM_SUBMISSION_FILE_EXT;
 	}
 
-	/**
-	 * sacct 
-	 * 
-	 *        JobID    JobName  Partition    Account  AllocCPUS      State ExitCode
-	 *        ------------ ---------- ---------- ---------- ---------- ---------- --------
-	 *        4989         V_TEST_10+        amd      pi-loew          1 CANCELLED+      0:0
-	 *        4990         V_TEST_10+    general      pi-loew          2  COMPLETED      0:0
-	 *        4990.batch        batch                 pi-loew          2  COMPLETED      0:0
-	 * 
-	 * 
-	 * allowed fields: 
-	 * 
-	 * AllocCPUS         AllocGRES         AllocNodes        AllocTRES
-	 * Account           AssocID           AveCPU            AveCPUFreq
-	 * AveDiskRead       AveDiskWrite      AvePages          AveRSS
-	 * AveVMSize         BlockID           Cluster           Comment
-	 * ConsumedEnergy    ConsumedEnergyRaw CPUTime           CPUTimeRAW
-	 * DerivedExitCode   Elapsed           Eligible          End
-	 * ExitCode          GID               Group             JobID
-	 * JobIDRaw          JobName           Layout            MaxDiskRead
-	 * MaxDiskReadNode   MaxDiskReadTask   MaxDiskWrite      MaxDiskWriteNode
-	 * MaxDiskWriteTask  MaxPages          MaxPagesNode      MaxPagesTask
-	 * MaxRSS            MaxRSSNode        MaxRSSTask        MaxVMSize
-	 * MaxVMSizeNode     MaxVMSizeTask     MinCPU            MinCPUNode
-	 * MinCPUTask        NCPUS             NNodes            NodeList
-	 * NTasks            Priority          Partition         QOS
-	 * QOSRAW            ReqCPUFreq        ReqCPUFreqMin     ReqCPUFreqMax
-	 * ReqCPUFreqGov     ReqCPUS           ReqGRES           ReqMem
-	 * ReqNodes          ReqTRES           Reservation       ReservationId
-	 * Reserved          ResvCPU           ResvCPURAW        Start
-	 * State             Submit            Suspended         SystemCPU
-	 * Timelimit         TotalCPU          UID               User
-	 * UserCPU           WCKey             WCKeyID
-	 * 
-	 *  
-	 *  sacct -u vcell -P -o jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode
-	 *  
-	 *  JobID|JobName|Partition|User|AllocCPUS|NCPUS|NTasks|State|ExitCode
-	 *  4989|V_TEST_107541132_0_0|amd|vcell|1|1||CANCELLED by 10001|0:0
-	 *  4990|V_TEST_107541132_0_0|general|vcell|2|2||COMPLETED|0:0
-	 *  4990.batch|batch||vcell|2|2|1|COMPLETED|0:0
-	 *  4991|V_TEST_107548598_0_0|general|vcell|2|2||COMPLETED|0:0
-	 *  4991.batch|batch||vcell|2|2|1|COMPLETED|0:0
-	 *  
-	 *  sacct can specify a particular job:
-	 *  
-	 *  -j job(.step) , --jobs=job(.step)
-	 *  
-	 *     Displays information about the specified job(.step) or list of job(.step)s.
-	 *     The job(.step) parameter is a comma-separated list of jobs. 
-	 *     Space characters are not permitted in this list. 
-	 *     NOTE: A step id of 'batch' will display the information about the batch step. 
-	 *     The batch step information is only available after the batch job is complete unlike regular steps which are available when they start.
-	 *     The default is to display information on all jobs.
-	 * @throws IOException 
-	 */
-
 	@Override
 	public Map<HtcJobID, JobInfoAndStatus> getRunningJobs() throws ExecutableException, IOException {
-		String states = SlurmJobStatus.RUNNING.shortName+","+
-						SlurmJobStatus.CONFIGURING.shortName+","+
-						SlurmJobStatus.RESIZING.shortName;
-		String[] cmds = {Slurm_HOME + JOB_CMD_STATUS,"-u","vcell","-P","-s",states,"-o","jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode"};
+		final String JOB_CMD_SQUEUE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sacct,"squeue");
+		// squeue -p vcell -O jobid:25,name:25,state:13
+		String[] cmds = {Slurm_HOME + JOB_CMD_SQUEUE,"-p","vcell","-O","jobid:25,name:25,state:13,batchhost"};
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
-		Map<HtcJobID, JobInfoAndStatus> statusMap = extractJobIds(output);
+		Map<HtcJobID, JobInfoAndStatus> statusMap = extractJobIdsFromSqueue(output);
 		return statusMap;
 	}
 
-	@Override
-	public Map<HtcJobID,JobInfoAndStatus> getJobStatus(List<HtcJobID> htcJobIDs) throws ExecutableException, IOException {
-		ArrayList<String> jobNumbers = new ArrayList<String>();
-		for (HtcJobID job : htcJobIDs) {
-			jobNumbers.add(Long.toString(job.getJobNumber()));
-		}
-		String jobList = String.join(",", jobNumbers);
-		String[] cmds = {Slurm_HOME + JOB_CMD_STATUS,"-u","vcell","-P","-j",jobList,"-o","jobid%25,jobname%25,partition,user,alloccpus,ncpus,ntasks,state%13,exitcode"};
-		CommandOutput commandOutput = commandService.command(cmds);
-		
-		String output = commandOutput.getStandardOutput();
-		Map<HtcJobID, JobInfoAndStatus> statusMap = extractJobIds(output);
-		return statusMap;
-	}
-	
-	static Map<HtcJobID, JobInfoAndStatus> extractJobIds(String output) throws IOException {
+	static Map<HtcJobID, JobInfoAndStatus> extractJobIdsFromSqueue(String output) throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();
-		if (!line.equals("JobID|JobName|Partition|User|AllocCPUS|NCPUS|NTasks|State|ExitCode")){
-			throw new RuntimeException("unexpected first line from sacct: '"+line+"'");
+//		JOBID                    NAME                     STATE        EXEC_HOST           
+//		330717                   V_BETA_127025366_0_0     PENDING      n/a         
+//		330701                   V_BETA_127025160_0_0     RUNNING      shangrila14         
+//		330698                   V_BETA_127025036_0_0     RUNNING      shangrila14         
+		line = line.replaceAll(" +", " ").trim();
+		if (!line.equals("JOBID NAME STATE EXEC_HOST")){
+			throw new RuntimeException("unexpected first line from squeue: '"+line+"'");
 		}
 		Map<HtcJobID, JobInfoAndStatus> statusMap = new HashMap<HtcJobID, JobInfoAndStatus>();
 		while ((line = reader.readLine()) != null){
-			String[] tokens = line.split("\\|");
+			line = line.replaceAll(" +", " ").trim();
+			String[] tokens = line.split(" ");
 			String jobID = tokens[0];
 			String jobName = tokens[1];
-			String partition = tokens[2];
-			String user = tokens[3];
-			String allocCPUs = tokens[4];
-			String ncpus = tokens[5];
-			String ntasks = tokens[6];
-			String state = tokens[7];
-			String exitcode = tokens[8];
-			if (jobName.equals("batch")){
-				continue;
+			String state = tokens[2];
+			String exe_host = tokens[3];
+			if (exe_host.equals("n/a")) {
+				exe_host = null;
 			}
 			HtcJobID htcJobID = new HtcJobID(jobID,BatchSystemType.SLURM);
 			String errorPath = null;
@@ -452,6 +373,7 @@ public class SlurmProxy extends HtcProxy {
 
 	@Override
 	public HtcJobID submitJob(String jobName, String sub_file_internal, String sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+		final String JOB_CMD_SBATCH = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sbatch,"sbatch");
 		try {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
@@ -479,7 +401,7 @@ public class SlurmProxy extends HtcProxy {
 		 * Submitted batch job 5174
 		 * 
 		 */
-		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SUBMIT, sub_file_external};
+		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SBATCH, sub_file_external};
 		if (LG.isDebugEnabled()) {
 			LG.debug("submitting SLURM job: '"+CommandOutput.concatCommandStrings(completeCommand)+"'");
 		}
@@ -490,7 +412,7 @@ public class SlurmProxy extends HtcProxy {
 			jobid = jobid.replace(EXPECTED_STDOUT_PREFIX, "");
 		}else{
 			LG.error("failed to submit SLURM job '"+sub_file_external+"', stdout='"+commandOutput.getStandardOutput()+"', stderr='"+commandOutput.getStandardError()+"'");
-			throw new ExecutableException("unexpected response from '"+JOB_CMD_SUBMIT+"' while submitting simulation: '"+jobid+"'");
+			throw new ExecutableException("unexpected response from '"+JOB_CMD_SBATCH+"' while submitting simulation: '"+jobid+"'");
 		}
 		HtcJobID htcJobID = new HtcJobID(jobid,BatchSystemType.SLURM);
 		if (LG.isDebugEnabled()) {

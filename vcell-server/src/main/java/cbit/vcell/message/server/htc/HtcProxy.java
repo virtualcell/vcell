@@ -186,8 +186,6 @@ public abstract class HtcProxy {
 
 	public abstract Map<HtcJobID,JobInfoAndStatus> getRunningJobs() throws ExecutableException, IOException;
 
-	public abstract Map<HtcJobID,JobInfoAndStatus> getJobStatus(List<HtcJobID> htcJobIDs) throws ExecutableException, IOException;
-
 	public final CommandService getCommandService() {
 		return commandService;
 	}

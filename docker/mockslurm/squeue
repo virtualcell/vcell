@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [ "$#" -ne 4 ] ; then
+   echo "========== MOCK SLURM squeue =========="
+   echo "usage: squeue -p vcell -O jobid:25,name:25,state:13,batchhost"
+   echo " with 4 args, returns empty job list: "
+   echo "JOBID                    NAME                     STATE        EXEC_HOST           "
+   exit 1;
+fi
+
+echo "JOBID                    NAME                     STATE        EXEC_HOST           "
+#
+# don't echo any job status ... like slurm has no jobs
+#
+exit 0

@@ -51,6 +51,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     slurm_cmd_sbatch=sbatch \
     slurm_cmd_sacct=sacct \
     slurm_cmd_scancel=scancel \
+    slurm_cmd_squeue=squeue \
     jmsblob_minsize=100000
 
 ENV dbpswdfile=/run/secrets/dbpswd \
@@ -83,6 +84,7 @@ ENTRYPOINT java \
 	-Dvcell.htc.nodelist="${htcnodelist}" \
 	-Dvcell.slurm.cmd.sbatch="${slurm_cmd_sbatch}" \
 	-Dvcell.slurm.cmd.sacct="${slurm_cmd_sacct}" \
+	-Dvcell.slurm.cmd.squeue="${slurm_cmd_squeue}" \
 	-Dvcell.slurm.cmd.scancel="${slurm_cmd_scancel}" \
 	-Dvcell.batch.singularity.image="${singularity_imagefile}" \
 	-Dvcell.batch.docker.name="${docker_name}" \

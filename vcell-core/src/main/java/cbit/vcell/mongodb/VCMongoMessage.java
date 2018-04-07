@@ -417,7 +417,9 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_info,failureMessage);
 			dbObject.put(MongoMessage_htcJobID,htcJobID.toDatabase());
 			
-			addObject(dbObject,jobStatus);
+			if (jobStatus!=null) {
+				addObject(dbObject,jobStatus);
+			}
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){

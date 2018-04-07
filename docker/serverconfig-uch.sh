@@ -91,6 +91,7 @@ VCELL_INSTALLER_SCP_DESTINATION=vcell@apache.cam.uchc.edu:/apache_webroot/htdocs
 VCELL_BATCH_HOST=vcell-service.cam.uchc.edu
 VCELL_SLURM_CMD_SBATCH=sbatch
 VCELL_SLURM_CMD_SACCT=sacct
+VCELL_SLURM_CMD_SQUEUE=squeue
 VCELL_SLURM_CMD_SCANCEL=scancel
 
 #
