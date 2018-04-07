@@ -112,7 +112,7 @@ public class SlurmProxy extends HtcProxy {
 
 	@Override
 	public Map<HtcJobID, JobInfoAndStatus> getRunningJobs() throws ExecutableException, IOException {
-		final String JOB_CMD_SQUEUE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sacct,"squeue");
+		final String JOB_CMD_SQUEUE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_squeue,"squeue");
 		// squeue -p vcell -O jobid:25,name:25,state:13
 		String[] cmds = {Slurm_HOME + JOB_CMD_SQUEUE,"-p","vcell","-O","jobid:25,name:25,state:13,batchhost"};
 		CommandOutput commandOutput = commandService.command(cmds);
