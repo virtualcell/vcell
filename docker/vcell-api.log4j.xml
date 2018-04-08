@@ -12,5 +12,13 @@
     <Logger name="org.vcell" level="trace" />
     <Logger name="cbit.vcell" level="trace" />
     <Logger name="cbit.vcell.modeldb" level="warn" />
+    <Logger name="cbit.vcell.message.server.cmd" level="debug" />
+    <Logger name="org.vcell.util.exe" level="debug" />
+    <Logger name="org.vcell.util.CommentStringTokenizer" level="warn" />
+    <Logger name="cbit.vcell.math.MathUtilities" level="warn" />
+    <Logger name="cbit.vcell.message.server.dispatcher.SimulationDispatcher" level="warn" />
+    <Logger name="cbit.vcell.solver.SolverTaskDescription" level="warn" />
+    <Logger name="cbit.vcell.messaging.db" level="warn" />
+    <Logger name="cbit.vcell.xml.XmlHelper" level="warn" />
   </Loggers>
 </Configuration>
