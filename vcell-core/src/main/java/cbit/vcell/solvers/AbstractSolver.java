@@ -13,7 +13,8 @@ package cbit.vcell.solvers;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ConfigurationException;
 
 import cbit.vcell.math.Constant;
@@ -42,7 +43,7 @@ import cbit.vcell.solver.server.SolverStatus;
  * @author: Ion Moraru
  */
 public abstract class AbstractSolver implements Solver, SimDataConstants {
-	public static final Logger lg = Logger.getLogger(AbstractSolver.class);
+	public static final Logger lg = LogManager.getLogger(AbstractSolver.class);
 
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);

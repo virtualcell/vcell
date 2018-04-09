@@ -21,7 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -52,7 +53,7 @@ import cbit.vcell.solver.SimulationMetadata;
  * @author: Fei Gao
  */
 public class SimulationJobDbDriver {
-	public static Logger lg = Logger.getLogger(SimulationJobDbDriver.class);
+	public static Logger lg = LogManager.getLogger(SimulationJobDbDriver.class);
 
 	private static final SimulationJobTable jobTable = SimulationJobTable.table;
 	private static final cbit.vcell.modeldb.SimulationTable simTable = cbit.vcell.modeldb.SimulationTable.table;

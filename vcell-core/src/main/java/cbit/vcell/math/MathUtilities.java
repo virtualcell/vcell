@@ -16,7 +16,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.parser.Expression;
@@ -49,7 +50,7 @@ public class MathUtilities {
 //	final String FAILURE_DIV_BY_ZERO =			 	" MathsDifferent:FailedDivideByZero ";
 //	final String FAILURE_UNKNOWN = 					" MathsDifferent:FailedUnknown ";
 //	final String UNKNOWN_DIFFERENCE_IN_MATH =		" MathsDifferent:Unknown ";
-	private static final Logger lg = Logger.getLogger(MathUtilities.class);
+	private static final Logger lg = LogManager.getLogger(MathUtilities.class);
 
 /**
  * This method was created by a SmartGuide.

@@ -17,7 +17,8 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.simdata.PortableCommand;
 
@@ -40,7 +41,7 @@ public class CopySimFiles implements PortableCommand, FileVisitor<Path> {
 	private transient PrintWriter pw = null;
 	
 	
-	private static Logger lg = Logger.getLogger(CopySimFiles.class);
+	private static Logger lg = LogManager.getLogger(CopySimFiles.class);
 
 	public CopySimFiles(String jobName, String fromDirectory, String toDirectory, String logName) {
 		this.jobName = jobName;

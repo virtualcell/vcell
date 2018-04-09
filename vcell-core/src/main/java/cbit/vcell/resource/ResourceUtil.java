@@ -25,7 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -81,7 +82,7 @@ public class ResourceUtil {
 	 * uniquely identify version and variant (OperatingSystemInfo)
 	 */
 	private static String ourManifest = null;
-	private static final Logger LG = Logger.getLogger(ResourceUtil.class);
+	private static final Logger LG = LogManager.getLogger(ResourceUtil.class);
 
     /**
      * ensure class loaded so static initialization executes

@@ -14,7 +14,8 @@ import java.util.HashSet;
 
 import javax.swing.event.EventListenerList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.WorkerEvent;
@@ -33,7 +34,7 @@ import cbit.vcell.solver.server.SolverStatus;
  */
 @SuppressWarnings("serial")
 public class LocalSolverController implements SolverListener {
-	public static final Logger lg = Logger.getLogger(LocalSolverController.class);
+	public static final Logger lg = LogManager.getLogger(LocalSolverController.class);
 
 	private SolverControllerImpl solverControllerImpl = null;
 	private EventListenerList listenerList = new EventListenerList();

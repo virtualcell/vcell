@@ -5,8 +5,8 @@ import java.util.Objects;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.VCAssert;
 
@@ -27,7 +27,7 @@ public class VH5Path {
 
 	protected Object target;
 	protected Exception exc;
-	protected static final Logger lg = Logger.getLogger(VH5Path.class);
+	protected static final Logger lg = LogManager.getLogger(VH5Path.class);
 
 
 	/**
@@ -41,7 +41,7 @@ public class VH5Path {
 			target = walk(g,names,0);
 		} catch (Exception e) {
 			exc = e;
-			if (lg.isEnabledFor(Priority.WARN)) {
+			if (lg.isWarnEnabled()) {
 				lg.warn("Error retrieving " + concat(names),exc);
 			}
 		}

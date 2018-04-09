@@ -16,14 +16,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.exe.ExecutableException;
 import org.vcell.util.executable.ClosedInput;
 import org.vcell.util.executable.IdleProcessSelfTerminator;
 import org.vcell.util.executable.InheritOutput;
 import org.vcell.util.executable.LiveProcess;
 import org.vcell.util.executable.LiveProcess.LiveProcessStatus;
-import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
@@ -44,7 +44,7 @@ public class SBMLStandaloneImporter {
 	/**
 	 * log4j logger
 	 */
-	static final Logger lg = Logger.getLogger(SBMLStandaloneImporter.class);
+	static final Logger lg = LogManager.getLogger(SBMLStandaloneImporter.class);
 
 	/**
 	 * how long to go without input before exiting standalone process
@@ -179,7 +179,6 @@ public class SBMLStandaloneImporter {
 	
 	
 	public static void main(String[] args) {
-		Logging.init();
 		ResourceUtil.setNativeLibraryDirectory();
 		new Standalone(args);
 	}

@@ -17,8 +17,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.exe.ExecutableException;
 
@@ -52,7 +52,7 @@ class BNGExecutorServiceNative implements BNGExecutorService {
 	private boolean stopped = false;
 	private long startTime = System.currentTimeMillis();
 
-	private static final Logger LG = Logger.getLogger(BNGExecutorServiceNative.class);
+	private static final Logger LG = LogManager.getLogger(BNGExecutorServiceNative.class);
 
 /**
  * BNGUtils constructor comment.
@@ -100,7 +100,7 @@ public BNGOutput executeBNG() throws BNGException {
 			bngInputFile = new File(workingDir, tempFilePrefix + suffix_input);
 			fos = new java.io.FileOutputStream(bngInputFile);
 		}catch (java.io.IOException e){
-			if (LG.isEnabledFor(Level.WARN) ) {
+			if (LG.isWarnEnabled() ) {
 				LG.warn("error opening input file '"+bngInputFile,e);
 			}
 			e.printStackTrace(System.out);
@@ -165,7 +165,7 @@ public BNGOutput executeBNG() throws BNGException {
 		bngOutput = new BNGOutput(stdoutString, filenames.toArray(new String[0]), filecontents.toArray(new String[0]));
 
 	} catch(ExecutableException | IOException ex ){
-		if (LG.isEnabledFor(Level.WARN) ) {
+		if (LG.isWarnEnabled() ) {
 			LG.warn("error executable BNG", ex); 
 		}
 		if (executable==null || executable.getStderrString().trim().length() == 0) {

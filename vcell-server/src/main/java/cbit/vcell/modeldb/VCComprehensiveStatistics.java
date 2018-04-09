@@ -83,7 +83,6 @@ public class VCComprehensiveStatistics {
 	VCComprehensiveStatistics() throws Exception {
 		new PropertyLoader();
 		
-		DatabasePolicySQL.lg.setLevel(Level.WARN);
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 		
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();

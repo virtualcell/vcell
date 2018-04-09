@@ -3,7 +3,8 @@ package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -38,7 +39,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 
 public class SimulationStateMachine {
-	public static final Logger lg = Logger.getLogger(SimulationStateMachine.class);
+	public static final Logger lg = LogManager.getLogger(SimulationStateMachine.class);
 	
 	// bitmapped counter so that allows 3 retries for each request (but preserves ordinal nature)
 	// bits 0-3: retry count

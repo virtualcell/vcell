@@ -10,11 +10,11 @@
 
 package cbit.vcell.modeldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (8/28/2003 4:57:38 PM)
@@ -22,7 +22,7 @@ import org.vcell.util.SessionLog;
  */
 public abstract class AbstractDBTopLevel {
 	
-	public static Logger lg = Logger.getLogger(AdminDBTopLevel.class);
+	public static Logger lg = LogManager.getLogger(AdminDBTopLevel.class);
 
 	protected final ConnectionFactory conFactory;
 /**

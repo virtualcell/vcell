@@ -2,10 +2,11 @@ package cbit.vcell.message;
 
 import java.io.Serializable;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
-	public static final Logger lg = Logger.getLogger(VCRpcMessageHandler.class);
+	public static final Logger lg = LogManager.getLogger(VCRpcMessageHandler.class);
 
 	private Object serviceImplementation = null;
 	private VCellQueue queue = null;

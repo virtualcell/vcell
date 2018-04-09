@@ -3,11 +3,8 @@ package cbit.vcell.tools;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
@@ -50,9 +47,6 @@ public class PortableCommandWrapperTest {
 
 	@Before
 	public void init( ) {
-		Logging.init();
-		Logger lg = Logger.getLogger(PortableCommand.class);
-		lg.setLevel(Level.ALL);
 	}
 
 	@Test

@@ -20,7 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.NonEditableDefaultTableModel;
 import org.vcell.util.gui.ScrollTable;
@@ -38,7 +39,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 public class Plot2DDataPanel extends JPanel {
 	private static final long serialVersionUID = org.vcell.util.Serial.serialFromSVNRevision("$Rev$");
-	private static final Logger LG = Logger.getLogger(Plot2DDataPanel.class);
+	private static final Logger LG = LogManager.getLogger(Plot2DDataPanel.class);
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {

@@ -9,7 +9,8 @@
  */
 
 package org.vcell.rest.rpc;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessageSession;
@@ -24,7 +25,7 @@ import cbit.vcell.resource.PropertyLoader;
  * @author: Fei Gao
  */
 public abstract class AbstractRpcServerProxy {
-	public static final Logger lg = Logger.getLogger(AbstractRpcServerProxy.class);
+	public static final Logger lg = LogManager.getLogger(AbstractRpcServerProxy.class);
 
 	private VCMessageSession vcMessagingSession = null;
 	protected UserLoginInfo userLoginInfo = null;

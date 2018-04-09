@@ -24,8 +24,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
@@ -111,7 +111,7 @@ public class SimulationDispatcher extends ServiceProvider {
 	 * format for logging. Lazily created on {@link #getDateFormat()}
 	 */
 	private DateFormat dateFormat = null;
-	public static Logger lg = Logger.getLogger(SimulationDispatcher.class);
+	public static Logger lg = LogManager.getLogger(SimulationDispatcher.class);
 
 	public class SimulationServiceImpl implements SimulationService {
 
@@ -381,7 +381,7 @@ public class SimulationDispatcher extends ServiceProvider {
 									}
 								}
 								if (killJob && HtcProxy.isMyJob(jobInfoAndStatus.info)){
-									if (lg.isEnabledFor(Level.WARN)) {
+									if (lg.isWarnEnabled()) {
 										lg.warn("killing " + jobInfoAndStatus.info + ", " + failureMessage);
 									}
 									if (simJobStatus == null) { 

@@ -10,13 +10,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.vcell.util.SessionLog;
-import org.vcell.util.logging.Log4jSessionLog;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
@@ -34,7 +33,7 @@ import cbit.vcell.resource.VCellExecutorService;
 
 public class VCMongoDbDriver {
 	private static VCMongoDbDriver mongoDriverSingleton = null;
-	private static final Logger lg  = Logger.getLogger(VCMongoDbDriver.class);
+	private static final Logger lg  = LogManager.getLogger(VCMongoDbDriver.class);
 	private final String mongoDbDatabaseName;
 	private final String mongoDbLoggingCollectionName;
 
@@ -57,17 +56,6 @@ public class VCMongoDbDriver {
     	mongoDbLoggingCollectionName = PropertyLoader.getProperty(PropertyLoader.mongodbLoggingCollection, "logging");
 	}
 
-	public void setSessionLog(SessionLog log){
-		this.log = log;
-	}
-	
-	public SessionLog getSessionLog(){
-		if(log == null) {
-			log = new Log4jSessionLog(lg);
-		}
-		return log;
-	}
-	
 	private synchronized void sendMessages() {
    		if (messageOutbox.size() > 0) {
    			try {
@@ -96,7 +84,7 @@ public class VCMongoDbDriver {
 		        	}
 	        	} catch (MongoException e){
 		        	lg.debug("failed to write to mongodb", e);
-		        	if (lg.isEnabledFor(Level.WARN)) {
+		        	if (lg.isWarnEnabled()) {
 	        			lg.warn("VCMongoMessage failedToSend : "+ e.getMessage());
 		        	}
 		        }

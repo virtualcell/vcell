@@ -39,7 +39,8 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
@@ -171,7 +172,7 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
  * @author: Anuradha Lakshminarayana
  */
 public class TestingFrameworkWindowManager extends TopLevelWindowManager implements DataViewerManager {
-	private static Logger lg = Logger.getLogger(TestingFrameworkWindowManager.class);
+	private static Logger lg = LogManager.getLogger(TestingFrameworkWindowManager.class);
 
 	public static final int COPY_REGRREF = 0;
 	public static final int ASSIGNORIGINAL_REGRREF = 1;

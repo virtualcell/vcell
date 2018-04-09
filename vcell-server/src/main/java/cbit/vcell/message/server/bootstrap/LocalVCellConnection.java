@@ -12,7 +12,8 @@ package cbit.vcell.message.server.bootstrap;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
@@ -30,7 +31,6 @@ import cbit.rmi.event.SimpleMessageService;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
-import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.LocalUserMetaDbServer;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.server.DataSetController;
@@ -47,7 +47,7 @@ import cbit.vcell.simdata.LocalDataSetController;
  * @author: Jim Schaff.
  */
 public class LocalVCellConnection implements VCellConnection, ExportListener, DataJobListener {
-	public static final Logger lg = Logger.getLogger(LocalVCellConnection.class);
+	public static final Logger lg = LogManager.getLogger(LocalVCellConnection.class);
 
 	private SimulationController simulationController = null;
 	private SimulationControllerImpl simulationControllerImpl = null;

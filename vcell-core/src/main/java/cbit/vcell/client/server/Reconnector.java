@@ -10,7 +10,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.SwingUtilities;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.resource.VCellExecutorService;
 
@@ -19,7 +20,7 @@ import cbit.vcell.resource.VCellExecutorService;
  */
 public class Reconnector {
 	private static final long MAX_WAIT_SECONDS = TimeUnit.MINUTES.toSeconds(5);
-	private static final Logger lg = Logger.getLogger(Reconnector.class);
+	private static final Logger lg = LogManager.getLogger(Reconnector.class);
 	private final ClientServerManager csm;
 	private final Set<ReconnectListener> listeners;
 	private final AtomicBoolean active;

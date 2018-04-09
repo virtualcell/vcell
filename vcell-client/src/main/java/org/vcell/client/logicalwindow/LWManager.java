@@ -9,7 +9,8 @@ import java.awt.event.WindowEvent;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 
 /**
@@ -18,7 +19,7 @@ import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 class LWManager extends WindowAdapter{
 	
 	private final LWContainerHandle lwParent;
-	private static final Logger LG = Logger.getLogger(LWManager.class);
+	private static final Logger LG = LogManager.getLogger(LWManager.class);
 	
 	 /**
 	 * storage of children

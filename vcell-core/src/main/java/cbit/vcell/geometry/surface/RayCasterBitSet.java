@@ -16,7 +16,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -35,7 +36,7 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.parser.ExpressionException;
 
 public class RayCasterBitSet {
-	private static Logger lg = Logger.getLogger(RayCasterBitSet.class);
+	private static Logger lg = LogManager.getLogger(RayCasterBitSet.class);
 	
 	public static Geometry createGeometryFromSTL(GeometryThumbnailImageFactory geometryThumbnailImageFactory, File stlFile, int numSamples) throws ImageException, PropertyVetoException, GeometryException, ExpressionException, IOException{
 		SurfaceCollection surfaceCollection = StlReader.readStl(stlFile);

@@ -17,7 +17,8 @@ import java.sql.SQLException;
 import javax.jms.JMSException;
 import javax.swing.event.EventListenerList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
@@ -64,7 +65,7 @@ import cbit.vcell.solvers.LocalSolverController;
  * @author: Jim Schaff
  */
 public class SimulationControllerImpl implements WorkerEventListener {
-	public static final Logger lg = Logger.getLogger(SimulationControllerImpl.class);
+	public static final Logger lg = LogManager.getLogger(SimulationControllerImpl.class);
 
 	private java.util.Hashtable<SimulationTaskID, LocalSolverController> solverControllerHash = new java.util.Hashtable<SimulationTaskID, LocalSolverController>();
 	private LocalVCellConnection localVCellConnection = null;

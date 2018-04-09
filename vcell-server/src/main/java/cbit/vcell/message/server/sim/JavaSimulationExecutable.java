@@ -14,7 +14,8 @@ import java.io.File;
 
 import javax.jms.JMSException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
@@ -46,7 +47,7 @@ import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.xml.XmlHelper;
 
 public class JavaSimulationExecutable  {
-	public static final Logger lg = Logger.getLogger(JavaSimulationExecutable.class);
+	public static final Logger lg = LogManager.getLogger(JavaSimulationExecutable.class);
 
 	String[] arguments = null;
 	

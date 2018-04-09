@@ -235,7 +235,6 @@ public class VCellApiApplication extends WadlApplication {
 		this.restEventService = restEventService;
 		this.templateConfiguration = templateConfiguration;
 		this.healthService = healthService;
-		getLogger().setLevel(Level.FINE);
 	}
 	
 

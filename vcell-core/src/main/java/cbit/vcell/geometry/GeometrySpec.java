@@ -21,8 +21,8 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -60,7 +60,7 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	public static final String ORIGIN_PROPERTY = "origin";
 	public static final String EXTENT_PROPERTY = "extent";
 	
-	private static final Logger lg = Logger.getLogger(GeometrySpec.class);
+	private static final Logger lg = LogManager.getLogger(GeometrySpec.class);
 	
 	private VCImage vcImage = null;
 	private transient byte[] uncompressedPixels = null;
@@ -1405,7 +1405,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 			VCImage newVCImage = (VCImage)event.getNewValue();
 			if (newVCImage.getNumXYZ() > IMAGE_SIZE_LIMIT){
 				//throw new PropertyVetoException("image size "+newVCImage.getNumXYZ()+" pixels exceeded limit of "+IMAGE_SIZE_LIMIT,event);
-				if (lg.isEnabledFor(Level.WARN)) {
+				if (lg.isWarnEnabled()) {
 					lg.warn("WARNING: image size "+newVCImage.getNumXYZ()+" pixels exceeded limit of "+IMAGE_SIZE_LIMIT);				
 				}
 			}

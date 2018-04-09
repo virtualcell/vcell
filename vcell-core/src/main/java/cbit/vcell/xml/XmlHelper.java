@@ -20,7 +20,8 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -117,7 +118,7 @@ public class XmlHelper {
 	//For now, same as their VCML counterparts.
 	private static final String SIM_CONTAINER = XMLTags.SimulationSpecTag;
 	private static final String IMAGE_CONTAINER = XMLTags.GeometryTag;
-	private static final Logger lg = Logger.getLogger(XmlHelper.class);
+	private static final Logger lg = LogManager.getLogger(XmlHelper.class);
 
 	//no instances allowed
 	private XmlHelper() {}

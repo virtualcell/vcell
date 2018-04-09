@@ -10,7 +10,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.apache.commons.lang3.mutable.MutableDouble;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.Severity;
@@ -48,7 +49,7 @@ class SimulationWarning {
 		}
 	}
 		
-	static Logger lg = Logger.getLogger(SimulationWarning.class);
+	static Logger lg = LogManager.getLogger(SimulationWarning.class);
 	
 	public static void gatherIssues(Simulation simulation, IssueContext issueContext, List<Issue> issueList){
 		if (simulation.getSolverTaskDescription().getSolverDescription() == SolverDescription.Smoldyn){

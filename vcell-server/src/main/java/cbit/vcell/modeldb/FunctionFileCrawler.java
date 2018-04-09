@@ -13,7 +13,8 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -33,7 +34,7 @@ import cbit.vcell.solvers.FunctionFileGenerator;
  * @author: Jim Schaff
  */
 public class FunctionFileCrawler {
-	public static final Logger lg = Logger.getLogger(FunctionFileCrawler.class);
+	public static final Logger lg = LogManager.getLogger(FunctionFileCrawler.class);
 
 	private AdminDatabaseServer adminDbServer = null;
 	private File dataRootDir = null;

@@ -18,7 +18,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
@@ -28,7 +27,6 @@ import cbit.vcell.modeldb.BadMathVisitor;
 import cbit.vcell.modeldb.BatchTester;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.StdoutSessionLog;
 
 public class MathVisitor implements BadMathVisitor {
 	final PrintWriter loadErrorWriter;
@@ -69,8 +67,6 @@ public class MathVisitor implements BadMathVisitor {
 	
 	@Before
 	public void init( ) {
-		Logging.init();
-		
 	}
 	
 	@Test

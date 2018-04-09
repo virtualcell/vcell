@@ -1,7 +1,7 @@
 package org.vcell.rest.admin;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 
@@ -16,7 +16,7 @@ public class AdminService {
 	
 	private final AdminDBTopLevel adminDbTop;
 	private final DatabaseServerImpl dbServerImpl;
-	Logger lg = LoggerFactory.getLogger(AdminService.class);
+	Logger lg = LogManager.getLogger(AdminService.class);
 
 	public AdminService(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl) throws java.io.IOException, java.io.FileNotFoundException, org.jdom.JDOMException, javax.jms.JMSException {
 		super();

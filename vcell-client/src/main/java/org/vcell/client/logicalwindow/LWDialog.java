@@ -7,8 +7,8 @@ import java.util.Iterator;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 
 import edu.uchc.connjur.wb.ExecutionTrace;
@@ -22,7 +22,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  */
 @SuppressWarnings("serial")
 public abstract class LWDialog extends JDialog implements LWFrameOrDialog, LWHandle {
-	private static final Logger LG = Logger.getLogger(LWDialog.class);
+	private static final Logger LG = LogManager.getLogger(LWDialog.class);
 	private final LWContainerHandle lwParent;
 	protected LWTraits traits;
 	
@@ -118,7 +118,7 @@ public abstract class LWDialog extends JDialog implements LWFrameOrDialog, LWHan
 	public static void normalizeModality(JDialog jdialog ) {
 		switch (jdialog.getModalityType()) {
 		case MODELESS:
-			if (LG.isEnabledFor(Level.WARN)) {
+			if (LG.isWarnEnabled()) {
 				//we want our modeless windows to be LWChildWindows, not Dialogs
 				LG.warn(ExecutionTrace.justClassName(jdialog) + ' ' + jdialog.getTitle() + " invalid modeless dialog");
 			}

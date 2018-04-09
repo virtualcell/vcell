@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -561,7 +562,7 @@ static final String PARAMETER_SPECIFIC_CAPACITANCE_PREFIX = "C_";
 public static final String PARAMETER_SIZE_FUNCTION_PREFIX = "Size_";
 static final String BIO_PARAM_SUFFIX_SPECIES_COUNT = "_temp_Count";
 static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";
-protected static final Logger lg = Logger.getLogger(AbstractMathMapping.class);
+protected static final Logger lg = LogManager.getLogger(AbstractMathMapping.class);
 public static final String PARAMETER_K_FLUX_PREFIX = "KFlux_";
 public static final int PARAMETER_ROLE_P = 3;
 public static final int PARAMETER_ROLE_SPECIES_CONCENRATION = 5;

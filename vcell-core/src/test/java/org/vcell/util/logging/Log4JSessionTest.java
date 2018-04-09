@@ -1,9 +1,5 @@
 package org.vcell.util.logging;
 
-import static org.junit.Assert.assertTrue;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.vcell.util.SessionLog;
@@ -44,7 +40,6 @@ public class Log4JSessionTest {
 	}
 	@Before
 	public void init( ) {
-		Logging.init( );
 	}
 	
 	//@Test
@@ -55,21 +50,20 @@ public class Log4JSessionTest {
 		StdoutSessionLog ssl = new StdoutSessionLog("JUnitTest");
 		walkThrough(ssl);
 		
-		Logger.getRootLogger().setLevel(Level.ALL);
 		Log4jSessionLog l4jl = new Log4jSessionLog("JUnitTest");
 		walkThrough(l4jl);
 	}
 	
 	@Test
 	public void makeSure( ) {
-		assertTrue(Level.WARN.isGreaterOrEqual(Level.INFO));
+//		assertTrue(Level.WARN.isGreaterOrEqual(Level.INFO));
 	}
 	
 	
 	@Test
 	public void config( ) {
-		Log4jSessionLog l4jl = new Log4jSessionLog("ConfigTest");
-		System.err.println("config set level " + l4jl.getLogger().getEffectiveLevel());
+//		Log4jSessionLog l4jl = new Log4jSessionLog("ConfigTest");
+//		System.err.println("config set level " + l4jl.getLogger().getEffectiveLevel());
 	}
 	
 }

@@ -12,7 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 
 import cbit.vcell.resource.OperatingSystemInfo;
@@ -61,7 +62,7 @@ public class NativeLoader {
 	 */
 	private static Map<String,Future<Boolean> > cache = new HashMap<String, Future<Boolean>>( );
 	
-	private static Logger lg = Logger.getLogger(NativeLoader.class);
+	private static Logger lg = LogManager.getLogger(NativeLoader.class);
 	
 	/**
 	 * library name path (see {@link NativeGroup} )

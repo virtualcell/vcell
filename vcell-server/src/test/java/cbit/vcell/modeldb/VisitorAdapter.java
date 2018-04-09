@@ -4,13 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.vcell.util.VCAssert;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.model.BioModelVisitor;
 import cbit.vcell.resource.PropertyLoader;
@@ -33,20 +31,7 @@ public abstract class VisitorAdapter {
 	 */
 	protected abstract void scan(VCDatabaseScanner scanner, User[] users) throws Exception;
 	
-	protected Logger lg = Logger.getLogger(VisitorAdapter.class);
-	protected Level level = Level.DEBUG;
-	
-	/**
-	 * optional method to specify different logger than default
-	 * @param lg
-	 * @param level
-	 */
-	protected void setupLogging(Logger lg, Level level) {
-		VCAssert.assertValid(lg);
-		VCAssert.assertValid(level);
-		this.lg = lg;
-		this.level = level;
-	}
+	protected Logger lg = LogManager.getLogger(VisitorAdapter.class);
 	
 	/**
 	 * initialize
@@ -62,7 +47,6 @@ public abstract class VisitorAdapter {
 	 * @throws IOException
 	 */
 	protected void init(String[] additionalRequired) throws IOException {
-		Logging.init();
 		String[] required;
 		if (additionalRequired == null) {
 			required = REQUIRED_PROPERTIES;
@@ -124,8 +108,8 @@ public abstract class VisitorAdapter {
 	public boolean filterBioModel(BioModelInfo bioModelInfo) {
 		VCellSoftwareVersion sv = bioModelInfo.getSoftwareVersion();
 		final boolean recentEnough = ( sv.getMajorVersion() >= minimumModelVersion() ); 
-		if (!recentEnough && lg.isEnabledFor(level)) {
-			lg.log(level,"skipping old (v" + sv.getMajorVersion() + ")" + bioModelInfo.toString());
+		if (!recentEnough && lg.isInfoEnabled()) {
+			lg.info("skipping old (v" + sv.getMajorVersion() + ")" + bioModelInfo.toString());
 		}
 		return recentEnough;
 	}

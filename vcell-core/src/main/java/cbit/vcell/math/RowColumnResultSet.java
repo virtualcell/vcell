@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.Variable.Domain;
@@ -50,7 +51,7 @@ public class RowColumnResultSet implements java.io.Serializable {
 	
 	private transient VariableSymbolTable resultSetSymbolTableWithFunction = null;
 	private transient VariableSymbolTable resultSetSymbolTableWithoutFunction = null; 
-	private static final Logger lg = Logger.getLogger(RowColumnResultSet.class);
+	private static final Logger lg = LogManager.getLogger(RowColumnResultSet.class);
 
 /**
  *  construct empty, add columns via {@link #addDataColumn(ColumnDescription)} et. al. after creation 

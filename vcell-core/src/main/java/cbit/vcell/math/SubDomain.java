@@ -17,7 +17,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue.IssueOrigin;
@@ -32,7 +33,7 @@ import cbit.vcell.parser.ExpressionException;
  */
 @SuppressWarnings("serial")
 public abstract class SubDomain extends CommentedBlockObject implements Serializable, Matchable, IssueOrigin {
-	protected static final Logger LG = Logger.getLogger(SubDomain.class);
+	protected static final Logger LG = LogManager.getLogger(SubDomain.class);
 
 
 	/**

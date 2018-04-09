@@ -9,7 +9,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.resource.ResourceUtil;
@@ -43,7 +44,7 @@ public class LiveProcess<I extends IProcessInput, O extends IProcessOut, E exten
 	
 	private Map<String,String> environmentals;
 	
-	private static Logger lg = Logger.getLogger(LiveProcess.class);
+	private static Logger lg = LogManager.getLogger(LiveProcess.class);
 
 	public LiveProcess(I inputHandler, O outputHandler, E errorHandler, String ... commands) {
 		super();

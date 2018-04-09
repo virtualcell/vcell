@@ -3,11 +3,10 @@ package cbit.vcell.solvers.mb;
 
 import java.util.Arrays;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.Element;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.MeshInfo;
@@ -20,9 +19,7 @@ public class MovingBoundaryResultTest extends H5Client {
     private static String fname  = FILE;
 	MovingBoundaryReader mbr;
     public MovingBoundaryResultTest() {
-    	Logging.init();
-		Logger lg = Logger.getLogger("ncsa");
-		lg.setLevel(Level.DEBUG);
+		Logger lg = LogManager.getLogger("ncsa");
 		mbr = new MovingBoundaryReader(fname);
 		mbr.testquery();
 	}

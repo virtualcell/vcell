@@ -16,8 +16,8 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.jsbml.ASTNode;
@@ -161,7 +161,7 @@ public class SBMLExporter {
 	
 	private SBMLExportSpec sbmlExportSpec = null;
 	
-	private static Logger lg = Logger.getLogger(SBMLExporter.class);
+	private static Logger lg = LogManager.getLogger(SBMLExporter.class);
 	
 	public class SBMLExportSpec {
 		private VCUnitDefinition substanceUnits = null;
@@ -221,15 +221,7 @@ public class SBMLExporter {
 			}
 		}
 	}
-	
-	/**
-	 * set log4j level (for unit tests)
-	 * @param lvl
-	 */
-	public void setLogLevel(Level lvl) {
-		lg.setLevel(lvl);
-	}
-	
+		
 	public static class VCellSBMLDoc implements AutoCloseable {
 		public final SBMLDocument document;
 		public final org.sbml.jsbml.Model model; 
@@ -330,7 +322,7 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 				sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
 				UnitDefinition unitDefn = getOrCreateSBMLUnit(sbmlSizeUnit);
 				sbmlCompartment.setUnits(unitDefn);
-			} else if (lg.isEnabledFor(Level.WARN)) {
+			} else if (lg.isWarnEnabled()) {
 				lg.warn(this.sbmlModel.getName() + " membrame "  + vcMembrane.getName()  + " has not outside feature");
 				
 			}
@@ -1899,7 +1891,7 @@ System.err.println("should be:\n  distanceMapImageData.setSamples((float[])signe
 }
 
 private boolean goodPointer(Object obj, Class<?> clzz, String sourceName) {
-	if (lg.isEnabledFor(Level.WARN)) {
+	if (lg.isWarnEnabled()) {
 		lg.warn(sourceName + "has no " + clzz.getSimpleName());
 	}
 	return obj != null;

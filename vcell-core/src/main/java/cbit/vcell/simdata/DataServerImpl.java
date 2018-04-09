@@ -9,7 +9,8 @@
  */
 
 package cbit.vcell.simdata;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
@@ -34,7 +35,7 @@ import cbit.vcell.solvers.CartesianMesh;
  * 
  */
 public class DataServerImpl {
-	public static final Logger lg = Logger.getLogger(DataServerImpl.class);
+	public static final Logger lg = LogManager.getLogger(DataServerImpl.class);
 
 	private DataSetControllerImpl dataSetControllerImpl = null;
 	private ExportServiceImpl exportServiceImpl = null;

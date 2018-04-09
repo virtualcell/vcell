@@ -15,7 +15,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 //import java.util.prefs.BackingStoreException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
@@ -46,7 +47,7 @@ public class VisitSupport {
 		}
 	}
 	
-	private static final Logger lg = Logger.getLogger(VisitSupport.class);
+	private static final Logger lg = LogManager.getLogger(VisitSupport.class);
 
 	public static File getVisToolPythonScript()
 	{

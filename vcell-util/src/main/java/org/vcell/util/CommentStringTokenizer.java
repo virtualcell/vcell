@@ -16,7 +16,8 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -33,7 +34,7 @@ public class CommentStringTokenizer {
 	private final static String QUOTE = "\"";
 	private final static String SPACE = " ";
 	private final static String DELIMITERS= SPACE + TAB + QUOTE; 
-	private final static Logger lg = Logger.getLogger(CommentStringTokenizer.class);
+	private final static Logger lg = LogManager.getLogger(CommentStringTokenizer.class);
 	
 	private final static char SPACE_CHAR = ' ';
 	

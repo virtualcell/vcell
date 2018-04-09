@@ -8,8 +8,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -38,7 +38,7 @@ public class PortableCommandWrapper {
 	 */
 	public static final char SCRIPT_COMMENT = '#' ;
 	
-	private static Logger lg = Logger.getLogger(PortableCommandWrapper.class);
+	private static Logger lg = LogManager.getLogger(PortableCommandWrapper.class);
 	
 	/**
 	 * create empty wrapper. {@link #setCommand(PortableCommand)} must be called
@@ -119,7 +119,7 @@ public class PortableCommandWrapper {
 				}
 			}
 		} catch (Exception e) {
-			if (lg.isEnabledFor(Level.WARN)) {
+			if (lg.isWarnEnabled()) {
 				lg.warn("Error parsing " + filename + " for PortableCommands", e);
 			}
 		}

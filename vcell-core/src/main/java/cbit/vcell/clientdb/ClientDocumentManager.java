@@ -19,7 +19,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;
@@ -100,7 +101,7 @@ import cbit.vcell.xml.XmlParseException;
  * @author: 
  */
 public class ClientDocumentManager implements DocumentManager{
-	private static final Logger LG = Logger.getLogger(ClientDocumentManager.class);
+	private static final Logger LG = LogManager.getLogger(ClientDocumentManager.class);
 	//
 	//
 	private SessionManager sessionManager = null;

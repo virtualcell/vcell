@@ -18,7 +18,8 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWChildFrame;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWFrameOrDialog;
@@ -44,7 +45,7 @@ public class ChildWindowManager {
 	
 	private JFrame parent = null;
 	private LWContainerHandle owner = null; 
-	private static final Logger LG = Logger.getLogger(ChildWindowManager.class);
+	private static final Logger LG = LogManager.getLogger(ChildWindowManager.class);
 	private interface ManagedChild {
 		ChildWindowManager getChildWindowManager(); 
 	}

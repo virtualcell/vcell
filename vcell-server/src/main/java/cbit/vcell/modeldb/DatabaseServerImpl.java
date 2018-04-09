@@ -13,14 +13,14 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Preference;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
@@ -68,7 +68,7 @@ import cbit.vcell.xml.XmlParseException;
  * This type was created in VisualAge.
  */
 public class DatabaseServerImpl {
-	public static final Logger lg = Logger.getLogger(DatabaseServerImpl.class);
+	public static final Logger lg = LogManager.getLogger(DatabaseServerImpl.class);
 
 	private DBTopLevel dbTop = null;
 	private DictionaryDBTopLevel dictionaryTop = null;

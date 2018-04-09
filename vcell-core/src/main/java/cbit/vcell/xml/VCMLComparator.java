@@ -18,8 +18,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -51,13 +51,7 @@ public class VCMLComparator {
 	 * existing errors logged yet?
 	 */
 	private static boolean errorRecorded = false;
-	private static Logger LG = Logger.getLogger(VCMLComparator.class);
-	public static void setLogLevel(Level newLevel) {
-		LG.setLevel(newLevel);
-	}
-	public static Level getLogLevel( ) {
-		return LG.getLevel();
-	}
+	private static Logger LG = LogManager.getLogger(VCMLComparator.class);
 	
 	public static class VCMLElementSorter implements Comparator<Element> {
 	

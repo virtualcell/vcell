@@ -17,7 +17,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
@@ -57,7 +58,7 @@ import cbit.vcell.model.ReactionStepInfo;
  * This type was created in VisualAge.
  */
 public class DictionaryDbDriver {
-	public static Logger lg = Logger.getLogger(DictionaryDbDriver.class);
+	public static Logger lg = LogManager.getLogger(DictionaryDbDriver.class);
 	//
     public static final CompoundTable compoundTable = CompoundTable.table;
     public static final CompoundAliasTable compoundAliasTable = CompoundAliasTable.table;

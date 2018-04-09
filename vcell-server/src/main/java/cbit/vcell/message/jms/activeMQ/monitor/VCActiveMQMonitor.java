@@ -18,24 +18,23 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.text.WordUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.message.jms.VCJmsConfig;
 
 public class VCActiveMQMonitor  implements VCJmsConfig{
-	private static final Logger LG = Logger.getLogger(VCActiveMQMonitor.class);
+	private static final Logger LG = LogManager.getLogger(VCActiveMQMonitor.class);
 	private SimpleDateFormat dateFormat;
 	private ScheduledExecutorService executorService;
 	private List<SiteMonitor> siteMonitors = new ArrayList<>();
    
 	public static void main(String[] args) {
 		try {
-			Logging.init();
 			if (args.length > 0) {
 				VCActiveMQMonitor mon = new VCActiveMQMonitor( );
 				mon.startMonitors(args[0]);

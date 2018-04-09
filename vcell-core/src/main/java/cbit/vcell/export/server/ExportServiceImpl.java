@@ -22,7 +22,8 @@ import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
@@ -43,7 +44,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
  * This type was created in VisualAge.
  */
 public class ExportServiceImpl implements ExportConstants, ExportService {
-	public static final Logger lg = Logger.getLogger(ExportServiceImpl.class);
+	public static final Logger lg = LogManager.getLogger(ExportServiceImpl.class);
 	
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 

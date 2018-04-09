@@ -15,7 +15,6 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.apache.log4j.Level;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -36,7 +35,6 @@ import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
-import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -100,7 +98,6 @@ public static void main(java.lang.String[] args) {
 	
 	try {
 		PropertyLoader.loadProperties();
-		DatabasePolicySQL.lg.setLevel(Level.ALL);
 		
 		int serviceOrdinal = Integer.parseInt(args[0]);
 		String logdir = null;

@@ -23,8 +23,8 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ConfigurationException;
 
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -194,7 +194,7 @@ public class PropertyLoader {
 	public static final String NATIVE_LIB_DIR = record("vcell.lib", ValueType.DIR);
 
 	private static File systemTemporaryDirectory = null;
-	private static Logger lg = Logger.getLogger(PropertyLoader.class);
+	private static Logger lg = LogManager.getLogger(PropertyLoader.class);
 
 	private enum ValueType {
 		/**
@@ -513,7 +513,7 @@ public class PropertyLoader {
 			lookForMagic(propertyFile);
 		}
 		else {
-			if (lg.isEnabledFor(Level.WARN)) {
+			if (lg.isWarnEnabled()) {
 				lg.warn("Can't read propertyFile " + propertyFile.getAbsolutePath() + " specified by " + where);
 			}
 			

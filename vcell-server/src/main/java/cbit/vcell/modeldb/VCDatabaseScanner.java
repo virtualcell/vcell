@@ -8,8 +8,8 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -40,7 +40,7 @@ import cbit.vcell.xml.XmlParseException;
  * @author: Jim Schaff
  */
 public class VCDatabaseScanner {
-	public static final Logger lg = Logger.getLogger(VCDatabaseScanner.class);
+	public static final Logger lg = LogManager.getLogger(VCDatabaseScanner.class);
 
 	/**
 	 * special user id meaning all users
@@ -63,7 +63,6 @@ public static VCDatabaseScanner createDatabaseScanner() throws Exception{
 	
 	new PropertyLoader();
 		
-	DatabasePolicySQL.lg.setLevel(Level.WARN);
 	DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	
 	ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();

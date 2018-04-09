@@ -2,8 +2,8 @@ package org.vcell.util.logging;
 
 import java.rmi.server.RemoteServer;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.SessionLog;
 
 /**
@@ -11,17 +11,6 @@ import org.vcell.util.SessionLog;
  * @author gweatherby
  */
 public class Log4jSessionLog implements SessionLog {
-	/**
-	 *  alias for {@link Level#WARN}; use "<<ALERT>>" as
-	 *  identifier for legacy purposes
-	 */
-	@SuppressWarnings("serial")
-	public static class Alert extends Level {
-		private Alert( ) {
-			super(Level.WARN.toInt(),"<<ALERT>>",Level.WARN.getSyslogEquivalent());
-		}
-	}
-	public static final Alert ALERT = new Alert( );
 	
 	private final Logger lg;
 	private String host; 
@@ -34,7 +23,7 @@ public class Log4jSessionLog implements SessionLog {
 		if (userid == null) {
 			userid = "default";
 		}
-		lg = Logger.getLogger(userid);
+		lg = LogManager.getLogger(userid);
 	}
 	/**
 	 * create logger using existing {@link Logger}
@@ -69,24 +58,21 @@ public class Log4jSessionLog implements SessionLog {
 
 	@Override
 	public void alert(String message) {
-		if (lg.isEnabledFor(ALERT))  {
-			lg.log(ALERT,getHost( ) +message); 
+		if (lg.isWarnEnabled())  {
+			lg.warn(message); 
 		}
 
 	}
 
 	@Override
 	public void exception(Throwable e) {
-		if (lg.isEnabledFor(Level.ERROR))  {
-			lg.log(Level.ERROR,getHost( ),e); 
-		}
-
+		lg.error(e.getMessage(),e); 
 	}
 
 	@Override
 	public void print(String message) {
 		if (lg.isDebugEnabled()) {
-			lg.debug(getHost( ) + message);
+			lg.debug(message);
 		}
 	}
 }

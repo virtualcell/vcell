@@ -11,7 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -28,7 +29,6 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusPersistent;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
@@ -53,7 +53,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
 public class SimulationDatabaseDirect implements SimulationDatabase {
-	public static final Logger lg = Logger.getLogger(SimulationDatabaseDirect.class);
+	public static final Logger lg = LogManager.getLogger(SimulationDatabaseDirect.class);
 
 	private AdminDBTopLevel adminDbTopLevel = null;
 	private DatabaseServerImpl databaseServerImpl = null;

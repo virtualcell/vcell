@@ -19,13 +19,13 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
@@ -53,7 +53,7 @@ import cbit.vcell.xml.XmlHelper;
  * @author: Jim Schaff
  */
 public class SolverPreprocessor  {
-	public static final Logger lg = Logger.getLogger(SolverPreprocessor.class);
+	public static final Logger lg = LogManager.getLogger(SolverPreprocessor.class);
 	/**
 	 * Starts the application.
 	 * @param args an array of command-line arguments
@@ -99,7 +99,6 @@ public class SolverPreprocessor  {
 				throw new IllegalArgumentException(parallelDirectory.getAbsolutePath() +  " is not a writeable directory");
 			}
 		}
-		Logging.init();
 		try {
 			
 			PropertyLoader.loadProperties();

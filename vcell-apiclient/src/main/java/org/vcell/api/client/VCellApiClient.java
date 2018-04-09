@@ -3,34 +3,6 @@ package org.vcell.api.client;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-
-/*
- * ====================================================================
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * ====================================================================
- *
- * This software consists of voluntary contributions made by many
- * individuals on behalf of the Apache Software Foundation.  For more
- * information on the Apache Software Foundation, please see
- * <http://www.apache.org/>.
- *
- */
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,8 +14,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -80,6 +50,8 @@ import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.util.TextUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.api.common.AccessTokenRepresentation;
@@ -98,7 +70,7 @@ import com.google.gson.Gson;
  */
 public class VCellApiClient {
 	
-	public static final Logger lg = Logger.getLogger(VCellApiClient.class.getName());
+	private static final Logger lg = LogManager.getLogger(VCellApiClient.class);
 	private HttpHost httpHost;
 	private String clientID;
 	private CloseableHttpClient httpclient;
@@ -163,13 +135,13 @@ public class VCellApiClient {
 
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/simtask?"+simTasksQuerySpec.getQueryString());
 
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve simulation tasks " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String simTasksJson = responseBody;
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(simTasksJson));
 		}
 
@@ -182,13 +154,13 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel?"+bioModelsQuerySpec.getQueryString());
 
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve biomodels " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String bimodelsJson = responseBody;
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(bimodelsJson));
 		}
 
@@ -201,13 +173,13 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/events?beginTimestamp="+beginTimestamp);
 
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve user events " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String eventWrappersJson = responseBody;
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(eventWrappersJson));
 		}
 
@@ -220,13 +192,13 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId);
 		
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String bimodelsJson = responseBody;
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(bimodelsJson));
 		}
 
@@ -239,7 +211,7 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/biomodel.vcml");
 		
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
 		}
 
@@ -253,13 +225,13 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey);
 		
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve simulation " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
 		String simulationJson = responseBody;
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(simulationJson));
 		}
 
@@ -271,12 +243,12 @@ public class VCellApiClient {
 	public String getOptRunJson(String optimizationId) throws IOException {
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization/"+optimizationId);
 		
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve optimization run " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(responseBody));
 		}
 		return responseBody;
@@ -289,7 +261,7 @@ public class VCellApiClient {
 		input.setContentType("application/json");
 		httppost.setEntity(input);
 		
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to submit optProblem " + httppost.getRequestLine());
 		}
 
@@ -299,7 +271,7 @@ public class VCellApiClient {
 				int status = response.getStatusLine().getStatusCode();
 				if (status == 202) {
 					HttpEntity entity = response.getEntity();
-					if (lg.isLoggable(Level.INFO)) {
+					if (lg.isInfoEnabled()) {
 						try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
 							lg.info("optimizationId = "+reader.readLine());
 						}
@@ -321,7 +293,7 @@ public class VCellApiClient {
 
 		};
 		String responseUri = httpclient.execute(httppost,handler,httpClientContext);
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(responseUri));
 		}
 
@@ -357,13 +329,13 @@ public class VCellApiClient {
 		  
 		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey+"/startSimulation");
 		
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httppost, responseHandler, httpClientContext);
 		String simTaskReps = responseBody;
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(simTaskReps));
 		}
 
@@ -380,13 +352,13 @@ public class VCellApiClient {
 		  
 		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey+"/stopSimulation");
 		
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httppost, responseHandler, httpClientContext);
 		String simTaskReps = responseBody;
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(simTaskReps));
 		}
 
@@ -401,13 +373,13 @@ public class VCellApiClient {
 		
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/access_token?user_id="+userid+"&user_password="+digestedPassword+"&client_id="+clientID);
 
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve access_token " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, responseHandler);
 		String accessTokenJson = responseBody;
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+accessTokenJson);
 		}
 
@@ -473,7 +445,7 @@ public class VCellApiClient {
 		input.setContentType(ContentType.APPLICATION_JSON.getMimeType());
 		httppost.setEntity(input);
 		
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to submit new user " + httppost.getRequestLine());
 		}
 
@@ -500,7 +472,7 @@ public class VCellApiClient {
 
 		};
 		UserInfo insertedUserInfo = httpclient.execute(httppost,handler,httpClientContext);
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned userinfo: "+insertedUserInfo);
 		}
 
@@ -513,7 +485,7 @@ public class VCellApiClient {
 		input.setContentType(ContentType.TEXT_PLAIN.getMimeType());
 		httppost.setEntity(input);
 		
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to send lost password " + httppost.getRequestLine());
 		}
 
@@ -539,7 +511,7 @@ public class VCellApiClient {
 
 		};
 		String message = httpclient.execute(httppost,handler,httpClientContext);
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("requested lost password for user "+userid+", server returned "+message);
 		}
 	}
@@ -591,7 +563,7 @@ public class VCellApiClient {
 			httppost.addHeader("specialProperties", Arrays.asList(specialProperties).toString());
 		}
 	
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to submit rpc call " + httppost.getRequestLine());
 		}
 
@@ -599,7 +571,7 @@ public class VCellApiClient {
 
 			public Serializable handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
 				int status = response.getStatusLine().getStatusCode();
-				if (lg.isLoggable(Level.INFO)) {
+				if (lg.isInfoEnabled()) {
 					lg.info("in rpc response handler, status="+status);
 				}
 				if (status == 200) {
@@ -613,23 +585,23 @@ public class VCellApiClient {
 							if (returnValue instanceof Exception){
 								Exception e = (Exception)returnValue;
 								e.printStackTrace();
-								lg.severe("vcellapi rpc failure, method="+rpcRequest.methodName+": "+e.getMessage());
+								lg.error("vcellapi rpc failure, method="+rpcRequest.methodName+": "+e.getMessage(),e);
 								throw new ClientProtocolException("vcellapi rpc failure, method="+rpcRequest.methodName+": "+e.getMessage(),e);
 							} else {
-								if (lg.isLoggable(Level.INFO)) {
+								if (lg.isInfoEnabled()) {
 									lg.info("returning normally from rpc response handler ("+toStringTruncated(returnValue)+")");
 								}
 								return returnValue;
 							}
 						} else {
-							if (lg.isLoggable(Level.INFO)) {
+							if (lg.isInfoEnabled()) {
 								lg.info("returning null from rpc response handler (returnRequired==false)");
 							}
 							return null;
 						}
 					} catch (ClassNotFoundException | IllegalStateException e1) {
 						e1.printStackTrace();
-						lg.severe("vcellapi rpc failure deserializing return value, method="+rpcRequest.methodName+": "+e1.getMessage());
+						lg.error("vcellapi rpc failure deserializing return value, method="+rpcRequest.methodName+": "+e1.getMessage(),e1);
 						throw new RuntimeException("vcellapi rpc failure deserializing return value, method="+rpcRequest.methodName+": "+e1.getMessage(),e1);
 					}
 					
@@ -639,14 +611,14 @@ public class VCellApiClient {
 					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
 						message = reader.lines().collect(Collectors.joining());
 					}
-					lg.severe("RPC method "+rpcDestination+":"+rpcRequest.methodName+"() failed: response status: " + status + "\nreason: " + message);
+					lg.error("RPC method "+rpcDestination+":"+rpcRequest.methodName+"() failed: response status: " + status + "\nreason: " + message);
 					throw new ClientProtocolException("RPC method "+rpcDestination+":"+rpcRequest.methodName+"() failed: response status: " + status + "\nreason: " + message);
 				}
 			}
 
 		};
 		Serializable returnedValue = httpclient.execute(httppost,handler,httpClientContext);
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("returned from vcellapi rpc method="+rpcDestination+":"+rpcRequest.methodName+"()");
 		}
 		return returnedValue;
@@ -706,7 +678,7 @@ public class VCellApiClient {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/swversion");
 
-		if (lg.isLoggable(Level.INFO)) {
+		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve server software version " + httpget.getRequestLine());
 		}
 

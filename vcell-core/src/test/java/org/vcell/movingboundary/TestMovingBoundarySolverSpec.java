@@ -5,12 +5,8 @@ import static junit.framework.Assert.assertTrue;
 import org.junit.Test;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.logging.Logging;
 
 public class TestMovingBoundarySolverSpec {
-	static {
-		Logging.init();
-	}
 
 	@Test
 	public void test() throws DataAccessException {

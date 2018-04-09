@@ -2,7 +2,8 @@ package org.vcell.util;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * exit application after time delay
@@ -17,7 +18,7 @@ public class ApplicationTerminator {
 	private ExitProcessThread countdownThread;
 	private static ApplicationTerminator arnold  = null;
 	
-	private static final Logger lg = Logger.getLogger(ApplicationTerminator.class);
+	private static final Logger lg = LogManager.getLogger(ApplicationTerminator.class);
 	
 	/**
 	 * commence count down to exit with specified code

@@ -12,7 +12,8 @@ import java.util.Map;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWDialog;
 import org.vcell.client.logicalwindow.LWHandle;
@@ -26,7 +27,7 @@ import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
  */
 public class LWJDialogDecorator implements LWHandle {
 	private static final Map<JDialog, LWJDialogDecorator>  decorators = new HashMap<>( );
-	static final Logger LG = Logger.getLogger(LWJDialogDecorator.class);
+	static final Logger LG = LogManager.getLogger(LWJDialogDecorator.class);
 	
 	private final JDialog jdialog;
 	private static final LWTraits traits = new LWTraits(InitialPosition.CENTERED_ON_PARENT);

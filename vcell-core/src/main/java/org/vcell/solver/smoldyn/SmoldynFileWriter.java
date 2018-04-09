@@ -32,7 +32,8 @@ import java.util.TreeSet;
 import java.util.zip.DeflaterOutputStream;
 
 import org.apache.commons.math3.random.RandomDataGenerator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ColorUtil;
@@ -205,7 +206,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Map<Polygon, MembraneElement> polygonMembaneElementMap = null;
 	private CartesianMesh cartesianMesh = null;
 	private String baseFileName = null;
-	private static final Logger lg = Logger.getLogger(SmoldynFileWriter.class);
+	private static final Logger lg = LogManager.getLogger(SmoldynFileWriter.class);
 
 public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, SimulationTask simTask, boolean bMessaging)
 {

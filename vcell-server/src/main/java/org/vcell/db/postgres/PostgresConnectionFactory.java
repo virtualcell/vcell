@@ -16,7 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.postgresql.ds.PGConnectionPoolDataSource;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
@@ -29,7 +30,7 @@ import cbit.vcell.modeldb.UserTable;
  * This type was created in VisualAge.y
  */
 public final class PostgresConnectionFactory implements ConnectionFactory  {
-	private static final Logger lg = Logger.getLogger(PostgresConnectionFactory.class);
+	private static final Logger lg = LogManager.getLogger(PostgresConnectionFactory.class);
 
 	private PGConnectionPoolDataSource poolDataSource = null;
 

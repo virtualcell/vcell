@@ -35,7 +35,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 	private PlaneNodes pnodes;
 	private final PointIndexTreeAndList pointIndex;
 
-//	private static final Logger lg = Logger.getLogger(MovingBoundaryReader.class);
+//	private static final Logger lg = LogManager.getLogger(MovingBoundaryReader.class);
 	private static final String HDF_SPLIT_CHARS = "{}, ";
 
 

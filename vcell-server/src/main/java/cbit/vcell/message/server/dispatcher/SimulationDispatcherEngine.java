@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -24,7 +25,6 @@ import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.messages.StatusMessage;
-import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.UpdateSynchronizationException;
@@ -39,7 +39,7 @@ import cbit.vcell.solver.server.SimulationMessage;
  * @author: Jim Schaff
  */
 public class SimulationDispatcherEngine {
-	public static final Logger lg = Logger.getLogger(SimulationDispatcherEngine.class);
+	public static final Logger lg = LogManager.getLogger(SimulationDispatcherEngine.class);
 
 	private HashMap<KeyValue,List<SimulationStateMachine>> simStateMachineHash = new HashMap<KeyValue, List<SimulationStateMachine>>();
 

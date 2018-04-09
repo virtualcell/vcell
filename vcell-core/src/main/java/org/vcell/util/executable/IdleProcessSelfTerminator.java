@@ -2,7 +2,8 @@ package org.vcell.util.executable;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * thread which monitors current process and exits when an elapsed time has passed 
@@ -14,7 +15,7 @@ public class IdleProcessSelfTerminator extends Thread {
 	
 	private final AtomicLong lastTime;
 	private final long idleSeconds;
-	private static Logger lg = Logger.getLogger(IdleProcessSelfTerminator.class);
+	private static Logger lg = LogManager.getLogger(IdleProcessSelfTerminator.class);
 	
 	/**
 	 * create in state {@link Thread.State.NEW}; {@link #start()} must be called to activate

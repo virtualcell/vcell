@@ -5,7 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ProgrammingException;
 
 import cbit.vcell.geometry.concept.PolygonImmutable;
@@ -29,7 +30,7 @@ public class SphereTestFixture {
 	private Boolean bSphereTest;
 	private int level;
 	private Pattern sphereLine;
-	private static Logger LG = Logger.getLogger(SphereTestFixture.class);
+	private static Logger LG = LogManager.getLogger(SphereTestFixture.class);
 	private double center[];
 	private double radius;
 

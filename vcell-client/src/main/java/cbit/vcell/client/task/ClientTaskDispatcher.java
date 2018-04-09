@@ -31,8 +31,8 @@ import javax.swing.Timer;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.ProgressDialogListener;
@@ -63,10 +63,10 @@ public class ClientTaskDispatcher {
 	 */
 	private static final String HASH_DATA_ERROR = "hdeHdeHde";
 	/**
-	 * hash key to store stack trace if {@link #lg} enabled for {@link Level#INFO}
+	 * hash key to store stack trace if {@link #lg} enabled for INFO
 	 */
 	private static final String STACK_TRACE_ARRAY = "clientTaskDispatcherStackTraceArray";
-	private static final Logger lg = Logger.getLogger(ClientTaskDispatcher.class);
+	private static final Logger lg = LogManager.getLogger(ClientTaskDispatcher.class);
 	/**
 	 * used to count / generate thread names
 	 */

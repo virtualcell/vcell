@@ -12,7 +12,8 @@ package cbit.vcell.modeldb;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.document.User;
 
@@ -23,7 +24,7 @@ import cbit.vcell.resource.PropertyLoader;
  * This type was created in VisualAge.
  */
 public class DatabasePolicySQL {
-	public static final Logger lg = Logger.getLogger(DbDriver.class);
+	public static final Logger lg = LogManager.getLogger(DbDriver.class);
 	public static boolean bAllowAdministrativeAccess = false;
 	private static final String alias = "_alias";
 

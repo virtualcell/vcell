@@ -2,8 +2,8 @@ package cbit.vcell.resource;
 
 import javax.swing.JOptionPane;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 /**
@@ -13,7 +13,7 @@ import org.vcell.util.BeanUtils;
 public class LibraryLoaderThread extends Thread {
 	private final boolean isGui;
 	
-	private static Logger lg = Logger.getLogger(LibraryLoaderThread.class);
+	private static Logger lg = LogManager.getLogger(LibraryLoaderThread.class);
 	
 	/**
 	 * execute thread
@@ -58,7 +58,7 @@ public class LibraryLoaderThread extends Thread {
 		}
 		if (sb != null) {
 			if (isGui) {
-			if (lg.isEnabledFor(Level.WARN)) {
+			if (lg.isWarnEnabled()) {
 				lg.warn("scheduling display of " + sb.toString());
 			}
 			// Suppress modal dialog warning for now

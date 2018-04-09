@@ -11,7 +11,8 @@
 package org.vcell.rest.server;
 import javax.swing.event.EventListenerList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
 
 import cbit.rmi.event.DataJobEvent;
@@ -43,7 +44,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * @author: Fei Gao
  */
 public class ClientTopicMessageCollector implements MessageCollector, TopicListener {
-	public static final Logger lg = Logger.getLogger(ClientTopicMessageCollector.class);
+	public static final Logger lg = LogManager.getLogger(ClientTopicMessageCollector.class);
 
 	private EventListenerList listenerList = new EventListenerList();	
 	private VCMessagingService vcMessagingService = null;

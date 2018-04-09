@@ -47,7 +47,6 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.ConsoleCapture;
-import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
@@ -222,7 +221,7 @@ public static void main(java.lang.String[] args) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
 		ConsoleCapture.getInstance().captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
 	}
-	Logging.init();
+//	Logging.init();
 	ErrorUtils.setDebug(IS_DEBUG);
 	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
 		List<String> newArgs = new ArrayList<String>();

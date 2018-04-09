@@ -46,8 +46,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.Severity;
@@ -83,7 +83,7 @@ public abstract class DocumentEditor extends JPanel {
 	public static final String TAB_TITLE_PROBLEMS = "Problems";
 	private static final String TAB_TITLE_OBJECT_PROPERTIES = "Object Properties";
 	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to view/edit properties.";
-	protected static final Logger LG = Logger.getLogger(DocumentEditor.class);
+	protected static final Logger LG = LogManager.getLogger(DocumentEditor.class);
 	
 	protected enum DocumentEditorTabID {
 		object_properties,
@@ -845,7 +845,7 @@ public void setWindowFocus( ) {
 	if (w != null) {
 		w.toFront( );
 	}
-	if (LG.isEnabledFor(Level.WARN)) {
+	if (LG.isWarnEnabled()) {
 		LG.warn("can't find window owner");
 	}
 }

@@ -13,7 +13,8 @@ package org.vcell.db.oracle;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
@@ -32,7 +33,7 @@ public final class OraclePoolingConnectionFactory implements ConnectionFactory  
 
 	private String connectionCacheName = null;
 	private PoolDataSource poolDataSource = null;
-	private static final Logger lg = Logger.getLogger(OraclePoolingConnectionFactory.class);
+	private static final Logger lg = LogManager.getLogger(OraclePoolingConnectionFactory.class);
 
 OraclePoolingConnectionFactory() throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, ConfigurationException, UniversalConnectionPoolException {
 	this(PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),

@@ -10,7 +10,8 @@
 
 package cbit.vcell.server;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.User;
 
 /**
@@ -20,7 +21,7 @@ import org.vcell.util.document.User;
  */
 public class PerformanceMonitoringFacility implements cbit.rmi.event.PerformanceMonitorListener {
 	private User user = null;
-	private static Logger lg = Logger.getLogger(PerformanceMonitoringFacility.class);
+	private static Logger lg = LogManager.getLogger(PerformanceMonitoringFacility.class);
 
 /**
  * Insert the method's description here.

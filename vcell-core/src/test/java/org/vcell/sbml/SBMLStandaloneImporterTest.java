@@ -3,14 +3,12 @@ package org.vcell.sbml;
 import java.io.File;
 
 import org.vcell.sbml.vcell.SBMLStandaloneImporter;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.biomodel.BioModel;
 
 public class SBMLStandaloneImporterTest {
 
 	public static void main(String[] args) {
-		Logging.init( );
 		try {
 		SBMLStandaloneImporter sa = new SBMLStandaloneImporter();
 		for (;;) {

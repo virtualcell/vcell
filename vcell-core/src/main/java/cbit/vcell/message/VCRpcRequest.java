@@ -12,7 +12,8 @@ package cbit.vcell.message;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
@@ -23,7 +24,7 @@ import org.vcell.util.document.User;
  * @author: Fei Gao
  */
 public class VCRpcRequest implements java.io.Serializable {
-	public static final Logger lg = Logger.getLogger(VCRpcRequest.class);
+	public static final Logger lg = LogManager.getLogger(VCRpcRequest.class);
 	
 	public enum RpcServiceType {
 		DATA("Data"), 

@@ -47,7 +47,6 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImportException.Category;
 import org.vcell.util.SkipCommentLineNumberReader;
-import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
@@ -101,7 +100,6 @@ public class BiomodelsDB_TestSuite {
 
 	public static void main(String[] args){
 		try {
-			Logging.init();
 			/*sanity check -- we currently only have a copasi_java dll for 32-bit, so let's make sure 
 			 * we're running on the right JVM. (Note we can run this on 64 bit machine, just have to install
 			 * a 32 bit JVM...)

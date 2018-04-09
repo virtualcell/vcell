@@ -4,7 +4,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import org.vcell.util.SessionLog;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.resource.StdoutSessionLogConcurrent.LifeSignInfo;
 
@@ -37,7 +36,6 @@ public class StdSessionLogTest {
 	
 	@SuppressWarnings("resource")
 	private static void setup(String[] args) throws Exception{
-		Logging.init();
 		PrintStream output = new PrintStream(args[3]);
 		SessionLog log = null;
 		String type = args[0];

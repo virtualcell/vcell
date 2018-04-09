@@ -15,9 +15,8 @@ import java.util.Objects;
 
 import javax.swing.JMenuBar;
 
-import org.apache.commons.logging.impl.Log4JLogger;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWHandle.LWModality;
 import org.vcell.util.BeanUtils;
 
@@ -27,11 +26,8 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * utility methods for package
  */
 public interface LWNamespace {
-	/**
-	 * holder for {@link Log4JLogger}
-	 */
 	public static class LGHolder {
-		private final static Logger LG = Logger.getLogger(LWNamespace.class);
+		private final static Logger LG = LogManager.getLogger(LWNamespace.class);
 	}
 
 	/**
@@ -171,7 +167,7 @@ public interface LWNamespace {
 		case DOCUMENT_MODAL:
 			return LWModality.PARENT_ONLY;
 		default:
-			if (lg.isEnabledFor(Level.WARN)) {
+			if (lg.isWarnEnabled()) {
 				lg.warn(ExecutionTrace.justClassName(dialog) + " titled " + dialog.getTitle() + 
 						" using unsupported modality "  + awtModality);
 			}

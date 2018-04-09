@@ -15,7 +15,6 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.apache.log4j.Level;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -228,7 +227,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							gs.geometryNameChanged(oldName,newName);
 						}
 						else {
-							if (lg.isEnabledFor(Level.WARN)) {
+							if (lg.isWarnEnabled()) {
 								lg.warn(getGeometry().getDescription() + " has no GeometrySpec?");
 							}
 							

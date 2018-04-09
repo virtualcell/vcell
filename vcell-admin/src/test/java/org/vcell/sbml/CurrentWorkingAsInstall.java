@@ -1,7 +1,5 @@
 package org.vcell.sbml;
 
-import org.vcell.util.logging.Logging;
-
 import cbit.vcell.resource.ResourceUtil;
 
 /**
@@ -23,7 +21,6 @@ public class CurrentWorkingAsInstall {
 	 * set current working directory as vcell.installDir, if not already set
 	 */
 	public static void init( ) {
-		Logging.init( );
 		if (System.getProperty(IPROP) == null) {
 			System.setProperty(IPROP, "cwd");
 		}

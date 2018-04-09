@@ -10,7 +10,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.LifeSignThread;
 import org.vcell.util.SessionLog;
 
@@ -43,7 +44,7 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 	private static final int FIRST_MESSAGES = 200; 
 
 	private final LinkedBlockingQueue<String> messageQueue;
-	private static final Logger LG = Logger.getLogger(StdoutSessionLogConcurrent.class);
+	private static final Logger LG = LogManager.getLogger(StdoutSessionLogConcurrent.class);
 	private final AtomicBoolean shutdown; 
 	private final ThreadThatWrites writerThread;
 	protected final PrintWriter out; 

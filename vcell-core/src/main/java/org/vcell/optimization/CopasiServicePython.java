@@ -7,7 +7,8 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
@@ -50,7 +51,7 @@ import cbit.vcell.resource.ResourceUtil;
 public class CopasiServicePython {
 	
 	public static CopasiServicePython copasiService = null;
-	protected static final Logger lg = Logger.getLogger(VtkService.class);
+	protected static final Logger lg = LogManager.getLogger(VtkService.class);
 
 	public static void writeOptProblem(File optProblemFile,  OptProblem optProblem) throws IOException {
 		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());

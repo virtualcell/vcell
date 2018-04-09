@@ -12,7 +12,8 @@ import java.util.Vector;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -33,7 +34,7 @@ import ncsa.hdf.object.HObject;
 
 public class CartesianMeshChombo extends CartesianMesh {
 	private static final long serialVersionUID = -6830066634726835851L;
-	protected static Logger logger = Logger.getLogger(CartesianMeshChombo.class);
+	protected static Logger logger = LogManager.getLogger(CartesianMeshChombo.class);
 	
 	public static class FeaturePhaseVol implements Serializable
 	{

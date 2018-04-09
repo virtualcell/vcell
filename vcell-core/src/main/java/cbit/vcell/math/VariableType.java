@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Matchable;
 
 
@@ -38,7 +38,7 @@ public class VariableType implements java.io.Serializable, org.vcell.util.Matcha
 	 */
 	private boolean legacyWarn = false;
 	private static final List<VariableType> allTypes = new ArrayList<>();
-	private static final Logger LG = Logger.getLogger(VariableType.class);
+	private static final Logger LG = LogManager.getLogger(VariableType.class);
 	
 	//match constants in numerics SimTypes.h
 	private static final int UNKNOWN_TYPE = 0;
@@ -309,7 +309,7 @@ public boolean incompatibleWith(VariableType funcType) {
  */
 protected boolean supportsCode(int code) {
 	final boolean matches = ( code == type );
-	if (matches && legacyWarn  && LG.isEnabledFor(Level.WARN)) {
+	if (matches && legacyWarn  && LG.isWarnEnabled()) {
 		LG.warn("code match found on " + code + ", " + getTypeName() + ", not previously supported");
 	}
 	return matches;

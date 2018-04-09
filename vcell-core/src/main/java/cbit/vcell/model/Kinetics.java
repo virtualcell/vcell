@@ -18,8 +18,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -235,7 +235,7 @@ java.io.Serializable, IssueSource
 		null,	// valence
 	};
 	
-	private static final Logger lg = Logger.getLogger(Kinetics.class);
+	private static final Logger lg = LogManager.getLogger(Kinetics.class);
 
 
 	public class KineticsParameter extends Parameter implements ExpressionContainer, IssueSource {
@@ -2061,7 +2061,7 @@ public void resolveUndefinedUnits() {
 				}
 			}
 		}catch (Exception e){
-			if (lg.isEnabledFor(Level.WARN)) {
+			if (lg.isWarnEnabled()) {
 				lg.warn("Kinetics.resolveUndefinedUnits(): EXCEPTION: "+e.getMessage());
 			}
 		}finally{

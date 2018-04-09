@@ -2,17 +2,12 @@ package org.vcell.core;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.vcell.util.ApplicationTerminator;
-import org.vcell.util.logging.Logging;
 
 @SuppressWarnings("unused")
 public class TerminatorTest {
 
 	public static void main(String[] args) {
-		Logging.init();
-		Logger.getLogger(ApplicationTerminator.class).setLevel(Level.INFO);
 		try {
 			int testN = 1; 
 			boolean shouldNotReturn = false;

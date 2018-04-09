@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
@@ -40,7 +40,7 @@ public class HealthService {
 	private static final long SIMULATION_LOOP_START_DELAY = 60*1000;
 	private static final long SIMULATION_LOOP_SLEEP = 5*60*1000;
 	
-	Logger lg = LoggerFactory.getLogger(HealthService.class);
+	Logger lg = LogManager.getLogger(HealthService.class);
 
 	public static enum HealthEventType {
 		LOGIN_START,

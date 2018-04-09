@@ -3,12 +3,13 @@ package org.vcell.vis.vtk;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 
 public abstract class VtkService {
 	public static VtkService vtkService = null;
-	protected static final Logger lg = Logger.getLogger(VtkService.class);
+	protected static final Logger lg = LogManager.getLogger(VtkService.class);
 
 	public static VtkService getInstance(){
 		//return new VtkGridUtils();

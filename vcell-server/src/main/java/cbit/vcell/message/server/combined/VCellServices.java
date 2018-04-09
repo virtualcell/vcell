@@ -12,8 +12,6 @@ package cbit.vcell.message.server.combined;
 import java.io.File;
 import java.util.Date;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -47,9 +45,7 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.message.server.sim.HtcSimulationWorker;
 import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.LibraryLoaderThread;

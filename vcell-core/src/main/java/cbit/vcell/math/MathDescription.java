@@ -29,7 +29,8 @@ import java.util.function.Predicate;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Commented;
@@ -100,7 +101,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	private static final char NEWLINE_CHAR = '\n';
 
 	private ArrayList<ParticleMolecularType> particleMolecularTypes = new ArrayList<ParticleMolecularType>();
-	private static Logger lg = Logger.getLogger(MathDescription.class);
+	private static Logger lg = LogManager.getLogger(MathDescription.class);
 	
 /**
  * MathDescription constructor comment.

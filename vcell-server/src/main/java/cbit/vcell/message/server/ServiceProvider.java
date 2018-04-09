@@ -10,15 +10,8 @@
 
 package cbit.vcell.message.server;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
@@ -37,7 +30,7 @@ import cbit.vcell.message.messages.MessageConstants;
  * @author: Fei Gao
  */
 public abstract class ServiceProvider {
-	public static final Logger lg = Logger.getLogger(ServiceProvider.class);
+	public static final Logger lg = LogManager.getLogger(ServiceProvider.class);
 
 	protected ServiceInstanceStatus serviceInstanceStatus = null;
 	protected VCMessagingService vcMessagingService = null;

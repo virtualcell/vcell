@@ -11,7 +11,8 @@
 package cbit.vcell.modeldb;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
@@ -31,7 +32,7 @@ import cbit.vcell.server.UpdateSynchronizationException;
  * This type was created in VisualAge.
  */
 public class LocalAdminDbServer implements AdminDatabaseServer {
-	public static final Logger lg = Logger.getLogger(LocalAdminDbServer.class);
+	public static final Logger lg = LogManager.getLogger(LocalAdminDbServer.class);
 
 	private AdminDBTopLevel adminDbTop = null;
 

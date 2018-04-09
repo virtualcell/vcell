@@ -15,7 +15,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.InflaterInputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 /**
  * This type was created in VisualAge.
  */
@@ -23,7 +24,7 @@ import org.apache.log4j.Logger;
 public class VCImageCompressed extends VCImage {
 	private byte compressedPixels[] = null;
 	private transient byte uncompressed[] = null;
-	private static Logger lg = Logger.getLogger(VCImageCompressed.class);
+	private static Logger lg = LogManager.getLogger(VCImageCompressed.class);
 /**
  * This method was created in VisualAge.
  * @param vcimage cbit.image.VCImage

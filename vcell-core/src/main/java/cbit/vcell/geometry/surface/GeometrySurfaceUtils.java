@@ -10,9 +10,10 @@
 
 package cbit.vcell.geometry.surface;
 
+import org.apache.logging.log4j.LogManager;
 //import org.vcell.util.ISize;
 //import progress.message.client.EExclusiveQueueOpen;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.geometry.GeometrySpec;
@@ -26,7 +27,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: Jim Schaff
  */ 
 public class GeometrySurfaceUtils {
-	private static Logger lg = Logger.getLogger(GeometrySurfaceUtils.class);
+	private static Logger lg = LogManager.getLogger(GeometrySurfaceUtils.class);
 /**
  * Insert the method's description here.
  * Creation date: (6/28/2004 3:09:13 PM)

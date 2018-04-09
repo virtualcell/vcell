@@ -13,7 +13,8 @@ import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Objects;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.TimeInterval;
 import org.vcell.util.BeanUtils;
@@ -54,7 +55,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	public static final int TASK_UNSTEADY = 0;
 	public static final int TASK_STEADY   = 1;
 
-	private static Logger lg = Logger.getLogger(SolverTaskDescription.class);
+	private static Logger lg = LogManager.getLogger(SolverTaskDescription.class);
 	//
 	private int fieldTaskType = TASK_UNSTEADY;
 	private Constant fieldSensitivityParameter = null;

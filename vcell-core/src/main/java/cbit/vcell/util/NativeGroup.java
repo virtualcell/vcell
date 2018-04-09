@@ -9,7 +9,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.prefs.Preferences;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 
 /**
@@ -28,7 +29,7 @@ class NativeGroup implements Callable<Boolean> {
 	public static final int NUM_ATTEMPTS = 50;
 
 	
-	private static Logger lg = Logger.getLogger(NativeGroup.class);
+	private static Logger lg = LogManager.getLogger(NativeGroup.class);
 
 	/**
 	 * preferences to use

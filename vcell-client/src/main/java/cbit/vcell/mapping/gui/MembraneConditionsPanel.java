@@ -13,8 +13,8 @@ import java.awt.BorderLayout;
 
 import javax.swing.JTable;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
@@ -31,7 +31,7 @@ public class MembraneConditionsPanel extends DocumentEditorSubPanel implements  
 	private SimulationContext fieldSimulationContext = null;
 	private JSortTable table = null;
 	private MembraneConditionTableModel tableModel = null;
-	private static Logger lg = Logger.getLogger(MembraneConditionsPanel.class);
+	private static Logger lg = LogManager.getLogger(MembraneConditionsPanel.class);
 	
 public MembraneConditionsPanel() {
 	super();
@@ -84,7 +84,7 @@ public SimulationContext getSimulationContext() {
  * @param exception java.lang.Throwable
  */
 private void handleException(Throwable exception) {
-	if (lg.isEnabledFor(Level.WARN)) {
+	if (lg.isWarnEnabled()) {
 		lg.warn("uncaught exception " + getClass( ).getName(),exception);
 	}
 }

@@ -19,12 +19,12 @@ import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
@@ -39,7 +39,7 @@ import cbit.vcell.resource.PropertyLoader;
 public class UserDbDriver /*extends DbDriver*/ {
 	public static final UserTable userTable = UserTable.table;
 	private Random passwordGen = null; 
-	private static final Logger lg = Logger.getLogger(UserDbDriver.class);
+	private static final Logger lg = LogManager.getLogger(UserDbDriver.class);
 /**
  * LocalDBManager constructor comment.
  */
@@ -485,7 +485,7 @@ public ApiClient getApiClient(Connection con, String clientId) throws SQLExcepti
 	try {
 		rset = stmt.executeQuery(sql);
 		if (rset.next()) {
-			apiClient = clientTable.getApiClient(rset, lg);
+			apiClient = clientTable.getApiClient(rset);
 		}
 	} finally {
 		stmt.close();

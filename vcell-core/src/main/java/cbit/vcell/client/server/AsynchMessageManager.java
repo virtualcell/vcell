@@ -18,7 +18,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.DataJobEvent;
@@ -50,7 +51,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
 public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener,DataJobListenerHolder {
     private static final long BASE_POLL_SECONDS = 3;
     private static final long ATTEMPT_POLL_SECONDS = 3;
-	private static Logger lg = Logger.getLogger(AsynchMessageManager.class);
+	private static Logger lg = LogManager.getLogger(AsynchMessageManager.class);
 
 	private EventListenerList listenerList = new EventListenerList();
     private ClientServerManager clientServerManager = null;

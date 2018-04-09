@@ -34,7 +34,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.CacheException;
@@ -137,7 +138,7 @@ import ncsa.hdf.object.h5.H5ScalarDS;
  */
 
 public class DataSetControllerImpl implements SimDataConstants,DataJobListenerHolder {
-	public static final Logger lg = Logger.getLogger(DataSetControllerImpl.class);
+	public static final Logger lg = LogManager.getLogger(DataSetControllerImpl.class);
 	
 	private boolean bAllowOptimizedTimeDataRetrieval = true;
 	

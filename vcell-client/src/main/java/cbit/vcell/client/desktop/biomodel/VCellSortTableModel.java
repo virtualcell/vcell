@@ -21,7 +21,8 @@ import java.util.Set;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.gui.ScrollTable;
@@ -46,7 +47,7 @@ public abstract class VCellSortTableModel<T> extends AbstractTableModel  impleme
 	private SortPreference fieldSortPreference = new SortPreference(true, -1);
 	private List<T> visibleRows = Collections.synchronizedList(new ArrayList<T>());
 	private String columns[] = null;		
-	protected static Logger lg = Logger.getLogger(VCellSortTableModel.class);
+	protected static Logger lg = LogManager.getLogger(VCellSortTableModel.class);
 
 	public VCellSortTableModel() {
 		this(null, null);

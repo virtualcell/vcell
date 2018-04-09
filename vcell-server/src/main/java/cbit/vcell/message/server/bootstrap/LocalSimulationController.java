@@ -10,7 +10,8 @@
 
 package cbit.vcell.message.server.bootstrap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -27,7 +28,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * @author: Jim Schaff
  */
 public class LocalSimulationController implements SimulationController {
-	public static final Logger lg = Logger.getLogger(LocalSimulationController.class);
+	public static final Logger lg = LogManager.getLogger(LocalSimulationController.class);
 
 	private SimulationControllerImpl simulationControllerImpl = null;
 	private User user = null;

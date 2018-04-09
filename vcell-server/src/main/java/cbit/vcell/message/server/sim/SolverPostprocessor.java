@@ -16,14 +16,12 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.logging.Log4jSessionLog;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
@@ -58,7 +56,6 @@ public class SolverPostprocessor  {
 			System.exit(1);
 		}
 
-		Logging.init();
 		Log4jSessionLog log = new Log4jSessionLog(LOG_NAME);
 		Logger lg = log.getLogger( );
 		VCMessagingService vcMessagingService = null;
@@ -152,7 +149,7 @@ public class SolverPostprocessor  {
 					lg.debug("processing " + cmd.getClass( ).getName());
 				}
 			if (cmd.execute() != 0) {
-				if (lg.isEnabledFor(Level.WARN)) {
+				if (lg.isWarnEnabled()) {
 					lg.warn("post processing auxiliary command failed",cmd.exception());
 				}
 				return cmd.exception();

@@ -18,8 +18,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
-import org.vcell.util.ConfigurationException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -73,7 +73,7 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	private VCQueueConsumer queueConsumer = null;
 	private VCMessageSession sharedMessageProducer = null;
 	private VCPooledQueueConsumer pooledQueueConsumer = null;
-	public static Logger lg = Logger.getLogger(HtcSimulationWorker.class);
+	public static Logger lg = LogManager.getLogger(HtcSimulationWorker.class);
 
 	/**
 	 * SimulationWorker constructor comment.

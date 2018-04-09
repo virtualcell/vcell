@@ -19,7 +19,6 @@ public class WatchLogging {
 	public static void init(long timeDelayMillis) {
 		singleInitCheck();
 		WATCH_LOGGING_DELAY_MILLIS = timeDelayMillis;
-		Logging.init();
 	}
 	
 	/**
@@ -39,7 +38,6 @@ public class WatchLogging {
 				System.err.println("invalid " + propertyName +  " property " + intvlProp);
 			}
 		}
-		Logging.init();
 	}
 	
 	/**

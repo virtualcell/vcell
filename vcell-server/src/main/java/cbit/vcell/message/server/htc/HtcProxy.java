@@ -9,12 +9,12 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.ExecutableException;
 
@@ -25,7 +25,7 @@ import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.solvers.ExecutableCommand;
 
 public abstract class HtcProxy {
-	public static final Logger LG = Logger.getLogger(HtcProxy.class);
+	public static final Logger LG = LogManager.getLogger(HtcProxy.class);
 
 	/**
 	 *

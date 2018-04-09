@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ISize;
 import org.vcell.vis.chombo.ChomboBoundaries;
 import org.vcell.vis.chombo.ChomboBoundaries.BorderCellInfo;
@@ -31,7 +32,7 @@ import org.vcell.vis.vismesh.thrift.VisVoxel;
 
 
 public class ChomboMeshMapping {
-	private static Logger LG = Logger.getLogger(ChomboMeshMapping.class);
+	private static Logger LG = LogManager.getLogger(ChomboMeshMapping.class);
 	
 	public ChomboMeshMapping(){
 		

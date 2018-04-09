@@ -22,7 +22,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -43,7 +44,7 @@ import cbit.vcell.util.AmplistorUtils;
  * @author: Jim Schaff
  */
 public class ResultSetCrawler {
-	public static final Logger lg = Logger.getLogger(ResultSetCrawler.class);
+	public static final Logger lg = LogManager.getLogger(ResultSetCrawler.class);
 	
 	public static void main(String[] args) {
 		ConnectionFactory conFactory = null;

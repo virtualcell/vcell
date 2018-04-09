@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayModel;
@@ -86,7 +87,7 @@ Identifiable, IdentifiableProvider, IssueSource
 
 	private final PathwayModel pathwayModel = new PathwayModel();
 	private final RelationshipModel relationshipModel = new RelationshipModel();
-	private static final Logger lg = Logger.getLogger(BioModel.class);
+	private static final Logger lg = LogManager.getLogger(BioModel.class);
 
 	public BioModel(Version version, ModelUnitSystem modelUnitSystem){
 		super();

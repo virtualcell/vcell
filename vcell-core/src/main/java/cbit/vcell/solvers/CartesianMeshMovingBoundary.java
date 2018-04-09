@@ -7,7 +7,8 @@ import java.util.List;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -23,7 +24,7 @@ import ncsa.hdf.object.Group;
 
 public class CartesianMeshMovingBoundary extends CartesianMesh 
 {
-	private static Logger logger = Logger.getLogger(CartesianMeshMovingBoundary.class);
+	private static Logger logger = LogManager.getLogger(CartesianMeshMovingBoundary.class);
 	private static final String Group_Mesh = "Mesh";
 	private int dimension;
 

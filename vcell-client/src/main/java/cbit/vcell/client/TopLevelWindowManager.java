@@ -26,8 +26,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -72,7 +72,7 @@ public abstract class TopLevelWindowManager implements DataJobListenerHolder {
 	protected transient Vector<DataListener> aDataListener = null;
 	protected transient Vector<ExportListener> aExportListener = null;
 	protected transient Vector<DataJobListener> aDataJobListener = null;
-	private static final Logger lg = Logger.getLogger(TopLevelWindowManager.class);
+	private static final Logger lg = LogManager.getLogger(TopLevelWindowManager.class);
 	private static final LinkedList<WeakReference<TopLevelWindowManager>> allManagers = new LinkedList<>();
 	private static final Object PREFERENCES_WINDOW = "PREFERENCES_WINDOW";
 
@@ -102,7 +102,7 @@ public static TopLevelWindowManager activeManager( ) {
 			continue;
 		}
 		if (activetf == null) {
-			if (lg.isEnabledFor(Level.WARN)) {
+			if (lg.isWarnEnabled()) {
 				lg.warn("no active LWTopFrame in TopLevelWindowManager?");
 			}
 			return tlwm; //guess

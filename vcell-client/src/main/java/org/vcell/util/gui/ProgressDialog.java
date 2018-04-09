@@ -16,7 +16,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWDialog;
 import org.vcell.util.ProgressDialogListener;
@@ -35,7 +36,7 @@ public abstract class ProgressDialog extends LWDialog {
 	protected final static int MaxLen = 50;					// message truncation if too long
 	protected final static int TruncTailLen = 0;
 	protected final static int TruncHeaderLen = MaxLen - (TruncTailLen + 2);
-	protected final static Logger LG = Logger.getLogger(ProgressDialog.class);
+	protected final static Logger LG = LogManager.getLogger(ProgressDialog.class);
 	
 	protected JProgressBar progressBar = null;
 	protected transient ProgressDialogListener fieldProgressDialogListenerEventMulticaster = null;

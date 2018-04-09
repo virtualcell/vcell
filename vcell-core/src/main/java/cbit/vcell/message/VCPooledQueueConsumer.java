@@ -8,10 +8,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class VCPooledQueueConsumer implements VCQueueConsumer.QueueListener {
-	public static final Logger lg = Logger.getLogger(VCPooledQueueConsumer.class);
+	public static final Logger lg = LogManager.getLogger(VCPooledQueueConsumer.class);
 
 	private VCQueueConsumer.QueueListener queueListener = null;
 	private int numThreads;

@@ -3,8 +3,8 @@ package cbit.vcell.mapping.gui;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.VCAssert;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -26,7 +26,7 @@ import cbit.vcell.parser.ExpressionException;
  */
 @SuppressWarnings("serial")
 public class MembraneConditionTableModel extends VCellSortTableModel<MembraneSpec> {
-	private static Logger lg = Logger.getLogger(MembraneConditionTableModel.class);
+	private static Logger lg = LogManager.getLogger(MembraneConditionTableModel.class);
 	
 	private SimulationContext simContext;
 	
@@ -66,7 +66,7 @@ public class MembraneConditionTableModel extends VCellSortTableModel<MembraneSpe
 		 return ScopedExpression.class;
 		
 		}
-		if (lg.isEnabledFor(Level.WARN)) {
+		if (lg.isWarnEnabled()) {
 			lg.warn("getColumnClass asking for column " + columnIndex);
 		}
 		return Object.class; 
@@ -81,7 +81,7 @@ public class MembraneConditionTableModel extends VCellSortTableModel<MembraneSpe
 		case COLUMN_CELERITY_Y:
 		 return true; 
 		}
-		if (lg.isEnabledFor(Level.WARN)) {
+		if (lg.isWarnEnabled()) {
 			lg.warn("isCellEditable asking for column " + columnIndex);
 		}
 		return false;
@@ -110,7 +110,7 @@ public class MembraneConditionTableModel extends VCellSortTableModel<MembraneSpe
 		}
 		
 		IllegalArgumentException iae = new IllegalArgumentException("no column " + col);
-		if (lg.isEnabledFor(Level.WARN)) {
+		if (lg.isWarnEnabled()) {
 			lg.warn("getValueAt", iae);
 		}
 		throw iae;
@@ -136,7 +136,7 @@ public class MembraneConditionTableModel extends VCellSortTableModel<MembraneSpe
 			default:
 		}
 		} catch (ExpressionException ee) {
-			if (lg.isEnabledFor(Level.WARN)) {
+			if (lg.isWarnEnabled()) {
 				lg.warn("setValueAt " + rowIndex + ", " + columnIndex + " with " + aValue, ee);
 			}
 			PopupGenerator.showErrorDialog(super.ownerTable, ee.getMessage());
@@ -159,7 +159,7 @@ public class MembraneConditionTableModel extends VCellSortTableModel<MembraneSpe
 				return new YCompare(ascending);
 		}
 		IllegalArgumentException iae = new IllegalArgumentException("no column " + col);
-		if (lg.isEnabledFor(Level.WARN)) {
+		if (lg.isWarnEnabled()) {
 			lg.warn("getComparator", iae);
 		}
 		throw iae;

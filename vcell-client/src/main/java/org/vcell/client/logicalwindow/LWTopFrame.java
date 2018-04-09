@@ -22,7 +22,8 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 
 /**
@@ -49,7 +50,7 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	private static Map<String,MutableInt> titleSequenceNumbers = new HashMap<>();
 
 	private static final LWTraits traits = new LWTraits(InitialPosition.NOT_LW_MANAGED);
-	private static final Logger LG = Logger.getLogger(LWTopFrame.class);
+	private static final Logger LG = LogManager.getLogger(LWTopFrame.class);
 
 //	private final static Set<Window> transientStatusDialogs;
 	static {

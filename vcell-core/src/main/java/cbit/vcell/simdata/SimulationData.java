@@ -29,8 +29,8 @@ import java.util.zip.ZipEntry;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -373,7 +373,7 @@ public class SimulationData extends VCData {
 	private String odeIdentifier = null;
 
 
-	private static Logger lg = Logger.getLogger(SimulationData.class);
+	private static Logger lg = LogManager.getLogger(SimulationData.class);
 	public static class SimDataAmplistorInfo {
 		private String amplistorVCellUsersRootPath;
 		private AmplistorCredential amplistorCredential;
@@ -1445,7 +1445,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 				try {
 					varType = VariableType.getVariableTypeFromInteger(varTypeInts[i]);
 				}catch (IllegalArgumentException e){
-					if (LG.isEnabledFor(Level.WARN)) {
+					if (LG.isWarnEnabled()) {
 						LG.warn("Exception typing " + varNames[i] + " has unsupported type " + varTypeInts[i] + ": " + e.getMessage());
 					}
 					varType = SimulationData.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));

@@ -12,7 +12,8 @@ package cbit.vcell.message.server.bootstrap;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -35,7 +36,7 @@ import ncsa.hdf.object.FileFormat;
  * This type was created in VisualAge.
  */
 public class LocalVCellConnectionFactory implements VCellConnectionFactory {
-	public static final Logger lg = Logger.getLogger(LocalVCellConnectionFactory.class);
+	public static final Logger lg = LogManager.getLogger(LocalVCellConnectionFactory.class);
 	
 	private UserLoginInfo userLoginInfo;
 	private ConnectionFactory connectionFactory = null;

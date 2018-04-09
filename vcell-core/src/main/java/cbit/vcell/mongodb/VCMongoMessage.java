@@ -6,6 +6,8 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
@@ -41,6 +43,7 @@ public final class VCMongoMessage {
 	public static boolean enabled = true;
 	public static boolean bTrace = false;
 	private static boolean processingException = false;
+	private static Logger lg = LogManager.getLogger(VCMongoMessage.class);
 	
 	public static enum ServiceName {
 		unknown,
@@ -194,7 +197,7 @@ public final class VCMongoMessage {
 	
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 	
@@ -238,7 +241,7 @@ public final class VCMongoMessage {
 							
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e); 
+			lg.error(e.getMessage(),e); 
 		}
 	}
 
@@ -258,7 +261,7 @@ public final class VCMongoMessage {
 							
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e); 
+			lg.error(e.getMessage(),e); 
 		}
 	}
 
@@ -275,7 +278,7 @@ public final class VCMongoMessage {
 							
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e); 
+			lg.error(e.getMessage(),e); 
 		}
 	}
 
@@ -292,7 +295,7 @@ public final class VCMongoMessage {
 							
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e); 
+			lg.error(e.getMessage(),e); 
 		}
 	}
 
@@ -318,7 +321,7 @@ public final class VCMongoMessage {
 							
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -343,7 +346,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e); 
+			lg.error(e.getMessage(),e); 
 		}
 	}
 
@@ -368,7 +371,7 @@ public final class VCMongoMessage {
 		} catch (Exception e){
 			e.printStackTrace(System.out);
 			// cannot put exception to SessionLog ... infinite recursion.
-			// VCMongoDbDriver.getInstance().getSessionLog().exception(e); 
+			// lg.error(e.getMessage(),e); 
 			//
 		} finally {
 			processingException = false;
@@ -396,7 +399,7 @@ public final class VCMongoMessage {
 	
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -423,7 +426,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -443,7 +446,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -460,7 +463,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -477,7 +480,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -494,7 +497,7 @@ public final class VCMongoMessage {
 				
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 		
@@ -511,7 +514,7 @@ public final class VCMongoMessage {
 				
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 		
@@ -529,7 +532,7 @@ public final class VCMongoMessage {
 				
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -546,7 +549,7 @@ public final class VCMongoMessage {
 				
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -568,7 +571,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 	
@@ -589,7 +592,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -608,7 +611,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -625,7 +628,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -644,7 +647,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -668,7 +671,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -685,7 +688,7 @@ public final class VCMongoMessage {
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			lg.error(e.getMessage(),e);
 		}
 	}
 
@@ -706,7 +709,7 @@ public final class VCMongoMessage {
 					
 					VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 				} catch (Exception e){
-					VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+					lg.error(e.getMessage(),e);
 				}
 			}
 		}

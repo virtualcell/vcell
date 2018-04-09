@@ -41,7 +41,8 @@ import java.util.Vector;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.jsbml.ASTNode;
@@ -281,7 +282,7 @@ public class SBMLImporter {
 		}
 	}
 
-	private static Logger lg = Logger.getLogger(SBMLImporter.class);
+	private static Logger lg = LogManager.getLogger(SBMLImporter.class);
 
 	public SBMLImporter(org.sbml.jsbml.Model sbmlModel, VCLogger argVCLogger, boolean isSpatial) {
 		this((String) null, argVCLogger, isSpatial);

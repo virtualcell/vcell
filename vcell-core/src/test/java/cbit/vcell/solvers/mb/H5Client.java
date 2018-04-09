@@ -3,7 +3,6 @@ package cbit.vcell.solvers.mb;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
@@ -22,7 +21,6 @@ public class H5Client {
 //	protected static String FILE = "fig43-10-1.h5";
 
 	public H5Client() {
-		Logging.init();
     	System.setProperty(PropertyLoader.installationRoot, ".");
     	ResourceUtil.setNativeLibraryDirectory();
     	NativeLib.HDF5.load();

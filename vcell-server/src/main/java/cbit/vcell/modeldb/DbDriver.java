@@ -25,8 +25,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
@@ -116,7 +116,7 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
  * This type was created in VisualAge.
  */
 public abstract class DbDriver {
-	public static final Logger lg = Logger.getLogger(DbDriver.class);
+	protected static final Logger lg = LogManager.getLogger(DbDriver.class);
 	//
 	private static final int VARCHAR_SIZE_LIMIT = 4000;
 	public static final String INSERT_VARCHAR2_HERE = "INSERT_VARCHAR2_HERE";
@@ -2274,9 +2274,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 	ResultSet rset = null;
 	String sql = null;
 	
-	Level origLogLevel = DatabasePolicySQL.lg.getLevel();
 	try{
-		DatabasePolicySQL.lg.setLevel(Level.WARN);
 		
 //double begTime=System.currentTimeMillis();
 //int counter = 0;
@@ -2760,7 +2758,6 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 		lg.error("failed: ("+sql+"): "+e.getMessage(), e);
 		throw e;
 	}finally{
-		DatabasePolicySQL.lg.setLevel(origLogLevel);
 		if(stmt != null){
 			stmt.close();
 		}
@@ -4662,7 +4659,7 @@ public final static void varchar2_CLOB_update(
             marker_index + INSERT_VARCHAR2_HERE.length(),
             "'" + TokenMangler.getSQLEscapedString(data) + "'");
         int changed = updateCleanSQL(con, sb.toString());
-        if (changed != 1 && lg.isEnabledFor(Level.WARN) ){
+        if (changed != 1 && lg.isWarnEnabled() ){
         	lg.warn("query " + sb.toString() + " changed " + changed +  " rows"); 
         }
     }else{

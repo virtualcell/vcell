@@ -17,7 +17,6 @@ import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.advisory.AdvisorySupport;
-import org.vcell.util.logging.Logging;
 
 public class AdvisoryConsumerApp implements MessageListener {
 
@@ -69,7 +68,6 @@ public class AdvisoryConsumerApp implements MessageListener {
     }
 
     public static void main(String[] args) {
-    	Logging.init();
         AdvisoryConsumerApp example = new AdvisoryConsumerApp();
         System.out.print("\n\n\n");
         System.out.println("Starting Advisory Consumer example now...");

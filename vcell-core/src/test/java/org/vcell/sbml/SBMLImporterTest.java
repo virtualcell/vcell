@@ -9,7 +9,6 @@ import javax.xml.stream.XMLStreamException;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
@@ -18,7 +17,6 @@ import cbit.vcell.biomodel.BioModel;
 public class SBMLImporterTest {
 
 	public static void main(String[] args) {
-		Logging.init( );
 		try {
 			VCLogger vcl = new TLogger();
 		SBMLImporter imp = new SBMLImporter("samp.sbml", vcl,false); 

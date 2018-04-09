@@ -10,18 +10,18 @@
 
 package cbit.sql;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 
 import cbit.sql.Field.SQLDataType;
-import cbit.vcell.messaging.db.SimulationJobDbDriver;
 
 /**
  * This type was created in VisualAge.
  */
 public abstract class Table {
 	
-	public static Logger lg = Logger.getLogger(Table.class);
+	public static Logger lg = LogManager.getLogger(Table.class);
 
 	public static final String SQL_GLOBAL_HINT = "";//" /*+ RULE */ ";
 	
