@@ -69,6 +69,7 @@ ENTRYPOINT java \
 	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
     -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
+	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-master.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.python.executable=/usr/bin/python \
