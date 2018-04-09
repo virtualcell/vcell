@@ -15,6 +15,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -77,6 +79,7 @@ import cbit.vcell.xml.XmlParseException;
  */
 public class ServerDocumentManager {
 	private DatabaseServerImpl dbServer = null;
+	private static Logger lg = LogManager.getLogger(ServerDocumentManager.class);
 
 /**
  * ClientDocumentManager constructor comment.
@@ -820,9 +823,9 @@ long start = System.currentTimeMillis();
 	SimulationContext scArray[] = bioModel.getSimulationContexts();
 
 //	Hashtable mathEquivHash = new Hashtable();
-long roundtripTimer = 0;
-long l1 = 0;
-long l2 = 0;
+	long roundtripTimer = 0;
+	long l1 = 0;
+	long l2 = 0;
 	//
 	// for each image (anywhere in document):
 	//    save if necessary (only once) and store saved instance in hashTable
@@ -855,17 +858,25 @@ long l2 = 0;
 						//
 						// saved image not found in origBioModel (too bad), get from database.
 						//
-l1 = System.currentTimeMillis();
+						if (lg.isTraceEnabled()) {
+							l1 = System.currentTimeMillis();
+						}
 						databaseImage = dbServer.getDBTopLevel().getVCImage(dbc, user,memoryImage.getKey(),false);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+						if (lg.isTraceEnabled()) {
+							l2 = System.currentTimeMillis();
+							roundtripTimer += l2 - l1;
+						}
 					}
 					if (databaseImage!=null && !databaseImage.compareEqual(memoryImage)){
 						KeyValue updatedImageKey = dbServer.getDBTopLevel().updateVersionable(user,memoryImage,false,true);
-l1 = System.currentTimeMillis();
+						if (lg.isTraceEnabled()) {
+							l1 = System.currentTimeMillis();
+						}
 						VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(dbc, user,updatedImageKey,false);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+						if (lg.isTraceEnabled()) {
+							l2 = System.currentTimeMillis();
+							roundtripTimer += l2 - l1;
+						}
 						memoryToDatabaseHash.put(memoryImage,updatedImage);
 						bSomethingChanged = true;
 					}
@@ -887,10 +898,14 @@ roundtripTimer += l2 - l1;
 						}
 					}
 					KeyValue updatedImageKey = dbServer.getDBTopLevel().insertVersionable(user,memoryImage,memoryImage.getName(),false,true);
-l1 = System.currentTimeMillis();
+					if (lg.isTraceEnabled()) {
+						l1 = System.currentTimeMillis();
+					}
 					VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(dbc, user,updatedImageKey,false);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+					if (lg.isTraceEnabled()) {
+						l2 = System.currentTimeMillis();
+						roundtripTimer += l2 - l1;
+					}
 					memoryToDatabaseHash.put(memoryImage,updatedImage);
 					bSomethingChanged = true;
 				}
@@ -940,10 +955,14 @@ roundtripTimer += l2 - l1;
 						//
 						// saved geometry not found in origBioModel (too bad), get from database.
 						//
-l1 = System.currentTimeMillis();
+						if (lg.isTraceEnabled()) {
+							l1 = System.currentTimeMillis();
+						}
 						databaseGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,memoryGeometry.getKey(),false);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+						if (lg.isTraceEnabled()) {
+							l2 = System.currentTimeMillis();
+							roundtripTimer += l2 - l1;
+						}
 					}
 					if (databaseGeometry!=null && !databaseGeometry.compareEqual(memoryGeometry)){
 						bMustSaveGeometry = true;
@@ -962,10 +981,14 @@ roundtripTimer += l2 - l1;
 				if (bMustSaveGeometry){
 					KeyValue updatedImageKey = (geometryImage!=null)?(geometryImage.getKey()):(null);
 					KeyValue updatedGeometryKey = dbServer.getDBTopLevel().updateVersionable(dbc, user,memoryGeometry,updatedImageKey,false,true);
-l1 = System.currentTimeMillis();
+					if (lg.isTraceEnabled()) {
+						l1 = System.currentTimeMillis();
+					}
 					Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,updatedGeometryKey,false);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+					if (lg.isTraceEnabled()) {
+						l2 = System.currentTimeMillis();
+						roundtripTimer += l2 - l1;
+					}
 					memoryToDatabaseHash.put(memoryGeometry,updatedGeometry);
 					bSomethingChanged = true;
 				}
@@ -987,10 +1010,14 @@ roundtripTimer += l2 - l1;
 				}
 				KeyValue updatedImageKey = (geometryImage!=null)?(geometryImage.getKey()):(null);
 				KeyValue updatedGeometryKey = dbServer.getDBTopLevel().insertVersionable(dbc, user,memoryGeometry,updatedImageKey,memoryGeometry.getName(),false,true);
-l1 = System.currentTimeMillis();
+				if (lg.isTraceEnabled()) {
+					l1 = System.currentTimeMillis();
+				}
 				Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,updatedGeometryKey,false);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+				if (lg.isTraceEnabled()) {
+					l2 = System.currentTimeMillis();
+					roundtripTimer += l2 - l1;
+				}
 				memoryToDatabaseHash.put(memoryGeometry,updatedGeometry);
 				bSomethingChanged = true;
 			}
@@ -1037,10 +1064,14 @@ roundtripTimer += l2 - l1;
 					//
 					// saved mathDescription not found in origBioModel (too bad), get from database.
 					//
-l1 = System.currentTimeMillis();
+					if (lg.isTraceEnabled()) {
+						l1 = System.currentTimeMillis();
+					}
 					databaseMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,memoryMathDescription.getKey());
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+					if (lg.isTraceEnabled()) {
+						l2 = System.currentTimeMillis();
+						roundtripTimer += l2 - l1;
+					}
 				}
 				if (databaseMathDescription!=null && !databaseMathDescription.compareEqual(memoryMathDescription)){
 					bMustSaveMathDescription = true;
@@ -1090,10 +1121,14 @@ roundtripTimer += l2 - l1;
 					updatedMathDescriptionKey = dbServer.getDBTopLevel().insertVersionable(user,memoryMathDescription,updatedGeometryKey,memoryMathDescription.getName(),false,true);
 				}
 					
-l1 = System.currentTimeMillis();
+				if (lg.isTraceEnabled()) {
+					l1 = System.currentTimeMillis();
+				}
 				MathDescription updatedMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,updatedMathDescriptionKey);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+				if (lg.isTraceEnabled()) {
+					l2 = System.currentTimeMillis();
+					roundtripTimer += l2 - l1;
+				}
 				memoryToDatabaseHash.put(memoryMathDescription,updatedMathDescription);
 				mathEquivalencyHash.put(updatedMathDescription,mathCompareResults);
 				bSomethingChanged = true;
@@ -1123,17 +1158,25 @@ roundtripTimer += l2 - l1;
 				//
 				// saved model not found in origBioModel (too bad), get from database.
 				//
-l1 = System.currentTimeMillis();
+				if (lg.isTraceEnabled()) {
+					l1 = System.currentTimeMillis();
+				}
 				databaseModel = dbServer.getDBTopLevel().getModel(dbc, user,memoryModel.getKey());
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+				if (lg.isTraceEnabled()) {
+					l2 = System.currentTimeMillis();
+					roundtripTimer += l2 - l1;
+				}
 			}
 			if (databaseModel!=null && !databaseModel.compareEqual(memoryModel)){
 				KeyValue updatedModelKey = dbServer.getDBTopLevel().updateVersionable(user,memoryModel,false,true);
-l1 = System.currentTimeMillis();
+				if (lg.isTraceEnabled()) {
+					l1 = System.currentTimeMillis();
+				}
 				Model updatedModel = dbServer.getDBTopLevel().getModel(dbc, user,updatedModelKey);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+				if (lg.isTraceEnabled()) {
+					l2 = System.currentTimeMillis();
+					roundtripTimer += l2 - l1;
+				}
 				memoryToDatabaseHash.put(memoryModel,updatedModel);
 				bSomethingChanged = true;
 			}
@@ -1143,10 +1186,14 @@ roundtripTimer += l2 - l1;
 			// insert it with a any name (doens't have to be unique ... mathDescription is not a top-level versionable).
 			//
 			KeyValue updatedModelKey = dbServer.getDBTopLevel().insertVersionable(user,memoryModel,memoryModel.getName(),false,true);
-l1 = System.currentTimeMillis();
+			if (lg.isTraceEnabled()) {
+				l1 = System.currentTimeMillis();
+			}
 			Model updatedModel = dbServer.getDBTopLevel().getModel(dbc, user,updatedModelKey);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+			if (lg.isTraceEnabled()) {
+				l2 = System.currentTimeMillis();
+				roundtripTimer += l2 - l1;
+			}
 			memoryToDatabaseHash.put(memoryModel,updatedModel);
 			bSomethingChanged = true;
 		}
@@ -1207,10 +1254,14 @@ roundtripTimer += l2 - l1;
 						//
 						// saved geometry not found in origBioModel (too bad), get from database.
 						//
-l1 = System.currentTimeMillis();
+						if (lg.isTraceEnabled()) {
+							l1 = System.currentTimeMillis();
+						}
 						databaseSimContext = dbServer.getDBTopLevel().getSimulationContext(dbc, user,memorySimContext.getKey());
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+						if (lg.isTraceEnabled()) {
+							l2 = System.currentTimeMillis();
+							roundtripTimer += l2 - l1;
+						}
 					}
 					if (databaseSimContext!=null && !databaseSimContext.compareEqual(memorySimContext)){
 						bMustSaveSimContext = true;
@@ -1221,10 +1272,14 @@ roundtripTimer += l2 - l1;
 					KeyValue updatedMathDescriptionKey = memorySimContext.getMathDescription().getKey();
 					Model updatedModel = memorySimContext.getModel();
 					KeyValue updatedSimContextKey = dbServer.getDBTopLevel().updateVersionable(user,memorySimContext,updatedMathDescriptionKey,updatedModel,updatedGeometryKey,false,true);
-l1 = System.currentTimeMillis();
+					if (lg.isTraceEnabled()) {
+						l1 = System.currentTimeMillis();
+					}
 					SimulationContext updatedSimContext = dbServer.getDBTopLevel().getSimulationContext(dbc, user,updatedSimContextKey);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+					if (lg.isTraceEnabled()) {
+						l2 = System.currentTimeMillis();
+						roundtripTimer += l2 - l1;
+					}
 					//
 					// make sure mathDescription is a single reference (for this app and all of it's Simulations).
 					//
@@ -1241,10 +1296,14 @@ roundtripTimer += l2 - l1;
 				KeyValue updatedMathDescriptionKey = memorySimContext.getMathDescription().getKey();
 				Model updatedModel = memorySimContext.getModel();
 				KeyValue updatedSimContextKey = dbServer.getDBTopLevel().insertVersionable(user,memorySimContext,updatedMathDescriptionKey,updatedModel,updatedGeometryKey,memorySimContext.getName(),false,true);
-l1 = System.currentTimeMillis();
+				if (lg.isTraceEnabled()) {
+					l1 = System.currentTimeMillis();
+				}
 				SimulationContext updatedSimContext = dbServer.getDBTopLevel().getSimulationContext(dbc, user,updatedSimContextKey);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+				if (lg.isTraceEnabled()) {
+					l2 = System.currentTimeMillis();
+					roundtripTimer += l2 - l1;
+				}
 				//
 				// make sure mathDescription is a single reference (for this app and all of it's Simulations).
 				//
@@ -1297,10 +1356,14 @@ roundtripTimer += l2 - l1;
 					//
 					// saved simulation not found in origBioModel (too bad), get from database.
 					//
-l1 = System.currentTimeMillis();
+					if (lg.isTraceEnabled()) {
+						l1 = System.currentTimeMillis();
+					}
 					databaseSimulation = dbServer.getDBTopLevel().getSimulation(dbc, user,memorySimulation.getKey());
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+					if (lg.isTraceEnabled()) {
+						l2 = System.currentTimeMillis();
+						roundtripTimer += l2 - l1;
+					}
 				}
 				if (databaseSimulation!=null){
 					if (!memorySimulation.compareEqual(databaseSimulation)){
@@ -1353,10 +1416,14 @@ roundtripTimer += l2 - l1;
 					// name changed, insert simulation (but pass in database Simulation to check for parent-equivalence)
 					updatedSimulationKey = dbServer.getDBTopLevel().insertVersionable(user,memorySimulation,updatedMathDescriptionKey,memorySimulation.getName(),false,bMathematicallyEquivalent,true);
 				}						
-l1 = System.currentTimeMillis();
+				if (lg.isTraceEnabled()) {
+					l1 = System.currentTimeMillis();
+				}
 				Simulation updatedSimulation = dbServer.getDBTopLevel().getSimulation(dbc, user,updatedSimulationKey);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+				if (lg.isTraceEnabled()) {
+					l2 = System.currentTimeMillis();
+					roundtripTimer += l2 - l1;
+				}
 				//
 				// make sure mathDescription is a single reference (for an app and all of it's Simulations).
 				//
@@ -1430,16 +1497,24 @@ roundtripTimer += l2 - l1;
 		BioModelMetaData updatedBioModelMetaData = null;
 		if (bioModel.getVersion()==null || !bioModel.getVersion().getName().equals(bioModel.getName())){
 			KeyValue updatedBioModelKey = dbServer.getDBTopLevel().insertVersionable(user,bioModelMetaData,null/*hack*/,bioModel.getName(),false,true);
-l1 = System.currentTimeMillis();
+			if (lg.isTraceEnabled()) {
+				l1 = System.currentTimeMillis();
+			}
 			updatedBioModelMetaData = dbServer.getDBTopLevel().getBioModelMetaData(dbc, user,updatedBioModelKey);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+			if (lg.isTraceEnabled()) {
+				l2 = System.currentTimeMillis();
+				roundtripTimer += l2 - l1;
+			}
 		}else{
 			KeyValue updatedBioModelKey = dbServer.getDBTopLevel().updateVersionable(user,bioModelMetaData,null/*hack*/,false,true);
-l1 = System.currentTimeMillis();
+			if (lg.isTraceEnabled()) {
+				l1 = System.currentTimeMillis();
+			}
 			updatedBioModelMetaData = dbServer.getDBTopLevel().getBioModelMetaData(dbc, user,updatedBioModelKey);
-l2 = System.currentTimeMillis();
-roundtripTimer += l2 - l1;
+			if (lg.isTraceEnabled()) {
+				l2 = System.currentTimeMillis();
+				roundtripTimer += l2 - l1;
+			}
 		}
 
 		//
@@ -1465,12 +1540,14 @@ roundtripTimer += l2 - l1;
 		dbServer.insertVersionableChildSummary(user,VersionableType.BioModelMetaData,updatedBioModel.getVersion().getVersionKey(),
 				updatedBioModel.createBioModelChildSummary().toDatabaseSerialization());
 		dbServer.insertVersionableXML(user,VersionableType.BioModelMetaData,updatedBioModel.getVersion().getVersionKey(),bioModelXML);
-System.out.println("------------------------------> Total time: " + ((double)(System.currentTimeMillis() - start)) / 1000);
-System.out.println("------------------------------> Time spent on roundtrip: " + ((double)roundtripTimer) / 1000);
+		if (lg.isTraceEnabled()) {
+			lg.trace("Total time: " + ((double)(System.currentTimeMillis() - start)) / 1000 + " roundtrip: " + ((double)roundtripTimer) / 1000);
+		}
 		return bioModelXML;
 	} else {
-System.out.println("------------------------------> Total time: " + ((double)(System.currentTimeMillis() - start)) / 1000);
-System.out.println("------------------------------> Time spent on roundtrip: " + ((double)roundtripTimer) / 1000);
+		if (lg.isTraceEnabled()) {
+			lg.trace("Total time: " + ((double)(System.currentTimeMillis() - start)) / 1000 + " roundtrip: " + ((double)roundtripTimer) / 1000);
+		}
 		return bioModelXML;
 	}
 }

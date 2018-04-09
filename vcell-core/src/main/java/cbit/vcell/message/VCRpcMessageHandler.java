@@ -64,7 +64,9 @@ public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 		try {
 			synchronized (session) {				
 				session.sendQueueMessage(replyTo, vcReplyMessage, persistent, clientTimeoutMS);
-System.out.println("sent reply message with JMSCorrelationID to "+vcReplyMessage.getCorrelationID()+", and messageID = "+vcReplyMessage.getMessageID());
+				if (lg.isTraceEnabled()) {
+					lg.trace("sent reply message with JMSCorrelationID to "+vcReplyMessage.getCorrelationID()+", and messageID = "+vcReplyMessage.getMessageID());
+				}
 			}
 		} catch (VCMessagingException e) {
 			lg.error(e.getMessage(),e);
