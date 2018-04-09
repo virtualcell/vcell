@@ -6,17 +6,13 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
-import org.vcell.util.SessionLog;
-import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ClientServerManager.InteractiveContext;
 import cbit.vcell.client.server.ClientServerManager.InteractiveContextDefaultProvider;
-import cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnectionFactory;
 /**

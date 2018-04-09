@@ -16,12 +16,12 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.logging.Log4jSessionLog;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
@@ -48,7 +48,7 @@ import cbit.vcell.util.NativeLoader;
  */
 public class SolverPostprocessor  {
 	private static final int NUM_STD_ARGS = 6;
-	private static final String LOG_NAME = "solverPostprocessor";
+	private static Logger lg = LogManager.getLogger(SolverPostprocessor.class);
 
 	public static void main(java.lang.String[] args) {
 		if (args.length < NUM_STD_ARGS) {
@@ -56,8 +56,6 @@ public class SolverPostprocessor  {
 			System.exit(1);
 		}
 
-		Log4jSessionLog log = new Log4jSessionLog(LOG_NAME);
-		Logger lg = log.getLogger( );
 		VCMessagingService vcMessagingService = null;
 
 		try {
@@ -121,7 +119,7 @@ public class SolverPostprocessor  {
 			VCMongoMessage.sendWorkerEvent(workerEventMessage);
 
 		} catch (Throwable e) {
-			log.exception(e);
+			lg.error(e.getMessage(),e);
 		} finally {
 			if (vcMessagingService!=null){
 				try {

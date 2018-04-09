@@ -19,7 +19,6 @@ import java.util.ArrayList;
 
 import org.vcell.pub.Publication;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -63,7 +62,7 @@ private PublicationTable() {
  * @param log cbit.vcell.server.SessionLog
  * @throws MalformedURLException 
  */
-public Publication getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,DataAccessException, MalformedURLException {
+public Publication getInfo(ResultSet rset,Connection con) throws SQLException,DataAccessException, MalformedURLException {
 	
 	KeyValue key = new KeyValue(rset.getBigDecimal(PublicationTable.table.id.toString()));
 	String title = rset.getString(PublicationTable.table.title.toString());

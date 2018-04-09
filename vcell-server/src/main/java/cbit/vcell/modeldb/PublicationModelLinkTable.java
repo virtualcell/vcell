@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import org.vcell.pub.Publication;
 import org.vcell.pub.PublishedModels;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
@@ -55,7 +54,7 @@ private PublicationModelLinkTable() {
  * @param log cbit.vcell.server.SessionLog
  * @throws MalformedURLException  
  */
-public PublishedModels getInfo(ResultSet rset, Connection con, Publication vcellPub, SessionLog log) throws SQLException,DataAccessException, MalformedURLException {
+public PublishedModels getInfo(ResultSet rset, Connection con, Publication vcellPub) throws SQLException,DataAccessException, MalformedURLException {
 	
 	ArrayList<KeyValue> bioModelKeys = new ArrayList<KeyValue>();
 	ArrayList<KeyValue> mathModelKeys = new ArrayList<KeyValue>();

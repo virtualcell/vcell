@@ -15,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.vcell.util.SessionLog;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
@@ -41,7 +40,6 @@ public class VCMongoDbDriver {
 	private ConcurrentLinkedQueue<VCMongoMessage> messageOutbox = new ConcurrentLinkedQueue<VCMongoMessage>();
 	private boolean processing = false;
 
-	private SessionLog log = null;
 	private ScheduledFuture<?> command = null;
 
 	public static VCMongoDbDriver getInstance(){

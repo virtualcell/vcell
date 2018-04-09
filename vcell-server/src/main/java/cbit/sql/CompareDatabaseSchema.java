@@ -21,10 +21,8 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
-import org.vcell.util.SessionLog;
 
 import cbit.vcell.modeldb.SQLCreateAllTables;
-import cbit.vcell.resource.StdoutSessionLog;
 /**
  * This type was created in VisualAge.
  */
@@ -32,7 +30,7 @@ public class CompareDatabaseSchema {
 /**
  * This method was created in VisualAge.
  */
-private static void compareSchemas(SessionLog log, ConnectionFactory conFactory, KeyFactory keyFactory, Table tables[], DatabaseSyntax dbSyntax) throws SQLException {
+private static void compareSchemas(ConnectionFactory conFactory, KeyFactory keyFactory, Table tables[], DatabaseSyntax dbSyntax) throws SQLException {
 	Connection con = null;
 	Object lock = new Object();
 	try {
@@ -203,7 +201,6 @@ public static void main(java.lang.String[] args) {
             throw new RuntimeException("Aborted by user");
         }
 
-        SessionLog log = new StdoutSessionLog("CompareDatabaseSchema");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
         new cbit.vcell.resource.PropertyLoader();
@@ -239,7 +236,7 @@ public static void main(java.lang.String[] args) {
         // compare with VCell Software 'tables'
         //
 		Table tables[] = SQLCreateAllTables.getVCellTables();
-        compareSchemas(log, conFactory, keyFactory, tables, dbSyntax);
+        compareSchemas(conFactory, keyFactory, tables, dbSyntax);
     } catch (Throwable e) {
         e.printStackTrace(System.out);
     }

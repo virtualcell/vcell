@@ -10,9 +10,10 @@
 
 package cbit.vcell.message.server.bootstrap.client;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
@@ -42,27 +43,26 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public class LocalDataSetControllerMessaging implements DataSetController {
     private RpcDataServerProxy dataServerProxy = null;
-    private SessionLog sessionLog = null;
+    private static Logger lg = LogManager.getLogger(LocalDataSetControllerMessaging.class);
 
 /**
  * This method was created by a SmartGuide.
  */
-public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, RpcSender rpcSender, SessionLog sLog) {
-	this.sessionLog = sLog;
-	this.dataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSender, sessionLog);
+public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, RpcSender rpcSender) {
+	this.dataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSender);
 }
 
 
 
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
-	sessionLog.print("LocalDataSetControllerMessaging.fieldDataFileOperationSpec(...)");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.fieldDataFileOperationSpec(...)");
 	try {
 		return dataServerProxy.fieldDataFileOperation(fieldDataFileOperationSpec);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -74,14 +74,14 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
  * @throws RemoteProxyException 
  */
 public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdID) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getDataIdentifiers(vcdID=" + vcdID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getDataIdentifiers(vcdID=" + vcdID + ")");
 	try {
 		return dataServerProxy.getDataIdentifiers(outputContext,vcdID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -92,14 +92,14 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIde
  * @throws RemoteProxyException 
  */
 public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getDataSetTimes(vcdID=" + vcdID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getDataSetTimes(vcdID=" + vcdID + ")");
 	try {
 		return dataServerProxy.getDataSetTimes(vcdID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -114,14 +114,14 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  */
 
 public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputContext,org.vcell.util.document.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getFunctions(vcdataID=" + vcdataID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getFunctions(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getFunctions(outputContext,vcdataID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -135,14 +135,14 @@ public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputCo
  * @throws RemoteProxyException 
  */
 public PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdID, String varName, double time, SpatialSelection spatialSelection) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getLineScan(vcdID=" + vcdID + ", " + varName + ", " + time + ", at " + spatialSelection+")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getLineScan(vcdID=" + vcdID + ", " + varName + ", " + time + ", at " + spatialSelection+")");
 	try {
 		return dataServerProxy.getLineScan(outputContext,vcdID, varName, time, spatialSelection);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -154,14 +154,14 @@ public PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdID, 
  * @throws RemoteProxyException 
  */
 public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getMesh(vcdID=" + vcdID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getMesh(vcdID=" + vcdID + ")");
 	try {
 		return dataServerProxy.getMesh(vcdID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -175,14 +175,14 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException,
  * @exception RemoteProxyException The exception description.
  */
 public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getODEData(vcdID=" + vcdID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getODEData(vcdID=" + vcdID + ")");
 	try {
 		return dataServerProxy.getODEData(vcdID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -196,14 +196,14 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
  * @throws RemoteProxyException 
  */
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getParticleDataBlock(vcdID=" + vcdID + ",time=" + time + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getParticleDataBlock(vcdID=" + vcdID + ",time=" + time + ")");
 	try {
 		return dataServerProxy.getParticleDataBlock(vcdID,time);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -215,14 +215,14 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
  * @throws RemoteProxyException 
  */
 public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getParticleDataExists(vcdID=" + vcdID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getParticleDataExists(vcdID=" + vcdID + ")");
 	try {
 		return dataServerProxy.getParticleDataExists(vcdID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -236,14 +236,14 @@ public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessEx
  * @throws RemoteProxyException 
  */
 public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdID, String varName, double time) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getSimDataBlock(vcdID=" + vcdID + ", varName=" + varName + ", time=" + time + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getSimDataBlock(vcdID=" + vcdID + ", varName=" + varName + ", time=" + time + ")");
 	try {
 		return dataServerProxy.getSimDataBlock(outputContext,vcdID,varName,time);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -257,14 +257,14 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier
  * @throws RemoteProxyException 
  */
 public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getTimeSeriesValues(vcdID=" + vcdID + ", " + timeSeriesJobSpec + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getTimeSeriesValues(vcdID=" + vcdID + ", " + timeSeriesJobSpec + ")");
 	try {
 		return dataServerProxy.getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -277,14 +277,14 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
  * @throws RemoteProxyException 
  */
 public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.makeRemoteFile(vcdID=" + exportSpecs.getVCDataIdentifier() + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.makeRemoteFile(vcdID=" + exportSpecs.getVCDataIdentifier() + ")");
 	try {
 		return dataServerProxy.makeRemoteFile(outputContext,exportSpecs);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -292,14 +292,14 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs export
 
 
 public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.doDataOperation(...)");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.doDataOperation(...)");
 	try {
 		return dataServerProxy.doDataOperation(dataOperation);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -307,14 +307,14 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 
 @Override
 public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getDataSetMetadata(vcdataID=" + vcdataID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getDataSetMetadata(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getDataSetMetadata(vcdataID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -323,28 +323,28 @@ public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws Data
 
 @Override
 public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getDataSetMetadata(vcdataID=" + vcdataID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getDataSetMetadata(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getDataSetTimeSeries(vcdataID, variableNames);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
 
 @Override
 public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int timeIndex)	throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getEmptyVtuMeshFiles(vcdataID=" + vcdataID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getEmptyVtuMeshFiles(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getEmptyVtuMeshFiles(vcdataID, timeIndex);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -352,14 +352,14 @@ public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int time
 
 @Override
 public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time)	throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshData(vcdataID=" + vcdataID + ", var=" + var.name + ", time=" + time + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getVtuMeshData(vcdataID=" + vcdataID + ", var=" + var.name + ", time=" + time + ")");
 	try {
 		return dataServerProxy.getVtuMeshData(outputContext, vcdataID, var, time);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -368,14 +368,14 @@ public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcd
 
 @Override
 public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
-	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshFiles(vcdataID=" + vcdataID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getVtuMeshFiles(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getVtuVarInfos(outputContext, vcdataID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -384,28 +384,28 @@ public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier
 
 @Override
 public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
-	sessionLog.print("LocalDataSetControllerMessaging.getVtuTimes(vcdataID=" + vcdataID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getVtuTimes(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getVtuTimes(vcdataID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
 
 @Override
 public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
-	sessionLog.print("LocalDataSetControllerMessaging.getNFSimMolecularConfigurations(vcdataID=" + vcdataID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getNFSimMolecularConfigurations(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getNFSimMolecularConfigurations(vcdataID);
 	} catch (DataAccessException e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw e;
 	} catch (Throwable e){
-		sessionLog.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }

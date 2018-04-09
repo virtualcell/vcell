@@ -13,7 +13,6 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.image.VCPixelClass;
@@ -65,7 +64,7 @@ public String getSQLValueList(KeyValue key,KeyValue imageKey,VCPixelClass pixelC
  * @param rset ResultSet
  * @param log SessionLog
  */
-public VCPixelClass getVCPixelClass(ResultSet rset, SessionLog log) throws SQLException {
+public VCPixelClass getVCPixelClass(ResultSet rset) throws SQLException {
 
 	KeyValue key = new KeyValue(rset.getBigDecimal(id.toString()));
 	String rName = rset.getString(regionName.toString());

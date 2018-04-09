@@ -9,8 +9,9 @@
  */
 
 package cbit.vcell.message.server.bootstrap.client;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -26,16 +27,15 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * @author: Jim Schaff
  */
 public class LocalSimulationControllerMessaging implements SimulationController {
-	private org.vcell.util.SessionLog fieldSessionLog = null;
+	private static Logger lg = LogManager.getLogger(LocalSimulationControllerMessaging.class);
 	private RpcSimServerProxy simServerProxy = null;
 
 /**
  * MessagingSimulationController constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, RpcSender rpcSender, SessionLog log) {
-	this.fieldSessionLog = log;
-	simServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSender, fieldSessionLog);
+public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, RpcSender rpcSender) {
+	simServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSender);
 }
 
 
@@ -44,7 +44,7 @@ public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, RpcSender
  * @exception java.rmi.RemoteException The exception description.
  */
 public SimulationStatus startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
-	fieldSessionLog.print("LocalSimulationControllerMessaging.startSimulation(" + vcSimID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationControllerMessaging.startSimulation(" + vcSimID + ")");
 	return simServerProxy.startSimulation(simServerProxy.userLoginInfo.getUser(),vcSimID,numSimulationScanJobs);
 }
 
@@ -54,27 +54,27 @@ public SimulationStatus startSimulation(VCSimulationIdentifier vcSimID, int numS
  * @exception java.rmi.RemoteException The exception description.
  */
 public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimID) {
-	fieldSessionLog.print("LocalSimulationControllerMessaging.stopSimulation(" + vcSimID + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationControllerMessaging.stopSimulation(" + vcSimID + ")");
 	return simServerProxy.stopSimulation(simServerProxy.userLoginInfo.getUser(),vcSimID);
 }
 
 
 @Override
 public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAccessException {
-	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationStatus(" + simKeys + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationControllerMessaging.getSimulationStatus(" + simKeys + ")");
 	return simServerProxy.getSimulationStatus(simServerProxy.userLoginInfo.getUser(),simKeys);
 }
 
 
 @Override
 public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException {
-	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationStatus(" + simulationKey + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationControllerMessaging.getSimulationStatus(" + simulationKey + ")");
 	return simServerProxy.getSimulationStatus(simServerProxy.userLoginInfo.getUser(),simulationKey);
 }
 
 @Override
 public SimpleJobStatus[] getSimpleJobStatus(SimpleJobStatusQuerySpec simJobStatusQuerySpec) throws DataAccessException {
-	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationJobStatus(" + simJobStatusQuerySpec + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalSimulationControllerMessaging.getSimulationJobStatus(" + simJobStatusQuerySpec + ")");
 	return simServerProxy.getSimpleJobStatus(simServerProxy.userLoginInfo.getUser(),simJobStatusQuerySpec);
 }
 

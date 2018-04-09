@@ -30,8 +30,8 @@ import cbit.vcell.server.UserRegistrationResults;
 
 public class RpcDbServerProxy extends AbstractRpcServerProxy implements cbit.vcell.server.UserMetaDbServer {
 
-public RpcDbServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender, org.vcell.util.SessionLog log) {
-	super(userLoginInfo, rpcSender, VCellQueue.DbRequestQueue, log);
+public RpcDbServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender) {
+	super(userLoginInfo, rpcSender, VCellQueue.DbRequestQueue);
 }
 
 
@@ -225,16 +225,16 @@ private Object rpc(String methodName, Object[] args) throws ObjectNotFoundExcept
 	try {
 		return rpc(RpcServiceType.DB, methodName, args, true);
 	} catch (ObjectNotFoundException ex) {
-		log.exception(ex);
+		lg.error(ex.getMessage(),ex);
 		throw ex;
 	} catch (DataAccessException ex) {
-		log.exception(ex);
+		lg.error(ex.getMessage(),ex);
 		throw ex;
 	} catch (RuntimeException e){
-		log.exception(e);
+		lg.error(e);
 		throw e;
 	} catch (Exception e){
-		log.exception(e);
+		lg.error(e);
 		throw new RuntimeException(e.getMessage());
 	}
 }

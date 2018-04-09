@@ -10,7 +10,6 @@
 
 package cbit.vcell.message.server.bootstrap.client;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
@@ -35,8 +34,8 @@ public class RpcSimServerProxy extends AbstractRpcServerProxy implements Simulat
 /**
  * DataServerProxy constructor comment.
  */
-public RpcSimServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender, SessionLog log) {
-	super(userLoginInfo, rpcSender, VCellQueue.SimReqQueue, log);
+public RpcSimServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender) {
+	super(userLoginInfo, rpcSender, VCellQueue.SimReqQueue);
 }
 
 
@@ -52,10 +51,10 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
 	try {
 		return rpc(RpcServiceType.DISPATCH, methodName, args, true);
 	} catch (DataAccessException ex) {
-		log.exception(ex);
+		lg.error(ex.getMessage(),ex);
 		throw ex;
 	} catch (Exception e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -69,7 +68,7 @@ public SimulationStatus startSimulation(User user, VCSimulationIdentifier vcSimI
 	try {
 		return (SimulationStatus)rpc("startSimulation",new Object[]{user, vcSimID, new Integer(numSimulationScanJobs)});
 	}catch (DataAccessException e){
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -83,7 +82,7 @@ public SimulationStatus stopSimulation(User user, VCSimulationIdentifier vcSimID
 	try {
 		return (SimulationStatus)rpc("stopSimulation",new Object[]{user, vcSimID});
 	} catch (DataAccessException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -94,7 +93,7 @@ public SimulationStatus[] getSimulationStatus(User user, KeyValue[] simKeys) thr
 	try {
 		return (SimulationStatus[])rpc("getSimulationStatus",new Object[]{user, simKeys});
 	} catch (DataAccessException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -105,7 +104,7 @@ public SimulationStatus getSimulationStatus(User user, KeyValue simulationKey) t
 	try {
 		return (SimulationStatus)rpc("getSimulationStatus",new Object[]{user, simulationKey});
 	} catch (DataAccessException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -115,7 +114,7 @@ public SimpleJobStatus[] getSimpleJobStatus(User user, SimpleJobStatusQuerySpec 
 	try {
 		return (SimpleJobStatus[])rpc("getSimpleJobStatus",new Object[]{user, simJobStatusQuerySpec});
 	} catch (DataAccessException e) {
-		log.exception(e);
+		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
 }

@@ -9,10 +9,10 @@
  */
 
 package cbit.vcell.message.server.bootstrap.client;
-import org.vcell.util.SessionLog;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
@@ -27,16 +27,16 @@ public abstract class AbstractRpcServerProxy {
 	private RpcSender rpcSender = null;
 	protected UserLoginInfo userLoginInfo = null;
 	private VCellQueue queue = null;
-	protected org.vcell.util.SessionLog log = null;
+	
+	protected static Logger lg = LogManager.getLogger(AbstractRpcServerProxy.class);
 
 /**
  * RpcServerProxy constructor comment.
  */
-protected AbstractRpcServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender, VCellQueue queue, SessionLog argLog) {
+protected AbstractRpcServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender, VCellQueue queue) {
 	super();
 	this.userLoginInfo = userLoginInfo;
 	this.rpcSender = rpcSender;
-	this.log = argLog;
 	this.queue = queue;
 }
 

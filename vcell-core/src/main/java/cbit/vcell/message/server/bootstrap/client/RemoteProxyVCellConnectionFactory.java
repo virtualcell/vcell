@@ -27,7 +27,6 @@ import org.vcell.api.common.events.EventWrapper;
 import org.vcell.api.common.events.ExportEventRepresentation;
 import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
 import org.vcell.util.AuthenticationException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
@@ -40,7 +39,6 @@ import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.resource.StdoutSessionLog;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
@@ -50,7 +48,6 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 	private UserLoginInfo userLoginInfo;
 	private final String apihost;
 	private final Integer apiport;
-	private final SessionLog sessionLog;
 	private final VCellApiClient vcellApiClient;
 	private final static AtomicLong lastProcessedEventTimestamp = new AtomicLong(0);
 	
@@ -138,7 +135,6 @@ public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLo
 	this.apihost = apihost;
 	this.apiport = apiport;
 	this.userLoginInfo = userLoginInfo;
-	this.sessionLog = new StdoutSessionLog("remoteProxy");
 	boolean bIgnoreCertProblems = true;
 	boolean bIgnoreHostMismatch = true;
 	try {
@@ -157,7 +153,7 @@ public void changeUser(UserLoginInfo userLoginInfo) {
 }
 
 public VCellConnection createVCellConnection() throws AuthenticationException, ConnectionException {
-	return new LocalVCellConnectionMessaging(userLoginInfo,sessionLog,rpcSender);
+	return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender);
 }
 
 public static String getVCellSoftwareVersion(String apihost, Integer apiport) {

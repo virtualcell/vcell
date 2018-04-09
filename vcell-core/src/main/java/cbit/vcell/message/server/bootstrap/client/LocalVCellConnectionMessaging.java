@@ -11,8 +11,9 @@
 package cbit.vcell.message.server.bootstrap.client;
 import java.io.IOException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.rmi.event.MessageEvent;
@@ -36,26 +37,23 @@ public class LocalVCellConnectionMessaging implements VCellConnection {
 	private LocalDataSetControllerMessaging dataSetControllerMessaging = null;
 	private LocalSimulationControllerMessaging simulationControllerMessaging = null;
 	private LocalUserMetaDbServerMessaging userMetaDbServerMessaging = null;
+	private static Logger lg = LogManager.getLogger(LocalVCellConnectionMessaging.class);
 	
 	private UserLoginInfo userLoginInfo;
 	
 	private RpcSender rpcSender;
 	
-	private SessionLog fieldSessionLog = null;
-
-	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, SessionLog sessionLog, RpcSender rpcSender) {
-		
+	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, RpcSender rpcSender) {
 		this.userLoginInfo = userLoginInfo;
-		this.fieldSessionLog = sessionLog;
 		this.rpcSender = rpcSender;
 	}	
 
 	
 @Override
 public DataSetController getDataSetController() throws DataAccessException {
-	fieldSessionLog.print("LocalVCellConnectionMessaging.getDataSetController()");
+	if (lg.isTraceEnabled()) lg.trace("LocalVCellConnectionMessaging.getDataSetController()");
 	if (dataSetControllerMessaging == null) {
-		dataSetControllerMessaging = new LocalDataSetControllerMessaging(getUserLoginInfo(), rpcSender, fieldSessionLog);
+		dataSetControllerMessaging = new LocalDataSetControllerMessaging(getUserLoginInfo(), rpcSender);
 	}
 	return dataSetControllerMessaging;
 }
@@ -63,7 +61,7 @@ public DataSetController getDataSetController() throws DataAccessException {
 @Override
 public SimulationController getSimulationController() {
 	if (simulationControllerMessaging == null){
-		simulationControllerMessaging = new LocalSimulationControllerMessaging(getUserLoginInfo(), rpcSender, fieldSessionLog);
+		simulationControllerMessaging = new LocalSimulationControllerMessaging(getUserLoginInfo(), rpcSender);
 	}
 	return simulationControllerMessaging;
 }
@@ -75,9 +73,9 @@ public UserLoginInfo getUserLoginInfo() {
 
 @Override
 public UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
-	fieldSessionLog.print("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
+	if (lg.isTraceEnabled()) lg.trace("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServerMessaging == null) {
-		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), rpcSender, fieldSessionLog);
+		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), rpcSender);
 	}
 	return userMetaDbServerMessaging;
 }

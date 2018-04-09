@@ -7,14 +7,14 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
-import org.vcell.util.SessionLog;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessagingConsumer;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCTopicConsumer;
-import cbit.vcell.resource.StdoutSessionLog;
 
 public class ConsumerContextJms implements Runnable {
 	public static final long CONSUMER_POLLING_INTERVAL_MS = 2000;
@@ -25,7 +25,7 @@ public class ConsumerContextJms implements Runnable {
 	private MessageConsumer jmsMessageConsumer = null;
 	private boolean bProcessing = false;
 	private Thread thread = null;
-	private SessionLog log = new StdoutSessionLog("consumer");
+	private static Logger lg = LogManager.getLogger(ConsumerContextJms.class);
 	
 	public ConsumerContextJms(VCMessagingServiceJms vcMessagingServiceJms, VCMessagingConsumer consumer){
 		this.vcMessagingServiceJms = vcMessagingServiceJms;
@@ -75,14 +75,14 @@ public class ConsumerContextJms implements Runnable {
 			} catch (JMSException e) {
 				onException(e);
 			} catch (RollbackException e) {
-				log.exception(e);
+				lg.error(e.getMessage(),e);
 				try {
 					jmsSession.rollback();
 				} catch (JMSException e1) {
 					onException(e1);
 				}
 			} catch (Exception e) {
-				log.exception(e);
+				lg.error(e.getMessage(),e);
 			}finally{
 				if(temporaryMessageProducerSession != null){
 					temporaryMessageProducerSession.close();
@@ -129,7 +129,7 @@ public class ConsumerContextJms implements Runnable {
 	
 	private void onException(Exception e){
 		vcMessagingServiceJms.getDelegate().onException(e);
-		e.printStackTrace(System.out);
+		lg.error(e.getMessage(),e);
 	}
 	
 	public VCMessagingConsumer getVCConsumer() {
