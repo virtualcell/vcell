@@ -1,9 +1,9 @@
 package org.vcell.rest.rpc;
 
 import java.io.Serializable;
-import java.security.Principal;
-import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -13,13 +13,11 @@ import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.restlet.representation.ByteArrayRepresentation;
-import org.restlet.security.Role;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiClient.VCellApiRpcBody;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -28,6 +26,7 @@ import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
 
 public final class RpcRestlet extends Restlet {
+	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
 	public RpcRestlet(Context context) {
 		super(context);
 	}
@@ -50,12 +49,10 @@ public final class RpcRestlet extends Restlet {
 				String compressed = request.getHeaders().getFirstValue("Compressed");
 				String klass = request.getHeaders().getFirstValue("Class");
 				
-				StringBuffer buffer = new StringBuffer();
-				buffer.append("username="+username+", userkey="+userkey+", destination="+destination+", method="+method+"\n");
-				buffer.append("returnRequired="+returnRequired+", timeoutMS="+timeoutMS+", compressed="+compressed+"\n");
-				buffer.append("class="+klass);
-				
-				System.out.println(buffer.toString());
+				if (lg.isTraceEnabled()) {
+					lg.trace("username="+username+", userkey="+userkey+", destination="+destination+", method="+method+
+							", returnRequired="+returnRequired+", timeoutMS="+timeoutMS+", compressed="+compressed+", class="+klass);
+				}
 				
 				req.bufferEntity();
 				Serializable rpcRequestBodyObject = VCellApiClient.fromCompressedSerialized(req.getEntity().getStream());

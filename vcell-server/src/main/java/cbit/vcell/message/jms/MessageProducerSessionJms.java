@@ -19,6 +19,8 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.UserLoginInfo;
@@ -42,6 +44,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 		private Connection connection = null;
 		private Session session = null;
 		protected boolean bIndependent;
+		private static Logger lg = LogManager.getLogger(MessageProducerSessionJms.class);
 
 		public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException, VCMessagingException {
 //			System.out.println("-----\nmpjms MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
@@ -101,7 +104,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 					messageProducer.send(rpcMessage);
 					session.commit();
 					vcMessagingServiceJms.getDelegate().onRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
-System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for reply message with correlationID = "+rpcMessage.getJMSMessageID());
+					if (lg.isTraceEnabled()) lg.trace("MessageProducerSessionJms.sendRpcMessage(): looking for reply message with correlationID = "+rpcMessage.getJMSMessageID());
 					String filter = VCMessagingConstants.JMSCORRELATIONID_PROPERTY + "='" + rpcMessage.getJMSMessageID() + "'";
 					MessageConsumer replyConsumer = null;
 					Message replyMessage = null;
@@ -152,7 +155,6 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					if (messageProducer!=null){
 						messageProducer.close();
 					}
-//					try{Thread.sleep(10000);}catch(Exception e){e.printStackTrace();}
 				} catch (JMSException e) {
 					onException(e);
 				}
@@ -186,7 +188,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 						try {
 							messageProducer.close();
 						} catch (JMSException e) {
-							e.printStackTrace();
+							lg.error(e.getMessage(), e);
 						}
 					}
 				}
@@ -210,7 +212,6 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					}
 					vcMessagingServiceJms.getDelegate().onMessageSent(message,topic);
 				} catch (JMSException e) {
-					e.printStackTrace(System.out);
 					onException(e);
 				}
 			}else{
@@ -239,7 +240,6 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 				Message jmsMessage = session.createTextMessage(text);
 				return new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
 			} catch (JMSException e) {
-				e.printStackTrace(System.out);
 				onException(e);
 				throw new RuntimeException("unable to create text message",e);
 			}
@@ -303,11 +303,10 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					return new VCMessageJms(objectMessage, vcMessagingServiceJms.getDelegate());
 				}
 			} catch (JMSException e) {
-				e.printStackTrace(System.out);
 				onException(e);
 				throw new RuntimeException("unable to create object message",e);
 			} catch (Exception e){
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}
@@ -317,7 +316,6 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 				Message jmsMessage = session.createMessage();
 				return new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
 			} catch (JMSException e) {
-				e.printStackTrace(System.out);
 				onException(e);
 				throw new RuntimeException("unable to create message",e);
 			}
@@ -327,6 +325,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 			if (getDelegate()!=null){
 				getDelegate().onException(e);
 			}
+			lg.error(e.getMessage(), e);
 			e.printStackTrace(System.out);
 		}
 

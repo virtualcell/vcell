@@ -98,33 +98,32 @@ public class VCellApiMain {
 				
 				@Override
 				public void onTraceEvent(String string) {
-					System.out.println("Trace: "+string);
+					if (lg.isTraceEnabled()) lg.trace("onTraceEvent(): "+string);
 				}
 				
 				@Override
 				public void onRpcRequestSent(VCRpcRequest vcRpcRequest, UserLoginInfo userLoginInfo, VCMessage vcRpcRequestMessage) {
-					System.out.println("request sent:");
+					if (lg.isTraceEnabled()) lg.trace("onRpcRequestSent(): "+vcRpcRequest.getMethodName());
 				}
 				
 				@Override
 				public void onRpcRequestProcessed(VCRpcRequest vcRpcRequest, VCMessage rpcVCMessage) {
-					System.out.println("request processed:");
+					if (lg.isTraceEnabled()) lg.trace("onRpcRequestProcessed(): "+vcRpcRequest.getMethodName());
 				}
 				
 				@Override
 				public void onMessageSent(VCMessage message, VCDestination desintation) {
-					System.out.println("message sent:");
+					if (lg.isTraceEnabled()) lg.trace("onMessageSent(): "+message);
 				}
 				
 				@Override
 				public void onMessageReceived(VCMessage vcMessage, VCDestination vcDestination) {
-					System.out.println("message received");
+					if (lg.isTraceEnabled()) lg.trace("onMessageReceived(): "+vcMessage);
 				}
 				
 				@Override
 				public void onException(Exception e) {
-					System.out.println("Exception: "+e.getMessage());
-					e.printStackTrace();
+					lg.error(e.getMessage(), e);
 				}
 			});
 							
@@ -228,7 +227,7 @@ public class VCellApiMain {
 			healthService.start();
 			
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 		}
 	}
 }

@@ -3,6 +3,8 @@ package org.vcell.rest.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.MediaType;
 import org.restlet.ext.wadl.ApplicationInfo;
@@ -26,6 +28,8 @@ public class AccessTokenServerResource extends AbstractServerResource implements
 	public static final String PARAM_USER_ID = "user_id";
 	public static final String PARAM_USER_PASSWORD = "user_password";
 	public static final String PARAM_CLIENT_ID = "client_id";
+	
+	private static Logger lg = LogManager.getLogger(AccessTokenServerResource.class);
 
 	@Override
 	protected void doInit() throws ResourceException {
@@ -67,12 +71,14 @@ public class AccessTokenServerResource extends AbstractServerResource implements
 		try {
 			ApiClient apiClient = application.getUserVerifier().getApiClient(clientId);
 			if (apiClient==null){
+				if (lg.isWarnEnabled()) lg.warn("client not found");
 				throw new RuntimeException("client not found");
 			}
 			
 			User authenticatedUser = application.getUserVerifier().authenticateUser(userId, userPassword.toCharArray());
 			
 			if (authenticatedUser == null){
+				if (lg.isWarnEnabled()) lg.warn("unable to authenticate user");
 				throw new RuntimeException("unable to authenticate user");
 			}
 			
@@ -90,7 +96,7 @@ public class AccessTokenServerResource extends AbstractServerResource implements
 	        return tokenRep;
 	        
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 			throw new RuntimeException(e.getMessage(),e);
 		}
     }

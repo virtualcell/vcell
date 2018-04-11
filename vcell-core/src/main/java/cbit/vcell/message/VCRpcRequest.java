@@ -213,16 +213,17 @@ public final Object rpc(Object rpcServiceImpl) throws DataAccessException, Objec
 	} catch (InvocationTargetException ex) {
 		lg.error(ex.getMessage(), ex);
 		Throwable targetExcepton = ex.getTargetException();
+		lg.error(targetExcepton.getMessage(), targetExcepton);
 	 	if (targetExcepton instanceof ObjectNotFoundException) {
 		 	throw (ObjectNotFoundException)targetExcepton;
 	 	} else if (targetExcepton instanceof DataAccessException) {
 		 	throw (DataAccessException)targetExcepton;
 	 	} else {
-		 	throw new RuntimeException(targetExcepton.getMessage());
+		 	throw new RuntimeException(targetExcepton.getMessage(),targetExcepton);
 	 	}
 	} catch (IllegalAccessException e){
 		lg.error(e.getMessage(), e);
-		throw new RuntimeException("IllegalAccessException for rpc(method=" + methodName);
+		throw new RuntimeException("IllegalAccessException for rpc(method=" + methodName+")",e);
 	}
 }
 
