@@ -1,3 +1,38 @@
+## start with standard UCH Centos 7.3 distribution and run update (to Centos 7.4)
+
+```bash
+sudo yum -y update 
+sudo reboot
+```
+## install java dev tools
+
+```bash
+sudo yum install java-1.8.0-openjdk-devel
+echo "export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")" | sudo tee -a /etc/profile
+source /etc/profile
+```
+
+install maven (using /tmp because of root squashed home directories)
+
+```bash
+cd /tmp
+wget http://www-us.apache.org/dist/maven/maven-3/3.5.3/binaries/apache-maven-3.5.3-bin.tar.gz
+tar -zxvf apache-maven-3.5.3-bin.tar.gz
+sudo mv /tmp/apache-maven-3.5.3 /opt
+sudo chown -R root:root /opt/apache-maven-3.5.3
+sudo ln -s /opt/apache-maven-3.5.3 /opt/apache-maven
+echo 'export PATH=$PATH:/opt/apache-maven/bin' | sudo tee -a /etc/profile
+source /etc/profile
+mvn --version
+rm /tmp/apache-maven-3.5.3-bin.tar.gz
+```
+
+install jq
+
+```bash
+sudo yum install -y jq
+```
+
 ## install docker [on centos](https://docs.docker.com/install/linux/docker-ce/centos/#install-docker-ce-1)
 
 set up yum docker stable repository (first time only)
@@ -12,6 +47,7 @@ install appropriate version of docker and start docker (should be same across th
 
 ```bash
 sudo yum install -y docker-ce-18.03.0.ce
+sudo systemctl enable docker
 sudo systemctl start docker
 ```
 
@@ -78,10 +114,21 @@ sudo service docker stop
 sudo service docker start
 ```
 
+join the new node to the swarm as a worker (check that all docker swarm nodes are accessible from DMZ machines through the firewall)
+
+```bash
+manager-node>  sudo docker swarm join-token worker
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
+
+new-worker-node>  sudo docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
+```
+
 set as an "internal node" to schedule "vcell-master it needs a non-root-squashed share".  
 
 ```bash
-docker node update --label-add zone=INTERNAL `docker node ls -q`
+sudo docker node update --label-add zone=INTERNAL `sudo docker node ls -q`
 
 # 155.37.248.131:/vcellroot mounted as /opt/vcelldata 
 #sudo su -
@@ -98,15 +145,7 @@ contents of /etc/auto.master from vcell-node1
 ```
 
 
-join the new node to the swarm as a worker (check that all docker swarm nodes are accessible from DMZ machines through the firewall)
 
-```bash
-manager-node>  sudo docker swarm join-token worker
-To add a worker to this swarm, run the following command:
 
-    docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
-
-new-worker-node>  sudo docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
-```
-
+​
 
