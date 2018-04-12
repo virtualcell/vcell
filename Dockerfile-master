@@ -58,6 +58,11 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     slurm_cmd_sbatch=sbatch \
     slurm_cmd_sacct=sacct \
     slurm_cmd_scancel=scancel \
+    slurm_cmd_squeue=squeue \
+    maxJobsPerScan=max-jobs-per-scan-not-set \
+    maxJobsPerSite=max-jobs-per-site-not-set \
+	maxOdeJobsPerUser=max-ode-jobs-per-user-not-set \
+	maxPdeJobsPerUser=max-pde-jobs-per-user-not-set \
     jmsblob_minsize=100000
 
 ENV dbpswdfile=/run/secrets/dbpswd \
@@ -91,6 +96,7 @@ ENTRYPOINT java \
 	-Dvcell.htc.nodelist="${htcnodelist}" \
 	-Dvcell.slurm.cmd.sbatch="${slurm_cmd_sbatch}" \
 	-Dvcell.slurm.cmd.sacct="${slurm_cmd_sacct}" \
+	-Dvcell.slurm.cmd.squeue="${slurm_cmd_squeue}" \
 	-Dvcell.slurm.cmd.scancel="${slurm_cmd_scancel}" \
 	-Dvcell.batch.singularity.image="${singularity_imagefile}" \
 	-Dvcell.batch.docker.name="${docker_name}" \
@@ -117,10 +123,10 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.host.external=${mongodb_host_external} \
 	-Dvcell.mongodb.port.external=${mongodb_port_external} \
 	-Dvcell.mongodb.database=${mongodb_database} \
-	-Dvcell.server.maxJobsPerScan=100 \
-	-Dvcell.server.maxJobsPerSite=100 \
-	-Dvcell.server.maxOdeJobsPerUser=30 \
-	-Dvcell.server.maxPdeJobsPerUser=20 \
+	-Dvcell.server.maxJobsPerScan=${maxJobsPerScan} \
+	-Dvcell.server.maxJobsPerSite=${maxJobsPerSite} \
+	-Dvcell.server.maxOdeJobsPerUser=${maxOdeJobsPerUser} \
+	-Dvcell.server.maxPdeJobsPerUser=${maxPdeJobsPerUser} \
 	-Dvcell.limit.jobMemoryMB=2000 \
 	-cp "./lib/*" cbit.vcell.message.server.combined.VCellServices \
 	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"
