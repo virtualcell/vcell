@@ -128,8 +128,7 @@ vcell_build=`cat $local_config_file | grep VCELL_BUILD_NUMBER | cut -d"=" -f2`
 singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
 singularity_remote_path=`cat $local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
 singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
-#partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
-partitionName=vcell
+partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
 #slurmSingularityImagePath=`cat ../$local_config_file | grep VCELL_SLURM_SINGULARITY_IMAGE_PATH | cut -d"=" -f2`
 slurmSingularityImagePath=/state/partition1/singularityImages/
 batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`

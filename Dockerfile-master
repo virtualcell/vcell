@@ -59,6 +59,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     slurm_cmd_sacct=sacct \
     slurm_cmd_scancel=scancel \
     slurm_cmd_squeue=squeue \
+    slurm_partition=vcell \
     maxJobsPerScan=max-jobs-per-scan-not-set \
     maxJobsPerSite=max-jobs-per-site-not-set \
 	maxOdeJobsPerUser=max-ode-jobs-per-user-not-set \
@@ -98,6 +99,7 @@ ENTRYPOINT java \
 	-Dvcell.slurm.cmd.sacct="${slurm_cmd_sacct}" \
 	-Dvcell.slurm.cmd.squeue="${slurm_cmd_squeue}" \
 	-Dvcell.slurm.cmd.scancel="${slurm_cmd_scancel}" \
+	-Dvcell.slurm.partition="${slurm_partition}" \
 	-Dvcell.batch.singularity.image="${singularity_imagefile}" \
 	-Dvcell.batch.docker.name="${docker_name}" \
 	-Dvcell.simulation.postprocessor=JavaPostprocessor64 \

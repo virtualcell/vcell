@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.http.client.ClientProtocolException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.api.client.VCellApiRpcRequest;
@@ -50,6 +52,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 	private final Integer apiport;
 	private final VCellApiClient vcellApiClient;
 	private final static AtomicLong lastProcessedEventTimestamp = new AtomicLong(0);
+	private final static Logger lg = LogManager.getLogger(RemoteProxyVCellConnectionFactory.class);
 	
 	private RpcSender rpcSender = new RemoteProxyRpcSender();
 	
@@ -92,7 +95,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 			ArrayList<MessageEvent> messageEvents = new ArrayList<MessageEvent>();
 			Gson gson = new Gson();
 			for (EventWrapper eventWrapper : eventWrappers) {
-				System.out.println("received event: ("+eventWrapper.id+", "+eventWrapper.timestamp+", "+eventWrapper.userid+", "+eventWrapper.eventJSON+")");
+				if (lg.isTraceEnabled()) lg.trace("received event: ("+eventWrapper.id+", "+eventWrapper.timestamp+", "+eventWrapper.userid+", "+eventWrapper.eventJSON+")");
 				switch (eventWrapper.eventType) {
 				case SimJob:{
 					SimulationJobStatusEventRepresentation simJobStatusEventRep = 

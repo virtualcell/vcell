@@ -171,7 +171,7 @@ public class SlurmProxy extends HtcProxy {
 		LineStringBuilder lsb = new LineStringBuilder();
 
 		lsb.write("#!/usr/bin/env bash");
-		String partition = "vcell";
+		String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
 		lsb.write("#SBATCH --partition=" + partition);
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + htcLogDirExternalString+jobName+".slurm.log");
@@ -195,6 +195,7 @@ public class SlurmProxy extends HtcProxy {
 		//
 		// Initialize Singularity
 		//
+		lsb.write("module load singularity");
 		lsb.write("echo \"job running on host `hostname -f`\"");
 		lsb.newline();
 		lsb.write("echo \"id is `id`\"");

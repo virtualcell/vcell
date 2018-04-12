@@ -26,6 +26,7 @@ VCELL_REPO_NAMESPACE=$_repo
 VCELL_TAG=$_tag
 VCELL_VERSION_NUMBER=$_version_number
 VCELL_BUILD_NUMBER=$_build_number
+vcell_slurm_partition=vcell
 
 case $VCELL_SITE in
 	REL)
@@ -44,6 +45,7 @@ case $VCELL_SITE in
 		_site_port_offset=2
 		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8080
+		vcell_slurm_partition=vcell2
 		_applicationId="1471-8022-1038-5554"
 		;;
 	TEST)
@@ -93,6 +95,7 @@ VCELL_SLURM_CMD_SBATCH=sbatch
 VCELL_SLURM_CMD_SACCT=sacct
 VCELL_SLURM_CMD_SQUEUE=squeue
 VCELL_SLURM_CMD_SCANCEL=scancel
+VCELL_SLURM_PARTITION=$vcell_slurm_partition
 
 #
 # VCELL_API_PORT_EXTERNAL uses 443 for Beta and Rel (but on different machines/swarm clusters)
@@ -137,6 +140,7 @@ VCELL_BATCH_USER=vcell
 VCELL_SLURM_CMD_SBATCH=$VCELL_SLURM_CMD_SBATCH
 VCELL_SLURM_CMD_SACCT=$VCELL_SLURM_CMD_SACCT
 VCELL_SLURM_CMD_SCANCEL=$VCELL_SLURM_CMD_SCANCEL
+VCELL_SLURM_PARTITION=$VCELL_SLURM_PARTITION
 VCELL_CLIENT_APPID=${_applicationId}
 VCELL_HTCLOGS_EXTERNAL=/share/apps/vcell3/htclogs
 VCELL_HTCLOGS_HOST=/opt/vcelldata/htclogs

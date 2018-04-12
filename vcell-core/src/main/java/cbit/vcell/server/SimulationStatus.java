@@ -436,13 +436,13 @@ public boolean isUnknown() {
  */
 public static SimulationStatus newNeverRan(int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(NEVER_RAN, false, jobCount);
-	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NEVER RAN <<<<< ######################   newstatus=" + newStatus);
+//	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NEVER RAN <<<<< ######################   newstatus=" + newStatus);
 	return newStatus;
 }
 
 public static SimulationStatus newNotSaved(int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(NOT_SAVED, false, jobCount);
-	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NOT SAVED <<<<< ######################   newstatus=" + newStatus);
+//	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NOT SAVED <<<<< ######################   newstatus=" + newStatus);
 	return newStatus;
 }
 
@@ -456,7 +456,7 @@ public static SimulationStatus newNotSaved(int jobCount) {
  */
 public static SimulationStatus newStartRequest(int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(START_REQUESTED, false, jobCount);
-	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW START REQUEST <<<<< ######################   newstatus=" + newStatus);
+//	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW START REQUEST <<<<< ######################   newstatus=" + newStatus);
 	return newStatus;
 }
 
@@ -471,7 +471,7 @@ public static SimulationStatus newStartRequest(int jobCount) {
 public static SimulationStatus newStartRequestFailure(String failMsg, int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(FAILED, false, jobCount);
 	newStatus.details = failMsg;
-	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW START REQUEST FAILURE <<<<< ######################   newstatus=" + newStatus);
+//	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW START REQUEST FAILURE <<<<< ######################   newstatus=" + newStatus);
 	return newStatus;
 }
 
@@ -487,7 +487,7 @@ public static SimulationStatus newStopRequest(SimulationStatus currentStatus) {
 	SimulationStatus newStatus = new SimulationStatus(currentStatus);
 	newStatus.status = STOP_REQUESTED;
 	newStatus.details = null;
-	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW STOP REQUEST <<<< ###########   oldstatus=" + currentStatus + "\n###########  newstatus=" + newStatus + "\n###########");
+//	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW STOP REQUEST <<<< ###########   oldstatus=" + currentStatus + "\n###########  newstatus=" + newStatus + "\n###########");
 	return newStatus;
 }
 
@@ -541,7 +541,7 @@ public String toString() {
 
 public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, SimulationJobStatusEvent simJobStatusEvent) {
 	SimulationStatus newstatus = updateFromJobEvent0(oldStatus, simJobStatusEvent);
-	System.out.println("##  ##  ##  ##  ##  ##  ##  ##    >>>> NEW SIMULATION STATUS <<<< ###########   oldstatus=" + oldStatus + "\n###########  newstatus=" + newstatus + "\n###########  jobstatusevent=" + simJobStatusEvent.getJobStatus());
+//	System.out.println("##  ##  ##  ##  ##  ##  ##  ##    >>>> NEW SIMULATION STATUS <<<< ###########   oldstatus=" + oldStatus + "\n###########  newstatus=" + newstatus + "\n###########  jobstatusevent=" + simJobStatusEvent.getJobStatus());
 	return newstatus;	
 }
 /**

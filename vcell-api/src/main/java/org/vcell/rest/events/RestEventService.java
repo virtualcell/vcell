@@ -51,7 +51,7 @@ public class RestEventService {
 	}
 	
 	private void newEventMessage(MessageEvent event) {
-		System.out.println(getClass().getName()+".newEventMessage("+event.getClass().getSimpleName()+": "+event);
+		if (lg.isTraceEnabled()) lg.trace("newEventMessage("+event.getClass().getSimpleName()+": "+event);
 		if (event instanceof ExportEvent) {
 			ExportEvent exportEvent = (ExportEvent) event;
 			try {
@@ -123,7 +123,7 @@ public class RestEventService {
 		while (iter.hasNext()) {
 			EventWrapper eventWrapper = iter.next();
 			if (eventWrapper.timestamp > lasttimestamp && (eventWrapper.userid==null || eventWrapper.userid.equals(userid))) {
-				System.out.println("returning event to userid: ("+eventWrapper.id+", "+eventWrapper.timestamp+", "+eventWrapper.userid+", "+eventWrapper.eventJSON+")");
+				if (lg.isTraceEnabled()) lg.trace("returning event to userid: ("+eventWrapper.id+", "+eventWrapper.timestamp+", "+eventWrapper.userid+", "+eventWrapper.eventJSON+")");
 				eventList.add(0, eventWrapper);
 			}
 		}
