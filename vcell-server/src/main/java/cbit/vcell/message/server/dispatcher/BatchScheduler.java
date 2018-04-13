@@ -151,7 +151,7 @@ public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsAllSites, Ma
 		KeyValue simKey = jobStatus.getVCSimulationIdentifier().getSimulationKey();
 		Integer numPdeRunningJobsThisUser = userPdeRunningJobsAllSites.get(user);
 		Integer numOdeRunningJobsThisUser = userOdeRunningJobsAllSites.get(user);
-		waitingJobsAllSites.add(new WaitingJob(user, numPdeRunningJobsThisUser, numOdeRunningJobsThisUser, waitingTimeStamp, jobStatus, simulationRequirementsMap.get(simKey), jobStatus.getServerID()));
+		waitingJobsAllSites.add(new WaitingJob(user, (numPdeRunningJobsThisUser!=null)?numPdeRunningJobsThisUser:0, (numOdeRunningJobsThisUser!=null)?numOdeRunningJobsThisUser:0, waitingTimeStamp, jobStatus, simulationRequirementsMap.get(simKey), jobStatus.getServerID()));
 	}
 
 	//
