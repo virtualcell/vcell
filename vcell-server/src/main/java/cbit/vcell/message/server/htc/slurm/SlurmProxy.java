@@ -247,11 +247,6 @@ public class SlurmProxy extends HtcProxy {
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 
 		lsb.write("TMPDIR=/state/partition1");
-		lsb.write("mkdir -p /state/partition1/singularityImages");
-		lsb.write("if [[ $? -ne 0 ]]; then");
-		lsb.write("    echo \"couldn't create /state/partition1/singularityImages temp directory for singularity\"");
-		lsb.write("    exit 1");
-		lsb.write("fi");
 		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
 		
 		//

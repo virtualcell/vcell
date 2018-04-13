@@ -212,7 +212,7 @@ if [ "$install_singularity" == "true" ]; then
 		# copy singularity image from singularity-vm directory to remote destination
 		echo ""
 		echo "coping ./$singularity_filename to $slurmSingularityImagePath on $computenode as user $ssh_user"
-		cmd="scp $ssh_key ./$singularity_filename ${ssh_user}@${computenode}:${slurmSingularityImagePath}"
+		cmd="scp $ssh_key ./$singularity_filename ${ssh_user}@${computenode}:${slurmSingularityImagePath}/$singularity_filename"
 		echo $cmd
 		($cmd) || (echo "failed to upload generated singularity image to compute node $computenode" && exit 1)
     done
