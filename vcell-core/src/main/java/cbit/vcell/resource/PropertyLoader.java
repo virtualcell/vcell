@@ -59,6 +59,8 @@ public class PropertyLoader {
 	public static final String slurm_cmd_scancel				= record("vcell.slurm.cmd.scancel",ValueType.GEN);
 	public static final String slurm_cmd_sacct				= record("vcell.slurm.cmd.sacct",ValueType.GEN);
 	public static final String slurm_cmd_squeue				= record("vcell.slurm.cmd.squeue",ValueType.GEN);
+	public static final String slurm_cmd_scontrol			= record("vcell.slurm.cmd.scontrol",ValueType.GEN);
+	public static final String slurm_cmd_sinfo				= record("vcell.slurm.cmd.sinfo",ValueType.GEN);
 	public static final String slurm_partition				= record("vcell.slurm.partition",ValueType.GEN);
 	public static final String sgeModulePath				= record("vcell.htc.sge.module",ValueType.GEN);
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
@@ -152,7 +154,7 @@ public class PropertyLoader {
 	public static final String maxOdeJobsPerUser	= record("vcell.server.maxOdeJobsPerUser",ValueType.GEN);
 	public static final String maxPdeJobsPerUser	= record("vcell.server.maxPdeJobsPerUser",ValueType.GEN);
 	public static final String maxJobsPerScan		= record("vcell.server.maxJobsPerScan",ValueType.GEN);
-	public static final String maxJobsPerSite		= record("vcell.server.maxJobsPerSite",ValueType.GEN);
+	//public static final String maxJobsPerSite		= record("vcell.server.maxJobsPerSite",ValueType.GEN);
 	public static final String limitJobMemoryMB		= record("vcell.limit.jobMemoryMB",ValueType.GEN);
 
 	public static final String vcellSoftwareVersion = record("vcell.softwareVersion",ValueType.GEN);

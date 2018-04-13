@@ -4,10 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,10 +31,9 @@ public class SlurmProxy extends HtcProxy {
 	private final static int SCANCEL_JOB_NOT_FOUND_RETURN_CODE = 1;
 	private final static String SCANCEL_UNKNOWN_JOB_RESPONSE = "does not exist";
 	protected final static String SLURM_SUBMISSION_FILE_EXT = ".slurm.sub";
+	
 //	private Map<HtcJobID, JobInfoAndStatus> statusMap;
 	
-	//private static String Slurm_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSlurmHome);
-	private static String Slurm_HOME = ""; // slurm commands should be in the path (empty prefix)
 	private static String htcLogDirExternalString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
 	private static String MPI_HOME_EXTERNAL= PropertyLoader.getProperty(PropertyLoader.MPI_HOME_EXTERNAL,"");
 	static {
@@ -56,7 +53,7 @@ public class SlurmProxy extends HtcProxy {
 	@Override
 	public void killJob(HtcJobID htcJobId) throws ExecutableException, HtcException {
 		final String JOB_CMD_DELETE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scancel,"scancel");
-		String[] cmd = new String[]{Slurm_HOME + JOB_CMD_DELETE, Long.toString(htcJobId.getJobNumber())};
+		String[] cmd = new String[]{JOB_CMD_DELETE, Long.toString(htcJobId.getJobNumber())};
 		try {
 			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			if (LG.isDebugEnabled()) {
@@ -110,11 +107,76 @@ public class SlurmProxy extends HtcProxy {
 		return SLURM_SUBMISSION_FILE_EXT;
 	}
 
+	private String getPartitionNodeListCSV() throws HtcException, ExecutableException, IOException {
+		final String JOB_CMD_SINFO = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sinfo,"sinfo");
+		// 
+		// sinfo -N -h -p vcell --Format='nodelist' | xargs | tr ' ' ','
+		//
+		String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
+		String[] cmds = {JOB_CMD_SINFO,"-N","-h","-p",partition,"--Format='nodelist'","|","xargs","|","tr","' '","','"};
+		CommandOutput commandOutput = commandService.command(cmds);
+
+		String output = commandOutput.getStandardOutput().trim();
+		output = output.replace("\n", "");
+		return output;
+	}
+	
+	public PartitionStatistics getPartitionStatistics() throws HtcException, ExecutableException, IOException {
+		final String JOB_CMD_SCONTROL = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scontrol,"scontrol");
+		//
+		// scontrol show node $(sinfo -N -p vcell2 --Format='nodelist' | xargs | tr ' ' ',') | grep CPUAlloc
+		// 
+
+		String partitionNodeList = getPartitionNodeListCSV();
+//		String[] cmds = {JOB_CMD_SCONTROL,"show","node","$(",JOB_CMD_SINFO,"-N","-h","-p",partition,"--Format='nodelist'","|","xargs","|","tr","' '","','",")","|","grep","CPUAlloc"};
+		String[] cmds = {JOB_CMD_SCONTROL,"-a","show","node",partitionNodeList,"|","grep","CPUAlloc"};
+		CommandOutput commandOutput = commandService.command(cmds);
+
+		String output = commandOutput.getStandardOutput();
+		PartitionStatistics clusterStatistics = extractPartitionStatistics(output);
+		return clusterStatistics;
+	}
+	
+	static PartitionStatistics extractPartitionStatistics(String output) throws IOException {
+		BufferedReader reader = new BufferedReader(new StringReader(output));
+		String line = reader.readLine();
+		//   CPUAlloc=0 CPUErr=0 CPUTot=36 CPULoad=0.05
+		//   CPUAlloc=0 CPUErr=0 CPUTot=36 CPULoad=0.06
+		//   CPUAlloc=0 CPUErr=0 CPUTot=36 CPULoad=0.06
+		//   CPUAlloc=0 CPUErr=0 CPUTot=36 CPULoad=0.06
+		//   CPUAlloc=0 CPUErr=0 CPUTot=64 CPULoad=0.01
+		//   CPUAlloc=0 CPUErr=0 CPUTot=64 CPULoad=0.03
+		if (line==null) {
+			return new PartitionStatistics(0,0,0);
+		}
+		int CPUAlloc_sum = 0;
+		int CPUErr_sum = 0;
+		int CPUTot_sum = 0;
+		double CPULoad_sum = 0.0;
+		while (line != null){
+			line = line.replaceAll(" +", " ").trim();
+			line = line.replaceAll("=", " ").trim();
+			String[] tokens = line.split(" ");
+			String CPUAlloc = tokens[1];
+			String CPUErr = tokens[3];
+			String CPUTot = tokens[5];
+			String CPULoad = tokens[7];
+			CPUAlloc_sum += Integer.parseInt(CPUAlloc);
+			CPUErr_sum += Integer.parseInt(CPUErr);
+			CPUTot_sum += Integer.parseInt(CPUTot);
+			CPULoad_sum += Double.parseDouble(CPULoad);
+			line = reader.readLine();
+		}
+		PartitionStatistics clusterStatistics = new PartitionStatistics(CPUAlloc_sum, CPUTot_sum-CPUErr_sum, CPULoad_sum);
+		return clusterStatistics;
+	}
+
 	@Override
 	public Map<HtcJobID, JobInfoAndStatus> getRunningJobs() throws ExecutableException, IOException {
 		final String JOB_CMD_SQUEUE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_squeue,"squeue");
-		// squeue -p vcell -O jobid:25,name:25,state:13
-		String[] cmds = {Slurm_HOME + JOB_CMD_SQUEUE,"-p","vcell","-O","jobid:25,name:25,state:13,batchhost"};
+		// squeue -p vcell2 -O jobid:25,name:25,state:13
+		String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
+		String[] cmds = {JOB_CMD_SQUEUE,"-p",partition,"-O","jobid:25,name:25,state:13,batchhost"};
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
@@ -402,7 +464,7 @@ public class SlurmProxy extends HtcProxy {
 		 * Submitted batch job 5174
 		 * 
 		 */
-		String[] completeCommand = new String[] {Slurm_HOME + JOB_CMD_SBATCH, sub_file_external};
+		String[] completeCommand = new String[] {JOB_CMD_SBATCH, sub_file_external};
 		if (LG.isDebugEnabled()) {
 			LG.debug("submitting SLURM job: '"+CommandOutput.concatCommandStrings(completeCommand)+"'");
 		}
@@ -421,5 +483,6 @@ public class SlurmProxy extends HtcProxy {
 		}
 		return htcJobID;
 	}
+
 
 }

@@ -38,6 +38,21 @@ public abstract class HtcProxy {
 	 * this will execute on sigcluster2 (with SGE) and not execute on sigcluster (with PBS).
 	 *
 	 */
+	
+	public static class PartitionStatistics {
+		public final int numCpusAllocated;
+		public final int numCpusTotal;
+		public final double load;
+		
+		public PartitionStatistics(int numCpusAllocated, int numCpusTotal, double load) {
+			this.numCpusAllocated = numCpusAllocated;
+			this.numCpusTotal = numCpusTotal;
+			this.load = load;
+		}
+		public String toString() {
+			return "numCpusAllocated="+numCpusAllocated+", numCpusTotal="+numCpusTotal+", load="+load;
+		}
+	}
 
 	public static class HtcJobInfo{
 		private final HtcJobID htcJobID;
@@ -185,6 +200,8 @@ public abstract class HtcProxy {
 	public abstract HtcProxy cloneThreadsafe();
 
 	public abstract Map<HtcJobID,JobInfoAndStatus> getRunningJobs() throws ExecutableException, IOException;
+	
+	public abstract PartitionStatistics getPartitionStatistics() throws HtcException, ExecutableException, IOException;
 
 	public final CommandService getCommandService() {
 		return commandService;

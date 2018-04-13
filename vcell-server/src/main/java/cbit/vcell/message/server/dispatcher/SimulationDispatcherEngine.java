@@ -133,7 +133,7 @@ public class SimulationDispatcherEngine {
 	public void onStopRequest(VCSimulationIdentifier vcSimID, User user, SimulationDatabase simulationDatabase, VCMessageSession session) throws DataAccessException, VCMessagingException, SQLException {
 		KeyValue simKey = vcSimID.getSimulationKey();
 
-		SimulationJobStatus[] allActiveSimJobStatusArray = simulationDatabase.getActiveJobs();
+		SimulationJobStatus[] allActiveSimJobStatusArray = simulationDatabase.getActiveJobs(VCellServerID.getSystemServerID());
 		ArrayList<SimulationJobStatus> simJobStatusArray = new ArrayList<SimulationJobStatus>();
 		for (SimulationJobStatus activeSimJobStatus : allActiveSimJobStatusArray){
 			if (activeSimJobStatus.getVCSimulationIdentifier().getSimulationKey().equals(vcSimID.getSimulationKey())){

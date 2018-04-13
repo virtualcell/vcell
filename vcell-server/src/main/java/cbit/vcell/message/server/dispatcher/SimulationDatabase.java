@@ -9,6 +9,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.messaging.db.SimulationRequirements;
@@ -27,7 +28,14 @@ public interface SimulationDatabase {
 
 	public void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, SQLException;
 
-	public SimulationJobStatus[] getActiveJobs() throws DataAccessException, SQLException;
+	/**
+	 * 
+	 * @param vcellServerID - if null, return all jobs
+	 * @return
+	 * @throws DataAccessException
+	 * @throws SQLException
+	 */
+	public SimulationJobStatus[] getActiveJobs(VCellServerID vcellServerID) throws DataAccessException, SQLException;
 	
 	public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Collection<KeyValue> simKeys) throws SQLException;
 	

@@ -205,8 +205,8 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	}
 
 	@Override
-	public SimulationJobStatus[] getActiveJobs() throws DataAccessException, SQLException{
-		SimulationJobStatusPersistent[] activeJobsDb = adminDbTopLevel.getActiveJobs(VCellServerID.getSystemServerID(),true);
+	public SimulationJobStatus[] getActiveJobs(VCellServerID vcellServerId) throws DataAccessException, SQLException{
+		SimulationJobStatusPersistent[] activeJobsDb = adminDbTopLevel.getActiveJobs(vcellServerId,true);
 		SimulationJobStatus[] activeJobs = new SimulationJobStatus[activeJobsDb.length];
 		for (int i=0;i<activeJobsDb.length;i++){
 			SimJobStatusKey key = new SimJobStatusKey(activeJobsDb[i].getVCSimulationIdentifier().getSimulationKey(),activeJobsDb[i].getJobIndex(),activeJobsDb[i].getTaskID());
