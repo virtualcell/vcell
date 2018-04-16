@@ -25,6 +25,14 @@ public enum SGEJobStatus {
 		return this == EXITED;
 	}
 
+	public boolean isCompleted() {
+		return this == EXITED;
+	}
+
+	public boolean isFailed() {
+		return this == ERROR;
+	}
+
 	/**
 	 *  convert String to enum
 	 * @param status string to match
@@ -63,5 +71,5 @@ public enum SGEJobStatus {
 	 * state code for some states
 	 */
 	private final String stateCode;
-
+	
 }

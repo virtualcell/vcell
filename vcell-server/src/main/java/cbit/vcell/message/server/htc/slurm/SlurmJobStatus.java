@@ -51,4 +51,12 @@ public enum SlurmJobStatus {
 		return this == COMPLETING;
 	}
 
+	public boolean isFailed() {
+		return this == FAILED;
+	}
+
+	public boolean isCompleted() {
+		return this == COMPLETED;
+	}
+
 }

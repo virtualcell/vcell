@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -32,26 +34,40 @@ public class SlurmProxy extends HtcProxy {
 	private final static String SCANCEL_UNKNOWN_JOB_RESPONSE = "does not exist";
 	protected final static String SLURM_SUBMISSION_FILE_EXT = ".slurm.sub";
 	
-//	private Map<HtcJobID, JobInfoAndStatus> statusMap;
-	
-	private static String htcLogDirExternalString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
-	private static String MPI_HOME_EXTERNAL= PropertyLoader.getProperty(PropertyLoader.MPI_HOME_EXTERNAL,"");
-	static {
-//		if (!Slurm_HOME.endsWith("/")){
-//			Slurm_HOME += "/";
-//		}
-		if (!htcLogDirExternalString.endsWith("/")){
-			htcLogDirExternalString = htcLogDirExternalString+"/";
-		}
-	}
-
 	public SlurmProxy(CommandService commandService, String htcUser) {
 		super(commandService, htcUser);
 	}
 
 
 	@Override
-	public void killJob(HtcJobID htcJobId) throws ExecutableException, HtcException {
+	public void killJobSafe(HtcJobInfo htcJobInfo) throws ExecutableException, HtcException {
+		final String JOB_CMD_DELETE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scancel,"scancel");
+		String[] cmd = new String[]{JOB_CMD_DELETE, "--jobname", htcJobInfo.getJobName(), Long.toString(htcJobInfo.getHtcJobID().getJobNumber())};
+		try {
+			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			if (LG.isDebugEnabled()) {
+				LG.debug("killing SLURM job htcJobId="+htcJobInfo+": '"+CommandOutput.concatCommandStrings(cmd)+"'");
+			}
+			CommandOutput commandOutput = commandService.command(cmd,new int[] { 0, SCANCEL_JOB_NOT_FOUND_RETURN_CODE });
+
+			Integer exitStatus = commandOutput.getExitStatus();
+			String standardOut = commandOutput.getStandardOutput();
+			if (exitStatus!=null && exitStatus.intValue()==SCANCEL_JOB_NOT_FOUND_RETURN_CODE && standardOut!=null && standardOut.toLowerCase().contains(SCANCEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
+				LG.error("failed to cancel SLURM htcJobId="+htcJobInfo+", job not found");
+				throw new HtcJobNotFoundException(standardOut, htcJobInfo);
+			}
+		}catch (ExecutableException e){
+			LG.error("failed to cancel SLURM htcJobId="+htcJobInfo, e);
+			if (!e.getMessage().toLowerCase().contains(SCANCEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
+				throw e;
+			}else{
+				throw new HtcJobNotFoundException(e.getMessage(), htcJobInfo);
+			}
+		}
+	}
+
+	@Override
+	public void killJobUnsafe(HtcJobID htcJobId) throws ExecutableException, HtcException {
 		final String JOB_CMD_DELETE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scancel,"scancel");
 		String[] cmd = new String[]{JOB_CMD_DELETE, Long.toString(htcJobId.getJobNumber())};
 		try {
@@ -87,6 +103,8 @@ public class SlurmProxy extends HtcProxy {
 		if (ncpus == 1) {
 			return command;
 		}
+		String MPI_HOME_EXTERNAL= PropertyLoader.getProperty(PropertyLoader.MPI_HOME_EXTERNAL,"");
+
 		final char SPACE = ' ';
 		StringBuilder sb = new StringBuilder( );
 		sb.append(MPI_HOME_EXTERNAL);
@@ -172,7 +190,7 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	@Override
-	public Map<HtcJobID, JobInfoAndStatus> getRunningJobs() throws ExecutableException, IOException {
+	public Map<HtcJobInfo, HtcJobStatus> getRunningJobs() throws ExecutableException, IOException {
 		final String JOB_CMD_SQUEUE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_squeue,"squeue");
 		// squeue -p vcell2 -O jobid:25,name:25,state:13
 		String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
@@ -180,11 +198,11 @@ public class SlurmProxy extends HtcProxy {
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
-		Map<HtcJobID, JobInfoAndStatus> statusMap = extractJobIdsFromSqueue(output);
+		Map<HtcJobInfo, HtcJobStatus> statusMap = extractJobIdsFromSqueue(output);
 		return statusMap;
 	}
 
-	static Map<HtcJobID, JobInfoAndStatus> extractJobIdsFromSqueue(String output) throws IOException {
+	static Map<HtcJobInfo, HtcJobStatus> extractJobIdsFromSqueue(String output) throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();
 //		JOBID                    NAME                     STATE        EXEC_HOST           
@@ -195,7 +213,7 @@ public class SlurmProxy extends HtcProxy {
 		if (!line.equals("JOBID NAME STATE EXEC_HOST")){
 			throw new RuntimeException("unexpected first line from squeue: '"+line+"'");
 		}
-		Map<HtcJobID, JobInfoAndStatus> statusMap = new HashMap<HtcJobID, JobInfoAndStatus>();
+		Map<HtcJobInfo, HtcJobStatus> statusMap = new HashMap<HtcJobInfo, HtcJobStatus>();
 		while ((line = reader.readLine()) != null){
 			line = line.replaceAll(" +", " ").trim();
 			String[] tokens = line.split(" ");
@@ -207,11 +225,58 @@ public class SlurmProxy extends HtcProxy {
 				exe_host = null;
 			}
 			HtcJobID htcJobID = new HtcJobID(jobID,BatchSystemType.SLURM);
-			String errorPath = null;
-			String outputPath = null;
-			HtcJobInfo htcJobInfo = new HtcJobInfo(htcJobID, true, jobName, errorPath, outputPath);
+			HtcJobInfo htcJobInfo = new HtcJobInfo(htcJobID, jobName);
 			HtcJobStatus htcJobStatus = new HtcJobStatus(SlurmJobStatus.parseStatus(state));
-			statusMap.put(htcJobID, new JobInfoAndStatus(htcJobInfo, htcJobStatus));
+			statusMap.put(htcJobInfo, htcJobStatus);
+		}
+		return statusMap;
+	}
+	
+	public Map<HtcJobInfo,HtcJobStatus> getJobStatus(List<HtcJobInfo> requestedHtcJobInfos) throws ExecutableException, IOException {
+		if (requestedHtcJobInfos.size()==0) {
+			throw new RuntimeException("htcJobList is empty");
+		}
+		final String JOB_CMD_SACCT = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_squeue,"sacct");
+		ArrayList<String> jobNumbers = new ArrayList<String>();
+		for (HtcJobInfo jobInfo : requestedHtcJobInfos) {
+			jobNumbers.add(Long.toString(jobInfo.getHtcJobID().getJobNumber()));
+		}
+		String jobList = String.join(",", jobNumbers);
+		String[] cmds = {JOB_CMD_SACCT,"-P","-j",jobList,"-o","jobid%25,jobname%25,state%13"};
+		CommandOutput commandOutput = commandService.command(cmds);
+		
+		String output = commandOutput.getStandardOutput();
+		Map<HtcJobInfo, HtcJobStatus> statusMap = extractJobIds(output);
+		//
+		// HtcJobIDs can be reused by Slurm, so make sure it has the correct JobName also.
+		//
+		for (HtcJobInfo parsedHtcJobInfo : statusMap.keySet()) {
+			if (!requestedHtcJobInfos.contains(parsedHtcJobInfo)) {
+				statusMap.remove(parsedHtcJobInfo);
+			}
+		}
+		return statusMap;
+	}
+	
+	static Map<HtcJobInfo, HtcJobStatus> extractJobIds(String output) throws IOException {
+		BufferedReader reader = new BufferedReader(new StringReader(output));
+		String line = reader.readLine();
+		if (!line.equals("JobID|JobName|State")){
+			throw new RuntimeException("unexpected first line from sacct: '"+line+"'");
+		}
+		Map<HtcJobInfo, HtcJobStatus> statusMap = new HashMap<HtcJobInfo, HtcJobStatus>();
+		while ((line = reader.readLine()) != null){
+			String[] tokens = line.split("\\|");
+			String jobID = tokens[0];
+			String jobName = tokens[1];
+			String state = tokens[2];
+			if (jobName.equals("batch")){
+				continue;
+			}
+			HtcJobID htcJobID = new HtcJobID(jobID,BatchSystemType.SLURM);
+			HtcJobInfo htcJobInfo = new HtcJobInfo(htcJobID, jobName);
+			HtcJobStatus htcJobStatus = new HtcJobStatus(SlurmJobStatus.parseStatus(state));
+			statusMap.put(htcJobInfo, htcJobStatus);
 		}
 		return statusMap;
 	}
@@ -233,11 +298,12 @@ public class SlurmProxy extends HtcProxy {
 		LineStringBuilder lsb = new LineStringBuilder();
 
 		lsb.write("#!/usr/bin/env bash");
+		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
 		String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
 		lsb.write("#SBATCH --partition=" + partition);
 		lsb.write("#SBATCH -J " + jobName);
-		lsb.write("#SBATCH -o " + htcLogDirExternalString+jobName+".slurm.log");
-		lsb.write("#SBATCH -e " + htcLogDirExternalString+jobName+".slurm.log");
+		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
+		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
 		if (nodelist!=null && nodelist.trim().length()>0) {
 			lsb.write("#SBATCH --nodelist="+nodelist);
@@ -252,7 +318,11 @@ public class SlurmProxy extends HtcProxy {
 		//
 		// Initialize Singularity
 		//
-		lsb.write("module load singularity");
+		lsb.write("echo `hostname`\n");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
+		lsb.write("source /usr/share/Modules/init/bash\n");
+		lsb.write("module load singularity\n");
+		
 		lsb.write("echo \"job running on host `hostname -f`\"");
 		lsb.newline();
 		lsb.write("echo \"id is `id`\"");
@@ -336,6 +406,9 @@ public class SlurmProxy extends HtcProxy {
 		 */
 
 		if (isParallel) {
+			String MPI_HOME_EXTERNAL= PropertyLoader.getProperty(PropertyLoader.MPI_HOME_EXTERNAL,"");
+
+
 			// #SBATCH
 //			lsb.append("#$ -pe mpich ");
 //			lsb.append(ncpus);
@@ -430,8 +503,7 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, String sub_file_internal, String sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
-		final String JOB_CMD_SBATCH = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sbatch,"sbatch");
+	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
@@ -446,20 +518,19 @@ public class SlurmProxy extends HtcProxy {
 			if (LG.isDebugEnabled()) {
 				LG.debug("moving local SLURM submit file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_external+"'");
 			}
-			FileUtils.copyFile(tempFile, new File(sub_file_internal));
+			FileUtils.copyFile(tempFile, sub_file_internal);
 			tempFile.delete();
 		} catch (IOException ex) {
 			ex.printStackTrace(System.out);
 			return null;
 		}
 
-		/**
-		 * 
-		 * > sbatch /share/apps/vcell2/deployed/test/htclogs/V_TEST_107643258_0_0.slurm.sub
-		 * Submitted batch job 5174
-		 * 
-		 */
-		String[] completeCommand = new String[] {JOB_CMD_SBATCH, sub_file_external};
+		return submitJobFile(sub_file_external);
+	}
+
+	HtcJobID submitJobFile(File sub_file_external) throws ExecutableException {
+		final String JOB_CMD_SBATCH = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sbatch,"sbatch");
+		String[] completeCommand = new String[] {JOB_CMD_SBATCH, sub_file_external.getAbsolutePath()};
 		if (LG.isDebugEnabled()) {
 			LG.debug("submitting SLURM job: '"+CommandOutput.concatCommandStrings(completeCommand)+"'");
 		}
