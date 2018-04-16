@@ -89,7 +89,7 @@ ENTRYPOINT java \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.parallelDatadir.external="${simdatadir_parallel_external}" \
 	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \
-	-Dvcell.export.baseDir.internal=/exportdir \
+	-Dvcell.export.baseDir.internal=/exportdir/ \
 	-Dvcell.export.baseURL="${export_baseurl}" \
 	-Dvcell.htc.user="${batchuser}" \
 	-Dvcell.htc.logdir.internal=/htclogs \
