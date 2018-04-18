@@ -1337,8 +1337,8 @@ public class FRAPStudy implements Matchable{
 	}
 
 
-	public void setStartingIndexForRecovery(int startingIndexForRecovery) {
-		this.startingIndexForRecovery = new Integer(startingIndexForRecovery);
+	public void setStartingIndexForRecovery(Integer startingIndexForRecovery) {
+		this.startingIndexForRecovery = startingIndexForRecovery;
 	}
 	
 	public void setSelectedROIsForErrorCalculation(boolean[] arg_selectedROIs)

@@ -116,15 +116,17 @@ public class ROISummaryDescriptor extends WizardPanelDescriptor {
 								new String[] {FIX_AUTO,NO_THANKS}, FIX_AUTO);
 						if(result != null && result.equals(FIX_AUTO)){
 							if (fStudy.getFrapData().fixROIConstraints()) {
-								fStudy.setStartingIndexForRecovery(startIndex);
+//								fStudy.setStartingIndexForRecovery(startIndex);
 								getBatchRunWorkspace().setWorkingFRAPStudy(fStudy);
 								//generate ROI rings
-								fStudy.refreshDependentROIs();
+//								fStudy.refreshDependentROIs();
 							} else {
 								throw new Exception("Please fix the ROI problem or cancel the wizard.");
 							}
 						}
 					}
+					fStudy.setStartingIndexForRecovery(startIndex);
+					fStudy.refreshDependentROIs();
 				}
 				else throw new Exception(msg);
 			}
