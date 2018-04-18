@@ -18,6 +18,9 @@ public enum PBSJobStatus {
 		return pbsCommandLetter;
 	}
 
+	public boolean isFailed() {
+		return false;
+	}
 	public boolean isCompleted() {
 		return this.equals(Completed);
 	}

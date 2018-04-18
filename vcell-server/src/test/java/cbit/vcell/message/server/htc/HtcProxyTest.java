@@ -46,11 +46,11 @@ public class HtcProxyTest {
 	@Test
 	public void test_isMyJob(){
 		System.setProperty(PropertyLoader.vcellServerIDProperty,"ALPHA");
-		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),true,"V_ALPHA_115785823_0_0",null,null)));
-		Assert.assertFalse(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),true,"V_BETA_115785823_0_0",null,null)));
+		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),"V_ALPHA_115785823_0_0")));
+		Assert.assertFalse(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),"V_BETA_115785823_0_0")));
 		
 		System.setProperty(PropertyLoader.vcellServerIDProperty,"BETA");
-		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),true,"V_BETA_115785823_0_0",null,null)));
+		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),"V_BETA_115785823_0_0")));
 	}
 
 }

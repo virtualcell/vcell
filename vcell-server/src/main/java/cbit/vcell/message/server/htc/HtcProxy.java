@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.LogManager;
@@ -57,81 +56,42 @@ public abstract class HtcProxy {
 	public static class HtcJobInfo{
 		private final HtcJobID htcJobID;
 		private final String jobName;
-		//private String errorPath;
-		//private String outputPath;
-		private final boolean bFound;
-		/**
-		 * @param htcJobID
-		 * @param bFound
-		 * @param jobName
-		 * @param errorPath ignored
-		 * @param outputPath ignored
-		 */
-		public HtcJobInfo(HtcJobID htcJobID, boolean bFound, String jobName,String errorPath,String outputPath) {
+
+		public HtcJobInfo(HtcJobID htcJobID, String jobName) {
 			this.htcJobID = htcJobID;
-			this.bFound = bFound;
 			this.jobName = jobName;
-			//this.errorPath = errorPath;
-			//this.outputPath = outputPath;
 		}
 		public HtcJobID getHtcJobID() {
 			return htcJobID;
 		}
 		public String getJobName(){
-			validate();
 			return jobName;
 		}
-		/*
-		public String getErrorPath() {
-			validate();
-			return errorPath;
-		}
-		public String getOutputPath() {
-			validate();
-			return outputPath;
-		}
-		*/
-		public boolean isFound(){
-			return bFound;
-		}
 		public String toString(){
-			if (bFound){
-				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",found=true,jobName="+jobName+")";
-			}else{
-				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+", JOB NOT FOUND)";
-			}
-		}
-		private void validate(){
-			if(!isFound()){
-				throw new RuntimeException("Must call isFound() before using HtcJobInfo to verify info exists");
-			}
-		}
-	}
-	
-	/**
-	 * package job info and status
-	 */
-	public static class JobInfoAndStatus {
-		public final HtcJobInfo info;
-		public final HtcJobStatus status;
-		/**
-		 * @param info not null
-		 * @param status not null
-		 */
-		public JobInfoAndStatus(HtcJobInfo info, HtcJobStatus status) {
-			Objects.requireNonNull(info);
-			Objects.requireNonNull(status);
-			this.info = info;
-			this.status = status;
+			return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",jobName="+jobName+")";
 		}
 		@Override
-		public String toString() {
-			return info.toString() + ": "  + status.toString();
+		public int hashCode() {
+			return htcJobID.toDatabase().hashCode() + jobName.hashCode();
 		}
-
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof HtcJobInfo) {
+				HtcJobInfo other = (HtcJobInfo)obj;
+				if (!htcJobID.toDatabase().equals(other.htcJobID.toDatabase())){
+					return false;
+				}
+				if (!jobName.equals(other.jobName)){
+					return false;
+				}
+				return true;
+			}else {
+				return false;
+			}
+		}
+		
 	}
-
-
+	
 	public static class SimTaskInfo {
 		
 		public final KeyValue simId;
@@ -186,7 +146,8 @@ public abstract class HtcProxy {
 		this.htcUser = htcUser;
 	}
 
-	public abstract void killJob(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException;
+	public abstract void killJobSafe(HtcJobInfo htcJobInfo) throws ExecutableException, HtcJobNotFoundException, HtcException;
+	public abstract void killJobUnsafe(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException;
 
 	/**
 	 * @param postProcessingCommands may be null if no commands desired
@@ -194,12 +155,12 @@ public abstract class HtcProxy {
 	 * @param postProcessingCommands non null
 	 * @throws ExecutableException
 	 */
-	public abstract HtcJobID submitJob(String jobName, String sub_file_internal, String sub_file_external, ExecutableCommand.Container commandSet,
+	public abstract HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet,
 			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException;
 
 	public abstract HtcProxy cloneThreadsafe();
 
-	public abstract Map<HtcJobID,JobInfoAndStatus> getRunningJobs() throws ExecutableException, IOException;
+	public abstract Map<HtcJobInfo,HtcJobStatus> getRunningJobs() throws ExecutableException, IOException;
 	
 	public abstract PartitionStatistics getPartitionStatistics() throws HtcException, ExecutableException, IOException;
 

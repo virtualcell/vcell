@@ -253,17 +253,11 @@ private void initQueueConsumer() {
 private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, PostProcessingChores chores) throws XmlParseException, IOException, SolverException, ExecutableException {
 
 	HtcJobID jobid = null;
-	String htcLogDirExternalString = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal)).getAbsolutePath();
-	if (!htcLogDirExternalString.endsWith("/")){
-		htcLogDirExternalString = htcLogDirExternalString+"/";
-    }
-	String htcLogDirInternalString = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirInternal)).getAbsolutePath();
-	if (!htcLogDirInternalString.endsWith("/")){
-		htcLogDirInternalString = htcLogDirInternalString+"/";
-    }
+	File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
+	File htcLogDirInternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirInternal));
     String jobname = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID()));   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex()+ "_" + simTask.getTaskID();
-	String subFileExternal = htcLogDirExternalString+jobname + clonedHtcProxy.getSubmissionFileExtension();
-	String subFileInternal = htcLogDirInternalString+jobname + clonedHtcProxy.getSubmissionFileExtension();
+	File subFileExternal = new File(htcLogDirExternal, jobname + clonedHtcProxy.getSubmissionFileExtension());
+	File subFileInternal = new File(htcLogDirInternal, jobname + clonedHtcProxy.getSubmissionFileExtension());
 
 	File parallelDirInternal = new File(chores.runDirectoryInternal);
 	File parallelDirExternal = new File(chores.runDirectoryExternal);
@@ -303,7 +297,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 			Integer.toString(jobId),
 			Integer.toString(simTask.getTaskID()),
 			SOLVER_EXIT_CODE_REPLACE_STRING,
-			subFileExternal);
+			subFileExternal.getAbsolutePath());
 	postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
 	commandContainer.add(postprocessorCmd);
 
