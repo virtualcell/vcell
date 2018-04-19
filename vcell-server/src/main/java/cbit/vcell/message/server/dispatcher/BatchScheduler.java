@@ -228,9 +228,10 @@ public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsAllSites, Ma
 	// each time allocate 50% of available estimated job slots.
 	// assume that each job takes 2 cpus (don't want to wait on Slurm queue)
 	//
-	int inUseCPUs = Math.max(partitionStatistics.numCpusAllocated, (int)Math.ceil(partitionStatistics.load));
+	//int inUseCPUs = Math.max(partitionStatistics.numCpusAllocated, (int)Math.ceil(partitionStatistics.load));
+	int inUseCPUs = partitionStatistics.numCpusAllocated;
 	int cpusAvailable = Math.max(0, partitionStatistics.numCpusTotal - inUseCPUs);
-	int numJobsSlotsAvailable = Math.max(0, cpusAvailable/2 - numPendingJobsAllSites);
+	int numJobsSlotsAvailable = Math.max(0, cpusAvailable - numPendingJobsAllSites);
 	
 	int numJobsEligibleAllSites = waitingJobsAllSites.size();
 	int numJobsToDispatchAllSites = Math.min(numJobsSlotsAvailable,numJobsEligibleAllSites);
