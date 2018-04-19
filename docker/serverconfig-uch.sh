@@ -26,7 +26,7 @@ VCELL_REPO_NAMESPACE=$_repo
 VCELL_TAG=$_tag
 VCELL_VERSION_NUMBER=$_version_number
 VCELL_BUILD_NUMBER=$_build_number
-vcell_slurm_partition=vcell
+vcell_slurm_partition=vcell2
 
 case $VCELL_SITE in
 	REL)
@@ -45,7 +45,6 @@ case $VCELL_SITE in
 		_site_port_offset=2
 		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8080
-		vcell_slurm_partition=vcell2
 		_applicationId="1471-8022-1038-5554"
 		;;
 	TEST)
