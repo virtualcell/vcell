@@ -210,6 +210,10 @@ if [ "$install_singularity" == "true" ]; then
     for computenode in $nodeList; do
     	echo "scp file vcell@${computenode}:${slurmSingularityImagePath}"
 		# copy singularity image from singularity-vm directory to remote destination
+		echo "mkdir -p $slurmSingularityImagePath on $computenode"
+		cmd="ssh $ssh_key ${ssh_user}@${computenode} mkdir -p ${slurmSingularityImagePath}"
+		echo $cmd
+		($cmd)
 		echo ""
 		echo "coping ./$singularity_filename to $slurmSingularityImagePath on $computenode as user $ssh_user"
 		cmd="scp $ssh_key ./$singularity_filename ${ssh_user}@${computenode}:${slurmSingularityImagePath}/$singularity_filename"

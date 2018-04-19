@@ -230,7 +230,7 @@ public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsAllSites, Ma
 	//
 	int inUseCPUs = Math.max(partitionStatistics.numCpusAllocated, (int)Math.ceil(partitionStatistics.load));
 	int cpusAvailable = Math.max(0, partitionStatistics.numCpusTotal - inUseCPUs);
-	int numJobsSlotsAvailable = cpusAvailable/2 - numPendingJobsAllSites;
+	int numJobsSlotsAvailable = Math.max(0, cpusAvailable/2 - numPendingJobsAllSites);
 	
 	int numJobsEligibleAllSites = waitingJobsAllSites.size();
 	int numJobsToDispatchAllSites = Math.min(numJobsSlotsAvailable,numJobsEligibleAllSites);
