@@ -65,6 +65,7 @@ import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 @SuppressWarnings("serial")
 public class ViewJobsPanel extends DocumentEditorSubPanel {
@@ -77,11 +78,14 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 
 	private JTextField textFieldSearch = null;
 	private JLabel countLabel = new JLabel("");
+	private JLabel simulationInfoLabel = new JLabel("");
 	
 	private JTextField textFieldJobsLimit = null;
 	int maxRows = 200;
 
-	private JButton refreshAllButton;
+	private JButton refreshAllButton = null;
+	private JButton showQuotaButton = null;
+	private JButton stopJobButton = null;
 	/*
 	 hasData
 	*/
@@ -232,6 +236,8 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				}
 				maxRows = rows;
 				refreshInterface();
+			} else if(e.getSource() == getStopJobButton()) {
+				stopJob();
 			} else if(e.getSource() == getOrphanedButton()) {
 				// nothing to do here
 			}
@@ -261,6 +267,13 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 					final String htmlEnd = "</font></font></html>";
 					String text = FormatMessage(message);
 					details.setText(htmlStart + text + htmlEnd);
+					
+					getStopJobButton().setEnabled(model.isStoppable(row));
+					
+					SimpleJobStatus sjs = model.getValueAt(row);
+					String str = "Simulation " + model.getSimulationId(sjs);
+					str += ", Job " + sjs.jobStatus.getJobIndex() + " of " + model.getJobsCount(sjs);
+					simulationInfoLabel.setText(str);
 				}
 			}
 		}
@@ -279,9 +292,37 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	private class RunQuery extends AsynchClientTask {
+	
+	private class RunStopTaskQuery extends AsynchClientTask {
+		private static final String message = "Stopping Task ...";
+		public RunStopTaskQuery() {
+			super(message, TASKTYPE_NONSWING_BLOCKING);
+		}
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			ClientRequestManager crm = (ClientRequestManager)dwm.getRequestManager();
+			ClientDocumentManager cdm = (ClientDocumentManager)crm.getDocumentManager();
+			SessionManager sm = cdm.getSessionManager();
+			ClientServerManager csm = (ClientServerManager)sm;
+			SimulationController sc = csm.getSimulationController();
+			
+			int row = table.getSelectedRow();
+			SimpleJobStatus sjs = model.getValueAt(row);
+			VCSimulationIdentifier vcSimulationIdentifier = sjs.jobStatus.getVCSimulationIdentifier();
+			getRefreshAllButton().setEnabled(false);
+			getStopJobButton().setEnabled(false);
+
+			try {
+				sc.stopSimulation(vcSimulationIdentifier);
+			} catch (RemoteProxyException e1) {
+				e1.printStackTrace();
+			}
+			System.out.println("Finished Stopping Task");
+		}
+	}
+	private class RunRefreshQuery extends AsynchClientTask {
 		private static final String message = "Running Query ...";
-		public RunQuery() {
+		public RunRefreshQuery() {
 			super(message, TASKTYPE_NONSWING_BLOCKING);
 		}
 		@Override
@@ -323,6 +364,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			}
 			
 			getRefreshAllButton().setEnabled(false);
+			getStopJobButton().setEnabled(false);
 			SimpleJobStatus[] sjs = null;
 			try {
 				sjs = sc.getSimpleJobStatus(ssqs);
@@ -334,9 +376,9 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			System.out.println("Finish Querry Run");
 		}
 	}
-	private class DisplayResults extends AsynchClientTask {
+	private class DisplayRefreshResults extends AsynchClientTask {
 		private static final String message = "Displaying Results ...";
-		public DisplayResults() {
+		public DisplayRefreshResults() {
 			super(message, TASKTYPE_SWING_BLOCKING);
 		}
 		@Override
@@ -397,8 +439,8 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				gbc.weightx = 0;
 				gbc.weighty = 0;
 				gbc.anchor = GridBagConstraints.WEST;
-				gbc.insets = new Insets(4,4,4,4);
-				propertiesPanel.add(new JLabel("Message"), gbc);
+				gbc.insets = new Insets(10,4,4,4);
+				propertiesPanel.add(new JLabel("Message:"), gbc);
 
 				details = new JTextPane();
 				details.setContentType("text/html");
@@ -406,16 +448,45 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				JScrollPane scrl = new JScrollPane(details);
 				
 				gbc = new GridBagConstraints();
-				gbc.gridx = 2;
+				gbc.gridx = 1;
 				gbc.gridy = gridy;
 				gbc.weightx = 1.0;
 				gbc.weighty = 1.0;
 				gbc.gridwidth = 4;
-				gbc.gridheight = 3;		// 3 rows high
+				gbc.gridheight = 3;							// 3 rows high
 				gbc.anchor = GridBagConstraints.EAST;
 				gbc.fill = java.awt.GridBagConstraints.BOTH;
 				gbc.insets = new Insets(4,4,4,4);
 				propertiesPanel.add(scrl, gbc);
+				
+				gridy = 3;									// last row
+				gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.weightx = 0;
+				gbc.weighty = 0;
+				gbc.gridwidth = 2;
+				gbc.anchor = GridBagConstraints.WEST;
+				gbc.insets = new Insets(4,4,4,4);
+				propertiesPanel.add(simulationInfoLabel, gbc);
+				
+				gbc = new GridBagConstraints();
+				gbc.weightx = 1.0;
+				gbc.gridx = 2;
+				gbc.gridy = gridy;
+				gbc.anchor = GridBagConstraints.EAST;
+				gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(4,4,4,4);
+				propertiesPanel.add(new JLabel(""), gbc);	// fake horizontal
+
+				gbc = new GridBagConstraints();
+				gbc.gridx = 4;								// last cell
+				gbc.gridy = gridy;
+				gbc.weightx = 0;
+				gbc.weighty = 0;
+				gbc.anchor = GridBagConstraints.EAST;
+				gbc.insets = new Insets(4,4,4,4);
+				propertiesPanel.add(getStopJobButton(), gbc);
 				
 //				GridBagConstraints gbc = new GridBagConstraints();
 //				gbc.weighty = 1.0;
@@ -425,14 +496,6 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 //				gbc.fill = java.awt.GridBagConstraints.VERTICAL;
 //				propertiesPanel.add(new JLabel("-"), gbc);			// fake vertical
 //
-//				gbc = new GridBagConstraints();
-//				gbc.weightx = 1.0;
-//				gbc.gridx = 1;
-//				gbc.gridy = gridy;
-//				gbc.anchor = GridBagConstraints.EAST;
-//				gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-//				gbc.insets = new Insets(4,4,4,4);
-//				propertiesPanel.add(new JLabel("-"), gbc);			// fake horizontal
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -510,7 +573,6 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		try {
 			setName("ViewSimulationJobsPanel");
 			
-			getRefreshAllButton().addActionListener(eventHandler);
 			getTimeGroup();		// initialize the time button group and its components
 			
 			// ----------------------------------------------------------------------------------
@@ -555,6 +617,8 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			left.setBorder(titleLeft);
 
 			JPanel center = new SeparatedJPanel();
+//			Dimension dim = new Dimension(200, 100);
+//			center.setMinimumSize(dim);
 
 			top.setLayout(new GridBagLayout());
 			gbc = new GridBagConstraints();
@@ -756,9 +820,10 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			//textFieldJobsLimit.getDocument().addDocumentListener(eventHandler);
 			textFieldJobsLimit.setText(maxRows+"");
 			Dimension d = textFieldJobsLimit.getPreferredSize();
-			d.width = 80;
+			d.width = 60;
 			textFieldJobsLimit.setPreferredSize(d);
 			textFieldJobsLimit.setMaximumSize(d);
+			textFieldJobsLimit.setMinimumSize(d);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 1; 
@@ -838,12 +903,20 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			gbc.insets = new Insets(4, 0, 4, 4);
 			bottom.add(textFieldSearch, gbc);
 
+//			gbc = new GridBagConstraints();
+//			gbc.gridx = 4;
+//			gbc.gridy = gridy;
+//			gbc.fill = GridBagConstraints.HORIZONTAL;
+//			gbc.insets = new Insets(4, 4, 4, 10);
+//			bottom.add(getShowQuotaButton(), gbc);
+
 			gbc = new GridBagConstraints();
 			gbc.gridx = 4;
 			gbc.gridy = gridy;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(4, 4, 4, 10);
 			bottom.add(countLabel, gbc);
+
 
 			// renderer for the status icon; the tooltip gives the text
 			DefaultScrollTableCellRenderer statusCellRenderer = new DefaultScrollTableCellRenderer() {
@@ -968,13 +1041,33 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	private void refreshInterface() {
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		AsynchClientTask[] tasksArray = new AsynchClientTask[2];
-		tasksArray[0] = new RunQuery();
-		tasksArray[1] = new DisplayResults();
+		tasksArray[0] = new RunRefreshQuery();
+		tasksArray[1] = new DisplayRefreshResults();
 		ClientTaskDispatcher.dispatch(this, hash, tasksArray, false, true, new ProgressDialogListener() {
 			@Override
 			public void cancelButton_actionPerformed(EventObject newEvent) {
 				try {
 					getRefreshAllButton().setEnabled(true);
+					getStopJobButton().setEnabled(model.isStoppable(table.getSelectedRow()));
+					System.out.println("...user cancelled.");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+	private void stopJob() {
+		Hashtable<String, Object> hash = new Hashtable<String, Object>();
+		AsynchClientTask[] tasksArray = new AsynchClientTask[3];
+		tasksArray[0] = new RunStopTaskQuery();
+		tasksArray[1] = new RunRefreshQuery();
+		tasksArray[2] = new DisplayRefreshResults();
+		ClientTaskDispatcher.dispatch(this, hash, tasksArray, false, true, new ProgressDialogListener() {
+			@Override
+			public void cancelButton_actionPerformed(EventObject newEvent) {
+				try {
+					getRefreshAllButton().setEnabled(true);
+					getStopJobButton().setEnabled(model.isStoppable(table.getSelectedRow()));
 					System.out.println("...user cancelled.");
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -987,8 +1080,24 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		if (refreshAllButton == null) {
 			refreshAllButton = new javax.swing.JButton("Refresh");
 			refreshAllButton.setName("RefreshAllButton");
-		}
+			refreshAllButton.addActionListener(eventHandler);		}
 		return refreshAllButton;
+	}
+	private JButton getShowQuotaButton() {
+		if (showQuotaButton == null) {
+			showQuotaButton = new javax.swing.JButton("Show Quota");
+			showQuotaButton.setName("ShowQuotaButton");
+			showQuotaButton.addActionListener(eventHandler);
+		}
+		return showQuotaButton;
+	}
+	private JButton getStopJobButton() {
+		if (stopJobButton == null) {
+			stopJobButton = new javax.swing.JButton("Stop Simulation");
+			stopJobButton.setName("StopJobButton");
+			stopJobButton.addActionListener(eventHandler);
+		}
+		return stopJobButton;
 	}
 	
 	private void searchTable() {

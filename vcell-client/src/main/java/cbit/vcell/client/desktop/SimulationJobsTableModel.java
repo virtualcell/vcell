@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
@@ -315,6 +316,57 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 	@Override
 	public SymbolTable getSymbolTable(int row, int column) {
 		return null;
+	}
+	
+	public String getSimulationId(SimpleJobStatus sjs) {
+		if(sjs == null || sjs.simulationMetadata == null || sjs.simulationMetadata.vcSimID == null || sjs.simulationMetadata.vcSimID.getSimulationKey() == null) {
+			return "";
+		}
+		return sjs.simulationMetadata.vcSimID.getSimulationKey().toString();
+	}
+	public int getJobsCount(SimpleJobStatus sjs) {
+		if(sjs == null || sjs.simulationMetadata == null || sjs.simulationMetadata.vcSimID == null || sjs.simulationMetadata.vcSimID.getSimulationKey() == null) {
+			return 0;
+		}
+		if(sjs.jobStatus == null) {
+			return 0;
+		}
+		KeyValue ourKey = sjs.simulationMetadata.vcSimID.getSimulationKey();
+		int ourTaskId = sjs.jobStatus.getTaskID();
+		int count = 0;
+		for(SimpleJobStatus theirSjs : jobStatusArray) {
+			KeyValue theirKey = theirSjs.simulationMetadata.vcSimID.getSimulationKey();
+			int theirTaskId = theirSjs.jobStatus.getTaskID();
+			if(ourKey.compareEqual(theirKey) && ourTaskId == theirTaskId) {
+				count++;
+			}
+		}
+		return count;
+	}
+	public boolean isStoppable(int row) {
+		if(row < 0) {
+			return false;
+		}
+		SimpleJobStatus sjs = getValueAt(row);
+		return isStoppable(sjs);
+	}
+	public static boolean isStoppable(SimpleJobStatus sjs) {
+		if(sjs == null || sjs.jobStatus == null || sjs.jobStatus.getSchedulerStatus() == null) {
+			return false;
+		}
+		SchedulerStatus ss = sjs.jobStatus.getSchedulerStatus();
+		switch (ss) {
+		case WAITING:
+		case QUEUED:
+		case DISPATCHED:
+		case RUNNING:
+			return true;
+		case COMPLETED:
+		case STOPPED:
+		case FAILED:
+		default:
+			return false;
+		}
 	}
 
 }
