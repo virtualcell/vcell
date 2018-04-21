@@ -398,27 +398,6 @@ public boolean isUnknown() {
 	return status == UNKNOWN;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatusPersistent
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatusPersistent
- * @param progress java.lang.Double
- */
-public static SimulationStatusPersistent newNeverRan(int jobCount) {
-	SimulationStatusPersistent newStatus = new SimulationStatusPersistent(NEVER_RAN, false, jobCount);
-	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NEVER RAN <<<<< ######################   newstatus=" + newStatus);
-	return newStatus;
-}
-
-public static SimulationStatusPersistent newNotSaved(int jobCount) {
-	SimulationStatusPersistent newStatus = new SimulationStatusPersistent(NOT_SAVED, false, jobCount);
-	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NOT SAVED <<<<< ######################   newstatus=" + newStatus);
-	return newStatus;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (2/10/2004 12:45:40 PM)

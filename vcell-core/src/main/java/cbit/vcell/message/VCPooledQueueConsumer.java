@@ -83,7 +83,7 @@ public class VCPooledQueueConsumer implements VCQueueConsumer.QueueListener {
 				return true;
 			}
 		};
-System.out.println("Dispatching a worker thread to handle this message");
+		if (lg.isTraceEnabled()) lg.trace("Dispatching a worker thread to handle this message");
 		Future<Boolean> messageProcessorFuture = executorService.submit(messageProcessor);
 		messageProcessorFutures.add(messageProcessorFuture);
 	}

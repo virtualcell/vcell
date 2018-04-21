@@ -287,7 +287,7 @@ public String getPreparedStatement_BioModelReps(String conditions, OrderBy order
 			  "where rnum >= ?";
 	}
 
-	System.out.println(sql);
+	if (lg.isTraceEnabled()) lg.trace(sql);
 	return sql;
 }
 

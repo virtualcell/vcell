@@ -77,6 +77,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.KeyStroke;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -94,7 +96,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * @author:
  */
 public final class BeanUtils {
-	
+	private static final Logger lg = LogManager.getLogger(BeanUtils.class);
 	public static final String vcDateFormat = "dd-MMM-yyyy HH:mm:ss";
 
 	/**
@@ -177,8 +179,7 @@ public final class BeanUtils {
 			try {
 				m.invoke(frame, new Object[] {f.get(frame)});
 			} catch (Exception e) {
-				System.out.println(e);
-				e.printStackTrace(System.out);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -188,8 +189,7 @@ public final class BeanUtils {
 			return;
 		}
 		if (reference == null) {
-			System.out.println("BeanUtils.centerOnComponent, reference=null");
-			Thread.dumpStack();
+			if (lg.isWarnEnabled()) lg.warn("reference=null");
 			window.setLocation(0, 0);
 			return;
 		}
@@ -327,9 +327,6 @@ public final class BeanUtils {
 	}
 
 	public static Serializable cloneSerializable(Serializable obj) throws ClassNotFoundException, java.io.IOException {
-
-		//	System.out.println("BeanUtils.cloneSerializable, ("+obj+")");
-
 		Serializable clone = fromSerialized(toSerialized(obj));
 		return clone;
 	}
@@ -442,7 +439,10 @@ public final class BeanUtils {
 	}
 
 	public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, java.io.IOException {
-		//	long before = System.currentTimeMillis();
+		long before = 0;
+		if (lg.isTraceEnabled()) {
+			before = System.currentTimeMillis();
+		}
 
 		java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData);
 		InflaterInputStream iis = new InflaterInputStream(bis);
@@ -451,14 +451,19 @@ public final class BeanUtils {
 		ois.close();
 		bis.close();
 
-		//	long after = System.currentTimeMillis();
-		//	System.out.println("BeanUtils.fromCompressedSerialized, t="+(after-before)+" ms, ("+cacheClone+")");
+		if (lg.isTraceEnabled()) {
+			long after = System.currentTimeMillis();
+			lg.trace("fromCompressedSerialized(): t="+(after-before)+" ms, ("+cacheClone+")");	
+		}
 
 		return cacheClone;
 	}
 
 	public static Serializable fromSerialized(byte[] objData) throws ClassNotFoundException, IOException {
-		//	long before = System.currentTimeMillis();
+		long before = 0;
+		if (lg.isTraceEnabled()) {
+			before = System.currentTimeMillis();
+		}
 
 		ByteArrayInputStream bis = new ByteArrayInputStream(objData);
 		ObjectInputStream ois = new ObjectInputStream(bis);
@@ -466,8 +471,10 @@ public final class BeanUtils {
 		ois.close();
 		bis.close();
 
-		//	long after = System.currentTimeMillis();
-		//	System.out.println("BeanUtils.fromSerialized, t="+(after-before)+" ms, ("+cacheClone+")");
+		if (lg.isTraceEnabled()) {
+			long after = System.currentTimeMillis();
+			lg.trace("fromSerialized(): t="+(after-before)+" ms, ("+cacheClone+")");			
+		}
 
 		return cacheClone;
 	}
@@ -783,13 +790,16 @@ public final class BeanUtils {
 		bos.close();
 
 		long after = System.currentTimeMillis();
-		System.out.println("BeanUtils.toSerialized, t="+(after-before)+" ms, ("+cacheObj+") ratio=" + objData.length + "/" + bytes.length);
+		if (lg.isTraceEnabled()) lg.trace("toSerialized(), t="+(after-before)+" ms, ("+cacheObj+") ratio=" + objData.length + "/" + bytes.length);
 
 		return objData;
 	}
 
 	public static byte[] toSerialized(Serializable cacheObj) throws java.io.IOException {
-		//	long before = System.currentTimeMillis();
+		long before = 0;
+		if (lg.isTraceEnabled()) {
+			before = System.currentTimeMillis();
+		}
 
 		byte[] objData = null;
 		java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
@@ -800,8 +810,10 @@ public final class BeanUtils {
 		oos.close();
 		bos.close();
 
-		//	long after = System.currentTimeMillis();
-		//	System.out.println("BeanUtils.toSerialized, t="+(after-before)+" ms, ("+cacheObj+")");
+		if (lg.isTraceEnabled()) {
+			long after = System.currentTimeMillis();
+			lg.trace("toSerialized, t="+(after-before)+" ms, ("+cacheObj+")");
+		}
 
 		return objData;
 	}

@@ -148,7 +148,7 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 	// query guarantees authorized access to biomodels based on the supplied User authentication.
 	String sql = subquery + additionalConditionsClause + orderByClause;
 	
-	System.out.println(sql);
+	if (lg.isTraceEnabled()) lg.trace(sql);
 	return sql;
 }
 

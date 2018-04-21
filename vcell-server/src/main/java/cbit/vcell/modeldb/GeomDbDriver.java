@@ -715,7 +715,7 @@ private void getSurfaceDescription(Connection con, Geometry geom) throws SQLExce
 		sql = 	" SELECT " + geoSurfaceTable.getTableName()+".* "+
 				" FROM " + 	geoSurfaceTable.getTableName() +
 				" WHERE " + geoSurfaceTable.geometryRef.getQualifiedColName() + " = " + geom.getVersion().getVersionKey();
-System.out.println(sql);
+		if (lg.isTraceEnabled()) lg.trace(sql);
 		ResultSet rset = stmt.executeQuery(sql);
 		if (rset.next()){
 			geoSurfaceTable.populateGeometrySurfaceDescription(rset,geom.getGeometrySurfaceDescription());
@@ -739,7 +739,7 @@ System.out.println(sql);
 				" FROM " + 	geoRegionTable.getTableName() +
 				" WHERE " + geoRegionTable.geometryRef.getQualifiedColName() + " = " + geom.getVersion().getVersionKey() +
 				" AND " + geoRegionTable.type + " = " + GeometricRegionTable.TYPE_VOLUME;
-System.out.println(sql);
+		if (lg.isTraceEnabled()) lg.trace(sql);
 		rset = stmt.executeQuery(sql);
 		Vector<GeometricRegion> regionList = new Vector<GeometricRegion>();
 		while (rset.next()){
@@ -763,7 +763,7 @@ System.out.println(sql);
 				" AND vol1Table.id = surfTable." + geoRegionTable.volRegion1.getUnqualifiedColName() +
 				" AND vol2Table.id = surfTable." + geoRegionTable.volRegion2.getUnqualifiedColName() +
 				" AND surfTable." + geoRegionTable.type.getUnqualifiedColName() + " = " + GeometricRegionTable.TYPE_SURFACE;
-System.out.println(sql);
+		if (lg.isTraceEnabled()) lg.trace(sql);
 		rset = stmt.executeQuery(sql);
 		while (rset.next()){
 			SurfaceGeometricRegion surfaceRegion = geoRegionTable.getSurfaceRegion(rset, volumeRegions, geom.getUnitSystem());

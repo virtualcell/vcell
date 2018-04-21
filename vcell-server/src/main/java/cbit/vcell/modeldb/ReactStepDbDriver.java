@@ -128,7 +128,7 @@ private ReactionParticipant getReactionParticipant(QueryHashtable dbc, Connectio
 	try {
 		rp.setSpeciesContext(speciesContext);
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException("PropertyVetoException: "+e.getMessage());
 	}
 	rp.setReactionStep(rs);
@@ -187,7 +187,7 @@ private ReactionParticipant[] getReactionParticipants(QueryHashtable dbc, Connec
 		// return enumeration of ReactionParticipants
 		//
 		if (rpList.size() == 0) {
-			System.out.println("WARNING:::::ReactionParticipants for reactionStep(id=" + reactStepID + ") not found");
+			if (lg.isWarnEnabled()) lg.warn("ReactionParticipants for reactionStep(id=" + reactStepID + ") not found");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
@@ -310,8 +310,8 @@ private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultS
 	try {
 		rs.getKinetics().bind(rs);
 	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException("ExpressionException: "+e.getMessage());
+		lg.error(e.getMessage(), e);
+		throw new DataAccessException("ExpressionException: "+e.getMessage(),e);
 	}
 
 	dbc.put(rsKey,rs);
@@ -589,7 +589,7 @@ public HashMap<KeyValue, StructureKeys> getStructureParentMapByModel(QueryHashta
 			" WHERE " + structTable.id.getQualifiedColName() + " = " + modelStructLinkTable.structRef.getQualifiedColName() +
 			   " AND " + modelStructLinkTable.modelRef.getQualifiedColName() + " = " + modelKey;
 
-System.out.println(sql);
+	if (lg.isTraceEnabled()) lg.trace(sql);
 
 	Statement stmt = con.createStatement();
 
@@ -635,7 +635,9 @@ public StructureKeys getStructureKeys(QueryHashtable dbc, Connection con , KeyVa
 			" FROM " + structTable.getTableName() + 
 			" WHERE " + structTable.id.getQualifiedColName() + " = " + structKey;
 
-System.out.println(sql);
+	if (lg.isTraceEnabled()) {
+		lg.trace(sql);
+	}
 
 	Statement stmt = con.createStatement();
 	
