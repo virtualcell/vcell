@@ -4,7 +4,7 @@
 sudo yum -y update 
 sudo reboot
 ```
-## install java dev tools
+## install java dev tools, python packages, and utilities
 
 ```bash
 sudo yum install java-1.8.0-openjdk-devel
@@ -25,6 +25,19 @@ echo 'export PATH=$PATH:/opt/apache-maven/bin' | sudo tee -a /etc/profile
 source /etc/profile
 mvn --version
 rm /tmp/apache-maven-3.5.3-bin.tar.gz
+```
+
+install paramiko, requests, and tabulate python packages (used by cli.py)
+
+```bash
+sudo yum install -y python-devel
+sudo yum install -y libffi-devel
+sudo yum install -y openssl-devel
+sudo yum install -y python-pip
+sudo pip install --upgrade pip
+sudo pip install paramiko
+sudo pip install requests
+sudo pip install tabulate
 ```
 
 install jq
