@@ -1,14 +1,16 @@
-package org.vcell.vcellij.api;
+package org.vcell.sbmlsim.service;
 
 import java.util.List;
 
 import org.sbml.jsbml.Model;
-import org.scijava.service.SciJavaService;
-import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.sbmlsim.api.common.SimulationInfo;
+import org.vcell.sbmlsim.api.common.SimulationSpec;
+import org.vcell.sbmlsim.api.common.SimulationStatus;
+import org.vcell.sbmlsim.api.common.VariableInfo;
 
-public interface SimulationService extends SciJavaService {
+public interface SimulationService {
 
-	SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec,ClientTaskStatusSupport clientTaskStatusSupport);
+	SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec);
 
 	SimulationStatus getStatus(SimulationInfo simInfo);
 

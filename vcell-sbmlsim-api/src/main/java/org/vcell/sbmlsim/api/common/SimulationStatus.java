@@ -1,13 +1,13 @@
-package org.vcell.vcellij.api;
+package org.vcell.sbmlsim.api.common;
 
 public class SimulationStatus{
 	
 	private SimulationState simState;
+	
 	public SimulationStatus(SimulationState simState) {
 		super();
 		this.simState = simState;
 	}
-
 
 	public SimulationState getSimState() {
 		return simState;

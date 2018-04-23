@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" level="3" version="1" spatial:required="true">
+  <model id="optoPlexin_PRG_rule_based_1_Dimensional" name="optoPlexin-PRG rule-based_1-Dimensional">
+    <annotation>
+      <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+        <vcell:VCMLSpecific>
+          <vcell:BioModel Name="optoPlexin_PRG_rule_based" KeyValue="114750188"/>
+          <vcell:SimulationSpec Name="_one__Dimensional" KeyValue="114750169"/>
+        </vcell:VCMLSpecific>
+      </vcell:VCellInfo>
+    </annotation>
+    <listOfUnitDefinitions>
+      <unitDefinition id="substance">
+        <listOfUnits>
+          <unit kind="item" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="volume">
+        <listOfUnits>
+          <unit kind="metre" exponent="3" scale="-18" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="area">
+        <listOfUnits>
+          <unit kind="metre" exponent="2" scale="-12" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="length">
+        <listOfUnits>
+          <unit kind="metre" exponent="1" scale="-6" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="time">
+        <listOfUnits>
+          <unit kind="second" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="molecules">
+        <listOfUnits>
+          <unit kind="item" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="s_1">
+        <listOfUnits>
+          <unit kind="second" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="molecules_um_2">
+        <listOfUnits>
+          <unit kind="dimensionless" exponent="1" scale="12" multiplier="1"/>
+          <unit kind="item" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="metre" exponent="-2" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="uM">
+        <listOfUnits>
+          <unit kind="dimensionless" exponent="1" scale="-3" multiplier="1"/>
+          <unit kind="mole" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="metre" exponent="3" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="Cyt" name="Cyt" spatialDimensions="3" size="50000" units="um3" constant="true">
+        <spatial:compartmentMapping spatial:id="CytCyt" spatial:domainType="Cyt" spatial:unitSize="1"/>
+      </compartment>
+      <compartment id="EC" name="EC" spatialDimensions="3" size="50000" units="um3" constant="true">
+        <spatial:compartmentMapping spatial:id="ECEC" spatial:domainType="EC" spatial:unitSize="1"/>
+      </compartment>
+      <compartment id="PM" name="PM" spatialDimensions="2" size="6563" constant="true">
+        <spatial:compartmentMapping spatial:id="Cyt_EC_membranePM" spatial:domainType="Cyt_EC_membrane" spatial:unitSize="1"/>
+      </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="opN" compartment="Cyt" initialConcentration="0.5237" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s0"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+      <species id="PRG" compartment="Cyt" initialConcentration="0.7357" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s1"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+      <species id="CIB1" compartment="PM" initialConcentration="1000" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s2"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+      <species id="opN_PRG" compartment="Cyt" initialConcentration="0.1924" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s3"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+      <species id="opN_CIB1" compartment="PM" initialConcentration="128.2" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s4"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+      <species id="opA" compartment="Cyt" initialConcentration="0" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s5"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+      <species id="opA_PRG" compartment="Cyt" initialConcentration="0" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s6"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+      <species id="opA_CIB1" compartment="PM" initialConcentration="0" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s7"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+      <species id="opN_PRG_CIB1" compartment="PM" initialConcentration="47.1" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s8"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+      <species id="opA_PRG_CIB1" compartment="PM" initialConcentration="0" substanceUnits="molecules" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <annotation>
+          <vcell:VCellInfo xmlns:vcell="http://sourceforge.net/projects/vcell">
+            <vcell:VCMLSpecific>
+              <vcell:Compound Name="s9"/>
+            </vcell:VCMLSpecific>
+          </vcell:VCellInfo>
+        </annotation>
+      </species>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="x" value="0" constant="true">
+        <spatial:spatialSymbolReference spatial:spatialRef="x"/>
+      </parameter>
+      <parameter id="opN_diff" value="5" constant="true">
+        <spatial:diffusionCoefficient spatial:variable="opN" spatial:type="isotropic"/>
+      </parameter>
+      <parameter id="opN_BC_Xm" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="opN" spatial:type="Neumann" spatial:coordinateBoundary="Xmin"/>
+      </parameter>
+      <parameter id="opN_BC_Xp" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="opN" spatial:type="Neumann" spatial:coordinateBoundary="Xmax"/>
+      </parameter>
+      <parameter id="PRG_diff" value="5" constant="true">
+        <spatial:diffusionCoefficient spatial:variable="PRG" spatial:type="isotropic"/>
+      </parameter>
+      <parameter id="PRG_BC_Xm" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="PRG" spatial:type="Neumann" spatial:coordinateBoundary="Xmin"/>
+      </parameter>
+      <parameter id="PRG_BC_Xp" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="PRG" spatial:type="Neumann" spatial:coordinateBoundary="Xmax"/>
+      </parameter>
+      <parameter id="opN_PRG_diff" value="3" constant="true">
+        <spatial:diffusionCoefficient spatial:variable="opN_PRG" spatial:type="isotropic"/>
+      </parameter>
+      <parameter id="opN_PRG_BC_Xm" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="opN_PRG" spatial:type="Neumann" spatial:coordinateBoundary="Xmin"/>
+      </parameter>
+      <parameter id="opN_PRG_BC_Xp" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="opN_PRG" spatial:type="Neumann" spatial:coordinateBoundary="Xmax"/>
+      </parameter>
+      <parameter id="opA_diff" value="5" constant="true">
+        <spatial:diffusionCoefficient spatial:variable="opA" spatial:type="isotropic"/>
+      </parameter>
+      <parameter id="opA_BC_Xm" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="opA" spatial:type="Neumann" spatial:coordinateBoundary="Xmin"/>
+      </parameter>
+      <parameter id="opA_BC_Xp" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="opA" spatial:type="Neumann" spatial:coordinateBoundary="Xmax"/>
+      </parameter>
+      <parameter id="opA_PRG_diff" value="3" constant="true">
+        <spatial:diffusionCoefficient spatial:variable="opA_PRG" spatial:type="isotropic"/>
+      </parameter>
+      <parameter id="opA_PRG_BC_Xm" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="opA_PRG" spatial:type="Neumann" spatial:coordinateBoundary="Xmin"/>
+      </parameter>
+      <parameter id="opA_PRG_BC_Xp" value="0" constant="true">
+        <spatial:boundaryCondition spatial:variable="opA_PRG" spatial:type="Neumann" spatial:coordinateBoundary="Xmax"/>
+      </parameter>
+      <parameter id="Laser" units="s_1" constant="false"/>
+      <parameter id="op_PM_tot" units="molecules_um_2" constant="false"/>
+      <parameter id="PRG_PM_tot" units="molecules_um_2" constant="false"/>
+      <parameter id="op_Cyt_tot" units="uM" constant="false"/>
+      <parameter id="PRG_Cyt_tot" units="uM" constant="false"/>
+      <parameter id="Kdeff_opA_CIB1" value="1" units="uM" constant="true"/>
+      <parameter id="Kd_opN_CIB1" value="4" units="uM" constant="true"/>
+      <parameter id="Kd_op_PRG" value="2" units="uM" constant="true"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="Laser">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn> 1 </cn>
+              <apply>
+                <gt/>
+                <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> t </csymbol>
+                <cn> 90 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn> 0 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="op_PM_tot">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <ci> opA_CIB1 </ci>
+            <ci> opN_CIB1 </ci>
+            <ci> opA_PRG_CIB1 </ci>
+            <ci> opN_PRG_CIB1 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="PRG_PM_tot">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <ci> opA_PRG_CIB1 </ci>
+            <ci> opN_PRG_CIB1 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="op_Cyt_tot">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <ci> opA </ci>
+            <ci> opN </ci>
+            <ci> opA_PRG </ci>
+            <ci> opN_PRG </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="PRG_Cyt_tot">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <ci> PRG </ci>
+            <ci> opA_PRG </ci>
+            <ci> opN_PRG </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <spatial:geometry spatial:id="vcell" spatial:coordinateSystem="cartesian">
+      <spatial:listOfCoordinateComponents>
+        <spatial:coordinateComponent spatial:id="x" spatial:type="cartesianX" spatial:unit="length">
+          <spatial:boundaryMin spatial:id="Xmin" spatial:value="0"/>
+          <spatial:boundaryMax spatial:id="Xmax" spatial:value="1"/>
+        </spatial:coordinateComponent>
+      </spatial:listOfCoordinateComponents>
+      <spatial:listOfDomainTypes>
+        <spatial:domainType spatial:id="EC" spatial:spatialDimensions="3"/>
+        <spatial:domainType spatial:id="Cyt" spatial:spatialDimensions="3"/>
+        <spatial:domainType spatial:id="Cyt_EC_membrane" spatial:spatialDimensions="2"/>
+      </spatial:listOfDomainTypes>
+      <spatial:listOfDomains>
+        <spatial:domain spatial:id="EC0" spatial:domainType="EC">
+          <spatial:listOfInteriorPoints>
+            <spatial:interiorPoint spatial:coord1="0" spatial:coord2="5" spatial:coord3="5"/>
+          </spatial:listOfInteriorPoints>
+        </spatial:domain>
+        <spatial:domain spatial:id="Cyt1" spatial:domainType="Cyt">
+          <spatial:listOfInteriorPoints>
+            <spatial:interiorPoint spatial:coord1="0.0204081632653061" spatial:coord2="5" spatial:coord3="5"/>
+          </spatial:listOfInteriorPoints>
+        </spatial:domain>
+        <spatial:domain spatial:id="membrane_EC0_Cyt1" spatial:domainType="Cyt_EC_membrane"/>
+      </spatial:listOfDomains>
+      <spatial:listOfAdjacentDomains>
+        <spatial:adjacentDomains spatial:id="membrane_EC0_Cyt1_Cyt1" spatial:domain1="membrane_EC0_Cyt1" spatial:domain2="Cyt1"/>
+        <spatial:adjacentDomains spatial:id="membrane_EC0_Cyt1_EC0" spatial:domain1="membrane_EC0_Cyt1" spatial:domain2="EC0"/>
+      </spatial:listOfAdjacentDomains>
+      <spatial:listOfGeometryDefinitions>
+        <spatial:analyticGeometry spatial:id="Analytic_Geometry10" spatial:isActive="true">
+          <spatial:listOfAnalyticVolumes>
+            <spatial:analyticVolume spatial:id="EC" spatial:functionType="layered" spatial:ordinal="1" spatial:domainType="EC">
+              <math xmlns="http://www.w3.org/1998/Math/MathML">
+                <piecewise>
+                  <piece>
+                    <cn> 1 </cn>
+                    <apply>
+                      <lt/>
+                      <ci> x </ci>
+                      <cn> 0.01 </cn>
+                    </apply>
+                  </piece>
+                  <otherwise>
+                    <cn> 0 </cn>
+                  </otherwise>
+                </piecewise>
+              </math>
+            </spatial:analyticVolume>
+            <spatial:analyticVolume spatial:id="Cyt" spatial:functionType="layered" spatial:ordinal="0" spatial:domainType="Cyt">
+              <math xmlns="http://www.w3.org/1998/Math/MathML">
+                <cn> 1 </cn>
+              </math>
+            </spatial:analyticVolume>
+          </spatial:listOfAnalyticVolumes>
+        </spatial:analyticGeometry>
+      </spatial:listOfGeometryDefinitions>
+    </spatial:geometry>
+  </model>
+</sbml>

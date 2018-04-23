@@ -1,4 +1,4 @@
-package org.vcell.vcellij.api;
+package org.vcell.sbmlsim.service;
 
 import static org.junit.Assert.fail;
 
@@ -10,7 +10,11 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.vcell.vcellij.SimulationServiceImpl;
+import org.vcell.sbmlsim.api.common.SBMLModel;
+import org.vcell.sbmlsim.api.common.SimulationInfo;
+import org.vcell.sbmlsim.api.common.SimulationSpec;
+import org.vcell.sbmlsim.api.common.SimulationState;
+import org.vcell.sbmlsim.api.common.VariableInfo;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
@@ -20,14 +24,14 @@ import cbit.vcell.resource.ResourceUtil;
 /**
  * Exercises the {@link SimulationServiceImpl}.
  */
-@Ignore
+//@Ignore
 public class SimulationServiceImplTest {
 
 	@Test
 	public void test() throws URISyntaxException, Exception {
 		SimulationServiceImpl simService = new SimulationServiceImpl();
 		// TODO - Eliminate code duplication.
-		URL sbmlFileUrl = SimulationServiceImplTest.class.getResource("../../sbml/optoPlexin_PRG_rule_based.xml");
+		URL sbmlFileUrl = SimulationServiceImplTest.class.getResource("../optoPlexin_PRG_rule_based.xml");
 		File file = new File(sbmlFileUrl.toURI());
 		VCMongoMessage.enabled = false;
 
@@ -37,7 +41,7 @@ public class SimulationServiceImplTest {
 		ResourceUtil.setNativeLibraryDirectory();
 		NativeLib.HDF5.load();
 
-		file = new File("src/test/resources/org/vcell/sbml/optoPlexin_PRG_rule_based.xml");
+		file = new File("src/test/resources/org/vcell/sbmlsim/optoPlexin_PRG_rule_based.xml");
 		Assert.assertTrue(file.exists());
 
 		SBMLModel sbmlModel = new SBMLModel(file);

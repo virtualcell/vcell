@@ -6,7 +6,7 @@
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
 		<version>17.1.1</version>
-		<relativePath />
+		<relativePath/>
 	</parent>
 
 	<groupId>org.vcell</groupId>
@@ -74,7 +74,9 @@
 		<module>vcell-server</module>
 		<module>vcell-util</module>
 		<module>vcell-vmicro</module>
-	</modules>
+    <module>vcell-sbmlsim</module>
+    <module>vcell-sbmlsim-api</module>
+  </modules>
 
 	<scm>
 		<connection>scm:git:git://github.com/virtualcell/vcell</connection>

@@ -1,4 +1,4 @@
-package org.vcell.vcellij;
+package org.vcell.sbmlsim.service;
 
 
 import java.io.File;
@@ -12,26 +12,23 @@ import javax.xml.stream.XMLStreamException;
 
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLException;
-import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
-import org.scijava.service.Service;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter.VCellSBMLDoc;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbmlsim.api.common.DomainType;
+import org.vcell.sbmlsim.api.common.SBMLModel;
+import org.vcell.sbmlsim.api.common.SimulationInfo;
+import org.vcell.sbmlsim.api.common.SimulationSpec;
+import org.vcell.sbmlsim.api.common.SimulationState;
+import org.vcell.sbmlsim.api.common.SimulationStatus;
+import org.vcell.sbmlsim.api.common.VariableInfo;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
-import org.vcell.vcellij.api.DomainType;
-import org.vcell.vcellij.api.SBMLModel;
-import org.vcell.vcellij.api.SimulationInfo;
-import org.vcell.vcellij.api.SimulationService;
-import org.vcell.vcellij.api.SimulationSpec;
-import org.vcell.vcellij.api.SimulationState;
-import org.vcell.vcellij.api.SimulationStatus;
-import org.vcell.vcellij.api.VariableInfo;
 
 import cbit.image.VCImage;
 import cbit.util.xml.VCLogger;
@@ -74,7 +71,6 @@ import cbit.vcell.xml.XmlParseException;
 /**
  * Created by kevingaffney on 7/12/17.
  */
-@Plugin(type=Service.class)
 public class SimulationServiceImpl extends AbstractService implements SimulationService {
 	private static class SimulationServiceContext {
 		SimulationInfo simInfo = null;
@@ -88,7 +84,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 		double[] times = null;
 	}
 	
-	HashMap<Integer,SimulationServiceContext> sims = new HashMap<Integer,SimulationServiceContext>();
+	HashMap<Long,SimulationServiceContext> sims = new HashMap<Long,SimulationServiceContext>();
 
 //	private void writeNetcdfFile(SimulationServiceContext simServiceContext, SimulationData simData, OutputContext outputContext, File netcdfFile) {
 //		NetcdfFileWriter dataFile = null;
@@ -190,7 +186,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
     }
 
     private CartesianMesh mesh(SimulationInfo simInfo) {
-        SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
+        SimulationServiceContext simServiceContext = sims.get(simInfo.getLocalId());
         try {
             DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
             CartesianMesh mesh = datasetController.getMesh(simServiceContext.vcDataIdentifier);
@@ -212,7 +208,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
         }
     }
 
-    public SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec, ClientTaskStatusSupport statusCallback) {
+    public SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec) {
         try {
             SBMLImporter importer = new SBMLImporter(sbmlModel,vcLogger(),true);
             BioModel bioModel = importer.getBioModel();
@@ -263,8 +259,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 //			newsim.getMeshSpecification().setSamplingSize(new ISize(simContext.getGeometry().getGeometrySpec().getImage().getNumX(), simContext.getGeometry().getGeometrySpec().getImage().getNumY(), simContext.getGeometry().getGeometrySpec().getImage().getNumZ()));
 			newsim.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, simSpec.getTotalTime()));
 			newsim.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(simSpec.getOutputTimeStep()));
-	    	SimulationInfo simulationInfo = new SimulationInfo();
-	        simulationInfo.setId(Math.abs(new Random().nextInt(1000000)));
+	    	SimulationInfo simulationInfo = new SimulationInfo(Math.abs(new Random().nextInt(1000000)));
 	        
         	// ----------- run simulation(s)
         	final File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());	
@@ -281,7 +276,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 	        if (simServiceContext.solver == null) {
 	        	throw new RuntimeException("null solver");
 	        }
-	        sims.put(simulationInfo.getId(),simServiceContext);
+	        sims.put(simulationInfo.getLocalId(),simServiceContext);
 	                	
 			
 			simServiceContext.solver.addSolverListener(new SolverListener() {
@@ -391,12 +386,12 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
     }
 
 	public SimulationStatus getStatus(SimulationInfo simInfo) {
-		SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
+		SimulationServiceContext simServiceContext = sims.get(simInfo.getLocalId());
 		return new SimulationStatus(simServiceContext.simState);
 	}
 
 	public List<Double> getData(SimulationInfo simInfo, VariableInfo varInfo, int timeIndex)  throws Exception {
-        SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
+        SimulationServiceContext simServiceContext = sims.get(simInfo.getLocalId());
         if (simServiceContext==null){
         	throw new RuntimeException("simulation results not found");
         }
@@ -418,7 +413,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 	}
 
 	public List<Double> getTimePoints(SimulationInfo simInfo) throws Exception {
-        SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
+        SimulationServiceContext simServiceContext = sims.get(simInfo.getLocalId());
         if (simServiceContext==null){
         	throw new Exception("simulation results not found");
         }
@@ -438,7 +433,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 	}
 
 	public List<VariableInfo> getVariableList(SimulationInfo simInfo) throws Exception {
-        SimulationServiceContext simServiceContext = sims.get(simInfo.getId());
+        SimulationServiceContext simServiceContext = sims.get(simInfo.getLocalId());
         if (simServiceContext==null){
         	throw new Exception("simulation results not found");
         }

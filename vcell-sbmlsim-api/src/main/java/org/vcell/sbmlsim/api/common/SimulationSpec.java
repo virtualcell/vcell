@@ -1,4 +1,4 @@
-package org.vcell.vcellij.api;
+package org.vcell.sbmlsim.api.common;
 
 public class SimulationSpec{
 
