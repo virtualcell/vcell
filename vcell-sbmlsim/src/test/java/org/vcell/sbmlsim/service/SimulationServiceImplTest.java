@@ -24,7 +24,7 @@ import cbit.vcell.resource.ResourceUtil;
 /**
  * Exercises the {@link SimulationServiceImpl}.
  */
-//@Ignore
+@Ignore
 public class SimulationServiceImplTest {
 
 	@Test
