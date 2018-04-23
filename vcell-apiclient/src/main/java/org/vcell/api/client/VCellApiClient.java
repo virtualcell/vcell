@@ -81,19 +81,47 @@ public class VCellApiClient {
 
 
 	// Create a custom response handler
-	private ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
+	public static class VCellStringResponseHandler implements ResponseHandler<String> {
 
-		public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
+		private final String methodCallString;
+		private final HttpGet httpget;
+		private final HttpPost httppost;
+		
+		public VCellStringResponseHandler(String methodCallString, HttpGet httpget) {
+			this.methodCallString = methodCallString;
+			this.httpget = httpget;
+			this.httppost = null;
+		}
+
+		public VCellStringResponseHandler(String methodCallString, HttpPost httppost) {
+			this.methodCallString = methodCallString;
+			this.httpget = null;
+			this.httppost = httppost;
+		}
+		
+		@Override
+		public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
 			int status = response.getStatusLine().getStatusCode();
 			if (status >= 200 && status < 300) {
 				HttpEntity entity = response.getEntity();
 				return entity != null ? EntityUtils.toString(entity) : null;
 			} else {
-				throw new ClientProtocolException("Unexpected response status: " + status);
+				HttpEntity entity = response.getEntity();
+				String message = null;
+				try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+					message = reader.lines().collect(Collectors.joining());
+				}
+				final URI uri;
+				if (httpget!=null) {
+					uri = httpget.getURI();
+				}else {
+					uri = httppost.getURI();
+				}
+				lg.error(methodCallString+" ("+uri+") failed: response status: " + status + "\nreason: " + message);
+				throw new ClientProtocolException(methodCallString+" failed: response status: " + status + "\nreason: " + message);
 			}
 		}
-
-	};
+	}
 
 	public VCellApiClient(String host, int port, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
 		this.httpHost = new HttpHost(host,port,"https");
@@ -139,7 +167,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve simulation tasks " + httpget.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getSimTasks()", httpget), httpClientContext);
 		String simTasksJson = responseBody;
 		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(simTasksJson));
@@ -158,7 +186,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve biomodels " + httpget.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getBioModels()", httpget), httpClientContext);
 		String bimodelsJson = responseBody;
 		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(bimodelsJson));
@@ -177,7 +205,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve user events " + httpget.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getEvents()", httpget), httpClientContext);
 		String eventWrappersJson = responseBody;
 		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(eventWrappersJson));
@@ -196,7 +224,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getBioModel()", httpget), httpClientContext);
 		String bimodelsJson = responseBody;
 		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(bimodelsJson));
@@ -215,7 +243,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getBioModelVCML()", httpget), httpClientContext);
 		String vcml = responseBody;
 
 		return vcml;
@@ -229,7 +257,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve simulation " + httpget.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getSimulation()", httpget), httpClientContext);
 		String simulationJson = responseBody;
 		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(simulationJson));
@@ -247,7 +275,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve optimization run " + httpget.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getOptRunJson()", httpget), httpClientContext);
 		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(responseBody));
 		}
@@ -287,7 +315,14 @@ public class VCellApiClient {
 			        URI uri = createLocationURI(location);
 					return uri.toString();
 				} else {
-					throw new ClientProtocolException("Unexpected response status: " + status);
+					HttpEntity entity = response.getEntity();
+					String message = null;
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						message = reader.lines().collect(Collectors.joining());
+					}
+					final URI uri = httppost.getURI();
+					lg.error("submitOptimization() ("+uri+") failed: response status: " + status + "\nreason: " + message);
+					throw new ClientProtocolException("submitOptimization() failed: response status: " + status + "\nreason: " + message);
 				}
 			}
 
@@ -333,7 +368,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httppost, responseHandler, httpClientContext);
+		String responseBody = httpclient.execute(httppost, new VCellStringResponseHandler("startSimulation()", httppost), httpClientContext);
 		String simTaskReps = responseBody;
 		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(simTaskReps));
@@ -356,7 +391,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httppost, responseHandler, httpClientContext);
+		String responseBody = httpclient.execute(httppost, new VCellStringResponseHandler("stopSimulation()", httppost), httpClientContext);
 		String simTaskReps = responseBody;
 		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+toStringTruncated(simTaskReps));
@@ -377,7 +412,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve access_token " + httpget.getRequestLine());
 		}
 
-		String responseBody = httpclient.execute(httpget, responseHandler);
+		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("authenticate()", httpget));
 		String accessTokenJson = responseBody;
 		if (lg.isInfoEnabled()) {
 			lg.info("returned: "+accessTokenJson);
@@ -466,7 +501,9 @@ public class VCellApiClient {
 					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
 						message = reader.lines().collect(Collectors.joining());
 					}
-					throw new ClientProtocolException("Unexpected response status: " + status + "\nreason: " + message);
+					final URI uri = httppost.getURI();
+					lg.error("insertUserInfo() ("+uri+") failed: response status: " + status + "\nreason: " + message);
+					throw new ClientProtocolException("insertUserInfo() failed: response status: " + status + "\nreason: " + message);
 				}
 			}
 
@@ -505,6 +542,8 @@ public class VCellApiClient {
 					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
 						message = reader.lines().collect(Collectors.joining());
 					}
+					final URI uri = httppost.getURI();
+					lg.error("sendLostPassword() ("+uri+") failed: response status: " + status + "\nreason: " + message);
 					throw new ClientProtocolException("Failed to request lost password, response status: " + status + "\nreason: " + message);
 				}
 			}
@@ -682,7 +721,7 @@ public class VCellApiClient {
 			lg.info("Executing request to retrieve server software version " + httpget.getRequestLine());
 		}
 
-		String vcellSoftwareVersion = httpclient.execute(httpget, responseHandler, httpClientContext);
+		String vcellSoftwareVersion = httpclient.execute(httpget, new VCellStringResponseHandler("getServerSoftwareVersion()", httpget), httpClientContext);
 		return vcellSoftwareVersion;
 	}
 	
