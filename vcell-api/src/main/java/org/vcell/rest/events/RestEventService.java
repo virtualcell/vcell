@@ -67,7 +67,7 @@ public class RestEventService {
 				String eventJSON = gson.toJson(exportEventRep);
 				insert(exportEventRep.username,EventType.ExportEvent,eventJSON);
 			}catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 			}
 		}else if (event instanceof SimulationJobStatusEvent) {
 			SimulationJobStatusEvent simJobEvent = (SimulationJobStatusEvent)event;
@@ -84,7 +84,7 @@ public class RestEventService {
 				String eventJSON = gson.toJson(simJobEventRep);
 				insert(simJobEventRep.username,EventType.SimJob,eventJSON);
 			}catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 			}
 		}else if (event instanceof VCellMessageEvent) {
 			VCellMessageEvent vcellMessageEvent = (VCellMessageEvent)event;
@@ -96,7 +96,6 @@ public class RestEventService {
 			lg.error("event of type PerformanceMonitorEvent not supported");
 			PerformanceMonitorEvent performanceMonitorEvent = (PerformanceMonitorEvent)event;
 		}else if (event instanceof DataJobEvent) {
-			lg.error("event of type DataJobEvent not supported");
 			DataJobEvent dataJobEvent = (DataJobEvent)event;
 			try {
 				DataJobEventRepresentation dataJobEventRep = dataJobEvent.toJsonRep();
@@ -111,7 +110,7 @@ public class RestEventService {
 				String eventJSON = gson.toJson(dataJobEventRep);
 				insert(dataJobEventRep.username,EventType.DataJob,eventJSON);
 			}catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
