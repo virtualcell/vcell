@@ -177,14 +177,14 @@ current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 ```bash
-export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=7dcb3ad
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=e49f960
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=1 VCELL_SITE=rel
+export VCELL_VERSION=7.0.0 VCELL_BUILD=2 VCELL_SITE=rel
 export MANAGER_NODE=vcellapi.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
@@ -193,7 +193,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=6 VCELL_SITE=beta
+export VCELL_VERSION=7.0.0 VCELL_BUILD=7 VCELL_SITE=beta
 export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Beta"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
@@ -202,7 +202,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=36 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=38 VCELL_SITE=alpha
 export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
