@@ -29,6 +29,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -100,7 +101,7 @@ public class VCellApiClient {
 		}
 		
 		@Override
-		public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+		public String handleResponse(HttpResponse response) throws HttpResponseException, IOException {
 			int status = response.getStatusLine().getStatusCode();
 			if (status >= 200 && status < 300) {
 				HttpEntity entity = response.getEntity();
@@ -118,7 +119,7 @@ public class VCellApiClient {
 					uri = httppost.getURI();
 				}
 				lg.error(methodCallString+" ("+uri+") failed: response status: " + status + "\nreason: " + message);
-				throw new ClientProtocolException(methodCallString+" failed: response status: " + status + "\nreason: " + message);
+				throw new HttpResponseException(status, methodCallString+" failed: response status: " + status + "\nreason: " + message);
 			}
 		}
 	}

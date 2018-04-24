@@ -23,6 +23,7 @@ import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.admin.AdminJobsRestlet;
 import org.vcell.rest.admin.AdminService;
+import org.vcell.rest.auth.AuthenticationTokenRestlet;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.events.EventsRestlet;
 import org.vcell.rest.events.RestEventService;
@@ -30,7 +31,6 @@ import org.vcell.rest.health.HealthRestlet;
 import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcRestlet;
 import org.vcell.rest.rpc.RpcService;
-import org.vcell.rest.server.AccessTokenServerResource;
 import org.vcell.rest.server.BiomodelDiagramServerResource;
 import org.vcell.rest.server.BiomodelServerResource;
 import org.vcell.rest.server.BiomodelSimulationSaveServerResource;
@@ -307,7 +307,7 @@ public class VCellApiApplication extends WadlApplication {
         
 		Router rootRouter = new Router(getContext());
 		rootRouter.attach("/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
-	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, AccessTokenServerResource.class);
+	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, new AuthenticationTokenRestlet(getContext()));
 	    rootRouter.attach("/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
 	    rootRouter.attach("/"+OPTIMIZATION, OptimizationRunServerResource.class);
 	    rootRouter.attach("/"+OPTIMIZATION+"/{"+OPTIMIZATIONID+"}", OptimizationServerResource.class);

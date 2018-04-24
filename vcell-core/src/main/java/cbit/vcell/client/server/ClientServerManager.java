@@ -12,6 +12,8 @@ package cbit.vcell.client.server;
 
 import java.io.IOException;
 
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpResponseException;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.AuthenticationException;
@@ -417,9 +419,18 @@ private VCellConnection connectToServer(InteractiveContext requester) {
 		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
 			requester.showConnectWarning(msg);
 		}
+	} catch (HttpResponseException httpexc) {
+		httpexc.printStackTrace(System.out);
+		if (httpexc.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+			requester.showErrorDialog(httpexc.getMessage());
+		}else {
+			String msg = "Exception: "+httpexc.getMessage() + "\n\n" + badConnectMessage(badConnStr);
+			ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
+			requester.showErrorDialog(msg);
+		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		String msg = badConnectMessage(badConnStr) + "\nException:\n" + exc.getMessage();
+		String msg = "Exception: "+exc.getMessage() + "\n\n" + badConnectMessage(badConnStr);
 		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		requester.showErrorDialog(msg);
 	}
