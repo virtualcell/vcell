@@ -422,7 +422,7 @@ private VCellConnection connectToServer(InteractiveContext requester) {
 	} catch (HttpResponseException httpexc) {
 		httpexc.printStackTrace(System.out);
 		if (httpexc.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
-			requester.showErrorDialog(httpexc.getMessage());
+			requester.showErrorDialog("Invalid Userid or Password\n\n"+httpexc.getMessage());
 		}else {
 			String msg = "Exception: "+httpexc.getMessage() + "\n\n" + badConnectMessage(badConnStr);
 			ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
