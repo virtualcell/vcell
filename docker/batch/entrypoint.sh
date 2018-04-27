@@ -17,7 +17,7 @@ show_help() {
 	echo "    FiniteVolume_x64"
 	echo "    FiniteVolume_PETSc_x64"
 	echo "    MovingBoundary_x64"
-	echo "    NFSim_x64"
+	echo "    NFsim_x64"
 	echo "    smoldyn_x64"
 	echo "    SundialsSolverStandalone_x64"
 	echo "    VCellStoch_x64"
@@ -84,8 +84,8 @@ case $command in
 		/vcellbin/MovingBoundary_x64 $arguments
 		exit $?
 		;;
-	NFSim_x64)
-		/vcellbin/NFSim_x64 $arguments
+	NFsim_x64)
+		/vcellbin/NFsim_x64 $arguments
 		exit $?
 		;;
 	smoldyn_x64)
