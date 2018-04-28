@@ -44,7 +44,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     mongodbhost_internal="mongo-host-not-set" \
     mongodbport_internal="mongo-port-not-set" \
     mongodb_database=test \
-    TMPDIR=/solvertmp \
+    TMPDIR=/solvertmp/ \
     jmsblob_minsize=100000
 
 VOLUME /simdata
