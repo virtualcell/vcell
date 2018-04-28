@@ -62,6 +62,7 @@ public class PropertyLoader {
 	public static final String slurm_cmd_scontrol			= record("vcell.slurm.cmd.scontrol",ValueType.GEN);
 	public static final String slurm_cmd_sinfo				= record("vcell.slurm.cmd.sinfo",ValueType.GEN);
 	public static final String slurm_partition				= record("vcell.slurm.partition",ValueType.GEN);
+	public static final String slurm_tmpdir					= record("vcell.slurm.tmpdir",ValueType.GEN);
 	public static final String sgeModulePath				= record("vcell.htc.sge.module",ValueType.GEN);
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
 	public static final String MPI_HOME_INTERNAL		        = record("vcell.htc.mpi.home",ValueType.DIR);

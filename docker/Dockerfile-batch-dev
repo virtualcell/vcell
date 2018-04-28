@@ -1,4 +1,4 @@
-FROM schaff/vcell-solvers:0.0.10-dev
+FROM schaff/vcell-solvers:0.0.11-dev
 
 RUN apt-get -y update && \
     apt-get install -y openjdk-8-jre-headless
@@ -36,9 +36,11 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     mongodbhost_internal="mongo-host-not-set" \
     mongodbport_internal="mongo-port-not-set" \
     mongodb_database=test \
+    TMPDIR=/solvertmp \
     jmsblob_minsize=100000
 
 VOLUME /simdata
 VOLUME /htclogs
+VOLUME /solvertmp
 
 ENTRYPOINT [ "/vcellscripts/entrypoint.sh" ]

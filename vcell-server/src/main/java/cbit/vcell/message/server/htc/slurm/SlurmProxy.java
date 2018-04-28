@@ -312,7 +312,40 @@ public class SlurmProxy extends HtcProxy {
 
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 
-		lsb.write("TMPDIR=/state/partition1");
+		String jmshost_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
+		String jmsport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsPortExternal);
+		String jmsrestport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+	    String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+		String jmsuser=PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
+		String jmspswd=PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue,PropertyLoader.jmsPasswordFile);
+		String jmsblob_minsize = PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageMinSize, "10000");
+		String mongodbhost_external = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostExternal);
+		String mongodbport_external = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortExternal);
+		String mongodb_database = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
+		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
+		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
+		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
+		String singularityImageName = new File(remote_singularity_image).getName();
+
+		String[] environmentVars = new String[] {
+				"jmshost_internal="+jmshost_external,
+				"jmsport_internal="+jmsport_external,
+				"jmsrestport_internal="+jmsrestport_external,
+				"jmsuser="+jmsuser,
+				"jmspswd="+jmspswd,
+				"jmsblob_minsize="+jmsblob_minsize,
+				"mongodbhost_internal="+mongodbhost_external,
+				"mongodbport_internal="+mongodbport_external,
+				"mongodb_database="+mongodb_database,
+				"datadir_external="+primaryDataDirExternal,
+				"htclogdir_external="+htclogdir_external,
+				"softwareVersion="+softwareVersion,
+				"serverid="+serverid
+		};
+		
+		lsb.write("TMPDIR="+slurm_tmpdir);
 		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
 		
 		//
@@ -333,37 +366,6 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("echo ENVIRONMENT");
 		lsb.write("env");
 		lsb.newline();
-		String jmshost_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
-		String jmsport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsPortExternal);
-		String jmsrestport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
-	    String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
-		String jmsuser=PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
-		String jmspswd=PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue,PropertyLoader.jmsPasswordFile);
-		String jmsblob_minsize = PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageMinSize, "10000");
-		String mongodbhost_external = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostExternal);
-		String mongodbport_external = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortExternal);
-		String mongodb_database = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
-		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
-		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
-		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
-		String singularityImageName = new File(remote_singularity_image).getName();
-
-		String[] environmentVars = new String[] {
-				"jmshost_internal="+jmshost_external,
-				"jmsport_internal="+jmsport_external,
-				"jmsrestport_internal="+jmsrestport_external,
-				"jmsuser="+jmsuser,
-				"jmspswd="+jmspswd,
-				"jmsblob_minsize="+jmsblob_minsize,
-				"mongodbhost_internal="+mongodbhost_external,
-				"mongodbport_internal="+mongodbport_external,
-				"mongodb_database="+mongodb_database,
-				"datadir_external="+primaryDataDirExternal,
-				"htclogdir_external="+htclogdir_external,
-				"softwareVersion="+softwareVersion,
-				"serverid="+serverid
-		};
 		
 		lsb.write("container_prefix=");
 		lsb.write("if command -v singularity >/dev/null 2>&1; then");
@@ -379,13 +381,13 @@ public class SlurmProxy extends HtcProxy {
 		for (String envVar : environmentVars) {
 			singularityEnvironmentVars.append(" --env "+envVar);
 		}
-		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs $localSingularityImage "+singularityEnvironmentVars+" \"");
+		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs  --bind "+slurm_tmpdir+":/solvertmp $localSingularityImage "+singularityEnvironmentVars+" \"");
 		lsb.write("else");
 		StringBuffer dockerEnvironmentVars = new StringBuffer();
 		for (String envVar : environmentVars) {
 			dockerEnvironmentVars.append(" -e "+envVar);
 		}
-		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs "+dockerEnvironmentVars+" "+docker_image+" \"");
+		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs -v "+slurm_tmpdir+":/solvertmp "+dockerEnvironmentVars+" "+docker_image+" \"");
 		lsb.write("fi");
 		lsb.write("echo \"container_prefix is '${container_prefix}'\"");
 		lsb.write("echo \"3 date=`date`\"");
