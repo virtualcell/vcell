@@ -43,8 +43,6 @@ show_help() {
 	echo "    --link-installers     optionally create symbolic links for newly created client installers"
 	echo "                          for permanent 'latest' web links fr each platform"
 	echo ""
-	echo "    --upload-singularity  optionally upload Singularity image for vcell-batch container"
-	echo ""
 	echo "    --install-singularity  optionally install singularity image on each compute node in 'vcell' SLURM partition"
 	echo ""
 	echo ""
@@ -65,7 +63,6 @@ fi
 ssh_user=$(whoami)
 ssh_key=
 installer_deploy_dir=
-upload_singularity=false
 build_installers=false
 link_installers=false
 install_singularity=false
@@ -86,9 +83,6 @@ while :; do
 		--installer-deploy-dir)
 			shift
 			installer_deploy_dir=$1
-			;;
-		--upload-singularity)
-			upload_singularity=true
 			;;
 		--install-singularity)
 			install_singularity=true
@@ -126,11 +120,8 @@ vcell_siteCamel=`cat $local_config_file | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
 vcell_version=`cat $local_config_file | grep VCELL_VERSION_NUMBER | cut -d"=" -f2`
 vcell_build=`cat $local_config_file | grep VCELL_BUILD_NUMBER | cut -d"=" -f2`
 singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
-singularity_remote_path=`cat $local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
-singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
+singularity_image_external=`cat $local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
 partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
-#slurmSingularityImagePath=`cat ../$local_config_file | grep VCELL_SLURM_SINGULARITY_IMAGE_PATH | cut -d"=" -f2`
-slurmSingularityImagePath=/state/partition1/singularityImages
 batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
 
 
@@ -145,38 +136,6 @@ echo "coping $local_compose_file to $manager_node:$remote_compose_file as user $
 cmd="scp $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_file"
 echo $cmd
 ($cmd) || (echo "failed to upload docker-compose file" && exit 1)
-
-
-
-## BEGIN SINGULARITY UPLOAD
-if [ "$upload_singularity" == "true" ]; then
-	echo ""
-	cmd="cd singularity-vm"
-	cd singularity-vm
-	echo ""
-	echo "CURRENT DIRECTORY IS $PWD"
-
-	#
-	# get configuration from config file and load into current bash environment
-	#
-	echo ""
-
-	if [ ! -e "./${singularity_filename}" ]; then
-		echo "failed to find local singularity image file $singularity_filename in ./singularity-vm directory"
-		exit 1
-	fi
-
-	# copy singularity image from singularity-vm directory to remote destination
-	echo ""
-	echo "coping ./$singularity_filename to $singularity_remote_path on $manager_node as user $ssh_user"
-	cmd="scp $ssh_key ./$singularity_filename ${ssh_user}@${manager_node}:${singularity_remote_path}"
-	echo $cmd
-	($cmd) || (echo "failed to upload generated singularity image for vcell-batch" && exit 1)
-
-	echo "cd .."
-	cd ..
-fi
-## END SINGULARITY BUILD
 
 
 #
@@ -208,15 +167,16 @@ if [ "$install_singularity" == "true" ]; then
 	echo "compute node list is $nodeList"
 
     for computenode in $nodeList; do
-    	echo "scp file vcell@${computenode}:${slurmSingularityImagePath}"
+    	echo "scp file vcell@${computenode}:${singularity_image_external}"
 		# copy singularity image from singularity-vm directory to remote destination
-		echo "mkdir -p $slurmSingularityImagePath on $computenode"
-		cmd="ssh $ssh_key ${ssh_user}@${computenode} mkdir -p ${slurmSingularityImagePath}"
+		singularity_image_directory=$(dirname $singularity_image_external)
+		echo "mkdir -p $singularity_image_directory on $computenode"
+		cmd="ssh $ssh_key ${ssh_user}@${computenode} mkdir -p ${singularity_image_directory}"
 		echo $cmd
 		($cmd)
 		echo ""
-		echo "coping ./$singularity_filename to $slurmSingularityImagePath on $computenode as user $ssh_user"
-		cmd="scp $ssh_key ./$singularity_filename ${ssh_user}@${computenode}:${slurmSingularityImagePath}/$singularity_filename"
+		echo "coping ./$singularity_filename to $singularity_image_external on $computenode as user $ssh_user"
+		cmd="scp $ssh_key ./$singularity_filename ${ssh_user}@${computenode}:${singularity_image_external}"
 		echo $cmd
 		($cmd) || (echo "failed to upload generated singularity image to compute node $computenode" && exit 1)
     done

@@ -327,7 +327,6 @@ public class SlurmProxy extends HtcProxy {
 		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
 		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
 		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
-		String singularityImageName = new File(remote_singularity_image).getName();
 
 		String[] environmentVars = new String[] {
 				"jmshost_internal="+jmshost_external,
@@ -372,7 +371,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("   #");
 		lsb.write("   # local copy of singularity image should already be present in ${TMPDIR}/singularityImages/ (pushed during deploy)");
 		lsb.write("   #");
-		lsb.write("   localSingularityImage=\"${TMPDIR}/singularityImages/"+singularityImageName+"\"");
+		lsb.write("   localSingularityImage="+remote_singularity_image);
 		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
 		lsb.write("       echo \"local singularity image $localSingularityImage not found\"");
 		lsb.write("       exit 1");

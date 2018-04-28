@@ -177,7 +177,7 @@ current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 ```bash
-export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=05fb43d
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=7adf7e7
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
@@ -223,14 +223,14 @@ using deploy configuration and Docker images, generate client installers and dep
 
 ```bash
 ./deploy.sh \
-   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --upload-singularity --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR --link-installers \
+   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR --link-installers \
    ${MANAGER_NODE} \
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
    vcell${VCELL_SITE}
 
 ./deploy.sh \
-   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --upload-singularity --install-singularity  \
+   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --install-singularity  \
    ${MANAGER_NODE} \
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
@@ -311,7 +311,7 @@ Deploy VCell Docker containers on local machine in Swarm Mode with mocked SLURM 
 
 ```bash
 ./deploy.sh \
-  --ssh-user `whoami` --ssh-key ~/.ssh/schaff_rsa --build-installers --upload-singularity \
+  --ssh-user `whoami` --ssh-key ~/.ssh/schaff_rsa --build-installers --install-singularity \
   `hostname` \
   ./$VCELL_CONFIG_FILE_NAME $PWD/local-${VCELL_TAG}.config \
   ./docker-compose-dev.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
