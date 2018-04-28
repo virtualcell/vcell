@@ -346,6 +346,7 @@ public class SlurmProxy extends HtcProxy {
 		
 		lsb.write("TMPDIR="+slurm_tmpdir);
 		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
+		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
 		
 		//
 		// Initialize Singularity

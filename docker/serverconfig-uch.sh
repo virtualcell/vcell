@@ -95,7 +95,7 @@ VCELL_SLURM_CMD_SACCT=sacct
 VCELL_SLURM_CMD_SQUEUE=squeue
 VCELL_SLURM_CMD_SCANCEL=scancel
 VCELL_SLURM_PARTITION=$vcell_slurm_partition
-VCELL_SLURM_TMPDIR=/scratch
+VCELL_SLURM_TMPDIR=/scratch/vcell
 
 #
 # VCELL_API_PORT_EXTERNAL uses 443 for Beta and Rel (but on different machines/swarm clusters)

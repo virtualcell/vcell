@@ -79,7 +79,7 @@ VCELL_SLURM_CMD_SACCT=sacct
 VCELL_SLURM_CMD_SQUEUE=squeue
 VCELL_SLURM_CMD_SCANCEL=scancel
 VCELL_SLURM_PARTITION=$vcell_slurm_partition
-VCELL_SLURM_TMPDIR=/scratch
+VCELL_SLURM_TMPDIR=/scratch/vcell
 
 VCELL_API_PORT_EXTERNAL=$((8080 + $_site_port_offset))
 VCELL_JMS_PORT_EXTERNAL=$((61616 + $_site_port_offset))
