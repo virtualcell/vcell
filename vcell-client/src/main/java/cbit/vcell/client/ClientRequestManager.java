@@ -1533,6 +1533,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					}else{
 						File[] dirFiles = null;
 						ImageSizeInfo origImageSizeInfo = null;
+						ImageDatasetReaderService imageDatasetReaderServiceInstance = ImageDatasetReaderService.getInstance();
+						ImageDatasetReader imageDatasetReader = imageDatasetReaderServiceInstance.getImageDatasetReader();
 						if(imageFile.isDirectory()){
 							dirFiles = imageFile.listFiles(new java.io.FileFilter(){
 								public boolean accept(File pathname) {
@@ -1560,7 +1562,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 								
 							}
 							hashTable.put(IMPORT_SOURCE_NAME,"Directory: "+imageFile.getAbsolutePath());
-							origImageSizeInfo = ImageDatasetReaderService.getInstance().getImageDatasetReader().getImageSizeInfoForceZ(dirFiles[0].getAbsolutePath(),dirFiles.length);
+							origImageSizeInfo = imageDatasetReader.getImageSizeInfoForceZ(dirFiles[0].getAbsolutePath(),dirFiles.length);
 							if(dirFiles.length > 1){
 								final String importZ = "Import Z-Sections";
 								final String cancelOption = "Cancel";
@@ -1573,7 +1575,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							}
 							hashTable.put(DIR_FILES, dirFiles);
 						}else{
-							origImageSizeInfo = ImageDatasetReaderService.getInstance().getImageDatasetReader().getImageSizeInfo(imageFile.getAbsolutePath());
+							origImageSizeInfo = imageDatasetReader.getImageSizeInfo(imageFile.getAbsolutePath());
 							hashTable.put(IMPORT_SOURCE_NAME,"File: "+imageFile.getAbsolutePath());
 						}
 						hashTable.put(ORIG_IMAGE_SIZE_INFO, origImageSizeInfo);

@@ -230,7 +230,7 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
             	t_resize = new org.vcell.imagedataset.ISize(resize.getX(), resize.getY(), resize.getZ());
             }
             
-			List<org.vcell.imagedataset.ImageDataset> t_imageDatasetList = client.readImageDatasetChannels(fileName, bMergeChannels, timeIndex, t_resize);
+			List<org.vcell.imagedataset.ImageDataset> t_imageDatasetList = client.readImageDatasetChannels(fileName, bMergeChannels, (timeIndex!=null)?(timeIndex):(0), t_resize);
             
             ImageDataset[] imageDatasets = new ImageDataset[t_imageDatasetList.size()];
             for (int i=0;i<t_imageDatasetList.size();i++){
