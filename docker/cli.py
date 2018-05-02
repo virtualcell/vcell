@@ -257,14 +257,8 @@ def main():
 
     parser_showjobs.add_argument("--hasData", type=str, default=None)
 
-    parser_showjobs.add_argument("--waiting", type=bool, default=True)
-    parser_showjobs.add_argument("--queued", type=bool, default=True)
-    parser_showjobs.add_argument("--dispatched", type=bool, default=True)
-    parser_showjobs.add_argument("--running", type=bool, default=True)
-
-    parser_showjobs.add_argument("--completed", type=bool, default=False)
-    parser_showjobs.add_argument("--failed", type=bool, default=False)
-    parser_showjobs.add_argument("--stopped", type=bool, default=False)
+    parser_showjobs.add_argument("--status", type=str, default='wqdr', 
+        help='job status (default wqdr) a-all, w-waiting, q-queued, d-dispatched, r-running, c-completed, s-stopped')
 
     parser_showjobs.add_argument("--maxRows", type=int, default=100)
     parser_showjobs.add_argument("--hostport", type=str, default='vcellapi.cam.uchc.edu:443')
@@ -284,13 +278,13 @@ def main():
             query.fields['userid'] = args.userid
             query.fields['simId'] = args.simId
             query.fields['jobId'] = args.jobId
-            query.fields['waiting'] = args.waiting
-            query.fields['queued'] = args.queued
-            query.fields['dispatched'] = args.dispatched
-            query.fields['running'] = args.running
-            query.fields['completed'] = args.completed
-            query.fields['failed'] = args.failed
-            query.fields['stopped'] = args.stopped
+            query.fields['waiting'] = True if 'w' in args.status else False
+            query.fields['queued'] = True if 'q' in args.status else False
+            query.fields['dispatched'] = True if 'd' in args.status else False
+            query.fields['running'] = True if 'r' in args.status else False
+            query.fields['completed'] = True if 'c' in args.status else False
+            query.fields['failed'] = True if 'f' in args.status else False
+            query.fields['stopped'] = True if 's' in args.status else False
             query.fields['maxRows'] = args.maxRows
             hostport = args.hostport
             json_response = simquery(query,hostport)
