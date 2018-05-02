@@ -297,7 +297,7 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder lsb = new LineStringBuilder();
 
-		lsb.write("#!/usr/bin/env bash");
+		lsb.write("#!/usr/bin/bash");
 		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
 		String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
 		lsb.write("#SBATCH --partition=" + partition);
@@ -354,7 +354,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("echo `hostname`\n");
 		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
 		lsb.write("source /usr/share/Modules/init/bash\n");
-		lsb.write("module load singularity\n");
+		lsb.write("module load singularity/2.4.2\n");
 		
 		lsb.write("echo \"job running on host `hostname -f`\"");
 		lsb.newline();
