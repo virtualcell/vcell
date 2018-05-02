@@ -6641,6 +6641,10 @@ private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimula
 		if (temp != null) {
 			sso.setSaveParticleLocations(new Boolean(temp));
 		}
+		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_innerStep, vcNamespace);
+		if (temp != null) {
+			sso.setInnerStep(Integer.parseInt(temp));
+		}
 	}	
 	return sso;
 }

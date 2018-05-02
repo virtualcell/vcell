@@ -29,7 +29,8 @@ import cbit.vcell.math.VCML;
 public class SmoldynSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
 	private Integer randomSeed = null;
-	private double accuracy = 10.0;;
+	private double accuracy = 10.0;
+	private int innerStep = 1;
 	private int gaussianTableSize = 4096;
 	private boolean useHighResolutionSample = true;
 	private boolean saveParticleLocations = false;
@@ -39,6 +40,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 	
 	public static final String PROPERTY_NAME_RANDOM_SEED = "randomSeed";
 	public static final String PROPERTY_NAME_ACCURACY = "accuracy";
+	public static final String PROPERTY_NAME_INNERSTEP = "innerStep";
 	public static final String PROPERTY_NAME_GAUSSIAN_TABLE_SIZE = "gaussianTableSize";
 	public static final String PROPERTY_NAME_USE_HIGH_RES = "useHighResolutionSample";
 	public static final String PROPERTY_NAME_SAVE_PARTICLE_LOCS = "saveParticleLocations";
@@ -56,6 +58,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 		if (smoldynSimulationOptions != null) {
 			randomSeed = smoldynSimulationOptions.randomSeed;
 			accuracy = smoldynSimulationOptions.accuracy;
+			innerStep = smoldynSimulationOptions.innerStep;
 			gaussianTableSize = smoldynSimulationOptions.gaussianTableSize;
 			useHighResolutionSample = smoldynSimulationOptions.useHighResolutionSample;
 			saveParticleLocations = smoldynSimulationOptions.saveParticleLocations;
@@ -96,6 +99,9 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 		if (accuracy != smoldynSimulationOptions.accuracy) {
 			return false;
 		}
+		if (innerStep != smoldynSimulationOptions.innerStep) {
+			return false;
+		}
 		if (gaussianTableSize != smoldynSimulationOptions.gaussianTableSize) {
 			return false;
 		}
@@ -126,6 +132,16 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 		double oldValue = this.accuracy;		
 		this.accuracy = newValue;
 		firePropertyChange(PROPERTY_NAME_ACCURACY, oldValue, newValue);
+	}
+
+	public final int getInnerStep() {
+		return innerStep;
+	}
+
+	public final void setInnerStep(int newValue) {
+		int oldValue = this.innerStep;		
+		this.innerStep = newValue;
+		firePropertyChange(PROPERTY_NAME_INNERSTEP, oldValue, newValue);
 	}
 
 	public int getGaussianTableSize() {
@@ -179,6 +195,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 			buffer.append("\t\t" + VCML.SmoldynSimulationOptions_randomSeed + " " + randomSeed + "\n");			
 		}
 		buffer.append("\t\t" + VCML.SmoldynSimulationOptions_saveParticleLocations + " " + saveParticleLocations + "\n");
+		buffer.append("\t\t" + VCML.SmoldynSimulationOptions_innerStep + " " + innerStep + "\n");
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		
 		return buffer.toString();
@@ -213,6 +230,9 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions_saveParticleLocations)) {
 				token = tokens.nextToken();
 				saveParticleLocations = Boolean.parseBoolean(token);
+			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions_innerStep)) {
+					token = tokens.nextToken();
+					innerStep = Integer.parseInt(token);
 			}  else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}
