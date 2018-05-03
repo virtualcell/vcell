@@ -23,7 +23,7 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 
-//@Ignore
+@Ignore
 public class SlurmProxyTest {
 
     @BeforeClass
