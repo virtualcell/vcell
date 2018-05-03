@@ -20,6 +20,7 @@ import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
@@ -291,7 +292,7 @@ public class SlurmProxy extends HtcProxy {
 	 * @param postProcessingCommands
 	 * @return String containing script
 	 */
-	String generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) {
+	String generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 		final boolean isParallel = ncpus > 1;
 
 
@@ -343,7 +344,6 @@ public class SlurmProxy extends HtcProxy {
 				"softwareVersion="+softwareVersion,
 				"serverid="+serverid
 		};
-		
 		lsb.write("TMPDIR="+slurm_tmpdir);
 		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
 		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
@@ -393,6 +393,40 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("echo \"3 date=`date`\"");
 
 		lsb.newline();
+
+		lsb.write("sendFailureMsg() {");
+		lsb.write("  echo ${cmd_prefix} " +
+				" --msg-userid "+jmsuser+
+				" --msg-password "+jmspswd+
+				" --msg-host "+jmshost_external+
+				" --msg-port "+jmsport_external+
+				" --msg-job-host `hostname`"+
+				" --msg-job-userid "+simTask.getUserName()+
+				" --msg-job-simkey "+simTask.getSimKey()+
+				" --msg-job-jobindex "+simTask.getSimulationJob().getJobIndex() +
+				" --msg-job-taskid "+simTask.getTaskID() +
+				" --msg-job-errmsg \"$1\"" +
+				" SendErrorMsg");
+		lsb.write("  ${cmd_prefix} " +
+				" --msg-userid "+jmsuser+
+				" --msg-password "+jmspswd+
+				" --msg-host "+jmshost_external+
+				" --msg-port "+jmsport_external+
+				" --msg-job-host `hostname`"+
+				" --msg-job-userid "+simTask.getUserName()+
+				" --msg-job-simkey "+simTask.getSimKey()+
+				" --msg-job-jobindex "+simTask.getSimulationJob().getJobIndex() +
+				" --msg-job-taskid "+simTask.getTaskID() +
+				" --msg-job-errmsg \"$1\"" +
+				" SendErrorMsg");
+		lsb.write("  stat=$?");
+		lsb.write("  if [[ $stat -ne 0 ]]; then");
+		lsb.write("    echo 'failed to send error message, retcode=$stat'");
+		lsb.write("  else");
+		lsb.write("    echo 'sent failure message'");
+		lsb.write("  fi");
+		lsb.write("}");
+		
 		/**
 		 * excerpt from vcell-batch Dockerfile
 		 * 
@@ -505,12 +539,12 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws ExecutableException {
 		try {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
 			}
-			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands);
+			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands, simTask);
 
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 

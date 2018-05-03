@@ -157,6 +157,13 @@ contents of /etc/auto.master from vcell-node1
 #systemctl restart autofs
 ```
 
+make sure ganglia is set properly (send_metadata_interval = 60)
+
+```bash
+sudo vi /etc/ganglia/gmond.conf
+sudo systemctl restart gmond
+```
+
 
 
 

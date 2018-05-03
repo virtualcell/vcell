@@ -201,7 +201,17 @@ def simquery(query, host_port):
     assert(isinstance(host_port,str))
     import requests
     r = requests.get('https://'+host_port+'/admin/jobs', params=query.params())
-    print(r.url)
+    logger = logging.getLogger("paramiko")
+    logger.debug(r.url)
+    json = r.json()
+    return json
+
+def health(query, host_port):
+    assert(isinstance(host_port,str))
+    import requests
+    r = requests.get('https://'+host_port+'/health', params=query.params())
+    logger = logging.getLogger("paramiko")
+    logger.debug(r.url)
     json = r.json()
     return json
 
@@ -239,6 +249,18 @@ class simjobquery:
     def params(self):
         return {k: v for k, v in self.fields.items() if v is not None}
 
+class healthquery:
+    fields = {}
+
+    def __init__(self):
+        # type: () -> object
+        self.fields = {
+            "check" : "all",
+        }
+
+    def params(self):
+        return {k: v for k, v in self.fields.items() if v is not None}
+
 
 
 def main():
@@ -261,12 +283,17 @@ def main():
         help='job status (default wqdr) a-all, w-waiting, q-queued, d-dispatched, r-running, c-completed, s-stopped')
 
     parser_showjobs.add_argument("--maxRows", type=int, default=100)
-    parser_showjobs.add_argument("--hostport", type=str, default='vcellapi.cam.uchc.edu:443')
+    parser_showjobs.add_argument("--hostport", type=str, default='vcellapi.cam.uchc.edu:443', help='host and port of server')
     parser_showjobs.set_defaults(which='showjobs')
 
     parser_killjobs = subparsers.add_parser('siminfo', help='detailed simulation info (see siminfo --help)')
     parser_killjobs.add_argument("--simId", type=int, )
     parser_killjobs.set_defaults(which='siminfo')
+
+    parser_health = subparsers.add_parser('health', help='site status (see health --help)')
+    parser_health.add_argument("--hostport", type=str, default='vcellapi.cam.uchc.edu:443', help='host and port of server')
+    parser_health.add_argument('--monitor', type=str, default='sle', help='monitor type (default sla) s-simulation, l-login, e-events')
+    parser_health.set_defaults(which='health')
 
     parser.set_defaults(debug=False)
     #main_args = parser.parse_args(['showjobs','--userid','schaff'])
@@ -296,6 +323,33 @@ def main():
             print tabulate(table, headers=col_names)
             # for job in json_response:
             #     print(job)
+        elif args.which == "health":
+            hostport = args.hostport
+            query = healthquery()
+            if 'e' in args.monitor:
+                # {"timestamp_MS":1525270930943,"transactionId":5,"eventType":"LOGIN_SUCCESS","message":"login success (5)"}
+                query.fields['check'] = 'all'
+                json_response = health(query,hostport)
+                col_names = ["timestamp_MS", "transactionId", "eventType", "message"]
+                table = [[row.get(col_name,'') for col_name in col_names] for row in json_response]
+                from tabulate import tabulate
+                print tabulate(table, headers=col_names)
+            if 's' in args.monitor:
+                # {"nagiosStatusName":"OK","nagiosStatusCode":0,"elapsedTime_MS":7400}
+                query.fields['check'] = 'sim'
+                json_response = health(query,hostport)
+                message = str(json_response.get('message',"''"))
+                print 'Simulation(status=' + str(json_response.get('nagiosStatusName')) + \
+                    ', elapsedTime=' + str(int(json_response.get('elapsedTime_MS'))/1000.0) + ' seconds' + \
+                    ', message=' + message + ')'
+            if 'l' in args.monitor:
+                # {"nagiosStatusName":"OK","nagiosStatusCode":0,"elapsedTime_MS":7400}
+                query.fields['check'] = 'login'
+                json_response = health(query,hostport)
+                message = str(json_response.get('message',"''"))
+                print 'Login(status=' + str(json_response.get('nagiosStatusName')) + \
+                    ', elapsedTime=' + str(int(json_response.get('elapsedTime_MS'))/1000.0) + ' seconds' + \
+                    ', message=' + message + ')'
         elif args.which == "siminfo":
             pass
         else:
