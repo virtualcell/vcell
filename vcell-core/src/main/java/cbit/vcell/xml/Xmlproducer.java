@@ -4853,7 +4853,11 @@ private Element getXML(SmoldynSimulationOptions sso) {
 
 		element = new Element(XMLTags.SmoldynSimulationOptions_gaussianTableSize);
 		element.setText(sso.getGaussianTableSize() + "");
-		ssoElement.addContent(element);			
+		ssoElement.addContent(element);		
+		
+		element = new Element(XMLTags.SmoldynSimulationOptions_innerStep);
+		element.setText(sso.getInnerStep() + "");
+		ssoElement.addContent(element);
 	}
 	return ssoElement;
 }
