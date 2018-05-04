@@ -212,7 +212,9 @@ case $command in
 		args="${args}&JMSDeliveryMode=persistent"
 		args="${args}&MessageType=WorkerEvent"
 		args="${args}&UserName=${msg_job_userid}"
-		args="${args}&HostName=${msg_job_host}"
+		if [ ! -z ${msg_job_host+x} ]; then
+			args="${args}&HostName=${msg_job_host}"
+		fi
 		args="${args}&SimKey=${msg_job_simkey}"
 		args="${args}&TaskID=${msg_job_taskid}"
 		args="${args}&JobIndex=${msg_job_jobindex}"
