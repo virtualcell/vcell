@@ -145,7 +145,7 @@ public class UserRegistrationManager {
 					try {					
 						UserInfo registeredUserInfo = finalRegistrationProvider.insertUserInfo(newUserInfo,(userAction.equals(LoginManager.USERACTION_EDITINFO)?true:false));
 						hashTable.put("registeredUserInfo", registeredUserInfo);
-					}catch (UseridIDExistsException e) {
+					}catch (IllegalArgumentException e) {
 						throw e;
 					}catch (Exception e) {
 						e.printStackTrace();

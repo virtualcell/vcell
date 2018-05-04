@@ -349,6 +349,7 @@
 							<md5>7d0e5a77fd8673f018ad706ec9a1a9f0</md5>
 						</configuration>
 					</execution>
+<!--
 					<execution>
 						<id>install-solvers-mac64</id>
 						<phase>generate-test-resources</phase>
@@ -375,6 +376,7 @@
 							<md5>576bf50c80b9ab8801f14928afa1b1df</md5>
 						</configuration>
 					</execution>
+-->
 <!--
 					<execution>
 						<id>download-libjhdf-linux64</id>

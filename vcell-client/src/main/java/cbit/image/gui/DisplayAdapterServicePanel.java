@@ -94,10 +94,10 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 				connEtoM3(e);
 			if (e.getSource() == DisplayAdapterServicePanel.this.getAutoScaleCheckbox()) 
 				connEtoM7(e);
-			if (e.getSource() == DisplayAdapterServicePanel.this.getAutoScaleCheckbox()){
-				getRdbtnSingle().setEnabled(getAutoScaleCheckbox().isSelected());
-				getRdbtnAllTimes().setEnabled(getAutoScaleCheckbox().isSelected() && bEnableAutoAllTimes);
-			}
+//			if (e.getSource() == DisplayAdapterServicePanel.this.getAutoScaleCheckbox()){
+//				getRdbtnSingle().setEnabled(getAutoScaleCheckbox().isSelected());
+//				getRdbtnAllTimes().setEnabled(getAutoScaleCheckbox().isSelected() && bEnableAutoAllTimes);
+//			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			try {
