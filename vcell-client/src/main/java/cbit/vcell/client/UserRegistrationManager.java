@@ -187,7 +187,7 @@ public class UserRegistrationManager {
 				public void run(final Hashtable<String, Object> hashTable) throws Exception {
 					if(hashTable.containsKey(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR)){
 						//retry if requested
-						if(hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) instanceof UseridIDExistsException){
+						if(hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) instanceof IllegalArgumentException){
 							//Exception handled here, suppress ClientTaskDispatcher error dialog.
 							hashTable.remove(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
 							UserInfo newUserInfo = (UserInfo)hashTable.get(NEW_USER_INFO_KEY);
