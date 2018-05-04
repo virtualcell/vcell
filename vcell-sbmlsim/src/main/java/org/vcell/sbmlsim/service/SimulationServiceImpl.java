@@ -10,7 +10,7 @@ import java.util.Random;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.Model;
+import org.apache.commons.io.FileUtils;
 import org.sbml.jsbml.SBMLException;
 import org.scijava.service.AbstractService;
 import org.vcell.sbml.SbmlException;
@@ -19,11 +19,14 @@ import org.vcell.sbml.vcell.SBMLExporter.VCellSBMLDoc;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbmlsim.api.common.DomainType;
 import org.vcell.sbmlsim.api.common.SBMLModel;
+import org.vcell.sbmlsim.api.common.SimData;
 import org.vcell.sbmlsim.api.common.SimulationInfo;
 import org.vcell.sbmlsim.api.common.SimulationSpec;
 import org.vcell.sbmlsim.api.common.SimulationState;
 import org.vcell.sbmlsim.api.common.SimulationStatus;
+import org.vcell.sbmlsim.api.common.TimePoints;
 import org.vcell.sbmlsim.api.common.VariableInfo;
+import org.vcell.sbmlsim.api.common.VcmlToSbmlResults;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
@@ -173,14 +176,17 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 //		}
 //	}
 
+	@Override
     public int sizeX(SimulationInfo simInfo) {
         return mesh(simInfo).getSizeX();
     }
 
+	@Override
     public int sizeY(SimulationInfo simInfo) {
         return mesh(simInfo).getSizeY();
     }
 
+	@Override
     public int sizeZ(SimulationInfo simInfo) {
         return mesh(simInfo).getSizeZ();
     }
@@ -196,6 +202,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
         }
     }
 
+    @Override
     public SimulationInfo computeModel(SBMLModel model, SimulationSpec simSpec) {
         try {
             SBMLImporter importer = new SBMLImporter(model.getFilepath().getAbsolutePath(),vcLogger(),true);
@@ -208,18 +215,18 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
         }
     }
 
-    public SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec) {
-        try {
-            SBMLImporter importer = new SBMLImporter(sbmlModel,vcLogger(),true);
-            BioModel bioModel = importer.getBioModel();
-//            XmlUtil.writeXMLStringToFile(XmlHelper.bioModelToXML(bioModel), "C:\\Users\\frm\\vcGititImageJWorkspace\\vcell\\imagej_true.xml", true);
-			return computeModel(bioModel, simSpec, null);
-        }
-        catch (Exception exc) {
-            exc.printStackTrace(System.out);
-            return null;
-        }
-    }
+//    public SimulationInfo computeModel(Model sbmlModel, SimulationSpec simSpec) {
+//        try {
+//            SBMLImporter importer = new SBMLImporter(sbmlModel,vcLogger(),true);
+//            BioModel bioModel = importer.getBioModel();
+////            XmlUtil.writeXMLStringToFile(XmlHelper.bioModelToXML(bioModel), "C:\\Users\\frm\\vcGititImageJWorkspace\\vcell\\imagej_true.xml", true);
+//			return computeModel(bioModel, simSpec, null);
+//        }
+//        catch (Exception exc) {
+//            exc.printStackTrace(System.out);
+//            return null;
+//        }
+//    }
 
     public static cbit.util.xml.VCLogger vcLogger() {
         return new cbit.util.xml.VCLogger() {
@@ -358,7 +365,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
     	}
     	
     	// ----- 'FiniteVolume, Regular Grid' solver (semi-implicit) solver is not supported for quick run; throw exception.
-    	if (solverDescription.equals(SolverDescription.FiniteVolume)) {
+    	if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {
     		throw new IllegalArgumentException("Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step) solver not allowed for quick run of simulations.");
     	}
     	
@@ -385,12 +392,14 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 
     }
 
+    @Override
 	public SimulationStatus getStatus(SimulationInfo simInfo) {
 		SimulationServiceContext simServiceContext = sims.get(simInfo.getLocalId());
 		return new SimulationStatus(simServiceContext.simState);
 	}
 
-	public List<Double> getData(SimulationInfo simInfo, VariableInfo varInfo, int timeIndex)  throws Exception {
+	@Override
+	public SimData getData(SimulationInfo simInfo, VariableInfo varInfo, int timeIndex)  throws Exception {
         SimulationServiceContext simServiceContext = sims.get(simInfo.getLocalId());
         if (simServiceContext==null){
         	throw new RuntimeException("simulation results not found");
@@ -401,37 +410,34 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 			SimDataBlock simDataBlock = datasetController.getSimDataBlock(outputContext, simServiceContext.vcDataIdentifier, varInfo.getVariableVtuName(), times[timeIndex]);
 			double[] dataArray = simDataBlock.getData();
-	        ArrayList<Double> dataList = new ArrayList<Double>();
-			for (double d : dataArray){
-				dataList.add(d);
-			}
-			return dataList;
+			SimData simData = new SimData();
+			simData.setData(dataArray);
+	        return simData;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("failed to retrieve data for variable "+varInfo.getVariableVtuName()+": "+e.getMessage());
 		}
 	}
 
-	public List<Double> getTimePoints(SimulationInfo simInfo) throws Exception {
+	@Override
+	public TimePoints getTimePoints(SimulationInfo simInfo) throws Exception {
         SimulationServiceContext simServiceContext = sims.get(simInfo.getLocalId());
         if (simServiceContext==null){
         	throw new Exception("simulation results not found");
         }
         try {
 	        DataSetControllerImpl datasetController = getDataSetController(simServiceContext);
-	        ArrayList<Double> times = new ArrayList<Double>();
-	        double[] timeArray;
-			timeArray = datasetController.getDataSetTimes(simServiceContext.vcDataIdentifier);
-			for (double t : timeArray){
-				times.add(t);
-			}
-			return times;
+	        double[] timeArray = datasetController.getDataSetTimes(simServiceContext.vcDataIdentifier);
+	        TimePoints timePoints = new TimePoints();
+	        timePoints.setTimePoints(timeArray);
+	        return timePoints;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("failed to retrieve times for simulation: "+e.getMessage());
 		}
 	}
 
+	@Override
 	public List<VariableInfo> getVariableList(SimulationInfo simInfo) throws Exception {
         SimulationServiceContext simServiceContext = sims.get(simInfo.getLocalId());
         if (simServiceContext==null){
@@ -470,13 +476,18 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
         	throw new Exception("failed to retrieve variable list: "+e.getMessage());
         }
 	}
-	public String getSBML(String vcml, String applicationName) throws Exception {
+	
+	@Override
+	public VcmlToSbmlResults getSBML(File vcmlFile, String applicationName, File outputFile) throws Exception {
 		try {
-			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml));
+			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFile));
 			SimulationContext simContext = bioModel.getSimulationContext(applicationName);
 			SBMLExporter exporter = new SBMLExporter(simContext,3,1,simContext.getGeometry().getDimension()>0);
 			VCellSBMLDoc sbmlDoc = exporter.convertToSBML();
-			return sbmlDoc.xmlString;
+			FileUtils.write(outputFile, sbmlDoc.xmlString);
+			VcmlToSbmlResults results = new VcmlToSbmlResults();
+			results.setSbmlFilePath(outputFile);
+			return results;
 		} catch (SBMLException | XmlParseException | SbmlException | XMLStreamException e) {
 			e.printStackTrace();
 			throw new Exception("failed to generate SBML document: "+e.getMessage());

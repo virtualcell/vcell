@@ -6,4 +6,8 @@ public class SimData {
 	public double[] getData() {
 		return data;
 	}
+	
+	public void setData(double[] data) {
+		this.data = data;
+	}
 }

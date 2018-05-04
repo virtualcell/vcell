@@ -4,10 +4,10 @@ WORKDIR /app
 RUN mvn clean install dependency:copy-dependencies
 
 
-FROM schaff/vcell-solvers:0.0.10-dev
+FROM schaff/vcell-solvers:0.0.11-dev
 
 RUN apt-get -y update && \
-    apt-get install -y openjdk-8-jre-headless
+    apt-get install -y openjdk-8-jre-headless curl
 
 RUN mkdir -p /usr/local/app/localsolvers && ln -s /vcellbin  /usr/local/app/localsolvers/linux64
 WORKDIR /usr/local/app
@@ -44,9 +44,11 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     mongodbhost_internal="mongo-host-not-set" \
     mongodbport_internal="mongo-port-not-set" \
     mongodb_database=test \
+    TMPDIR=/solvertmp/ \
     jmsblob_minsize=100000
 
 VOLUME /simdata
 VOLUME /htclogs
+VOLUME /solvertmp
 
 ENTRYPOINT [ "/vcellscripts/entrypoint.sh" ]

@@ -6,4 +6,8 @@ public class TimePoints {
 	public double[] getTimePoints() {
 		return timePoints;
 	}
+
+	public void setTimePoints(double[] timeArray) {
+		this.timePoints = timeArray;
+	}
 }

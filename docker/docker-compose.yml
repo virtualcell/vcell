@@ -76,6 +76,7 @@ services:
       - slurm_cmd_squeue=${VCELL_SLURM_CMD_SQUEUE:-squeue}
       - slurm_cmd_scancel=${VCELL_SLURM_CMD_SCANCEL:-scancel}
       - slurm_partition=${VCELL_SLURM_PARTITION:-vcell}
+      - slurm_tmpdir=${VCELL_SLURM_TMPDIR}
       - maxJobsPerScan=${VCELL_MAX_JOBS_PER_SCAN:-100}
       - maxJobsPerSite=${VCELL_MAX_JOBS_PER_SITE:-100}
       - maxOdeJobsPerUser=${VCELL_MAX_ODE_JOBS_PER_USER:-50}

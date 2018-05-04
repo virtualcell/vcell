@@ -20,6 +20,7 @@ import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
@@ -291,13 +292,13 @@ public class SlurmProxy extends HtcProxy {
 	 * @param postProcessingCommands
 	 * @return String containing script
 	 */
-	String generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) {
+	String generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 		final boolean isParallel = ncpus > 1;
 
 
 		LineStringBuilder lsb = new LineStringBuilder();
 
-		lsb.write("#!/usr/bin/env bash");
+		lsb.write("#!/usr/bin/bash");
 		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
 		String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
 		lsb.write("#SBATCH --partition=" + partition);
@@ -312,27 +313,6 @@ public class SlurmProxy extends HtcProxy {
 
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 
-		lsb.write("TMPDIR=/state/partition1");
-		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
-		
-		//
-		// Initialize Singularity
-		//
-		lsb.write("echo `hostname`\n");
-		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
-		lsb.write("source /usr/share/Modules/init/bash\n");
-		lsb.write("module load singularity\n");
-		
-		lsb.write("echo \"job running on host `hostname -f`\"");
-		lsb.newline();
-		lsb.write("echo \"id is `id`\"");
-		lsb.newline();
-		lsb.write("echo \"bash version is `bash --version`\"");
-		lsb.write("date");
-		lsb.newline();
-		lsb.write("echo ENVIRONMENT");
-		lsb.write("env");
-		lsb.newline();
 		String jmshost_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
 		String jmsport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsPortExternal);
 		String jmsrestport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
@@ -347,7 +327,7 @@ public class SlurmProxy extends HtcProxy {
 		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
 		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
 		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
-		String singularityImageName = new File(remote_singularity_image).getName();
+		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
 
 		String[] environmentVars = new String[] {
 				"jmshost_internal="+jmshost_external,
@@ -364,13 +344,35 @@ public class SlurmProxy extends HtcProxy {
 				"softwareVersion="+softwareVersion,
 				"serverid="+serverid
 		};
+		lsb.write("TMPDIR="+slurm_tmpdir);
+		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
+		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
+		
+		//
+		// Initialize Singularity
+		//
+		lsb.write("echo `hostname`\n");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
+		lsb.write("source /usr/share/Modules/init/bash\n");
+		lsb.write("module load singularity/2.4.2\n");
+		
+		lsb.write("echo \"job running on host `hostname -f`\"");
+		lsb.newline();
+		lsb.write("echo \"id is `id`\"");
+		lsb.newline();
+		lsb.write("echo \"bash version is `bash --version`\"");
+		lsb.write("date");
+		lsb.newline();
+		lsb.write("echo ENVIRONMENT");
+		lsb.write("env");
+		lsb.newline();
 		
 		lsb.write("container_prefix=");
 		lsb.write("if command -v singularity >/dev/null 2>&1; then");
 		lsb.write("   #");
 		lsb.write("   # local copy of singularity image should already be present in ${TMPDIR}/singularityImages/ (pushed during deploy)");
 		lsb.write("   #");
-		lsb.write("   localSingularityImage=\"${TMPDIR}/singularityImages/"+singularityImageName+"\"");
+		lsb.write("   localSingularityImage="+remote_singularity_image);
 		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
 		lsb.write("       echo \"local singularity image $localSingularityImage not found\"");
 		lsb.write("       exit 1");
@@ -379,18 +381,52 @@ public class SlurmProxy extends HtcProxy {
 		for (String envVar : environmentVars) {
 			singularityEnvironmentVars.append(" --env "+envVar);
 		}
-		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs $localSingularityImage "+singularityEnvironmentVars+" \"");
+		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs  --bind "+slurm_tmpdir+":/solvertmp $localSingularityImage "+singularityEnvironmentVars+" \"");
 		lsb.write("else");
 		StringBuffer dockerEnvironmentVars = new StringBuffer();
 		for (String envVar : environmentVars) {
 			dockerEnvironmentVars.append(" -e "+envVar);
 		}
-		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs "+dockerEnvironmentVars+" "+docker_image+" \"");
+		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs -v "+slurm_tmpdir+":/solvertmp "+dockerEnvironmentVars+" "+docker_image+" \"");
 		lsb.write("fi");
 		lsb.write("echo \"container_prefix is '${container_prefix}'\"");
 		lsb.write("echo \"3 date=`date`\"");
 
 		lsb.newline();
+
+		lsb.write("sendFailureMsg() {");
+		lsb.write("  echo ${cmd_prefix} " +
+				" --msg-userid "+jmsuser+
+				" --msg-password "+jmspswd+
+				" --msg-host "+jmshost_external+
+				" --msg-port "+jmsport_external+
+				" --msg-job-host `hostname`"+
+				" --msg-job-userid "+simTask.getUserName()+
+				" --msg-job-simkey "+simTask.getSimKey()+
+				" --msg-job-jobindex "+simTask.getSimulationJob().getJobIndex() +
+				" --msg-job-taskid "+simTask.getTaskID() +
+				" --msg-job-errmsg \"$1\"" +
+				" SendErrorMsg");
+		lsb.write("  ${cmd_prefix} " +
+				" --msg-userid "+jmsuser+
+				" --msg-password "+jmspswd+
+				" --msg-host "+jmshost_external+
+				" --msg-port "+jmsport_external+
+				" --msg-job-host `hostname`"+
+				" --msg-job-userid "+simTask.getUserName()+
+				" --msg-job-simkey "+simTask.getSimKey()+
+				" --msg-job-jobindex "+simTask.getSimulationJob().getJobIndex() +
+				" --msg-job-taskid "+simTask.getTaskID() +
+				" --msg-job-errmsg \"$1\"" +
+				" SendErrorMsg");
+		lsb.write("  stat=$?");
+		lsb.write("  if [[ $stat -ne 0 ]]; then");
+		lsb.write("    echo 'failed to send error message, retcode=$stat'");
+		lsb.write("  else");
+		lsb.write("    echo 'sent failure message'");
+		lsb.write("  fi");
+		lsb.write("}");
+		
 		/**
 		 * excerpt from vcell-batch Dockerfile
 		 * 
@@ -503,12 +539,12 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws ExecutableException {
 		try {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
 			}
-			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands);
+			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands, simTask);
 
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 

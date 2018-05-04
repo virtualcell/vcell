@@ -54,7 +54,7 @@ public class SlurmProxyTest {
 			File sub_file_remotepath = new File("/share/apps/vcell3/htclogs/"+jobName+".slurm.sub");
 			
 			StringBuffer subfileContent = new StringBuffer();
-			subfileContent.append("#!/usr/bin/env bash\n");
+			subfileContent.append("#!/usr/bin/bash\n");
 			String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
 			subfileContent.append("#SBATCH --partition="+partition+"\n");
 			subfileContent.append("#SBATCH -J "+jobName+"\n");
@@ -62,9 +62,9 @@ public class SlurmProxyTest {
 			subfileContent.append("#SBATCH -e /share/apps/vcell3/htclogs/"+jobName+".slurm.log\n");
 			subfileContent.append("env\n");
 			subfileContent.append("echo `hostname`\n");
-			subfileContent.append("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
-			subfileContent.append("source /usr/share/Modules/init/bash\n");
-			subfileContent.append("module load singularity\n");
+			//subfileContent.append("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
+			//subfileContent.append("source /usr/share/Modules/init/bash\n");
+			subfileContent.append("module load singularity/2.4.2\n");
 			subfileContent.append("if command -v singularity >/dev/null 2>&1; then\n");
 			subfileContent.append("   echo 'singularity command exists'\n");
 			subfileContent.append("   exit 0\n");

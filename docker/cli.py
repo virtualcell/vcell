@@ -201,7 +201,17 @@ def simquery(query, host_port):
     assert(isinstance(host_port,str))
     import requests
     r = requests.get('https://'+host_port+'/admin/jobs', params=query.params())
-    print(r.url)
+    logger = logging.getLogger("paramiko")
+    logger.debug(r.url)
+    json = r.json()
+    return json
+
+def health(query, host_port):
+    assert(isinstance(host_port,str))
+    import requests
+    r = requests.get('https://'+host_port+'/health', params=query.params())
+    logger = logging.getLogger("paramiko")
+    logger.debug(r.url)
     json = r.json()
     return json
 
@@ -239,6 +249,18 @@ class simjobquery:
     def params(self):
         return {k: v for k, v in self.fields.items() if v is not None}
 
+class healthquery:
+    fields = {}
+
+    def __init__(self):
+        # type: () -> object
+        self.fields = {
+            "check" : "all",
+        }
+
+    def params(self):
+        return {k: v for k, v in self.fields.items() if v is not None}
+
 
 
 def main():
@@ -252,27 +274,33 @@ def main():
     parser_showjobs.add_argument("--simId", type=int, default=None)
     parser_showjobs.add_argument("--jobId", type=int, default=None)
     parser_showjobs.add_argument("--taskId", type=int, default=None)
-
-    parser_showjobs.add_argument("--submit", type=str, default='')
-
-    parser_showjobs.add_argument("--hasData", type=str, default=None)
-
-    parser_showjobs.add_argument("--waiting", type=bool, default=True)
-    parser_showjobs.add_argument("--queued", type=bool, default=True)
-    parser_showjobs.add_argument("--dispatched", type=bool, default=True)
-    parser_showjobs.add_argument("--running", type=bool, default=True)
-
-    parser_showjobs.add_argument("--completed", type=bool, default=False)
-    parser_showjobs.add_argument("--failed", type=bool, default=False)
-    parser_showjobs.add_argument("--stopped", type=bool, default=False)
-
-    parser_showjobs.add_argument("--maxRows", type=int, default=100)
-    parser_showjobs.add_argument("--hostport", type=str, default='vcellapi.cam.uchc.edu:443')
+    parser_showjobs.add_argument("--status", type=str, default='wqdr', 
+        help='job status (default wqdr) a-all, w-waiting, q-queued, d-dispatched, r-running, c-completed, s-stopped')
+    parser_showjobs.add_argument("--maxRows", type=int, default=500)
+    parser_showjobs.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
+    parser_showjobs.add_argument("--apiport", type=int, default='443', help='port of api server')
     parser_showjobs.set_defaults(which='showjobs')
 
-    parser_killjobs = subparsers.add_parser('siminfo', help='detailed simulation info (see siminfo --help)')
-    parser_killjobs.add_argument("--simId", type=int, )
-    parser_killjobs.set_defaults(which='siminfo')
+    parser_killjobs = subparsers.add_parser('killjob', help='kill simulation job (see killjob --help)')
+    parser_killjobs.add_argument("--userid", type=str, default=None)
+    parser_killjobs.add_argument("--simId", type=int, default=None)
+    parser_killjobs.add_argument("--jobId", type=int, default=0)
+    parser_killjobs.add_argument("--taskId", type=int, default=0)
+    parser_killjobs.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
+    parser_killjobs.add_argument("--msgport", type=int, default='8161', help='port of message server')
+    parser_killjobs.add_argument("--vcellbatch", type=str, default="schaff/vcell-batch:latest")
+    parser_killjobs.set_defaults(which='killjob')
+
+    parser_slurmjobs = subparsers.add_parser('slurmjobs', help='slurm running jobs (see slurmjobs --help)')
+    parser_slurmjobs.add_argument("--slurmhost", type=str, default="vcell-service.cam.uchc.edu")
+    parser_slurmjobs.add_argument("--partition", type=str, default="vcell2,vcell")
+    parser_slurmjobs.set_defaults(which='slurmjobs')
+
+    parser_health = subparsers.add_parser('health', help='site status (see health --help)')
+    parser_health.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
+    parser_health.add_argument("--apiport", type=int, default='443', help='port of api server')
+    parser_health.add_argument('--monitor', type=str, default='sle', help='monitor type (default sla) s-simulation, l-login, e-events')
+    parser_health.set_defaults(which='health')
 
     parser.set_defaults(debug=False)
     #main_args = parser.parse_args(['showjobs','--userid','schaff'])
@@ -284,16 +312,17 @@ def main():
             query.fields['userid'] = args.userid
             query.fields['simId'] = args.simId
             query.fields['jobId'] = args.jobId
-            query.fields['waiting'] = args.waiting
-            query.fields['queued'] = args.queued
-            query.fields['dispatched'] = args.dispatched
-            query.fields['running'] = args.running
-            query.fields['completed'] = args.completed
-            query.fields['failed'] = args.failed
-            query.fields['stopped'] = args.stopped
+            query.fields['taskId'] = args.taskId
+            query.fields['waiting'] = True if ('w' in args.status or 'a' in args.status) else False
+            query.fields['queued'] = True if ('q' in args.status or 'a' in args.status) else False
+            query.fields['dispatched'] = True if ('d' in args.status or 'a' in args.status) else False
+            query.fields['running'] = True if ('r' in args.status or 'a' in args.status) else False
+            query.fields['completed'] = True if ('c' in args.status or 'a' in args.status) else False
+            query.fields['failed'] = True if ('f' in args.status or 'a' in args.status) else False
+            query.fields['stopped'] = True if ('s' in args.status or 'a' in args.status) else False
             query.fields['maxRows'] = args.maxRows
-            hostport = args.hostport
-            json_response = simquery(query,hostport)
+            apihostport = args.host+":"+str(args.apiport)
+            json_response = simquery(query,apihostport)
             col_names = ["owner_userid", "simulationKey", "jobIndex", "taskID", "schedulerStatus", "hasData",
                          "vcellServerID","queueDate", "simexe_startDate", "simexe_latestUpdateDate",
                          "computeHost", "detailedStateMessage"]
@@ -302,8 +331,64 @@ def main():
             print tabulate(table, headers=col_names)
             # for job in json_response:
             #     print(job)
-        elif args.which == "siminfo":
-            pass
+
+        elif args.which == "slurmjobs":
+            # owner_userid      simulationKey    jobIndex    taskID  schedulerStatus    hasData    vcellServerID    queueDate                 simexe_startDate          simexe_latestUpdateDate    computeHost             detailedStateMessage
+            # "squeue -p vcell2 -O jobid:25,name:25,state:13,batchhost"
+            import subprocess
+            # if args.debug:
+            #     print "sudo docker run --rm "+args.vcellbatch+" "+options+" SendErrorMsg"
+            if args.debug:
+                print "ssh "+args.slurmhost+" squeue -p "+args.partition+" -O jobid:25,name:25,state:13,submittime,starttime,batchhost,reason"
+            return_code = subprocess.call("ssh "+args.slurmhost+" squeue -p "+args.partition+" -O jobid:25,name:25,state:13,submittime,starttime,batchhost,reason", shell=True)
+
+        elif args.which == "killjob":
+            cmd_prefix = "sudo docker run --rm "+args.vcellbatch
+            options =  " --msg-userid admin" 
+            options += " --msg-password admin"
+            options += " --msg-host "+args.host
+            options += " --msg-port "+str(args.msgport)
+            options += " --msg-job-userid "+args.userid
+            options += " --msg-job-simkey "+str(args.simId)
+            options += " --msg-job-jobindex "+str(args.jobId)
+            options += " --msg-job-taskid "+str(args.taskId)
+            options += " --msg-job-errmsg "+"killed"
+            import subprocess
+            if args.debug:
+                print "sudo docker run --rm "+args.vcellbatch+" "+options+" SendErrorMsg"
+            return_code = subprocess.call("sudo docker run --rm "+args.vcellbatch+" "+options+" SendErrorMsg", shell=True)
+            if return_code == 0:
+                print "kill message sent"
+            else:
+                print "unable to send kill message"
+
+        elif args.which == "health":
+            apihostport = args.host+":"+str(args.apiport)
+            query = healthquery()
+            if 'e' in args.monitor:
+                # {"timestamp_MS":1525270930943,"transactionId":5,"eventType":"LOGIN_SUCCESS","message":"login success (5)"}
+                query.fields['check'] = 'all'
+                json_response = health(query,apihostport)
+                col_names = ["timestamp_MS", "transactionId", "eventType", "message"]
+                table = [[row.get(col_name,'') for col_name in col_names] for row in json_response]
+                from tabulate import tabulate
+                print tabulate(table, headers=col_names)
+            if 's' in args.monitor:
+                # {"nagiosStatusName":"OK","nagiosStatusCode":0,"elapsedTime_MS":7400}
+                query.fields['check'] = 'sim'
+                json_response = health(query,apihostport)
+                message = str(json_response.get('message',"''"))
+                print 'Simulation(status=' + str(json_response.get('nagiosStatusName')) + \
+                    ', elapsedTime=' + str(int(json_response.get('elapsedTime_MS'))/1000.0) + ' seconds' + \
+                    ', message=' + message + ')'
+            if 'l' in args.monitor:
+                # {"nagiosStatusName":"OK","nagiosStatusCode":0,"elapsedTime_MS":7400}
+                query.fields['check'] = 'login'
+                json_response = health(query,apihostport)
+                message = str(json_response.get('message',"''"))
+                print 'Login(status=' + str(json_response.get('nagiosStatusName')) + \
+                    ', elapsedTime=' + str(int(json_response.get('elapsedTime_MS'))/1000.0) + ' seconds' + \
+                    ', message=' + message + ')'
         else:
             parser.print_help()
             raise Exception("unknown command " + args.cmd)

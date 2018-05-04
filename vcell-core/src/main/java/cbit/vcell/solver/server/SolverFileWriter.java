@@ -124,8 +124,8 @@ private Element create(SolverInputFileKeyword sifk, int number) {
 protected Element xmlJMSParameters () {
 	Element jms = create(SolverInputFileKeyword.JMS_PARAM_BEGIN,null);
 	String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
-	String jmsport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsPortExternal);
-	String jmsurl = "failover:(tcp://"+jmshost+":"+jmsport+")";
+	String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+	String jmsurl = jmshost+":"+jmsrestport;
 	Element broker = create(SolverInputFileKeyword.JMS_BROKER, jmsurl) ;
 	Element jmsUser = create(SolverInputFileKeyword.JMS_USER, PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
     String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
