@@ -14,6 +14,7 @@ import org.vcell.sbmlsim.api.common.SBMLModel;
 import org.vcell.sbmlsim.api.common.SimulationInfo;
 import org.vcell.sbmlsim.api.common.SimulationSpec;
 import org.vcell.sbmlsim.api.common.SimulationState;
+import org.vcell.sbmlsim.api.common.TimePoints;
 import org.vcell.sbmlsim.api.common.VariableInfo;
 
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -66,7 +67,7 @@ public class SimulationServiceImplTest {
 		Assert.assertNotNull(vars);
 		// TODO - Assert more things.
 
-		final List<Double> timePoints = simService.getTimePoints(simInfo);
+		final TimePoints timePoints = simService.getTimePoints(simInfo);
 		vars.stream().forEach(var -> {
 			try {
 				System.out.println(var.getVariableDisplayName() + "[0] = " + //

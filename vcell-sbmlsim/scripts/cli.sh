@@ -92,6 +92,19 @@ if [[ $# -ne 1 ]] ; then
     show_help
 fi
 
+runjava()
+	CLASSPATH=./target/maven-jars/*:../lib/*
+	MAIN_CLASS=org.vcell.sbmlsim.VCellSbmlSimCLI
+
+	props="-Dvcell.installDir=$PWD"
+	# props="${props} -Dvcell.softwareVersion=standalone_VCell_7.0"
+	# props="${props} -Dvcell.bioformatsJarFileName=vcell-bioformats-0.0.4-jar-with-dependencies.jar"
+	# props="${props} -Dvcell.bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.4-jar-with-dependencies.jar"
+
+	echo java ${props} -cp $CLASSPATH $MAIN_CLASS $@
+	java ${props} -cp $CLASSPATH $MAIN_CLASS $@
+}
+
 command=$1
 
 case $command in
