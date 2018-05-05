@@ -116,6 +116,40 @@ services:
       placement:
         constraints:
           - node.labels.zone == INTERNAL
+  db:
+    image: "${VCELL_REPO_NAMESPACE}/vcell-db:${VCELL_TAG}"
+    environment:
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
+
+      - dburl=${VCELL_DB_URL}
+      - dbdriver=${VCELL_DB_DRIVER}
+      - dbuser=${VCELL_DB_USER}
+
+      - jmsuser=clientUser
+      - jmshost_internal=activemq
+      - jmsport_internal=61616
+      - jmsrestport_internal=8161
+
+      - mongodb_host_internal=mongodb
+      - mongodb_port_internal=27017
+      - mongodb_database=test
+    secrets:
+      - dbpswd
+      - jmspswd
+    networks:
+      - vcellnet
+    depends_on:
+      - activemq
+      - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 500M
+        reservations:
+          memory: 500M
   activemq:
     image: webcenter/activemq:5.14.3
     ports:

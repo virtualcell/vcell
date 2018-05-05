@@ -178,19 +178,27 @@ build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7
 
 //Get VCell project
 Login to vcell-node1 as user 'vcell'
+
+```bash
 cd /opt/build
 git clone https://github.com/virtualcell/vcell.git
 cd vcell/docker
 //Run the following bash commands in your terminal
+```
+
 ```bash
 export VCELL_TAG=`git rev-parse HEAD | cut -c -7`
 export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
+
 //Helper for current install4j VCell software $VCELL_BUILD number, increment version if deploying client, otherwise if server only do not increment version #
+
+```bash
 echo Alpha `curl --silent http://vcell.org/webstart/Alpha/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
 echo Beta `curl --silent http://vcell.org/webstart/Beta/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
 echo Rel `curl --silent http://vcell.org/webstart/Rel/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
+```
 
 //Choose 1 of the following blocks depending on site {Alpha,Beta,Rel}, and set VCELL_BUILD= if necessary, execute all commands in bash
 	increment if pushing new client, otherwise no increment for VCELL_BUILD
