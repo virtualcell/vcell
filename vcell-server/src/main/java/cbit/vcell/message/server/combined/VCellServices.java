@@ -208,7 +208,10 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
 			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true);
 
-			Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
+			String cacheSize = PropertyLoader.getRequiredProperty(PropertyLoader.simdataCacheSizeProperty);
+			long maxMemSize = Long.parseLong(cacheSize);
+
+			Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20,maxMemSize);
 			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable,
 					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)),
 					new File(PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty))));
@@ -294,7 +297,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		PropertyLoader.jmsBlobMessageUseMongo,
 		PropertyLoader.maxJobsPerScan,
 		PropertyLoader.exportBaseURLProperty,
-		PropertyLoader.exportBaseDirInternalProperty
+		PropertyLoader.exportBaseDirInternalProperty,
+		PropertyLoader.simdataCacheSizeProperty
 	};
 
 

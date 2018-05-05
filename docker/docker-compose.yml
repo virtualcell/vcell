@@ -81,6 +81,7 @@ services:
       - maxJobsPerSite=${VCELL_MAX_JOBS_PER_SITE:-100}
       - maxOdeJobsPerUser=${VCELL_MAX_ODE_JOBS_PER_USER:-50}
       - maxPdeJobsPerUser=${VCELL_MAX_PDE_JOBS_PER_USER:-50}
+      - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
 
       - jmsuser=clientUser
       - jmshost_internal=activemq

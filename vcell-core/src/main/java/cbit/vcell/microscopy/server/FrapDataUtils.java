@@ -52,7 +52,7 @@ public class FrapDataUtils {
 
 	public static DataSetControllerImpl getDataSetControllerImplFromVCellSimulationData(File vcellSimLogFile) throws Exception{
 		File primaryDir = vcellSimLogFile.getParentFile();
-		return new DataSetControllerImpl(new Cachetable(Cachetable.minute*10),primaryDir,primaryDir);
+		return new DataSetControllerImpl(new Cachetable(Cachetable.minute*10,1000000L),primaryDir,primaryDir);
 	}
 
 	public static FRAPData importFRAPDataFromImageDataSet(ImageDataset imageDataSet){

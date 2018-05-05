@@ -58,7 +58,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     maxJobsPerSite=max-jobs-per-site-not-set \
 	maxOdeJobsPerUser=max-ode-jobs-per-user-not-set \
 	maxPdeJobsPerUser=max-pde-jobs-per-user-not-set \
-    jmsblob_minsize=100000
+    jmsblob_minsize=100000 \
+    simdataCacheSize=simdata-cache-size-not-set
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -80,6 +81,7 @@ ENTRYPOINT java \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
+	-Dvcell.simdataCacheSize="${simdataCacheSize}" \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.parallelDatadir.external="${simdatadir_parallel_external}" \
 	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \

@@ -55,7 +55,7 @@ public class VtkMeshGenerator implements PortableCommand {
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 		VCSimulationDataIdentifier vcdataID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 
-		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
+		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20,1000000L);
 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable,
 				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)),
 				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty)));

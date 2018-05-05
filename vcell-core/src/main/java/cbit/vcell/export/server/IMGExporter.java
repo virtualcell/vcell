@@ -120,7 +120,7 @@ public static void main(String [] args) throws Exception{
 		}
 	}
 	ExportServiceImpl exportServiceImpl = new PrintingExportServiceImpl();
-	Cachetable cachetable = new Cachetable(10*Cachetable.minute);
+	Cachetable cachetable = new Cachetable(10*Cachetable.minute,1000000L);
 	File primaryDir = new File(primaryDirStr);
 	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cachetable,primaryDir,null);
 	DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);

@@ -23,7 +23,7 @@ public class VCellSimReader {
 
 	public static DataSetControllerImpl getDataSetControllerImplFromVCellSimulationData(File vcellSimLogFile) throws Exception{
 		File primaryDir = vcellSimLogFile.getParentFile();
-		return new DataSetControllerImpl(new Cachetable(Cachetable.minute*10),primaryDir,primaryDir);
+		return new DataSetControllerImpl(new Cachetable(Cachetable.minute*10,1000000),primaryDir,primaryDir);
 	}
 
 	public static User getDotUser(){

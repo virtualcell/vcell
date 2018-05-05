@@ -154,8 +154,11 @@ public static void main(java.lang.String[] args) {
 		//
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
- 		
-		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
+		
+        String cacheSize = PropertyLoader.getRequiredProperty(PropertyLoader.simdataCacheSizeProperty);
+		long maxMemSize = Long.parseLong(cacheSize);
+
+		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20, maxMemSize);
 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable, 
 				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)), 
 				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty)));

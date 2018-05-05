@@ -380,7 +380,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 		try {
 			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 			
-			Cachetable cacheTable = new Cachetable(10000);
+			Cachetable cacheTable = new Cachetable(10000,1000000L);
 			DataSetControllerImpl datasetController = new DataSetControllerImpl(cacheTable,simServiceContext.localSimDataDir.getParentFile(), null);
 			simServiceContext.times = datasetController.getDataSetTimes(simServiceContext.vcDataIdentifier);
 			simServiceContext.dataIdentifiers = datasetController.getDataIdentifiers(outputContext, simServiceContext.vcDataIdentifier);
