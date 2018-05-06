@@ -52,7 +52,6 @@ ENTRYPOINT java \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
 	-Dvcell.jms.host.internal="${jmshost_internal}" \
 	-Dvcell.jms.port.internal="${jmsport_internal}" \
-	-Dvcell.jms.restport.internal="${jmsrestport_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
 	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \

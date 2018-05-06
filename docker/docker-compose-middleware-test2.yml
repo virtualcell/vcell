@@ -1,10 +1,10 @@
-version: '3.1'
+version: '3.3'
 services:
   activemq:
     image: webcenter/activemq:5.14.3
     ports:
-      - "61619:61616"
-      - "8164:8161"
+      - "61620:61616"
+      - "8165:8161"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbReq;simJob;workerEvent
       - ACTIVEMQ_STATIC_TOPICS=serviceControl;daemonControl;clientStatus
@@ -20,35 +20,14 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-       placement:
-        constraints:
-          - node.hostname == vcell-docker
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 2500M
-        reservations:
-          cpus: '0.25'
-          memory: 600M
   mongodb:
     image: schaff/vcell-mongo:latest
     ports:
-      - "27020:27017"
+      - "27021:27017"
     networks:
       - vcellnet
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == vcell-docker
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 500M
-        reservations:
-          cpus: '0.25'
-          memory: 50M
-      
 networks:
   vcellnet:

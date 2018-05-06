@@ -176,15 +176,16 @@ current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
-//Get VCell project
-Login to vcell-node1 as user 'vcell'
+Get VCell project, login to vcell-node1 as user 'vcell'
 
 ```bash
+ssh vcell@vcell-node1.cam.uchc.edu
 cd /opt/build
 git clone https://github.com/virtualcell/vcell.git
 cd vcell/docker
-//Run the following bash commands in your terminal
 ```
+
+Run the following bash commands in your terminal (sets the Docker tags to first 7 characters of Git commit hash)
 
 ```bash
 export VCELL_TAG=`git rev-parse HEAD | cut -c -7`

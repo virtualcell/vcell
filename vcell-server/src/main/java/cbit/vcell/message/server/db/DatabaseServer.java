@@ -32,6 +32,7 @@ import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 
 /**
@@ -60,6 +61,8 @@ public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServe
 }
 
 public void init() throws Exception {
+	initControlTopicListener();
+
 	int numDatabaseThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.databaseThreadsProperty, "5"));
 	this.sharedProducerSession = vcMessagingService.createProducerSession();
 	rpcMessageHandler = new VCRpcMessageHandler(databaseServerImpl, VCellQueue.DbRequestQueue);
@@ -85,6 +88,8 @@ public void stopService() {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
+	OperatingSystemInfo.getInstance();
+
 	if (args.length != 0) {
 		System.out.println("Unexpected arguments: " + DatabaseServer.class.getName());
 		System.exit(1);
@@ -93,7 +98,7 @@ public static void main(java.lang.String[] args) {
 	try {
 		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);		
 
-		int serviceOrdinal = 0;
+		int serviceOrdinal = 99;
 		VCMongoMessage.serviceStartup(ServiceName.database, new Integer(serviceOrdinal), args);
 
 		//
@@ -131,7 +136,6 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.mongodbDatabase,
 		PropertyLoader.jmsHostInternal,
 		PropertyLoader.jmsPortInternal,
-		PropertyLoader.jmsRestPortInternal,
 		PropertyLoader.jmsUser,
 		PropertyLoader.jmsPasswordFile,
 		PropertyLoader.jmsBlobMessageUseMongo,

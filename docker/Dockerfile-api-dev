@@ -1,5 +1,5 @@
 FROM schaff/python-copasi-jre:latest
-    
+
 RUN mkdir -p /usr/local/app/lib
 WORKDIR /usr/local/app
 
