@@ -168,7 +168,7 @@ services:
         constraints:
           - node.labels.zone == INTERNAL
   submit:
-    image: "${VCELL_REPO_NAMESPACE}/vcell-master:${VCELL_TAG}"
+    image: "${VCELL_REPO_NAMESPACE}/vcell-submit:${VCELL_TAG}"
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}

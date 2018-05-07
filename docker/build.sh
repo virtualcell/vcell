@@ -371,7 +371,7 @@ case $target in
 		exit $?
 		;;
 	all)
-		build_batch && build_api && build_master && build_db && build_clientgen && build_mongo && build_singularity
+		build_batch && build_api && build_master && build_db && build_sched && build_submit && build_data && build_clientgen && build_mongo && build_singularity
 		exit $?
 		;;
 	*)
