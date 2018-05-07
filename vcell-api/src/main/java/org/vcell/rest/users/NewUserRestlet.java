@@ -72,9 +72,14 @@ public final class NewUserRestlet extends Restlet {
 				response.setEntity(userRep);
 				return;
 				
-			} catch (SQLException | DataAccessException | UseridIDExistsException e) {
+			} catch (SQLException | DataAccessException e) {
 				e.printStackTrace();
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
+				response.setEntity("failed to add user "+newUserInfo.userid+": "+e.getMessage(), MediaType.TEXT_PLAIN);
+				return;
+			} catch (UseridIDExistsException e) {
+				e.printStackTrace();
+				response.setStatus(Status.CLIENT_ERROR_FORBIDDEN);
 				response.setEntity("failed to add user "+newUserInfo.userid+": "+e.getMessage(), MediaType.TEXT_PLAIN);
 				return;
 			}

@@ -1,6 +1,10 @@
-FROM schaff/python-copasi-jre:latest
+FROM openjdk:8u151-jdk-alpine3.7
 
-RUN mkdir -p /usr/local/app/lib
+RUN mkdir -p /usr/local/app && \
+	apk update && \
+    apk add openssh-client && \
+    apk add screen
+
 WORKDIR /usr/local/app
 
 COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
@@ -9,15 +13,10 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./vcell-oracle/target/maven-jars/*.jar \
      ./ojdbc6/src/ojdbc6.jar \
      ./ucp/src/ucp.jar \
-     ./vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar \
-     ./vcell-api/target/maven-jars/*.jar \
      ./lib/
 
-COPY ./pythonScripts ./pythonScripts
-COPY ./vcell-api/docroot ./docroot
-COPY ./vcell-api/webapp ./webapp
-COPY ./vcell-api/keystore_macbook.jks .
-COPY ./docker/vcell-api.log4j.xml .
+
+COPY ./docker/vcell-sched.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \
@@ -26,33 +25,36 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     dbuser="db-user-not-set" \
     jmshost_internal=activemq \
     jmsport_internal=61616 \
-    jmsrestport_internal=8161 \
     jmsuser=clientUser \
-    mongodb_host_internal=mongodb \
-    mongodb_port_internal=27017 \
-    mongodb_database=test \
     jmsblob_minsize=100000 \
-    	smtp_hostname="smtp-host-not-set" \
-	smtp_port="smtp-port-not-set" \
-	smtp_emailaddress="smtp-emailaddress-not-set"
-    
+	mongodb_host_internal=mongodb \
+	mongodb_port_internal=27017 \
+    mongodb_database=test \
+    batchhost="batch-host-not-set" \
+    batchuser="batch-user-not-set" \
+    slurm_partition="slurm-partition-not-set" \
+    maxJobsPerScan=max-jobs-per-scan-not-set \
+	maxOdeJobsPerUser=max-ode-jobs-per-user-not-set \
+	maxPdeJobsPerUser=max-pde-jobs-per-user-not-set \
+	jobMemoryMB=2000
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
-    keystore=/run/secrets/keystorefile \
-    keystorepswdfile=/run/secrets/keystorepswd
+    batchuserkeyfile=/run/secrets/batchuserkeyfile
 
-EXPOSE 8080
 EXPOSE 8000
 
 ENTRYPOINT java \
-    -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
-    -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
+	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
+    -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
-	-Dlog4j.configurationFile=/usr/local/app/vcell-api.log4j.xml \
+	-Dlog4j.configurationFile=/usr/local/app/vcell-sched.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
-	-Dvcell.python.executable=/usr/bin/python \
+	-Dvcell.htc.user="${batchuser}" \
+	-Dvcell.htc.nodelist="${htcnodelist}" \
+	-Dvcell.slurm.partition="${slurm_partition}" \
 	-Dvcell.installDir=/usr/local/app \
 	-Dvcell.server.dbConnectURL="${dburl}" \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
@@ -68,10 +70,9 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
 	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
 	-Dvcell.mongodb.database=${mongodb_database} \
-	-Dvcellapi.keystore.file="${keystore}" \
-	-Dvcellapi.keystore.pswdfile="${keystorepswdfile}" \
-	-Dvcell.smtp.hostName="${smtp_hostname}" \
-	-Dvcell.smtp.port="${smtp_port}" \
-	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
-	-cp "./lib/*" org.vcell.rest.VCellApiMain \
-	/usr/local/app/docroot 8080
+	-Dvcell.server.maxJobsPerScan=${maxJobsPerScan} \
+	-Dvcell.server.maxOdeJobsPerUser=${maxOdeJobsPerUser} \
+	-Dvcell.server.maxPdeJobsPerUser=${maxPdeJobsPerUser} \
+	-Dvcell.limit.jobMemoryMB=${jobMemoryMB} \
+	-cp "./lib/*" cbit.vcell.message.server.dispatcher.SimulationDispatcher \
+	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"

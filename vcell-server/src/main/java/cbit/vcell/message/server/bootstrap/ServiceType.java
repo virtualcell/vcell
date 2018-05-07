@@ -1,11 +1,10 @@
 package cbit.vcell.message.server.bootstrap;
 
-import cbit.vcell.message.VCRpcRequest.RpcServiceType;
-
 public enum ServiceType { 
 	DB ("Db"),	
 	DATA ("Data"),
 	DATAEXPORT ("Exprt"),
+	COMBINEDDATA ("CombinedData"),
 	DISPATCH ("Dsptch"),
 	PBSCOMPUTE ("PbsC"),	// submit everything to PBS
 	LOCALCOMPUTE ("LclC"),   // local pde and ode

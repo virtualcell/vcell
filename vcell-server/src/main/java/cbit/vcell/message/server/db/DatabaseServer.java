@@ -9,11 +9,7 @@
  */
 
 package cbit.vcell.message.server.db;
-import java.lang.management.ManagementFactory;
 import java.util.Date;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
@@ -33,11 +29,10 @@ import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 
 /**
@@ -66,6 +61,8 @@ public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServe
 }
 
 public void init() throws Exception {
+	initControlTopicListener();
+
 	int numDatabaseThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.databaseThreadsProperty, "5"));
 	this.sharedProducerSession = vcMessagingService.createProducerSession();
 	rpcMessageHandler = new VCRpcMessageHandler(databaseServerImpl, VCellQueue.DbRequestQueue);
@@ -91,28 +88,28 @@ public void stopService() {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
-	if (args.length < 1) {
-		System.out.println("Missing arguments: " + DatabaseServer.class.getName() + " serviceOrdinal [logdir]");
+	OperatingSystemInfo.getInstance();
+
+	if (args.length != 0) {
+		System.out.println("Unexpected arguments: " + DatabaseServer.class.getName());
 		System.exit(1);
 	}
 	
 	try {
-		PropertyLoader.loadProperties();
-		
-		int serviceOrdinal = Integer.parseInt(args[0]);
-		String logdir = null;
-		if (args.length > 1) {
-			logdir = args[1];
-		}
-		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DB, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);		
+
+		int serviceOrdinal = 99;
 		VCMongoMessage.serviceStartup(ServiceName.database, new Integer(serviceOrdinal), args);
 
 		//
 		// JMX registration
 		//
-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+//		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+//		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
  				
+		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
+				ServiceType.DB, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+		
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
@@ -126,6 +123,23 @@ public static void main(java.lang.String[] args) {
 	    e.printStackTrace(System.out); 
     }
 }
+
+private static final String REQUIRED_SERVICE_PROPERTIES[] = {
+		PropertyLoader.vcellServerIDProperty,
+		PropertyLoader.installationRoot,
+		PropertyLoader.dbConnectURL,
+		PropertyLoader.dbDriverName,
+		PropertyLoader.dbUserid,
+		PropertyLoader.dbPasswordFile,
+		PropertyLoader.mongodbHostInternal,
+		PropertyLoader.mongodbPortInternal,
+		PropertyLoader.mongodbDatabase,
+		PropertyLoader.jmsHostInternal,
+		PropertyLoader.jmsPortInternal,
+		PropertyLoader.jmsUser,
+		PropertyLoader.jmsPasswordFile,
+		PropertyLoader.jmsBlobMessageUseMongo,
+	};
 
 
 }

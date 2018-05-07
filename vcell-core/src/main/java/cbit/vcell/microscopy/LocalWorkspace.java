@@ -122,7 +122,7 @@ public class LocalWorkspace {
 	public DataSetControllerImpl getDataSetControllerImpl() throws FileNotFoundException{ 
 		if (dataSetControllerImpl==null){
 			File rootDir = new File(getDefaultWorkspaceDirectory());
-			dataSetControllerImpl = new DataSetControllerImpl(new Cachetable(10000),rootDir,rootDir);
+			dataSetControllerImpl = new DataSetControllerImpl(new Cachetable(10000,1000000L),rootDir,rootDir);
 		}
 		return dataSetControllerImpl;
 	}

@@ -4457,7 +4457,7 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			SimDataBlock simDataBlock = null;
 			if (dataCachingEnabled && chomboExtrapolatedValuesCache == null)
 			{
-				chomboExtrapolatedValuesCache = new Cachetable(MessageConstants.MINUTE_IN_MS * 10);
+				chomboExtrapolatedValuesCache = new Cachetable(MessageConstants.MINUTE_IN_MS * 10,1000000L);
 			}
 			simDataBlock = chomboExtrapolatedValuesCache.get(pdeDataInfo);
 			if (simDataBlock == null) {

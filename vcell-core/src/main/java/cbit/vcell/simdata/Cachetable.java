@@ -45,32 +45,7 @@ public class Cachetable implements Pingable {
  * This method was created in VisualAge.
  * @param expireTime long
  */
-public Cachetable(long expireTime) {
-	this(expireTime,0);
-}
-/**
- * This method was created in VisualAge.
- * @param expireTime long
- */
-private Cachetable(long expireTime, long maxMemSize) {
-	//
-	// if not specified, use half of memory
-	//
-	if (maxMemSize==0){
-		try {
-			String cacheSize = System.getProperty(PropertyLoader.simdataCacheSizeProperty);
-			maxMemSize = Long.parseLong(cacheSize);
-//			System.out.print("SimData cache size="+maxMemSize+" (given by property file)");
-		}catch (Exception e){
-			maxMemSize = Runtime.getRuntime().totalMemory()/4;
-//			System.out.println("SimData cache size="+maxMemSize+" (given by 1/4 of Runtime.getRuntime().totalMemory())");
-		}
-	}else{
-//		System.out.println("SimData cache size="+maxMemSize+" (forced by application)");
-	}
-	
-//	System.out.println(" SimData object expiration="+(expireTime/1000.0)+" seconds");
-	
+public Cachetable(long expireTime, long maxMemSize) {	
 	this.expireTime = expireTime;
 	cleaner = new Ping(this, ((long) (expireTime * 0.75)),"SimResultsCacheReaper");
 	cleaner.start();

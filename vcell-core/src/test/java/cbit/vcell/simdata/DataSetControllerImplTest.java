@@ -35,7 +35,7 @@ public class DataSetControllerImplTest extends TestCase {
 		ResourceUtil.setNativeLibraryDirectory();
 		NativeLib.HDF5.load();
 
-		Cachetable cachetable = new Cachetable(2000);
+		Cachetable cachetable = new Cachetable(2000,1000000L);
 		File resourcesDirectory = new File("src/test/resources/simdata");
 		File primarydir = resourcesDirectory;
 		File secondarydir = resourcesDirectory;

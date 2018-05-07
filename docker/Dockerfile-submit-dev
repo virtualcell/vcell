@@ -1,4 +1,4 @@
-FROM schaff/vtk-openjdk-alpine:latest
+FROM openjdk:8u151-jdk-alpine3.7
 
 RUN mkdir -p /usr/local/app && \
 	apk update && \
@@ -9,22 +9,13 @@ WORKDIR /usr/local/app
 
 COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./vcell-server/target/maven-jars/*.jar \
-     ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
-     ./vcell-oracle/target/maven-jars/*.jar \
-     ./ojdbc6/src/ojdbc6.jar \
-     ./ucp/src/ucp.jar \
      ./lib/
 
 
-COPY ./pythonScripts ./pythonScripts
-COPY ./nativelibs/linux64 ./nativelibs/linux64
-COPY ./docker/vcell-master.log4j.xml .
+COPY ./docker/vcell-submit.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \
-	dburl="db-url-not-set" \
-    dbdriver="db-driver-not-set" \
-    dbuser="db-user-not-set" \
     jmshost_internal=activemq \
     jmsport_internal=61616 \
     jmsrestport_internal=8161 \
@@ -54,19 +45,12 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     slurm_cmd_squeue=squeue \
     slurm_partition=vcell \
     slurm_tmpdir="slurm-tmpdir-not-set" \
-    maxJobsPerScan=max-jobs-per-scan-not-set \
-    maxJobsPerSite=max-jobs-per-site-not-set \
-	maxOdeJobsPerUser=max-ode-jobs-per-user-not-set \
-	maxPdeJobsPerUser=max-pde-jobs-per-user-not-set \
-    jmsblob_minsize=100000 \
-    simdataCacheSize=simdata-cache-size-not-set
+    jmsblob_minsize=100000
 
-ENV dbpswdfile=/run/secrets/dbpswd \
-    jmspswdfile=/run/secrets/jmspswd \
+ENV jmspswdfile=/run/secrets/jmspswd \
     batchuserkeyfile=/run/secrets/batchuserkeyfile
 
 VOLUME /simdata
-VOLUME /exportdir
 VOLUME /htclogs
 
 EXPOSE 8000
@@ -77,16 +61,12 @@ ENTRYPOINT java \
     -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
-	-Dlog4j.configurationFile=/usr/local/app/vcell-master.log4j.xml \
+	-Dlog4j.configurationFile=/usr/local/app/vcell-submit.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
-	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
-	-Dvcell.simdataCacheSize="${simdataCacheSize}" \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.parallelDatadir.external="${simdatadir_parallel_external}" \
 	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \
-	-Dvcell.export.baseDir.internal=/exportdir/ \
-	-Dvcell.export.baseURL="${export_baseurl}" \
 	-Dvcell.htc.user="${batchuser}" \
 	-Dvcell.htc.logdir.internal=/htclogs \
 	-Dvcell.htc.logdir.external="${htclogdir_external}" \
@@ -103,10 +83,6 @@ ENTRYPOINT java \
 	-Dvcell.simulation.preprocessor=JavaPreprocessor64 \
 	-Dvcell.javaSimulation.executable=JavaSimExe64 \
 	-Dvcell.installDir=/usr/local/app \
-	-Dvcell.server.dbConnectURL="${dburl}" \
-	-Dvcell.server.dbDriverName="${dbdriver}" \
-	-Dvcell.server.dbUserid="${dbuser}" \
-	-Dvcell.db.pswdfile="${dbpswdfile}" \
 	-Dvcell.jms.host.internal="${jmshost_internal}" \
 	-Dvcell.jms.port.internal="${jmsport_internal}" \
 	-Dvcell.jms.restport.internal="${jmsrestport_internal}" \
@@ -122,10 +98,5 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.host.external=${mongodb_host_external} \
 	-Dvcell.mongodb.port.external=${mongodb_port_external} \
 	-Dvcell.mongodb.database=${mongodb_database} \
-	-Dvcell.server.maxJobsPerScan=${maxJobsPerScan} \
-	-Dvcell.server.maxJobsPerSite=${maxJobsPerSite} \
-	-Dvcell.server.maxOdeJobsPerUser=${maxOdeJobsPerUser} \
-	-Dvcell.server.maxPdeJobsPerUser=${maxPdeJobsPerUser} \
-	-Dvcell.limit.jobMemoryMB=2000 \
-	-cp "./lib/*" cbit.vcell.message.server.combined.VCellServices \
+	-cp "./lib/*" cbit.vcell.message.server.sim.HtcSimulationWorker \
 	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"

@@ -472,7 +472,7 @@ public class VCellApiClient {
 		return sb.toString().toUpperCase();
 	}
 
-	public UserInfo insertUserInfo(UserInfo newUserInfo) throws ClientProtocolException, IOException {
+	public UserInfo insertUserInfo(UserInfo newUserInfo) throws ClientProtocolException, IOException,IllegalArgumentException {
 		  
 		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/newuser");
 		Gson gson = new Gson();
@@ -496,6 +496,15 @@ public class VCellApiClient {
 						UserInfo userInfo = gson.fromJson(json, UserInfo.class);
 						return userInfo;
 					}
+				} else if(status == HttpStatus.SC_FORBIDDEN){
+					HttpEntity entity = response.getEntity();
+					String message = null;
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						message = reader.lines().collect(Collectors.joining());
+					}
+					final URI uri = httppost.getURI();
+					lg.error("insertUserInfo() ("+uri+") failed: response status: " + status + "\nreason: " + message);
+					throw new IllegalArgumentException("insertUserInfo() failed: response status: " + status + "\nreason: " + message);
 				} else {
 					HttpEntity entity = response.getEntity();
 					String message = null;

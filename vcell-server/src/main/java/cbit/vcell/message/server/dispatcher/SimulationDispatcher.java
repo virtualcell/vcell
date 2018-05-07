@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.message.server.dispatcher;
+import java.io.File;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -26,6 +27,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
@@ -49,8 +54,15 @@ import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
+import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
+import cbit.vcell.message.server.bootstrap.ServiceType;
+import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandServiceLocal;
+import cbit.vcell.message.server.cmd.CommandServiceSshNative;
+import cbit.vcell.message.server.combined.VCellServices;
 import cbit.vcell.message.server.dispatcher.BatchScheduler.WaitingJob;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
@@ -58,10 +70,16 @@ import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
+import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.db.SimulationRequirements;
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
@@ -70,6 +88,7 @@ import cbit.vcell.server.SimulationService;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.AbstractSolver;
 
 /**
  * Insert the type's description here.
@@ -643,6 +662,109 @@ public class SimulationDispatcher extends ServiceProvider {
 
 	public void stopService() {
 	}
+	
+	/**
+	 * Starts the application.
+	 * @param args an array of command-line arguments
+	 */
+	public static void main(java.lang.String[] args) {
+		OperatingSystemInfo.getInstance();
 
+		if (args.length != 3 && args.length != 0) {
+			System.out.println("Missing arguments: " + VCellServices.class.getName() + " [sshHost sshUser sshKeyFile] ");
+			System.exit(1);
+		}
+
+		try {
+			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
+
+			CommandService commandService = null;
+			if (args.length==3){
+				String sshHost = args[0];
+				String sshUser = args[1];
+				File sshKeyFile = new File(args[2]);
+				try {
+					commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile);
+					commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+					lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
+				} catch (Exception e) {
+					if (lg.isDebugEnabled()) lg.debug("SSH Connection test failed with installed keyfile, trying again with installed keyfile", e);
+					try {
+						commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile,new File("/root"));
+						commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+						lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
+					} catch (Exception e2) {
+						lg.error("SSH Connection test failed even after installing keyfile, running ls as user \"+sshUser+\" on \"+sshHost",e2);
+						throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
+					}
+				}
+				AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
+			}else{
+				commandService = new CommandServiceLocal();
+			}
+			BatchSystemType batchSystemType = BatchSystemType.SLURM;
+			HtcProxy htcProxy = null;
+			switch(batchSystemType){
+				case SLURM:{
+					htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
+					break;
+				}
+				default: {
+					throw new RuntimeException("unrecognized batch scheduling option :"+batchSystemType);
+				}
+			}
+
+			int serviceOrdinal = 99;
+			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
+
+//			//
+//			// JMX registration
+//			//
+//			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+//			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+
+			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),
+					ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+
+			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
+			KeyFactory keyFactory = conFactory.getKeyFactory();
+			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
+			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true);
+
+			VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+			vcMessagingService.setDelegate(new ServerMessagingDelegate());
+
+			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, serviceInstanceStatus, simulationDatabase, false);
+
+			simulationDispatcher.init();
+		} catch (Throwable e) {
+			lg.error("uncaught exception initializing SimulationDispatcher: "+e.getLocalizedMessage(), e);
+			System.exit(1);
+		}
+	}
+
+
+	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
+			PropertyLoader.vcellServerIDProperty,
+			PropertyLoader.installationRoot,
+			PropertyLoader.dbConnectURL,
+			PropertyLoader.dbDriverName,
+			PropertyLoader.dbUserid,
+			PropertyLoader.dbPasswordFile,
+			PropertyLoader.mongodbHostInternal,
+			PropertyLoader.mongodbPortInternal,
+			PropertyLoader.mongodbDatabase,
+			PropertyLoader.jmsHostInternal,
+			PropertyLoader.jmsPortInternal,
+			PropertyLoader.jmsUser,
+			PropertyLoader.jmsPasswordFile,
+			PropertyLoader.htcUser,
+			PropertyLoader.jmsBlobMessageUseMongo,
+			PropertyLoader.maxJobsPerScan,
+			PropertyLoader.maxOdeJobsPerUser,
+			PropertyLoader.maxPdeJobsPerUser,
+			PropertyLoader.slurm_partition
+		};
 
 }

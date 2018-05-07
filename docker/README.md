@@ -176,10 +176,33 @@ current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
+Get VCell project, login to vcell-node1 as user 'vcell'
+
 ```bash
-export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff VCELL_TAG=729ebc0
+ssh vcell@vcell-node1.cam.uchc.edu
+cd /opt/build
+git clone https://github.com/virtualcell/vcell.git
+cd vcell/docker
+```
+
+Run the following bash commands in your terminal (sets the Docker tags to first 7 characters of Git commit hash)
+
+```bash
+export VCELL_TAG=`git rev-parse HEAD | cut -c -7`
+export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
+
+//Helper for current install4j VCell software $VCELL_BUILD number, increment version if deploying client, otherwise if server only do not increment version #
+
+```bash
+echo Alpha `curl --silent http://vcell.org/webstart/Alpha/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
+echo Beta `curl --silent http://vcell.org/webstart/Beta/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
+echo Rel `curl --silent http://vcell.org/webstart/Rel/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
+```
+
+//Choose 1 of the following blocks depending on site {Alpha,Beta,Rel}, and set VCELL_BUILD= if necessary, execute all commands in bash
+	increment if pushing new client, otherwise no increment for VCELL_BUILD
 
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
 
@@ -202,7 +225,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=40 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=41 VCELL_SITE=alpha
 export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
@@ -218,8 +241,11 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
-
 using deploy configuration and Docker images, generate client installers and deploy server as a Docker stack in swarm mode.  Note that the Docker and Singularity images and docker-compose.yml file remain independent of the deployed configuration.  Only the final deployed configuration file vcellapi.cam.uchc.edu:/usr/local/deploy/config/$VCELL_CONFIG_FILE_NAME contains server dependencies.  get platform installer from web site (e.g. http://vcell.org/webstart/Test/VCell_Test_macos_7.0.0_7_64bit.dmg)
+
+Choose 1 of the following:
+
+//CLIENT and SERVER deploy commands
 
 ```bash
 ./deploy.sh \
@@ -228,15 +254,17 @@ using deploy configuration and Docker images, generate client installers and dep
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
    vcell${VCELL_SITE}
+```
 
+//SERVER only deploy commands
+
+```bash
 ./deploy.sh \
    --ssh-user vcell --ssh-key ~/.ssh/id_rsa --install-singularity  \
    ${MANAGER_NODE} \
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
    vcell${VCELL_SITE}
-
-
 ```
 
 debug installers on Macos?

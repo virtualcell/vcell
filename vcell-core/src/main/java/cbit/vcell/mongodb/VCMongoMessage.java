@@ -54,6 +54,7 @@ public final class VCMongoMessage {
 		bootstrap,
 		simData,
 		export,
+		combinedData,
 		database,
 		serverManager,
 		solverPreprocessor,
