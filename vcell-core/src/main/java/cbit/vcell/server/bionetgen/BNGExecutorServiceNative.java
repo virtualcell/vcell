@@ -131,6 +131,7 @@ public BNGOutput executeBNG() throws BNGException {
 			timeoutMS = timeoutDurationMS.longValue();
 		}
 		executable = new BioNetGenExecutable(cmd,timeoutMS, workingDir);
+		executable.addEnvironmentVariable("LD_LIBRARY_PATH", "");
 		executable.inheritCallbacks(getCallbacks());
 		int[] expectedReturnCodes = new int[] { 0 };
 		executable.start( expectedReturnCodes ); 
