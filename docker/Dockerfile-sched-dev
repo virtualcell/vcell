@@ -16,7 +16,7 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./lib/
 
 
-COPY ./docker/vcell-master.log4j.xml .
+COPY ./docker/vcell-sched.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \

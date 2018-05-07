@@ -27,7 +27,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     export_baseurl="export-baseurl-not-set" \
     simdatadir_external=/path/to/external/simdata/ \
     jmsblob_minsize=100000 \
-    simdataCacheSize="simdataCacheSize-not-set"
+    simdataCacheSize="simdataCacheSize-not-set" \
     servertype="servertype-not-set"
 
 ENV jmspswdfile=/run/secrets/jmspswd
@@ -48,7 +48,7 @@ ENTRYPOINT java \
 	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
-	-Dvcell.simdataCacheSize="${simdataCacheSize}"
+	-Dvcell.simdataCacheSize="${simdataCacheSize}" \
 	-Dvcell.export.baseDir.internal=/exportdir/ \
 	-Dvcell.export.baseURL="${export_baseurl}" \
 	-Dvcell.installDir=/usr/local/app \

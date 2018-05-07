@@ -688,13 +688,13 @@ public class SimulationDispatcher extends ServiceProvider {
 					commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
 					lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
 				} catch (Exception e) {
-					e.printStackTrace();
+					if (lg.isDebugEnabled()) lg.debug("SSH Connection test failed with installed keyfile, trying again with installed keyfile", e);
 					try {
 						commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile,new File("/root"));
 						commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
 						lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
 					} catch (Exception e2) {
-						e.printStackTrace();
+						lg.error("SSH Connection test failed even after installing keyfile, running ls as user \"+sshUser+\" on \"+sshHost",e2);
 						throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
 					}
 				}
@@ -739,7 +739,8 @@ public class SimulationDispatcher extends ServiceProvider {
 
 			simulationDispatcher.init();
 		} catch (Throwable e) {
-			e.printStackTrace(System.out);
+			lg.error("uncaught exception initializing SimulationDispatcher: "+e.getLocalizedMessage(), e);
+			System.exit(1);
 		}
 	}
 
