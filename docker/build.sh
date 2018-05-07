@@ -12,7 +12,7 @@ mvn_repo=$HOME/.m2
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | master | db | mongo | clientgen | all)"
+	echo "    target                ( batch | api | master | db | sched | submit | mongo | clientgen | all)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
 	echo ""
@@ -134,6 +134,26 @@ build_db() {
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-db:$tag
+	fi
+}
+
+build_sched() {
+	echo "building $repo/vcell-sched:$tag"
+	echo "sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag .."
+	sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	if [ "$skip_push" == "false" ]; then
+		sudo docker push $repo/vcell-sched:$tag
+	fi
+}
+
+build_submit() {
+	echo "building $repo/vcell-submit:$tag"
+	echo "sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag .."
+	sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	if [ "$skip_push" == "false" ]; then
+		sudo docker push $repo/vcell-submit:$tag
 	fi
 }
 
@@ -318,6 +338,14 @@ case $target in
 		;;
 	db)
 		build_db
+		exit $?
+		;;
+	sched)
+		build_sched
+		exit $?
+		;;
+	submit)
+		build_submit
 		exit $?
 		;;
 	mongo)

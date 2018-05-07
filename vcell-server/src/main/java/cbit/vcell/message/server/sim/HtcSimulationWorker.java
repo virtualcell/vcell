@@ -15,14 +15,17 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.util.xml.XmlUtil;
@@ -41,13 +44,24 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
+import cbit.vcell.message.server.bootstrap.ServiceType;
+import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandServiceLocal;
+import cbit.vcell.message.server.cmd.CommandServiceSshNative;
+import cbit.vcell.message.server.combined.VCellServices;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VtkMeshGenerator;
@@ -359,75 +373,111 @@ public void stopService(){
 	super.stopService();
 }
 
-///**
-// * Starts the application.
-// * @param args an array of command-line arguments
-// */
-//public static void main(java.lang.String[] args) {
-//	if (args.length != 3 && args.length != 6) {
-//		System.out.println("Missing arguments: " + HtcSimulationWorker.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE|SLURM) [pbshost userid pswd] ");
-//		System.exit(1);
-//	}
-//
-//	//
-//	// Create and install a security manager
-//	//
-//	try {
-//		PropertyLoader.loadProperties();
-//
-//		int serviceOrdinal = Integer.parseInt(args[0]);
-//		VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
-//		String logdir = args[1];
-//		BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
-//
-//		CommandService commandService = null;
-//		if (args.length==6){
-//			String pbsHost = args[3];
-//			String pbsUser = args[4];
-//			String pbsPswd = args[5];
-//			commandService = new CommandServiceSsh(pbsHost,pbsUser,pbsPswd);
-//			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
-//		}else{
-//			commandService = new CommandServiceLocal();
-//		}
-//		HtcProxy htcProxy = null;
-//		switch(batchSystemType){
-//			case PBS:{
-//				htcProxy = new PbsProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-//				break;
-//			}
-//			case SGE:{
-//				htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-//				break;
-//			}
-//			case SLURM:{
-//				htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-//				break;
-//			}
-//		}
-//
-//		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-//		initLog(serviceInstanceStatus, logdir);
-//
+/**
+ * Starts the application.
+ * @param args an array of command-line arguments
+ */
+public static void main(java.lang.String[] args) {
+	OperatingSystemInfo.getInstance();
+
+	if (args.length != 3 && args.length != 0) {
+		System.out.println("Missing arguments: " + VCellServices.class.getName() + " [sshHost sshUser sshKeyFile] ");
+		System.exit(1);
+	}
+
+	try {
+		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
+
+		CommandService commandService = null;
+		if (args.length==3){
+			String sshHost = args[0];
+			String sshUser = args[1];
+			File sshKeyFile = new File(args[2]);
+			try {
+				commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile);
+				commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+				lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
+			} catch (Exception e) {
+				e.printStackTrace();
+				try {
+					commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile,new File("/root"));
+					commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+					lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
+				} catch (Exception e2) {
+					e.printStackTrace();
+					throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
+				}
+			}
+			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
+		}else{
+			commandService = new CommandServiceLocal();
+		}
+		BatchSystemType batchSystemType = BatchSystemType.SLURM;
+		HtcProxy htcProxy = null;
+		switch(batchSystemType){
+			case SLURM:{
+				htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
+				break;
+			}
+			default: {
+				throw new RuntimeException("unrecognized batch scheduling option :"+batchSystemType);
+			}
+		}
+
+		int serviceOrdinal = 0;
+		VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
+
 //		//
 //		// JMX registration
 //		//
 //		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 //		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
-//
-//        VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
-//
-//		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
-//		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log, false);
-//		simulationWorker.init();
-//
-//	} catch (Throwable e) {
-//		e.printStackTrace(System.out);
-//		VCMongoMessage.sendException(e);
-//		VCMongoMessage.flush();
-//		System.exit(-1);
-//	}
-//}
+
+		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),
+				ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+
+		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		vcMessagingService.setDelegate(new ServerMessagingDelegate());
+
+		HtcSimulationWorker htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, false);
+
+		htcSimulationWorker.init();
+	} catch (Throwable e) {
+		e.printStackTrace(System.out);
+	}
+}
+
+private static final String REQUIRED_SERVICE_PROPERTIES[] = {
+		PropertyLoader.vcellSoftwareVersion,
+		PropertyLoader.primarySimDataDirInternalProperty,
+		PropertyLoader.primarySimDataDirExternalProperty,
+		PropertyLoader.nativeSolverDir_External,
+		PropertyLoader.vcellServerIDProperty,
+		PropertyLoader.installationRoot,
+		PropertyLoader.mongodbHostInternal,
+		PropertyLoader.mongodbPortInternal,
+		PropertyLoader.mongodbHostExternal,
+		PropertyLoader.mongodbPortExternal,
+		PropertyLoader.mongodbDatabase,
+		PropertyLoader.jmsHostInternal,
+		PropertyLoader.jmsPortInternal,
+		PropertyLoader.jmsRestPortInternal,
+		PropertyLoader.jmsHostExternal,
+		PropertyLoader.jmsPortExternal,
+		PropertyLoader.jmsRestPortExternal,
+		PropertyLoader.jmsUser,
+		PropertyLoader.jmsPasswordFile,
+		PropertyLoader.htcUser,
+		PropertyLoader.htcLogDirExternal,
+		PropertyLoader.htcLogDirInternal,
+		PropertyLoader.slurm_tmpdir,
+		PropertyLoader.jmsBlobMessageUseMongo,
+		PropertyLoader.simulationPostprocessor,
+		PropertyLoader.simulationPreprocessor,
+		PropertyLoader.slurm_partition,
+		PropertyLoader.vcellbatch_singularity_image,
+		PropertyLoader.vcellbatch_docker_name
+	};
 
 
 }
