@@ -37,6 +37,7 @@ import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.data.SimDataServer;
+import cbit.vcell.message.server.data.SimDataServer.SimDataServiceType;
 import cbit.vcell.message.server.db.DatabaseServer;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
@@ -106,11 +107,11 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		databaseServer.init();
 
 		ServiceInstanceStatus simDataServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DATA,99,ManageUtils.getHostName(), new Date(), true);
-		simDataServer = new SimDataServer(simDataServiceInstanceStatus,dataServerImpl,vcMessagingService,true);
+		simDataServer = new SimDataServer(simDataServiceInstanceStatus,dataServerImpl,vcMessagingService,SimDataServiceType.SimDataOnly, true);
 		simDataServer.init();
 
 		ServiceInstanceStatus dataExportServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DATAEXPORT,99,ManageUtils.getHostName(), new Date(), true);
-		exportDataServer = new SimDataServer(dataExportServiceInstanceStatus,dataServerImpl,vcMessagingService, true);
+		exportDataServer = new SimDataServer(dataExportServiceInstanceStatus,dataServerImpl,vcMessagingService, SimDataServiceType.ExportDataOnly, true);
 		exportDataServer.init();
 
 		ServiceInstanceStatus htcServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.PBSCOMPUTE,99,ManageUtils.getHostName(), new Date(), true);

@@ -10,11 +10,7 @@
 
 package cbit.vcell.message.server.data;
 import java.io.File;
-import java.lang.management.ManagementFactory;
 import java.util.Date;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.document.VCellServerID;
@@ -39,11 +35,14 @@ import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.LibraryLoaderThread;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.PythonSupport;
+import cbit.vcell.resource.PythonSupport.PythonPackage;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -54,11 +53,19 @@ import cbit.vcell.simdata.DataSetControllerImpl;
  * @author: Jim Schaff
  */
 public class SimDataServer extends ServiceProvider implements ExportListener, DataJobListener {
+	
+	public enum SimDataServiceType {
+		ExportDataOnly,
+		SimDataOnly,
+		CombinedData
+	}
+	
 	private DataServerImpl dataServerImpl = null;
 	private VCQueueConsumer rpcConsumer = null;	
 	private VCRpcMessageHandler rpcMessageHandler = null;
 	private VCPooledQueueConsumer pooledQueueConsumer = null;
 	private VCMessageSession sharedProducerSession = null;
+	private final SimDataServiceType simDataServiceType;
 
 
 /**
@@ -68,9 +75,10 @@ public class SimDataServer extends ServiceProvider implements ExportListener, Da
  * @param log
  * @throws Exception
  */
-public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl dataServerImpl, VCMessagingService vcMessagingService, boolean bSlaveMode) throws Exception {
+public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl dataServerImpl, VCMessagingService vcMessagingService, SimDataServiceType simDataServiceType, boolean bSlaveMode) throws Exception {
 	super(vcMessagingService,serviceInstanceStatus,bSlaveMode);
 	this.dataServerImpl = dataServerImpl;
+	this.simDataServiceType = simDataServiceType;
 }
 
 public void init() throws Exception {
@@ -83,14 +91,27 @@ public void init() throws Exception {
 	VCMessageSelector selector;
 	ServiceType serviceType = serviceInstanceStatus.getType();
 	int numThreads;
-	if (serviceType == ServiceType.DATAEXPORT){
+	switch (simDataServiceType) {
+	case CombinedData: {
+		selector = vcMessagingService.createSelector(dataRequestFilter);
+		int exportThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.exportdataThreadsProperty, "3"));
+		int simdataThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.simdataThreadsProperty, "5"));
+		numThreads = exportThreads + simdataThreads;
+		break;
+	}
+	case ExportDataOnly: {
 		selector = vcMessagingService.createSelector(dataRequestFilter+" AND "+exportOnlyFilter);
 		numThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.exportdataThreadsProperty, "3"));
-	}else if (serviceType == ServiceType.DATA){
+		break;
+	}
+	case SimDataOnly: {
 		selector = vcMessagingService.createSelector(dataRequestFilter+" AND "+dataOnlyFilter);
 		numThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.simdataThreadsProperty, "5"));
-	}else{
+		break;
+	}
+	default: {
 		throw new RuntimeException("expecting either Service type of "+ServiceType.DATA+" or "+ServiceType.DATAEXPORT);
+	}
 	}
 
 	this.sharedProducerSession = vcMessagingService.createProducerSession();
@@ -115,53 +136,64 @@ public void stopService() {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
-	if (args.length < 1) {
-		System.out.println("Missing arguments: " + SimDataServer.class.getName() + " serviceOrdinal [EXPORTONLY] [logdir]");
+	OperatingSystemInfo.getInstance();
+
+	if (args.length != 1) {
+		System.out.println("Missing arguments: " + SimDataServer.class.getName() + " (CombinedData | ExportDataOnly | SimDataOnly)");
 		System.exit(1);
 	}
 	
 	try {
-		PropertyLoader.loadProperties();
+		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
+		ResourceUtil.setNativeLibraryDirectory();
+		new LibraryLoaderThread(false).start( );
+
+		PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.VTK, PythonPackage.THRIFT});
+
+		int serviceOrdinal = 99;
 		
-		int serviceOrdinal = Integer.parseInt(args[0]);		
-		String logdir = null;
-		boolean bExportOnly = false;	
-		if (args.length > 1) {
-			if (args[1].equalsIgnoreCase("EXPORTONLY")) {
-				bExportOnly = true;
-				VCMongoMessage.serviceStartup(ServiceName.export, new Integer(serviceOrdinal), args);
-				if (args.length > 2) {	
-					logdir = args[2];
-				}
-			} else {
-				VCMongoMessage.serviceStartup(ServiceName.simData, new Integer(serviceOrdinal), args);
-				logdir = args[1];
-			}
+		SimDataServiceType simDataServiceType = SimDataServiceType.valueOf(args[0]);
+		if (simDataServiceType==null) {
+			throw new RuntimeException("expecting argument (CombinedData | ExportDataOnly | SimDataOnly)");
 		}
-		ServiceInstanceStatus serviceInstanceStatus = null;
-		ServiceName serviceName = null;
-		if (bExportOnly){
+		final ServiceInstanceStatus serviceInstanceStatus;
+		final ServiceName serviceName;
+		switch (simDataServiceType) {
+		case ExportDataOnly: {
 			serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DATAEXPORT, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 			serviceName = ServiceName.export;
-		}else{
+			break;
+		}
+		case SimDataOnly: {
 			serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DATA, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 			serviceName = ServiceName.simData;
+			break;
 		}
+		case CombinedData: {
+			serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.COMBINEDDATA, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+			serviceName = ServiceName.combinedData;
+			break;
+		}
+		default: {
+			throw new RuntimeException("unexpected SimDataServiceType "+simDataServiceType);
+		}
+		}
+
 		VCMongoMessage.serviceStartup(serviceName, new Integer(serviceOrdinal), args);
 
-		//
-		// JMX registration
-		//
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+//		//
+//		// JMX registration
+//		//
+//        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+//        mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
 		
-        String cacheSize = PropertyLoader.getRequiredProperty(PropertyLoader.simdataCacheSizeProperty);
+		String cacheSize = PropertyLoader.getRequiredProperty(PropertyLoader.simdataCacheSizeProperty);
 		long maxMemSize = Long.parseLong(cacheSize);
 
-		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20, maxMemSize);
-		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable, 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)), 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty)));
+		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20,maxMemSize);
+		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable,
+				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)),
+				new File(PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty))));
 		
 		ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 		
@@ -170,7 +202,7 @@ public static void main(java.lang.String[] args) {
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
 		vcMessagingService.setDelegate(new ServerMessagingDelegate());
 		
-        SimDataServer simDataServer = new SimDataServer(serviceInstanceStatus, dataServerImpl, vcMessagingService, false);
+        SimDataServer simDataServer = new SimDataServer(serviceInstanceStatus, dataServerImpl, vcMessagingService, simDataServiceType, false);
         //add dataJobListener
         dataSetControllerImpl.addDataJobListener(simDataServer);
         // add export listener
@@ -220,5 +252,24 @@ public void exportMessage(cbit.rmi.event.ExportEvent event) {
 		lg.error(ex.getMessage(), ex);
 	}
 }
+
+private static final String REQUIRED_SERVICE_PROPERTIES[] = {
+		PropertyLoader.primarySimDataDirInternalProperty,
+		PropertyLoader.primarySimDataDirExternalProperty,
+		PropertyLoader.vcellServerIDProperty,
+		PropertyLoader.installationRoot,
+		PropertyLoader.mongodbHostInternal,
+		PropertyLoader.mongodbPortInternal,
+		PropertyLoader.mongodbDatabase,
+		PropertyLoader.jmsHostInternal,
+		PropertyLoader.jmsPortInternal,
+		PropertyLoader.jmsUser,
+		PropertyLoader.jmsPasswordFile,
+		PropertyLoader.pythonExe,
+		PropertyLoader.jmsBlobMessageUseMongo,
+		PropertyLoader.exportBaseURLProperty,
+		PropertyLoader.exportBaseDirInternalProperty,
+		PropertyLoader.simdataCacheSizeProperty
+	};
 
 }

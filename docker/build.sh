@@ -12,7 +12,7 @@ mvn_repo=$HOME/.m2
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | master | db | sched | submit | mongo | clientgen | all)"
+	echo "    target                ( batch | api | master | db | sched | submit | data | mongo | clientgen | all)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
 	echo ""
@@ -154,6 +154,16 @@ build_submit() {
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-submit:$tag
+	fi
+}
+
+build_data() {
+	echo "building $repo/vcell-data:$tag"
+	echo "sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag .."
+	sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	if [ "$skip_push" == "false" ]; then
+		sudo docker push $repo/vcell-data:$tag
 	fi
 }
 
@@ -346,6 +356,10 @@ case $target in
 		;;
 	submit)
 		build_submit
+		exit $?
+		;;
+	data)
+		build_data
 		exit $?
 		;;
 	mongo)

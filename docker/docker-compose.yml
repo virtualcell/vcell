@@ -107,7 +107,7 @@ services:
       - mongodb
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 0
       resources:
         limits:
           memory: 3000M
@@ -263,6 +263,47 @@ services:
           memory: 500M
         reservations:
           memory: 500M
+  data:
+    image: "${VCELL_REPO_NAMESPACE}/vcell-data:${VCELL_TAG}"
+    environment:
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
+      - export_baseurl=${VCELL_EXPORT_BASEURL}
+
+      - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
+
+      - jmsuser=clientUser
+      - jmshost_internal=activemq
+      - jmsport_internal=61616
+      - jmsrestport_internal=8161
+      - mongodb_host_internal=mongodb
+      - mongodb_port_internal=27017
+      - mongodb_database=test
+
+      - servertype=CombinedData
+    ports:
+      - "8000" # java remote debugging
+    volumes:
+      - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_EXPORTDIR_HOST}:/exportdir"
+    secrets:
+      - jmspswd
+    networks:
+      - vcellnet
+    depends_on:
+      - activemq
+      - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 3000M
+        reservations:
+          memory: 3000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   activemq:
     image: webcenter/activemq:5.14.3
     ports:
