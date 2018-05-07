@@ -181,6 +181,7 @@ Get VCell project, login to vcell-node1 as user 'vcell'
 ```bash
 ssh vcell@vcell-node1.cam.uchc.edu
 cd /opt/build
+rm -rf vcell (if necessary)
 git clone https://github.com/virtualcell/vcell.git
 cd vcell/docker
 ```
@@ -201,7 +202,7 @@ echo Beta `curl --silent http://vcell.org/webstart/Beta/updates.xml | xmllint --
 echo Rel `curl --silent http://vcell.org/webstart/Rel/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
 ```
 
-//Choose 1 of the following blocks depending on site {Alpha,Beta,Rel}, and set VCELL_BUILD= if necessary, execute all commands in bash
+//Choose 1 of the following blocks depending on site {Alpha,Beta,Rel}, and set VCELL_BUILD= if necessary (deploying client), execute all commands in bash
 	increment if pushing new client, otherwise no increment for VCELL_BUILD
 
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
@@ -225,7 +226,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=41 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=42 VCELL_SITE=alpha
 export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
@@ -245,7 +246,7 @@ using deploy configuration and Docker images, generate client installers and dep
 
 Choose 1 of the following:
 
-//CLIENT and SERVER deploy commands
+//CLIENT and SERVER deploy commands (may request password at some point)
 
 ```bash
 ./deploy.sh \
@@ -256,7 +257,7 @@ Choose 1 of the following:
    vcell${VCELL_SITE}
 ```
 
-//SERVER only deploy commands
+//SERVER only deploy commands (may request password at some point)
 
 ```bash
 ./deploy.sh \
