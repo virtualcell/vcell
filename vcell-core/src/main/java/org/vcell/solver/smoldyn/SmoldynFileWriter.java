@@ -435,7 +435,6 @@ private void writeSimulationSettings() {
 	SmoldynSimulationOptions smoldynSimulationOptions = simulation.getSolverTaskDescription().getSmoldynSimulationOptions();
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.accuracy + " " + smoldynSimulationOptions.getAccuracy());
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.gauss_table_size + " " + smoldynSimulationOptions.getGaussianTableSize());
-
 	printWriter.println();
 }
 
@@ -1258,7 +1257,14 @@ private void writeSimulationTimes() {
 	printWriter.println("# simulation times");
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_start + " " + timeBounds.getStartingTime());
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_stop + " " + timeBounds.getEndingTime());
-	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_step + " " + timeStep.getDefaultTimeStep());
+	MathDescription md = simulation.getMathDescription();
+	if(md.isSpatialHybrid()) {
+		SmoldynSimulationOptions smoldynSimulationOptions = simulation.getSolverTaskDescription().getSmoldynSimulationOptions();
+		double ts = timeStep.getDefaultTimeStep() * (double)smoldynSimulationOptions.getSmoldynStepMultiplier();
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_step + " " + ts);
+	} else {
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_step + " " + timeStep.getDefaultTimeStep());
+	}
 	printWriter.println();
 }
 

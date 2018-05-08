@@ -238,6 +238,8 @@ public class VCML {
 	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
+	public final static String SmoldynSimulationOptions_stepMultiplier	= "SmoldynStepMultiplier";
+	@Deprecated
 	public final static String SmoldynSimulationOptions_innerStep	= "InnerStep";
 	public final static String SmoldynSimulationOptions_gaussianTableSize	= "gaussianTableSize";
 	public final static String SmoldynSimulationOptions_boxSize	= "BoxSize";

@@ -43,12 +43,12 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 	private JCheckBox saveParticleLocationsCheckBox;
 	private JTextField randomSeedTextField;
 	private JTextField accuracyTextField = null;
-	private JTextField innerStepTextField = null;
+	private JTextField smoldynStepMultiplierTextField = null;
 	private JTextField gaussianTableSizeTextField;
 	private SolverTaskDescription solverTaskDescription = null;	
 	private JButton randomSeedHelpButton = null;
 	private JButton accuracyHelpButton = null;
-	private JButton innerStepHelpButton = null;
+	private JButton smoldynStepMultiplierHelpButton = null;
 	private JButton gaussianTableSizeHelpButton = null;
 	private int lastUserEnteredSeed = 0;
 	
@@ -70,10 +70,10 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 						"virtual box when accuracy is 0 to 2.99, reactants in nearest neighboring boxes " +
 						"are considered as well when accuracy is 3 to 6.99, and reactants in all types of " +
 						"neighboring boxes are checked when accuracy is 7 to 10.</html>");
-			} else if (source == innerStepHelpButton) {
-				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Inner Step", "<html>Inner Step <i>integer</i> " +
-						"<br>A parameter that determines the inner step of the simulation, as an integer. " +
-						"Low values are less accurate but run faster.  Default value is 1, for default time step. " +
+			} else if (source == smoldynStepMultiplierHelpButton) {
+				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Step Multiplier", "<html>Step Multiplier <i>integer</i> " +
+						"<br>A parameter that determines the time step multiplier of the Smoldyn simulation, as an integer. " +
+						"High values are less accurate but run faster.  Default value is 1, for default time step. " +
 						"</html>");
 //			} else if (source == molPerBoxHelpButton) {
 //				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "<html>molperbox <i>float</i> " +
@@ -118,8 +118,8 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			if (e.getSource() == accuracyTextField) {
 				setNewAccuracy();
 			}
-			if (e.getSource() == innerStepTextField) {
-				setNewInnerStep();
+			if (e.getSource() == smoldynStepMultiplierTextField) {
+				setSmoldynStepMultiplier();
 			}
 			if (e.getSource() == gaussianTableSizeTextField) {
 				setNewGaussianTableSize();
@@ -145,14 +145,14 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		randomSeedTextField = new JTextField();
 		JLabel accuracyLabel = new JLabel("accuracy");
 		accuracyTextField = new JTextField();		
-		innerStepTextField = new JTextField();		
+		smoldynStepMultiplierTextField = new JTextField();		
 	
 		JLabel gaussianTableSizeLabel = new JLabel("gauss table size");
 		gaussianTableSizeTextField = new JTextField();
 		
 		randomSeedHelpButton = new JButton(" ? ");
 		accuracyHelpButton = new JButton(" ? ");
-		innerStepHelpButton = new JButton(" ? ");
+		smoldynStepMultiplierHelpButton = new JButton(" ? ");
 		gaussianTableSizeHelpButton = new JButton(" ? ");
 		Font font = randomSeedHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
@@ -160,8 +160,8 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		randomSeedHelpButton.setBorder(border);
 		accuracyHelpButton.setFont(font);
 		accuracyHelpButton.setBorder(border);
-		innerStepHelpButton.setFont(font);
-		innerStepHelpButton.setBorder(border);
+		smoldynStepMultiplierHelpButton.setFont(font);
+		smoldynStepMultiplierHelpButton.setBorder(border);
 		gaussianTableSizeHelpButton.setFont(font);
 		gaussianTableSizeHelpButton.setBorder(border);
 		
@@ -259,14 +259,14 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(0, 0, 0, 0);
-		getContentPanel().add(new JLabel("inner step "), gbc);
+		getContentPanel().add(new JLabel("step multiplier "), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(innerStepHelpButton, gbc);
+		getContentPanel().add(smoldynStepMultiplierHelpButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
@@ -274,7 +274,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		getContentPanel().add(innerStepTextField, gbc);		
+		getContentPanel().add(smoldynStepMultiplierTextField, gbc);		
 
 }
 	
@@ -282,14 +282,14 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		randomSeedCheckBox.addActionListener(ivjEventHandler);
 		randomSeedTextField.addFocusListener(ivjEventHandler);
 		accuracyTextField.addFocusListener(ivjEventHandler);		
-		innerStepTextField.addFocusListener(ivjEventHandler);		
+		smoldynStepMultiplierTextField.addFocusListener(ivjEventHandler);		
 		gaussianTableSizeTextField.addFocusListener(ivjEventHandler);
 		highResCheckBox.addActionListener(ivjEventHandler);
 		saveParticleLocationsCheckBox.addActionListener(ivjEventHandler);
 		
 		randomSeedHelpButton.addActionListener(ivjEventHandler);
 		accuracyHelpButton.addActionListener(ivjEventHandler);
-		innerStepHelpButton.addActionListener(ivjEventHandler);
+		smoldynStepMultiplierHelpButton.addActionListener(ivjEventHandler);
 		gaussianTableSizeHelpButton.addActionListener(ivjEventHandler);
 	}
 	
@@ -336,7 +336,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		
 			gaussianTableSizeTextField.setText("" + smoldynSimulationOptions.getGaussianTableSize());
 			accuracyTextField.setText("" + smoldynSimulationOptions.getAccuracy());
-			innerStepTextField.setText("" + smoldynSimulationOptions.getInnerStep());
+			smoldynStepMultiplierTextField.setText("" + smoldynSimulationOptions.getSmoldynStepMultiplier());
 		}
 	}
 	
@@ -353,18 +353,18 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			return;
 		}
 	}
-	private void setNewInnerStep(){
+	private void setSmoldynStepMultiplier(){
 		if(!isVisible()){
 			return;
 		}
 		try {
-			int innerStep = Integer.parseInt(innerStepTextField.getText());
-			if(innerStep < 1) {
-				DialogUtils.showErrorDialog(this, "Inner Step must be a greater than zero integer.");
+			int smoldynStepMultiplier = Integer.parseInt(smoldynStepMultiplierTextField.getText());
+			if(smoldynStepMultiplier < 1) {
+				DialogUtils.showErrorDialog(this, "Smoldyn Step Multiplier must be a greater than zero integer.");
 			}
-			solverTaskDescription.getSmoldynSimulationOptions().setInnerStep(innerStep);
+			solverTaskDescription.getSmoldynSimulationOptions().setSmoldynStepMultiplier(smoldynStepMultiplier);
 		} catch (NumberFormatException ex) {
-			DialogUtils.showErrorDialog(this, "Wrong number format inner step: " + ex.getMessage());
+			DialogUtils.showErrorDialog(this, "Wrong number format for Smoldyn Step Multiplier: " + ex.getMessage());
 			return;
 		}
 	}

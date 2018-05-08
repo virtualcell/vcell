@@ -30,7 +30,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 
 	private Integer randomSeed = null;
 	private double accuracy = 10.0;
-	private int innerStep = 1;
+	private int smoldynStepMultiplier = 1;
 	private int gaussianTableSize = 4096;
 	private boolean useHighResolutionSample = true;
 	private boolean saveParticleLocations = false;
@@ -40,7 +40,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 	
 	public static final String PROPERTY_NAME_RANDOM_SEED = "randomSeed";
 	public static final String PROPERTY_NAME_ACCURACY = "accuracy";
-	public static final String PROPERTY_NAME_INNERSTEP = "innerStep";
+	public static final String PROPERTY_NAME_SMOLDYNSTEPMULTIPLIER = "smoldynStepMultiplier";
 	public static final String PROPERTY_NAME_GAUSSIAN_TABLE_SIZE = "gaussianTableSize";
 	public static final String PROPERTY_NAME_USE_HIGH_RES = "useHighResolutionSample";
 	public static final String PROPERTY_NAME_SAVE_PARTICLE_LOCS = "saveParticleLocations";
@@ -58,7 +58,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 		if (smoldynSimulationOptions != null) {
 			randomSeed = smoldynSimulationOptions.randomSeed;
 			accuracy = smoldynSimulationOptions.accuracy;
-			innerStep = smoldynSimulationOptions.innerStep;
+			smoldynStepMultiplier = smoldynSimulationOptions.smoldynStepMultiplier;
 			gaussianTableSize = smoldynSimulationOptions.gaussianTableSize;
 			useHighResolutionSample = smoldynSimulationOptions.useHighResolutionSample;
 			saveParticleLocations = smoldynSimulationOptions.saveParticleLocations;
@@ -99,7 +99,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 		if (accuracy != smoldynSimulationOptions.accuracy) {
 			return false;
 		}
-		if (innerStep != smoldynSimulationOptions.innerStep) {
+		if (smoldynStepMultiplier != smoldynSimulationOptions.smoldynStepMultiplier) {
 			return false;
 		}
 		if (gaussianTableSize != smoldynSimulationOptions.gaussianTableSize) {
@@ -134,14 +134,14 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 		firePropertyChange(PROPERTY_NAME_ACCURACY, oldValue, newValue);
 	}
 
-	public final int getInnerStep() {
-		return innerStep;
+	public final int getSmoldynStepMultiplier() {
+		return smoldynStepMultiplier;
 	}
 
-	public final void setInnerStep(int newValue) {
-		int oldValue = this.innerStep;		
-		this.innerStep = newValue;
-		firePropertyChange(PROPERTY_NAME_INNERSTEP, oldValue, newValue);
+	public final void setSmoldynStepMultiplier(int newValue) {
+		int oldValue = this.smoldynStepMultiplier;		
+		this.smoldynStepMultiplier = newValue;
+		firePropertyChange(PROPERTY_NAME_SMOLDYNSTEPMULTIPLIER, oldValue, newValue);
 	}
 
 	public int getGaussianTableSize() {
@@ -195,12 +195,13 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 			buffer.append("\t\t" + VCML.SmoldynSimulationOptions_randomSeed + " " + randomSeed + "\n");			
 		}
 		buffer.append("\t\t" + VCML.SmoldynSimulationOptions_saveParticleLocations + " " + saveParticleLocations + "\n");
-		buffer.append("\t\t" + VCML.SmoldynSimulationOptions_innerStep + " " + innerStep + "\n");
+		buffer.append("\t\t" + VCML.SmoldynSimulationOptions_stepMultiplier + " " + smoldynStepMultiplier + "\n");
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		
 		return buffer.toString();
 	}
 	
+	@SuppressWarnings("deprecation")
 	private void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 		String token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions)) {
@@ -209,7 +210,6 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 				throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
 			}
 		}
-		
 		while (tokens.hasMoreTokens()) {
 			token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
@@ -230,9 +230,11 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions_saveParticleLocations)) {
 				token = tokens.nextToken();
 				saveParticleLocations = Boolean.parseBoolean(token);
-			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions_innerStep)) {
+			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions_stepMultiplier)) {
 					token = tokens.nextToken();
-					innerStep = Integer.parseInt(token);
+					smoldynStepMultiplier = Integer.parseInt(token);
+			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions_innerStep)) {
+				;		// consume it and do nothing
 			}  else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}

@@ -121,6 +121,7 @@ import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -252,6 +253,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		REFINEMENTS,
 		REFINEMENT_ROIS,
 		CHOMBO_SPEC_END,
+		SMOLDYN_STEP_MULTIPLIER,
 	}
 
 public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File workingDir) {	// for optimization only, no messaging
@@ -1411,6 +1413,13 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 		}
 		printWriter.println(FVInputFileKeyword.KEEP_EVERY + " " +  keepEvery);
   }
+	
+	MathDescription md = simulation.getMathDescription();
+	if(md.isSpatialHybrid()) {
+		SmoldynSimulationOptions smoldynSimulationOptions = simulation.getSolverTaskDescription().getSmoldynSimulationOptions();
+		printWriter.println(FVInputFileKeyword.SMOLDYN_STEP_MULTIPLIER + " " + smoldynSimulationOptions.getSmoldynStepMultiplier());
+	}
+
   ErrorTolerance stopAtSpatiallyUniformErrorTolerance = solverTaskDesc.getStopAtSpatiallyUniformErrorTolerance();
 	if (stopAtSpatiallyUniformErrorTolerance != null) {
   	printWriter.println(FVInputFileKeyword.CHECK_SPATIALLY_UNIFORM + " " + stopAtSpatiallyUniformErrorTolerance.getAbsoluteErrorTolerance() 
