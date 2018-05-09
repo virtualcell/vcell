@@ -210,7 +210,8 @@ public static void main(java.lang.String[] args) {
         
         simDataServer.init();
     } catch (Throwable e) {
-        e.printStackTrace(System.out);
+		lg.error("uncaught exception initializing SimDataServer: "+e.getLocalizedMessage(), e);
+		System.exit(1);
     }
 }
 

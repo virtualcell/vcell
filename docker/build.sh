@@ -12,7 +12,7 @@ mvn_repo=$HOME/.m2
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | master | db | sched | submit | data | mongo | clientgen | all)"
+	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | all)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
 	echo ""
@@ -117,15 +117,15 @@ build_clientgen() {
 	fi
 }
 
-build_master() {
-	echo "building $repo/vcell-master:$tag"
-	echo "sudo docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag .."
-	sudo docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag ..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
-	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-master:$tag
-	fi
-}
+# build_master() {
+# 	echo "building $repo/vcell-master:$tag"
+# 	echo "sudo docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag .."
+# 	sudo docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag ..
+# 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+# 	if [ "$skip_push" == "false" ]; then
+# 		sudo docker push $repo/vcell-master:$tag
+# 	fi
+# }
 
 build_db() {
 	echo "building $repo/vcell-db:$tag"
@@ -342,10 +342,10 @@ case $target in
 		build_api
 		exit $?
 		;;
-	master)
-		build_master
-		exit $?
-		;;
+	# master)
+	# 	build_master
+	# 	exit $?
+	# 	;;
 	db)
 		build_db
 		exit $?
@@ -371,6 +371,7 @@ case $target in
 		exit $?
 		;;
 	all)
+		# build_batch && build_api && build_master && build_db && build_sched && build_submit && build_data && build_clientgen && build_mongo && build_singularity
 		build_batch && build_api && build_master && build_db && build_sched && build_submit && build_data && build_clientgen && build_mongo && build_singularity
 		exit $?
 		;;

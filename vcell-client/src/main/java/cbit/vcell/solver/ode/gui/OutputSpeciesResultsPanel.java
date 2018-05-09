@@ -470,7 +470,12 @@ public OutputSpeciesResultsPanel(ODEDataViewer owner) {
 
 private GeneratedSpeciesTableRow createTableRow(String expression, Integer count) {
 	GeneratedSpeciesTableRow row = new GeneratedSpeciesTableRow(count);
-	row.deriveSpecies(expression);
+	try {
+		row.deriveSpecies(expression);
+	}catch (Exception e) {
+		e.printStackTrace();
+		row.expression = expression;
+	}
 	return row;
 }
 
