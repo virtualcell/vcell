@@ -1417,7 +1417,9 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	MathDescription md = simulation.getMathDescription();
 	if(md.isSpatialHybrid()) {
 		SmoldynSimulationOptions smoldynSimulationOptions = simulation.getSolverTaskDescription().getSmoldynSimulationOptions();
-		printWriter.println(FVInputFileKeyword.SMOLDYN_STEP_MULTIPLIER + " " + smoldynSimulationOptions.getSmoldynStepMultiplier());
+		if(smoldynSimulationOptions != null && smoldynSimulationOptions.getSmoldynStepMultiplier() > 1) {
+			printWriter.println(FVInputFileKeyword.SMOLDYN_STEP_MULTIPLIER + " " + smoldynSimulationOptions.getSmoldynStepMultiplier());
+		}
 	}
 
   ErrorTolerance stopAtSpatiallyUniformErrorTolerance = solverTaskDesc.getStopAtSpatiallyUniformErrorTolerance();
