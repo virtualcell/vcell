@@ -164,9 +164,6 @@ services:
           memory: 500M
         reservations:
           memory: 500M
-      placement:
-        constraints:
-          - node.labels.zone == INTERNAL
   submit:
     image: "${VCELL_REPO_NAMESPACE}/vcell-submit:${VCELL_TAG}"
     environment:

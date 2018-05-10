@@ -2,186 +2,34 @@
 
 import sys, os, paramiko, argparse, traceback, logging
 
-
-
+# class slurm_job:
+#     fields = {
+#         "jobid": None,
+#         "name": None,
+#         "state": None,
+#         "submit_time": None,
+#         "start_time": None,
+#         "exec_host": None,
+#         "reason": None
+#     }
 #
-# SSH Helper Class
-#
+# class vcell_job:
+#     fields = {
+#         "owner_userid": None,
+#         "slurm_name": None,
+#         "simulationKey": None,
+#         "jobIndex": None,
+#         "taskID": None,
+#         "schedulerStatus": None,
+#         "hasData": None,
+#         "vcellServerID": None,
+#         "queueDate": None,
+#         "simexe_startDate": None,
+#         "simexe_latestUpdateDate": None,
+#         "computeHost": None,
+#         "detailedStateMessage": None
+#     }
 
-class ssh:
-    client = None
-    address = None
-    logger = None
-
-    def __init__(self, address, username):
-        assert isinstance(address, str)
-        assert isinstance(username, str)
-        self.address = address
-        self.logger = logging.getLogger("paramiko")
-        self.logger.info("======== Connecting to " + address + " as user " + username + " ========")
-
-        self.client = paramiko.client.SSHClient()
-        self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
-
-        key_path_dsa = os.path.join(os.path.expanduser("~"), ".ssh", "schaff_dsa")
-        key_path_rsa = os.path.join(os.path.expanduser("~"), ".ssh", "schaff_rsa")
-        if os.path.isfile(key_path_dsa):
-            # look for an alternative DSA key file before trying default ~/.ssh/id_rsa
-            k = paramiko.DSSKey.from_private_key_file(key_path_dsa)
-            self.client.connect(address, username=username, pkey=k)
-        elif os.path.isfile(key_path_rsa):
-            # look for an alternative RSA key file before trying default ~/.ssh/id_rsa
-            k = paramiko.RSAKey.from_private_key_file(key_path_rsa)
-            self.client.connect(address, username=username, pkey=k)
-        else:
-            # try ~/.ssh/id_rsa
-            self.client.connect(address, username=username, look_for_keys=True)
-
-    def sendCommand(self, command):
-        if (self.client != None):
-            self.logger.info("=== command: " + command)
-            stdin, stdout, stderr = self.client.exec_command(command)
-            alldata = ''
-            while not stdout.channel.exit_status_ready():
-                alldata += stdout.channel.recv(1024)
-                while stdout.channel.recv_ready():
-                    alldata += stdout.channel.recv(1024)
-
-            exitStatus = stdout.channel.recv_exit_status()
-            self.logger.info("=== retcode: " + str(exitStatus))
-            self.logger.info("=== stdout: " + str(alldata))
-            return exitStatus, str(alldata)
-        else:
-            raise RuntimeError("Connection not opened")
-
-    def close(self):
-        if (self.client != None):
-            self.client.close()
-            self.logger.info("======== Closing connection to " + self.address + " ========")
-
-
-
-class Dockerservice:
-    user = None
-    name = None
-    host = None
-    container_name = None
-    env = None
-    ports = None
-    volumes = None
-    image_name = None
-
-    def __init__(self, user, name, host, container_name, env, ports, volumes, image_name):
-        assert isinstance(user, str)
-        assert isinstance(name, str)
-        assert isinstance(host, str)
-        assert isinstance(container_name, str)
-        assert isinstance(env, dict)
-        assert isinstance(ports, dict)
-        assert isinstance(volumes, dict)
-        assert isinstance(image_name, str)
-        self.user = user
-        self.name = name
-        self.host = host
-        self.container_name = container_name
-        self.env = env
-        self.ports = ports
-        self.volumes = volumes
-        self.image_name = image_name
-
-    def start(self):
-        cmd = 'bash -l -c "sudo docker container start ' + self.container_name + '"'
-        connection = None
-        try:
-            connection = ssh(self.host, self.user)
-            retcode, stdout = connection.sendCommand(cmd)
-            if retcode != 0:
-                raise RuntimeError(
-                    "docker container start failed: {0}: ret={1}, stdout=\'{2}\'".format(self.container_name,
-                                                                                         str(retcode), str(stdout)))
-            print ("started docker container " + self.container_name + " on " + self.host)
-        finally:
-            if connection is not None:
-                connection.close()
-
-    def stop(self):
-        cmd = 'bash -l -c "sudo docker container stop ' + self.container_name + '"'
-        connection = None
-        try:
-            connection = ssh(self.host, self.user)
-            retcode, stdout = connection.sendCommand(cmd)
-            if retcode != 0:
-                raise RuntimeError(
-                    "docker container stop failed: {0}: ret={1}, stdout=\'{2}\'".format(self.container_name,
-                                                                                        str(retcode), str(stdout)))
-            print ("stopped docker container " + self.container_name + " on " + self.host)
-        finally:
-            if connection is not None:
-                connection.close()
-
-    def status(self):
-        cmd = 'bash -l -c "sudo docker container inspect ' \
-              '--format=\'status: {{.State.Status}}, startedAt: {{.State.StartedAt}}\' ' \
-              + self.container_name + '"'
-        connection = None
-        try:
-            connection = ssh(self.host, self.user)
-            retcode, stdout = connection.sendCommand(cmd)
-            if retcode != 0:
-                raise RuntimeError(
-                    "docker container creation failed: {0}: ret={1}, stdout=\'{2}\'".format(self.container_name,
-                                                                                            str(retcode), str(stdout)))
-            print ("status of docker container " + self.container_name + " on " + self.host + " is " + str(stdout))
-        finally:
-            if connection is not None:
-                connection.close()
-
-    def create(self):
-        cmd = 'bash -l -c "sudo docker create --name=' + self.container_name
-        for varname, value in self.env.items():
-            cmd += " -e " + varname + '=' + value
-        for hostdir, containerdir in self.volumes.items():
-            cmd += " -v " + hostdir + ':' + containerdir
-        for hostport, containerport in self.ports.items():
-            cmd += " -p " + hostport + ':' + containerport
-        cmd += " "+self.image_name
-        cmd += '"'
-
-        connection = None
-        try:
-            connection = ssh(self.host, self.user)
-            retcode, stdout = connection.sendCommand(cmd)
-            if retcode != 0:
-                raise RuntimeError(
-                    "docker container creation failed: {0}: ret={1}, stdout=\'{2}\'".format(self.container_name,
-                                                                                            str(retcode), str(stdout)))
-            print ("created docker container " + self.container_name + " on " + self.host)
-        finally:
-            if connection is not None:
-                connection.close()
-
-    def destroy(self):
-        cmd = 'bash -l -c "sudo docker container rm ' + self.container_name + '"'
-        connection = None
-        try:
-            connection = ssh(self.host, self.user)
-            retcode, stdout = connection.sendCommand(cmd)
-            if retcode != 0:
-                raise RuntimeError(
-                    "docker container remove failed: {0}: ret={1}, stdout=\'{2}\'".format(self.container_name,
-                                                                                        str(retcode), str(stdout)))
-            print ("removed docker container " + self.container_name + " on " + self.host)
-        finally:
-            if connection is not None:
-                connection.close()
-
-
-def getenv(varname):
-    value = os.environ.get(varname, None)
-    if (value is None):
-        raise EnvironmentError("undefined environment var '" + varname + "', hint: invoke using ./vcell script")
-    assert isinstance(value, str)
-    return value
 
 def setdebug(debug):
     assert isinstance(debug,bool)
@@ -197,15 +45,6 @@ def setdebug(debug):
         logger.setLevel(logging.WARN)
         console_handler.setLevel(logging.WARN)
 
-def simquery(query, host_port):
-    assert(isinstance(host_port,str))
-    import requests
-    r = requests.get('https://'+host_port+'/admin/jobs', params=query.params())
-    logger = logging.getLogger("paramiko")
-    logger.debug(r.url)
-    json = r.json()
-    return json
-
 def health(query, host_port):
     assert(isinstance(host_port,str))
     import requests
@@ -216,11 +55,122 @@ def health(query, host_port):
     return json
 
 
+def simquery(query, host_port):
+    """
+    :param bool debug: whether to show debug information
+    :param str host_port: vcell api host:port separated by colon
+    :returns list of dict:
+    """
+    assert(isinstance(host_port,str))
+
+    import requests
+    r = requests.get('https://'+host_port+'/admin/jobs', params=query.params())
+    logger = logging.getLogger("paramiko")
+    logger.debug(r.url)
+    json = r.json()
+    """
+    [{ u'computeHost' = {unicode} u'shangrila14'
+       u'detailedState' = {unicode} u'WORKEREVENT_PROGRESS'
+       u'detailedStateMessage' = {unicode} u'0.270433'
+       u'hasData' = {bool} True
+       u'jobIndex' = {int} 0
+       u'onwer_userkey' = {unicode} u'120840072'
+       u'owner_userid' = {unicode} u'975464864'
+       u'queueDate' = {unicode} u'May 10, 2018 6:40:20 AM'
+       u'queueId' = {unicode} u'QUEUE_ID_NULL'
+       u'queuePriority' = {int} 5
+       u'schedulerStatus' = {unicode} u'RUNNING'
+       u'simexe_latestUpdateDate' = {unicode} u'May 10, 2018 2:07:32 PM'
+       u'simexe_startDate' = {unicode} u'May 10, 2018 6:41:27 AM'
+       u'simulationKey' = {unicode} u'130250352'
+       u'submitDate' = {unicode} u'May 10, 2018 6:40:20 AM'
+       u'taskID' = {int} 0
+       u'vcellServerID' = {unicode} u'REL'}
+    ]
+    """
+    return json
+
+
+def slurmquery(debug, slurmhost, partitions):
+    """
+    :param bool debug: whether to show debug information
+    :param str slurmhost: slurm node for running queries
+    :param str partitions: comma separated list of slurm partitions
+    :returns list of dict:
+    """
+    assert(isinstance(debug,bool))
+    assert(isinstance(slurmhost,str))
+    assert(isinstance(partitions,str))
+
+    import subprocess
+    # if args.debug:
+    #     print "sudo docker run --rm "+args.vcellbatch+" "+options+" SendErrorMsg"
+    if debug:
+        print "ssh " + slurmhost + " squeue -p " + partitions + " -O jobid:25,name:25,state:13,submittime,starttime,batchhost,reason"
+    proc = subprocess.Popen(['ssh', slurmhost,
+                          'squeue', '-p', partitions,
+                          '-O', 'jobid:25,name:25,state:13,submittime,starttime,batchhost,reason' ],
+                         stdout=subprocess.PIPE)
+    # return_code = subprocess.call(
+    #     "ssh " + slurmhost + " squeue -p " + partitions + " -O jobid:25,name:25,state:13,submittime,starttime,batchhost,reason",
+    #     shell=True)
+    stdout, stderr = proc.communicate()
+    return parseslurm(stdout)
+
+
+def parseslurm(squeue_output):
+    assert(isinstance(squeue_output,str))
+    """
+    JOBID                    NAME                     STATE        SUBMIT_TIME         START_TIME          EXEC_HOST           REASON              
+    418774                   V_REL_130234420_7_0      RUNNING      2018-05-09T23:34:36 2018-05-10T09:41:36 shangrila01         None                
+    """
+    table = [[str(i) for i in line.split()] for line in squeue_output.splitlines()]
+    """
+    [['JOBID', 'NAME', 'STATE', 'SUBMIT_TIME', 'START_TIME', 'EXEC_HOST', 'REASON'], 
+     ['418774', 'V_REL_130234420_7_0', 'RUNNING', '2018-05-09T23:34:36', '2018-05-10T09:41:36', 'shangrila01', 'None']]
+    """
+    list_of_dict = [dict(zip(table[0], row)) for row in table[1:]]
+    """
+    [{'NAME': 'V_REL_130234420_7_0', 
+      'START_TIME': '2018-05-10T09:41:36', 
+      'REASON': 'None', 
+      'JOBID': '418774', 
+      'STATE': 'RUNNING', 
+      'SUBMIT_TIME': '2018-05-09T23:34:36', 
+      'EXEC_HOST': 'shangrila01'}
+    ]
+    """
+    return list_of_dict
+
+def merge_slurm_vcell(showjobs_ouptput, slurmjobs_output):
+    merged_list = []
+    for vcelljob in showjobs_ouptput:
+        merged_job = vcelljob.copy()
+        site = str(vcelljob['vcellServerID'])
+        simKey = str(vcelljob['simulationKey'])
+        jobIndex = str(vcelljob['jobIndex'])
+        taskID = str(vcelljob['taskID'])
+        slurm_jobname = 'V_' + site + '_' + simKey + '_' + jobIndex + '_' + taskID
+        merged_job['vcSimID'] = slurm_jobname
+        merged_job['found'] = 'vcell'
+        matching_slurmjobs = filter(lambda slurmjob: slurmjob['NAME'] == slurm_jobname, slurmjobs_output)
+        if matching_slurmjobs is not None and len(matching_slurmjobs)>0 and matching_slurmjobs[0] is not None:
+            merged_job.update(matching_slurmjobs[0])
+            merged_job['found'] += ',slurm'
+        merged_list.append(merged_job)
+    for slurmjob in slurmjobs_output:
+        matching_vcelljob = filter(lambda merged_job: merged_job.get('vcSimID') == slurmjob['NAME'], merged_list)
+        if matching_vcelljob is None or len(matching_vcelljob)==0:
+            merged_list.append(slurmjob)
+            merged_job['found'] = 'slurm'
+    return merged_list
+
+
 class simjobquery:
     fields = {}
 
     def __init__(self):
-        # type: () -> object
+        # type: () -> None
         self.fields = {
             "submitLowMS" : None,
             "submitHighMS" : None,
@@ -253,7 +203,7 @@ class healthquery:
     fields = {}
 
     def __init__(self):
-        # type: () -> object
+        # type: () -> None
         self.fields = {
             "check" : "all",
         }
@@ -279,6 +229,9 @@ def main():
     parser_showjobs.add_argument("--maxRows", type=int, default=500)
     parser_showjobs.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
     parser_showjobs.add_argument("--apiport", type=int, default='443', help='port of api server')
+    parser_showjobs.add_argument("--withslurm", type=bool, default=False)
+    parser_showjobs.add_argument("--slurmhost", type=str, default="vcell-service.cam.uchc.edu")
+    parser_showjobs.add_argument("--partition", type=str, default="vcell2,vcell")
     parser_showjobs.set_defaults(which='showjobs')
 
     parser_killjobs = subparsers.add_parser('killjob', help='kill simulation job (see killjob --help)')
@@ -323,24 +276,30 @@ def main():
             query.fields['maxRows'] = args.maxRows
             apihostport = args.host+":"+str(args.apiport)
             json_response = simquery(query,apihostport)
-            col_names = ["owner_userid", "simulationKey", "jobIndex", "taskID", "schedulerStatus", "hasData",
-                         "vcellServerID","queueDate", "simexe_startDate", "simexe_latestUpdateDate",
+            slurmjobs = slurmquery(args.debug, args.slurmhost, args.partition)
+            merged_jobs = merge_slurm_vcell(json_response, slurmjobs)
+            col_names = ["JOBID", "STATE", "NAME", "EXEC_HOST", "found", "owner_userid", "vcSimID", "schedulerStatus", "hasData",
+                         "queueDate", "simexe_startDate", "simexe_latestUpdateDate",
                          "computeHost", "detailedStateMessage"]
-            table = [[row.get(col_name,'') for col_name in col_names] for row in json_response]
+            table = [[row.get(col_name,'') for col_name in col_names] for row in merged_jobs]
             from tabulate import tabulate
             print tabulate(table, headers=col_names)
             # for job in json_response:
             #     print(job)
 
         elif args.which == "slurmjobs":
-            # owner_userid      simulationKey    jobIndex    taskID  schedulerStatus    hasData    vcellServerID    queueDate                 simexe_startDate          simexe_latestUpdateDate    computeHost             detailedStateMessage
-            # "squeue -p vcell2 -O jobid:25,name:25,state:13,batchhost"
-            import subprocess
-            # if args.debug:
-            #     print "sudo docker run --rm "+args.vcellbatch+" "+options+" SendErrorMsg"
-            if args.debug:
-                print "ssh "+args.slurmhost+" squeue -p "+args.partition+" -O jobid:25,name:25,state:13,submittime,starttime,batchhost,reason"
-            return_code = subprocess.call("ssh "+args.slurmhost+" squeue -p "+args.partition+" -O jobid:25,name:25,state:13,submittime,starttime,batchhost,reason", shell=True)
+            # 'NAME': 'V_REL_130234420_7_0',
+            # 'START_TIME': '2018-05-10T09:41:36',
+            # 'REASON': 'None',
+            # 'JOBID': '418774',
+            # 'STATE': 'RUNNING',
+            # 'SUBMIT_TIME': '2018-05-09T23:34:36',
+            # 'EXEC_HOST':
+            slurmjobs = slurmquery(args.debug, args.slurmhost, args.partition)
+            col_names = ["JOBID", "STATE", "NAME", "EXEC_HOST", "START_TIME", "SUBMIT_TIME", "REASON"]
+            table = [[row.get(col_name, '') for col_name in col_names] for row in slurmjobs]
+            from tabulate import tabulate
+            print tabulate(table, headers=col_names)
 
         elif args.which == "killjob":
             cmd_prefix = "sudo docker run --rm "+args.vcellbatch
@@ -404,16 +363,6 @@ def main():
         sys.exit(-1)
     else:
         sys.exit(0)
-
-def test_connection():
-    #
-    # TESTING ONLY
-    #
-    setdebug(True)
-
-    c = ssh("vcell-service.cam.uchc.edu","vcell")
-    print ("done")
-
 
 
 if __name__ == "__main__":
