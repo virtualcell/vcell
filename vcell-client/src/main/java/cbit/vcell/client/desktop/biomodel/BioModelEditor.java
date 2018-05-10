@@ -18,7 +18,6 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Objects;
 
-import javax.help.UnsupportedOperationException;
 import javax.swing.JComponent;
 import javax.swing.ListSelectionModel;
 

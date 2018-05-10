@@ -76,8 +76,8 @@ public class DocumentCompiler {
 				System.out.println("Usage: java "+DocumentCompiler.class.getTypeName()+" input-xml-dir  output-javahelp-dir");
 				System.exit(-1);
 			}
-			docSourceDir = new File(args[0]); // vcell-client/UserDocumentation/originalXML
-			docTargetDir = new File(args[1]); // vcell-client/src/main/resources/vcellDoc
+			docSourceDir = new File(args[0]); // see vcell-client/pom.xml
+			docTargetDir = new File(args[1]); // see vcell-client/pom.xml
 			System.out.println("docSourceDir="+docSourceDir);
 			System.out.println("docTargetDir="+docTargetDir);
 			System.out.flush();

@@ -13,7 +13,6 @@ import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import javax.help.UnsupportedOperationException;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
