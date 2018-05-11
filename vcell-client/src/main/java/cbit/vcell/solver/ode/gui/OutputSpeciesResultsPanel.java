@@ -90,6 +90,7 @@ import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
+import cbit.vcell.graph.SmallShapeManager;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.gui.LargeShapePanel;
@@ -120,6 +121,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
 	private JLabel totalSpeciesLabel = new JLabel("");
+	private SmallShapeManager ssm = new SmallShapeManager(false, false,false, false);
 
 	private JPanel speciesFileLocationPanel = null;
 	private JTextField speciesFileLocationTextField = null;
@@ -552,9 +554,9 @@ private void initialize() {
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 		shapePanel.setLayout(new GridBagLayout());
 		shapePanel.setBackground(Color.white);
-		shapePanel.setEditable(true);		// not really editable but we don't want the brown contours here
-		shapePanel.setShowMoleculeColor(true);
-		shapePanel.setShowNonTrivialOnly(true);
+		shapePanel.setEditable(true);			// not really editable but we don't want the brown contours here
+		shapePanel.setShowMoleculeColor(false);	// we work with a "fake" model and cannot show proper molecule color
+		shapePanel.setShowNonTrivialOnly(false);
 
 		JScrollPane scrollPane = new JScrollPane(shapePanel);
 		scrollPane.setBorder(loweredBevelBorder);
@@ -728,7 +730,7 @@ private void initialize() {
 							} else {
 								SpeciesPattern sp = sc.getSpeciesPattern();
 								Graphics panelContext = table.getGraphics();
-								spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected, issueManager);
+								spss = new SpeciesPatternSmallShape(4, 2, sp, ssm, panelContext, sc, isSelected, issueManager);
 							}
 						}
 					} else {
