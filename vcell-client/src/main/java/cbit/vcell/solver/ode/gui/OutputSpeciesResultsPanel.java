@@ -375,13 +375,16 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 				String struct = componentTokenizer.nextToken(",");
 				structure = struct.substring(struct.indexOf("~")+1);
 				// ignore the second token (ex: AAB~0) 
-				componentTokenizer.nextToken(",");
+				String aab = componentTokenizer.nextToken(",");
 				// build what's left to newExpression unchanged
-				String remaining = componentTokenizer.nextToken(")");
-				if(remaining.startsWith(",")) {
-					remaining = remaining.substring(1, remaining.length());
+				if(componentTokenizer.hasMoreTokens()) {
+					String remaining = componentTokenizer.nextToken(")");
+					if(remaining.startsWith(",")) {
+						remaining = remaining.substring(1, remaining.length());
+					}
+					newExpression += remaining;
 				}
-				newExpression += remaining + ").";
+				newExpression += ").";
 			}
 			if(newExpression.endsWith(".")) {
 				expression = newExpression.substring(0, newExpression.length()-1);
