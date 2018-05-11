@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<!--
+
+  @(#)package.html	1.4 98/10/19
+
+  Copyright (c) 2006 Sun Microsystems, Inc.  All Rights Reserved.
+  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+
+  This code is free software; you can redistribute it and/or modify it
+  under the terms of the GNU General Public License version 2 only, as
+  published by the Free Software Foundation.  Sun designates this
+  particular file as subject to the "Classpath" exception as provided
+  by Sun in the LICENSE file that accompanied this code.
+
+  This code is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+  version 2 for more details (a copy is included in the LICENSE file that
+  accompanied this code).
+
+  You should have received a copy of the GNU General Public License version
+  2 along with this work; if not, write to the Free Software Foundation,
+  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+
+  Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+  CA 95054 USA or visit www.sun.com if you need additional information or
+  have any questions.
+
+-->
+
+</head>
+<body bgcolor="white">
+
+Supports presentation of online documentation with both
+content and contextual views of this information.
+This is the main package for the JavaHelp standard extension.
+The main focus of JavaHelp is online help,
+but it can be used for any online content.
+
+<p>
+JavaHelp supports the notion of a HelpSet that encompases
+all documentation information.
+There is a simple way to read a HelpSet,
+create a presentation for it, and interact with it
+and there is also a collection of Swing components that
+can be used directly for additional control.
+JavaHelp presents content using Swing's EditorKits,
+which provide for extensibility of content.
+JavaHelp also provides for extensibility of context via
+the notion of a NavigatorView;
+several views are standard.
+One of the standard views provides full-text search,
+which relies on a simple search package to communicate with
+search engines.
+
+
+<h3>Basic Classes</h3>
+
+<code>HelpSet</code> is the main class, providing
+access to a HelpSet file.
+A visual presentation of a HelpSet can be obtained through
+a <code>HelpBroker</code> which is an abstraction
+that permits interaction regardless of the presentation
+details;
+the default presentation is <code>DefaultHelpBroker</code>.
+An application can provide online help using only these two classes.
+
+<p>
+Helpsets can be merged dynamically or statically, and
+can be associated with Beans.
+
+<h3>Swing components</h3>
+
+JavaHelp provides a collection of Swing components that are used to
+implement the DefaultHelpBroker and can also be used directly.  The
+components follow the standard MVC from Swing.
+<code>HelpModel</code> models changes to the location within a
+HelpSet--components that want to respond to these changes should
+listen to events originating within the model (this is how
+synchronized views work).  <code>TextHelpModel</code> provides
+additional information when the content is textual.
+<code>DefaultHelpModel</code> is the default model that implements both
+models.
+
+<p>
+<code>JHelpContentViewer</code>
+is the Swing component for HTML content,
+while context corresponds to several subclasses of
+<code>JHelpNavigator</code>.
+<code>JHelp</code> is a common grouping of these
+classes into synchronized views of content.
+
+
+<h3>Extensibility</h3>
+
+Context extensibility is described through a
+<code>NavigatorView</code> which provides access to context
+information, plus a way of presenting this information.
+<code>TOCView</code>, <code>IndexView</code>, and
+<code>SearchView</code> are standard views for table of contents,
+index, and full-text search.
+
+<p>
+The standard views yield standard <code>JHelpTOCNavigator</code>,
+<code>JHelpIndexNavigator</code>, and
+<code>JHelpSearchNavigator</code> Swing components.  The standard
+views also provide access to the content--this access is
+provides through subclasses
+of <code>TreeItem</code>.
+
+<p>
+New views can be added,
+for instance a new TOC presentation can be obtained by
+subclassing TOCView and changing the JHelpNavigator
+returned by it.
+
+<h3>Context Sensitive Help</h3>
+
+JavaHelp supports a <code>Map</code> between identifiers and URLs.
+<code>FlatMap</code> and <code>TryMap</code> are two
+implementations.
+
+The main class used to associate specific content with graphic
+objects is <code>CSH</code>, while <code>DialogSupport</code>
+provides support in Dialogs (this may migrate to Swing at some
+point).
+
+<h3>Search</h3>
+JavaHelp supports a standard full-text search view and navigator.
+The view interacts with a search engine through the types in the
+<code>javax.javahelp.search</code> package.  The reference
+implementation provides a search engine that implements these interfaces,
+but others can also be used. The specific search engine is part
+of the information given to the search view.  This separation
+provides the full-text search functionality but does not
+imposing specific formats.
+
+
+<!--
+<H2>Package Specification</H2>
+<p>
+Link to updated API specification to be added here.
+-->
+
+<H2>Related Documentation</H2>
+
+<P>
+For overviews, tutorials, examples, guides, tool support,
+and other documentation,
+please see the <em>JavaHelp System User's Guide</em>.
+
+  </body>
+</html>
