@@ -358,6 +358,9 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	@Override
 	public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws ObjectNotFoundException, DataAccessException {
 		SimulationStatusPersistent simStatusDB = databaseServerImpl.getSimulationStatus(simulationKey);
+		if (simStatusDB==null) {
+			throw new ObjectNotFoundException("simulation status for simkey "+simulationKey+" not found");
+		}
 		return buildSimulationStatus(simStatusDB);
 	}
 
@@ -473,11 +476,16 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	}
 	
 	private SimulationStatus translateToSimulationStatusTransient(SimulationStatusPersistent simStatusPersistent) {
-		SimulationJobStatus[] simJobStatusArray = new SimulationJobStatus[simStatusPersistent.getJobStatuses().length];
-		for (int i=0;i<simJobStatusArray.length;i++){
-			simJobStatusArray[i] = translateToSimulationJobStatusTransient(simStatusPersistent.getJobStatus(i));
+		ArrayList<SimulationJobStatus> simJobStatusList = new ArrayList<SimulationJobStatus>();
+		if (simStatusPersistent==null) {	
 		}
-		SimulationStatus simStatus = new SimulationStatus(simJobStatusArray);
+		SimulationJobStatusPersistent[] simStatusPersistentArray = simStatusPersistent.getJobStatuses();
+		if (simStatusPersistentArray==null) {
+		}
+		for (SimulationJobStatusPersistent stat : simStatusPersistentArray) {
+			simJobStatusList.add(translateToSimulationJobStatusTransient(stat));
+		}
+		SimulationStatus simStatus = new SimulationStatus(simJobStatusList.toArray(new SimulationJobStatus[0]));
 		return simStatus;
 	}
 	
