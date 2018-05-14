@@ -142,6 +142,30 @@ docker build -f Dockerfile-batch-dev --tag localhost:5000/vcell-batch-dev ..
 
 how to set up a registry with self-signed certificate  http://ralph.soika.com/how-to-setup-a-private-docker-registry/
 
+```bash
+ssh vcell-docker.cam.uchc.edu
+mkdir -p /usr/local/deploy/registry_certs
+cd /usr/local/deploy/registry_certs
+openssl req -newkey rsa:4096 -nodes -sha256 \
+                -keyout registry_certs/domain.key -x509 -days 356 \
+                -out registry_certs/domain.cert
+
+sudo docker run -d -p 5000:5000 \
+ -v $(pwd)/registry_certs:/certs \
+ -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.cert \
+ -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+ --restart=always --name registry registry:2
+```
+
+for removing old docker images from registry:
+
+```bash
+go get github.com/fraunhoferfokus/deckschrubber
+export GOPATH=$HOME/go
+$GOPATH/bin/deckschrubber -day 30 -registry https://vcell-docker.cam.uchc.edu:5000
+```
+
+
 ## install self-signed cert as trusted CA
 trusting self signed certificate on Macos (https://github.com/docker/distribution/issues/2295), and Linux/Windows (https://docs.docker.com/registry/insecure/#failing).  For example, to trust the self-signed certificate on UCHC server nodes using Centos 7.2:
 
@@ -163,6 +187,7 @@ sudo docker run \
   -e ENV_DOCKER_REGISTRY_PORT=5000 \
   -e ENV_DOCKER_REGISTRY_USE_SSL=1 \
   -p 5001:80 \
+  --restart always
   konradkleine/docker-registry-frontend:v2
 
 open http://localhost:5001
@@ -197,8 +222,8 @@ export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff
 //Helper for current install4j VCell software $VCELL_BUILD number, increment version if deploying client, otherwise if server only do not increment version #
 
 ```bash
-echo Alpha `curl --silent http://vcell.org/webstart/Alpha/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
-echo Beta `curl --silent http://vcell.org/webstart/Beta/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
+echo Alpha `curl --silent http://vcell.org/webstart/Alpha/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'` && \
+echo Beta `curl --silent http://vcell.org/webstart/Beta/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'` && \
 echo Rel `curl --silent http://vcell.org/webstart/Rel/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
 ```
 
