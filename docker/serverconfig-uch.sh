@@ -37,7 +37,7 @@ case $VCELL_SITE in
 		;;
 	BETA)
 		_site_port_offset=1
-		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
+		VCELL_API_HOST_EXTERNAL=vcellapi.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		_applicationId="1471-8022-1038-5552"
 		;;

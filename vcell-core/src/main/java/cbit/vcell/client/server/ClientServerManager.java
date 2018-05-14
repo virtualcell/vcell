@@ -21,6 +21,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
@@ -299,10 +300,16 @@ private void checkClientServerSoftwareVersion(InteractiveContext requester, Clie
 		Integer apiport = clientServerInfo.getApiport();
 		String serverSoftwareVersion = RemoteProxyVCellConnectionFactory.getVCellSoftwareVersion(apihost,apiport);
 		if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
-			requester.showWarningDialog("A new VCell client is available:\n"
-				+ "current version : " + clientSoftwareVersion + "\n"
-				+ "new version : " + serverSoftwareVersion + "\n"
-				+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
+			VCellSoftwareVersion clientVersion = VCellSoftwareVersion.fromString(clientSoftwareVersion);
+			VCellSoftwareVersion serverVersion = VCellSoftwareVersion.fromString(serverSoftwareVersion);
+			if (clientVersion.getMajorVersion()!=serverVersion.getMajorVersion() ||
+				clientVersion.getMinorVersion()!=serverVersion.getMinorVersion() ||
+				clientVersion.getPatchVersion()!=serverVersion.getPatchVersion()) {
+				requester.showWarningDialog("software version mismatch between client and server:\n"
+					+ "client VCell version : " + clientSoftwareVersion + "\n"
+					+ "server VCell version : " + serverSoftwareVersion + "\n"
+					+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
+			}
 		}
 	}
 }

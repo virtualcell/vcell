@@ -157,7 +157,7 @@ sudo docker run -d -p 5000:5000 \
  --restart=always --name registry registry:2
 ```
 
-for removing old docker images from registry:
+for removing old docker images from registry (error upon delete):
 
 ```bash
 go get github.com/fraunhoferfokus/deckschrubber
@@ -242,7 +242,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=8 VCELL_SITE=beta
+export VCELL_VERSION=7.0.0 VCELL_BUILD=9 VCELL_SITE=beta
 export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Beta"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
@@ -251,7 +251,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=42 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=43 VCELL_SITE=alpha
 export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
