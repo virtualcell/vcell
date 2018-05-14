@@ -109,6 +109,14 @@ public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory)
 	}		
 }
 
+public void cleanupDatabase() throws DataAccessException {
+	try {
+		dbTop.cleanupDatabase(true);
+	} catch (DataAccessException | SQLException e) {
+		e.printStackTrace();
+		throw new DataAccessException(e.getMessage(),e);
+	}
+}
 
 /**
  * Insert the method's description here.
@@ -121,15 +129,15 @@ public VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessE
 		return dbTop.curate(user,curateSpec);
 	} catch (SQLException e) {
 		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
 	}
 	catch (ObjectNotFoundException e) {
 		lg.error(e.getMessage(),e);
-		throw new ObjectNotFoundException(e.getMessage());
+		throw new ObjectNotFoundException(e.getMessage(),e);
 	} 
 	catch (Throwable e) {
 		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
 	}
 	
 }

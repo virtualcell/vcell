@@ -143,6 +143,34 @@ private VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRe
 }
 
 
+void cleanupDatabase(boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		DBBackupAndClean.cleanupDatabase(con, null);
+		con.commit();
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			// rbe.printStackTrace(System.out);
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			cleanupDatabase(false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (9/25/2003 7:57:54 AM)

@@ -9,12 +9,18 @@
  */
 
 package cbit.vcell.message.server.db;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.VCMessageSession;
@@ -29,11 +35,19 @@ import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
+import cbit.vcell.message.server.dispatcher.BatchScheduler;
+import cbit.vcell.message.server.dispatcher.BatchScheduler.WaitingJob;
+import cbit.vcell.message.server.dispatcher.SimulationDispatcher.DispatchThread;
+import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
+import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.SimulationJobStatus;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
  * Insert the type's description here.
@@ -47,11 +61,53 @@ public class DatabaseServer extends ServiceProvider {
 	private VCPooledQueueConsumer pooledQueueConsumer = null;
 	private VCMessageSession sharedProducerSession = null;
 	
+	private DatabaseCleanupThread databaseCleanupThread = null;
+
+	
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (1/26/2004 9:49:08 AM)
 	 */
 
+	
+	
+	public class DatabaseCleanupThread extends Thread {
+
+		Object notifyObject = new Object();
+		DatabaseServerImpl databaseServerImpl = null;
+
+		public DatabaseCleanupThread(DatabaseServerImpl databaseServerImpl) {
+			super();
+			this.databaseServerImpl = databaseServerImpl;
+			setDaemon(true);
+			setName("Database Cleanup Thread");
+		}
+
+		public void run() {
+
+			while (true) {
+
+				try {
+					if (lg.isDebugEnabled()) lg.debug("starting database cleanup");
+					
+					databaseServerImpl.cleanupDatabase();
+					
+					if (lg.isDebugEnabled()) lg.debug("done with database cleanup");
+				} catch (Exception ex) {
+					lg.error(ex.getMessage(), ex);
+				}
+
+				try { 
+					// run every 15 minutes
+					Thread.sleep(15*60*1000);
+				}catch (InterruptedException e) {
+				}
+
+			}
+		}
+	}
+	
+	
 /**
  * Scheduler constructor comment.
  */
@@ -71,6 +127,9 @@ public void init() throws Exception {
 	rpcConsumer = new VCQueueConsumer(VCellQueue.DbRequestQueue, this.pooledQueueConsumer, null, "Database RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DB_REQUEST);
 
 	vcMessagingService.addMessageConsumer(rpcConsumer);
+	
+	this.databaseCleanupThread = new DatabaseCleanupThread(databaseServerImpl);
+	this.databaseCleanupThread.start();
 	
 	initControlTopicListener();
 }

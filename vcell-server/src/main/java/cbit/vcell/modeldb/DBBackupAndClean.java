@@ -1286,20 +1286,7 @@ public class DBBackupAndClean {
 			con = connectionFactory.getConnection(new Object());
 			con.setAutoCommit(false);
 						
-			cleanClearVersionBranchPointRef(con,SimulationTable.table, logStringBuffer);
-			cleanRemoveUnreferencedSimulations(con, logStringBuffer);
-
-			cleanClearVersionBranchPointRef(con,MathDescTable.table, logStringBuffer);
-			cleanRemoveUnreferencedMathDescriptions(con, logStringBuffer);
-
-			cleanRemoveUnReferencedNonSpatialGeometries(con, logStringBuffer);
-
-			cleanClearVersionBranchPointRef(con,SimContextTable.table, logStringBuffer);
-			cleanRemoveUnReferencedSimulationContexts(con, logStringBuffer);
-
-			cleanRemoveUnReferencedModels(con, logStringBuffer);
-			
-			cleanRemoveUnReferencedSotwareVersions(con, logStringBuffer);
+			cleanupDatabase(con, logStringBuffer);
 
 			writeFile(dbBackupHelper.workingDir, baseFileName, logStringBuffer.toString(), false, dbBackupHelper.exportDir);
 			
@@ -1320,6 +1307,23 @@ public class DBBackupAndClean {
 			}
 		}
 		
+	}
+
+	public static void cleanupDatabase(Connection con, StringBuffer logStringBuffer) throws Exception {
+		cleanClearVersionBranchPointRef(con,SimulationTable.table, logStringBuffer);
+		cleanRemoveUnreferencedSimulations(con, logStringBuffer);
+
+		cleanClearVersionBranchPointRef(con,MathDescTable.table, logStringBuffer);
+		cleanRemoveUnreferencedMathDescriptions(con, logStringBuffer);
+
+		cleanRemoveUnReferencedNonSpatialGeometries(con, logStringBuffer);
+
+		cleanClearVersionBranchPointRef(con,SimContextTable.table, logStringBuffer);
+		cleanRemoveUnReferencedSimulationContexts(con, logStringBuffer);
+
+		cleanRemoveUnReferencedModels(con, logStringBuffer);
+		
+		cleanRemoveUnReferencedSotwareVersions(con, logStringBuffer);
 	}
 }
 
