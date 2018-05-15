@@ -161,8 +161,10 @@ def merge_slurm_vcell(showjobs_ouptput, slurmjobs_output):
     for slurmjob in slurmjobs_output:
         matching_vcelljob = filter(lambda merged_job: merged_job.get('vcSimID') == slurmjob['NAME'], merged_list)
         if matching_vcelljob is None or len(matching_vcelljob)==0:
-            merged_list.append(slurmjob)
+            merged_job = slurmjob.copy()
             merged_job['found'] = 'slurm'
+            merged_list.append(merged_job)
+
     return merged_list
 
 
