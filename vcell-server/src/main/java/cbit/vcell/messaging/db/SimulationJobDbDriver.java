@@ -352,6 +352,65 @@ public SimulationJobStatusPersistent[] getSimulationJobStatusArray(Connection co
 	return simulationJobStatusArrayList.toArray(new SimulationJobStatusPersistent[0]);
 }
 
+public List<SimulationJobStatusPersistent> getSimulationJobStatus(Connection con, String conditions, int startRow, int maxNumRows) throws java.sql.SQLException, DataAccessException {	
+
+	String subquery = "SELECT " +
+		"current_timestamp as " + DatabaseConstants.SYSDATE_COLUMN_NAME
+		+ "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() + "," + userTable.id.getQualifiedColName()+" as ownerkey"
+		+ "," + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName()
+		+ "," + "vc_sim_1." + simTable.name.getUnqualifiedColName()
+		+ " FROM " + jobTable.getTableName()
+					+ "," + simTable.getTableName() + " vc_sim_1"
+					+ "," + userTable.getTableName() 
+		+ " WHERE " + "vc_sim_1." + simTable.id.getUnqualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
+		+ " AND " + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName() + "=" + userTable.id.getQualifiedColName();
+
+	String additionalConditionsClause = "";
+	if (conditions!=null && conditions.length() > 0) {
+		additionalConditionsClause = " AND (" + conditions + ")";
+	}
+	
+	String orderByClause = " order by " + jobTable.submitDate.getQualifiedColName() + " DESC ";  // most recent records first
+	
+	String sql = null;
+	
+	if (maxNumRows>0){
+		if (startRow <= 1){
+			// simpler query, only limit rows, not starting row
+			sql = "select * from "+
+					"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") "+
+					"where rownum <= "+maxNumRows;
+		}else{
+			// full query, limit start and limit
+			sql = "select * from "+
+						"(select a.*, ROWNUM rnum from "+
+							"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") a "+
+						" where rownum <= " + (startRow + maxNumRows - 1) + ") "+
+				  "where rnum >= "+startRow;
+		}
+	}else{
+		sql = subquery + " " + additionalConditionsClause + " " + orderByClause;
+	}
+	
+	if (lg.isTraceEnabled()) {
+		lg.trace(sql);
+	}
+	
+	List<SimulationJobStatusPersistent> resultList = new ArrayList<SimulationJobStatusPersistent>();
+	Statement stmt = con.createStatement();	
+	try {
+		ResultSet rset = stmt.executeQuery(sql.toString());
+		while (rset.next()) {
+			SimulationJobStatusPersistent simJobStatus = jobTable.getSimulationJobStatus(rset);
+			resultList.add(simJobStatus);
+		} 
+	} finally {
+		stmt.close();		
+	}
+	
+	return resultList;
+}
+
 
 /**
  * Insert the method's description here.
@@ -557,6 +616,129 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 	
 	return resultList;
 }
+
+public List<SimulationJobStatusPersistent> getSimulationJobStatus(Connection con, SimpleJobStatusQuerySpec simStatusQuerySpec) throws java.sql.SQLException, DataAccessException {	
+	ArrayList<String> conditions = new ArrayList<String>();
+	
+	if (simStatusQuerySpec.simId!=null){
+		conditions.add(jobTable.simRef.getQualifiedColName() + "=" + simStatusQuerySpec.simId);
+ 	}
+
+	if (simStatusQuerySpec.jobId!=null){
+		conditions.add(jobTable.jobIndex.getQualifiedColName() + "=" + simStatusQuerySpec.jobId);
+ 	}
+
+	if (simStatusQuerySpec.taskId!=null){
+		conditions.add(jobTable.taskID.getQualifiedColName() + "=" + simStatusQuerySpec.taskId);
+ 	}
+
+	if (simStatusQuerySpec.computeHost != null && simStatusQuerySpec.computeHost.length()>0){
+ 		conditions.add("lower(" + jobTable.computeHost.getQualifiedColName() + ")='" + simStatusQuerySpec.computeHost.toLowerCase() + "'");
+	}
+
+	if (simStatusQuerySpec.serverId!=null && simStatusQuerySpec.serverId.length()>0){
+		conditions.add("lower(" + jobTable.serverID.getQualifiedColName() + ")='" + simStatusQuerySpec.serverId + "'");
+	}
+	
+	if (simStatusQuerySpec.hasData!=null){
+		if (simStatusQuerySpec.hasData!=null && simStatusQuerySpec.hasData.booleanValue()==true){
+			// return only records that have data
+			conditions.add("lower(" + jobTable.hasData.getQualifiedColName() + ")='y'");
+		} else if (simStatusQuerySpec.hasData!=null && simStatusQuerySpec.hasData.booleanValue()==false){
+			// return only records that don't have data
+			conditions.add(jobTable.hasData.getQualifiedColName() + " is null");
+		}
+	} // else all records.
+	
+	if (simStatusQuerySpec.userid!=null && simStatusQuerySpec.userid.length()>0){
+		conditions.add(UserTable.table.userid.getQualifiedColName() + "='" + simStatusQuerySpec.userid + "'");
+	}
+
+/**
+* 		w = WAITING(0,"waiting"),
+*		q = QUEUED(1,"queued"),
+*		d = DISPATCHED(2,"dispatched"),
+*		r = RUNNING(3,"running"),
+*		c = COMPLETED(4,"completed"),
+*		s = STOPPED(5,"stopped"),
+*		f = FAILED(6,"failed");
+*
+*/
+	ArrayList<String> statusConditions = new ArrayList<String>();
+	if (simStatusQuerySpec.waiting){
+		statusConditions.add(jobTable.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.WAITING.getDatabaseNumber());
+	}
+	if (simStatusQuerySpec.queued){
+		statusConditions.add(jobTable.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.QUEUED.getDatabaseNumber());
+	}
+	if (simStatusQuerySpec.dispatched){
+		statusConditions.add(jobTable.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.DISPATCHED.getDatabaseNumber());
+	}
+	if (simStatusQuerySpec.running){
+		statusConditions.add(jobTable.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.RUNNING.getDatabaseNumber());
+	}
+	if (simStatusQuerySpec.completed){
+		statusConditions.add(jobTable.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.COMPLETED.getDatabaseNumber());
+	}
+	if (simStatusQuerySpec.stopped){
+		statusConditions.add(jobTable.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.STOPPED.getDatabaseNumber());
+	}
+	if (simStatusQuerySpec.failed){
+		statusConditions.add(jobTable.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.FAILED.getDatabaseNumber());
+	}
+	if (statusConditions.size()>0){
+       	StringBuffer statusConditionsBuffer = new StringBuffer();
+    	for (String statusCondition : statusConditions) {
+    		if (statusConditionsBuffer.length() > 0) {
+    			statusConditionsBuffer.append(" OR ");
+    		}
+    		statusConditionsBuffer.append(statusCondition);
+		}
+ 		conditions.add("(" + statusConditionsBuffer + ")");
+	}
+ 	
+	java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
+	
+	if (simStatusQuerySpec.submitLowMS != null){
+		conditions.add("(" + jobTable.submitDate.getQualifiedColName() + " >= to_date('" + df.format(new Date(simStatusQuerySpec.submitLowMS)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
+	}
+	if (simStatusQuerySpec.submitHighMS != null){
+		conditions.add("(" + jobTable.submitDate.getQualifiedColName() + " <= to_date('" + df.format(new Date(simStatusQuerySpec.submitHighMS)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
+	}
+	if (simStatusQuerySpec.startLowMS != null){
+		conditions.add("(" + jobTable.startDate.getQualifiedColName() + " >= to_date('" + df.format(new Date(simStatusQuerySpec.startLowMS)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
+	}
+	if (simStatusQuerySpec.startHighMS != null){
+		conditions.add("(" + jobTable.startDate.getQualifiedColName() + " <= to_date('" + df.format(new Date(simStatusQuerySpec.startHighMS)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
+	}
+	if (simStatusQuerySpec.endLowMS != null){
+		conditions.add("(" + jobTable.endDate.getQualifiedColName() + " >= to_date('" + df.format(new Date(simStatusQuerySpec.endLowMS)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
+	}
+	if (simStatusQuerySpec.endHighMS != null){
+		conditions.add("(" + jobTable.endDate.getQualifiedColName() + " <= to_date('" + df.format(new Date(simStatusQuerySpec.endHighMS)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
+	}
+
+//	conditions.add("(" + "rownum" + " <= " + maxNumRows + ")");
+	
+	StringBuffer conditionsBuffer = new StringBuffer();
+	for (String condition : conditions) {
+		if (conditionsBuffer.length() > 0) {
+			conditionsBuffer.append(" AND ");
+		}
+		conditionsBuffer.append(condition);
+	}
+	
+	if (statusConditions.size()==0){
+		// no status conditions wanted ... nothing to query
+		return new ArrayList<SimulationJobStatusPersistent>();
+	}else{
+   		List<SimulationJobStatusPersistent> resultList = getSimulationJobStatus(con, conditionsBuffer.toString(), simStatusQuerySpec.startRow, simStatusQuerySpec.maxRows);
+   		return resultList;
+	}
+}
+
+
+
 
 
 public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, SimpleJobStatusQuerySpec simStatusQuerySpec) throws java.sql.SQLException, DataAccessException {	

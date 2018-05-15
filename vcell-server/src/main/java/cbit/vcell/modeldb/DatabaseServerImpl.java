@@ -57,6 +57,7 @@ import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.server.SimpleJobStatusPersistent;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
@@ -683,6 +684,17 @@ public SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[
 		throw new DataAccessException(e.getMessage());
 	}
 
+}
+
+
+public List<SimulationJobStatusPersistent> getSimulationJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec) throws DataAccessException {
+	try {
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getSimulationStatus(simStatusQuerySpec="+simStatusQuerySpec+")");
+		return adminDbTop.getSimulationJobStatus(simStatusQuerySpec,true);
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage());
+	}
 }
 
 

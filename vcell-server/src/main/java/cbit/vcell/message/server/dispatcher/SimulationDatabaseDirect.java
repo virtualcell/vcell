@@ -387,6 +387,37 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	}
 
 	@Override
+	public SimulationJobStatus[] queryJobs(SimpleJobStatusQuerySpec simStatusQuerySpec) throws ObjectNotFoundException, DataAccessException {
+		//
+		// create corresponding SimpleJobStatus[] from SimpleJobStatusPersistent[]
+		// 1) get SimpleJobStatusPersistent from database (with stored status, metadata, and documentLinks - but no stateInfo)
+		// 2) if already in cache, use SimulationJobStatus and stateInfo from cache.
+		// 3) if not in cache, use SimulationJobStatus from database and no stateInfo, populate cache.
+		//
+		List<SimulationJobStatusPersistent> simpleJobStatusPersistentList = databaseServerImpl.getSimulationJobStatus(simStatusQuerySpec);
+		ArrayList<SimulationJobStatus> simulationJobStatusList = new ArrayList<SimulationJobStatus>();
+		for (SimulationJobStatusPersistent simJobStatusDb : simpleJobStatusPersistentList){
+			SimJobStatusKey key = new SimJobStatusKey(simJobStatusDb.getVCSimulationIdentifier().getSimulationKey(),simJobStatusDb.getJobIndex(),simJobStatusDb.getTaskID());
+			SimStatusCacheEntry simStatusCacheEntry = cache.get(key);
+			
+			StateInfo cachedStateInfo = null; //TODO need to get this from memory cache.
+			SimulationJobStatus latestSimulationJobStatus = null;
+			if (simStatusCacheEntry != null){
+				cachedStateInfo = simStatusCacheEntry.stateInfo;
+				latestSimulationJobStatus = simStatusCacheEntry.jobStatus;
+			}else{
+				latestSimulationJobStatus = translateToSimulationJobStatusTransient(simJobStatusDb);
+				cache.put(key, new SimStatusCacheEntry(latestSimulationJobStatus, null));
+			}
+			
+			SimulationJobStatus simulationJobStatus = translateToSimulationJobStatusTransient(simJobStatusDb);
+			
+			simulationJobStatusList.add(simulationJobStatus); // uses latest SimulationJobStatus and StateInfo.
+		}
+		return simulationJobStatusList.toArray(new SimulationJobStatus[simulationJobStatusList.size()]);
+	}
+
+	@Override
 	public SimpleJobStatus[] getSimpleJobStatus(User user, SimpleJobStatusQuerySpec simStatusQuerySpec) throws ObjectNotFoundException, DataAccessException {
 		//
 		// create corresponding SimpleJobStatus[] from SimpleJobStatusPersistent[]

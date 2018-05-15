@@ -15,8 +15,8 @@ import org.vcell.rest.VCellApiApplication;
 
 import com.google.gson.Gson;
 
-import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationJobStatus;
 
 public final class AdminJobsRestlet extends Restlet {
 	
@@ -98,7 +98,7 @@ public final class AdminJobsRestlet extends Restlet {
 	    			}
 
 				AdminService adminService = application.getAdminService();
-				SimpleJobStatus[] jobStatusArray = adminService.query(querySpec);
+				SimulationJobStatus[] jobStatusArray = adminService.query(querySpec);
 				SimpleJobStatusRepresentation[] reps = new SimpleJobStatusRepresentation[jobStatusArray.length];
 				for (int i=0;i<jobStatusArray.length;i++) {
 					reps[i] = jobStatusArray[i].toRep();
