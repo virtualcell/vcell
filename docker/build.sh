@@ -117,16 +117,6 @@ build_clientgen() {
 	fi
 }
 
-# build_master() {
-# 	echo "building $repo/vcell-master:$tag"
-# 	echo "sudo docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag .."
-# 	sudo docker build -f Dockerfile-master-dev --tag $repo/vcell-master:$tag ..
-# 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
-# 	if [ "$skip_push" == "false" ]; then
-# 		sudo docker push $repo/vcell-master:$tag
-# 	fi
-# }
-
 build_db() {
 	echo "building $repo/vcell-db:$tag"
 	echo "sudo docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag .."
