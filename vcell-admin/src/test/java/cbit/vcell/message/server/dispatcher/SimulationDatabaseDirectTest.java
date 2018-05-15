@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
@@ -15,7 +16,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
 
-//@Ignore
+@Ignore
 public class SimulationDatabaseDirectTest {
 
 	@Before
