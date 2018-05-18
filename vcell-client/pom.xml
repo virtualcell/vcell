@@ -108,35 +108,12 @@
 			<version>2.1.1e</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.help/javahelp -->
-<!--
+
 		<dependency>
 			<groupId>javax.help</groupId>
 			<artifactId>javahelp</artifactId>
 			<version>2.0.05</version>
 		</dependency>
--->
-
-<!-- https://mvnrepository.com/artifact/org.jdesktop/jdic -->
-<dependency>
-    <groupId>org.jdesktop</groupId>
-    <artifactId>jdic</artifactId>
-    <version>0.9.4</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
-<dependency>
-    <groupId>javax.servlet</groupId>
-    <artifactId>javax.servlet-api</artifactId>
-    <version>3.1.0</version>
-    <scope>provided</scope>
-</dependency>
-<!-- https://mvnrepository.com/artifact/javax.servlet.jsp/jsp-api -->
-<dependency>
-    <groupId>javax.servlet.jsp</groupId>
-    <artifactId>jsp-api</artifactId>
-    <version>2.2</version>
-    <scope>provided</scope>
-</dependency>
-
 
 	</dependencies>
 	<profiles>
@@ -150,29 +127,6 @@
 			</activation>
 			<build>
 				<plugins>
-
-
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>build-helper-maven-plugin</artifactId>
-						<executions>						
-							<execution>
-								<id>add-source</id>
-								<phase>generate-sources</phase>
-								<goals>
-									<goal>add-source</goal>
-								</goals>
-								<configuration>
-									<sources>
-										<source>${project.basedir}/src/github-com_javaee_javahelp</source>
-									</sources>
-								</configuration>
-							</execution>
-						</executions>	
-					</plugin>
-
-
-
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
@@ -194,8 +148,6 @@
 			
 						</executions>
 					</plugin>
-					
-
 				</plugins>
 			</build>
 		</profile>

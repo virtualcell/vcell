@@ -13,6 +13,7 @@ package org.vcell.documentation;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -54,6 +55,7 @@ public class DocumentCompiler {
 	public final static String helpSearchFolderName = "JavaHelpSearch";
 	public final static String definitionFilePath = "topics/ch_9/Appendix/";
 	public final static String definitionXMLFileName = "Definitions.xml";
+	public final static String javaHelp_helpSearchConfigFile = "helpSearchConfig.txt";
 	
 	private Documentation documentation = new Documentation();
 
@@ -115,9 +117,17 @@ public class DocumentCompiler {
 		} else {
 			helpSearchDir.mkdirs();
 		}
+		
+		//Write indexer config file, removes path prefix to make indexed items not dependent of original index file locations
+		File helpSearchConfigFullPath = new File(docSourceDir,javaHelp_helpSearchConfigFile);
+		try (FileWriter fw = new FileWriter(helpSearchConfigFullPath);) {
+			fw.write("IndexRemove "+docTargetDir+"/");
+		}
+		
+		
 		Indexer indexer = new Indexer();
 //		indexer.compile(new String[]{"-logfile", "indexer.log", "-c", "UserDocumentation/originalXML/helpSearchConfig.txt", "-db", docTargetDir + File.separator + helpSearchFolderName, docTargetDir + File.separator + "topics"});//javahelpsearch generated under vcell root
-		indexer.compile(new String[]{"-c", "UserDocumentation/originalXML/helpSearchConfig.txt", "-db", helpSearchDir.toString(), topicsDir.toString()});//javahelpsearch generated under vcell root
+		indexer.compile(new String[]{"-c", helpSearchConfigFullPath.getAbsolutePath(), "-db", helpSearchDir.toString(), topicsDir.toString()});//javahelpsearch generated under vcell root
 	}
 
 	public static TreeSet<String> referencedImageFiles = new TreeSet<String>();
