@@ -93,8 +93,8 @@ public class VCellApiMain {
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
 			
 			lg.trace("messaging service (next)");
-			VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-			vcMessagingService.setDelegate(new VCMessagingDelegate() {
+			VCMessagingService vcMessagingService_int = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+			VCMessagingDelegate delegate = new VCMessagingDelegate() {
 				
 				@Override
 				public void onTraceEvent(String string) {
@@ -125,13 +125,16 @@ public class VCellApiMain {
 				public void onException(Exception e) {
 					lg.error(e.getMessage(), e);
 				}
-			});
+			};
+    		String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+    		int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+			vcMessagingService_int.setConfiguration(delegate, jmshost_int, jmsport_int);
 							
 			lg.trace("rest database service (next)");
-			RestDatabaseService restDatabaseService = new RestDatabaseService(databaseServerImpl, localAdminDbServer, vcMessagingService);
+			RestDatabaseService restDatabaseService = new RestDatabaseService(databaseServerImpl, localAdminDbServer, vcMessagingService_int);
 			
 			lg.trace("rest event service (next)");
-			RestEventService restEventService = new RestEventService(vcMessagingService);
+			RestEventService restEventService = new RestEventService(vcMessagingService_int);
 			
 			lg.trace("use verifier (next)");
 			UserVerifier userVerifier = new UserVerifier(adminDbTopLevel);
@@ -212,7 +215,7 @@ public class VCellApiMain {
 			UserInfo testUserInfo = localAdminDbServer.getUserInfo(testUser.getID()); // lookup hashed auth credentials in database.
 			HealthService healthService = new HealthService(restEventService, "localhost", port, bIgnoreCertProblems, bIgnoreHostProblems, testUserInfo.userid, testUserInfo.digestedPassword0);
 			AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);
-			RpcService rpcService = new RpcService(vcMessagingService);
+			RpcService rpcService = new RpcService(vcMessagingService_int);
 			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  

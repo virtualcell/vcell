@@ -20,7 +20,7 @@ public interface VCMessagingService extends VCellService, AutoCloseable {
 	
 	VCMessagingDelegate getDelegate();
 	
-	void setDelegate(VCMessagingDelegate delegate);
+	void setConfiguration(VCMessagingDelegate delegate, String jmshost, int jmsport);
 	
 }
 

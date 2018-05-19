@@ -18,8 +18,8 @@ COPY ./docker/vcell-data.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \
-    jmshost_internal=activemq \
-    jmsport_internal=61616 \
+    jmshost_int_internal=activemqint \
+    jmsport_int_internal=61616 \
     jmsuser=clientUser \
 	mongodb_host_internal=mongodb \
 	mongodb_port_internal=27017 \
@@ -52,9 +52,8 @@ ENTRYPOINT java \
 	-Dvcell.export.baseDir.internal=/exportdir/ \
 	-Dvcell.export.baseURL="${export_baseurl}" \
 	-Dvcell.installDir=/usr/local/app \
-	-Dvcell.jms.host.internal="${jmshost_internal}" \
-	-Dvcell.jms.port.internal="${jmsport_internal}" \
-	-Dvcell.jms.restport.internal="${jmsrestport_internal}" \
+	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
+	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
 	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \

@@ -39,9 +39,10 @@ public class TestRPC {
 		try {
 			
 			PropertyLoader.loadProperties();
-			
     		VCMessagingService messagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-    		messagingService.setDelegate(new SimpleMessagingDelegate());
+    		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+    		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+    		messagingService.setConfiguration(new SimpleMessagingDelegate(), jmshost, jmsport);
 	    	
 	        // reading message and computing sum
 	        // create N comsumers

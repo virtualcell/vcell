@@ -37,7 +37,7 @@ public class TestQueues {
 	    	PropertyLoader.loadProperties();
 	    	
 	    	VCMessagingService messagingService = new VCMessagingServiceEmbedded();
-	    	messagingService.setDelegate(new SimpleMessagingDelegate());
+	    	messagingService.setConfiguration(new SimpleMessagingDelegate(),null,-1);
 	    	
 	        final Calculator calculator = new Calculator();
 	        

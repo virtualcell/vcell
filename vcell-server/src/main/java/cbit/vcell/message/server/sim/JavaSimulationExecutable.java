@@ -16,7 +16,6 @@ import javax.jms.JMSException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
 
@@ -30,6 +29,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
@@ -212,8 +212,10 @@ public static void main(String[] args) {
 		PropertyLoader.loadProperties();
 		VCMongoMessage.enabled = false;
 		
-		vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-		vcMessagingService.setDelegate(new ServerMessagingDelegate());
+		vcMessagingService = new VCMessagingServiceActiveMQ();
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
+		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
+		vcMessagingService.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
 		
 		worker = new JavaSimulationExecutable(vcMessagingService, args);
 		worker.init();

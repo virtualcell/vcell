@@ -20,9 +20,9 @@ javasolver_mainclass=cbit.vcell.message.server.sim.JavaSimulationExecutable
 
 jvmprop="-Djava.io.tmpdir=/tmp"
 jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"
-jvmprop="${jvmprop} -Dvcell.jms.host.internal=${jmshost_internal}"
-jvmprop="${jvmprop} -Dvcell.jms.port.internal=${jmsport_internal}"
-jvmprop="${jvmprop} -Dvcell.jms.restport.internal=${jmsrestport_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.host.internal=${jmshost_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.port.internal=${jmsport_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.restport.internal=${jmsrestport_sim_internal}"
 jvmprop="${jvmprop} -Dvcell.jms.user=${jmsuser}"
 jvmprop="${jvmprop} -Dvcell.jms.password=${jmspswd}"
 jvmprop="${jvmprop} -Dvcell.jms.blobMessageUseMongo=${blob_message_use_mongo}"

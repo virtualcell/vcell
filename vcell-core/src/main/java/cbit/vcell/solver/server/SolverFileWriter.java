@@ -76,8 +76,8 @@ protected void writeJMSParamters() {
 	if (bUseMessaging) {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println(SolverInputFileKeyword.JMS_PARAM_BEGIN);
-		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
-		String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
+		String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimRestPortExternal);
 		String jmsurl = jmshost+":"+jmsrestport;
 		printWriter.println(SolverInputFileKeyword.JMS_BROKER + " " + jmsurl);
 	    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
@@ -123,8 +123,8 @@ private Element create(SolverInputFileKeyword sifk, int number) {
  */
 protected Element xmlJMSParameters () {
 	Element jms = create(SolverInputFileKeyword.JMS_PARAM_BEGIN,null);
-	String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
-	String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+	String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
+	String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimRestPortExternal);
 	String jmsurl = jmshost+":"+jmsrestport;
 	Element broker = create(SolverInputFileKeyword.JMS_BROKER, jmsurl) ;
 	Element jmsUser = create(SolverInputFileKeyword.JMS_USER, PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));

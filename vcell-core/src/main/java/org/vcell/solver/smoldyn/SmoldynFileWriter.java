@@ -2065,8 +2065,8 @@ private void writeJms(Simulation simulation) {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println("start_jms");
 	    String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
-		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
-		String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
+		String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimRestPortExternal);
 		String jmsurl = jmshost+":"+jmsrestport;
 		printWriter.println("ActiveMQ" + " " + jmsurl
 			+ " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + jmsPassword

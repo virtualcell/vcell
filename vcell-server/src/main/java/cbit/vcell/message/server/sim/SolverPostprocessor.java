@@ -18,7 +18,6 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -26,6 +25,7 @@ import org.vcell.util.document.User;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
@@ -83,8 +83,10 @@ public class SolverPostprocessor  {
 			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
 
-			vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-			vcMessagingService.setDelegate(new ServerMessagingDelegate());
+			vcMessagingService = new VCMessagingServiceActiveMQ();
+    		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
+    		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
+			vcMessagingService.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
 			VCMessageSession session = vcMessagingService.createProducerSession();
 			WorkerEventMessage workerEventMessage;
 			if (solverExitCode==0){

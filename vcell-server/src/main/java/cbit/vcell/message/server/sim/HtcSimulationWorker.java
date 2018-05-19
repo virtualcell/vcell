@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -40,6 +39,7 @@ import cbit.vcell.message.VCPooledQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
@@ -85,8 +85,9 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	private HtcProxy htcProxy = null;
 
 	private VCQueueConsumer queueConsumer = null;
-	private VCMessageSession sharedMessageProducer = null;
-	private VCPooledQueueConsumer pooledQueueConsumer = null;
+	private VCMessageSession messageProducer_sim = null;
+	private VCMessageSession messageProducer_int = null;
+	private VCPooledQueueConsumer pooledQueueConsumer_int = null;
 	public static Logger lg = LogManager.getLogger(HtcSimulationWorker.class);
 
 	/**
@@ -95,8 +96,8 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
 	 * @param argInitialContext javax.naming.Context
 	 */
-public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, boolean bSlaveMode) throws DataAccessException, FileNotFoundException, UnknownHostException {
-	super(vcMessagingService, serviceInstanceStatus, bSlaveMode);
+public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService_int, VCMessagingService vcMessagingService_sim, ServiceInstanceStatus serviceInstanceStatus, boolean bSlaveMode) throws DataAccessException, FileNotFoundException, UnknownHostException {
+	super(vcMessagingService_int, vcMessagingService_sim, serviceInstanceStatus, bSlaveMode);
 	this.htcProxy = htcProxy;
 }
 
@@ -107,7 +108,6 @@ public final String getJobSelector() {
 }
 
 public void init() {
-	initControlTopicListener();
 	initQueueConsumer();
 }
 
@@ -207,7 +207,8 @@ private PostProcessingChores choresFor(SimulationTask simTask) {
 
 private void initQueueConsumer() {
 
-	this.sharedMessageProducer = vcMessagingService.createProducerSession();
+	this.messageProducer_sim = vcMessagingService_sim.createProducerSession();
+	this.messageProducer_int = vcMessagingService_int.createProducerSession();
 
 	QueueListener queueListener = new QueueListener() {
 
@@ -229,8 +230,8 @@ private void initQueueConsumer() {
 				if (lg.isInfoEnabled()) {
 					lg.info("onQueueMessage() sending 'accepted' message for job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
 				}
-				synchronized (sharedMessageProducer) {
-					WorkerEventMessage.sendAccepted(sharedMessageProducer, HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), pbsId);
+				synchronized (messageProducer_sim) {
+					WorkerEventMessage.sendAccepted(messageProducer_sim, HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), pbsId);
 				}
 				if (lg.isInfoEnabled()) {
 					lg.info("onQueueMessage() sent 'accepted' message for job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
@@ -240,8 +241,8 @@ private void initQueueConsumer() {
 				if (simTask!=null){
 					try {
 						lg.error("failed to process simTask request: "+e.getMessage()+" for simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName(), e);
-						synchronized (sharedMessageProducer) {
-							WorkerEventMessage.sendFailed(sharedMessageProducer,  HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), SimulationMessage.jobFailed(e.getMessage()));
+						synchronized (messageProducer_sim) {
+							WorkerEventMessage.sendFailed(messageProducer_sim,  HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), SimulationMessage.jobFailed(e.getMessage()));
 						}
 						lg.error("sent 'failed' message for simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName(), e);
 					} catch (VCMessagingException e1) {
@@ -255,13 +256,13 @@ private void initQueueConsumer() {
 	};
 
 	int numHtcworkerThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.htcworkerThreadsProperty, "5"));
-	this.pooledQueueConsumer = new VCPooledQueueConsumer(queueListener, numHtcworkerThreads, sharedMessageProducer);
-	this.pooledQueueConsumer.initThreadPool();
+	this.pooledQueueConsumer_int = new VCPooledQueueConsumer(queueListener, numHtcworkerThreads, messageProducer_int);
+	this.pooledQueueConsumer_int.initThreadPool();
 	VCellQueue queue = VCellQueue.SimJobQueue;
-	VCMessageSelector selector = vcMessagingService.createSelector(getJobSelector());
+	VCMessageSelector selector = vcMessagingService_int.createSelector(getJobSelector());
 	String threadName = "SimJob Queue Consumer";
-	queueConsumer = new VCQueueConsumer(queue, pooledQueueConsumer, selector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_JOB_HTC);
-	vcMessagingService.addMessageConsumer(queueConsumer);
+	queueConsumer = new VCQueueConsumer(queue, pooledQueueConsumer_int, selector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_JOB_HTC);
+	vcMessagingService_int.addMessageConsumer(queueConsumer);
 }
 
 private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, PostProcessingChores chores) throws XmlParseException, IOException, SolverException, ExecutableException {
@@ -369,7 +370,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 
 @Override
 public void stopService(){
-	this.pooledQueueConsumer.shutdownAndAwaitTermination();
+	this.pooledQueueConsumer_int.shutdownAndAwaitTermination();
 	super.stopService();
 }
 
@@ -436,10 +437,17 @@ public static void main(java.lang.String[] args) {
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),
 				ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 
-		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-		vcMessagingService.setDelegate(new ServerMessagingDelegate());
+		VCMessagingService vcMessagingService_int = new VCMessagingServiceActiveMQ();
+		String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+		int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+		vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
+		
+		VCMessagingService vcMessagingService_sim = new VCMessagingServiceActiveMQ();
+		String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
+		int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
+		vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
 
-		HtcSimulationWorker htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, false);
+		HtcSimulationWorker htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService_int, vcMessagingService_sim, serviceInstanceStatus, false);
 
 		htcSimulationWorker.init();
 	} catch (Throwable e) {
@@ -459,12 +467,13 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.mongodbHostExternal,
 		PropertyLoader.mongodbPortExternal,
 		PropertyLoader.mongodbDatabase,
-		PropertyLoader.jmsHostInternal,
-		PropertyLoader.jmsPortInternal,
-		PropertyLoader.jmsRestPortInternal,
-		PropertyLoader.jmsHostExternal,
-		PropertyLoader.jmsPortExternal,
-		PropertyLoader.jmsRestPortExternal,
+		PropertyLoader.jmsIntHostInternal,
+		PropertyLoader.jmsIntPortInternal,
+		PropertyLoader.jmsSimHostInternal,
+		PropertyLoader.jmsSimPortInternal,
+		PropertyLoader.jmsSimHostExternal,
+		PropertyLoader.jmsSimPortExternal,
+		PropertyLoader.jmsSimRestPortExternal,
 		PropertyLoader.jmsUser,
 		PropertyLoader.jmsPasswordFile,
 		PropertyLoader.htcUser,

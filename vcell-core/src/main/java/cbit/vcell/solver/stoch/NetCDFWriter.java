@@ -258,7 +258,7 @@ public class NetCDFWriter {
 				// write jms info
 				if (bMessaging) {
 					ArrayChar.D1 jmsString = new ArrayChar.D1(stringLen.getLength());
-					String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
+					String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
 					
 					//
 					// Used for new REST HTTP messaging api (USE THIS WHEN Hyrbid Solvers are compiled).
@@ -269,7 +269,7 @@ public class NetCDFWriter {
 					//
 					// connect to messaging using legacy AMQP protocol instead of new REST api.  Needed for legacy pre-compiled solvers.
 					//
-					String jmsport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsPortExternal);
+					String jmsport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortExternal);
 					String jmsurl = "failover:(tcp://"+jmshost+":"+jmsport+")";
 					
 					

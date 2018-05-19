@@ -11,9 +11,8 @@ services:
       - dbuser=${VCELL_DB_USER}
 
       - jmsuser=clientUser
-      - jmshost_internal=activemq
-      - jmsport_internal=61616
-      - jmsrestport_internal=8161
+      - jmshost_int_internal=activemqint
+      - jmsport_int_internal=61616
       - mongodb_host_internal=mongodb
       - mongodb_port_internal=27017
       - mongodb_database=test
@@ -33,7 +32,114 @@ services:
     networks:
       - vcellnet
     depends_on:
-      - activemq
+      - activemqint
+      - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
+  sched:
+    image: "${VCELL_REPO_NAMESPACE}/vcell-sched:${VCELL_TAG}"
+    environment:
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
+
+      - dburl=${VCELL_DB_URL}
+      - dbdriver=${VCELL_DB_DRIVER}
+      - dbuser=${VCELL_DB_USER}
+
+      - jmshost_sim_external=activemqsim
+      - jmsrestport_sim_external=${VCELL_JMS_SIM_RESTPORT_EXTERNAL}
+      - jmsport_sim_external=${VCELL_JMS_SIM_PORT_EXTERNAL}
+
+      - batchhost=${VCELL_BATCH_HOST}
+      - batchuser=${VCELL_BATCH_USER}
+      - htcnodelist=${VCELL_HTC_NODELIST}
+      - batchsystem=SLURM
+      - slurm_cmd_sbatch=${VCELL_SLURM_CMD_SBATCH:-slurm}
+      - slurm_cmd_sacct=${VCELL_SLURM_CMD_SACCT:-sacct}
+      - slurm_cmd_squeue=${VCELL_SLURM_CMD_SQUEUE:-squeue}
+      - slurm_cmd_scancel=${VCELL_SLURM_CMD_SCANCEL:-scancel}
+      - slurm_partition=${VCELL_SLURM_PARTITION:-vcell}
+      - maxJobsPerScan=${VCELL_MAX_JOBS_PER_SCAN:-100}
+      - maxOdeJobsPerUser=${VCELL_MAX_ODE_JOBS_PER_USER:-50}
+      - maxPdeJobsPerUser=${VCELL_MAX_PDE_JOBS_PER_USER:-50}
+      - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
+
+      - jmsuser=clientUser
+      - jmshost_int_internal=activemqint
+      - jmsport_int_internal=61616
+      - jmshost_sim_internal=activemqsim
+      - jmsport_sim_internal=61616
+      - mongodb_host_internal=mongodb
+      - mongodb_port_internal=27017
+      - mongodb_database=test
+    ports:
+      - "8000" # java remote debugging
+    secrets:
+      - dbpswd
+      - jmspswd
+      - batchuserkeyfile
+    networks:
+      - vcellnet
+    depends_on:
+      - activemqint
+      - activemqsim
+      - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
+  submit:
+    image: "${VCELL_REPO_NAMESPACE}/vcell-submit:${VCELL_TAG}"
+    environment:
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
+      - singularity_imagefile=${VCELL_SINGULARITY_IMAGE_EXTERNAL}
+      - docker_name=${VCELL_BATCH_DOCKER_IMAGE}
+
+      - jmshost_sim_external=activemqsim
+      - jmsrestport_sim_external=${VCELL_JMS_SIM_RESTPORT_EXTERNAL}
+      - jmsport_sim_external=${VCELL_JMS_SIM_PORT_EXTERNAL}
+
+      - mongodb_host_external=${VCELL_MONGO_HOST_EXTERNAL}
+      - mongodb_port_external=${VCELL_MONGO_PORT_EXTERNAL}
+      - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
+      - simdatadir_parallel_external=${VCELL_SIMDATADIR_PARALLEL_EXTERNAL}
+      - export_baseurl=${VCELL_EXPORT_BASEURL}
+
+      - batchhost=${VCELL_BATCH_HOST}
+      - batchuser=${VCELL_BATCH_USER}
+      - htclogdir_external=${VCELL_HTCLOGS_EXTERNAL}
+      - nativesolverdir_external=${VCELL_NATIVESOLVERDIR_EXTERNAL}
+      - htcnodelist=${VCELL_HTC_NODELIST}
+      - batchsystem=SLURM
+      - slurm_cmd_sbatch=${VCELL_SLURM_CMD_SBATCH:-slurm}
+      - slurm_cmd_sacct=${VCELL_SLURM_CMD_SACCT:-sacct}
+      - slurm_cmd_squeue=${VCELL_SLURM_CMD_SQUEUE:-squeue}
+      - slurm_cmd_scancel=${VCELL_SLURM_CMD_SCANCEL:-scancel}
+      - slurm_partition=${VCELL_SLURM_PARTITION:-vcell}
+      - slurm_tmpdir=${VCELL_SLURM_TMPDIR}
+
+      - jmsuser=clientUser
+      - jmshost_int_internal=activemqint
+      - jmsport_int_internal=61616
+      - jmshost_sim_internal=activemqsim
+      - jmsport_sim_internal=61616
+      - mongodb_host_internal=mongodb
+      - mongodb_port_internal=27017
+      - mongodb_database=test
+    ports:
+      - "8000" # java remote debugging
+    volumes:
+      - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_HTCLOGS_HOST}:/htclogs"
+    secrets:
+      - jmspswd
+      - batchuserkeyfile
+    networks:
+      - vcellnet
+    depends_on:
+      - activemqint
+      - activemqsim
       - mongodb
     deploy:
       mode: replicated
@@ -49,32 +155,84 @@ services:
       - dbuser=${VCELL_DB_USER}
 
       - jmsuser=clientUser
-      - jmshost_internal=activemq
-      - jmsport_internal=61616
-      - jmsrestport_internal=8161
+      - jmshost_int_internal=activemqint
+      - jmsport_int_internal=61616
 
       - mongodb_host_internal=mongodb
       - mongodb_port_internal=27017
       - mongodb_database=test
+    ports:
+      - "8000" # java remote debugging
     secrets:
       - dbpswd
       - jmspswd
     networks:
       - vcellnet
     depends_on:
-      - activemq
+      - activemqint
       - mongodb
     deploy:
       mode: replicated
       replicas: 1
-  activemq:
+  data:
+    image: "${VCELL_REPO_NAMESPACE}/vcell-data:${VCELL_TAG}"
+    environment:
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
+      - export_baseurl=${VCELL_EXPORT_BASEURL}
+
+      - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
+
+      - jmsuser=clientUser
+      - jmshost_int_internal=activemqint
+      - jmsport_int_internal=61616
+      - mongodb_host_internal=mongodb
+      - mongodb_port_internal=27017
+      - mongodb_database=test
+
+      - servertype=CombinedData
+    ports:
+      - "8000" # java remote debugging
+    volumes:
+      - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_EXPORTDIR_HOST}:/exportdir"
+    secrets:
+      - jmspswd
+    networks:
+      - vcellnet
+    depends_on:
+      - activemqint
+      - mongodb
+    deploy:
+      mode: replicated
+      replicas: 1
+  activemqint:
     image: webcenter/activemq:5.14.3
     ports:
-      - "${VCELL_JMS_PORT_EXTERNAL}:61616"
-      - "${VCELL_JMS_RESTPORT_EXTERNAL}:8161"
+      - "61616"
     environment:
-      - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbReq;simJob;workerEvent
-      - ACTIVEMQ_STATIC_TOPICS=serviceControl;daemonControl;clientStatus
+      - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbReq;simJob
+      - ACTIVEMQ_STATIC_TOPICS=clientStatus
+      - ACTIVEMQ_MIN_MEMORY=512
+      - ACTIVEMQ_MAX_MEMORY=2048
+      - ACTIVEMQ_ENABLED_SCHEDULER=true
+      - ACTIVEMQ_USERS_clientUser=dummy
+      - ACTIVEMQ_GROUPS_reads=clientUser
+      - ACTIVEMQ_GROUPS_writes=clientUser
+      - ACTIVEMQ_CONFIG_AUTHENABLED=true
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+  activemqsim:
+    image: webcenter/activemq:5.14.3
+    ports:
+      - "${VCELL_JMS_SIM_PORT_EXTERNAL}:61616"
+      - "${VCELL_JMS_SIM_RESTPORT_EXTERNAL}:8161"
+    environment:
+      - ACTIVEMQ_STATIC_QUEUES=workerEvent
+      - ACTIVEMQ_STATIC_TOPICS=serviceControl
       - ACTIVEMQ_MIN_MEMORY=512
       - ACTIVEMQ_MAX_MEMORY=2048
       - ACTIVEMQ_ENABLED_SCHEDULER=true

@@ -15,7 +15,6 @@ import java.util.Date;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.rmi.event.DataJobListener;
@@ -27,6 +26,7 @@ import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
@@ -85,10 +85,11 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	/**
 	 * Scheduler constructor comment.
 	 */
-	public VCellServices(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, DataServerImpl dataServerImpl, SimulationDatabase simulationDatabase) throws Exception {
-		super(vcMessagingService,serviceInstanceStatus,false);
+	public VCellServices(HtcProxy htcProxy, VCMessagingService vcMessagingService_int, VCMessagingService vcMessagingService_sim, ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, DataServerImpl dataServerImpl, SimulationDatabase simulationDatabase) throws Exception {
+		super(vcMessagingService_int,vcMessagingService_sim,serviceInstanceStatus,false);
 		this.htcProxy = htcProxy;
-		this.vcMessagingService = vcMessagingService;
+		this.vcMessagingService_int = vcMessagingService_int;
+		this.vcMessagingService_sim = vcMessagingService_sim;
 		this.databaseServerImpl = databaseServerImpl;
 		this.dataServerImpl = dataServerImpl;
 		this.simulationDatabase = simulationDatabase;
@@ -96,30 +97,28 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 
 	public void init() throws Exception{
-		initControlTopicListener();
-
 		ServiceInstanceStatus dispatcherServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DISPATCH,99,ManageUtils.getHostName(), new Date(), true);
-		simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, dispatcherServiceInstanceStatus, simulationDatabase, true);
+		simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService_int, vcMessagingService_sim, dispatcherServiceInstanceStatus, simulationDatabase, true);
 		simulationDispatcher.init();
 
 		ServiceInstanceStatus databaseServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DB,99,ManageUtils.getHostName(), new Date(), true);
-		databaseServer = new DatabaseServer(databaseServiceInstanceStatus,databaseServerImpl,vcMessagingService, true);
+		databaseServer = new DatabaseServer(databaseServiceInstanceStatus,databaseServerImpl,vcMessagingService_int, true);
 		databaseServer.init();
 
 		ServiceInstanceStatus simDataServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DATA,99,ManageUtils.getHostName(), new Date(), true);
-		simDataServer = new SimDataServer(simDataServiceInstanceStatus,dataServerImpl,vcMessagingService,SimDataServiceType.SimDataOnly, true);
+		simDataServer = new SimDataServer(simDataServiceInstanceStatus,dataServerImpl,vcMessagingService_int,SimDataServiceType.SimDataOnly, true);
 		simDataServer.init();
 
 		ServiceInstanceStatus dataExportServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DATAEXPORT,99,ManageUtils.getHostName(), new Date(), true);
-		exportDataServer = new SimDataServer(dataExportServiceInstanceStatus,dataServerImpl,vcMessagingService, SimDataServiceType.ExportDataOnly, true);
+		exportDataServer = new SimDataServer(dataExportServiceInstanceStatus,dataServerImpl,vcMessagingService_int, SimDataServiceType.ExportDataOnly, true);
 		exportDataServer.init();
 
 		ServiceInstanceStatus htcServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.PBSCOMPUTE,99,ManageUtils.getHostName(), new Date(), true);
-		htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, htcServiceInstanceStatus, true);
+		htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService_int, vcMessagingService_sim, htcServiceInstanceStatus, true);
 		htcSimulationWorker.init();
 
-		dataSession = vcMessagingService.createProducerSession();
-		exportSession = vcMessagingService.createProducerSession();
+		dataSession = vcMessagingService_int.createProducerSession();
+		exportSession = vcMessagingService_int.createProducerSession();
 	}
 
 	@Override
@@ -221,10 +220,17 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 			DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);        //add dataJobListener
 
-			VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-			vcMessagingService.setDelegate(new ServerMessagingDelegate());
+			VCMessagingService vcMessagingService_int = new VCMessagingServiceActiveMQ();
+			String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+    		int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+			vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
 
-			VCellServices vcellServices = new VCellServices(htcProxy, vcMessagingService, serviceInstanceStatus, databaseServerImpl, dataServerImpl, simulationDatabase);
+			VCMessagingService vcMessagingService_sim = new VCMessagingServiceActiveMQ();
+			String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
+    		int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
+			vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
+
+			VCellServices vcellServices = new VCellServices(htcProxy, vcMessagingService_int, vcMessagingService_sim, serviceInstanceStatus, databaseServerImpl, dataServerImpl, simulationDatabase);
 
 			dataSetControllerImpl.addDataJobListener(vcellServices);
 	        exportServiceImpl.addExportListener(vcellServices);
@@ -282,12 +288,13 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		PropertyLoader.mongodbHostExternal,
 		PropertyLoader.mongodbPortExternal,
 		PropertyLoader.mongodbDatabase,
-		PropertyLoader.jmsHostInternal,
-		PropertyLoader.jmsPortInternal,
-		PropertyLoader.jmsRestPortInternal,
-		PropertyLoader.jmsHostExternal,
-		PropertyLoader.jmsPortExternal,
-		PropertyLoader.jmsRestPortExternal,
+		PropertyLoader.jmsIntHostInternal,
+		PropertyLoader.jmsIntPortInternal,
+		PropertyLoader.jmsSimHostInternal,
+		PropertyLoader.jmsSimPortInternal,
+		PropertyLoader.jmsSimHostExternal,
+		PropertyLoader.jmsSimPortExternal,
+		PropertyLoader.jmsSimRestPortExternal,
 		PropertyLoader.jmsUser,
 		PropertyLoader.jmsPasswordFile,
 		PropertyLoader.htcUser,

@@ -33,6 +33,8 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
     private ArrayList<MessageProducerSessionJms> messagingProducerSessions = new ArrayList<MessageProducerSessionJms>();
 	protected HashMap<String,Destination> destinationMap = new HashMap<String,Destination>();
 	private VCMessagingDelegate delegate = new SimpleMessagingDelegate();
+	protected String jmshost = null;
+	protected Integer jmsport = null;
 
 	private Timer garbageCollectorTimer = new Timer(true);
 	private final static long BlobGarbageCollector_initialDelayMS 	= 1000*3600;		// one hour
@@ -87,8 +89,10 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 	}
 
 	@Override
-	public void setDelegate(VCMessagingDelegate delegate){
+	public void setConfiguration(VCMessagingDelegate delegate, String jmshost, int jmsport){
 		this.delegate = delegate;
+		this.jmshost = jmshost;
+		this.jmsport = jmsport;
 	}
 	
 	@Override

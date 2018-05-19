@@ -233,7 +233,7 @@ echo Rel `curl --silent http://vcell.org/webstart/Rel/updates.xml | xmllint --xp
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=3 VCELL_SITE=rel
+export VCELL_VERSION=7.0.0 VCELL_BUILD=4 VCELL_SITE=rel
 export MANAGER_NODE=vcellapi.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
@@ -251,7 +251,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=43 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=44 VCELL_SITE=alpha
 export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
@@ -319,7 +319,7 @@ sudo env ${cat server_alpha_7.0.0_10_a9a83bb-2.config | xargs) docker stack depl
 build the containers (e.g. localhost:5000/schaff/vcell-api:dev1) and upload to local registry Docker registry (e.g. localhost:5000).  
 
 ```bash
-export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev11
+export VCELL_REPO_NAMESPACE=localhost:5000/schaff VCELL_TAG=dev12
 ./build.sh --skip-singularity all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
@@ -337,6 +337,15 @@ Deploy VCell Docker containers on local machine in Swarm Mode with mocked SLURM 
 ```bash
 ./deploy.sh \
   --ssh-user `whoami` --ssh-key ~/.ssh/id_rsa --build-installers \
+  `hostname` \
+  ./$VCELL_CONFIG_FILE_NAME $PWD/${VCELL_CONFIG_FILE_NAME}.config \
+  ./docker-compose-dev.yml $PWD/local-docker-compose-dev-${VCELL_TAG}.yml \
+  vcell${VCELL_SITE}
+```
+
+```bash
+./deploy.sh \
+  --ssh-user `whoami` --ssh-key ~/.ssh/id_rsa \
   `hostname` \
   ./$VCELL_CONFIG_FILE_NAME $PWD/${VCELL_CONFIG_FILE_NAME}.config \
   ./docker-compose-dev.yml $PWD/local-docker-compose-dev-${VCELL_TAG}.yml \

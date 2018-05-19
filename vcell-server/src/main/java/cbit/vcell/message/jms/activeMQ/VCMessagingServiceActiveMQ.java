@@ -22,7 +22,6 @@ import cbit.vcell.resource.PropertyLoader;
 
 @Plugin(type = VCMessagingService.class)
 public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
-	private static String JMS_URL;
 	
 	public VCMessagingServiceActiveMQ() throws VCMessagingException {
 		super();
@@ -36,7 +35,7 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 	@Override
 	public ConnectionFactory createConnectionFactory(){
 		//return new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false&broker.useJmx=false&create=false");
-		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl( ));
+		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl(jmshost, jmsport ));
 		activeMQConnectionFactory.setTrustAllPackages(true);
 		return activeMQConnectionFactory;
 	}
@@ -62,14 +61,8 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 	 * lazily retrieve from {@link PropertyLoader#jmsURL}
 	 * @return static string
 	 */
-	private String jmsUrl( ) {
-		if (JMS_URL == null) {
-			String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostInternal);
-			String jmsport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsPortInternal);
-			String jmsurl = "failover:(tcp://"+jmshost+":"+jmsport+")";
-			JMS_URL = jmsurl;
-			Objects.requireNonNull(JMS_URL);
-		}
-		return JMS_URL;
+	private String jmsUrl(String jmshost, int jmsport) {
+		String jmsurl = "failover:(tcp://"+jmshost+":"+jmsport+")";
+		return jmsurl;
 	}
 }

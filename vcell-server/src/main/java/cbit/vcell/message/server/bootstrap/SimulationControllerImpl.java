@@ -360,6 +360,7 @@ public void stopSimulation(Simulation simulation) throws FileNotFoundException, 
 			if (destination == VCellTopic.ClientStatusTopic && objectMessage.getObjectContent() instanceof SimulationJobStatus){
 				onClientStatusTopic_SimulationJobStatus(objectMessage);
 			}else if (destination == VCellTopic.ServiceControlTopic && objectMessage.getStringProperty(messageTypeProperty).equals(stopSimulationValue)){
+				lg.error("SimulationControllerImpl.stopSimulation() exercising serviceControl topic ... should be removed");
 				onServiceControlTopic_StopSimulation(objectMessage);
 			}else{
 				throw new RuntimeException("SimulationControllerImpl.startSimulation().objectMessageListener:: expecting message with SimulationJobStatus to topic "+VCellTopic.ClientStatusTopic.getName()+": received \""+objectMessage.show()+"\" on destination \""+destination+"\"");

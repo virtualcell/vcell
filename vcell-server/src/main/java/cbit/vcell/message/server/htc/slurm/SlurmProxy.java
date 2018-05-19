@@ -313,9 +313,9 @@ public class SlurmProxy extends HtcProxy {
 
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 
-		String jmshost_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsHostExternal);
-		String jmsport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsPortExternal);
-		String jmsrestport_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
+		String jmshost_sim_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
+		String jmsport_sim_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortExternal);
+		String jmsrestport_sim_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimRestPortExternal);
 	    String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
 		String jmsuser=PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
 		String jmspswd=PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue,PropertyLoader.jmsPasswordFile);
@@ -330,9 +330,9 @@ public class SlurmProxy extends HtcProxy {
 		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
 
 		String[] environmentVars = new String[] {
-				"jmshost_internal="+jmshost_external,
-				"jmsport_internal="+jmsport_external,
-				"jmsrestport_internal="+jmsrestport_external,
+				"jmshost_sim_internal="+jmshost_sim_external,
+				"jmsport_sim_internal="+jmsport_sim_external,
+				"jmsrestport_sim_internal="+jmsrestport_sim_external,
 				"jmsuser="+jmsuser,
 				"jmspswd="+jmspswd,
 				"jmsblob_minsize="+jmsblob_minsize,
@@ -398,8 +398,8 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("  echo ${cmd_prefix} " +
 				" --msg-userid "+jmsuser+
 				" --msg-password "+jmspswd+
-				" --msg-host "+jmshost_external+
-				" --msg-port "+jmsport_external+
+				" --msg-host "+jmshost_sim_external+
+				" --msg-port "+jmsport_sim_external+
 				" --msg-job-host `hostname`"+
 				" --msg-job-userid "+simTask.getUserName()+
 				" --msg-job-simkey "+simTask.getSimKey()+
@@ -410,8 +410,8 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("  ${cmd_prefix} " +
 				" --msg-userid "+jmsuser+
 				" --msg-password "+jmspswd+
-				" --msg-host "+jmshost_external+
-				" --msg-port "+jmsport_external+
+				" --msg-host "+jmshost_sim_external+
+				" --msg-port "+jmsport_sim_external+
 				" --msg-job-host `hostname`"+
 				" --msg-job-userid "+simTask.getUserName()+
 				" --msg-job-simkey "+simTask.getSimKey()+

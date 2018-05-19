@@ -22,9 +22,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	dburl="db-url-not-set" \
     dbdriver="db-driver-not-set" \
     dbuser="db-user-not-set" \
-    jmshost_internal=activemq \
-    jmsport_internal=61616 \
-    jmsrestport_internal=8161 \
+    jmshost_int_internal=activemqint \
+    jmsport_int_internal=61616 \
     jmsuser=clientUser \
 	mongodb_host_internal=mongodb \
 	mongodb_port_internal=27017 \
@@ -36,6 +35,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd
+
+EXPOSE 8000
 
 ENTRYPOINT java \
 	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
@@ -50,8 +51,8 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
-	-Dvcell.jms.host.internal="${jmshost_internal}" \
-	-Dvcell.jms.port.internal="${jmsport_internal}" \
+	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
+	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
 	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \

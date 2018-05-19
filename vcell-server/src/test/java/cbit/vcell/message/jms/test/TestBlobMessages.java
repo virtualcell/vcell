@@ -19,6 +19,7 @@ import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.jms.VCMessageJms;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.mongodb.VCMongoDbDriver;
+import cbit.vcell.resource.PropertyLoader;
 
 @Ignore
 public class TestBlobMessages {
@@ -42,7 +43,9 @@ public class TestBlobMessages {
 		System.getProperties().put("vcell.jms.blobMessageUseMongo","true");
 		System.getProperties().put("vcell.jms.blobMessageMinSize","100000");
 		messagingService = new VCMessagingServiceActiveMQ();
-		messagingService.setDelegate(new SimpleMessagingDelegate());
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+		messagingService.setConfiguration(new SimpleMessagingDelegate(), jmshost, jmsport);
 	}
 	
 	@After

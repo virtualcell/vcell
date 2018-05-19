@@ -21,7 +21,6 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
@@ -30,6 +29,7 @@ import org.vcell.util.document.User;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.jmx.VCellServiceMXBean;
@@ -60,8 +60,10 @@ public class SolverPreprocessor  {
 	 * @throws VCMessagingException 
 	 */
 	public static void sendFailureAndExit(HTCSolver htcSolver, SimulationTask simTask, String hostName, SimulationMessage simMessage) throws VCMessagingException{
-		VCMessagingService service = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-		service.setDelegate(new ServerMessagingDelegate());
+		VCMessagingService service = new VCMessagingServiceActiveMQ();
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
+		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
+		service.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
 		VCMessageSession session = service.createProducerSession();
 		try {
 			WorkerEventMessage.sendFailed(session, htcSolver, simTask, hostName, simMessage);

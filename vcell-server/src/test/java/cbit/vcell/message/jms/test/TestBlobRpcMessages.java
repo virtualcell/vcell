@@ -51,7 +51,9 @@ public class TestBlobRpcMessages {
 	    	//System.getProperties().setProperty(PropertyLoader.jmsURL,"tcp://nrcamdev5.cam.uchc.edu:61616");
 	    	
 	    	VCMessagingService messagingService = new VCMessagingServiceActiveMQ();
-	    	messagingService.setDelegate(new SimpleMessagingDelegate());
+    		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+    		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+	    	messagingService.setConfiguration(new SimpleMessagingDelegate(), jmshost, jmsport);
 
 	        // reading message and computing sum
 	        // create N comsumers

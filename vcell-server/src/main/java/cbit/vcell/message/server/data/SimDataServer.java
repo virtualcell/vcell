@@ -76,7 +76,7 @@ public class SimDataServer extends ServiceProvider implements ExportListener, Da
  * @throws Exception
  */
 public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl dataServerImpl, VCMessagingService vcMessagingService, SimDataServiceType simDataServiceType, boolean bSlaveMode) throws Exception {
-	super(vcMessagingService,serviceInstanceStatus,bSlaveMode);
+	super(vcMessagingService,null,serviceInstanceStatus,bSlaveMode);
 	this.dataServerImpl = dataServerImpl;
 	this.simDataServiceType = simDataServiceType;
 }
@@ -93,19 +93,19 @@ public void init() throws Exception {
 	int numThreads;
 	switch (simDataServiceType) {
 	case CombinedData: {
-		selector = vcMessagingService.createSelector(dataRequestFilter);
+		selector = vcMessagingService_int.createSelector(dataRequestFilter);
 		int exportThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.exportdataThreadsProperty, "3"));
 		int simdataThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.simdataThreadsProperty, "5"));
 		numThreads = exportThreads + simdataThreads;
 		break;
 	}
 	case ExportDataOnly: {
-		selector = vcMessagingService.createSelector(dataRequestFilter+" AND "+exportOnlyFilter);
+		selector = vcMessagingService_int.createSelector(dataRequestFilter+" AND "+exportOnlyFilter);
 		numThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.exportdataThreadsProperty, "3"));
 		break;
 	}
 	case SimDataOnly: {
-		selector = vcMessagingService.createSelector(dataRequestFilter+" AND "+dataOnlyFilter);
+		selector = vcMessagingService_int.createSelector(dataRequestFilter+" AND "+dataOnlyFilter);
 		numThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.simdataThreadsProperty, "5"));
 		break;
 	}
@@ -114,15 +114,13 @@ public void init() throws Exception {
 	}
 	}
 
-	this.sharedProducerSession = vcMessagingService.createProducerSession();
+	this.sharedProducerSession = vcMessagingService_int.createProducerSession();
 	rpcMessageHandler = new VCRpcMessageHandler(dataServerImpl, VCellQueue.DataRequestQueue);
 	this.pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, numThreads, sharedProducerSession);
 	this.pooledQueueConsumer.initThreadPool();
 	rpcConsumer = new VCQueueConsumer(VCellQueue.DataRequestQueue, pooledQueueConsumer, selector, serviceType.getName()+" RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DATA_REQUEST);
 
-	vcMessagingService.addMessageConsumer(rpcConsumer);
-	
-	initControlTopicListener();
+	vcMessagingService_int.addMessageConsumer(rpcConsumer);
 }
 
 @Override
@@ -200,7 +198,9 @@ public static void main(java.lang.String[] args) {
 		DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);
 
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-		vcMessagingService.setDelegate(new ServerMessagingDelegate());
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+		vcMessagingService.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
 		
         SimDataServer simDataServer = new SimDataServer(serviceInstanceStatus, dataServerImpl, vcMessagingService, simDataServiceType, false);
         //add dataJobListener
@@ -222,7 +222,7 @@ public static void main(java.lang.String[] args) {
  */
 public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 	try {
-		VCMessageSession dataSession = vcMessagingService.createProducerSession();
+		VCMessageSession dataSession = vcMessagingService_int.createProducerSession();
 		VCMessage dataEventMessage = dataSession.createObjectMessage(event);
 		dataEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
 		dataEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
@@ -242,7 +242,7 @@ public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
  */
 public void exportMessage(cbit.rmi.event.ExportEvent event) {
 	try {
-		VCMessageSession dataSession = vcMessagingService.createProducerSession();
+		VCMessageSession dataSession = vcMessagingService_int.createProducerSession();
 		VCMessage exportEventMessage = dataSession.createObjectMessage(event);
 		exportEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
 		exportEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
@@ -262,8 +262,8 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.mongodbHostInternal,
 		PropertyLoader.mongodbPortInternal,
 		PropertyLoader.mongodbDatabase,
-		PropertyLoader.jmsHostInternal,
-		PropertyLoader.jmsPortInternal,
+		PropertyLoader.jmsIntHostInternal,
+		PropertyLoader.jmsIntPortInternal,
 		PropertyLoader.jmsUser,
 		PropertyLoader.jmsPasswordFile,
 		PropertyLoader.pythonExe,

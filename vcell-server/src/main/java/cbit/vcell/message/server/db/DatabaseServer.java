@@ -9,18 +9,12 @@
  */
 
 package cbit.vcell.message.server.db;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
 
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.service.VCellServiceHelper;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.VCMessageSession;
@@ -35,19 +29,11 @@ import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
-import cbit.vcell.message.server.dispatcher.BatchScheduler;
-import cbit.vcell.message.server.dispatcher.BatchScheduler.WaitingJob;
-import cbit.vcell.message.server.dispatcher.SimulationDispatcher.DispatchThread;
-import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
-import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.SimulationJobStatus;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
  * Insert the type's description here.
@@ -111,27 +97,23 @@ public class DatabaseServer extends ServiceProvider {
 /**
  * Scheduler constructor comment.
  */
-public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, VCMessagingService vcMessagingService, boolean bSlaveMode) throws Exception {
-	super(vcMessagingService,serviceInstanceStatus,bSlaveMode);
+public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, VCMessagingService vcMessagingService_int, boolean bSlaveMode) throws Exception {
+	super(vcMessagingService_int, null, serviceInstanceStatus,bSlaveMode);
 	this.databaseServerImpl = databaseServerImpl;
 }
 
 public void init() throws Exception {
-	initControlTopicListener();
-
 	int numDatabaseThreads = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.databaseThreadsProperty, "5"));
-	this.sharedProducerSession = vcMessagingService.createProducerSession();
+	this.sharedProducerSession = vcMessagingService_int.createProducerSession();
 	rpcMessageHandler = new VCRpcMessageHandler(databaseServerImpl, VCellQueue.DbRequestQueue);
 	this.pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, numDatabaseThreads, sharedProducerSession);
 	this.pooledQueueConsumer.initThreadPool();
 	rpcConsumer = new VCQueueConsumer(VCellQueue.DbRequestQueue, this.pooledQueueConsumer, null, "Database RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DB_REQUEST);
 
-	vcMessagingService.addMessageConsumer(rpcConsumer);
+	vcMessagingService_int.addMessageConsumer(rpcConsumer);
 	
 	this.databaseCleanupThread = new DatabaseCleanupThread(databaseServerImpl);
 	this.databaseCleanupThread.start();
-	
-	initControlTopicListener();
 }
 
 
@@ -174,7 +156,9 @@ public static void main(java.lang.String[] args) {
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
 		
 		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-		vcMessagingService.setDelegate(new ServerMessagingDelegate());
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+		vcMessagingService.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
 		
 		DatabaseServer databaseServer = new DatabaseServer(serviceInstanceStatus, databaseServerImpl, vcMessagingService, false);
         databaseServer.init();
@@ -193,8 +177,8 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.mongodbHostInternal,
 		PropertyLoader.mongodbPortInternal,
 		PropertyLoader.mongodbDatabase,
-		PropertyLoader.jmsHostInternal,
-		PropertyLoader.jmsPortInternal,
+		PropertyLoader.jmsIntHostInternal,
+		PropertyLoader.jmsIntPortInternal,
 		PropertyLoader.jmsUser,
 		PropertyLoader.jmsPasswordFile,
 		PropertyLoader.jmsBlobMessageUseMongo,

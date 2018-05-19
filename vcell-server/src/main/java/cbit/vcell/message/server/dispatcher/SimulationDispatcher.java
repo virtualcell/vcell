@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
@@ -52,6 +51,7 @@ import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
@@ -116,16 +116,16 @@ public class SimulationDispatcher extends ServiceProvider {
 	public static final long QUEUE_FLUSH_WAITIME = MessageConstants.MINUTE_IN_MS*5;
 
 	private SimulationDatabase simulationDatabase = null;
-	private VCQueueConsumer workerEventConsumer = null;
-	private VCQueueConsumer simRequestConsumer = null;
-	private VCRpcMessageHandler rpcMessageHandler = null;
+	private VCQueueConsumer workerEventConsumer_sim = null;
+	private VCQueueConsumer simRequestConsumer_int = null;
+	private VCRpcMessageHandler rpcMessageHandler_int = null;
 
 	private SimulationDispatcherEngine simDispatcherEngine = new SimulationDispatcherEngine();
 
 	private DispatchThread dispatchThread = null;
 	private SimulationMonitor simMonitor = null;
-	private VCMessageSession dispatcherQueueSession = null;
-	private VCMessageSession simMonitorThreadSession = null;
+	private VCMessageSession dispatcherQueueSession_int = null;
+	private VCMessageSession simMonitorThreadSession_sim = null;
 
 	private HtcProxy htcProxy = null;
 	/**
@@ -142,7 +142,7 @@ public class SimulationDispatcher extends ServiceProvider {
 				lg.debug("stop simulation requested for "+vcSimulationIdentifier);
 			}
 			try {
-				simDispatcherEngine.onStopRequest(vcSimulationIdentifier, user, simulationDatabase, dispatcherQueueSession);
+				simDispatcherEngine.onStopRequest(vcSimulationIdentifier, user, simulationDatabase, dispatcherQueueSession_int);
 			} catch (VCMessagingException | SQLException e) {
 				lg.error("failed to stop simulation "+vcSimulationIdentifier, e);
 				throw new DataAccessException(e.getMessage(),e);
@@ -160,7 +160,7 @@ public class SimulationDispatcher extends ServiceProvider {
 				lg.debug("start simulation requested for "+vcSimulationIdentifier+" with "+numSimulationScanJobs+" jobs");
 			}
 			try {
-				simDispatcherEngine.onStartRequest(vcSimulationIdentifier, user, numSimulationScanJobs, simulationDatabase, dispatcherQueueSession, dispatcherQueueSession);
+				simDispatcherEngine.onStartRequest(vcSimulationIdentifier, user, numSimulationScanJobs, simulationDatabase, dispatcherQueueSession_int, dispatcherQueueSession_int);
 			} catch (VCMessagingException | SQLException e1) {
 				lg.error("failed to start simulation "+vcSimulationIdentifier, e1);
 				throw new DataAccessException(e1.getMessage(),e1);
@@ -313,12 +313,12 @@ public class SimulationDispatcher extends ServiceProvider {
 								if (lg.isDebugEnabled()) {
 									lg.debug("dispatching simKey="+vcSimID+", jobId="+jobStatus.getJobIndex()+", taskId="+jobStatus.getTaskID());
 								}
-								simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession);
+								simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession_int);
 								bDispatchedAnyJobs = true;
 							} catch (Exception e) {
 								lg.error("failed to dispatch simKey="+vcSimID+", jobId="+jobStatus.getJobIndex()+", taskId="+jobStatus.getTaskID(), e);
 								final String failureMessage = FAILED_LOAD_MESSAGE + e.getMessage();
-								simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession);
+								simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession_sim);
 							}
 							Thread.yield();
 						}
@@ -449,10 +449,10 @@ public class SimulationDispatcher extends ServiceProvider {
 			}
 			
 			private void flushWorkerEventQueue() throws VCMessagingException{
-				VCMessage message = simMonitorThreadSession.createObjectMessage(new Long(VCMongoMessage.getServiceStartupTime()));
+				VCMessage message = simMonitorThreadSession_sim.createObjectMessage(new Long(VCMongoMessage.getServiceStartupTime()));
 				message.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_FLUSH_VALUE);
 				synchronized (notifyObject) {
-					simMonitorThreadSession.sendQueueMessage(VCellQueue.WorkerEventQueue, message, false, MessageConstants.MINUTE_IN_MS*5L);
+					simMonitorThreadSession_sim.sendQueueMessage(VCellQueue.WorkerEventQueue, message, false, MessageConstants.MINUTE_IN_MS*5L);
 					try {
 						long startWaitTime = System.currentTimeMillis();
 						notifyObject.wait(QUEUE_FLUSH_WAITIME);
@@ -515,7 +515,7 @@ public class SimulationDispatcher extends ServiceProvider {
 						//SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(activeJobStatus.getVCSimulationIdentifier().getSimulationKey(), activeJobStatus.getJobIndex());
 						//					System.out.println(simStateMachine.show());
 						VCMongoMessage.sendObsoleteJob(activeJobStatus,failureMessage);
-						simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, simMonitorThreadSession);
+						simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, simMonitorThreadSession_sim);
 						if (activeJobStatus.getSimulationExecutionStatus()!=null && activeJobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
 							HtcJobID htcJobId = activeJobStatus.getSimulationExecutionStatus().getHtcJobID();
 							try {
@@ -550,8 +550,8 @@ public class SimulationDispatcher extends ServiceProvider {
 	/**
 	 * Scheduler constructor comment.
 	 */
-	public SimulationDispatcher(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SimulationDatabase simulationDatabase, boolean bSlaveMode) throws Exception {
-		super(vcMessagingService,serviceInstanceStatus,bSlaveMode);
+	public SimulationDispatcher(HtcProxy htcProxy, VCMessagingService vcMessagingService_int, VCMessagingService vcMessagingService_sim, ServiceInstanceStatus serviceInstanceStatus, SimulationDatabase simulationDatabase, boolean bSlaveMode) throws Exception {
+		super(vcMessagingService_int, vcMessagingService_sim,serviceInstanceStatus,bSlaveMode);
 		this.simulationDatabase = simulationDatabase;
 		this.htcProxy = htcProxy;
 	}
@@ -569,8 +569,8 @@ public class SimulationDispatcher extends ServiceProvider {
 		};
 		VCMessageSelector workerEventSelector = null;
 		String threadName = "Worker Event Consumer";
-		workerEventConsumer = new VCQueueConsumer(VCellQueue.WorkerEventQueue, workerEventListener, workerEventSelector, threadName, MessageConstants.PREFETCH_LIMIT_WORKER_EVENT);
-		vcMessagingService.addMessageConsumer(workerEventConsumer);
+		workerEventConsumer_sim = new VCQueueConsumer(VCellQueue.WorkerEventQueue, workerEventListener, workerEventSelector, threadName, MessageConstants.PREFETCH_LIMIT_WORKER_EVENT);
+		vcMessagingService_sim.addMessageConsumer(workerEventConsumer_sim);
 
 		//
 		// set up consumer for Simulation Request (non-blocking RPC) messages
@@ -579,19 +579,17 @@ public class SimulationDispatcher extends ServiceProvider {
 
 		VCMessageSelector simRequestSelector = null;
 		threadName = "Sim Request Consumer";
-		this.rpcMessageHandler = new VCRpcMessageHandler(simServiceImpl, VCellQueue.SimReqQueue);
+		this.rpcMessageHandler_int = new VCRpcMessageHandler(simServiceImpl, VCellQueue.SimReqQueue);
 
-		simRequestConsumer = new VCQueueConsumer(VCellQueue.SimReqQueue, rpcMessageHandler, simRequestSelector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_REQUEST);
-		vcMessagingService.addMessageConsumer(simRequestConsumer);
+		simRequestConsumer_int = new VCQueueConsumer(VCellQueue.SimReqQueue, rpcMessageHandler_int, simRequestSelector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_REQUEST);
+		vcMessagingService_int.addMessageConsumer(simRequestConsumer_int);
 
-		this.dispatcherQueueSession = vcMessagingService.createProducerSession();
+		this.dispatcherQueueSession_int = vcMessagingService_int.createProducerSession();
 
 		this.dispatchThread = new DispatchThread();
 		this.dispatchThread.start();
 
-		initControlTopicListener();
-
-		this.simMonitorThreadSession = vcMessagingService.createProducerSession();
+		this.simMonitorThreadSession_sim = vcMessagingService_sim.createProducerSession();
 		this.simMonitor = new SimulationMonitor();
 	}
 
@@ -732,10 +730,17 @@ public class SimulationDispatcher extends ServiceProvider {
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
 			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true);
 
-			VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-			vcMessagingService.setDelegate(new ServerMessagingDelegate());
+			VCMessagingService vcMessagingService_int = new VCMessagingServiceActiveMQ();
+    		String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+    		int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+			vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
+			
+			VCMessagingService vcMessagingService_sim = new VCMessagingServiceActiveMQ();
+			String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
+    		int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
+			vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
 
-			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, serviceInstanceStatus, simulationDatabase, false);
+			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService_int, vcMessagingService_sim, serviceInstanceStatus, simulationDatabase, false);
 
 			simulationDispatcher.init();
 		} catch (Throwable e) {
@@ -755,8 +760,10 @@ public class SimulationDispatcher extends ServiceProvider {
 			PropertyLoader.mongodbHostInternal,
 			PropertyLoader.mongodbPortInternal,
 			PropertyLoader.mongodbDatabase,
-			PropertyLoader.jmsHostInternal,
-			PropertyLoader.jmsPortInternal,
+			PropertyLoader.jmsIntHostInternal,
+			PropertyLoader.jmsIntPortInternal,
+			PropertyLoader.jmsSimHostInternal,
+			PropertyLoader.jmsSimPortInternal,
 			PropertyLoader.jmsUser,
 			PropertyLoader.jmsPasswordFile,
 			PropertyLoader.htcUser,

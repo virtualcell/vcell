@@ -128,13 +128,15 @@ public class PropertyLoader {
 	public static final String dbPasswordValue				= record("vcell.server.dbPassword",ValueType.GEN);
 	public static final String dbPasswordFile				= record("vcell.db.pswdfile",ValueType.GEN);
 
-	public static final String jmsHostInternal				= record("vcell.jms.host.internal",ValueType.GEN);
-	public static final String jmsPortInternal				= record("vcell.jms.port.internal",ValueType.GEN);
-	public static final String jmsRestPortInternal			= record("vcell.jms.restport.internal",ValueType.GEN);
-	public static final String jmsHostExternal				= record("vcell.jms.host.external",ValueType.GEN);
-	public static final String jmsPortExternal				= record("vcell.jms.port.external",ValueType.GEN);
-	public static final String jmsRestPortExternal			= record("vcell.jms.restport.external",ValueType.GEN);
-	public static final String jmsUser					= record("vcell.jms.user",ValueType.GEN);
+	public static final String jmsIntHostInternal			= record("vcell.jms.int.host.internal",ValueType.GEN);
+	public static final String jmsIntPortInternal			= record("vcell.jms.int.port.internal",ValueType.GEN);
+	public static final String jmsSimHostInternal			= record("vcell.jms.sim.host.internal",ValueType.GEN);
+	public static final String jmsSimPortInternal			= record("vcell.jms.sim.port.internal",ValueType.GEN);
+	public static final String jmsSimRestPortInternal		= record("vcell.jms.sim.restport.internal",ValueType.GEN);
+	public static final String jmsSimHostExternal			= record("vcell.jms.sim.host.external",ValueType.GEN);
+	public static final String jmsSimPortExternal			= record("vcell.jms.sim.port.external",ValueType.GEN);
+	public static final String jmsSimRestPortExternal		= record("vcell.jms.sim.restport.external",ValueType.GEN);
+	public static final String jmsUser						= record("vcell.jms.user",ValueType.GEN);
 	public static final String jmsPasswordValue				= record("vcell.jms.password",ValueType.GEN);
 	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.GEN);
 

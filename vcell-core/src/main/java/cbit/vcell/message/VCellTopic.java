@@ -1,12 +1,9 @@
 package cbit.vcell.message;
 
-import java.util.Objects;
-
 import cbit.vcell.resource.PropertyLoader;
 
 public class VCellTopic implements VCDestination {
 	public final static VCellTopic ClientStatusTopic = new VCellTopic(PropertyLoader.jmsClientStatusTopic, "clientStatus");
-	public final static VCellTopic DaemonControlTopic = new VCellTopic(PropertyLoader.jmsDaemonControlTopic, "daemonControl");
 	public final static VCellTopic ServiceControlTopic = new VCellTopic(PropertyLoader.jmsServiceControlTopic, "serviceControl");
 
 	private final String topicName;
