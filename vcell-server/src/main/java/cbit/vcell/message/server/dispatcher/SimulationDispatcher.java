@@ -125,6 +125,7 @@ public class SimulationDispatcher extends ServiceProvider {
 	private DispatchThread dispatchThread = null;
 	private SimulationMonitor simMonitor = null;
 	private VCMessageSession dispatcherQueueSession_int = null;
+	private VCMessageSession clientStatusTopicSession_int = null;
 	private VCMessageSession simMonitorThreadSession_sim = null;
 
 	private HtcProxy htcProxy = null;
@@ -318,7 +319,7 @@ public class SimulationDispatcher extends ServiceProvider {
 							} catch (Exception e) {
 								lg.error("failed to dispatch simKey="+vcSimID+", jobId="+jobStatus.getJobIndex()+", taskId="+jobStatus.getTaskID(), e);
 								final String failureMessage = FAILED_LOAD_MESSAGE + e.getMessage();
-								simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession_sim);
+								simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, clientStatusTopicSession_int);
 							}
 							Thread.yield();
 						}
@@ -515,7 +516,7 @@ public class SimulationDispatcher extends ServiceProvider {
 						//SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(activeJobStatus.getVCSimulationIdentifier().getSimulationKey(), activeJobStatus.getJobIndex());
 						//					System.out.println(simStateMachine.show());
 						VCMongoMessage.sendObsoleteJob(activeJobStatus,failureMessage);
-						simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, simMonitorThreadSession_sim);
+						simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, clientStatusTopicSession_int);
 						if (activeJobStatus.getSimulationExecutionStatus()!=null && activeJobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
 							HtcJobID htcJobId = activeJobStatus.getSimulationExecutionStatus().getHtcJobID();
 							try {
@@ -585,6 +586,7 @@ public class SimulationDispatcher extends ServiceProvider {
 		vcMessagingService_int.addMessageConsumer(simRequestConsumer_int);
 
 		this.dispatcherQueueSession_int = vcMessagingService_int.createProducerSession();
+		this.clientStatusTopicSession_int = vcMessagingService_int.createProducerSession();
 
 		this.dispatchThread = new DispatchThread();
 		this.dispatchThread.start();
@@ -629,7 +631,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			
 			WorkerEventMessage workerEventMessage = new WorkerEventMessage(userResolver, vcMessage);
 			WorkerEvent workerEvent = workerEventMessage.getWorkerEvent();
-			simDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabase, session);
+			simDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabase, clientStatusTopicSession_int);
 
 		} catch (Exception ex) {
 			lg.error(ex.getMessage(), ex);
