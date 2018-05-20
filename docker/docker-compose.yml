@@ -52,7 +52,7 @@ services:
       - dbdriver=${VCELL_DB_DRIVER}
       - dbuser=${VCELL_DB_USER}
 
-      - jmshost_sim_external=activemqsim
+      - jmshost_sim_external=${VCELL_JMS_SIM_HOST_EXTERNAL}
       - jmsrestport_sim_external=${VCELL_JMS_SIM_RESTPORT_EXTERNAL}
       - jmsport_sim_external=${VCELL_JMS_SIM_PORT_EXTERNAL}
 
@@ -106,7 +106,7 @@ services:
       - singularity_imagefile=${VCELL_SINGULARITY_IMAGE_EXTERNAL}
       - docker_name=${VCELL_BATCH_DOCKER_IMAGE}
 
-      - jmshost_sim_external=activemqsim
+      - jmshost_sim_external=${VCELL_JMS_SIM_HOST_EXTERNAL}
       - jmsrestport_sim_external=${VCELL_JMS_SIM_RESTPORT_EXTERNAL}
       - jmsport_sim_external=${VCELL_JMS_SIM_PORT_EXTERNAL}
 
