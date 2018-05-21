@@ -243,7 +243,7 @@ def main():
     parser_killjobs.add_argument("--taskId", type=int, default=0)
     parser_killjobs.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
     parser_killjobs.add_argument("--msgport", type=int, default='8161', help='port of message server')
-    parser_killjobs.add_argument("--vcellbatch", type=str, default="schaff/vcell-batch:latest")
+    parser_killjobs.add_argument("--vcellbatch", type=str, default=None) # or "schaff/vcell-batch:latest"
     parser_killjobs.set_defaults(which='killjob')
 
     parser_slurmjobs = subparsers.add_parser('slurmjobs', help='slurm running jobs (see slurmjobs --help)')
@@ -304,8 +304,19 @@ def main():
             print tabulate(table, headers=col_names)
 
         elif args.which == "killjob":
-            cmd_prefix = "sudo docker run --rm "+args.vcellbatch
-            options =  " --msg-userid admin" 
+            import subprocess
+            vcellbatch = args.vcellbatch
+            if vcellbatch is None:
+                p1 = subprocess.Popen(['sudo', 'docker', 'image', 'ls'], stdout=subprocess.PIPE)
+                p2 = subprocess.Popen(['grep', 'vcell-batch'], stdin=p1.stdout, stdout=subprocess.PIPE)
+                p3 = subprocess.Popen(['head', '-1'], stdin=p2.stdout, stdout=subprocess.PIPE)
+                stdout, stderr = p3.communicate()
+                parts = stdout.strip().split()
+                if len(parts)<2:
+                    raise Exception("didn't find local vcell-batch docker image, specify using --vcellbatch")
+                vcellbatch = parts[0]+':'+parts[1]
+                print 'found vcell-batch image: ' + vcellbatch
+            options =  " --msg-userid admin"
             options += " --msg-password admin"
             options += " --msg-host "+args.host
             options += " --msg-port "+str(args.msgport)
@@ -314,10 +325,9 @@ def main():
             options += " --msg-job-jobindex "+str(args.jobId)
             options += " --msg-job-taskid "+str(args.taskId)
             options += " --msg-job-errmsg "+"killed"
-            import subprocess
             if args.debug:
-                print "sudo docker run --rm "+args.vcellbatch+" "+options+" SendErrorMsg"
-            return_code = subprocess.call("sudo docker run --rm "+args.vcellbatch+" "+options+" SendErrorMsg", shell=True)
+                print "sudo docker run --rm "+vcellbatch+" "+options+" SendErrorMsg"
+            return_code = subprocess.call("sudo docker run --rm "+vcellbatch+" "+options+" SendErrorMsg", shell=True)
             if return_code == 0:
                 print "kill message sent"
             else:
