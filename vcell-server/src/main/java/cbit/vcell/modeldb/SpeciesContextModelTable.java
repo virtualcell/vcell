@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.modeldb;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListenerProxy;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -33,8 +36,9 @@ public class SpeciesContextModelTable extends cbit.sql.Table {
 	//public final Field initCond		= new Field("initCond",		"varchar(255)",			"NOT NULL");
 	public final Field hasOverride	= new Field("hasOverride",	SQLDataType.varchar2_1,		"NOT NULL");// 'T' or 'F'
 	public final Field speciesPattern=new Field("speciesPattern",SQLDataType.varchar2_255,	"");
+	public final Field sbmlName		= new Field("sbmlName",			SQLDataType.varchar_255,	"");
 	
-	private final Field fields[] = {modelRef,speciesRef,structRef,name,/*diffRate,initCond,*/hasOverride,speciesPattern};
+	private final Field fields[] = {modelRef,speciesRef,structRef,name,/*diffRate,initCond,*/hasOverride,speciesPattern, sbmlName};
 	
 	public static final SpeciesContextModelTable table = new SpeciesContextModelTable();
 	//
@@ -58,7 +62,7 @@ private SpeciesContextModelTable() {
 public SpeciesContext getSpeciesContext(java.sql.ResultSet rset, KeyValue keyValue) throws java.sql.SQLException, DataAccessException {
 
 	//try {
-		String nameStr = rset.getString(name.toString());
+	String nameStr = rset.getString(name.toString());
 		
 		String speciesPattern = rset.getString(table.speciesPattern.getUnqualifiedColName());
 		if(rset.wasNull()){
@@ -67,16 +71,21 @@ public SpeciesContext getSpeciesContext(java.sql.ResultSet rset, KeyValue keyVal
 			speciesPattern = TokenMangler.getSQLRestoredString(speciesPattern);
 		}
 		SpeciesContext speciesContext = null;
-		//try {
+		try {
 			speciesContext = new SpeciesContext(keyValue,nameStr,null,null);
+			
+			String sbmlNameStr = rset.getString(sbmlName.toString());
+			if(!rset.wasNull()) {
+				speciesContext.setSbmlName(sbmlNameStr);
+			}
 			speciesContext.setSpeciesPatternString(speciesPattern);
 			//speciesContext.setInitialValue(initValueExp.evaluateConstant());
 			//speciesContext.setDiffusionRate(diffValueExp.evaluateConstant());
 			return speciesContext;
-		//}catch (java.beans.PropertyVetoException e){
-			//log.exception(e);
-			//throw new DataAccessException("PropertyVetoException unexpected: "+e.getMessage());
-		//}
+		}catch (java.beans.PropertyVetoException e){
+			lg.error(e);
+			throw new DataAccessException("PropertyVetoException unexpected: "+e.getMessage());
+		}
 	//}catch (cbit.vcell.parser.ExpressionException e){
 		//log.exception(e);
 		//throw new DataAccessException("ExpressionException while reading SpeciesContext: "+e.getMessage());
@@ -109,7 +118,12 @@ public String getSQLValueList(InsertHashtable hash, KeyValue key, SpeciesContext
 	//buffer.append("'"+speciesContext.getDiffusionRate()+"'" + ",");
 	//buffer.append("'"+speciesContext.getInitialValue()+"'" + ",");
 	buffer.append("'"+OVERRIDE_TRUE+"',");
-	buffer.append("'"+speciesPattern+"'");
+	buffer.append("'"+speciesPattern+"',");
+	if(speciesContext.getSbmlName() != null) {
+		buffer.append("'"+speciesContext.getSbmlName()+"'");
+	} else {
+		buffer.append("NULL");
+	}
 	buffer.append(")");
 
 	return buffer.toString();

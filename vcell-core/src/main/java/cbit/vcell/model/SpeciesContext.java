@@ -62,6 +62,7 @@ public class SpeciesContext implements Cacheable, Matchable, EditableSymbolTable
 	private Species species = null;
 	private Structure structure = null;
 	private String fieldName = null/*new String()*/;
+	private String sbmlName = null;
 	private SpeciesPattern speciesPattern = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -122,6 +123,9 @@ public boolean compareEqual(Matchable aThat) {
 	if (!Compare.isEqual(getName(),sc.getName())){
 		return false;
 	}
+	if (!Compare.isEqualOrNull(getSbmlName(),sc.getSbmlName())){
+			return false;
+	}
 	if (!Compare.isEqual(speciesPattern,sc.getSpeciesPattern())){
 		return false;
 	}
@@ -170,6 +174,10 @@ public KeyValue getKey() {
 
 public String getName() {
 	return fieldName;
+}
+
+public String getSbmlName() {
+	return sbmlName;
 }
 
 public NameScope getNameScope() {
@@ -242,6 +250,17 @@ public void setName(String name) throws PropertyVetoException {
 	firePropertyChange("name", oldValue, name);
 }
 
+public void setSbmlName(String newString) throws PropertyVetoException {
+	String oldValue = this.sbmlName;
+	String newValue = newString;
+	if(newString != null && newString.isEmpty()) {
+		newValue = null;
+	}
+	fireVetoableChange("sbmlName", oldValue, newValue);
+	this.sbmlName = newValue;
+	firePropertyChange("sbmlName", oldValue, newValue);
+}
+
 public void setStructure(Structure structure) {
 	Structure oldValue = this.structure;
 	this.structure = structure;
@@ -255,6 +274,7 @@ public String toString() {
 	if (species != null){ sb.append(", species='"+species.getCommonName()+"'"); }
 	if (structure != null){ sb.append(", structure='"+structure.getName()+"'"); }
 	if (speciesPattern != null){sb.append(", speciesPatterns='"+speciesPattern.getMolecularTypePatterns().size()); }
+	if (sbmlName != null){ sb.append(", sbmlName='"+sbmlName+"'"); }
 	sb.append(")");
 	return sb.toString();
 }
@@ -277,13 +297,22 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 					throw new PropertyVetoException("species context name '"+newName+"' can't include a '"+newName.charAt(i)+"'",e);
 				}
 			}	
+		} else if(e.getPropertyName().equals("sbmlName")) {
+			String newName = (String)e.getNewValue();
+			if(newName == null) {
+				return;
+			}
+			// sbmlName may be null but it cannot contain illegal characters
+			if (!Character.isJavaIdentifierStart(newName.charAt(0))){
+				throw new PropertyVetoException("species context sbmlName '"+newName+"' can't start with a '"+newName.charAt(0)+"'", e);
+			}
+			for (int i=1;i<newName.length();i++){
+				if (!Character.isJavaIdentifierPart(newName.charAt(i))){
+					throw new PropertyVetoException("species context sbmlName '"+newName+"' can't include a '"+newName.charAt(i)+"'", e);
+				}
+			}	
 		}
 	}
-}
-
-public void writeTokens(PrintWriter pw) {
-	pw.println("\t"+VCMODL.Context+" "+getName()+" "+getSpecies().getCommonName()+" "+VCMODL.BeginBlock+" ");
-	pw.println("\t"+VCMODL.EndBlock+" ");
 }
 
 public String getTypeLabel() {
@@ -294,6 +323,7 @@ public static SpeciesContext duplicate(SpeciesContext oldSpecies, Structure s, M
 	String newName = SpeciesContext.deriveSpeciesName(oldSpecies, m);
 	Species newSpecies = new Species(newName, null);
 	SpeciesContext newSpeciesContext = new SpeciesContext(null, newName, newSpecies, s);
+	newSpeciesContext.setSbmlName(oldSpecies.getSbmlName());	// sbmlName stays the same
 	SpeciesPattern newsp = new SpeciesPattern(m, oldSpecies.getSpeciesPattern());
 	newSpeciesContext.setSpeciesPattern(newsp);
 	m.addSpecies(newSpecies);
@@ -434,6 +464,27 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 					String message = "'Trash' is a reserved NFSim keyword and it cannot be used as a seed species.";
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 				}
+			}
+		}
+		if(sbmlName == null) {
+			String message = "SbmlName is null.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.INFO));
+		} else {
+			if(sbmlName.isEmpty()) {
+				String message = "SbmlName cannot be an empty string.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+			} else {
+				String message = null;
+				if (!Character.isJavaIdentifierStart(sbmlName.charAt(0))){
+					message = "SbmlName '"+sbmlName+"' can't start with a '"+sbmlName.charAt(0)+"'.";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+				}
+				for (int i=1;i<sbmlName.length();i++){
+					if (!Character.isJavaIdentifierPart(sbmlName.charAt(i))){
+						message = "species context sbmlName '"+sbmlName+"' can't include a '"+sbmlName.charAt(i)+"'.";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+					}
+				}	
 			}
 		}
 	}

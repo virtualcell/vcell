@@ -6816,6 +6816,7 @@ private Species getSpecies(Element param) throws XmlParseException {
 private SpeciesContext getSpeciesContext(Element param, Model model) throws XmlParseException{
 	//retrieve its information
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+	String sbmlName = unMangle(param.getAttributeValue(XMLTags.SbmlNameAttrTag));
 	String hasOverrideString = param.getAttributeValue(XMLTags.HasOverrideAttrTag);
 	String speciesName = unMangle(param.getAttributeValue(XMLTags.SpeciesRefAttrTag));
 	Species specieref= (Species)model.getSpecies(speciesName);	
@@ -6850,6 +6851,12 @@ private SpeciesContext getSpeciesContext(Element param, Model model) throws XmlP
 	//---try to create the speciesContext---
 	SpeciesContext speciecontext = null;
 	speciecontext = new SpeciesContext( key, name, specieref, structureref, sp);
+	try {
+		speciecontext.setSbmlName(sbmlName);
+	} catch (PropertyVetoException e) {		// can't happen here, whatever we saved must have been correct
+		// throw new XmlParseException("The SbmlName is invalid");
+		e.printStackTrace();
+	}
 	return speciecontext;
 }
 

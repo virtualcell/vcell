@@ -448,6 +448,7 @@ private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, Res
 	//
 	speciesContext = speciesContextModelTable.getSpeciesContext(rset,scKey);
 	String speciesPatternString = speciesContext.getSpeciesPatternString();
+	String sbmlNameString = speciesContext.getSbmlName();
 	//
 	// add objects corresponding to foreign keys
 	//
@@ -455,6 +456,11 @@ private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, Res
 	Species species = reactStepDB.getSpecies(dbc, con,speciesKey);
 	speciesContext = new SpeciesContext(scKey,speciesContext.getName(),species,structure);
 	speciesContext.setSpeciesPatternString(speciesPatternString);
+	try {
+		speciesContext.setSbmlName(sbmlNameString);
+	} catch(PropertyVetoException ex) {
+		throw new DataAccessException(ex.getMessage(), ex);
+	}
 
 	//
 	// put SpeciesContext into object cache

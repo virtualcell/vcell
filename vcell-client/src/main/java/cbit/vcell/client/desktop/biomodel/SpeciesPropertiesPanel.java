@@ -134,6 +134,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private JScrollPane linkedPOScrollPane;
 	private JEditorPane PCLinkValueEditorPane = null;
 	private JTextField nameTextField = null;
+	private JTextField sbmlNameTextField = null;
 	
 	private JTree speciesPropertiesTree = null;
 	private SpeciesPropertiesTreeModel speciesPropertiesTreeModel = null;
@@ -261,6 +262,8 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 			Object source = e.getSource();
 			if (source == nameTextField) {
 				changeName();
+			} else if(source == sbmlNameTextField) {
+				changeSbmlName();
 			} else if (source == showDetailsCheckBox) {
 				speciesPropertiesTreeModel.setShowDetails(showDetailsCheckBox.isSelected());
 			} else if (source == getZoomLargerButton()) {
@@ -293,6 +296,8 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 				changeFreeTextAnnotation();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
+			} else if (e.getSource() == sbmlNameTextField) {
+				changeSbmlName();
 			} 
 		}
 		@Override
@@ -377,6 +382,7 @@ private void initConnections() throws java.lang.Exception {
 	annotationTextArea.addFocusListener(eventHandler);
 	annotationTextArea.addMouseListener(eventHandler);
 	nameTextField.addFocusListener(eventHandler);
+	sbmlNameTextField.addFocusListener(eventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(eventHandler);
 }
 
@@ -527,7 +533,7 @@ private void initialize() {
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.insets = new Insets(2, 4, 2, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
 		JLabel label = new JLabel("Species Name");
 		generalPanel.add(label, gbc);
@@ -535,17 +541,38 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
+		gbc.weightx = 0.7;		// significantly longer than the sbmlName text field
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.insets = new Insets(2, 4, 2, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		generalPanel.add(nameTextField, gbc);
+		
+		sbmlNameTextField = new JTextField();
+		sbmlNameTextField.setEditable(true);
+		sbmlNameTextField.addActionListener(eventHandler);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 2; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(2, 8, 2, 2);
+		gbc.anchor = GridBagConstraints.LINE_END;		
+		generalPanel.add(new JLabel("Sbml Name"), gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 3; 
+		gbc.gridy = gridy;
+		gbc.weightx = 0.3;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(2, 4, 2, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		generalPanel.add(sbmlNameTextField, gbc);
+
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(2, 4, 2, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 		generalPanel.add(new JLabel("Linked Pathway Object(s)"), gbc);
 
@@ -556,16 +583,17 @@ private void initialize() {
 		gbc.weighty = 0.1;
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
+        gbc.gridwidth = 3;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(2, 4, 2, 4);
 		generalPanel.add(linkedPOScrollPane, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(9, 8, 4, 6);
+		gbc.insets = new Insets(7, 8, 4, 6);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 		generalPanel.add(new JLabel("Annotation "), gbc);
 
@@ -581,9 +609,10 @@ private void initialize() {
 		gbc.weighty = 0.1;
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
+        gbc.gridwidth = 3;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(2, 4, 4, 4);
 		generalPanel.add(jsp, gbc);
 	
 		GridBagConstraints gbc1 = new GridBagConstraints();
@@ -753,6 +782,7 @@ void setSpeciesContext(SpeciesContext newValue) {
 	}
 	// commit the changes before switch to another species
 	changeName();
+	changeSbmlName();
 	changeFreeTextAnnotation();
 	
 	fieldSpeciesContext = newValue;
@@ -767,14 +797,17 @@ private void updateInterface() {
 	boolean bNonNullSpeciesContext = fieldSpeciesContext != null && bioModel != null;
 	annotationTextArea.setEditable(bNonNullSpeciesContext);
 	nameTextField.setEditable(bNonNullSpeciesContext);
+	sbmlNameTextField.setEditable(bNonNullSpeciesContext);
 	if (bNonNullSpeciesContext) {
 		nameTextField.setText(getSpeciesContext().getName());
+		sbmlNameTextField.setText(getSpeciesContext().getSbmlName());
 		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));
 		updatePCLink();		
 	} else {
 		annotationTextArea.setText(null);
 		getPCLinkValueEditorPane().setText(null);
 		nameTextField.setText(null);
+		sbmlNameTextField.setText(null);
 	}
 	listLinkedPathwayObjects();
 	updateShape();
@@ -824,6 +857,22 @@ private void updateShape() {
 		} catch (PropertyVetoException e1) {
 			e1.printStackTrace();
 			DialogUtils.showErrorDialog(SpeciesPropertiesPanel.this, e1.getMessage());
+		}
+	}
+
+	private void changeSbmlName() {
+		if (fieldSpeciesContext == null) {
+			return;
+		}
+		String newName = sbmlNameTextField.getText();
+		if (newName.equals(fieldSpeciesContext.getSbmlName())) {
+			return;
+		}
+		try {
+			getSpeciesContext().setSbmlName(newName);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(SpeciesPropertiesPanel.this, e.getMessage());
 		}
 	}
 

@@ -1452,6 +1452,11 @@ public class SBMLImporter {
 				vcSpeciesContexts[i] = new SpeciesContext(vcSpecies,
 						spStructure);
 				vcSpeciesContexts[i].setName(speciesName);
+				
+				if(sbmlSpecies.isSetName()) {
+					String sbmlSpeciesName = sbmlSpecies.getName();
+					vcSpeciesContexts[i].setSbmlName(sbmlSpeciesName);
+				}
 
 				// Adjust units of species, convert to VC units.
 				// Units in SBML, compute this using some of the attributes of

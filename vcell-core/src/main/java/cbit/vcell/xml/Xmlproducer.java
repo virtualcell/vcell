@@ -4418,6 +4418,9 @@ private Element getXML(SpeciesContext param) {
 	Element speciecontext = new Element( XMLTags.SpeciesContextTag);
 	//Add atributes
 	speciecontext.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if(param.getSbmlName() != null) {
+		speciecontext.setAttribute(XMLTags.SbmlNameAttrTag, mangle(param.getSbmlName()));
+	}
 	speciecontext.setAttribute(XMLTags.SpeciesRefAttrTag, mangle(param.getSpecies().getCommonName()));
 	speciecontext.setAttribute( XMLTags.StructureAttrTag, mangle(param.getStructure().getName()) );
 	speciecontext.setAttribute( XMLTags.HasOverrideAttrTag, true + "" );

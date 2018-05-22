@@ -794,6 +794,9 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 	for (int i = 0; i < vcSpeciesContexts.length; i++){
 		org.sbml.jsbml.Species sbmlSpecies = sbmlModel.createSpecies();
 		sbmlSpecies.setId(vcSpeciesContexts[i].getName());
+		if(vcSpeciesContexts[i].getSbmlName() != null) {
+			sbmlSpecies.setName(vcSpeciesContexts[i].getSbmlName());
+		}
 		// Assuming that at this point, the compartment(s) for the model are already filled in.
 		Compartment compartment = sbmlModel.getCompartment(TokenMangler.mangleToSName(vcSpeciesContexts[i].getStructure().getName()));
 		if (compartment != null) {
