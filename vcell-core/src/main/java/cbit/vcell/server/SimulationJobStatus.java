@@ -162,15 +162,6 @@ public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimI
 }
 
 /**
- * status for lost / unknown jobs 
- * @return newly created job 
- */
-public static SimulationJobStatus noSuchJob( ) {
-		SimulationMessage mess = SimulationMessage.MESSAGE_JOB_FAILED_UNKNOWN;
-		return new SimulationJobStatus(null,null,0,new Date(0),SchedulerStatus.FAILED,0,mess,null,null);
-}
-
-/**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
  * @param obj java.lang.Object

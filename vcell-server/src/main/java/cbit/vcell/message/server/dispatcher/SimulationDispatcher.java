@@ -405,9 +405,6 @@ public class SimulationDispatcher extends ServiceProvider {
 								if (lg.isWarnEnabled()) {
 									lg.warn("killing " + htcJobInfo + ", " + failureMessage);
 								}
-								if (simJobStatus == null) { 
-									simJobStatus = SimulationJobStatus.noSuchJob();
-								}
 								VCMongoMessage.sendZombieJob(simJobStatus,failureMessage,htcJobInfo.getHtcJobID());
 								htcProxy.killJobSafe(htcJobInfo);
 							}
