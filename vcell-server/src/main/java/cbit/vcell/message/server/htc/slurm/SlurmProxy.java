@@ -129,7 +129,7 @@ public class SlurmProxy extends HtcProxy {
 	private String getPartitionNodeListCSV() throws HtcException, ExecutableException, IOException {
 		final String JOB_CMD_SINFO = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sinfo,"sinfo");
 		// 
-		// sinfo -N -h -p vcell --Format='nodelist' | xargs | tr ' ' ','
+		// nodelist=$(sinfo -N -h -p vcell2 --Format='nodelist' | xargs | tr ' ' ',')
 		//
 		String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
 		String[] cmds = {JOB_CMD_SINFO,"-N","-h","-p",partition,"--Format='nodelist'","|","xargs","|","tr","' '","','"};
@@ -162,6 +162,7 @@ public class SlurmProxy extends HtcProxy {
 		//   CPUAlloc=0 CPUErr=0 CPUTot=36 CPULoad=0.05
 		//   CPUAlloc=0 CPUErr=0 CPUTot=36 CPULoad=0.06
 		//   CPUAlloc=0 CPUErr=0 CPUTot=36 CPULoad=0.06
+		//   CPUAlloc=0 CPUErr=0 CPUTot=36 CPULoad=N/A
 		//   CPUAlloc=0 CPUErr=0 CPUTot=36 CPULoad=0.06
 		//   CPUAlloc=0 CPUErr=0 CPUTot=64 CPULoad=0.01
 		//   CPUAlloc=0 CPUErr=0 CPUTot=64 CPULoad=0.03
@@ -180,10 +181,25 @@ public class SlurmProxy extends HtcProxy {
 			String CPUErr = tokens[3];
 			String CPUTot = tokens[5];
 			String CPULoad = tokens[7];
-			CPUAlloc_sum += Integer.parseInt(CPUAlloc);
-			CPUErr_sum += Integer.parseInt(CPUErr);
-			CPUTot_sum += Integer.parseInt(CPUTot);
-			CPULoad_sum += Double.parseDouble(CPULoad);
+			
+			Integer cpuAlloc = null;
+			Integer cpuErr = null;
+			Integer cpuTot = null;
+			Double cpuLoad = null;
+			try {
+				cpuAlloc = Integer.parseInt(CPUAlloc);
+				cpuErr = Integer.parseInt(CPUErr);
+				cpuTot = Integer.parseInt(CPUTot);
+				cpuLoad = Double.parseDouble(CPULoad);
+				
+				// parsing succeeded, node is not down or otherwise irregular
+				CPUAlloc_sum += cpuAlloc;
+				CPUErr_sum += cpuErr;
+				CPUTot_sum += cpuTot;
+				CPULoad_sum += cpuLoad;
+			} catch (NumberFormatException e) {
+				LG.error("failed to parse line '"+line+"' in slurm partition statistics", e);
+			}
 			line = reader.readLine();
 		}
 		PartitionStatistics clusterStatistics = new PartitionStatistics(CPUAlloc_sum, CPUTot_sum-CPUErr_sum, CPULoad_sum);

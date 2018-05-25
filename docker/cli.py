@@ -254,7 +254,7 @@ def main():
     parser_health = subparsers.add_parser('health', help='site status (see health --help)')
     parser_health.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
     parser_health.add_argument("--apiport", type=int, default='443', help='port of api server')
-    parser_health.add_argument('--monitor', type=str, default='sle', help='monitor type (default sla) s-simulation, l-login, e-events')
+    parser_health.add_argument('--monitor', type=str, default='sle', help='monitor type (default sle) s-simulation, l-login, e-events')
     parser_health.set_defaults(which='health')
 
     parser.set_defaults(debug=False)
