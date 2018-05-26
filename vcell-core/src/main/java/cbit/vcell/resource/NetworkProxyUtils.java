@@ -44,7 +44,7 @@ public class NetworkProxyUtils {
 			String newProxy = proxyTypeNew+":"+proxyHostNew+":"+proxyPortNew;
 			if(bChanged){
 				if(bRestartWarn && restartWarningProvider!=null){
-					restartWarningProvider.showRestartWarning("Proxy settings have changed from '"+oldProxy+"' to '"+newProxy+"', please restart VCell");
+					restartWarningProvider.showRestartWarning("Proxy settings have changed from '"+oldProxy+"' to '"+newProxy+"', you may have to restart VCell");
 				}else{
 					new Exception("Error, not expecting old proxy "+oldProxy+" doesn't match new proxy "+newProxy);
 				}

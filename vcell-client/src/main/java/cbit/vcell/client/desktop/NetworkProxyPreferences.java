@@ -53,12 +53,9 @@ public class NetworkProxyPreferences {
 			} catch (NumberFormatException nfe) {
 				nfe.printStackTrace();
 				DialogUtils.showErrorDialog(requester,nfe.getMessage() + "\nportNumber must be integer between 0 and 65535");
-			} catch (IllegalArgumentException iae) {
-				iae.printStackTrace();
-				DialogUtils.showErrorDialog(requester,iae.getMessage() + "\nProxy type must be 'http' or 'socks'");
 			} catch(Exception e){
 				e.printStackTrace();
-				DialogUtils.showErrorDialog(requester,e.getMessage() + "\nEntry must be of form ("+PROXY_FORMAT+")");
+				DialogUtils.showErrorDialog(requester,e.getMessage() + "\nEntry must be of form ("+PROXY_FORMAT+") to set proxy or empty to remove proxy");
 			}
 		} while (true);
 		

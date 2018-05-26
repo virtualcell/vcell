@@ -31,6 +31,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -48,6 +49,7 @@ import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.util.TextUtils;
@@ -148,7 +150,26 @@ public class VCellApiClient {
 			sslsf = new SSLConnectionSocketFactory(builder.build());
 		}
 
-		httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new DefaultRedirectStrategy()).build();
+		HttpClientBuilder httpClientBuilder = HttpClients.custom();
+		try {
+			HttpHost proxy = null;
+			if(System.getProperty("http.proxyHost") != null && System.getProperty("http.proxyPort") != null){
+//				System.getProperty(NetworkProxyUtils.PROXY_HTTP_HOST);
+				proxy = new HttpHost(System.getProperty("http.proxyHost"), Integer.parseUnsignedInt(System.getProperty("http.proxyPort")), "http");
+			}else if(System.getProperty("socksProxyHost") != null && System.getProperty("socksProxyPort") != null){
+//				System.getProperty(NetworkProxyUtils.PROXY_SOCKS_HOST);
+				proxy = new HttpHost(System.getProperty("socksProxyHost"), Integer.parseUnsignedInt(System.getProperty("socksProxyPort")), "socks");
+			}
+			if(proxy != null){
+				RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+				httpClientBuilder.setDefaultRequestConfig(config);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			//continue, try connections anyway 
+		}
+
+		httpclient = httpClientBuilder.setSSLSocketFactory(sslsf).setRedirectStrategy(new DefaultRedirectStrategy()).build();
 		httpClientContext = HttpClientContext.create();
 	}
 	

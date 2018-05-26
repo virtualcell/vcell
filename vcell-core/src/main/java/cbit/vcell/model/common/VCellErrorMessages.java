@@ -63,7 +63,7 @@ public class VCellErrorMessages {
 	
 	// =============== connection problems start ========== //
 	public static final String BAD_CONNECTION_MESSAGE = "Your computer is unable to " + PLACE_HOLDER + " to the Virtual Cell server" + PLACE_HOLDER 
-			+ ". To save a copy of an open model to your computer, export to VCML format (File > Export > VCML).\nIf problem persists, it may be due to a firewall problem. " +
+			+ ". To save a copy of an open model to your computer, export to VCML format (File > Export > VCML).\nIf problem persists, it may be due to a firewall problem or proxy (see Server->Set Proxy...) " +
 			"Contact your network administrator and send the error message below to " + VCellSupport + ".";
 	public static final String FAIL_LOAD_MESSAGE = "Failed to load document. Possible reasons :\n" +
 						"1. You are no longer connected to the server. Reconnect in order to retrieve model. \n" +
