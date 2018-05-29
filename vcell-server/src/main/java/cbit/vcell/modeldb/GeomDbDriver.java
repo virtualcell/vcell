@@ -778,8 +778,7 @@ private void getSurfaceDescription(Connection con, Geometry geom) throws SQLExce
 		
 		
 	}catch(Exception e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.toString());
+		throw new DataAccessException(e.toString(), e);
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
@@ -1104,7 +1103,6 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 		//}
 	//}
 	if (regions==null){
-		System.out.println("Geometry "+geom.getName()+"("+geom.getVersion()+") doesn't have region information");
 		throw new DataAccessException("geometry '"+geom.getName()+" didn't have region information");
 	}
 	//

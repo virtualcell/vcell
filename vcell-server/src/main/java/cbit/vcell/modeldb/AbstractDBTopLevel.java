@@ -42,7 +42,6 @@ protected void handle_DataAccessException_SQLException(Throwable t) throws org.v
 	if (t == null){
 		return;
 	}
-	t.printStackTrace(System.out);
 	if (t instanceof org.vcell.util.DataAccessException){
 		throw (org.vcell.util.DataAccessException)t;
 	}else if (t instanceof java.sql.SQLException){
@@ -50,10 +49,10 @@ protected void handle_DataAccessException_SQLException(Throwable t) throws org.v
 	}else if (t instanceof Error){
 		throw (Error)t;
 	}else if (t instanceof RuntimeException){
-		throw new DataAccessException("Unknown Database Access Error : " + t.getMessage());
+		throw new DataAccessException("Unknown Database Access Error : " + t.getMessage(),t);
 		// throw (RuntimeException)t;
 	}else{
-		throw new RuntimeException("Unexpected \""+t.getClass().getName()+"\": "+t.getMessage());
+		throw new RuntimeException("Unexpected \""+t.getClass().getName()+"\": "+t.getMessage(),t);
 	}
 }
 /**
@@ -64,7 +63,6 @@ protected void handle_SQLException(Throwable t) throws java.sql.SQLException {
 	if (t == null){
 		return;
 	}
-	t.printStackTrace(System.out);
 	if (t instanceof java.sql.SQLException){
 		throw (java.sql.SQLException)t;
 	}else if (t instanceof Error){
@@ -72,7 +70,7 @@ protected void handle_SQLException(Throwable t) throws java.sql.SQLException {
 	}else if (t instanceof RuntimeException){
 		throw (RuntimeException)t;
 	}else{
-		throw new RuntimeException("Unexpected \""+t.getClass().getName()+"\": "+t.getMessage());
+		throw new RuntimeException("Unexpected \""+t.getClass().getName()+"\": "+t.getMessage(),t);
 	}
 }
 /**

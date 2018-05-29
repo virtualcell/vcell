@@ -303,7 +303,6 @@ public static Version getVersion(ResultSet rset, GroupAccess groupAccess) throws
 			}
 		}
 	}catch (SQLException e){
-		e.printStackTrace(System.out);
 		lg.warn("VersionTable.getVersion(): consuming exception for missing column "+versionParentSimRef_ColumnName+": "+e.getMessage(), e);
 	}
 	//

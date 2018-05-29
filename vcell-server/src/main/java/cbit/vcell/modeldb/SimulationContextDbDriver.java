@@ -554,8 +554,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					try {
 						fm.getVolumePerUnitAreaParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(volPerUnitArea)));
 					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
+						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage(), e);
 					}
 				}
 				String volPerUnitVol = rset.getString(structureMappingTable.volPerUnitVolExp.toString());
@@ -563,8 +562,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					try {
 						fm.getVolumePerUnitVolumeParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(volPerUnitVol)));
 					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
+						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage(), e);
 					}
 				}
 			} else if (sm instanceof MembraneMapping) {
@@ -574,8 +572,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					try {
 						mm.getSurfaceToVolumeParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(surfToVolString)));
 					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
+						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage(), e);
 					}
 				}
 				String volFractString = rset.getString(structureMappingTable.volFractExp.toString());
@@ -583,8 +580,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					try {
 						mm.getVolumeFractionParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(volFractString)));
 					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("parse error in volFract expression: " + e.getMessage());
+						throw new DataAccessException("parse error in volFract expression: " + e.getMessage(), e);
 					}
 				}
 				boolean bCalculateVoltage = rset.getBoolean(structureMappingTable.bCalculateVoltage.toString());
@@ -596,8 +592,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					try {
 						mm.getSpecificCapacitanceParameter().setExpression(new Expression(specificCapacitance.doubleValue()));
 					}catch (ExpressionBindingException e){
-						e.printStackTrace(System.out);
-						throw new DataAccessException("error setting membrane specific capacitance: "+e.getMessage());
+						throw new DataAccessException("error setting membrane specific capacitance: "+e.getMessage(), e);
 					}
 				}
 				String initialVoltageString = rset.getString(structureMappingTable.initialVoltage.toString());
@@ -605,8 +600,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					try {
 						mm.getInitialVoltageParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(initialVoltageString)));
 					}catch (ExpressionException e){
-						e.printStackTrace(System.out);
-						throw new DataAccessException("database parse error in initial membrane voltage: "+e.getMessage());
+						throw new DataAccessException("database parse error in initial membrane voltage: "+e.getMessage(), e);
 					}
 				}
 				String areaPerUnitArea = rset.getString(structureMappingTable.areaPerUnitAreaExp.toString());
@@ -614,8 +608,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					try {
 						mm.getAreaPerUnitAreaParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(areaPerUnitArea)));
 					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
+						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage(), e);
 					}
 				}
 				String areaPerUnitVol = rset.getString(structureMappingTable.areaPerUnitVolExp.toString());
@@ -623,8 +616,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					try {
 						mm.getAreaPerUnitVolumeParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(areaPerUnitVol)));
 					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
+						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage(), e);
 					}
 				}
 			} else {
@@ -777,7 +769,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 		try {
 			StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error("failed to updateUnitStructureSizes",e);
 		}
 	}
 	simContext.getGeometryContext().enforceHierarchicalBoundaryConditions(simContext.getModel().getStructureTopology());

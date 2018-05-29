@@ -130,8 +130,7 @@ private MathDescription getMathDescriptionSQL(QueryHashtable dbc, Connection con
 			try {
 				mathDescription.setGeometry(geom);
 			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				throw new DataAccessException("DataAccess Exception: "+e.getMessage());
+				throw new DataAccessException("DataAccess Exception: "+e.getMessage(), e);
 			}
 			
 		} else {
@@ -245,8 +244,7 @@ private void insertMathDescExternalDataLink(Connection con,User user,MathDescrip
 			}
 		}
 	}catch(Exception e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException("Error inserting MathDescription-ExtrnalData link\n"+e.getMessage());
+		throw new DataAccessException("Error inserting MathDescription-ExtrnalData link\n"+e.getMessage(), e);
 	}
 }
 

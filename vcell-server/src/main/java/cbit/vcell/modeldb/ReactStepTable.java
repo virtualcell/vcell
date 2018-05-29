@@ -119,8 +119,7 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 			rs = new SimpleReaction(model, structure,key,reactionStepName,false);
 		}
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 
 
@@ -195,7 +194,7 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 	try {
 		rs.setPhysicsOptions(physicsOptionsValue);
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(), e);
 	}
 
 	String annot = rset.getString(ReactStepTable.table.annotation.getUnqualifiedColName());
@@ -556,8 +555,7 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 			}
 			buffer.append(valence+",");
 		}catch (cbit.vcell.parser.ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage());
+			throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage(), e);
 		}
 		buffer.append(reactionStep.getPhysicsOptions()+",");
 	
@@ -595,8 +593,7 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 			}
 			buffer.append(valence+",");
 		}catch (cbit.vcell.parser.ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage());
+			throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage(), e);
 		}
 		buffer.append(reactionStep.getPhysicsOptions()+",");
 	

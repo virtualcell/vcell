@@ -143,8 +143,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		try {
 			buffer.append(mm.getSpecificCapacitanceParameter().getExpression().evaluateConstant()+",");
 		}catch (cbit.vcell.parser.ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException("specific capacitance for "+mm.getMembrane().getName()+" not constant: ("+e.getMessage()+")");
+			throw new DataAccessException("specific capacitance for "+mm.getMembrane().getName()+" not constant: ("+e.getMessage()+")", e);
 		}
 		buffer.append("'"+TokenMangler.getSQLEscapedString(mm.getInitialVoltageParameter().getExpression().infix())+"',");
 	}

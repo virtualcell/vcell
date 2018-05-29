@@ -82,14 +82,12 @@ public SubVolume getAnalyticOrCompartmentSubVolume(KeyValue key, ResultSet rset)
 					CSGObject csgObject = xmlReader.getCSGObject(csgObjElement, key);
 					return csgObject;
 				} catch (Exception e1) {
-					e1.printStackTrace(System.out);
 					throw new DataAccessException(e1.getMessage(), e1);
 				}
 			}
 			Expression exp = new Expression(expString);
 			return new AnalyticSubVolume(key,svName,exp,handleValue);
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage(), e);
 		}
 	}
@@ -110,8 +108,7 @@ public ImageSubVolume getImageSubVolume(KeyValue key, ResultSet rset, cbit.image
 	try {
 		imageSubVolume.setName(svName);
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 	
 	return imageSubVolume;

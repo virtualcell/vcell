@@ -277,8 +277,7 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 			Element bioEventsElement = xmlProducer.getXML(bioEvents);
 			appComponentsElement.addContent(bioEventsElement);
 		} catch (XmlParseException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage());
+			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage(), e);
 		}
 	}
 	
@@ -288,8 +287,7 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 			Element appParamsElement = xmlProducer.getXML(appParams);
 			appComponentsElement.addContent( appParamsElement);
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error generating XML for application parameters : " + e.getMessage());
+			throw new RuntimeException("Error generating XML for application parameters : " + e.getMessage(), e);
 		}
 	}
 	
@@ -299,8 +297,7 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 			Element spatialObjectsElement = xmlProducer.getXML(spatialObjects);
 			appComponentsElement.addContent( spatialObjectsElement);
 		} catch (XmlParseException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error generating XML for spatialObjects : " + e.getMessage());
+			throw new RuntimeException("Error generating XML for spatialObjects : " + e.getMessage(), e);
 		}
 	}
 	
@@ -310,8 +307,7 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 			Element spatialProcessesElement = xmlProducer.getXML(spatialProcesses);
 			appComponentsElement.addContent( spatialProcessesElement);
 		} catch (XmlParseException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error generating XML for spatialProcesses : " + e.getMessage());
+			throw new RuntimeException("Error generating XML for spatialProcesses : " + e.getMessage(), e);
 		}
 	}
 	
@@ -327,8 +323,7 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 			Element rateRulesElement = xmlProducer.getXML(rateRules);
 			appComponentsElement.addContent(rateRulesElement);
 		} catch (XmlParseException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage());
+			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage(), e);
 		}
 	}
 	
@@ -463,8 +458,7 @@ public void readAppComponents(Connection con, SimulationContext simContext, Data
 			}
 		}
 	} catch (XmlParseException e) {
-		e.printStackTrace(System.out);
-		throw new DataAccessException("Error retrieving bioevents : " + e.getMessage());
+		throw new DataAccessException("Error retrieving bioevents : " + e.getMessage(), e);
 	}
 }
 

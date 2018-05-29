@@ -79,7 +79,7 @@ private void deleteSimulationSQL(Connection con,User user, KeyValue simKey) thro
 		try {
 			deleteVersionable(con,user,VersionableType.Simulation,parentSimKey);
 		}catch (Exception e){
-			System.out.println("failed to delete parent simulation, key="+parentSimKey+": "+e.getMessage());
+			lg.error("failed to delete parent simulation, key="+parentSimKey+": "+e.getMessage(), e);
 		}
 	}
 }

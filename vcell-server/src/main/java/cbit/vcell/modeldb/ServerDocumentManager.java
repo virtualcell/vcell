@@ -131,7 +131,7 @@ private void forceDeepDirtyIfForeign(User user,BioModel bioModel) {
 			bioModel.clearVersion();
 		}
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(), e);
 	}
 	forceDirtyIfForeign(user,bioModel.getModel());
 	SimulationContext simulationContexts[] = bioModel.getSimulationContexts();
@@ -197,7 +197,7 @@ private void forceDeepDirtyIfForeign(User user, MathModel mathModel) {
 			mathModel.clearVersion();
 		}
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 	}
 	MathDescription mathDesc = mathModel.getMathDescription();
 	if (mathDesc!=null){
@@ -256,7 +256,7 @@ private void forceDirtyIfForeign(User user,Versionable versionable) {
 			versionable.clearVersion();
 		}
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 	}
 }
 
@@ -295,7 +295,7 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 		try {
 			simArray[i] = (Simulation)BeanUtils.cloneSerializable(sim);
 		}catch (Throwable e){
-			e.printStackTrace(System.out);
+			lg.error(e.getLocalizedMessage(),e);
 			throw new RuntimeException("exception cloning Simulation: "+e.getMessage());
 		}
 	}
@@ -312,12 +312,12 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 			scArray[i].refreshDependencies();
 			scArray[i].setModel(model);
 		}catch (Throwable e){
-			e.printStackTrace(System.out);
+			lg.error(e.getLocalizedMessage(),e);
 			throw new RuntimeException("exception cloning Application: "+e.getMessage());
 		}
 		if (!scArray[i].getModel().getKey().compareEqual(modelKey)){
 //			throw new DataAccessException("simulationContext("+scKeys[i]+").model = "+scArray[i].getModel().getKey()+", BioModel.model = "+modelKey);
-			System.out.println("simulationContext("+scKeys[i]+").model = "+scArray[i].getModel().getKey()+", BioModel.model = "+modelKey);
+			if (lg.isWarnEnabled()) lg.warn("simulationContext("+scKeys[i]+").model = "+scArray[i].getModel().getKey()+", BioModel.model = "+modelKey);
 		}
 	}
 
@@ -327,7 +327,7 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 	BioModel newBioModel = new BioModel(bioModelMetaData.getVersion());
 	try {
 		// newBioModel.setMIRIAMAnnotation(bioModelMetaData.getMIRIAMAnnotation());
-		System.err.println("< < < < NEED TO GET VCMETADATA FROM METADATA TABLE ... METADATA IS EMPTY. > > > >");
+		if (lg.isWarnEnabled()) lg.warn("< < < < NEED TO GET VCMETADATA FROM METADATA TABLE ... METADATA IS EMPTY. > > > >");
 		newBioModel.setModel(model);
 		newBioModel.setSimulationContexts(scArray);
 		//
@@ -343,14 +343,14 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 				}
 			}
 			if (!bMathFound){
-				System.out.println("<<<<WARNING>>>>> ClientDocumentManager.getBioModel(), Simulation "+simArray[i].getName()+" is orphaned, Math("+simArray[i].getMathDescription().getName()+") not found in Applications");
+				if (lg.isWarnEnabled()) lg.warn("<<<<WARNING>>>>> ClientDocumentManager.getBioModel(), Simulation "+simArray[i].getName()+" is orphaned, Math("+simArray[i].getMathDescription().getName()+") not found in Applications");
 				simArray = (Simulation[])BeanUtils.removeElement(simArray,simArray[i]);
 				i--;
 			}
 		}
 		newBioModel.setSimulations(simArray);
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		throw new DataAccessException("PropertyVetoException caught "+e.getMessage());
 	}
 
@@ -365,7 +365,7 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 //	try {
 //		newBioModel = (BioModel)BeanUtils.cloneSerializable(newBioModel);
 //	}catch (Exception e){
-//		e.printStackTrace(System.out);
+//		lg.error(e.getLocalizedMessage(),e);
 //		throw new DataAccessException("BioModel clone failed: "+e.getMessage());
 //	}
 
@@ -404,7 +404,7 @@ public String getBioModelXML(QueryHashtable dbc, User user, KeyValue bioModelKey
 			}
 		}
 	} catch (java.sql.SQLException e) {
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (ObjectNotFoundException e){
 		//
@@ -420,10 +420,10 @@ public String getBioModelXML(QueryHashtable dbc, User user, KeyValue bioModelKey
 
 		return bioModelXML;
 	} catch (java.sql.SQLException e) {
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (cbit.vcell.xml.XmlParseException e) {
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		throw new DataAccessException (e.getMessage());
 	}
 }
@@ -484,7 +484,7 @@ public MathModel getMathModelUnresolved(QueryHashtable dbc, User user, KeyValue 
 		}
 		if (!simArray[i].getMathDescription().getKey().compareEqual(mathDescriptionKey)){
 //			throw new DataAccessException("simulation("+simKeys[i]+").mathDescription = "+simArray[i].getMathDescription().getKey()+", MathModel.mathDescription = "+mathDescriptionKey);
-			System.out.println("ClientDocumentManager.getMathModel(), simulation("+simKeys[i]+").mathDescription = "+simArray[i].getMathDescription().getKey()+", MathModel.mathDescription = "+mathDescriptionKey);
+			if (lg.isWarnEnabled()) lg.warn("ClientDocumentManager.getMathModel(), simulation("+simKeys[i]+").mathDescription = "+simArray[i].getMathDescription().getKey()+", MathModel.mathDescription = "+mathDescriptionKey);
 		}
 	}
 	
@@ -509,7 +509,7 @@ public MathModel getMathModelUnresolved(QueryHashtable dbc, User user, KeyValue 
 	try {
 		newMathModel = (MathModel)BeanUtils.cloneSerializable(newMathModel);
 	}catch (Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		throw new DataAccessException("MathModel clone failed: "+e.getMessage());
 	}
 
@@ -548,7 +548,7 @@ public String getMathModelXML(QueryHashtable dbc, User user, KeyValue mathModelK
 			}
 		}
 	} catch (java.sql.SQLException e) {
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}catch (ObjectNotFoundException e){
 		//
@@ -565,10 +565,10 @@ public String getMathModelXML(QueryHashtable dbc, User user, KeyValue mathModelK
 
 		return mathModelXML;
 	} catch (java.sql.SQLException e) {
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	} catch (cbit.vcell.xml.XmlParseException e) {
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -603,7 +603,7 @@ boolean isChanged(QueryHashtable dbc, User user, cbit.image.VCImage vcImage) thr
 		//
 		// loaded version has been deleted
 		//
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		return true;
 	}
 	return isChanged0(user, vcImage, savedVersionable);
@@ -640,7 +640,7 @@ boolean isChanged(QueryHashtable dbc, User user, Geometry geometry) throws DataA
 		//
 		// loaded version has been deleted
 		//
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		return true;
 	}
 	
@@ -685,7 +685,7 @@ private boolean isChanged0(User user, org.vcell.util.document.Versionable versio
 		//
 		// loaded version has been deleted
 		//
-		e.printStackTrace(System.out);
+		lg.error(e.getLocalizedMessage(),e);
 		return true;
 	}*/
 
@@ -761,7 +761,7 @@ long start = System.currentTimeMillis();
 		try{
 			bioModel.setName(newName);
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
+			lg.error(e.getLocalizedMessage(),e);
 			throw new DataAccessException("couldn't set new name for BioModel: "+e.getMessage());
 		}
 	}else{
@@ -891,7 +891,7 @@ long start = System.currentTimeMillis();
 						try {
 							memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
 						}catch (java.beans.PropertyVetoException e){
-							e.printStackTrace(System.out);
+							lg.error(e.getLocalizedMessage(),e);
 						}
 						if (count++ > 5){
 							throw new DataAccessException("failed to find unique image name '"+memoryImage.getName()+"' is last name tried");
@@ -1002,7 +1002,7 @@ long start = System.currentTimeMillis();
 					try {
 						memoryGeometry.setName(TokenMangler.getNextRandomToken(memoryGeometry.getName()));
 					}catch (java.beans.PropertyVetoException e){
-						e.printStackTrace(System.out);
+						lg.error(e.getLocalizedMessage(),e);
 					}
 					if (count++ > 5){
 						throw new DataAccessException("failed to find unique geometry name '"+memoryGeometry.getName()+"' is last name tried");
@@ -1096,14 +1096,16 @@ long start = System.currentTimeMillis();
 							mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),mathDesc_4_8, databaseMathDescription);
 						}
 					}catch (Exception e){
-						e.printStackTrace(System.out);
+						lg.error(e.getLocalizedMessage(),e);
 						mathCompareResults = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN,"Exception: '"+e.getMessage()+"'");
-						System.out.println("FAILED TO COMPARE THE FOLLOWING MATH DESCRIPTIONS");
-						try {
-							System.out.println("MemoryMathDescription:\n"+((memoryMathDescription!=null)?(memoryMathDescription.getVCML_database()):("null")));
-							System.out.println("DatabaseMathDescription:\n"+((databaseMathDescription!=null)?(databaseMathDescription.getVCML_database()):("null")));
-						}catch (Exception e2){
-							System.out.println("couldn't print math descriptions");
+						if (lg.isTraceEnabled()) {
+							lg.trace("FAILED TO COMPARE THE FOLLOWING MATH DESCRIPTIONS");
+							try {
+								lg.trace("MemoryMathDescription:\n"+((memoryMathDescription!=null)?(memoryMathDescription.getVCML_database()):("null")));
+								lg.trace("DatabaseMathDescription:\n"+((databaseMathDescription!=null)?(databaseMathDescription.getVCML_database()):("null")));
+							}catch (Exception e2){
+								lg.error(e2.getLocalizedMessage(), e2);
+							}
 						}
 					}
 				}else{
@@ -1489,7 +1491,7 @@ long start = System.currentTimeMillis();
 				try {
 					bioModelMetaData.setDescription(bioModel.getDescription());
 				} catch (java.beans.PropertyVetoException e) {
-					e.printStackTrace(System.out);
+					lg.error(e.getLocalizedMessage(),e);
 				}
 			}
 		}
@@ -1570,7 +1572,7 @@ public String saveGeometry(QueryHashtable dbc, User user,String geometryXML,Stri
 		try{
 			geometry.setName(newName);
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
+			lg.error(e.getLocalizedMessage(),e);
 			throw new DataAccessException("couldn't set new name for Geometry: "+e.getMessage());
 		}
 	}
@@ -1594,14 +1596,14 @@ public String saveGeometry(QueryHashtable dbc, User user,String geometryXML,Stri
 					try {
 						image.setName(TokenMangler.getNextRandomToken(image.getName()));
 					}catch (java.beans.PropertyVetoException e){
-						e.printStackTrace(System.out);
+						lg.error(e.getLocalizedMessage(),e);
 					}
 					if (count++ > 5){
 						throw new DataAccessException("failed to find unique image name '" + image.getName()+"' is last name tried");
 					}
 				}
 			}catch(Exception ex){
-				ex.printStackTrace(System.out);
+				lg.error(ex.getLocalizedMessage(),ex);
 				throw new DataAccessException(ex.getMessage(),ex);
 			}
 			updatedImageKey = dbServer.getDBTopLevel().insertVersionable(user,image,image.getName(),false,true);
@@ -1652,7 +1654,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		try{
 			mathModel.setName(newName);
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
+			lg.error(e.getLocalizedMessage(),e);
 			throw new DataAccessException("couldn't set new name for MathModel: "+e.getMessage());
 		}
 	}else{
@@ -1733,7 +1735,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 					try {
 						memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
 					}catch (java.beans.PropertyVetoException e){
-						e.printStackTrace(System.out);
+						lg.error(e.getLocalizedMessage(),e);
 					}
 					if (count++ > 5){
 						throw new DataAccessException("failed to find unique image name '"+memoryImage.getName()+"' is last name tried");
@@ -1806,7 +1808,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 				try {
 					memoryGeometry.setName(TokenMangler.getNextRandomToken(memoryGeometry.getName()));
 				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
+					lg.error(e.getLocalizedMessage(),e);
 				}
 				if (count++ > 5){
 					throw new DataAccessException("failed to find unique geometry name '"+memoryGeometry.getName()+"' is last name tried");
@@ -1873,14 +1875,16 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 				try {
 					mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
 				}catch (Exception e){
-					e.printStackTrace(System.out);
+					lg.error(e.getLocalizedMessage(),e);
 					mathCompareResults = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN,"Exception: '"+e.getMessage()+"'");
-					System.out.println("FAILED TO COMPARE THE FOLLOWING MATH DESCRIPTIONS");
-					try {
-						System.out.println("MemoryMathDescription:\n"+((memoryMathDescription!=null)?(memoryMathDescription.getVCML_database()):("null")));
-						System.out.println("DatabaseMathDescription:\n"+((databaseMathDescription!=null)?(databaseMathDescription.getVCML_database()):("null")));
-					}catch (Exception e2){
-						System.out.println("couldn't print math descriptions");
+					if (lg.isTraceEnabled()) {
+						lg.trace("FAILED TO COMPARE THE FOLLOWING MATH DESCRIPTIONS");
+						try {
+							lg.trace("MemoryMathDescription:\n"+((memoryMathDescription!=null)?(memoryMathDescription.getVCML_database()):("null")));
+							lg.trace("DatabaseMathDescription:\n"+((databaseMathDescription!=null)?(databaseMathDescription.getVCML_database()):("null")));
+						}catch (Exception e2){
+							lg.error("couldn't print math descriptions: "+e2.getLocalizedMessage(),e2);
+						}
 					}
 				}
 			}else{
@@ -1975,7 +1979,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 					try {
 						bSimMathematicallyEquivalent = !bForceIndependent && Simulation.testEquivalency(memorySimulation, databaseSimulation, mathCompareResults);
 					}catch (Exception e){
-						e.printStackTrace(System.out);
+						lg.error(e.getLocalizedMessage(),e);
 						throw new DataAccessException(e.getMessage());
 					}
 					//
@@ -2021,7 +2025,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 				try {
 					mathModelMetaData.setDescription(mathModel.getDescription());
 				} catch (java.beans.PropertyVetoException e) {
-					e.printStackTrace(System.out);
+					lg.error(e.getLocalizedMessage(),e);
 				}
 			}
 		}
@@ -2134,7 +2138,7 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 					try {
 						memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
 					}catch (java.beans.PropertyVetoException e){
-						e.printStackTrace(System.out);
+						lg.error(e.getLocalizedMessage(),e);
 					}
 					if (count++ > 5){
 						throw new DataAccessException("failed to find unique image name '"+memoryImage.getName()+"' is last name tried");
@@ -2207,7 +2211,7 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 				try {
 					memoryGeometry.setName(TokenMangler.getNextRandomToken(memoryGeometry.getName()));
 				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
+					lg.error(e.getLocalizedMessage(),e);
 				}
 				if (count++ > 5){
 					throw new DataAccessException("failed to find unique geometry name '"+memoryGeometry.getName()+"' is last name tried");
@@ -2368,7 +2372,7 @@ public String saveVCImage(User user,String imageXML,String newName) throws DataA
 		try{
 			image.setName(newName);
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
+			lg.error(e.getLocalizedMessage(),e);
 			throw new DataAccessException("couldn't set new name for Image: "+e.getMessage());
 		}
 	}

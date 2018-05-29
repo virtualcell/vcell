@@ -375,8 +375,7 @@ public SimulationRep getSimulationRep(ResultSet rset, DatabaseSyntax dbSyntax) t
 	try {
 		solverTaskDescription = new SolverTaskDescription(new CommentStringTokenizer(taskDesc));
 	} catch (DataAccessException e) {
-		System.out.println("SimulationTable:getSimulationRep(): failed to parse solver task description, exception=["+e.getMessage()+"]::\n[[["+taskDesc+"]]]\n");
-//		e.printStackTrace();
+		lg.error("SimulationTable:getSimulationRep(): failed to parse solver task description, exception=["+e.getMessage()+"]::\n[[["+taskDesc+"]]]\n", e);
 	}
 
 	CommentStringTokenizer mathOverridesTokenizer = getMathOverridesTokenizer(rset,dbSyntax);
