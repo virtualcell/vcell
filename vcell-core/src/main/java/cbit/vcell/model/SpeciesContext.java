@@ -250,12 +250,27 @@ public void setName(String name) throws PropertyVetoException {
 	firePropertyChange("name", oldValue, name);
 }
 
+
+private static String fixSbmlName(String newString) {
+	if(newString != null && newString.isEmpty()) {
+		return null;
+	}
+	StringBuilder sb = new StringBuilder(newString);
+	for (int i=0; i<sb.length(); i++){
+		if (sb.charAt(i) == '\'') {
+			sb.setCharAt(i,'_');
+		}
+		if (sb.charAt(i) == '\"') {
+			sb.setCharAt(i,'_');
+		}
+	}
+	String newValue = sb.toString();
+	return newValue;
+}
 public void setSbmlName(String newString) throws PropertyVetoException {
 	String oldValue = this.sbmlName;
-	String newValue = newString;
-	if(newString != null && newString.isEmpty()) {
-		newValue = null;
-	}
+	String newValue = fixSbmlName(newString);
+	
 	fireVetoableChange("sbmlName", oldValue, newValue);
 	this.sbmlName = newValue;
 	firePropertyChange("sbmlName", oldValue, newValue);
@@ -303,14 +318,16 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 				return;
 			}
 			// sbmlName may be null but it cannot contain illegal characters
-			if (!Character.isJavaIdentifierStart(newName.charAt(0))){
-				throw new PropertyVetoException("species context sbmlName '"+newName+"' can't start with a '"+newName.charAt(0)+"'", e);
-			}
-			for (int i=1;i<newName.length();i++){
-				if (!Character.isJavaIdentifierPart(newName.charAt(i))){
-					throw new PropertyVetoException("species context sbmlName '"+newName+"' can't include a '"+newName.charAt(i)+"'", e);
-				}
-			}	
+//			if (!Character.isJavaIdentifierStart(newName.charAt(0))){
+//				throw new PropertyVetoException("species context sbmlName '"+newName+"' can't start with a '"+newName.charAt(0)+"'", e);
+//			}
+//			for (int i=1;i<newName.length();i++){
+//				if (!Character.isJavaIdentifierPart(newName.charAt(i))){
+//					if(newName.charAt(i) != ' ') {
+//						throw new PropertyVetoException("species context sbmlName '"+newName+"' can't include a '"+newName.charAt(i)+"'", e);
+//					}
+//				}
+//			}	
 		}
 	}
 }
@@ -474,17 +491,17 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				String message = "SbmlName cannot be an empty string.";
 				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 			} else {
-				String message = null;
-				if (!Character.isJavaIdentifierStart(sbmlName.charAt(0))){
-					message = "SbmlName '"+sbmlName+"' can't start with a '"+sbmlName.charAt(0)+"'.";
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
-				}
-				for (int i=1;i<sbmlName.length();i++){
-					if (!Character.isJavaIdentifierPart(sbmlName.charAt(i))){
-						message = "species context sbmlName '"+sbmlName+"' can't include a '"+sbmlName.charAt(i)+"'.";
-						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
-					}
-				}	
+//				String message = null;
+//				if (!Character.isJavaIdentifierStart(sbmlName.charAt(0))){
+//					message = "SbmlName '"+sbmlName+"' can't start with a '"+sbmlName.charAt(0)+"'.";
+//					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+//				}
+//				for (int i=1;i<sbmlName.length();i++){
+//					if (!Character.isJavaIdentifierPart(sbmlName.charAt(i))){
+//						message = "species context sbmlName '"+sbmlName+"' can't include a '"+sbmlName.charAt(i)+"'.";
+//						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+//					}
+//				}	
 			}
 		}
 	}
