@@ -227,6 +227,12 @@ public static SchedulerDecisions schedule(List<ActiveJob> activeJobsAllSites, Pa
 	int numPendingJobsAllSites = 0;
 	for (ActiveJob activeJob : activeJobsAllSites) {
 
+		UserQuotaInfo userQuotaInfo = userQuotaInfoMap.get(activeJob.simulationOwner);
+		if (userQuotaInfo==null) {
+			userQuotaInfo = new UserQuotaInfo(activeJob.simulationOwner);
+			userQuotaInfoMap.put(activeJob.simulationOwner, userQuotaInfo);
+		}
+
 		if (!activeJob.schedulerStatus.isActive()) {
 			continue;
 		}
@@ -239,11 +245,6 @@ public static SchedulerDecisions schedule(List<ActiveJob> activeJobsAllSites, Pa
 			numPendingJobsAllSites++;
 		}
 		
-		UserQuotaInfo userQuotaInfo = userQuotaInfoMap.get(activeJob.simulationOwner);
-		if (userQuotaInfo==null) {
-			userQuotaInfo = new UserQuotaInfo(activeJob.simulationOwner);
-			userQuotaInfoMap.put(activeJob.simulationOwner, userQuotaInfo);
-		}
 		if(activeJob.isPDE) {
 			userQuotaInfo.numPdeRunningJobsAllSites++;
 		} else {
