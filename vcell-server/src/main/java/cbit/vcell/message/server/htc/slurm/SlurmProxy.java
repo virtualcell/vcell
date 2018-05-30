@@ -323,7 +323,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		long memoryKB = (long)(memSizeMB*1000.0);
 		memoryKB = Math.max(256*1000, memoryKB * 2);  // minimum of 256MB Memory and 2*estimated memory.
-		lsb.write("#SBATCH -mem="+memoryKB+"K");
+		lsb.write("#SBATCH --mem="+memoryKB+"K");
 		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
 		if (nodelist!=null && nodelist.trim().length()>0) {
 			lsb.write("#SBATCH --nodelist="+nodelist);
