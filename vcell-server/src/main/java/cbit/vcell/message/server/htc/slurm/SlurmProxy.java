@@ -308,7 +308,7 @@ public class SlurmProxy extends HtcProxy {
 	 * @param postProcessingCommands
 	 * @return String containing script
 	 */
-	String generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
+	String generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 		final boolean isParallel = ncpus > 1;
 
 
@@ -321,6 +321,9 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
+		long memoryKB = (long)(memSizeMB*1000.0);
+		memoryKB = Math.max(256*1000, memoryKB * 2);  // minimum of 256MB Memory and 2*estimated memory.
+		lsb.write("#SBATCH -mem="+memoryKB+"K");
 		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
 		if (nodelist!=null && nodelist.trim().length()>0) {
 			lsb.write("#SBATCH --nodelist="+nodelist);
@@ -555,12 +558,12 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws ExecutableException {
 		try {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
 			}
-			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands, simTask);
+			String text = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
 
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 

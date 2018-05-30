@@ -26,18 +26,6 @@ import cbit.vcell.solvers.ExecutableCommand;
 
 public abstract class HtcProxy {
 	public static final Logger LG = LogManager.getLogger(HtcProxy.class);
-
-	/**
-	 *
-	 * in order for remote (non-interactive) shells to work with SGE, some environment variables have to be set
-	 *
-	 * we created a .bashrc file in the home directory of user vcell with the following single line content:
-	 *
-	 * if [ "${HOSTNAME}" = "sigcluster2.cam.uchc.edu" ]; then source /etc/profile.d/sge-binaries.sh; fi
-	 *
-	 * this will execute on sigcluster2 (with SGE) and not execute on sigcluster (with PBS).
-	 *
-	 */
 	
 	public static class PartitionStatistics {
 		public final int numCpusAllocated;
@@ -235,36 +223,6 @@ public abstract class HtcProxy {
 	}
 
 	public abstract String getSubmissionFileExtension();
-
-	/**
-	 * for unix-style commands that have (e.g. pipes), using the java Runtime.exec(String[] cmd), the pipe requires a shell to operate properly.
-	 * the SSH command already invokes this with a shell, so it is not required.
-	 */
-	protected final String[] constructShellCommand(CommandService commandService, String[] cmd){
-//		if (commandService instanceof CommandServiceSsh_sshj || commandService instanceof CommandServiceSshNative){
-//			ArrayList<String> ar = new ArrayList<String>();
-//			ar.addAll(Arrays.asList(getEnvironmentModuleCommandPrefix()));
-//			ar.addAll(Arrays.asList(cmd));
-//			return ar.toArray(new String[0]);
-//		}else if (commandService instanceof CommandServiceLocal){
-			StringBuffer sb = new StringBuffer();
-
-
-/*  		Code to invoke environment modules */
-
-//			String[] envModulePrefix = getEnvironmentModuleCommandPrefix();
-//			for (int i = 0; i< envModulePrefix.length; i++){
-//				sb.append((i>0?" ":"")+envModulePrefix[i]);
-//			}
-			 //if code above is uncommented, line 2 lines down below becomes sb.append(" "+cmd[i]); instead of sb.append((i>0?" ":"")+cmd[i]);
-
-			for (int i = 0; i < cmd.length; i++) {
-				sb.append((i>0?" ":"")+cmd[i]);
-			}
-			return new String[] { "/bin/sh","-c",sb.toString()};
-//		}
-//		throw new RuntimeException("expected either SSH or Local CommandService");
-	}
 
 }
 

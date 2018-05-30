@@ -13,6 +13,7 @@ import java.io.File;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,7 +64,8 @@ import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.combined.VCellServices;
-import cbit.vcell.message.server.dispatcher.BatchScheduler.WaitingJob;
+import cbit.vcell.message.server.dispatcher.BatchScheduler.ActiveJob;
+import cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecisions;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
@@ -257,7 +259,6 @@ public class SimulationDispatcher extends ServiceProvider {
 				boolean bDispatchedAnyJobs = false;
 
 				try {
-					VCellServerID vcellServerId = VCellServerID.getSystemServerID();
 					final SimulationJobStatus[] allActiveJobsAllSites = simulationDatabase.getActiveJobs(null);
 					Set<KeyValue> simKeys = new LinkedHashSet<KeyValue>(); //Linked hash set maintains insertion order
 					for (SimulationJobStatus simJobStatus : allActiveJobsAllSites){
@@ -290,10 +291,17 @@ public class SimulationDispatcher extends ServiceProvider {
 						VCellServerID serverID = VCellServerID.getSystemServerID();
 
 						final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
-						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobsAllSites, simulationRequirementsMap, partitionStatistics, maxOdePerUser, maxPdePerUser, serverID);
+						ArrayList<BatchScheduler.ActiveJob> activeJobs = new ArrayList<BatchScheduler.ActiveJob>();
+						for (SimulationJobStatus simJobStatus : allActiveJobsAllSites) {
+							SimulationRequirements simulationRequirements = simulationRequirementsMap.get(simJobStatus.getVCSimulationIdentifier().getSimulationKey());
+							boolean isPDE = (simulationRequirements!=null)?(simulationRequirements.isPDE()):(false);
+							BatchScheduler.ActiveJob activeJob = new BatchScheduler.ActiveJob(simJobStatus, isPDE);
+							activeJobs.add(activeJob);
+						}
+						SchedulerDecisions schedulerDecisions = BatchScheduler.schedule(activeJobs, partitionStatistics, maxOdePerUser, maxPdePerUser, serverID);
 						if (lg.isTraceEnabled()) {
 							lg.trace("Dispatcher limits: partitionStatistics="+partitionStatistics+", maxOdePerUser="+maxOdePerUser+", maxPdePerUser="+maxPdePerUser);
-							lg.trace(waitingJobs.length + " waiting jobs to process: "+Arrays.asList(waitingJobs));
+							lg.trace(schedulerDecisions.getRunnableThisSite().size() + " runnable jobs to process");
 						}
 
 						//
@@ -301,8 +309,8 @@ public class SimulationDispatcher extends ServiceProvider {
 						// cache is discarded after use.
 						//
 						HashMap<KeyValue,Simulation> tempSimulationMap = new HashMap<KeyValue,Simulation>();
-						for (WaitingJob waitingJob : waitingJobs){
-							SimulationJobStatus jobStatus = waitingJob.simJobStatus;
+						for (ActiveJob jobToRun : schedulerDecisions.getRunnableThisSite()){
+							SimulationJobStatus jobStatus = (SimulationJobStatus)jobToRun.jobObject;
 							VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
 							try {
 								final KeyValue simKey = vcSimID.getSimulationKey();
@@ -376,7 +384,6 @@ public class SimulationDispatcher extends ServiceProvider {
 
 					Map<HtcJobInfo, HtcJobStatus> runningJobs = htcProxy.getRunningJobs();
 					for (HtcJobInfo htcJobInfo : runningJobs.keySet()){
-						HtcJobStatus jobStatus = runningJobs.get(htcJobInfo);
 						try {
 							String simJobName = htcJobInfo.getJobName();
 							HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);

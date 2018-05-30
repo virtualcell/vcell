@@ -13,20 +13,22 @@ package cbit.vcell.message.server.dispatcher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.vcell.util.document.KeyValue;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
-import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimulationJobStatus;
+import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 
 /**
  * Insert the type's description here.
@@ -34,36 +36,163 @@ import cbit.vcell.server.SimulationJobStatus;
  * @author: Jim Schaff
  */
 public class BatchScheduler {
-
 	
-	public static class WaitingJob {
-		public final User user;
-		public final Integer numRunningPDEs;
-		public final Integer numRunningODEs;
-		public final Long waitingTimeStamp;
-		public final SimulationJobStatus simJobStatus;
-		public final SimulationRequirements simRequirements;
-		public final VCellServerID vcellServerId;
+	static Logger lg = LogManager.getLogger(BatchScheduler.class);
+	
+	public static class ActiveJob {
+		public final User simulationOwner;
+		public final SchedulerStatus schedulerStatus;
+		public final long submitTimestamp;
+		public final VCellServerID serverId;
+		public final boolean isPDE;
 
-		public WaitingJob(User user, int numRunningPDEs, int numRunningODEs, long waitingTimeStamp, SimulationJobStatus simJobStatus, SimulationRequirements simRequirements, VCellServerID vcellServerId) {
+		public final Object jobObject; // to externally associate this job
+
+		
+		public ActiveJob(SimulationJobStatus simJobStatus, boolean isPDE) {
+			this.jobObject = simJobStatus;
+			this.simulationOwner = simJobStatus.getVCSimulationIdentifier().getOwner();
+			this.schedulerStatus = simJobStatus.getSchedulerStatus();
+			this.submitTimestamp = simJobStatus.getSubmitDate().getTime();
+			this.serverId = simJobStatus.getServerID();
+			this.isPDE = isPDE;
+		}
+		
+		
+		public ActiveJob(Object jobObject, User simulationOwner, SchedulerStatus schedulerStatus,
+				long queueTimestamp, VCellServerID serverId, boolean isPDE) {
+			super();
+			this.jobObject = jobObject;
+			this.simulationOwner = simulationOwner;
+			this.schedulerStatus = schedulerStatus;
+			this.submitTimestamp = queueTimestamp;
+			this.serverId = serverId;
+			this.isPDE = isPDE;
+		}
+	}
+	
+	public static class UserQuotaInfo {
+		public final User user;
+		public int numPdeRunningJobsAllSites = 0;
+		public int numOdeRunningJobsAllSites = 0;
+		
+		public UserQuotaInfo(User user) {
 			this.user = user;
-			this.numRunningPDEs = numRunningPDEs;
-			this.numRunningODEs = numRunningODEs;
-			this.waitingTimeStamp = waitingTimeStamp;
-			this.simJobStatus = simJobStatus;
-			this.simRequirements = simRequirements;
-			this.vcellServerId = vcellServerId;
 		}
 		
-		public Integer getNumRunningJobs(){
-			return new Integer(numRunningODEs+numRunningPDEs);
+		public int getNumRunningJobs() {
+			return numPdeRunningJobsAllSites+numOdeRunningJobsAllSites;
+		}
+	}
+
+	enum SchedulerDecisionType {
+		UNKNOWN,
+		INACTIVE_JOB,
+		ALREADY_RUNNING_OR_QUEUED,
+		
+		HELD_USER_QUOTA_ODE,
+		HELD_USER_QUOTA_PDE,
+		HELD_CLUSTER_RESOURCES,
+		
+		RUNNABLE_OTHER_SITE,
+		
+		RUNNABLE_THIS_SITE;
+		
+		boolean isRequested() {
+			return this!=INACTIVE_JOB && this!=ALREADY_RUNNING_OR_QUEUED;
+		}
+	}
+	
+	public static class SchedulerDecisions {
+		private Map<ActiveJob,SchedulerDecisionType> decisionTypeMap = new HashMap<ActiveJob,SchedulerDecisionType>();
+		private Map<ActiveJob,Integer> ordinalMap = new HashMap<ActiveJob,Integer>();
+		
+		public SchedulerDecisions(List<ActiveJob> activeJobsAllSites) {
+			for (ActiveJob activeJob : activeJobsAllSites) {
+				this.decisionTypeMap.put(activeJob,SchedulerDecisionType.UNKNOWN);
+				this.ordinalMap.put(activeJob, new Integer(-1));
+			}
 		}
 		
-		public String toString() {
-			return "WaitingJob("+simRequirements+": waitingTimeStamp="+waitingTimeStamp+", user="+user+", numRunningPde="+numRunningPDEs+", numRunningOdes="+numRunningODEs+", simJobStatus="+simJobStatus+")";
+		public SchedulerDecisionType getDecisionType(ActiveJob activeJob) {
+			return decisionTypeMap.get(activeJob);
+		}
+
+		public Integer getOrdinal(ActiveJob activeJob) {
+			return ordinalMap.get(activeJob);
 		}
 		
-	};
+		public List<ActiveJob> getRunnableThisSite() {
+			ArrayList<ActiveJob> runnableThisSite = new ArrayList<ActiveJob>();
+			for (ActiveJob job : decisionTypeMap.keySet()) {
+				if (decisionTypeMap.get(job) == SchedulerDecisionType.RUNNABLE_THIS_SITE) {
+					runnableThisSite.add(job);
+				}
+			}
+			return runnableThisSite;
+		}
+
+
+		private void setInactive(ActiveJob activeJob) {
+			this.decisionTypeMap.put(activeJob,SchedulerDecisionType.INACTIVE_JOB);
+		}
+
+		private void setAlreadyRunningOrQueued(ActiveJob activeJob) {
+			decisionTypeMap.put(activeJob, SchedulerDecisionType.ALREADY_RUNNING_OR_QUEUED);
+		}
+
+		private void setOrdinal(ActiveJob activeJob, int index) {
+			ordinalMap.put(activeJob, index);
+		}
+
+		private void setHeldUserQuotaPDE(ActiveJob waitingJob) {
+			decisionTypeMap.put(waitingJob, SchedulerDecisionType.HELD_USER_QUOTA_PDE);
+		}
+
+		private void setHeldUserQuotaODE(ActiveJob waitingJob) {
+			 decisionTypeMap.put(waitingJob, SchedulerDecisionType.HELD_USER_QUOTA_ODE);
+		}
+
+		private void setHeldClusterResources(ActiveJob waitingJob) {
+			decisionTypeMap.put(waitingJob, SchedulerDecisionType.HELD_CLUSTER_RESOURCES);
+		}
+
+		private void setRunnableThisSite(ActiveJob waitingJob) {
+			decisionTypeMap.put(waitingJob, SchedulerDecisionType.RUNNABLE_THIS_SITE);
+		}
+		
+		private void setRunnableOtherSite(ActiveJob waitingJob) {
+			decisionTypeMap.put(waitingJob, SchedulerDecisionType.RUNNABLE_OTHER_SITE);
+		}
+		
+		private void verify(PartitionStatistics partitionStatistics) {
+			// look for inconsistent decisions
+			for (ActiveJob activeJob : decisionTypeMap.keySet()) {
+				if (decisionTypeMap.get(activeJob) == SchedulerDecisionType.UNKNOWN) {
+					lg.error("activeJob("+activeJob.jobObject+") undecided");
+				}
+			}
+			if (lg.isTraceEnabled()) {
+				for (ActiveJob activeJob : decisionTypeMap.keySet()) {
+					lg.trace(getDecisionDesc(activeJob));
+				}
+			}
+		}
+
+		public void show() {
+			for (ActiveJob activeJob : decisionTypeMap.keySet()) {
+				System.out.println(getDecisionDesc(activeJob));
+			}
+		}
+		
+		public String getDecisionDesc(ActiveJob activeJob) {
+			SchedulerDecisionType schedulerDecisionType = decisionTypeMap.get(activeJob);
+			Integer ordinal = ordinalMap.get(activeJob);
+			String jobType = activeJob.isPDE?"pde":"ode";
+			return "activeJob("+activeJob.jobObject+"): user="+activeJob.simulationOwner.getName()+", site="+activeJob.serverId+", status="+activeJob.schedulerStatus+", time="+activeJob.submitTimestamp+", type="+jobType+", globalOrdinal="+ordinal+", decision="+schedulerDecisionType;
+		}
+	}
+	
 
 /**
  * BatchScheduler constructor comment.
@@ -90,88 +219,79 @@ public static final int getMaxPdeJobsPerUser() {
  * Insert the method's description here.
  * Creation date: (5/11/2006 9:32:58 AM)
  */
-public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsAllSites, Map<KeyValue,SimulationRequirements> simulationRequirementsMap, PartitionStatistics partitionStatistics, int userQuotaOde, int userQuotaPde, VCellServerID systemID) {
-	Hashtable<User, Integer> userPdeRunningJobsAllSites = new Hashtable<User, Integer>();
-	Hashtable<User, Integer> userOdeRunningJobsAllSites = new Hashtable<User, Integer>();
-
+public static SchedulerDecisions schedule(List<ActiveJob> activeJobsAllSites, PartitionStatistics partitionStatistics, int userQuotaOde, int userQuotaPde, VCellServerID systemID) {
+	Hashtable<User, UserQuotaInfo> userQuotaInfoMap = new Hashtable<User, UserQuotaInfo>();
 	//
 	// gather statistics about all currently active jobs across all sites (per user and aggregate).
 	//
 	int numPendingJobsAllSites = 0;
-	for (SimulationJobStatus jobStatus : activeJobsAllSites) {
+	for (ActiveJob activeJob : activeJobsAllSites) {
 
-		if (!jobStatus.getSchedulerStatus().isActive()) {
+		if (!activeJob.schedulerStatus.isActive()) {
 			continue;
 		}
 		
-		if (jobStatus.getSchedulerStatus().isWaiting()) {
+		if (activeJob.schedulerStatus.isWaiting()) {
 			continue;  // we only do statistics on running jobs;
 		}
 		
-		if (jobStatus.getSchedulerStatus().isDispatched() || jobStatus.getSchedulerStatus().isQueued()) {
+		if (activeJob.schedulerStatus.isDispatched() || activeJob.schedulerStatus.isQueued()) {
 			numPendingJobsAllSites++;
 		}
 		
-		User user = jobStatus.getVCSimulationIdentifier().getOwner();
-		SimulationRequirements simRequirements = simulationRequirementsMap.get(jobStatus.getVCSimulationIdentifier().getSimulationKey());
-		if(simRequirements!=null && simRequirements.isPDE()) {
-			Integer numUserPdeJobs = userPdeRunningJobsAllSites.get(user);
-			if (numUserPdeJobs == null) {
-				userPdeRunningJobsAllSites.put(user, 1);
-			} else {
-				userPdeRunningJobsAllSites.put(user, numUserPdeJobs.intValue() + 1);
-			}
+		UserQuotaInfo userQuotaInfo = userQuotaInfoMap.get(activeJob.simulationOwner);
+		if (userQuotaInfo==null) {
+			userQuotaInfo = new UserQuotaInfo(activeJob.simulationOwner);
+			userQuotaInfoMap.put(activeJob.simulationOwner, userQuotaInfo);
+		}
+		if(activeJob.isPDE) {
+			userQuotaInfo.numPdeRunningJobsAllSites++;
 		} else {
-			Integer numUserOdeJobs = userOdeRunningJobsAllSites.get(user);
-			if (numUserOdeJobs == null) {
-				userOdeRunningJobsAllSites.put(user, 1);
-			} else {
-				userOdeRunningJobsAllSites.put(user, numUserOdeJobs.intValue() + 1);
-			}
+			userQuotaInfo.numOdeRunningJobsAllSites++;
 		}
 	}
 	
 	//
 	// gather all waiting jobs (all sites)
 	//
-	ArrayList<WaitingJob> waitingJobsAllSites = new ArrayList<WaitingJob>();
-	for (SimulationJobStatus jobStatus : activeJobsAllSites) {
-			
-		if (!jobStatus.getSchedulerStatus().isActive()) {
+	SchedulerDecisions schedulerDecisions = new SchedulerDecisions(activeJobsAllSites);
+	ArrayList<ActiveJob> prioritizedJobList = new ArrayList<ActiveJob>(activeJobsAllSites);
+	
+	for (ActiveJob activeJob : activeJobsAllSites) {
+
+		if (!activeJob.schedulerStatus.isActive()) {
+			schedulerDecisions.setInactive(activeJob);
+			prioritizedJobList.remove(activeJob);
 			continue;
 		}
 
-		if (!jobStatus.getSchedulerStatus().isWaiting()) {
-			continue; // ignore non-waiting job
+		if (!activeJob.schedulerStatus.isWaiting()) {
+			schedulerDecisions.setAlreadyRunningOrQueued(activeJob);
+			prioritizedJobList.remove(activeJob);
+			continue;
 		}
-
-		User user = jobStatus.getVCSimulationIdentifier().getOwner();
-		long waitingTimeStamp = jobStatus.getSimulationQueueEntryStatus().getQueueDate().getTime();
-		
-		KeyValue simKey = jobStatus.getVCSimulationIdentifier().getSimulationKey();
-		Integer numPdeRunningJobsThisUser = userPdeRunningJobsAllSites.get(user);
-		Integer numOdeRunningJobsThisUser = userOdeRunningJobsAllSites.get(user);
-		waitingJobsAllSites.add(new WaitingJob(user, (numPdeRunningJobsThisUser!=null)?numPdeRunningJobsThisUser:0, (numOdeRunningJobsThisUser!=null)?numOdeRunningJobsThisUser:0, waitingTimeStamp, jobStatus, simulationRequirementsMap.get(simKey), jobStatus.getServerID()));
 	}
 
 	//
-	// sort jobs according to priority
+	// sort requested jobs according to priority
 	//
-	Collections.sort(waitingJobsAllSites,new Comparator<WaitingJob>(){
+	Collections.sort(prioritizedJobList,new Comparator<ActiveJob>(){
 
 		@Override
-		public int compare(WaitingJob o1, WaitingJob o2) {
+		public int compare(ActiveJob o1, ActiveJob o2) {
 			//
 			// user with fewer jobs running should take precedence
 			//
-			if (!o1.getNumRunningJobs().equals(o2.getNumRunningJobs())){
-				return o1.getNumRunningJobs().compareTo(o2.getNumRunningJobs());
+			UserQuotaInfo userQuotaInfo1 = userQuotaInfoMap.get(o1.simulationOwner);
+			UserQuotaInfo userQuotaInfo2 = userQuotaInfoMap.get(o2.simulationOwner);
+			if (userQuotaInfo1.getNumRunningJobs() != userQuotaInfo2.getNumRunningJobs()){
+				return Integer.compare(userQuotaInfo1.getNumRunningJobs(), userQuotaInfo2.getNumRunningJobs());
 			}
 			//
 			// ODEs take precedence over PDEs (they should be faster)
 			//
-			if (o1.simRequirements.isPDE() != o2.simRequirements.isPDE()){
-				if (o1.simRequirements.isPDE()){
+			if (o1.isPDE != o2.isPDE){
+				if (o1.isPDE){
 					return 1;
 				}else{
 					return -1;
@@ -180,45 +300,51 @@ public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsAllSites, Ma
 			//
 			// both are odes or both are pdes ... sort by waiting time
 			//
-			return o1.waitingTimeStamp.compareTo(o2.waitingTimeStamp);
+			return Long.compare(o1.submitTimestamp, o2.submitTimestamp);
 		}
 		
 	});
 	
 	//
+	// set the job priority (ineligible jobs keep an ordinal of -1)
+	//
+	int index=0;
+	for (ActiveJob activeJob : prioritizedJobList) {
+		schedulerDecisions.setOrdinal(activeJob, index);
+		index++;
+	}
+	
+	
+	//
 	// enforce quota for each user (remove jobs which exceed user quotas)
 	//
 	HashSet<User> users = new HashSet<User>();
-	users.addAll(userPdeRunningJobsAllSites.keySet());
-	users.addAll(userOdeRunningJobsAllSites.keySet());
+	users.addAll(userQuotaInfoMap.keySet());
 	for (User user : users){
-		int numRunningPDEsAllSites = 0;
-		if (userPdeRunningJobsAllSites.get(user)!=null){
-			numRunningPDEsAllSites = userPdeRunningJobsAllSites.get(user);
-		}
-		int numRunningODEsAllSites = 0;
-		if (userOdeRunningJobsAllSites.get(user) != null){
-			numRunningODEsAllSites = userOdeRunningJobsAllSites.get(user);
-		}
+		UserQuotaInfo userQuotaInfo = userQuotaInfoMap.get(user);
+		int numDesiredRunningPDEsAllSites = userQuotaInfo.numPdeRunningJobsAllSites;
+		int numDesiredRunningODEsAllSites = userQuotaInfo.numOdeRunningJobsAllSites;
 		
 		//
 		// go full list and remove any jobs that would exceed this users quota
 		//
-		Iterator<WaitingJob> waitingJobIter = waitingJobsAllSites.iterator();
-		while (waitingJobIter.hasNext()){
-			WaitingJob waitingJob = waitingJobIter.next();
-			if (waitingJob.user.equals(user)){
-				if (waitingJob.simRequirements.isPDE()){
-					if (numRunningPDEsAllSites < userQuotaPde){
-						numRunningPDEsAllSites++;
+		Iterator<ActiveJob> prioritizedJobIter = prioritizedJobList.iterator();
+		while (prioritizedJobIter.hasNext()){
+			ActiveJob waitingJob = prioritizedJobIter.next();
+			if (waitingJob.simulationOwner.equals(user)){
+				if (waitingJob.isPDE){
+					if (numDesiredRunningPDEsAllSites < userQuotaPde){
+						numDesiredRunningPDEsAllSites++;
 					}else{
-						waitingJobIter.remove();
+						schedulerDecisions.setHeldUserQuotaPDE(waitingJob);
+						prioritizedJobIter.remove();
 					}
 				}else{
-					if (numRunningODEsAllSites < userQuotaOde){
-						numRunningODEsAllSites++;
+					if (numDesiredRunningODEsAllSites < userQuotaOde){
+						numDesiredRunningODEsAllSites++;
 					}else{
-						waitingJobIter.remove();
+						schedulerDecisions.setHeldUserQuotaODE(waitingJob);
+						prioritizedJobIter.remove();
 					}
 				}
 			}
@@ -233,24 +359,27 @@ public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsAllSites, Ma
 	int cpusAvailable = Math.max(0, partitionStatistics.numCpusTotal - inUseCPUs);
 	int numJobsSlotsAvailable = Math.max(0, cpusAvailable - numPendingJobsAllSites);
 	
-	int numJobsEligibleAllSites = waitingJobsAllSites.size();
-	int numJobsToDispatchAllSites = Math.min(numJobsSlotsAvailable,numJobsEligibleAllSites);
-	if (numJobsToDispatchAllSites == 0){
-		return new WaitingJob[0];
-	}else{
-		//
-		// trim global prioritized list of jobs to be submitted across all sites.
-		// only submit the jobs (of the N global jobs) which are from this site.
-		// the other sites will submit their own jobs in time.
-		//
-		List<WaitingJob> waitingJobsToRunAllSites = waitingJobsAllSites.subList(0, numJobsToDispatchAllSites);
-		ArrayList<WaitingJob> waitingJobsToRunThisSite = new ArrayList<WaitingJob>();
-		for (WaitingJob waitingJobToRun : waitingJobsToRunAllSites) {
-			if (waitingJobToRun.vcellServerId.equals(systemID)){
-				waitingJobsToRunThisSite.add(waitingJobToRun);
+	for (int i=0;i<prioritizedJobList.size();i++) {
+		ActiveJob nextWaitingJob = prioritizedJobList.get(i);
+		if (i<numJobsSlotsAvailable) {
+			//
+			// trim global prioritized list of jobs to be submitted across all sites.
+			// only submit the jobs (of the N global jobs) which are from this site.
+			// the other sites will submit their own jobs in time.
+			//
+			if (nextWaitingJob.serverId.equals(systemID)){
+				schedulerDecisions.setRunnableThisSite(nextWaitingJob);
+			}else {
+				schedulerDecisions.setRunnableOtherSite(nextWaitingJob);
 			}
+		}else {
+			schedulerDecisions.setHeldClusterResources(nextWaitingJob);
 		}
-		return waitingJobsToRunThisSite.toArray(new WaitingJob[0]);
 	}
+
+	schedulerDecisions.verify(partitionStatistics);
+
+	return schedulerDecisions;
 }
+
 }
