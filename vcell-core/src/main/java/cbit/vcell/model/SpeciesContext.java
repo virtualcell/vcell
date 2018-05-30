@@ -252,7 +252,7 @@ public void setName(String name) throws PropertyVetoException {
 
 
 private static String fixSbmlName(String newString) {
-	if(newString != null && newString.isEmpty()) {
+	if(newString == null || newString.isEmpty()) {
 		return null;
 	}
 	StringBuilder sb = new StringBuilder(newString);
