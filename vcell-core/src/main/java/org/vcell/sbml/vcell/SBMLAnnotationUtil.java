@@ -128,9 +128,17 @@ public class SBMLAnnotationUtil {
 		XMLNode rootRDF = null;
 		if (rdfChunk != null && metaData.getBaseURIExtended() != null) {
 			Element element = XMLRDFWriter.createElement(rdfChunk, nsSBML);
-			XMLNamespaces xmlnss = new XMLNamespaces();
-			xmlnss.add(DefaultNameSpaces.RDF.uri, DefaultNameSpaces.RDF.prefix);
-			rootRDF = XMLNode.convertStringToXMLNode(XmlUtil.xmlToString(element), xmlnss);
+			if(element.getAttributes().isEmpty() && element.getContent().isEmpty()) {
+				// an empty element with just a namespace (as below) will be interpreted wrongly as a note and will fail with a null pointer exception
+				// <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+				// hence this test, we just ignore such elements
+				;
+			} else {
+				XMLNamespaces xmlnss = new XMLNamespaces();
+				xmlnss.add(DefaultNameSpaces.RDF.uri, DefaultNameSpaces.RDF.prefix);
+				String str = XmlUtil.xmlToString(element);
+				rootRDF = XMLNode.convertStringToXMLNode(str, xmlnss);
+			}
 		}
 		if (rootRDF != null && rootRDF.getNumChildren() > 0) {
 			rootAnnotation.addChild(rootRDF);
