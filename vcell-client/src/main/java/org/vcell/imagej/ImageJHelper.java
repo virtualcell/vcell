@@ -7,18 +7,33 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.EventObject;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.IOUtils;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -583,4 +598,120 @@ public class ImageJHelper {
 			}
 		});
 	}
+	
+	public static class ApiInfoHandler extends AbstractHandler
+	{
+		private enum ApiEnum {list};
+		private HashMap<ApiEnum, String[]> apiParams = new HashMap<>();
+		public ApiInfoHandler() {
+			apiParams.put(ApiEnum.list, new String[] {"type={biom,math}","type=sims&modelname=xxx"});
+		}
+	    @Override
+	    public void handle( String target,
+	                        Request baseRequest,
+	                        HttpServletRequest request,
+	                        HttpServletResponse response ) throws IOException,
+	                                                      ServletException
+	    {
+	    	
+	    	System.out.println(target+"\n"+baseRequest.getQueryString());
+	        // Declare response encoding and types
+	        response.setContentType("text/html; charset=utf-8");
+
+	        // Declare response status code
+	        response.setStatus(HttpServletResponse.SC_OK);
+
+	        for(ApiEnum apiEnum:ApiEnum.values()) {
+		        
+		        String[] params = apiParams.get(apiEnum);
+		        if(params != null) {
+		        	for(String s:params) {
+			        	response.getWriter().print("http://localhost/"+apiEnum.name()+"?");
+			        	response.getWriter().print(s);
+			        	response.getWriter().println();
+		        	}
+		        }else {
+		        	response.getWriter().println("http://localhost/"+apiEnum.name());
+		        }
+		        
+
+	        }
+	        // Write back response
+//	        response.getWriter().println("<h1>Hello World</h1>");
+
+	        // Inform jetty that this request has now been handled
+	        baseRequest.setHandled(true);
+	    }
+
+	}
+	
+	public static class ApiListHandler extends AbstractHandler{
+
+		@Override
+		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+				throws IOException, ServletException {
+	    	System.out.println(target+"\n"+baseRequest.getQueryString());
+	        // Declare response encoding and types
+	        response.setContentType("text/html; charset=utf-8");
+
+	        // Declare response status code
+	        response.setStatus(HttpServletResponse.SC_OK);
+
+	        // Write back response
+	        response.getWriter().println("<h1>list requested</h1>");
+
+	        // Inform jetty that this request has now been handled
+	        baseRequest.setHandled(true);
+
+			
+		}
+		
+	}
+	
+    public static void startService() throws Exception
+    {
+        Server server = new Server(8080);
+        
+        ContextHandler contextRoot = new ContextHandler("/");
+        contextRoot.setHandler(new ApiInfoHandler());
+        ContextHandler context = new ContextHandler("/list");
+        context.setHandler(new ApiListHandler());
+
+        ContextHandlerCollection contexts = new ContextHandlerCollection();
+        contexts.setHandlers(new Handler[] { contextRoot,context });
+
+        server.setHandler(contexts);
+
+//        server.setHandler(new HelloWorld());
+        System.out.println(server.getURI());
+        server.start();
+//        server.join();
+    }
+
+    public static void exerciseService() {
+    	try {
+//    	HttpClient httpClient = new HttpClient();
+//    	HostConfiguration hostConfiguration = new HostConfiguration();
+//    	hostConfiguration.setHost("localhost",8080);
+//    	HttpMethod method = new GetMethod("/list?type=biom");
+//			int var = httpClient.executeMethod(hostConfiguration, method);
+//			System.out.println("result="+var);
+//			
+//			method = new GetMethod("/");
+//			var = httpClient.executeMethod(hostConfiguration, method);
+//			System.out.println("result="+var);
+
+			URL url = new URL("http://localhost:8080/");
+//			URL url = new URL("http://localhost:8080/list");
+			URLConnection con = url.openConnection();
+			InputStream in = con.getInputStream();
+			String encoding = con.getContentEncoding();
+			encoding = encoding == null ? "UTF-8" : encoding;
+			String body = IOUtils.toString(in, encoding);
+			System.out.println(body);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 }
