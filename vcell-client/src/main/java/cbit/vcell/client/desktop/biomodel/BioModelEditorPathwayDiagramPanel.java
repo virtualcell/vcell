@@ -78,6 +78,7 @@ import org.vcell.relationship.PathwayMapping;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.graphlayout.ExpandCanvasLayouter;
+import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.ShrinkCanvasLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
@@ -1134,7 +1135,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 				return new LayoutAction(GraphLayoutManager.OldLayouts.RELAXER);
 			}
 			case GLG_LAYOUT : {
-				return new LayoutAction(EnergyMinimizingLayouter.LAYOUT_NAME);
+				return new LayoutAction(GenericLogicGraphLayouter.LAYOUT_NAME);
 			}
 			case SHRINK_CANVAS : {
 				return new LayoutAction(ShrinkCanvasLayouter.LAYOUT_NAME);
