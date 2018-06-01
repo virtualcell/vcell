@@ -50,6 +50,7 @@ public class SlurmProxyTest {
 			SlurmProxy slurmProxy = new SlurmProxy(cmd, "vcell");
 
 			String jobName = "V_TEST2_999999999_0_"+r.nextInt(10000);
+			System.out.println("job name is "+jobName);
 			File sub_file_localpath = new File("/Volumes/vcell/htclogs/"+jobName+".slurm.sub");
 			File sub_file_remotepath = new File("/share/apps/vcell3/htclogs/"+jobName+".slurm.sub");
 			
@@ -60,18 +61,28 @@ public class SlurmProxyTest {
 			subfileContent.append("#SBATCH -J "+jobName+"\n");
 			subfileContent.append("#SBATCH -o /share/apps/vcell3/htclogs/"+jobName+".slurm.log\n");
 			subfileContent.append("#SBATCH -e /share/apps/vcell3/htclogs/"+jobName+".slurm.log\n");
+			subfileContent.append("#SBATCH --mem=1000M\n");
+			subfileContent.append("#SBATCH --no-kill\n");
+			subfileContent.append("#SBATCH --no-requeue\n");
 			subfileContent.append("env\n");
 			subfileContent.append("echo `hostname`\n");
+			subfileContent.append("python -c \"some_str = ' ' * 51200000\"\n");
+			subfileContent.append("retcode=$?\n");
+			subfileContent.append("echo \"return code was $retcode\"\n");
+			subfileContent.append("if [[ $retcode == 137 ]]; then\n");
+			subfileContent.append("   echo \"job was killed via kill -9 (probably out of memory)\"\n");
+			subfileContent.append("fi\n");
+			subfileContent.append("exit $retcode\n");
 			//subfileContent.append("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
 			//subfileContent.append("source /usr/share/Modules/init/bash\n");
-			subfileContent.append("module load singularity/2.4.2\n");
-			subfileContent.append("if command -v singularity >/dev/null 2>&1; then\n");
-			subfileContent.append("   echo 'singularity command exists'\n");
-			subfileContent.append("   exit 0\n");
-			subfileContent.append("else\n");
-			subfileContent.append("   echo 'singularity command not found'\n");
-			subfileContent.append("   exit 1\n");
-			subfileContent.append("fi\n");
+//			subfileContent.append("module load singularity/2.4.2\n");
+//			subfileContent.append("if command -v singularity >/dev/null 2>&1; then\n");
+//			subfileContent.append("   echo 'singularity command exists'\n");
+//			subfileContent.append("   exit 0\n");
+//			subfileContent.append("else\n");
+//			subfileContent.append("   echo 'singularity command not found'\n");
+//			subfileContent.append("   exit 1\n");
+//			subfileContent.append("fi\n");
 
 			FileUtils.writeStringToFile(sub_file_localpath, subfileContent.toString());
 			HtcJobID htcJobId = slurmProxy.submitJobFile(sub_file_remotepath);
@@ -83,9 +94,10 @@ public class SlurmProxyTest {
 			
 			Map<HtcJobInfo, HtcJobStatus> jobStatusMap = slurmProxy.getJobStatus(jobInfos);
 			int attempts = 0;
-			while (attempts<8 && (jobStatusMap.get(htcJobInfo)==null || !jobStatusMap.get(htcJobInfo).isDone())){
+			while (attempts<80 && (jobStatusMap.get(htcJobInfo)==null || !jobStatusMap.get(htcJobInfo).isDone())){
 				try { Thread.sleep(1000); } catch (InterruptedException e){}
 				jobStatusMap = slurmProxy.getJobStatus(jobInfos);
+				System.out.println(jobStatusMap.get(htcJobInfo));
 				attempts++;
 			}
 			System.out.println(jobStatusMap.get(htcJobInfo));

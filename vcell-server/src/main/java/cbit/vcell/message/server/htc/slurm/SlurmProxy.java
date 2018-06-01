@@ -322,9 +322,11 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		long memoryMB = (long)Math.ceil(memSizeMB);
-		long minMemMB = 256;
+		long minMemMB = 1024;
 		memoryMB = Math.max(minMemMB, memoryMB * 2);  // maximum of 256MB Memory and 2*estimated memory.
 		lsb.write("#SBATCH --mem="+memoryMB+"M");
+		lsb.write("#SBATCH --no-kill");
+		lsb.write("#SBATCH --no-requeue");
 		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
 		if (nodelist!=null && nodelist.trim().length()>0) {
 			lsb.write("#SBATCH --nodelist="+nodelist);
@@ -485,7 +487,6 @@ public class SlurmProxy extends HtcProxy {
 			ExecutableCommand exitCmd = commandSet.getExitCodeCommand();
 			exitCmd.stripPathFromCommand();
 			lsb.write("callExitProcessor( ) {");
-			lsb.write("echo \"4 date=`date`\"");
 			lsb.append("\techo exitCommand = ");
 			lsb.write("$container_prefix" + exitCmd.getJoinedCommands("$1"));
 			lsb.append('\t');
@@ -536,7 +537,6 @@ public class SlurmProxy extends HtcProxy {
 			lsb.append("echo ");
 			lsb.append("${cmd_prefix}" + cmd);
 			lsb.write("returned $stat");
-			lsb.write("echo \"6 date=`date`\"");
 
 			lsb.write("if [ $stat -ne 0 ]; then");
 			if (hasExitProcessor) {
