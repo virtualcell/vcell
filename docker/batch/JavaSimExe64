@@ -36,7 +36,7 @@ jvmprop="${jvmprop} -Dvcell.mongodb.database=${mongodb_database}"
 jvmprop="${jvmprop} -Dvcell.mongodb.host.internal=${mongodbhost_internal}"
 jvmprop="${jvmprop} -Dvcell.mongodb.port.internal=${mongodbport_internal}"
 
-jvmoptions="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M"
+jvmoptions="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M -Xmx${java_mem_Xmx}"
 
 echo "starting java solver"
 
