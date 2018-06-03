@@ -76,7 +76,8 @@
 		<module>vcell-vmicro</module>
     <module>vcell-sbmlsim</module>
     <module>vcell-sbmlsim-api</module>
-  </modules>
+    <module>vcell-imagej-helper</module>
+	</modules>
 
 	<scm>
 		<connection>scm:git:git://github.com/virtualcell/vcell</connection>
