@@ -59,8 +59,11 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
@@ -80,6 +83,7 @@ import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
@@ -743,14 +747,23 @@ public class ImageJHelper {
 	private static class IJContextInfo{
 		@XmlAttribute()
 		private String name;
+		@XmlAttribute()
+		private String mathType;
+		@XmlAttribute()
+		private int gomeDim;
+		@XmlAttribute()
+		private String geomName;
 		@XmlElement(name="simName")
 		private String[] simNames;
 		public IJContextInfo() {
 			
 		}
-		public IJContextInfo(String name, String[] simNames) {
+		public IJContextInfo(String name, String mathType, int gomeDim, String geomName, String[] simNames) {
 			super();
 			this.name = name;
+			this.mathType = mathType;
+			this.gomeDim = gomeDim;
+			this.geomName = geomName;
 			this.simNames = simNames;
 		}
 		
@@ -764,17 +777,20 @@ public class ImageJHelper {
 		private String type;
 		@XmlAttribute()
 		private Boolean open;
+		@XmlAttribute()
+		private String user;
 		@XmlElement(name="context")
 		ArrayList<IJContextInfo> contexts;
 		public IJModelInfo() {
 			
 		}
-		public IJModelInfo(String name, String date, String type, Boolean open,ArrayList<IJContextInfo> contexts) {
+		public IJModelInfo(String name, String date, String type, Boolean open,String user,ArrayList<IJContextInfo> contexts) {
 			super();
 			this.name = name;
 			this.date = date;
 			this.type = type;
 			this.open = open;
+			this.user = user;
 			this.contexts = contexts;
 		}
 		
@@ -792,26 +808,60 @@ public class ImageJHelper {
 		}
 		
 	}
+	private static void addSimToIJContextInfo(ArrayList<IJContextInfo>ijContextInfos,String contextName,MathType mathType,int geomDim,String geomName,Simulation[] sims) {
+		ArrayList<String> simNames = new ArrayList<>();
+		for(Simulation sim:sims) {
+			simNames.add(sim.getName());
+		}
+		ijContextInfos.add(new IJContextInfo(contextName,mathType.name(),geomDim,geomName, simNames.toArray(new String[0])));	
+	}
+	private static void populateDesktopIJModelInfos(ArrayList<KeyValue> openKeys,ArrayList<IJModelInfo> modelInfos) {
+		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
+		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
+	    	if(topLevelWindowManager instanceof DocumentWindowManager) {
+	    		DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
+	    		if(documentWindowManager.getVCDocument().getVersion() != null && documentWindowManager.getVCDocument().getVersion().getVersionKey() != null) {
+	    			openKeys.add(documentWindowManager.getVCDocument().getVersion().getVersionKey());
+	    		}else {
+	    			ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
+	    			if(documentWindowManager instanceof BioModelWindowManager) {
+	    				for(SimulationContext simulationContext:((BioModelWindowManager)documentWindowManager).getBioModel().getSimulationContexts()) {
+		    				addSimToIJContextInfo(ijContextInfos, simulationContext.getName(), simulationContext.getMathType(),simulationContext.getGeometryContext().getGeometry().getDimension(),simulationContext.getGeometry().getName(),simulationContext.getSimulations());
+	    				}
+	    				modelInfos.add(new IJModelInfo(documentWindowManager.getVCDocument().getName(), null, "biom", true,documentWindowManager.getUser().getName(), ijContextInfos));
+	    			}else if(documentWindowManager instanceof MathModelWindowManager) {
+	    				MathModel mathModel = ((MathModelWindowManager)documentWindowManager).getMathModel();
+	    				addSimToIJContextInfo(ijContextInfos, null,mathModel.getMathDescription().getMathType(),mathModel.getGeometry().getDimension(),mathModel.getGeometry().getName(),((MathModelWindowManager)documentWindowManager).getSimulationWorkspace().getSimulations());
+	    				modelInfos.add(new IJModelInfo(documentWindowManager.getVCDocument().getName(), null, "math", true,documentWindowManager.getUser().getName(), ijContextInfos));
+	    			}
+	    		}
+	    	}
+		}
+	}
+	private static List<NameValuePair> getParamsFromRequest(HttpServletRequest request) throws ServletException{
+    	List<NameValuePair> params = null;
+        StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
+        String queryString = request.getQueryString();
+
+        if (queryString == null) {
+        	queryString = requestURL.toString();
+        } else {
+        	queryString = requestURL.append('?').append(queryString).toString();
+        }
+    	try {
+			return URLEncodedUtils.parse(new URI(queryString), "UTF-8");
+		} catch (URISyntaxException e) {
+			throw new ServletException(e);
+		}
+
+	}
 	public static class ApiListHandler extends AbstractHandler{
 
 		@Override
 		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 				throws IOException, ServletException {
 	    	System.out.println(target+"\n"+baseRequest.getQueryString());
-	    	List<NameValuePair> params = null;
-	        StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
-	        String queryString = request.getQueryString();
-
-	        if (queryString == null) {
-	        	queryString = requestURL.toString();
-	        } else {
-	        	queryString = requestURL.append('?').append(queryString).toString();
-	        }
-	    	try {
-				params = URLEncodedUtils.parse(new URI(queryString), "UTF-8");
-			} catch (URISyntaxException e) {
-				throw new ServletException(e);
-			}
+	    	List<NameValuePair> params = getParamsFromRequest(request);
 	    	String model = null;
 	    	Boolean bOpen = null;
 	    	for(NameValuePair nameValuePair:params) {
@@ -833,71 +883,40 @@ public class ImageJHelper {
 		        response.setStatus(HttpServletResponse.SC_OK);
 	
 		        RequestManager requestManager = VCellClientTest.getVCellClient().getRequestManager();
-		        ArrayList<KeyValue> openKeys = new ArrayList<>();
-//		        ArrayList<String> openUnsaved = new ArrayList<>();
-		        Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
+		        ArrayList<KeyValue> openKeys = new ArrayList<>();		     
 		        ArrayList<IJModelInfo> modelInfos = new ArrayList<>();
-		        for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
-		        	if(topLevelWindowManager instanceof DocumentWindowManager) {
-		        		DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
-		        		if(documentWindowManager.getVCDocument().getVersion() != null && documentWindowManager.getVCDocument().getVersion().getVersionKey() != null) {
-		        			openKeys.add(documentWindowManager.getVCDocument().getVersion().getVersionKey());
-		        		}else {
-		        			if(documentWindowManager instanceof BioModelWindowManager) {
-		        				ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
-		        				BioModelWindowManager bioModelWindowManager = (BioModelWindowManager)documentWindowManager;
-		        				for(SimulationContext simulationContext:bioModelWindowManager.getBioModel().getSimulationContexts()) {
-		        					ArrayList<String> simNames = new ArrayList<>();
-		        					for(Simulation sim:simulationContext.getSimulations()) {
-		        						simNames.add(sim.getName());
-		        					}
-		        					ijContextInfos.add(new IJContextInfo(simulationContext.getName(), simNames.toArray(new String[0])));
-		        				}
-		        				modelInfos.add(new IJModelInfo(documentWindowManager.getVCDocument().getName(), null, "biom", true, ijContextInfos));
-		        			}else if(documentWindowManager instanceof MathModelWindowManager) {
-		        				
-		        			}
-		        		}
-		        	}
-		        }
+		        populateDesktopIJModelInfos(openKeys, modelInfos);
+		        
 		        BioModelInfo[] bioModelInfos = requestManager.getDocumentManager().getBioModelInfos();
 		        for(BioModelInfo bioModelInfo:bioModelInfos) {
 		        	if(bOpen && !openKeys.contains(bioModelInfo.getVersion().getVersionKey())) {
 		        		continue;
 		        	}
 			        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
-		        	if(bioModelInfo.getBioModelChildSummary().getSimulationContextNames() != null) {
-		        		for(String contextName:bioModelInfo.getBioModelChildSummary().getSimulationContextNames()) {
-		        			if(bioModelInfo.getBioModelChildSummary().getSimulationNames(contextName)!= null) {
-	        					IJContextInfo ijContextInfo = new IJContextInfo(contextName, bioModelInfo.getBioModelChildSummary().getSimulationNames(contextName));
+		        	BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();
+					if(bioModelChildSummary.getSimulationContextNames() != null) {
+		        		for(int i = 0; i<bioModelInfo.getBioModelChildSummary().getSimulationContextNames().length;i++) {
+		        			String bioModelContextName = bioModelInfo.getBioModelChildSummary().getSimulationContextNames()[i];
+		        			if(bioModelContextName != null) {
+	        					IJContextInfo ijContextInfo = new IJContextInfo(bioModelContextName,bioModelInfo.getBioModelChildSummary().getAppTypes()[i].name(),bioModelInfo.getBioModelChildSummary().getGeometryDimensions()[i],bioModelInfo.getBioModelChildSummary().getGeometryNames()[i], bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName));
 	        					ijContextInfos.add(ijContextInfo);
-
-//		        				for(String simName:bioModelInfo.getBioModelChildSummary().getSimulationNames(contextName)) {
-//		        					IJContextInfo ijContextInfo = new IJContextInfo(contextName, bioModelInfo.getBioModelChildSummary().getSimulationNames(contextName));
-//		        					ijContextInfos.add(ijContextInfo);
-//		        				}
 		        			}
 		        		}
 		        	}
-		        	modelInfos.add(new IJModelInfo(bioModelInfo.getVersion().getName(), bioModelInfo.getVersion().getDate().toString(), "biom", openKeys.contains(bioModelInfo.getVersion().getVersionKey()), ijContextInfos));
+		        	modelInfos.add(new IJModelInfo(bioModelInfo.getVersion().getName(), bioModelInfo.getVersion().getDate().toString(), "biom", openKeys.contains(bioModelInfo.getVersion().getVersionKey()),bioModelInfo.getVersion().getOwner().getName(), ijContextInfos));
 		        }
-//		        if(bOpen) {
-//		        	try {
-//						OpenModelInfoHolder[] openModelInfoHolders = requestManager.getOpenDesktopDocumentInfos(true);
-//						for(OpenModelInfoHolder openModelInfoHolder:openModelInfoHolders) {
-//							if((model == null || model.equals("biom")) && openModelInfoHolder instanceof FDSimBioModelInfo) {
-//								FDSimBioModelInfo bioModelInfo = (FDSimBioModelInfo)openModelInfoHolder;
-//								Simulation[] sims = bioModelInfo.getSimulationContext().getSimulations();
-////								IJContextInfo ijContextInfo = new IJContextInfo(bioModelInfo.getSimulationContext().getName(), simNames)
-////								modelInfos.add(new IJModelInfo(bioModelInfo.getBioModelVersion().getName(), bioModelInfo.getBioModelVersion().getDate().toString(), "biom", true));
-//							}else if((model == null || model.equals("math")) && openModelInfoHolder instanceof FDSimMathModelInfo) {
-//							}
-//						}
-//					} catch (DataAccessException e) {
-//						e.printStackTrace();
-//						throw new ServletException(e);
-//					}
-//		        }
+		        
+		        MathModelInfo[] mathModelInfos = requestManager.getDocumentManager().getMathModelInfos();
+		        for(MathModelInfo mathModelInfo:mathModelInfos) {
+		        	if(bOpen && !openKeys.contains(mathModelInfo.getVersion().getVersionKey())) {
+		        		continue;
+		        	}
+			        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
+					IJContextInfo ijContextInfo = new IJContextInfo(null,mathModelInfo.getMathModelChildSummary().getModelType().name(),mathModelInfo.getMathModelChildSummary().getGeometryDimension(),mathModelInfo.getMathModelChildSummary().getGeometryName(), mathModelInfo.getMathModelChildSummary().getSimulationNames());
+					ijContextInfos.add(ijContextInfo);
+		        	modelInfos.add(new IJModelInfo(mathModelInfo.getVersion().getName(), mathModelInfo.getVersion().getDate().toString(), "math", openKeys.contains(mathModelInfo.getVersion().getVersionKey()), mathModelInfo.getVersion().getOwner().getName(),ijContextInfos));
+		        }
+
 		        // Write back response
 //		        response.getWriter().println("<h1>getInfo requested</h1>");
 		        try {
@@ -949,7 +968,7 @@ public class ImageJHelper {
 //			System.out.println("result="+var);
 
 //			URL url = new URL("http://localhost:8080/");
-			URL url = new URL("http://localhost:8080/"+ApiEnum.getinfo.name()+"?open=true&type=biom");
+			URL url = new URL("http://localhost:8080/"+ApiEnum.getinfo.name()+"?open=false&type=math");
 			URLConnection con = url.openConnection();
 			InputStream in = con.getInputStream();
 			String encoding = con.getContentEncoding();
