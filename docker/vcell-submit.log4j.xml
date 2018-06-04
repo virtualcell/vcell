@@ -6,9 +6,13 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Root level="warn">
+    <Root level="trace">
       <AppenderRef ref="Console"/>
     </Root>
+    <Logger name="org.apache.activemq" level="warn" />
+    <Logger name="org.mongodb.driver.cluster" level="warn" />
+    <Logger name="org.apache.activemq.util.ClassLoadingAwareObjectInputStream" level="warn" />
+  <!--   
     <Logger name="org.vcell" level="warn" />
     <Logger name="cbit.vcell" level="warn" />
     <Logger name="cbit.vcell.modeldb" level="warn" />
@@ -20,5 +24,6 @@
     <Logger name="cbit.vcell.solver.SolverTaskDescription" level="warn" />
     <Logger name="cbit.vcell.messaging.db" level="warn" />
     <Logger name="cbit.vcell.xml.XmlHelper" level="warn" />
+   -->
   </Loggers>
 </Configuration>

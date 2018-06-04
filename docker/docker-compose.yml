@@ -241,6 +241,7 @@ services:
     image: webcenter/activemq:5.14.3
     ports:
       - "61616"
+      - "8161"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbReq;simJob
       - ACTIVEMQ_STATIC_TOPICS=clientStatus
