@@ -154,6 +154,15 @@ public class SimulationDispatcher extends ServiceProvider {
 			if (lg.isDebugEnabled()) {
 				lg.debug("stopped simulation processed for "+vcSimulationIdentifier+", status="+simulationStatus);
 			}
+			
+			try {
+				String htcJobNameSubstring = "_"+vcSimulationIdentifier.getSimulationKey()+"_";
+				if (lg.isTraceEnabled()) lg.trace("killing batch jobs with jobName substring of "+htcJobNameSubstring);
+				htcProxy.killJobs(htcJobNameSubstring);
+				if (lg.isTraceEnabled()) lg.trace("killed batch jobs with jobName substring of "+htcJobNameSubstring);
+			}catch (Exception e) {
+				lg.error("failed to kill one or more simulation jobs for Simid "+vcSimulationIdentifier.getSimulationKey(), e);
+			}
 			return simulationStatus;
 		}
 

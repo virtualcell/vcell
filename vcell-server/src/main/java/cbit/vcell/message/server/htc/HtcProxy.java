@@ -137,6 +137,7 @@ public abstract class HtcProxy {
 
 	public abstract void killJobSafe(HtcJobInfo htcJobInfo) throws ExecutableException, HtcJobNotFoundException, HtcException;
 	public abstract void killJobUnsafe(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException;
+	public abstract void killJobs(String htcJobSubstring) throws ExecutableException, HtcJobNotFoundException, HtcException;
 
 	/**
 	 * @param postProcessingCommands may be null if no commands desired

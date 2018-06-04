@@ -72,6 +72,7 @@ public class SlurmProxyTest {
 			subfileContent.append("if [[ $retcode == 137 ]]; then\n");
 			subfileContent.append("   echo \"job was killed via kill -9 (probably out of memory)\"\n");
 			subfileContent.append("fi\n");
+			subfileContent.append("sleep 20\n");
 			subfileContent.append("exit $retcode\n");
 			//subfileContent.append("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
 			//subfileContent.append("source /usr/share/Modules/init/bash\n");
@@ -93,11 +94,15 @@ public class SlurmProxyTest {
 			jobInfos.add(htcJobInfo);
 			
 			Map<HtcJobInfo, HtcJobStatus> jobStatusMap = slurmProxy.getJobStatus(jobInfos);
+			
 			int attempts = 0;
 			while (attempts<80 && (jobStatusMap.get(htcJobInfo)==null || !jobStatusMap.get(htcJobInfo).isDone())){
 				try { Thread.sleep(1000); } catch (InterruptedException e){}
 				jobStatusMap = slurmProxy.getJobStatus(jobInfos);
 				System.out.println(jobStatusMap.get(htcJobInfo));
+				if (attempts==5) {
+					slurmProxy.killJobs(jobName);
+				}
 				attempts++;
 			}
 			System.out.println(jobStatusMap.get(htcJobInfo));

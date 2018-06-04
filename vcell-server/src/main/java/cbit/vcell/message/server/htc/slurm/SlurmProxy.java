@@ -20,6 +20,7 @@ import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
@@ -94,6 +95,32 @@ public class SlurmProxy extends HtcProxy {
 		}
 	}
 
+	@Override
+	public void killJobs(String jobNameSubstring) {
+		Map<HtcJobInfo, HtcJobStatus> runningJobs = null;
+		try {
+			runningJobs = this.getRunningJobs();
+			if (LG.isTraceEnabled()) LG.trace("retrieved "+runningJobs.size()+" running job infos");
+		} catch (Exception e) {
+			LG.error(e.getMessage(), e);
+		}
+		
+		// kill each job individually
+		if (runningJobs != null) {
+			for (HtcJobInfo jobInfo : runningJobs.keySet()) {
+				if (jobInfo.getJobName().contains(jobNameSubstring)) {
+					try {
+						this.killJobSafe(jobInfo);
+						if (LG.isTraceEnabled()) LG.trace("requested Slurm to kill job "+jobInfo.getJobName());
+					} catch (Exception e2) {
+						LG.error("failed to request Slurm to kill job "+jobInfo.getJobName()+": "+e2.getMessage(), e2);
+					}
+				}
+			}
+		}
+	}
+
+	
 	/**
 	 * adding MPICH command if necessary
 	 * @param ncpus if != 1, {@link #MPI_HOME} command prepended
