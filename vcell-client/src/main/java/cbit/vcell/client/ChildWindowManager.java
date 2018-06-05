@@ -33,7 +33,9 @@ import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.TopLevelWindow;
+import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.title.TitleChanger;
+import cbit.vcell.solver.TempSimulation;
 //import cbit.vcell.client.desktop.biomodel.ChildWindowListener;
 import edu.uchc.connjur.wb.ExecutionTrace;
 
@@ -481,6 +483,17 @@ public class ChildWindowManager {
 		return null;
 	}
 
+	public SimulationWindow getTempSimWindow(String simID) {
+		for (ChildWindow child : childWindows){
+			if (child.getContextObject() instanceof SimulationWindow &&
+				((SimulationWindow)child.getContextObject()).getSimulation() instanceof TempSimulation &&
+				((SimulationWindow)child.getContextObject()).getSimulation().getKey().toString().equals(simID)){
+				return (SimulationWindow)child.getContextObject();
+			}
+		}
+		return null;
+		
+	}
 }
 	
 	
