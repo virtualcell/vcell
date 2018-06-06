@@ -88,11 +88,14 @@ import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model.Owner;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -702,7 +705,8 @@ public class ImageJHelper {
 		}
 	}
 	private enum ApiEnum {getinfo,getdata};
-	private static String GETINFO_PARMS = IJListParams.type.name()+"={"+IJDocType.bm.name()+","+IJDocType.mm.name()+","+IJDocType.quick.name()+"}"+"&"+IJListParams.open.name()+"={true,false}"+"&"+IJListParams.cachekey.name()+"=simKey";
+	private static String GETINFO_PARMS = IJListParams.type.name()+"={"+IJDocType.bm.name()+","+IJDocType.mm.name()+","+IJDocType.quick.name()+"}"+"&"+IJListParams.open.name()+"={true,false}";
+	private static String GETDATA_PARMS = IJGetDataParams.cachekey.name()+"=key";
 	public static class ApiInfoHandler extends AbstractHandler
 	{
 		private HashMap<ApiEnum, VCCommand[]> apiParams = new HashMap<>();
@@ -713,7 +717,7 @@ public class ImageJHelper {
 					});
 			apiParams.put(ApiEnum.getdata, new VCCommand[] {
 					/*"type={biom,math}","type=sims&modelname=xxx"*/
-					new VCCommand(ApiEnum.getdata.name()+"?"+"TBI", "Get sim data")
+					new VCCommand(ApiEnum.getdata.name()+"?"+GETDATA_PARMS, "Get sim data")
 					});
 		}
 	    @Override
@@ -923,7 +927,7 @@ public class ImageJHelper {
 	private static long ijCacheCounter = 0;
 	private static ArrayList<IJModelInfo> ijModelInfoCache;
 	
-	private static enum IJListParams {type,open,cachekey}
+	private static enum IJListParams {type,open}
 	public static class ApiListHandler extends AbstractHandler{
 
 		@Override
@@ -954,66 +958,6 @@ public class ImageJHelper {
 	
 		        // Declare response status code
 		        response.setStatus(HttpServletResponse.SC_OK);
-//		        if(cacheKey != null) {
-//		        	if(ijModelInfoCache != null) {
-//		        		for(IJModelInfo ijModelInfo:ijModelInfoCache) {
-//		        			if(ijModelInfo.contexts != null) {
-//		        				for(IJContextInfo ijContextInfo:ijModelInfo.contexts) {
-//		        					if(ijContextInfo.ijSimId != null) {
-//		        						for(IJSimInfo ijSimInfo:ijContextInfo.ijSimId) {
-//		        							if(ijSimInfo.cacheKey == cacheKey) {
-//		        								if(IJDocType.valueOf(ijModelInfo.type) == IJDocType.quick) {//quickrun sim
-//		        									try {
-//			        							        ArrayList<File> dirs = new ArrayList<>();
-//			        							        dirs.add(ResourceUtil.getLocalRootDir());
-//			        							        while(dirs.size() != 0) {
-//			        							        	File dir = dirs.remove(0);
-//			        							        	File[] files = dir.listFiles();
-//			        							        	for (File file:files) {
-//			        							        		if(file.isHidden()) {
-//			        							        			continue;
-//			        							        		}
-//			        											if(file.isDirectory()) {
-//			        												dirs.add(file);
-//			        											}else if (file.getName().startsWith("SimID_") && file.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)) {
-//			        												StringTokenizer st = new StringTokenizer(file.getName(), "_");
-//			        												st.nextToken();
-//			        												String quickrunKey = st.nextToken();
-//			        												if(quickrunKey.equals(ijSimInfo.quickrunKey)) {
-//			        													User user = new User("quick", new KeyValue("0"));
-//			        													VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(quickrunKey), user);
-//			        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);//quickrun always job 0
-//			        													SimulationData simData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
-//			        													CartesianMesh mesh = simData.getMesh();
-//			        													System.out.println(mesh);
-//			    			        						    		response.setContentType("text/html; charset=utf-8");
-//			    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-//			    			        						    		response.getWriter().println("<h1>mesh="+mesh.getSizeX()+","+mesh.getSizeY()+","+mesh.getSizeZ()+"</h1>");
-//			    			        							        baseRequest.setHandled(true);
-//			    			        							        return;
-//			        												}	
-//			        											}
-//			        							        	}
-//			        							        }
-//			        						    		response.setContentType("text/html; charset=utf-8");
-//			        						    		response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//			        						    		response.getWriter().println("<h1>Key="+cacheKey+" not found</h1>");
-//		        									}catch(Exception e) {
-//		        										throw new ServletException(e);
-//		        									}
-//		        								}else {//saved sim
-//		        									RequestManager requestManager = VCellClientTest.getVCellClient().getRequestManager();
-//		        								}
-//		        							}
-//		        						}
-//		        					}
-//		        				}
-//		        			}
-//		        		}
-//		        	}else {
-//		        		throw new ServletException("No vcell ijcache to lookup key="+cacheKey);
-//		        	}
-//		        }
 		        
 		        ArrayList<KeyValue> openKeys = new ArrayList<>();		     
 		        ArrayList<IJModelInfo> modelInfos = new ArrayList<>();
@@ -1181,19 +1125,49 @@ public class ImageJHelper {
 		}
 		
 	}
-	private static enum IJGetDataParams {key,var}
+	
+	private static class IJVarInfo{
+		@XmlAttribute
+		private String name;
+		@XmlAttribute
+		private String displayName;
+		@XmlAttribute
+		private String variableType;
+		@XmlAttribute
+		private String domain;
+		@XmlAttribute
+		private boolean bFunction;
+		public IJVarInfo() {
+			
+		}
+		public IJVarInfo(String name, String displayName, String variableType, String domain, boolean bFunction) {
+			this.name = name;
+			this.displayName = displayName;
+			this.variableType = variableType;
+			this.domain = domain;
+			this.bFunction = bFunction;
+		}
+		
+	}
+	private static enum IJGetDataParams {cachekey,varname,timepoint}
 	public static class ApiGetDataHandler extends AbstractHandler{
-
 		@Override
 		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 				throws IOException, ServletException {
 	    	System.out.println(target+"\n"+baseRequest.getQueryString());
 	    	List<NameValuePair> params = getParamsFromRequest(request);
 	    	Long cacheKey = null;
+	    	String varname = null;
+	    	Double timepoint = null;
 	    	for(NameValuePair nameValuePair:params) {
-	    		if(nameValuePair.getName().equals(IJListParams.cachekey.name())) {
+	    		if(nameValuePair.getName().equals(IJGetDataParams.cachekey.name())) {
 	    			cacheKey = Long.valueOf(nameValuePair.getValue());
+	    		}else if(nameValuePair.getName().equals(IJGetDataParams.varname.name())) {
+	    			varname = nameValuePair.getValue();
+	    		}else if(nameValuePair.getName().equals(IJGetDataParams.timepoint.name())) {
+	    			timepoint = Double.parseDouble(nameValuePair.getValue());
 	    		}
+
 	    	}
 	    	if(cacheKey == null) {
 	    		response.setContentType("text/html; charset=utf-8");
@@ -1216,7 +1190,7 @@ public class ImageJHelper {
 		        					if(ijContextInfo.ijSimId != null) {
 		        						for(IJSimInfo ijSimInfo:ijContextInfo.ijSimId) {
 		        							if(ijSimInfo.cacheKey == cacheKey) {
-		        								if(IJDocType.valueOf(ijModelInfo.type) == IJDocType.quick) {//quickrun sim
+		        								if(ijSimInfo.quickrunKey != null) {//quickrun sim
 		        									try {
 			        							        ArrayList<File> dirs = new ArrayList<>();
 			        							        dirs.add(ResourceUtil.getLocalRootDir());
@@ -1239,24 +1213,29 @@ public class ImageJHelper {
 			        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);//quickrun always job 0
 			        													SimulationData simData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
 			        													CartesianMesh mesh = simData.getMesh();
-			        													System.out.println(mesh);
-			        													DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
-			        													if(dataIdentifiers != null) {
-			        														for(DataIdentifier did:dataIdentifiers) {
-			        															System.out.println(did.toString());
-			        														}
-			        													}
 			        													BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, simData.getDataTimes().length);
-			        													int numDoubles = basicStackDimensions.getTotalSize();
-			        													byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
-			        													ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
-			        													for(int i=0;i<numDoubles;i++) {
-			        														bb.putDouble(3.14159);
+			        													if(varname!=null) {
+			        														SimDataBlock simDataBlock = simData.getSimDataBlock(null, varname, timepoint);
+				        													int numDoubles = basicStackDimensions.getTotalSize();
+				        													byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
+				        													ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
+				        													for(int i=0;i<numDoubles;i++) {
+				        														bb.putDouble(simDataBlock.getData()[i]);
+				        													}
+				        													IJData ijData = new IJData(basicStackDimensions, byteDoubles);
+				    			        						    		response.setContentType("text/html; charset=utf-8");
+				    			        						    		response.setStatus(HttpServletResponse.SC_OK);
+				    			        						    		response.getWriter().write(createXML(ijData));
+			        													}else {
+				        													DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
+				        													ArrayList<String> varNames = new ArrayList<>();
+				        													if(dataIdentifiers != null) {
+				        														for(DataIdentifier did:dataIdentifiers) {
+				        															System.out.println(did.toString());
+				        														}
+				        													}
+			        														
 			        													}
-			        													IJData ijData = new IJData(basicStackDimensions, byteDoubles);
-			    			        						    		response.setContentType("text/html; charset=utf-8");
-			    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-			    			        						    		response.getWriter().write(createXML(ijData));
 //			    			        						    		response.getWriter().println("<h1>mesh="+mesh.getSizeX()+","+mesh.getSizeY()+","+mesh.getSizeZ()+"\n"+
 //			    			        						    				"numTimes="+simData.getDataTimes().length+
 //			    			        						    				"</h1>");
@@ -1342,7 +1321,7 @@ public class ImageJHelper {
     		JAXBContext jaxbContext = JAXBContext.newInstance(IJData.class);
 
     		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-    		IJData ijData = (IJData) jaxbUnmarshaller.unmarshal(new URL("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJListParams.cachekey.name()+"=0"));
+    		IJData ijData = (IJData) jaxbUnmarshaller.unmarshal(new URL("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJGetDataParams.cachekey.name()+"=0"));
     		System.out.println(ijData);
     		
 //			URLConnection con = url.openConnection();
