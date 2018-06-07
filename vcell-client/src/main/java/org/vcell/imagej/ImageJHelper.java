@@ -36,6 +36,7 @@ import java.util.Vector;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -78,6 +79,7 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
+import org.vcell.util.gui.DialogUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -89,6 +91,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -896,6 +899,9 @@ public class ImageJHelper {
 		ijContextInfos.add(new IJContextInfo(contextName,mathType,geomDim,geomName, ijSimInfos));	
 	}
 	private static void populateDesktopIJModelInfos(IJDocType docType,ArrayList<KeyValue> openKeys,ArrayList<IJModelInfo> modelInfos) {
+		if(VCellClientTest.getVCellClient() == null) {
+			return;
+		}
 		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
 		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
 	    	if(topLevelWindowManager instanceof DocumentWindowManager) {
@@ -1005,25 +1011,27 @@ public class ImageJHelper {
 								Date parentDate = null;
 								String parentUser = null;
 								IJDocType docType = IJDocType.quick;
-					    		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
-					    		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
-					    			if(topLevelWindowManager.getComponent() != null && topLevelWindowManager instanceof DocumentWindowManager) {//can be null for databseWinManger or FieldDataWindowMangr if they are not showing
-					    				DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
-					    				ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(topLevelWindowManager.getComponent());
-					    				SimulationWindow simulationWindow = childWindowManager.getTempSimWindow(quickrunKey);
-					    				if(simulationWindow != null) {
-					    					parentSimName = simulationWindow.getSimulation().getName();
-					    					parentContextName = simulationWindow.getSimOwner().getName();
-					    					parentGeomDim = simulationWindow.getSimOwner().getGeometry().getDimension();
-					    					parentMathType = simulationWindow.getSimOwner().getMathDescription().getMathType();
-					    					parentGeomName = simulationWindow.getSimOwner().getGeometry().getName();
-					    					parentModelName = documentWindowManager.getVCDocument().getName();
-					    					parentDate = documentWindowManager.getVCDocument().getVersion().getDate();
-					    					parentUser = documentWindowManager.getVCDocument().getVersion().getOwner().getName();
-					    					docType = (documentWindowManager.getVCDocument().getDocumentType() ==VCDocumentType.BIOMODEL_DOC?IJDocType.bm:IJDocType.mm);
-					    				}
-					    			}
-					    		}
+								if(VCellClientTest.getVCellClient() != null) {
+						    		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
+						    		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
+						    			if(topLevelWindowManager.getComponent() != null && topLevelWindowManager instanceof DocumentWindowManager) {//can be null for databseWinManger or FieldDataWindowMangr if they are not showing
+						    				DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
+						    				ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(topLevelWindowManager.getComponent());
+						    				SimulationWindow simulationWindow = childWindowManager.getTempSimWindow(quickrunKey);
+						    				if(simulationWindow != null) {
+						    					parentSimName = simulationWindow.getSimulation().getName();
+						    					parentContextName = simulationWindow.getSimOwner().getName();
+						    					parentGeomDim = simulationWindow.getSimOwner().getGeometry().getDimension();
+						    					parentMathType = simulationWindow.getSimOwner().getMathDescription().getMathType();
+						    					parentGeomName = simulationWindow.getSimOwner().getGeometry().getName();
+						    					parentModelName = documentWindowManager.getVCDocument().getName();
+						    					parentDate = documentWindowManager.getVCDocument().getVersion().getDate();
+						    					parentUser = documentWindowManager.getVCDocument().getVersion().getOwner().getName();
+						    					docType = (documentWindowManager.getVCDocument().getDocumentType() ==VCDocumentType.BIOMODEL_DOC?IJDocType.bm:IJDocType.mm);
+						    				}
+						    			}
+						    		}
+								}
 					    		if(bOpen == null || (bOpen && docType != IJDocType.quick)){
 									ArrayList<IJContextInfo> contInfos = new ArrayList<>();
 									ArrayList<IJSimInfo> ijsimfos= new ArrayList<>();
@@ -1036,47 +1044,49 @@ public class ImageJHelper {
 			        }
 		        	
 		        }
-		        RequestManager requestManager = VCellClientTest.getVCellClient().getRequestManager();
-		        if(ijDocType == null || ijDocType == IJDocType.bm) {
-			        BioModelInfo[] bioModelInfos = requestManager.getDocumentManager().getBioModelInfos();
-			        for(BioModelInfo bioModelInfo:bioModelInfos) {
-			        	if(bOpen && !openKeys.contains(bioModelInfo.getVersion().getVersionKey())) {
-			        		continue;
-			        	}
-				        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
-			        	BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();
-						if(bioModelChildSummary.getSimulationContextNames() != null) {
-			        		for(int i = 0; i<bioModelInfo.getBioModelChildSummary().getSimulationContextNames().length;i++) {
-			        			String bioModelContextName = bioModelInfo.getBioModelChildSummary().getSimulationContextNames()[i];
-			        			if(bioModelContextName != null) {
-			        				ArrayList<IJSimInfo> ijSimInfos = new ArrayList<>();
-			        				for(String simName:bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName)) {
-			        					ijSimInfos.add(new IJSimInfo(null,simName));
-			        				}
-		        					IJContextInfo ijContextInfo = new IJContextInfo(bioModelContextName,bioModelInfo.getBioModelChildSummary().getAppTypes()[i],bioModelInfo.getBioModelChildSummary().getGeometryDimensions()[i],bioModelInfo.getBioModelChildSummary().getGeometryNames()[i],ijSimInfos);
-		        					ijContextInfos.add(ijContextInfo);
-			        			}
-			        		}
-			        	}
-			        	modelInfos.add(new IJModelInfo(bioModelInfo.getVersion().getName(), bioModelInfo.getVersion().getDate(), IJDocType.bm, openKeys.contains(bioModelInfo.getVersion().getVersionKey()),bioModelInfo.getVersion().getOwner().getName(), ijContextInfos));
+		        if(VCellClientTest.getVCellClient() != null) {
+			        RequestManager requestManager = VCellClientTest.getVCellClient().getRequestManager();
+			        if(ijDocType == null || ijDocType == IJDocType.bm) {
+				        BioModelInfo[] bioModelInfos = requestManager.getDocumentManager().getBioModelInfos();
+				        for(BioModelInfo bioModelInfo:bioModelInfos) {
+				        	if(bOpen && !openKeys.contains(bioModelInfo.getVersion().getVersionKey())) {
+				        		continue;
+				        	}
+					        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
+				        	BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();
+							if(bioModelChildSummary.getSimulationContextNames() != null) {
+				        		for(int i = 0; i<bioModelInfo.getBioModelChildSummary().getSimulationContextNames().length;i++) {
+				        			String bioModelContextName = bioModelInfo.getBioModelChildSummary().getSimulationContextNames()[i];
+				        			if(bioModelContextName != null) {
+				        				ArrayList<IJSimInfo> ijSimInfos = new ArrayList<>();
+				        				for(String simName:bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName)) {
+				        					ijSimInfos.add(new IJSimInfo(null,simName));
+				        				}
+			        					IJContextInfo ijContextInfo = new IJContextInfo(bioModelContextName,bioModelInfo.getBioModelChildSummary().getAppTypes()[i],bioModelInfo.getBioModelChildSummary().getGeometryDimensions()[i],bioModelInfo.getBioModelChildSummary().getGeometryNames()[i],ijSimInfos);
+			        					ijContextInfos.add(ijContextInfo);
+				        			}
+				        		}
+				        	}
+				        	modelInfos.add(new IJModelInfo(bioModelInfo.getVersion().getName(), bioModelInfo.getVersion().getDate(), IJDocType.bm, openKeys.contains(bioModelInfo.getVersion().getVersionKey()),bioModelInfo.getVersion().getOwner().getName(), ijContextInfos));
+				        }
 			        }
-		        }
-		        
-		        if(ijDocType == null || ijDocType == IJDocType.mm) {
-			        MathModelInfo[] mathModelInfos = requestManager.getDocumentManager().getMathModelInfos();
-			        for(MathModelInfo mathModelInfo:mathModelInfos) {
-			        	if(bOpen && !openKeys.contains(mathModelInfo.getVersion().getVersionKey())) {
-			        		continue;
-			        	}
-	    				ArrayList<IJSimInfo> ijSimInfos = new ArrayList<>();
-	    				for(String simName:mathModelInfo.getMathModelChildSummary().getSimulationNames()) {
-	    					ijSimInfos.add(new IJSimInfo(null,simName));
-	    				}
-	
-				        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
-						IJContextInfo ijContextInfo = new IJContextInfo(null,mathModelInfo.getMathModelChildSummary().getModelType(),mathModelInfo.getMathModelChildSummary().getGeometryDimension(),mathModelInfo.getMathModelChildSummary().getGeometryName(),ijSimInfos);
-						ijContextInfos.add(ijContextInfo);
-			        	modelInfos.add(new IJModelInfo(mathModelInfo.getVersion().getName(), mathModelInfo.getVersion().getDate(), IJDocType.mm, openKeys.contains(mathModelInfo.getVersion().getVersionKey()), mathModelInfo.getVersion().getOwner().getName(),ijContextInfos));
+			        
+			        if(ijDocType == null || ijDocType == IJDocType.mm) {
+				        MathModelInfo[] mathModelInfos = requestManager.getDocumentManager().getMathModelInfos();
+				        for(MathModelInfo mathModelInfo:mathModelInfos) {
+				        	if(bOpen && !openKeys.contains(mathModelInfo.getVersion().getVersionKey())) {
+				        		continue;
+				        	}
+		    				ArrayList<IJSimInfo> ijSimInfos = new ArrayList<>();
+		    				for(String simName:mathModelInfo.getMathModelChildSummary().getSimulationNames()) {
+		    					ijSimInfos.add(new IJSimInfo(null,simName));
+		    				}
+		
+					        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
+							IJContextInfo ijContextInfo = new IJContextInfo(null,mathModelInfo.getMathModelChildSummary().getModelType(),mathModelInfo.getMathModelChildSummary().getGeometryDimension(),mathModelInfo.getMathModelChildSummary().getGeometryName(),ijSimInfos);
+							ijContextInfos.add(ijContextInfo);
+				        	modelInfos.add(new IJModelInfo(mathModelInfo.getVersion().getName(), mathModelInfo.getVersion().getDate(), IJDocType.mm, openKeys.contains(mathModelInfo.getVersion().getVersionKey()), mathModelInfo.getVersion().getOwner().getName(),ijContextInfos));
+				        }
 			        }
 		        }
 		        // Write back response
@@ -1370,143 +1380,161 @@ public class ImageJHelper {
 
     }
 
-    public static void exerciseService() {
-    	try {
-//    	HttpClient httpClient = new HttpClient();
-//    	HostConfiguration hostConfiguration = new HostConfiguration();
-//    	hostConfiguration.setHost("localhost",8080);
-//    	HttpMethod method = new GetMethod("/list?type=biom");
-//			int var = httpClient.executeMethod(hostConfiguration, method);
-//			System.out.println("result="+var);
-//			
-//			method = new GetMethod("/");
-//			var = httpClient.executeMethod(hostConfiguration, method);
-//			System.out.println("result="+var);
-
-    		System.out.println(getApiResponse("http://localhost:8080/"));
-//    		System.out.println(getApiResponse("http://localhost:8080/"+ApiEnum.getinfo.name()+"?"/*+"open=true"+"&"*/+IJListParams.type.name()+"="+IJDocType.quick.name()));//generates cache
-    		System.out.println(getApiResponse("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJGetDataParams.cachekey.name()+"=0"));
-    		Document doc = ImageJHelper.getDocument(new URL("http://localhost:8080/"+ApiEnum.getdata.name()+"?"+IJGetDataParams.cachekey.name()+"=0"+"&"+IJGetDataParams.varname.name()+"="+"C_cyt"+"&"+IJGetDataParams.timepoint.name()+"=0.05"));
-    		ImageJHelper.BasicStackDimensions basicStackDimensions = ImageJHelper.getBasicStackDims(doc);
-    		System.out.println(basicStackDimensions);
-    		
-//    		JAXBContext jaxbContext = JAXBContext.newInstance(IJData.class);
-//    		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-//    		IJData ijData = (IJData) jaxbUnmarshaller.unmarshal(new URL("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJGetDataParams.cachekey.name()+"=0"));
-//    		System.out.println(ijData);
-    		
-//			URLConnection con = url.openConnection();
-//			InputStream in = con.getInputStream();
-//			String encoding = con.getContentEncoding();
-//			encoding = encoding == null ? "UTF-8" : encoding;
-//			String body = IOUtils.toString(in, encoding);
-//			System.out.println(body);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-    public static String getApiResponse(String url) throws Exception{
-        String responseBody = null;
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()){
-            HttpGet httpget = new HttpGet(url);
-
-            System.out.println("Executing request " + httpget.getRequestLine());
-
-            // Create a custom response handler
-            ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
-
-                @Override
-                public String handleResponse(
-                        final HttpResponse response) throws ClientProtocolException, IOException {
-                    int status = response.getStatusLine().getStatusCode();
-                    if (status >= 200 && status < 300) {
-                        HttpEntity entity = response.getEntity();
-                        return entity != null ? EntityUtils.toString(entity) : null;
-                    } else {
-                        HttpEntity entity = response.getEntity();
-                        String res = entity != null ? EntityUtils.toString(entity) : null;
-                        throw new ClientProtocolException("Unexpected response status: " + res);
-                    }
-                }
-
-            };
-            responseBody = httpclient.execute(httpget, responseHandler);
-//            System.out.println("----------------------------------------");
-//            System.out.println(responseBody);
-        	return responseBody;
-        }
-    }
-
-//	public static class ApiGetDataHandler extends AbstractHandler{
+//    public static void exerciseService() {
+//    	try {
+////    	HttpClient httpClient = new HttpClient();
+////    	HostConfiguration hostConfiguration = new HostConfiguration();
+////    	hostConfiguration.setHost("localhost",8080);
+////    	HttpMethod method = new GetMethod("/list?type=biom");
+////			int var = httpClient.executeMethod(hostConfiguration, method);
+////			System.out.println("result="+var);
+////			
+////			method = new GetMethod("/");
+////			var = httpClient.executeMethod(hostConfiguration, method);
+////			System.out.println("result="+var);
 //
-//		@Override
-//		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-//				throws IOException, ServletException {
-//			VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(bioModelInfo)
-//			
+//    		int lastVCellApiPort = VCellHelper.findVCellApiServerPort();//search for port that vcell is providing IJ related services on
+//    		int cachekey = 1;
+//    		System.out.println(VCellHelper.getApiInfo());//get rest api
+////    		System.out.println(VCellHelper.getRawContent(new URL("http://localhost:"+lastVCellApiPort+"/"+"getinfo"+"?"/*+"open=true"+"&"*/+"type"+"="+"quick")));//generate cachekeys user can reference to get data
+//    		System.out.println(VCellHelper.getRawContent(new URL("http://localhost:"+lastVCellApiPort+"/"+"getdata"+"?"/*+"open=true"+"&"*/+"cachekey"+"="+cachekey)));//get variable names
+//    		Document doc = VCellHelper.getDocument(new URL("http://localhost:"+lastVCellApiPort+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+"C_cyt"+"&"+"timepoint"+"=0.5"));//get data
+//    		BasicStackDimensions basicStackDimensions = VCellHelper.getVCStackDims(doc);
+//     		double[] data = VCellHelper.getData(doc);
+//       		System.out.println(basicStackDimensions.getTotalSize());
+//       		System.out.println(data.length);
+//
+//       		long[] dims = new long[basicStackDimensions.numDimensions()];
+//       		basicStackDimensions.dimensions(dims);
+//       		ArrayImg<DoubleType, DoubleArray> img = ArrayImgs.doubles(data, dims);
+////            ArrayImg<DoubleType, DoubleArray> img = (ArrayImg<DoubleType, DoubleArray>)new ArrayImgFactory< DoubleType >().create( basicStackDimensions, new DoubleType() );
+////            ArrayCursor<DoubleType> cursor = img.cursor();
+////            while(cursor.hasNext()) {
+////            	cursor.next().set
+////            }
+//
+//            
+////       		Img< UnsignedByteType > img = new ArrayImgFactory< UnsignedByteType >().create( new long[] { 400, 320 }, new UnsignedByteType() );
+//            ImageJFunctions.show( img );
+//            DialogUtils.showInfoDialog(JOptionPane.getRootFrame(), "blah");
+//
+////    		JAXBContext jaxbContext = JAXBContext.newInstance(IJData.class);
+////    		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+////    		IJData ijData = (IJData) jaxbUnmarshaller.unmarshal(new URL("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJGetDataParams.cachekey.name()+"=0"));
+////    		System.out.println(ijData);
+//    		
+////			URLConnection con = url.openConnection();
+////			InputStream in = con.getInputStream();
+////			String encoding = con.getContentEncoding();
+////			encoding = encoding == null ? "UTF-8" : encoding;
+////			String body = IOUtils.toString(in, encoding);
+////			System.out.println(body);
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
 //		}
-//		
+//    }
+//    public static String getApiResponse(String url) throws Exception{
+//        String responseBody = null;
+//        try (CloseableHttpClient httpclient = HttpClients.createDefault()){
+//            HttpGet httpget = new HttpGet(url);
+//
+//            System.out.println("Executing request " + httpget.getRequestLine());
+//
+//            // Create a custom response handler
+//            ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
+//
+//                @Override
+//                public String handleResponse(
+//                        final HttpResponse response) throws ClientProtocolException, IOException {
+//                    int status = response.getStatusLine().getStatusCode();
+//                    if (status >= 200 && status < 300) {
+//                        HttpEntity entity = response.getEntity();
+//                        return entity != null ? EntityUtils.toString(entity) : null;
+//                    } else {
+//                        HttpEntity entity = response.getEntity();
+//                        String res = entity != null ? EntityUtils.toString(entity) : null;
+//                        throw new ClientProtocolException("Unexpected response status: " + res);
+//                    }
+//                }
+//
+//            };
+//            responseBody = httpclient.execute(httpget, responseHandler);
+////            System.out.println("----------------------------------------");
+////            System.out.println(responseBody);
+//        	return responseBody;
+//        }
+//    }
+//
+////	public static class ApiGetDataHandler extends AbstractHandler{
+////
+////		@Override
+////		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+////				throws IOException, ServletException {
+////			VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(bioModelInfo)
+////			
+////		}
+////		
+////	}
+//
+//	public static Document getDocument(URL url) throws Exception{
+//		HttpURLConnection con = (HttpURLConnection)url.openConnection();
+//		int responseCode = con.getResponseCode();
+//		if(responseCode == HttpURLConnection.HTTP_OK) {
+//			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+//			DocumentBuilder docBuilder = factory.newDocumentBuilder();
+//			Document doc = docBuilder.parse(url.toString());
+//			return doc;
+//		}else {
+//			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
+//		}
 //	}
-
-	public static Document getDocument(URL url) throws Exception{
-		HttpURLConnection con = (HttpURLConnection)url.openConnection();
-		int responseCode = con.getResponseCode();
-		if(responseCode == HttpURLConnection.HTTP_OK) {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = factory.newDocumentBuilder();
-			Document doc = docBuilder.parse(url.toString());
-			return doc;
-		}else {
-			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
-		}
-	}
-//	public static class VCStackDim{
-//		public int xsize;
-//		public int ysize;
-//		public int zsize;
-//		public int csize;
-//		public int tsize;
-//		public VCStackDim(int xsize, int ysize, int zsize, int csize, int tsize) {
-//			this.xsize = xsize;
-//			this.ysize = ysize;
-//			this.zsize = zsize;
-//			this.csize = csize;
-//			this.tsize = tsize;
-//		}
-//		public int getTotalSize(){
-//			return xsize*ysize*zsize*csize*tsize;
-//		}
+////	public static class VCStackDim{
+////		public int xsize;
+////		public int ysize;
+////		public int zsize;
+////		public int csize;
+////		public int tsize;
+////		public VCStackDim(int xsize, int ysize, int zsize, int csize, int tsize) {
+////			this.xsize = xsize;
+////			this.ysize = ysize;
+////			this.zsize = zsize;
+////			this.csize = csize;
+////			this.tsize = tsize;
+////		}
+////		public int getTotalSize(){
+////			return xsize*ysize*zsize*csize*tsize;
+////		}
+////	}
+//	public static  BasicStackDimensions getBasicStackDims(Document doc) throws Exception{
+//		NodeList si = (NodeList)doc.getElementsByTagName("stackInfo");
+//		Node node = (Node)si.item(0);
+//		NamedNodeMap nnm = node.getAttributes();
+//		return new BasicStackDimensions(
+//				Integer.parseInt(nnm.getNamedItem("xsize").getNodeValue()),
+//				Integer.parseInt(nnm.getNamedItem("ysize").getNodeValue()),
+//				Integer.parseInt(nnm.getNamedItem("zsize").getNodeValue()),
+//				Integer.parseInt(nnm.getNamedItem("csize").getNodeValue()),
+//				Integer.parseInt(nnm.getNamedItem("tsize").getNodeValue()));
 //	}
-	public static  BasicStackDimensions getBasicStackDims(Document doc) throws Exception{
-		NodeList si = (NodeList)doc.getElementsByTagName("stackInfo");
-		Node node = (Node)si.item(0);
-		NamedNodeMap nnm = node.getAttributes();
-		return new BasicStackDimensions(
-				Integer.parseInt(nnm.getNamedItem("xsize").getNodeValue()),
-				Integer.parseInt(nnm.getNamedItem("ysize").getNodeValue()),
-				Integer.parseInt(nnm.getNamedItem("zsize").getNodeValue()),
-				Integer.parseInt(nnm.getNamedItem("csize").getNodeValue()),
-				Integer.parseInt(nnm.getNamedItem("tsize").getNodeValue()));
-	}
-	public static double[] getData(Document doc) throws Exception{
-			double[] doubleVals = new double[getBasicStackDims(doc).getTotalSize()];
-			DoubleBuffer db = ByteBuffer.wrap(Base64.getDecoder().decode(doc.getElementsByTagName("data").item(0).getFirstChild().getNodeValue())).asDoubleBuffer();
-			db.get(doubleVals);
-			return doubleVals;
-	}
-	
-	public static String getRawContent(URL url) throws Exception{
-		URLConnection con = url.openConnection();
-		InputStream instrm = con.getInputStream();
-//		String encoding = con.getContentEncoding();
-		BufferedInputStream bis = new BufferedInputStream(instrm);
-		int currChar;
-		StringBuffer sb = new StringBuffer();
-			while ((currChar = bis.read()) != -1) {
-				sb.append((char)currChar);
-			}
-			return sb.toString();
-	}
+//	public static double[] getData(Document doc) throws Exception{
+//			double[] doubleVals = new double[getBasicStackDims(doc).getTotalSize()];
+//			DoubleBuffer db = ByteBuffer.wrap(Base64.getDecoder().decode(doc.getElementsByTagName("data").item(0).getFirstChild().getNodeValue())).asDoubleBuffer();
+//			db.get(doubleVals);
+//			return doubleVals;
+//	}
+//	
+//	public static String getRawContent(URL url) throws Exception{
+//		URLConnection con = url.openConnection();
+//		InputStream instrm = con.getInputStream();
+////		String encoding = con.getContentEncoding();
+//		BufferedInputStream bis = new BufferedInputStream(instrm);
+//		int currChar;
+//		StringBuffer sb = new StringBuffer();
+//			while ((currChar = bis.read()) != -1) {
+//				sb.append((char)currChar);
+//			}
+//			return sb.toString();
+//	}
 
 }

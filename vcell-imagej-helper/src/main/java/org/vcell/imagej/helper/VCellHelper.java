@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
@@ -18,26 +17,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-//import org.apache.http.HttpEntity;
-//import org.apache.http.HttpResponse;
-//import org.apache.http.client.ClientProtocolException;
-//import org.apache.http.client.ResponseHandler;
-//import org.apache.http.client.methods.HttpGet;
-//import org.apache.http.impl.client.CloseableHttpClient;
-//import org.apache.http.impl.client.HttpClients;
-//import org.apache.http.util.EntityUtils;
-//import org.apache.http.HttpEntity;
-//import org.apache.http.HttpResponse;
-//import org.apache.http.client.ClientProtocolException;
-//import org.apache.http.client.ResponseHandler;
-//import org.apache.http.client.methods.HttpGet;
-//import org.apache.http.impl.client.CloseableHttpClient;
-//import org.apache.http.impl.client.HttpClients;
-//import org.apache.http.util.EntityUtils;
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
@@ -47,11 +29,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import net.imagej.ImageJService;
+import net.imglib2.Dimensions;
 
 @Plugin(type = Service.class)
 public class VCellHelper extends AbstractService implements ImageJService
 {	
-	private int lastVCellApiPort = -1;
+	private static int lastVCellApiPort = -1;
 	
 //	public VCellHelper() {
 //		
@@ -61,7 +44,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 //    	ImageJ ij = new ImageJ();
 //    }
     
-	public int findVCellApiServerPort() throws Exception{
+	public static int findVCellApiServerPort() throws Exception{
 		final int start = 8000;
 		final int end = 8100;
 		int tryCount = end-start+1;
@@ -90,7 +73,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 		return lastVCellApiPort;
 		
 	}
-	public String getApiInfo() throws Exception{
+	public static String getApiInfo() throws Exception{
 		findVCellApiServerPort();
 		URL url = new URL("http://localhost:"+lastVCellApiPort+"/");
 	//	URL url = new URL("http://localhost:8080/list");
@@ -128,7 +111,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
 		}
 	}
-	public static class BasicStackDimensions{
+	public static class BasicStackDimensions implements Dimensions{
 		public int xsize;
 		public int ysize;
 		public int zsize;
@@ -143,6 +126,34 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 		public int getTotalSize(){
 			return xsize*ysize*zsize*csize*tsize;
+		}
+		@Override
+		public int numDimensions() {
+			int numdims = (xsize>1?1:0)+(ysize>1?1:0)+(zsize>1?1:0)+(csize>1?1:0)+(tsize>1?1:0);
+			return (numdims==0?1:numdims);
+		}
+		@Override
+		public void dimensions(long[] dimensions) {
+			for(int i=0;i<dimensions.length;i++) {
+				dimensions[i] = dimension(i);
+			}
+		}
+		@Override
+		public long dimension(int d) {
+			switch(d) {
+			case 0:
+				return xsize;
+			case 1:
+				return ysize;
+			case 2:
+				return zsize;
+			case 3:
+				return csize;
+			case 4:
+				return tsize;
+			default:
+				throw new RuntimeException("dim index must be les than "+numDimensions());
+			}
 		}
 	}
 	public static BasicStackDimensions getVCStackDims(Document doc) throws Exception{
@@ -165,15 +176,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 	
 	public static String getRawContent(URL url) throws Exception{
 		URLConnection con = url.openConnection();
-		try(InputStream instrm = con.getInputStream()){	
-//			BufferedInputStream bis = new BufferedInputStream(instrm);
-//			int currChar;
-//			StringBuffer sb = new StringBuffer();
-//			while ((currChar = bis.read()) != -1) {
-//				sb.append((char)currChar);
-//			}
-//			return sb.toString();
-			
+		try(InputStream instrm = con.getInputStream()){				
 		    StringBuilder textBuilder = new StringBuilder();
 			Reader reader = new BufferedReader(new InputStreamReader(instrm, Charset.forName(StandardCharsets.UTF_8.name())));
 			int c = 0;
@@ -274,4 +277,60 @@ public class VCellHelper extends AbstractService implements ImageJService
 //	    }
 //
 //	}
+	
+//  public static void exerciseService() {
+//	try {
+////	HttpClient httpClient = new HttpClient();
+////	HostConfiguration hostConfiguration = new HostConfiguration();
+////	hostConfiguration.setHost("localhost",8080);
+////	HttpMethod method = new GetMethod("/list?type=biom");
+////		int var = httpClient.executeMethod(hostConfiguration, method);
+////		System.out.println("result="+var);
+////		
+////		method = new GetMethod("/");
+////		var = httpClient.executeMethod(hostConfiguration, method);
+////		System.out.println("result="+var);
+//
+//		int lastVCellApiPort = VCellHelper.findVCellApiServerPort();//search for port that vcell is providing IJ related services on
+//		int cachekey = 1;
+//		System.out.println(VCellHelper.getApiInfo());//get rest api
+////		System.out.println(VCellHelper.getRawContent(new URL("http://localhost:"+lastVCellApiPort+"/"+"getinfo"+"?"/*+"open=true"+"&"*/+"type"+"="+"quick")));//generate cachekeys user can reference to get data
+//		System.out.println(VCellHelper.getRawContent(new URL("http://localhost:"+lastVCellApiPort+"/"+"getdata"+"?"/*+"open=true"+"&"*/+"cachekey"+"="+cachekey)));//get variable names
+//		Document doc = VCellHelper.getDocument(new URL("http://localhost:"+lastVCellApiPort+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+"C_cyt"+"&"+"timepoint"+"=0.5"));//get data
+//		BasicStackDimensions basicStackDimensions = VCellHelper.getVCStackDims(doc);
+// 		double[] data = VCellHelper.getData(doc);
+//   		System.out.println(basicStackDimensions.getTotalSize());
+//   		System.out.println(data.length);
+//
+//   		long[] dims = new long[basicStackDimensions.numDimensions()];
+//   		basicStackDimensions.dimensions(dims);
+//   		ArrayImg<DoubleType, DoubleArray> img = ArrayImgs.doubles(data, dims);
+////        ArrayImg<DoubleType, DoubleArray> img = (ArrayImg<DoubleType, DoubleArray>)new ArrayImgFactory< DoubleType >().create( basicStackDimensions, new DoubleType() );
+////        ArrayCursor<DoubleType> cursor = img.cursor();
+////        while(cursor.hasNext()) {
+////        	cursor.next().set
+////        }
+//
+//        
+////   		Img< UnsignedByteType > img = new ArrayImgFactory< UnsignedByteType >().create( new long[] { 400, 320 }, new UnsignedByteType() );
+//        ImageJFunctions.show( img );
+//        DialogUtils.showInfoDialog(JOptionPane.getRootFrame(), "blah");
+//
+////		JAXBContext jaxbContext = JAXBContext.newInstance(IJData.class);
+////		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+////		IJData ijData = (IJData) jaxbUnmarshaller.unmarshal(new URL("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJGetDataParams.cachekey.name()+"=0"));
+////		System.out.println(ijData);
+//		
+////		URLConnection con = url.openConnection();
+////		InputStream in = con.getInputStream();
+////		String encoding = con.getContentEncoding();
+////		encoding = encoding == null ? "UTF-8" : encoding;
+////		String body = IOUtils.toString(in, encoding);
+////		System.out.println(body);
+//	} catch (Exception e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	}
+//}
+
 }
