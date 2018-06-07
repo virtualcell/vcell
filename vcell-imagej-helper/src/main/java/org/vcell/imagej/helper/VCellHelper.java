@@ -1,8 +1,11 @@
 package org.vcell.imagej.helper;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -11,6 +14,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -61,39 +66,33 @@ public class VCellHelper extends AbstractService implements ImageJService
 		final int end = 8100;
 		int tryCount = end-start+1;
 		for(int i = lastVCellApiPort;i<=end;i++) {
-			try {
-				if(i == -1) {
-					i= start;
-				}
+			if(i == -1) {
+				i= start;
+			}
+	        try (Socket socket = new Socket();){
+				socket.connect(new InetSocketAddress("localhost", i), 100);
+				socket.close();
 				String response = getRawContent(new URL("http://localhost:"+i+"/hello"));
 				if(response.contains("VCellApi")) {
 					lastVCellApiPort = i;
 					break;
 				}
-			} catch (Exception e) {
-				//ignore, keep scanning
+			} catch (IOException e) {
+				//ignore, continue scanning
 			}
 			if(i == end) {
-				i = start;
+				i = start-1;
 			}
 			if(--tryCount == 0) {
 				throw new Exception("Couldn't find VCellApi Server between ports "+start+" and "+end);
 			}
-//	        try {
-//				Socket socket = new Socket();
-//				socket.connect(new InetSocketAddress("localhost", i), 100);
-//				socket.
-//				socket.close();
-//			} catch (IOException e) {
-//				//ignore, continue scanning
-//			}
 		}
 		return lastVCellApiPort;
 		
 	}
-	public String getApiInfo(int port) throws Exception{
-
-		URL url = new URL("http://localhost:"+port+"/");
+	public String getApiInfo() throws Exception{
+		findVCellApiServerPort();
+		URL url = new URL("http://localhost:"+lastVCellApiPort+"/");
 	//	URL url = new URL("http://localhost:8080/list");
 		HttpURLConnection con = (HttpURLConnection)url.openConnection();
 		int responseCode = con.getResponseCode();
@@ -166,15 +165,23 @@ public class VCellHelper extends AbstractService implements ImageJService
 	
 	public static String getRawContent(URL url) throws Exception{
 		URLConnection con = url.openConnection();
-		InputStream instrm = con.getInputStream();
-//		String encoding = con.getContentEncoding();
-		BufferedInputStream bis = new BufferedInputStream(instrm);
-		int currChar;
-		StringBuffer sb = new StringBuffer();
-			while ((currChar = bis.read()) != -1) {
-				sb.append((char)currChar);
+		try(InputStream instrm = con.getInputStream()){	
+//			BufferedInputStream bis = new BufferedInputStream(instrm);
+//			int currChar;
+//			StringBuffer sb = new StringBuffer();
+//			while ((currChar = bis.read()) != -1) {
+//				sb.append((char)currChar);
+//			}
+//			return sb.toString();
+			
+		    StringBuilder textBuilder = new StringBuilder();
+			Reader reader = new BufferedReader(new InputStreamReader(instrm, Charset.forName(StandardCharsets.UTF_8.name())));
+			int c = 0;
+			while ((c = reader.read()) != -1) {
+			    textBuilder.append((char) c);
 			}
-			return sb.toString();
+			return textBuilder.toString();
+		}
 	}
 	
 //    public static String getApiInfo() throws Exception{
