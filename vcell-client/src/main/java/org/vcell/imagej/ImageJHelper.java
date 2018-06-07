@@ -7,15 +7,20 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
@@ -38,6 +43,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlInlineBinaryData;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -71,6 +78,10 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ChildWindowManager;
@@ -704,13 +715,17 @@ public class ImageJHelper {
 			this.commandInfo = commandInfo;
 		}
 	}
-	private enum ApiEnum {getinfo,getdata};
+	private enum ApiEnum {hello,getinfo,getdata};
 	private static String GETINFO_PARMS = IJListParams.type.name()+"={"+IJDocType.bm.name()+","+IJDocType.mm.name()+","+IJDocType.quick.name()+"}"+"&"+IJListParams.open.name()+"={true,false}";
-	private static String GETDATA_PARMS = IJGetDataParams.cachekey.name()+"=key";
+	private static String GETDATA_PARMS = IJGetDataParams.cachekey.name()+"=int"+"&"+IJGetDataParams.varname.name()+"=string"+"&"+IJGetDataParams.timepoint.name()+"="+"double";
 	public static class ApiInfoHandler extends AbstractHandler
 	{
 		private HashMap<ApiEnum, VCCommand[]> apiParams = new HashMap<>();
 		public ApiInfoHandler() {
+			apiParams.put(ApiEnum.hello, new VCCommand[] {
+					/*"type={biom,math}","type=sims&modelname=xxx"*/
+					new VCCommand(ApiEnum.hello.name(), "simple reply if server is listening running")
+					});
 			apiParams.put(ApiEnum.getinfo, new VCCommand[] {
 					/*"type={biom,math}","type=sims&modelname=xxx"*/
 					new VCCommand(ApiEnum.getinfo.name()+"?"+GETINFO_PARMS, "List of Bio/Math models information")
@@ -1111,17 +1126,23 @@ public class ImageJHelper {
 //	}
 	@XmlRootElement
 	private static class IJData {
+		@XmlAttribute
+		private String varname;
+		@XmlAttribute
+		private double timepoint;
 		@XmlElement
 		private BasicStackDimensions stackInfo;
 		@XmlInlineBinaryData
-		private byte[] data;
+		private byte[] data;//double[] converted to byte[]
 		public IJData() {
 			
 		}
-		public IJData(BasicStackDimensions stackInfo, byte[] data) {
+		public IJData(BasicStackDimensions stackInfo, byte[] data,String varname,double timepoint) {
 			super();
 			this.stackInfo = stackInfo;
 			this.data = data;
+			this.varname = varname;
+			this.timepoint = timepoint;
 		}
 		
 	}
@@ -1136,16 +1157,39 @@ public class ImageJHelper {
 		@XmlAttribute
 		private String domain;
 		@XmlAttribute
-		private boolean bFunction;
+		private Boolean bFunction;
 		public IJVarInfo() {
 			
 		}
-		public IJVarInfo(String name, String displayName, String variableType, String domain, boolean bFunction) {
+		public IJVarInfo(String name, String displayName, VariableType variableType, Domain domain, Boolean bFunction) {
 			this.name = name;
 			this.displayName = displayName;
-			this.variableType = variableType;
-			this.domain = domain;
+			this.variableType = (variableType != null?variableType.getTypeName():null);
+			this.domain = (domain != null?domain.getName():null);
 			this.bFunction = bFunction;
+		}
+		
+	}
+	
+	@XmlRootElement
+	private static class IJVarInfos {
+		@XmlElement
+		private String times;
+		@XmlElement
+		private ArrayList<IJVarInfo> ijVarInfo;
+		public IJVarInfos() {
+			
+		}
+		public IJVarInfos(ArrayList<IJVarInfo> ijVarInfos,double[] times) {
+			super();
+			this.ijVarInfo = ijVarInfos;
+			if(times != null && times.length > 0) {
+				StringBuffer sb =new StringBuffer();
+				for(int i=0;i<times.length;i++) {
+					sb.append((i>0?",":"")+i+"='"+times[i]+"'");
+				}
+				this.times=sb.toString();
+			}
 		}
 		
 	}
@@ -1212,9 +1256,9 @@ public class ImageJHelper {
 			        													VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(quickrunKey), user);
 			        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);//quickrun always job 0
 			        													SimulationData simData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
-			        													CartesianMesh mesh = simData.getMesh();
-			        													BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, simData.getDataTimes().length);
-			        													if(varname!=null) {
+			        													if(varname!=null && timepoint != null) {
+				        													CartesianMesh mesh = simData.getMesh();
+				        													BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1/*simData.getDataTimes().length*/);
 			        														SimDataBlock simDataBlock = simData.getSimDataBlock(null, varname, timepoint);
 				        													int numDoubles = basicStackDimensions.getTotalSize();
 				        													byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
@@ -1222,18 +1266,19 @@ public class ImageJHelper {
 				        													for(int i=0;i<numDoubles;i++) {
 				        														bb.putDouble(simDataBlock.getData()[i]);
 				        													}
-				        													IJData ijData = new IJData(basicStackDimensions, byteDoubles);
+				        													IJData ijData = new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
 				    			        						    		response.setContentType("text/html; charset=utf-8");
 				    			        						    		response.setStatus(HttpServletResponse.SC_OK);
 				    			        						    		response.getWriter().write(createXML(ijData));
 			        													}else {
 				        													DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
-				        													ArrayList<String> varNames = new ArrayList<>();
-				        													if(dataIdentifiers != null) {
-				        														for(DataIdentifier did:dataIdentifiers) {
-				        															System.out.println(did.toString());
-				        														}
-				        													}
+				        													ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
+			        														for(DataIdentifier did:dataIdentifiers) {
+			        															ijVarInfos.add(new IJVarInfo(did.getName(), did.getDisplayName(), did.getVariableType(), did.getDomain(), did.isFunction()));
+			        														}
+				    			        						    		response.setContentType("text/html; charset=utf-8");
+				    			        						    		response.setStatus(HttpServletResponse.SC_OK);
+				    			        						    		response.getWriter().write(createXML(new IJVarInfos(ijVarInfos,simData.getDataTimes())));
 			        														
 			        													}
 //			    			        						    		response.getWriter().println("<h1>mesh="+mesh.getSizeX()+","+mesh.getSizeY()+","+mesh.getSizeZ()+"\n"+
@@ -1275,28 +1320,54 @@ public class ImageJHelper {
 		
 	}
 
-    public static void startService() throws Exception
+	public static class ApiHelloHandler extends AbstractHandler{
+
+		@Override
+		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+				throws IOException, ServletException {
+			// TODO Auto-generated method stub
+    		response.setContentType("text/html; charset=utf-8");
+    		response.setStatus(HttpServletResponse.SC_OK);
+    		response.getWriter().write("VCellApi");
+    		baseRequest.setHandled(true);
+
+		}
+		
+	}
+    public static void startService(int port) throws Exception
     {
-        Server server = new Server(8080);
-        
-        ContextHandler contextRoot = new ContextHandler("/");
-        contextRoot.setHandler(new ApiInfoHandler());
-        
-        ContextHandler context = new ContextHandler("/"+ApiEnum.getinfo.name()+"/");
-        context.setHandler(new ApiListHandler());
-        
-        ContextHandler contextData = new ContextHandler("/"+ApiEnum.getdata.name()+"/");
-        contextData.setHandler(new ApiGetDataHandler());
 
-        ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[] { contextRoot,context,contextData });
+        Server server = null;
+//        for(int i=8000;i<=8100;i++) {
+            ContextHandler contextHello = new ContextHandler("/"+ApiEnum.hello.name()+"/");
+            contextHello.setHandler(new ApiHelloHandler());
 
-        server.setHandler(contexts);
+            ContextHandler contextRoot = new ContextHandler("/");
+            contextRoot.setHandler(new ApiInfoHandler());
+            
+            ContextHandler context = new ContextHandler("/"+ApiEnum.getinfo.name()+"/");
+            context.setHandler(new ApiListHandler());
+            
+            ContextHandler contextData = new ContextHandler("/"+ApiEnum.getdata.name()+"/");
+            contextData.setHandler(new ApiGetDataHandler());
 
-//        server.setHandler(new HelloWorld());
-        System.out.println(server.getURI());
-        server.start();
-//        server.join();
+            ContextHandlerCollection contexts = new ContextHandlerCollection();
+            contexts.setHandlers(new Handler[] { contextHello,contextRoot,context,contextData });
+
+            server = new Server(port);
+	        server.setHandler(contexts);
+	//        server.setHandler(new HelloWorld());
+//	        try {
+				server.start();
+//				break;
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//				server.stop();
+//			}
+	//        server.join();
+//        }
+		System.out.println(server.getURI());
+
     }
 
     public static void exerciseService() {
@@ -1312,17 +1383,17 @@ public class ImageJHelper {
 //			var = httpClient.executeMethod(hostConfiguration, method);
 //			System.out.println("result="+var);
 
-//			URL url = new URL("http://localhost:8080/");
-//			URL url = new URL("http://localhost:8080/"+ApiEnum.getinfo.name()+"?open=false&type=math");
     		System.out.println(getApiResponse("http://localhost:8080/"));
-//    		System.out.println(getApiResponse("http://localhost:8080/"+ApiEnum.getinfo.name()+"?"/*+"open=true"+"&"*/+IJListParams.type.name()+"="+IJDocType.quick.name()));
-//    		System.out.println(getApiResponse("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJListParams.cachekey.name()+"=0"));
-//    		String simData = getApiResponse("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJListParams.cachekey.name()+"=0");
-    		JAXBContext jaxbContext = JAXBContext.newInstance(IJData.class);
-
-    		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-    		IJData ijData = (IJData) jaxbUnmarshaller.unmarshal(new URL("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJGetDataParams.cachekey.name()+"=0"));
-    		System.out.println(ijData);
+//    		System.out.println(getApiResponse("http://localhost:8080/"+ApiEnum.getinfo.name()+"?"/*+"open=true"+"&"*/+IJListParams.type.name()+"="+IJDocType.quick.name()));//generates cache
+    		System.out.println(getApiResponse("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJGetDataParams.cachekey.name()+"=0"));
+    		Document doc = ImageJHelper.getDocument(new URL("http://localhost:8080/"+ApiEnum.getdata.name()+"?"+IJGetDataParams.cachekey.name()+"=0"+"&"+IJGetDataParams.varname.name()+"="+"C_cyt"+"&"+IJGetDataParams.timepoint.name()+"=0.05"));
+    		ImageJHelper.BasicStackDimensions basicStackDimensions = ImageJHelper.getBasicStackDims(doc);
+    		System.out.println(basicStackDimensions);
+    		
+//    		JAXBContext jaxbContext = JAXBContext.newInstance(IJData.class);
+//    		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+//    		IJData ijData = (IJData) jaxbUnmarshaller.unmarshal(new URL("http://localhost:8080/"+ApiEnum.getdata.name()+"?"/*+"open=true"+"&"*/+IJGetDataParams.cachekey.name()+"=0"));
+//    		System.out.println(ijData);
     		
 //			URLConnection con = url.openConnection();
 //			InputStream in = con.getInputStream();
@@ -1377,5 +1448,65 @@ public class ImageJHelper {
 //		}
 //		
 //	}
+
+	public static Document getDocument(URL url) throws Exception{
+		HttpURLConnection con = (HttpURLConnection)url.openConnection();
+		int responseCode = con.getResponseCode();
+		if(responseCode == HttpURLConnection.HTTP_OK) {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = factory.newDocumentBuilder();
+			Document doc = docBuilder.parse(url.toString());
+			return doc;
+		}else {
+			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
+		}
+	}
+//	public static class VCStackDim{
+//		public int xsize;
+//		public int ysize;
+//		public int zsize;
+//		public int csize;
+//		public int tsize;
+//		public VCStackDim(int xsize, int ysize, int zsize, int csize, int tsize) {
+//			this.xsize = xsize;
+//			this.ysize = ysize;
+//			this.zsize = zsize;
+//			this.csize = csize;
+//			this.tsize = tsize;
+//		}
+//		public int getTotalSize(){
+//			return xsize*ysize*zsize*csize*tsize;
+//		}
+//	}
+	public static  BasicStackDimensions getBasicStackDims(Document doc) throws Exception{
+		NodeList si = (NodeList)doc.getElementsByTagName("stackInfo");
+		Node node = (Node)si.item(0);
+		NamedNodeMap nnm = node.getAttributes();
+		return new BasicStackDimensions(
+				Integer.parseInt(nnm.getNamedItem("xsize").getNodeValue()),
+				Integer.parseInt(nnm.getNamedItem("ysize").getNodeValue()),
+				Integer.parseInt(nnm.getNamedItem("zsize").getNodeValue()),
+				Integer.parseInt(nnm.getNamedItem("csize").getNodeValue()),
+				Integer.parseInt(nnm.getNamedItem("tsize").getNodeValue()));
+	}
+	public static double[] getData(Document doc) throws Exception{
+			double[] doubleVals = new double[getBasicStackDims(doc).getTotalSize()];
+			DoubleBuffer db = ByteBuffer.wrap(Base64.getDecoder().decode(doc.getElementsByTagName("data").item(0).getFirstChild().getNodeValue())).asDoubleBuffer();
+			db.get(doubleVals);
+			return doubleVals;
+	}
+	
+	public static String getRawContent(URL url) throws Exception{
+		URLConnection con = url.openConnection();
+		InputStream instrm = con.getInputStream();
+//		String encoding = con.getContentEncoding();
+		BufferedInputStream bis = new BufferedInputStream(instrm);
+		int currChar;
+		StringBuffer sb = new StringBuffer();
+			while ((currChar = bis.read()) != -1) {
+				sb.append((char)currChar);
+			}
+			return sb.toString();
+	}
 
 }
