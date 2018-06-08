@@ -61,6 +61,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
@@ -1252,6 +1253,70 @@ public class ImageJHelper {
 //		
 //	}
 	
+	private static class IJDataResponder{
+		private VCDataManager vcDataManager;
+		private SimulationData simulationData;
+		private String varname;
+		private Double timepoint;
+		private OutputContext outputContext;
+		private VCSimulationDataIdentifier vcSimulationDataIdentifier;
+		private IJDataResponder(OutputContext outputContext,Double timepoint,VCSimulationDataIdentifier vcSimulationDataIdentifier) {
+			this.vcSimulationDataIdentifier = vcSimulationDataIdentifier;
+			this.outputContext = outputContext;
+			this.timepoint = timepoint;
+		}
+		public IJDataResponder(VCDataManager vcDataManager,OutputContext outputContext,String varname,Double timepoint,VCSimulationDataIdentifier vcSimulationDataIdentifier) {//saved to database
+			this(outputContext, timepoint, vcSimulationDataIdentifier);
+			this.vcDataManager = vcDataManager;
+		}
+		public IJDataResponder(SimulationData simulationData,OutputContext outputContext,String varname,Double timepoint,VCSimulationDataIdentifier vcSimulationDataIdentifier) {//quickrun
+			this(outputContext, timepoint, vcSimulationDataIdentifier);
+			this.simulationData = simulationData;
+		}
+//		private DataIdentifier getDataIdentifier() throws Exception{
+//			DataIdentifier[] dataIdentifiers = vcDataManager.getDataIdentifiers(outputContext, vcSimulationDataIdentifier);
+//			DataIdentifier wantedDataIdentifer = null;
+//			for(DataIdentifier dataIdentifier:dataIdentifiers) {
+//				if(dataIdentifier.getName().equals(varname)) {
+//					wantedDataIdentifer = dataIdentifier;
+//					break;
+//				}
+//			}
+//			return wantedDataIdentifer;
+//		}
+		public IJData getIJData() throws Exception{
+			CartesianMesh mesh = (simulationData != null?simulationData.getMesh():vcDataManager.getMesh(vcSimulationDataIdentifier));
+			BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1);
+			SimDataBlock simDataBlock = (simulationData != null?simulationData.getSimDataBlock(outputContext, varname, timepoint):vcDataManager.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname, timepoint));
+			int numDoubles = basicStackDimensions.getTotalSize();
+			byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
+			ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
+			for(int i=0;i<numDoubles;i++) {
+				bb.putDouble(simDataBlock.getData()[i]);
+			}
+			return new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
+		}
+		public IJVarInfos getIJVarInfos(String simName,Long cachekey,Integer scancount) throws Exception{
+			DataIdentifier[] dataIdentifiers = (simulationData != null?simulationData.getVarAndFunctionDataIdentifiers(outputContext):vcDataManager.getDataIdentifiers(outputContext, vcSimulationDataIdentifier));
+			ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
+			for(DataIdentifier did:dataIdentifiers) {
+				ijVarInfos.add(new IJVarInfo(did.getName(), did.getDisplayName(), did.getVariableType(), did.getDomain(), did.isFunction()));
+			}
+			return new IJVarInfos(ijVarInfos,simName,cachekey,(simulationData != null?simulationData.getDataTimes():vcDataManager.getDataSetTimes(vcSimulationDataIdentifier)),scancount);
+		}
+		public void respondData(HttpServletResponse response) throws Exception{
+    		respond(response, createXML(getIJData()));
+		}
+		public void respondIdentifiers(HttpServletResponse response,String simName,Long cachekey,Integer scancount) throws Exception{
+    		respond(response, createXML(getIJVarInfos(simName, cachekey, scancount)));
+		}
+		private void respond(HttpServletResponse response,String xml) throws IOException{
+    		response.setContentType("text/xml; charset=utf-8");
+    		response.setStatus(HttpServletResponse.SC_OK);
+    		response.getWriter().write(xml);
+		}
+	}
+	
 	private static enum IJGetDataParams {cachekey,varname,timepoint,jobid}
 	public static class ApiGetDataHandler extends AbstractHandler{
 		@Override
@@ -1314,38 +1379,45 @@ public class ImageJHelper {
 				        												st.nextToken();
 				        												String quickrunKey = st.nextToken();
 				        												if(quickrunKey.equals(ijSimInfo.quickrunKey)) {
-				        													User user = new User("quick", new KeyValue("0"));
-				        													VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(quickrunKey), user);
-				        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);//quickrun always job 0
-				        													SimulationData simData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
+//				        													User user = new User("quick", new KeyValue("0"));
+				        													VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(quickrunKey), null);
+				        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobid!=null?jobid:0));//quickrun always job 0
+				        													SimulationData simulationData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
+				        													IJDataResponder ijDataResponder = new IJDataResponder(simulationData, null, varname, timepoint, vcSimulationDataIdentifier);
 				        													if(varname!=null && timepoint != null) {
-					        													CartesianMesh mesh = simData.getMesh();
-					        													BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1/*simData.getDataTimes().length*/);
-				        														SimDataBlock simDataBlock = simData.getSimDataBlock(null, varname, timepoint);
-					        													int numDoubles = basicStackDimensions.getTotalSize();
-					        													byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
-					        													ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
-					        													for(int i=0;i<numDoubles;i++) {
-					        														bb.putDouble(simDataBlock.getData()[i]);
-					        													}
-					        													IJData ijData = new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
-					    			        						    		response.setContentType("text/xml; charset=utf-8");
-					    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-					    			        						    		response.getWriter().write(createXML(ijData));
+				        														ijDataResponder.respondData(response);
 				        													}else {
-					        													DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
-					        													ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
-				        														for(DataIdentifier did:dataIdentifiers) {
-				        															ijVarInfos.add(new IJVarInfo(did.getName(), did.getDisplayName(), did.getVariableType(), did.getDomain(), did.isFunction()));
-				        														}
-					    			        						    		response.setContentType("text/xml; charset=utf-8");
-					    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-					    			        						    		response.getWriter().write(createXML(new IJVarInfos(ijVarInfos,null,null,simData.getDataTimes(),null)));
-				        														
+				        														ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey, 1/*can quickrun do scans?*/);
 				        													}
-	//			    			        						    		response.getWriter().println("<h1>mesh="+mesh.getSizeX()+","+mesh.getSizeY()+","+mesh.getSizeZ()+"\n"+
-	//			    			        						    				"numTimes="+simData.getDataTimes().length+
-	//			    			        						    				"</h1>");
+//				        													User user = new User("quick", new KeyValue("0"));
+//				        													VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(quickrunKey), user);
+//				        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);//quickrun always job 0
+//				        													SimulationData simData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
+//				        													if(varname!=null && timepoint != null) {
+//					        													CartesianMesh mesh = simData.getMesh();
+//					        													BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1/*simData.getDataTimes().length*/);
+//				        														SimDataBlock simDataBlock = simData.getSimDataBlock(null, varname, timepoint);
+//					        													int numDoubles = basicStackDimensions.getTotalSize();
+//					        													byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
+//					        													ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
+//					        													for(int i=0;i<numDoubles;i++) {
+//					        														bb.putDouble(simDataBlock.getData()[i]);
+//					        													}
+//					        													IJData ijData = new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
+//					    			        						    		response.setContentType("text/xml; charset=utf-8");
+//					    			        						    		response.setStatus(HttpServletResponse.SC_OK);
+//					    			        						    		response.getWriter().write(createXML(ijData));
+//				        													}else {
+//					        													DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
+//					        													ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
+//				        														for(DataIdentifier did:dataIdentifiers) {
+//				        															ijVarInfos.add(new IJVarInfo(did.getName(), did.getDisplayName(), did.getVariableType(), did.getDomain(), did.isFunction()));
+//				        														}
+//					    			        						    		response.setContentType("text/xml; charset=utf-8");
+//					    			        						    		response.setStatus(HttpServletResponse.SC_OK);
+//					    			        						    		response.getWriter().write(createXML(new IJVarInfos(ijVarInfos,null,null,simData.getDataTimes(),null)));
+//				        														
+//				        													}
 				    			        						    		bFound = true;
 				    			        						    		break outerloop;
 				        												}	
@@ -1362,47 +1434,52 @@ public class ImageJHelper {
 				        										VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 				        										VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobid==null?0:jobid));
 				        										OutputContext outputContext = new OutputContext(simulationContext.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
-				        										DataManager dataManager = requestManager.getDataManager(outputContext, vcSimulationDataIdentifier, simulation.isSpatial());			        											
-			        											DataIdentifier[] dataIdentifiers = dataManager.getDataIdentifiers();
-				        										if(jobid == null) {
-				        											//Send varinfo and jobid info back to user
-		        													ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
-	        														for(DataIdentifier did:dataIdentifiers) {
-	        															ijVarInfos.add(new IJVarInfo(did.getName(), did.getDisplayName(), did.getVariableType(), did.getDomain(), did.isFunction()));
-	        														}
-		    			        						    		response.setContentType("text/xml; charset=utf-8");
-		    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-		    			        						    		response.getWriter().write(createXML(new IJVarInfos(ijVarInfos,simulation.getName(),cacheKey,dataManager.getDataSetTimes(),simulation.getScanCount())));
-//		    			        						    		response.getWriter().write(createXML(new IJSimJobIDInfo(simulation.getName(),
-//		    			        						    				simulation.getScanCount(),biomodel.getVersion().getVersionKey(),
-//		    			        						    				simulationContext.getVersion().getVersionKey(),
-//		    			        						    				simulation.getVersion().getVersionKey())));
-				        										}else if(varname!=null && timepoint != null){
-				        											VCDataManager vcDataManager = new VCDataManager(VCellClientTest.getVCellClient().getClientServerManager());
-				        											PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcSimulationDataIdentifier);
-				        											ClientPDEDataContext clientPDEDataContext = new ClientPDEDataContext(pdeDataManager);
-				        											DataIdentifier wantedDataIdentifer = null;
-				        											for(DataIdentifier dataIdentifier:dataIdentifiers) {
-				        												if(dataIdentifier.getName().equals(varname)) {
-				        													wantedDataIdentifer = dataIdentifier;
-				        													break;
-				        												}
-				        											}
-				        											clientPDEDataContext.setVariableAndTime(wantedDataIdentifer, timepoint);
-		        													CartesianMesh mesh = clientPDEDataContext.getCartesianMesh();
-		        													BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1/*simData.getDataTimes().length*/);
-		        													int numDoubles = basicStackDimensions.getTotalSize();
-		        													byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
-		        													ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
-		        													double[] datavals = clientPDEDataContext.getDataValues();
-		        													for(int i=0;i<numDoubles;i++) {
-		        														bb.putDouble(datavals[i]);
-		        													}
-		        													IJData ijData = new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
-		    			        						    		response.setContentType("text/xml; charset=utf-8");
-		    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-		    			        						    		response.getWriter().write(createXML(ijData));
+				        										VCDataManager vcDataManager = new VCDataManager(VCellClientTest.getVCellClient().getClientServerManager());
+																IJDataResponder ijDataResponder = new IJDataResponder(vcDataManager, outputContext, varname, timepoint,vcSimulationDataIdentifier);
+				        										if(varname!=null && timepoint != null){
+				        											ijDataResponder.respondData(response);
+				        										}else {
+				        											ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey, simulation.getScanCount());
 				        										}
+//				        										VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobid==null?0:jobid));
+//				        										OutputContext outputContext = new OutputContext(simulationContext.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
+//				        										DataManager dataManager = requestManager.getDataManager(outputContext, vcSimulationDataIdentifier, simulation.isSpatial());			        											
+//			        											DataIdentifier[] dataIdentifiers = dataManager.getDataIdentifiers();
+//				        										if(jobid == null) {
+//				        											//Send varinfo and jobid info back to user
+//		        													ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
+//	        														for(DataIdentifier did:dataIdentifiers) {
+//	        															ijVarInfos.add(new IJVarInfo(did.getName(), did.getDisplayName(), did.getVariableType(), did.getDomain(), did.isFunction()));
+//	        														}
+//		    			        						    		response.setContentType("text/xml; charset=utf-8");
+//		    			        						    		response.setStatus(HttpServletResponse.SC_OK);
+//		    			        						    		response.getWriter().write(createXML(new IJVarInfos(ijVarInfos,simulation.getName(),cacheKey,dataManager.getDataSetTimes(),simulation.getScanCount())));
+//				        										}else if(varname!=null && timepoint != null){
+//				        											VCDataManager vcDataManager = new VCDataManager(VCellClientTest.getVCellClient().getClientServerManager());
+//				        											PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcSimulationDataIdentifier);
+//				        											ClientPDEDataContext clientPDEDataContext = new ClientPDEDataContext(pdeDataManager);
+//				        											DataIdentifier wantedDataIdentifer = null;
+//				        											for(DataIdentifier dataIdentifier:dataIdentifiers) {
+//				        												if(dataIdentifier.getName().equals(varname)) {
+//				        													wantedDataIdentifer = dataIdentifier;
+//				        													break;
+//				        												}
+//				        											}
+//				        											clientPDEDataContext.setVariableAndTime(wantedDataIdentifer, timepoint);
+//		        													CartesianMesh mesh = clientPDEDataContext.getCartesianMesh();
+//		        													BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1/*simData.getDataTimes().length*/);
+//		        													int numDoubles = basicStackDimensions.getTotalSize();
+//		        													byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
+//		        													ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
+//		        													double[] datavals = clientPDEDataContext.getDataValues();
+//		        													for(int i=0;i<numDoubles;i++) {
+//		        														bb.putDouble(datavals[i]);
+//		        													}
+//		        													IJData ijData = new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
+//		    			        						    		response.setContentType("text/xml; charset=utf-8");
+//		    			        						    		response.setStatus(HttpServletResponse.SC_OK);
+//		    			        						    		response.getWriter().write(createXML(ijData));
+//				        										}
 	    			        						    		bFound = true;
 	    			        						    		break outerloop;
 				        									}else if(ijDocType == IJDocType.mm) {
