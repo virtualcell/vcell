@@ -176,8 +176,14 @@ public class VCellHelper extends AbstractService implements ImageJService
 	}
 	
 	public static String getRawContent(URL url) throws Exception{
-		URLConnection con = url.openConnection();
-		return streamToString(con.getInputStream());
+		HttpURLConnection con = (HttpURLConnection)url.openConnection();
+		int responseCode = con.getResponseCode();
+		if(responseCode == HttpURLConnection.HTTP_OK) {
+			return streamToString(con.getInputStream());
+		}else {
+			throw new Exception("Expecting OK but got "+responseCode+" "+streamToString(con.getErrorStream()));
+		}
+		
 //		try(InputStream instrm = con.getInputStream()){				
 //		    StringBuilder textBuilder = new StringBuilder();
 //			Reader reader = new BufferedReader(new InputStreamReader(instrm, Charset.forName(StandardCharsets.UTF_8.name())));

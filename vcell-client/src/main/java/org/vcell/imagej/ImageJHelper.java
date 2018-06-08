@@ -68,6 +68,7 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
@@ -96,6 +97,7 @@ import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.test.VCellClientTest;
@@ -124,6 +126,7 @@ import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
@@ -1024,6 +1027,7 @@ public class ImageJHelper {
 								String parentUser = null;
 								KeyValue parentModelKey = null;
 								IJDocType docType = IJDocType.quick;
+								boolean bOpenOnDesktop = false;
 								if(VCellClientTest.getVCellClient() != null) {
 						    		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
 						    		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
@@ -1042,11 +1046,12 @@ public class ImageJHelper {
 						    					parentUser = documentWindowManager.getVCDocument().getVersion().getOwner().getName();
 						    					parentModelKey = documentWindowManager.getVCDocument().getVersion().getVersionKey();
 						    					docType = (documentWindowManager.getVCDocument().getDocumentType() ==VCDocumentType.BIOMODEL_DOC?IJDocType.bm:IJDocType.mm);
+						    					bOpenOnDesktop = true;
 						    				}
 						    			}
 						    		}
 								}
-					    		if(bOpen == null || (bOpen && docType != IJDocType.quick)){
+					    		if(bOpen == null || bOpen.booleanValue() == bOpenOnDesktop){
 									ArrayList<IJContextInfo> contInfos = new ArrayList<>();
 									ArrayList<IJSimInfo> ijsimfos= new ArrayList<>();
 									ijsimfos.add(new IJSimInfo(quickrunKey, parentSimName));
@@ -1256,35 +1261,43 @@ public class ImageJHelper {
 	private static class IJDataResponder{
 		private VCDataManager vcDataManager;
 		private SimulationData simulationData;
-		private String varname;
-		private Double timepoint;
 		private OutputContext outputContext;
 		private VCSimulationDataIdentifier vcSimulationDataIdentifier;
-		private IJDataResponder(OutputContext outputContext,Double timepoint,VCSimulationDataIdentifier vcSimulationDataIdentifier) {
+		private Integer jobCount;
+		private IJDataResponder(OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobcount) {
 			this.vcSimulationDataIdentifier = vcSimulationDataIdentifier;
 			this.outputContext = outputContext;
-			this.timepoint = timepoint;
+			this.jobCount = jobcount;
 		}
-		public IJDataResponder(VCDataManager vcDataManager,OutputContext outputContext,String varname,Double timepoint,VCSimulationDataIdentifier vcSimulationDataIdentifier) {//saved to database
-			this(outputContext, timepoint, vcSimulationDataIdentifier);
+		private IJDataResponder(VCDataManager vcDataManager,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobcount) {//saved to database
+			this(outputContext,  vcSimulationDataIdentifier,jobcount);
 			this.vcDataManager = vcDataManager;
 		}
-		public IJDataResponder(SimulationData simulationData,OutputContext outputContext,String varname,Double timepoint,VCSimulationDataIdentifier vcSimulationDataIdentifier) {//quickrun
-			this(outputContext, timepoint, vcSimulationDataIdentifier);
+		private IJDataResponder(SimulationData simulationData,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobCount) {//quickrun
+			this(outputContext, vcSimulationDataIdentifier,jobCount);
 			this.simulationData = simulationData;
 		}
-//		private DataIdentifier getDataIdentifier() throws Exception{
-//			DataIdentifier[] dataIdentifiers = vcDataManager.getDataIdentifiers(outputContext, vcSimulationDataIdentifier);
-//			DataIdentifier wantedDataIdentifer = null;
-//			for(DataIdentifier dataIdentifier:dataIdentifiers) {
-//				if(dataIdentifier.getName().equals(varname)) {
-//					wantedDataIdentifer = dataIdentifier;
-//					break;
-//				}
-//			}
-//			return wantedDataIdentifer;
-//		}
-		public IJData getIJData() throws Exception{
+		public static IJDataResponder create(VCellClient vCellClient,KeyValue modelKey,String simContextName,String simName,Integer jobIndex) throws Exception{
+			SimulationOwner simOwner = (simContextName != null?vCellClient.getRequestManager().getDocumentManager().getBioModel(modelKey).getSimulationContext(simContextName):vCellClient.getRequestManager().getDocumentManager().getMathModel(modelKey));
+			Simulation[] simulations = simOwner.getSimulations();
+			for(Simulation sim:simulations) {
+				if(sim.getName().equals(simName)) {
+					VCSimulationIdentifier vcSimulationIdentifier = sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+					VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobIndex!=null?jobIndex:0));
+					OutputContext outputContext = new OutputContext(simOwner.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
+					VCDataManager vcDataManager = new VCDataManager(vCellClient.getClientServerManager());
+					return new IJDataResponder(vcDataManager, outputContext, vcSimulationDataIdentifier,sim.getScanCount());
+				}
+			}
+			throw new Exception("IJREsponder: simulation name '"+simName+"' not found");
+		}
+		public static IJDataResponder create(KeyValue quickrunKey,File simDataDir,Integer jobIndex) throws Exception{
+			VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(quickrunKey, null/*no user necessary*/);
+			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobIndex!=null?jobIndex:0));
+			SimulationData simulationData = new SimulationData(vcSimulationDataIdentifier, simDataDir, simDataDir, null);
+			return new IJDataResponder(simulationData, null, vcSimulationDataIdentifier,1);
+		}
+		public IJData getIJData(String varname,Double timepoint) throws Exception{
 			CartesianMesh mesh = (simulationData != null?simulationData.getMesh():vcDataManager.getMesh(vcSimulationDataIdentifier));
 			BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1);
 			SimDataBlock simDataBlock = (simulationData != null?simulationData.getSimDataBlock(outputContext, varname, timepoint):vcDataManager.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname, timepoint));
@@ -1304,11 +1317,11 @@ public class ImageJHelper {
 			}
 			return new IJVarInfos(ijVarInfos,simName,cachekey,(simulationData != null?simulationData.getDataTimes():vcDataManager.getDataSetTimes(vcSimulationDataIdentifier)),scancount);
 		}
-		public void respondData(HttpServletResponse response) throws Exception{
-    		respond(response, createXML(getIJData()));
+		public void respondData(HttpServletResponse response,String varname,Double timepoint) throws Exception{
+    		respond(response, createXML(getIJData(varname,timepoint)));
 		}
-		public void respondIdentifiers(HttpServletResponse response,String simName,Long cachekey,Integer scancount) throws Exception{
-    		respond(response, createXML(getIJVarInfos(simName, cachekey, scancount)));
+		public void respondIdentifiers(HttpServletResponse response,String simName,Long cachekey) throws Exception{
+    		respond(response, createXML(getIJVarInfos(simName, cachekey, jobCount)));
 		}
 		private void respond(HttpServletResponse response,String xml) throws IOException{
     		response.setContentType("text/xml; charset=utf-8");
@@ -1362,9 +1375,11 @@ public class ImageJHelper {
 		        						for(IJSimInfo ijSimInfo:ijContextInfo.ijSimId) {
 		        							if(ijSimInfo.cacheKey == cacheKey) {
 	        									try {
+	        										IJDataResponder ijDataResponder = null;
 			        								if(ijSimInfo.quickrunKey != null) {//quickrun sim
 				        							        ArrayList<File> dirs = new ArrayList<>();
 				        							        dirs.add(ResourceUtil.getLocalRootDir());
+				        							        fileloop:
 				        							        while(dirs.size() != 0) {
 				        							        	File dir = dirs.remove(0);
 				        							        	File[] files = dir.listFiles();
@@ -1380,114 +1395,66 @@ public class ImageJHelper {
 				        												String quickrunKey = st.nextToken();
 				        												if(quickrunKey.equals(ijSimInfo.quickrunKey)) {
 //				        													User user = new User("quick", new KeyValue("0"));
-				        													VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(quickrunKey), null);
-				        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobid!=null?jobid:0));//quickrun always job 0
-				        													SimulationData simulationData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
-				        													IJDataResponder ijDataResponder = new IJDataResponder(simulationData, null, varname, timepoint, vcSimulationDataIdentifier);
-				        													if(varname!=null && timepoint != null) {
-				        														ijDataResponder.respondData(response);
-				        													}else {
-				        														ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey, 1/*can quickrun do scans?*/);
-				        													}
-//				        													User user = new User("quick", new KeyValue("0"));
-//				        													VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(quickrunKey), user);
-//				        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);//quickrun always job 0
-//				        													SimulationData simData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
+//				        													VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(quickrunKey), null);
+//				        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobid!=null?jobid:0));//quickrun always job 0
+//				        													SimulationData simulationData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
+				        													ijDataResponder = IJDataResponder.create(new KeyValue(quickrunKey),file.getParentFile(), jobid);//new IJDataResponder(simulationData, null, vcSimulationDataIdentifier);
 //				        													if(varname!=null && timepoint != null) {
-//					        													CartesianMesh mesh = simData.getMesh();
-//					        													BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1/*simData.getDataTimes().length*/);
-//				        														SimDataBlock simDataBlock = simData.getSimDataBlock(null, varname, timepoint);
-//					        													int numDoubles = basicStackDimensions.getTotalSize();
-//					        													byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
-//					        													ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
-//					        													for(int i=0;i<numDoubles;i++) {
-//					        														bb.putDouble(simDataBlock.getData()[i]);
-//					        													}
-//					        													IJData ijData = new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
-//					    			        						    		response.setContentType("text/xml; charset=utf-8");
-//					    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-//					    			        						    		response.getWriter().write(createXML(ijData));
+//				        														ijDataResponder.respondData(response,varname, timepoint);
 //				        													}else {
-//					        													DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
-//					        													ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
-//				        														for(DataIdentifier did:dataIdentifiers) {
-//				        															ijVarInfos.add(new IJVarInfo(did.getName(), did.getDisplayName(), did.getVariableType(), did.getDomain(), did.isFunction()));
-//				        														}
-//					    			        						    		response.setContentType("text/xml; charset=utf-8");
-//					    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-//					    			        						    		response.getWriter().write(createXML(new IJVarInfos(ijVarInfos,null,null,simData.getDataTimes(),null)));
-//				        														
+//				        														ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey);
 //				        													}
-				    			        						    		bFound = true;
-				    			        						    		break outerloop;
+//				    			        						    		bFound = true;
+//				    			        						    		break outerloop;
+				        													break fileloop;
 				        												}	
 				        											}
 				        							        	}
 				        							        }
 				        								}else {//saved sim
-				        									RequestManager requestManager = VCellClientTest.getVCellClient().getRequestManager();
+//				        									RequestManager requestManager = VCellClientTest.getVCellClient().getRequestManager();
 				        									IJDocType ijDocType = IJDocType.valueOf(ijModelInfo.type);
-				        									if(ijDocType == IJDocType.bm) {
-				        										BioModel biomodel = requestManager.getDocumentManager().getBioModel(new KeyValue(ijModelInfo.modelkey));
-				        										SimulationContext simulationContext = biomodel.getSimulationContext(ijContextInfo.name);
-				        										Simulation simulation = simulationContext.getSimulation(ijSimInfo.name);
-				        										VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-				        										VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobid==null?0:jobid));
-				        										OutputContext outputContext = new OutputContext(simulationContext.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
-				        										VCDataManager vcDataManager = new VCDataManager(VCellClientTest.getVCellClient().getClientServerManager());
-																IJDataResponder ijDataResponder = new IJDataResponder(vcDataManager, outputContext, varname, timepoint,vcSimulationDataIdentifier);
-				        										if(varname!=null && timepoint != null){
-				        											ijDataResponder.respondData(response);
-				        										}else {
-				        											ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey, simulation.getScanCount());
-				        										}
-//				        										VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobid==null?0:jobid));
-//				        										OutputContext outputContext = new OutputContext(simulationContext.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
-//				        										DataManager dataManager = requestManager.getDataManager(outputContext, vcSimulationDataIdentifier, simulation.isSpatial());			        											
-//			        											DataIdentifier[] dataIdentifiers = dataManager.getDataIdentifiers();
-//				        										if(jobid == null) {
-//				        											//Send varinfo and jobid info back to user
-//		        													ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
-//	        														for(DataIdentifier did:dataIdentifiers) {
-//	        															ijVarInfos.add(new IJVarInfo(did.getName(), did.getDisplayName(), did.getVariableType(), did.getDomain(), did.isFunction()));
-//	        														}
-//		    			        						    		response.setContentType("text/xml; charset=utf-8");
-//		    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-//		    			        						    		response.getWriter().write(createXML(new IJVarInfos(ijVarInfos,simulation.getName(),cacheKey,dataManager.getDataSetTimes(),simulation.getScanCount())));
-//				        										}else if(varname!=null && timepoint != null){
-//				        											VCDataManager vcDataManager = new VCDataManager(VCellClientTest.getVCellClient().getClientServerManager());
-//				        											PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcSimulationDataIdentifier);
-//				        											ClientPDEDataContext clientPDEDataContext = new ClientPDEDataContext(pdeDataManager);
-//				        											DataIdentifier wantedDataIdentifer = null;
-//				        											for(DataIdentifier dataIdentifier:dataIdentifiers) {
-//				        												if(dataIdentifier.getName().equals(varname)) {
-//				        													wantedDataIdentifer = dataIdentifier;
-//				        													break;
-//				        												}
-//				        											}
-//				        											clientPDEDataContext.setVariableAndTime(wantedDataIdentifer, timepoint);
-//		        													CartesianMesh mesh = clientPDEDataContext.getCartesianMesh();
-//		        													BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1/*simData.getDataTimes().length*/);
-//		        													int numDoubles = basicStackDimensions.getTotalSize();
-//		        													byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
-//		        													ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
-//		        													double[] datavals = clientPDEDataContext.getDataValues();
-//		        													for(int i=0;i<numDoubles;i++) {
-//		        														bb.putDouble(datavals[i]);
-//		        													}
-//		        													IJData ijData = new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
-//		    			        						    		response.setContentType("text/xml; charset=utf-8");
-//		    			        						    		response.setStatus(HttpServletResponse.SC_OK);
-//		    			        						    		response.getWriter().write(createXML(ijData));
-//				        										}
-	    			        						    		bFound = true;
-	    			        						    		break outerloop;
-				        									}else if(ijDocType == IJDocType.mm) {
-				        										
-				        									}else {
-				        										throw new ServletException("Assumed IJ request for saved model, not expecting IJDocType='"+ijDocType.name()+"'");
+				        									if(ijDocType != IJDocType.bm && ijDocType != IJDocType.mm) {
+				        							    		response.setContentType("text/html; charset=utf-8");
+				        							    		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				        							    		response.getWriter().println("<h1>\"Assumed IJ request for saved bio/math model, not expecting IJDocType='\"+ijDocType.name()+\"'\"</h1>");
+				        							    		baseRequest.setHandled(true);
+				        							    		return;
+//				        										throw new ServletException("Assumed IJ request for saved bio/math model, not expecting IJDocType='"+ijDocType.name()+"'");
 				        									}
+				        									ijDataResponder = IJDataResponder.create(VCellClientTest.getVCellClient(), new KeyValue(ijModelInfo.modelkey), ijContextInfo.name/*null for mathmodel*/, ijSimInfo.name, jobid);
+//				        									if(ijDocType == IJDocType.bm) {
+////				        										BioModel biomodel = requestManager.getDocumentManager().getBioModel(new KeyValue(ijModelInfo.modelkey));
+////				        										SimulationContext simulationContext = biomodel.getSimulationContext(ijContextInfo.name);
+////				        										Simulation simulation = simulationContext.getSimulation(ijSimInfo.name);
+////				        										VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+////				        										VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobid==null?0:jobid));
+////				        										OutputContext outputContext = new OutputContext(simulationContext.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
+////				        										VCDataManager vcDataManager = new VCDataManager(VCellClientTest.getVCellClient().getClientServerManager());
+//																ijDataResponder = IJDataResponder.create(VCellClientTest.getVCellClient(), new KeyValue(ijModelInfo.modelkey), ijContextInfo.name, ijSimInfo.name, jobid);
+//																//new IJDataResponder(vcDataManager, outputContext,/* varname, timepoint,*/vcSimulationDataIdentifier);
+////				        										if(varname!=null && timepoint != null){
+////				        											ijDataResponder.respondData(response,varname, timepoint);
+////				        										}else {
+////				        											ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey);
+////				        										}
+////	    			        						    		bFound = true;
+////	    			        						    		break outerloop;
+//				        									}else if(ijDocType == IJDocType.mm) {
+//																ijDataResponder = IJDataResponder.create(VCellClientTest.getVCellClient(), new KeyValue(ijModelInfo.modelkey), ijContextInfo.name, ijSimInfo.name, jobid);				        										
+//				        									}else {
+//				        										throw new ServletException("Assumed IJ request for saved bio/math model, not expecting IJDocType='"+ijDocType.name()+"'");
+//				        									}
 				        								}
+			        								if(ijDataResponder != null) {
+		        										if(varname!=null && timepoint != null){
+		        											ijDataResponder.respondData(response,varname, timepoint);
+		        										}else {
+		        											ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey);
+		        										}
+		        										bFound = true;
+		        										break outerloop;			        									
+			        								}
 	        									}catch(Exception e) {
 	        										throw new ServletException(e);
 	        									}
