@@ -108,7 +108,8 @@ public class VCellHelper extends AbstractService implements ImageJService
 			Document doc = docBuilder.parse(url.toString());
 			return doc;
 		}else {
-			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
+//			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
+			throw new Exception("Expecting OK but got "+responseCode+" "+streamToString(con.getErrorStream()));
 		}
 	}
 	public static class BasicStackDimensions implements Dimensions{
@@ -176,7 +177,20 @@ public class VCellHelper extends AbstractService implements ImageJService
 	
 	public static String getRawContent(URL url) throws Exception{
 		URLConnection con = url.openConnection();
-		try(InputStream instrm = con.getInputStream()){				
+		return streamToString(con.getInputStream());
+//		try(InputStream instrm = con.getInputStream()){				
+//		    StringBuilder textBuilder = new StringBuilder();
+//			Reader reader = new BufferedReader(new InputStreamReader(instrm, Charset.forName(StandardCharsets.UTF_8.name())));
+//			int c = 0;
+//			while ((c = reader.read()) != -1) {
+//			    textBuilder.append((char) c);
+//			}
+//			return textBuilder.toString();
+//		}
+	}
+	
+	public static String streamToString(InputStream stream) throws Exception{
+		try(InputStream instrm = stream){				
 		    StringBuilder textBuilder = new StringBuilder();
 			Reader reader = new BufferedReader(new InputStreamReader(instrm, Charset.forName(StandardCharsets.UTF_8.name())));
 			int c = 0;
@@ -185,8 +199,8 @@ public class VCellHelper extends AbstractService implements ImageJService
 			}
 			return textBuilder.toString();
 		}
+		
 	}
-	
 //    public static String getApiInfo() throws Exception{
 //        String responseBody = null;
 //        try (CloseableHttpClient httpclient = HttpClients.createDefault()){
