@@ -187,7 +187,7 @@ public class UserVerifier implements Verifier {
 	private Date getNewExpireDate() {
 		long oneHourMs = 1000*60*60;
 		long oneDayMs = oneHourMs * 24;
-		long tokenLifetimeMs = oneDayMs;
+		long tokenLifetimeMs = oneDayMs * 30;
 		Date expireTime = new Date(System.currentTimeMillis() + tokenLifetimeMs);
 		return expireTime;
 	}
