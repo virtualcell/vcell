@@ -194,7 +194,7 @@ services:
       replicas: 1
       resources:
         limits:
-          memory: 500M
+          memory: 1000M
         reservations:
           memory: 500M
   data:
