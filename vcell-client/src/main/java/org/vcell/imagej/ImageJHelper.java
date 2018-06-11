@@ -2,12 +2,16 @@ package org.vcell.imagej;
 
 import java.awt.Component;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.net.BindException;
 import java.net.HttpURLConnection;
@@ -19,6 +23,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -33,6 +39,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -80,6 +87,7 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.gui.DialogUtils;
@@ -730,9 +738,20 @@ public class ImageJHelper {
 			this.commandInfo = commandInfo;
 		}
 	}
-	private enum ApiEnum {hello,getinfo,getdata};
+	private enum ApiEnum {hello,getinfo,getdata,gettimeseries};
 	private static String GETINFO_PARMS = IJListParams.type.name()+"={"+IJDocType.bm.name()+","+IJDocType.mm.name()+","+IJDocType.quick.name()+"}"+"&"+IJListParams.open.name()+"={true,false}";
 	private static String GETDATA_PARMS = IJGetDataParams.cachekey.name()+"=int"+"&"+IJGetDataParams.varname.name()+"=string"+"&"+IJGetDataParams.timepoint.name()+"="+"double";
+	private static String GETTIMESERIES_PARMS =
+			IJGetTimeSeriesParams.varnames.name()+"=int"+"&"+
+			IJGetTimeSeriesParams.indices.name()+"=int"+"&"+
+			IJGetTimeSeriesParams.starttime.name()+"=int"+"&"+
+			IJGetTimeSeriesParams.steptime.name()+"=int"+"&"+
+			IJGetTimeSeriesParams.endtime.name()+"=int"+"&"+
+			IJGetTimeSeriesParams.bspacestats.name()+"=int"+"&"+
+			IJGetTimeSeriesParams.btimestats.name()+"=int"+"&"+
+			IJGetTimeSeriesParams.jobid.name()+"=int"+"&"+
+			IJGetTimeSeriesParams.cacheky.name()+"=int";
+
 	public static class ApiInfoHandler extends AbstractHandler
 	{
 		private HashMap<ApiEnum, VCCommand[]> apiParams = new HashMap<>();
@@ -749,6 +768,10 @@ public class ImageJHelper {
 					/*"type={biom,math}","type=sims&modelname=xxx"*/
 					new VCCommand(ApiEnum.getdata.name()+"?"+GETDATA_PARMS, "Get sim data")
 					});
+			apiParams.put(ApiEnum.gettimeseries, new VCCommand[] {
+					/*"type={biom,math}","type=sims&modelname=xxx"*/
+					new VCCommand(ApiEnum.gettimeseries.name()+"?"+GETTIMESERIES_PARMS, "Get point,line,kymograph,ROI. Retrieve data at multiple times")
+					});
 		}
 	    @Override
 	    public void handle( String target,
@@ -760,6 +783,28 @@ public class ImageJHelper {
 	    	
 	    	String baseUri = "http:"+baseRequest.getHttpURI().toString();
 	    	System.out.println(target+"\n"+baseUri);
+//	    	if ("POST".equalsIgnoreCase(request.getMethod())) 
+//	    	{
+//	    		System.out.println(" \n\n Headers");
+//
+//	    	    Enumeration headerNames = request.getHeaderNames();
+//	    	    while(headerNames.hasMoreElements()) {
+//	    	        String headerName = (String)headerNames.nextElement();
+//	    	        System.out.println(headerName + " = " + request.getHeader(headerName));
+//	    	    }
+//
+//	    	    System.out.println("\n\nParameters");
+//
+//	    	    Enumeration params = request.getParameterNames();
+//	    	    while(params.hasMoreElements()){
+//	    	        String paramName = (String)params.nextElement();
+//	    	        System.out.println(paramName + " = " + request.getParameter(paramName));
+//	    	    }
+//
+//	    	    System.out.println("\n\n Row data");
+//	    	   String test = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+//	    	   System.out.println(test);
+//	    	}
 	        // Declare response encoding and types
 	        response.setContentType("text/html; charset=utf-8");
 
@@ -806,6 +851,248 @@ public class ImageJHelper {
 
 	}
 	
+//	public static class TimeSeriesJobSpec{
+//	private String[] variableNames;
+//	private int[] indices;
+//	private double startTime;
+//	private int step;
+//	private double endTime;
+//	private boolean calcSpaceStats = false;//Calc stats over space for each timepoint
+//	private boolean calcTimeStats = false;
+//	private int jobid;
+//	private int cachekey;
+//}
+
+//	public static String getRawContent(URL url) throws Exception{
+//		HttpURLConnection con = (HttpURLConnection)url.openConnection();
+//		int responseCode = con.getResponseCode();
+//		if(responseCode == HttpURLConnection.HTTP_OK) {
+//			return streamToString(con.getInputStream());
+//		}else {
+//			throw new Exception("Expecting OK but got "+responseCode+" "+streamToString(con.getErrorStream()));
+//		}
+//	}
+	public static String streamToString(InputStream stream) throws Exception{
+		try(InputStream instrm = stream){				
+		    StringBuilder textBuilder = new StringBuilder();
+			Reader reader = new BufferedReader(new InputStreamReader(instrm, Charset.forName(StandardCharsets.UTF_8.name())));
+			int c = 0;
+			while ((c = reader.read()) != -1) {
+			    textBuilder.append((char) c);
+			}
+			return textBuilder.toString();
+		}
+		
+	}
+
+	@XmlRootElement
+	public static class IJTimeSeriesJobResults{
+		@XmlElement
+		private String[] variableNames;
+		@XmlElement
+		private int[] indices;//all variable share same indices
+		@XmlElement
+		private double[] times;//all vars share times
+		@XmlElement
+		private double[][] data;//[varname][data]
+		public IJTimeSeriesJobResults() {
+			
+		}
+		public IJTimeSeriesJobResults(String[] variableNames, int[] indices, double[] times, double[][] data) {
+			super();
+			this.variableNames = variableNames;
+			this.indices = indices;
+			this.times = times;
+			this.data = data;
+		}
+	}
+	
+	@XmlRootElement
+	public static class IJTimeSeriesResults{
+		@XmlElement
+		private double[][] results;
+		public IJTimeSeriesResults() {
+			
+		}
+		public IJTimeSeriesResults(double[][] results) {
+			super();
+			this.results = results;
+		}
+	}
+	
+	@XmlRootElement
+	public static class IJTimeSeriesJobSpec{
+		@XmlElement
+		private String[] variableNames;
+		@XmlElement
+		private int[] indices;
+		@XmlAttribute
+		private double startTime;
+		@XmlAttribute
+		private int step;
+		@XmlAttribute
+		private double endTime;
+		@XmlAttribute
+		private boolean calcSpaceStats = false;//Calc stats over space for each timepoint
+		@XmlAttribute
+		private boolean calcTimeStats = false;
+		@XmlAttribute
+		private int jobid;
+		@XmlAttribute
+		private int cachekey;
+		public IJTimeSeriesJobSpec() {
+			
+		}
+//		public IJTimeSeriesJobSpec(String[] variableNames, int[] indices, double startTime, int step, double endTime,
+//				boolean calcSpaceStats, boolean calcTimeStats, int jobid, int cachekey) {
+//			super();
+//			this.variableNames = variableNames;
+//			this.indices = indices;
+//			this.startTime = startTime;
+//			this.step = step;
+//			this.endTime = endTime;
+//			this.calcSpaceStats = calcSpaceStats;
+//			this.calcTimeStats = calcTimeStats;
+//			this.jobid = jobid;
+//			this.cachekey = cachekey;
+//		}
+		
+	}
+
+	private static IJDataResponder getIJDataResponderFromCache(int cacheKey,Integer jobid) throws Exception{
+		IJDataResponder ijDataResponder = null;
+    	if(ijModelInfoCache != null) {
+    		outerloop:
+    		for(IJModelInfo ijModelInfo:ijModelInfoCache) {
+    			if(ijModelInfo.contexts != null) {
+    				for(IJContextInfo ijContextInfo:ijModelInfo.contexts) {
+    					if(ijContextInfo.ijSimId != null) {
+    						for(IJSimInfo ijSimInfo:ijContextInfo.ijSimId) {
+    							if(ijSimInfo.cacheKey == cacheKey) {
+    								if(ijSimInfo.quickrunKey != null) {
+//    									simKey = new KeyValue(ijSimInfo.quickrunKey);
+    									ijDataResponder = IJDataResponder.create(new KeyValue(ijSimInfo.quickrunKey), ResourceUtil.getLocalSimDir("temp"), jobid);
+    								}else if(VCellClientTest.getVCellClient() != null) {
+    									ijDataResponder = IJDataResponder.create(VCellClientTest.getVCellClient(), new KeyValue(ijModelInfo.modelkey) , ijContextInfo.name, ijSimInfo.name, jobid);
+//    									if(ijContextInfo.name == null) {//mathmodel
+//    										KeyValue simKey = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getMathModel(new KeyValue(ijModelInfo.modelkey)).getSimulation(ijSimInfo.name).getSimulationVersion().getVersionKey();
+//    									}else {
+//    										KeyValue simKey = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(new KeyValue(ijModelInfo.modelkey)).getSimulationContext(ijContextInfo.name).getSimulation(ijSimInfo.name).getSimulationVersion().getVersionKey();
+//    									}
+    								}
+    								break outerloop;
+    							}
+    						}
+    					}
+    				}
+    			}
+    		}
+    	}
+		return ijDataResponder;
+	}
+	
+	private static enum IJGetTimeSeriesParams {varnames,indices,starttime,steptime,endtime,bspacestats,btimestats,jobid,cacheky}
+	public static class ApiTimeSeriesHandler extends AbstractHandler{
+
+		@Override
+		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+				throws IOException, ServletException {
+	    	try {
+//				List<NameValuePair> params = getParamsFromRequest(request);
+				if ("POST".equalsIgnoreCase(request.getMethod())) 
+				{
+//					System.out.println(" \n\n Headers");
+//				    Enumeration headerNames = request.getHeaderNames();
+//				    while(headerNames.hasMoreElements()) {
+//				        String headerName = (String)headerNames.nextElement();
+//				        System.out.println(headerName + " = " + request.getHeader(headerName));
+//				    }
+//
+//				    System.out.println("\n\nParameters");
+//				    Enumeration params2 = request.getParameterNames();
+//				    while(params2.hasMoreElements()){
+//				        String paramName = (String)params2.nextElement();
+//				        System.out.println(paramName + " = " + request.getParameter(paramName));
+//				    }
+
+//				    System.out.println("\n\n Row data");
+				   String test = streamToString(request.getInputStream());
+//				   System.out.println(test);
+				    JAXBContext jContext = JAXBContext.newInstance(IJTimeSeriesJobSpec.class);
+				    //creating the unmarshall object
+				    Unmarshaller unmarshallerObj = jContext.createUnmarshaller();
+				    //calling the unmarshall method
+				    IJTimeSeriesJobSpec ijTimeSeriesJobSpec=(IJTimeSeriesJobSpec) unmarshallerObj.unmarshal(new ByteArrayInputStream(test.getBytes()));
+				    IJDataResponder ijDataResponder = getIJDataResponderFromCache(ijTimeSeriesJobSpec.cachekey, ijTimeSeriesJobSpec.jobid);//IJDataResponder.create(getSimKeyFromCache(ijTimeSeriesJobSpec.cachekey), ResourceUtil.getLocalSimDir("temp"), ijTimeSeriesJobSpec.jobid);
+					// Declare response encoding and types
+					response.setContentType("text/html; charset=utf-8");
+
+					// Declare response status code
+					response.setStatus(HttpServletResponse.SC_OK);
+
+					// Inform jetty that this request has now been handled
+					baseRequest.setHandled(true);
+					
+					response.setContentType("text/xml; charset=utf-8");
+//					response.setStatus(HttpServletResponse.SC_OK);
+					response.getWriter().print(createXML(ijDataResponder.getIJTimeSeriesData(ijTimeSeriesJobSpec)));
+				}else {
+					throw new Exception("POST expected");
+				}
+
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new ServletException(e);
+			}
+
+
+	        
+////	    	public class TimeSeriesJobSpec implements java.io.Serializable{
+////	    		
+////	    		private String[] variableNames;
+////	    		private int[][] indices;// int[varNameIndex][varValIndex]
+////	    		private double startTime;
+////	    		private int step;
+////	    		private double endTime;
+////	    		private boolean calcSpaceStats = false;//Calc stats over space for each timepoint
+////	    		private boolean calcTimeStats = false;
+////	    		private BitSet[] roi;
+////	    		private VCDataJobID vcDataJobID;
+////	    		private int[][] crossingMembraneIndices;//int[varNameIndex][MembraneIndex] non-null for volume data only
+//
+//	    	String[] variableNames = null;
+//	    	int[][] indices = null;
+//	    	Double starttime = null;
+//	    	Integer step = null;
+//	    	Double endtime = null;
+//	    	Boolean calcSpaceStats = null;
+//	    	Boolean calcTimeStats = null;
+//	    	BitSet[] roi = null;
+//	    	VCDataJobID vcDataJobID = null;
+//	    	int[][] crossingMembraneIndices = null;
+//	    	for(NameValuePair nameValuePair:params) {
+//	    		if(nameValuePair.getName().equals(IJGetTimeSeriesParams.varnames.name())) {
+//	    			StringTokenizer st = new StringTokenizer(str, ",");
+//	    		}else if(nameValuePair.getName().equals(IJGetTimeSeriesParams.indices.name())) {
+//	    			bOpen = Boolean.parseBoolean(nameValuePair.getValue());
+//	    		}
+////	    		else if(nameValuePair.getName().equals(IJListParams.cachekey.name())) {
+////	    			cacheKey = Long.valueOf(nameValuePair.getValue());
+////	    		}
+//	    	}
+	    	
+//	    	if(ijDocType == null && bOpen == null/* && cacheKey == null*/) {
+//	    		response.setContentType("text/html; charset=utf-8");
+//	    		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//	    		response.getWriter().println("<h1>Expecting '"+GETINFO_PARMS+"' in request</h1>");
+//	    	}else {
+//	    		
+//	    	}
+			
+		}
+	}
+
 	private static class IJSimInfo {
 //		@XmlAttribute()
 		private String quickrunKey;
@@ -1309,6 +1596,9 @@ public class ImageJHelper {
 			}
 			return new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
 		}
+		public IJTimeSeriesResults getIJTimeSeriesData(IJTimeSeriesJobSpec ijTimeSeriesJobSpec) {
+			return new IJTimeSeriesResults(new double[][] {{3,4,5,6,7}});
+		}
 		public IJVarInfos getIJVarInfos(String simName,Long cachekey,Integer scancount) throws Exception{
 			DataIdentifier[] dataIdentifiers = (simulationData != null?simulationData.getVarAndFunctionDataIdentifiers(outputContext):vcDataManager.getDataIdentifiers(outputContext, vcSimulationDataIdentifier));
 			ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
@@ -1513,8 +1803,11 @@ public class ImageJHelper {
             ContextHandler contextData = new ContextHandler("/"+ApiEnum.getdata.name()+"/");
             contextData.setHandler(new ApiGetDataHandler());
 
+            ContextHandler contextTimeSeries = new ContextHandler("/"+ApiEnum.gettimeseries.name()+"/");
+            contextTimeSeries.setHandler(new ApiTimeSeriesHandler());
+
             ContextHandlerCollection contexts = new ContextHandlerCollection();
-            contexts.setHandlers(new Handler[] { contextHello,contextRoot,context,contextData });
+            contexts.setHandlers(new Handler[] { contextHello,contextRoot,context,contextData ,contextTimeSeries});
 
             try {
 				server = new Server((onlyThisPort == null?i:onlyThisPort));
@@ -1531,5 +1824,11 @@ public class ImageJHelper {
 			}
         }
     }
+//	@Override
+//	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+//			throws IOException, ServletException {
+//		// TODO Auto-generated method stub
+//		
+//	}
 
 }

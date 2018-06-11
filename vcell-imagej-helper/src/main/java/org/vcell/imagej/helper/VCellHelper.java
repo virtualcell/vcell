@@ -2,21 +2,32 @@ package org.vcell.imagej.helper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -206,6 +217,291 @@ public class VCellHelper extends AbstractService implements ImageJService
 			return textBuilder.toString();
 		}
 		
+	}
+	
+	private static String createXML(Object theClass) throws Exception{
+//		vcListXML.setCommandInfo(result);
+		JAXBContext context = JAXBContext.newInstance(theClass.getClass());
+		Marshaller m = context.createMarshaller();
+		// for pretty-print XML in JAXB
+		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		StringWriter writer = new StringWriter();
+		// Write to list to a writer
+		m.marshal(theClass, writer);
+		String str = writer.toString();
+//		System.out.println(str);
+		// write the content to a physical file
+//		new FileWriter("jaxbTest.xml").write(result);
+		return str;
+	}
+
+	@XmlRootElement
+	public static class IJTimeSeriesJobSpec{
+		@XmlElement
+		private String[] variableNames;
+		@XmlElement
+		private int[] indices;
+		@XmlAttribute
+		private double startTime;
+		@XmlAttribute
+		private int step;
+		@XmlAttribute
+		private double endTime;
+		@XmlAttribute
+		private boolean calcSpaceStats = false;//Calc stats over space for each timepoint
+		@XmlAttribute
+		private boolean calcTimeStats = false;
+		@XmlAttribute
+		private int jobid;
+		@XmlAttribute
+		private int cachekey;
+		public IJTimeSeriesJobSpec() {
+			
+		}
+		public IJTimeSeriesJobSpec(String[] variableNames, int[] indices, double startTime, int step, double endTime,
+				boolean calcSpaceStats, boolean calcTimeStats, int jobid, int cachekey) {
+			super();
+			this.variableNames = variableNames;
+			this.indices = indices;
+			this.startTime = startTime;
+			this.step = step;
+			this.endTime = endTime;
+			this.calcSpaceStats = calcSpaceStats;
+			this.calcTimeStats = calcTimeStats;
+			this.jobid = jobid;
+			this.cachekey = cachekey;
+		}
+		
+	}
+	
+	public static double[] getTimeSeries(String[] variableNames, int[] indices, double startTime, int step, double endTime,
+			boolean calcSpaceStats, boolean calcTimeStats, int jobid, int cachekey) throws Exception{
+		IJTimeSeriesJobSpec ijTimeSeriesJobSpec = new IJTimeSeriesJobSpec(variableNames, indices, startTime, step, endTime, calcSpaceStats, calcTimeStats, jobid, cachekey);
+		URL url = new URL("http://localhost:8000/gettimeseries/");
+		
+//		MultipartUtility multipart = new MultipartUtility(url.toString(), "UTF-8");
+//		InputStream stream = new ByteArrayInputStream(createXML(ijTimeSeriesJobSpec).getBytes(StandardCharsets.UTF_8));
+//		multipart.addStreamPart("testfield", stream);
+//		System.out.println(multipart.finish());
+
+		
+		
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+//		String boundary = "---" + System.currentTimeMillis() + "---";
+		con.setUseCaches(false);
+		con.setDoOutput(true);    // indicates POST method
+		con.setDoInput(true);
+		con.setRequestProperty("Content-Type","text/xml");
+//        con.setRequestProperty("Content-Type","multipart/form-data; boundary=" + boundary);
+
+
+		con.setRequestMethod("POST");
+//		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Accept-Language", "UTF-8");
+ 
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(con.getOutputStream());
+		String s = createXML(ijTimeSeriesJobSpec);
+        outputStreamWriter.write(s);
+        outputStreamWriter.flush();
+        outputStreamWriter.close();
+// 
+		int responseCode = con.getResponseCode();
+		System.out.println("Response Code : " + responseCode);
+ 
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+ 
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+ 
+		System.out.println(response.toString());
+
+		
+		
+		
+		
+		
+//		MultipartUtility multipart = new MultipartUtility("http://localhost:8000/", "UTF-8");
+//		multipart.addStreamPart("testfield", new StringInputStream("blah"));
+//		System.out.println(multipart.finish());
+		
+//		// In your case you are not adding form data so ignore this
+//		/* This is to add parameter values */
+//		for (int i = 0; i < myFormDataArray.size(); i++) {
+//			multipart.addFormField(myFormDataArray.get(i).getParamName(), myFormDataArray.get(i).getParamValue());
+//		}
+
+//		// add your file here.
+//		/* This is to add file content */
+//		for (int i = 0; i < myFileArray.size(); i++) {
+//			multipart.addFilePart(myFileArray.getParamName(), new File(myFileArray.getFileName()));
+//		}
+//
+//		List<String> response = multipart.finish();
+//		for (String line : response) {
+//			// get your server response here.
+//			System.out.println(line);
+//		}
+		
+		
+//        URL url = new URL("http://example.net/new-message.php");
+//        Map<String,Object> params = new LinkedHashMap<>();
+//        params.put("name", "Freddie the Fish");
+//        params.put("email", "fishie@seamail.example.com");
+//        params.put("reply_to_thread", 10394);
+//        params.put("message", "Shark attacks in Botany Bay have gotten out of control. We need more defensive dolphins to protect the schools here, but Mayor Porpoise is too busy stuffing his snout with lobsters. He's so shellfish.");
+//
+//        StringBuilder postData = new StringBuilder();
+//        for (Map.Entry<String,Object> param : params.entrySet()) {
+//            if (postData.length() != 0) postData.append('&');
+//            postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+//            postData.append('=');
+//            postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+//        }
+//        byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+//
+//        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+//        conn.setRequestMethod("POST");
+//        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+//        conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+//        conn.setDoOutput(true);
+//        conn.getOutputStream().write(postDataBytes);
+//
+//        Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+//
+//        StringBuilder sb = new StringBuilder();
+//        for (int c; (c = in.read()) >= 0;) {
+//            sb.append((char)c);
+//        }
+//        String response = sb.toString();
+        return null;
+	}
+	
+	public static class MultipartUtility {
+	    private final String boundary;
+	    private static final String LINE_FEED = "\r\n";
+	    private HttpURLConnection httpConn;
+	    private String charset;
+	    private OutputStream outputStream;
+	    private PrintWriter writer;
+
+	    /**
+	     * This constructor initializes a new HTTP POST request with content type
+	     * is set to multipart/form-data
+	     *
+	     * @param requestURL
+	     * @param charset
+	     * @throws IOException
+	     */
+	    public MultipartUtility(String requestURL, String charset)
+	            throws IOException {
+	        this.charset = charset;
+
+	        // creates a unique boundary based on time stamp
+	        boundary = "---" + System.currentTimeMillis() + "---";
+	        URL url = new URL(requestURL);
+	        httpConn = (HttpURLConnection) url.openConnection();
+	        httpConn.setUseCaches(false);
+	        httpConn.setDoOutput(true);    // indicates POST method
+	        httpConn.setDoInput(true);
+	        httpConn.setRequestMethod( "POST" );
+	        httpConn.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded"); 
+
+//	        httpConn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+	        outputStream = httpConn.getOutputStream();
+	        writer = new PrintWriter(new OutputStreamWriter(outputStream, charset),
+	                true);
+	    }
+
+	    /**
+	     * Adds a form field to the request
+	     *
+	     * @param name  field name
+	     * @param value field value
+	     */
+	    public void addFormField(String name, String value) {
+	        writer.append("--" + boundary).append(LINE_FEED);
+	        writer.append("Content-Disposition: form-data; name=\"" + name + "\"")
+	                .append(LINE_FEED);
+	        writer.append("Content-Type: text/plain; charset=" + charset).append(
+	                LINE_FEED);
+	        writer.append(LINE_FEED);
+	        writer.append(value).append(LINE_FEED);
+	        writer.flush();
+	    }
+
+	    /**
+	     * Adds a upload file section to the request
+	     *
+	     * @param fieldName  name attribute in <input type="file" name="..." />
+	     * @param uploadFile a File to be uploaded
+	     * @throws IOException
+	     */
+		public void addStreamPart(String fieldName, InputStream inputStream) throws IOException {
+////			String fileName = uploadFile.getName();
+//			writer.append("--" + boundary).append(LINE_FEED);
+//			writer.append("Content-Disposition: form-data; name=\"" + fieldName/* + "\"; filename=\"" + fileName + "\""*/)
+//					.append(LINE_FEED);
+//			writer.append("Content-Type: " + "text/xml").append(LINE_FEED);
+//			writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
+//			writer.append(LINE_FEED);
+//			writer.flush();
+//
+////			FileInputStream inputStream = new FileInputStream(uploadFile);
+			byte[] buffer = new byte[4096];
+			int bytesRead = -1;
+			while ((bytesRead = inputStream.read(buffer)) != -1) {
+				outputStream.write(buffer, 0, bytesRead);
+			}
+			outputStream.flush();
+			inputStream.close();
+//			writer.append(LINE_FEED);
+			writer.flush();
+		}
+
+	    /**
+	     * Adds a header field to the request.
+	     *
+	     * @param name  - name of the header field
+	     * @param value - value of the header field
+	     */
+	    public void addHeaderField(String name, String value) {
+	        writer.append(name + ": " + value).append(LINE_FEED);
+	        writer.flush();
+	    }
+
+	    /**
+	     * Completes the request and receives response from the server.
+	     *
+	     * @return a list of Strings as response in case the server returned
+	     * status OK, otherwise an exception is thrown.
+	     * @throws IOException
+	     */
+	    public List<String> finish() throws IOException {
+	        List<String> response = new ArrayList<String>();
+//	        writer.append(LINE_FEED).flush();
+//	        writer.append("--" + boundary + "--").append(LINE_FEED);
+	        writer.close();
+
+	        // checks server's status code first
+	        int status = httpConn.getResponseCode();
+	        if (status == HttpURLConnection.HTTP_OK) {
+	            BufferedReader reader = new BufferedReader(new InputStreamReader(
+	                    httpConn.getInputStream()));
+	            String line = null;
+	            while ((line = reader.readLine()) != null) {
+	                response.add(line);
+	            }
+	            reader.close();
+	            httpConn.disconnect();
+	        } else {
+	            throw new IOException("Server returned non-OK status: " + status);
+	        }
+	        return response;
+	    }
 	}
 //    public static String getApiInfo() throws Exception{
 //        String responseBody = null;
