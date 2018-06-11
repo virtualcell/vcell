@@ -236,6 +236,15 @@ def main():
     parser_showjobs.add_argument("--partition", type=str, default="vcell2,vcell")
     parser_showjobs.set_defaults(which='showjobs')
 
+    parser_showjobs = subparsers.add_parser('logjobs', help='show simulation job logs (see logjobs --help)')
+    parser_showjobs.add_argument("--userid", type=str, default=None)
+    parser_showjobs.add_argument("--simId", type=int, default=None)
+    parser_showjobs.add_argument("--jobId", type=int, default=None)
+    parser_showjobs.add_argument("--taskId", type=int, default=None)
+    parser_showjobs.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
+    parser_showjobs.add_argument("--mongoport", type=int, default='27017', help='port of mongodb service')
+    parser_showjobs.set_defaults(which='logjobs')
+
     parser_killjobs = subparsers.add_parser('killjob', help='kill simulation job (see killjob --help)')
     parser_killjobs.add_argument("--userid", type=str, default=None)
     parser_killjobs.add_argument("--simId", type=int, default=None)
@@ -262,7 +271,34 @@ def main():
     args = parser.parse_args()
     try:
         setdebug(args.debug)
-        if args.which == "showjobs":
+        if args.which == "logjobs":
+            import pymongo
+            import pprint
+            client = pymongo.MongoClient("mongodb://"+args.host+":"+str(args.mongoport))
+            db = client['test']
+            collection = db['logging']
+            query = {}
+            if args.simId is not None:
+                query["simId"] = str(args.simId)
+            if args.jobId is not None:
+                query["jobIndex"] = str(args.jobId)
+            if args.taskId is not None:
+                query["taskId"] = str(args.taskId)
+            pprint.pprint(query)
+            resultSet = collection.find(query)
+            table = []
+            col_names = ["computeHost", "destination", "simId", "jobIndex", "taskId", "serviceName", "simMessageMsg"]
+            rowcount=0
+            for record in resultSet:
+                table.append([record.get(col_name,'') for col_name in col_names])
+                rowcount+=1
+                if rowcount<10:
+                    pprint.pprint(record)
+
+            from tabulate import tabulate
+            print tabulate(table, headers=col_names)
+
+        elif args.which == "showjobs":
             query = simjobquery()
             query.fields['userid'] = args.userid
             query.fields['simId'] = args.simId

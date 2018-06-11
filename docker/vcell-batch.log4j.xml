@@ -20,5 +20,6 @@
     <Logger name="cbit.vcell.solver.SolverTaskDescription" level="warn" />
     <Logger name="cbit.vcell.messaging.db" level="warn" />
     <Logger name="cbit.vcell.xml.XmlHelper" level="warn" />
+    <Logger name="cbit.vcell.mongodb" level="trace" />
   </Loggers>
 </Configuration>

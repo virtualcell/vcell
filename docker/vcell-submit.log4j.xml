@@ -12,6 +12,7 @@
     <Logger name="org.apache.activemq" level="warn" />
     <Logger name="org.mongodb.driver.cluster" level="warn" />
     <Logger name="org.apache.activemq.util.ClassLoadingAwareObjectInputStream" level="warn" />
+    <Logger name="cbit.vcell.mongodb" level="trace" />
   <!--   
     <Logger name="org.vcell" level="warn" />
     <Logger name="cbit.vcell" level="warn" />

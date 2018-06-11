@@ -145,6 +145,8 @@ public class VCMongoDbDriver {
     
     public void addMessage(VCMongoMessage message)
     {
+    	if (lg.isTraceEnabled()) lg.trace(message.getDbObject().toJson());
+    	
 //    	getSessionLog().print("VCMongoMessage queued : "+message);
     	messageOutbox.add(message);
     	if (!IsProcessing()){
