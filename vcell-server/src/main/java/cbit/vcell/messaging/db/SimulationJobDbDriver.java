@@ -473,39 +473,37 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 		+ "," + "vc_sim_1." + simTable.meshSpecZ.getUnqualifiedColName()
 		+ "," + "vc_sim_1." + simTable.mathOverridesLarge.getUnqualifiedColName()+" as "+simTable.mathOverridesLarge.getUnqualifiedColName()
 		+ "," + "vc_sim_1." + simTable.mathOverridesSmall.getUnqualifiedColName()+" as "+simTable.mathOverridesSmall.getUnqualifiedColName()
-		+ "," + "(SELECT max('{\""+BioModelLink.bmid+"\":\"' || lpad(vc_biomodel.id,14,0)" +
+		+ "," + "(SELECT '{\""+BioModelLink.bmid+"\":\"' || lpad(vc_biomodel.id,14,0)" +
 							" || '\",\""+BioModelLink.scid+"\":\"' || lpad(vc_simcontext.id,14,0)" +
 							" || '\",\""+BioModelLink.bmbranch+"\":\"' || lpad(vc_biomodel.versionbranchid,14,0)" +
 							" || '\",\""+BioModelLink.scbranch+"\":\"' || lpad(vc_simcontext.versionbranchid,14,0)" +
 							" || '\",\""+BioModelLink.bmname+"\":\"' || vc_biomodel.name" +
-							" || '\",\""+BioModelLink.scname+"\":\"' || vc_simcontext.name || '\"}')" +
+							" || '\",\""+BioModelLink.scname+"\":\"' || vc_simcontext.name || '\"}'" +
 				" FROM vc_biomodel" +
 				", vc_biomodelsimcontext" +
-				", VC_BIOMODELSIM" +
 				", vc_simcontext" +
 				" WHERE vc_sim_1.mathref = vc_simcontext.mathref" +
 				" AND VC_BIOMODELSIMCONTEXT.SIMCONTEXTREF = VC_SIMCONTEXT.id" +
 				" AND VC_BIOMODELSIMCONTEXT.BIOMODELREF = vc_biomodel.id" +
-				" AND VC_BIOMODELSIM.SIMREF = vc_sim_1.id" +
-				" AND VC_BIOMODELSIM.BIOMODELREF = vc_biomodel.id" +
+				" AND vc_bmsim_1.SIMREF = vc_sim_1.id" +
+				" AND vc_bmsim_1.BIOMODELREF = vc_biomodel.id" +
 				") as " + BMLINK
-		+ "," + "(SELECT max('{\""+MathModelLink.mmid+"\":\"' || lpad(vc_mathmodel.id,14,0)" +
+		+ "," + "(SELECT '{\""+MathModelLink.mmid+"\":\"' || lpad(vc_mathmodel.id,14,0)" +
 							" || '\",\""+MathModelLink.mmbranch+"\":\"' || lpad(vc_mathmodel.versionbranchid,14,0)" +
-							" || '\",\""+MathModelLink.mmname+"\":\"' || vc_mathmodel.name || '\"}')" +
+							" || '\",\""+MathModelLink.mmname+"\":\"' || vc_mathmodel.name || '\"}'" +
 				" FROM vc_mathmodel" +
-				", vc_mathmodelsim" +
-				" WHERE vc_sim_1.id = vc_mathmodelsim.SIMREF" +
-				" AND vc_mathmodelsim.MATHMODELREF = vc_mathmodel.id" +
+				" WHERE vc_sim_1.id = vc_mmsim_1.SIMREF" +
+				" AND vc_mmsim_1.MATHMODELREF = vc_mathmodel.id" +
 				") as " + MMLINK
 		+ " FROM " + jobTable.getTableName()
 					+ "," + simTable.getTableName() + " vc_sim_1"
 					+ "," + userTable.getTableName() 
-					+ "," + bioSimLinkTable.getTableName()
-					+ "," + mathSimLinkTable.getTableName()
+					+ "," + bioSimLinkTable.getTableName() + " vc_bmsim_1"
+					+ "," + mathSimLinkTable.getTableName() + " vc_mmsim_1"
 		+ " WHERE " + "vc_sim_1." + simTable.id.getUnqualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
 		+ " AND " + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName() + "=" + userTable.id.getQualifiedColName()
-		+ " AND " + bioSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName()
-		+ " AND " + mathSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName();
+		+ " AND " + "vc_bmsim_1." + bioSimLinkTable.simRef.getUnqualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName()
+		+ " AND " + "vc_mmsim_1." + mathSimLinkTable.simRef.getUnqualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName();
 
 	String additionalConditionsClause = "";
 	if (conditions!=null && conditions.length() > 0) {
