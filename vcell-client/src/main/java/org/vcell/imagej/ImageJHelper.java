@@ -86,6 +86,9 @@ import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.TSJobResultsNoStats;
+import org.vcell.util.document.TimeSeriesJobResults;
+import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.document.VCDocument;
@@ -124,6 +127,7 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataManager;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
@@ -894,11 +898,11 @@ public class ImageJHelper {
 		@XmlElement
 		private double[] times;//all vars share times
 		@XmlElement
-		private double[][] data;//[varname][data]
+		private double[][][] data;//[varname][indices][times];
 		public IJTimeSeriesJobResults() {
 			
 		}
-		public IJTimeSeriesJobResults(String[] variableNames, int[] indices, double[] times, double[][] data) {
+		public IJTimeSeriesJobResults(String[] variableNames, int[] indices, double[] times, double[][][] data) {
 			super();
 			this.variableNames = variableNames;
 			this.indices = indices;
@@ -933,9 +937,9 @@ public class ImageJHelper {
 		@XmlAttribute
 		private double endTime;
 		@XmlAttribute
-		private boolean calcSpaceStats = false;//Calc stats over space for each timepoint
+		private boolean calcSpaceStats;//Calc stats over space for each timepoint
 		@XmlAttribute
-		private boolean calcTimeStats = false;
+		private boolean calcTimeStats;
 		@XmlAttribute
 		private int jobid;
 		@XmlAttribute
@@ -971,7 +975,7 @@ public class ImageJHelper {
     							if(ijSimInfo.cacheKey == cacheKey) {
     								if(ijSimInfo.quickrunKey != null) {
 //    									simKey = new KeyValue(ijSimInfo.quickrunKey);
-    									ijDataResponder = IJDataResponder.create(new KeyValue(ijSimInfo.quickrunKey), ResourceUtil.getLocalSimDir("temp"), jobid);
+    									ijDataResponder = IJDataResponder.create(new KeyValue(ijSimInfo.quickrunKey), ResourceUtil.getLocalRootDir(), jobid);
     								}else if(VCellClientTest.getVCellClient() != null) {
     									ijDataResponder = IJDataResponder.create(VCellClientTest.getVCellClient(), new KeyValue(ijModelInfo.modelkey) , ijContextInfo.name, ijSimInfo.name, jobid);
 //    									if(ijContextInfo.name == null) {//mathmodel
@@ -1547,22 +1551,24 @@ public class ImageJHelper {
 	
 	private static class IJDataResponder{
 		private VCDataManager vcDataManager;
-		private SimulationData simulationData;
+		private DataSetControllerImpl dataSetControllerImpl;
 		private OutputContext outputContext;
 		private VCSimulationDataIdentifier vcSimulationDataIdentifier;
 		private Integer jobCount;
-		private IJDataResponder(OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobcount) {
+		private User user;
+		private IJDataResponder(OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobcount,User user) {
 			this.vcSimulationDataIdentifier = vcSimulationDataIdentifier;
 			this.outputContext = outputContext;
 			this.jobCount = jobcount;
+			this.user = user;
 		}
-		private IJDataResponder(VCDataManager vcDataManager,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobcount) {//saved to database
-			this(outputContext,  vcSimulationDataIdentifier,jobcount);
+		private IJDataResponder(VCDataManager vcDataManager,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobcount,User user) {//saved to database
+			this(outputContext,  vcSimulationDataIdentifier,jobcount,user);
 			this.vcDataManager = vcDataManager;
 		}
-		private IJDataResponder(SimulationData simulationData,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobCount) {//quickrun
-			this(outputContext, vcSimulationDataIdentifier,jobCount);
-			this.simulationData = simulationData;
+		private IJDataResponder(DataSetControllerImpl dataSetControllerImpl,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobCount,User user) {//quickrun
+			this(outputContext, vcSimulationDataIdentifier,jobCount,user);
+			this.dataSetControllerImpl = dataSetControllerImpl;
 		}
 		public static IJDataResponder create(VCellClient vCellClient,KeyValue modelKey,String simContextName,String simName,Integer jobIndex) throws Exception{
 			SimulationOwner simOwner = (simContextName != null?vCellClient.getRequestManager().getDocumentManager().getBioModel(modelKey).getSimulationContext(simContextName):vCellClient.getRequestManager().getDocumentManager().getMathModel(modelKey));
@@ -1573,21 +1579,22 @@ public class ImageJHelper {
 					VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobIndex!=null?jobIndex:0));
 					OutputContext outputContext = new OutputContext(simOwner.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
 					VCDataManager vcDataManager = new VCDataManager(vCellClient.getClientServerManager());
-					return new IJDataResponder(vcDataManager, outputContext, vcSimulationDataIdentifier,sim.getScanCount());
+					return new IJDataResponder(vcDataManager, outputContext, vcSimulationDataIdentifier,sim.getScanCount(),sim.getSimulationVersion().getOwner());
 				}
 			}
 			throw new Exception("IJREsponder: simulation name '"+simName+"' not found");
 		}
 		public static IJDataResponder create(KeyValue quickrunKey,File simDataDir,Integer jobIndex) throws Exception{
-			VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(quickrunKey, null/*no user necessary*/);
+			VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(quickrunKey, User.tempUser);
 			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobIndex!=null?jobIndex:0));
-			SimulationData simulationData = new SimulationData(vcSimulationDataIdentifier, simDataDir, simDataDir, null);
-			return new IJDataResponder(simulationData, null, vcSimulationDataIdentifier,1);
+//			SimulationData simulationData = new SimulationData(vcSimulationDataIdentifier, simDataDir, simDataDir, null);
+			DataSetControllerImpl dsci = new DataSetControllerImpl(null, simDataDir,null);
+			return new IJDataResponder(dsci, null, vcSimulationDataIdentifier,1,User.tempUser);
 		}
 		public IJData getIJData(String varname,Double timepoint) throws Exception{
-			CartesianMesh mesh = (simulationData != null?simulationData.getMesh():vcDataManager.getMesh(vcSimulationDataIdentifier));
+			CartesianMesh mesh = (dataSetControllerImpl != null?dataSetControllerImpl.getMesh(vcSimulationDataIdentifier):vcDataManager.getMesh(vcSimulationDataIdentifier));
 			BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1);
-			SimDataBlock simDataBlock = (simulationData != null?simulationData.getSimDataBlock(outputContext, varname, timepoint):vcDataManager.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname, timepoint));
+			SimDataBlock simDataBlock = (dataSetControllerImpl != null?dataSetControllerImpl.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname,timepoint):vcDataManager.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname, timepoint));
 			int numDoubles = basicStackDimensions.getTotalSize();
 			byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
 			ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
@@ -1596,16 +1603,27 @@ public class ImageJHelper {
 			}
 			return new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
 		}
-		public IJTimeSeriesResults getIJTimeSeriesData(IJTimeSeriesJobSpec ijTimeSeriesJobSpec) {
-			return new IJTimeSeriesResults(new double[][] {{3,4,5,6,7}});
+		public IJTimeSeriesJobResults getIJTimeSeriesData(IJTimeSeriesJobSpec ijTimeSeriesJobSpec) throws Exception{
+			int[][] copiedIndices = new int[ijTimeSeriesJobSpec.variableNames.length][];
+			for (int i = 0; i < copiedIndices.length; i++) {
+				copiedIndices[i] = ijTimeSeriesJobSpec.indices;
+			}
+			TimeSeriesJobSpec timeSeriesJobSpec = new TimeSeriesJobSpec(ijTimeSeriesJobSpec.variableNames, copiedIndices,null,
+						ijTimeSeriesJobSpec.startTime, ijTimeSeriesJobSpec.step, ijTimeSeriesJobSpec.endTime, /*ijTimeSeriesJobSpec.calcTimeStats, ijTimeSeriesJobSpec.calcSpaceStats,*/ new VCDataJobID(vcSimulationDataIdentifier.getJobIndex(), user, false));
+			TSJobResultsNoStats timeSeriesJobResults = (TSJobResultsNoStats)(dataSetControllerImpl != null?dataSetControllerImpl.getTimeSeriesValues(outputContext, vcSimulationDataIdentifier, timeSeriesJobSpec):vcDataManager.getTimeSeriesValues(outputContext, vcSimulationDataIdentifier, timeSeriesJobSpec));
+			double[][][] newData = new double[timeSeriesJobResults.getVariableNames().length][][];
+			for (int i = 0; i < newData.length; i++) {
+				newData[i] = timeSeriesJobResults.getTimesAndValuesForVariable(timeSeriesJobResults.getVariableNames()[i]);
+			}
+			return new IJTimeSeriesJobResults(timeSeriesJobResults.getVariableNames(), timeSeriesJobResults.getIndices()[0], timeSeriesJobResults.getTimes(), newData);
 		}
 		public IJVarInfos getIJVarInfos(String simName,Long cachekey,Integer scancount) throws Exception{
-			DataIdentifier[] dataIdentifiers = (simulationData != null?simulationData.getVarAndFunctionDataIdentifiers(outputContext):vcDataManager.getDataIdentifiers(outputContext, vcSimulationDataIdentifier));
+			DataIdentifier[] dataIdentifiers = (dataSetControllerImpl != null?dataSetControllerImpl.getDataIdentifiers(outputContext, vcSimulationDataIdentifier):vcDataManager.getDataIdentifiers(outputContext, vcSimulationDataIdentifier));
 			ArrayList<IJVarInfo> ijVarInfos = new ArrayList<>();
 			for(DataIdentifier did:dataIdentifiers) {
 				ijVarInfos.add(new IJVarInfo(did.getName(), did.getDisplayName(), did.getVariableType(), did.getDomain(), did.isFunction()));
 			}
-			return new IJVarInfos(ijVarInfos,simName,cachekey,(simulationData != null?simulationData.getDataTimes():vcDataManager.getDataSetTimes(vcSimulationDataIdentifier)),scancount);
+			return new IJVarInfos(ijVarInfos,simName,cachekey,(dataSetControllerImpl != null?dataSetControllerImpl.getDataSetTimes(vcSimulationDataIdentifier):vcDataManager.getDataSetTimes(vcSimulationDataIdentifier)),scancount);
 		}
 		public void respondData(HttpServletResponse response,String varname,Double timepoint) throws Exception{
     		respond(response, createXML(getIJData(varname,timepoint)));
@@ -1688,7 +1706,7 @@ public class ImageJHelper {
 //				        													VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(quickrunKey), null);
 //				        													VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobid!=null?jobid:0));//quickrun always job 0
 //				        													SimulationData simulationData = new SimulationData(vcSimulationDataIdentifier, file.getParentFile(), file.getParentFile(), null);
-				        													ijDataResponder = IJDataResponder.create(new KeyValue(quickrunKey),file.getParentFile(), jobid);//new IJDataResponder(simulationData, null, vcSimulationDataIdentifier);
+				        													ijDataResponder = IJDataResponder.create(new KeyValue(quickrunKey),file.getParentFile().getParentFile(), jobid);//new IJDataResponder(simulationData, null, vcSimulationDataIdentifier);
 //				        													if(varname!=null && timepoint != null) {
 //				        														ijDataResponder.respondData(response,varname, timepoint);
 //				        													}else {

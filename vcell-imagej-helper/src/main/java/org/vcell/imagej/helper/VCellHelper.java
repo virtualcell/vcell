@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -274,10 +275,25 @@ public class VCellHelper extends AbstractService implements ImageJService
 		
 	}
 	
-	public static double[] getTimeSeries(String[] variableNames, int[] indices, double startTime, int step, double endTime,
+	
+	@XmlRootElement
+	public static class IJTimeSeriesJobResults{
+		@XmlElement
+		private String[] variableNames;
+		@XmlElement
+		private int[] indices;//all variable share same indices
+		@XmlElement
+		private double[] times;//all vars share times
+		@XmlElement
+		private double[][][] data;//[varname][indices][times];
+		public IJTimeSeriesJobResults() {
+			
+		}
+	}
+	public static IJTimeSeriesJobResults getTimeSeries(String[] variableNames, int[] indices, double startTime, int step, double endTime,
 			boolean calcSpaceStats, boolean calcTimeStats, int jobid, int cachekey) throws Exception{
 		IJTimeSeriesJobSpec ijTimeSeriesJobSpec = new IJTimeSeriesJobSpec(variableNames, indices, startTime, step, endTime, calcSpaceStats, calcTimeStats, jobid, cachekey);
-		URL url = new URL("http://localhost:8000/gettimeseries/");
+		URL url = new URL("http://localhost:"+lastVCellApiPort+"/gettimeseries/");
 		
 //		MultipartUtility multipart = new MultipartUtility(url.toString(), "UTF-8");
 //		InputStream stream = new ByteArrayInputStream(createXML(ijTimeSeriesJobSpec).getBytes(StandardCharsets.UTF_8));
@@ -317,9 +333,13 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 		in.close();
  
-		System.out.println(response.toString());
+//		System.out.println(response.toString());
 
-		
+	JAXBContext jaxbContext = JAXBContext.newInstance(IJTimeSeriesJobResults.class);
+	Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+	IJTimeSeriesJobResults ijTimeSeriesJobResults =  (IJTimeSeriesJobResults) jaxbUnmarshaller.unmarshal(new ByteArrayInputStream(response.toString().getBytes()));
+
+
 		
 		
 		
@@ -377,7 +397,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 //            sb.append((char)c);
 //        }
 //        String response = sb.toString();
-        return null;
+        return ijTimeSeriesJobResults;
 	}
 	
 	public static class MultipartUtility {
