@@ -238,6 +238,7 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 		 			particleSb.append( coordinate.getY() );
 		 			particleSb.append(COMMA);
 		 			particleSb.append( coordinate.getZ() );
+		 			particleSb.append(COMMA);
 		 		}
 			}
 		}
