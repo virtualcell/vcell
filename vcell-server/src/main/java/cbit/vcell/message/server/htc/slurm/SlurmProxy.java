@@ -379,6 +379,7 @@ public class SlurmProxy extends HtcProxy {
 		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
 
 		String[] environmentVars = new String[] {
+				"java_mem_Xmx="+memoryMB+"M",
 				"jmshost_sim_internal="+jmshost_sim_external,
 				"jmsport_sim_internal="+jmsport_sim_external,
 				"jmsrestport_sim_internal="+jmsrestport_sim_external,
