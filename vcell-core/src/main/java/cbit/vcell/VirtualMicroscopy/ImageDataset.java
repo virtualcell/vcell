@@ -191,7 +191,7 @@ public int getSizeC() {
 }
 
 public int getSizeT() {
-	return (imageTimeStamps!=null)?(imageTimeStamps.length):(1);
+	return (imageTimeStamps!=null && imageTimeStamps.length>0)?(imageTimeStamps.length):(1);
 }
 
 public int[] getZCT(int index) {
