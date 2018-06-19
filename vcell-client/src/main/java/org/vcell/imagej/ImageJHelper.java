@@ -119,6 +119,7 @@ import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
@@ -128,6 +129,7 @@ import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
@@ -141,7 +143,10 @@ import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.util.ColumnDescription;
 
 public class ImageJHelper {
 	public static final String USER_ABORT = "userAbort";
@@ -847,10 +852,82 @@ public class ImageJHelper {
 			VCCommandList vcListXML = new VCCommandList(result);
 	        try {
 				response.getWriter().println(createXML(vcListXML));
+				response.getWriter().close();
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new ServletException(e);
 			}
+	        
+//	        try {
+//				if(VCellClientTest.getVCellClient() != null){
+////					TreeMap<String, double[]> mapObsTpData = new TreeMap<>();
+//					double[] times = null;
+//					BioModelInfo[] bioModelInfos = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModelInfos();
+//					for (int i = 0; i < bioModelInfos.length; i++) {
+//						if(bioModelInfos[i].getVersion().getName().equals("EGFR Full_Model_Compart_v3")) {
+//							System.out.println(bioModelInfos[i]);
+//							BioModel bioModel = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(bioModelInfos[i]);
+//							SimulationContext[] simulationContexts = bioModel.getSimulationContexts();
+//							for (int j = 0; j < simulationContexts.length; j++) {
+//								if(simulationContexts[j].getName().toLowerCase().contains("nfsim")) {
+//									TreeMap<String, double[]> mapObsTpData = new TreeMap<>();
+//									SimulationContext simulationContext = simulationContexts[j];
+//									Simulation[] sims = simulationContext.getSimulations();
+//									for (int k = 0; k < sims.length; k++) {
+//										VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(sims[k].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), 0);
+//										ODESimData odeSimData = VCellClientTest.getVCellClient().getClientServerManager().getVCDataManager().getODEData(vcSimulationDataIdentifier);
+//										for (int l = 0; l < odeSimData.getRowCount(); l++) {
+//											ColumnDescription columnDescription = odeSimData.getColumnDescriptions(l);
+////											System.out.println(columnDescription.getName()+"\n-----");
+//											double[] rowData = odeSimData.extractColumn(l);
+//											if(times == null && columnDescription.getName().toLowerCase().equals("t")) {
+//												times = rowData;
+//												System.out.print("'Model:App:Variable'");
+//												for (int m = 0;m < times.length; m++) {
+//													System.out.print((m!= 0?",":"")+(times[m]));
+//												}
+//												System.out.println();
+//											}
+//											String keyName = simulationContexts[j].getName()+":"+columnDescription.getName();
+//											double[] accumData = mapObsTpData.get(keyName);
+//											if(accumData == null) {
+//												accumData = rowData;
+//												mapObsTpData.put(keyName, accumData);
+//											}
+//											if(accumData.length != rowData.length) {
+//												throw new Exception("Rows are different lengths");
+//											}
+//											for (int m = 0; m < rowData.length; m++) {
+//												accumData[m]+= rowData[m];
+//											}
+////											System.out.println();
+//										}
+////										DataIdentifier[] dataIdentifiers = VCellClientTest.getVCellClient().getClientServerManager().getVCDataManager().getDataIdentifiers(null, vcSimulationDataIdentifier);
+////										for (int l = 0; l < dataIdentifiers.length; l++) {
+////											if(dataIdentifiers[l].getName().toLowerCase().endsWith("_count")){
+////												VCellClientTest.getVCellClient().getClientServerManager().getVCDataManager().getODEData(dataIdentifiers[l]);
+////											}
+////										}
+//									}
+//									for(String s:mapObsTpData.keySet()) {
+//										System.out.print("'"+/*bioModelInfos[i].getVersion().getName()+":"+simulationContexts[j].getName()+":"+*/s+"'");
+//										double[] accumVals = mapObsTpData.get(s);
+//										for (int k = 0; k < accumVals.length; k++) {
+//											System.out.print((k!= 0?",":"")+(accumVals[k]/sims.length));
+//										}
+//										System.out.println();
+//									}
+//									System.out.println();
+//								}
+//							}
+//						}
+//					}
+////	        	VCellClientTest.getVCellClient().getClientServerManager().getVCDataManager().
+//				}
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 	    }
 
 	}
@@ -1253,6 +1330,7 @@ public class ImageJHelper {
 
 	private static long ijCacheCounter = 0;
 	private static ArrayList<IJModelInfo> ijModelInfoCache;
+	private static HashMap<String, VCDocument> modelKeyMapToVCDocument = new HashMap<>();
 	
 	private static enum IJListParams {type,open}
 	public static class ApiListHandler extends AbstractHandler{
@@ -1449,7 +1527,7 @@ public class ImageJHelper {
 		@XmlAttribute
 		private String varname;
 		@XmlAttribute
-		private double timepoint;
+		private Double timepoint;
 		@XmlElement
 		private BasicStackDimensions stackInfo;
 		@XmlInlineBinaryData
@@ -1457,7 +1535,7 @@ public class ImageJHelper {
 		public IJData() {
 			
 		}
-		public IJData(BasicStackDimensions stackInfo, byte[] data,String varname,double timepoint) {
+		public IJData(BasicStackDimensions stackInfo, byte[] data,String varname,Double timepoint) {
 			super();
 			this.stackInfo = stackInfo;
 			this.data = data;
@@ -1549,6 +1627,15 @@ public class ImageJHelper {
 //		
 //	}
 	
+	private static byte[] convertDoubleToBytes(double[] doubles) {
+		byte[] byteDoubles = new byte[doubles.length*Double.BYTES];
+		ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
+		for(int i=0;i<doubles.length;i++) {
+			bb.putDouble(doubles[i]);
+		}
+		return byteDoubles;
+	}
+	
 	private static class IJDataResponder{
 		private VCDataManager vcDataManager;
 		private DataSetControllerImpl dataSetControllerImpl;
@@ -1571,7 +1658,14 @@ public class ImageJHelper {
 			this.dataSetControllerImpl = dataSetControllerImpl;
 		}
 		public static IJDataResponder create(VCellClient vCellClient,KeyValue modelKey,String simContextName,String simName,Integer jobIndex) throws Exception{
-			SimulationOwner simOwner = (simContextName != null?vCellClient.getRequestManager().getDocumentManager().getBioModel(modelKey).getSimulationContext(simContextName):vCellClient.getRequestManager().getDocumentManager().getMathModel(modelKey));
+			SimulationOwner simOwner = null;
+			VCDocument vcDocument = modelKeyMapToVCDocument.get(modelKey.toString());
+			if(vcDocument == null) {
+				vcDocument = (simContextName != null?vCellClient.getRequestManager().getDocumentManager().getBioModel(modelKey):vCellClient.getRequestManager().getDocumentManager().getMathModel(modelKey));
+				modelKeyMapToVCDocument.clear();
+				modelKeyMapToVCDocument.put(modelKey.toString(), vcDocument);
+			}
+			simOwner = (vcDocument instanceof BioModel?((BioModel)vcDocument).getSimulationContext(simContextName):((MathModel)vcDocument));
 			Simulation[] simulations = simOwner.getSimulations();
 			for(Simulation sim:simulations) {
 				if(sim.getName().equals(simName)) {
@@ -1595,13 +1689,36 @@ public class ImageJHelper {
 			CartesianMesh mesh = (dataSetControllerImpl != null?dataSetControllerImpl.getMesh(vcSimulationDataIdentifier):vcDataManager.getMesh(vcSimulationDataIdentifier));
 			BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1);
 			SimDataBlock simDataBlock = (dataSetControllerImpl != null?dataSetControllerImpl.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname,timepoint):vcDataManager.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname, timepoint));
-			int numDoubles = basicStackDimensions.getTotalSize();
-			byte[] byteDoubles = new byte[numDoubles*Double.BYTES];
-			ByteBuffer bb = ByteBuffer.wrap(byteDoubles);
-			for(int i=0;i<numDoubles;i++) {
-				bb.putDouble(simDataBlock.getData()[i]);
+			return new IJData(basicStackDimensions, convertDoubleToBytes(simDataBlock.getData()),varname,timepoint);
+		}
+		public IJData getOdeIJData(String varName) throws Exception{
+			ODESolverResultSet odeSolverResultSet = null;
+			if(vcDataManager != null) {
+				ODESimData odeSimData = vcDataManager.getODEData(vcSimulationDataIdentifier);
+				odeSolverResultSet = odeSimData;
+			}else {
+				ODEDataBlock odeDataBlock = dataSetControllerImpl.getODEDataBlock(vcSimulationDataIdentifier);
+				odeSolverResultSet = odeDataBlock.getODESimData();
 			}
-			return new IJData(basicStackDimensions, byteDoubles,varname,timepoint);
+			double[] doubles = null;
+			double[] times = null;
+			for (int i = 0; i < odeSolverResultSet.getRowCount(); i++) {
+				ColumnDescription columnDescription = odeSolverResultSet.getColumnDescriptions(i);
+				if(columnDescription.getName().equals(varName)) {
+					doubles = odeSolverResultSet.extractColumn(i);
+					if (times != null) {
+						break;
+					}
+				}else if(columnDescription.getName().equals(ReservedVariable.TIME.getName())) {
+					times = odeSolverResultSet.extractColumn(i);
+					if (doubles != null) {
+						break;
+					}
+				}
+			}
+			BasicStackDimensions basicStackDimensions = new BasicStackDimensions(1, 1, 1, 1, doubles.length);
+			IJData ijData = new IJData(basicStackDimensions, convertDoubleToBytes(doubles),varName,null);
+			return ijData;
 		}
 		public IJTimeSeriesJobResults getIJTimeSeriesData(IJTimeSeriesJobSpec ijTimeSeriesJobSpec) throws Exception{
 			int[][] copiedIndices = new int[ijTimeSeriesJobSpec.variableNames.length][];
@@ -1625,8 +1742,12 @@ public class ImageJHelper {
 			}
 			return new IJVarInfos(ijVarInfos,simName,cachekey,(dataSetControllerImpl != null?dataSetControllerImpl.getDataSetTimes(vcSimulationDataIdentifier):vcDataManager.getDataSetTimes(vcSimulationDataIdentifier)),scancount);
 		}
-		public void respondData(HttpServletResponse response,String varname,Double timepoint) throws Exception{
-    		respond(response, createXML(getIJData(varname,timepoint)));
+		public void respondData(HttpServletResponse response,String varname,Double timepoint,boolean bSpatial) throws Exception{
+			if(bSpatial) {
+				respond(response, createXML(getIJData(varname,timepoint)));
+			}else {
+				respond(response, createXML(getOdeIJData(varname)));
+			}
 		}
 		public void respondIdentifiers(HttpServletResponse response,String simName,Long cachekey) throws Exception{
     		respond(response, createXML(getIJVarInfos(simName, cachekey, jobCount)));
@@ -1755,8 +1876,8 @@ public class ImageJHelper {
 //				        									}
 				        								}
 			        								if(ijDataResponder != null) {
-		        										if(varname!=null && timepoint != null){
-		        											ijDataResponder.respondData(response,varname, timepoint);
+		        										if(varname!=null/* && timepoint != null*/){
+		        											ijDataResponder.respondData(response,varname, timepoint,(ijContextInfo.gomeDim > 0));
 		        										}else {
 		        											ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey);
 		        										}

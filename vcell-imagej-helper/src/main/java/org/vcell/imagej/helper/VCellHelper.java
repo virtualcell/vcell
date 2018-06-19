@@ -3,6 +3,7 @@ package org.vcell.imagej.helper;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -31,6 +33,11 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
@@ -56,6 +63,19 @@ public class VCellHelper extends AbstractService implements ImageJService
 //    	ImageJ ij = new ImageJ();
 //    }
     
+	public String documentToString(Document doc) throws Exception {
+	    TransformerFactory tf = TransformerFactory.newInstance();
+	    Transformer transformer = tf.newTransformer();
+	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+	    transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+	    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+	    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	    transformer.transform(new DOMSource(doc),new StreamResult(new OutputStreamWriter(baos, "UTF-8")));
+	    return baos.toString();
+	}
+
 	public static int findVCellApiServerPort() throws Exception{
 		final int start = 8000;
 		final int end = 8100;
@@ -185,6 +205,18 @@ public class VCellHelper extends AbstractService implements ImageJService
 			DoubleBuffer db = ByteBuffer.wrap(Base64.getDecoder().decode(doc.getElementsByTagName("data").item(0).getFirstChild().getNodeValue())).asDoubleBuffer();
 			db.get(doubleVals);
 			return doubleVals;
+	}
+	public static double[] getTimesFromVarInfos(Document doc) throws Exception{
+		//reads times from human readable 'times' xml tag: <times>0='0.0',1='0.2',...</times>
+		String timeList = doc.getElementsByTagName("times").item(0).getTextContent();
+		StringTokenizer st = new StringTokenizer(timeList, ",");
+		double[] doubles = new double[st.countTokens()];
+		while(st.hasMoreTokens()) {
+			StringTokenizer st2 = new StringTokenizer(st.nextToken(), "='");
+			int index = Integer.valueOf(st2.nextToken());
+			doubles[index] = Double.valueOf(st2.nextToken());
+		}
+		return doubles;
 	}
 	
 	public static String getRawContent(URL url) throws Exception{
