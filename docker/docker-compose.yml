@@ -24,7 +24,7 @@ services:
     ports:
       - "${VCELL_API_PORT_EXTERNAL}:8080"
       - "8000" # java remote debugging
-	healthcheck:
+    healthcheck:
       test: ["CMD", "curl", "-f", "https://localhost:8080/health?check=login"]
       interval: 30s
       timeout: 10s
