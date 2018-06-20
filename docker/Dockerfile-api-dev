@@ -35,8 +35,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	smtp_port="smtp-port-not-set" \
 	smtp_emailaddress="smtp-emailaddress-not-set"
 
-HEALTHCHECK CMD curl --fail http://localhost:8080/health?check=all || exit 1
-
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
     keystore=/run/secrets/keystorefile \
