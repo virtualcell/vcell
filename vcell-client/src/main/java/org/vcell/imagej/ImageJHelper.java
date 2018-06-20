@@ -1331,7 +1331,7 @@ public class ImageJHelper {
 	private static long ijCacheCounter = 0;
 	private static ArrayList<IJModelInfo> ijModelInfoCache;
 	private static HashMap<String, VCDocument> modelKeyMapToVCDocument = new HashMap<>();
-	
+	private static HashMap<String, ODESolverResultSet> SimDataIdMapToOdeResultSet = new HashMap<>();
 	private static enum IJListParams {type,open}
 	public static class ApiListHandler extends AbstractHandler{
 
@@ -1692,30 +1692,34 @@ public class ImageJHelper {
 			return new IJData(basicStackDimensions, convertDoubleToBytes(simDataBlock.getData()),varname,timepoint);
 		}
 		public IJData getOdeIJData(String varName) throws Exception{
-			ODESolverResultSet odeSolverResultSet = null;
-			if(vcDataManager != null) {
-				ODESimData odeSimData = vcDataManager.getODEData(vcSimulationDataIdentifier);
-				odeSolverResultSet = odeSimData;
-			}else {
-				ODEDataBlock odeDataBlock = dataSetControllerImpl.getODEDataBlock(vcSimulationDataIdentifier);
-				odeSolverResultSet = odeDataBlock.getODESimData();
-			}
-			double[] doubles = null;
-			double[] times = null;
-			for (int i = 0; i < odeSolverResultSet.getRowCount(); i++) {
-				ColumnDescription columnDescription = odeSolverResultSet.getColumnDescriptions(i);
-				if(columnDescription.getName().equals(varName)) {
-					doubles = odeSolverResultSet.extractColumn(i);
-					if (times != null) {
-						break;
-					}
-				}else if(columnDescription.getName().equals(ReservedVariable.TIME.getName())) {
-					times = odeSolverResultSet.extractColumn(i);
-					if (doubles != null) {
-						break;
-					}
+			ODESolverResultSet odeSolverResultSet = SimDataIdMapToOdeResultSet.get(vcSimulationDataIdentifier.toString());
+			if(odeSolverResultSet == null) {
+				if(vcDataManager != null) {
+					ODESimData odeSimData = vcDataManager.getODEData(vcSimulationDataIdentifier);
+					odeSolverResultSet = odeSimData;
+				}else {
+					ODEDataBlock odeDataBlock = dataSetControllerImpl.getODEDataBlock(vcSimulationDataIdentifier);
+					odeSolverResultSet = odeDataBlock.getODESimData();
 				}
+				SimDataIdMapToOdeResultSet.clear();
+				SimDataIdMapToOdeResultSet.put(vcSimulationDataIdentifier.toString(), odeSolverResultSet);
 			}
+			double[] doubles = odeSolverResultSet.extractColumn(odeSolverResultSet.findColumn(varName));
+//			double[] times = odeSolverResultSet.extractColumn(odeSolverResultSet.findColumn(ReservedVariable.TIME.getName()));
+//			for (int i = 0; i < odeSolverResultSet.getRowCount(); i++) {
+//				ColumnDescription columnDescription = odeSolverResultSet.getColumnDescriptions(i);
+//				if(columnDescription.getName().equals(varName)) {
+//					doubles = odeSolverResultSet.extractColumn(i);
+//					if (times != null) {
+//						break;
+//					}
+//				}else if(columnDescription.getName().equals(ReservedVariable.TIME.getName())) {
+//					times = odeSolverResultSet.extractColumn(i);
+//					if (doubles != null) {
+//						break;
+//					}
+//				}
+//			}
 			BasicStackDimensions basicStackDimensions = new BasicStackDimensions(1, 1, 1, 1, doubles.length);
 			IJData ijData = new IJData(basicStackDimensions, convertDoubleToBytes(doubles),varName,null);
 			return ijData;

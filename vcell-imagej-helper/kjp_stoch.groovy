@@ -17,15 +17,18 @@ Document doc = vh.getDocument(url);//Get all modelInfos we have permission to ac
 docStr = vh.documentToString(doc);//convert xml document to string
 print(docStr);//print sml as string
 NodeList si = (NodeList)doc.getElementsByTagName("modelInfo");
+double[] times = null;
 for(int i=0;i<si.getLength();i++){
 	Node node = si.item(i)
 	String user = node.getAttributes().getNamedItem("user").getNodeValue();
 	if(user.equals("kjp15105")){//get modelInfos owned by user
 		NodeList modelChildren = node.getChildNodes();
+		TreeMap<String,double[]> mapAppVarToSum = new TreeMap();
 		for(int j=0;j<modelChildren.getLength();j++){
 			Node modelChild = modelChildren.item(j);
 			if(modelChild.getNodeName().equals("context") && modelChild.getAttributes().getNamedItem("name").getNodeValue().endsWith("NFSim")){//get applications (simulationContexts) with names ending in "NFSim"
-				println(modelChild.getAttributes().getNamedItem("name"));
+				String contextName = modelChild.getAttributes().getNamedItem("name").getNodeValue();
+				println(contextName/*modelChild.getAttributes().getNamedItem("name")*/);
 				NodeList contextChildren = modelChild.getChildNodes();
 				for(int k=0;k<contextChildren.getLength();k++){
 					Node contextChild = contextChildren.item(k);
@@ -33,11 +36,52 @@ for(int i=0;i<si.getLength();i++){
 						String cacheKey = contextChild.getAttributes().getNamedItem("cacheKey").getNodeValue();
 						println("context="+j+" sim="+k+" cacheKey"+cacheKey)
 						Document varDoc = vh.getDocument(new URL("http://localhost:"+vh.lastVCellApiPort+"/"+"getdata"+"?"+"cachekey"+"="+cacheKey));//get variable names
+						if(times == null){
+							times = vh.getTimesFromVarInfos(varDoc);
+						}
+//						docStr = vh.documentToString(varDoc)
+//						print(docStr);
+						NodeList varInfoNodeList = (NodeList)varDoc.getElementsByTagName("ijVarInfo");
+						for(l=0;l<varInfoNodeList.getLength();l++){
+							Node varInfoNode = varInfoNodeList.item(l);
+							String varName = varInfoNode.getAttributes().getNamedItem("name").getNodeValue();
+							if(varName.endsWith("_Count")){
+								dataUrl = new URL("http://localhost:"+vh.lastVCellApiPort+"/getdata?cachekey="+cacheKey+"&varname="+varName)
+								Document dataDoc = vh.getDocument(dataUrl);
+								double[] data = vh.getData(dataDoc);
+								String appVarName = contextName+":"+varInfoNode.getAttributes().getNamedItem("name").getNodeValue();
+//								println(appVarName);
+								double[] counts = mapAppVarToSum.get(appVarName);
+								if(counts == null){
+									counts = new double[data.length];
+									Arrays.fill(counts,0.0);
+									mapAppVarToSum.put(appVarName,counts);
+								}
+								for(m=0;m<counts.length;m++){
+									counts[m]+= data[m];
+								}
+								
+//								println(appVarName+" "+count);
+							}
+						}
 //						docStr = vh.documentToString(varDoc)
 //						print(docStr)
+//						return
 					}
 				}
 			}
+		}
+		for(double time:times){
+			print(time+",")
+		}
+		println()
+		for(String appVar:mapAppVarToSum.keySet()){
+			double[] vals = mapAppVarToSum.get(appVar);
+			print(appVar+" ");
+			for(double val:vals){
+				print(val+",");
+			}
+			println()
 		}
 	}
 }
