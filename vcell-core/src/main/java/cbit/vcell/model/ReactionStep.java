@@ -290,7 +290,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 	}
 
-	if (structure instanceof Membrane){
+	if (structure instanceof Membrane) {
 		if(fieldKinetics instanceof MassActionKinetics) {
 			if((getNumReactants() > 1) || (getNumProducts() > 1)) {
 				if (isForMembraneMembraneMassAction()) {
@@ -302,6 +302,11 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				}
 			}
 		}
+//		if(fieldKinetics.getKineticsDescription().equals(KineticsDescription.GeneralCurrentLumped)) {
+//			String msg = "Kinetic Type '" + fieldKinetics.getKineticsDescription().getDescription() + "' is not supported anymore.";
+//			String tooltip = "Please replace the Kynetic Type with '" + KineticsDescription.GHK.getDescription() + " Current Density'.";
+//			issueList.add(new Issue(this, null, issueContext, IssueCategory.Identifiers, msg, tooltip, Issue.Severity.ERROR));					
+//		}
 		if(getPhysicsOptions() == PHYSICS_ELECTRICAL_ONLY || getPhysicsOptions() == PHYSICS_MOLECULAR_AND_ELECTRICAL){
 			Feature negFeature = getModel().getElectricalTopology().getNegativeFeature((Membrane)structure);
 			Feature posFeature = getModel().getElectricalTopology().getPositiveFeature((Membrane)structure);

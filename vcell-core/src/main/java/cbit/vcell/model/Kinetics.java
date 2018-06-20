@@ -1186,9 +1186,18 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 	//
 	for (String origSymbol : symbolRenamings.keySet()){
 		String newSymbol = symbolRenamings.get(origSymbol);
+		KineticsParameter newParam = null;
+		for (KineticsParameter kp : localParameters){
+			if (kp.getName().equals(newSymbol)){
+				newParam = kp;
+			}
+		}
 		for (KineticsParameter kp : localParameters){
 			if (kp.getName().equals(origSymbol)){
 				kp.setName(newSymbol);
+				if (newParam != null && kp.getExpression().isZero()){
+					kp.setExpression(new Expression(newParam.getExpression()));
+				}
 			}
 			if (kp.getExpression().hasSymbol(origSymbol)){
 				kp.getExpression().substituteInPlace(new Expression(origSymbol), new Expression(newSymbol));
