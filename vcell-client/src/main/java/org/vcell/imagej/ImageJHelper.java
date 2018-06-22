@@ -747,7 +747,7 @@ public class ImageJHelper {
 			this.commandInfo = commandInfo;
 		}
 	}
-	private enum ApiEnum {hello,getinfo,getdata,gettimeseries};
+	public static enum ApiEnum {hello,getinfo,getdata,gettimeseries};
 	private static String GETINFO_PARMS = IJListParams.type.name()+"={"+IJDocType.bm.name()+","+IJDocType.mm.name()+","+IJDocType.quick.name()+"}"+"&"+IJListParams.open.name()+"={true,false}";
 	private static String GETDATA_PARMS = IJGetDataParams.cachekey.name()+"=int"+"&"+IJGetDataParams.varname.name()+"=string"+"&"+IJGetDataParams.timepoint.name()+"="+"double";
 	private static String GETTIMESERIES_PARMS =
@@ -1758,8 +1758,9 @@ public class ImageJHelper {
 		}
 		private void respond(HttpServletResponse response,String xml) throws IOException{
     		response.setContentType("text/xml; charset=utf-8");
+//    		response.setContentLength(xml.length());
     		response.setStatus(HttpServletResponse.SC_OK);
-    		response.getWriter().write(xml);
+    		response.getWriter().write(xml);    	
 		}
 	}
 	
@@ -1921,7 +1922,7 @@ public class ImageJHelper {
 		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 				throws IOException, ServletException {
 			// TODO Auto-generated method stub
-    		response.setContentType("text/html; charset=utf-8");
+    		response.setContentType("text/plain; charset=utf-8");
     		response.setStatus(HttpServletResponse.SC_OK);
     		response.getWriter().write("VCellApi");
     		baseRequest.setHandled(true);

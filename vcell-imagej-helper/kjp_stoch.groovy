@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 
 
 
-url = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getinfo"+"?"+"open=true"+"&"+"type"+"="+"bm");
+url = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getinfo/"+"?"+"open=true"+"&"+"type"+"="+"bm");
 Document doc = vh.getDocument(url);//Get all modelInfos we have permission to access that match the url query
 docStr = vh.documentToString(doc);//convert xml document to string
 print(docStr);//print sml as string
@@ -35,7 +35,7 @@ for(int i=0;i<si.getLength();i++){
 					if(contextChild.getNodeName().equals("simInfo")){
 						String cacheKey = contextChild.getAttributes().getNamedItem("cacheKey").getNodeValue();
 						println("context="+j+" sim="+k+" cacheKey"+cacheKey)
-						Document varDoc = vh.getDocument(new URL("http://localhost:"+vh.lastVCellApiPort+"/"+"getdata"+"?"+"cachekey"+"="+cacheKey));//get variable names
+						Document varDoc = vh.getDocument(new URL("http://localhost:"+vh.lastVCellApiPort+"/"+"getdata/"+"?"+"cachekey"+"="+cacheKey));//get variable names
 						if(times == null){
 							times = vh.getTimesFromVarInfos(varDoc);
 						}
@@ -46,7 +46,7 @@ for(int i=0;i<si.getLength();i++){
 							Node varInfoNode = varInfoNodeList.item(l);
 							String varName = varInfoNode.getAttributes().getNamedItem("name").getNodeValue();
 							if(varName.endsWith("_Count")){
-								dataUrl = new URL("http://localhost:"+vh.lastVCellApiPort+"/getdata?cachekey="+cacheKey+"&varname="+varName)
+								dataUrl = new URL("http://localhost:"+vh.lastVCellApiPort+"/getdata/?cachekey="+cacheKey+"&varname="+varName)
 								Document dataDoc = vh.getDocument(dataUrl);
 								double[] data = vh.getData(dataDoc);
 								String appVarName = contextName+":"+varInfoNode.getAttributes().getNamedItem("name").getNodeValue();

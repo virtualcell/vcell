@@ -137,7 +137,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 		if(responseCode == HttpURLConnection.HTTP_OK) {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = factory.newDocumentBuilder();
-			Document doc = docBuilder.parse(url.toString());
+			Document doc = docBuilder.parse(con.getInputStream());
 			return doc;
 		}else {
 //			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
