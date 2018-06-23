@@ -189,22 +189,33 @@ public class VCellHelper extends AbstractService implements ImageJService
 			}
 		}
 	}
-	public static BasicStackDimensions getVCStackDims(Document doc) throws Exception{
-		NodeList si = (NodeList)doc.getElementsByTagName("stackInfo");
-		Node node = (Node)si.item(0);
-		NamedNodeMap nnm = node.getAttributes();
-		return new BasicStackDimensions(
-				Integer.parseInt(nnm.getNamedItem("xsize").getNodeValue()),
-				Integer.parseInt(nnm.getNamedItem("ysize").getNodeValue()),
-				Integer.parseInt(nnm.getNamedItem("zsize").getNodeValue()),
-				Integer.parseInt(nnm.getNamedItem("csize").getNodeValue()),
-				Integer.parseInt(nnm.getNamedItem("tsize").getNodeValue()));
+	public static BasicStackDimensions getVCStackDims(Node ijDataNode) throws Exception{
+		NodeList childNodes = ijDataNode.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			if(childNodes.item(i).getNodeName().equals("stackInfo")) {
+				NamedNodeMap nnm = childNodes.item(i).getAttributes();
+				return new BasicStackDimensions(
+						Integer.parseInt(nnm.getNamedItem("xsize").getNodeValue()),
+						Integer.parseInt(nnm.getNamedItem("ysize").getNodeValue()),
+						Integer.parseInt(nnm.getNamedItem("zsize").getNodeValue()),
+						Integer.parseInt(nnm.getNamedItem("csize").getNodeValue()),
+						Integer.parseInt(nnm.getNamedItem("tsize").getNodeValue()));
+				
+			}
+		}
+		throw new Exception("stackInfo not found");
 	}
-	public static double[] getData(Document doc) throws Exception{
-			double[] doubleVals = new double[getVCStackDims(doc).getTotalSize()];
-			DoubleBuffer db = ByteBuffer.wrap(Base64.getDecoder().decode(doc.getElementsByTagName("data").item(0).getFirstChild().getNodeValue())).asDoubleBuffer();
-			db.get(doubleVals);
-			return doubleVals;
+	public static double[] getData(Node ijDataNode) throws Exception{
+		NodeList childNodes = ijDataNode.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			if(childNodes.item(i).getNodeName().equals("data")) {
+				double[] doubleVals = new double[getVCStackDims(ijDataNode).getTotalSize()];
+				DoubleBuffer db = ByteBuffer.wrap(Base64.getDecoder().decode(childNodes.item(i).getTextContent())).asDoubleBuffer();
+				db.get(doubleVals);
+				return doubleVals;				
+			}
+		}
+		throw new Exception("data not found");
 	}
 	public static double[] getTimesFromVarInfos(Document doc) throws Exception{
 		//reads times from human readable 'times' xml tag: <times>0='0.0',1='0.2',...</times>

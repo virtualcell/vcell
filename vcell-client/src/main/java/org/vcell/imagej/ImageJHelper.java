@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
@@ -36,6 +37,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -1522,7 +1524,6 @@ public class ImageJHelper {
 //			this.data = data;
 //		}
 //	}
-	@XmlRootElement
 	private static class IJData {
 		@XmlAttribute
 		private String varname;
@@ -1541,6 +1542,20 @@ public class ImageJHelper {
 			this.data = data;
 			this.varname = varname;
 			this.timepoint = timepoint;
+		}
+		
+	}
+	
+	@XmlRootElement
+	private static class IJDataList {
+		@XmlElement
+		IJData[] ijData;
+		public IJDataList() {
+			
+		}
+		public IJDataList(IJData[] ijData) {
+			super();
+			this.ijData = ijData;
 		}
 		
 	}
@@ -1746,12 +1761,16 @@ public class ImageJHelper {
 			}
 			return new IJVarInfos(ijVarInfos,simName,cachekey,(dataSetControllerImpl != null?dataSetControllerImpl.getDataSetTimes(vcSimulationDataIdentifier):vcDataManager.getDataSetTimes(vcSimulationDataIdentifier)),scancount);
 		}
-		public void respondData(HttpServletResponse response,String varname,Double timepoint,boolean bSpatial) throws Exception{
-			if(bSpatial) {
-				respond(response, createXML(getIJData(varname,timepoint)));
-			}else {
-				respond(response, createXML(getOdeIJData(varname)));
+		public void respondData(HttpServletResponse response,String[] varNames,Double timepoint,boolean bSpatial) throws Exception{
+			ArrayList<IJData> ijDatas = new ArrayList<>();
+			for (int i = 0; i < varNames.length; i++) {
+				if(bSpatial) {
+					ijDatas.add(getIJData(varNames[i],timepoint));
+				}else {
+					ijDatas.add(getOdeIJData(varNames[i]));
+				}				
 			}
+			respond(response, createXML(new IJDataList(ijDatas.toArray(new IJData[0]))));
 		}
 		public void respondIdentifiers(HttpServletResponse response,String simName,Long cachekey) throws Exception{
     		respond(response, createXML(getIJVarInfos(simName, cachekey, jobCount)));
@@ -1770,20 +1789,21 @@ public class ImageJHelper {
 		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 				throws IOException, ServletException {
 	    	System.out.println(target+"\n"+baseRequest.getQueryString());
-	    	List<NameValuePair> params = getParamsFromRequest(request);
+//	    	List<NameValuePair> params = getParamsFromRequest(request);
 	    	Long cacheKey = null;
-	    	String varname = null;
+	    	String[] decodedVarNames = null;
 	    	Double timepoint = null;
 	    	Integer jobid = null;
-	    	for(NameValuePair nameValuePair:params) {
-	    		if(nameValuePair.getName().equals(IJGetDataParams.cachekey.name())) {
-	    			cacheKey = Long.valueOf(nameValuePair.getValue());
-	    		}else if(nameValuePair.getName().equals(IJGetDataParams.varname.name())) {
-	    			varname = nameValuePair.getValue();
-	    		}else if(nameValuePair.getName().equals(IJGetDataParams.timepoint.name())) {
-	    			timepoint = Double.parseDouble(nameValuePair.getValue());
-	    		}else if(nameValuePair.getName().equals(IJGetDataParams.jobid.name())) {
-	    			jobid = Integer.parseInt(nameValuePair.getValue());
+	    	Map<String, String[]> parameterMap = request.getParameterMap();
+	    	for(String param:parameterMap.keySet()) {
+	    		if(param.equals(IJGetDataParams.cachekey.name())) {
+	    			cacheKey = Long.valueOf(parameterMap.get(param)[0]);
+	    		}else if(param.equals(IJGetDataParams.varname.name())) {
+	    			decodedVarNames = parameterMap.get(param);//Values are already URLDecoded at this point
+	    		}else if(param.equals(IJGetDataParams.timepoint.name())) {
+	    			timepoint = Double.parseDouble(parameterMap.get(param)[0]);
+	    		}else if(param.equals(IJGetDataParams.jobid.name())) {
+	    			jobid = Integer.parseInt(parameterMap.get(param)[0]);
 	    		}
 
 	    	}
@@ -1881,8 +1901,8 @@ public class ImageJHelper {
 //				        									}
 				        								}
 			        								if(ijDataResponder != null) {
-		        										if(varname!=null/* && timepoint != null*/){
-		        											ijDataResponder.respondData(response,varname, timepoint,(ijContextInfo.gomeDim > 0));
+		        										if(decodedVarNames!=null/* && timepoint != null*/){
+		        											ijDataResponder.respondData(response,decodedVarNames, timepoint,(ijContextInfo.gomeDim > 0));
 		        										}else {
 		        											ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey);
 		        										}
