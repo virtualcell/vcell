@@ -16,14 +16,19 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -63,7 +68,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 //    	ImageJ ij = new ImageJ();
 //    }
     
-	public String documentToString(Document doc) throws Exception {
+	public static String documentToString(Document doc) throws Exception {
 	    TransformerFactory tf = TransformerFactory.newInstance();
 	    Transformer transformer = tf.newTransformer();
 	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
@@ -204,6 +209,100 @@ public class VCellHelper extends AbstractService implements ImageJService
 			}
 		}
 		throw new Exception("stackInfo not found");
+	}
+	
+	public static class SearchedData {
+		HashMap<String,HashMap> mapModelToContext = new HashMap<>();
+		
+		public void put(String modelName,String contextName,String simName,String varName,double[] data) throws Exception{
+			while(true){
+				if(mapModelToContext.containsKey(modelName)) {
+					HashMap<String, HashMap> mapContextToSim = mapModelToContext.get(modelName);
+					if(mapContextToSim.containsKey(contextName)) {
+						HashMap<String, HashMap> mapSimToVar = mapContextToSim.get(contextName);
+						if(mapSimToVar.containsKey(simName)) {
+							HashMap<String, double[]> mapVarToData = mapSimToVar.get(simName);
+							if(mapVarToData.containsKey(varName)) {
+								throw new Exception("Data laready exists for "+modelName+":"+contextName+":"+simName+":"+varName);
+							}else {
+								mapVarToData.put(varName, data);
+								return;
+							}
+						}else {
+							mapSimToVar.put(simName, new HashMap<String,HashMap>());
+						}
+					}else {
+						mapContextToSim.put(contextName, new HashMap<String,HashMap>());
+					}
+				}else {
+					mapModelToContext.put(modelName, new HashMap<String,HashMap>());
+				}
+			}
+		}
+	}
+	public static enum ModelType {bm,mm,quick};
+	public static SearchedData getSearch(String userName,Boolean isOpen,ModelType modelType,String modelNameSearch,String contextNameSearch,String simNameSearch,String varNameSearch) throws Exception{
+		SearchedData searchedData = new SearchedData();
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(isOpen == null?"":"open="+isOpen+"&")+"type"+"="+modelType.name());
+		Pattern regexModelNameSearch = Pattern.compile(("\\Q" + modelNameSearch + "\\E").replace("*", "\\E.*\\Q"));
+		Pattern regexContextNameSearch = Pattern.compile(("\\Q" + contextNameSearch + "\\E").replace("*", "\\E.*\\Q"));
+		Pattern regexSimNameSearch = Pattern.compile(("\\Q" + simNameSearch + "\\E").replace("*", "\\E.*\\Q"));
+		Pattern regexVarNameSearch = Pattern.compile(("\\Q" + varNameSearch + "\\E").replace("*", "\\E.*\\Q"));
+		Document doc = getDocument(url);
+//		String docStr = documentToString(doc);//convert xml document to string
+//		System.out.println(docStr);//print sml as string
+		NodeList si = (NodeList)doc.getElementsByTagName("modelInfo");
+		for(int i=0;i<si.getLength();i++){
+			Node node = si.item(i);
+			String currentUser = node.getAttributes().getNamedItem("user").getNodeValue();
+			boolean bUserMatch = userName == null || userName.equals(currentUser);
+			String currentModel = node.getAttributes().getNamedItem("name").getNodeValue();
+			boolean bModelMatch = modelNameSearch == null || regexModelNameSearch.matcher(currentModel).matches();
+			if(bUserMatch && bModelMatch){//get modelInfos owned by user
+				NodeList modelChildren = node.getChildNodes();
+				for(int j=0;j<modelChildren.getLength();j++){
+					Node modelContext = modelChildren.item(j);
+					if(modelContext.getNodeName().equals("context")/* && modelChild.getAttributes().getNamedItem("name").getNodeValue().endsWith("NFSim")*/){//get applications (simulationContexts) with names ending in "NFSim"
+						String currentContext = modelContext.getAttributes().getNamedItem("name").getNodeValue();
+						boolean bContextMatch = contextNameSearch == null || regexContextNameSearch.matcher(currentContext).matches();
+						if(!bContextMatch) {continue;}
+//						System.out.println(currentContext);
+						NodeList simInfos = modelContext.getChildNodes();
+						for(int k=0;k<simInfos.getLength();k++){
+							Node simInfoNode = simInfos.item(k);
+							if(simInfoNode.getNodeName().equals("simInfo")){
+								String currentSimName = simInfoNode.getAttributes().getNamedItem("name").getNodeValue();
+								boolean bSimInfoMatch = simNameSearch == null || regexSimNameSearch.matcher(currentSimName).matches();
+								if(!bSimInfoMatch){continue;}
+								String cacheKey = simInfoNode.getAttributes().getNamedItem("cacheKey").getNodeValue();
+								System.out.println("context="+j+" sim="+k+" cacheKey"+cacheKey);
+								Document varDoc = getDocument(new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata/"+"?"+"cachekey"+"="+cacheKey));//get variable names
+								NodeList varInfoNodeList = (NodeList)varDoc.getElementsByTagName("ijVarInfo");
+								StringBuffer urlEncodedVarNames = new StringBuffer();
+								for(int l=0;l<varInfoNodeList.getLength();l++){
+									Node varInfoNode = varInfoNodeList.item(l);
+									String currentVarName = varInfoNode.getAttributes().getNamedItem("name").getNodeValue();
+									boolean bVarNameMatch = varNameSearch == null || regexVarNameSearch.matcher(currentVarName).matches();
+									if(bVarNameMatch){
+										urlEncodedVarNames.append("&varname="+URLEncoder.encode(currentVarName, Charset.forName("UTF-8").name()));
+									}
+								}
+								URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/getdata/?cachekey="+cacheKey+urlEncodedVarNames.toString());
+								Document dataDoc = getDocument(dataUrl);
+//								printDocument(dataDoc, System.out);
+								NodeList ijDataNodes = (NodeList)dataDoc.getElementsByTagName("ijData");
+								for(int l=0;l<ijDataNodes.getLength();l++){
+									String currentVarName = ijDataNodes.item(l).getAttributes().getNamedItem("varname").getNodeValue();
+									double[] data = getData(ijDataNodes.item(l));
+									searchedData.put(currentModel, currentContext, currentSimName, currentVarName, data);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return searchedData;
 	}
 	public static double[] getData(Node ijDataNode) throws Exception{
 		NodeList childNodes = ijDataNode.getChildNodes();
