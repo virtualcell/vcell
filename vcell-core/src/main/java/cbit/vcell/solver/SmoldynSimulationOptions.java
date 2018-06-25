@@ -234,7 +234,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 					token = tokens.nextToken();
 					smoldynStepMultiplier = Integer.parseInt(token);
 			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions_innerStep)) {
-				;		// consume it and do nothing
+				token = tokens.nextToken();		// consume it and do nothing
 			}  else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}
