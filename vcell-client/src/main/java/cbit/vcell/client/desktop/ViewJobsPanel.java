@@ -266,7 +266,6 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				if(table.getRowCount() == 0) {
 					strSimInfo += "The table is empty";
 				} else {
-					System.out.println("Adjusting is false, " + row + ", table size: " + table.getRowCount());
 					SimpleJobStatus sjs = model.getValueAt(row);
 					String strHost = "";
 					if(sjs != null) {
@@ -347,8 +346,8 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			SimulationController sc = csm.getSimulationController();
 			
 			SimpleJobStatusQuerySpec ssqs = new SimpleJobStatusQuerySpec();
-//			ssqs.userid = cdm.getUser().getName();
-			ssqs.userid = "nasrin";
+			ssqs.userid = cdm.getUser().getName();
+//			ssqs.userid = "nasrin";
 			
 			ssqs.maxRows = maxRows;
 			ssqs.completed = getCompletedButton().isSelected();
