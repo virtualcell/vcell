@@ -258,23 +258,36 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
 			if(!e.getValueIsAdjusting()) {
+				String strSimInfo = "";
+				String strDetails = "";
+				final String htmlStart = "<html><font size =\"-1\">";
+				final String htmlEnd = "</font></font></html>";
 				int row = table.getSelectedRow();
-				String message = (String) model.getValueAt(row, SimulationJobsTableModel.iColMessage);
-				if(message != null) {
-//					final String htmlStart = "<html><font face = \"Arial\"><font size =\"-1\">";
-//					final String htmlEnd = "</font></font></html>";
-					final String htmlStart = "<html><font size =\"-1\">";
-					final String htmlEnd = "</font></font></html>";
-					String text = FormatMessage(message);
-					details.setText(htmlStart + text + htmlEnd);
-					
-					getStopJobButton().setEnabled(model.isStoppable(row));
-					
+				if(table.getRowCount() == 0) {
+					strSimInfo += "The table is empty";
+				} else {
+					System.out.println("Adjusting is false, " + row + ", table size: " + table.getRowCount());
 					SimpleJobStatus sjs = model.getValueAt(row);
-					String str = "Simulation " + model.getSimulationId(sjs);
-					str += ", Job " + sjs.jobStatus.getJobIndex() + " of " + model.getJobsCount(sjs);
-					simulationInfoLabel.setText(str);
+					String strHost = "";
+					if(sjs != null) {
+						strSimInfo = "Simulation " + model.getSimulationId(sjs);
+						strSimInfo += ", Job " + sjs.jobStatus.getJobIndex() + " of " + model.getJobsCount(sjs);
+						strHost = sjs.jobStatus.getComputeHost();
+					}
+					
+					if(strHost != null) {
+						strDetails += "Host: " + strHost + "<br>";
+					}
+					String message = (String) model.getValueAt(row, SimulationJobsTableModel.iColMessage);
+					if(message != null) {
+						strDetails += "Message: ";
+						strDetails += FormatMessage(message);
+					}
+					
 				}
+				getStopJobButton().setEnabled(model.isStoppable(row));
+				details.setText(htmlStart + strDetails + htmlEnd);
+				simulationInfoLabel.setText(strSimInfo);
 			}
 		}
 		
@@ -334,7 +347,9 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 			SimulationController sc = csm.getSimulationController();
 			
 			SimpleJobStatusQuerySpec ssqs = new SimpleJobStatusQuerySpec();
-			ssqs.userid = cdm.getUser().getName();
+//			ssqs.userid = cdm.getUser().getName();
+			ssqs.userid = "nasrin";
+			
 			ssqs.maxRows = maxRows;
 			ssqs.completed = getCompletedButton().isSelected();
 			ssqs.dispatched = getDispatchedButton().isSelected();
@@ -440,7 +455,7 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 				gbc.weighty = 0;
 				gbc.anchor = GridBagConstraints.WEST;
 				gbc.insets = new Insets(10,4,4,4);
-				propertiesPanel.add(new JLabel("Message:"), gbc);
+				propertiesPanel.add(new JLabel("Details:"), gbc);
 
 				details = new JTextPane();
 				details.setContentType("text/html");
