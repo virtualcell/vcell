@@ -239,8 +239,36 @@ public class SimulationJobsTableModel  extends VCellSortTableModel<SimpleJobStat
 	
 	public void refreshData() {
 		List<SimpleJobStatus> allJobStatusList = new ArrayList<>();
-		for(SimpleJobStatus sjj : jobStatusArray) {
-			allJobStatusList.add(sjj);
+		for(SimpleJobStatus candidate : jobStatusArray) {
+			boolean found = false;
+			for(SimpleJobStatus added : allJobStatusList) {
+				if(added.jobStatus.compareEqual(candidate.jobStatus)) {		// sim id, job idx, task, ...
+					if(candidate.simulationDocumentLink instanceof BioModelLink && added.simulationDocumentLink instanceof BioModelLink) {
+						BioModelLink mlCandidate = (BioModelLink)candidate.simulationDocumentLink;
+						BioModelLink mlAdded = (BioModelLink)added.simulationDocumentLink;
+						String str1 = mlCandidate.bioModelName + "," + mlCandidate.simContextName;
+						String str2 = mlAdded.bioModelName + "," + mlAdded.simContextName;
+						if(str1.compareTo(str2) == 0) {
+							found = true;
+							break;
+						}
+					} else if(candidate.simulationDocumentLink instanceof MathModelLink && added.simulationDocumentLink instanceof MathModelLink) {
+						MathModelLink mlCandidate = (MathModelLink)candidate.simulationDocumentLink;
+						MathModelLink mlAdded = (MathModelLink)added.simulationDocumentLink;
+						String str1 = mlCandidate.mathModelName;
+						String str2 = mlAdded.mathModelName;
+						if(str1.compareTo(str2) == 0) {
+							found = true;
+							break;
+						}
+					}
+				}
+			}
+			if(found) {
+//				System.out.println("Job " + getSimulationId(candidate) + " is duplicated");
+			} else {
+				allJobStatusList.add(candidate);
+			}
 		}
 		// ----- apply filters that are not applied by running the query -----------------
 		List<SimpleJobStatus> filteredJobStatusList = new ArrayList<>();
