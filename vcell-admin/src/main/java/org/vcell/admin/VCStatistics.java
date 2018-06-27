@@ -1,4 +1,4 @@
-package org.vcell.db.oracle;
+package org.vcell.admin;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -12,13 +12,15 @@ import java.util.Date;
 import java.util.Vector;
 
 import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseService;
+import org.vcell.db.oracle.OraclePoolingConnectionFactoryProvider;
+import org.vcell.db.postgres.PostgresConnectionFactoryProvider;
+//import org.vcell.db.DatabaseService;
 
 public class VCStatistics {
 	private ConnectionFactory connectionFactory = null;
 	private ArrayList<String> userNameList = new ArrayList<String>();
 	private ArrayList<Integer> userIDList = new ArrayList<Integer>();
-	private static String simDataDir = "\\\\cfs02.cam.uchc.edu\\ifs\\raid\\vcell\\users\\";
+//	private static String simDataDir = "\\\\cfs02.cam.uchc.edu\\ifs\\raid\\vcell\\users\\";
 	private class UserModelCount {
 		int userID;
 		int modelCount;
@@ -52,22 +54,30 @@ public class VCStatistics {
 			return sb.toString();
 		}
 	}
+	public static ConnectionFactory createConnectionFactory(String dbDriverName, String dbConnectURL,String dbUserid,String dbPassword) {
+		ConnectionFactory connFact = null;
+		if(OraclePoolingConnectionFactoryProvider.ORACLE_DRIVER_NAME.equals(dbDriverName)) {
+			connFact = new OraclePoolingConnectionFactoryProvider().createConnctionFactory(dbDriverName, dbConnectURL, dbUserid, dbPassword);
+		}else if(PostgresConnectionFactoryProvider.POSTGRESQL_DRIVER_NAME.equals(dbDriverName)) {
+			connFact = new PostgresConnectionFactoryProvider().createConnctionFactory(dbDriverName, dbConnectURL, dbUserid, dbPassword);
+		}
+		return connFact;
+	}
+
 	private VCStatistics(String dbDriverName, String dbConnectURL,String dbUserid,String dbPassword) throws Exception {
-		connectionFactory = DatabaseService.getInstance().createConnectionFactory(
-				dbDriverName,
-				dbConnectURL,
-				dbUserid,
-				dbPassword);
+		connectionFactory = createConnectionFactory(dbDriverName, dbConnectURL, dbUserid, dbPassword);
 	}
 	public static void main(String[] args) {
-		if(args.length != 4){
+		if(args.length != 5){
 			//e.g in your eclipse debug configuration put arguments: dbs6.cam.uchc.edu orcl ID password
-			System.out.println("Usage:VCStatistics dbDriverName connectUrl dbUserID dbPassword");
+			System.out.println("Usage:VCStatistics dbDriverName connectUrl dbUserID dbPassword simDataDir");
+			System.out.println("Example: VCStatistics oracle.jdbc.driver.OracleDriver \"jdbc:oracle:thin:@host:1521:db\" dbUserid dbPassword simDataDir");
+
 			System.exit(1);
 		}
 		try {
 			VCStatistics vcstat = new VCStatistics(args[0],args[1],args[2],args[3]);
-			vcstat.startStatistics();			
+			vcstat.startStatistics(args[4]);			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		} finally {
@@ -75,7 +85,7 @@ public class VCStatistics {
 		}
 	}
 	
-	private  void startStatistics() {
+	private  void startStatistics(String simDataDir) {
 		PrintWriter pw = null;
 		try {
 			Date currentDate = new Date();
@@ -89,7 +99,7 @@ public class VCStatistics {
 			int numUsers = userIDList.size();
 			pw.format("%30s - %10d%n", "Total Registered VCell Users", numUsers);		
 			System.out.println("Total Registered VCell Users : " + numUsers);
-			int numUsersRunSim = howManyUsersWhoRanSimulations();
+			int numUsersRunSim = howManyUsersWhoRanSimulations(simDataDir);
 			pw.format("%30s - %10d%n", "Users Who Ran Simulations", numUsersRunSim);
 			System.out.println("Users Who Ran Simulations : " + numUsersRunSim);
 			int howmanyBio = howManyBioModels();
@@ -158,7 +168,7 @@ public class VCStatistics {
 		}
 	}
 	
-	private int howManyUsersWhoRanSimulations() throws SQLException {
+	private int howManyUsersWhoRanSimulations(String simDataDir) throws SQLException {
 		File dataRootDir = new File(simDataDir);	
 		File userDirs[] = dataRootDir.listFiles();
 		int howmany = 0;

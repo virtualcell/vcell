@@ -12,6 +12,7 @@ import oracle.ucp.UniversalConnectionPoolException;
 @Plugin(type = Database.class)
 public class OraclePoolingConnectionFactoryProvider implements Database {
 
+	public static final String ORACLE_DRIVER_NAME = "oracle.jdbc.driver.OracleDriver";
 	@Override
 	public ConnectionFactory createConnctionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) {
 		try {
@@ -30,7 +31,7 @@ public class OraclePoolingConnectionFactoryProvider implements Database {
 
 	@Override
 	public String getDriverClassName() {
-		return "oracle.jdbc.driver.OracleDriver";
+		return ORACLE_DRIVER_NAME;
 	}
 
 }

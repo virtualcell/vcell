@@ -8,6 +8,8 @@ import org.vcell.db.spi.Database;
 @Plugin(type = Database.class)
 public class PostgresConnectionFactoryProvider implements Database {
 
+	public static final String POSTGRESQL_DRIVER_NAME = "org.postgresql.Driver";
+
 	@Override
 	public ConnectionFactory createConnctionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) {
 		try {
@@ -25,7 +27,7 @@ public class PostgresConnectionFactoryProvider implements Database {
 
 	@Override
 	public String getDriverClassName() {
-		return "org.postgresql.Driver";
+		return POSTGRESQL_DRIVER_NAME;
 	}
 
 }

@@ -388,7 +388,7 @@ public ParameterContext(BioNameScope bioNameScope, ParameterPolicy parameterPoli
 	this.parameterPolicy = parameterPolicy;
 	this.unitSystemProvider = argUnitSystemProvider;
 	addPropertyChangeListener(listener);
-System.out.println(this);
+//System.out.println(this);
 }            
 
 /**
