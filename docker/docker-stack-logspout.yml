@@ -1,0 +1,38 @@
+version: '3.1'
+services:
+  logspout:
+    image: bekt/logspout-logstash
+    environment:
+      ROUTE_URIS: 'logstash://elk.cam.uchc.edu:5000'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - logstash
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+
+        ## see https://botleg.com/stories/log-management-of-docker-swarm-with-elk-stack/
+
+# logstash filter:
+#
+# input {
+#  udp {
+#    port  => 5000
+#    codec => json
+#  }
+#}
+#
+#filter {
+#  if [docker][image] =~ /logstash/ {
+#    drop { }
+#  }
+#}
+#
+#output {
+#  elasticsearch { hosts => ["elasticsearch:9200"] }
+#  stdout { codec => rubydebug }
+#}
+#

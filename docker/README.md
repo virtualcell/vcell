@@ -233,7 +233,7 @@ echo Rel `curl --silent http://vcell.org/webstart/Rel/updates.xml | xmllint --xp
 create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=8 VCELL_SITE=rel
+export VCELL_VERSION=7.0.0 VCELL_BUILD=9 VCELL_SITE=rel
 export MANAGER_NODE=vcellapi.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config

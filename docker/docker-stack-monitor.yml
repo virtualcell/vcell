@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  influx:
+    image: influxdb
+    volumes:
+      - influx:/var/lib/influxdb
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 0.0.0.0:80:3000
+    volumes:
+      - grafana:/var/lib/grafana
+    depends_on:
+      - influx
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  cadvisor:
+    image: google/cadvisor
+    hostname: '{{.Node.Hostname}}'
+    command: -logtostderr -docker_only -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influx:8086
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    depends_on:
+      - influx
+    deploy:
+      mode: global
+
+volumes:
+  influx:
+    driver: local
+  grafana:
