@@ -129,10 +129,10 @@ public class CopasiOptimizationSolver {
 
 			String optimizationId = apiClient.submitOptimization(optProblemJson);
 			
-			final long TIMEOUT_MS = 1000*20; // 20 second minute timeout
+			final long TIMEOUT_MS = 1000*200; // 200 second timeout
 			long startTime = System.currentTimeMillis();
 			OptRun optRun = null;
-			while ((System.currentTimeMillis()-startTime)<TIMEOUT_MS){
+			while ((System.currentTimeMillis()-startTime)<TIMEOUT_MS) {
 				if (optSolverCallbacks.getStopRequested()){
 					throw new RuntimeException(STOP_REQUESTED);
 				}
@@ -154,8 +154,17 @@ public class CopasiOptimizationSolver {
 					Thread.sleep(1000);
 				}catch (InterruptedException e){}
 			}
+			if((System.currentTimeMillis()-startTime) >= TIMEOUT_MS) {
+				throw new RuntimeException("optimization timed out.");
+			}
 			System.out.println("done with optimization");
 			OptResultSet optResultSet = optRun.getOptResultSet();
+			if(optResultSet == null) {
+				throw new RuntimeException("optResultSet is null, status is " + optRun.getStatusMessage());
+			}
+			if(optResultSet != null && optResultSet.getOptParameterValues() == null) {
+				throw new RuntimeException("getOptParameterValues is null, status is " + optRun.getStatusMessage());
+			}
 			int numFittedParameters = optResultSet.getOptParameterValues().size();
 			String[] paramNames = new String[numFittedParameters];
 			double[] paramValues = new double[numFittedParameters];
