@@ -101,5 +101,5 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.host.external=${mongodb_host_external} \
 	-Dvcell.mongodb.port.external=${mongodb_port_external} \
 	-Dvcell.mongodb.database=${mongodb_database} \
-	-cp "./lib/*" cbit.vcell.message.server.sim.HtcSimulationWorker \
+	-cp "./lib/*" cbit.vcell.message.server.batch.sim.HtcSimulationWorker \
 	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"

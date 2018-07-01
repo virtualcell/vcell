@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.sim;
+package cbit.vcell.message.server.batch.sim;
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;

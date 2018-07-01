@@ -16,7 +16,7 @@ fi
 #
 shopt -s -o nounset
 
-postprocessor_mainclass=cbit.vcell.message.server.sim.SolverPostprocessor
+postprocessor_mainclass=cbit.vcell.message.server.batch.sim.SolverPostprocessor
 
 jvmprop="-Djava.io.tmpdir=/tmp"
 jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"

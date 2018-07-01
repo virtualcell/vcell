@@ -16,7 +16,7 @@ fi
 #
 shopt -s -o nounset
 
-javasolver_mainclass=cbit.vcell.message.server.sim.JavaSimulationExecutable
+javasolver_mainclass=cbit.vcell.message.server.batch.sim.JavaSimulationExecutable
 
 jvmprop="-Djava.io.tmpdir=/tmp"
 jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"

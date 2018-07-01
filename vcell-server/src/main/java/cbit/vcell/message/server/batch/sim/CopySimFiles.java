@@ -1,4 +1,4 @@
-package cbit.vcell.message.server.sim;
+package cbit.vcell.message.server.batch.sim;
 
 import java.io.File;
 import java.io.FileWriter;
