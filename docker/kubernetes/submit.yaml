@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose --file ../docker-compose-simple.yml convert
+    kompose.version: 1.12.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: submit
+  name: submit
+spec:
+  ports:
+  - name: "8000"
+    port: 8000
+    targetPort: 8000
+  selector:
+    io.kompose.service: submit
+status:
+  loadBalancer: {}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose --file ../docker-compose-simple.yml convert
+    kompose.version: 1.12.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: submit
+  name: submit
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: submit
+    spec:
+      containers:
+      - env:
+        - name: batchhost
+        - name: batchsystem
+          value: SLURM
+        - name: batchuser
+        - name: docker_name
+        - name: export_baseurl
+        - name: htclogdir_external
+        - name: htcnodelist
+        - name: jmshost_int_internal
+          value: activemqint
+        - name: jmshost_sim_external
+        - name: jmshost_sim_internal
+          value: activemqsim
+        - name: jmsport_int_internal
+          value: "61616"
+        - name: jmsport_sim_external
+        - name: jmsport_sim_internal
+          value: "61616"
+        - name: jmsrestport_sim_external
+        - name: jmsuser
+          value: clientUser
+        - name: mongodb_database
+          value: test
+        - name: mongodb_host_external
+        - name: mongodb_host_internal
+          value: mongodb
+        - name: mongodb_port_external
+        - name: mongodb_port_internal
+          value: "27017"
+        - name: nativesolverdir_external
+        - name: serverid
+        - name: simdatadir_external
+        - name: simdatadir_parallel_external
+        - name: singularity_imagefile
+        - name: slurm_cmd_sacct
+          value: sacct
+        - name: slurm_cmd_sbatch
+          value: slurm
+        - name: slurm_cmd_scancel
+          value: scancel
+        - name: slurm_cmd_squeue
+          value: squeue
+        - name: slurm_partition
+          value: vcell
+        - name: slurm_tmpdir
+        - name: softwareVersion
+        image: '/vcell-submit:'
+        name: submit
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            memory: 524288e3
+          requests:
+            memory: 524288e3
+        volumeMounts:
+        - mountPath: /simdata
+          name: submit-claim0
+        - mountPath: /htclogs
+          name: submit-claim1
+      restartPolicy: Always
+      volumes:
+      - name: submit-claim0
+        persistentVolumeClaim:
+          claimName: submit-claim0
+      - name: submit-claim1
+        persistentVolumeClaim:
+          claimName: submit-claim1
+status: {}

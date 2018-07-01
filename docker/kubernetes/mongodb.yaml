@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose --file ../docker-compose-simple.yml convert
+    kompose.version: 1.12.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mongodb
+  name: mongodb
+spec:
+  ports:
+  - name: "27017"
+    port: 27017
+    targetPort: 27017
+  selector:
+    io.kompose.service: mongodb
+status:
+  loadBalancer: {}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose --file ../docker-compose-simple.yml convert
+    kompose.version: 1.12.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mongodb
+  name: mongodb
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: mongodb
+    spec:
+      containers:
+      - image: '/vcell-mongo:'
+        name: mongodb
+        ports:
+        - containerPort: 27017
+        resources:
+          limits:
+            memory: 1572864e3
+          requests:
+            memory: 1048576e3
+      restartPolicy: Always
+status: {}

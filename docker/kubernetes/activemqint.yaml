@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose --file ../docker-compose-simple.yml convert
+    kompose.version: 1.12.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: activemqint
+  name: activemqint
+spec:
+  ports:
+  - name: "61616"
+    port: 61616
+    targetPort: 61616
+  selector:
+    io.kompose.service: activemqint
+status:
+  loadBalancer: {}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose --file ../docker-compose-simple.yml convert
+    kompose.version: 1.12.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: activemqint
+  name: activemqint
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: activemqint
+    spec:
+      containers:
+      - env:
+        - name: ACTIVEMQ_CONFIG_AUTHENABLED
+          value: "true"
+        - name: ACTIVEMQ_ENABLED_SCHEDULER
+          value: "true"
+        - name: ACTIVEMQ_GROUPS_reads
+          value: clientUser
+        - name: ACTIVEMQ_GROUPS_writes
+          value: clientUser
+        - name: ACTIVEMQ_MAX_MEMORY
+          value: "2048"
+        - name: ACTIVEMQ_MIN_MEMORY
+          value: "512"
+        - name: ACTIVEMQ_STATIC_QUEUES
+          value: simReq;dataReq;dbReq;simJob
+        - name: ACTIVEMQ_STATIC_TOPICS
+          value: clientStatus
+        - name: ACTIVEMQ_USERS_clientUser
+          value: dummy
+        image: webcenter/activemq:5.14.3
+        name: activemqint
+        ports:
+        - containerPort: 61616
+        resources:
+          limits:
+            memory: 2097152e3
+          requests:
+            memory: 1048576e3
+      restartPolicy: Always
+status: {}

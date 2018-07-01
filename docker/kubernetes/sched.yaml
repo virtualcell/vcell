@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: sched
+  name: sched
+spec:
+  ports:
+  - name: "8000"
+    port: 8000
+    targetPort: 8000
+  selector:
+    io.kompose.service: sched
+status:
+  loadBalancer: {}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: sched
+  name: sched
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: sched
+    spec:
+      containers:
+      - env:
+        - name: batchhost
+        - name: batchsystem
+          value: SLURM
+        - name: batchuser
+        - name: dbdriver
+        - name: dburl
+        - name: dbuser
+        - name: htcnodelist
+        - name: jmshost_int_internal
+          value: activemqint
+        - name: jmshost_sim_external
+        - name: jmshost_sim_internal
+          value: activemqsim
+        - name: jmsport_int_internal
+          value: "61616"
+        - name: jmsport_sim_external
+        - name: jmsport_sim_internal
+          value: "61616"
+        - name: jmsrestport_sim_external
+        - name: jmsuser
+          value: clientUser
+        - name: maxJobsPerScan
+          value: "100"
+        - name: maxOdeJobsPerUser
+          value: "50"
+        - name: maxPdeJobsPerUser
+          value: "50"
+        - name: mongodb_database
+          value: test
+        - name: mongodb_host_internal
+          value: mongodb
+        - name: mongodb_port_internal
+          value: "27017"
+        - name: serverid
+        - name: simdataCacheSize
+          value: "10000000"
+        - name: slurm_cmd_sacct
+          value: sacct
+        - name: slurm_cmd_sbatch
+          value: slurm
+        - name: slurm_cmd_scancel
+          value: scancel
+        - name: slurm_cmd_squeue
+          value: squeue
+        - name: slurm_partition
+          value: vcell
+        - name: softwareVersion
+        image: '/vcell-sched:'
+        name: sched
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            memory: 524288e3
+          requests:
+            memory: 524288e3
+      restartPolicy: Always
+status: {}

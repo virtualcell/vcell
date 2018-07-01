@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: api
+  name: api
+spec:
+  ports:
+  - name: "8080"
+    port: 8080
+    targetPort: 8080
+  - name: "8000"
+    port: 8000
+    targetPort: 8000
+  selector:
+    io.kompose.service: api
+status:
+  loadBalancer: {}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: api
+  name: api
+spec:
+  replicas: 2
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: api
+    spec:
+      containers:
+      - env:
+        - name: dbdriver
+        - name: dburl
+        - name: dbuser
+        - name: jmshost_int_internal
+          value: activemqint
+        - name: jmsport_int_internal
+          value: "61616"
+        - name: jmsuser
+          value: clientUser
+        - name: mongodb_database
+          value: test
+        - name: mongodb_host_internal
+          value: mongodb
+        - name: mongodb_port_internal
+          value: "27017"
+        - name: serverid
+        - name: smtp_emailaddress
+        - name: smtp_hostname
+        - name: smtp_port
+        - name: softwareVersion
+        image: '/vcell-api:'
+        name: api
+        ports:
+        - containerPort: 8080
+        - containerPort: 8000
+        volumeMounts:
+        - name: foo
+          mountPath: "/etc/foo"
+          readOnly: true
+        resources:
+          limits:
+            memory: 2097152e3
+          requests:
+            memory: 1048576e3
+      volumes:
+      - name: foo
+        secret:
+          secretName: mysecret
+      restartPolicy: Always
+status: {}

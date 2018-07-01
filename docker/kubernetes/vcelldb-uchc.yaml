@@ -1,0 +1,8 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: oracle
+  namespace: prod
+spec:
+  type: ExternalName
+  externalName: vcell-db.cam.uchc.edu
