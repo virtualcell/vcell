@@ -392,6 +392,14 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 		return doubles;
 	}
+	public static String[] getVarNamesFromVarInfos(Document doc) {
+		ArrayList<String> varNamesList = new ArrayList<>();
+		NodeList varNodes = doc.getElementsByTagName("ijVarInfo");
+		for(int j=0;j<varNodes.getLength();j++) {
+			varNamesList.add(varNodes.item(j).getAttributes().getNamedItem("name").getNodeValue());
+		}
+		return varNamesList.toArray(new String[0]);
+	}
 	
 	public static String getRawContent(URL url) throws Exception{
 		HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -545,11 +553,18 @@ public class VCellHelper extends AbstractService implements ImageJService
 		public String statusMessage;
 		public IJSolverStatus() {	
 		}
+		//SimulationJobStatus vs. SolverStatus
 		@Override
 		public String toString() {
 			return simJobId+" "+statusCode+" "+statusName+" "+statusDetail+" "+statusMessage;
 		}
-		
+		public int getJobIndex() {
+			//Assumes simJobId = SimID_simkey_jobindex
+			StringTokenizer st = new StringTokenizer(simJobId, "_");
+			st.nextToken();
+			st.nextToken();
+			return Integer.parseInt(st.nextToken());
+		}
 	}
 
 

@@ -133,6 +133,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
@@ -1423,12 +1424,25 @@ public class ImageJHelper {
 							if(file.isDirectory()) {
 								dirs.add(file);
 							}else if (file.getName().startsWith("SimID_") && file.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)) {
+								Integer parentGeomDim = null;
+								try {
+									String simRoot = file.getName().substring(0, file.getName().length()-SimDataConstants.LOGFILE_EXTENSION.length());
+									File meshFile = new File(file.getParentFile(),simRoot+SimDataConstants.MESHFILE_EXTENSION);
+									if(meshFile.exists()) {//try to get geometry dimension even if there is no open vcell data window
+										File meshmetricsFile = new File(file.getParentFile(),simRoot+SimDataConstants.MESHMETRICSFILE_EXTENSION);
+										File subdomainFile = new File(file.getParentFile(),simRoot+SimDataConstants.SUBDOMAINS_FILE_SUFFIX);
+										CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, meshmetricsFile, subdomainFile);
+										parentGeomDim = mesh.getGeometryDimension();
+									}
+								} catch (Exception e) {
+									e.printStackTrace();
+									//continue, downstream might not need dim
+								}
 								StringTokenizer st = new StringTokenizer(file.getName(), "_");
 								st.nextToken();
 								String quickrunKey = st.nextToken();
 								String parentSimName = null;
 								String parentContextName = null;
-								Integer parentGeomDim = null;
 								MathType parentMathType = null;
 								String parentGeomName = null;
 								String parentModelName = null;
@@ -1447,7 +1461,11 @@ public class ImageJHelper {
 						    				if(simulationWindow != null) {
 						    					parentSimName = simulationWindow.getSimulation().getName();
 						    					parentContextName = simulationWindow.getSimOwner().getName();
-						    					parentGeomDim = simulationWindow.getSimOwner().getGeometry().getDimension();
+						    					int tempdim = simulationWindow.getSimOwner().getGeometry().getDimension();
+						    					if(parentGeomDim != null && parentGeomDim.intValue() != tempdim) {
+						    						throw new ServletException("Geometry dimesnion from mesh="+parentGeomDim+" does not equal display window model dimension="+tempdim);
+						    					}
+						    					parentGeomDim = tempdim;
 						    					parentMathType = simulationWindow.getSimOwner().getMathDescription().getMathType();
 						    					parentGeomName = simulationWindow.getSimOwner().getGeometry().getName();
 						    					parentModelName = documentWindowManager.getVCDocument().getName();
@@ -2071,7 +2089,7 @@ public class ImageJHelper {
 							}
 						}
 						if(newsim == null) {
-							generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_BAD_REQUEST,TYPE_TEXT_PLAIN_UTF8, "Couldn't find simulation for 'frap' solver");
+							generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,TYPE_TEXT_PLAIN_UTF8, "Couldn't find simulation for 'frap' solver");
 						}
 	    			}
 	    		}else if(target.startsWith("/sbml")) {
