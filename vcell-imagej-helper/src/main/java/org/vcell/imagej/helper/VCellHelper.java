@@ -22,17 +22,16 @@ import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -58,11 +57,17 @@ import net.imglib2.Dimensions;
 @Plugin(type = Service.class)
 public class VCellHelper extends AbstractService implements ImageJService
 {	
-	private static int lastVCellApiPort = -1;
+	private int lastVCellApiPort = -1;
+	JAXBContext jaxbContext;
+//	private TreeMap<String, JAXBContext> jaxbMap = new TreeMap<>();
 	
-//	public VCellHelper() {
-//		
-//	}
+	public VCellHelper() {
+		try {
+			jaxbContext = JAXBContext.newInstance(new Class[] {IJSolverStatus.class,IJTimeSeriesJobResults.class,IJTimeSeriesJobSpec.class});
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		}
+	}
 //    public static void main( String[] args )
 //    {
 //    	ImageJ ij = new ImageJ();
@@ -81,7 +86,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 	    return baos.toString();
 	}
 
-	public static int findVCellApiServerPort() throws Exception{
+	public int findVCellApiServerPort() throws Exception{
 		final int start = 8000;
 		final int end = 8100;
 		int tryCount = end-start+1;
@@ -110,7 +115,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 		return lastVCellApiPort;
 		
 	}
-	public static String getApiInfo() throws Exception{
+	public String getApiInfo() throws Exception{
 		findVCellApiServerPort();
 		URL url = new URL("http://localhost:"+lastVCellApiPort+"/");
 	//	URL url = new URL("http://localhost:8080/list");
@@ -140,14 +145,21 @@ public class VCellHelper extends AbstractService implements ImageJService
 		HttpURLConnection con = (HttpURLConnection)url.openConnection();
 		int responseCode = con.getResponseCode();
 		if(responseCode == HttpURLConnection.HTTP_OK) {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = factory.newDocumentBuilder();
-			Document doc = docBuilder.parse(con.getInputStream());
-			return doc;
+			return getDocument(con.getInputStream());
 		}else {
 //			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
-			throw new Exception("Expecting OK but got "+responseCode+" "+streamToString(con.getErrorStream()));
+			throw new Exception("Expecting OK but got "+responseCode+" "+streamToStringWithClose(con.getErrorStream()));
 		}
+	}
+	public static Document getDocument(InputStream is) throws Exception{
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = factory.newDocumentBuilder();
+		Document doc = docBuilder.parse(is);
+		return doc;
+	}
+	public static Document getDocument(String str) throws Exception{
+		InputStream is = new ByteArrayInputStream(StandardCharsets.UTF_16.encode(str).array());
+		return getDocument(is);
 	}
 	public static class BasicStackDimensions implements Dimensions{
 		public int xsize;
@@ -194,7 +206,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 			}
 		}
 	}
-	public static BasicStackDimensions getVCStackDims(Node ijDataNode) throws Exception{
+	public static BasicStackDimensions getDimensions(Node ijDataNode) throws Exception{
 		NodeList childNodes = ijDataNode.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			if(childNodes.item(i).getNodeName().equals("stackInfo")) {
@@ -212,45 +224,83 @@ public class VCellHelper extends AbstractService implements ImageJService
 	}
 	
 	public static class SearchedData {
-		HashMap<String,HashMap> mapModelToContext = new HashMap<>();
-		
-		public void put(String modelName,String contextName,String simName,String varName,double[] data) throws Exception{
+		private HashMap<String,HashMap<String,HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>>> mapModelToContext = new HashMap<>();
+		private HashMap<double[],long[]> mapDataToDimension = new HashMap<>();
+		public String[] getModelNames() {
+			return mapModelToContext.keySet().toArray(new String[0]);
+		}
+		public String[] getContextNames(String modelName) {
+			return mapModelToContext.get(modelName).keySet().toArray(new String[0]);
+		}
+		public String[] getSimulationNames(String modelName,String contextName) {
+			return mapModelToContext.get(modelName).get(contextName).keySet().toArray(new String[0]);
+		}
+		public String[] getVariableNames(String modelName,String contextName,String simulationName) {
+			return mapModelToContext.get(modelName).get(contextName).get(simulationName).keySet().toArray(new String[0]);
+		}
+		public Double[] getTimePoints(String modelName,String contextName,String simulationName,String variableName) {
+			return mapModelToContext.get(modelName).get(contextName).get(simulationName).get(variableName).keySet().toArray(new Double[0]);
+		}
+		public Integer[] getJobIndexes(String modelName,String contextName,String simulationName,String variableName,double timePoint) {
+			return mapModelToContext.get(modelName).get(contextName).get(simulationName).get(variableName).get(timePoint).keySet().toArray(new Integer[0]);
+		}
+		public double[] getData(String modelName,String contextName,String simulationName,String variableName,double timePoint,int jobIndex) {
+			return mapModelToContext.get(modelName).get(contextName).get(simulationName).get(variableName).get(timePoint).get(jobIndex);
+		}
+		public long[] getXYZDimensions(double[] data) {
+			return mapDataToDimension.get(data);
+		}
+		public Set<double[]> getDatas(){
+			return mapDataToDimension.keySet();
+		}
+		public void put(String modelName,String contextName,String simName,String varName,double[] data,long[] xyzDim,double timePoint,int jobIndex) throws Exception{
 			while(true){
 				if(mapModelToContext.containsKey(modelName)) {
-					HashMap<String, HashMap> mapContextToSim = mapModelToContext.get(modelName);
+					HashMap<String,HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>> mapContextToSim = mapModelToContext.get(modelName);
 					if(mapContextToSim.containsKey(contextName)) {
-						HashMap<String, HashMap> mapSimToVar = mapContextToSim.get(contextName);
+						HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>> mapSimToVar = mapContextToSim.get(contextName);
 						if(mapSimToVar.containsKey(simName)) {
-							HashMap<String, double[]> mapVarToData = mapSimToVar.get(simName);
-							if(mapVarToData.containsKey(varName)) {
-								throw new Exception("Data laready exists for "+modelName+":"+contextName+":"+simName+":"+varName);
+							HashMap<String,HashMap<Double,HashMap<Integer,double[]>>> mapVarToTime = mapSimToVar.get(simName);
+							if(mapVarToTime.containsKey(varName)) {
+								HashMap<Double,HashMap<Integer,double[]>> mapTimeToJob = mapVarToTime.get(varName);
+								if(mapTimeToJob.containsKey(timePoint)) {
+									HashMap<Integer, double[]> mapJobToData = mapTimeToJob.get(timePoint);
+									if(mapJobToData.containsKey(jobIndex)) {
+										throw new Exception("Data already exists for "+modelName+":"+contextName+":"+simName+":"+varName);
+									}else {
+										mapJobToData.put(jobIndex, data);
+										mapDataToDimension.put(data, xyzDim);
+										return;
+									}
+								}else {
+									mapTimeToJob.put(timePoint, new HashMap<Integer, double[]>());
+								}
 							}else {
-								mapVarToData.put(varName, data);
-								return;
+								mapVarToTime.put(varName, new HashMap<Double,HashMap<Integer,double[]>>());
 							}
 						}else {
-							mapSimToVar.put(simName, new HashMap<String,HashMap>());
+							mapSimToVar.put(simName, new HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>());
 						}
 					}else {
-						mapContextToSim.put(contextName, new HashMap<String,HashMap>());
+						mapContextToSim.put(contextName, new HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>());
 					}
 				}else {
-					mapModelToContext.put(modelName, new HashMap<String,HashMap>());
+					mapModelToContext.put(modelName, new HashMap<String,HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>>());
 				}
 			}
 		}
 	}
 	public static enum ModelType {bm,mm,quick};
-	public static SearchedData getSearch(String userName,Boolean isOpen,ModelType modelType,String modelNameSearch,String contextNameSearch,String simNameSearch,String varNameSearch) throws Exception{
+	public SearchedData getSearchedData(String userName,Boolean isOpen,ModelType modelType,String modelNameSearch,String contextNameSearch,String simNameSearch,String varNameSearch,int[] timeIndexes,int jobIndex) throws Exception{
 		SearchedData searchedData = new SearchedData();
 		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(isOpen == null?"":"open="+isOpen+"&")+"type"+"="+modelType.name());
-		Pattern regexModelNameSearch = Pattern.compile(("\\Q" + modelNameSearch + "\\E").replace("*", "\\E.*\\Q"));
-		Pattern regexContextNameSearch = Pattern.compile(("\\Q" + contextNameSearch + "\\E").replace("*", "\\E.*\\Q"));
-		Pattern regexSimNameSearch = Pattern.compile(("\\Q" + simNameSearch + "\\E").replace("*", "\\E.*\\Q"));
-		Pattern regexVarNameSearch = Pattern.compile(("\\Q" + varNameSearch + "\\E").replace("*", "\\E.*\\Q"));
+		Pattern regexModelNameSearch = (modelNameSearch==null?null:Pattern.compile(("\\Q" + modelNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+		Pattern regexContextNameSearch = (contextNameSearch==null?null:Pattern.compile(("\\Q" + contextNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+		Pattern regexSimNameSearch = (simNameSearch==null?null:Pattern.compile(("\\Q" + simNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+		Pattern regexVarNameSearch = (varNameSearch==null?null:Pattern.compile(("\\Q" + varNameSearch + "\\E").replace("*", "\\E.*\\Q")));
 		Document doc = getDocument(url);
-//		String docStr = documentToString(doc);//convert xml document to string
-//		System.out.println(docStr);//print sml as string
+		String docStr = documentToString(doc);//convert xml document to string
+		System.out.println(docStr);//print sml as string
 		NodeList si = (NodeList)doc.getElementsByTagName("modelInfo");
 		for(int i=0;i<si.getLength();i++){
 			Node node = si.item(i);
@@ -287,14 +337,28 @@ public class VCellHelper extends AbstractService implements ImageJService
 										urlEncodedVarNames.append("&varname="+URLEncoder.encode(currentVarName, Charset.forName("UTF-8").name()));
 									}
 								}
-								URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/getdata/?cachekey="+cacheKey+urlEncodedVarNames.toString());
+								StringBuffer timeIndexURL = new StringBuffer();
+								for (int l = 0; timeIndexes != null && l < timeIndexes.length; l++) {
+									timeIndexURL.append("&timeindex="+timeIndexes[l]);
+								}
+//								StringBuffer jobIndexURL = new StringBuffer();
+//								for (int l = 0; timeIndexes != null && l < timeIndexes.length; l++) {
+//									jobIndexURL.append("&jobIndex="+jobIndexes[l]);
+//								}
+								URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/getdata/?cachekey="+cacheKey+urlEncodedVarNames.toString()+(timeIndexURL.length()==0?"":timeIndexURL.toString()+"&jobindex="+jobIndex/*(jobIndexURL.length()==0?"":jobIndexURL.toString())*/));
 								Document dataDoc = getDocument(dataUrl);
-//								printDocument(dataDoc, System.out);
+								docStr = documentToString(dataDoc);
+								System.out.println(docStr);
+//								if(true) {return null;}
 								NodeList ijDataNodes = (NodeList)dataDoc.getElementsByTagName("ijData");
 								for(int l=0;l<ijDataNodes.getLength();l++){
 									String currentVarName = ijDataNodes.item(l).getAttributes().getNamedItem("varname").getNodeValue();
+									String currentTimePoint = ijDataNodes.item(l).getAttributes().getNamedItem("timepoint").getNodeValue();
+									String currentJobId = ijDataNodes.item(l).getAttributes().getNamedItem("jobindex").getNodeValue();
 									double[] data = getData(ijDataNodes.item(l));
-									searchedData.put(currentModel, currentContext, currentSimName, currentVarName, data);
+									BasicStackDimensions stackDims = getDimensions(ijDataNodes.item(l));
+									long[] xyzDims = new long[] {stackDims.xsize,stackDims.ysize,stackDims.zsize};
+									searchedData.put(currentModel, currentContext, currentSimName, currentVarName, data,xyzDims,Double.parseDouble(currentTimePoint),Integer.parseInt(currentJobId));
 								}
 							}
 						}
@@ -308,7 +372,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 		NodeList childNodes = ijDataNode.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			if(childNodes.item(i).getNodeName().equals("data")) {
-				double[] doubleVals = new double[getVCStackDims(ijDataNode).getTotalSize()];
+				double[] doubleVals = new double[getDimensions(ijDataNode).getTotalSize()];
 				DoubleBuffer db = ByteBuffer.wrap(Base64.getDecoder().decode(childNodes.item(i).getTextContent())).asDoubleBuffer();
 				db.get(doubleVals);
 				return doubleVals;				
@@ -333,9 +397,9 @@ public class VCellHelper extends AbstractService implements ImageJService
 		HttpURLConnection con = (HttpURLConnection)url.openConnection();
 		int responseCode = con.getResponseCode();
 		if(responseCode == HttpURLConnection.HTTP_OK) {
-			return streamToString(con.getInputStream());
+			return streamToStringWithClose(con.getInputStream());
 		}else {
-			throw new Exception("Expecting OK but got "+responseCode+" "+streamToString(con.getErrorStream()));
+			throw new Exception("Expecting OK but got "+responseCode+" "+streamToStringWithClose(con.getErrorStream()));
 		}
 		
 //		try(InputStream instrm = con.getInputStream()){				
@@ -349,7 +413,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 //		}
 	}
 	
-	public static String streamToString(InputStream stream) throws Exception{
+	public static String streamToStringWithClose(InputStream stream) throws Exception{
 		try(InputStream instrm = stream){				
 		    StringBuilder textBuilder = new StringBuilder();
 			Reader reader = new BufferedReader(new InputStreamReader(instrm, Charset.forName(StandardCharsets.UTF_8.name())));
@@ -359,18 +423,35 @@ public class VCellHelper extends AbstractService implements ImageJService
 			}
 			return textBuilder.toString();
 		}
-		
 	}
 	
-	private static String createXML(Object theClass) throws Exception{
+//	private static TreeMap<String, JAXBContext> jaxbMap = new TreeMap<>();
+//	private static String createXML(Object theClass) throws Exception{
+////		vcListXML.setCommandInfo(result);
+//		JAXBContext context = jaxbMap.get(theClass.getClass().getName());
+//		if(context == null) {
+//			context = JAXBContext.newInstance(theClass.getClass());
+//			jaxbMap.put(theClass.getClass().getName(), context);
+//			System.out.println("jaxbMap entry count = "+jaxbMap.size());
+//		}
+
+//	private static JAXBContext getJaxbContext(Class<?> theClass,TreeMap<String, JAXBContext> jaxbMap) throws Exception{
+//		JAXBContext jaxbContext = jaxbMap.get(theClass.getName());
+//		if(jaxbContext == null) {
+//			jaxbContext = JAXBContext.newInstance(theClass.getClass());
+//			jaxbMap.put(theClass.getClass().getName(), jaxbContext);
+//			System.out.println("jaxbMap entry count = "+jaxbMap.size());
+//		}
+//		return jaxbContext;
+//	}
+	private String createXML(Object theObject) throws Exception{
 //		vcListXML.setCommandInfo(result);
-		JAXBContext context = JAXBContext.newInstance(theClass.getClass());
-		Marshaller m = context.createMarshaller();
+		Marshaller m = /*getJaxbContext(theObject.getClass(), jaxbMap)*/jaxbContext.createMarshaller();
 		// for pretty-print XML in JAXB
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		StringWriter writer = new StringWriter();
 		// Write to list to a writer
-		m.marshal(theClass, writer);
+		m.marshal(theObject, writer);
 		String str = writer.toString();
 //		System.out.println(str);
 		// write the content to a physical file
@@ -432,7 +513,53 @@ public class VCellHelper extends AbstractService implements ImageJService
 			
 		}
 	}
-	public static IJTimeSeriesJobResults getTimeSeries(String[] variableNames, int[] indices, double startTime, int step, double endTime,
+
+	public IJSolverStatus startFrap() throws Exception{
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/frap");
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		return (IJSolverStatus)unmarshallResponseFromConnection(con, jaxbContext);
+	}
+	
+	private static Object unmarshallResponseFromConnection(HttpURLConnection con,JAXBContext jaxbContext) throws Exception{
+		int responseCode = con.getResponseCode();
+//		System.out.println("Response Code : " + responseCode);
+		if(responseCode == HttpURLConnection.HTTP_OK) {
+			IJSolverStatus ijSolverStatus = (IJSolverStatus)jaxbContext.createUnmarshaller().unmarshal(con.getInputStream());
+			con.getInputStream().close();
+			return ijSolverStatus;
+		}
+		throw new Exception(streamToStringWithClose(con.getErrorStream()));
+	}
+	
+	@XmlRootElement
+	public static class IJSolverStatus  {
+		@XmlAttribute
+		public String simJobId;
+		@XmlAttribute
+		public int statusCode;
+		@XmlAttribute
+		public String statusName;
+		@XmlAttribute
+		public String statusDetail;
+		@XmlAttribute
+		public String statusMessage;
+		public IJSolverStatus() {	
+		}
+		@Override
+		public String toString() {
+			return simJobId+" "+statusCode+" "+statusName+" "+statusDetail+" "+statusMessage;
+		}
+		
+	}
+
+
+	public IJSolverStatus getSolverStatus(String simulationJobId) throws Exception{
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/status/?vcSimId="+simulationJobId);
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		return (IJSolverStatus)unmarshallResponseFromConnection(con, jaxbContext);
+	}
+	
+	public IJTimeSeriesJobResults getTimeSeries(String[] variableNames, int[] indices, double startTime, int step, double endTime,
 			boolean calcSpaceStats, boolean calcTimeStats, int jobid, int cachekey) throws Exception{
 		IJTimeSeriesJobSpec ijTimeSeriesJobSpec = new IJTimeSeriesJobSpec(variableNames, indices, startTime, step, endTime, calcSpaceStats, calcTimeStats, jobid, cachekey);
 		URL url = new URL("http://localhost:"+lastVCellApiPort+"/gettimeseries/");
@@ -462,24 +589,25 @@ public class VCellHelper extends AbstractService implements ImageJService
         outputStreamWriter.write(s);
         outputStreamWriter.flush();
         outputStreamWriter.close();
-// 
-		int responseCode = con.getResponseCode();
-		System.out.println("Response Code : " + responseCode);
- 
-		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-		String inputLine;
-		StringBuffer response = new StringBuffer();
- 
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
-		}
-		in.close();
- 
-//		System.out.println(response.toString());
 
-	JAXBContext jaxbContext = JAXBContext.newInstance(IJTimeSeriesJobResults.class);
-	Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-	IJTimeSeriesJobResults ijTimeSeriesJobResults =  (IJTimeSeriesJobResults) jaxbUnmarshaller.unmarshal(new ByteArrayInputStream(response.toString().getBytes()));
+        return (IJTimeSeriesJobResults)unmarshallResponseFromConnection(con, jaxbContext);
+//		int responseCode = con.getResponseCode();
+//		System.out.println("Response Code : " + responseCode);
+// 
+//		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+//		String inputLine;
+//		StringBuffer response = new StringBuffer();
+// 
+//		while ((inputLine = in.readLine()) != null) {
+//			response.append(inputLine);
+//		}
+//		in.close();
+// 
+////		System.out.println(response.toString());
+//
+//	JAXBContext jaxbContext = JAXBContext.newInstance(IJTimeSeriesJobResults.class);
+//	Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+//	IJTimeSeriesJobResults ijTimeSeriesJobResults =  (IJTimeSeriesJobResults) jaxbUnmarshaller.unmarshal(new ByteArrayInputStream(response.toString().getBytes()));
 
 
 		
@@ -539,7 +667,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 //            sb.append((char)c);
 //        }
 //        String response = sb.toString();
-        return ijTimeSeriesJobResults;
+//        return ijTimeSeriesJobResults;
 	}
 	
 	public static class MultipartUtility {
