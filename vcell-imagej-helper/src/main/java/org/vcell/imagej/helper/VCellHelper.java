@@ -522,8 +522,12 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 	}
 
-	public IJSolverStatus startFrap() throws Exception{
-		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/frap");
+	public IJSolverStatus startFrap(Double rDiffusionOverride,Double kForwardBindingOverride,Double kReversBindingOverride) throws Exception{
+		StringBuffer sb = new StringBuffer();
+		sb.append((rDiffusionOverride==null?"":"r_diffusionRate="+rDiffusionOverride.doubleValue()+"&rf_diffusionRate="+rDiffusionOverride.doubleValue()));
+		sb.append((sb.length()>0?"&":"")+(kForwardBindingOverride==null?"":"Kf_RAN_FITC_binding="+kForwardBindingOverride.doubleValue()+"&Kf_RAN_binding="+kForwardBindingOverride.doubleValue()));
+		sb.append((sb.length()>0?"&":"")+(kReversBindingOverride==null?"":"Kr_RAN_FITC_binding="+kReversBindingOverride.doubleValue()+"&Kr_RAN_binding="+kReversBindingOverride.doubleValue()));
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/frap/"+(sb.length()>0?"?"+sb.toString():""));
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		return (IJSolverStatus)unmarshallResponseFromConnection(con, jaxbContext);
 	}

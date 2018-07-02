@@ -6,6 +6,28 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Element;
 
+import org.vcell.imagej.helper.VCellHelper.ModelType
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.util.Fraction;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.img.basictypeaccess.array.DoubleArray;
+import net.imglib2.img.basictypeaccess.array.FloatArray;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.img.ImgFactory;
+import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.img.Img
+import net.imglib2.img.array.ArrayImgs;
+
+
+		mt = ModelType.bm;
+		int[] timeIndexes = [3];
+    	searchedData = vh.getSearchedData("frm",true, ModelType.bm,null,null, "Copy of Copy of fully implicit", "C_cyt",timeIndexes,0);
+    	double[] data = searchedData.getDatas().iterator().next();
+    	long[] xyzDims = searchedData.getXYZDimensions(data);
+		img1 = ArrayImgs.doubles(data,xyzDims)
+        ImageJFunctions.show( img1 );
+
 
 
 		URL url = new URL("http://172.16.129.126:8010"+"/"+"getinfo/"+"?"+"open=true"+"&"+"type"+"="+"bm");

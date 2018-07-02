@@ -1,4 +1,5 @@
 #@VCellHelper vh
+#@OpService op //This is a net.imagej.ops.OpEnvironment
 
 import org.vcell.imagej.helper.VCellHelper;
 import org.vcell.imagej.helper.VCellHelper.IJSolverStatus;
@@ -10,14 +11,34 @@ import net.imglib2.img.basictypeaccess.array.DoubleArray;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imagej.ops.OpInfo
+import net.imagej.ops.OpMatchingService
+import net.imagej.ops.OpRef
+import net.imagej.ops.OpCandidate
 
-//long[] dims = [20,20,20,5];
-//double[] stack = new double[20*20*20*5];
-//ArrayImg<DoubleType, DoubleArray> test = ArrayImgs.doubles(stack, dims);
-//ImageJFunctions.show( test );
+
+
+
+//Collection<OpInfo> opInfos = op.infos();
+//for(OpInfo opInfo:opInfos){
+//	println(opInfo.getName());
+//}
+//OpMatchingService matcher = op.matcher();
+//ArrayImg<DoubleType, DoubleArray> img0;
+//Double d = new Double("100.5");
+//List<OpCandidate> opCandidates = matcher.findCandidates(op,OpRef.create("stats.mean"));
+//for(OpCandidate opCandidate:opCandidates){
+//	println(opCandidate);
+//}
+//something = op.image();
 //if(true){return}
 
-    	IJSolverStatus ijSolverStatus = vh.startFrap();
+
+//		ijSolverStatus = new IJSolverStatus();
+//		ijSolverStatus.simJobId = "SimID_0123456789_0";
+
+		Double diffOverride = new Double(".00001");
+    	IJSolverStatus ijSolverStatus = vh.startFrap(diffOverride,null,null);
     	println(ijSolverStatus.toString());
     	String simulationJobId = ijSolverStatus.simJobId;
     	while(true) {
@@ -62,6 +83,7 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 
 		ArrayImg<DoubleType, DoubleArray> img = ArrayImgs.doubles(timeStack, xyztDims);
 		ImageJFunctions.show( img );
+		println(op.stats().mean(img))// 'op' is a net.imagej.ops.OpEnvironment
 
 
 

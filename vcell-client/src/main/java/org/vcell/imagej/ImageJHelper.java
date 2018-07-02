@@ -78,6 +78,7 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.jdom.Namespace;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
@@ -133,6 +134,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
@@ -140,6 +142,7 @@ import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.Model.Owner;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
@@ -154,6 +157,7 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationModelInfo;
@@ -2045,6 +2049,10 @@ public class ImageJHelper {
 	}
 	private static HashMap<String, Solver> solverCache = new HashMap<>();
 	public static class ApiSolverHandler extends AbstractHandler{
+//		private static final String R_DIFFUSION = "rDiffusion";
+//		private static final String KR_BINDING = "krBinding";
+//		private static final String KF_BINDING = "kfBinding";
+
 		@Override
 		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 				throws IOException, ServletException {
@@ -2068,6 +2076,10 @@ public class ImageJHelper {
 	    				}
 	    			}
 	    		}else if(target.startsWith("/frap")) {
+//	    			Map<String, String[]> parameterMap = request.getParameterMap();
+//	    			Double overrideKfBinding = (parameterMap.get(KF_BINDING) == null?null:Double.parseDouble(parameterMap.get(KF_BINDING)[0]));
+//	    			Double overrideKrBinding = (parameterMap.get(KR_BINDING) == null?null:Double.parseDouble(parameterMap.get(KR_BINDING)[0]));
+//	    			Double override_rDiffusion = (parameterMap.get(R_DIFFUSION) == null?null:Double.parseDouble(parameterMap.get(R_DIFFUSION)[0]));
 	    			if(VCellClientTest.getVCellClient() == null) {
 	    				generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_BAD_REQUEST,TYPE_TEXT_PLAIN_UTF8, "Must be logged in to start frap solver");
 	    			}else {
@@ -2083,6 +2095,26 @@ public class ImageJHelper {
 								for (Simulation simulation : simulations) {
 									if(simulation.getName().equals("FRAP binding")) {
 										newsim = simulation;
+										Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(newsim);
+										clonedSimulation.refreshDependencies();
+										MathOverrides clonedMathOverrides = clonedSimulation.getMathOverrides();
+										String[] allConstantNames = clonedMathOverrides.getAllConstantNames();
+										Map<String, String[]> parameterMap = request.getParameterMap();
+										boolean bChanges = false;
+										for(String param:parameterMap.keySet()) {
+											for(String constantName:allConstantNames) {
+												if(constantName.equals(param)) {
+													Constant oldConstant = clonedMathOverrides.getConstant(constantName);
+													Constant newConstant = new Constant(oldConstant.getName(), new Expression(parameterMap.get(param)[0]));
+													clonedMathOverrides.putConstant(newConstant);
+													bChanges = true;
+												}
+											}
+										}
+										if(bChanges) {
+											clonedSimulation.refreshDependencies();
+											newsim.setMathOverrides(new MathOverrides(newsim, clonedSimulation.getMathOverrides()));
+										}
 										break;
 									}
 								}
