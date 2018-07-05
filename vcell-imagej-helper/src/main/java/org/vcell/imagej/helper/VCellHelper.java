@@ -63,7 +63,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 	
 	public VCellHelper() {
 		try {
-			jaxbContext = JAXBContext.newInstance(new Class[] {IJSolverStatus.class,IJTimeSeriesJobResults.class,IJTimeSeriesJobSpec.class});
+			jaxbContext = JAXBContext.newInstance(new Class[] {IJSolverStatus.class,IJTimeSeriesJobResults.class,IJTimeSeriesJobSpec.class,IJFieldData.class,IJGeom.class});
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
@@ -454,7 +454,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 //	}
 	private String createXML(Object theObject) throws Exception{
 //		vcListXML.setCommandInfo(result);
-		Marshaller m = /*getJaxbContext(theObject.getClass(), jaxbMap)*/jaxbContext.createMarshaller();
+		Marshaller m = jaxbContext.createMarshaller();
 		// for pretty-print XML in JAXB
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		StringWriter writer = new StringWriter();
@@ -522,13 +522,91 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 	}
 
-	public IJSolverStatus startFrap(Double rDiffusionOverride,Double kForwardBindingOverride,Double kReversBindingOverride) throws Exception{
+	@XmlRootElement
+	public static class IJFieldData {
+		@XmlAttribute
+		public String varName;
+		@XmlAttribute
+		public int xsize;
+		@XmlAttribute
+		public int ysize;
+		@XmlAttribute
+		public int zsize;
+		@XmlElement
+		double[] data;
+		public IJFieldData() {
+			
+		}
+		public IJFieldData(String varName,int xsize, int ysize, int zsize, double[] data) {
+			super();
+			this.varName = varName;
+			this.xsize = xsize;
+			this.ysize = ysize;
+			this.zsize = zsize;
+			this.data = data;
+		}
+	}
+	@XmlRootElement
+	public static class IJGeom {
+		@XmlElement
+		String[] subvolumeNames;
+		@XmlElement
+		int[] subvolumePixelValue;
+		@XmlAttribute
+		public int xsize;
+		@XmlAttribute
+		public int ysize;
+		@XmlAttribute
+		public int zsize;
+		@XmlElement
+		double[] originXYZ;
+		@XmlElement
+		double[] extentXYZ;
+		@XmlElement
+		byte[] geom;
+		public IJGeom() {
+			
+		}
+		public IJGeom(String[] subvolumeNames, int[] subvolumePixelValue, int xsize, int ysize, int zsize,double[] originXYZ, double[] extentXYZ, byte[] geom) throws Exception{
+			super();
+			if(originXYZ == null || extentXYZ == null || originXYZ.length != 3 || extentXYZ.length != 3) {
+				throw new Exception("origin and extent array size must be 3");
+			}
+			if(subvolumeNames == null || subvolumePixelValue == null || (subvolumeNames.length != subvolumePixelValue.length)) {
+				throw new Exception("subvolNames and pixelvalues arrays must be non-null and same length");
+			}
+			if(geom == null || geom.length != (xsize*ysize*zsize)) {
+				throw new Exception("x*y*z="+(xsize*ysize*zsize)+" not the same as geom length="+geom.length);
+			}
+
+			this.subvolumeNames = subvolumeNames;
+			this.subvolumePixelValue = subvolumePixelValue;
+			this.xsize = xsize;
+			this.ysize = ysize;
+			this.zsize = zsize;
+			this.originXYZ = originXYZ;
+			this.extentXYZ = extentXYZ;
+			this.geom = geom;
+		}
+	}
+
+	public IJSolverStatus startFrap(Double rDiffusionOverride,Double kForwardBindingOverride,Double kReversBindingOverride,IJGeom ijGeom,String laserCoverageAnalyticExpression) throws Exception{
 		StringBuffer sb = new StringBuffer();
-		sb.append((rDiffusionOverride==null?"":"r_diffusionRate="+rDiffusionOverride.doubleValue()+"&rf_diffusionRate="+rDiffusionOverride.doubleValue()));
+		sb.append((laserCoverageAnalyticExpression==null?"":"laserCoverage="+URLEncoder.encode(laserCoverageAnalyticExpression)));
+		sb.append((sb.length()>0?"&":"")+(rDiffusionOverride==null?"":"r_diffusionRate="+rDiffusionOverride.doubleValue()+"&rf_diffusionRate="+rDiffusionOverride.doubleValue()));
 		sb.append((sb.length()>0?"&":"")+(kForwardBindingOverride==null?"":"Kf_RAN_FITC_binding="+kForwardBindingOverride.doubleValue()+"&Kf_RAN_binding="+kForwardBindingOverride.doubleValue()));
 		sb.append((sb.length()>0?"&":"")+(kReversBindingOverride==null?"":"Kr_RAN_FITC_binding="+kReversBindingOverride.doubleValue()+"&Kr_RAN_binding="+kReversBindingOverride.doubleValue()));
 		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/frap/"+(sb.length()>0?"?"+sb.toString():""));
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		if(ijGeom != null) {
+			con.setDoOutput(true);    // indicates POST method
+			con.setDoInput(true);
+			con.setRequestMethod("POST");
+			con.setRequestProperty("Content-Type", "text/xml");
+//			jaxbContext.createMarshaller().marshal(ijFieldData, con.getOutputStream());
+			jaxbContext.createMarshaller().marshal(ijGeom, con.getOutputStream());
+			con.getOutputStream().close();
+		}
 		return (IJSolverStatus)unmarshallResponseFromConnection(con, jaxbContext);
 	}
 	

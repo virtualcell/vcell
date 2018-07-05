@@ -79,16 +79,7 @@ public class RunRefSimulationOp {
 	}
 	
 	private static ExternalDataInfo createNewExternalDataInfo(LocalWorkspace localWorkspace, String extDataIDName){
-		
-		File targetDir = new File(localWorkspace.getDefaultSimDataDirectory());
-		KeyValue key = LocalWorkspace.createNewKeyValue();
-		User owner = LocalWorkspace.getDefaultOwner();
-		
-		ExternalDataIdentifier newImageDataExtDataID = new ExternalDataIdentifier(key, owner,extDataIDName);
-		String filename = new File(targetDir,newImageDataExtDataID.getID()+SimDataConstants.LOGFILE_EXTENSION).getAbsolutePath();
-		ExternalDataInfo newImageDataExtDataInfo = new ExternalDataInfo(newImageDataExtDataID, filename);
-		
-		return newImageDataExtDataInfo;
+		return LocalWorkspace.createNewExternalDataInfo(new File(localWorkspace.getDefaultSimDataDirectory()), extDataIDName);
 	}
 
 	private static ImageTimeSeries<FloatImage> runRefSimulation(LocalWorkspace localWorkspace, ROI cellROI, double timeStepVal, TimeBounds timeBounds, FloatImage initRefConc, double baseDiffusionRate, ClientTaskStatusSupport progressListener) throws Exception
@@ -200,31 +191,7 @@ public class RunRefSimulationOp {
 
 	private static void saveExternalData(Image image, String varName, ExternalDataIdentifier newROIExtDataID, LocalWorkspace localWorkspace) throws ObjectNotFoundException, ImageException, IOException 
 	{
-		Extent extent = image.getExtent();
-		Origin origin = image.getOrigin();
-		ISize isize = image.getISize();
-		VCImage vcImage = new VCImageUncompressed(null, new byte[isize.getXYZ()], extent, isize.getX(),isize.getY(),isize.getZ());
-		RegionImage regionImage = new RegionImage(vcImage,0,null,null,RegionImage.NO_SMOOTHING);
-		CartesianMesh simpleCartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, isize, regionImage);
-		int NumTimePoints = 1; 
-		int NumChannels = 1;
-		double[][][] pixData = new double[NumTimePoints][NumChannels][]; // dimensions: time points, channels, whole image ordered by z slices. 
-		
-		pixData[0][0] = image.getDoublePixels();
-
-		FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-		fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-		fdos.cartesianMesh = simpleCartesianMesh;
-		fdos.doubleSpecData =  pixData;
-		fdos.specEDI = newROIExtDataID;
-		fdos.varNames = new String[] { varName };
-		fdos.owner = LocalWorkspace.getDefaultOwner();
-		fdos.times = new double[] { 0.0 };
-		fdos.variableTypes = new VariableType[] { VariableType.VOLUME };
-		fdos.origin = origin;
-		fdos.extent = extent;
-		fdos.isize = isize;
-		localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+		LocalWorkspace.saveExternalData(image.getExtent(),image.getOrigin(),image.getISize(),image.getDoublePixels(),LocalWorkspace.getDefaultOwner(), varName, newROIExtDataID, localWorkspace.getDataSetControllerImpl());
 	}
 
 	private static BioModel createRefSimBioModel(KeyValue simKey, User owner, Origin origin, Extent extent, ROI cellROI_2D, double timeStepVal, TimeBounds timeBounds, String varName, Expression initialConcentration, double baseDiffusionRate) throws Exception {
