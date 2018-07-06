@@ -124,6 +124,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.RequestManager;
@@ -2163,6 +2164,14 @@ public class ImageJHelper {
 //											ClientTaskDispatcher.dispatchColl(null, new Hashtable<String, Object>(), ClientRequestManager.updateMath(null, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout), false);
 //											Thread.sleep(10000);
 										}
+										
+										//Change simulation endtime
+										String[] endTime = request.getParameterMap().get("endTime");
+										if(endTime != null) {
+											ClientTaskManager.changeEndTime(null, newsim.getSolverTaskDescription(), Double.parseDouble(endTime[0]));
+										}
+										
+										//Update everything
 										mathUpdateTasks = (ArrayList<AsynchClientTask>)ClientRequestManager.updateMath(null, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout);
 										break getout;
 									}
@@ -2336,6 +2345,9 @@ public class ImageJHelper {
 				}
 				return pixelClassList.toArray(new VCPixelClass[0]);
 			}
+			public ISize getISize() {
+				return new ISize(xsize, ysize, zsize);
+			}
 		}
 
 		public void changeGeometry(Simulation newsim,IJGeom ijGeom) throws Exception {
@@ -2350,6 +2362,7 @@ public class ImageJHelper {
 //					}
 //				}
 //			}
+			
 			SimulationContext simulationContext = (SimulationContext)newsim.getSimulationOwner();
 			StructureMapping[] origStructureMappings = simulationContext.getGeometryContext().getStructureMappings();
 			VCImageUncompressed aVCImage = new VCImageUncompressed(null, ijGeom.geom,ijGeom.getExtent()/*newsim.getMeshSpecification().getGeometry().getExtent()*/ , ijGeom.xsize,ijGeom.ysize,ijGeom.zsize);
@@ -2389,6 +2402,8 @@ public class ImageJHelper {
 			overrideGeom.getGeometrySurfaceDescription().updateAll();
 			simulationContext.setGeometry(overrideGeom);
 			newsim.getMathDescription().setGeometry(overrideGeom);
+			newsim.getMeshSpecification().setGeometry(overrideGeom);
+			newsim.getMeshSpecification().setSamplingSize(ijGeom.getISize());
 			
 			//Create Structure mappings using names of subvolumes matching
 			System.out.println("-----subvolumes");

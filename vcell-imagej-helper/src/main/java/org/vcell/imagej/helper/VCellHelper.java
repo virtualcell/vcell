@@ -590,12 +590,13 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 	}
 
-	public IJSolverStatus startFrap(Double rDiffusionOverride,Double kForwardBindingOverride,Double kReversBindingOverride,IJGeom ijGeom,String laserCoverageAnalyticExpression) throws Exception{
+	public IJSolverStatus startFrap(Double rDiffusionOverride,Double kForwardBindingOverride,Double kReversBindingOverride,IJGeom ijGeom,String laserCoverageAnalyticExpression,Double newEndTime) throws Exception{
 		StringBuffer sb = new StringBuffer();
-		sb.append((laserCoverageAnalyticExpression==null?"":"laserCoverage="+URLEncoder.encode(laserCoverageAnalyticExpression)));
-		sb.append((sb.length()>0?"&":"")+(rDiffusionOverride==null?"":"r_diffusionRate="+rDiffusionOverride.doubleValue()+"&rf_diffusionRate="+rDiffusionOverride.doubleValue()));
-		sb.append((sb.length()>0?"&":"")+(kForwardBindingOverride==null?"":"Kf_RAN_FITC_binding="+kForwardBindingOverride.doubleValue()+"&Kf_RAN_binding="+kForwardBindingOverride.doubleValue()));
-		sb.append((sb.length()>0?"&":"")+(kReversBindingOverride==null?"":"Kr_RAN_FITC_binding="+kReversBindingOverride.doubleValue()+"&Kr_RAN_binding="+kReversBindingOverride.doubleValue()));
+		sb.append((sb.length()>0?"&":"")+(laserCoverageAnalyticExpression==null?"":"laserCoverage="+URLEncoder.encode(laserCoverageAnalyticExpression)));
+		sb.append((sb.length()>0?"&":"")+(newEndTime==null?"":                     "endTime="+newEndTime.doubleValue()));
+		sb.append((sb.length()>0?"&":"")+(rDiffusionOverride==null?"":             "r_diffusionRate="+rDiffusionOverride.doubleValue()+"&rf_diffusionRate="+rDiffusionOverride.doubleValue()));
+		sb.append((sb.length()>0?"&":"")+(kForwardBindingOverride==null?"":        "Kf_RAN_FITC_binding="+kForwardBindingOverride.doubleValue()+"&Kf_RAN_binding="+kForwardBindingOverride.doubleValue()));
+		sb.append((sb.length()>0?"&":"")+(kReversBindingOverride==null?"":         "Kr_RAN_FITC_binding="+kReversBindingOverride.doubleValue()+"&Kr_RAN_binding="+kReversBindingOverride.doubleValue()));
 		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/frap/"+(sb.length()>0?"?"+sb.toString():""));
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		if(ijGeom != null) {
