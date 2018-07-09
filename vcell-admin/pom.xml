@@ -112,14 +112,16 @@
 		</dependency>
 		
 		<!-- NB: For testing via main methods in IDEs. -->
+<!-- 
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-oracle</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
-		</dependency>
-	</dependencies>
+ 		</dependency>
+ -->	
+ 	</dependencies>
 	
 	<build>
         <plugins>

@@ -12,9 +12,7 @@ import java.util.Date;
 import java.util.Vector;
 
 import org.vcell.db.ConnectionFactory;
-import org.vcell.db.oracle.OraclePoolingConnectionFactoryProvider;
-import org.vcell.db.postgres.PostgresConnectionFactoryProvider;
-//import org.vcell.db.DatabaseService;
+import org.vcell.db.DatabaseService;
 
 public class VCStatistics {
 	private ConnectionFactory connectionFactory = null;
@@ -54,18 +52,12 @@ public class VCStatistics {
 			return sb.toString();
 		}
 	}
-	public static ConnectionFactory createConnectionFactory(String dbDriverName, String dbConnectURL,String dbUserid,String dbPassword) {
-		ConnectionFactory connFact = null;
-		if(OraclePoolingConnectionFactoryProvider.ORACLE_DRIVER_NAME.equals(dbDriverName)) {
-			connFact = new OraclePoolingConnectionFactoryProvider().createConnctionFactory(dbDriverName, dbConnectURL, dbUserid, dbPassword);
-		}else if(PostgresConnectionFactoryProvider.POSTGRESQL_DRIVER_NAME.equals(dbDriverName)) {
-			connFact = new PostgresConnectionFactoryProvider().createConnctionFactory(dbDriverName, dbConnectURL, dbUserid, dbPassword);
-		}
-		return connFact;
-	}
-
 	private VCStatistics(String dbDriverName, String dbConnectURL,String dbUserid,String dbPassword) throws Exception {
-		connectionFactory = createConnectionFactory(dbDriverName, dbConnectURL, dbUserid, dbPassword);
+		connectionFactory = DatabaseService.getInstance().createConnectionFactory(
+				dbDriverName,
+				dbConnectURL,
+				dbUserid,
+				dbPassword);
 	}
 	public static void main(String[] args) {
 		if(args.length != 5){

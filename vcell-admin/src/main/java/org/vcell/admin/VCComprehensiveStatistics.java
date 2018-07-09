@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
@@ -72,17 +73,18 @@ public class VCComprehensiveStatistics {
 	ModelStat[] bioModelStats = null;
 	ModelStat[] mathModelStats = null;
 
-	VCComprehensiveStatistics(String dbDriverName, String dbConnectURL,String dbUserid,String dbPassword) throws Exception {
+	VCComprehensiveStatistics() throws Exception {
 		new PropertyLoader();
 		
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 		
-		oracleConnection = VCStatistics.createConnectionFactory(dbDriverName, dbConnectURL, dbUserid, dbPassword);
-		KeyFactory keyFactory = oracleConnection.getKeyFactory();
-		localAdminDbServer = new LocalAdminDbServer(oracleConnection, keyFactory);
-		dbServerImpl = new DatabaseServerImpl(oracleConnection,keyFactory);
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
+		KeyFactory keyFactory = conFactory.getKeyFactory();
 		
-//		oracleConnection = DatabaseService.getInstance().createConnectionFactory();
+		localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory);
+		dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
+		
+		oracleConnection = DatabaseService.getInstance().createConnectionFactory();
 		
 		internalDeveloper.add("fgao");
 		internalDeveloper.add("anu");
@@ -118,9 +120,9 @@ public class VCComprehensiveStatistics {
 	}
 	public static void main(String[] args) {
 		try {
-			if (args.length != 6) {
-				System.out.println("Usage : VCComprehensiveStatistics end_date #_of_retro_months dbDriverName, dbConnectURL, dbUserid, dbPassword");
-				System.out.println("Example: VCComprehensiveStatistics 12/31/2009 6 oracle.jdbc.driver.OracleDriver \"jdbc:oracle:thin:@host:1521:db\" dbUserid dbPassword");
+			if (args.length != 2) {
+				System.out.println("Usage : VCComprehensiveStatistics end_date #_of_retro_months ");
+				System.out.println("eg : VCComprehensiveStatistics 12/31/2009 6]");
 				System.exit(1);
 			}
 			Date startDate = null;
@@ -129,9 +131,8 @@ public class VCComprehensiveStatistics {
 			int numMonths = Integer.parseInt(args[1]);
 			startDate = new Date(endDate.getTime() - (long)(numMonths * MONTH_IN_MS));
 			
-			String dbUserId = args[4];
-			VCComprehensiveStatistics vcstat = new VCComprehensiveStatistics(args[2],args[3],dbUserId,args[5]);
-			vcstat.startStatistics(startDate, endDate,dbUserId);			
+			VCComprehensiveStatistics vcstat = new VCComprehensiveStatistics();
+			vcstat.startStatistics(startDate, endDate);			
 		} catch (Throwable ex) {
 			ex.printStackTrace(System.out);
 		} finally {
@@ -148,7 +149,7 @@ public class VCComprehensiveStatistics {
 		}
 	}
 	
-	public void startStatistics(Date startDate, Date endDate,String dbUserID) throws DataAccessException, FileNotFoundException, SQLException {
+	public void startStatistics(Date startDate, Date endDate) throws DataAccessException, FileNotFoundException, SQLException {
 		try {			
 			long startDateInMs = startDate.getTime();
 			long endDateInMs = endDate.getTime();
@@ -156,7 +157,7 @@ public class VCComprehensiveStatistics {
 			DateFormat df = DateFormat.getDateInstance();
 			DateFormat sdf = new SimpleDateFormat("MMM_dd_yyyy");
 			itemCount = 0;
-			statOutputPW = new PrintWriter("VCStatistics_" + dbUserID + "_from_" + sdf.format(startDate) + "_to_" + sdf.format(endDate) + ".txt");
+			statOutputPW = new PrintWriter("VCStatistics_" + PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid) + "_from_" + sdf.format(startDate) + "_to_" + sdf.format(endDate) + ".txt");
 			statOutputPW.println("Note: developers are excluded from this statistics");
 			statOutputPW.println();
 			collectUserStats(startDateInMs, endDateInMs);
