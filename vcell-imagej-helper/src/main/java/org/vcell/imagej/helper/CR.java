@@ -1,32 +1,25 @@
 package org.vcell.imagej.helper;
 
-import java.io.File;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import org.renjin.primitives.subset.PositionalSubscript;
-import org.scijava.convert.ConversionRequest;
-import org.scijava.display.Display;
 import org.vcell.imagej.helper.VCellHelper.BasicStackDimensions;
 import org.vcell.imagej.helper.VCellHelper.IJGeom;
 import org.vcell.imagej.helper.VCellHelper.IJSolverStatus;
+//import org.vcell.imagej.helper.VCellHelper.BasicStackDimensions;
+//import org.vcell.imagej.helper.VCellHelper.IJGeom;
+//import org.vcell.imagej.helper.VCellHelper.IJSolverStatus;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import ij.process.ImageProcessor;
 import io.scif.img.ImgOpener;
 import net.imagej.ImageJ;
-import net.imagej.display.DefaultImageDisplay;
-import net.imagej.plugins.commands.zoom.ZoomSet;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.IterableInterval;
