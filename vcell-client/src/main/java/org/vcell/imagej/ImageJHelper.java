@@ -771,28 +771,16 @@ public class ImageJHelper {
 		try {
 			jaxbContext = JAXBContext.newInstance(new Class[] {VCCommandList.class,IJModelInfos.class,IJSolverStatus.class,IJTimeSeriesJobResults.class,IJDataList.class,IJVarInfos.class,IJFieldData.class,IJGeom.class});
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-//	private static TreeMap<String, JAXBContext> jaxbMap = new TreeMap<>();
 	private static String createXML(Object theClass) throws Exception{
-//		JAXBContext context = jaxbMap.get(theClass.getClass().getName());
-//		if(context == null) {
-//			context = JAXBContext.newInstance(theClass.getClass());
-//			jaxbMap.put(theClass.getClass().getName(), context);
-//			System.out.println("jaxbMap entry count = "+jaxbMap.size());
-//		}
 		Marshaller m = jaxbContext.createMarshaller();
 		// for pretty-print XML in JAXB
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		StringWriter writer = new StringWriter();
-		// Write to list to a writer
 		m.marshal(theClass, writer);
 		String str = writer.toString();
-//		System.out.println(str);
-		// write the content to a physical file
-//		new FileWriter("jaxbTest.xml").write(result);
 		return str;
 	}
 	
@@ -2258,7 +2246,14 @@ public class ImageJHelper {
 					    	// create solver from SolverFactory
 					    	SimulationTask simTask = new SimulationTask(new SimulationJob(finalSim, 0, null),0);
 //					    	VCSimulationDataIdentifier vcSimulationDataIdentifier = simTask.getSimulationJob().getVCDataIdentifier();
-					    	final File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());	
+					    	final File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
+					    	File[] files = localSimDataDir.listFiles();
+					    	for (int i = 0; i < files.length; i++) {
+								if(files[i].getName().startsWith(finalSim.getSimulationID())) {
+									files[i].delete();
+								}
+							}
+					    	Thread.sleep(1000);
 					    	Solver solver = SolverFactory.createSolver(localSimDataDir, simTask, false);						
 							solver.startSolver();
 					    	SolverStatus solverStatus =  solver.getSolverStatus();
@@ -2451,10 +2446,24 @@ public class ImageJHelper {
 		}
 	}
 	
-	public static Server imageJServer;
+	public static URI getServiceURI() {
+		return imageJServer.getURI();
+	}
+	public static boolean serviceExists() {
+		return imageJServer != null;
+	}
+	public static void stopService() throws Exception{
+		if(imageJServer != null) {
+			imageJServer.stop();
+			imageJServer = null;
+		}
+	}
+	private static Server imageJServer;
+	private static final int IJSERVER_BEGIN_PORT_RANGE = 8000;
+	private static final int IJSERVER_END_PORT_RANGE = 8100;
     public static void startService(Integer onlyThisPort) throws Exception{
-    	if(imageJServer != null && !imageJServer.isStopped()) {
-    		imageJServer.stop();
+    	if(ImageJHelper.serviceExists()) {
+    		throw new Exception("ImageJServer already exists, only 1 allowed");
     	}
             ContextHandler contextHello = new ContextHandler("/"+ApiEnum.hello.name()+"/");
             contextHello.setHandler(new ApiHelloHandler());
@@ -2476,23 +2485,21 @@ public class ImageJHelper {
 
             ContextHandlerCollection contexts = new ContextHandlerCollection();
             contexts.setHandlers(new Handler[] { contextHello,contextRoot,context,contextData ,contextTimeSeries,contextSolver});
-        for(int i=8000;i<=8100;i++) {
+        for(int ijServerPort=IJSERVER_BEGIN_PORT_RANGE;ijServerPort<=IJSERVER_END_PORT_RANGE;ijServerPort++) {
             imageJServer = null;
             try {
-            	imageJServer = new Server((onlyThisPort == null?i:onlyThisPort));
+            	imageJServer = new Server((onlyThisPort == null?ijServerPort:onlyThisPort));
             	imageJServer.setHandler(contexts);
             	imageJServer.start();
 		        System.out.println(imageJServer.getURI());
 				break;
 			} catch (BindException e) {
-				if(imageJServer != null) {
-					imageJServer.stop();
-				}
+				ImageJHelper.stopService();
 				if(onlyThisPort != null) {
 					e.printStackTrace();
 					throw e;
 				}
-				System.out.println("VCellIJ service: port "+i+" in use, continuing search...");
+				System.out.println("VCellIJ service: port "+ijServerPort+" in use, continuing search...");
 			}
         }
     }

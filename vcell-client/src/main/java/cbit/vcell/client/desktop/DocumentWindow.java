@@ -37,9 +37,12 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
+import org.vcell.imagej.ImageJHelper;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UtilCancelException;
@@ -103,6 +106,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JMenu ivjOpenMenuItem = null;
 	//private JMenu recentMenuItem = new JMenu("Open Recent...");
 	private JMenuItem ivjReconnectMenuItem = null;
+	private JMenuItem ivjImageJServiceMenuItem = null;
 	private JMenuItem ivjSave_AsMenuItem = null;
 	private JMenuItem ivjSave_AsLocalMenuItem = null;
 	private JMenuItem ivjSave_VersionMenuItem = null;
@@ -191,6 +195,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				setProxy();
 			if (e.getSource() == DocumentWindow.this.getReconnectMenuItem())
 				connEtoC19(e);
+			if (e.getSource() == DocumentWindow.this.getImageJServiceMenuItem())
+				startStopImageJService();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemRevert())
 				connEtoC28(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemCompare())
@@ -1610,6 +1616,48 @@ private javax.swing.JMenuItem getReconnectMenuItem() {
 	return ivjReconnectMenuItem;
 }
 
+private static String createImageJServiceMenuText() {
+	if(ImageJHelper.serviceExists()) {
+		return "Stop ImageJ Service ("+ImageJHelper.getServiceURI().getPort()+")";
+	}
+	return "Start ImageJ Service";
+}
+private javax.swing.JMenuItem getImageJServiceMenuItem() {
+	if (ivjImageJServiceMenuItem == null) {
+		try {
+			ivjImageJServiceMenuItem = new javax.swing.JMenuItem();
+			ivjImageJServiceMenuItem.setName("ivjImageJServiceMenuItem");
+			ivjImageJServiceMenuItem.setEnabled(true);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjImageJServiceMenuItem;
+}
+
+private void startStopImageJService() {
+	if(ImageJHelper.serviceExists()) {
+		try {
+			ImageJHelper.stopService();
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, "Error stopping ImageJ Service: "+e.getMessage());
+		}
+	}else {
+		try {
+			ImageJHelper.startService(null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, "error starting ImageJ Service: "+e.getMessage());
+		}
+	}
+	
+}
+
 ///**
 // * Return the RunBNGMenuItem property value.
 // * @return javax.swing.JMenuItem
@@ -1771,12 +1819,26 @@ private javax.swing.JMenu getServerMenu() {
 	if (ivjServerMenu == null) {
 		try {
 			ivjServerMenu = new javax.swing.JMenu();
+			//getImageJServiceMenuItem().setText(createImageJServiceMenuText());
+			ivjServerMenu.addMenuListener(new MenuListener() {
+				@Override
+				public void menuSelected(MenuEvent e) {
+					getImageJServiceMenuItem().setText(createImageJServiceMenuText());
+				}
+				@Override
+				public void menuDeselected(MenuEvent e) {
+				}
+				@Override
+				public void menuCanceled(MenuEvent e) {
+				}
+			});
 			ivjServerMenu.setName("ServerMenu");
 			ivjServerMenu.setText("Server");
 			ivjServerMenu.add(getChange_UserMenuItem());
 			ivjServerMenu.add(getChange_ProxyMenuItem());
 			ivjServerMenu.add(getUpdate_UserMenuItem());
 			ivjServerMenu.add(getReconnectMenuItem());
+			ivjServerMenu.add(getImageJServiceMenuItem());
 			ivjServerMenu.add(new JSeparator());
 			ivjServerMenu.add(getViewJobsMenuItem());
 			// user code begin {1}
@@ -1996,6 +2058,7 @@ private void initConnections() throws java.lang.Exception {
 	getChange_ProxyMenuItem().addActionListener(ivjEventHandler);
 	getUpdate_UserMenuItem().addActionListener(ivjEventHandler);
 	getReconnectMenuItem().addActionListener(ivjEventHandler);
+	getImageJServiceMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemRevert().addActionListener(ivjEventHandler);
 	getJMenuItemCompare().addActionListener(ivjEventHandler);
 	getNonSpatialMenuItem().addActionListener(ivjEventHandler);

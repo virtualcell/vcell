@@ -59,7 +59,6 @@ public class VCellHelper extends AbstractService implements ImageJService
 {	
 	private int lastVCellApiPort = -1;
 	JAXBContext jaxbContext;
-//	private TreeMap<String, JAXBContext> jaxbMap = new TreeMap<>();
 	
 	public VCellHelper() {
 		try {
@@ -68,10 +67,6 @@ public class VCellHelper extends AbstractService implements ImageJService
 			e.printStackTrace();
 		}
 	}
-//    public static void main( String[] args )
-//    {
-//    	ImageJ ij = new ImageJ();
-//    }
     
 	public static String documentToString(Document doc) throws Exception {
 	    TransformerFactory tf = TransformerFactory.newInstance();
