@@ -516,9 +516,9 @@ public class SlurmProxy extends HtcProxy {
 			exitCmd.stripPathFromCommand();
 			lsb.write("callExitProcessor( ) {");
 			lsb.append("\techo exitCommand = ");
-			lsb.write("$container_prefix" + exitCmd.getJoinedCommands("$1"));
+			lsb.write("${container_prefix}" + exitCmd.getJoinedCommands("$1"));
 			lsb.append('\t');
-			lsb.write("$container_prefix" + exitCmd.getJoinedCommands());
+			lsb.write("${container_prefix}" + exitCmd.getJoinedCommands());
 			lsb.write("}");
 			lsb.write("echo");
 		}
