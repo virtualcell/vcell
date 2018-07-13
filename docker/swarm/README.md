@@ -195,7 +195,7 @@ open http://localhost:5001
 
 
 
-#### Build VCell and deploy to production servers (from ./docker directory)
+#### Build VCell and deploy to production servers (from ./docker/swarm/ directory)
 
 current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 

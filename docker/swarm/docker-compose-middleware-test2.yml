@@ -1,0 +1,53 @@
+version: '3.3'
+services:
+  activemqint:
+    image: webcenter/activemq:5.14.3
+    ports:
+      - "61620:61616"
+      - "8165:8161"
+    environment:
+      - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbReq;simJob
+      - ACTIVEMQ_STATIC_TOPICS=clientStatus
+      - ACTIVEMQ_MIN_MEMORY=512
+      - ACTIVEMQ_MAX_MEMORY=1024
+      - ACTIVEMQ_ENABLED_SCHEDULER=true
+      - ACTIVEMQ_USERS_clientUser=dummy
+      - ACTIVEMQ_GROUPS_reads=clientUser
+      - ACTIVEMQ_GROUPS_writes=clientUser
+      - ACTIVEMQ_CONFIG_AUTHENABLED=true
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+  activemqsim:
+    image: webcenter/activemq:5.14.3
+    ports:
+      - "61621:61616"
+      - "8166:8161"
+    environment:
+      - ACTIVEMQ_STATIC_QUEUES=workerEvent
+      - ACTIVEMQ_STATIC_TOPICS=serviceControl
+      - ACTIVEMQ_MIN_MEMORY=512
+      - ACTIVEMQ_MAX_MEMORY=1024
+      - ACTIVEMQ_ENABLED_SCHEDULER=true
+      - ACTIVEMQ_USERS_clientUser=dummy
+      - ACTIVEMQ_GROUPS_reads=clientUser
+      - ACTIVEMQ_GROUPS_writes=clientUser
+      - ACTIVEMQ_CONFIG_AUTHENABLED=true
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+  mongodb:
+    image: schaff/vcell-mongo:latest
+    ports:
+      - "27021:27017"
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+networks:
+  vcellnet:

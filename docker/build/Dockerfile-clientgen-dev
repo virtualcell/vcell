@@ -20,7 +20,7 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
     ./vcell-client/target/maven-jars/*.jar \
     /vcellclient/vcell-client/target/maven-jars/
 
-COPY ./docker/installers /config/
+COPY ./docker/build/installers /config/
 WORKDIR /config
 
 VOLUME /jres

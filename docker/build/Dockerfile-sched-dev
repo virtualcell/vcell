@@ -2,6 +2,7 @@ FROM openjdk:8u151-jdk-alpine3.7
 
 RUN mkdir -p /usr/local/app && \
 	apk update && \
+    apk add openssh-client && \
     apk add screen
 
 WORKDIR /usr/local/app
@@ -15,7 +16,7 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./lib/
 
 
-COPY ./docker/vcell-db.log4j.xml .
+COPY ./docker/build/vcell-sched.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \
@@ -24,17 +25,24 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     dbuser="db-user-not-set" \
     jmshost_int_internal=activemqint \
     jmsport_int_internal=61616 \
+    jmshost_sim_internal=activemqsim \
+    jmsport_sim_internal=61626 \
     jmsuser=clientUser \
+    jmsblob_minsize=100000 \
 	mongodb_host_internal=mongodb \
 	mongodb_port_internal=27017 \
     mongodb_database=test \
-    mongodb_host_external="mongodb-host-external-not-set" \
-    mongodb_port_external="mongodb-port-external-not-set" \
-    export_baseurl="export-baseurl-not-set" \
-    jmsblob_minsize=100000
+    batchhost="batch-host-not-set" \
+    batchuser="batch-user-not-set" \
+    slurm_partition="slurm-partition-not-set" \
+    maxJobsPerScan=max-jobs-per-scan-not-set \
+	maxOdeJobsPerUser=max-ode-jobs-per-user-not-set \
+	maxPdeJobsPerUser=max-pde-jobs-per-user-not-set \
+	jobMemoryMB=2000
 
 ENV dbpswdfile=/run/secrets/dbpswd \
-    jmspswdfile=/run/secrets/jmspswd
+    jmspswdfile=/run/secrets/jmspswd \
+    batchuserkeyfile=/run/secrets/batchuserkeyfile
 
 EXPOSE 8000
 
@@ -44,8 +52,11 @@ ENTRYPOINT java \
     -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
-	-Dlog4j.configurationFile=/usr/local/app/vcell-db.log4j.xml \
+	-Dlog4j.configurationFile=/usr/local/app/vcell-sched.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
+	-Dvcell.htc.user="${batchuser}" \
+	-Dvcell.htc.nodelist="${htcnodelist}" \
+	-Dvcell.slurm.partition="${slurm_partition}" \
 	-Dvcell.installDir=/usr/local/app \
 	-Dvcell.server.dbConnectURL="${dburl}" \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
@@ -53,6 +64,8 @@ ENTRYPOINT java \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
 	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
 	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
+	-Dvcell.jms.sim.host.internal="${jmshost_sim_internal}" \
+	-Dvcell.jms.sim.port.internal="${jmsport_sim_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
 	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \
@@ -60,4 +73,9 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
 	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
 	-Dvcell.mongodb.database=${mongodb_database} \
-	-cp "./lib/*" cbit.vcell.message.server.db.DatabaseServer
+	-Dvcell.server.maxJobsPerScan=${maxJobsPerScan} \
+	-Dvcell.server.maxOdeJobsPerUser=${maxOdeJobsPerUser} \
+	-Dvcell.server.maxPdeJobsPerUser=${maxPdeJobsPerUser} \
+	-Dvcell.limit.jobMemoryMB=${jobMemoryMB} \
+	-cp "./lib/*" cbit.vcell.message.server.dispatcher.SimulationDispatcher \
+	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"

@@ -27,7 +27,7 @@ jobid=$(( ( RANDOM % 1000 )  + 42000000000 ))
   echo $jobid >> slurm.jobid
   echo "sbatch $job"
   echo "starting job $jobid on Vagrant singularity box"
-  ../../docker/singularity-vm/run.sh $job
+  ../../docker/build/singularity-vm/run.sh $job
   retcode=$?
   if [[ $retcode -ne 0 ]]; then
      echo "job failed"

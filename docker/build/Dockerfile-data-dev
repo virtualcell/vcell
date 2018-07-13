@@ -14,7 +14,7 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
 
 COPY ./pythonScripts ./pythonScripts
 COPY ./nativelibs/linux64 ./nativelibs/linux64
-COPY ./docker/vcell-data.log4j.xml .
+COPY ./docker/build/vcell-data.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \

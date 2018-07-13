@@ -11,10 +11,10 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./lib/
 
 COPY ./nativelibs/linux64 ./nativelibs/linux64
-COPY ./docker/batch/JavaPreprocessor64 \
-     ./docker/batch/JavaPostprocessor64 \
-     ./docker/batch/JavaSimExe64 \
-     ./docker/batch/entrypoint.sh \
+COPY ./docker/build/batch/JavaPreprocessor64 \
+     ./docker/build/batch/JavaPostprocessor64 \
+     ./docker/build/batch/JavaSimExe64 \
+     ./docker/build/batch/entrypoint.sh \
      /vcellscripts/
 
 ENV PATH=/vcellscripts:$PATH \

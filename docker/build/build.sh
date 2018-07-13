@@ -90,7 +90,7 @@ tag=$3
 build_api() {
 	echo "building $repo/vcell-api:$tag"
 	echo "sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag .."
-	sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ..
+	sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-api:$tag
@@ -100,7 +100,7 @@ build_api() {
 build_batch() {
 	echo "building $repo/vcell-batch:$tag"
 	echo "sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag .."
-	sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ..
+	sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-batch:$tag
@@ -110,7 +110,7 @@ build_batch() {
 build_clientgen() {
 	echo "building $repo/vcell-clientgen:$tag"
 	echo "sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag .."
-	sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ..
+	sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-clientgen:$tag
@@ -120,7 +120,7 @@ build_clientgen() {
 build_db() {
 	echo "building $repo/vcell-db:$tag"
 	echo "sudo docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag .."
-	sudo docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ..
+	sudo docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-db:$tag
@@ -130,7 +130,7 @@ build_db() {
 build_sched() {
 	echo "building $repo/vcell-sched:$tag"
 	echo "sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag .."
-	sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ..
+	sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-sched:$tag
@@ -140,7 +140,7 @@ build_sched() {
 build_submit() {
 	echo "building $repo/vcell-submit:$tag"
 	echo "sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag .."
-	sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ..
+	sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-submit:$tag
@@ -150,7 +150,7 @@ build_submit() {
 build_data() {
 	echo "building $repo/vcell-data:$tag"
 	echo "sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag .."
-	sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ..
+	sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-data:$tag
@@ -318,7 +318,7 @@ EOF
 shift
 
 if [ "$skip_maven" == "false" ]; then
-	pushd ..
+	pushd ../..
 	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies
 	popd
 fi
