@@ -546,7 +546,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 		@XmlElement
 		String[] subvolumeNames;
 		@XmlElement
-		int[] subvolumePixelValue;
+		Integer[] subvolumePixelValue;
 		@XmlAttribute
 		public int xsize;
 		@XmlAttribute
@@ -562,7 +562,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 		public IJGeom() {
 			
 		}
-		public IJGeom(String[] subvolumeNames, int[] subvolumePixelValue, int xsize, int ysize, int zsize,double[] originXYZ, double[] extentXYZ, byte[] geom) throws Exception{
+		public IJGeom(String[] subvolumeNames, Integer[] subvolumePixelValue, int xsize, int ysize, int zsize,double[] originXYZ, double[] extentXYZ, byte[] geom) throws Exception{
 			super();
 			if(originXYZ == null || extentXYZ == null || originXYZ.length != 3 || extentXYZ.length != 3) {
 				throw new Exception("origin and extent array size must be 3");
