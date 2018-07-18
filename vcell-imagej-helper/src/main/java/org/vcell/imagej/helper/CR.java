@@ -1,16 +1,23 @@
 package org.vcell.imagej.helper;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.JFrame;
+//import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import org.scijava.display.Display;
+//import org.jfree.chart.ChartFactory;
+//import org.jfree.chart.ChartPanel;
+//import org.jfree.chart.JFreeChart;
+//import org.jfree.data.xy.DefaultXYDataset;
 import org.vcell.imagej.helper.VCellHelper.BasicStackDimensions;
 import org.vcell.imagej.helper.VCellHelper.IJGeom;
 import org.vcell.imagej.helper.VCellHelper.IJSolverStatus;
@@ -18,14 +25,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import ij.WindowManager;
 import io.scif.img.SCIFIOImgPlus;
 import net.imagej.DefaultDataset;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
-import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.IdentityAxis;
+import net.imagej.display.DefaultImageDisplay;
 import net.imagej.display.ImageDisplay;
 import net.imagej.interval.DefaultCalibratedRealInterval;
 import net.imglib2.Cursor;
@@ -34,7 +42,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.DoubleArray;
-import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -45,21 +52,39 @@ public class CR {
 
 	public static void main(String[] args) {
 		try {
-			testSolver2(new File(System.getProperty("user.dir", ".")));
+	    	ImageJ ij = new ImageJ();//make sure this is the 'net.imagej' version and not the 'ij' version
+			ij.ui().showUI();
+			VCellHelper vh = new VCellHelper();//Communicates with VCellApi
+			
+//	    	double[] diffRates = new double[] { // For test of simulated experimental data
+//			1.1,
+//			1.15,
+//			1.2,
+//			1.25,
+//			1.3
+//			};
+
+	    	double[] diffRates = new double[] {	    			
+			1.25,
+			1.3,
+			1.4,
+			1.45,
+			1.5,
+			1.55,
+			1.6
+			};
+			double[] mse = testSolver2(diffRates,new File(System.getProperty("user.dir", ".")),vh,ij);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-    public static void testSolver2(File exampleDataDir) throws Exception{
-    	ImageJ ij = new ImageJ();//make sure this is the 'net.imagej' version and not the 'ij' version
-ij.ui().showUI();
-    	VCellHelper vh = new VCellHelper();//Communicates with VCellApi
-    	
+    public static double[] testSolver2(double[] diffRates,File exampleDataDir,VCellHelper vh,ImageJ ij) throws Exception{
+
     	ImgPlus<? extends RealType<?>> experimentalData = null;// 2D
     	ImgPlus<UnsignedByteType> segmentedGeom = null;// 2D or 3D (if 3D will be z-project for analysis withg 2D experimental data)
-    	ImgPlus<? extends RealType<?>> preBleachRAI0 = null;// 2D
+    	ImgPlus<? extends RealType<?>> preBleachImage = null;// 2D
     	HashMap<Integer, String> segmentedGeomMapSubvolumeName = new HashMap<>();
     	final UnsignedByteType domainOfInterestFromSegmentedGeom = new UnsignedByteType(255);
     	final int ANALYZE_BEGIN_TIMEINDEX = 5;
@@ -70,34 +95,103 @@ ij.ui().showUI();
     	segmentedGeomMapSubvolumeName.put(0, "cyt");
     	segmentedGeomMapSubvolumeName.put(255, "Nuc");
     	
-    	DefaultDataset defaultDataset = (DefaultDataset)ij.io().open(new File(exampleDataDir,"Experimental.zip").getAbsolutePath());
-    	ij.ui().show(defaultDataset);
-    	defaultDataset = (DefaultDataset)ij.io().open(new File(exampleDataDir,"Seg Geom_3d.zip").getAbsolutePath());
-    	ij.ui().show(defaultDataset);
-    	defaultDataset = (DefaultDataset)ij.io().open(new File(exampleDataDir,"PreBleach.zip").getAbsolutePath());
-    	ij.ui().show(defaultDataset);
-    	defaultDataset = (DefaultDataset)ij.io().open(new File(exampleDataDir,"Analysis ROI.zip").getAbsolutePath());
-    	ij.ui().show(defaultDataset);
+//    	String[] imageTitles = WindowManager.getImageTitles();
+//    	for (int i = 0; i < imageTitles.length; i++) {
+//    		System.out.println("----------title "+imageTitles[i]+" "+WindowManager.getWindow(imageTitles[i]));
+//		}
+//    	
+    	final String[] exampleFiles = new String[] {"Experimental.zip","Seg Geom_3d.zip","PreBleach.zip","Analysis ROI.zip"};
+//    	final String[] exampleFiles = new String[] {"testDiff_1_2.zip","Seg Geom_3d.zip","testPreBleach.zip","Analysis ROI.zip"};// for test
+    	
+    	
+//    	List<Display<?>> displays0 = ij.display().getDisplays();
+//    	for (Display<?> display : displays0) {
+//			System.out.println("----------disp "+display.getName()+" "+display.getIdentifier());
+//		}
+    	List<ImageDisplay> knownImageDisplays = ij.imageDisplay().getImageDisplays();
+//    	for (ImageDisplay imageDisplay : imageDisplays0) {
+//    		System.out.println("----------imgdisp "+imageDisplay.getName()+" "+imageDisplay.getIdentifier());
+//		}
 
-    	List<ImageDisplay> imageDisplays = ij.imageDisplay().getImageDisplays();
-    	for (ImageDisplay imageDisplay : imageDisplays) {
-			System.out.println("-----"+imageDisplay.getName()+" ");
-			if(imageDisplay.getName().startsWith("Experimental")) {
-				experimentalData = ij.imageDisplay().getActiveDatasetView(imageDisplay).getData().getImgPlus();
-			}else if(imageDisplay.getName().startsWith("Seg Geom")) {
-				segmentedGeom = (ImgPlus<UnsignedByteType>)ij.imageDisplay().getActiveDatasetView(imageDisplay).getData().getImgPlus();
-			}else if(imageDisplay.getName().startsWith("PreBleach")) {
-				preBleachRAI0 = (ImgPlus<UnsignedByteType>)ij.imageDisplay().getActiveDatasetView(imageDisplay).getData().getImgPlus();
-			}else if(imageDisplay.getName().startsWith("Analysis ROI")) {
-				analysisROI= (ImgPlus<UnsignedByteType>)ij.imageDisplay().getActiveDatasetView(imageDisplay).getData().getImgPlus();
+    	// Open example images if they are not already open
+    	for (int exampleFilesIndex = 0; exampleFilesIndex < exampleFiles.length; exampleFilesIndex++) {
+    		DefaultDataset exampleFileDataset = null;
+    		
+    		for (ImageDisplay imageDisplay : knownImageDisplays) {
+    			if(imageDisplay.getName().equals(exampleFiles[exampleFilesIndex])) {
+    				exampleFileDataset = (DefaultDataset) imageDisplay.getActiveView().getData();
+    				break;
+    			}
+    		}
+			if(exampleFileDataset == null) {
+				exampleFileDataset = (DefaultDataset)ij.io().open(new File(exampleDataDir,exampleFiles[exampleFilesIndex]).getAbsolutePath());
+//				ij.ui().show(exampleFileDataset);
+				showAndZoom(ij, exampleFiles[exampleFilesIndex], exampleFileDataset, 4);
 			}
-	    	CalibratedAxis[] calibratedAxes = new CalibratedAxis[imageDisplay.numDimensions()];
-	    	imageDisplay.axes(calibratedAxes);
-	    	for (int i = 0; i < calibratedAxes.length; i++) {
-	    		System.out.print(calibratedAxes[i].type());
+			// Print names of axes (x,y,z,time,channel,unknown,...)
+			System.out.print(exampleFileDataset.getName()+": ");
+	    	for (int dimensionIndex = 0; dimensionIndex < exampleFileDataset.numDimensions(); dimensionIndex++) {
+	    		System.out.print((exampleFileDataset.axis(dimensionIndex)!=null?exampleFileDataset.axis(dimensionIndex).type()+" ":"null "));
 	    	}
 	    	System.out.println();
+
+	    	// Assign variables (defaultDataset corresponds to open 'exampleFiles' element
+			switch (exampleFilesIndex) {
+			case 0:
+				experimentalData = exampleFileDataset.getImgPlus();
+				break;
+			case 1:
+				segmentedGeom = (ImgPlus<UnsignedByteType>) exampleFileDataset.getImgPlus();
+				break;
+			case 2:
+				preBleachImage = exampleFileDataset.getImgPlus();
+				break;
+			case 3:
+				analysisROI = (ImgPlus<UnsignedByteType>) exampleFileDataset.getImgPlus();
+				break;
+			}
 		}
+
+
+//    	List<ImageDisplay> imageDisplays = ij.imageDisplay().getImageDisplays();
+//    	for (ImageDisplay imageDisplay : imageDisplays) {
+//			System.out.println("-----"+imageDisplay.getName()+" ");
+//			if(imageDisplay.getName().startsWith("Experimental")) {
+//				experimentalData = ij.imageDisplay().getActiveDatasetView(imageDisplay).getData().getImgPlus();
+//			}else if(imageDisplay.getName().startsWith("Seg Geom")) {
+//				segmentedGeom = (ImgPlus<UnsignedByteType>)ij.imageDisplay().getActiveDatasetView(imageDisplay).getData().getImgPlus();
+//			}else if(imageDisplay.getName().startsWith("PreBleach")) {
+//				preBleachRAI0 = (ImgPlus<UnsignedByteType>)ij.imageDisplay().getActiveDatasetView(imageDisplay).getData().getImgPlus();
+//			}else if(imageDisplay.getName().startsWith("Analysis ROI")) {
+//				analysisROI= (ImgPlus<UnsignedByteType>)ij.imageDisplay().getActiveDatasetView(imageDisplay).getData().getImgPlus();
+//			}
+//	    	CalibratedAxis[] calibratedAxes = new CalibratedAxis[imageDisplay.numDimensions()];
+//	    	imageDisplay.axes(calibratedAxes);
+//	    	for (int i = 0; i < calibratedAxes.length; i++) {
+//	    		System.out.print(calibratedAxes[i].type());
+//	    	}
+//	    	System.out.println();
+//		}
+//    	if(experimentalData == null) {
+//    		DefaultDataset defaultDataset = (DefaultDataset)ij.io().open(new File(exampleDataDir,"Experimental.zip").getAbsolutePath());
+//    		ij.ui().show(defaultDataset);
+//    		experimentalData = defaultDataset.getImgPlus();
+//    	}
+//    	if(segmentedGeom == null) {
+//    		DefaultDataset defaultDataset = (DefaultDataset)ij.io().open(new File(exampleDataDir,"Seg Geom_3d.zip").getAbsolutePath());
+//    		ij.ui().show(defaultDataset);
+//    		segmentedGeom = (ImgPlus<UnsignedByteType>) defaultDataset.getImgPlus();
+//    	}
+//    	if(preBleachRAI0 == null) {
+//    		DefaultDataset defaultDataset = (DefaultDataset)ij.io().open(new File(exampleDataDir,"PreBleach.zip").getAbsolutePath());
+//    		ij.ui().show(defaultDataset);
+//    		preBleachRAI0 = defaultDataset.getImgPlus();
+//    	}
+//    	if(analysisROI == null) {
+//    		DefaultDataset defaultDataset = (DefaultDataset)ij.io().open(new File(exampleDataDir,"Analysis ROI.zip").getAbsolutePath());
+//    		ij.ui().show(defaultDataset);
+//    		analysisROI= (ImgPlus<UnsignedByteType>) defaultDataset.getImgPlus();
+//    	}
 //    	if(true) {return;}
     	
 //    //Load image
@@ -117,52 +211,94 @@ ij.ui().showUI();
 //showAndZoom(ij, "Exp Data Scaled", cropAllScaled, 4);
 
     	//Run multiple VCell sims of the 'frap' model using different diffusion rates
-    	ArrayList<Double> results = new ArrayList();
-    	double[] diffRates = new double[] {
-    			.00001,
-    			.4,
-    			.8,
-    			1.2,
-    			1.6,
-    			2.0,
-    			2.4,
-    			2.8
-    			};
+//    	ArrayList<Double> results = new ArrayList();
+//    	double minResult = Double.POSITIVE_INFINITY;
+//    	double maxResult = Double.NEGATIVE_INFINITY;
+    	double[] mse = new double[diffRates.length];
     	for(int i=0;i<diffRates.length;i++){
     		double result = runSim(vh, ij, diffRates[i],null,null,"rf",
-    			experimentalData, segmentedGeom, preBleachRAI0, segmentedGeomMapSubvolumeName, domainOfInterestFromSegmentedGeom, ANALYZE_BEGIN_TIMEINDEX, ANALYZE_END_TIMEINDEX, laserBounds, analysisROI,new Double(10.0));
-    		results.add(result);
+    			experimentalData, segmentedGeom, preBleachImage, segmentedGeomMapSubvolumeName, domainOfInterestFromSegmentedGeom,
+    			ANALYZE_BEGIN_TIMEINDEX, ANALYZE_END_TIMEINDEX, laserBounds, analysisROI,new Double(10.0));
+//    		results.add(result);
+    		mse[i] = result;
+//    		minResult = Math.min(minResult, result);
+//    		maxResult = Math.max(maxResult, result);
+    	}
+    	for(int i=0;i<mse.length;i++){
+    		System.out.println("diffRate="+diffRates[i]+" MSE="+(mse[i]));
     	}
 
-    	for(int i=0;i<diffRates.length;i++){
-    		System.out.println("diffRate="+diffRates[i]+" MSE="+(results.get(i)));
-    	}
+//    	DefaultXYDataset dataset = new DefaultXYDataset();
+//    	double[][] data =new double[][] { diffRates,mse};
+//    	dataset.addSeries("Exp vs. Sim", data);
+//    	JFreeChart xyLineChart = ChartFactory.createXYLineChart("Experimental vs. Simulated FRAP", "Diffusion", "MSE", dataset);
+//    	xyLineChart.getXYPlot().getRangeAxis().setRange(minResult, maxResult);
+//    	ChartPanel chartPanel = new ChartPanel(xyLineChart);
+//    	JFrame frame = new JFrame("Chart");
+//    	//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//    	frame.getContentPane().add(chartPanel);
+//    	//Display the window.
+//    	frame.pack();
+//    	frame.setVisible(true);
+    	return mse;
 
     }
     
     public static void showAndZoom(ImageJ ij,String displayName,Object thingToDisplay,double zoomFactor) throws Exception{
-    	if(!displayName.startsWith("Sim Data")) {
-    		return;
-    	}
-    	SwingUtilities.invokeLater(new Runnable() {
+//    	if(!displayName.startsWith("Sim Data")) {
+//    		return;
+//    	}
+    	new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
-		    	String fileName = displayName.replace(" ", "_");
-//		    	ij.io().save(thingToDisplay, new File("C:/temp/ImportImageExamples/vcij_images","a_"+fileName).getAbsolutePath());
-		    	//Display<?> bitDisplay = ij.imageDisplay().getDisplayService().createDisplay("subvolumes",bits);
-		    	ij.ui().show(displayName,thingToDisplay);
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				// TODO Auto-generated method stub
+				ij.ui().show(displayName,thingToDisplay);
+		    	//Find display and set zoom, resize window
+		    	List<ImageDisplay> knownImageDisplays = ij.imageDisplay().getImageDisplays();
+		    	boolean bvisible = false;
+				while (!bvisible) {
+					for (ImageDisplay imageDisplay : knownImageDisplays) {
+						if (imageDisplay.getName().equals(displayName)) {
+							if (imageDisplay.isVisible(imageDisplay.getActiveView())) {
+								bvisible = true;
+								break;
+							}
+						}
+					}
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
-		    	//((DefaultImageDisplay)ij.imageDisplay().getDisplayService().getDisplay("subvolumes")).getCanvas().setZoom(2.0);
-		    	ij.imageDisplay().getActiveImageDisplay().getCanvas().setZoom(zoomFactor);
-		    	//ij.command().run(ZoomSet.class, true, new Object[] {"zoomPercent",200.0,"centerU",(cropScaleXSize/2),"centerV",(cropScaleYSize/2)});
+//		    	int vw = ij.imageDisplay().getActiveImageDisplay().getCanvas().getViewportWidth();
+//		    	int vh = ij.imageDisplay().getActiveImageDisplay().getCanvas().getViewportHeight();
+//		    	System.out.println(" -----byname="+ij.display().getDisplay(displayName));
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+				    	try {
+							ij.imageDisplay().getActiveImageDisplay().getCanvas().setZoom(zoomFactor);
+							if(ij.display().getDisplay(displayName) != null && ij.ui().getDisplayViewer(ij.display().getDisplay(displayName)) instanceof JFrame) {
+								double vw = ij.imageDisplay().getActiveImageDisplay().dimension(ij.imageDisplay().getActiveImageDisplay().dimensionIndex(Axes.X))*zoomFactor;
+								double vh = ij.imageDisplay().getActiveImageDisplay().dimension(ij.imageDisplay().getActiveImageDisplay().dimensionIndex(Axes.Y))*zoomFactor;
+								((JFrame)ij.ui().getDisplayViewer(ij.display().getDisplay(displayName)).getWindow()).setSize(new Dimension((int)vw+50, (int)vh+150));
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}				
+					}
+				});
+
+//		    	ij.ui().getDisplayViewer(ij.display().getDisplay(displayName)).getPanel().redoLayout();
+//		    	List<Display<?>> displays = ij.display().getDisplays();
+//		    	for (Display<?> display : displays) {
+//					System.out.println(display+" -----byname="+ij.display().getDisplay(displayName));
+//				}
+				
 			}
-		});
+		}).start();
 
     }
 //	public static NearestNeighborInterpolatorFactory<UnsignedByteType> interpolator = new NearestNeighborInterpolatorFactory<>();
@@ -191,7 +327,7 @@ ij.ui().showUI();
     	int[] dims = new int[zProjectedExperimentalData.numDimensions()];
     	for (int i = 0; i < dims.length; i++) {
 			if(zProjectedExperimentalData.axis(i).type().equals(Axes.X) || zProjectedExperimentalData.axis(i).type().equals(Axes.Y)){
-				if(!zProjectedExperimentalData.axis(i).equals(nonZProjectedSegmentedGeom.axis(i)) || !zProjectedExperimentalData.axis(i).equals(zProjectedPreBleach.axis(i)) || !zProjectedExperimentalData.axis(i).equals(zProjectedAnalysisROI.axis(i))) {
+				if(!zProjectedExperimentalData.axis(i).type().equals(nonZProjectedSegmentedGeom.axis(i).type()) || !zProjectedExperimentalData.axis(i).type().equals(zProjectedPreBleach.axis(i).type()) || !zProjectedExperimentalData.axis(i).type().equals(zProjectedAnalysisROI.axis(i).type())) {
 					throw new Exception("Axis "+zProjectedExperimentalData.axis(i).type().getLabel()+" type for dimension index="+i+" of experimentalData, segmentedGeom, preBleach and analysisROI must match");
 				}
 				if(zProjectedExperimentalData.dimension(i) != nonZProjectedSegmentedGeom.dimension(i) || zProjectedExperimentalData.dimension(i) != zProjectedPreBleach.dimension(i) || zProjectedExperimentalData.dimension(i) != zProjectedAnalysisROI.dimension(i)) {
@@ -200,8 +336,18 @@ ij.ui().showUI();
 			}
 		}
     	
-    	int zIndex = nonZProjectedSegmentedGeom.dimensionIndex(Axes.Z);
-    	int zsize = (zIndex == -1?1:(int)nonZProjectedSegmentedGeom.dimension(zIndex));
+    	//Assume any nonXY axis is the Z axis
+    	if(nonZProjectedSegmentedGeom.numDimensions() > 3) {
+    		throw new Exception("Segmented Geometry geometry allowed number of dimension must be <= 3");
+    	}
+    	int assumedZIndex = -1;
+    	for (int i = 0; i < nonZProjectedSegmentedGeom.numDimensions(); i++) {
+			if(nonZProjectedSegmentedGeom.dimensionIndex(Axes.X)!=i && nonZProjectedSegmentedGeom.dimensionIndex(Axes.Y)!=i) {
+				assumedZIndex = i;
+				break;
+			}
+		}
+    	int zsize = (assumedZIndex == -1?1:(int)nonZProjectedSegmentedGeom.dimension(assumedZIndex));
     	
     	if((xsize*ysize*zsize) != Intervals.numElements(nonZProjectedSegmentedGeom)) {
     		throw new Exception("x*y*z = "+(xsize*ysize*zsize)+" does not equal segmentedGeom size = "+Intervals.numElements(nonZProjectedSegmentedGeom));
@@ -216,9 +362,9 @@ ij.ui().showUI();
     	Cursor<UnsignedByteType> nonZProjectedSegmentedGeomCursor = nonZProjectedSegmentedGeom.localizingCursor();
     	while(nonZProjectedSegmentedGeomCursor.hasNext()){
     		UnsignedByteType segmentedGeomValue = (UnsignedByteType) nonZProjectedSegmentedGeomCursor.next();
-    		int currentZ = (zIndex==-1?0:nonZProjectedSegmentedGeomCursor.getIntPosition(zIndex));
+    		int currentZ = (assumedZIndex==-1?0:nonZProjectedSegmentedGeomCursor.getIntPosition(assumedZIndex));
     		int currXYPixelIndex = nonZProjectedSegmentedGeomCursor.getIntPosition(yIndex)*xsize + nonZProjectedSegmentedGeomCursor.getIntPosition(xIndex);
-    		int currXYZPixelIndex = currXYPixelIndex + (zIndex==-1?0:currentZ*xysize);
+    		int currXYZPixelIndex = currXYPixelIndex + (assumedZIndex==-1?0:currentZ*xysize);
     		vcellSubvolumeHandles[currXYZPixelIndex] = (byte)segmentedGeomValue.get();
     	}
 
@@ -305,6 +451,7 @@ ij.ui().showUI();
         	}
     	}
 
+    	// Get the data cachekey that corresponds to the simulation job that just ran (ijSolverStatus.simJobId)
     	URL url = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getinfo"+"?"+"type"+"="+"quick");
     	Document doc = VCellHelper.getDocument(url);
     	System.out.println(VCellHelper.documentToString(doc));
@@ -320,45 +467,45 @@ ij.ui().showUI();
     	if(cachekey == null){
     		throw new Exception("Couldn't find cacheKey for simulationJobId="+simulationJobId);
     	}
-    	URL varInfoUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey);
-    	doc = VCellHelper.getDocument(varInfoUrl);
-    	System.out.println(VCellHelper.documentToString(doc));
-//    	double[] times = VCellHelper.getTimesFromVarInfos(doc);
+    	
+    	// Display all the simulation data for a particular variable in a time stack
+//    	if(zsize == 1) {
+//	    	URL varInfoUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey);
+//	    	doc = VCellHelper.getDocument(varInfoUrl);
+//	    	System.out.println(VCellHelper.documentToString(doc));
+//	    	double[] times = VCellHelper.getTimesFromVarInfos(doc);
+//	    	double[] wholeSim = new double[xsize*ysize*times.length];
+//	    	for (int i = 0; i < times.length; i++) {
+//	        	URL dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)(i)+"&"+"jobid="+ijSolverStatus.getJobIndex());
+//	    	    double[] simNormalizer = getNormalizedZProjectedSimTimePointData(dataUrl,xsize,ysize,zsize,null);
+//				System.arraycopy(simNormalizer, 0, wholeSim, i*xysize, simNormalizer.length);
+//			}
+//	    	ArrayImg<DoubleType, DoubleArray> testImg = ArrayImgs.doubles(wholeSim, xsize,ysize,times.length);
+//	    	ij.ui().show(testImg);
+//    	}
+    	
+    	
 //	    String[] varNames = VCellHelper.getVarNamesFromVarInfos(doc);
-	    double[] timeStack = new double[ANALYZE_COUNT*xsize*ysize];
-//	    long[] xyztDims = null;
-//	    AxisType[] simDataAxes = null;
+	    double[] bleachedTimeStack = new double[ANALYZE_COUNT*xsize*ysize];
+	    
+	    // Get the SIMULATION pre-bleach timepoint data for normalizing
+    	URL dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)(0)+"&"+"jobid="+ijSolverStatus.getJobIndex());
+	    double[] simNormalizer = getNormalizedZProjectedSimTimePointData(dataUrl,xsize,ysize,zsize,null);
+//showAndZoom(ij, "Sim Data PreBleach", ArrayImgs.doubles(simNormalizer, xsize,ysize), 4);
+	    
+	    // Get the SIMULATION post-bleach data to analyze
 	    for(int timeIndex = ANALYZE_BEGIN_TIMEINDEX;timeIndex<=ANALYZE_END_TIMEINDEX;timeIndex++){
-	    	URL dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)timeIndex+"&"+"jobid="+ijSolverStatus.getJobIndex());
-	    	doc = VCellHelper.getDocument(dataUrl);
-			System.out.println(VCellHelper.documentToString(doc));
-	    	nodes = doc.getElementsByTagName("ijData");
-			BasicStackDimensions basicStackDimensions = VCellHelper.getDimensions(nodes.item(0));
-			if(basicStackDimensions.xsize != xsize || basicStackDimensions.ysize != ysize || basicStackDimensions.zsize != zsize) {
-				throw new Exception("One or more sim data xyz dimensions="+basicStackDimensions.xsize+","+basicStackDimensions.ysize+","+basicStackDimensions.zsize+" does not match expected xyz sizes="+xsize+","+ysize+","+zsize);
-			}
-	 		double[] data = VCellHelper.getData(nodes.item(0));
-//	   		if(xyztDims == null){
-//	   			timeStack = new double[ANALYZE_COUNT*data.length];
-//	   			xyztDims = new long [] {basicStackDimensions.xsize,basicStackDimensions.ysize,basicStackDimensions.zsize,ANALYZE_COUNT};
-//	   			simDataAxes = new AxisType[] {Axes.X,Axes.Y,Axes.Z,Axes.TIME};
-//	   		}
-	 		
-	 		//Sum pixel values in Z direction to match experimental data (open pinhole confocal, essentially brightfield)
-			for (int j = 0; j < data.length; j++) {
-				timeStack[(timeIndex-ANALYZE_BEGIN_TIMEINDEX)*xysize+(j%xysize)]+= data[j];
-			}
-		    
-//	   		System.arraycopy(data,  0,timeStack, (timeIndex-ANALYZE_BEGIN_TIMEINDEX)*data.length,data.length);
-//	   		System.out.println("timeindex="+timeIndex+" copied to index="+((timeIndex-timeIndexToAnalyze)*data.length)+" data length="+data.length);
+	    	dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)timeIndex+"&"+"jobid="+ijSolverStatus.getJobIndex());
+	 		double[] data = getNormalizedZProjectedSimTimePointData(dataUrl,xsize,ysize,zsize,simNormalizer);	 		
+		    System.arraycopy(data, 0, bleachedTimeStack, (timeIndex-ANALYZE_BEGIN_TIMEINDEX)*xysize, data.length);
     	}
 
     	//Turn VCell data into iterableinterval
 //    	FinalInterval zProjectedSimDataSize = FinalInterval.createMinSize(new long[] {0,0,0, xsize,ysize,ANALYZE_COUNT});//xyzt:origin and xyzt:size
-		ArrayImg<DoubleType, DoubleArray> simImgs = ArrayImgs.doubles(timeStack, new long[] {xsize,ysize,ANALYZE_COUNT});
-		SCIFIOImgPlus<DoubleType> annotatedZProjectedSimData = new SCIFIOImgPlus<>(simImgs, "Sim Data "+diffusionRate,new AxisType[] {Axes.X,Axes.Y,Axes.TIME});
+		ArrayImg<DoubleType, DoubleArray> simImgs = ArrayImgs.doubles(bleachedTimeStack, new long[] {xsize,ysize,ANALYZE_COUNT});
+		SCIFIOImgPlus<DoubleType> annotatedZProjectedSimPostBleachData = new SCIFIOImgPlus<>(simImgs, "Sim Data "+diffusionRate,new AxisType[] {Axes.X,Axes.Y,Axes.TIME});
 //    	RandomAccessibleInterval<DoubleType> simExtracted = ij.op().transform().crop(annotatedSimData, simExtractInterval);   	
-showAndZoom(ij, "Sim Data "+diffusionRate, annotatedZProjectedSimData, 4);
+showAndZoom(ij, "Sim Data "+diffusionRate, annotatedZProjectedSimPostBleachData, 4);
 
 
 
@@ -401,44 +548,32 @@ showAndZoom(ij, "Sim Data "+diffusionRate, annotatedZProjectedSimData, 4);
 //    	}
 
 		//Calculate mean-squared-error as example, normalize experimental data by dividing by a prebleach image
-		RandomAccessibleInterval<? extends RealType<?>> postBleachScaled = ij.op().transform().crop(zProjectedExperimentalData, analyzeOrigInterval);
-//		FinalInterval calcRoi = FinalInterval.createMinSize(new long[] {laserDim[Axes.X.ordinal()-2],laserDim[Axes.Y.ordinal()-2],laserDim[XLEN_INDEX+4],laserDim[YLEN_INDEX+4]});//xyzt:origin and xyzt:size
-//		IterableRandomAccessibleInterval<UnsignedByteType> thresholdSliceIRAI = IterableRandomAccessibleInterval.create(thresholdSlice);
-    	Cursor<DoubleType> simCursor = IterableRandomAccessibleInterval.create(annotatedZProjectedSimData).localizingCursor();
-    	Cursor<? extends RealType<?>> postCursor = IterableRandomAccessibleInterval.create(postBleachScaled).localizingCursor();
-//    	List<Cursor> cursorList = Arrays.asList(new Cursor[] {preBleachCursor,simCursor,postCursor,maskCursor});
-    	IterableRandomAccessibleInterval<? extends RealType<?>> preBleachRAI = IterableRandomAccessibleInterval.create(zProjectedPreBleach);
+		RandomAccessibleInterval<? extends RealType<?>> zProjectedExperimentalPostBleach = ij.op().transform().crop(zProjectedExperimentalData, analyzeOrigInterval);
+    	Cursor<DoubleType> zProjectedSimPostBleachDataCursor = IterableRandomAccessibleInterval.create(annotatedZProjectedSimPostBleachData).localizingCursor();
+    	Cursor<? extends RealType<?>> zProjectedExpPostBleachDataCursor = IterableRandomAccessibleInterval.create(zProjectedExperimentalPostBleach).localizingCursor();
+    	IterableRandomAccessibleInterval<? extends RealType<?>> zProjectedPreBleachInterval = IterableRandomAccessibleInterval.create(zProjectedPreBleach);
     	BigDecimal sumSquaredDiff = new BigDecimal(0);
     	int[] analysisPosition = new int[zProjectedAnalysisROI.numDimensions()];
-    	int[] preBleachPosition = new int[preBleachRAI.numDimensions()];
-    	int[] experimentalPosition = new int[postBleachScaled.numDimensions()];
-    	int[] simulationPosition = new int[annotatedZProjectedSimData.numDimensions()];
+    	int[] preBleachPosition = new int[zProjectedPreBleachInterval.numDimensions()];
+    	int[] experimentalPosition = new int[zProjectedExperimentalPostBleach.numDimensions()];
+    	int[] simulationPosition = new int[annotatedZProjectedSimPostBleachData.numDimensions()];
     	int numValsInMask = 0;
-    	while(simCursor.hasNext()){
+    	while(zProjectedSimPostBleachDataCursor.hasNext()){
     		Cursor<UnsignedByteType> analysisCursor = zProjectedAnalysisROI.localizingCursor();
-			Cursor<? extends RealType<?>> preBleachCursor = preBleachRAI.localizingCursor();
+			Cursor<? extends RealType<?>> preBleachNormalizingCursor = zProjectedPreBleachInterval.localizingCursor();
         	while(analysisCursor.hasNext()){
         		boolean maskBit = !(analysisCursor.next().get() == 0);
-        		DoubleType simval = simCursor.next();
-        		RealType<?> postBleachVal = postCursor.next();
-        		RealType<?> preBleachVal = preBleachCursor.next();
+        		DoubleType simPostBleachVal = zProjectedSimPostBleachDataCursor.next();
+        		RealType<?> expPostBleachVal = zProjectedExpPostBleachDataCursor.next();
+        		RealType<?> preBleachNormalizingVal = preBleachNormalizingCursor.next();
         		if(!maskBit) {//skip areas where analysis mask is 0
         			continue;
         		}
-//        		maskCursor.localize(positionSlice);
-//        		boolean xmoob = positionSlice[xIndex] < ;
-//        		boolean xpoob = positionSlice[yIndex] > laserDim[Axes.X.ordinal()]+laserDim[XLEN_INDEX]+2;
-//        		boolean ymoob = positionSlice[yIndex] < laserDim[Axes.Y.ordinal()]-2;
-//				boolean ypoob = positionSlice[yIndex] > laserDim[Axes.Y.ordinal()]+laserDim[YLEN_INDEX]+2;
-////				System.out.println(positionSlice[Axes.X.ordinal()]+" "+positionSlice[Axes.Y.ordinal()]+" "+xmoob+" "+ymoob+" "+xpoob+" "+ypoob);
-//				if(xmoob || ymoob || xpoob || ypoob) {
-//        			continue;
-//        		}
-        		//laserDim[Axes.X.ordinal()-2],laserDim[Axes.Y.ordinal()-2],laserDim[XLEN_INDEX+4],laserDim[YLEN_INDEX+4]
+        		//Get the position of all the cursors and check they are in sync
         		analysisCursor.localize(analysisPosition);
-        		preBleachCursor.localize(preBleachPosition);
-        		postCursor.localize(experimentalPosition);
-        		simCursor.localize(simulationPosition);
+        		preBleachNormalizingCursor.localize(preBleachPosition);
+        		zProjectedExpPostBleachDataCursor.localize(experimentalPosition);
+        		zProjectedSimPostBleachDataCursor.localize(simulationPosition);
 //        		System.out.println("analysis="+Arrays.toString(analysisPosition)+" prebleach="+Arrays.toString(preBleachPosition)+" exp="+Arrays.toString(experimentalPosition)+" sim="+Arrays.toString(simulationPosition));
         		if(!Arrays.equals(analysisPosition, preBleachPosition) || !Arrays.equals(experimentalPosition, simulationPosition)){
         			throw new Exception("Cursor positions not equal");
@@ -446,22 +581,41 @@ showAndZoom(ij, "Sim Data "+diffusionRate, annotatedZProjectedSimData, 4);
         		if(analysisPosition[0] != experimentalPosition[0] || analysisPosition[1] != experimentalPosition[1]) {//check xy are same
         			throw new Exception("XY Cursor position not equal for analysisROI mask and experimental data");
         		}
-    			double normalize = (postBleachVal.getRealDouble()+.0000001)/(preBleachVal.getRealDouble()+.0000001);
-    			double diff = simval.get()-(normalize);
+        		double normalizedExpDataVal = 0;
+        		if(expPostBleachVal.getRealDouble() != 0) {
+        			normalizedExpDataVal = (expPostBleachVal.getRealDouble())/(preBleachNormalizingVal.getRealDouble()+Double.MIN_VALUE);
+        		}
+    			double diff = simPostBleachVal.get()-(normalizedExpDataVal);
     			sumSquaredDiff = sumSquaredDiff.add(new BigDecimal(Math.pow(diff,2.0)));
     			numValsInMask++;
         	}
     	}
-
-
-//    	Img<DoubleType> preBleach64 = ij.op().convert().float64(IterableRandomAccessibleInterval.create(thresholdSlice));
-//    	IterableInterval<DoubleType> add1 = ij.op().math().add(preBleach64,new DoubleType(.5));
-
-		//Do some comparison between simulation data and experimental data
-//		IterableInterval<DoubleType> it1 = simImgslice;
-//		IterableInterval<UnsignedByteType> it2 = IterableRandomAccessibleInterval.create(postBleachScaled);
-//		Double result = (Double)ij.op().run("coloc.icq", it1, it2);
 		return sumSquaredDiff.divide(new BigDecimal(numValsInMask),8, RoundingMode.HALF_UP).doubleValue();
     }
 
+    public static double[] getNormalizedZProjectedSimTimePointData(URL dataUrl,int xsize,int ysize,int zsize,double[] normalizer) throws Exception{
+    	Document doc = VCellHelper.getDocument(dataUrl);
+//		System.out.println(VCellHelper.documentToString(doc));
+		NodeList nodes = doc.getElementsByTagName("ijData");
+		BasicStackDimensions basicStackDimensions = VCellHelper.getDimensions(nodes.item(0));
+		if(basicStackDimensions.xsize != xsize || basicStackDimensions.ysize != ysize || basicStackDimensions.zsize != zsize) {
+			throw new Exception("One or more sim data xyz dimensions="+basicStackDimensions.xsize+","+basicStackDimensions.ysize+","+basicStackDimensions.zsize+" does not match expected xyz sizes="+xsize+","+ysize+","+zsize);
+		}
+		double[] zData = VCellHelper.getData(nodes.item(0));
+ 		//Sum pixel values in Z direction to match experimental data (open pinhole confocal, essentially brightfield)
+		int xysize = xsize*ysize;
+		double[] normalizedData = new double[xysize];
+		for (int i = 0; i < zData.length; i++) {
+			normalizedData[(i%xysize)]+= zData[i];
+		}
+		if(normalizer != null) {
+			for (int i = 0; i < normalizedData.length; i++) {
+				if(normalizedData[i] != 0) {
+					normalizedData[i] = (normalizedData[i]+Double.MIN_VALUE)/(normalizer[i]+Double.MIN_VALUE);
+				}
+			}
+		}
+		return normalizedData;
+
+    }
 }
