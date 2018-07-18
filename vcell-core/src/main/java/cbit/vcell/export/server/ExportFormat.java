@@ -16,7 +16,7 @@ public enum ExportFormat {
 	VTK_UNSTRUCT("VTK Unstructured (*.vtu)", false),
 	VTK_IMAGE("VTK Image (*.vtk)", false),
 	PLY("Stanford Poly Texture (*.ply)", false),
-	IMAGEJ("ImageJ direct", false)
+//	IMAGEJ("ImageJ direct", false)
 	; 
 	ExportFormat(String label, boolean requiresFollowOn ) {
 		this.label = label;

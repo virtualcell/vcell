@@ -389,8 +389,8 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	final int MESH_FILE = 4;
 	final int FROM_SCRATCH = 5;
 	final int CSGEOMETRY_3D = 6;
-	final int FIJI_IMAGEJ = 7;
-	final int BLENDER_SURF = 8;
+//	final int FIJI_IMAGEJ = 7;
+//	final int BLENDER_SURF = 8;
 
 	int[] geomType = null;
 
@@ -402,8 +402,9 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 			{"Mesh based (import from STL file)"},
 			{"New Blank Image Canvas"},
 			{"Constructed Solid Geometry (3D)"},
-			{"Import from Fiji/Imagej"},
-			{"Import from Blender"}};
+//			{"Import from Fiji/Imagej"},
+//			{"Import from Blender"}
+			};
 	geomType = DialogUtils.showComponentOKCancelTableList(
 			getComponent(),
 			dialogText,
@@ -423,11 +424,13 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
 	}else if(geomType[0] == CSGEOMETRY_3D){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_CSGEOMETRY_3D);
-	}else if(geomType[0] == FIJI_IMAGEJ){
-		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FIJI_IMAGEJ);
-	}else if(geomType[0] == BLENDER_SURF){
-		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_BLENDER);
-	}else{
+	}
+//	else if(geomType[0] == FIJI_IMAGEJ){
+//		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FIJI_IMAGEJ);
+//	}else if(geomType[0] == BLENDER_SURF){
+//		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_BLENDER);
+//	}
+	else{
 		throw new IllegalArgumentException("Error selecting geometry, Unknown Geometry type "+geomType[0]);
 	}
 	DocumentWindowManager.GeometrySelectionInfo geometrySelectionInfo = null;
@@ -451,9 +454,9 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 		hash.put(B_SHOW_OLD_GEOM_EDITOR, false);
 		if(geometrySelectionInfo.getDocumentCreationInfo() != null){
 			if(ClientRequestManager.isImportGeometryType(geometrySelectionInfo.getDocumentCreationInfo())){
-				bCancellable =
-					geometrySelectionInfo.getDocumentCreationInfo().getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
-					geometrySelectionInfo.getDocumentCreationInfo().getOption() == VCDocument.GEOM_OPTION_BLENDER;
+//				bCancellable =
+//					geometrySelectionInfo.getDocumentCreationInfo().getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
+//					geometrySelectionInfo.getDocumentCreationInfo().getOption() == VCDocument.GEOM_OPTION_BLENDER;
 				//Create imported Geometry
 				createGeomTaskV.addAll(Arrays.asList(
 					((ClientRequestManager)getRequestManager()).createNewGeometryTasks(this,

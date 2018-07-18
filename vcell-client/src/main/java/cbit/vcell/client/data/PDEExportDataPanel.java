@@ -77,7 +77,6 @@ import cbit.vcell.export.server.GeometrySpecs;
 import cbit.vcell.export.server.ImageSpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.PLYSpecs;
-import cbit.vcell.export.server.RasterSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.mapping.SimulationContext;
@@ -2117,7 +2116,7 @@ private void setFormatChoices_0(/*boolean bMembrane*/){
 		cb.addItem(ExportFormat.ANIMATED_GIF);
 		cb.addItem(ExportFormat.FORMAT_JPEG);
 		cb.addItem(ExportFormat.NRRD);
-		cb.addItem(ExportFormat.IMAGEJ);
+//		cb.addItem(ExportFormat.IMAGEJ);
 		cb.addItem(ExportFormat.UCD);
 		cb.addItem(ExportFormat.PLY);
 		cb.addItem(ExportFormat.VTK_UNSTRUCT);
@@ -2495,7 +2494,7 @@ private void startExport() {
 			break;
 		}
 	case NRRD:
-	case IMAGEJ:
+//	case IMAGEJ:
 	case UCD:
 	case VTK_IMAGE:
 	case VTK_UNSTRUCT:
@@ -2525,10 +2524,10 @@ private void startExport() {
 			return;
 		}
 	}
-	if(format.equals(ExportFormat.IMAGEJ)){
-		//export nrrd for imagej direct, the we'll send to imagej from vcell client
-		getExportSettings1().setFormatSpecificSpecs(new RasterSpecs(ExportConstants.NRRD_SINGLE, false));
-	}
+//	if(format.equals(ExportFormat.IMAGEJ)){
+//		//export nrrd for imagej direct, the we'll send to imagej from vcell client
+//		getExportSettings1().setFormatSpecificSpecs(new RasterSpecs(ExportConstants.NRRD_SINGLE, false));
+//	}
 	
 	// determine of sim result is from local (quick) run or on server.
 	final OutputContext outputContext = ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext();
@@ -2707,7 +2706,7 @@ private void updateExportFormat(ExportFormat exportFormat) {
 			break;
 		}
 		case NRRD: 
-		case IMAGEJ:
+//		case IMAGEJ:
 		{
 			BeanUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonFull().setSelected(true);
@@ -2805,7 +2804,7 @@ private void updateInterface() {
 		getVolVarRadioButton().setEnabled(false);
 		break;
 	case NRRD:
-	case IMAGEJ:
+//	case IMAGEJ:
 		if(getBothVarRadioButton().isSelected()){
 			getVolVarRadioButton().doClick();
 		}

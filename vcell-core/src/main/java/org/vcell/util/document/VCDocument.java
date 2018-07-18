@@ -46,8 +46,8 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		public static final int GEOM_OPTION_CSGEOMETRY_3D = 8;
 		public static final int GEOM_OPTION_FROM_WORKSPACE_IMAGE = 9;
 		public static final int GEOM_OPTION_FROM_WORKSPACE_ANALYTIC = 10;
-		public static final int GEOM_OPTION_FIJI_IMAGEJ = 11;
-		public static final int GEOM_OPTION_BLENDER = 12;
+//		public static final int GEOM_OPTION_FIJI_IMAGEJ = 11;
+//		public static final int GEOM_OPTION_BLENDER = 12;
 
 //	public static final int XML_DOC = 3;
 	//Document Creation Info

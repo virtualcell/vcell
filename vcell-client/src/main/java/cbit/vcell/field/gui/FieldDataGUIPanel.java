@@ -245,9 +245,10 @@ public class FieldDataGUIPanel extends JPanel{
 				jButtonFDFromSim_ActionPerformed(e);
 			}else if(getCreateJComboBox().getSelectedItem().equals(FROM_FILE)){
 				jButtonFDFromFile_ActionPerformed(e);
-			}else if(getCreateJComboBox().getSelectedItem().equals(FROM_IMAGEJ)){
-				fromImageJ();
 			}
+//			else if(getCreateJComboBox().getSelectedItem().equals(FROM_IMAGEJ)){
+//				fromImageJ();
+//			}
 	};
 		public void treeCollapsed(javax.swing.event.TreeExpansionEvent event) {};
 		public void treeExpanded(javax.swing.event.TreeExpansionEvent event) {
@@ -595,10 +596,10 @@ private JButton getJButtonFDCreate() {
 private JComboBox<String> jComboBoxCreate;
 private static final String FROM_FILE = "from File";
 private static final String FROM_SIM = "from Simulation";
-private static final String FROM_IMAGEJ = "from ImageJ";
+//private static final String FROM_IMAGEJ = "from ImageJ";
 private JComboBox<String> getCreateJComboBox(){
 	if(jComboBoxCreate == null){
-		jComboBoxCreate = new JComboBox<>(new String[] {FROM_FILE,FROM_SIM,FROM_IMAGEJ});
+		jComboBoxCreate = new JComboBox<>(new String[] {FROM_FILE,FROM_SIM/*,FROM_IMAGEJ*/});
 	}
 	return jComboBoxCreate;
 }
@@ -1041,19 +1042,19 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 
 }
 
-private void fromImageJ(){
-	//windows debug port in use, netstat -anob | findstr "5000", tasklist | findstr "LISTENER from netstat query"
-	AsynchClientTask imageJTask = new AsynchClientTask("contact ImageJ...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			File imageJFile = ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"image for new FieldData");
-			hashTable.put(IMAGE_FILE_KEY, imageJFile);
-		}
-	};
-	AsynchClientTask[] tasks = fdFromFile();
-	tasks = BeanUtils.addElements(new AsynchClientTask[] {imageJTask}, tasks);
-	ClientTaskDispatcher.dispatch(this, new Hashtable<>(), tasks, false, true, null);
-}
+//private void fromImageJ(){
+//	//windows debug port in use, netstat -anob | findstr "5000", tasklist | findstr "LISTENER from netstat query"
+//	AsynchClientTask imageJTask = new AsynchClientTask("contact ImageJ...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			File imageJFile = ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"image for new FieldData");
+//			hashTable.put(IMAGE_FILE_KEY, imageJFile);
+//		}
+//	};
+//	AsynchClientTask[] tasks = fdFromFile();
+//	tasks = BeanUtils.addElements(new AsynchClientTask[] {imageJTask}, tasks);
+//	ClientTaskDispatcher.dispatch(this, new Hashtable<>(), tasks, false, true, null);
+//}
 
 String IMAGE_FILE_KEY = "imageFile";
 private AsynchClientTask[] fdFromFile() {

@@ -27,7 +27,6 @@ import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -52,8 +51,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -78,8 +75,6 @@ import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
-import org.vcell.imagej.ImageJHelper;
-import org.vcell.imagej.ImageJHelper.ImageJConnection;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BngUnitSystem;
 import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
@@ -175,7 +170,6 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
@@ -1219,9 +1213,9 @@ public static boolean isImportGeometryType(DocumentCreationInfo documentCreation
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE ||
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH ||
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC ||
-	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE ||
-	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
-	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE
+//	|| documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
+//	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER
 	;
 }
 
@@ -1385,15 +1379,16 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 			final Component guiParent =(Component)hashTable.get(ClientRequestManager.GUI_PARENT);
 			try {
 				FieldDataFileOperationSpec fdfos = null;
-				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
-					hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"Image for new VCell geometry"));
-				}
-				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
-					hashTable.put("imageFile",ImageJHelper.vcellWantSurface(getClientTaskStatusSupport(),"Image for new VCell geometry"));
-				}
-				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE ||
-					documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
-					documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
+//				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
+//					hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"Image for new VCell geometry"));
+//				}
+//				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
+//					hashTable.put("imageFile",ImageJHelper.vcellWantSurface(getClientTaskStatusSupport(),"Image for new VCell geometry"));
+//				}
+				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE
+//					|| documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
+//					documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER
+					){
 					
 					File imageFile = (File)hashTable.get("imageFile");
 					if(imageFile == null){
@@ -1837,9 +1832,11 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask,queryImageResizeTask,importFileImageTask/*resizes*/,finishTask}));
-	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ || documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
-		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,queryImageResizeTask,importFileImageTask/*resizes*/,finishTask}));
-	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
+	}
+//	else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ || documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
+//		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,queryImageResizeTask,importFileImageTask/*resizes*/,finishTask}));
+//	}
+	else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {getFieldDataImageParams,queryImageResizeTask,parseImageTask,resizeImageTask,finishTask}));
 	}
 	return tasksV.toArray(new AsynchClientTask[0]);
@@ -2299,7 +2296,7 @@ public static void downloadExportedData(final Component requester, final UserPre
 			final boolean[] bFlagArr = new boolean[] {false};
 			final ByteArrayOutputStream[] baosArr = new ByteArrayOutputStream[1];
 			final HttpGet[] httpGetArr = new HttpGet[1];
-			final ImageJConnection[] imagejConnetArr = new ImageJConnection[1];
+//			final ImageJConnection[] imagejConnetArr = new ImageJConnection[1];
 			//Start download of exported file in separate thread that is interruptible (apache HTTPClient)
 			Thread interruptible = new Thread(new Runnable() {
 				@Override
@@ -2334,7 +2331,7 @@ public static void downloadExportedData(final Component requester, final UserPre
 					}catch(Exception e){
 						excArr[0] = e;
 					}finally {
-					    if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
+//					    if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
 					    if(response != null){try{response.close();}catch(Exception e){}}
 					    if(httpclient != null){try{httpclient.close();}catch(Exception e){}}
 					    bFlagArr[0] = true;
@@ -2346,14 +2343,14 @@ public static void downloadExportedData(final Component requester, final UserPre
 			while(!bFlagArr[0]){
 				if(getClientTaskStatusSupport() != null && getClientTaskStatusSupport().isInterrupted()){//user cancelled
 					if(httpGetArr[0] != null){httpGetArr[0].abort();}
-					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
+//					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
 					throw UserCancelException.CANCEL_GENERIC;
 				}
 				try{
 					Thread.sleep(500);
 				}catch(InterruptedException e){// caused by pressing 'cancel' button on progresspopup
 					if(httpGetArr[0] != null){httpGetArr[0].abort();}
-					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
+//					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
 					if(getClientTaskStatusSupport() != null && getClientTaskStatusSupport().isInterrupted()){
 						throw UserCancelException.CANCEL_GENERIC;
 					}
@@ -2376,45 +2373,46 @@ public static void downloadExportedData(final Component requester, final UserPre
 		    if(evt.getFormat() == null || !evt.getFormat().equals("IMAGEJ")){
 		    	//save for file save operations
 		    	hashTable.put(BYTES_KEY, baosArr[0].toByteArray());
-		    }else{
-		    	//Send to ImageJ directly
-//		    	int response = DialogUtils.showComponentOKCancelDialog(requester, new JLabel("Open ImageJ->File->Export->VCellUtil... to begin data transefer"), "Sending data to ImageJ...");
-//		    	if(response != JOptionPane.OK_OPTION){
-//		    		throw UserCancelException.CANCEL_GENERIC;
-//		    	}
-		    	//NRRD format send to ImageJ
-		    	if(getClientTaskStatusSupport() != null){
-		    		getClientTaskStatusSupport().setMessage("unpacking data...");
-		    	}
-		    	ByteArrayInputStream bais = new ByteArrayInputStream( baosArr[0].toByteArray());
-		    	ZipInputStream zis = null;
-		    	BufferedInputStream bis = null;
-		    	try{
-			    	zis = new ZipInputStream(bais);
-			    	ZipEntry entry = zis.getNextEntry();
-//			    	System.out.println("zipfile entry name="+entry.getName()+"zipfile entry size="+entry.getSize());
-//					    	File tempf = new File("C:\\temp\\tempf.nrrd");
-//					    	FileOutputStream fos = new FileOutputStream(tempf);
-//					    	byte[] mybuf = new byte[1000];
-//					    	int numread = 0;
-//					    	while((numread = zis.read(mybuf)) != -1){
-//					    		fos.write(mybuf, 0, numread);
-//					    	}
-//					    	fos.close();
-			    	TimeSpecs timeSpecs = evt.getTimeSpecs();
-			    	double[] timePoints = new double[timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1];
-			    	for (int tp = timeSpecs.getBeginTimeIndex(); tp <= timeSpecs.getEndTimeIndex(); tp++){
-			    		timePoints[tp-timeSpecs.getBeginTimeIndex()] = timeSpecs.getAllTimes()[tp];
-			    	}
-			    	imagejConnetArr[0] = new ImageJConnection(ImageJHelper.ExternalCommunicator.IMAGEJ);//doesn't open connection until later
-			    	bis = new BufferedInputStream(zis);
-			    	ImageJHelper.vcellSendNRRD(requester,bis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'",timePoints,evt.getVariableSpecs().getVariableNames());
-		    	}finally{
-		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}
-		    		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
-		    	}
-		    	throw UserCancelException.CANCEL_GENERIC;//finished, exit all further tasks
 		    }
+//		    else{
+//		    	//Send to ImageJ directly
+////		    	int response = DialogUtils.showComponentOKCancelDialog(requester, new JLabel("Open ImageJ->File->Export->VCellUtil... to begin data transefer"), "Sending data to ImageJ...");
+////		    	if(response != JOptionPane.OK_OPTION){
+////		    		throw UserCancelException.CANCEL_GENERIC;
+////		    	}
+//		    	//NRRD format send to ImageJ
+//		    	if(getClientTaskStatusSupport() != null){
+//		    		getClientTaskStatusSupport().setMessage("unpacking data...");
+//		    	}
+//		    	ByteArrayInputStream bais = new ByteArrayInputStream( baosArr[0].toByteArray());
+//		    	ZipInputStream zis = null;
+//		    	BufferedInputStream bis = null;
+//		    	try{
+//			    	zis = new ZipInputStream(bais);
+//			    	ZipEntry entry = zis.getNextEntry();
+////			    	System.out.println("zipfile entry name="+entry.getName()+"zipfile entry size="+entry.getSize());
+////					    	File tempf = new File("C:\\temp\\tempf.nrrd");
+////					    	FileOutputStream fos = new FileOutputStream(tempf);
+////					    	byte[] mybuf = new byte[1000];
+////					    	int numread = 0;
+////					    	while((numread = zis.read(mybuf)) != -1){
+////					    		fos.write(mybuf, 0, numread);
+////					    	}
+////					    	fos.close();
+//			    	TimeSpecs timeSpecs = evt.getTimeSpecs();
+//			    	double[] timePoints = new double[timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1];
+//			    	for (int tp = timeSpecs.getBeginTimeIndex(); tp <= timeSpecs.getEndTimeIndex(); tp++){
+//			    		timePoints[tp-timeSpecs.getBeginTimeIndex()] = timeSpecs.getAllTimes()[tp];
+//			    	}
+//			    	imagejConnetArr[0] = new ImageJConnection(ImageJHelper.ExternalCommunicator.IMAGEJ);//doesn't open connection until later
+//			    	bis = new BufferedInputStream(zis);
+//			    	ImageJHelper.vcellSendNRRD(requester,bis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'",timePoints,evt.getVariableSpecs().getVariableNames());
+//		    	}finally{
+//		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}
+//		    		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
+//		    	}
+//		    	throw UserCancelException.CANCEL_GENERIC;//finished, exit all further tasks
+//		    }
 		}
 	};
 	AsynchClientTask task2 = new AsynchClientTask("selecting file to save", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
