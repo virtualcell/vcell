@@ -17,9 +17,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import org.vcell.util.exe.ExecutableException;
 
@@ -288,23 +291,32 @@ public class NFSimSolver extends SimpleCompiledSolver {
 
 	public static void main(String[] args) {
 		
-		String baseName = "SimID_";
-		String workingDir = "C:\\Users\\jmasison\\.vcell\\simdata\\user\\sub\\";
-		String executable = "C:\\Users\\jmasison\\workspace\\VCell_trunk\\localsolvers\\win64\\NFsim_x64.exe";
-		String blankDelimiters = " \t";
+		final String baseName = "SimID_";
+		final String workingDir = "C:\\TEMP\\eee\\";
+		final String executable = "C:\\Users\\vasilescu\\.vcell\\solvers_DanDev_Version_5_3_build_99\\NFsim_x64.exe";
+//		final String workingDir = "C:\\Users\\jmasison\\.vcell\\simdata\\user\\sub\\";
+//		final String executable = "C:\\Users\\jmasison\\workspace\\VCell_trunk\\localsolvers\\win64\\NFsim_x64.exe";
 		
-		String debugfile = "C:\\Users\\jmasison\\.vcell\\simdata\\user\\sub\\debug.txt";
+		final String outputFile1 = "C:\\TEMP\\eee\\outputFile1.txt";		// results files
+		final String outputFile2 = "C:\\TEMP\\eee\\outputFile2.txt";
 				
-		int seed = 1807259453;
-		int steps = 100;
-		double duration = 0.1; // unit system is in sec
+		final int seed = 1807259453;
+		final int steps = 50;			// 100
+		final double duration = 10;	// unit system is in sec
 		
+		final int numSimulations = 3;			// number of simulations  ex: 50
+		final String yesPhos = "~p";			// replace here with the phosphorilated notation you use (ex: pY)
+		final String nonPhos = "~u";			// same as above, unphosphorilated
+
 		Map<Integer, Double> timestepMap = new HashMap<> ();
-		
 		BufferedReader br = null;
-		PrintWriter writer = null;
+		PrintWriter writer1 = null;		// prints averages
+		PrintWriter writer2 = null;		// prints phosphorilation statistics
 		try {
-			writer = new PrintWriter(debugfile, "UTF-8");
+			writer1 = new PrintWriter(outputFile1, "UTF-8");
+			writer2 = new PrintWriter(outputFile2, "UTF-8");
+			writer2.println("Time\tMolecule,Site\t#pY\t#Y");
+
 			for(int i = 1; i < steps + 1; i++) {
 //print				writer.println("\t\t\t\tentering i loop");
 				String input = workingDir + baseName + "000" + ".nfsimInput";		// C:\\TEMP\\eee\\SimID_000.nfsimInput
@@ -318,7 +330,9 @@ public class NFSimSolver extends SimpleCompiledSolver {
 				}
 			
 				double averageOfAverage = 0;	// average length of patterns at this timepoint, over many simulations
-				int numSimulations = 50;
+				Map<String, Integer> phosphorilatedSitesMap = new LinkedHashMap<> ();		// key = molecule name, comma, site name  (ex A,s)
+																					// value = how many times that site is phosphorilated
+				Map<String, Integer> unPhosphorilatedSitesMap = new LinkedHashMap<> ();
 				for(int ii = 0; ii < numSimulations; ii++) {
 //print					writer.println("\t\t\t\t\tentering ii loop");
 					int curSeed = seed + ii * 538297;		// calculate a new seed for this simulation (same start seeds will be used for each time point)
@@ -336,28 +350,19 @@ public class NFSimSolver extends SimpleCompiledSolver {
 						System.out.println("exe failed, exitValue="+mathExe.getExitValue()+", \nstderr="+mathExe.getStderrString()+", \nstdout="+mathExe.getStdoutString());
 					}
 					
-					//command = "cmd.exe /c del " + workingDir + "*.gdat";
-					//p = Runtime.getRuntime().exec(command);
-					//p.waitFor();
-					
-					//delete the intermediate .gdat files
-//					MathExecutable mathExeDel = new MathExecutable(new String[] {"cmd.exe", "/c", "del", workingDir, "*.gdat"}, new File(workingDir));
-//					try {
-//						mathExeDel.start();
-//					} catch (ExecutableException e) {
-//						e.printStackTrace();
-//					}		
-					
-					Map<Integer, Integer> occurencesMap = new HashMap<> ();
+					Map<Integer, Integer> occurencesMap = new HashMap<> ();		// key = number of molecules in species pattern (ex 3)
+																				// value = how many instances of this species pattern are there (ex 5)
 					br = new BufferedReader(new FileReader(curspecies));
 					String line;			// ex: A(s!1,t!2).B(u!1).B(u!2)  5
 					while ((line = br.readLine()) != null) {
 						if(line.startsWith("#")) {
 							continue;
 						}
+						
+						// 1. calculate number of molecules for each length
 						int numMolecules = 1;				// how many molecules in the above pattern => 3
 						int number;							// how many instances of this pattern => 5
-						StringTokenizer nextLine = new StringTokenizer(line, blankDelimiters);
+						StringTokenizer nextLine = new StringTokenizer(line, " \t");
 						String pattern = nextLine.nextToken();			// A(s!1,t!2).B(u!1).B(u!2)
 						for(int j = 0; j < pattern.length(); j++) {
 							if(pattern.charAt(j) == '.') {
@@ -374,8 +379,48 @@ public class NFSimSolver extends SimpleCompiledSolver {
 						} else {
 							occurencesMap.put(numMolecules, number);
 						}
+						
+						// 2. we count number of phosphorilated / unphosphorilated sites for each molecule/site
+						// ex: A(s~pY,t!1).B(u~pY!1, v~Y, x!?)
+						StringTokenizer speciesPatternTokens = new StringTokenizer(pattern, ".");
+						while(speciesPatternTokens.hasMoreTokens()) {
+							String molecule = speciesPatternTokens.nextToken();		// must be at least one molecule, with or without sites
+							String moleculeName = molecule.substring(0, molecule.indexOf("("));		// extract name of molecule
+							molecule = molecule.substring(molecule.indexOf("(")+1);	// get rid of name and "("
+							molecule = molecule.substring(0, molecule.length()-1);	// get rid of  last ")"
+							StringTokenizer molecularPatternTokens = new StringTokenizer(molecule, ",");
+							while(molecularPatternTokens.hasMoreTokens()) {
+								String siteString = molecularPatternTokens.nextToken();	// ex: u~pY!1
+								String siteName = null;
+								if(siteString.contains(yesPhos)) {
+									siteName = siteString.substring(0, siteString.indexOf(yesPhos));
+									String key = moleculeName + "," + siteName;
+									Integer total = 0;
+									if(phosphorilatedSitesMap.containsKey(key)) {
+										total = phosphorilatedSitesMap.get(key);
+									}
+									total += number;	// we have "number" instances of this molecule
+									phosphorilatedSitesMap.put(key, total);
+									if(!unPhosphorilatedSitesMap.containsKey(key)) {	// if the other table lacks this key, initialize an entry with zero
+										unPhosphorilatedSitesMap.put(key, 0);
+									}
+								} else if(siteString.contains(nonPhos)) {
+									siteName = siteString.substring(0, siteString.indexOf(nonPhos));
+									String key = moleculeName + "," + siteName;
+									Integer total = 0;
+									if(unPhosphorilatedSitesMap.containsKey(key)) {
+										total = unPhosphorilatedSitesMap.get(key);
+									}
+									total += number;	// we have "number" instances of this molecule
+									unPhosphorilatedSitesMap.put(key, total);
+									if(!phosphorilatedSitesMap.containsKey(key)) {
+										phosphorilatedSitesMap.put(key, 0);
+									}
+								}
+							}
+						}
 					}
-					
+				
 					double up = 0;
 					double down = 0;
 					for (Map.Entry<Integer, Integer> entry : occurencesMap.entrySet()) {
@@ -405,27 +450,38 @@ public class NFSimSolver extends SimpleCompiledSolver {
 							
 					br.close();
 				
-					//if uncimmented make sure to use mathexecutable
-					//command = "cmd.exe /c del " + workingDir + "*.species";
-					//p = Runtime.getRuntime().exec(command); 
-					//p.waitFor();
-				}
+				} // end of running all simulations for this time step (i)
 				
 				averageOfAverage = averageOfAverage / numSimulations;
 //print				writer.println("Final_average_for_time_"+i+" : "+averageOfAverage); writer.println();
 				timestepMap.put(i, averageOfAverage); //save average for time step (i) to map 
 				
+				TreeMap<String, Integer> sorted = new TreeMap<>();	// naturally sorted by key
+		        sorted.putAll(phosphorilatedSitesMap);
+				for (Map.Entry<String, Integer> entry : sorted.entrySet()) {
+					String row = (i-1) + "\t";
+					row += entry.getKey() + "\t\t";
+//					double a = entry.getValue();
+//					double d = a/numSimulations;
+//					row += d + "\t";				// result expressed as double
+
+					row += entry.getValue()/numSimulations + "\t";			// as integer
+					row += unPhosphorilatedSitesMap.get(entry.getKey())/numSimulations;
+					writer2.println(row);
+				}
+				writer2.println();	// one line separation between timepoints
 			}
 		
 		//exited both loops
 			
 //print		writer.println();
-		writer.println("Time\tAverageCLusterSize");
+		writer1.println("Time\tAverageCLusterSize");
 	    for(int j = 1; j < steps + 1; j++) {
-	    	writer.println((j-1) + "\t" + timestepMap.get(j));
+	    	writer1.println((j-1) + "\t" + timestepMap.get(j));
 	    }		
-	    writer.println(); writer.println("Done");
-	    writer.close();
+	    writer1.println(); writer1.println("Done");
+	    writer1.close();
+	    writer2.close();
 			
 	    System.out.println("\n\n\n\nDone\n\n");
 		} catch (IOException e) {
