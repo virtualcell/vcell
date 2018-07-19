@@ -288,7 +288,11 @@ public static void main(java.lang.String[] args) {
 		System.out.println("usage: VCellClientTest ( ((-local|host[:port]) [userid password]) | ([-open] filename) )");
 		System.exit(1);
 	}
-	if (hosts[0]!=null && hosts[0].equalsIgnoreCase("-local")) {
+	boolean bLocal = false;
+	if (hosts[0]!=null && hosts[0].equalsIgnoreCase("-local")){
+		bLocal = true;
+	}
+	if (bLocal) {
 		csInfo = ClientServerInfo.createLocalServerInfo(user, (password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	} else {
 		String[] hostParts = hosts[0].split(":");
@@ -297,8 +301,7 @@ public static void main(java.lang.String[] args) {
 		csInfo = ClientServerInfo.createRemoteServerInfo(apihost, apiport, user,(password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	}
 	try {
-		String propertyFile = PropertyLoader.getProperty(PropertyLoader.propertyFileProperty, "");
-		if (propertyFile.length()>0){
+		if (bLocal){
 			PropertyLoader.loadProperties(ArrayUtils.addAll(REQUIRED_CLIENT_PROPERTIES,REQUIRED_LOCAL_PROPERTIES) );
 			try {
 				VCMongoMessage.enabled = true;
