@@ -12,8 +12,16 @@ package cbit.vcell.bionetgen;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
+import org.vcell.model.rbm.RbmUtils;
+
+import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 
 
 /**
@@ -21,7 +29,7 @@ import cbit.vcell.parser.Expression;
  * Creation date: (1/13/2006 5:47:24 PM)
  * @author: Jim Schaff
  */
-public class BNGReaction  implements Serializable {
+public class BNGReaction  implements Serializable {	// obtained from parsing the .net file (result of flattening .bngl file)
 	private Expression paramExpression = null;
 	String matchingKey = null;
 	private BNGSpecies[] reactants = null;
@@ -67,9 +75,6 @@ public String extractRuleName() {
 	} else {
 		return ruleName;
 	}
-}
-public boolean isRuleReversed() {
-	return bRuleReversed;
 }
 
 public List<Integer> findProductPositions(BNGSpecies our) {
@@ -144,6 +149,139 @@ public String writeReaction() {
 	return reactionStr;
 }
 
+public boolean isRuleReversed() {
+	return bRuleReversed;
+}
+public boolean isMichaelisMenten() {
+	String value = paramExpression.infix();
+	if(value == null) {
+		return false;
+	}
+	value = value.replaceAll("\\s+","");		// 2*Sat(Vmax,Km)
+	if(!value.contains(RbmUtils.MM_Prefix)) {
+		return false;
+	}
+	StringTokenizer tokenizer = new StringTokenizer(value, "*");
+	if(!tokenizer.hasMoreTokens()) {
+		return false;
+	}
+	String token = tokenizer.nextToken();
+	if(token.startsWith(RbmUtils.MM_Prefix)) {
+		return true;
+	}
+	if(!tokenizer.hasMoreTokens()) {
+		return false;
+	}
+	token = tokenizer.nextToken();
+	if(token.startsWith(RbmUtils.MM_Prefix)) {
+		return true;
+	}
+	return false;
+}
+public String extractSymmetryFactor() {
+	if(!isMichaelisMenten()) {
+		return null;
+	}
+	String value = paramExpression.infix();		// already verified in isMichaelisMenten() that value is not null
+	value = value.replaceAll("\\s+","");
+	StringTokenizer tokenizer = new StringTokenizer(value, "*");
+	if(!tokenizer.hasMoreTokens()) {
+		return null;
+	}
+	String token = tokenizer.nextToken();
+	if(token.startsWith(RbmUtils.MM_Prefix)) {
+		return "1";
+	} else {
+		return token;
+	}
+}
+public String extractMMPrefix() {
+	if(!isMichaelisMenten()) {
+		return null;
+	}
+	String value = paramExpression.infix();		// already verified in isMichaelisMenten() that value is not null
+	value = value.replaceAll("\\s+","");
+	StringTokenizer tokenizer = new StringTokenizer(value, "*");
+	if(!tokenizer.hasMoreTokens()) {
+		return null;
+	}
+	String token = tokenizer.nextToken();
+	if(token.startsWith(RbmUtils.MM_Prefix)) {
+		token = token.substring(0, RbmUtils.MM_Prefix.length()-1);
+		return token;
+	}
+	if(!tokenizer.hasMoreTokens()) {
+		return null;
+	}
+	token = tokenizer.nextToken();
+	token = token.substring(0, RbmUtils.MM_Prefix.length()-1);
+	return token;
+}
+public String extractVmax() {
+	if(!isMichaelisMenten()) {
+		return null;
+	}
+	String value = paramExpression.infix();
+	value = value.replaceAll("\\s+","");
+	StringTokenizer tokenizer = new StringTokenizer(value, "*");
+	if(!tokenizer.hasMoreTokens()) {
+		return null;
+	}
+	value = tokenizer.nextToken();
+	if(!value.startsWith(RbmUtils.MM_Prefix)) {
+		if(!tokenizer.hasMoreTokens()) {
+			return null;
+		}
+		value = tokenizer.nextToken();
+	}
+	value = value.substring(0, value.lastIndexOf(")"));			// get rid of the last ")"
+	value = value.substring(RbmUtils.MM_Prefix.length());		// get rid of the prefix  "Sat("
+	String strVmax = value.substring(0, value.indexOf(","));	// part before the ","
+	return strVmax;
+}
+public String extractKm() {
+	if(!isMichaelisMenten()) {
+		return null;
+	}
+	String value = paramExpression.infix();
+	value = value.replaceAll("\\s+","");
+	StringTokenizer tokenizer = new StringTokenizer(value, "*");
+	if(!tokenizer.hasMoreTokens()) {
+		return null;
+	}
+	value = tokenizer.nextToken();
+	if(!value.startsWith(RbmUtils.MM_Prefix)) {
+		if(!tokenizer.hasMoreTokens()) {
+			return null;
+		}
+		value = tokenizer.nextToken();
+	}
+	value = value.substring(0, value.lastIndexOf(")"));
+	value = value.substring(RbmUtils.MM_Prefix.length());
+	String strKm = value.substring(value.indexOf(",")+1);		// part after the ","
+	return strKm;
+}
+public Expression getMichaelisMentenParamExpression(KineticsParameter rateParameter) {
+	if(!isMichaelisMenten()) {
+		return null;
+	}
+	String str = null;
+	if(rateParameter.getRole() == Kinetics.ROLE_Vmax) {
+		str = extractVmax();
+	} else if(rateParameter.getRole() == Kinetics.ROLE_Km) {
+		str = extractKm();
+	} else {
+		throw new RuntimeException("Unexpected kinetic parameter " + rateParameter.getName());
+	}
+	Expression expression = null;
+	try {
+		expression = new Expression(str);
+	} catch (ExpressionException e) {
+		throw new RuntimeException("Unable to initialize expression for " + rateParameter.getName());
+	}
+	return expression;
+}
+
 public String toBnglString() {
 	String reactionStr = "";
 	
@@ -166,17 +304,30 @@ public String toBnglString() {
 			reactionStr += getProducts()[i].getNetworkFileIndex() + ",";
 		}
 	}
-	String infix = paramExpression.infix();
-	if(infix.startsWith("(") && infix.endsWith(")")) {
-		infix = infix.replaceAll("\\s+","");	// remove spaces
-	}
-	reactionStr += " " + infix;
 	
-	reactionStr += " #";
-	if(bRuleReversed) {
-		reactionStr += "_reverse_";
+	if(!isMichaelisMenten()) {
+		String infix = paramExpression.infix();
+		if(infix.startsWith("(") && infix.endsWith(")")) {
+			infix = infix.replaceAll("\\s+","");	// remove spaces
+		}
+		reactionStr += " " + infix;
+		reactionStr += " #";
+		if(bRuleReversed) {
+			reactionStr += "_reverse_";
+		}
+		reactionStr += ruleName;
+	} else {
+		String str1 = extractMMPrefix();
+		String str2 = extractVmax();
+		String str3 = extractKm();
+		if(str1 != null && str2 != null && str3 != null) {
+			reactionStr += " " + str1 + " " + str2 + " " + str3;
+		} else {
+			throw new RuntimeException("Invalid format for BNGReaction parameterExpression");
+		}
+		reactionStr += " #";
+		reactionStr += ruleName;
 	}
-	reactionStr += ruleName;
 	return reactionStr;
 }
 

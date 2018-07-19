@@ -352,7 +352,7 @@ void ReactionRule() #ReactionRule :					// ---------- ReactionRule -------------
 	Reactant() (<ADD> Reactant())* 
 	( ( t = <REACTION_ARROW_RIGHT>) | ( t = <REACTION_ARROW_BOTH> ) )
 	Product() (<ADD> Product())*
-	KineticsParameter() [ <COMMA> KineticsParameter() ]
+	KineticsParameter() [ <COMMA> KineticsParameter() ]			// 	("MM(" KineticsParameter() <COMMA> KineticsParameter() ")") | ( KineticsParameter() [ <COMMA> KineticsParameter() ] )
 	{ jjtThis.setArrowString(t.image); jjtThis.setLabel(tLabel.image);}
 }
 void Reactant() #Reactant :

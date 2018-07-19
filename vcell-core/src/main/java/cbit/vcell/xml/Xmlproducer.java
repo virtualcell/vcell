@@ -3713,7 +3713,7 @@ private Element getXML(RbmKineticLaw param) {
 	HashMap<ParameterRoleEnum, String> roleHash = new HashMap<ParameterRoleEnum, String>();
 	roleHash.put(RbmKineticLawParameterType.MassActionForwardRate, XMLTags.RbmMassActionKfRole);
 	roleHash.put(RbmKineticLawParameterType.MassActionReverseRate, XMLTags.RbmMassActionKrRole);
-	roleHash.put(RbmKineticLawParameterType.MichaelisMentenKcat, XMLTags.RbmMichaelisMentenKcatRole);
+	roleHash.put(RbmKineticLawParameterType.MichaelisMentenVmax, XMLTags.RbmMichaelisMentenVmaxRole);
 	roleHash.put(RbmKineticLawParameterType.MichaelisMentenKm, XMLTags.RbmMichaelisMentenKmRole);
 	roleHash.put(RbmKineticLawParameterType.SaturableVmax, XMLTags.RbmSaturableVmaxRole);
 	roleHash.put(RbmKineticLawParameterType.SaturableKs, XMLTags.RbmSaturableKsRole);

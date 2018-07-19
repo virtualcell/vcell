@@ -33,6 +33,8 @@ import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
+import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
@@ -611,30 +613,47 @@ public class NetworkTransformer implements SimContextTransformer {
 						product.setStoichiometry(stoichiometry);
 					}
 				}
-				MassActionKinetics targetKinetics = new MassActionKinetics(sr);
-				sr.setKinetics(targetKinetics);
-				KineticsParameter kforward = targetKinetics.getForwardRateParameter();
-				KineticsParameter kreverse = targetKinetics.getReverseRateParameter();
-				String kforwardNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate).getName();
-				if (!kforward.getName().equals(kforwardNewName)){
-					targetKinetics.renameParameter(kforward.getName(), kforwardNewName);
-					kforward = targetKinetics.getForwardRateParameter();
+				
+				if(!bngReaction.isMichaelisMenten()) {		// MassAction
+					MassActionKinetics targetKinetics = new MassActionKinetics(sr);
+					sr.setKinetics(targetKinetics);
+					KineticsParameter kforward = targetKinetics.getForwardRateParameter();
+					KineticsParameter kreverse = targetKinetics.getReverseRateParameter();
+					String kforwardNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate).getName();
+					if (!kforward.getName().equals(kforwardNewName)){
+						targetKinetics.renameParameter(kforward.getName(), kforwardNewName);
+						kforward = targetKinetics.getForwardRateParameter();
+					}
+					final String kreverseNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate).getName();
+					if (!kreverse.getName().equals(kreverseNewName)){
+						targetKinetics.renameParameter(kreverse.getName(), kreverseNewName);
+						kreverse = targetKinetics.getReverseRateParameter();
+					}
+					applyKineticsExpressions(forwardBNGReaction, kforward, targetKinetics);
+					if (reverseBNGReaction!=null){
+						applyKineticsExpressions(reverseBNGReaction, kreverse, targetKinetics);
+					}
+				} else {										// MichaelisMenten
+					HMM_IRRKinetics targetKinetics = new HMM_IRRKinetics(sr);
+					sr.setKinetics(targetKinetics);
+					KineticsParameter vmax = targetKinetics.getVmaxParameter();
+					KineticsParameter km = targetKinetics.getKmParameter();
+					String vmaxNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MichaelisMentenVmax).getName();
+					if (!vmax.getName().equals(vmaxNewName)){
+						targetKinetics.renameParameter(vmax.getName(), vmaxNewName);
+						vmax = targetKinetics.getVmaxParameter();
+					}
+					applyKineticsExpressions(forwardBNGReaction, vmax, targetKinetics);
+					final String kmNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MichaelisMentenKm).getName();
+					if (!km.getName().equals(kmNewName)){
+						targetKinetics.renameParameter(km.getName(), kmNewName);
+						km = targetKinetics.getKmParameter();
+					}
+					applyKineticsExpressions(forwardBNGReaction, km, targetKinetics);
 				}
-				final String kreverseNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate).getName();
-				if (!kreverse.getName().equals(kreverseNewName)){
-					targetKinetics.renameParameter(kreverse.getName(), kreverseNewName);
-					kreverse = targetKinetics.getReverseRateParameter();
-				}
-				applyKineticsExpressions(forwardBNGReaction, kforward, targetKinetics);
-				if (reverseBNGReaction!=null){
-					applyKineticsExpressions(reverseBNGReaction, kreverse, targetKinetics);
-				}
-	//			String fieldParameterName = kforward.getName();
-	//			fieldParameterName += "_" + r.getRuleName();
-	//			kforward.setName(fieldParameterName);
 				reactionStepMap.put(reactionName, sr);
-			} else if (reverseBNGReactionsMap.containsValue(bngReaction) && !directBNGReactionsMap.containsKey(bngReaction.getKey())){
-				// reverse only (must be irreversible)
+			} else if (reverseBNGReactionsMap.containsValue(bngReaction) && !directBNGReactionsMap.containsKey(bngReaction.getKey())) {
+				// reverse only (must be irreversible, cannot be Michaelis-Menten)
 				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(reverseBNGReaction.extractRuleName());
 				Structure structure = rr.getStructure();		
@@ -789,9 +808,14 @@ public class NetworkTransformer implements SimContextTransformer {
 //		return newExp;
 //	}
 
-	private Expression applyKineticsExpressions(BNGReaction bngReaction, KineticsParameter rateParameter, MassActionKinetics targetKinetics) throws ExpressionException {
+	private Expression applyKineticsExpressions(BNGReaction bngReaction, KineticsParameter rateParameter, DistributedKinetics targetKinetics) throws ExpressionException {
 		ReactionRule reactionRule = null;
-		Expression paramExpression = bngReaction.getParamExpression();
+		Expression paramExpression = null;
+		if(!bngReaction.isMichaelisMenten()) {
+			paramExpression = bngReaction.getParamExpression();
+		} else {
+			paramExpression = bngReaction.getMichaelisMentenParamExpression(rateParameter);
+		}
 		Expression newExp = new Expression(paramExpression);
 		String[] fakeSymbols = paramExpression.getSymbols();
 		for (String fakeSymbol : fakeSymbols){

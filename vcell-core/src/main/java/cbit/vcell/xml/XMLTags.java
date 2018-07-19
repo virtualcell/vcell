@@ -663,6 +663,7 @@ public class XMLTags {
 	public static final String RbmMassActionKfRole = "MassActionKf";
 	public static final String RbmMassActionKrRole = "MassActionKr";
 	public static final String RbmMichaelisMentenKcatRole = "MichaelisMentenKcat";
+	public static final String RbmMichaelisMentenVmaxRole = "MichaelisMentenVmax";
 	public static final String RbmMichaelisMentenKmRole = "MichaelisMentenKm";
 	public static final String RbmSaturableVmaxRole = "SaturableVmax";
 	public static final String RbmSaturableKsRole = "SaturableKs";

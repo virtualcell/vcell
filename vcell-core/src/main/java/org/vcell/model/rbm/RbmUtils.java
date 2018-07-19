@@ -112,6 +112,8 @@ public class RbmUtils {
 	public static final String SiteStruct = "AAA";		// site indicating compartment
 	public static final String SiteProduct = "AAB";		// site indicating 0 if it's reactant (seed species) or 1 if it's a product
 	
+	public static final String MM_Prefix = "Sat(";		// Kinetic Parameters prefix for Michaelis-Menten
+	
 	public static class BnglObjectConstructionVisitor implements BNGLParserVisitor {
 		private boolean stopOnError = true;	// throw exception if object which should have been there is missing
 		private Model model = null;
@@ -360,37 +362,47 @@ public class RbmUtils {
 				}
 				if (parameterIndex == 0) {
 					try {
-						int numReactants = rr.getReactantPatterns().size();
-						if (numReactants > 1 && !bngUnitSystem.isConcentration()){
-							Double bnglModelVolume = bngUnitSystem.getVolume();
-							double reactantsFactor = Math.pow(bnglModelVolume,numReactants-1);
-							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(reactantsFactor)).flatten();
-							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, correctedRate);
-						}else{
-							String value = node.getValue();
+						String value = node.getValue();
+						if(value.startsWith(MM_Prefix)) {			// Michaelis-Menten that needs some post processing ex:  "2*Sat(Vmax,Km)"
+							value = value.replaceAll("\\s+","");					// get rid of spaces, if any
+							value = value.substring(0, value.lastIndexOf(")"));	// get rid of the last ")"
+							value = value.substring(MM_Prefix.length());			// get rid of the prefix  "Sat("
+							String strVmax = value.substring(0, value.indexOf(","));	// part before the ","
+							String strKm = value.substring(value.indexOf(",")+1);		// part after the ","
+							Expression newVMaxExpression = getBoundExpression(strVmax, model.getRbmModelContainer().getSymbolTable());
+							Expression newKmExpression = getBoundExpression(strKm, model.getRbmModelContainer().getSymbolTable());
+							rr.setKineticLaw(new RbmKineticLaw(rr, RbmKineticLaw.RateLawType.MichaelisMenten));
+							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenVmax, newVMaxExpression);
+							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKm, newKmExpression);
+						} else {								// Mass Action forward rate
+							//Expression newExpression = new Expression(node.getValue());
 							Expression newExpression = getBoundExpression(value, model.getRbmModelContainer().getSymbolTable());
-							//Expression newExpression = new Expression(value);
-							RbmKineticLaw kineticLaw = rr.getKineticLaw();
-							kineticLaw.setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, newExpression);
+							int numReactants = rr.getReactantPatterns().size();
+							if (numReactants > 1 && !bngUnitSystem.isConcentration()){
+								Double bnglModelVolume = bngUnitSystem.getVolume();
+								double reactantsFactor = Math.pow(bnglModelVolume,numReactants-1);
+								Expression correctedRate = Expression.mult(newExpression, new Expression(reactantsFactor)).flatten();
+								rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, correctedRate);
+							}else{
+								rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, newExpression);
+							}
 						}
 					} catch (PropertyVetoException | ExpressionException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-				} else {
+				} else {		// second parameter, always mass action reverse rate (can't be MM)
 					try {
+						String value = node.getValue();
+						Expression newExpression = getBoundExpression(value, model.getRbmModelContainer().getSymbolTable());
 						int numProducts = rr.getProductPatterns().size();
 						if (numProducts > 1 && !bngUnitSystem.isConcentration()){
 							Double bnglModelVolume = bngUnitSystem.getVolume();
 							double productsFactor = Math.pow(bnglModelVolume,numProducts-1);
-							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(productsFactor)).flatten();
+							Expression correctedRate = Expression.mult(newExpression, new Expression(productsFactor)).flatten();
 							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, correctedRate);
 //	this results in an expression which is molecules/time ... but we need concentration/time.
 //    K' = K * V^(N-1)
 						}else{
-							String value = node.getValue();
-							Expression newExpression = getBoundExpression(value, model.getRbmModelContainer().getSymbolTable());
-							//Expression newExpression = new Expression(node.getValue());
 							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, newExpression);
 						}
 					} catch (ExpressionException | PropertyVetoException e1) {
@@ -871,14 +883,14 @@ public class RbmUtils {
 					//
 					// should be a build-in vcell function with arguments ... user defined functions with arguments not supported yet in bngl import.
 					//
-					FunctionType builtinFunctionType = cbit.vcell.parser.ASTFuncNode.FunctionType.fromFunctionName(invocation.getFunctionName());
-					if (builtinFunctionType==null){
-						throw new RuntimeException("function \""+invocation.getFunctionExpression().infix()+"\" not found as a built-in VCell function (and bngl functions with arguments are not yet supported");
-					}else{
-						if (invocation.getArguments().length != builtinFunctionType.getArgTypes().length){
-							throw new RuntimeException("built-in function \""+invocation.getFunctionExpression().infix()+"\" expects "+builtinFunctionType.getArgTypes().length+" arguments");
-						}
-					}
+//					FunctionType builtinFunctionType = cbit.vcell.parser.ASTFuncNode.FunctionType.fromFunctionName(invocation.getFunctionName());
+//					if (builtinFunctionType==null){
+//						throw new RuntimeException("function \""+invocation.getFunctionExpression().infix()+"\" not found as a built-in VCell function (and bngl functions with arguments are not yet supported");
+//					}else{
+//						if (invocation.getArguments().length != builtinFunctionType.getArgTypes().length){
+//							throw new RuntimeException("built-in function \""+invocation.getFunctionExpression().infix()+"\" expects "+builtinFunctionType.getArgTypes().length+" arguments");
+//						}
+//					}
 				}
 				System.out.println(invocations.toString());
 			}
@@ -1834,23 +1846,35 @@ public class RbmUtils {
 		String str = reactionRule.getName() + ":\t";
 		str += toBnglStringShort(reactionRule, compartmentMode);
 		str += "\t\t";
-		if(reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate) != null) {
-			String str1 = reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate).infixBng();
-			str += str1;
-		} else {
-			System.out.println("Could not recover Kf from " + reactionRule.getName());
-			str += "1";
-		}
-		if(!reactionRule.isReversible()) {
+		switch (reactionRule.getKineticLaw().getRateLawType()) {
+		case MassAction: {
+			if(reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate) != null) {
+				String str1 = reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate).infixBng();
+				str += str1;
+			} else {
+				System.out.println("Could not recover Kf from " + reactionRule.getName());
+				str += "1";
+			}
+			if(!reactionRule.isReversible()) {
+				return str;
+			}
+			if (reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate) != null) {
+				String str1 = reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate).infixBng();
+				str += ", " + str1;
+			} else {
+				throw new RuntimeException("Reaction rule " + reactionRule.getName() + " (reversible) is missing the reverse rate Kr (null).");
+			}
 			return str;
 		}
-		if (reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate) != null) {
-			String str1 = reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate).infixBng();
-			str += ", " + str1;
-		} else {
-			throw new RuntimeException("Reaction rule " + reactionRule.getName() + " (reversible) is missing the reverse rate Kr (null).");
+		case MichaelisMenten: {
+			FakeReactionRuleRateParameter fakeParameterVmax = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MichaelisMentenVmax);
+			FakeReactionRuleRateParameter fakeParameterKm = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MichaelisMentenKm);
+			str += MM_Prefix + fakeParameterVmax + "," + fakeParameterKm + ")";
+			return str;
 		}
-		return str;
+		default:
+			throw new RuntimeException("kinetic law "+reactionRule.getKineticLaw().getRateLawType().name()+" not yet supported.");
+		}
 	}
 	
 	public static String toBnglStringLong_internal(ReactionRule reactionRule, CompartmentMode compartmentMode) {
@@ -1863,8 +1887,8 @@ public class RbmUtils {
 			str += " 0";	// this is the new syntax for Trash!!! 
 		}
 		str += "\t";
-		switch (reactionRule.getKineticLaw().getRateLawType()){
-		case MassAction:{
+		switch (reactionRule.getKineticLaw().getRateLawType()) {
+		case MassAction: {
 			FakeReactionRuleRateParameter fakeForwardRateParam = new FakeReactionRuleRateParameter(reactionRule, RbmKineticLawParameterType.MassActionForwardRate);
 			str += fakeForwardRateParam.fakeParameterName;
 			if (reactionRule.isReversible()) {
@@ -1873,9 +1897,14 @@ public class RbmUtils {
 			}
 			return str;
 		}
-		default:{
-			throw new RuntimeException("kinetic law "+reactionRule.getKineticLaw().getRateLawType().name()+" not yet supported.");
+		case MichaelisMenten: {
+			FakeReactionRuleRateParameter fakeParameterVmax = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MichaelisMentenVmax);
+			FakeReactionRuleRateParameter fakeParameterKm = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MichaelisMentenKm);
+			str += MM_Prefix + fakeParameterVmax + "," + fakeParameterKm + ")";
+			return str;
 		}
+		default:
+			throw new RuntimeException("kinetic law "+reactionRule.getKineticLaw().getRateLawType().name()+" not yet supported.");
 		}
 	}
 

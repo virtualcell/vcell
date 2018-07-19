@@ -1295,6 +1295,20 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 				}
 			}
 		}
+		if(getKineticLaw().getRateLawType() != RbmKineticLaw.RateLawType.MassAction) {
+			// Michaelis Menten or Saturable
+			if(isReversible()) {
+				String message = "Reaction Rules with a '" + getKineticLaw().getRateLawType().getDefaultName() + "' kinetic type must be Irreversible.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+			}
+			if(reactantPatterns.size() != 1) {
+				String message = "Reaction Rules with a '" + getKineticLaw().getRateLawType().getDefaultName() + "' kinetic type must have exactly one Reactant.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+			} else if(productPatterns.size() != 1) {
+				String message = "Reaction Rules with a '" + getKineticLaw().getRateLawType().getDefaultName() + "' kinetic type must have exactly one Product.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+			}
+		}
 	}
 	
 	public RbmKineticLaw getKineticLaw() {

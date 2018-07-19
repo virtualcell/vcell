@@ -795,7 +795,7 @@ void ReactionRule()               :					// ---------- ReactionRule -------------
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
         }
-/*@egen*/
+/*@egen*/			// 	("MM(" KineticsParameter() <COMMA> KineticsParameter() ")") | ( KineticsParameter() [ <COMMA> KineticsParameter() ] )
 	{ jjtn000.setArrowString(t.image); jjtn000.setLabel(tLabel.image);}/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {

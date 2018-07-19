@@ -155,10 +155,10 @@ public class RbmNetworkGenerator {
 		writer.println();
 		
 		for (ReactionRuleSpec rrs : simulationContext.getReactionContext().getReactionRuleSpecs()){
-			if (!rrs.isExcluded()){
+			if (!rrs.isExcluded()) {
 				ReactionRule reactionRule = rrs.getReactionRule();
 				RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
-				switch (kineticLaw.getRateLawType()){
+				switch (kineticLaw.getRateLawType()) {
 				case MassAction:{
 					FakeReactionRuleRateParameter fakeRateParameterForward = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MassActionForwardRate);
 					LocalParameter origForwardRateParameter = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
@@ -168,6 +168,15 @@ public class RbmNetworkGenerator {
 						LocalParameter origReverseRateParameter = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
 						kineticsParameterMap.put(fakeRateParameterReverse, origReverseRateParameter);
 					}
+					break;
+				}
+				case MichaelisMenten: {
+					FakeReactionRuleRateParameter fakeParameterVmax = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MichaelisMentenVmax);
+					FakeReactionRuleRateParameter fakeParameterKm = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MichaelisMentenKm);
+					LocalParameter origVmaxParameter = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MichaelisMentenVmax);
+					LocalParameter origKmParameter = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MichaelisMentenKm);
+					kineticsParameterMap.put(fakeParameterVmax, origVmaxParameter);
+					kineticsParameterMap.put(fakeParameterKm, origKmParameter);
 					break;
 				}
 				default:{

@@ -20,6 +20,7 @@ import java.beans.PropertyVetoException;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -54,7 +55,13 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -66,10 +73,10 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 	
 	private BioModel bioModel = null;
 	private ReactionRule reactionRule = null;
-	private JLabel titleLabel = null;
 	private JCheckBox isReversibleCheckBox;
-	private JComboBox kineticsTypeComboBox = null;
+	private JComboBox<RateLawType> kineticsTypeComboBox = null;
 	private JButton jToggleButton = null;
+	private JLabel titleLabel = null;
 
 	private ReactionRulePropertiesTableModel tableModel = null;
 	private ScrollTable table = null;
@@ -80,13 +87,20 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 
-	private class BioModelNodeEditableTree extends JTree {
-		@Override
-		public boolean isPathEditable(TreePath path) {
-			Object object = path.getLastPathComponent();
-			return object instanceof BioModelNode;
-		}
-	}
+//	private class BioModelNodeEditableTree extends JTree {
+//		@Override
+//		public boolean isPathEditable(TreePath path) {
+//			Object object = path.getLastPathComponent();
+//			return object instanceof BioModelNode;
+//		}
+//	}
+	
+	private final static RateLawType[] RateLawTypes = {
+		RateLawType.MassAction,
+		RateLawType.MichaelisMenten,
+//		RateLawType.Saturable,
+	};
+	
 	private class InternalEventHandler implements PropertyChangeListener, ActionListener, FocusListener, MouseListener
 	{
 		@Override
@@ -229,7 +243,6 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.weightx = 1.0;
 			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 			add(getKineticsTypeComboBox(), gbc);
-			getKineticsTypeComboBox().setEnabled(false);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 3;
@@ -305,6 +318,9 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			add(collapsiblePanel, gbc);
 
+			getKineticsTypeComboBox().addActionListener(eventHandler);
+			getKineticsTypeComboBox().setEnabled(false);
+			initKineticChoices();
 			annotationTextArea.addFocusListener(eventHandler);
 			annotationTextArea.addMouseListener(eventHandler);
 		} catch (java.lang.Throwable ivjExc) {
@@ -397,13 +413,22 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			newValue.addPropertyChangeListener(eventHandler);
 		}
 		getReactionRulePropertiesTableModel().setReactionRule(reactionRule);
-		refreshInterface();
+		updateInterface();
 	}
 	private void setReversible(boolean bReversible) {
 		reactionRule.setReversible(bReversible);
 		if(!bReversible && reactionRule != null) {
-			// we know for sure it must be MassAction
-			LocalParameter lp = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
+			LocalParameter lp = null;
+			switch(reactionRule.getKineticLaw().getRateLawType()) {
+			case MassAction:
+				lp = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
+				break;
+			case MichaelisMenten:	// not reversible
+			case Saturable:
+				return;
+			default:
+				throw new RuntimeException("unsupported rule-based kinetic law "+reactionRule.getKineticLaw().getRateLawType());
+			}
 			try {
 				lp.setExpression(new Expression(0.0d));
 			} catch (ExpressionBindingException e) {
@@ -413,21 +438,72 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		getReactionRulePropertiesTableModel().refreshData();
 	}
 
-	protected void refreshInterface() {
+	private RateLawType getRateLawType(RbmKineticLaw kineticLaw) {
+		if (kineticLaw != null) {
+			return kineticLaw.getRateLawType();
+		}else{
+			return null;
+		}
+	}
+	
+	private void initKineticChoices() {
+		javax.swing.DefaultComboBoxModel<RateLawType> model = new DefaultComboBoxModel<RateLawType>();
+		for(RateLawType rateLawType : RateLawTypes) {
+			model.addElement(rateLawType);
+		}
+		getKineticsTypeComboBox().setModel(model);
+		return;
+	}
+	private void updateKineticChoice() {
+		RateLawType newRateLawType = (RateLawType)getKineticsTypeComboBox().getSelectedItem();
+		// if same as current kinetics, don't create new one
+		if (reactionRule == null || reactionRule.getKineticLaw().getRateLawType().equals(newRateLawType)) {
+			return;
+		}
+		RbmKineticLaw newRbmKineticLaw = new RbmKineticLaw(reactionRule, newRateLawType);
+		reactionRule.setKineticLaw(newRbmKineticLaw);
+		if(newRateLawType != RateLawType.MassAction) {
+			reactionRule.setReversible(false);
+			isReversibleCheckBox.setSelected(reactionRule.isReversible());
+			isReversibleCheckBox.setEnabled(false);
+		} else {
+			isReversibleCheckBox.setSelected(reactionRule.isReversible());
+			isReversibleCheckBox.setEnabled(true);
+		}
+	}
+
+	
+	protected void updateInterface() {
 		
 		boolean bNonNullRule = reactionRule != null && bioModel != null;
 		annotationTextArea.setEditable(bNonNullRule);
+		//getKineticsTypeComboBox().setEnabled(bNonNullRule);	// TODO: here!!!
+		getKineticsTypeComboBox().setEnabled(false);			// TODO: here!!!
+
 		if (bNonNullRule) {
+//			initKineticChoices();
 			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
 			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(reactionRule));
 			nameTextField.setEditable(true);
 			nameTextField.setText(reactionRule.getName());
-			isReversibleCheckBox.setSelected(reactionRule.isReversible());
+			getKineticsTypeComboBox().setSelectedItem(getRateLawType(reactionRule.getKineticLaw()));
+
+			if(reactionRule.getKineticLaw().getRateLawType() == RateLawType.Saturable) {
+				isReversibleCheckBox.setSelected(false);
+				isReversibleCheckBox.setEnabled(false);
+			} else if(reactionRule.getKineticLaw().getRateLawType() == RateLawType.MichaelisMenten) {
+				isReversibleCheckBox.setSelected(false);
+				isReversibleCheckBox.setEnabled(false);
+			} else {	// MassAction
+				isReversibleCheckBox.setSelected(reactionRule.isReversible());
+				isReversibleCheckBox.setEnabled(true);
+			}
 		} else {
 			annotationTextArea.setText(null);
 			nameTextField.setEditable(false);
 			nameTextField.setText(null);
 			isReversibleCheckBox.setSelected(false);
+			isReversibleCheckBox.setEnabled(true);
 		}
 		listLinkedPathwayObjects();
 	}
@@ -479,29 +555,46 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
-	private JComboBox getKineticsTypeComboBox() {
+	private JComboBox<RateLawType> getKineticsTypeComboBox() {
 		if (kineticsTypeComboBox == null) {
 			kineticsTypeComboBox = new JComboBox();
 			kineticsTypeComboBox.setName("JComboBox1");
 			kineticsTypeComboBox.setRenderer(new DefaultListCellRenderer() {
 				private final static String PI = "\u03A0";
+				private final static String MU = "\u03BC";
+				private final static String SQUARED = "\u00B2";
 				private final static String PIs = "<strong>\u03A0</strong>";
 				private final static String PIsb = "<strong><big>\u03A0</big></strong>";
 				private final static String pi = "\u03C0";
 				private final static String MULT = "\u22C5";
+				private final static String MICROMOLAR = MU+"M";
+				private final static String SQUAREMICRON = MU+"m"+SQUARED;
 
 				public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-					java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-					String str = "<html>Mass Action ( for each reaction:  ";
-					str += "Kf" + MULT + PIs + " <small>reactants</small> - Kr" + MULT + PIs + " <small>products</small> )</html>";
-					setText(str);
+					java.awt.Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					if(value == RateLawType.Saturable) {
+						String str = "<html>Saturable";
+						str += "</html>";
+						setText(str);
+					} else if(value == RateLawType.MichaelisMenten) {
+						String str = "<html>";
+						if(reactionRule.getStructure() instanceof Feature) {
+							str += "Henri-Michaelis-Menten (Irreversible) ["+MICROMOLAR+"/s]";
+						} else if (reactionRule.getStructure() instanceof Membrane) {
+							str += "Henri-Michaelis-Menten (Irreversible) [molecules/("+SQUAREMICRON+" s)]";
+						}
+						str += "</html>";
+						setText(str);
+					} else if(value == RateLawType.MassAction) {
+						String str = "<html>Mass Action ( for each reaction:  ";
+						str += "Kf" + MULT + PIs + " <small>reactants</small> - Kr" + MULT + PIs + " <small>products</small> )</html>";
+						setText(str);
+					}
 					return component;
 				}
 			});
 		}
 		return kineticsTypeComboBox;
-	}
-	private void updateKineticChoice() {
 	}
 
 	private JButton getJToggleButton() {

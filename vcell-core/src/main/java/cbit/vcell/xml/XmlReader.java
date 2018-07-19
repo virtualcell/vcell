@@ -5015,7 +5015,7 @@ private ReactionRule getRbmReactionRule(Element reactionRuleElement, Model newMo
 				HashMap<String,ParameterRoleEnum> roleHash = new HashMap<String, ParameterContext.ParameterRoleEnum>();
 				roleHash.put(XMLTags.RbmMassActionKfRole,RbmKineticLawParameterType.MassActionForwardRate);
 				roleHash.put(XMLTags.RbmMassActionKrRole,RbmKineticLawParameterType.MassActionReverseRate);
-				roleHash.put(XMLTags.RbmMichaelisMentenKcatRole,RbmKineticLawParameterType.MichaelisMentenKcat);
+				roleHash.put(XMLTags.RbmMichaelisMentenVmaxRole,RbmKineticLawParameterType.MichaelisMentenVmax);
 				roleHash.put(XMLTags.RbmMichaelisMentenKmRole,RbmKineticLawParameterType.MichaelisMentenKm);
 				roleHash.put(XMLTags.RbmSaturableVmaxRole,RbmKineticLawParameterType.SaturableVmax);
 				roleHash.put(XMLTags.RbmSaturableKsRole,RbmKineticLawParameterType.SaturableKs);
@@ -5073,7 +5073,7 @@ private void readOldRbmKineticsAttributes(Element reactionRuleElement, ReactionR
 	if(MM_Kcat != null && !MM_Kcat.isEmpty()) {
 		reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, RateLawType.MichaelisMenten));
 		Expression MM_Kcat_exp = unMangleExpression(MM_Kcat);
-		LocalParameter kcatParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MichaelisMentenKcat);
+		LocalParameter kcatParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MichaelisMentenVmax);
 		reactionRule.getKineticLaw().setParameterValue(kcatParameter, MM_Kcat_exp, true);
 		String MM_Km = reactionRuleElement.getAttributeValue(XMLTags.RbmMichaelisMentenKmAttrTag_DEPRECATED);
 		if(MM_Km == null || MM_Km.isEmpty()) {
