@@ -71,7 +71,7 @@ VCELL_DEPLOY_SECRETS_DIR=`cat $local_config_file | grep VCELL_DEPLOY_SECRETS_DIR
 
 echo "sudo docker run --rm ... ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}"
 
-echo "sudo docker run --rm --cpus=1\\"
+echo "sudo docker run --rm --cpus=\"1.0\"\\"
 echo "    -e compiler_updateSiteBaseUrl=$VCELL_UPDATE_SITE \\"
 echo "    -e compiler_Site=$VCELL_SITE_CAMEL \\"
 echo "    -e compiler_vcellVersion=$VCELL_VERSION_NUMBER \\"
@@ -98,7 +98,7 @@ echo "    ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}"
 
 
 
-sudo docker run --rm --cpus=1 \
+sudo docker run --rm --cpus="1.0" \
     -e compiler_updateSiteBaseUrl=$VCELL_UPDATE_SITE \
     -e compiler_Site=$VCELL_SITE_CAMEL \
     -e compiler_vcellVersion=$VCELL_VERSION_NUMBER \

@@ -64,7 +64,7 @@ ssh vcell@vcell-node1.cam.uchc.edu
 cd /opt/build
 rm -rf vcell (if necessary)
 git clone https://github.com/virtualcell/vcell.git
-cd vcell/docker/build
+cd vcell/docker
 ```
 
 Run the following bash commands in your terminal (sets the Docker tags to first 7 characters of Git commit hash)

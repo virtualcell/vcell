@@ -143,8 +143,8 @@ echo $cmd
 #
 if [ "$install_singularity" == "true" ]; then
 	echo ""
-	cmd="cd singularity-vm"
-	cd singularity-vm
+	cmd="pushd ../build/singularity-vm"
+	pushd ../build/singularity-vm
 	echo ""
 	echo "CURRENT DIRECTORY IS $PWD"
 
@@ -181,8 +181,8 @@ if [ "$install_singularity" == "true" ]; then
 		($cmd) || (echo "failed to upload generated singularity image to compute node $computenode" && exit 1)
     done
 
-	echo "cd .."
-	cd ..
+	echo "popd"
+	popd
 fi
 
 

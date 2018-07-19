@@ -1,5 +1,12 @@
 # deploy vcell using docker swarm mode.
 
+# Table of Contents
+1. [Cluster Configuration](#cluster_configuration)
+2. [Useful Docker Commands](#useful_docker_commands)
+3. [Deploy Configuration](#deploy_configuration)
+    1. [VCell Client JREs](#vcell_client_jres)
+
+
 ## cluster configuration (<vcellroot>/docker)
 
 1) shared folder for simulation results, singularity images, SLURM submit scripts and logs (TMPDIR=/state/partition1 currently hard-coded for SLURM nodes).
@@ -12,19 +19,6 @@ docker node update --label-add zone=INTERNAL `docker node ls -q`
 sudo sudo sysctl -w vm.max_map_count=262144 ### for elasticsearch (ELK stack)
 ```
 
-2a) set up a build machine.  Install java jdk 1.8, maven 3.5, and singularity on a Linux or Macos build machine (use Vagrant Box in vcell/docker/singularity-vm for singularity on Macos).
-
-```bash
-git clone https://github.com/singularityware/singularity.git
-cd singularity
-./autogen.sh
-./configure --prefix=/usr/local
-make
-sudo make install
-sudo ln -s /usr/local/bin/singularity /usr/bin/singularity 
-sudo yum install squashfs-tools.x86_64
-```
-
 3) deploy a vcell production stack (named "local") on a single machine Docker swarm mode
 
 ```bash
@@ -32,29 +26,7 @@ sudo yum install squashfs-tools.x86_64
 env $(cat local_mockslurm.config | xargs) docker stack deploy -c docker-compose.yml -c docker-compose-swarm.yml local
 ```
 
-or deploy a development version using docker-compose (from <vcellroot>/docker)
-
-```bash
-pushd ..
-mvn clean install dependency:copy-dependencies
-popd
-./build.sh all localhost:5000 dev
-./localconfig_mockslurm.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
-env $(cat local_mockslurm.config | xargs) docker-compose -f docker-compose-clientgen.yml rm --force
-env $(cat local_mockslurm.config | xargs) docker-compose -f docker-compose-clientgen.yml up
-open ./generated_installers/VCell_Test_macos_7_0_0_4_64bit.dmg
-
-
-env $(cat local_mockslurm.config | xargs) docker stack deploy -c docker-compose.yml local
-
-or
-
-env $(cat local_mockslurm.config | xargs) docker-compose -f docker-compose.yml rm --force
-env $(cat local_mockslurm.config | xargs) docker-compose -f docker-compose.yml up
-
-```
-
-4) useful commands
+## useful commands <a name="useful_docker_commands"/>
 
 ```bash
 > docker stack services local
@@ -97,6 +69,19 @@ cflee8p55yph        local_mongodb       replicated          1/1                 
 (see AdminJobsRestlet for details)
 ```
 
+### VCell Client JREs <a name="vcell_client_jres"/>
+while building the clientgen container, it is assumed that during deployment there is a directory which is mapped to the /jre volume in the vcset up "build secrets" directory (e.g. /usr/local/deploy/.install4j6/jres/ on vcell-node1.cam.uchc.edu).
+
+
+Java jre bundles which are compatible with installed version of
+Install4J
+/usr/local/deploy/.install4j6/jres/linux-amd64-1.8.0_66.tar.gz
+/usr/local/deploy/.install4j6/jres/macosx-amd64-1.8.0_66.tar.gz
+/usr/local/deploy/.install4j6/jres/windows-x86-1.8.0_66.tar.gz
+/usr/local/deploy/.install4j6/jres/linux-x86-1.8.0_66.tar.gz  
+/usr/local/deploy/.install4j6/jres/windows-amd64-1.8.0_66.tar.gz
+
+
 # build VCell Client installers (this uses docker-compose rather than docker stack)
 required files:
 
@@ -136,63 +121,6 @@ to build dev vcell-batch containers (from <vcellroot>/docker)
 docker build -f Dockerfile-batch-dev --tag localhost:5000/vcell-batch-dev ..
 ```
 
-# Private Docker repository
-
-## to set up a private Docker repository with self-signed certificate
-
-how to set up a registry with self-signed certificate  http://ralph.soika.com/how-to-setup-a-private-docker-registry/
-
-```bash
-ssh vcell-docker.cam.uchc.edu
-mkdir -p /usr/local/deploy/registry_certs
-cd /usr/local/deploy/registry_certs
-openssl req -newkey rsa:4096 -nodes -sha256 \
-                -keyout registry_certs/domain.key -x509 -days 356 \
-                -out registry_certs/domain.cert
-
-sudo docker run -d -p 5000:5000 \
- -v $(pwd)/registry_certs:/certs \
- -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.cert \
- -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
- --restart=always --name registry registry:2
-```
-
-for removing old docker images from registry (error upon delete):
-
-```bash
-go get github.com/fraunhoferfokus/deckschrubber
-export GOPATH=$HOME/go
-$GOPATH/bin/deckschrubber -day 30 -registry https://vcell-docker.cam.uchc.edu:5000
-```
-
-
-## install self-signed cert as trusted CA
-trusting self signed certificate on Macos (https://github.com/docker/distribution/issues/2295), and Linux/Windows (https://docs.docker.com/registry/insecure/#failing).  For example, to trust the self-signed certificate on UCHC server nodes using Centos 7.2:
-
-```bash
-sudo scp vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/vcell-docker.cam.uchc.edu.crt
-sudo update-ca-trust
-sudo service docker stop
-sudo service docker start
-```
-
-https://vcell-docker.cam.uchc.edu:5000/v2/_catalog
-
-for a simple web-based UI to the private repository see http://vcell-docker.cam.uchc.edu:5001/home, this UI was recently ported to registry:2 and has limited functionality (as of Jan 25, 2018).
-
-```bash
-sudo docker run \
-  -d --restart=always --name registry-ui \
-  -e ENV_DOCKER_REGISTRY_HOST=vcell-docker.cam.uchc.edu \
-  -e ENV_DOCKER_REGISTRY_PORT=5000 \
-  -e ENV_DOCKER_REGISTRY_USE_SSL=1 \
-  -p 5001:80 \
-  --restart always
-  konradkleine/docker-registry-frontend:v2
-
-open http://localhost:5001
-```
-
 
 
 #### Build VCell and deploy to production servers (from ./docker/swarm/ directory)
@@ -203,12 +131,10 @@ build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7
 
 Get VCell project, login to vcell-node1 as user 'vcell'
 
+build vcell according to instructions in /vcell/docker/build/README.md
+
 ```bash
-ssh vcell@vcell-node1.cam.uchc.edu
-cd /opt/build
-rm -rf vcell (if necessary)
-git clone https://github.com/virtualcell/vcell.git
-cd vcell/docker
+cd vcell/docker/swarm
 ```
 
 Run the following bash commands in your terminal (sets the Docker tags to first 7 characters of Git commit hash)
@@ -216,7 +142,9 @@ Run the following bash commands in your terminal (sets the Docker tags to first 
 ```bash
 export VCELL_TAG=`git rev-parse HEAD | cut -c -7`
 export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff
-./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
+
+## the build command is assumed to have already be run
+##  ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
 //Helper for current install4j VCell software $VCELL_BUILD number, increment version if deploying client, otherwise if server only do not increment version #
@@ -251,7 +179,7 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
 ```
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=49 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=51 VCELL_SITE=alpha
 export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
