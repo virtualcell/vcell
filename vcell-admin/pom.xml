@@ -112,7 +112,7 @@
 		</dependency>
 		
 		<!-- NB: For testing via main methods in IDEs. -->
-<!-- 
+		<!-- Don't comment this out, it'll break the standalone (local with oracle connection) version of vcell -->
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-oracle</artifactId>
@@ -120,7 +120,6 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
  		</dependency>
- -->	
  	</dependencies>
 	
 	<build>
