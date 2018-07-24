@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +21,9 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
@@ -136,15 +140,18 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 
 	
 	public static class SimpleJobStatusCacheMultithread implements SimpleJobStatusCache {
-		private HashMap<SimJobStatusKey, SimStatusCacheEntry> map = new HashMap<SimJobStatusKey,SimStatusCacheEntry>();
+		private final Cache<SimJobStatusKey, SimStatusCacheEntry> map;
 		
 		public SimpleJobStatusCacheMultithread(){
-			
+			map = CacheBuilder.newBuilder()
+				       .maximumSize(1000)
+				       .expireAfterAccess(30, TimeUnit.MINUTES)
+				       .build();
 		}
 
 		@Override
 		public SimStatusCacheEntry get(SimJobStatusKey simJobStatusKey) {
-			return map.get(simJobStatusKey);
+			return map.getIfPresent(simJobStatusKey);
 		}
 
 		@Override
@@ -156,7 +163,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 		}
 		
 	};
-
+	
 	
 	public SimulationDatabaseDirect(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl databaseServerImpl, boolean bCache){
 		this.databaseServerImpl = databaseServerImpl;
