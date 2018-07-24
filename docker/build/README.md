@@ -10,7 +10,7 @@
 6) vcell-activemqint => docker image in registry    (activemqint)
 7) vcell-activemqsim => docker image in registry    (activemqsim)
 8) vcell-clientgen   => docker image in registry    (generates Install4J installers during deployment)
-9) vcell-batch       => docker image in registry    (for batch processing, includes Linux solver executables)
+9) vcell-batch       => docker image in registry    (for batch processing, includes java code and Linux solver executables)
 10) vcell-batch.img  => singularity image in ./singularity-vm/   (built from vcell-batch docker image)
 
 ## build Singularity image for Linux solvers

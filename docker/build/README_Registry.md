@@ -1,6 +1,6 @@
 # Private Docker repository
 
-## to set up a private Docker repository with self-signed certificate
+## to set up a private Docker repository with self-signed certificate (on vcell-docker.cam.uchc.edu)
 
 how to set up a registry with self-signed certificate  http://ralph.soika.com/how-to-setup-a-private-docker-registry/
 
@@ -29,7 +29,7 @@ $GOPATH/bin/deckschrubber -day 30 -registry https://vcell-docker.cam.uchc.edu:50
 
 
 ## install self-signed cert as trusted CA to enable use of Docker registry by Singularity
-trusting self signed certificate on Macos (https://github.com/docker/distribution/issues/2295), and Linux/Windows (https://docs.docker.com/registry/insecure/#failing).  For example, to trust the self-signed certificate on UCHC server nodes using Centos 7.2:
+trusting self signed certificate on Macos (https://github.com/docker/distribution/issues/2295), and Linux/Windows (https://docs.docker.com/registry/insecure/#failing).  For example, to trust the self-signed certificate on UCHC server nodes using Centos 7.2 (e.g. vcellapi, vcell-node1, vcell-node2, vcellapi-beta, vcell-node3, vcell-node4):
 
 ```bash
 sudo scp vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/vcell-docker.cam.uchc.edu.crt
@@ -54,13 +54,16 @@ sudo docker run \
 open http://localhost:5001
 ```
 
-# During build, supply internal registry as part of Docker image namespace
+# During build, supply internal registry as part of Docker image namespace (e.g. vcell-docker.cam.uchc.edu:5000/schaff/<container_name>:<tag_name>)
 
 #### Build VCell and deploy to production servers (from ./docker/build/ directory)
 
 current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
 
-build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
+build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and temporarily stored locally on the build machine as a Singularity Image in directory (vcell-node1.cam.uchc.edu:/opt/build/vcell/docker/build/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
+
+
+The following environment variable is used by the build process (on vcell-node1) to name the containers and instruct which repository to push them to.  This environment variable is also used during deploy to swarm 
 
 ```bash
 export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff
